@@ -1,11 +1,9 @@
 import { SignJWT, jwtVerify } from "jose";
 import { env } from "@/env.mjs";
-import { NextRequest } from "next/server";
 
-export async function readToken(request: NextRequest) {
-  const token = request.cookies.get("token");
+export async function readToken(token?: string) {
   if (token) {
-    const decoded = await decodeToken(token.value);
+    const decoded = await decodeToken(token);
     if (decoded.success) {
       return decoded.payload;
     }

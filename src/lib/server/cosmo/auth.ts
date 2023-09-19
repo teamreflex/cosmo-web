@@ -1,4 +1,4 @@
-const COSMO_ENDPOINT = "https://api.cosmo.fans";
+import { COSMO_ENDPOINT } from "./common";
 
 type CosmoLoginResult = {
   user: {

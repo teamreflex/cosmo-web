@@ -8,7 +8,7 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // verifies token validity
-  const token = await readToken(request);
+  const token = await readToken(request.cookies.get("token")?.value);
 
   if (!token) {
     if (request.cookies.has("token")) {

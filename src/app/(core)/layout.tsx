@@ -1,29 +1,31 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
-import { decodeToken } from "@/lib/server/jwt";
 import { ProviderHelper } from "@/components/provider";
+import Navbar from "@/components/navbar";
+import { cookies } from "next/headers";
+import { readToken } from "@/lib/server/jwt";
 
 export const metadata: Metadata = {
   title: "Cosmo",
   description: "Cosmo",
 };
 
-async function getToken() {
-  const token = cookies().get("token")?.value;
-  if (token) {
-    const decoded = await decodeToken(token);
-    if (decoded.success) {
-      return decoded.payload;
-    }
-  }
-}
-
 export default async function CoreLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const user = await getToken();
+  const user = await readToken(cookies().get("token")?.value);
 
-  return <ProviderHelper user={user!}>{children}</ProviderHelper>;
+  return (
+    <ProviderHelper user={user!}>
+      <div className="max-w-screen h-screen">
+        <Navbar user={user!} />
+
+        {/* content */}
+        <div className="m-auto mb-5 flex min-h-[calc(100vh-9.25rem)] min-w-full flex-col text-foreground">
+          {children}
+        </div>
+      </div>
+    </ProviderHelper>
+  );
 }
