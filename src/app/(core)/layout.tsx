@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ProviderHelper } from "@/components/provider";
+import AuthProvider from "@/components/auth-provider";
 import Navbar from "@/components/navbar";
 import { cookies } from "next/headers";
 import { readToken } from "@/lib/server/jwt";
@@ -14,18 +14,16 @@ export default async function CoreLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const user = await readToken(cookies().get("token")?.value);
-
   return (
-    <ProviderHelper user={user!}>
+    <AuthProvider>
       <div className="max-w-screen h-screen">
-        <Navbar user={user!} />
+        <Navbar />
 
         {/* content */}
         <div className="m-auto mb-5 flex min-h-[calc(100vh-9.25rem)] min-w-full flex-col text-foreground">
           {children}
         </div>
       </div>
-    </ProviderHelper>
+    </AuthProvider>
   );
 }

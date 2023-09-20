@@ -1,12 +1,11 @@
 "use client";
 
-import { UserContext } from "@/context/user";
-import { useContext } from "react";
+import { useAuthStore } from "@/store";
 
 export default function MyPage() {
-  const user = useContext(UserContext);
+  const ramperUser = useAuthStore((state) => state.ramperUser);
 
   return (
-    <main className="flex flex-col items-center p-2">{user!.nickname} my</main>
+    <main className="flex flex-col items-center p-2">{ramperUser?.email}</main>
   );
 }

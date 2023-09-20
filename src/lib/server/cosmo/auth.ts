@@ -126,3 +126,33 @@ export async function user(accessToken: string): Promise<CosmoUser> {
     artists: result.profile.followingArtists,
   };
 }
+
+type CosmoSearchResult = {
+  results: {
+    nickname: string;
+    address: string;
+    profileImageUrl: string;
+  }[];
+};
+
+export type SearchUser = {
+  nickname: string;
+  profileImageUrl: string;
+  address: string;
+};
+
+/**
+ * Search for the given user.
+ * @param term string
+ * @returns Promise<User[]>
+ */
+export async function search(term: string): Promise<SearchUser[]> {
+  const res = await fetch(`${COSMO_ENDPOINT}/user/v1/search?query=${term}`);
+
+  if (res.ok) {
+    const data: CosmoSearchResult = await res.json();
+    return data.results;
+  }
+
+  return [];
+}

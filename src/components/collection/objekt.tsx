@@ -24,7 +24,7 @@ export default function Objekt({ objekt }: Props) {
       />
       <ObjektNumber objekt={objekt} />
       <div
-        className="absolute top-0 left-0 p-1 sm:p-2 rounded-br-lg sm:rounded-br-xl flex gap-2 items-center group shadow-md"
+        className="absolute top-0 left-0 p-1 sm:p-2 rounded-br-lg sm:rounded-br-xl flex gap-2 items-center shadow-md"
         style={{
           backgroundColor: objekt.backgroundColor,
           color: objekt.textColor,
@@ -32,9 +32,6 @@ export default function Objekt({ objekt }: Props) {
       >
         <SendObjekt objekt={objekt} />
         {objekt.transferable && <LockObjekt objekt={objekt} />}
-        <p className="text-sm font-semibold hidden group-hover:flex">
-          {objekt.collectionId}
-        </p>
       </div>
     </div>
   );

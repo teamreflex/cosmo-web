@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { Home, PackageOpen, User, Wrench } from "lucide-react";
-import { TokenPayload } from "@/lib/server/jwt";
+import { Home, PackageOpen, User } from "lucide-react";
+import { Button } from "./ui/button";
+import AuthOptions from "./auth-options";
 
 const links = [
   { name: "Home", icon: Home, href: "/home" },
@@ -10,7 +11,7 @@ const links = [
   { name: "Account", icon: User, href: "/my" },
 ];
 
-export default function Navbar({ user }: { user: TokenPayload }) {
+export default function Navbar() {
   return (
     <div className="flex h-16 items-center bg-foreground/20">
       <div className="container grid grid-cols-2 items-center gap-2 text-sm text-foreground dark:text-background md:gap-4 md:py-6 lg:grid-cols-3">
@@ -35,7 +36,9 @@ export default function Navbar({ user }: { user: TokenPayload }) {
           ))}
         </div>
 
-        <div className="flex justify-end">{user.nickname}</div>
+        <div className="flex justify-end">
+          <AuthOptions />
+        </div>
       </div>
     </div>
   );
