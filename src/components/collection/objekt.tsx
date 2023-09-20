@@ -15,7 +15,7 @@ function pad(n: string) {
 
 export default function Objekt({ objekt }: Props) {
   return (
-    <div className="relative touch-manipulation">
+    <div className="relative overflow-hidden rounded-lg md:rounded-xl lg:rounded-2xl touch-manipulation">
       <Image
         src={objekt.frontImage}
         width={291}
@@ -24,7 +24,7 @@ export default function Objekt({ objekt }: Props) {
       />
       <ObjektNumber objekt={objekt} />
       <div
-        className="absolute top-0 left-0 p-2 rounded-tl-2xl rounded-br-xl flex gap-2 items-center group shadow-md"
+        className="absolute top-0 left-0 p-1 sm:p-2 rounded-br-lg sm:rounded-br-xl flex gap-2 items-center group shadow-md"
         style={{
           backgroundColor: objekt.backgroundColor,
           color: objekt.textColor,
@@ -44,7 +44,7 @@ function ObjektNumber({ objekt }: Props) {
   return (
     <div
       className={cn(
-        "absolute h-full flex gap-2 justify-center top-0 right-1 [writing-mode:vertical-lr] font-semibold"
+        "absolute h-full items-center w-[11%] flex gap-2 justify-center top-0 right-0 [writing-mode:vertical-lr] font-semibold text-[6px] sm:text-xs md:text-sm lg:text-base"
       )}
       style={{ color: objekt.textColor }}
     >

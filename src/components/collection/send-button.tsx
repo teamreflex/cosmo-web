@@ -16,8 +16,8 @@ export default function SendObjekt({ objekt }: Props) {
           "hover:cursor-pointer hover:scale-110 transition-all"
       )}
     >
-      {!objekt.transferable && <MailX className="h-5 w-5" />}
-      {objekt.transferable && <Send className="h-5 w-5" />}
+      {!objekt.transferable && <MailX className="h-3 w-3 sm:h-5 sm:w-5" />}
+      {objekt.transferable && <Send className="h-3 w-3 sm:h-5 sm:w-5" />}
     </div>
   );
 }

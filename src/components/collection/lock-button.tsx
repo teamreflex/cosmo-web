@@ -32,8 +32,12 @@ export default function LockObjekt({ objekt }: Props) {
 
 function LockIcon({ loading, locked }: { loading: boolean; locked: boolean }) {
   if (loading) {
-    return <Loader2 className="h-5 w-5 animate-spin" />;
+    return <Loader2 className="h-3 w-3 sm:h-5 sm:w-5 animate-spin" />;
   }
 
-  return locked ? <Lock className="h-5 w-5" /> : <Unlock className="h-5 w-5" />;
+  return locked ? (
+    <Lock className="h-3 w-3 sm:h-5 sm:w-5" />
+  ) : (
+    <Unlock className="h-3 w-3 sm:h-5 sm:w-5" />
+  );
 }
