@@ -22,7 +22,7 @@ export async function sendEmail(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      appId: env.COSMO_APP_ID,
+      appId: env.NEXT_PUBLIC_COSMO_APP_ID,
       transactionId,
       email,
     }),
@@ -79,7 +79,7 @@ export async function exchangeToken(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      appId: env.COSMO_APP_ID,
+      appId: env.NEXT_PUBLIC_COSMO_APP_ID,
       transactionId,
       pendingToken,
     }),

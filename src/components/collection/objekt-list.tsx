@@ -12,7 +12,7 @@ export default function ObjektList({ objekts }: Props) {
     <div className="grid grid-cols-4 gap-4">
       {objekts.map((objekt) => (
         <div key={objekt.tokenId}>
-          <Objekt objekt={objekt} />
+          <Objekt objekt={objekt} showButtons={true} />
         </div>
       ))}
     </div>

@@ -20,21 +20,44 @@ import {
   SUPPORTED_ETHEREUM_CHAIN_IDS,
   getRamperSigner,
 } from "@ramper/ethereum";
-import { Interface, parseEther } from "ethers/lib/utils";
+import { Interface } from "ethers/lib/utils";
 import objektAbi from "@/objekt-abi.json";
+import { env } from "@/env.mjs";
+import { useToast } from "@/components/ui/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import Objekt from "./objekt";
 
 type Props = {
   objekt: OwnedObjekt;
 };
 
 export default function SendObjekt({ objekt }: Props) {
+  const [openSearch, setOpenSearch] = useState(false);
+  const [openSend, setOpenSend] = useState(false);
+  const [recipient, setRecipient] = useState<SearchUser | null>(null);
+
+  function prepareSending(newRecipient: SearchUser) {
+    setRecipient(newRecipient);
+    setOpenSearch(false);
+    setOpenSend(true);
+  }
+
   return (
     <>
       {!objekt.transferable && <MailX className="h-3 w-3 sm:h-5 sm:w-5" />}
       {objekt.transferable && (
-        <Popover>
-          <PopoverTrigger asChild>
+        <Dialog open={openSearch} onOpenChange={setOpenSearch}>
+          <DialogTrigger asChild>
             <button
+              onClick={() => setOpenSearch(true)}
               className={cn(
                 objekt.transferable && "hover:scale-110 transition-all"
               )}
@@ -43,19 +66,80 @@ export default function SendObjekt({ objekt }: Props) {
                 <Send className="h-3 w-3 sm:h-5 sm:w-5" />
               )}
             </button>
-          </PopoverTrigger>
-          <PopoverContent className="w-80">
-            <UserSearch objekt={objekt} />
-          </PopoverContent>
-        </Popover>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Send Objekt</DialogTitle>
+              <DialogDescription>
+                Search for another Cosmo user to send the objekt to.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="flex">
+              <UserSearch onRecipientSelected={prepareSending} />
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {recipient && (
+        <Dialog open={openSend} onOpenChange={setOpenSend}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Send Objekt</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to send this objekt to{" "}
+                <span className="font-bold">{recipient.nickname}</span>?
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="flex flex-col gap-4 justify-center items-center">
+              <Objekt objekt={objekt} showButtons={false} />
+            </div>
+
+            <DialogFooter className="flex gap-2">
+              <Button variant="destructive" onClick={() => setOpenSend(false)}>
+                Cancel
+              </Button>
+              <SendToUserButton
+                objekt={objekt}
+                user={recipient}
+                transactionComplete={() => setOpenSend(false)}
+              />
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </>
   );
 }
 
-function UserSearch({ objekt }: { objekt: OwnedObjekt }) {
+const instagrams = [
+  "0ct0ber19",
+  "withaseul",
+  "kimxxlip",
+  "zindoriyam",
+  "cher_ryppo",
+];
+
+function UserSearchButton() {
   const { pending } = useFormStatus();
+
+  return (
+    <Button variant="default" type="submit" disabled={pending}>
+      {pending ? <Loader2 className="animate-spin" /> : <Search />}
+    </Button>
+  );
+}
+
+type UserSearchProps = {
+  onRecipientSelected: (recipient: SearchUser) => void;
+};
+
+function UserSearch({ onRecipientSelected }: UserSearchProps) {
   const [users, setUsers] = useState<SearchUser[]>([]);
+
+  const placeholder = instagrams[Math.floor(Math.random() * (1 + 4 - 0)) + 0];
 
   async function executeSearch(formData: FormData) {
     const results = await searchForUser(formData);
@@ -65,32 +149,30 @@ function UserSearch({ objekt }: { objekt: OwnedObjekt }) {
   }
 
   return (
-    <div className="grid gap-4">
-      <div className="space-y-2">
-        <h4 className="font-medium leading-none">Send Objekt</h4>
-      </div>
+    <div className="flex flex-col gap-4 w-full">
+      <form action={executeSearch} className="flex gap-2 items-center">
+        <Input name="search" placeholder={`${placeholder}...`} />
+        <UserSearchButton />
+      </form>
 
-      <div className="flex flex-col gap-2">
-        <form action={executeSearch} className="flex gap-2 items-center">
-          <Input name="search" placeholder="Search Cosmo for a user..." />
-          <Button variant="default" type="submit" disabled={pending}>
-            {pending ? <Loader2 className="animate-spin" /> : <Search />}
-          </Button>
-        </form>
-
-        {users.length > 0 && <Separator />}
-        {users.length > 0 && (
+      {users.length > 0 && (
+        <>
+          <Separator />
           <div className="flex flex-col gap-2">
             {users.map((user) => (
-              <SendToUserButton
+              <Button
                 key={user.address}
-                objekt={objekt}
-                user={user}
-              />
+                variant="ghost"
+                className="flex gap-2 items-center"
+                onClick={() => onRecipientSelected(user)}
+              >
+                <Send />
+                <span>{user.nickname}</span>
+              </Button>
             ))}
           </div>
-        )}
-      </div>
+        </>
+      )}
     </div>
   );
 }
@@ -98,66 +180,177 @@ function UserSearch({ objekt }: { objekt: OwnedObjekt }) {
 function SendToUserButton({
   objekt,
   user,
+  transactionComplete,
 }: {
   objekt: OwnedObjekt;
   user: SearchUser;
+  transactionComplete: () => void;
 }) {
+  const { toast } = useToast();
   const ramperUser = useAuthStore((state) => state.ramperUser);
 
-  async function sendObjekt(toAddress: string) {
-    const wallet = ramperUser!.wallets["ethereum"];
-    const alchemy = new ethers.providers.AlchemyProvider(
-      SUPPORTED_ETHEREUM_CHAIN_IDS.MATIC,
-      "Ohb01kV33OMAtPqRP7Q_jbPyKjZCNS4n"
-    );
-    const ramperSigner = await getRamperSigner(alchemy);
-    const value = ethers.utils.parseEther("0.0");
-    const nonce = await alchemy.getTransactionCount(wallet.publicKey);
-    const abi = new Interface(objektAbi);
-    const customData = abi.encodeFunctionData(abi.getFunction("transferFrom"), [
-      wallet.publicKey,
-      toAddress,
-      objekt.tokenId,
-    ]);
-    console.log(customData);
-    const gasLimit = await alchemy.estimateGas({
-      to: objekt.tokenAddress,
-      data: customData,
-    });
-    console.log(gasLimit);
-    const feeData = await alchemy.getFeeData();
-    console.log(feeData);
-
+  async function fetchNonce(
+    alchemy: ethers.providers.AlchemyProvider,
+    address: string
+  ) {
     try {
-      const result = await ramperSigner.signTransaction({
-        type: 2,
-        from: wallet.publicKey,
-        to: objekt.tokenAddress,
-        value: value,
-        chainId: SUPPORTED_ETHEREUM_CHAIN_IDS.MATIC,
-        nonce: nonce,
-        gasLimit: gasLimit,
-        maxFeePerGas: feeData.maxFeePerGas,
-        maxPriorityFeePerGas: 60000000000,
-        data: customData,
-      });
-      console.log("signTransaction result", result);
-
-      const sendResult = await alchemy.sendTransaction(result);
-      console.log("sendTransaction result", sendResult);
-    } catch (e) {
-      console.log(e);
+      return await alchemy.getTransactionCount(address);
+    } catch (_) {
+      throw new TransactionError("Failed to get transaction count");
     }
   }
 
+  function encodeTransaction(
+    fromAddress: string,
+    toAddress: string,
+    tokenId: string
+  ) {
+    try {
+      const abi = new Interface(objektAbi);
+      return abi.encodeFunctionData(abi.getFunction("transferFrom"), [
+        fromAddress,
+        toAddress,
+        tokenId,
+      ]);
+    } catch (_) {
+      throw new TransactionError("Failed to encode transaction");
+    }
+  }
+
+  async function fetchGasLimit(
+    alchemy: ethers.providers.AlchemyProvider,
+    objektContract: string,
+    transactionData: string
+  ) {
+    try {
+      return await alchemy.estimateGas({
+        to: objektContract,
+        data: transactionData,
+      });
+    } catch (_) {
+      throw new TransactionError("Failed to fetch gas limit");
+    }
+  }
+
+  async function fetchFeeData(alchemy: ethers.providers.AlchemyProvider) {
+    try {
+      return await alchemy.getFeeData();
+    } catch (_) {
+      throw new TransactionError("Failed to fetch transaction fee data");
+    }
+  }
+
+  async function signTransaction(
+    ramperSigner: any,
+    fromAddress: string,
+    value: ethers.BigNumber,
+    nonce: number,
+    gasLimit: ethers.BigNumber,
+    maxFeePerGas: ethers.BigNumber | null,
+    customData: string
+  ) {
+    try {
+      return await ramperSigner.signTransaction({
+        type: 2,
+        from: fromAddress,
+        to: objekt.tokenAddress,
+        value,
+        chainId: SUPPORTED_ETHEREUM_CHAIN_IDS.MATIC,
+        nonce,
+        gasLimit,
+        maxFeePerGas,
+        maxPriorityFeePerGas: 60000000000,
+        data: customData,
+      });
+    } catch (_) {
+      throw new TransactionError("Failed to sign transaction");
+    }
+  }
+
+  async function sendTransaction(
+    alchemy: ethers.providers.AlchemyProvider,
+    signedTransaction: string
+  ) {
+    try {
+      return await alchemy.sendTransaction(signedTransaction);
+    } catch (_) {
+      throw new TransactionError("Failed to send transaction");
+    }
+  }
+
+  async function sendObjekt() {
+    setPending(true);
+    const wallet = ramperUser!.wallets["ethereum"];
+    const alchemy = new ethers.providers.AlchemyProvider(
+      SUPPORTED_ETHEREUM_CHAIN_IDS.MATIC,
+      env.NEXT_PUBLIC_ALCHEMY_KEY
+    );
+
+    try {
+      const ramperSigner = await getRamperSigner(alchemy);
+      const value = ethers.utils.parseEther("0.0");
+      const nonce = await fetchNonce(alchemy, wallet.publicKey);
+      const customData = encodeTransaction(
+        wallet.publicKey,
+        user.address,
+        objekt.tokenId
+      );
+      const gasLimit = await fetchGasLimit(
+        alchemy,
+        objekt.tokenAddress,
+        customData
+      );
+      const feeData = await fetchFeeData(alchemy);
+
+      // get confirmation from user
+      const signResult = await signTransaction(
+        ramperSigner,
+        wallet.publicKey,
+        value,
+        nonce,
+        gasLimit,
+        feeData.maxFeePerGas,
+        customData
+      );
+
+      await sendTransaction(alchemy, signResult);
+
+      toast({
+        description: "Transaction submitted!",
+        variant: "default",
+      });
+    } catch (err) {
+      if (err instanceof TransactionError) {
+        toast({
+          title: "Error",
+          description: err.message,
+          variant: "destructive",
+        });
+      }
+    }
+
+    setPending(false);
+    transactionComplete();
+  }
+
+  const [pending, setPending] = useState(false);
+
   return (
-    <Button
-      variant="ghost"
-      className="flex gap-2 items-center"
-      onClick={() => sendObjekt(user.address)}
-    >
-      <Send />
-      <span>{user.nickname}</span>
+    <Button variant="default" disabled={pending} onClick={() => sendObjekt()}>
+      {pending ? (
+        <Loader2 className="animate-spin" />
+      ) : (
+        <span className="flex gap-2 items-center">
+          <Send />
+          <span>Send!</span>
+        </span>
+      )}
     </Button>
   );
+}
+class TransactionError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "TransactionError";
+  }
 }
