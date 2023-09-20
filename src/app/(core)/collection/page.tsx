@@ -2,6 +2,7 @@ import ObjektList from "@/components/collection/objekt-list";
 import { OwnedObjektsSearchParams, ownedByMe } from "@/lib/server/cosmo";
 import { readToken } from "@/lib/server/jwt";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +12,10 @@ type Props = {
 
 export default async function CollectionPage({ searchParams }: Props) {
   const user = await readToken(cookies().get("token")?.value);
+  if (!user) {
+    redirect("/home");
+  }
+
   const result = await ownedByMe({
     token: user!.cosmoToken,
     startAfter: searchParams.startAfter ?? 0,

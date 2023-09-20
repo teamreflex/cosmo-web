@@ -17,7 +17,7 @@ export default function Navbar() {
       <div className="container grid grid-cols-2 items-center gap-2 text-sm text-foreground dark:text-background md:gap-4 md:py-6 lg:grid-cols-3">
         <Link
           href={{ pathname: "/home" }}
-          className="hidden font-semibold underline underline-offset-4 lg:block"
+          className="hidden font-semibold underline underline-offset-4 lg:block w-fit"
           aria-label="Home"
         >
           Cosmo

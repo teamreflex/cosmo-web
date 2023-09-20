@@ -4,14 +4,21 @@ import { getUser, signIn, signOut } from "@ramper/ethereum";
 import { Button } from "./ui/button";
 import { useAuthStore } from "@/store";
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function AuthOptions() {
   const ramperUser = useAuthStore((state) => state.ramperUser);
   const setRamperUser = useAuthStore((state) => state.setRamperUser);
+  const router = useRouter();
 
   useEffect(() => {
-    setRamperUser(getUser());
-  }, [setRamperUser]);
+    const user = getUser();
+    setRamperUser(user);
+
+    if (!user) {
+      router.push("/home");
+    }
+  }, [setRamperUser, router]);
 
   async function executeSignIn() {
     const result = await signIn();
