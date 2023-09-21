@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
-import AuthProvider from "@/components/auth-provider";
 import Navbar from "@/components/navbar";
-import { cookies } from "next/headers";
-import { readToken } from "@/lib/server/jwt";
+import ClientProviders from "@/components/client-providers";
 
 export const metadata: Metadata = {
   title: "Cosmo",
@@ -15,7 +13,7 @@ export default async function CoreLayout({
   children: React.ReactNode;
 }) {
   return (
-    <AuthProvider>
+    <ClientProviders>
       <div className="max-w-screen h-screen">
         <Navbar />
 
@@ -24,6 +22,6 @@ export default async function CoreLayout({
           {children}
         </div>
       </div>
-    </AuthProvider>
+    </ClientProviders>
   );
 }

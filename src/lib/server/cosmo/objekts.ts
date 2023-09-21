@@ -1,8 +1,12 @@
 import { COSMO_ENDPOINT } from "./common";
 
+export type ObjektQueryParams = OwnedObjektsSearchParams & {
+  showLocked: boolean;
+};
+
 export type OwnedObjektsSearchParams = {
   startAfter: number;
-  nextStartAfter?: string;
+  nextStartAfter?: number;
   member?: string;
   artist?: "artms" | "tripleS";
   sort: "newest" | "oldest" | "noAscending" | "noDescending";
@@ -12,8 +16,9 @@ type OwnedByMeInput = OwnedObjektsSearchParams & {
   token: string;
 };
 
-type OwnedObjektsResult = {
+export type OwnedObjektsResult = {
   hasNext: boolean;
+  nextStartAfter?: string;
   total: number;
   objekts: OwnedObjekt[];
 };
@@ -48,7 +53,7 @@ export type OwnedObjekt = {
  * @param {OwnedByMeInput} options
  * @param {string} options.token - Cosmo token to act upon
  * @param {number} options.startAfter - pagination cursor
- * @param {string | undefined} options.nextStartAfter - next pagination cursor
+ * @param {number | undefined} options.nextStartAfter - next pagination cursor
  * @param {string | undefined} options.member - member name to filter by
  * @param {string | undefined} options.artist - artist name to filter by
  * @param {"newest" | "oldest" | "noAscending" | "noDescending"} options.sort
