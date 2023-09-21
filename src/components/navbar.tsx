@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { Home, PackageOpen, User } from "lucide-react";
-import AuthOptions from "./auth-options";
+import UserDropdown from "./user-dropdown";
 import CosmoLogo from "./cosmo-logo";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store";
 import { TokenPayload } from "@/lib/server/jwt";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+import { CosmoArtist } from "@/lib/server/cosmo";
 
 const links = [
   { name: "Home", icon: Home, href: "/" },
@@ -18,9 +19,10 @@ const links = [
 
 type Props = {
   user: TokenPayload | undefined;
+  artists: CosmoArtist[];
 };
 
-export default function Navbar({ user }: Props) {
+export default function Navbar({ user, artists }: Props) {
   const ramperUser = useAuthStore((state) => state.ramperUser);
 
   const [hasScrolled, setHasScrolled] = useState(false);
@@ -68,8 +70,8 @@ export default function Navbar({ user }: Props) {
           ))}
         </div>
 
-        <div className="flex justify-end">
-          <AuthOptions />
+        <div className="flex justify-end gap-2">
+          <UserDropdown user={user} artists={artists} />
         </div>
       </div>
     </div>

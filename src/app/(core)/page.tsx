@@ -1,5 +1,17 @@
-"use client";
+import NewsProvider from "@/components/news/news-provider";
+import { readToken } from "@/lib/server/jwt";
+import { cookies } from "next/headers";
 
-export default function HomePage() {
-  return <main className="flex flex-col items-center p-2">home</main>;
+export default async function HomePage() {
+  const user = await readToken(cookies().get("token")?.value);
+
+  if (!user) {
+    return <span>Please login!</span>;
+  }
+
+  return (
+    <main className="flex flex-col items-center">
+      <NewsProvider user={user} />
+    </main>
+  );
 }

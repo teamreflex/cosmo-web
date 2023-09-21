@@ -2,7 +2,7 @@
 
 import { getUser, signIn, signOut } from "@ramper/ethereum";
 import { Button } from "./ui/button";
-import { useAuthStore } from "@/store";
+import { useAuthStore, useSettingsStore } from "@/store";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -17,16 +17,37 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { cosmoLogin } from "@/app/(auth)/login/email/actions";
-import { Loader2, LogOut } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+import { Disc3, Loader2, LogOut } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { TokenPayload } from "@/lib/server/jwt";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { CosmoArtist } from "@/lib/server/cosmo";
+import Image from "next/image";
 
-export default function AuthOptions() {
+type Props = {
+  user: TokenPayload | undefined;
+  artists: CosmoArtist[];
+};
+
+export default function UserDropdown({ user, artists }: Props) {
   const [pending, setPending] = useState(true);
   const [email, setEmail] = useState("");
   const [token, setToken] = useState("");
 
   const ramperUser = useAuthStore((state) => state.ramperUser);
   const setRamperUser = useAuthStore((state) => state.setRamperUser);
+  const setArtist = useSettingsStore((state) => state.setArtist);
 
   const router = useRouter();
   const cosmoForm = useRef<HTMLFormElement>(null);
@@ -81,21 +102,50 @@ export default function AuthOptions() {
       </form>
 
       <div className="flex items-center justify-center">
-        {ramperUser ? (
-          <Tooltip delayDuration={0}>
-            <TooltipTrigger asChild>
-              <button
-                onClick={executeSignOut}
-                className="border-foreground pb-1 drop-shadow-lg hover:border-b-2"
-                aria-label="Sign Out"
-              >
-                <LogOut className="h-8 w-8 shrink-0" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Sign Out</p>
-            </TooltipContent>
-          </Tooltip>
+        {user ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger>
+              <Avatar>
+                <AvatarFallback>
+                  {user?.nickname?.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuLabel>Settings</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <Disc3 className="mr-2 h-4 w-4" />
+                  <span>Switch Artist</span>
+                </DropdownMenuSubTrigger>
+                <DropdownMenuPortal>
+                  <DropdownMenuSubContent>
+                    {artists.map((artist) => (
+                      <DropdownMenuItem
+                        key={artist.name}
+                        onClick={() => setArtist(artist.name)}
+                      >
+                        <Image
+                          className="mr-2"
+                          src={artist.logoImageUrl}
+                          alt={artist.title}
+                          width={24}
+                          height={24}
+                        />
+                        <span>{artist.title}</span>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuSubContent>
+                </DropdownMenuPortal>
+              </DropdownMenuSub>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={executeSignOut}>
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Sign Out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         ) : (
           <>
             {pending ? (
