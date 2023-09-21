@@ -15,11 +15,11 @@ export async function GET(request: NextRequest) {
     ...parseParams(request.nextUrl.searchParams),
   });
 
-  console.log({
-    hasNext: objekts.hasNext,
-    nextStartAfter: objekts.nextStartAfter,
-    total: objekts.total,
-  });
+  // console.log({
+  //   hasNext: objekts.hasNext,
+  //   nextStartAfter: objekts.nextStartAfter,
+  //   total: objekts.total,
+  // });
 
   return NextResponse.json(objekts, { status: 200 });
 }

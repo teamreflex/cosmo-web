@@ -4,9 +4,11 @@ import Link from "next/link";
 import { Home, PackageOpen, User } from "lucide-react";
 import AuthOptions from "./auth-options";
 import CosmoLogo from "./cosmo-logo";
-import { Separator } from "./ui/separator";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/store";
+import { TokenPayload } from "@/lib/server/jwt";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 const links = [
   { name: "Home", icon: Home, href: "/" },
@@ -14,9 +16,16 @@ const links = [
   { name: "Account", icon: User, href: "/my" },
 ];
 
-export default function Navbar() {
+type Props = {
+  user: TokenPayload | undefined;
+};
+
+export default function Navbar({ user }: Props) {
+  const ramperUser = useAuthStore((state) => state.ramperUser);
+
   const [hasScrolled, setHasScrolled] = useState(false);
 
+  // add glass effect to nav when scrolled
   useEffect(() => {
     function handleScroll() {
       if (window.scrollY > 0) {
@@ -42,19 +51,24 @@ export default function Navbar() {
 
         <div className="flex flex-row items-center gap-10 justify-center">
           {links.map((link, i) => (
-            <Link
-              key={i}
-              href={{ pathname: link.href }}
-              className="border-foreground pb-1 drop-shadow-lg hover:border-b-2"
-              aria-label={link.name}
-            >
-              <link.icon className="h-8 w-8 shrink-0" />
-            </Link>
+            <Tooltip key={i} delayDuration={0}>
+              <TooltipTrigger asChild>
+                <Link
+                  href={{ pathname: link.href }}
+                  className="border-foreground pb-1 drop-shadow-lg hover:border-b-2"
+                  aria-label={link.name}
+                >
+                  <link.icon className="h-8 w-8 shrink-0" />
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{link.name}</p>
+              </TooltipContent>
+            </Tooltip>
           ))}
         </div>
 
         <div className="flex justify-end">
-          <Separator orientation="vertical" />
           <AuthOptions />
         </div>
       </div>

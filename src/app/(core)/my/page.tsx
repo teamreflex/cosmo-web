@@ -1,11 +1,14 @@
-"use client";
+import { readToken } from "@/lib/server/jwt";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
-import { useAuthStore } from "@/store";
-
-export default function MyPage() {
-  const ramperUser = useAuthStore((state) => state.ramperUser);
+export default async function MyPage() {
+  const user = await readToken(cookies().get("token")?.value);
+  if (!user) {
+    redirect("/");
+  }
 
   return (
-    <main className="flex flex-col items-center p-2">{ramperUser?.email}</main>
+    <main className="flex flex-col items-center p-2">{user.nickname}</main>
   );
 }
