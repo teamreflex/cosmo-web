@@ -3,7 +3,7 @@ import { z } from "zod";
 
 export const env = createEnv({
   server: {
-    NODE_ENV: z.enum(["development", "production"]),
+    VERCEL_ENV: z.enum(["development", "production"]),
     RAMPER_ENDPOINT: z.string().url(),
     JWT_SECRET: z.string().min(1),
   },

@@ -61,7 +61,7 @@ export async function exchangeCode(form: FormData) {
     path: "/",
     maxAge: 60 * 60 * 24 * 7, // 7 days
     sameSite: true,
-    secure: env.NODE_ENV !== "development",
+    secure: env.VERCEL_ENV !== "development",
   });
 
   redirect("/");
@@ -91,7 +91,7 @@ export async function cosmoLogin(form: FormData) {
     path: "/",
     maxAge: 60 * 60 * 24 * 7, // 7 days
     sameSite: true,
-    secure: env.NODE_ENV !== "development",
+    secure: env.VERCEL_ENV !== "development",
   });
 
   redirect("/");
