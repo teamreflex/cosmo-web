@@ -37,16 +37,10 @@ export default function Navbar() {
         hasScrolled && "bg-background/75"
       )}
     >
-      <div className="container grid grid-cols-2 items-center gap-2 text-sm text-foreground md:gap-4 md:py-6 lg:grid-cols-3">
-        <Link
-          href={{ pathname: "/" }}
-          className="hidden font-semibold underline underline-offset-4 lg:block w-fit"
-          aria-label="Home"
-        >
-          <CosmoLogo color="white" />
-        </Link>
+      <div className="container grid grid-cols-3 items-center gap-2 text-sm text-foreground md:gap-4 md:py-6 lg:grid-cols-3">
+        <CosmoLogo color="white" />
 
-        <div className="flex flex-row items-center justify-start gap-10 lg:justify-center">
+        <div className="flex flex-row items-center gap-10 justify-center">
           {links.map((link, i) => (
             <Link
               key={i}

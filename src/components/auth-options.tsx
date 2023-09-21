@@ -17,7 +17,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { cosmoLogin } from "@/app/(auth)/login/email/actions";
-import { Loader2 } from "lucide-react";
+import { Loader2, LogOut } from "lucide-react";
 
 export default function AuthOptions() {
   const [pending, setPending] = useState(true);
@@ -81,9 +81,13 @@ export default function AuthOptions() {
 
       <div className="flex items-center justify-center">
         {ramperUser ? (
-          <Button variant="link" onClick={executeSignOut}>
-            Sign Out
-          </Button>
+          <button
+            onClick={executeSignOut}
+            className="border-foreground pb-1 drop-shadow-lg hover:border-b-2"
+            aria-label="Sign Out"
+          >
+            <LogOut className="h-8 w-8 shrink-0" />
+          </button>
         ) : (
           <>
             {pending ? (
