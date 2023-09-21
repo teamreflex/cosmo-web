@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@radix-ui/react-alert-dialog": "^1.0.4",
     "@radix-ui/react-dialog": "^1.0.4",
     "@radix-ui/react-dropdown-menu": "^2.0.5",
     "@radix-ui/react-label": "^2.0.2",
@@ -22,6 +23,7 @@
     "@types/react": "18.2.21",
     "@types/react-dom": "18.2.7",
     "autoprefixer": "10.4.15",
+    "bufferutil": "^4.0.7",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "eslint": "8.49.0",
@@ -38,6 +40,7 @@
     "tailwindcss": "3.3.3",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "5.2.2",
+    "utf-8-validate": "^6.0.3",
     "uuid": "^9.0.1",
     "zod": "^3.22.2",
     "zustand": "^4.4.1"

@@ -1,3 +1,5 @@
+"use server";
+
 import { object, string } from "zod";
 import { search } from "@/lib/server/cosmo";
 

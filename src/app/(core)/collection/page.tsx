@@ -13,7 +13,7 @@ type Props = {
 export default async function CollectionPage({ searchParams }: Props) {
   const user = await readToken(cookies().get("token")?.value);
   if (!user) {
-    redirect("/home");
+    redirect("/");
   }
 
   const result = await ownedByMe({
