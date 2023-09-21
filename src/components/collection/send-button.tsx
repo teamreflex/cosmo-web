@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "../ui/button";
 import { searchForUser } from "@/app/(core)/collection/actions";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Separator } from "../ui/separator";
 import { experimental_useFormStatus as useFormStatus } from "react-dom";
 import { useAuthStore } from "@/store";
@@ -34,6 +34,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import Objekt from "./objekt";
+import { RefetchObjektsContext } from "./objekt-list";
 
 type Props = {
   objekt: OwnedObjekt;
@@ -44,10 +45,17 @@ export default function SendObjekt({ objekt }: Props) {
   const [openSend, setOpenSend] = useState(false);
   const [recipient, setRecipient] = useState<SearchUser | null>(null);
 
+  const refetchPage = useContext(RefetchObjektsContext);
+
   function prepareSending(newRecipient: SearchUser) {
     setRecipient(newRecipient);
     setOpenSearch(false);
     setOpenSend(true);
+  }
+
+  function sendingComplete() {
+    setOpenSend(false);
+    refetchPage();
   }
 
   return (
@@ -104,7 +112,7 @@ export default function SendObjekt({ objekt }: Props) {
               <SendToUserButton
                 objekt={objekt}
                 user={recipient}
-                transactionComplete={() => setOpenSend(false)}
+                transactionComplete={sendingComplete}
               />
             </DialogFooter>
           </DialogContent>

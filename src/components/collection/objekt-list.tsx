@@ -2,10 +2,12 @@
 
 import { ObjektQueryParams, OwnedObjektsResult } from "@/lib/server/cosmo";
 import Objekt from "./objekt";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, createContext, useEffect, useState } from "react";
 import { ChevronDown, HeartCrack, Loader2 } from "lucide-react";
 import { useInfiniteQuery } from "react-query";
 import { useInView } from "react-intersection-observer";
+
+export const RefetchObjektsContext = createContext<() => void>(() => void 0);
 
 export default function ObjektList() {
   const { ref, inView } = useInView();
@@ -37,7 +39,6 @@ export default function ObjektList() {
 
   const {
     data,
-    error,
     fetchNextPage,
     refetch,
     hasNextPage,
@@ -56,12 +57,13 @@ export default function ObjektList() {
   }, [inView]);
 
   // reset query upon filter change
+  const refetchPage = () => refetch({ refetchPage: (_, index) => index === 0 });
   useEffect(() => {
-    refetch({ refetchPage: (_, index) => index === 0 });
+    refetchPage();
   }, [params]);
 
   return (
-    <>
+    <RefetchObjektsContext.Provider value={refetchPage}>
       <div className="grid grid-cols-3 md:grid-cols-4 gap-4 px-4">
         {status === "loading" ? (
           <div className="flex col-span-full py-12">
@@ -102,7 +104,7 @@ export default function ObjektList() {
           </button>
         </div>
       )}
-    </>
+    </RefetchObjektsContext.Provider>
   );
 }
 
