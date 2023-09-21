@@ -62,9 +62,9 @@ export default function ObjektList() {
 
   return (
     <>
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 md:grid-cols-4 gap-4 px-4">
         {status === "loading" ? (
-          <div className="flex col-span-3 py-12">
+          <div className="flex col-span-full py-12">
             <Loader2 className="animate-spin h-24 w-24" />
           </div>
         ) : status === "error" ? (
@@ -116,7 +116,7 @@ function Loading() {
 
 function Error() {
   return (
-    <div className="col-span-3 flex flex-col gap-2 items-center">
+    <div className="col-span-full flex flex-col gap-2 items-center">
       <HeartCrack className="h-12 w-12" />
       <p>There was an error loading your objekts</p>
     </div>
