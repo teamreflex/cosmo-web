@@ -34,6 +34,7 @@ import { TokenPayload } from "@/lib/server/jwt";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { CosmoArtist } from "@/lib/server/cosmo";
 import Image from "next/image";
+import { ValidArtist } from "@/lib/server/cosmo/common";
 
 type Props = {
   user: TokenPayload | undefined;
@@ -124,7 +125,7 @@ export default function UserDropdown({ user, artists }: Props) {
                     {artists.map((artist) => (
                       <DropdownMenuItem
                         key={artist.name}
-                        onClick={() => setArtist(artist.name)}
+                        onClick={() => setArtist(artist.name as ValidArtist)}
                       >
                         <Image
                           className="mr-2"
