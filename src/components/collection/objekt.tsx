@@ -38,7 +38,15 @@ export default function Objekt({
       <ObjektNumber objekt={objekt} />
       {showButtons && (
         <div
-          className="absolute top-0 left-0 p-1 sm:p-2 rounded-br-lg sm:rounded-br-xl flex gap-2 items-center shadow-md"
+          className={cn(
+            "absolute top-0 left-0 p-1 sm:p-2 rounded-br-lg sm:rounded-br-xl flex gap-2 items-center shadow-md group h-5 sm:h-9 transition-all overflow-hidden",
+            objekt.transferable && "w-10 sm:w-16",
+            !objekt.transferable &&
+              !objekt.usedForGrid &&
+              "w-5 sm:w-9 sm:hover:w-[8.8rem]",
+            objekt.usedForGrid && "w-5 sm:w-9 sm:hover:w-[7.7rem]",
+            locked && "w-5 sm:w-9 sm:hover:w-[5.5rem]"
+          )}
           style={{
             backgroundColor: objekt.backgroundColor,
             color: objekt.textColor,
@@ -51,6 +59,21 @@ export default function Objekt({
               locked={locked}
               onLockChange={setLocked}
             />
+          )}
+          {locked && (
+            <p className="text-xs opacity-0 group-hover:opacity-100 whitespace-nowrap transition-all">
+              Locked
+            </p>
+          )}
+          {!objekt.transferable && !objekt.usedForGrid && (
+            <p className="text-xs opacity-0 group-hover:opacity-100 whitespace-nowrap transition-all">
+              Not transferable
+            </p>
+          )}
+          {objekt.usedForGrid && (
+            <p className="text-xs opacity-0 group-hover:opacity-100 whitespace-nowrap transition-all">
+              Used for grid
+            </p>
           )}
         </div>
       )}

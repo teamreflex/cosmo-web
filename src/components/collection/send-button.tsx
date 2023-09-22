@@ -4,11 +4,6 @@ import { OwnedObjekt, SearchUser } from "@/lib/server/cosmo";
 import { cn } from "@/lib/utils";
 import { Loader2, MailX, Search, Send } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { Button } from "../ui/button";
 import { searchForUser } from "@/app/(core)/collection/actions";
 import { useContext, useState } from "react";
@@ -60,7 +55,9 @@ export default function SendObjekt({ objekt }: Props) {
 
   return (
     <>
-      {!objekt.transferable && <MailX className="h-3 w-3 sm:h-5 sm:w-5" />}
+      {!objekt.transferable && (
+        <MailX className="h-3 w-3 sm:h-5 sm:w-5 shrink-0" />
+      )}
       {objekt.transferable && (
         <Dialog open={openSearch} onOpenChange={setOpenSearch}>
           <DialogTrigger asChild>
@@ -102,7 +99,7 @@ export default function SendObjekt({ objekt }: Props) {
             </DialogHeader>
 
             <div className="flex flex-col gap-4 justify-center items-center">
-              <Objekt objekt={objekt} showButtons={false} />
+              <Objekt objekt={objekt} showButtons={false} lockedObjekts={[]} />
             </div>
 
             <DialogFooter className="flex gap-2">

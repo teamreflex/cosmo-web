@@ -3,7 +3,6 @@
 import { setObjektLock } from "@/app/(core)/collection/actions";
 import { OwnedObjekt } from "@/lib/server/cosmo";
 import { Loader2, Lock, Unlock } from "lucide-react";
-import { useEffect, useState } from "react";
 import { experimental_useFormStatus as useFormStatus } from "react-dom";
 
 type Props = {
@@ -35,10 +34,6 @@ export default function LockObjekt({ objekt, locked, onLockChange }: Props) {
 
 function LockButton({ locked }: { locked: boolean }) {
   const { pending } = useFormStatus();
-
-  useEffect(() => {
-    console.log(pending);
-  }, [pending]);
 
   return (
     <button
