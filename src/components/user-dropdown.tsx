@@ -135,7 +135,7 @@ export default function UserDropdown({ user, artists }: Props) {
                         onClick={() => setArtist(artist.name as ValidArtist)}
                       >
                         <Image
-                          className="mr-2"
+                          className="mr-2 rounded-full"
                           src={artist.logoImageUrl}
                           alt={artist.title}
                           width={24}

@@ -39,6 +39,10 @@ export async function fetchArtists() {
   return artists;
 }
 
+export function isValidArtist(artist: string): artist is ValidArtist {
+  return artist === "artms" || artist === "tripleS";
+}
+
 export type CosmoNewsSectionBar = {
   type: "bar";
   artist: ValidArtist;

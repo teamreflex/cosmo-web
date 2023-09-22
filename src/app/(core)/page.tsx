@@ -1,6 +1,10 @@
-import NewsContainer from "@/components/news/news-container";
+import DashboardHandler from "@/components/home/dashboard-handler";
+import { fetchArtists } from "@/lib/server/cosmo";
 import { readToken } from "@/lib/server/jwt";
 import { cookies } from "next/headers";
+import { cache } from "react";
+
+const fetchAllArtists = cache(async () => await fetchArtists());
 
 export default async function HomePage() {
   const user = await readToken(cookies().get("token")?.value);
@@ -11,9 +15,11 @@ export default async function HomePage() {
     );
   }
 
+  const artists = await fetchAllArtists();
+
   return (
-    <main className="flex flex-col items-center">
-      <NewsContainer user={user} />
+    <main className="flex flex-col items-center container">
+      <DashboardHandler artists={artists} />
     </main>
   );
 }
