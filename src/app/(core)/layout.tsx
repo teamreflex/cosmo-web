@@ -23,11 +23,11 @@ export default async function CoreLayout({
 
   return (
     <ClientProviders>
-      <div className="max-w-screen h-screen">
+      <div className="relative flex min-h-screen flex-col">
         <Navbar user={user} artists={artists} />
 
         {/* content */}
-        <div className="m-auto mb-5 flex min-h-[calc(100vh-9.25rem)] min-w-full flex-col text-foreground pt-16">
+        <div className="flex min-w-full flex-col text-foreground">
           {children}
         </div>
       </div>

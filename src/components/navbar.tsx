@@ -44,7 +44,7 @@ export default function Navbar({ user, artists }: Props) {
   return (
     <div
       className={cn(
-        "flex h-14 w-full items-center bg-background/100 transition-colors duration-500 fixed z-50 border-b border-accent backdrop-blur",
+        "flex h-14 w-full items-center bg-background/100 transition-colors duration-500 sticky top-0 z-50 border-b border-accent backdrop-blur",
         hasScrolled && "bg-background/75"
       )}
     >

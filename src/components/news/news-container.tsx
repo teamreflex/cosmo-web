@@ -14,8 +14,8 @@ type Props = {
   user: TokenPayload;
 };
 
-const fetchNewsForArtist = cache(async (token: string, artist: ValidArtist) =>
-  fetchNews(token, artist)
+const fetchNewsForArtist = cache(
+  async (token: string, artist: ValidArtist) => await fetchNews(token, artist)
 );
 
 export default async function NewsContainer({ user, artist }: Props) {
