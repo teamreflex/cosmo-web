@@ -219,7 +219,7 @@ export async function fetchNews(token: string, artist: ValidArtist) {
     throw new Error("Failed to fetch news");
   }
 
-  return testNews.sections as CosmoNewsSection[];
+  // return testNews.sections as CosmoNewsSection[];
 
   const { sections }: CosmoNewsResult = await res.json();
   return sections;

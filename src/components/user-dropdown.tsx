@@ -49,9 +49,16 @@ export default function UserDropdown({ user, artists }: Props) {
   const ramperUser = useAuthStore((state) => state.ramperUser);
   const setRamperUser = useAuthStore((state) => state.setRamperUser);
   const setArtist = useSettingsStore((state) => state.setArtist);
+  const setAvailableArtists = useSettingsStore(
+    (state) => state.setAvailableArtists
+  );
 
   const router = useRouter();
   const cosmoForm = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    setAvailableArtists(artists);
+  }, [artists]);
 
   useEffect(() => {
     const user = getUser();
