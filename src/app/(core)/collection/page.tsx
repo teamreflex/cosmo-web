@@ -1,4 +1,5 @@
 import ObjektList from "@/components/collection/objekt-list";
+import { fetchLockedObjekts } from "@/lib/server/cache";
 import { readToken } from "@/lib/server/jwt";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -11,9 +12,11 @@ export default async function CollectionPage() {
     redirect("/");
   }
 
+  const lockedObjekts = await fetchLockedObjekts(user.id);
+
   return (
     <main className="flex flex-col items-center">
-      <ObjektList />
+      <ObjektList locked={lockedObjekts} />
     </main>
   );
 }

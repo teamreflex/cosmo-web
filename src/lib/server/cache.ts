@@ -1,0 +1,21 @@
+import { kv } from "@vercel/kv";
+
+export async function fetchLockedObjekts(userId: number) {
+  return (await kv.lrange(`locked-objekts:${userId}`, 0, -1)) as number[];
+}
+
+export async function lockObjekt(userId: number, tokenId: number) {
+  try {
+    return (await kv.lpush(`locked-objekts:${userId}`, tokenId)) !== undefined;
+  } catch (err) {
+    return false;
+  }
+}
+
+export async function unlockObjekt(userId: number, tokenId: number) {
+  try {
+    return (await kv.lrem(`locked-objekts:${userId}`, 1, tokenId)) === 1;
+  } catch (err) {
+    return false;
+  }
+}

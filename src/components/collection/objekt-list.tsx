@@ -9,7 +9,11 @@ import { useInView } from "react-intersection-observer";
 
 export const RefetchObjektsContext = createContext<() => void>(() => void 0);
 
-export default function ObjektList() {
+type Props = {
+  locked: number[];
+};
+
+export default function ObjektList({ locked }: Props) {
   const { ref, inView } = useInView();
 
   const [params, setParams] = useState<ObjektQueryParams>({
@@ -78,7 +82,11 @@ export default function ObjektList() {
                 <Fragment key={i}>
                   {group.objekts.map((objekt) => (
                     <div key={objekt.tokenId}>
-                      <Objekt objekt={objekt} showButtons={true} />
+                      <Objekt
+                        objekt={objekt}
+                        showButtons={true}
+                        lockedObjekts={locked}
+                      />
                     </div>
                   ))}
                 </Fragment>

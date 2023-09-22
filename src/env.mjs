@@ -6,6 +6,10 @@ export const env = createEnv({
     VERCEL_ENV: z.enum(["development", "production"]),
     RAMPER_ENDPOINT: z.string().url(),
     JWT_SECRET: z.string().min(1),
+    KV_URL: z.string().url(),
+    KV_REST_API_URL: z.string().url(),
+    KV_REST_API_TOKEN: z.string().min(1),
+    KV_REST_API_READ_ONLY_TOKEN: z.string().min(1),
   },
   client: {
     NEXT_PUBLIC_COSMO_APP_ID: z.string().min(1),

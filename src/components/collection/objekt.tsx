@@ -1,12 +1,16 @@
+"use client";
+
 import { OwnedObjekt } from "@/lib/server/cosmo";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import LockObjekt from "./lock-button";
 import SendObjekt from "./send-button";
+import { useState } from "react";
 
 type ObjektProps = {
   objekt: OwnedObjekt;
   showButtons: boolean;
+  lockedObjekts: number[];
 };
 
 function pad(n: string) {
@@ -14,7 +18,15 @@ function pad(n: string) {
   return n.length >= 5 ? n : new Array(5 - n.length + 1).join("0") + n;
 }
 
-export default function Objekt({ objekt, showButtons }: ObjektProps) {
+export default function Objekt({
+  objekt,
+  showButtons,
+  lockedObjekts,
+}: ObjektProps) {
+  const [locked, setLocked] = useState(
+    lockedObjekts.includes(parseInt(objekt.tokenId))
+  );
+
   return (
     <div className="relative overflow-hidden rounded-lg md:rounded-xl lg:rounded-2xl touch-manipulation">
       <Image
@@ -32,8 +44,14 @@ export default function Objekt({ objekt, showButtons }: ObjektProps) {
             color: objekt.textColor,
           }}
         >
-          <SendObjekt objekt={objekt} />
-          {objekt.transferable && <LockObjekt objekt={objekt} />}
+          {!locked && <SendObjekt objekt={objekt} />}
+          {objekt.transferable && (
+            <LockObjekt
+              objekt={objekt}
+              locked={locked}
+              onLockChange={setLocked}
+            />
+          )}
         </div>
       )}
     </div>
