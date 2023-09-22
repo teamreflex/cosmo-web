@@ -65,6 +65,7 @@ export default function UserDropdown({ user, artists }: Props) {
     setRamperUser(user);
     setPending(false);
 
+    // TODO: dispatch an action to invalidate the cosmo token here
     if (!user) {
       router.push("/");
     }

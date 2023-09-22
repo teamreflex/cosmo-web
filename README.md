@@ -1,34 +1,66 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# cosmo-web
 
-## Getting Started
+This project aims to build a web based version of [Modhaus](https://www.mod-haus.com/)' **[Cosmo: the Gate](https://play.google.com/store/apps/details?id=com.modhaus.cosmo)** mobile application, replicate its core features as close as possible, and add new features on top.
 
-First, run the development server:
+### Scope
+
+- Account registration is out of scope. There's too much that goes into the onboarding process, not worth the effort.
+- Account settings updates are out of scope. There's not enough in there to adjust right now.
+- Purchasing objekts is out of scope due to Apple/Google services being used.
+- Gridding objekts is out of scope. May revisit this when new editions drop and I have a better understanding of how it works.
+- Complete objekt library and viewing other users are both out of scope. Other tools already exist.
+
+### Replicated Features
+
+- Authentication
+  - Sign in with Ramper
+  - Cosmo user/token fetching
+  - Sign out
+- Objekts
+  - Fetching owned objekts (paginated)
+  - Sending objekts to another Cosmo user
+  - Displaying reason for untransferable objekts - e.g. gridded vs. not transferrable (event, welcome)
+- Artist
+  - Fetching artist information
+  - Artist switching (homepage defaults to selected)
+- News
+  - Displaying news feed
+
+### New Features
+
+- Objekts
+  - "lock" an objekt to prevent it from being sent to another user (like the Superstar games)
+
+### Notes
+
+- **There's no app version or user agent spoofing. It's entirely possible for Modhaus to detect usage of this. Use at your own risk.**
+- Authentication can be fragile as there's two separate states. The process requires using the Ramper SDK to get the Ramper user, then use the received `idToken` to log into Cosmo. The Ramper user is stored by the SDK in localStorage, whereas the Cosmo user is encoded into a cookie by the application. If either one of these expires/invalidates, the other will not be and this will possibly result in a broken auth state.
+
+## Setup
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
+$ git clone git@github.com:teamreflex/cosmo-web.git
+$ cd cosmo-web
+$ pnpm install
+$ pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Tooling
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- [Next 13](https://nextjs.org/)
+  - [React Server Components](https://nextjs.org/docs/app/building-your-application/rendering/server-components)
+  - [Server Actions](https://nextjs.org/docs/app/building-your-application/data-fetching/forms-and-mutations)
+- [Ramper SDK](https://www.ramper.xyz/)
+- [shadcn/ui](https://ui.shadcn.com/docs)
+- [Tailwind](https://tailwindcss.com/)
+- [Vercel KV](https://vercel.com/docs/storage/vercel-kv)
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+## License
 
-## Learn More
+Licensed under the [MIT license](https://github.com/teamreflex/cosmo-web/blob/main/LICENSE.md).
 
-To learn more about Next.js, take a look at the following resources:
+## Contact
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+- **Email**: kyle at reflex.lol
+- **Discord**: kairunz
+- **Cosmo ID**: Kairu
