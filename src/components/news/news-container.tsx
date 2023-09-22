@@ -1,36 +1,47 @@
-import {
-  fetchNews,
-  isExclusiveSection,
-  isFeedSection,
-} from "@/lib/server/cosmo";
-import { ValidArtist } from "@/lib/server/cosmo/common";
+"use client";
+
 import { TokenPayload } from "@/lib/server/jwt";
-import { cache } from "react";
-import NewsSectionFeed from "./news-section-feed";
-import NewsSectionExclusive from "./news-section-exclusive";
+import { useSettingsStore } from "@/store";
+import { Suspense, useEffect } from "react";
+import NewsRenderer from "./news-renderer";
+import { useRouter } from "next/navigation";
+import { ValidArtist } from "@/lib/server/cosmo/common";
+import { Loader2 } from "lucide-react";
 
 type Props = {
-  artist: ValidArtist;
   user: TokenPayload;
 };
 
-const fetchNewsForArtist = cache(
-  async (token: string, artist: ValidArtist) => await fetchNews(token, artist)
-);
+export default function NewsContainer({ user }: Props) {
+  const artist = useSettingsStore((state) => state.artist);
 
-export default async function NewsContainer({ user, artist }: Props) {
-  const news = await fetchNewsForArtist(user.cosmoToken, artist);
+  const router = useRouter();
+
+  // refresh the page when the artist changes
+  useEffect(() => {
+    router.refresh();
+  }, [artist]);
 
   return (
-    <div className="flex flex-col items-center divide-y-2 divide-accent container px-4">
-      {news.map((section) => {
-        if (isFeedSection(section)) {
-          return <NewsSectionFeed key={section.title} section={section} />;
-        }
-        if (isExclusiveSection(section)) {
-          return <NewsSectionExclusive key={section.title} section={section} />;
-        }
-      })}
+    <Suspense fallback={<LoadingNews artist={artist ?? "artms"} />}>
+      <NewsRenderer user={user} artist={artist ?? "artms"} />
+    </Suspense>
+  );
+}
+
+function LoadingNews({ artist }: { artist: ValidArtist }) {
+  const availableArtists = useSettingsStore((state) => state.availableArtists);
+
+  const currentArtist = availableArtists[artist];
+
+  return (
+    <div className="flex flex-col gap-2 items-center py-12">
+      <Loader2 className="animate-spin w-12 h-12" />
+      {currentArtist !== undefined ? (
+        <p>Loading news for {currentArtist.title}...</p>
+      ) : (
+        <p>Loading news...</p>
+      )}
     </div>
   );
 }
