@@ -12,7 +12,7 @@ export default async function CollectionPage() {
   }
 
   return (
-    <main className="flex flex-col items-center py-2">
+    <main className="flex flex-col items-center">
       <ObjektList />
     </main>
   );
