@@ -10,10 +10,13 @@ module.exports = {
   theme: {
     container: {
       center: true,
-      padding: "2rem",
+      padding: "1rem",
       screens: {
-        "2xl": "1400px",
+        "2xl": "1200px",
       },
+    },
+    fontFamily: {
+      sans: ["var(--font-inter)"],
     },
     extend: {
       colors: {
@@ -72,6 +75,10 @@ module.exports = {
       },
       aspectRatio: {
         photocard: "5.5 / 8.5",
+      },
+      fontFamily: {
+        sans: ["var(--font-inter)"],
+        cosmo: ["var(--font-cosmo)"],
       },
     },
   },

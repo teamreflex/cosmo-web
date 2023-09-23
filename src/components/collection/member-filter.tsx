@@ -7,7 +7,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Fragment } from "react";
 import { cn } from "@/lib/utils";
 import { ValidArtist } from "@/lib/server/cosmo/common";
-import { Separator } from "../ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 type Props = {
@@ -41,7 +40,7 @@ export default function MemberFilter({
   }
 
   return (
-    <div className="flex flex-row gap-2 pt-4 pb-1 h-fit sm:justify-center container px-4 overflow-x-scroll no-scrollbar">
+    <div className="flex flex-row gap-2 pt-3 pb-1 px-1 h-fit sm:justify-center justify-items-start overflow-x-scroll no-scrollbar">
       {artists.map((artist) => (
         <MemberFilterButton
           key={artist.name}
@@ -91,7 +90,7 @@ function MemberFilterButton({
           className={cn("rounded-full", isActive && "ring ring-violet-600")}
         >
           <Avatar>
-            <AvatarFallback>{displayName}</AvatarFallback>
+            <AvatarFallback>{displayName.at(0)}</AvatarFallback>
             <AvatarImage src={image} alt={displayName} />
           </Avatar>
         </button>
