@@ -2,7 +2,14 @@
 
 import { OwnedObjekt, SearchUser } from "@/lib/server/cosmo";
 import { cn } from "@/lib/utils";
-import { Check, Loader2, MailX, Search, Send } from "lucide-react";
+import {
+  AlertTriangle,
+  Check,
+  Loader2,
+  MailX,
+  Search,
+  Send,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "../ui/button";
 import { searchForUser } from "@/app/(core)/collection/actions";
@@ -127,6 +134,17 @@ export default function SendObjekt({ objekt }: Props) {
               )}
             </DialogHeader>
 
+            {/* show error state */}
+            {transactionProgress === TransactionStatus.ERROR && (
+              <div className="flex flex-col gap-2 justify-center items-center">
+                <AlertTriangle className="h-10 w-10" />
+                <p className="text-sm">
+                  There was an error sending your objekt, please check your
+                  collection and try again.
+                </p>
+              </div>
+            )}
+
             {/* show complete state */}
             {transactionProgress === TransactionStatus.COMPLETE && (
               <div className="flex flex-col gap-2 justify-center items-center">
@@ -137,7 +155,8 @@ export default function SendObjekt({ objekt }: Props) {
 
             {/* progress bar while sending */}
             {transactionProgress !== TransactionStatus.WAITING &&
-              transactionProgress !== TransactionStatus.COMPLETE && (
+              transactionProgress !== TransactionStatus.COMPLETE &&
+              transactionProgress !== TransactionStatus.ERROR && (
                 <div className="w-full bg-accent h-2 shadow-sm rounded">
                   <div
                     className="bg-foreground h-2 rounded transition-all animate-pulse"
