@@ -1,3 +1,4 @@
 export const COSMO_ENDPOINT = "https://api.cosmo.fans";
 
-export type ValidArtist = "tripleS" | "artms";
+export const validArtists = ["artms", "tripleS"] as const;
+export type ValidArtist = (typeof validArtists)[number];

@@ -1,24 +1,38 @@
 "use client";
 
-import { ObjektQueryParams, OwnedObjektsResult } from "@/lib/server/cosmo";
+import {
+  CosmoArtistWithMembers,
+  ObjektQueryParams,
+  OwnedObjektsResult,
+} from "@/lib/server/cosmo";
 import Objekt from "./objekt";
-import { Fragment, createContext, useEffect, useState } from "react";
+import {
+  Fragment,
+  createContext,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import { ChevronDown, HeartCrack, Loader2 } from "lucide-react";
 import { useInfiniteQuery } from "react-query";
 import { useInView } from "react-intersection-observer";
+import MemberFilter from "./member-filter";
 
 export const RefetchObjektsContext = createContext<() => void>(() => void 0);
 
 type Props = {
   locked: number[];
+  artists: CosmoArtistWithMembers[];
 };
 
-export default function ObjektList({ locked }: Props) {
+export default function ObjektList({ locked, artists }: Props) {
   const { ref, inView } = useInView();
 
   const [params, setParams] = useState<ObjektQueryParams>({
     startAfter: 0,
     sort: "newest",
+    artist: undefined,
+    member: undefined,
     showLocked: true,
   });
 
@@ -48,7 +62,9 @@ export default function ObjektList({ locked }: Props) {
     hasNextPage,
     isFetchingNextPage,
     status,
-  } = useInfiniteQuery("objekts", fetchObjekts, {
+  } = useInfiniteQuery({
+    queryKey: ["objekts", params],
+    queryFn: fetchObjekts,
     getNextPageParam: (lastPage) => lastPage.nextStartAfter,
     refetchOnWindowFocus: false,
   });
@@ -61,13 +77,21 @@ export default function ObjektList({ locked }: Props) {
   }, [inView]);
 
   // reset query upon filter change
-  const refetchPage = () => refetch({ refetchPage: (_, index) => index === 0 });
+  const refetchPage = useCallback(
+    () => refetch({ refetchPage: (_, index) => index === 0 }),
+    [refetch]
+  );
   useEffect(() => {
     refetchPage();
-  }, [params]);
+  }, [params, refetchPage]);
 
   return (
     <RefetchObjektsContext.Provider value={refetchPage}>
+      <MemberFilter
+        artists={artists}
+        filters={params}
+        updateFilters={setParams}
+      />
       <div className="grid grid-cols-3 md:grid-cols-4 gap-4 px-4 py-2">
         {status === "loading" ? (
           <div className="flex col-span-full py-12">

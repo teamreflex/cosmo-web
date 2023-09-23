@@ -2,11 +2,11 @@
 
 import { OwnedObjekt, SearchUser } from "@/lib/server/cosmo";
 import { cn } from "@/lib/utils";
-import { Loader2, MailX, Search, Send } from "lucide-react";
+import { Check, Loader2, MailX, Search, Send } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "../ui/button";
 import { searchForUser } from "@/app/(core)/collection/actions";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Separator } from "../ui/separator";
 import { experimental_useFormStatus as useFormStatus } from "react-dom";
 import { useAuthStore } from "@/store";
@@ -35,22 +35,44 @@ type Props = {
   objekt: OwnedObjekt;
 };
 
+enum TransactionStatus {
+  ERROR = -1,
+  WAITING = 0,
+  GET_USER = 1,
+  GET_NONCE = 2,
+  ENCODE_TRANSACTION = 3,
+  GET_GAS_LIMIT = 4,
+  GET_FEE_DATA = 5,
+  SIGN_TRANSACTION = 6,
+  SEND_TRANSACTION = 7,
+  COMPLETE = 8,
+}
+
 export default function SendObjekt({ objekt }: Props) {
   const [openSearch, setOpenSearch] = useState(false);
   const [openSend, setOpenSend] = useState(false);
   const [recipient, setRecipient] = useState<SearchUser | null>(null);
+  const [transactionProgress, setTransactionProgress] =
+    useState<TransactionStatus>(TransactionStatus.WAITING);
+  const [percentage, setPercentage] = useState(0);
 
   const refetchPage = useContext(RefetchObjektsContext);
+
+  // calculate progress
+  useEffect(() => {
+    setPercentage(
+      Math.round((transactionProgress / TransactionStatus.COMPLETE) * 100) || 0
+    );
+
+    if (transactionProgress === TransactionStatus.COMPLETE) {
+      refetchPage();
+    }
+  }, [transactionProgress]);
 
   function prepareSending(newRecipient: SearchUser) {
     setRecipient(newRecipient);
     setOpenSearch(false);
     setOpenSend(true);
-  }
-
-  function sendingComplete() {
-    setOpenSend(false);
-    refetchPage();
   }
 
   return (
@@ -91,27 +113,66 @@ export default function SendObjekt({ objekt }: Props) {
         <Dialog open={openSend} onOpenChange={setOpenSend}>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>Send Objekt</DialogTitle>
-              <DialogDescription>
-                Are you sure you want to send this objekt to{" "}
-                <span className="font-bold">{recipient.nickname}</span>?
-              </DialogDescription>
+              <DialogTitle>
+                {transactionProgress === TransactionStatus.WAITING
+                  ? "Send"
+                  : "Sending"}{" "}
+                Objekt
+              </DialogTitle>
+              {transactionProgress === TransactionStatus.WAITING && (
+                <DialogDescription>
+                  Are you sure you want to send this objekt to{" "}
+                  <span className="font-bold">{recipient.nickname}</span>?
+                </DialogDescription>
+              )}
             </DialogHeader>
 
-            <div className="flex flex-col gap-4 justify-center items-center">
-              <Objekt objekt={objekt} showButtons={false} lockedObjekts={[]} />
-            </div>
+            {/* show complete state */}
+            {transactionProgress === TransactionStatus.COMPLETE && (
+              <div className="flex flex-col gap-2 justify-center items-center">
+                <Check className="h-10 w-10" />
+                <p className="text-sm">Objekt sent to {recipient.nickname}</p>
+              </div>
+            )}
 
-            <DialogFooter className="flex gap-2">
-              <Button variant="destructive" onClick={() => setOpenSend(false)}>
-                Cancel
-              </Button>
-              <SendToUserButton
-                objekt={objekt}
-                user={recipient}
-                transactionComplete={sendingComplete}
-              />
-            </DialogFooter>
+            {/* progress bar while sending */}
+            {transactionProgress !== TransactionStatus.WAITING &&
+              transactionProgress !== TransactionStatus.COMPLETE && (
+                <div className="w-full bg-accent h-2 shadow-sm rounded">
+                  <div
+                    className="bg-foreground h-2 rounded transition-all animate-pulse"
+                    style={{ width: `${percentage}%` }}
+                  />
+                </div>
+              )}
+
+            {/* show preview before sending */}
+            {transactionProgress === TransactionStatus.WAITING && (
+              <div className="flex flex-col gap-4 justify-center items-center">
+                <Objekt
+                  objekt={objekt}
+                  showButtons={false}
+                  lockedObjekts={[]}
+                />
+              </div>
+            )}
+
+            {/* buttons as part of preview */}
+            {transactionProgress === TransactionStatus.WAITING && (
+              <DialogFooter className="flex gap-2">
+                <Button
+                  variant="destructive"
+                  onClick={() => setOpenSend(false)}
+                >
+                  Cancel
+                </Button>
+                <SendToUserButton
+                  objekt={objekt}
+                  user={recipient}
+                  updateTransactionProgress={setTransactionProgress}
+                />
+              </DialogFooter>
+            )}
           </DialogContent>
         </Dialog>
       )}
@@ -182,15 +243,17 @@ function UserSearch({ onRecipientSelected }: UserSearchProps) {
   );
 }
 
+type SendToUserButtonProps = {
+  objekt: OwnedObjekt;
+  user: SearchUser;
+  updateTransactionProgress: (status: TransactionStatus) => void;
+};
+
 function SendToUserButton({
   objekt,
   user,
-  transactionComplete,
-}: {
-  objekt: OwnedObjekt;
-  user: SearchUser;
-  transactionComplete: () => void;
-}) {
+  updateTransactionProgress,
+}: SendToUserButtonProps) {
   const { toast } = useToast();
   const ramperUser = useAuthStore((state) => state.ramperUser);
 
@@ -293,19 +356,24 @@ function SendToUserButton({
 
     try {
       const ramperSigner = await getRamperSigner(alchemy);
+      updateTransactionProgress(TransactionStatus.GET_USER);
       const value = ethers.utils.parseEther("0.0");
       const nonce = await fetchNonce(alchemy, wallet.publicKey);
+      updateTransactionProgress(TransactionStatus.GET_NONCE);
       const customData = encodeTransaction(
         wallet.publicKey,
         user.address,
         objekt.tokenId
       );
+      updateTransactionProgress(TransactionStatus.ENCODE_TRANSACTION);
       const gasLimit = await fetchGasLimit(
         alchemy,
         objekt.tokenAddress,
         customData
       );
+      updateTransactionProgress(TransactionStatus.GET_GAS_LIMIT);
       const feeData = await fetchFeeData(alchemy);
+      updateTransactionProgress(TransactionStatus.GET_FEE_DATA);
 
       // get confirmation from user
       const signResult = await signTransaction(
@@ -317,15 +385,19 @@ function SendToUserButton({
         feeData.maxFeePerGas,
         customData
       );
+      updateTransactionProgress(TransactionStatus.SIGN_TRANSACTION);
 
       await sendTransaction(alchemy, signResult);
+      updateTransactionProgress(TransactionStatus.SEND_TRANSACTION);
 
       toast({
         description: "Transaction submitted!",
         variant: "default",
       });
+      updateTransactionProgress(TransactionStatus.COMPLETE);
     } catch (err) {
       if (err instanceof TransactionError) {
+        updateTransactionProgress(TransactionStatus.ERROR);
         toast({
           title: "Error",
           description: err.message,
@@ -335,13 +407,57 @@ function SendToUserButton({
     }
 
     setPending(false);
-    transactionComplete();
+  }
+
+  function triggerStatus() {
+    setPending(true);
+    setTimeout(() => {
+      updateTransactionProgress(TransactionStatus.GET_USER);
+
+      setTimeout(() => {
+        updateTransactionProgress(TransactionStatus.GET_NONCE);
+
+        setTimeout(() => {
+          updateTransactionProgress(TransactionStatus.ENCODE_TRANSACTION);
+
+          setTimeout(() => {
+            updateTransactionProgress(TransactionStatus.GET_GAS_LIMIT);
+
+            setTimeout(() => {
+              updateTransactionProgress(TransactionStatus.GET_FEE_DATA);
+
+              setTimeout(() => {
+                updateTransactionProgress(TransactionStatus.SIGN_TRANSACTION);
+
+                setTimeout(() => {
+                  updateTransactionProgress(TransactionStatus.SEND_TRANSACTION);
+
+                  setTimeout(() => {
+                    updateTransactionProgress(TransactionStatus.COMPLETE);
+
+                    toast({
+                      description: "Transaction submitted!",
+                      variant: "default",
+                    });
+                    setPending(false);
+                  }, 1000);
+                }, 1000);
+              }, 1000);
+            }, 1000);
+          }, 1000);
+        }, 1000);
+      }, 1000);
+    }, 1000);
   }
 
   const [pending, setPending] = useState(false);
 
   return (
-    <Button variant="default" disabled={pending} onClick={() => sendObjekt()}>
+    <Button
+      variant="default"
+      disabled={pending}
+      onClick={() => triggerStatus()}
+    >
       {pending ? (
         <Loader2 className="animate-spin" />
       ) : (
