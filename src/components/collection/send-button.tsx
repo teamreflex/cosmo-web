@@ -409,55 +409,10 @@ function SendToUserButton({
     setPending(false);
   }
 
-  function triggerStatus() {
-    setPending(true);
-    setTimeout(() => {
-      updateTransactionProgress(TransactionStatus.GET_USER);
-
-      setTimeout(() => {
-        updateTransactionProgress(TransactionStatus.GET_NONCE);
-
-        setTimeout(() => {
-          updateTransactionProgress(TransactionStatus.ENCODE_TRANSACTION);
-
-          setTimeout(() => {
-            updateTransactionProgress(TransactionStatus.GET_GAS_LIMIT);
-
-            setTimeout(() => {
-              updateTransactionProgress(TransactionStatus.GET_FEE_DATA);
-
-              setTimeout(() => {
-                updateTransactionProgress(TransactionStatus.SIGN_TRANSACTION);
-
-                setTimeout(() => {
-                  updateTransactionProgress(TransactionStatus.SEND_TRANSACTION);
-
-                  setTimeout(() => {
-                    updateTransactionProgress(TransactionStatus.COMPLETE);
-
-                    toast({
-                      description: "Transaction submitted!",
-                      variant: "default",
-                    });
-                    setPending(false);
-                  }, 1000);
-                }, 1000);
-              }, 1000);
-            }, 1000);
-          }, 1000);
-        }, 1000);
-      }, 1000);
-    }, 1000);
-  }
-
   const [pending, setPending] = useState(false);
 
   return (
-    <Button
-      variant="default"
-      disabled={pending}
-      onClick={() => triggerStatus()}
-    >
+    <Button variant="default" disabled={pending} onClick={() => sendObjekt()}>
       {pending ? (
         <Loader2 className="animate-spin" />
       ) : (
