@@ -95,7 +95,7 @@ function MemberFilterButton({
           </Avatar>
         </button>
       </TooltipTrigger>
-      <TooltipContent>{displayName}</TooltipContent>
+      <TooltipContent side="bottom">{displayName}</TooltipContent>
     </Tooltip>
   );
 }

@@ -1,8 +1,31 @@
 import { getUser } from "@/app/api/common";
-import { ObjektQueryParams, ownedByMe } from "@/lib/server/cosmo";
+import {
+  ObjektQueryParams,
+  ownedByMe,
+  validClasses,
+  validOnlineTypes,
+  validSeasons,
+  validSorts,
+} from "@/lib/server/cosmo";
+import { validArtists } from "@/lib/server/cosmo/common";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 export const runtime = "edge";
+
+const objektFilterSchema = z.object({
+  showLocked: z.coerce.boolean(),
+  startAfter: z.number(),
+  nextStartAfter: z.number().optional(),
+  member: z.string().optional(),
+  artist: z.enum(validArtists).optional(),
+  sort: z.enum(validSorts),
+  classType: z.enum(validClasses).array().optional(),
+  onlineType: z.enum(validOnlineTypes).array().optional(),
+  season: z.enum(validSeasons).array().optional(),
+  transferable: z.boolean().optional(),
+  gridable: z.boolean().optional(),
+});
 
 export async function GET(request: NextRequest) {
   const auth = await getUser();
@@ -15,45 +38,34 @@ export async function GET(request: NextRequest) {
     ...parseParams(request.nextUrl.searchParams),
   });
 
-  // console.log({
-  //   hasNext: objekts.hasNext,
-  //   nextStartAfter: objekts.nextStartAfter,
-  //   total: objekts.total,
-  // });
-
   return NextResponse.json(objekts, { status: 200 });
 }
 
 function parseParams(params: URLSearchParams): ObjektQueryParams {
-  const artist = params.get("artist");
-  const parsedArtist =
-    artist !== null ? (isValidArtist(artist) ? artist : undefined) : undefined;
+  const classType = params.get("classType");
+  const onlineType = params.get("onlineType");
+  const season = params.get("season");
 
-  const sort = params.get("sort");
-  const parsedSort =
-    sort !== null ? (isValidSort(sort) ? sort : "newest") : "newest";
-
-  return {
+  const result = objektFilterSchema.safeParse({
     startAfter: parseInt(params.get("startAfter") ?? "0"),
     nextStartAfter: parseInt(params.get("nextStartAfter") ?? "0"),
-    member: params.get("member") ?? undefined,
-    artist: parsedArtist,
-    sort: parsedSort,
-    showLocked: params.get("showLocked") === "true",
+    member: params.get("member") || undefined,
+    artist: params.get("artist") || undefined,
+    sort: params.get("sort") || undefined,
+    classType: classType ? classType.split(",") : undefined,
+    onlineType: onlineType ? onlineType.split(",") : undefined,
+    season: season ? season.split(",") : undefined,
+    transferable: params.get("transferable") === "true",
+    gridable: params.get("gridable") === "true",
+  });
+
+  if (result.success) {
+    return result.data;
+  }
+
+  return {
+    startAfter: 0,
+    nextStartAfter: 0,
+    sort: "newest",
   };
-}
-
-function isValidArtist(
-  artist: string
-): artist is NonNullable<ObjektQueryParams["artist"]> {
-  return artist === "tripleS" || artist === "artms";
-}
-
-function isValidSort(sort: string): sort is ObjektQueryParams["sort"] {
-  return (
-    sort === "newest" ||
-    sort === "oldest" ||
-    sort === "noAscending" ||
-    sort === "noDescending"
-  );
 }

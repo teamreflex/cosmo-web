@@ -3,16 +3,11 @@
 import {
   CosmoArtistWithMembers,
   ObjektQueryParams,
+  OwnedObjekt,
   OwnedObjektsResult,
 } from "@/lib/server/cosmo";
 import Objekt from "./objekt";
-import {
-  Fragment,
-  createContext,
-  useCallback,
-  useEffect,
-  useState,
-} from "react";
+import { Fragment, createContext, useCallback, useEffect } from "react";
 import { ChevronDown, HeartCrack, Loader2 } from "lucide-react";
 import { useInfiniteQuery } from "react-query";
 import { useInView } from "react-intersection-observer";
@@ -22,33 +17,35 @@ import { PropsWithClassName, cn } from "@/lib/utils";
 export const RefetchObjektsContext = createContext<() => void>(() => void 0);
 
 type Props = PropsWithClassName<{
-  locked: number[];
+  lockedTokenIds: number[];
+  showLocked: boolean;
   artists: CosmoArtistWithMembers[];
+  filters: ObjektQueryParams;
+  setFilters: (filters: ObjektQueryParams) => void;
 }>;
 
-export default function ObjektList({ locked, artists, className }: Props) {
+export default function ObjektList({
+  lockedTokenIds,
+  showLocked,
+  artists,
+  filters,
+  setFilters,
+  className,
+}: Props) {
   const { ref, inView } = useInView();
-
-  const [params, setParams] = useState<ObjektQueryParams>({
-    startAfter: 0,
-    sort: "newest",
-    artist: undefined,
-    member: undefined,
-    showLocked: true,
-  });
 
   async function fetchObjekts({ pageParam = 0 }) {
     const searchParams = new URLSearchParams({
       startAfter: pageParam.toString(),
-      sort: params.sort,
-      showLocked: params.showLocked.toString(),
+      sort: filters.sort,
+      artist: filters.artist ?? "",
+      member: filters.member ?? "",
+      classType: filters.classType ? filters.classType.join(",") : "",
+      onlineType: filters.onlineType ? filters.onlineType.join(",") : "",
+      season: filters.season ? filters.season.join(",") : "",
+      transferable: filters.transferable ? "true" : "",
+      gridable: filters.gridable ? "true" : "",
     });
-    if (params.member) {
-      searchParams.append("member", params.member);
-    }
-    if (params.artist) {
-      searchParams.append("artist", params.artist);
-    }
 
     const result = await fetch(
       `/api/objekt/v1/owned-by/me?${searchParams.toString()}`
@@ -64,7 +61,7 @@ export default function ObjektList({ locked, artists, className }: Props) {
     isFetchingNextPage,
     status,
   } = useInfiniteQuery({
-    queryKey: ["objekts", params],
+    queryKey: ["objekts", filters],
     queryFn: fetchObjekts,
     getNextPageParam: (lastPage) => lastPage.nextStartAfter,
     refetchOnWindowFocus: false,
@@ -84,15 +81,21 @@ export default function ObjektList({ locked, artists, className }: Props) {
   );
   useEffect(() => {
     refetchPage();
-  }, [params, refetchPage]);
+  }, [filters, refetchPage]);
+
+  function shouldShowObjekt(objekt: OwnedObjekt) {
+    return showLocked
+      ? true
+      : lockedTokenIds.includes(parseInt(objekt.tokenId)) === false;
+  }
 
   return (
     <RefetchObjektsContext.Provider value={refetchPage}>
       <div className={cn("flex flex-col", className)}>
         <MemberFilter
           artists={artists}
-          filters={params}
-          updateFilters={setParams}
+          filters={filters}
+          updateFilters={setFilters}
         />
 
         <div className="flex flex-col items-center">
@@ -108,15 +111,22 @@ export default function ObjektList({ locked, artists, className }: Props) {
                 {data !== undefined &&
                   data.pages.map((group, i) => (
                     <Fragment key={i}>
-                      {group.objekts.map((objekt) => (
+                      {group.objekts.filter(shouldShowObjekt).map((objekt) => (
                         <div key={objekt.tokenId}>
                           <Objekt
                             objekt={objekt}
                             showButtons={true}
-                            lockedObjekts={locked}
+                            lockedObjekts={lockedTokenIds}
                           />
                         </div>
                       ))}
+
+                      {group.objekts.filter(shouldShowObjekt).length === 0 && (
+                        <div className="col-span-full flex flex-col gap-2 items-center py-12">
+                          <HeartCrack className="h-12 w-12" />
+                          <p>No objekts found</p>
+                        </div>
+                      )}
                     </Fragment>
                   ))}
               </>
@@ -156,7 +166,7 @@ function Loading() {
 
 function Error() {
   return (
-    <div className="col-span-full flex flex-col gap-2 items-center">
+    <div className="col-span-full flex flex-col gap-2 items-center py-12">
       <HeartCrack className="h-12 w-12" />
       <p>There was an error loading your objekts</p>
     </div>
