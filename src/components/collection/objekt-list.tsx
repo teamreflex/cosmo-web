@@ -112,13 +112,12 @@ export default function ObjektList({
                   data.pages.map((group, i) => (
                     <Fragment key={i}>
                       {group.objekts.filter(shouldShowObjekt).map((objekt) => (
-                        <div key={objekt.tokenId}>
-                          <Objekt
-                            objekt={objekt}
-                            showButtons={true}
-                            lockedObjekts={lockedTokenIds}
-                          />
-                        </div>
+                        <Objekt
+                          key={objekt.tokenId}
+                          objekt={objekt}
+                          showButtons={true}
+                          lockedObjekts={lockedTokenIds}
+                        />
                       ))}
 
                       {group.objekts.filter(shouldShowObjekt).length === 0 && (

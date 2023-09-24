@@ -84,7 +84,7 @@ function MemberFilterButton({
 }: MemberFilterButtonProps) {
   return (
     <Tooltip delayDuration={0}>
-      <TooltipTrigger>
+      <TooltipTrigger asChild>
         <button
           onClick={() => setActive()}
           className={cn("rounded-full", isActive && "ring ring-violet-600")}
