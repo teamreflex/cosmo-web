@@ -7,6 +7,8 @@ import { readToken } from "@/lib/server/jwt";
 import { cookies } from "next/headers";
 import { Suspense, cache } from "react";
 
+export const runtime = "edge";
+
 type Props = {
   searchParams: {
     artist?: ValidArtist;

@@ -4,6 +4,8 @@ import { readToken } from "@/lib/server/jwt";
 import { cookies } from "next/headers";
 import { cache } from "react";
 
+export const runtime = "edge";
+
 const fetchAllArtists = cache(async () => await fetchArtists());
 
 export default async function HomePage() {

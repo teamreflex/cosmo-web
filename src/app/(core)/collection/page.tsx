@@ -8,6 +8,7 @@ import { cache } from "react";
 import CollectionRenderer from "@/components/collection/collection-renderer";
 
 export const dynamic = "force-dynamic";
+export const runtime = "edge";
 
 const fetchData = cache(
   async (userId: number) =>

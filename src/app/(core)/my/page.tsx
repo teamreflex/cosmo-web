@@ -5,6 +5,8 @@ import { cookies } from "next/headers";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 
+export const runtime = "edge";
+
 export default async function MyPage() {
   const user = await readToken(cookies().get("token")?.value);
   if (!user) {
