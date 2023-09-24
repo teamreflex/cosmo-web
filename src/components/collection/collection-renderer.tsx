@@ -12,7 +12,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { HelpCircle } from "lucide-react";
+import { HelpCircle, SlidersHorizontal } from "lucide-react";
 import { useState } from "react";
 import { ClassFilter } from "./filter-class";
 import { OnlineFilter } from "./filter-online";
@@ -20,6 +20,9 @@ import { SeasonFilter } from "./filter-season";
 import { TransferableFilter } from "./filter-transferable";
 import { GridableFilter } from "./filter-gridable";
 import { LockedFilter } from "./filter-locked";
+import { SortFilter } from "./filter-sort";
+import { Button } from "../ui/button";
+import { Toggle } from "../ui/toggle";
 
 export type PropsWithFilters<T extends keyof ObjektQueryParams> = {
   filters: ObjektQueryParams[T];
@@ -32,6 +35,7 @@ type Props = {
 };
 
 export default function CollectionRenderer({ locked, artists }: Props) {
+  const [showFilters, setShowFilters] = useState(false);
   // make showLocked a separate filter so it doesn't trigger a re-fetch
   const [showLocked, setShowLocked] = useState(true);
   const [filters, setFilters] = useState<ObjektQueryParams>({
@@ -57,15 +61,32 @@ export default function CollectionRenderer({ locked, artists }: Props) {
 
   return (
     <>
-      <div className="flex items-center flex-col sm:flex-row sm:justify-between">
+      <div
+        className="flex flex-col sm:flex-row justify-between group"
+        data-show={showFilters}
+      >
         {/* header */}
-        <div className="flex gap-2 items-center pb-2 sm:pb-0">
-          <h1 className="text-2xl font-cosmo uppercase">Collect</h1>
-          <HelpDialog />
+        <div className="flex items-center justify-between pb-2 sm:pb-0">
+          {/* title */}
+          <div className="flex gap-2 items-center">
+            <h1 className="text-3xl font-cosmo uppercase">Collect</h1>
+            <HelpDialog />
+          </div>
+
+          {/* mobile: show filters */}
+          <div className="flex sm:hidden items-center">
+            <Toggle
+              size="sm"
+              pressed={showFilters}
+              onPressedChange={setShowFilters}
+            >
+              <SlidersHorizontal className="w-4 h-4" />
+            </Toggle>
+          </div>
         </div>
 
         {/* filters */}
-        <div className="flex gap-2 items-center flex-wrap justify-center">
+        <div className="transition-all flex sm:group-data-[show=false]:opacity-100 sm:group-data-[show=true]:opacity-100 group-data-[show=true]:pb-2 sm:pb-1 sm:group-data-[show=false]:h-12 sm:group-data-[show=true]:h-12 group-data-[show=false]:disabled group-data-[show=false]:h-0 group-data-[show=false]:opacity-0 group-data-[show=true]:h-36 gap-2 items-center flex-wrap justify-center">
           <LockedFilter showLocked={showLocked} setShowLocked={setShowLocked} />
           <GridableFilter
             filters={filters.gridable}
@@ -86,6 +107,10 @@ export default function CollectionRenderer({ locked, artists }: Props) {
           <ClassFilter
             filters={filters.classType}
             setFilters={(f) => updateFilter("classType", f)}
+          />
+          <SortFilter
+            filters={filters.sort}
+            setFilters={(f) => updateFilter("sort", f)}
           />
         </div>
       </div>

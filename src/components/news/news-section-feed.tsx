@@ -2,7 +2,7 @@ import { CosmoNewsSectionFeed } from "@/lib/server/cosmo";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Fragment } from "react";
 import Image from "next/image";
-import Timestamp from "../ui/Timestamp";
+import Timestamp from "../ui/timestamp";
 
 type Props = {
   section: CosmoNewsSectionFeed;

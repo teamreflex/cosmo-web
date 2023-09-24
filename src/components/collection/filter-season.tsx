@@ -45,9 +45,7 @@ export function SeasonFilter({ filters, setFilters }: Props) {
           )}
         >
           <span>Season</span>
-          <ChevronDown
-            className={cn("h-4 w-4 transition", !open && "rotate-180")}
-          />
+          <ChevronDown className="h-4 w-4 opacity-50" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-36">

@@ -40,7 +40,7 @@ export default function MemberFilter({
   }
 
   return (
-    <div className="flex flex-row gap-2 pt-3 pb-1 px-1 h-fit sm:justify-center justify-items-start overflow-x-scroll no-scrollbar">
+    <div className="flex flex-row gap-2 pt-1 pb-1 px-1 h-fit sm:justify-center justify-items-start overflow-x-scroll no-scrollbar">
       {artists.map((artist) => (
         <MemberFilterButton
           key={artist.name}

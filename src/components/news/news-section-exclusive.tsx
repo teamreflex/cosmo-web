@@ -2,7 +2,7 @@ import { CosmoNewsSectionExclusive } from "@/lib/server/cosmo";
 import Image from "next/image";
 import Link from "next/link";
 import { Fragment } from "react";
-import Timestamp from "../ui/Timestamp";
+import Timestamp from "../ui/timestamp";
 
 type Props = {
   section: CosmoNewsSectionExclusive;

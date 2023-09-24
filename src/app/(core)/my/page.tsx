@@ -15,7 +15,7 @@ export default async function MyPage() {
     <main className="container flex flex-col py-2">
       <div className="flex items-center">
         <div className="flex gap-2 items-center">
-          <h1 className="text-2xl font-cosmo uppercase">My Page</h1>
+          <h1 className="text-3xl font-cosmo uppercase">My Page</h1>
         </div>
       </div>
 

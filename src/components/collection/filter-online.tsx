@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 
 type Props = PropsWithFilters<"onlineType">;
 
-const map = {
+const map: Record<ValidOnlineType, string> = {
   online: "Digital",
   offline: "Physical",
 };
@@ -50,9 +50,7 @@ export function OnlineFilter({ filters, setFilters }: Props) {
           )}
         >
           <span>Physical</span>
-          <ChevronDown
-            className={cn("h-4 w-4 transition", !open && "rotate-180")}
-          />
+          <ChevronDown className="h-4 w-4 opacity-50" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-36">
