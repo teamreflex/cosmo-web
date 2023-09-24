@@ -16,10 +16,12 @@ This project aims to build a web based version of [Modhaus](https://www.mod-haus
   - Sign in with Ramper
   - Cosmo user/token fetching
   - Sign out
+  - "My Page" displaying Cosmo ID and wallet address
 - Objekts
   - Fetching owned objekts (paginated)
   - Sending objekts to another Cosmo user
   - Displaying reason for untransferable objekts - e.g. gridded vs. not transferrable (event, welcome)
+  - All available filters
 - Artist
   - Fetching artist information
   - Artist switching (homepage defaults to selected)
