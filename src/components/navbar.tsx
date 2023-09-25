@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store";
 import { TokenPayload } from "@/lib/server/jwt";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
-import { CosmoArtist } from "@/lib/server/cosmo";
+import { CosmoArtist, CosmoUser } from "@/lib/server/cosmo";
 
 const links = [
   { name: "Home", icon: Home, href: "/" },
@@ -19,10 +19,11 @@ const links = [
 
 type Props = {
   user: TokenPayload | undefined;
+  cosmoUser: CosmoUser | undefined;
   artists: CosmoArtist[];
 };
 
-export default function Navbar({ user, artists }: Props) {
+export default function Navbar({ user, artists, cosmoUser }: Props) {
   const ramperUser = useAuthStore((state) => state.ramperUser);
 
   const [hasScrolled, setHasScrolled] = useState(false);
@@ -70,8 +71,8 @@ export default function Navbar({ user, artists }: Props) {
           ))}
         </div>
 
-        <div className="flex justify-end gap-2">
-          <UserDropdown user={user} artists={artists} />
+        <div className="flex items-center justify-end gap-2">
+          <UserDropdown user={user} artists={artists} cosmoUser={cosmoUser} />
         </div>
       </div>
     </div>
