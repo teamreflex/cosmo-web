@@ -4,27 +4,33 @@ import ClientProviders from "@/components/client-providers";
 import { readToken } from "@/lib/server/jwt";
 import { cookies } from "next/headers";
 import { cache } from "react";
-import { fetchArtists } from "@/lib/server/cosmo";
+import { fetchArtists, user } from "@/lib/server/cosmo";
 
 export const metadata: Metadata = {
   title: "Cosmo",
   description: "Cosmo",
 };
 
-const fetchAllArtists = cache(async () => await fetchArtists());
+const fetchData = cache(
+  async (token?: string) =>
+    await Promise.all([
+      fetchArtists(),
+      token ? user(token) : Promise.resolve(undefined), // hacky workaround i guess
+    ])
+);
 
 export default async function CoreLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const artists = await fetchAllArtists();
   const user = await readToken(cookies().get("token")?.value);
+  const [artists, cosmoUser] = await fetchData(user?.cosmoToken);
 
   return (
     <ClientProviders>
       <div className="relative flex min-h-screen flex-col">
-        <Navbar user={user} artists={artists} />
+        <Navbar user={user} artists={artists} cosmoUser={cosmoUser} />
 
         {/* content */}
         <div className="flex min-w-full flex-col text-foreground">
