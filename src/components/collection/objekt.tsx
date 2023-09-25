@@ -54,7 +54,7 @@ export default function Objekt({
         <ObjektNumber objekt={objekt} />
         {showButtons && (
           <>
-            <ObjektInformationHover objekt={objekt} />
+            <ObjektInformationToggle objekt={objekt} />
             <ObjektStatusButtons
               objekt={objekt}
               locked={locked}
@@ -131,7 +131,7 @@ function ObjektStatusButtons({
   );
 }
 
-function ObjektInformationHover({ objekt }: { objekt: OwnedObjekt }) {
+function ObjektInformationToggle({ objekt }: { objekt: OwnedObjekt }) {
   const [open, setOpen] = useState(false);
 
   const formatted = format(Date.parse(objekt.receivedAt), "dd/MM/yy h:mmb");
