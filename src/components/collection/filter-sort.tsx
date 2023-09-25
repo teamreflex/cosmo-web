@@ -25,7 +25,15 @@ export function SortFilter({ filters, setFilters }: Props) {
       <SelectTrigger className="w-32">
         <SelectValue placeholder="Sort" />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent
+        ref={(ref) => {
+          // fixes mobile touch-through bug in radix
+          if (!ref) return;
+          ref.ontouchstart = (e) => {
+            e.preventDefault();
+          };
+        }}
+      >
         {validSorts.map((sort) => (
           <SelectItem key={sort} value={sort}>
             {map[sort]}
