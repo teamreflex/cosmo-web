@@ -16,8 +16,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { cosmoLogin } from "@/app/(auth)/login/email/actions";
-import { Disc3, Loader2, LogOut, Moon, Sparkle } from "lucide-react";
+import { cosmoLogin } from "@/app/actions";
+import { Disc3, Loader2, LogOut } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,18 +31,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { TokenPayload } from "@/lib/server/jwt";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { CosmoArtist, CosmoUser } from "@/lib/server/cosmo";
+import { Avatar, AvatarFallback } from "./ui/avatar";
+import { CosmoArtist } from "@/lib/server/cosmo";
 import Image from "next/image";
 import { ValidArtist } from "@/lib/server/cosmo/common";
 
 type Props = {
   user: TokenPayload | undefined;
-  cosmoUser: CosmoUser | undefined;
   artists: CosmoArtist[];
+  comoBalances: ReactNode;
 };
 
-export default function UserDropdown({ user, artists, cosmoUser }: Props) {
+export default function UserDropdown({ user, artists, comoBalances }: Props) {
   const [pending, setPending] = useState(true);
   const [email, setEmail] = useState("");
   const [token, setToken] = useState("");
@@ -59,7 +59,7 @@ export default function UserDropdown({ user, artists, cosmoUser }: Props) {
 
   useEffect(() => {
     setAvailableArtists(artists);
-  }, [artists]);
+  }, [artists, setAvailableArtists]);
 
   useEffect(() => {
     const user = getUser();
@@ -112,12 +112,10 @@ export default function UserDropdown({ user, artists, cosmoUser }: Props) {
       </form>
 
       <div className="flex gap-2 items-center justify-center">
-        {user && cosmoUser ? (
+        {user ? (
           <>
             <div className="md:flex gap-2 items-center hidden">
-              {cosmoUser.artists.map((artist) => (
-                <ComoBalance key={artist.name} artist={artist} />
-              ))}
+              {comoBalances}
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger>
@@ -129,9 +127,7 @@ export default function UserDropdown({ user, artists, cosmoUser }: Props) {
               </DropdownMenuTrigger>
               <DropdownMenuContent>
                 <DropdownMenuItem className="md:hidden flex gap-2 items-center">
-                  {cosmoUser.artists.map((artist) => (
-                    <ComoBalance key={artist.name} artist={artist} />
-                  ))}
+                  {comoBalances}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="md:hidden" />
                 <DropdownMenuLabel>Settings</DropdownMenuLabel>
@@ -207,23 +203,5 @@ export default function UserDropdown({ user, artists, cosmoUser }: Props) {
         )}
       </div>
     </>
-  );
-}
-
-const map: Record<ValidArtist, ReactNode> = {
-  artms: (
-    <Moon className="ring-1 p-px w-3 h-3 rounded-full text-teal-400 fill-teal-400 ring-teal-400" />
-  ),
-  tripleS: (
-    <Sparkle className="ring-1 p-px w-3 h-3 rounded-full text-purple-300 fill-purple-300 ring-purple-300" />
-  ),
-};
-
-function ComoBalance({ artist }: { artist: CosmoUser["artists"][number] }) {
-  return (
-    <div className="flex justify-between items-center rounded bg-accent border border-black/30 dark:border-white/30 h-6 w-16 px-1 shadow">
-      {map[artist.name as ValidArtist]}
-      <span className="text-sm">{artist.assetBalance.totalComo}</span>
-    </div>
   );
 }

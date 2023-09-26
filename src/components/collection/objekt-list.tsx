@@ -72,7 +72,7 @@ export default function ObjektList({
     if (inView) {
       fetchNextPage();
     }
-  }, [inView]);
+  }, [inView, fetchNextPage]);
 
   // reset query upon filter change
   const refetchPage = useCallback(

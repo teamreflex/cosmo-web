@@ -123,7 +123,15 @@ function ObjektStatusButtons({
       )}
       <ObjektStatusText show={locked} text="Locked" />
       <ObjektStatusText
-        show={!objekt.transferable && !objekt.usedForGrid}
+        show={!objekt.transferable && objekt.status === "pending"}
+        text="Mint pending"
+      />
+      <ObjektStatusText
+        show={
+          !objekt.transferable &&
+          !objekt.usedForGrid &&
+          objekt.status === "minted"
+        }
         text="Not transferable"
       />
       <ObjektStatusText show={objekt.usedForGrid} text="Used for grid" />
@@ -156,7 +164,10 @@ function ObjektInformationHover({ objekt }: { objekt: OwnedObjekt }) {
       <div className="z-40 absolute flex flex-col gap-1 group-data-[open=false]:opacity-0 group-data-[open=true]:opacity-100 transition-all">
         <div className="flex flex-col text-xs">
           <Link
-            className="font-semibold flex gap-1 items-center underline"
+            className={cn(
+              "font-semibold flex gap-1 items-center underline",
+              !open && "pointer-events-none"
+            )}
             target="_blank"
             href={opensea}
           >

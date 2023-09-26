@@ -4,12 +4,11 @@ import Link from "next/link";
 import { Home, PackageOpen, User } from "lucide-react";
 import UserDropdown from "./user-dropdown";
 import CosmoLogo from "./cosmo-logo";
-import { useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-import { useAuthStore } from "@/store";
 import { TokenPayload } from "@/lib/server/jwt";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
-import { CosmoArtist, CosmoUser } from "@/lib/server/cosmo";
+import { CosmoArtist } from "@/lib/server/cosmo";
 
 const links = [
   { name: "Home", icon: Home, href: "/" },
@@ -19,13 +18,11 @@ const links = [
 
 type Props = {
   user: TokenPayload | undefined;
-  cosmoUser: CosmoUser | undefined;
   artists: CosmoArtist[];
+  comoBalances: ReactNode;
 };
 
-export default function Navbar({ user, artists, cosmoUser }: Props) {
-  const ramperUser = useAuthStore((state) => state.ramperUser);
-
+export default function Navbar({ user, artists, comoBalances }: Props) {
   const [hasScrolled, setHasScrolled] = useState(false);
 
   // add glass effect to nav when scrolled
@@ -72,7 +69,11 @@ export default function Navbar({ user, artists, cosmoUser }: Props) {
         </div>
 
         <div className="flex items-center justify-end gap-2">
-          <UserDropdown user={user} artists={artists} cosmoUser={cosmoUser} />
+          <UserDropdown
+            user={user}
+            artists={artists}
+            comoBalances={comoBalances}
+          />
         </div>
       </div>
     </div>

@@ -74,7 +74,7 @@ export default function SendObjekt({ objekt }: Props) {
     if (transactionProgress === TransactionStatus.COMPLETE) {
       refetchPage();
     }
-  }, [transactionProgress]);
+  }, [transactionProgress, setPercentage, refetchPage]);
 
   function prepareSending(newRecipient: SearchUser) {
     setRecipient(newRecipient);
