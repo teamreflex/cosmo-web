@@ -17,11 +17,12 @@ This project aims to build a web based version of [Modhaus](https://www.mod-haus
   - Cosmo user/token fetching
   - Sign out
   - "My Page" displaying Cosmo ID and wallet address
-- Objekts
+- Objekts/COMO
   - Fetching owned objekts (paginated)
   - Sending objekts to another Cosmo user
   - Displaying reason for untransferable objekts - e.g. gridded vs. not transferrable (event, welcome)
   - All available filters
+  - Display COMO balances (via Alchemy due to Cosmo's being outdated)
 - Artist
   - Fetching artist information
   - Artist switching (homepage defaults to selected)
