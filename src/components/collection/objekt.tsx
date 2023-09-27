@@ -142,7 +142,7 @@ function ObjektStatusButtons({
 function ObjektInformationHover({ objekt }: { objekt: OwnedObjekt }) {
   const [open, setOpen] = useState(false);
 
-  const formatted = format(Date.parse(objekt.receivedAt), "dd/MM/yy h:mmb");
+  const formatted = format(Date.parse(objekt.receivedAt), "dd/MM/yy h:mmaa");
   const opensea = `https://opensea.io/assets/matic/${objekt.tokenAddress}/${objekt.tokenId}`;
 
   return (
