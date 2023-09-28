@@ -4,14 +4,12 @@ import { readToken } from "@/lib/server/jwt";
 import { cookies } from "next/headers";
 import Image from "next/image";
 import { redirect } from "next/navigation";
+import ProfileImage from "@/static/profile.webp";
 
 export const runtime = "edge";
 
 export default async function MyPage() {
   const user = await readToken(cookies().get("token")?.value);
-  if (!user) {
-    redirect("/");
-  }
 
   return (
     <main className="container flex flex-col py-2">
@@ -26,15 +24,15 @@ export default async function MyPage() {
           <AvatarFallback className="relative bg-violet-100">
             <Image
               className="p-6"
-              src="/profile.webp"
+              src={ProfileImage}
               fill={true}
-              alt={user.nickname}
+              alt={user!.nickname}
             />
           </AvatarFallback>
-          <AvatarImage src="" alt={user.nickname} />
+          <AvatarImage src="" alt={user!.nickname} />
         </Avatar>
-        <p className="font-bold text-xl">{user.nickname}</p>
-        <CopyWallet address={user.address} />
+        <p className="font-bold text-xl">{user!.nickname}</p>
+        <CopyWallet address={user!.address} />
       </div>
     </main>
   );

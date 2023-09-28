@@ -4,16 +4,22 @@ import ClientProviders from "@/components/client-providers";
 import { readToken } from "@/lib/server/jwt";
 import { cookies } from "next/headers";
 import { Suspense, cache } from "react";
-import { fetchArtists } from "@/lib/server/cosmo";
+import { ValidArtist, fetchArtists } from "@/lib/server/cosmo";
 import ComoBalances from "@/components/como-balances";
 import { Loader2 } from "lucide-react";
+import { fetchSelectedArtist } from "@/lib/server/cache";
 
 export const metadata: Metadata = {
   title: "Cosmo",
   description: "Cosmo",
 };
 
-const fetchData = cache(async () => fetchArtists());
+const fetchData = cache(async (userId?: number) =>
+  Promise.all([
+    fetchArtists(),
+    userId ? fetchSelectedArtist(userId) : Promise.resolve(undefined),
+  ])
+);
 
 export default async function CoreLayout({
   children,
@@ -21,7 +27,7 @@ export default async function CoreLayout({
   children: React.ReactNode;
 }) {
   const user = await readToken(cookies().get("token")?.value);
-  const artists = await fetchData();
+  const [artists, selectedArtist] = await fetchData(user?.id);
 
   return (
     <ClientProviders>
@@ -29,6 +35,7 @@ export default async function CoreLayout({
         <Navbar
           user={user}
           artists={artists}
+          selectedArtist={selectedArtist as ValidArtist | undefined}
           comoBalances={
             user ? (
               <Suspense

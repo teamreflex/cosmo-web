@@ -6,10 +6,16 @@ const config = {
     serverActions: true,
   },
   images: {
-    unoptimized: true,
     remotePatterns: [
+      // objekt images
       {
+        protocol: "https",
         hostname: "imagedelivery.net",
+      },
+      // cosmo images (news, artist etc)
+      {
+        protocol: "https",
+        hostname: "**.cosmo.fans",
       },
     ],
   },

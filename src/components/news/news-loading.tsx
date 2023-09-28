@@ -1,22 +1,12 @@
 "use client";
 
-import { ValidArtist } from "@/lib/server/cosmo/common";
-import { useSettingsStore } from "@/store";
 import { Loader2 } from "lucide-react";
 
-export function LoadingNews({ artist }: { artist: ValidArtist }) {
-  const availableArtists = useSettingsStore((state) => state.availableArtists);
-
-  const currentArtist = availableArtists[artist];
-
+export function LoadingNews() {
   return (
-    <div className="flex flex-col gap-2 items-center py-12">
-      <Loader2 className="animate-spin w-12 h-12" />
-      {currentArtist !== undefined ? (
-        <p>Loading news for {currentArtist.title}...</p>
-      ) : (
-        <p>Loading news...</p>
-      )}
+    <div className="flex flex-col justify-center items-center w-full gap-2 py-12">
+      <Loader2 className="animate-spin w-24 h-24" />
+      <p className="font-semibold text-sm text-center">Loading news...</p>
     </div>
   );
 }

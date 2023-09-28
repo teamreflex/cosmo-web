@@ -1,14 +1,11 @@
-"use client";
-
 import Link from "next/link";
 import { Home, PackageOpen, User } from "lucide-react";
-import UserDropdown from "./user-dropdown";
+import AuthOptions from "./auth-options";
 import CosmoLogo from "./cosmo-logo";
-import { ReactNode, useEffect, useState } from "react";
-import { cn } from "@/lib/utils";
+import { ReactNode } from "react";
 import { TokenPayload } from "@/lib/server/jwt";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
-import { CosmoArtist } from "@/lib/server/cosmo";
+import { CosmoArtist, ValidArtist } from "@/lib/server/cosmo";
 
 const links = [
   { name: "Home", icon: Home, href: "/" },
@@ -19,33 +16,18 @@ const links = [
 type Props = {
   user: TokenPayload | undefined;
   artists: CosmoArtist[];
+  selectedArtist: ValidArtist | undefined;
   comoBalances: ReactNode;
 };
 
-export default function Navbar({ user, artists, comoBalances }: Props) {
-  const [hasScrolled, setHasScrolled] = useState(false);
-
-  // add glass effect to nav when scrolled
-  useEffect(() => {
-    function handleScroll() {
-      if (window.scrollY > 0) {
-        setHasScrolled(true);
-      } else {
-        setHasScrolled(false);
-      }
-    }
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
+export default function Navbar({
+  user,
+  artists,
+  selectedArtist,
+  comoBalances,
+}: Props) {
   return (
-    <div
-      className={cn(
-        "flex h-14 w-full items-center bg-background/100 transition-colors duration-500 sticky top-0 z-50 border-b border-accent backdrop-blur",
-        hasScrolled && "bg-background/75"
-      )}
-    >
+    <div className="flex h-14 w-full items-center bg-background/75 transition-colors duration-500 sticky top-0 z-50 border-b border-accent backdrop-blur">
       <div className="container grid grid-cols-3 items-center gap-2 text-sm text-foreground md:gap-4 md:py-6 lg:grid-cols-3">
         <CosmoLogo color="white" />
 
@@ -69,9 +51,10 @@ export default function Navbar({ user, artists, comoBalances }: Props) {
         </div>
 
         <div className="flex items-center justify-end gap-2">
-          <UserDropdown
+          <AuthOptions
             user={user}
             artists={artists}
+            selectedArtist={selectedArtist}
             comoBalances={comoBalances}
           />
         </div>

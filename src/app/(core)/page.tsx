@@ -1,27 +1,36 @@
-import DashboardHandler from "@/components/home/dashboard-handler";
-import { fetchArtists } from "@/lib/server/cosmo";
 import { readToken } from "@/lib/server/jwt";
 import { cookies } from "next/headers";
-import { cache } from "react";
+import { Suspense } from "react";
+import CosmoImage from "@/static/cosmo.png";
+import Image from "next/image";
+import { fetchSelectedArtist } from "@/lib/server/cache";
+import NewsRenderer from "@/components/news/news-renderer";
+import { LoadingNews } from "@/components/news/news-loading";
 
 export const runtime = "edge";
-
-const fetchAllArtists = cache(async () => await fetchArtists());
 
 export default async function HomePage() {
   const user = await readToken(cookies().get("token")?.value);
 
   if (!user) {
     return (
-      <span className="flex justify-center w-full py-12">Please login!</span>
+      <span className="flex flex-col justify-center items-center w-full gap-2 py-12">
+        <Image src={CosmoImage} width={100} height={100} alt="Cosmo" />
+        <span className="font-semibold text-lg">
+          Welcome to <span className="font-cosmo">COSMO</span>
+          <p className="text-sm text-center">Please sign in</p>
+        </span>
+      </span>
     );
   }
 
-  const artists = await fetchAllArtists();
+  const selectedArtist = await fetchSelectedArtist(user.id);
 
   return (
     <main className="flex flex-col items-center container">
-      <DashboardHandler artists={artists} />
+      <Suspense fallback={<LoadingNews />}>
+        <NewsRenderer user={user!} artist={selectedArtist ?? "artms"} />
+      </Suspense>
     </main>
   );
 }

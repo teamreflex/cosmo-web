@@ -15,7 +15,7 @@ export default function NewsSectionFeed({ section }: Props) {
       {section.contents.map((post) => (
         <Fragment key={post.id}>
           <div className="flex gap-2">
-            <Avatar className="border border-muted-foreground">
+            <Avatar className="border border-accent">
               <AvatarFallback>{post.artist.at(0)}</AvatarFallback>
               <AvatarImage src={post.logoImageUrl} />
             </Avatar>

@@ -11,22 +11,18 @@ export async function middleware(request: NextRequest) {
   const token = await readToken(request.cookies.get("token")?.value);
 
   if (!token) {
+    // delete the token if it exists, as it must be invalid
     if (request.cookies.has("token")) {
       request.cookies.delete("token");
       response.cookies.delete("token");
     }
 
-    // redirects from the app to /login when not authenticated
-    if (pathname !== "/" && !pathname.startsWith("/login")) {
-      return NextResponse.redirect(new URL("/login", request.url));
+    // redirect to index when unauthenticated
+    if (pathname !== "/") {
+      return NextResponse.redirect(new URL("/", request.url));
     }
 
     return response;
-  }
-
-  // redirect to the app from index or /login when authenticated
-  if (pathname === "/" || pathname.startsWith("/login")) {
-    return NextResponse.redirect(new URL("/home", request.url));
   }
 
   // pass the request on when in the app

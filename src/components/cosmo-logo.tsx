@@ -3,7 +3,6 @@ import Image from "next/image";
 import {
   AlertDialog,
   AlertDialogAction,
-  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
@@ -12,6 +11,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { env } from "@/env.mjs";
+import CosmoImage from "@/static/cosmo.png";
 
 type Props = {
   className?: string;
@@ -30,7 +30,7 @@ export default function CosmoLogo({
     <AlertDialog>
       <AlertDialogTrigger>
         <Image
-          src="/cosmo.png"
+          src={CosmoImage}
           height={height}
           width={width}
           alt="Cosmo"
@@ -42,12 +42,18 @@ export default function CosmoLogo({
           <AlertDialogTitle>
             cosmo-web v{env.NEXT_PUBLIC_APP_VERSION}
           </AlertDialogTitle>
-          <AlertDialogDescription>
-            Not affiliated with Modhaus
+          <AlertDialogDescription asChild>
+            <div className="flex flex-col gap-2">
+              <p>
+                cosmo-web is a fan-made platform aiming to replicate the Cosmo
+                mobile app with a desktop interface.
+              </p>
+              <p>Not affiliated with Modhaus or its artists.</p>
+            </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogAction>Ok</AlertDialogAction>
+          <AlertDialogAction>👍</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
