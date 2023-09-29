@@ -56,7 +56,6 @@ function BannerItem({ className, item, index, total }: BannerItemProps) {
         className="relative rounded-xl border border-accent overflow-hidden"
       >
         <Image
-          unoptimized
           src={item.imageUrl}
           alt={item.body}
           fill={true}
