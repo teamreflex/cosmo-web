@@ -11,10 +11,11 @@ export default function NewsPostFeed({
   post: CosmoNewsSectionFeedContent;
   fullWidth: boolean;
 }) {
-  function getColumns(count: number) {
-    if (fullWidth) return 1;
-    return count > 3 ? Math.floor(count / 2) : count;
-  }
+  const columns = fullWidth
+    ? 1
+    : post.imageUrls.length > 3
+    ? Math.floor(post.imageUrls.length / 2)
+    : post.imageUrls.length;
 
   return (
     <div className="flex flex-col gap-2 w-full">
@@ -37,7 +38,7 @@ export default function NewsPostFeed({
       <div
         className={cn(
           "grid gap-1 rounded-xl overflow-hidden w-full",
-          `grid-cols-${getColumns(post.imageUrls.length)}`
+          `grid-cols-${columns}`
         )}
       >
         {post.imageUrls.map((image) => (
