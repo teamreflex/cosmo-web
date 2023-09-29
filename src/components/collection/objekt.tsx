@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import LockObjekt from "./lock-button";
 import SendObjekt from "./send-button";
-import { CSSProperties, useState } from "react";
+import { CSSProperties, PropsWithChildren, useState } from "react";
 import ReactCardFlip from "react-card-flip";
 import { ExternalLink, Maximize2 } from "lucide-react";
 import { format } from "date-fns";
@@ -50,12 +50,13 @@ export default function Objekt({
           width={291}
           height={450}
           alt={objekt.collectionId}
+          quality={100}
         />
         <ObjektNumber objekt={objekt} />
         {showButtons && (
           <>
-            <ObjektInformationHover objekt={objekt} />
-            <ObjektStatusButtons
+            <InformationOverlay objekt={objekt} />
+            <ActionOverlay
               objekt={objekt}
               locked={locked}
               setLocked={setLocked}
@@ -70,6 +71,7 @@ export default function Objekt({
         width={291}
         height={450}
         alt={objekt.collectionId}
+        quality={100}
       />
     </ReactCardFlip>
   );
@@ -84,18 +86,7 @@ function ObjektNumber({ objekt }: { objekt: OwnedObjekt }) {
   );
 }
 
-function ObjektStatusText({ show, text }: { show: boolean; text: string }) {
-  if (show) {
-    return (
-      <p className="text-xs opacity-0 group-hover:opacity-100 whitespace-nowrap transition-all">
-        {text}
-      </p>
-    );
-  }
-  return null;
-}
-
-function ObjektStatusButtons({
+function ActionOverlay({
   objekt,
   locked,
   setLocked,
@@ -107,39 +98,45 @@ function ObjektStatusButtons({
   return (
     <div
       className={cn(
-        "absolute top-0 left-0 p-1 sm:p-2 rounded-br-lg sm:rounded-br-xl flex gap-2 items-center group h-5 sm:h-9 transition-all overflow-hidden",
+        "absolute top-0 left-0 p-1 sm:p-2 rounded-br-lg sm:rounded-br-xl items-center group h-5 sm:h-9 transition-all overflow-hidden",
         "text-[var(--objekt-text-color)] bg-[var(--objekt-background-color)]",
-        objekt.transferable && "w-10 sm:w-16",
-        !objekt.transferable &&
-          !objekt.usedForGrid &&
-          "w-5 sm:w-9 sm:hover:w-[8.8rem]",
-        objekt.usedForGrid && "w-5 sm:w-9 sm:hover:w-[7.7rem]",
-        locked && "w-5 sm:w-9 sm:hover:w-[5.5rem]"
+        "grid grid-flow-col grid-cols-[1fr_min-content]"
       )}
     >
-      {!locked && <SendObjekt objekt={objekt} />}
-      {objekt.transferable && (
-        <LockObjekt objekt={objekt} locked={locked} onLockChange={setLocked} />
-      )}
-      <ObjektStatusText show={locked} text="Locked" />
-      <ObjektStatusText
-        show={!objekt.transferable && objekt.status === "pending"}
-        text="Mint pending"
-      />
-      <ObjektStatusText
-        show={
-          !objekt.transferable &&
+      {/* buttons */}
+      <div className="flex items-center gap-2">
+        {!locked && <SendObjekt objekt={objekt} />}
+        {objekt.transferable && (
+          <LockObjekt
+            objekt={objekt}
+            locked={locked}
+            onLockChange={setLocked}
+          />
+        )}
+      </div>
+
+      {/* status text */}
+      <div className="text-xs whitespace-nowrap max-w-0 group-hover:max-w-[12rem] overflow-hidden transition-all">
+        {locked && <StatusText>Locked</StatusText>}
+        {!objekt.transferable && objekt.status === "pending" && (
+          <StatusText>Mint pending</StatusText>
+        )}
+        {!objekt.transferable &&
           !objekt.usedForGrid &&
-          objekt.status === "minted"
-        }
-        text="Not transferable"
-      />
-      <ObjektStatusText show={objekt.usedForGrid} text="Used for grid" />
+          objekt.status === "minted" && (
+            <StatusText>Not transferable</StatusText>
+          )}
+        {objekt.usedForGrid && <StatusText>Used for grid</StatusText>}
+      </div>
     </div>
   );
 }
 
-function ObjektInformationHover({ objekt }: { objekt: OwnedObjekt }) {
+function StatusText({ children }: PropsWithChildren) {
+  return <p className="pl-2">{children}</p>;
+}
+
+function InformationOverlay({ objekt }: { objekt: OwnedObjekt }) {
   const [open, setOpen] = useState(false);
 
   const formatted = format(Date.parse(objekt.receivedAt), "dd/MM/yy h:mmaa");

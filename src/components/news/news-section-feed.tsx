@@ -33,7 +33,7 @@ export default function NewsSectionFeed({ section }: Props) {
           <div className="grid grid-cols-2 gap-2 rounded-xl overflow-hidden w-full">
             {post.imageUrls.map((image) => (
               <div key={image} className="relative aspect-square w-full">
-                <Image src={image} alt={post.body} fill={true} />
+                <Image src={image} alt={post.body} fill={true} quality={100} />
               </div>
             ))}
           </div>

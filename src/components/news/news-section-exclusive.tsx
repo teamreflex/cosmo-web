@@ -24,6 +24,7 @@ export default function NewsSectionExclusive({ section }: Props) {
               alt={post.title}
               fill={true}
               className="object-contain"
+              quality={100}
             />
           </Link>
           <div className="flex flex-col">
