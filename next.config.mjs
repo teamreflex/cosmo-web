@@ -17,6 +17,11 @@ const config = {
         protocol: "https",
         hostname: "**.cosmo.fans",
       },
+      {
+        protocol: "https",
+        hostname: "s3.ap-northeast-2.amazonaws.com",
+        pathname: "/static.cosmo.fans/**",
+      },
     ],
   },
 };

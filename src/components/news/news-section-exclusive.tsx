@@ -1,8 +1,7 @@
 import { CosmoNewsSectionExclusive } from "@/lib/server/cosmo";
-import Image from "next/image";
+import NewsPostExclusive from "./news-post-exclusive";
+import { ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { Fragment } from "react";
-import Timestamp from "../ui/timestamp";
 
 type Props = {
   section: CosmoNewsSectionExclusive;
@@ -11,30 +10,15 @@ type Props = {
 export default function NewsSectionExclusive({ section }: Props) {
   return (
     <div className="flex flex-col gap-2 w-full md:w-1/2 py-4">
-      <h3 className="font-bold text-xl">COSMO Exclusive</h3>
+      <Link
+        href="/news/exclusive"
+        className="font-bold text-xl flex items-center justify-between"
+      >
+        {section.title}
+        <ChevronRight className="w-6 h-6 text-foreground/50" />
+      </Link>
       {section.contents.map((post) => (
-        <Fragment key={post.id}>
-          <Link
-            href={post.url}
-            target="_blank"
-            className="relative aspect-video rounded-xl border border-accent overflow-hidden"
-          >
-            <Image
-              src={post.thumbnailImageUrl}
-              alt={post.title}
-              fill={true}
-              className="object-contain"
-              quality={100}
-            />
-          </Link>
-          <div className="flex flex-col">
-            <p className="font-bold">{post.title}</p>
-            <p className="text-sm">{post.body}</p>
-            <p className="text-muted-foreground text-sm">
-              <Timestamp timestamp={post.createdAt} />
-            </p>
-          </div>
-        </Fragment>
+        <NewsPostExclusive key={post.id} post={post} />
       ))}
     </div>
   );

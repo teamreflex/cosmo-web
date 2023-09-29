@@ -1,5 +1,5 @@
 import {
-  fetchNews,
+  fetchHomeNews,
   isExclusiveSection,
   isFeedSection,
 } from "@/lib/server/cosmo";
@@ -15,7 +15,8 @@ type Props = {
 };
 
 const fetchNewsForArtist = cache(
-  async (token: string, artist: ValidArtist) => await fetchNews(token, artist)
+  async (token: string, artist: ValidArtist) =>
+    await fetchHomeNews(token, artist)
 );
 
 export default async function NewsRenderer({ user, artist }: Props) {
@@ -25,7 +26,13 @@ export default async function NewsRenderer({ user, artist }: Props) {
     <div className="flex flex-col items-center divide-y-2 divide-accent container px-4">
       {news.map((section) => {
         if (isFeedSection(section)) {
-          return <NewsSectionFeed key={section.title} section={section} />;
+          return (
+            <NewsSectionFeed
+              key={section.title}
+              section={section}
+              fullWidth={false}
+            />
+          );
         }
         if (isExclusiveSection(section)) {
           return <NewsSectionExclusive key={section.title} section={section} />;

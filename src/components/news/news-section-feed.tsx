@@ -1,43 +1,25 @@
 import { CosmoNewsSectionFeed } from "@/lib/server/cosmo";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { Fragment } from "react";
-import Image from "next/image";
-import Timestamp from "../ui/timestamp";
+import NewsPostFeed from "./news-post-feed";
+import { ChevronRight } from "lucide-react";
+import Link from "next/link";
 
 type Props = {
   section: CosmoNewsSectionFeed;
+  fullWidth: boolean;
 };
 
-export default function NewsSectionFeed({ section }: Props) {
+export default function NewsSectionFeed({ section, fullWidth }: Props) {
   return (
     <div className="flex flex-col gap-2 w-full md:w-1/2 py-4">
-      <h3 className="font-bold text-xl">{section.title}</h3>
+      <Link
+        href="/news/feed"
+        className="font-bold text-xl flex items-center justify-between"
+      >
+        {section.title}
+        <ChevronRight className="w-6 h-6 text-foreground/50" />
+      </Link>
       {section.contents.map((post) => (
-        <Fragment key={post.id}>
-          <div className="flex gap-2">
-            <Avatar className="border border-accent">
-              <AvatarFallback>{post.artist.at(0)}</AvatarFallback>
-              <AvatarImage src={post.logoImageUrl} />
-            </Avatar>
-
-            <div className="flex flex-col">
-              <span className="font-bold">{post.artist}</span>
-              <span className="text-muted-foreground text-sm">
-                <Timestamp timestamp={post.createdAt} />
-              </span>
-            </div>
-          </div>
-
-          <p>{post.body}</p>
-
-          <div className="grid grid-cols-2 gap-2 rounded-xl overflow-hidden w-full">
-            {post.imageUrls.map((image) => (
-              <div key={image} className="relative aspect-square w-full">
-                <Image src={image} alt={post.body} fill={true} quality={100} />
-              </div>
-            ))}
-          </div>
-        </Fragment>
+        <NewsPostFeed key={post.id} post={post} fullWidth={fullWidth} />
       ))}
     </div>
   );
