@@ -11,7 +11,7 @@ export type CosmoNewsSectionBanner = {
   artist: ValidArtist;
   contents: CosmoNewsSectionBannerContent[];
 };
-type CosmoNewsSectionBannerContent = {
+export type CosmoNewsSectionBannerContent = {
   id: number;
   url: string;
   createdAt: string;
