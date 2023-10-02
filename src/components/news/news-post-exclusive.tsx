@@ -71,7 +71,21 @@ function ExclusiveVideoPost({
         controls={true}
         width="100%"
         height="100%"
-        light={post.thumbnailImageUrl}
+        config={{
+          file: {
+            forceHLS: true,
+            forceSafariHLS: true,
+          },
+        }}
+        light={
+          <Image
+            src={post.thumbnailImageUrl}
+            alt={post.title}
+            fill={true}
+            className="object-contain"
+            quality={100}
+          />
+        }
       />
     </div>
   );
