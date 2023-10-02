@@ -6,8 +6,12 @@ import Image from "next/image";
 import NewsRenderer from "@/components/news/news-renderer";
 import { LoadingNews } from "@/components/news/news-loading";
 import { fetchSelectedArtist } from "./data-fetching";
+import { Metadata } from "next";
 
 export const runtime = "edge";
+export const metadata: Metadata = {
+  title: "Home",
+};
 
 export default async function HomePage() {
   const user = await readToken(cookies().get("token")?.value);

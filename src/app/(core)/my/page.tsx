@@ -3,10 +3,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { readToken } from "@/lib/server/jwt";
 import { cookies } from "next/headers";
 import Image from "next/image";
-import { redirect } from "next/navigation";
 import ProfileImage from "@/static/profile.webp";
+import { Metadata } from "next";
 
 export const runtime = "edge";
+export const metadata: Metadata = {
+  title: "My Page",
+};
 
 export default async function MyPage() {
   const user = await readToken(cookies().get("token")?.value);

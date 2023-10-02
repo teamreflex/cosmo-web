@@ -16,8 +16,13 @@ const cosmo = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Cosmo",
-  description: "Cosmo",
+  title: {
+    template: "%s · Cosmo",
+    default: "Cosmo",
+    absolute: "Cosmo",
+  },
+  description: "Cosmo - Where you meet your artist",
+  keywords: ["Next.js", "React", "JavaScript"],
 };
 
 export default function RootLayout({

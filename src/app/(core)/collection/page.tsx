@@ -5,9 +5,12 @@ import { readToken } from "@/lib/server/jwt";
 import { cookies } from "next/headers";
 import { cache } from "react";
 import CollectionRenderer from "@/components/collection/collection-renderer";
+import { Metadata } from "next";
 
-export const dynamic = "force-dynamic";
 export const runtime = "edge";
+export const metadata: Metadata = {
+  title: "Collection",
+};
 
 const fetchData = cache(
   async (userId: number) =>

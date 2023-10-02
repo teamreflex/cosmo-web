@@ -10,8 +10,13 @@ import { Loader2 } from "lucide-react";
 import { fetchSelectedArtist } from "./data-fetching";
 
 export const metadata: Metadata = {
-  title: "Cosmo",
-  description: "Cosmo",
+  title: {
+    template: "%s · Cosmo",
+    default: "Cosmo",
+    absolute: "Cosmo",
+  },
+  description: "Cosmo - Where you meet your artist",
+  keywords: ["Next.js", "React", "JavaScript"],
 };
 
 const fetchData = cache(async (userId?: number) =>
