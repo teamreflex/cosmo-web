@@ -9,17 +9,21 @@ import { useInfiniteQuery } from "react-query";
 type Props<TPostType> = {
   fetcher: ({ pageParam = 0 }) => Promise<CosmoNewsFeedResult<TPostType>>;
   component: (post: TPostType) => ReactNode;
+  queryKey: string;
+  artist: string;
 };
 
 export default function NewsInfiniteLoader<TPostType>({
   fetcher,
   component,
+  queryKey,
+  artist,
 }: Props<TPostType>) {
   const { ref, inView } = useInView();
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
     useInfiniteQuery({
-      queryKey: ["news-feed"],
+      queryKey: [queryKey, { artist }],
       queryFn: fetcher,
       getNextPageParam: (lastPage) => lastPage.nextStartAfter,
       refetchOnWindowFocus: false,

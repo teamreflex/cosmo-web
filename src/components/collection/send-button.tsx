@@ -13,7 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "../ui/button";
 import { searchForUser } from "@/app/(core)/collection/actions";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Separator } from "../ui/separator";
 import { experimental_useFormStatus as useFormStatus } from "react-dom";
 import { useAuthStore } from "@/store";
@@ -36,7 +36,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import Objekt from "./objekt";
-import { RefetchObjektsContext } from "./objekt-list";
+import { useQueryClient } from "react-query";
 
 type Props = {
   objekt: OwnedObjekt;
@@ -63,7 +63,7 @@ export default function SendObjekt({ objekt }: Props) {
     useState<TransactionStatus>(TransactionStatus.WAITING);
   const [percentage, setPercentage] = useState(0);
 
-  const refetchPage = useContext(RefetchObjektsContext);
+  const queryClient = useQueryClient();
 
   // calculate progress
   useEffect(() => {
@@ -71,10 +71,11 @@ export default function SendObjekt({ objekt }: Props) {
       Math.round((transactionProgress / TransactionStatus.COMPLETE) * 100) || 0
     );
 
+    // trigger a refresh of the objekts query upon sending
     if (transactionProgress === TransactionStatus.COMPLETE) {
-      refetchPage();
+      queryClient.invalidateQueries("objekts");
     }
-  }, [transactionProgress, setPercentage, refetchPage]);
+  }, [transactionProgress, setPercentage, queryClient]);
 
   function prepareSending(newRecipient: SearchUser) {
     setRecipient(newRecipient);

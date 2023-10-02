@@ -29,5 +29,12 @@ export default function NewsExclusiveInfiniteLoader({ artist }: Props) {
     return <NewsPostExclusive key={post.id} post={post} />;
   }
 
-  return <NewsInfiniteLoader fetcher={fetcher} component={generatePost} />;
+  return (
+    <NewsInfiniteLoader
+      fetcher={fetcher}
+      component={generatePost}
+      queryKey="news-exclusive"
+      artist={artist}
+    />
+  );
 }

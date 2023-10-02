@@ -1,24 +1,10 @@
-import { COSMO_ENDPOINT } from "./common";
-
-export const validSorts = [
-  "newest",
-  "oldest",
-  "noAscending",
-  "noDescending",
-] as const;
-export type ValidSort = (typeof validSorts)[number];
-export const validSeasons = ["Atom01", "Binary01"] as const;
-export type ValidSeason = (typeof validSeasons)[number];
-export const validClasses = [
-  "First",
-  "Special",
-  "Double",
-  "Welcome",
-  "Zero",
-] as const;
-export type ValidClass = (typeof validClasses)[number];
-export const validOnlineTypes = ["online", "offline"] as const;
-export type ValidOnlineType = (typeof validOnlineTypes)[number];
+import {
+  COSMO_ENDPOINT,
+  ValidClass,
+  ValidOnlineType,
+  ValidSeason,
+  ValidSort,
+} from "./common";
 
 export type ObjektQueryParams = {
   startAfter: number;

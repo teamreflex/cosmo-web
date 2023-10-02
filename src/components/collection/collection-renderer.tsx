@@ -12,7 +12,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { HelpCircle, SlidersHorizontal } from "lucide-react";
+import { AlertCircle, SlidersHorizontal } from "lucide-react";
 import { useState } from "react";
 import { ClassFilter } from "./filter-class";
 import { OnlineFilter } from "./filter-online";
@@ -21,7 +21,6 @@ import { TransferableFilter } from "./filter-transferable";
 import { GridableFilter } from "./filter-gridable";
 import { LockedFilter } from "./filter-locked";
 import { SortFilter } from "./filter-sort";
-import { Button } from "../ui/button";
 import { Toggle } from "../ui/toggle";
 
 export type PropsWithFilters<T extends keyof ObjektQueryParams> = {
@@ -130,7 +129,7 @@ function HelpDialog() {
   return (
     <AlertDialog>
       <AlertDialogTrigger>
-        <HelpCircle className="w-4 h-4 text-muted-foreground" />
+        <AlertCircle className="w-4 h-4 text-muted-foreground" />
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>

@@ -1,7 +1,7 @@
 import NewsFeedInfiniteLoader from "@/components/news/news-feed-infinite-loader";
-import { fetchSelectedArtist } from "@/lib/server/cache";
 import { readToken } from "@/lib/server/jwt";
 import { cookies } from "next/headers";
+import { fetchSelectedArtist } from "../../data-fetching";
 
 export default async function NewsFeedPage() {
   const user = await readToken(cookies().get("token")?.value);

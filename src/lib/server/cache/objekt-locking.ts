@@ -1,3 +1,4 @@
+import "server-only";
 import { kv } from "@vercel/kv";
 
 const KEY = "locked-objekts";

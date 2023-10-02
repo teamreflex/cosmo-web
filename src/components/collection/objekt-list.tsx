@@ -7,14 +7,12 @@ import {
   OwnedObjektsResult,
 } from "@/lib/server/cosmo";
 import Objekt from "./objekt";
-import { Fragment, createContext, useCallback, useEffect } from "react";
+import { Fragment, useCallback, useEffect } from "react";
 import { ChevronDown, HeartCrack, Loader2 } from "lucide-react";
 import { useInfiniteQuery } from "react-query";
 import { useInView } from "react-intersection-observer";
 import MemberFilter from "./member-filter";
 import { PropsWithClassName, cn } from "@/lib/utils";
-
-export const RefetchObjektsContext = createContext<() => void>(() => void 0);
 
 type Props = PropsWithClassName<{
   lockedTokenIds: number[];
@@ -79,6 +77,7 @@ export default function ObjektList({
     () => refetch({ refetchPage: (_, index) => index === 0 }),
     [refetch]
   );
+
   useEffect(() => {
     refetchPage();
   }, [filters, refetchPage]);
@@ -90,68 +89,66 @@ export default function ObjektList({
   }
 
   return (
-    <RefetchObjektsContext.Provider value={refetchPage}>
-      <div className={cn("flex flex-col", className)}>
-        <MemberFilter
-          artists={artists}
-          filters={filters}
-          updateFilters={setFilters}
-        />
+    <div className={cn("flex flex-col", className)}>
+      <MemberFilter
+        artists={artists}
+        filters={filters}
+        updateFilters={setFilters}
+      />
 
-        <div className="flex flex-col items-center">
-          <div className="grid grid-cols-3 md:grid-cols-4 gap-4 py-2">
-            {status === "loading" ? (
-              <div className="flex col-span-full py-12">
-                <Loader2 className="animate-spin h-24 w-24" />
-              </div>
-            ) : status === "error" ? (
-              <Error />
-            ) : (
-              <>
-                {data !== undefined &&
-                  data.pages.map((group, i) => (
-                    <Fragment key={i}>
-                      {group.objekts.filter(shouldShowObjekt).map((objekt) => (
-                        <Objekt
-                          key={objekt.tokenId}
-                          objekt={objekt}
-                          showButtons={true}
-                          lockedObjekts={lockedTokenIds}
-                        />
-                      ))}
-
-                      {group.objekts.filter(shouldShowObjekt).length === 0 && (
-                        <div className="col-span-full flex flex-col gap-2 items-center py-12">
-                          <HeartCrack className="h-12 w-12" />
-                          <p>No objekts found</p>
-                        </div>
-                      )}
-                    </Fragment>
-                  ))}
-              </>
-            )}
-          </div>
-
-          {status !== "error" && (
-            <div className="flex justify-center py-6">
-              <button
-                ref={ref}
-                onClick={() => fetchNextPage()}
-                disabled={!hasNextPage || isFetchingNextPage}
-              >
-                {isFetchingNextPage ? (
-                  <Loading />
-                ) : hasNextPage ? (
-                  <LoadMore />
-                ) : (
-                  <></>
-                )}
-              </button>
+      <div className="flex flex-col items-center">
+        <div className="grid grid-cols-3 md:grid-cols-4 gap-4 py-2">
+          {status === "loading" ? (
+            <div className="flex col-span-full py-12">
+              <Loader2 className="animate-spin h-24 w-24" />
             </div>
+          ) : status === "error" ? (
+            <Error />
+          ) : (
+            <>
+              {data !== undefined &&
+                data.pages.map((group, i) => (
+                  <Fragment key={i}>
+                    {group.objekts.filter(shouldShowObjekt).map((objekt) => (
+                      <Objekt
+                        key={objekt.tokenId}
+                        objekt={objekt}
+                        showButtons={true}
+                        lockedObjekts={lockedTokenIds}
+                      />
+                    ))}
+
+                    {group.objekts.filter(shouldShowObjekt).length === 0 && (
+                      <div className="col-span-full flex flex-col gap-2 items-center py-12">
+                        <HeartCrack className="h-12 w-12" />
+                        <p>No objekts found</p>
+                      </div>
+                    )}
+                  </Fragment>
+                ))}
+            </>
           )}
         </div>
+
+        {status !== "error" && (
+          <div className="flex justify-center py-6">
+            <button
+              ref={ref}
+              onClick={() => fetchNextPage()}
+              disabled={!hasNextPage || isFetchingNextPage}
+            >
+              {isFetchingNextPage ? (
+                <Loading />
+              ) : hasNextPage ? (
+                <LoadMore />
+              ) : (
+                <></>
+              )}
+            </button>
+          </div>
+        )}
       </div>
-    </RefetchObjektsContext.Provider>
+    </div>
   );
 }
 

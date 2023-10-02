@@ -7,7 +7,7 @@ import { Suspense, cache } from "react";
 import { ValidArtist, fetchArtists } from "@/lib/server/cosmo";
 import ComoBalances from "@/components/como-balances";
 import { Loader2 } from "lucide-react";
-import { fetchSelectedArtist } from "@/lib/server/cache";
+import { fetchSelectedArtist } from "./data-fetching";
 
 export const metadata: Metadata = {
   title: "Cosmo",

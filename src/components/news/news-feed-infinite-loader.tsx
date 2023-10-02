@@ -27,5 +27,12 @@ export default function NewsFeedInfiniteLoader({ artist }: Props) {
     return <NewsPostFeed key={post.id} post={post} fullWidth={true} />;
   }
 
-  return <NewsInfiniteLoader fetcher={fetcher} component={generatePost} />;
+  return (
+    <NewsInfiniteLoader
+      fetcher={fetcher}
+      component={generatePost}
+      queryKey="news-feed"
+      artist={artist}
+    />
+  );
 }

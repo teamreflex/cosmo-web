@@ -1,5 +1,6 @@
 "use server";
 
+import "server-only";
 import { object, string } from "zod";
 import { cookies } from "next/headers";
 import { readToken, signToken } from "@/lib/server/jwt";

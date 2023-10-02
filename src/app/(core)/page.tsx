@@ -3,9 +3,9 @@ import { cookies } from "next/headers";
 import { Suspense } from "react";
 import CosmoImage from "@/static/cosmo.png";
 import Image from "next/image";
-import { fetchSelectedArtist } from "@/lib/server/cache";
 import NewsRenderer from "@/components/news/news-renderer";
 import { LoadingNews } from "@/components/news/news-loading";
+import { fetchSelectedArtist } from "./data-fetching";
 
 export const runtime = "edge";
 

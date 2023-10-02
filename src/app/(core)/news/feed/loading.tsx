@@ -1,9 +1,5 @@
-import { Loader2 } from "lucide-react";
+import { Loader } from "@/components/loader";
 
 export default async function NewsFeedLoading() {
-  return (
-    <main className="flex flex-col items-center py-12">
-      <Loader2 className="animate-spin h-24 w-24" />
-    </main>
-  );
+  return <Loader>Loading news feed...</Loader>;
 }
