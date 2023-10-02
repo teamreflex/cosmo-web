@@ -73,8 +73,8 @@ function ExclusiveVideoPost({
         height="100%"
         config={{
           file: {
-            forceHLS: true,
             forceSafariHLS: true,
+            hlsVersion: "1.4.12",
           },
         }}
         light={

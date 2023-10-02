@@ -27,7 +27,9 @@ This project aims to build a web based version of [Modhaus](https://www.mod-haus
   - Fetching artist information
   - Artist switching (homepage defaults to selected)
 - News
-  - Displaying news feed
+  - Displaying homepage news feed
+  - Displaying "today's atmosphere" and "Cosmo exclusive" feeds
+  - Inline playback of exclusive m3u8 streams
 
 ### New Features
 
