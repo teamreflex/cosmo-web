@@ -5,6 +5,9 @@ import Image from "next/image";
 import Link from "next/link";
 import Timestamp from "../ui/timestamp";
 import ReactPlayer from "react-player";
+import { Copy } from "lucide-react";
+import { useCopyToClipboard } from "usehooks-ts";
+import { toast } from "../ui/use-toast";
 
 export default function NewsPostExclusive({
   post,
@@ -21,7 +24,10 @@ export default function NewsPostExclusive({
         <ExclusiveLinkPost post={post} />
       )}
       <div className="flex flex-col">
-        <p className="font-bold">{post.title}</p>
+        <p className="font-bold flex justify-between items-center">
+          {post.title}
+          {isVideoPost && <CopyVideoLink link={post.nativeVideoUrl} />}
+        </p>
         <p className="text-sm">{post.body}</p>
         <p className="text-muted-foreground text-sm">
           <Timestamp timestamp={post.createdAt} />
@@ -68,5 +74,22 @@ function ExclusiveVideoPost({
         light={post.thumbnailImageUrl}
       />
     </div>
+  );
+}
+
+function CopyVideoLink({ link }: { link: string }) {
+  const [_, copy] = useCopyToClipboard();
+
+  function copyLink() {
+    copy(link);
+    toast({
+      description: "M3U8 link copied to clipboard",
+    });
+  }
+
+  return (
+    <button className="flex items-center" onClick={() => copyLink()}>
+      <Copy className="w-6 h-6" />
+    </button>
   );
 }
