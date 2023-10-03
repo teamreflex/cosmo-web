@@ -4,10 +4,13 @@ import { CosmoNewsSectionExclusiveContent } from "@/lib/server/cosmo";
 import Image from "next/image";
 import Link from "next/link";
 import Timestamp from "../ui/timestamp";
-import ReactPlayer from "react-player/lazy";
 import { Copy } from "lucide-react";
 import { useCopyToClipboard } from "usehooks-ts";
 import { toast } from "../ui/use-toast";
+import dynamic from "next/dynamic";
+
+// gets around SSR hydration issues
+const ReactPlayer = dynamic(() => import("react-player/lazy"), { ssr: false });
 
 export default function NewsPostExclusive({
   post,
