@@ -14,7 +14,8 @@ import Link from "next/link";
 type ObjektProps = {
   objekt: OwnedObjekt;
   showButtons: boolean;
-  lockedObjekts: number[];
+  isLocked: boolean;
+  onTokenLock: (tokenId: number) => void;
 };
 
 function pad(n: string) {
@@ -25,12 +26,10 @@ function pad(n: string) {
 export default function Objekt({
   objekt,
   showButtons,
-  lockedObjekts,
+  isLocked,
+  onTokenLock,
 }: ObjektProps) {
   const [flipped, setFlipped] = useState(false);
-  const [locked, setLocked] = useState(
-    lockedObjekts.includes(parseInt(objekt.tokenId))
-  );
 
   const css = {
     "--objekt-background-color": objekt.backgroundColor,
@@ -58,8 +57,8 @@ export default function Objekt({
             <InformationOverlay objekt={objekt} />
             <ActionOverlay
               objekt={objekt}
-              locked={locked}
-              setLocked={setLocked}
+              isLocked={isLocked}
+              onTokenLock={onTokenLock}
             />
           </>
         )}
@@ -88,12 +87,12 @@ function ObjektNumber({ objekt }: { objekt: OwnedObjekt }) {
 
 function ActionOverlay({
   objekt,
-  locked,
-  setLocked,
+  isLocked,
+  onTokenLock,
 }: {
   objekt: OwnedObjekt;
-  locked: boolean;
-  setLocked: (locked: boolean) => void;
+  isLocked: boolean;
+  onTokenLock: (tokenId: number) => void;
 }) {
   return (
     <div
@@ -105,19 +104,19 @@ function ActionOverlay({
     >
       {/* buttons */}
       <div className="flex items-center gap-2">
-        {!locked && <SendObjekt objekt={objekt} />}
+        {!isLocked && <SendObjekt objekt={objekt} />}
         {objekt.transferable && (
           <LockObjekt
             objekt={objekt}
-            locked={locked}
-            onLockChange={setLocked}
+            isLocked={isLocked}
+            onLockChange={onTokenLock}
           />
         )}
       </div>
 
       {/* status text */}
       <div className="text-xs whitespace-nowrap max-w-0 group-hover:max-w-[12rem] overflow-hidden transition-all">
-        {locked && <StatusText>Locked</StatusText>}
+        {isLocked && <StatusText>Locked</StatusText>}
         {!objekt.transferable && objekt.status === "pending" && (
           <StatusText>Mint pending</StatusText>
         )}

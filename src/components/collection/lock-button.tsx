@@ -7,16 +7,15 @@ import { experimental_useFormStatus as useFormStatus } from "react-dom";
 
 type Props = {
   objekt: OwnedObjekt;
-  locked: boolean;
-  onLockChange: (locked: boolean) => void;
+  isLocked: boolean;
+  onLockChange: (tokenId: number) => void;
 };
 
-export default function LockObjekt({ objekt, locked, onLockChange }: Props) {
+export default function LockObjekt({ objekt, isLocked, onLockChange }: Props) {
   async function toggle(form: FormData) {
-    const newLockState = !locked;
     const result = await setObjektLock(form);
     if (result.success) {
-      onLockChange(newLockState);
+      onLockChange(parseInt(objekt.tokenId));
     }
   }
 
@@ -24,27 +23,27 @@ export default function LockObjekt({ objekt, locked, onLockChange }: Props) {
     <>
       <form action={toggle}>
         <input type="hidden" name="tokenId" value={objekt.tokenId} />
-        <input type="hidden" name="lock" value={(!locked).toString()} />
+        <input type="hidden" name="lock" value={(!isLocked).toString()} />
 
-        <LockButton locked={locked} />
+        <LockButton isLocked={isLocked} />
       </form>
     </>
   );
 }
 
-function LockButton({ locked }: { locked: boolean }) {
+function LockButton({ isLocked }: { isLocked: boolean }) {
   const { pending } = useFormStatus();
 
   return (
     <button
       className="hover:cursor-pointer hover:scale-110 transition-all flex items-center"
       disabled={pending}
-      aria-label={`${locked ? "unlock" : "lock"} this objekt`}
+      aria-label={`${isLocked ? "unlock" : "lock"} this objekt`}
       type="submit"
     >
       {pending ? (
         <Loader2 className="h-3 w-3 sm:h-5 sm:w-5 animate-spin" />
-      ) : locked ? (
+      ) : isLocked ? (
         <Lock className="h-3 w-3 sm:h-5 sm:w-5" />
       ) : (
         <Unlock className="h-3 w-3 sm:h-5 sm:w-5" />

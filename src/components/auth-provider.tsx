@@ -21,7 +21,6 @@ export default function AuthProvider({ children }: Props) {
       network: SUPPORTED_POLYGON_NETWORKS.MAINNET,
       theme: THEME.DARK,
     });
-    console.log("ramper init");
   }, []);
 
   return <>{children}</>;

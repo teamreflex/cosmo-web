@@ -7,7 +7,7 @@ import {
   OwnedObjektsResult,
 } from "@/lib/server/cosmo";
 import Objekt from "./objekt";
-import { Fragment, useCallback, useEffect } from "react";
+import { Fragment, useCallback, useEffect, useState } from "react";
 import { ChevronDown, HeartCrack, Loader2 } from "lucide-react";
 import { useInfiniteQuery } from "react-query";
 import { useInView } from "react-intersection-observer";
@@ -31,6 +31,15 @@ export default function ObjektList({
   className,
 }: Props) {
   const { ref, inView } = useInView();
+  const [lockedTokens, setLockedTokens] = useState<number[]>(lockedTokenIds);
+
+  function onTokenLock(tokenId: number) {
+    if (lockedTokens.includes(tokenId)) {
+      setLockedTokens((prev) => prev.filter((id) => id !== tokenId));
+    } else {
+      setLockedTokens((prev) => [...prev, tokenId]);
+    }
+  }
 
   async function fetchObjekts({ pageParam = 0 }) {
     const searchParams = new URLSearchParams({
@@ -85,7 +94,7 @@ export default function ObjektList({
   function shouldShowObjekt(objekt: OwnedObjekt) {
     return showLocked
       ? true
-      : lockedTokenIds.includes(parseInt(objekt.tokenId)) === false;
+      : lockedTokens.includes(parseInt(objekt.tokenId)) === false;
   }
 
   return (
@@ -114,7 +123,10 @@ export default function ObjektList({
                         key={objekt.tokenId}
                         objekt={objekt}
                         showButtons={true}
-                        lockedObjekts={lockedTokenIds}
+                        isLocked={lockedTokens.includes(
+                          parseInt(objekt.tokenId)
+                        )}
+                        onTokenLock={onTokenLock}
                       />
                     ))}
 
