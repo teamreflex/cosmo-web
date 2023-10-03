@@ -2,17 +2,7 @@
 
 import { CosmoArtistWithMembers, ObjektQueryParams } from "@/lib/server/cosmo";
 import ObjektList from "@/components/collection/objekt-list";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { AlertCircle, SlidersHorizontal } from "lucide-react";
+import { SlidersHorizontal } from "lucide-react";
 import { useState } from "react";
 import { ClassFilter } from "./filter-class";
 import { OnlineFilter } from "./filter-online";
@@ -22,6 +12,7 @@ import { GridableFilter } from "./filter-gridable";
 import { LockedFilter } from "./filter-locked";
 import { SortFilter } from "./filter-sort";
 import { Toggle } from "../ui/toggle";
+import HelpDialog from "./help-dialog";
 
 export type PropsWithFilters<T extends keyof ObjektQueryParams> = {
   filters: ObjektQueryParams[T];
@@ -122,26 +113,5 @@ export default function CollectionRenderer({ locked, artists }: Props) {
         setFilters={setFilters}
       />
     </>
-  );
-}
-
-function HelpDialog() {
-  return (
-    <AlertDialog>
-      <AlertDialogTrigger>
-        <AlertCircle className="w-4 h-4 text-muted-foreground" />
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Info</AlertDialogTitle>
-          <AlertDialogDescription>
-            Locking an objekt does not affect usage within the Cosmo app.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogAction>Understood</AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
   );
 }
