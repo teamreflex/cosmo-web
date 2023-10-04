@@ -10,7 +10,7 @@ type Props = {
 
 export default function NewsSectionFeed({ section, fullWidth }: Props) {
   return (
-    <div className="flex flex-col gap-2 w-full md:w-1/2 py-4">
+    <div className="flex flex-col gap-2 w-full md:w-1/2 py-4 border-none">
       <Link
         href="/news/feed"
         className="font-bold text-xl flex items-center justify-between"
