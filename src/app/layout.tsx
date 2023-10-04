@@ -22,7 +22,24 @@ export const metadata: Metadata = {
     absolute: "Cosmo",
   },
   description: "Cosmo - Where you meet your artist",
-  keywords: ["Next.js", "React", "JavaScript"],
+  keywords: [
+    "kpop",
+    "korea",
+    "modhaus",
+    "모드하우스",
+    "cosmo",
+    "objekt",
+    "tripleS",
+    "트리플에스",
+    "artms",
+    "artemis",
+    "아르테미스",
+    "아르테미스 스트래티지",
+    "odd eye circle",
+    "오드아이써클",
+    "loona",
+    "이달의 소녀",
+  ],
 };
 
 export default function RootLayout({
@@ -33,7 +50,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${cosmo.variable} font-sans`}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <ThemeProvider attribute="class" defaultTheme="dark">
           <TooltipProvider>{children}</TooltipProvider>
           <Toaster />
         </ThemeProvider>

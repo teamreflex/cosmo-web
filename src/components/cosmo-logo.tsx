@@ -3,6 +3,7 @@ import Image from "next/image";
 import {
   AlertDialog,
   AlertDialogAction,
+  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
@@ -12,6 +13,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { env } from "@/env.mjs";
 import CosmoImage from "@/static/cosmo.png";
+import Link from "next/link";
+import { Check, Github } from "lucide-react";
 
 type Props = {
   className?: string;
@@ -52,8 +55,18 @@ export default function CosmoLogo({
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogAction>👍</AlertDialogAction>
+        <AlertDialogFooter className="sm:justify-between">
+          <AlertDialogCancel asChild>
+            <Link
+              href="https://github.com/teamreflex/cosmo-web"
+              target="_blank"
+            >
+              <Github />
+            </Link>
+          </AlertDialogCancel>
+          <AlertDialogAction>
+            <Check />
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
