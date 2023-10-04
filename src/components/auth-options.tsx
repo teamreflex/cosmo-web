@@ -27,7 +27,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { TokenPayload } from "@/lib/server/jwt";
-import { Avatar, AvatarFallback } from "./ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { CosmoArtist } from "@/lib/server/cosmo";
 import Image from "next/image";
 import { ValidArtist } from "@/lib/server/cosmo/common";
@@ -39,6 +39,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import ProfileImage from "@/static/profile.webp";
 
 type Props = {
   user: TokenPayload | undefined;
@@ -203,6 +204,11 @@ function UserDropdown({
             <AvatarFallback>
               {user.nickname.charAt(0).toUpperCase()}
             </AvatarFallback>
+            <AvatarImage
+              className="bg-violet-200 p-[6px]"
+              src={ProfileImage.src}
+              alt={user.nickname}
+            />
           </Avatar>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
