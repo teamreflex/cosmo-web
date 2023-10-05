@@ -5,7 +5,10 @@ import { PropsWithClassName, cn } from "@/lib/utils";
 export default async function CollectionLoading() {
   return (
     <div className="container flex flex-col py-2">
-      <div className="flex flex-col sm:flex-row justify-between group">
+      <div
+        className="flex flex-col sm:flex-row justify-between group"
+        data-show={false}
+      >
         {/* header */}
         <div className="flex items-center justify-between pb-2 sm:pb-0">
           {/* title */}
@@ -16,7 +19,7 @@ export default async function CollectionLoading() {
 
           {/* mobile: show filters */}
           <div className="flex sm:hidden items-center">
-            <Skeleton className="w-6 h-6" />
+            <Skeleton className="w-8 h-8" />
           </div>
         </div>
 
@@ -46,6 +49,8 @@ export default async function CollectionLoading() {
 
 function Skeleton({ className }: PropsWithClassName<{}>) {
   return (
-    <div className={cn("animate-pulse rounded-lg bg-accent", className)} />
+    <div
+      className={cn("animate-pulse rounded-lg bg-accent shrink-0", className)}
+    />
   );
 }
