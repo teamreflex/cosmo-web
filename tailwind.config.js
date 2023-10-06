@@ -1,3 +1,5 @@
+const colors = require("tailwindcss/colors");
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ["class"],
@@ -20,6 +22,12 @@ module.exports = {
     },
     extend: {
       colors: {
+        cosmo: {
+          DEFAULT: colors.violet[600],
+          text: colors.violet[400],
+          hover: colors.violet[900],
+          profile: colors.violet[200],
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

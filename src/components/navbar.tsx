@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Home, PackageOpen, User } from "lucide-react";
+import { Home, LayoutGrid, PackageOpen, User } from "lucide-react";
 import AuthOptions from "./auth-options";
 import CosmoLogo from "./cosmo-logo";
 import { ReactNode } from "react";
@@ -10,6 +10,7 @@ import { CosmoArtist, ValidArtist } from "@/lib/server/cosmo";
 const links = [
   { name: "Home", icon: Home, href: "/" },
   { name: "Collection", icon: PackageOpen, href: "/collection" },
+  { name: "Grid", icon: LayoutGrid, href: "/grid" },
   { name: "Account", icon: User, href: "/my" },
 ];
 

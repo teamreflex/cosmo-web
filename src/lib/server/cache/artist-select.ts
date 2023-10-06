@@ -1,4 +1,3 @@
-import "server-only";
 import { kv } from "@vercel/kv";
 import { ValidArtist } from "../cosmo";
 

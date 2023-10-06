@@ -205,7 +205,7 @@ function UserDropdown({
               {user.nickname.charAt(0).toUpperCase()}
             </AvatarFallback>
             <AvatarImage
-              className="bg-violet-200 p-[6px]"
+              className="bg-cosmo-profile p-[6px]"
               src={ProfileImage.src}
               alt={user.nickname}
             />
@@ -330,7 +330,7 @@ function SelectArtistButton({
       {isSelected && pending && <Loader2 className="animate-spin h-5 w-5" />}
 
       {isSelected && !pending && (
-        <div className="bg-violet-600 rounded-full text-white p-1">
+        <div className="bg-cosmo rounded-full text-white p-1">
           <Check className="h-4 w-4" />
         </div>
       )}

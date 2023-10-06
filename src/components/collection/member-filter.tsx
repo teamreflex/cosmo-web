@@ -87,7 +87,7 @@ function MemberFilterButton({
       <TooltipTrigger asChild>
         <button
           onClick={() => setActive()}
-          className={cn("rounded-full", isActive && "ring ring-violet-600")}
+          className={cn("rounded-full", isActive && "ring ring-cosmo")}
         >
           <Avatar>
             <AvatarFallback>{displayName.at(0)}</AvatarFallback>

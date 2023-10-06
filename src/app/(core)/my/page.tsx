@@ -24,7 +24,7 @@ export default async function MyPage() {
 
       <div className="flex flex-col gap-2 items-center py-6">
         <Avatar className="h-36 w-36">
-          <AvatarFallback className="relative bg-violet-200">
+          <AvatarFallback className="relative bg-cosmo-profile">
             <Image
               className="p-6"
               src={ProfileImage}

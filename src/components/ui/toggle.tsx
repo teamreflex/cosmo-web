@@ -15,7 +15,7 @@ const toggleVariants = cva(
         outline:
           "border border-input bg-transparent hover:bg-accent hover:text-accent-foreground",
         cosmo:
-          "border border-input bg-transparent hover:bg-accent hover:text-accent-foreground data-[state=on]:bg-transparent data-[state=on]:border-violet-600",
+          "border border-input bg-transparent hover:bg-accent hover:text-accent-foreground data-[state=on]:bg-transparent data-[state=on]:border-cosmo",
       },
       size: {
         default: "h-10 px-3",

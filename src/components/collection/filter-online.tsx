@@ -46,7 +46,7 @@ export function OnlineFilter({ filters, setFilters }: Props) {
           variant="outline"
           className={cn(
             "flex gap-2 items-center",
-            filters && filters.length > 0 && "border-violet-600"
+            filters && filters.length > 0 && "border-cosmo"
           )}
         >
           <span>Physical</span>
