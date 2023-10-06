@@ -1,6 +1,6 @@
 "use client";
 
-import { OwnedObjekt, SearchUser } from "@/lib/server/cosmo";
+import { GasStationResult, OwnedObjekt, SearchUser } from "@/lib/server/cosmo";
 import { cn } from "@/lib/utils";
 import {
   AlertTriangle,
@@ -22,7 +22,7 @@ import {
   SUPPORTED_ETHEREUM_CHAIN_IDS,
   getRamperSigner,
 } from "@ramper/ethereum";
-import { Interface } from "ethers/lib/utils";
+import { Interface, parseUnits } from "ethers/lib/utils";
 import objektAbi from "@/objekt-abi.json";
 import { env } from "@/env.mjs";
 import { useToast } from "@/components/ui/use-toast";
@@ -329,6 +329,23 @@ function SendToUserButton({
     }
   }
 
+  async function fetchGasStation() {
+    try {
+      const response = await fetch(
+        "https://gas-station.cosmo.fans/v1/polygon-mainnet",
+        {
+          cache: "no-store",
+        }
+      );
+      if (response.ok) {
+        return (await response.json()) as GasStationResult;
+      }
+      throw new TransactionError("Failed to fetch gas station data");
+    } catch (_) {
+      throw new TransactionError("Failed to fetch gas station data");
+    }
+  }
+
   async function signTransaction(
     ramperSigner: any,
     fromAddress: string,
@@ -336,6 +353,7 @@ function SendToUserButton({
     nonce: number,
     gasLimit: ethers.BigNumber,
     maxFeePerGas: ethers.BigNumber | null,
+    maxPriorityFeePerGas: ethers.BigNumber | null,
     customData: string
   ) {
     try {
@@ -348,10 +366,11 @@ function SendToUserButton({
         nonce,
         gasLimit,
         maxFeePerGas,
-        maxPriorityFeePerGas: 60000000000,
+        maxPriorityFeePerGas,
         data: customData,
       });
-    } catch (_) {
+    } catch (err) {
+      console.log(err);
       throw new TransactionError("Failed to sign transaction");
     }
   }
@@ -362,7 +381,8 @@ function SendToUserButton({
   ) {
     try {
       return await alchemy.sendTransaction(signedTransaction);
-    } catch (_) {
+    } catch (err) {
+      console.log(err);
       throw new TransactionError("Failed to send transaction");
     }
   }
@@ -393,7 +413,8 @@ function SendToUserButton({
         customData
       );
       updateTransactionProgress(TransactionStatus.GET_GAS_LIMIT);
-      const feeData = await fetchFeeData(alchemy);
+      // const feeData = await fetchFeeData(alchemy);
+      const gasStation = await fetchGasStation();
       updateTransactionProgress(TransactionStatus.GET_FEE_DATA);
 
       // get confirmation from user
@@ -403,7 +424,8 @@ function SendToUserButton({
         value,
         nonce,
         gasLimit,
-        feeData.maxFeePerGas,
+        parseUnits(gasStation.fast.maxFee.toString(), "gwei"),
+        parseUnits(gasStation.fast.maxPriorityFee.toString(), "gwei"),
         customData
       );
       updateTransactionProgress(TransactionStatus.SIGN_TRANSACTION);

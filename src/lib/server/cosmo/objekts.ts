@@ -132,3 +132,21 @@ export async function ownedByMe({
 
   return (await res.json()) as OwnedObjektsResult;
 }
+
+export type GasStationResult = {
+  safeLow: {
+    maxFee: number;
+    maxPriorityFee: number;
+  };
+  standard: {
+    maxFee: number;
+    maxPriorityFee: number;
+  };
+  fast: {
+    maxFee: number;
+    maxPriorityFee: number;
+  };
+  estimatedBaseFee: number;
+  blockTime: number;
+  blockNumber: number;
+};
