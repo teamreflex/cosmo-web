@@ -48,7 +48,7 @@ export default async function GridEditions({
 function GridEdition({ edition }: { edition: CosmoGridEdition }) {
   return (
     <Link
-      href="/"
+      href={`/grid/${edition.id}`}
       className="w-full bg-accent/50 rounded-lg border border-white/20 flex items-center hover:bg-accent/40 transition-colors gap-4 p-4"
     >
       <div className="h-[70px] w-[70px] aspect-square relative">
@@ -73,7 +73,9 @@ function GridEdition({ edition }: { edition: CosmoGridEdition }) {
 export function GridEditionsSkeleton() {
   return (
     <div className="flex flex-col gap-2 w-full sm:w-1/2 animate-pulse">
-      <div className="bg-accent rounded-lg border border-white/30 flex items-center h-20"></div>
+      <div className="bg-accent rounded-lg flex items-center h-20"></div>
+      <div className="bg-accent rounded-lg flex items-center h-20"></div>
+      <div className="bg-accent rounded-lg flex items-center h-20"></div>
     </div>
   );
 }

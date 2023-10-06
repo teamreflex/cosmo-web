@@ -76,7 +76,7 @@ type MemberFilterButtonProps = {
   isActive: boolean;
   setActive: () => void;
 };
-function MemberFilterButton({
+export function MemberFilterButton({
   displayName,
   image,
   isActive,

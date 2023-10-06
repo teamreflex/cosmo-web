@@ -32,7 +32,7 @@ export default function Navbar({
       <div className="container grid grid-cols-3 items-center gap-2 text-sm text-foreground md:gap-4 md:py-6 lg:grid-cols-3">
         <CosmoLogo color="white" />
 
-        <div className="flex flex-row items-center gap-10 justify-center">
+        <div className="flex flex-row items-center gap-8 md:gap-10 justify-center">
           {links.map((link, i) => (
             <Tooltip key={i} delayDuration={0}>
               <TooltipTrigger asChild>

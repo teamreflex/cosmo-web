@@ -1,12 +1,12 @@
 import { readToken } from "@/lib/server/jwt";
 import { cookies } from "next/headers";
 import { Metadata } from "next";
-import { fetchSelectedArtistWithGrid } from "@/lib/server/cosmo";
 import { Suspense } from "react";
 import GridStatus, { GridStatusSkeleton } from "@/components/grid/grid-status";
 import GridEditions, {
   GridEditionsSkeleton,
 } from "@/components/grid/grid-editions";
+import { fetchSelectedArtist } from "@/lib/server/cache";
 
 export const runtime = "edge";
 export const metadata: Metadata = {
@@ -15,9 +15,7 @@ export const metadata: Metadata = {
 
 export default async function GridPage() {
   const user = await readToken(cookies().get("token")?.value);
-  const { selectedArtist, cosmoArtist } = await fetchSelectedArtistWithGrid(
-    user!.id
-  );
+  const selectedArtist = (await fetchSelectedArtist(user!.id)) ?? "artms";
 
   return (
     <main className="container flex flex-col py-2">

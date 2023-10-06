@@ -175,6 +175,7 @@ export async function fetchEdition(
 export type CosmoOngoingGridSlotWithoutPreferred = {
   no: number;
   completed: false;
+  preferredObjekt: undefined;
 };
 
 export type CosmoOngoingGridSlotWithPreferred = {
@@ -209,7 +210,7 @@ export type CosmoOngoingGridSlot =
 export type CosmoOngoingGrid = {
   ongoing: {
     id: number;
-    slotStatuses: string[];
+    slotStatuses: CosmoOngoingGridSlot[];
     allCompleted: boolean;
     rewardClaimed: boolean;
   };
@@ -223,7 +224,7 @@ export type CosmoOngoingGrid = {
  * @returns Promise<CosmoOngoingGrid>
  */
 export async function fetchArtistGridStatus(token: string, gridSlug: string) {
-  const res = await fetch(`${COSMO_ENDPOINT}/grid/v1/${gridSlug}`, {
+  const res = await fetch(`${COSMO_ENDPOINT}/grid/v1/${gridSlug}/status`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,
