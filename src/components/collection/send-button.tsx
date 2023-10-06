@@ -245,7 +245,7 @@ function UserSearch({ onRecipientSelected }: UserSearchProps) {
       {users.length > 0 && (
         <>
           <Separator />
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 max-h-64 overflow-y-scroll">
             {users.map((user) => (
               <Button
                 key={user.address}
