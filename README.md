@@ -7,7 +7,6 @@ This project aims to build a web based version of [Modhaus](https://www.mod-haus
 - Account registration is out of scope. There's too much that goes into the onboarding process, not worth the effort.
 - Account settings updates are out of scope. There's not enough in there to adjust right now.
 - Purchasing objekts is out of scope due to Apple/Google services being used.
-- Gridding objekts is out of scope. May revisit this when new editions drop and I have a better understanding of how it works.
 - Complete objekt library and viewing other users are both out of scope. Other tools already exist.
 
 ### Replicated Features
@@ -23,6 +22,10 @@ This project aims to build a web based version of [Modhaus](https://www.mod-haus
   - Displaying reason for untransferable objekts - e.g. gridded vs. not transferrable (event, welcome)
   - All available filters
   - Display COMO balances (via Alchemy due to Cosmo's being outdated)
+- Grid
+  - Displaying grid completion stats
+  - Displaying available seasons and editions
+  - Displaying grid per member with pre-selected objekts
 - Artist
   - Fetching artist information
   - Artist switching (homepage defaults to selected)
