@@ -7,6 +7,7 @@ import { useQuery } from "react-query";
 import { HeartCrack, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import GridObjekt from "./grid-objekt";
 
 type Props = {
   grids: CosmoGrid[];
@@ -87,7 +88,7 @@ export default function GridRenderer({ grids }: Props) {
 
 function GridEightSlot({ grid }: { grid: CosmoOngoingGrid }) {
   return (
-    <div className="grid grid-cols-3 grid-rows-3 gap-4 w-full md:w-1/2">
+    <div className="grid grid-cols-3 grid-rows-3 gap-4 w-full md:w-2/3">
       <div className="aspect-photocard w-full flex justify-center items-center order-5">
         <p className="text-5xl">?</p>
       </div>
@@ -100,10 +101,11 @@ function GridEightSlot({ grid }: { grid: CosmoOngoingGrid }) {
           key={slot.no}
         >
           {slot.preferredObjekt !== undefined ? (
-            <Image
-              src={slot.preferredObjekt.frontImage}
-              fill={true}
-              alt={slot.preferredObjekt.collectionId}
+            <GridObjekt
+              image={slot.preferredObjekt.frontImage}
+              collectionNo={slot.preferredObjekt.collectionNo}
+              objektNo={slot.preferredObjekt.objektNo}
+              textColor={slot.preferredObjekt.textColor}
             />
           ) : (
             <p className="text-white/20 text-3xl">{slot.no}</p>
@@ -123,7 +125,7 @@ const positions: Record<number, number> = {
 
 function GridFourSlot({ grid }: { grid: CosmoOngoingGrid }) {
   return (
-    <div className="grid grid-cols-3 grid-rows-3 gap-4 w-full md:w-1/2">
+    <div className="grid grid-cols-3 grid-rows-3 gap-4 w-full md:w-2/3">
       <div className="aspect-photocard bg-transparent w-full order-1" />
       <div className="aspect-photocard bg-transparent w-full order-3" />
       <div className="aspect-photocard bg-transparent w-full order-7" />

@@ -1,7 +1,7 @@
 "use client";
 
 import { OwnedObjekt } from "@/lib/server/cosmo";
-import { cn } from "@/lib/utils";
+import { cn, pad } from "@/lib/utils";
 import Image from "next/image";
 import LockObjekt from "./lock-button";
 import SendObjekt from "./send-button";
@@ -17,11 +17,6 @@ type ObjektProps = {
   isLocked: boolean;
   onTokenLock: (tokenId: number) => void;
 };
-
-function pad(n: string) {
-  n = n + "";
-  return n.length >= 5 ? n : new Array(5 - n.length + 1).join("0") + n;
-}
 
 export default function Objekt({
   objekt,
