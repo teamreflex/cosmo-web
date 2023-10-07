@@ -15,6 +15,7 @@ type Props = {
 export default function GridRenderer({ grids }: Props) {
   const [selected, setSelected] = useState<CosmoGrid>();
 
+  // TODO: fix components not rerendering upon data change
   const { data, status } = useQuery({
     queryKey: ["grid", selected?.id],
     queryFn: async () => {
@@ -73,9 +74,9 @@ export default function GridRenderer({ grids }: Props) {
 
               {/* slots */}
               {data.ongoing.slotStatuses.length === 8 ? (
-                <GridEightSlot grid={data} />
+                <GridEightSlot slug={selected.id} grid={data} />
               ) : (
-                <GridFourSlot grid={data} />
+                <GridFourSlot slug={selected.id} grid={data} />
               )}
             </div>
           )}

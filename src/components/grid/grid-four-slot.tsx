@@ -11,10 +11,14 @@ const positions: Record<number, number> = {
   3: 8,
 };
 
-export default function GridFourSlot({ grid }: { grid: CosmoOngoingGrid }) {
-  const [objekts, completion, populateSlot] = useGrid(
-    grid.ongoing.slotStatuses
-  );
+export default function GridFourSlot({
+  slug,
+  grid,
+}: {
+  slug: string;
+  grid: CosmoOngoingGrid;
+}) {
+  const [objekts, populateSlot] = useGrid(slug, grid.ongoing.slotStatuses);
 
   return (
     <div className="grid grid-cols-3 grid-rows-3 gap-4 w-full md:w-2/3">
