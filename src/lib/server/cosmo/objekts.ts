@@ -17,6 +17,8 @@ export type ObjektQueryParams = {
   onlineType?: ValidOnlineType[];
   transferable?: boolean;
   gridable?: boolean;
+  usedForGrid?: boolean;
+  collection?: string;
 };
 
 type OwnedByMeInput = ObjektQueryParams & {
@@ -81,6 +83,8 @@ const parseArray = <T>(value?: T[]) =>
  * @param {ValidOnlineType[] | undefined} options.onlineType
  * @param {boolean | undefined} options.transferable
  * @param {boolean | undefined} options.gridable
+ * @param {boolean | undefined} options.usedForGrid
+ * @param {string | undefined} options.collection
  * @returns Promise<OwnedObjektsResult>
  */
 export async function ownedByMe({
@@ -95,6 +99,8 @@ export async function ownedByMe({
   onlineType,
   transferable,
   gridable,
+  usedForGrid,
+  collection,
 }: OwnedByMeInput): Promise<OwnedObjektsResult> {
   const query = new URLSearchParams({
     start_after: startAfter.toString(),
@@ -104,6 +110,7 @@ export async function ownedByMe({
     member: member ?? "",
     class: parseArray(classType),
     on_offline: parseArray(onlineType),
+    collection: collection ?? "",
   });
 
   if (transferable) {
@@ -111,6 +118,9 @@ export async function ownedByMe({
   }
   if (gridable) {
     query.append("gridable", "true");
+  }
+  if (usedForGrid) {
+    query.append("used_for_grid", "true");
   }
 
   const res = await fetch(

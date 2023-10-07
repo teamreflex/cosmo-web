@@ -25,6 +25,8 @@ const objektFilterSchema = z.object({
   season: z.enum(validSeasons).array().optional(),
   transferable: z.boolean().optional(),
   gridable: z.boolean().optional(),
+  usedForGrid: z.boolean().optional(),
+  collection: z.string().optional(),
 });
 
 export async function GET(request: NextRequest) {
@@ -57,6 +59,8 @@ function parseParams(params: URLSearchParams): ObjektQueryParams {
     season: season ? season.split(",") : undefined,
     transferable: params.get("transferable") === "true",
     gridable: params.get("gridable") === "true",
+    usedForGrid: params.get("gridable") === "true",
+    collection: params.get("collection") || undefined,
   });
 
   if (result.success) {

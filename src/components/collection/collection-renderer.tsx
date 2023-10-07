@@ -37,6 +37,8 @@ export default function CollectionRenderer({ locked, artists }: Props) {
     onlineType: undefined,
     transferable: undefined,
     gridable: undefined,
+    usedForGrid: undefined,
+    collection: undefined,
   });
 
   function updateFilter<T extends keyof ObjektQueryParams>(

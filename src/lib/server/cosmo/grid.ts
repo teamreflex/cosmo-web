@@ -240,3 +240,91 @@ export async function fetchArtistGridStatus(token: string, gridSlug: string) {
   const result: CosmoOngoingGrid = await res.json();
   return result;
 }
+
+export type CosmoGridSlotCompletion = {
+  no: number;
+  tokenIdToUse: string;
+};
+
+/**
+ * Complete a grid
+ * @param token string
+ * @param gridSlug string
+ * @param slots GridSlotCompletion[]
+ * @returns Promise<boolean>
+ */
+export async function completeGrid(
+  token: string,
+  gridSlug: string,
+  slots: CosmoGridSlotCompletion[]
+) {
+  const res = await fetch(`${COSMO_ENDPOINT}/grid/v1/${gridSlug}/complete`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ slots }),
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to complete grid "${gridSlug}"`);
+  }
+
+  return true;
+}
+
+export type CosmoGridRewardClaimResult = {
+  objekt: {
+    collectionId: string;
+    season: string;
+    member: string;
+    collectionNo: string;
+    class: "Special";
+    artists: ValidArtist[];
+    thumbnailImage: string;
+    frontImage: string;
+    backImage: string;
+    accentColor: string;
+    backgroundColor: string;
+    textColor: string;
+    comoAmount: number;
+    transferableByDefault: boolean;
+    tokenId: string;
+    tokenAddress: string;
+    objektNo: number;
+    transferable: boolean;
+  };
+  transaction: {
+    txId: string;
+    chainId: string;
+    ref: string;
+  };
+};
+
+/**
+ * Claim a grid reward.
+ * @param token string
+ * @param gridSlug string
+ * @returns Promise<CosmoGridRewardClaimResult>
+ */
+export async function claimGridReward(token: string, gridSlug: string) {
+  const res = await fetch(
+    `${COSMO_ENDPOINT}/grid/v1/${gridSlug}/claim-reward`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error(`Failed to claim grid reward for "${gridSlug}"`);
+  }
+
+  return (await res.json()) as CosmoGridRewardClaimResult;
+}
