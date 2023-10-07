@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { fetchSelectedArtist } from "../../data-fetching";
 import { Metadata } from "next";
 
+export const runtime = "edge";
 export const metadata: Metadata = {
   title: "Exclusives",
 };
