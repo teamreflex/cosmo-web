@@ -4,6 +4,7 @@ import "./src/env.mjs";
 const config = {
   experimental: {
     serverActions: true,
+    typedRoutes: true,
   },
   images: {
     remotePatterns: [
