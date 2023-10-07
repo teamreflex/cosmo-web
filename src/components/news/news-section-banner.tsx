@@ -10,6 +10,7 @@ import { AspectRatio } from "../ui/aspect-ratio";
 import { PropsWithClassName } from "@/lib/utils";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
+import { Route } from "next";
 
 type Props = {
   section: CosmoNewsSectionBanner;
@@ -50,7 +51,7 @@ type BannerItemProps = PropsWithClassName<{
 
 function BannerItem({ className, item, index, total }: BannerItemProps) {
   return (
-    <Link href={item.url} target="_blank" className={className}>
+    <Link href={item.url as Route} target="_blank" className={className}>
       <AspectRatio
         ratio={1.45 / 1}
         className="relative rounded-xl border border-accent overflow-hidden"
