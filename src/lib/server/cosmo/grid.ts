@@ -178,29 +178,31 @@ export type CosmoOngoingGridSlotWithoutPreferred = {
   preferredObjekt: undefined;
 };
 
+export type CosmoGridSlotObjekt = {
+  collectionId: string;
+  season: string;
+  member: string;
+  collectionNo: string;
+  class: string;
+  artists: ValidArtist[];
+  thumbnailImage: string;
+  frontImage: string;
+  backImage: string;
+  accentColor: string;
+  backgroundColor: string;
+  textColor: string;
+  comoAmount: number;
+  transferableByDefault: boolean;
+  tokenId: string;
+  tokenAddress: string;
+  objektNo: number;
+  transferable: boolean;
+};
+
 export type CosmoOngoingGridSlotWithPreferred = {
   no: number;
   completed: false;
-  preferredObjekt: {
-    collectionId: string;
-    season: string;
-    member: string;
-    collectionNo: string;
-    class: string;
-    artists: ValidArtist[];
-    thumbnailImage: string;
-    frontImage: string;
-    backImage: string;
-    accentColor: string;
-    backgroundColor: string;
-    textColor: string;
-    comoAmount: number;
-    transferableByDefault: boolean;
-    tokenId: string;
-    tokenAddress: string;
-    objektNo: number;
-    transferable: boolean;
-  };
+  preferredObjekt: CosmoGridSlotObjekt;
 };
 
 export type CosmoOngoingGridSlot =

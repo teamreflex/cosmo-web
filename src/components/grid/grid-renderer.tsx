@@ -5,9 +5,8 @@ import { MemberFilterButton } from "../collection/member-filter";
 import { useState } from "react";
 import { useQuery } from "react-query";
 import { HeartCrack, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import Image from "next/image";
-import GridObjekt from "./grid-objekt";
+import GridEightSlot from "./grid-eight-slot";
+import GridFourSlot from "./grid-four-slot";
 
 type Props = {
   grids: CosmoGrid[];
@@ -82,76 +81,6 @@ export default function GridRenderer({ grids }: Props) {
           )}
         </>
       )}
-    </div>
-  );
-}
-
-function GridEightSlot({ grid }: { grid: CosmoOngoingGrid }) {
-  return (
-    <div className="grid grid-cols-3 grid-rows-3 gap-4 w-full md:w-2/3">
-      <div className="aspect-photocard w-full flex justify-center items-center order-5">
-        <p className="text-5xl">?</p>
-      </div>
-      {grid.ongoing.slotStatuses.map((slot, idx) => (
-        <div
-          className={cn(
-            "relative aspect-photocard rounded-lg bg-accent w-full flex justify-center items-center",
-            idx === 4 ? "order-6" : `order-${idx + 1}`
-          )}
-          key={slot.no}
-        >
-          {slot.preferredObjekt !== undefined ? (
-            <GridObjekt
-              image={slot.preferredObjekt.frontImage}
-              collectionNo={slot.preferredObjekt.collectionNo}
-              objektNo={slot.preferredObjekt.objektNo}
-              textColor={slot.preferredObjekt.textColor}
-            />
-          ) : (
-            <p className="text-white/20 text-3xl">{slot.no}</p>
-          )}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-const positions: Record<number, number> = {
-  0: 2,
-  1: 4,
-  2: 6,
-  3: 8,
-};
-
-function GridFourSlot({ grid }: { grid: CosmoOngoingGrid }) {
-  return (
-    <div className="grid grid-cols-3 grid-rows-3 gap-4 w-full md:w-2/3">
-      <div className="aspect-photocard bg-transparent w-full order-1" />
-      <div className="aspect-photocard bg-transparent w-full order-3" />
-      <div className="aspect-photocard bg-transparent w-full order-7" />
-      <div className="aspect-photocard bg-transparent w-full order-9" />
-      <div className="aspect-photocard w-full flex justify-center items-center order-5">
-        <p className="text-5xl">?</p>
-      </div>
-      {grid.ongoing.slotStatuses.map((slot, idx) => (
-        <div
-          className={cn(
-            "aspect-photocard rounded-lg bg-accent w-full flex justify-center items-center",
-            `order-${positions[idx]}`
-          )}
-          key={slot.no}
-        >
-          {slot.preferredObjekt !== undefined ? (
-            <Image
-              src={slot.preferredObjekt.frontImage}
-              fill={true}
-              alt={slot.preferredObjekt.collectionId}
-            />
-          ) : (
-            <p className="text-white/20 text-3xl">{slot.no}</p>
-          )}
-        </div>
-      ))}
     </div>
   );
 }

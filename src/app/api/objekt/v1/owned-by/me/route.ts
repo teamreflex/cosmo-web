@@ -59,7 +59,9 @@ function parseParams(params: URLSearchParams): ObjektQueryParams {
     season: season ? season.split(",") : undefined,
     transferable: params.get("transferable") === "true",
     gridable: params.get("gridable") === "true",
-    usedForGrid: params.get("gridable") === "true",
+    usedForGrid: params.has("usedForGrid")
+      ? params.get("usedForGrid") === "true"
+      : undefined,
     collection: params.get("collection") || undefined,
   });
 

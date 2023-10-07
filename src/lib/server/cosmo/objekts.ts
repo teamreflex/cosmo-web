@@ -119,8 +119,8 @@ export async function ownedByMe({
   if (gridable) {
     query.append("gridable", "true");
   }
-  if (usedForGrid) {
-    query.append("used_for_grid", "true");
+  if (usedForGrid !== undefined) {
+    query.append("used_for_grid", usedForGrid ? "true" : "false");
   }
 
   const res = await fetch(
