@@ -8,6 +8,7 @@ import { Copy } from "lucide-react";
 import { useCopyToClipboard } from "usehooks-ts";
 import { toast } from "../ui/use-toast";
 import dynamic from "next/dynamic";
+import { Route } from "next";
 
 // gets around SSR hydration issues
 const ReactPlayer = dynamic(() => import("react-player/lazy"), { ssr: false });
@@ -47,7 +48,7 @@ function ExclusiveLinkPost({
 }) {
   return (
     <Link
-      href={post.url}
+      href={post.url as Route}
       target="_blank"
       className="relative aspect-video rounded-xl border border-accent overflow-hidden"
     >
