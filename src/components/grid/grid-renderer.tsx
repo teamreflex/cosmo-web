@@ -25,6 +25,7 @@ export default function GridRenderer({ grids }: Props) {
       return (await response.json()) as CosmoOngoingGrid;
     },
     enabled: selected !== undefined,
+    refetchOnWindowFocus: false,
   });
 
   return (
