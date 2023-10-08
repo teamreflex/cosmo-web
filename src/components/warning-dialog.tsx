@@ -1,5 +1,7 @@
-import { cn } from "@/lib/utils";
-import Image from "next/image";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useSettingsStore } from "@/store";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -9,37 +11,22 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { env } from "@/env.mjs";
-import CosmoImage from "@/static/cosmo.png";
 import Link from "next/link";
-import { Check, Github } from "lucide-react";
+import { Github } from "lucide-react";
 
-type Props = {
-  className?: string;
-  height?: number;
-  width?: number;
-  color?: "white" | "black";
-};
+export default function WarningDialog() {
+  const warned = useSettingsStore((state) => state.warned);
+  const setWarned = useSettingsStore((state) => state.setWarned);
 
-export default function CosmoLogo({
-  className,
-  height = 35,
-  width = 35,
-  color = "white",
-}: Props) {
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    setOpen(warned === false);
+  }, [warned]);
+
   return (
-    <AlertDialog>
-      <AlertDialogTrigger>
-        <Image
-          src={CosmoImage}
-          height={height}
-          width={width}
-          alt="Cosmo"
-          className={cn(className, color === "black" && "invert")}
-        />
-      </AlertDialogTrigger>
+    <AlertDialog open={open}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>
@@ -73,9 +60,20 @@ export default function CosmoLogo({
               <Github />
             </Link>
           </AlertDialogCancel>
-          <AlertDialogAction>
-            <Check />
-          </AlertDialogAction>
+
+          <div className="flex items-center gap-2">
+            <AlertDialogCancel asChild>
+              <Link
+                href="https://www.youtube.com/watch?v=UDxID0_A9x4"
+                target="_blank"
+              >
+                Cancel
+              </Link>
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={() => setWarned(true)}>
+              Continue
+            </AlertDialogAction>
+          </div>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
