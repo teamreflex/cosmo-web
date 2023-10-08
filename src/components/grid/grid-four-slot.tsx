@@ -58,7 +58,7 @@ export default function GridFourSlot({
             <div
               className={cn(
                 "relative aspect-photocard rounded-lg bg-accent w-full flex justify-center items-center",
-                idx === 4 ? "order-6" : `order-${idx + 1}`
+                `order-${positions[idx]}`
               )}
               key={slot.collectionNo}
             >
