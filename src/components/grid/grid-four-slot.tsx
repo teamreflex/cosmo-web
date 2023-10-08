@@ -16,9 +16,11 @@ const positions: Record<number, number> = {
 export default function GridFourSlot({
   slug,
   grid,
+  onComplete,
 }: {
   slug: string;
   grid: CosmoOngoingGrid;
+  onComplete: () => void;
 }) {
   const [
     objekts,
@@ -90,7 +92,7 @@ export default function GridFourSlot({
         Complete Grid
       </Button>
 
-      <RewardDialog reward={gridReward} />
+      <RewardDialog reward={gridReward} onComplete={onComplete} />
     </div>
   );
 }

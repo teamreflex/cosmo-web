@@ -4,7 +4,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -15,9 +14,10 @@ import { Button } from "../ui/button";
 
 type Props = {
   reward: CosmoGridRewardClaimResult | undefined;
+  onComplete: () => void;
 };
 
-export default function RewardDialog({ reward }: Props) {
+export default function RewardDialog({ reward, onComplete }: Props) {
   const [open, setOpen] = useState(false);
 
   // pop the dialog upon reward coming in
@@ -26,6 +26,11 @@ export default function RewardDialog({ reward }: Props) {
       setOpen(true);
     }
   }, [reward]);
+
+  function complete() {
+    onComplete();
+    setOpen(false);
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -38,8 +43,9 @@ export default function RewardDialog({ reward }: Props) {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex flex-col gap-2 items-center justify-center w-2/3">
+          <div className="flex flex-col gap-2 items-center justify-center w-full">
             <GridObjekt
+              className="w-2/3"
               image={reward.objekt.frontImage}
               collectionNo={reward.objekt.collectionNo}
               objektNo={reward.objekt.objektNo}
@@ -47,7 +53,7 @@ export default function RewardDialog({ reward }: Props) {
               selected={false}
             />
 
-            <Button variant="cosmo" onClick={() => setOpen(false)}>
+            <Button variant="cosmo" onClick={complete}>
               Check
             </Button>
           </div>

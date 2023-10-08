@@ -1,4 +1,5 @@
 import { useToast } from "@/components/ui/use-toast";
+import { env } from "@/env.mjs";
 import {
   CosmoGridRewardClaimResult,
   CosmoGridSlotCompletion,
@@ -77,7 +78,11 @@ export function useGrid(slug: string, slots: CosmoOngoingGridSlot[]) {
       }
     }
     setSlotsForCompletion(completionSlots);
-    setCanComplete(completionSlots.length === slots.length);
+    setCanComplete(
+      env.NEXT_PUBLIC_SIMULATE_GRID
+        ? true
+        : completionSlots.length === slots.length
+    );
   }, [selectedObjekts, slots]);
 
   function populateSlot(collectionNo: number, objekt: PopulatedSlot) {

@@ -9,9 +9,11 @@ import RewardDialog from "./reward-dialog";
 export default function GridEightSlot({
   slug,
   grid,
+  onComplete,
 }: {
   slug: string;
   grid: CosmoOngoingGrid;
+  onComplete: () => void;
 }) {
   const [
     objekts,
@@ -79,7 +81,7 @@ export default function GridEightSlot({
         Complete Grid
       </Button>
 
-      <RewardDialog reward={gridReward} />
+      <RewardDialog reward={gridReward} onComplete={onComplete} />
     </div>
   );
 }
