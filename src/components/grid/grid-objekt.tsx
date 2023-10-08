@@ -1,6 +1,7 @@
-import { PropsWithClassName, cn, pad } from "@/lib/utils";
+import { PropsWithClassName, cn } from "@/lib/utils";
+import { Check } from "lucide-react";
 import Image from "next/image";
-import { CSSProperties, useEffect, useRef, useState } from "react";
+import { CSSProperties } from "react";
 import { useElementSize } from "usehooks-ts";
 
 type Props = PropsWithClassName<{
@@ -8,6 +9,7 @@ type Props = PropsWithClassName<{
   collectionNo: string;
   objektNo: number;
   textColor: string;
+  selected: boolean;
 }>;
 
 export default function GridObjekt({
@@ -16,6 +18,7 @@ export default function GridObjekt({
   collectionNo,
   objektNo,
   textColor,
+  selected,
 }: Props) {
   const css = {
     "--objekt-text-color": textColor,
@@ -24,14 +27,23 @@ export default function GridObjekt({
   return (
     <div
       className={cn(
-        "relative aspect-photocard rounded-lg bg-accent w-full flex justify-center items-center",
+        "relative aspect-photocard rounded-lg bg-accent w-full flex justify-center items-center border-4 border-transparent transition-colors",
         `text-[var(--objekt-text-color)]`,
+        selected && "rounded-2xl border-cosmo",
         className
       )}
       style={css}
     >
       <Image src={image} fill={true} alt={collectionNo} />
       <GridObjektNumber collectionNo={collectionNo} objektNo={objektNo} />
+      <div
+        className={cn(
+          "absolute top-1 left-1 bg-cosmo text-white rounded-full p-1 transition-all opacity-0",
+          selected && "opacity-100"
+        )}
+      >
+        <Check className="w-4 h-4" />
+      </div>
     </div>
   );
 }
@@ -52,7 +64,7 @@ function GridObjektNumber({
       style={{ lineHeight: `${width}px`, fontSize: `${width * 0.55}px` }}
     >
       <span>{collectionNo}</span>
-      <span>#{pad(objektNo.toString())}</span>
+      <span>#{objektNo.toString().padStart(5, "0")}</span>
     </div>
   );
 }

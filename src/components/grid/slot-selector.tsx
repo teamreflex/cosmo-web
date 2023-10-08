@@ -14,6 +14,9 @@ import { HeartCrack, Loader2 } from "lucide-react";
 import { PropsWithChildren, useState } from "react";
 import { useQuery } from "react-query";
 import GridObjekt from "./grid-objekt";
+import useEmblaCarousel from "embla-carousel-react";
+import { Button } from "../ui/button";
+import { cn } from "@/lib/utils";
 
 type Props = PropsWithChildren<{
   collectionId: string;
@@ -27,7 +30,10 @@ export default function SlotSelector({
   currentSlot,
   populateSlot,
 }: Props) {
+  const [carousel] = useEmblaCarousel();
+
   const [open, setOpen] = useState(false);
+  const [selected, setSelected] = useState<PopulatedSlot>(currentSlot);
 
   const { data, status } = useQuery({
     queryKey: ["grid-selection", collectionId],
@@ -55,18 +61,22 @@ export default function SlotSelector({
   });
 
   function select(objekt: OwnedObjekt) {
-    populateSlot(parseInt(objekt.collectionNo), {
+    setSelected({
       ...currentSlot,
       objektNo: objekt.objektNo,
       tokenId: objekt.tokenId,
     });
+  }
+
+  function saveSelection() {
+    populateSlot(parseInt(selected.collectionNo), selected);
     setOpen(false);
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent>
+      <DialogContent className="overflow-x-clip">
         <DialogHeader>
           <DialogTitle>Choose Objekt</DialogTitle>
           <DialogDescription>
@@ -83,21 +93,28 @@ export default function SlotSelector({
               <p className="text-sm">Error loading available objekts</p>
             </div>
           ) : data !== undefined ? (
-            <div className="flex flex-row gap-2 items-center justify-center overflow-x-scroll">
-              {data.map((objekt) => (
-                <button
-                  className="flex w-full h-full"
-                  key={objekt.tokenId}
-                  onClick={() => select(objekt)}
-                >
-                  <GridObjekt
-                    image={objekt.frontImage}
-                    collectionNo={objekt.collectionNo}
-                    objektNo={objekt.objektNo}
-                    textColor={objekt.textColor}
-                  />
-                </button>
-              ))}
+            <div className="flex flex-col gap-2 mx-auto w-1/2" ref={carousel}>
+              <div className="embla__container flex w-full h-full">
+                {data.map((objekt) => (
+                  <button
+                    className="embla__slide mx-3 flex w-full h-full"
+                    key={objekt.tokenId}
+                    onClick={() => select(objekt)}
+                  >
+                    <GridObjekt
+                      image={objekt.frontImage}
+                      collectionNo={objekt.collectionNo}
+                      objektNo={objekt.objektNo}
+                      textColor={objekt.textColor}
+                      selected={objekt.tokenId === selected.tokenId}
+                    />
+                  </button>
+                ))}
+              </div>
+
+              <Button variant="cosmo" onClick={() => saveSelection()}>
+                Select Objekt
+              </Button>
             </div>
           ) : null}
         </DialogHeader>

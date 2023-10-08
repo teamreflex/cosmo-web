@@ -1,7 +1,7 @@
 "use client";
 
 import { OwnedObjekt } from "@/lib/server/cosmo";
-import { cn, pad } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import Image from "next/image";
 import LockObjekt from "./lock-button";
 import SendObjekt from "./send-button";
@@ -75,6 +75,8 @@ export default function Objekt({
 function ObjektNumber({ objekt }: { objekt: OwnedObjekt }) {
   const [ref, { width }] = useElementSize();
 
+  // sometimes the first element in the grid is a couple pixels smaller on the width, resulting in an offset number
+  // using line-height works around it, as the background container is transparent so there's no resulting overflow
   return (
     <div
       ref={ref}
@@ -82,7 +84,7 @@ function ObjektNumber({ objekt }: { objekt: OwnedObjekt }) {
       style={{ lineHeight: `${width}px`, fontSize: `${width * 0.55}px` }}
     >
       <span>{objekt.collectionNo}</span>
-      <span>#{pad(objekt.objektNo.toString())}</span>
+      <span>#{objekt.objektNo.toString().padStart(5, "0")}</span>
     </div>
   );
 }
