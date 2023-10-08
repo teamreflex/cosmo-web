@@ -76,7 +76,8 @@ export function useGrid(slug: string, slots: CosmoOngoingGridSlot[]) {
       }
     }
     setSlotsForCompletion(completionSlots);
-  }, [selectedObjekts]);
+    setCanComplete(completionSlots.length === slots.length);
+  }, [selectedObjekts, slots]);
 
   function populateSlot(collectionNo: number, objekt: PopulatedSlot) {
     // idk copilot generated this

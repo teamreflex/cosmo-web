@@ -49,6 +49,7 @@ export default function GridFourSlot({
                   collectionNo={slot.collectionNo}
                   objektNo={slot.objektNo}
                   textColor={slot.textColor}
+                  selected={false}
                 />
               </div>
             </SlotSelector>
