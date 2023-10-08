@@ -26,13 +26,14 @@ This project aims to build a web based version of [Modhaus](https://www.mod-haus
   - Displaying grid completion stats
   - Displaying available seasons and editions
   - Displaying grid per member with pre-selected objekts
+  - Ability to select a different objekt to use for a grid slot
 - Artist
   - Fetching artist information
   - Artist switching (homepage defaults to selected)
 - News
   - Displaying homepage news feed
   - Displaying "today's atmosphere" and "Cosmo exclusive" feeds
-  - Inline playback of exclusive m3u8 streams
+  - Inline playback of exclusive m3u8 streams (broken on iOS due to HLS)
 
 ### New Features
 

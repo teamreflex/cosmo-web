@@ -4,6 +4,7 @@ import SlotSelector from "./slot-selector";
 import { cn } from "@/lib/utils";
 import GridObjekt from "./grid-objekt";
 import { Button } from "../ui/button";
+import RewardDialog from "./reward-dialog";
 
 export default function GridEightSlot({
   slug,
@@ -12,8 +13,14 @@ export default function GridEightSlot({
   slug: string;
   grid: CosmoOngoingGrid;
 }) {
-  const [objekts, populateSlot, canComplete, completeGrid, claimReward] =
-    useGrid(slug, grid.ongoing.slotStatuses);
+  const [
+    objekts,
+    populateSlot,
+    canComplete,
+    completeGrid,
+    claimReward,
+    gridReward,
+  ] = useGrid(slug, grid.ongoing.slotStatuses);
 
   return (
     <div className="flex flex-col gap-4 items-center w-full">
@@ -32,7 +39,7 @@ export default function GridEightSlot({
               >
                 <div
                   className={cn(
-                    "relative aspect-photocard rounded-lg bg-accent w-full flex justify-center items-center hover:cursor-pointer",
+                    "relative aspect-photocard w-full flex justify-center items-center hover:cursor-pointer",
                     idx === 4 ? "order-6" : `order-${idx + 1}`
                   )}
                 >
@@ -65,10 +72,14 @@ export default function GridEightSlot({
       <Button
         variant="cosmo"
         onClick={() => completeGrid.mutate()}
-        disabled={!canComplete || completeGrid.isLoading}
+        disabled={
+          !canComplete || completeGrid.isLoading || claimReward.isLoading
+        }
       >
         Complete Grid
       </Button>
+
+      <RewardDialog reward={gridReward} />
     </div>
   );
 }

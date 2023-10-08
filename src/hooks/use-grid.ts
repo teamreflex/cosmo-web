@@ -64,6 +64,7 @@ export function useGrid(slug: string, slots: CosmoOngoingGridSlot[]) {
     CosmoGridSlotCompletion[]
   >([]);
   const [canComplete, setCanComplete] = useState(false);
+  const [gridReward, setGridReward] = useState<CosmoGridRewardClaimResult>();
 
   useEffect(() => {
     const completionSlots: CosmoGridSlotCompletion[] = [];
@@ -126,8 +127,8 @@ export function useGrid(slug: string, slots: CosmoOngoingGridSlot[]) {
       });
     },
     onSuccess: async (response) => {
-      const { objekt }: CosmoGridRewardClaimResult = await response.json();
-      // do something with the objekt
+      const result: CosmoGridRewardClaimResult = await response.json();
+      setGridReward(result);
     },
   });
 
@@ -137,5 +138,6 @@ export function useGrid(slug: string, slots: CosmoOngoingGridSlot[]) {
     canComplete,
     completeGrid,
     claimReward,
+    gridReward,
   ] as const;
 }
