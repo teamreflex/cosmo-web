@@ -10,6 +10,7 @@ import ReactCardFlip from "react-card-flip";
 import { ExternalLink, Maximize2 } from "lucide-react";
 import { format } from "date-fns";
 import Link from "next/link";
+import { useElementSize } from "usehooks-ts";
 
 type ObjektProps = {
   objekt: OwnedObjekt;
@@ -72,8 +73,14 @@ export default function Objekt({
 }
 
 function ObjektNumber({ objekt }: { objekt: OwnedObjekt }) {
+  const [ref, { width }] = useElementSize();
+
   return (
-    <div className="absolute h-full items-center w-[11%] flex gap-2 justify-center top-0 right-0 [writing-mode:vertical-lr] font-semibold text-[6px] sm:text-xs md:text-sm lg:text-base text-[var(--objekt-text-color)]">
+    <div
+      ref={ref}
+      className="absolute h-full items-center w-[11%] flex gap-2 justify-center top-0 right-0 [writing-mode:vertical-lr] font-semibold text-[var(--objekt-text-color)]"
+      style={{ lineHeight: `${width}px`, fontSize: `${width * 0.55}px` }}
+    >
       <span>{objekt.collectionNo}</span>
       <span>#{pad(objekt.objektNo.toString())}</span>
     </div>

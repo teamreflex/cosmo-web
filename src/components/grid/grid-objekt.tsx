@@ -1,6 +1,7 @@
 import { PropsWithClassName, cn, pad } from "@/lib/utils";
 import Image from "next/image";
-import { CSSProperties } from "react";
+import { CSSProperties, useEffect, useRef, useState } from "react";
+import { useElementSize } from "usehooks-ts";
 
 type Props = PropsWithClassName<{
   image: string;
@@ -42,8 +43,14 @@ function GridObjektNumber({
   collectionNo: string;
   objektNo: number;
 }) {
+  const [ref, { width }] = useElementSize();
+
   return (
-    <div className="absolute h-full items-center w-[11%] flex gap-2 justify-center top-0 right-0 [writing-mode:vertical-lr] font-semibold text-[6px] sm:text-xs md:text-sm lg:text-base text-[var(--objekt-text-color)]">
+    <div
+      ref={ref}
+      className="absolute h-full items-center w-[11%] flex gap-2 justify-center top-0 right-0 [writing-mode:vertical-lr] font-semibold text-[var(--objekt-text-color)]"
+      style={{ lineHeight: `${width}px`, fontSize: `${width * 0.55}px` }}
+    >
       <span>{collectionNo}</span>
       <span>#{pad(objektNo.toString())}</span>
     </div>
