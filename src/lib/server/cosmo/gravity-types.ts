@@ -139,8 +139,22 @@ export type CosmoPastGravity = {
 };
 
 // TODO: document these
-export type CosmoUpcomingGravity = {};
-export type CosmoOngoingGravity = {};
+export type CosmoUpcomingGravity = {
+  id: number;
+  title: string;
+  type: CosmoGravityType;
+  bannerImageUrl: string;
+  entireStartDate: string;
+  entireEndDate: string;
+};
+export type CosmoOngoingGravity = {
+  id: number;
+  title: string;
+  type: CosmoGravityType;
+  bannerImageUrl: string;
+  entireStartDate: string;
+  entireEndDate: string;
+};
 
 export type CosmoGravity =
   | CosmoPastGravity
