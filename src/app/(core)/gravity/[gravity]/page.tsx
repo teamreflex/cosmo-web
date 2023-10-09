@@ -4,6 +4,9 @@ import { Metadata } from "next";
 import { cache } from "react";
 import { fetchSelectedArtist } from "@/lib/server/cache";
 import { fetchGravity } from "@/lib/server/cosmo";
+import GravityBodyRenderer from "@/components/gravity/gravity-body-renderer";
+import GravityCoreDetails from "@/components/gravity/gravity-core-details";
+import { redirect } from "next/navigation";
 
 export const runtime = "edge";
 
@@ -26,7 +29,7 @@ export async function generateMetadata({
   const gravity = await fetchData(user!, params.gravity);
 
   return {
-    title: gravity.title,
+    title: gravity?.title ?? "Gravity",
   };
 }
 
@@ -38,6 +41,10 @@ export default async function GravityPage({
   const user = await readToken(cookies().get("token")?.value);
   const gravity = await fetchData(user!, params.gravity);
 
+  if (!gravity) {
+    redirect("/gravity");
+  }
+
   return (
     <main className="container flex flex-col py-2">
       <div className="flex items-center">
@@ -46,7 +53,17 @@ export default async function GravityPage({
         </div>
       </div>
 
-      {gravity.title}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {/* core details */}
+        <div className="col-span-1 sm:col-span-2">
+          <GravityCoreDetails gravity={gravity} />
+        </div>
+
+        {/* dynamic details */}
+        <div className="col-span-1">
+          <GravityBodyRenderer gravity={gravity} />
+        </div>
+      </div>
     </main>
   );
 }

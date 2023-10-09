@@ -42,7 +42,8 @@ export type CosmoBodyItem =
   | CosmoBodySpacing
   | CosmoBodyHeading
   | CosmoBodyImage
-  | CosmoBodyText;
+  | CosmoBodyText
+  | CosmoBodyVideo;
 
 export type CosmoSinglePollVoteResult = {
   rank: number;
@@ -142,18 +143,22 @@ export type CosmoPastGravity = {
 export type CosmoUpcomingGravity = {
   id: number;
   title: string;
+  description: string;
   type: CosmoGravityType;
   bannerImageUrl: string;
   entireStartDate: string;
   entireEndDate: string;
+  body: CosmoBodyItem[];
 };
 export type CosmoOngoingGravity = {
   id: number;
   title: string;
+  description: string;
   type: CosmoGravityType;
   bannerImageUrl: string;
   entireStartDate: string;
   entireEndDate: string;
+  body: CosmoBodyItem[];
 };
 
 export type CosmoGravity =
@@ -164,7 +169,7 @@ export type CosmoGravity =
 export type CosmoMyGravityVote = {
   choiceId: string;
   voteTo: string;
-  voteImageUrl: string;
+  voteImageUrl?: string;
   comoUsed: number;
   at: string;
 };

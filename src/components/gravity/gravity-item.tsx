@@ -4,11 +4,11 @@ import {
   CosmoPastGravity,
   CosmoUpcomingGravity,
 } from "@/lib/server/cosmo";
-import { cn } from "@/lib/utils";
 import { isFuture, isPast } from "date-fns";
 import { ChevronRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import GravityEventType from "./gravity-event-type";
 
 export default function GravityItem({ gravity }: { gravity: CosmoGravity }) {
   if (isPast(new Date(gravity.entireEndDate))) {
@@ -40,16 +40,8 @@ function GravityPast({ gravity }: { gravity: CosmoPastGravity }) {
       <div className="flex items-center justify-between w-full">
         <div className="flex flex-col gap-1">
           <p className="text-xs opacity-75">{gravity.title}</p>
-          <p>{gravity.result.totalComoUsed} COMO</p>
-          <p
-            className={cn(
-              "px-2 py-1 text-xs font-semibold rounded w-fit",
-              gravity.type === "grand-gravity" && "bg-cosmo-text text-cosmo",
-              gravity.type === "event-gravity" && "bg-teal-300/80 text-teal-900"
-            )}
-          >
-            {gravity.type === "grand-gravity" ? "Grand" : "Event"}
-          </p>
+          <p className="font-semibold">{gravity.result.totalComoUsed} COMO</p>
+          <GravityEventType type={gravity.type} />
         </div>
 
         <ChevronRight className="w-8 h-8 text-white/30 justify-self-end" />

@@ -43,7 +43,7 @@ export async function fetchGravities(token: string, artist: ValidArtist) {
  * @param token string
  * @param artist ValidArtist
  * @param gravityId number
- * @returns Promise<CosmoGravity>
+ * @returns Promise<CosmoGravity | undefined>
  */
 export async function fetchGravity(
   token: string,
@@ -63,7 +63,7 @@ export async function fetchGravity(
   );
 
   if (!res.ok) {
-    throw new Error("Failed to fetch gravity");
+    return undefined;
   }
 
   const { gravity }: { gravity: CosmoGravity } = await res.json();

@@ -16,7 +16,6 @@ import { useQuery } from "react-query";
 import GridObjekt from "./grid-objekt";
 import useEmblaCarousel from "embla-carousel-react";
 import { Button } from "../ui/button";
-import { cn } from "@/lib/utils";
 
 type Props = PropsWithChildren<{
   collectionId: string;
