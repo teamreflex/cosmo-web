@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Home, LayoutGrid, PackageOpen, User } from "lucide-react";
+import { Home, LayoutGrid, PackageOpen, User, Vote } from "lucide-react";
 import AuthOptions from "./auth-options";
 import CosmoLogo from "./cosmo-logo";
 import { ReactNode } from "react";
@@ -11,6 +11,7 @@ const links = [
   { name: "Home", icon: Home, href: "/" },
   { name: "Collection", icon: PackageOpen, href: "/collection" },
   { name: "Grid", icon: LayoutGrid, href: "/grid" },
+  { name: "Gravity", icon: Vote, href: "/gravity" },
   { name: "Account", icon: User, href: "/my" },
 ];
 
@@ -32,7 +33,7 @@ export default function Navbar({
       <div className="container grid grid-cols-3 items-center gap-2 text-sm text-foreground md:gap-4 md:py-6 lg:grid-cols-3">
         <CosmoLogo color="white" />
 
-        <div className="flex flex-row items-center gap-8 md:gap-10 justify-center">
+        <div className="flex flex-row items-center gap-6 md:gap-10 justify-center">
           {links.map((link, i) => (
             <Tooltip key={i} delayDuration={0}>
               <TooltipTrigger asChild>
