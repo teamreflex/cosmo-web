@@ -9,7 +9,7 @@ export const validSorts = [
   "noDescending",
 ] as const;
 export type ValidSort = (typeof validSorts)[number];
-export const validSeasons = ["Atom01", "Binary01"] as const;
+export const validSeasons = ["Atom01", "Binary01", "Cream01"] as const;
 export type ValidSeason = (typeof validSeasons)[number];
 export const validClasses = [
   "First",
