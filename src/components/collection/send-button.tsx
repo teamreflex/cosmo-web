@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import {
   AlertTriangle,
   Check,
+  Grid2X2,
   Loader2,
   MailX,
   Search,
@@ -95,7 +96,10 @@ export default function SendObjekt({ objekt }: Props) {
 
   return (
     <>
-      {!objekt.transferable && (
+      {objekt.usedForGrid && (
+        <Grid2X2 className="h-3 w-3 sm:h-5 sm:w-5 shrink-0" />
+      )}
+      {!objekt.usedForGrid && !objekt.transferable && (
         <MailX className="h-3 w-3 sm:h-5 sm:w-5 shrink-0" />
       )}
       {objekt.transferable && (

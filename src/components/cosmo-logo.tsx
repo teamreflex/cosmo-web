@@ -43,13 +43,13 @@ export default function CosmoLogo({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>
-            cosmo-web v{env.NEXT_PUBLIC_APP_VERSION}
+            {env.NEXT_PUBLIC_APP_NAME} v{env.NEXT_PUBLIC_APP_VERSION}
           </AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div className="flex flex-col gap-2">
               <p>
-                cosmo-web is a fan-made platform aiming to replicate the Cosmo
-                mobile app with a desktop interface.
+                {env.NEXT_PUBLIC_APP_NAME} is a fan-made platform aiming to
+                replicate the Cosmo mobile app with a desktop interface.
               </p>
               <p>
                 It is not affiliated with Modhaus or its artists and is not
