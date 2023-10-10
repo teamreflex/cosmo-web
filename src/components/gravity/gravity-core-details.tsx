@@ -14,6 +14,9 @@ import GravityRankingCarousel from "./gravity-ranking-carousel";
 import { cn } from "@/lib/utils";
 import { Suspense } from "react";
 import GravityMyRecord from "./gravity-my-record";
+import GravityOngoingCountdown from "./gravity-ongoing-countdown";
+import GravityVote from "./gravity-vote";
+import StoreHydrated from "../store-hydrated";
 
 type Props = {
   gravity: CosmoGravity;
@@ -149,8 +152,14 @@ function OngoingDetails({ gravity }: { gravity: CosmoOngoingGravity }) {
     <div className="flex flex-col gap-2 w-full">
       <Header gravity={gravity} />
 
-      <div className="flex justify-center w-full py-12">
-        <h2 className="text-2xl font-bold">Gravity has started</h2>
+      <div className="flex flex-col gap-4 justify-center w-full py-12">
+        <div className="bg-cosmo-hover text-white w-full flex justify-center py-2 gap-2 rounded-lg">
+          <GravityOngoingCountdown endsAt={gravity.entireEndDate} />
+        </div>
+
+        <StoreHydrated>
+          <GravityVote gravity={gravity} />
+        </StoreHydrated>
       </div>
     </div>
   );

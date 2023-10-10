@@ -10,6 +10,8 @@ import Image from "next/image";
 import Link from "next/link";
 import GravityEventType from "./gravity-event-type";
 import GravityUpcomingTimestamp from "./gravity-upcoming-timestamp";
+import { PropsWithChildren } from "react";
+import GravityOngoingCountdown from "./gravity-ongoing-countdown";
 
 export default function GravityItem({ gravity }: { gravity: CosmoGravity }) {
   if (isPast(new Date(gravity.entireEndDate))) {
@@ -53,6 +55,29 @@ function GravityPast({ gravity }: { gravity: CosmoPastGravity }) {
 
 function GravityUpcoming({ gravity }: { gravity: CosmoUpcomingGravity }) {
   return (
+    <GravityUpcomingOrOngoing gravity={gravity}>
+      <div className="bg-cosmo-text text-white w-full flex justify-center py-2 gap-2">
+        <GravityUpcomingTimestamp at={gravity.entireStartDate} />
+      </div>
+    </GravityUpcomingOrOngoing>
+  );
+}
+
+function GravityOngoing({ gravity }: { gravity: CosmoOngoingGravity }) {
+  return (
+    <GravityUpcomingOrOngoing gravity={gravity}>
+      <div className="bg-cosmo-hover text-white w-full flex justify-center py-2 gap-2">
+        <GravityOngoingCountdown endsAt={gravity.entireEndDate} />
+      </div>
+    </GravityUpcomingOrOngoing>
+  );
+}
+
+function GravityUpcomingOrOngoing({
+  children,
+  gravity,
+}: PropsWithChildren<{ gravity: CosmoUpcomingGravity | CosmoOngoingGravity }>) {
+  return (
     <Link
       href={`/gravity/${gravity.id}`}
       className="w-full rounded-xl flex flex-col items-center overflow-hidden group"
@@ -65,20 +90,15 @@ function GravityUpcoming({ gravity }: { gravity: CosmoUpcomingGravity }) {
           fill={true}
         />
 
-        <div className="absolute bottom-0 left-0 w-full h-full bg-gradient-to-t from-black to-transparent flex flex-col justify-end p-3 gap-3 group-hover:to-cosmo/5">
+        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-transparent to-cosmo/10 opacity-0 group-hover:opacity-100 transition-all" />
+        <div className="absolute bottom-0 left-0 w-full h-full bg-gradient-to-t from-black to-transparent flex flex-col justify-end p-3 gap-3">
           <h2 className="text-2xl sm:text-4xl font-semibold">
             {gravity.title}
           </h2>
           <GravityEventType type={gravity.type} />
         </div>
       </div>
-      <div className="bg-cosmo-text text-white w-full flex justify-center py-2 gap-2">
-        <GravityUpcomingTimestamp at={gravity.entireStartDate} />
-      </div>
+      {children}
     </Link>
   );
-}
-
-function GravityOngoing({ gravity }: { gravity: CosmoOngoingGravity }) {
-  return null;
 }

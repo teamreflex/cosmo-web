@@ -36,7 +36,7 @@ This project aims to build a web based version of [Modhaus](https://www.mod-haus
   - Displaying "today's atmosphere" and "Cosmo exclusive" feeds
   - Inline playback of exclusive m3u8 streams (broken on iOS due to HLS)
 - Gravity
-  - Displaying list of past gravity events
+  - Displaying list of gravity events
   - Render dynamic gravity event description
   - Display details about a specific gravity event (ranking, leaderboard etc)
 

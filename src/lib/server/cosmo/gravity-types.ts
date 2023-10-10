@@ -172,6 +172,7 @@ export type CosmoOngoingGravity = {
   entireStartDate: string;
   entireEndDate: string;
   body: CosmoBodyItem[];
+  polls: CosmoPollUpcoming[];
 };
 
 export type CosmoGravity =
@@ -198,3 +199,81 @@ export type CosmoMyGravityResult = {
   totalComoUsed: number;
   voteStatuses: CosmoMyGravityVoteStatus[];
 };
+
+export type PollDefaultContentImage = {
+  type: "image";
+  imageUrl: string;
+  title: string;
+  description: string;
+};
+
+export type PollViewDefaultContent = PollDefaultContentImage;
+
+export type PollSelectedContentImage = {
+  choiceId: string;
+  content: {
+    type: "image";
+    imageUrl: string;
+    title: string;
+    description: string;
+  };
+};
+
+export type PollViewSelectedContent = PollSelectedContentImage;
+
+export type PollChoice = {
+  id: string;
+  title: string;
+  description: string;
+  txImageUrl: string;
+};
+
+export type CosmoSinglePollChoices = {
+  id: number;
+  artist: ValidArtist;
+  pollIdOnChain: number;
+  gravityId: number;
+  type: "single-poll";
+  indexInGravity: number;
+  title: string;
+  imageUrl: string;
+  startDate: string;
+  endDate: string;
+  revealDate: string;
+  finalized: false;
+  pollViewMetadata: {
+    title: string;
+    background: null;
+    defaultContent: PollViewDefaultContent;
+    selectedContent: PollViewSelectedContent[];
+    choiceViewType: "vertical" | "horizontal";
+  };
+  choices: PollChoice[];
+};
+
+export type CosmoCombinationPollChoices = {
+  id: number;
+  artist: ValidArtist;
+  pollIdOnChain: number;
+  gravityId: number;
+  type: "combination-poll";
+  indexInGravity: number;
+  title: string;
+  imageUrl: string;
+  startDate: string;
+  endDate: string;
+  revealDate: string;
+  finalized: false;
+  pollViewMetadata: {
+    title: string;
+    background: null;
+    defaultContent: PollViewDefaultContent;
+    selectedContent: PollViewSelectedContent[];
+    choiceViewType: "vertical" | "horizontal";
+  };
+  choices: PollChoice[];
+};
+
+export type CosmoPollChoices =
+  | CosmoSinglePollChoices
+  | CosmoCombinationPollChoices;

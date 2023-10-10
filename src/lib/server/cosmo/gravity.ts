@@ -4,6 +4,7 @@ import {
   CosmoMyGravityResult,
   CosmoOngoingGravity,
   CosmoPastGravity,
+  CosmoPollChoices,
   CosmoUpcomingGravity,
   ValidArtist,
 } from ".";
@@ -135,4 +136,44 @@ export async function fetchComoSpent(token: string, artist: ValidArtist) {
 
   const { totalComoUsed }: CosmoGravityComoSpentResult = await res.json();
   return totalComoUsed;
+}
+
+export type CosmoPollDetail = {
+  pollDetail: CosmoPollChoices;
+};
+
+/**
+ * Fetch the poll fields.
+ * @param token string
+ * @param artist ValidArtist
+ * @param gravityId number
+ * @param pollId number
+ * @returns Promise<CosmoPollDetail>
+ */
+export async function fetchPoll(
+  token: string,
+  artist: ValidArtist,
+  gravityId: number,
+  pollId: number
+) {
+  const res = await fetch(
+    `${COSMO_ENDPOINT}/gravity/v3/${artist}/gravity/${gravityId}/polls/${pollId}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error(
+      `Failed to fetch poll "${pollId}" for gravity "${gravityId}"`
+    );
+  }
+
+  const { pollDetail }: CosmoPollDetail = await res.json();
+  return pollDetail;
 }

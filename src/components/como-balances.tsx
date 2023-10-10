@@ -3,6 +3,7 @@ import { CosmoArtist } from "@/lib/server/cosmo";
 import { ValidArtist } from "@/lib/server/cosmo/common";
 import { Moon, Sparkle } from "lucide-react";
 import { ReactNode } from "react";
+import ComoBalancesClientHelper from "./como-balances-client-helper";
 
 export default async function ComoBalances({
   address,
@@ -18,6 +19,7 @@ export default async function ComoBalances({
 
   return (
     <>
+      <ComoBalancesClientHelper artists={artists} balances={balances} />
       {artists.map((artist) => (
         <ComoBalance
           key={artist.name}

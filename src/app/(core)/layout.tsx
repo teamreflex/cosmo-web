@@ -8,15 +8,33 @@ import { ValidArtist, fetchArtists } from "@/lib/server/cosmo";
 import ComoBalances from "@/components/como-balances";
 import { Loader2 } from "lucide-react";
 import { fetchSelectedArtist } from "./data-fetching";
+import { env } from "@/env.mjs";
 
 export const metadata: Metadata = {
   title: {
-    template: "%s · Cosmo",
-    default: "Cosmo",
-    absolute: "Cosmo",
+    template: `%s · ${env.NEXT_PUBLIC_APP_NAME}`,
+    default: env.NEXT_PUBLIC_APP_NAME,
+    absolute: env.NEXT_PUBLIC_APP_NAME,
   },
-  description: "Cosmo - Where you meet your artist",
-  keywords: ["Next.js", "React", "JavaScript"],
+  description: `${env.NEXT_PUBLIC_APP_NAME} - Where you meet your artist`,
+  keywords: [
+    "kpop",
+    "korea",
+    "modhaus",
+    "모드하우스",
+    "cosmo",
+    "objekt",
+    "tripleS",
+    "트리플에스",
+    "artms",
+    "artemis",
+    "아르테미스",
+    "아르테미스 스트래티지",
+    "odd eye circle",
+    "오드아이써클",
+    "loona",
+    "이달의 소녀",
+  ],
 };
 
 const fetchData = cache(async (userId?: number) =>

@@ -5,6 +5,7 @@ import localFont from "next/font/local";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { env } from "@/env.mjs";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -17,11 +18,11 @@ const cosmo = localFont({
 
 export const metadata: Metadata = {
   title: {
-    template: "%s · Cosmo",
-    default: "Cosmo",
-    absolute: "Cosmo",
+    template: `%s · ${env.NEXT_PUBLIC_APP_NAME}`,
+    default: env.NEXT_PUBLIC_APP_NAME,
+    absolute: env.NEXT_PUBLIC_APP_NAME,
   },
-  description: "Cosmo - Where you meet your artist",
+  description: `${env.NEXT_PUBLIC_APP_NAME} - Where you meet your artist`,
   keywords: [
     "kpop",
     "korea",
