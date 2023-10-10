@@ -27,6 +27,7 @@ This project aims to build a web based version of [Modhaus](https://www.mod-haus
   - Displaying available seasons and editions
   - Displaying grid per member with pre-selected objekts
   - Ability to select a different objekt to use for a grid slot
+  - Submitting completed grids and claiming the reward
 - Artist
   - Fetching artist information
   - Artist switching (homepage defaults to selected)

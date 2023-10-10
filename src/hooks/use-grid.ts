@@ -106,7 +106,8 @@ export function useGrid(slug: string, slots: CosmoOngoingGridSlot[]) {
         }),
       });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error(error);
       toast({
         variant: "destructive",
         description:
@@ -124,7 +125,8 @@ export function useGrid(slug: string, slots: CosmoOngoingGridSlot[]) {
         method: "POST",
       });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error(error);
       toast({
         variant: "destructive",
         description:
