@@ -55,7 +55,7 @@ function GravityUpcoming({ gravity }: { gravity: CosmoUpcomingGravity }) {
   return (
     <Link
       href={`/gravity/${gravity.id}`}
-      className="w-full rounded-lg flex flex-col items-center overflow-hidden group"
+      className="w-full rounded-xl flex flex-col items-center overflow-hidden group"
     >
       <div className="relative w-full aspect-square">
         <Image
