@@ -7,6 +7,7 @@ import NewsRenderer from "@/components/news/news-renderer";
 import { LoadingNews } from "@/components/news/news-loading";
 import { fetchSelectedArtist } from "./data-fetching";
 import { Metadata } from "next";
+import { env } from "@/env.mjs";
 
 export const runtime = "edge";
 export const metadata: Metadata = {
@@ -21,7 +22,10 @@ export default async function HomePage() {
       <span className="flex flex-col justify-center items-center w-full gap-2 py-12">
         <Image src={CosmoImage} width={100} height={100} alt="Cosmo" />
         <span className="font-semibold text-lg">
-          Welcome to <span className="font-cosmo">COSMO</span>
+          Welcome to{" "}
+          <span className="font-cosmo uppercase">
+            {env.NEXT_PUBLIC_APP_NAME}
+          </span>
           <p className="text-sm text-center">Please sign in</p>
         </span>
       </span>
