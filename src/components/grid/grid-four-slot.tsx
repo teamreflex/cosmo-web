@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import GridObjekt from "./grid-objekt";
 import { Button } from "../ui/button";
 import RewardDialog from "./reward-dialog";
+import GridConfirmDialog from "./grid-confirm-dialog";
 
 const positions: Record<number, number> = {
   0: 2,
@@ -82,15 +83,16 @@ export default function GridFourSlot({
         })}
       </div>
 
-      <Button
-        variant="cosmo"
-        onClick={() => completeGrid.mutate()}
-        disabled={
-          !canComplete || completeGrid.isLoading || claimReward.isLoading
-        }
-      >
-        Complete Grid
-      </Button>
+      <GridConfirmDialog onConfirm={() => completeGrid.mutate()}>
+        <Button
+          variant="cosmo"
+          disabled={
+            !canComplete || completeGrid.isLoading || claimReward.isLoading
+          }
+        >
+          Complete Grid
+        </Button>
+      </GridConfirmDialog>
 
       <RewardDialog reward={gridReward} onComplete={onComplete} />
     </div>

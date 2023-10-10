@@ -1,3 +1,3 @@
-### Grid
+### Auth
 
-- Implement confirmation popup upon clicking "Complete Grid".
+- Implement Cosmo token refreshing.
