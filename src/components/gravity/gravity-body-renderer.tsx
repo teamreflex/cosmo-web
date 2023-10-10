@@ -21,7 +21,7 @@ type Props = {
 export default function GravityBodyRenderer({ gravity }: Props) {
   return (
     <div className="flex flex-col w-full justify-center mb-4">
-      <div className="relative aspect-square w-full">
+      <div className="relative aspect-square w-full rounded-lg overflow-hidden">
         <Image
           className="absolute"
           src={gravity.bannerImageUrl}
@@ -29,7 +29,7 @@ export default function GravityBodyRenderer({ gravity }: Props) {
           fill={true}
           quality={100}
         />
-        <h2 className="absolute text-2xl font-semibold bottom-3 left-3">
+        <h2 className="absolute w-full h-full text-2xl font-semibold top-0 left-0 bg-gradient-to-t from-black/75 to-transparent p-3 flex items-end">
           {gravity.title}
         </h2>
       </div>
@@ -80,7 +80,10 @@ function HeadingElement({ item }: { item: CosmoBodyHeading }) {
 
 function ImageElement({ item }: { item: CosmoBodyImage }) {
   return (
-    <div className="relative" style={{ height: `${item.height}px` }}>
+    <div
+      className="relative rounded-lg overflow-hidden"
+      style={{ height: `${item.height}px` }}
+    >
       <Image src={item.imageUrl} fill={true} alt={item.id} />
     </div>
   );
@@ -90,12 +93,14 @@ function TextElement({ item }: { item: CosmoBodyText }) {
   return (
     <span
       className={cn(
-        "flex",
+        "flex flex-col",
         item.align === "center" && "text-center",
         item.align === "right" && "text-end"
       )}
     >
-      {item.text}
+      {item.text.split("\n").map((text, i) => (
+        <p key={i}>{text}</p>
+      ))}
     </span>
   );
 }

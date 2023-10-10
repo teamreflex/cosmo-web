@@ -54,23 +54,30 @@ export type CosmoSinglePollVoteResult = {
   };
 };
 
-export type CosmoSinglePoll = {
+type CosmoPollCommon<PollType extends CosmoPollType> = {
   id: number;
   artist: ValidArtist;
   pollIdOnChain: number;
   gravityId: number;
-  type: "single-poll";
+  type: PollType;
   indexInGravity: number;
   title: string;
   imageUrl: string;
   startDate: string;
   endDate: string;
   revealDate: string;
-  finalized: boolean;
+};
+
+export type CosmoSinglePollFinalized = CosmoPollCommon<"single-poll"> & {
+  finalized: true;
   result: {
     totalComoUsed: number;
     voteResults: CosmoSinglePollVoteResult[];
   };
+};
+
+export type CosmoSinglePollUpcoming = CosmoPollCommon<"single-poll"> & {
+  finalized: false;
 };
 
 export type CosmoCombinationPollVoteSlot = {
@@ -85,26 +92,26 @@ export type CosmoCombinationPollVoteResult = {
   votedSlots: CosmoCombinationPollVoteSlot[];
 };
 
-export type CosmoCombinationPoll = {
-  id: number;
-  artist: ValidArtist;
-  pollIdOnChain: number;
-  gravityId: number;
-  type: "combination-poll";
-  indexInGravity: number;
-  title: string;
-  imageUrl: string;
-  startDate: string;
-  endDate: string;
-  revealDate: string;
-  finalized: boolean;
-  result: {
-    totalComoUsed: number;
-    voteResults: CosmoCombinationPollVoteResult[];
+export type CosmoCombinationPollFinalized =
+  CosmoPollCommon<"combination-poll"> & {
+    finalized: true;
+    result: {
+      totalComoUsed: number;
+      voteResults: CosmoCombinationPollVoteResult[];
+    };
   };
-};
 
-export type CosmoPoll = CosmoSinglePoll | CosmoCombinationPoll;
+export type CosmoCombinationPollUpcoming =
+  CosmoPollCommon<"combination-poll"> & {
+    finalized: false;
+  };
+
+export type CosmoPollFinalized =
+  | CosmoSinglePollFinalized
+  | CosmoCombinationPollFinalized;
+export type CosmoPollUpcoming =
+  | CosmoSinglePollUpcoming
+  | CosmoCombinationPollUpcoming;
 
 export type CosmoLeaderboardItem = {
   rank: number;
@@ -128,7 +135,7 @@ export type CosmoPastGravity = {
   entireStartDate: string;
   entireEndDate: string;
   body: CosmoBodyItem[];
-  polls: CosmoPoll[];
+  polls: CosmoPollFinalized[];
   result: {
     totalComoUsed: number;
     resultImageUrl: string;
@@ -142,19 +149,25 @@ export type CosmoPastGravity = {
 // TODO: document these
 export type CosmoUpcomingGravity = {
   id: number;
+  artist: ValidArtist;
   title: string;
   description: string;
   type: CosmoGravityType;
+  pollType: CosmoPollType;
   bannerImageUrl: string;
   entireStartDate: string;
   entireEndDate: string;
   body: CosmoBodyItem[];
+  polls: CosmoPollUpcoming[];
 };
+
 export type CosmoOngoingGravity = {
   id: number;
+  artist: ValidArtist;
   title: string;
   description: string;
   type: CosmoGravityType;
+  pollType: CosmoPollType;
   bannerImageUrl: string;
   entireStartDate: string;
   entireEndDate: string;

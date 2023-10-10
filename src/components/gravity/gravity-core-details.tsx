@@ -133,7 +133,15 @@ function PastDetails({ gravity }: { gravity: CosmoPastGravity }) {
 }
 
 function UpcomingDetails({ gravity }: { gravity: CosmoUpcomingGravity }) {
-  return null;
+  return (
+    <div className="flex flex-col gap-2 w-full">
+      <Header gravity={gravity} />
+
+      <div className="flex justify-center w-full py-12">
+        <h2 className="text-2xl font-bold">Gravity is about to start</h2>
+      </div>
+    </div>
+  );
 }
 
 function OngoingDetails({ gravity }: { gravity: CosmoOngoingGravity }) {

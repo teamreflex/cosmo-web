@@ -9,6 +9,7 @@ import { ChevronRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import GravityEventType from "./gravity-event-type";
+import GravityUpcomingTimestamp from "./gravity-upcoming-timestamp";
 
 export default function GravityItem({ gravity }: { gravity: CosmoGravity }) {
   if (isPast(new Date(gravity.entireEndDate))) {
@@ -51,7 +52,31 @@ function GravityPast({ gravity }: { gravity: CosmoPastGravity }) {
 }
 
 function GravityUpcoming({ gravity }: { gravity: CosmoUpcomingGravity }) {
-  return null;
+  return (
+    <Link
+      href={`/gravity/${gravity.id}`}
+      className="w-full rounded-lg flex flex-col items-center overflow-hidden group"
+    >
+      <div className="relative w-full aspect-square">
+        <Image
+          className="absolute"
+          src={gravity.bannerImageUrl}
+          alt={gravity.title}
+          fill={true}
+        />
+
+        <div className="absolute bottom-0 left-0 w-full h-full bg-gradient-to-t from-black to-transparent flex flex-col justify-end p-3 gap-3 group-hover:to-cosmo/5">
+          <h2 className="text-2xl sm:text-4xl font-semibold">
+            {gravity.title}
+          </h2>
+          <GravityEventType type={gravity.type} />
+        </div>
+      </div>
+      <div className="bg-cosmo-text text-white w-full flex justify-center py-2 gap-2">
+        <GravityUpcomingTimestamp at={gravity.entireStartDate} />
+      </div>
+    </Link>
+  );
 }
 
 function GravityOngoing({ gravity }: { gravity: CosmoOngoingGravity }) {
