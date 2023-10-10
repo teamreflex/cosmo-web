@@ -1,6 +1,6 @@
 "use client";
 
-import { GasStationResult, OwnedObjekt, SearchUser } from "@/lib/server/cosmo";
+import { OwnedObjekt, SearchUser } from "@/lib/server/cosmo";
 import { cn } from "@/lib/utils";
 import {
   AlertTriangle,
@@ -22,8 +22,8 @@ import {
   SUPPORTED_ETHEREUM_CHAIN_IDS,
   getRamperSigner,
 } from "@ramper/ethereum";
-import { Interface, parseUnits } from "ethers/lib/utils";
-import objektAbi from "@/objekt-abi.json";
+import { parseUnits } from "ethers/lib/utils";
+
 import { env } from "@/env.mjs";
 import { useToast } from "@/components/ui/use-toast";
 import {
@@ -37,6 +37,16 @@ import {
 } from "@/components/ui/dialog";
 import Objekt from "./objekt";
 import { useQueryClient } from "react-query";
+import {
+  TransactionError,
+  encodeTransaction,
+  fetchGasLimit,
+  fetchGasStation,
+  fetchNonce,
+  sendTransaction,
+  signTransaction,
+} from "@/lib/client/blockchain";
+import { setTimeout } from "timers";
 
 type Props = {
   objekt: OwnedObjekt;
@@ -72,8 +82,9 @@ export default function SendObjekt({ objekt }: Props) {
     );
 
     // trigger a refresh of the objekts query upon sending
+    // delayed by a second to allow enough time for cosmo's api to update
     if (transactionProgress === TransactionStatus.COMPLETE) {
-      queryClient.invalidateQueries("objekts");
+      setTimeout(() => queryClient.invalidateQueries("objekts"), 1000);
     }
   }, [transactionProgress, setPercentage, queryClient]);
 
@@ -278,115 +289,6 @@ function SendToUserButton({
   const { toast } = useToast();
   const ramperUser = useAuthStore((state) => state.ramperUser);
 
-  async function fetchNonce(
-    alchemy: ethers.providers.AlchemyProvider,
-    address: string
-  ) {
-    try {
-      return await alchemy.getTransactionCount(address);
-    } catch (_) {
-      throw new TransactionError("Failed to get transaction count");
-    }
-  }
-
-  function encodeTransaction(
-    fromAddress: string,
-    toAddress: string,
-    tokenId: string
-  ) {
-    try {
-      const abi = new Interface(objektAbi);
-      return abi.encodeFunctionData(abi.getFunction("transferFrom"), [
-        fromAddress,
-        toAddress,
-        tokenId,
-      ]);
-    } catch (_) {
-      throw new TransactionError("Failed to encode transaction");
-    }
-  }
-
-  async function fetchGasLimit(
-    alchemy: ethers.providers.AlchemyProvider,
-    objektContract: string,
-    transactionData: string
-  ) {
-    try {
-      return await alchemy.estimateGas({
-        to: objektContract,
-        data: transactionData,
-      });
-    } catch (_) {
-      throw new TransactionError("Failed to fetch gas limit");
-    }
-  }
-
-  async function fetchFeeData(alchemy: ethers.providers.AlchemyProvider) {
-    try {
-      return await alchemy.getFeeData();
-    } catch (_) {
-      throw new TransactionError("Failed to fetch transaction fee data");
-    }
-  }
-
-  async function fetchGasStation() {
-    try {
-      const response = await fetch(
-        "https://gas-station.cosmo.fans/v1/polygon-mainnet",
-        {
-          cache: "no-store",
-        }
-      );
-      if (response.ok) {
-        return (await response.json()) as GasStationResult;
-      }
-      throw new TransactionError("Failed to fetch gas station data");
-    } catch (_) {
-      throw new TransactionError("Failed to fetch gas station data");
-    }
-  }
-
-  async function signTransaction(
-    ramperSigner: any,
-    fromAddress: string,
-    value: ethers.BigNumber,
-    nonce: number,
-    gasLimit: ethers.BigNumber,
-    maxFeePerGas: ethers.BigNumber | null,
-    maxPriorityFeePerGas: ethers.BigNumber | null,
-    customData: string
-  ) {
-    try {
-      return await ramperSigner.signTransaction({
-        type: 2,
-        from: fromAddress,
-        to: objekt.tokenAddress,
-        value,
-        chainId: SUPPORTED_ETHEREUM_CHAIN_IDS.MATIC,
-        nonce,
-        gasLimit,
-        maxFeePerGas,
-        maxPriorityFeePerGas,
-        data: customData,
-      });
-    } catch (err) {
-      console.log(err);
-      throw new TransactionError("Failed to sign transaction");
-    }
-  }
-
-  async function sendTransaction(
-    alchemy: ethers.providers.AlchemyProvider,
-    signedTransaction: string
-  ) {
-    try {
-      return await alchemy.sendTransaction(signedTransaction);
-    } catch (err) {
-      console.log(err);
-      throw new TransactionError("Failed to send transaction");
-    }
-  }
-
   async function sendObjekt() {
     setPending(true);
     const wallet = ramperUser!.wallets["ethereum"];
@@ -419,6 +321,7 @@ function SendToUserButton({
 
       // get confirmation from user
       const signResult = await signTransaction(
+        objekt.tokenAddress,
         ramperSigner,
         wallet.publicKey,
         value,
@@ -466,10 +369,4 @@ function SendToUserButton({
       )}
     </Button>
   );
-}
-class TransactionError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "TransactionError";
-  }
 }
