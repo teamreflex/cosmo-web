@@ -2,7 +2,7 @@
 
 import {
   CosmoCombinationPollVoteResult,
-  CosmoPoll,
+  CosmoPollFinalized,
   CosmoSinglePollVoteResult,
 } from "@/lib/server/cosmo";
 import { ordinal } from "@/lib/utils";
@@ -11,7 +11,7 @@ import Image from "next/image";
 import { PropsWithChildren } from "react";
 
 type Props = PropsWithChildren<{
-  poll: CosmoPoll;
+  poll: CosmoPollFinalized;
 }>;
 
 export default function GravityRankingCarousel({ children, poll }: Props) {
