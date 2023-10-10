@@ -46,7 +46,6 @@ import {
   sendTransaction,
   signTransaction,
 } from "@/lib/client/blockchain";
-import { setTimeout } from "timers";
 
 type Props = {
   objekt: OwnedObjekt;
