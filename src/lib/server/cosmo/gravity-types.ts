@@ -277,3 +277,19 @@ export type CosmoCombinationPollChoices = {
 export type CosmoPollChoices =
   | CosmoSinglePollChoices
   | CosmoCombinationPollChoices;
+
+export type FabricateVotePayload = {
+  pollId: number;
+  choiceId: string;
+  comoAmount: number;
+};
+
+export type CosmoGravityVoteCalldata = {
+  artist: ValidArtist;
+  pollId: number;
+  pollIdOnChain: number;
+  candidateId: number;
+  hash: string;
+  salt: string;
+  signature: string;
+};

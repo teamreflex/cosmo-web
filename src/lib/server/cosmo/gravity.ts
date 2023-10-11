@@ -1,11 +1,13 @@
 import {
   COSMO_ENDPOINT,
   CosmoGravity,
+  CosmoGravityVoteCalldata,
   CosmoMyGravityResult,
   CosmoOngoingGravity,
   CosmoPastGravity,
   CosmoPollChoices,
   CosmoUpcomingGravity,
+  FabricateVotePayload,
   ValidArtist,
 } from ".";
 
@@ -176,4 +178,39 @@ export async function fetchPoll(
 
   const { pollDetail }: CosmoPollDetail = await res.json();
   return pollDetail;
+}
+
+/**
+ * Get hashed vote data from Cosmo.
+ * @param token string
+ * @param artist ValidArtist
+ * @param payload FabricateVotePayload
+ * @returns Promise<CosmoGravityVoteCalldata>
+ */
+export async function fabricateVote(
+  token: string,
+  artist: ValidArtist,
+  payload: FabricateVotePayload
+) {
+  const res = await fetch(
+    `${COSMO_ENDPOINT}/gravity/v3/${artist}/fabricate-vote`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error(
+      `Failed to create vote for poll "${payload.pollId}" for gravity "${artist}"`
+    );
+  }
+
+  const { callData }: { callData: CosmoGravityVoteCalldata } = await res.json();
+  return callData;
 }

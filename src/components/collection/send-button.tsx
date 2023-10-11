@@ -40,7 +40,7 @@ import Objekt from "./objekt";
 import { useQueryClient } from "react-query";
 import {
   TransactionError,
-  encodeTransaction,
+  encodeObjektTransfer,
   fetchGasLimit,
   fetchGasStation,
   fetchNonce,
@@ -306,7 +306,7 @@ function SendToUserButton({
       const value = ethers.utils.parseEther("0.0");
       const nonce = await fetchNonce(alchemy, wallet.publicKey);
       updateTransactionProgress(TransactionStatus.GET_NONCE);
-      const customData = encodeTransaction(
+      const customData = encodeObjektTransfer(
         wallet.publicKey,
         user.address,
         objekt.tokenId

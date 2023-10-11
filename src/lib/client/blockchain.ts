@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import objektAbi from "@/objekt-abi.json";
+import objektAbi from "@/abi/objekt.json";
 import { Interface } from "ethers/lib/utils";
 import { GasStationResult } from "../server/cosmo";
 import { SUPPORTED_ETHEREUM_CHAIN_IDS } from "@ramper/ethereum";
@@ -29,7 +29,7 @@ export async function fetchNonce(
 /**
  * Encode transaction data into hex using the Objekt contract ABI.
  */
-export function encodeTransaction(
+export function encodeObjektTransfer(
   fromAddress: string,
   toAddress: string,
   tokenId: string
@@ -43,7 +43,7 @@ export function encodeTransaction(
     ]);
   } catch (err) {
     console.error(err);
-    throw new TransactionError("Failed to encode transaction");
+    throw new TransactionError("Failed to encode objekt transfer data");
   }
 }
 
@@ -147,5 +147,28 @@ export async function sendTransaction(
   } catch (err) {
     console.error(err);
     throw new TransactionError("Failed to send transaction");
+  }
+}
+
+/**
+ * Encode transaction data into hex using the como contract ABI.
+ */
+export function encodeComoTransfer(
+  fromAddress: string,
+  toAddress: string,
+  data: string
+) {
+  try {
+    const abi = new Interface([
+      "function send(address recipient, uint256 amount, bytes data)",
+    ]);
+    return abi.encodeFunctionData(abi.getFunction("send"), [
+      fromAddress,
+      toAddress,
+      data,
+    ]);
+  } catch (err) {
+    console.error(err);
+    throw new TransactionError("Failed to encode como transfer data");
   }
 }
