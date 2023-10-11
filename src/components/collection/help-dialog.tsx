@@ -65,7 +65,7 @@ export default function HelpDialog() {
 
                   {/* locked */}
                   <div className="flex gap-2 items-center">
-                    <div className="bg-[#f97777] text-black rounded-lg p-1 flex items-center justify-center w-fit">
+                    <div className="bg-[#FF7477] text-black rounded-lg p-1 flex items-center justify-center w-fit">
                       <Lock className="h-5 w-5" />
                     </div>
                     <p className="font-semibold">Objekt has been locked</p>
