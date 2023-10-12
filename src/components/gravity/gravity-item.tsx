@@ -64,10 +64,19 @@ function GravityUpcoming({ gravity }: { gravity: CosmoUpcomingGravity }) {
 }
 
 function GravityOngoing({ gravity }: { gravity: CosmoOngoingGravity }) {
+  const currentPoll = gravity.polls.find((poll) => {
+    return (
+      new Date(poll.startDate) <= new Date() &&
+      new Date(poll.endDate) >= new Date()
+    );
+  });
+
   return (
     <GravityUpcomingOrOngoing gravity={gravity}>
       <div className="bg-cosmo-hover text-white w-full flex justify-center py-2 gap-2">
-        <GravityOngoingCountdown endsAt={gravity.entireEndDate} />
+        <GravityOngoingCountdown
+          endsAt={currentPoll?.endDate ?? gravity.entireEndDate}
+        />
       </div>
     </GravityUpcomingOrOngoing>
   );

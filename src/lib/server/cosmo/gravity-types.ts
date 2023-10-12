@@ -146,7 +146,6 @@ export type CosmoPastGravity = {
   };
 };
 
-// TODO: document these
 export type CosmoUpcomingGravity = {
   id: number;
   artist: ValidArtist;
