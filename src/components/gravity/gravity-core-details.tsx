@@ -153,9 +153,7 @@ function OngoingDetails({ gravity }: { gravity: CosmoOngoingGravity }) {
       <Header gravity={gravity} />
 
       <div className="flex flex-col gap-4 justify-center w-full py-12">
-        <div className="bg-cosmo-hover text-white w-full flex justify-center py-2 gap-2 rounded-lg">
-          <GravityOngoingCountdown endsAt={gravity.entireEndDate} />
-        </div>
+        <GravityOngoingCountdown className="rounded-lg" gravity={gravity} />
 
         <StoreHydrated>
           <GravityVote gravity={gravity} />
