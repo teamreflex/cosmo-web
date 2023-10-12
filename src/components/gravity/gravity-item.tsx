@@ -64,9 +64,19 @@ function GravityUpcoming({ gravity }: { gravity: CosmoUpcomingGravity }) {
 }
 
 function GravityOngoing({ gravity }: { gravity: CosmoOngoingGravity }) {
+  const currentPoll = gravity.polls.find((poll) => {
+    return (
+      new Date(poll.startDate) <= new Date() &&
+      new Date(poll.endDate) >= new Date()
+    );
+  });
+
   return (
     <GravityUpcomingOrOngoing gravity={gravity}>
-      <GravityOngoingCountdown gravity={gravity} />
+      <GravityOngoingCountdown
+        pollEndDate={currentPoll?.endDate}
+        gravityEndDate={gravity.entireEndDate}
+      />
     </GravityUpcomingOrOngoing>
   );
 }

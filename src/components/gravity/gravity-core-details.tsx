@@ -148,16 +148,29 @@ function UpcomingDetails({ gravity }: { gravity: CosmoUpcomingGravity }) {
 }
 
 function OngoingDetails({ gravity }: { gravity: CosmoOngoingGravity }) {
+  const currentPoll = gravity.polls.find((poll) => {
+    return (
+      new Date(poll.startDate) <= new Date() &&
+      new Date(poll.endDate) >= new Date()
+    );
+  });
+
   return (
     <div className="flex flex-col gap-2 w-full">
       <Header gravity={gravity} />
 
       <div className="flex flex-col gap-4 justify-center w-full py-12">
-        <GravityOngoingCountdown className="rounded-lg" gravity={gravity} />
+        <GravityOngoingCountdown
+          className="rounded-lg"
+          pollEndDate={currentPoll?.endDate}
+          gravityEndDate={gravity.entireEndDate}
+        />
 
-        <StoreHydrated>
-          <GravityVote gravity={gravity} />
-        </StoreHydrated>
+        {currentPoll && (
+          <StoreHydrated>
+            <GravityVote gravity={gravity} />
+          </StoreHydrated>
+        )}
       </div>
     </div>
   );
