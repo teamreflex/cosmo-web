@@ -10,7 +10,7 @@ export default async function GridStatus({ artist }: { artist: ValidArtist }) {
     <div className="bg-accent rounded-lg grid grid-cols-2 divide-x divide-background w-full sm:w-1/2">
       {/* completed */}
       <div className="flex flex-col items-center justify-center p-2">
-        <p>Completed Grid</p>
+        <p className="font-bold text-sm">Completed Grid</p>
         <p className="text-2xl text-cosmo-text font-bold">
           {status.totalCompletedGrids}
         </p>
@@ -18,7 +18,7 @@ export default async function GridStatus({ artist }: { artist: ValidArtist }) {
 
       {/* total obtained */}
       <div className="flex flex-col items-center justify-center p-2">
-        <p>Total Special Objekts</p>
+        <p className="font-bold text-sm">Total Special Objekts</p>
         <p className="text-2xl text-cosmo-text font-bold">
           {status.totalSpecialObjekts}
         </p>

@@ -42,7 +42,7 @@ export default function HelpDialog() {
                   Different indicators in the top left denote different statuses
                   of an objekt.
                 </p>
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-1 text-start">
                   {/* grid */}
                   <div className="flex gap-2 items-center">
                     <div className="bg-[#FFDD00] text-black rounded-lg p-1 flex items-center justify-center w-fit">

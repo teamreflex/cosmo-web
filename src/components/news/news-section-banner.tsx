@@ -62,6 +62,7 @@ function BannerItem({ className, item, index, total }: BannerItemProps) {
           fill={true}
           className="object-contain"
           quality={100}
+          priority={true}
         />
 
         <div className="absolute bottom-0 left-0 w-full flex h-20 bg-gradient-to-t from-background/90 to-transparent" />

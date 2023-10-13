@@ -42,10 +42,10 @@ function SinglePollResult({ result }: { result: CosmoSinglePollVoteResult[] }) {
     <>
       {result.map((vote) => (
         <div
-          className="embla__slide mx-3 p-2 w-fit max-w-fit flex flex-col justify-between gap-2 aspect-photocard h-52 bg-black rounded-lg"
+          className="embla__slide mx-2 p-2 flex flex-col justify-between gap-2 aspect-photocard w-32 max-w-[8rem] bg-black rounded-lg"
           key={vote.rank}
         >
-          <span className="bg-cosmo text-white text-sm px-2 py-1 rounded-lg w-fit">
+          <span className="bg-cosmo text-white text-xs px-2 py-px rounded w-fit">
             {ordinal(vote.rank)}
           </span>
 
@@ -58,9 +58,9 @@ function SinglePollResult({ result }: { result: CosmoSinglePollVoteResult[] }) {
             />
           </div>
 
-          <div className="flex flex-col text-sm font-bold">
+          <div className="flex flex-col text-xs font-bold">
             <p className="text-cosmo-text">{vote.votedChoice.choiceName}</p>
-            <p>{vote.votedChoice.comoUsed} COMO</p>
+            <p>{vote.votedChoice.comoUsed.toLocaleString()} COMO</p>
           </div>
         </div>
       ))}

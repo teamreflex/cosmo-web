@@ -50,9 +50,9 @@ function PastDetails({ gravity }: { gravity: CosmoPastGravity }) {
         >
           {/* total como used */}
           <div className="flex flex-col items-center justify-center bg-accent rounded-xl py-4 w-full sm:w-1/2">
-            <p>Total COMO collected</p>
+            <p className="font-bold text-sm">Total COMO collected</p>
             <p className="text-2xl font-bold text-cosmo-text">
-              {gravity.result.totalComoUsed}
+              {gravity.result.totalComoUsed.toLocaleString()}
             </p>
           </div>
 
@@ -110,7 +110,7 @@ function PastDetails({ gravity }: { gravity: CosmoPastGravity }) {
                   <td className="w-10">{user.rank}</td>
                   <td className="flex grow">{user.user.nickname}</td>
                   <td className="flex justify-end">
-                    {user.totalComoUsed} COMO
+                    {user.totalComoUsed.toLocaleString()} COMO
                   </td>
                 </tr>
               ))}

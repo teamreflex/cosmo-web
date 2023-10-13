@@ -25,15 +25,15 @@ export default async function GravityMyRecord({ gravity }: Props) {
         <div className="bg-accent rounded-lg grid grid-cols-2 divide-x divide-background">
           {/* total como used */}
           <div className="flex flex-col items-center justify-center p-2">
-            <p>Total COMO used</p>
+            <p className="font-bold text-sm">Total COMO used</p>
             <p className="text-2xl text-cosmo-text font-bold">
-              {record.totalComoUsed}
+              {record.totalComoUsed.toLocaleString()}
             </p>
           </div>
 
           {/* contribution ranking */}
           <div className="flex flex-col items-center justify-center p-2">
-            <p>Contribution ranking</p>
+            <p className="font-bold text-sm">Contribution ranking</p>
             <p className="text-2xl text-cosmo-text font-bold">
               {ordinal(record.rank)}
             </p>
@@ -72,7 +72,7 @@ export default async function GravityMyRecord({ gravity }: Props) {
 
               <div className="flex flex-col justify-between text-sm items-end">
                 <p className="text-cosmo-text font-semibold">
-                  {vote.comoUsed} COMO
+                  {vote.comoUsed.toLocaleString()} COMO
                 </p>
                 <GravityVoteTimestamp at={vote.at} />
               </div>
