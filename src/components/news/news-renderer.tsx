@@ -1,28 +1,21 @@
 import {
-  fetchHomeNews,
   isBannerSection,
   isExclusiveSection,
   isFeedSection,
 } from "@/lib/server/cosmo";
 import { ValidArtist } from "@/lib/server/cosmo/common";
 import { TokenPayload } from "@/lib/server/jwt";
-import { cache } from "react";
 import NewsSectionFeed from "./news-section-feed";
 import NewsSectionExclusive from "./news-section-exclusive";
 import NewsSectionBanner from "./news-section-banner";
+import { fetchNewsForSelectedArtist } from "@/app/(core)/data-fetching";
 
 type Props = {
-  artist: ValidArtist;
   user: TokenPayload;
 };
 
-const fetchNewsForArtist = cache(
-  async (token: string, artist: ValidArtist) =>
-    await fetchHomeNews(token, artist)
-);
-
-export default async function NewsRenderer({ user, artist }: Props) {
-  const news = await fetchNewsForArtist(user.cosmoToken, artist);
+export default async function NewsRenderer({ user }: Props) {
+  const news = await fetchNewsForSelectedArtist(user.id, user.cosmoToken);
 
   return (
     <div className="flex flex-col items-center divide-y-2 divide-accent container px-4">

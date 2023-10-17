@@ -5,7 +5,6 @@ import CosmoImage from "@/static/cosmo.png";
 import Image from "next/image";
 import NewsRenderer from "@/components/news/news-renderer";
 import { LoadingNews } from "@/components/news/news-loading";
-import { fetchSelectedArtist } from "./data-fetching";
 import { Metadata } from "next";
 import { env } from "@/env.mjs";
 
@@ -32,13 +31,20 @@ export default async function HomePage() {
     );
   }
 
-  const selectedArtist = await fetchSelectedArtist(user.id);
-
   return (
     <main className="flex flex-col items-center container">
-      <Suspense fallback={<LoadingNews />}>
-        <NewsRenderer user={user!} artist={selectedArtist ?? "artms"} />
+      <Suspense fallback={<NewsSkeleton />}>
+        <NewsRenderer user={user!} />
       </Suspense>
     </main>
+  );
+}
+
+function NewsSkeleton() {
+  return (
+    <div className="flex flex-col gap-2 items-center animate-pulse w-full sm:w-1/2 py-4">
+      <div className="bg-accent rounded-lg h-48 w-full" />
+      <div className="bg-accent rounded-lg h-24 w-full" />
+    </div>
   );
 }
