@@ -7,7 +7,6 @@ This project aims to build a web based version of [Modhaus](https://www.mod-haus
 - Account registration is out of scope. There's too much that goes into the onboarding process, not worth the effort.
 - Account settings updates are out of scope. There's not enough in there to adjust right now.
 - Purchasing objekts is out of scope due to Apple/Google services being used.
-- Complete objekt library and viewing other users are both out of scope. Other tools already exist.
 
 ### Replicated Features
 
