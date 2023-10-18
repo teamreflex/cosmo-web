@@ -1,8 +1,7 @@
 import { cacheMembers, fetchLockedObjekts } from "@/lib/server/cache";
-import { readToken } from "@/lib/server/jwt";
-import { cookies } from "next/headers";
 import CollectionRenderer from "@/components/collection/collection-renderer";
 import { Metadata } from "next";
+import { decodeUser } from "../data-fetching";
 
 export const runtime = "edge";
 export const metadata: Metadata = {
@@ -10,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 export default async function CollectionPage() {
-  const user = await readToken(cookies().get("token")?.value);
+  const user = await decodeUser();
 
   const [lockedObjekts, artists] = await Promise.all([
     fetchLockedObjekts(user!.id),

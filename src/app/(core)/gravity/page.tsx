@@ -1,11 +1,10 @@
-import { readToken } from "@/lib/server/jwt";
-import { cookies } from "next/headers";
 import { Metadata } from "next";
 import { Suspense } from "react";
 import { fetchSelectedArtist } from "@/lib/server/cache";
 import GravityRenderer, {
   GravitySkeleton,
 } from "@/components/gravity/gravity-renderer";
+import { decodeUser } from "../data-fetching";
 
 export const runtime = "edge";
 export const metadata: Metadata = {
@@ -13,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default async function GravityPage() {
-  const user = await readToken(cookies().get("token")?.value);
+  const user = await decodeUser();
   const selectedArtist = (await fetchSelectedArtist(user!.id)) ?? "artms";
 
   return (

@@ -1,7 +1,5 @@
 import NewsExclusiveInfiniteLoader from "@/components/news/news-exclusive-infinite-loader";
-import { readToken } from "@/lib/server/jwt";
-import { cookies } from "next/headers";
-import { fetchSelectedArtist } from "../../data-fetching";
+import { decodeUser, fetchSelectedArtist } from "../../data-fetching";
 import { Metadata } from "next";
 
 export const runtime = "edge";
@@ -10,7 +8,7 @@ export const metadata: Metadata = {
 };
 
 export default async function NewsExclusivePage() {
-  const user = await readToken(cookies().get("token")?.value);
+  const user = await decodeUser();
   const selectedArtist = await fetchSelectedArtist(user!.id);
 
   return (

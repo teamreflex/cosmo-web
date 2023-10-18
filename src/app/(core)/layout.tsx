@@ -1,13 +1,11 @@
 import type { Metadata } from "next";
 import Navbar from "@/components/navbar";
 import ClientProviders from "@/components/client-providers";
-import { readToken } from "@/lib/server/jwt";
-import { cookies } from "next/headers";
 import { Suspense, cache } from "react";
 import { ValidArtist } from "@/lib/server/cosmo";
 import ComoBalances from "@/components/como-balances";
 import { Loader2 } from "lucide-react";
-import { fetchSelectedArtist } from "./data-fetching";
+import { decodeUser, fetchSelectedArtist } from "./data-fetching";
 import { env } from "@/env.mjs";
 import { cacheArtists } from "@/lib/server/cache";
 
@@ -50,7 +48,7 @@ export default async function CoreLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const user = await readToken(cookies().get("token")?.value);
+  const user = await decodeUser();
   const [artists, selectedArtist] = await fetchData(user?.id);
 
   return (

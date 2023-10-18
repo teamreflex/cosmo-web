@@ -1,5 +1,3 @@
-import { TokenPayload, readToken } from "@/lib/server/jwt";
-import { cookies } from "next/headers";
 import { Metadata } from "next";
 import { cache } from "react";
 import { fetchSelectedArtist } from "@/lib/server/cache";
@@ -7,14 +5,16 @@ import { fetchGravity } from "@/lib/server/cosmo";
 import GravityBodyRenderer from "@/components/gravity/gravity-body-renderer";
 import GravityCoreDetails from "@/components/gravity/gravity-core-details";
 import { redirect } from "next/navigation";
+import { decodeUser } from "../../data-fetching";
 
 export const runtime = "edge";
 
-const fetchData = cache(async (user: TokenPayload, gravity: number) => {
+const fetchData = cache(async (gravity: number) => {
+  const user = await decodeUser();
   const selectedArtist = await fetchSelectedArtist(user!.id);
 
   return await fetchGravity(
-    user.cosmoToken,
+    user!.cosmoToken,
     selectedArtist ?? "artms",
     gravity
   );
@@ -25,8 +25,7 @@ export async function generateMetadata({
 }: {
   params: { gravity: number };
 }): Promise<Metadata> {
-  const user = await readToken(cookies().get("token")?.value);
-  const gravity = await fetchData(user!, params.gravity);
+  const gravity = await fetchData(params.gravity);
 
   return {
     title: gravity?.title ?? "Gravity",
@@ -38,9 +37,7 @@ export default async function GravityPage({
 }: {
   params: { gravity: number };
 }) {
-  const user = await readToken(cookies().get("token")?.value);
-  const gravity = await fetchData(user!, params.gravity);
-
+  const gravity = await fetchData(params.gravity);
   if (!gravity) {
     redirect("/gravity");
   }

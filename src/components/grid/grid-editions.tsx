@@ -3,20 +3,19 @@ import {
   ValidArtist,
   fetchEditions,
 } from "@/lib/server/cosmo";
-import { readToken } from "@/lib/server/jwt";
 import { ChevronRight } from "lucide-react";
-import { cookies } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import * as R from "remeda";
+import { decodeUser } from "@/app/(core)/data-fetching";
 
 export default async function GridEditions({
   artist,
 }: {
   artist: ValidArtist;
 }) {
-  const user = await readToken(cookies().get("token")?.value);
+  const user = await decodeUser();
   const editions = await fetchEditions(user!.cosmoToken, artist);
 
   const seasons = R.groupBy(editions, (edition) => edition.season.title);

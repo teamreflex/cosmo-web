@@ -1,11 +1,11 @@
-import { TokenPayload, readToken } from "@/lib/server/jwt";
-import { cookies } from "next/headers";
+import { TokenPayload } from "@/lib/server/jwt";
 import { Metadata } from "next";
 import { cache } from "react";
 import { fetchEdition } from "@/lib/server/cosmo";
 import { redirect } from "next/navigation";
 import GridRenderer from "@/components/grid/grid-renderer";
 import { fetchSelectedArtist } from "@/lib/server/cache";
+import { decodeUser } from "../../data-fetching";
 
 export const runtime = "edge";
 
@@ -13,11 +13,12 @@ type Props = {
   params: { edition: string };
 };
 
-const fetchGrids = cache(async (user: TokenPayload, edition: string) => {
+const fetchGrids = cache(async (edition: string) => {
+  const user = await decodeUser();
   const selectedArtist = await fetchSelectedArtist(user!.id);
 
   return await fetchEdition(
-    user.cosmoToken,
+    user!.cosmoToken,
     selectedArtist ?? "artms",
     edition
   );
@@ -35,9 +36,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function GridEditionPage({ params }: Props) {
-  const user = await readToken(cookies().get("token")?.value);
-  const grids = await fetchGrids(user!, params.edition);
-
+  const grids = await fetchGrids(params.edition);
   if (grids.length === 0) {
     redirect("/grid");
   }

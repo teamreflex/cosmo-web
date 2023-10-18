@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { readToken } from "./lib/server/jwt";
+import { getUser } from "./app/api/common";
 
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next();
@@ -8,9 +8,9 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // verifies token validity
-  const token = await readToken(request.cookies.get("token")?.value);
+  const auth = await getUser();
 
-  if (!token) {
+  if (auth.success === false) {
     // delete the token if it exists, as it must be invalid
     if (request.cookies.has("token")) {
       request.cookies.delete("token");

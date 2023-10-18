@@ -1,16 +1,15 @@
 import { CosmoPastGravity, fetchMyGravityResult } from "@/lib/server/cosmo";
-import { readToken } from "@/lib/server/jwt";
 import { ordinal } from "@/lib/utils";
-import { cookies } from "next/headers";
 import Image from "next/image";
 import GravityVoteTimestamp from "./gravity-vote-timestamp";
+import { decodeUser } from "@/app/(core)/data-fetching";
 
 type Props = {
   gravity: CosmoPastGravity;
 };
 
 export default async function GravityMyRecord({ gravity }: Props) {
-  const user = await readToken(cookies().get("token")?.value);
+  const user = await decodeUser();
   const record = await fetchMyGravityResult(
     user!.cosmoToken,
     gravity.artist,

@@ -1,15 +1,14 @@
 import { CosmoGravity, ValidArtist, fetchGravities } from "@/lib/server/cosmo";
-import { readToken } from "@/lib/server/jwt";
-import { cookies } from "next/headers";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import GravityItem from "./gravity-item";
+import { decodeUser } from "@/app/(core)/data-fetching";
 
 type Props = {
   artist: ValidArtist;
 };
 
 export default async function GravityRenderer({ artist }: Props) {
-  const user = await readToken(cookies().get("token")?.value);
+  const user = await decodeUser();
   const gravities = await fetchGravities(user!.cosmoToken, artist);
 
   const ongoing = [...gravities.upcoming, ...gravities.ongoing];

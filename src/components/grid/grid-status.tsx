@@ -1,9 +1,8 @@
+import { decodeUser } from "@/app/(core)/data-fetching";
 import { ValidArtist, fetchGridStatus } from "@/lib/server/cosmo";
-import { readToken } from "@/lib/server/jwt";
-import { cookies } from "next/headers";
 
 export default async function GridStatus({ artist }: { artist: ValidArtist }) {
-  const user = await readToken(cookies().get("token")?.value);
+  const user = await decodeUser();
   const status = await fetchGridStatus(user!.cosmoToken, artist);
 
   return (

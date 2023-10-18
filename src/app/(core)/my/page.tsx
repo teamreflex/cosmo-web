@@ -1,10 +1,9 @@
 import CopyWallet from "@/components/my/copy-wallet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { readToken } from "@/lib/server/jwt";
-import { cookies } from "next/headers";
 import Image from "next/image";
 import ProfileImage from "@/static/profile.webp";
 import { Metadata } from "next";
+import { decodeUser } from "../data-fetching";
 
 export const runtime = "edge";
 export const metadata: Metadata = {
@@ -12,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 export default async function MyPage() {
-  const user = await readToken(cookies().get("token")?.value);
+  const user = await decodeUser();
 
   return (
     <main className="container flex flex-col py-2">
