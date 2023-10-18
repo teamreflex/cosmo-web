@@ -123,9 +123,9 @@ function VoteDialog({
                     />
                   </div>
 
-                  <div className="flex flex-col justify-between items-start">
-                    <h3 className="font-bold text-start">{choice.title}</h3>
-                    <p className="text-white/75 text-sm">
+                  <div className="flex flex-col justify-between items-start text-start">
+                    <h3 className="font-bold">{choice.title}</h3>
+                    <p className="text-white/75 text-xs">
                       {choice.description}
                     </p>
                   </div>
