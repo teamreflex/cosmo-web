@@ -24,9 +24,10 @@ export default function GravityOngoingCountdown({
 
   useEffect(() => {
     const interval = setInterval(() => {
-      const hours = (duration.days ?? 0) * 23 + (duration.hours ?? 0);
-      const minutes = duration.minutes?.toString().padStart(2, "0");
-      const seconds = duration.seconds?.toString().padStart(2, "0");
+      const hoursNum = (duration.hours ?? 0) + (duration.days ?? 0) * 24;
+      const hours = hoursNum.toString().padStart(2, "0");
+      const minutes = duration.minutes?.toString().padStart(2, "0") ?? "00";
+      const seconds = duration.seconds?.toString().padStart(2, "0") ?? "00";
 
       setTimeLeft(`${hours}H: ${minutes}M: ${seconds}S`);
     }, 1000);
