@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
 
   const params = parseParams(request.nextUrl.searchParams);
   const result = await fetchFeed(
-    auth.user.cosmoToken,
+    auth.user.accessToken,
     params.artist as ValidArtist,
     params.startAfter
   );

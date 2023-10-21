@@ -3,7 +3,7 @@ import { ValidArtist, fetchGridStatus } from "@/lib/server/cosmo";
 
 export default async function GridStatus({ artist }: { artist: ValidArtist }) {
   const user = await decodeUser();
-  const status = await fetchGridStatus(user!.cosmoToken, artist);
+  const status = await fetchGridStatus(user!.accessToken, artist);
 
   return (
     <div className="bg-accent rounded-lg grid grid-cols-2 divide-x divide-background w-full sm:w-1/2">

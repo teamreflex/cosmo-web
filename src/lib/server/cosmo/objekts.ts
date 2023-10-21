@@ -136,7 +136,6 @@ export async function ownedByMe({
   );
 
   if (!res.ok) {
-    console.log(await res.json());
     throw new Error("Failed to fetch objekts");
   }
 

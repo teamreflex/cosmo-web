@@ -19,7 +19,8 @@ type LoginResult = {
   email: string;
   nickname: string;
   address: string;
-  cosmoToken: string;
+  accessToken: string;
+  refreshToken: string;
 };
 
 /**
@@ -55,7 +56,8 @@ export async function login(
     email: result.user.email,
     nickname: result.user.nickname,
     address: result.user.address,
-    cosmoToken: result.credentials.accessToken,
+    accessToken: result.credentials.accessToken,
+    refreshToken: result.credentials.refreshToken,
   };
 }
 
@@ -155,4 +157,35 @@ export async function search(term: string): Promise<SearchUser[]> {
   }
 
   return [];
+}
+
+type RefreshTokenResult = {
+  refreshToken: string;
+  accessToken: string;
+};
+
+/**
+ * Refresh the given token.
+ * @param refreshToken string
+ * @returns Promise<RefreshTokenResult>
+ */
+export async function refresh(
+  refreshToken: string
+): Promise<RefreshTokenResult> {
+  const res = await fetch(`${COSMO_ENDPOINT}/auth/v1/refresh`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ refreshToken }),
+  });
+
+  if (res.ok) {
+    const { credentials }: { credentials: RefreshTokenResult } =
+      await res.json();
+    return credentials;
+  }
+
+  throw new Error("Failed to refresh token");
 }

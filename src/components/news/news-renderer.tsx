@@ -15,7 +15,7 @@ type Props = {
 };
 
 export default async function NewsRenderer({ user }: Props) {
-  const news = await fetchNewsForSelectedArtist(user.id, user.cosmoToken);
+  const news = await fetchNewsForSelectedArtist(user.id, user.accessToken);
 
   return (
     <div className="flex flex-col items-center divide-y-2 divide-accent container px-4">

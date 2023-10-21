@@ -13,6 +13,6 @@ export async function GET(
     return new Response(auth.error, { status: auth.status });
   }
 
-  const grid = await fetchArtistGridStatus(auth.user.cosmoToken, params.grid);
+  const grid = await fetchArtistGridStatus(auth.user.accessToken, params.grid);
   return NextResponse.json(grid);
 }

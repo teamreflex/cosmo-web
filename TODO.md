@@ -1,6 +1,6 @@
 ### Auth
 
-- Implement Cosmo token refreshing.
+- Test Cosmo token refreshing.
 
 ### Grid
 

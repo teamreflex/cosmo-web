@@ -18,7 +18,7 @@ const fetchGrids = cache(async (edition: string) => {
   const selectedArtist = await fetchSelectedArtist(user!.id);
 
   return await fetchEdition(
-    user!.cosmoToken,
+    user!.accessToken,
     selectedArtist ?? "artms",
     edition
   );

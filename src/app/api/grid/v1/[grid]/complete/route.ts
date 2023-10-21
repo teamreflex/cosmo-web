@@ -21,6 +21,6 @@ export async function POST(
 
   const { slots }: { slots: CosmoGridSlotCompletion[] } = await request.json();
 
-  const success = await completeGrid(auth.user.cosmoToken, params.grid, slots);
+  const success = await completeGrid(auth.user.accessToken, params.grid, slots);
   return NextResponse.json({ success }, { status: success ? 200 : 400 });
 }

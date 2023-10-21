@@ -11,7 +11,7 @@ type Props = {
 export default async function GravityMyRecord({ gravity }: Props) {
   const user = await decodeUser();
   const record = await fetchMyGravityResult(
-    user!.cosmoToken,
+    user!.accessToken,
     gravity.artist,
     gravity.id
   );

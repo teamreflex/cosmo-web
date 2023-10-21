@@ -48,6 +48,6 @@ export async function POST(
     });
   }
 
-  const result = await claimGridReward(auth.user.cosmoToken, params.grid);
+  const result = await claimGridReward(auth.user.accessToken, params.grid);
   return NextResponse.json(result);
 }

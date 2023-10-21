@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
   }
 
   const objekts = await ownedByMe({
-    token: auth.user.cosmoToken,
+    token: auth.user.accessToken,
     ...parseParams(request.nextUrl.searchParams),
   });
 

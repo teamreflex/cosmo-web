@@ -9,7 +9,7 @@ type Props = {
 
 export default async function GravityRenderer({ artist }: Props) {
   const user = await decodeUser();
-  const gravities = await fetchGravities(user!.cosmoToken, artist);
+  const gravities = await fetchGravities(user!.accessToken, artist);
 
   const ongoing = [...gravities.upcoming, ...gravities.ongoing];
 

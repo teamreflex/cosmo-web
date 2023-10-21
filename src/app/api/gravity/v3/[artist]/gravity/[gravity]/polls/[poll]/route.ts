@@ -14,7 +14,7 @@ export async function GET(
   }
 
   const poll = await fetchPoll(
-    auth.user.cosmoToken,
+    auth.user.accessToken,
     params.artist,
     params.gravity,
     params.poll

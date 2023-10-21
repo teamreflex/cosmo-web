@@ -3,8 +3,7 @@
 import "server-only";
 import { object, string } from "zod";
 import { cookies } from "next/headers";
-import { signToken } from "@/lib/server/jwt";
-import { env } from "@/env.mjs";
+import { generateCookiePayload, signToken } from "@/lib/server/jwt";
 import { ValidArtist, login } from "@/lib/server/cosmo";
 import { redirect } from "next/navigation";
 import { setSelectedArtist } from "@/lib/server/cache/artist-select";
@@ -35,12 +34,11 @@ export async function cosmoLogin(form: FormData) {
   // login with cosmo
   const loginPayload = await login(email, token);
 
-  cookies().set("token", await signToken(loginPayload), {
-    path: "/",
-    maxAge: 60 * 60 * 24 * 7, // 7 days
-    sameSite: true,
-    secure: env.VERCEL_ENV !== "development",
-  });
+  cookies().set(
+    "token",
+    await signToken(loginPayload),
+    generateCookiePayload()
+  );
 
   redirect("/");
 }

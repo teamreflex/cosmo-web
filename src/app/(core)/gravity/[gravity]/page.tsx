@@ -14,7 +14,7 @@ const fetchData = cache(async (gravity: number) => {
   const selectedArtist = await fetchSelectedArtist(user!.id);
 
   return await fetchGravity(
-    user!.cosmoToken,
+    user!.accessToken,
     selectedArtist ?? "artms",
     gravity
   );

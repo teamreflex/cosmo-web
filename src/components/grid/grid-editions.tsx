@@ -16,7 +16,7 @@ export default async function GridEditions({
   artist: ValidArtist;
 }) {
   const user = await decodeUser();
-  const editions = await fetchEditions(user!.cosmoToken, artist);
+  const editions = await fetchEditions(user!.accessToken, artist);
 
   const seasons = R.groupBy(editions, (edition) => edition.season.title);
   const seasonTitles = Object.keys(seasons);

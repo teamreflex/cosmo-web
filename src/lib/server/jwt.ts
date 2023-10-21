@@ -1,5 +1,5 @@
 import "server-only";
-import { SignJWT, jwtVerify } from "jose";
+import { SignJWT, decodeJwt, jwtVerify } from "jose";
 import { env } from "@/env.mjs";
 
 export async function readToken(token?: string) {
@@ -16,7 +16,8 @@ export type TokenPayload = {
   email: string;
   nickname: string;
   address: string;
-  cosmoToken: string;
+  accessToken: string;
+  refreshToken: string;
 };
 
 /**
@@ -29,7 +30,7 @@ export async function signToken(payload: TokenPayload) {
   return await new SignJWT({ data: payload })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
-    .setExpirationTime("7d")
+    .setExpirationTime("30d")
     .sign(secret);
 }
 
@@ -62,4 +63,22 @@ export async function decodeToken(token: string): Promise<TokenResult> {
   } catch (err) {
     return { success: false };
   }
+}
+
+/**
+ * Checks the JWT for a valid exp claim.
+ * @param token string
+ */
+export function validateExpiry(token: string): boolean {
+  const claims = decodeJwt(token);
+  return claims.exp !== undefined && claims.exp > Date.now() / 1000;
+}
+
+export function generateCookiePayload() {
+  return {
+    path: "/",
+    maxAge: 60 * 60 * 24 * 30, // 30 days
+    sameSite: true,
+    secure: env.VERCEL_ENV !== "development",
+  };
 }
