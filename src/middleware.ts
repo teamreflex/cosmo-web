@@ -29,27 +29,34 @@ export async function middleware(request: NextRequest) {
   }
 
   // validate the user's cosmo access token
-  if (validateExpiry(auth.user.accessToken) === false) {
-    // validate the user's cosmo refresh token
-    if (validateExpiry(auth.user.refreshToken)) {
-      // if valid, refresh the token
-      const newTokens = await refresh(auth.user.refreshToken);
+  try {
+    if (validateExpiry(auth.user.accessToken) === false) {
+      // validate the user's cosmo refresh token
+      if (validateExpiry(auth.user.refreshToken)) {
+        // if valid, refresh the token
+        const newTokens = await refresh(auth.user.refreshToken);
 
-      // set the new cookie
-      response.cookies.set(
-        "token",
-        await signToken({
-          ...auth.user,
-          ...newTokens,
-        }),
-        generateCookiePayload()
-      );
-    } else {
-      // if invalid, delete the cookie since we can't refresh it
-      const redirect = NextResponse.redirect(new URL("/", request.url));
-      redirect.cookies.delete("token");
-      return redirect;
+        // set the new cookie
+        response.cookies.set(
+          "token",
+          await signToken({
+            ...auth.user,
+            ...newTokens,
+          }),
+          generateCookiePayload()
+        );
+      } else {
+        // if invalid, delete the cookie since we can't refresh it
+        const redirect = NextResponse.redirect(new URL("/", request.url));
+        redirect.cookies.delete("token");
+        return redirect;
+      }
     }
+  } catch (err) {
+    // something has failed (probably jwt payload change), nuke everything
+    const redirect = NextResponse.redirect(new URL("/", request.url));
+    redirect.cookies.delete("token");
+    return redirect;
   }
 
   // pass the request on when in the app
