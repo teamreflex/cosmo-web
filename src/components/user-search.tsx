@@ -16,6 +16,7 @@ import { HeartCrack, Loader2 } from "lucide-react";
 
 type Props = PropsWithChildren<{
   placeholder?: string;
+  recent: SearchUser[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSelect: (user: SearchUser) => void;
@@ -23,6 +24,7 @@ type Props = PropsWithChildren<{
 
 export function UserSearch({
   children,
+  recent,
   placeholder,
   open,
   onOpenChange,
@@ -83,6 +85,19 @@ export function UserSearch({
                 ))}
               </CommandGroup>
             )
+          )}
+          {recent.length > 0 && (
+            <CommandGroup heading="Recent">
+              {recent.map((user) => (
+                <CommandItem
+                  key={user.address}
+                  onSelect={() => select(user)}
+                  className="cursor-pointer"
+                >
+                  {user.nickname}
+                </CommandItem>
+              ))}
+            </CommandGroup>
           )}
         </CommandList>
       </CommandDialog>

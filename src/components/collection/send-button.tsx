@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { AlertTriangle, Check, Loader2, Send } from "lucide-react";
 import { Button } from "../ui/button";
 import { useEffect, useState } from "react";
-import { useAuthStore } from "@/store";
+import { useAuthStore, useSearchStore } from "@/store";
 import { ethers } from "ethers";
 import {
   SUPPORTED_ETHEREUM_CHAIN_IDS,
@@ -69,6 +69,9 @@ export default function SendObjekt({ objekt }: Props) {
     useState<TransactionStatus>(TransactionStatus.WAITING);
   const [percentage, setPercentage] = useState(0);
 
+  const recent = useSearchStore((state) => state.recentSends);
+  const addRecent = useSearchStore((state) => state.addRecentSend);
+
   const queryClient = useQueryClient();
 
   // calculate progress
@@ -85,6 +88,7 @@ export default function SendObjekt({ objekt }: Props) {
   }, [transactionProgress, setPercentage, queryClient]);
 
   function prepareSending(newRecipient: SearchUser) {
+    addRecent(newRecipient);
     setRecipient(newRecipient);
     setOpenSearch(false);
     setOpenSend(true);
@@ -102,6 +106,7 @@ export default function SendObjekt({ objekt }: Props) {
         open={openSearch}
         onOpenChange={setOpenSearch}
         onSelect={prepareSending}
+        recent={recent}
       >
         <button
           onClick={() => setOpenSearch(true)}
