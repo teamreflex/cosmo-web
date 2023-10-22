@@ -15,6 +15,7 @@
 
 ### Collection
 
+- Replace form action user search with route handler
 - Look into marking objekts as "up for trade" or go all-in on a WTT system
   - would probably require indexing all possible objekts
 - Wishlist creator tool?

@@ -6,6 +6,7 @@ import { ReactNode } from "react";
 import { TokenPayload } from "@/lib/server/jwt";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { CosmoArtist, ValidArtist } from "@/lib/server/cosmo";
+import { UserSearch } from "./user-search";
 
 const links = [
   { name: "Home", icon: Home, href: "/" },
@@ -50,19 +51,7 @@ export default function Navbar({
             </Tooltip>
           ))}
 
-          <Tooltip key={4} delayDuration={0}>
-            <TooltipTrigger asChild>
-              <button
-                className="drop-shadow-lg hover:scale-110 transition-all"
-                aria-label="Search for user"
-              >
-                <Search className="h-8 w-8 shrink-0" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Search</p>
-            </TooltipContent>
-          </Tooltip>
+          <UserSearch />
         </div>
 
         <div className="flex items-center justify-end gap-2">

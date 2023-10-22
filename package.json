@@ -34,6 +34,7 @@
     "bufferutil": "^4.0.7",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
+    "cmdk": "^0.2.0",
     "date-fns": "^2.30.0",
     "embla-carousel-autoplay": "8.0.0-rc14",
     "embla-carousel-react": "8.0.0-rc14",
