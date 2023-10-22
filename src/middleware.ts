@@ -8,8 +8,35 @@ import {
 } from "./lib/server/jwt";
 import { refresh } from "./lib/server/cosmo";
 
+export const config = {
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+  ],
+};
+
+/**
+ * allow unauthenticated access to these paths:
+ * - /u/:username
+ * - /
+ * - /api/objekt/v1/owned-by/[nickname]
+ * - /api/user/v1/search
+ *
+ * this is separate to the matcher as these paths still need token handling
+ */
+const allowUnauthenticated = new RegExp(
+  "^(/u/[^/]*|/|/api/objekt/v1/owned-by/.*|/api/user/v1/search)$"
+);
+
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next();
+  const path = request.nextUrl.pathname;
 
   // verifies token validity
   const auth = await getUser();
@@ -21,7 +48,7 @@ export async function middleware(request: NextRequest) {
     }
 
     // redirect to index when unauthenticated
-    if (request.nextUrl.pathname !== "/") {
+    if (allowUnauthenticated.test(path) === false) {
       return NextResponse.redirect(new URL("/", request.url));
     }
 
@@ -62,16 +89,3 @@ export async function middleware(request: NextRequest) {
   // pass the request on when in the app
   return response;
 }
-
-export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
-    "/((?!api|_next/static|_next/image|favicon.ico).*)",
-  ],
-};

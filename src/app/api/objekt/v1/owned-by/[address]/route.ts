@@ -34,12 +34,10 @@ export async function GET(
   { params }: { params: { address: string } }
 ) {
   const auth = await getUser();
-  if (!auth.success) {
-    return new Response(auth.error, { status: auth.status });
-  }
+  const accessToken = auth.success ? auth.user?.accessToken : undefined;
 
   const objekts = await ownedBy({
-    token: auth.user.accessToken,
+    token: accessToken,
     address: params.address,
     ...parseParams(request.nextUrl.searchParams),
   });

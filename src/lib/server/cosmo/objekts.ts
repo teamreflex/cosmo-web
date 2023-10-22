@@ -23,7 +23,7 @@ export type ObjektQueryParams = {
 
 type OwnedByMeInput = ObjektQueryParams & {
   address: "me" | (string & {});
-  token: string;
+  token?: string;
 };
 
 export type OwnedObjektsResult = {
@@ -74,7 +74,7 @@ const parseArray = <T>(value?: T[]) =>
 /**
  * Fetch the list of objekts owned by the user.
  * @param {OwnedByMeInput} options
- * @param {string} options.token - Cosmo token to act upon
+ * @param {string | undefined} options.token - Cosmo token to act upon
  * @param {string} options.address - address to fetch
  * @param {number} options.startAfter - pagination cursor
  * @param {number | undefined} options.nextStartAfter - next pagination cursor
