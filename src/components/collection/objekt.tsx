@@ -130,7 +130,7 @@ function ActionOverlay({
           <MailX className="h-3 w-3 sm:h-5 sm:w-5 shrink-0" />
         )}
 
-        {/* send objekt*/}
+        {/* send objekt */}
         {!isLocked && objekt.transferable && authenticated && (
           <SendObjekt objekt={objekt} />
         )}

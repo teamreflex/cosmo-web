@@ -4,7 +4,6 @@ import { getUser, signIn, signOut } from "@ramper/ethereum";
 import { Button } from "./ui/button";
 import { useAuthStore } from "@/store";
 import { ReactNode, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -61,19 +60,14 @@ export default function AuthOptions({
 
   const setRamperUser = useAuthStore((state) => state.setRamperUser);
 
-  const router = useRouter();
   const cosmoForm = useRef<HTMLFormElement>(null);
 
+  // initialize ramper sdk
   useEffect(() => {
-    const user = getUser();
-    setRamperUser(user);
+    const ramper = getUser();
+    setRamperUser(ramper);
     setPending(false);
-
-    // TODO: dispatch an action to invalidate the cosmo token here
-    if (!user) {
-      router.push("/");
-    }
-  }, [setRamperUser, router]);
+  }, [setRamperUser, user]);
 
   // login with cosmo when the ramper login is complete
   useEffect(() => {

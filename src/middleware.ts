@@ -50,7 +50,6 @@ export async function middleware(request: NextRequest) {
 
     // redirect to index when unauthenticated
     if (allowUnauthenticated.test(path) === false) {
-      console.log("redirecting", path);
       return NextResponse.redirect(new URL("/", request.url));
     }
 
