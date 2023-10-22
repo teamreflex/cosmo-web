@@ -22,9 +22,16 @@ export type PropsWithFilters<T extends keyof ObjektQueryParams> = {
 type Props = {
   locked: number[];
   artists: CosmoArtistWithMembers[];
+  nickname?: string;
+  address: string;
 };
 
-export default function CollectionRenderer({ locked, artists }: Props) {
+export default function CollectionRenderer({
+  locked,
+  artists,
+  nickname,
+  address,
+}: Props) {
   const [showFilters, setShowFilters] = useState(false);
   // make showLocked a separate filter so it doesn't trigger a re-fetch
   const [showLocked, setShowLocked] = useState(true);
@@ -61,7 +68,9 @@ export default function CollectionRenderer({ locked, artists }: Props) {
         <div className="flex items-center justify-between pb-2 sm:pb-0">
           {/* title */}
           <div className="flex gap-2 items-center">
-            <h1 className="text-3xl font-cosmo uppercase">Collect</h1>
+            <h1 className="text-3xl font-cosmo uppercase">
+              {nickname ?? "Collect"}
+            </h1>
             <HelpDialog />
           </div>
 
@@ -108,6 +117,8 @@ export default function CollectionRenderer({ locked, artists }: Props) {
       </div>
 
       <ObjektList
+        authenticated={nickname === undefined}
+        address={address}
         lockedTokenIds={locked}
         showLocked={showLocked}
         artists={artists}

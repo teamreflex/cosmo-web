@@ -1,5 +1,5 @@
 import { Loader } from "@/components/loader";
 
-export default async function MyLoading() {
+export default function MyLoading() {
   return <Loader>Loading account...</Loader>;
 }

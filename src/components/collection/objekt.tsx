@@ -7,7 +7,7 @@ import LockObjekt from "./lock-button";
 import SendObjekt from "./send-button";
 import { CSSProperties, PropsWithChildren, useState } from "react";
 import ReactCardFlip from "react-card-flip";
-import { ExternalLink, Maximize2 } from "lucide-react";
+import { ExternalLink, Grid2X2, Lock, MailX, Maximize2 } from "lucide-react";
 import { format } from "date-fns";
 import Link from "next/link";
 import { useElementSize } from "usehooks-ts";
@@ -16,6 +16,7 @@ type ObjektProps = {
   objekt: OwnedObjekt;
   showButtons: boolean;
   isLocked: boolean;
+  authenticated: boolean;
   onTokenLock: (tokenId: number) => void;
 };
 
@@ -23,6 +24,7 @@ export default function Objekt({
   objekt,
   showButtons,
   isLocked,
+  authenticated,
   onTokenLock,
 }: ObjektProps) {
   const [flipped, setFlipped] = useState(false);
@@ -54,6 +56,7 @@ export default function Objekt({
             <ActionOverlay
               objekt={objekt}
               isLocked={isLocked}
+              authenticated={authenticated}
               onTokenLock={onTokenLock}
             />
           </>
@@ -80,7 +83,7 @@ function ObjektNumber({ objekt }: { objekt: OwnedObjekt }) {
   return (
     <div
       ref={ref}
-      className="absolute h-full items-center w-[11%] flex gap-2 justify-center top-0 right-0 [writing-mode:vertical-lr] font-semibold text-[var(--objekt-text-color)]"
+      className="absolute h-full items-center w-[11%] flex gap-2 justify-center top-0 right-0 [writing-mode:vertical-lr] font-semibold text-[var(--objekt-text-color)] select-none"
       style={{ lineHeight: `${width}px`, fontSize: `${width * 0.55}px` }}
     >
       <span>{objekt.collectionNo}</span>
@@ -92,24 +95,53 @@ function ObjektNumber({ objekt }: { objekt: OwnedObjekt }) {
 function ActionOverlay({
   objekt,
   isLocked,
+  authenticated,
   onTokenLock,
 }: {
   objekt: OwnedObjekt;
   isLocked: boolean;
+  authenticated: boolean;
   onTokenLock: (tokenId: number) => void;
 }) {
+  const showActions =
+    !objekt.transferable ||
+    objekt.usedForGrid ||
+    isLocked ||
+    (objekt.transferable && authenticated);
+
   return (
     <div
       className={cn(
         "absolute top-0 left-0 p-1 sm:p-2 rounded-br-lg sm:rounded-br-xl items-center group h-5 sm:h-9 transition-all overflow-hidden",
         "text-[var(--objekt-text-color)] bg-[var(--objekt-background-color)]",
-        "grid grid-flow-col grid-cols-[1fr_min-content]"
+        "grid grid-flow-col grid-cols-[1fr_min-content]",
+        showActions === false && "hidden"
       )}
     >
       {/* buttons */}
       <div className="flex items-center gap-2">
-        {!isLocked && <SendObjekt objekt={objekt} />}
-        {objekt.transferable && (
+        {/* used in grid */}
+        {objekt.usedForGrid && (
+          <Grid2X2 className="h-3 w-3 sm:h-5 sm:w-5 shrink-0" />
+        )}
+
+        {/* not transferable */}
+        {!objekt.usedForGrid && !objekt.transferable && (
+          <MailX className="h-3 w-3 sm:h-5 sm:w-5 shrink-0" />
+        )}
+
+        {/* send objekt*/}
+        {!isLocked && objekt.transferable && authenticated && (
+          <SendObjekt objekt={objekt} />
+        )}
+
+        {/* locked (viewing other user) */}
+        {isLocked && !authenticated && (
+          <Lock className="h-3 w-3 sm:h-5 sm:w-5 shrink-0" />
+        )}
+
+        {/* lock/unlock (authenticated) */}
+        {objekt.transferable && authenticated && (
           <LockObjekt
             objekt={objekt}
             isLocked={isLocked}

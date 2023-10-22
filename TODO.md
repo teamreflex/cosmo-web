@@ -22,3 +22,4 @@
 ### General
 
 - Replace Cosmo logo with something more generic
+- Replace ReactCardFlip with just CSS

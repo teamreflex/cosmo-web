@@ -1,7 +1,7 @@
 import { getUser } from "@/app/api/common";
 import {
   ObjektQueryParams,
-  ownedByMe,
+  ownedBy,
   validClasses,
   validOnlineTypes,
   validSeasons,
@@ -29,14 +29,18 @@ const objektFilterSchema = z.object({
   collection: z.string().optional(),
 });
 
-export async function GET(request: NextRequest) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { address: string } }
+) {
   const auth = await getUser();
   if (!auth.success) {
     return new Response(auth.error, { status: auth.status });
   }
 
-  const objekts = await ownedByMe({
+  const objekts = await ownedBy({
     token: auth.user.accessToken,
+    address: params.address,
     ...parseParams(request.nextUrl.searchParams),
   });
 

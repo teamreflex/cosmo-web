@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Home, LayoutGrid, PackageOpen, User, Vote } from "lucide-react";
+import { Home, LayoutGrid, PackageOpen, Search, Vote } from "lucide-react";
 import AuthOptions from "./auth-options";
 import CosmoLogo from "./cosmo-logo";
 import { ReactNode } from "react";
@@ -9,10 +9,9 @@ import { CosmoArtist, ValidArtist } from "@/lib/server/cosmo";
 
 const links = [
   { name: "Home", icon: Home, href: "/" },
+  { name: "Gravity", icon: Vote, href: "/gravity" },
   { name: "Collection", icon: PackageOpen, href: "/collection" },
   { name: "Grid", icon: LayoutGrid, href: "/grid" },
-  { name: "Gravity", icon: Vote, href: "/gravity" },
-  { name: "Account", icon: User, href: "/my" },
 ];
 
 type Props = {
@@ -39,7 +38,7 @@ export default function Navbar({
               <TooltipTrigger asChild>
                 <Link
                   href={{ pathname: link.href }}
-                  className="border-foreground pb-1 drop-shadow-lg hover:border-b-2"
+                  className="drop-shadow-lg hover:scale-110 transition-all"
                   aria-label={link.name}
                 >
                   <link.icon className="h-8 w-8 shrink-0" />
@@ -50,6 +49,20 @@ export default function Navbar({
               </TooltipContent>
             </Tooltip>
           ))}
+
+          <Tooltip key={4} delayDuration={0}>
+            <TooltipTrigger asChild>
+              <button
+                className="drop-shadow-lg hover:scale-110 transition-all"
+                aria-label="Search for user"
+              >
+                <Search className="h-8 w-8 shrink-0" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Search</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
 
         <div className="flex items-center justify-end gap-2">

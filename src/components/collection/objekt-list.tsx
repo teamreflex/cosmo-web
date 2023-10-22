@@ -15,6 +15,8 @@ import MemberFilter from "./member-filter";
 import { PropsWithClassName, cn } from "@/lib/utils";
 
 type Props = PropsWithClassName<{
+  authenticated: boolean;
+  address: string;
   lockedTokenIds: number[];
   showLocked: boolean;
   artists: CosmoArtistWithMembers[];
@@ -23,6 +25,8 @@ type Props = PropsWithClassName<{
 }>;
 
 export default function ObjektList({
+  authenticated,
+  address,
   lockedTokenIds,
   showLocked,
   artists,
@@ -55,7 +59,7 @@ export default function ObjektList({
     });
 
     const result = await fetch(
-      `/api/objekt/v1/owned-by/me?${searchParams.toString()}`
+      `/api/objekt/v1/owned-by/${address}?${searchParams.toString()}`
     );
     return (await result.json()) as OwnedObjektsResult;
   }
@@ -68,7 +72,7 @@ export default function ObjektList({
     isFetchingNextPage,
     status,
   } = useInfiniteQuery({
-    queryKey: ["objekts", filters],
+    queryKey: [`objekts::${address}`, filters],
     queryFn: fetchObjekts,
     getNextPageParam: (lastPage) => lastPage.nextStartAfter,
     refetchOnWindowFocus: false,
@@ -126,6 +130,7 @@ export default function ObjektList({
                         isLocked={lockedTokens.includes(
                           parseInt(objekt.tokenId)
                         )}
+                        authenticated={authenticated}
                         onTokenLock={onTokenLock}
                       />
                     ))}

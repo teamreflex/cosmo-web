@@ -2,7 +2,7 @@ import HelpDialog from "@/components/collection/help-dialog";
 import { Loader } from "@/components/loader";
 import { PropsWithClassName, cn } from "@/lib/utils";
 
-export default function CollectionLoading() {
+export default function OtherCollectionLoading() {
   return (
     <div className="container flex flex-col py-2">
       <div

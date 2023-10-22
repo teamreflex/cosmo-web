@@ -12,13 +12,17 @@ export default async function CollectionPage() {
   const user = await decodeUser();
 
   const [lockedObjekts, artists] = await Promise.all([
-    fetchLockedObjekts(user!.id),
+    fetchLockedObjekts(user!.address),
     cacheMembers(),
   ]);
 
   return (
     <main className="container flex flex-col py-2">
-      <CollectionRenderer locked={lockedObjekts} artists={artists} />
+      <CollectionRenderer
+        locked={lockedObjekts}
+        artists={artists}
+        address={user!.address}
+      />
     </main>
   );
 }

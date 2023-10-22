@@ -1,5 +1,5 @@
 import { Loader } from "@/components/loader";
 
-export default async function NewsExclusiveLoading() {
+export default function NewsExclusiveLoading() {
   return <Loader>Loading COSMO exclusives...</Loader>;
 }

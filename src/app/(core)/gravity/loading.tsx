@@ -1,5 +1,5 @@
 import { Loader } from "@/components/loader";
 
-export default async function GravityLoading() {
+export default function GravityLoading() {
   return <Loader>Loading gravity...</Loader>;
 }

@@ -58,6 +58,6 @@ export async function setObjektLock(form: FormData) {
   const lockFunc = result.data.lock ? lockObjekt : unlockObjekt;
 
   return {
-    success: await lockFunc(auth.user.id, parseInt(result.data.tokenId)),
+    success: await lockFunc(auth.user.address, parseInt(result.data.tokenId)),
   };
 }

@@ -17,7 +17,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { cosmoLogin, updateSelectedArtist } from "@/app/actions";
-import { Check, Disc3, Loader2, LogOut } from "lucide-react";
+import { Check, Disc3, Loader2, LogOut, User } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,6 +40,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import ProfileImage from "@/static/profile.webp";
+import Link from "next/link";
 
 type Props = {
   user: TokenPayload | undefined;
@@ -218,12 +219,22 @@ function UserDropdown({
           <DropdownMenuSeparator className="md:hidden" />
           <DropdownMenuLabel>Settings</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => setOpenArtistSwitch(true)}>
+          <DropdownMenuItem>
+            <User className="mr-2 h-4 w-4" />
+            <Link href="/my">My Page</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => setOpenArtistSwitch(true)}
+            className="cursor-pointer"
+          >
             <Disc3 className="mr-2 h-4 w-4" />
             <span>Switch Artist</span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => onSignOut()}>
+          <DropdownMenuItem
+            onClick={() => onSignOut()}
+            className="cursor-pointer"
+          >
             <LogOut className="mr-2 h-4 w-4" />
             <span>Sign Out</span>
           </DropdownMenuItem>

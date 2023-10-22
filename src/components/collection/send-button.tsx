@@ -96,40 +96,30 @@ export default function SendObjekt({ objekt }: Props) {
 
   return (
     <>
-      {objekt.usedForGrid && (
-        <Grid2X2 className="h-3 w-3 sm:h-5 sm:w-5 shrink-0" />
-      )}
-      {!objekt.usedForGrid && !objekt.transferable && (
-        <MailX className="h-3 w-3 sm:h-5 sm:w-5 shrink-0" />
-      )}
-      {objekt.transferable && (
-        <Dialog open={openSearch} onOpenChange={setOpenSearch}>
-          <DialogTrigger asChild>
-            <button
-              onClick={() => setOpenSearch(true)}
-              className={cn(
-                objekt.transferable && "hover:scale-110 transition-all"
-              )}
-            >
-              {objekt.transferable && (
-                <Send className="h-3 w-3 sm:h-5 sm:w-5" />
-              )}
-            </button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Send Objekt</DialogTitle>
-              <DialogDescription>
-                Search for another Cosmo user to send the objekt to.
-              </DialogDescription>
-            </DialogHeader>
+      <Dialog open={openSearch} onOpenChange={setOpenSearch}>
+        <DialogTrigger asChild>
+          <button
+            onClick={() => setOpenSearch(true)}
+            className={cn(
+              objekt.transferable && "hover:scale-110 transition-all"
+            )}
+          >
+            {objekt.transferable && <Send className="h-3 w-3 sm:h-5 sm:w-5" />}
+          </button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Send Objekt</DialogTitle>
+            <DialogDescription>
+              Search for another Cosmo user to send the objekt to.
+            </DialogDescription>
+          </DialogHeader>
 
-            <div className="flex">
-              <UserSearch onRecipientSelected={prepareSending} />
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
+          <div className="flex">
+            <UserSearch onRecipientSelected={prepareSending} />
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {recipient && (
         <Dialog open={openSend} onOpenChange={setOpenSend}>
@@ -187,6 +177,7 @@ export default function SendObjekt({ objekt }: Props) {
                   objekt={objekt}
                   showButtons={false}
                   isLocked={false}
+                  authenticated={false}
                   onTokenLock={() => void 0}
                 />
               </div>

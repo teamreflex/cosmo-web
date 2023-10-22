@@ -22,6 +22,7 @@ export type ObjektQueryParams = {
 };
 
 type OwnedByMeInput = ObjektQueryParams & {
+  address: "me" | (string & {});
   token: string;
 };
 
@@ -74,6 +75,7 @@ const parseArray = <T>(value?: T[]) =>
  * Fetch the list of objekts owned by the user.
  * @param {OwnedByMeInput} options
  * @param {string} options.token - Cosmo token to act upon
+ * @param {string} options.address - address to fetch
  * @param {number} options.startAfter - pagination cursor
  * @param {number | undefined} options.nextStartAfter - next pagination cursor
  * @param {string | undefined} options.member - member name to filter by
@@ -87,8 +89,9 @@ const parseArray = <T>(value?: T[]) =>
  * @param {string | undefined} options.collection
  * @returns Promise<OwnedObjektsResult>
  */
-export async function ownedByMe({
+export async function ownedBy({
   token,
+  address,
   startAfter,
   nextStartAfter,
   member,
@@ -124,11 +127,11 @@ export async function ownedByMe({
   }
 
   const res = await fetch(
-    `${COSMO_ENDPOINT}/objekt/v1/owned-by/me?${query.toString()}`,
+    `${COSMO_ENDPOINT}/objekt/v1/owned-by/${address}?${query.toString()}`,
     {
       method: "GET",
       headers: {
-        Authorization: `Bearer ${token}`,
+        ...(address === "me" && { Authorization: `Bearer ${token}` }), // only pass token when fetching for "me"
         Accept: "application/json",
         "Content-Type": "application/json",
       },
