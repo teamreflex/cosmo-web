@@ -13,6 +13,7 @@ This project aims to build a web based version of [Modhaus](https://www.mod-haus
 - Authentication
   - Sign in with Ramper
   - Cosmo user/token fetching
+  - Token refreshing
   - Sign out
   - "My Page" displaying Cosmo ID and wallet address
 - Objekts/COMO
@@ -41,12 +42,14 @@ This project aims to build a web based version of [Modhaus](https://www.mod-haus
 
 ### New Features
 
-- Objekts
+- Objekts/COMO
   - "lock" an objekt to prevent it from being sent to another user (like the Superstar games)
+  - View other user's collections
 
 ### Notes
 
 - **There's no app version or user agent spoofing. It's entirely possible for Modhaus to detect usage of this. Use at your own risk.**
+- Only the "happy path" is tested extensively. There's isn't a lot of good error handling.
 - Authentication can be fragile as there's two separate states. The process requires using the Ramper SDK to get the Ramper user, then use the received `idToken` to log into Cosmo. The Ramper user is stored by the SDK in localStorage, whereas the Cosmo user is encoded into a cookie by the application. If either one of these expires/invalidates, the other will not be and this will possibly result in a broken auth state.
 
 ## Setup
