@@ -9,7 +9,7 @@
 
 ### Gravity
 
-- Implement voting
+- ~~Implement voting~~
 - Implement combination poll display
 - Clean up poll result display for multi-poll gravities
 
@@ -22,7 +22,10 @@
 - Expand on public collections/profiles
   - eg: set a favorite objekt? favorite member?
   - private profile is probably useless due to other tools
+- Como calendar?
+  - might require indexing to be efficient
 
 ### General
 
 - Replace Cosmo logo with something more generic
+- Fix searchbox blur
