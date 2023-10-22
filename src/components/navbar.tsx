@@ -6,7 +6,7 @@ import { ReactNode } from "react";
 import { TokenPayload } from "@/lib/server/jwt";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { CosmoArtist, ValidArtist } from "@/lib/server/cosmo";
-import { UserSearch } from "./user-search";
+import NavbarSearch from "./navbar-search";
 
 const links = [
   { name: "Home", icon: Home, href: "/" },
@@ -51,7 +51,7 @@ export default function Navbar({
             </Tooltip>
           ))}
 
-          <UserSearch />
+          <NavbarSearch />
         </div>
 
         <div className="flex items-center justify-end gap-2">

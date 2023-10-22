@@ -2,21 +2,9 @@
 
 import { OwnedObjekt, SearchUser } from "@/lib/server/cosmo";
 import { cn } from "@/lib/utils";
-import {
-  AlertTriangle,
-  Check,
-  Grid2X2,
-  Loader2,
-  MailX,
-  Search,
-  Send,
-} from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { AlertTriangle, Check, Loader2, Send } from "lucide-react";
 import { Button } from "../ui/button";
-import { searchForUser } from "@/app/(core)/collection/actions";
 import { useEffect, useState } from "react";
-import { Separator } from "../ui/separator";
-import { experimental_useFormStatus as useFormStatus } from "react-dom";
 import { useAuthStore } from "@/store";
 import { ethers } from "ethers";
 import {
@@ -34,7 +22,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import Objekt from "./objekt";
 import { useQueryClient } from "react-query";
@@ -47,6 +34,7 @@ import {
   sendTransaction,
   signTransaction,
 } from "@/lib/client/blockchain";
+import { UserSearch } from "../user-search";
 
 type Props = {
   objekt: OwnedObjekt;
@@ -64,6 +52,14 @@ enum TransactionStatus {
   SEND_TRANSACTION = 7,
   COMPLETE = 8,
 }
+
+const instagrams = [
+  "0ct0ber19",
+  "withaseul",
+  "kimxxlip",
+  "zindoriyam",
+  "cher_ryppo",
+];
 
 export default function SendObjekt({ objekt }: Props) {
   const [openSearch, setOpenSearch] = useState(false);
@@ -94,32 +90,28 @@ export default function SendObjekt({ objekt }: Props) {
     setOpenSend(true);
   }
 
+  const placeholder =
+    instagrams[
+      Math.floor(Math.random() * (1 + (instagrams.length - 1) - 0)) + 0
+    ];
+
   return (
     <>
-      <Dialog open={openSearch} onOpenChange={setOpenSearch}>
-        <DialogTrigger asChild>
-          <button
-            onClick={() => setOpenSearch(true)}
-            className={cn(
-              objekt.transferable && "hover:scale-110 transition-all"
-            )}
-          >
-            {objekt.transferable && <Send className="h-3 w-3 sm:h-5 sm:w-5" />}
-          </button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Send Objekt</DialogTitle>
-            <DialogDescription>
-              Search for another Cosmo user to send the objekt to.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="flex">
-            <UserSearch onRecipientSelected={prepareSending} />
-          </div>
-        </DialogContent>
-      </Dialog>
+      <UserSearch
+        placeholder={`Send ${objekt.collectionId} to ${placeholder}...`}
+        open={openSearch}
+        onOpenChange={setOpenSearch}
+        onSelect={prepareSending}
+      >
+        <button
+          onClick={() => setOpenSearch(true)}
+          className={cn(
+            objekt.transferable && "hover:scale-110 transition-all"
+          )}
+        >
+          {objekt.transferable && <Send className="h-3 w-3 sm:h-5 sm:w-5" />}
+        </button>
+      </UserSearch>
 
       {recipient && (
         <Dialog open={openSend} onOpenChange={setOpenSend}>
@@ -203,69 +195,6 @@ export default function SendObjekt({ objekt }: Props) {
         </Dialog>
       )}
     </>
-  );
-}
-
-const instagrams = [
-  "0ct0ber19",
-  "withaseul",
-  "kimxxlip",
-  "zindoriyam",
-  "cher_ryppo",
-];
-
-function UserSearchButton() {
-  const { pending } = useFormStatus();
-
-  return (
-    <Button variant="default" type="submit" disabled={pending}>
-      {pending ? <Loader2 className="animate-spin" /> : <Search />}
-    </Button>
-  );
-}
-
-type UserSearchProps = {
-  onRecipientSelected: (recipient: SearchUser) => void;
-};
-
-function UserSearch({ onRecipientSelected }: UserSearchProps) {
-  const [users, setUsers] = useState<SearchUser[]>([]);
-
-  const placeholder = instagrams[Math.floor(Math.random() * (1 + 4 - 0)) + 0];
-
-  async function executeSearch(formData: FormData) {
-    const results = await searchForUser(formData);
-    if (results.success) {
-      setUsers(results.users ?? []);
-    }
-  }
-
-  return (
-    <div className="flex flex-col gap-4 w-full">
-      <form action={executeSearch} className="flex gap-2 items-center">
-        <Input name="search" placeholder={`${placeholder}...`} />
-        <UserSearchButton />
-      </form>
-
-      {users.length > 0 && (
-        <>
-          <Separator />
-          <div className="flex flex-col gap-2 max-h-64 overflow-y-scroll">
-            {users.map((user) => (
-              <Button
-                key={user.address}
-                variant="ghost"
-                className="flex gap-2 items-center"
-                onClick={() => onRecipientSelected(user)}
-              >
-                <Send />
-                <span>{user.nickname}</span>
-              </Button>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
   );
 }
 

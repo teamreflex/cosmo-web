@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { PropsWithChildren, useState } from "react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -12,12 +12,22 @@ import {
 import { SearchUser } from "@/lib/server/cosmo";
 import { useQuery } from "react-query";
 import { useDebounce } from "usehooks-ts";
-import { HeartCrack, Loader2, Search } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+import { HeartCrack, Loader2 } from "lucide-react";
 
-export function UserSearch() {
-  const [open, setOpen] = useState(false);
+type Props = PropsWithChildren<{
+  placeholder?: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSelect: (user: SearchUser) => void;
+}>;
+
+export function UserSearch({
+  children,
+  placeholder,
+  open,
+  onOpenChange,
+  onSelect,
+}: Props) {
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounce<string>(query, 500);
 
@@ -32,34 +42,20 @@ export function UserSearch() {
     enabled: debouncedQuery.length > 3,
   });
 
-  const router = useRouter();
-  function onSelect(nickname: string) {
+  // reset query before triggering handler
+  function select(user: SearchUser) {
     setQuery("");
-    setOpen(false);
-    router.push(`/u/${nickname}`);
+    onSelect(user);
   }
 
   return (
     <>
-      <Tooltip delayDuration={0}>
-        <TooltipTrigger asChild>
-          <button
-            className="drop-shadow-lg hover:scale-110 transition-all"
-            aria-label="Search for user"
-            onClick={() => setOpen(true)}
-          >
-            <Search className="h-8 w-8 shrink-0" />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>Search</p>
-        </TooltipContent>
-      </Tooltip>
+      {children}
 
-      <CommandDialog open={open} onOpenChange={setOpen}>
+      <CommandDialog open={open} onOpenChange={onOpenChange}>
         <CommandInput
           name="query"
-          placeholder="Search for a user..."
+          placeholder={placeholder ?? "Search for a user..."}
           value={query}
           onValueChange={setQuery}
         />
@@ -79,7 +75,7 @@ export function UserSearch() {
                 {result.data.map((user) => (
                   <CommandItem
                     key={user.address}
-                    onSelect={onSelect}
+                    onSelect={() => select(user)}
                     className="cursor-pointer"
                   >
                     {user.nickname}
