@@ -23,6 +23,7 @@ export const config = {
 
 /**
  * allow unauthenticated access to these paths:
+ * - /@:username
  * - /u/:username
  * - /
  * - /api/objekt/v1/owned-by/[nickname]
@@ -31,7 +32,7 @@ export const config = {
  * this is separate to the matcher as these paths still need token handling
  */
 const allowUnauthenticated = new RegExp(
-  "^(/u/[^/]*|/|/api/objekt/v1/owned-by/.*|/api/user/v1/search)$"
+  "^(/@.*|/u/[^/]*|/|/api/objekt/v1/owned-by/.*|/api/user/v1/search)$"
 );
 
 export async function middleware(request: NextRequest) {
@@ -49,6 +50,7 @@ export async function middleware(request: NextRequest) {
 
     // redirect to index when unauthenticated
     if (allowUnauthenticated.test(path) === false) {
+      console.log("redirecting", path);
       return NextResponse.redirect(new URL("/", request.url));
     }
 
