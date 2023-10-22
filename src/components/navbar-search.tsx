@@ -7,6 +7,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { Search } from "lucide-react";
 import { SearchUser } from "@/lib/server/cosmo";
 import { useSearchStore } from "@/store";
+import { Route } from "next";
 
 export default function NavbarSearch() {
   const recent = useSearchStore((state) => state.recentLookups);
@@ -18,7 +19,7 @@ export default function NavbarSearch() {
   function onSelect(user: SearchUser) {
     setOpen(false);
     addRecent(user);
-    router.push(`/u/${user.nickname}`);
+    router.push(`/@${user.nickname}` as Route);
   }
 
   return (

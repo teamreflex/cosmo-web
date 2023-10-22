@@ -15,6 +15,7 @@
 
 ### Collection
 
+- Fix filters wrapping under member filter
 - Look into marking objekts as "up for trade" or go all-in on a WTT system
   - would probably require indexing all possible objekts
 - Wishlist creator tool?
@@ -25,4 +26,3 @@
 ### General
 
 - Replace Cosmo logo with something more generic
-- Replace ReactCardFlip with just CSS

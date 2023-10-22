@@ -1,7 +1,4 @@
-import { cacheMembers, fetchLockedObjekts } from "@/lib/server/cache";
-import CollectionRenderer from "@/components/collection/collection-renderer";
 import { Metadata } from "next";
-import { decodeUser } from "../../data-fetching";
 import { Suspense } from "react";
 import UserCollectionRenderer from "@/components/user-collection/user-collection-renderer";
 import { search } from "@/lib/server/cosmo";

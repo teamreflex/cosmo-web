@@ -6,6 +6,16 @@ const config = {
     serverActions: true,
     typedRoutes: true,
   },
+
+  rewrites() {
+    return [
+      {
+        source: "/@:nickname",
+        destination: "/u/:nickname",
+      },
+    ];
+  },
+
   images: {
     remotePatterns: [
       // objekt images
