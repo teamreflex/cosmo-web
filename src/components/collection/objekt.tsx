@@ -28,6 +28,7 @@ export default function Objekt({
   onTokenLock,
 }: ObjektProps) {
   const [flipped, setFlipped] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   const css = {
     "--objekt-background-color": objekt.backgroundColor,
@@ -37,11 +38,15 @@ export default function Objekt({
   return (
     <ReactCardFlip isFlipped={flipped} flipDirection="horizontal">
       <div
-        className="relative overflow-hidden rounded-lg md:rounded-xl lg:rounded-2xl touch-manipulation"
+        className={cn(
+          "relative overflow-hidden rounded-lg md:rounded-xl lg:rounded-2xl touch-manipulation bg-accent",
+          !loaded && "animate-pulse"
+        )}
         style={css}
       >
         <Image
           onClick={() => setFlipped((prev) => !prev)}
+          onLoadingComplete={() => setLoaded(true)}
           className="cursor-pointer"
           src={objekt.frontImage}
           width={291}
@@ -49,8 +54,8 @@ export default function Objekt({
           alt={objekt.collectionId}
           quality={100}
         />
-        <ObjektNumber objekt={objekt} />
-        {showButtons && (
+        {loaded && <ObjektNumber objekt={objekt} />}
+        {loaded && showButtons && (
           <>
             <InformationOverlay objekt={objekt} />
             <ActionOverlay
