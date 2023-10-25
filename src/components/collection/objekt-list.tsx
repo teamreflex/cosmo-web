@@ -134,13 +134,6 @@ export default function ObjektList({
                         onTokenLock={onTokenLock}
                       />
                     ))}
-
-                    {group.objekts.filter(shouldShowObjekt).length === 0 && (
-                      <div className="col-span-full flex flex-col gap-2 items-center py-12">
-                        <HeartCrack className="h-12 w-12" />
-                        <p>No objekts found</p>
-                      </div>
-                    )}
                   </Fragment>
                 ))}
             </>

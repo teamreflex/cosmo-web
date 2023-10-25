@@ -16,7 +16,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { cosmoLogin, updateSelectedArtist } from "@/app/actions";
-import { Check, Disc3, Loader2, LogOut, User } from "lucide-react";
+import { Check, Disc3, Loader2, LogIn, LogOut, User } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -108,30 +108,28 @@ export default function AuthOptions({
         <input type="hidden" name="token" value={token} />
       </form>
 
-      <div className="flex gap-2 items-center justify-center">
-        {user ? (
-          <>
-            <div className="md:flex gap-2 items-center hidden">
-              {comoBalances}
-            </div>
-            <UserDropdown
-              user={user}
-              artists={artists}
-              selectedArtist={selectedArtist}
-              comoBalances={comoBalances}
-              onSignOut={executeSignOut}
-            />
-          </>
-        ) : (
-          <>
-            {pending ? (
-              <Loader2 className="animate-spin" />
-            ) : (
-              <SignInDialog onClick={executeSignIn} />
-            )}
-          </>
-        )}
-      </div>
+      {user ? (
+        <div className="flex gap-2 items-center justify-center">
+          <div className="md:flex gap-2 items-center hidden">
+            {comoBalances}
+          </div>
+          <UserDropdown
+            user={user}
+            artists={artists}
+            selectedArtist={selectedArtist}
+            comoBalances={comoBalances}
+            onSignOut={executeSignOut}
+          />
+        </div>
+      ) : (
+        <div className="flex items-center">
+          {pending ? (
+            <Loader2 className="animate-spin" />
+          ) : (
+            <SignInDialog onClick={executeSignIn} />
+          )}
+        </div>
+      )}
     </>
   );
 }
@@ -140,7 +138,10 @@ function SignInDialog({ onClick }: { onClick: () => void }) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="link">Sign In</Button>
+        <Button variant="link">
+          <span className="hidden md:block">Sign In</span>
+          <LogIn className="md:hidden h-8 w-8 shrink-0" />
+        </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
