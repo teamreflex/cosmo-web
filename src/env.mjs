@@ -16,6 +16,8 @@ export const env = createEnv({
     NEXT_PUBLIC_ALCHEMY_KEY: z.string().min(1),
     NEXT_PUBLIC_APP_NAME: z.string().min(1),
     NEXT_PUBLIC_APP_VERSION: z.string().min(1),
+    NEXT_PUBLIC_FATHOM_ID: z.string().min(1),
+    NEXT_PUBLIC_FATHOM_URL: z.string().min(1),
     NEXT_PUBLIC_SIMULATE_GRID: z
       .string()
       .refine((s) => s === "true" || s === "false")
@@ -26,6 +28,8 @@ export const env = createEnv({
     NEXT_PUBLIC_ALCHEMY_KEY: process.env.NEXT_PUBLIC_ALCHEMY_KEY,
     NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
     NEXT_PUBLIC_APP_VERSION: process.env.NEXT_PUBLIC_APP_VERSION,
+    NEXT_PUBLIC_FATHOM_ID: process.env.NEXT_PUBLIC_FATHOM_ID,
+    NEXT_PUBLIC_FATHOM_URL: process.env.NEXT_PUBLIC_FATHOM_URL,
     NEXT_PUBLIC_SIMULATE_GRID: process.env.NEXT_PUBLIC_SIMULATE_GRID,
   },
 });

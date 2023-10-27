@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { env } from "@/env.mjs";
+import Fathom from "@/components/fathom";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -54,6 +55,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="dark">
           <TooltipProvider>{children}</TooltipProvider>
           <Toaster />
+          <Fathom />
         </ThemeProvider>
       </body>
     </html>
