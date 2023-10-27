@@ -5,6 +5,7 @@ import {
   CosmoGridSlotCompletion,
   CosmoOngoingGridSlot,
 } from "@/lib/server/cosmo";
+import { trackEvent } from "fathom-client";
 import { useEffect, useState } from "react";
 import { useMutation } from "react-query";
 
@@ -136,6 +137,7 @@ export function useGrid(slug: string, slots: CosmoOngoingGridSlot[]) {
     onSuccess: async (response) => {
       const result: CosmoGridRewardClaimResult = await response.json();
       setGridReward(result);
+      trackEvent("grid-objekt");
     },
   });
 

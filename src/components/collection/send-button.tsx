@@ -35,6 +35,7 @@ import {
   signTransaction,
 } from "@/lib/client/blockchain";
 import { UserSearch } from "../user-search";
+import { trackEvent } from "fathom-client";
 
 type Props = {
   objekt: OwnedObjekt;
@@ -269,6 +270,8 @@ function SendToUserButton({
         variant: "default",
       });
       updateTransactionProgress(TransactionStatus.COMPLETE);
+
+      trackEvent("send-objekt");
     } catch (err) {
       if (err instanceof TransactionError) {
         updateTransactionProgress(TransactionStatus.ERROR);

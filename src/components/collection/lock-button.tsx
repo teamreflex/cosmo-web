@@ -2,6 +2,7 @@
 
 import { setObjektLock } from "@/app/(core)/collection/actions";
 import { OwnedObjekt } from "@/lib/server/cosmo";
+import { trackEvent } from "fathom-client";
 import { Loader2, Lock, Unlock } from "lucide-react";
 import { useFormStatus } from "react-dom";
 
@@ -15,6 +16,7 @@ export default function LockObjekt({ objekt, isLocked, onLockChange }: Props) {
   async function toggle(form: FormData) {
     const result = await setObjektLock(form);
     if (result.success) {
+      trackEvent(`${isLocked ? "unlock" : "lock"}-objekt`);
       onLockChange(parseInt(objekt.tokenId));
     }
   }
