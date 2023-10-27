@@ -31,6 +31,7 @@ function TrackPageView() {
 }
 
 export default function Fathom() {
+  if (env.NEXT_PUBLIC_FATHOM_ID === "dev") return null;
   return (
     <Suspense fallback={null}>
       <TrackPageView />
