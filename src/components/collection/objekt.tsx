@@ -46,7 +46,7 @@ export default function Objekt({
       >
         <Image
           onClick={() => setFlipped((prev) => !prev)}
-          onLoadingComplete={() => setLoaded(true)}
+          onLoad={() => setLoaded(true)}
           className="cursor-pointer"
           src={objekt.frontImage}
           width={291}

@@ -1,7 +1,6 @@
 import CopyWallet from "@/components/my/copy-wallet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Image from "next/image";
-import ProfileImage from "@/static/profile.webp";
 import { Metadata } from "next";
 import { decodeUser } from "../data-fetching";
 
@@ -26,7 +25,7 @@ export default async function MyPage() {
           <AvatarFallback className="relative bg-cosmo-profile">
             <Image
               className="p-6"
-              src={ProfileImage}
+              src="/profile.webp"
               fill={true}
               alt={user!.nickname}
             />

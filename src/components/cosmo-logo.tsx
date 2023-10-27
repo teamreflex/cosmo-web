@@ -12,7 +12,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { env } from "@/env.mjs";
-import CosmoImage from "@/static/cosmo.png";
 import Link from "next/link";
 import { Check, Github } from "lucide-react";
 
@@ -33,9 +32,10 @@ export default function CosmoLogo({
     <AlertDialog>
       <AlertDialogTrigger>
         <Image
-          src={CosmoImage}
+          src="/cosmo.png"
           height={height}
           width={width}
+          quality={100}
           alt="Cosmo"
           className={cn(className, color === "black" && "invert")}
         />

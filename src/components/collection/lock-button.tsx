@@ -3,7 +3,7 @@
 import { setObjektLock } from "@/app/(core)/collection/actions";
 import { OwnedObjekt } from "@/lib/server/cosmo";
 import { Loader2, Lock, Unlock } from "lucide-react";
-import { experimental_useFormStatus as useFormStatus } from "react-dom";
+import { useFormStatus } from "react-dom";
 
 type Props = {
   objekt: OwnedObjekt;

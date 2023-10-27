@@ -30,7 +30,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { CosmoArtist } from "@/lib/server/cosmo";
 import Image from "next/image";
 import { ValidArtist } from "@/lib/server/cosmo/common";
-import { experimental_useFormStatus as useFormStatus } from "react-dom";
+import { useFormStatus } from "react-dom";
 import {
   Dialog,
   DialogContent,
@@ -38,7 +38,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import ProfileImage from "@/static/profile.webp";
 import Link from "next/link";
 
 type Props = {
@@ -202,7 +201,7 @@ function UserDropdown({
             </AvatarFallback>
             <AvatarImage
               className="bg-cosmo-profile p-[6px]"
-              src={ProfileImage.src}
+              src="/profile.webp"
               alt={user.nickname}
             />
           </Avatar>
