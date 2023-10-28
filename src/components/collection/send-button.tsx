@@ -174,9 +174,7 @@ export default function SendObjekt({ objekt }: Props) {
                 <Objekt
                   objekt={objekt}
                   showButtons={false}
-                  isLocked={false}
                   authenticated={false}
-                  onTokenLock={() => void 0}
                 />
               </div>
             )}
