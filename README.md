@@ -45,6 +45,7 @@ This project aims to build a web based version of [Modhaus](https://www.mod-haus
 - Objekts/COMO
   - "lock" an objekt to prevent it from being sent to another user (like the Superstar games)
   - View other user's collections
+    - Includes user search box with recent history
 
 ### Notes
 
@@ -58,18 +59,23 @@ This project aims to build a web based version of [Modhaus](https://www.mod-haus
 $ git clone git@github.com:teamreflex/cosmo-web.git
 $ cd cosmo-web
 $ pnpm install
+$ cp .env.example .env.local
+$ pnpm db:push
 $ pnpm dev
 ```
 
 ## Tooling
 
-- [Next 13](https://nextjs.org/)
-  - [React Server Components](https://nextjs.org/docs/app/building-your-application/rendering/server-components)
+- [Nextjs](https://nextjs.org/)
+  - [Server Components](https://nextjs.org/docs/app/building-your-application/rendering/server-components)
   - [Server Actions](https://nextjs.org/docs/app/building-your-application/data-fetching/forms-and-mutations)
 - [Ramper SDK](https://www.ramper.xyz/)
 - [shadcn/ui](https://ui.shadcn.com/docs)
 - [Tailwind](https://tailwindcss.com/)
 - [Vercel KV](https://vercel.com/docs/storage/vercel-kv)
+- [PlanetScale](https://planetscale.com/)
+- [Drizzle ORM](https://orm.drizzle.team/)
+- [Fathom Analytics](https://usefathom.com/)
 
 ## License
 

@@ -24,6 +24,7 @@
   - private profile is probably useless due to other tools
 - Como calendar?
   - might require indexing to be efficient
+- Consider using Alchemy NFT activity webhooks to delete locked objekts upon transfer
 
 ### General
 
