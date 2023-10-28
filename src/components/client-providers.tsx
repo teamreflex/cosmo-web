@@ -2,7 +2,7 @@
 
 import { PropsWithChildren } from "react";
 import { QueryClient, QueryClientProvider } from "react-query";
-import AuthProvider from "./auth-provider";
+import AuthProvider from "./navbar/auth/auth-provider";
 import WarningDialog from "./warning-dialog";
 
 type Props = PropsWithChildren;

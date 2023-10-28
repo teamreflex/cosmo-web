@@ -2,8 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { UserSearch } from "./user-search";
-import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+import { UserSearch } from "../user-search";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { Search } from "lucide-react";
 import { SearchUser } from "@/lib/server/cosmo";
 import { useSearchStore } from "@/store";

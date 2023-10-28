@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { Home, LayoutGrid, PackageOpen, Search, Vote } from "lucide-react";
-import AuthOptions from "./auth-options";
+import { Home, LayoutGrid, PackageOpen, Vote } from "lucide-react";
+import AuthOptions from "./auth/auth-options";
 import CosmoLogo from "./cosmo-logo";
 import { ReactNode } from "react";
 import { TokenPayload } from "@/lib/server/jwt";
-import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { CosmoArtist, ValidArtist } from "@/lib/server/cosmo";
 import NavbarSearch from "./navbar-search";
 

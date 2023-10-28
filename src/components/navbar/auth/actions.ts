@@ -8,7 +8,8 @@ import { ValidArtist, login } from "@/lib/server/cosmo";
 import { redirect } from "next/navigation";
 import { setSelectedArtist } from "@/lib/server/cache/artist-select";
 import { revalidatePath } from "next/cache";
-import { getUser } from "./api/common";
+import { getUser } from "@/app/api/common";
+import { env } from "@/env.mjs";
 
 /**
  * Exchanges the idToken from Ramper for a JWT from Cosmo
@@ -36,7 +37,7 @@ export async function cosmoLogin(form: FormData) {
 
   cookies().set(
     "token",
-    await signToken(loginPayload),
+    await signToken(loginPayload, env.JWT_SECRET),
     generateCookiePayload()
   );
 
