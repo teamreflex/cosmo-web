@@ -1,5 +1,6 @@
-import { cacheMembers, fetchLockedObjekts } from "@/lib/server/cache";
+import { cacheMembers } from "@/lib/server/cache";
 import CollectionRenderer from "../collection/collection-renderer";
+import { fetchLockedObjekts } from "@/lib/server/collection";
 
 type Props = {
   nickname: string;

@@ -2,8 +2,8 @@
 
 import "server-only";
 import { z } from "zod";
-import { lockObjekt, unlockObjekt } from "@/lib/server/cache";
 import { authenticatedAction } from "@/lib/server/typed-action";
+import { setObjektLock } from "@/lib/server/collection/locked-objekts";
 
 /**
  * Toggle the lock on an objekt.
@@ -16,7 +16,6 @@ export const toggleObjektLock = async (form: FormData) =>
     }),
     form,
     async ({ tokenId, lock }, user) => {
-      const lockFunc = lock ? lockObjekt : unlockObjekt;
-      return await lockFunc(user.address, parseInt(tokenId));
+      return await setObjektLock(user.address, parseInt(tokenId), lock);
     }
   );

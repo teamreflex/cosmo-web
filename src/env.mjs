@@ -12,6 +12,10 @@ export const env = createEnv({
     KV_REST_API_READ_ONLY_TOKEN: z.string().min(1),
     ALCHEMY_ACTIVITY_WEBHOOK_KEY: z.string().min(1),
     ALCHEMY_METADATA_WEBHOOK_KEY: z.string().min(1),
+    DATABASE_HOST: z.string().min(1),
+    DATABASE_USERNAME: z.string().min(1),
+    DATABASE_PASSWORD: z.string().min(1),
+    DATABASE_NAME: z.string().min(1),
   },
   client: {
     NEXT_PUBLIC_COSMO_APP_ID: z.string().min(1),

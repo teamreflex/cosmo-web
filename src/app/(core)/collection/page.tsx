@@ -1,7 +1,8 @@
-import { cacheMembers, fetchLockedObjekts } from "@/lib/server/cache";
+import { cacheMembers } from "@/lib/server/cache";
 import CollectionRenderer from "@/components/collection/collection-renderer";
 import { Metadata } from "next";
 import { decodeUser } from "../data-fetching";
+import { fetchLockedObjekts } from "@/lib/server/collection";
 
 export const runtime = "edge";
 export const metadata: Metadata = {
