@@ -13,6 +13,7 @@ import { useInfiniteQuery } from "react-query";
 import { useInView } from "react-intersection-observer";
 import MemberFilter from "./member-filter";
 import { PropsWithClassName, cn } from "@/lib/utils";
+import { LockedObjektContext } from "@/context/objekt";
 
 type Props = PropsWithClassName<{
   authenticated: boolean;
@@ -102,63 +103,66 @@ export default function ObjektList({
   }
 
   return (
-    <div className={cn("flex flex-col", className)}>
-      <MemberFilter
-        artists={artists}
-        filters={filters}
-        updateFilters={setFilters}
-      />
+    <LockedObjektContext.Provider
+      value={{
+        lockedObjekts: lockedTokens,
+        lockObjekt: onTokenLock,
+      }}
+    >
+      <div className={cn("flex flex-col", className)}>
+        <MemberFilter
+          artists={artists}
+          filters={filters}
+          updateFilters={setFilters}
+        />
 
-      <div className="flex flex-col items-center">
-        <div className="grid grid-cols-3 md:grid-cols-4 gap-4 py-2">
-          {status === "loading" ? (
-            <div className="flex col-span-full py-12">
-              <Loader2 className="animate-spin h-24 w-24" />
+        <div className="flex flex-col items-center">
+          <div className="grid grid-cols-3 md:grid-cols-4 gap-4 py-2">
+            {status === "loading" ? (
+              <div className="flex col-span-full py-12">
+                <Loader2 className="animate-spin h-24 w-24" />
+              </div>
+            ) : status === "error" ? (
+              <Error />
+            ) : (
+              <>
+                {data !== undefined &&
+                  data.pages.map((group, i) => (
+                    <Fragment key={i}>
+                      {group.objekts.filter(shouldShowObjekt).map((objekt) => (
+                        <Objekt
+                          key={objekt.tokenId}
+                          objekt={objekt}
+                          showButtons={true}
+                          authenticated={authenticated}
+                        />
+                      ))}
+                    </Fragment>
+                  ))}
+              </>
+            )}
+          </div>
+
+          {status !== "error" && (
+            <div className="flex justify-center py-6">
+              <button
+                ref={ref}
+                onClick={() => fetchNextPage()}
+                disabled={!hasNextPage || isFetchingNextPage}
+              >
+                {isFetchingNextPage ? (
+                  <Loading />
+                ) : hasNextPage ? (
+                  <LoadMore />
+                ) : (
+                  <></>
+                )}
+              </button>
             </div>
-          ) : status === "error" ? (
-            <Error />
-          ) : (
-            <>
-              {data !== undefined &&
-                data.pages.map((group, i) => (
-                  <Fragment key={i}>
-                    {group.objekts.filter(shouldShowObjekt).map((objekt) => (
-                      <Objekt
-                        key={objekt.tokenId}
-                        objekt={objekt}
-                        showButtons={true}
-                        isLocked={lockedTokens.includes(
-                          parseInt(objekt.tokenId)
-                        )}
-                        authenticated={authenticated}
-                        onTokenLock={onTokenLock}
-                      />
-                    ))}
-                  </Fragment>
-                ))}
-            </>
           )}
         </div>
-
-        {status !== "error" && (
-          <div className="flex justify-center py-6">
-            <button
-              ref={ref}
-              onClick={() => fetchNextPage()}
-              disabled={!hasNextPage || isFetchingNextPage}
-            >
-              {isFetchingNextPage ? (
-                <Loading />
-              ) : hasNextPage ? (
-                <LoadMore />
-              ) : (
-                <></>
-              )}
-            </button>
-          </div>
-        )}
       </div>
-    </div>
+    </LockedObjektContext.Provider>
   );
 }
 

@@ -5,27 +5,24 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import LockObjekt from "./lock-button";
 import SendObjekt from "./send-button";
-import { CSSProperties, PropsWithChildren, useState } from "react";
+import { CSSProperties, PropsWithChildren, useContext, useState } from "react";
 import ReactCardFlip from "react-card-flip";
 import { ExternalLink, Grid2X2, Lock, MailX, Maximize2 } from "lucide-react";
 import { format } from "date-fns";
 import Link from "next/link";
 import { useElementSize } from "usehooks-ts";
+import { LockedObjektContext } from "@/context/objekt";
 
 type ObjektProps = {
   objekt: OwnedObjekt;
   showButtons: boolean;
-  isLocked: boolean;
   authenticated: boolean;
-  onTokenLock: (tokenId: number) => void;
 };
 
 export default function Objekt({
   objekt,
   showButtons,
-  isLocked,
   authenticated,
-  onTokenLock,
 }: ObjektProps) {
   const [flipped, setFlipped] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -58,12 +55,7 @@ export default function Objekt({
         {loaded && showButtons && (
           <>
             <InformationOverlay objekt={objekt} />
-            <ActionOverlay
-              objekt={objekt}
-              isLocked={isLocked}
-              authenticated={authenticated}
-              onTokenLock={onTokenLock}
-            />
+            <ActionOverlay objekt={objekt} authenticated={authenticated} />
           </>
         )}
       </div>
@@ -99,15 +91,16 @@ function ObjektNumber({ objekt }: { objekt: OwnedObjekt }) {
 
 function ActionOverlay({
   objekt,
-  isLocked,
   authenticated,
-  onTokenLock,
 }: {
   objekt: OwnedObjekt;
-  isLocked: boolean;
   authenticated: boolean;
-  onTokenLock: (tokenId: number) => void;
 }) {
+  const { lockedObjekts, lockObjekt } = useContext(
+    LockedObjektContext
+  ) as LockedObjektContext;
+
+  const isLocked = lockedObjekts.includes(parseInt(objekt.tokenId));
   const showActions =
     !objekt.transferable ||
     objekt.usedForGrid ||
@@ -150,7 +143,7 @@ function ActionOverlay({
           <LockObjekt
             objekt={objekt}
             isLocked={isLocked}
-            onLockChange={onTokenLock}
+            onLockChange={lockObjekt}
           />
         )}
       </div>
