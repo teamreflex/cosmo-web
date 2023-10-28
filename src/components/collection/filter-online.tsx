@@ -45,7 +45,7 @@ export function OnlineFilter({ filters, setFilters }: Props) {
         <Button
           variant="outline"
           className={cn(
-            "flex gap-2 items-center",
+            "flex gap-2 items-center drop-shadow-lg",
             filters && filters.length > 0 && "border-cosmo"
           )}
         >

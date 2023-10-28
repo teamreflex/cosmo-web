@@ -10,6 +10,7 @@ type Props = {
 export function LockedFilter({ showLocked, setShowLocked }: Props) {
   return (
     <Toggle
+      className="drop-shadow-lg"
       variant="cosmo"
       pressed={showLocked}
       onPressedChange={setShowLocked}

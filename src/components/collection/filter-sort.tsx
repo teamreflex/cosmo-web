@@ -22,7 +22,7 @@ const map: Record<ValidSort, string> = {
 export function SortFilter({ filters, setFilters }: Props) {
   return (
     <Select value={filters} onValueChange={setFilters}>
-      <SelectTrigger className="w-32">
+      <SelectTrigger className="w-32 drop-shadow-lg">
         <SelectValue placeholder="Sort" />
       </SelectTrigger>
       <SelectContent

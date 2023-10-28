@@ -15,7 +15,7 @@ export default function HelpDialog() {
   return (
     <AlertDialog>
       <AlertDialogTrigger>
-        <AlertCircle className="w-4 h-4 text-muted-foreground" />
+        <AlertCircle className="w-4 h-4 drop-shadow-lg" />
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>

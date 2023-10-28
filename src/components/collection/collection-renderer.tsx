@@ -68,7 +68,7 @@ export default function CollectionRenderer({
         <div className="flex items-center justify-between pb-2 sm:pb-0">
           {/* title */}
           <div className="flex gap-2 items-center">
-            <h1 className="text-3xl font-cosmo uppercase">
+            <h1 className="text-3xl font-cosmo uppercase drop-shadow-lg">
               {nickname ?? "Collect"}
             </h1>
             <HelpDialog />
@@ -81,7 +81,7 @@ export default function CollectionRenderer({
               pressed={showFilters}
               onPressedChange={setShowFilters}
             >
-              <SlidersHorizontal className="w-4 h-4" />
+              <SlidersHorizontal className="w-4 h-4 drop-shadow-lg" />
             </Toggle>
           </div>
         </div>
