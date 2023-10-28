@@ -4,6 +4,7 @@ import NewsRenderer from "@/components/news/news-renderer";
 import { Metadata } from "next";
 import { env } from "@/env.mjs";
 import { decodeUser } from "./data-fetching";
+import ApolloErrorBoundary from "@/components/error-boundary";
 
 export const runtime = "edge";
 export const metadata: Metadata = {
@@ -37,7 +38,9 @@ export default async function HomePage() {
   return (
     <main className="flex flex-col items-center container">
       <Suspense fallback={<NewsSkeleton />}>
-        <NewsRenderer user={user!} />
+        <ApolloErrorBoundary message="Could not load news">
+          <NewsRenderer user={user!} />
+        </ApolloErrorBoundary>
       </Suspense>
     </main>
   );
