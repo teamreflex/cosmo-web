@@ -37,7 +37,7 @@ export async function cosmoLogin(form: FormData) {
 
   cookies().set(
     "token",
-    await signToken(loginPayload, env.JWT_SECRET),
+    await signToken(loginPayload),
     generateCookiePayload()
   );
 
