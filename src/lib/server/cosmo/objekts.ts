@@ -162,3 +162,52 @@ export type GasStationResult = {
   blockTime: number;
   blockNumber: number;
 };
+
+export type ObjektMetadata = {
+  name: string;
+  description: string;
+  image: string;
+  background_color: string;
+  attributes: Record<string, string>[];
+  objekt: {
+    collectionId: string;
+    season: string;
+    member: string;
+    collectionNo: string;
+    class: string;
+    artists: ("artms" | "tripleS")[];
+    thumbnailImage: string;
+    frontImage: string;
+    backImage: string;
+    accentColor: string;
+    backgroundColor: string;
+    textColor: string;
+    comoAmount: number;
+    transferablebyDefault: boolean;
+    tokenId: string;
+    tokenAddress: string;
+    objektNo: number;
+    transferable: boolean;
+  };
+};
+
+/**
+ * Fetch token metadata from Cosmo.
+ * @param tokenId string
+ */
+export async function fetchObjekt(tokenId: string) {
+  const res = await fetch(`${COSMO_ENDPOINT}/objekt/v1/token/${tokenId}`, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to fetch token "${tokenId}"`);
+  }
+
+  const result: ObjektMetadata = await res.json();
+  return result;
+}

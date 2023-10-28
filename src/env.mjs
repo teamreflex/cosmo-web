@@ -10,6 +10,8 @@ export const env = createEnv({
     KV_REST_API_URL: z.string().url(),
     KV_REST_API_TOKEN: z.string().min(1),
     KV_REST_API_READ_ONLY_TOKEN: z.string().min(1),
+    ALCHEMY_ACTIVITY_WEBHOOK_KEY: z.string().min(1),
+    ALCHEMY_METADATA_WEBHOOK_KEY: z.string().min(1),
   },
   client: {
     NEXT_PUBLIC_COSMO_APP_ID: z.string().min(1),
