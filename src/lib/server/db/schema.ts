@@ -17,5 +17,9 @@ export const lockedObjekts = mysqlTable(
   },
   (table) => ({
     addressIdx: index("address_idx").on(table.userAddress),
+    addressTokenIdx: index("address_token_idx").on(
+      table.userAddress,
+      table.tokenId
+    ),
   })
 );
