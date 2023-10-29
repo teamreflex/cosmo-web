@@ -3,6 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Image from "next/image";
 import { Metadata } from "next";
 import { decodeUser } from "../data-fetching";
+import ProfileImage from "@/assets/profile.webp";
 
 export const runtime = "edge";
 export const metadata: Metadata = {
@@ -25,7 +26,7 @@ export default async function MyPage() {
           <AvatarFallback className="relative bg-cosmo-profile">
             <Image
               className="p-6"
-              src="/profile.webp"
+              src={ProfileImage.src}
               fill={true}
               alt={user!.nickname}
             />

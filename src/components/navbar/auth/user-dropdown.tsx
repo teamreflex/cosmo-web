@@ -13,6 +13,7 @@ import { Disc3, LogOut, User } from "lucide-react";
 import Link from "next/link";
 import { ReactNode, useState } from "react";
 import SwitchArtistDialog from "./switch-artist-dialog";
+import ProfileImage from "@/assets/profile.webp";
 
 type UserDropdownProps = {
   user: TokenPayload;
@@ -48,7 +49,7 @@ export default function UserDropdown({
             </AvatarFallback>
             <AvatarImage
               className="bg-cosmo-profile p-[6px]"
-              src="/profile.webp"
+              src={ProfileImage.src}
               alt={user.nickname}
             />
           </Avatar>

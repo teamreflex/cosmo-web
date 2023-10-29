@@ -14,6 +14,7 @@ import {
 import { env } from "@/env.mjs";
 import Link from "next/link";
 import { Check, Github } from "lucide-react";
+import CosmoImage from "@/assets/cosmo.png";
 
 type Props = {
   className?: string;
@@ -32,7 +33,7 @@ export default function CosmoLogo({
     <AlertDialog>
       <AlertDialogTrigger>
         <Image
-          src="/cosmo.png"
+          src={CosmoImage.src}
           height={height}
           width={width}
           quality={100}
