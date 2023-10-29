@@ -36,7 +36,7 @@ export default function Objekt({
     <ReactCardFlip isFlipped={flipped} flipDirection="horizontal">
       <div
         className={cn(
-          "relative overflow-hidden rounded-lg md:rounded-xl lg:rounded-2xl touch-manipulation bg-accent",
+          "isolate relative overflow-hidden rounded-lg md:rounded-xl lg:rounded-2xl touch-manipulation bg-accent",
           !loaded && "animate-pulse"
         )}
         style={css}

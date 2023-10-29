@@ -4,7 +4,6 @@ import AuthOptions from "./auth/auth-options";
 import CosmoLogo from "./cosmo-logo";
 import { ReactNode } from "react";
 import { TokenPayload } from "@/lib/server/jwt";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { CosmoArtist, ValidArtist } from "@/lib/server/cosmo";
 import NavbarSearch from "./navbar-search";
 
@@ -29,40 +28,39 @@ export default function Navbar({
   comoBalances,
 }: Props) {
   return (
-    <div className="flex h-14 w-full items-center bg-background/75 transition-colors duration-500 sticky top-0 z-50 border-b border-accent backdrop-blur">
-      <div className="container grid grid-cols-3 items-center gap-2 text-sm text-foreground md:gap-4 md:py-6 lg:grid-cols-3">
-        <CosmoLogo color="white" />
+    <nav className="sticky left-0 right-0 top-0 h-14 z-10">
+      <div className="glass">
+        <div className="flex w-full items-center h-14">
+          <div className="container grid grid-cols-3 items-center gap-2 text-sm text-foreground md:gap-4 md:py-6 lg:grid-cols-3 pointer-events-auto">
+            <CosmoLogo color="white" />
 
-        <div className="flex flex-row items-center gap-6 md:gap-10 justify-center">
-          {links.map((link, i) => (
-            <Tooltip key={i} delayDuration={0}>
-              <TooltipTrigger asChild>
+            <div className="flex flex-row items-center gap-6 md:gap-10 justify-center">
+              {links.map((link, i) => (
                 <Link
+                  key={i}
                   href={{ pathname: link.href }}
                   className="drop-shadow-lg hover:scale-110 transition-all"
                   aria-label={link.name}
                 >
                   <link.icon className="h-8 w-8 shrink-0" />
                 </Link>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{link.name}</p>
-              </TooltipContent>
-            </Tooltip>
-          ))}
+              ))}
 
-          <NavbarSearch />
-        </div>
+              <NavbarSearch />
+            </div>
 
-        <div className="flex items-center justify-end gap-2">
-          <AuthOptions
-            user={user}
-            artists={artists}
-            selectedArtist={selectedArtist}
-            comoBalances={comoBalances}
-          />
+            <div className="flex items-center justify-end gap-2">
+              <AuthOptions
+                user={user}
+                artists={artists}
+                selectedArtist={selectedArtist}
+                comoBalances={comoBalances}
+              />
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+      <div className="glass-edge"></div>
+    </nav>
   );
 }

@@ -72,7 +72,7 @@
   }
   body {
     @apply bg-background text-foreground;
-    overflow-y: scroll;
+    scrollbar-gutter: stable;
   }
 
   ::-webkit-scrollbar {
@@ -104,15 +104,63 @@
     scrollbar-width: none; /* Firefox */
   }
 }
+
 @layer components {
+  /* carousel styles */
   .embla {
     overflow: hidden;
   }
+
   .embla__container {
     display: flex;
   }
+
   .embla__slide {
     flex: 0 0 100%;
     min-width: 0;
+  }
+
+  /*
+   * navbar glass effect
+   * https://codesandbox.io/s/realistic-glass-aka-bien-glass-mk5phz
+   */
+  .glass {
+    position: absolute;
+    inset: 0;
+    --extended-by: 100px;
+    bottom: calc(-1 * var(--extended-by));
+    --filter: blur(30px);
+    -webkit-backdrop-filter: var(--filter);
+    backdrop-filter: var(--filter);
+    --cutoff: calc(100% - var(--extended-by));
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      black 0,
+      black var(--cutoff),
+      transparent var(--cutoff)
+    );
+    pointer-events: none;
+  }
+
+  .glass-edge {
+    position: absolute;
+    z-index: -1;
+    left: 0;
+    right: 0;
+    --extended-by: 80px;
+    --offset: 20px;
+    --thickness: 2px;
+    height: calc(var(--extended-by) + var(--offset));
+    top: calc(100% - var(--offset) + var(--thickness));
+    --filter: blur(90px) saturate(160%) brightness(1.3);
+    -webkit-backdrop-filter: var(--filter);
+    backdrop-filter: var(--filter);
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      black 0,
+      black var(--offset),
+      transparent var(--offset)
+    );
+    pointer-events: none;
   }
 }

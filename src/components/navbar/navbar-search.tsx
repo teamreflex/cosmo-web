@@ -3,7 +3,6 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { UserSearch } from "../user-search";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { Search } from "lucide-react";
 import { SearchUser } from "@/lib/server/cosmo";
 import { useSearchStore } from "@/store";
@@ -29,20 +28,13 @@ export default function NavbarSearch() {
       onSelect={onSelect}
       recent={recent}
     >
-      <Tooltip delayDuration={0}>
-        <TooltipTrigger asChild>
-          <button
-            className="drop-shadow-lg hover:scale-110 transition-all"
-            aria-label="Search for user"
-            onClick={() => setOpen(true)}
-          >
-            <Search className="h-8 w-8 shrink-0" />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>Search</p>
-        </TooltipContent>
-      </Tooltip>
+      <button
+        className="drop-shadow-lg hover:scale-110 transition-all"
+        aria-label="Search for user"
+        onClick={() => setOpen(true)}
+      >
+        <Search className="h-8 w-8 shrink-0" />
+      </button>
     </UserSearch>
   );
 }
