@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     default: env.NEXT_PUBLIC_APP_NAME,
     absolute: env.NEXT_PUBLIC_APP_NAME,
   },
-  description: `${env.NEXT_PUBLIC_APP_NAME} - Where you meet your artist`,
+  description: `${env.NEXT_PUBLIC_APP_NAME} - Unofficial desktop client for Cosmo`,
   keywords: [
     "kpop",
     "korea",
