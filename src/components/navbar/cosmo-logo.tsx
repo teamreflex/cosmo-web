@@ -39,6 +39,7 @@ export default function CosmoLogo({
           quality={100}
           alt="Cosmo"
           className={cn(className, color === "black" && "invert")}
+          priority={true}
         />
       </AlertDialogTrigger>
       <AlertDialogContent>

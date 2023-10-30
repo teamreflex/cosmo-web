@@ -22,7 +22,7 @@ export default function NewsPostFeed({
       <div className="flex gap-2">
         <Avatar className="border border-accent">
           <AvatarFallback>{post.artist.at(0)}</AvatarFallback>
-          <AvatarImage src={post.logoImageUrl} />
+          <AvatarImage src={post.logoImageUrl} alt={post.artist} />
         </Avatar>
 
         <div className="flex flex-col">
