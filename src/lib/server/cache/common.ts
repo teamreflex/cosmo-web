@@ -15,6 +15,7 @@ export async function remember<T>(
   const cached = await kv.get<Awaited<ReturnType<typeof fetcher>>>(`${key}`);
 
   if (cached === null) {
+    console.log(`[redis] Cache miss for ${key}`);
     const data = await fetcher();
     await kv.set(`${key}`, data, {
       ex: expiry,
