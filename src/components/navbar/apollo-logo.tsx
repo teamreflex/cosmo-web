@@ -37,7 +37,7 @@ export default function ApolloLogo({
           height={height}
           width={width}
           quality={100}
-          alt="Cosmo"
+          alt={env.NEXT_PUBLIC_APP_NAME}
           className={cn(className, color === "black" && "invert")}
           priority={true}
         />

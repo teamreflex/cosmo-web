@@ -23,7 +23,7 @@ export default async function HomePage() {
           width={100}
           height={100}
           quality={100}
-          alt="Cosmo"
+          alt={env.NEXT_PUBLIC_APP_NAME}
         />
         <span className="font-semibold text-lg">
           Welcome to{" "}
