@@ -45,6 +45,7 @@ export const logout = async () => {
   }
 
   cookies().delete("token");
+  redirect("/");
 };
 
 /**
