@@ -1,22 +1,10 @@
 "use client";
 
 import { getUser, signIn, signOut } from "@ramper/ethereum";
-import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store";
-import { ReactNode, useEffect, useRef, useState } from "react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { cosmoLogin } from "./actions";
-import { Loader2, LogIn } from "lucide-react";
+import { ReactNode, useEffect, useTransition } from "react";
+import { cosmoLogin, logout } from "./actions";
+import { Loader2 } from "lucide-react";
 import { TokenPayload } from "@/lib/server/jwt";
 import { CosmoArtist } from "@/lib/server/cosmo";
 import { ValidArtist } from "@/lib/server/cosmo/common";
@@ -36,60 +24,43 @@ export default function AuthOptions({
   selectedArtist,
   comoBalances,
 }: Props) {
-  const [pending, setPending] = useState(true);
-  const [email, setEmail] = useState("");
-  const [token, setToken] = useState("");
+  const [isPending, startTransition] = useTransition();
 
   const setRamperUser = useAuthStore((state) => state.setRamperUser);
 
-  const cosmoForm = useRef<HTMLFormElement>(null);
-
   // initialize ramper sdk
   useEffect(() => {
-    const ramper = getUser();
-    setRamperUser(ramper);
-    setPending(false);
+    startTransition(() => {
+      const ramper = getUser();
+      setRamperUser(ramper);
+    });
   }, [setRamperUser, user]);
 
-  // login with cosmo when the ramper login is complete
-  useEffect(() => {
-    if (cosmoForm.current && email && token) {
-      cosmoForm.current.requestSubmit();
-    }
-  }, [email, token]);
+  function ramperLogin() {
+    startTransition(async () => {
+      const result = await signIn();
+      if (result.method === "ramper" && result.user) {
+        setRamperUser(result.user);
 
-  async function executeSignIn() {
-    setPending(true);
-    const result = await signIn();
-    if (result.method === "ramper" && result.user) {
-      setRamperUser(result.user);
-
-      const token = result.user.ramperCredential?.idToken;
-      if (token && cosmoForm.current) {
-        setEmail(result.user.email!);
-        setToken(token);
+        const email = result.user.email;
+        const token = result.user.ramperCredential?.idToken;
+        if (email && token) {
+          await cosmoLogin(email, token);
+        }
       }
-    }
+    });
   }
 
-  async function executeCosmoLogin(formData: FormData) {
-    await cosmoLogin(formData);
-    setPending(false);
-  }
-
-  async function executeSignOut() {
-    signOut();
-    setRamperUser(null);
-    setPending(false);
+  function executeSignOut() {
+    startTransition(async () => {
+      signOut();
+      setRamperUser(null);
+      await logout();
+    });
   }
 
   return (
     <>
-      <form hidden action={executeCosmoLogin} ref={cosmoForm}>
-        <input type="hidden" name="email" value={email} />
-        <input type="hidden" name="token" value={token} />
-      </form>
-
       {user ? (
         <div className="flex gap-2 items-center justify-center">
           <div className="md:flex gap-2 items-center hidden">
@@ -105,10 +76,10 @@ export default function AuthOptions({
         </div>
       ) : (
         <div className="flex items-center">
-          {pending ? (
+          {isPending ? (
             <Loader2 className="animate-spin" />
           ) : (
-            <SignInDialog onClick={executeSignIn} />
+            <SignInDialog onClick={ramperLogin} />
           )}
         </div>
       )}

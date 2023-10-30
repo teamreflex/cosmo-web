@@ -1,6 +1,4 @@
 import { CosmoArtist, ValidArtist } from "@/lib/server/cosmo";
-import { useEffect, useRef, useState } from "react";
-import { updateSelectedArtist } from "./actions";
 import {
   Dialog,
   DialogContent,
@@ -11,6 +9,8 @@ import {
 import { useFormStatus } from "react-dom";
 import Image from "next/image";
 import { Check, Loader2 } from "lucide-react";
+import { useTransition } from "react";
+import { updateSelectedArtist } from "./actions";
 
 type SwitchArtistDialogProps = {
   open: boolean;
@@ -25,22 +25,6 @@ export default function SwitchArtistDialog({
   artists,
   selectedArtist,
 }: SwitchArtistDialogProps) {
-  const [selectedArtistLocal, setSelectedArtist] = useState<
-    ValidArtist | undefined
-  >(selectedArtist);
-  const form = useRef<HTMLFormElement>(null);
-
-  useEffect(() => {
-    if (form.current) {
-      form.current.requestSubmit();
-    }
-  }, [selectedArtist]);
-
-  async function executeArtistUpdate(form: FormData) {
-    await updateSelectedArtist(form);
-    onOpenChange(false);
-  }
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -50,27 +34,16 @@ export default function SwitchArtistDialog({
             Switch the Home tab to the selected artist&apos;s content.
           </DialogDescription>
 
-          <form action={executeArtistUpdate} ref={form}>
-            <input
-              hidden
-              name="artist"
-              value={selectedArtistLocal as string}
-              readOnly
-            />
-
-            <div className="flex flex-col gap-2">
-              {artists.map((artist) => (
-                <SelectArtistButton
-                  key={artist.name}
-                  artist={artist}
-                  updateArtist={() =>
-                    setSelectedArtist(artist.name as ValidArtist)
-                  }
-                  isSelected={artist.name === selectedArtistLocal}
-                />
-              ))}
-            </div>
-          </form>
+          <div className="flex flex-col gap-2">
+            {artists.map((artist) => (
+              <SelectArtistButton
+                key={artist.name}
+                artist={artist}
+                isSelected={artist.name === selectedArtist}
+                onOpenChange={onOpenChange}
+              />
+            ))}
+          </div>
         </DialogHeader>
       </DialogContent>
     </Dialog>
@@ -79,20 +52,29 @@ export default function SwitchArtistDialog({
 
 type SelectArtistButtonProps = {
   artist: CosmoArtist;
-  updateArtist: (artist: CosmoArtist) => void;
   isSelected: boolean;
+  onOpenChange: (open: boolean) => void;
 };
 
 function SelectArtistButton({
   artist,
-  updateArtist,
   isSelected,
+  onOpenChange,
 }: SelectArtistButtonProps) {
-  const { pending } = useFormStatus();
+  const [isPending, startTransition] = useTransition();
+
+  function select() {
+    startTransition(async () => {
+      const result = await updateSelectedArtist(artist.name);
+      if (result.success && result.data) {
+        onOpenChange(false);
+      }
+    });
+  }
 
   return (
     <button
-      onClick={() => updateArtist(artist)}
+      onClick={select}
       className="flex w-full justify-between items-center px-4 py-2 border border-accent rounded-lg hover:bg-accent/25 transition focus:outline-none"
     >
       <div className="flex gap-4 items-center">
@@ -106,9 +88,9 @@ function SelectArtistButton({
         <span className="font-bold">{artist.title}</span>
       </div>
 
-      {isSelected && pending && <Loader2 className="animate-spin h-5 w-5" />}
+      {isPending && <Loader2 className="animate-spin h-5 w-5" />}
 
-      {isSelected && !pending && (
+      {isSelected && !isPending && (
         <div className="bg-cosmo rounded-full text-white p-1">
           <Check className="h-4 w-4" />
         </div>
