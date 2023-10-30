@@ -8,7 +8,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import * as R from "remeda";
-import { decodeUser } from "@/app/(core)/data-fetching";
+import { decodeUser } from "@/app/data-fetching";
 
 export default async function GridEditions({
   artist,

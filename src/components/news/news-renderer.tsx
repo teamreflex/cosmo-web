@@ -3,12 +3,11 @@ import {
   isExclusiveSection,
   isFeedSection,
 } from "@/lib/server/cosmo";
-import { ValidArtist } from "@/lib/server/cosmo/common";
 import { TokenPayload } from "@/lib/server/jwt";
 import NewsSectionFeed from "./news-section-feed";
 import NewsSectionExclusive from "./news-section-exclusive";
 import NewsSectionBanner from "./news-section-banner";
-import { fetchNewsForSelectedArtist } from "@/app/(core)/data-fetching";
+import { fetchNewsForSelectedArtist } from "@/app/data-fetching";
 
 type Props = {
   user: TokenPayload;

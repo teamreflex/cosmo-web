@@ -1,7 +1,7 @@
 import { fetchSelectedArtist as redisSelectedArtist } from "@/lib/server/cache";
 import { fetchHomeNews } from "@/lib/server/cosmo";
 import { cache } from "react";
-import { getUser } from "../api/common";
+import { getUser } from "./api/common";
 import { remember } from "@/lib/server/cache/common";
 
 export const fetchSelectedArtist = cache(

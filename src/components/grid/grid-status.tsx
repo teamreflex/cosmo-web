@@ -1,4 +1,4 @@
-import { decodeUser } from "@/app/(core)/data-fetching";
+import { decodeUser } from "@/app/data-fetching";
 import { ValidArtist, fetchGridStatus } from "@/lib/server/cosmo";
 
 export default async function GridStatus({ artist }: { artist: ValidArtist }) {

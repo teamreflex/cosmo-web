@@ -1,11 +1,19 @@
 import "./globals.css";
-import type { Metadata } from "next";
+import Navbar from "@/components/navbar/navbar";
+import ClientProviders from "@/components/client-providers";
+import { Suspense, cache } from "react";
+import { ValidArtist } from "@/lib/server/cosmo";
+import ComoBalances from "@/components/navbar/como-balances";
+import { Loader2 } from "lucide-react";
+import { decodeUser, fetchSelectedArtist } from "./data-fetching";
+import { cacheArtists } from "@/lib/server/cache";
+import { Metadata } from "next";
+import { env } from "@/env.mjs";
 import { Inter } from "next/font/google";
 import localFont from "next/font/local";
 import { ThemeProvider } from "@/components/theme-provider";
-import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { env } from "@/env.mjs";
+import { Toaster } from "@/components/ui/toaster";
 import Fathom from "@/components/fathom";
 
 const inter = Inter({
@@ -44,16 +52,58 @@ export const metadata: Metadata = {
   ],
 };
 
-export default function RootLayout({
+const fetchData = cache(async (userId?: number) =>
+  Promise.all([
+    cacheArtists(),
+    userId ? fetchSelectedArtist(userId) : Promise.resolve(undefined),
+  ])
+);
+
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const user = await decodeUser();
+  const [artists, selectedArtist] = await fetchData(user?.id);
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${cosmo.variable} font-sans`}>
         <ThemeProvider attribute="class" defaultTheme="dark">
-          <TooltipProvider>{children}</TooltipProvider>
+          <TooltipProvider>
+            <ClientProviders>
+              <div className="relative flex min-h-screen flex-col">
+                <Navbar
+                  user={user}
+                  artists={artists}
+                  selectedArtist={selectedArtist as ValidArtist | undefined}
+                  comoBalances={
+                    user ? (
+                      <Suspense
+                        fallback={
+                          <div className="flex items-center">
+                            <Loader2 className="animate-spin" />
+                          </div>
+                        }
+                      >
+                        <ComoBalances
+                          address={user.address}
+                          artists={artists}
+                        />
+                      </Suspense>
+                    ) : null
+                  }
+                />
+
+                {/* content */}
+                <div className="flex min-w-full flex-col text-foreground">
+                  {children}
+                </div>
+              </div>
+            </ClientProviders>
+          </TooltipProvider>
+
           <Toaster />
           <Fathom />
         </ThemeProvider>
