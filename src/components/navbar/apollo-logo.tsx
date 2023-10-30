@@ -14,7 +14,7 @@ import {
 import { env } from "@/env.mjs";
 import Link from "next/link";
 import { Check, Github } from "lucide-react";
-import CosmoImage from "@/assets/cosmo.png";
+import LogoImage from "@/assets/logo.png";
 
 type Props = {
   className?: string;
@@ -23,17 +23,17 @@ type Props = {
   color?: "white" | "black";
 };
 
-export default function CosmoLogo({
+export default function ApolloLogo({
   className,
   height = 35,
-  width = 35,
+  width = 51,
   color = "white",
 }: Props) {
   return (
     <AlertDialog>
       <AlertDialogTrigger>
         <Image
-          src={CosmoImage.src}
+          src={LogoImage.src}
           height={height}
           width={width}
           quality={100}

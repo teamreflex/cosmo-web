@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Home, LayoutGrid, PackageOpen, Vote } from "lucide-react";
 import AuthOptions from "./auth/auth-options";
-import CosmoLogo from "./cosmo-logo";
+import ApolloLogo from "./apollo-logo";
 import { ReactNode } from "react";
 import { TokenPayload } from "@/lib/server/jwt";
 import { CosmoArtist, ValidArtist } from "@/lib/server/cosmo";
@@ -32,7 +32,7 @@ export default function Navbar({
       <div className="glass">
         <div className="flex w-full items-center h-14">
           <div className="container grid grid-cols-3 items-center gap-2 text-sm text-foreground md:gap-4 md:py-6 lg:grid-cols-3 pointer-events-auto">
-            <CosmoLogo color="white" />
+            <ApolloLogo color="white" />
 
             <div className="flex flex-row items-center gap-6 md:gap-10 justify-center">
               {links.map((link, i) => (

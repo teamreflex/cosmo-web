@@ -28,5 +28,4 @@
 
 ### General
 
-- Replace Cosmo logo with something more generic
 - Fix searchbox blur

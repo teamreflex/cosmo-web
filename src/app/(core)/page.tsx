@@ -5,7 +5,7 @@ import { Metadata } from "next";
 import { env } from "@/env.mjs";
 import { decodeUser } from "./data-fetching";
 import ApolloErrorBoundary from "@/components/error-boundary";
-import CosmoImage from "@/assets/cosmo.png";
+import LogoImage from "@/assets/logo.png";
 
 export const runtime = "edge";
 export const metadata: Metadata = {
@@ -19,7 +19,7 @@ export default async function HomePage() {
     return (
       <span className="flex flex-col justify-center items-center w-full gap-2 py-12">
         <Image
-          src={CosmoImage.src}
+          src={LogoImage.src}
           width={100}
           height={100}
           quality={100}
