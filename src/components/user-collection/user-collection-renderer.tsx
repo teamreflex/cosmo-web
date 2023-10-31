@@ -1,6 +1,6 @@
 import { cacheMembers } from "@/lib/server/cache";
-import CollectionRenderer from "../collection/collection-renderer";
 import { fetchLockedObjekts } from "@/lib/server/collection";
+import CollectionParams from "../collection/collection-params";
 
 type Props = {
   nickname: string;
@@ -18,7 +18,7 @@ export default async function UserCollectionRenderer({
 
   return (
     <main className="container flex flex-col py-2">
-      <CollectionRenderer
+      <CollectionParams
         locked={lockedObjekts}
         artists={artists}
         nickname={nickname}

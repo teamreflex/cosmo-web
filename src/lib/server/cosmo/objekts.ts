@@ -1,3 +1,4 @@
+import { parseCollectionParams } from "@/lib/universal";
 import {
   COSMO_ENDPOINT,
   ValidClass,
@@ -68,9 +69,6 @@ type OwnedObjektPending = OwnedObjektCommonFields & {
 
 export type OwnedObjekt = OwnedObjektMinted | OwnedObjektPending;
 
-const parseArray = <T>(value?: T[]) =>
-  value ? (value.length > 0 ? value.join(",") : "") : "";
-
 /**
  * Fetch the list of objekts owned by the user.
  * @param {OwnedByMeInput} options
@@ -92,39 +90,9 @@ const parseArray = <T>(value?: T[]) =>
 export async function ownedBy({
   token,
   address,
-  startAfter,
-  nextStartAfter,
-  member,
-  artist,
-  sort,
-  season,
-  classType,
-  onlineType,
-  transferable,
-  gridable,
-  usedForGrid,
-  collection,
+  ...params
 }: OwnedByMeInput): Promise<OwnedObjektsResult> {
-  const query = new URLSearchParams({
-    start_after: startAfter.toString(),
-    sort,
-    season: parseArray(season),
-    artist: artist ?? "",
-    member: member ?? "",
-    class: parseArray(classType),
-    on_offline: parseArray(onlineType),
-    collection: collection ?? "",
-  });
-
-  if (transferable) {
-    query.append("transferable", "true");
-  }
-  if (gridable) {
-    query.append("gridable", "true");
-  }
-  if (usedForGrid !== undefined) {
-    query.append("used_for_grid", usedForGrid ? "true" : "false");
-  }
+  const query = parseCollectionParams(params, "cosmo", ["nextStartAfter"]);
 
   const res = await fetch(
     `${COSMO_ENDPOINT}/objekt/v1/owned-by/${address}?${query.toString()}`,

@@ -3,7 +3,7 @@
 import { CosmoArtistWithMembers, ObjektQueryParams } from "@/lib/server/cosmo";
 import ObjektList from "@/components/collection/objekt-list";
 import { SlidersHorizontal } from "lucide-react";
-import { useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import { ClassFilter } from "./filter-class";
 import { OnlineFilter } from "./filter-online";
 import { SeasonFilter } from "./filter-season";
@@ -24,6 +24,8 @@ type Props = {
   artists: CosmoArtistWithMembers[];
   nickname?: string;
   address: string;
+  filters: ObjektQueryParams;
+  setFilters: Dispatch<SetStateAction<ObjektQueryParams>>;
 };
 
 export default function CollectionRenderer({
@@ -31,22 +33,12 @@ export default function CollectionRenderer({
   artists,
   nickname,
   address,
+  filters,
+  setFilters,
 }: Props) {
   const [showFilters, setShowFilters] = useState(false);
   // make showLocked a separate filter so it doesn't trigger a re-fetch
   const [showLocked, setShowLocked] = useState(true);
-  const [filters, setFilters] = useState<ObjektQueryParams>({
-    startAfter: 0,
-    sort: "newest",
-    artist: undefined,
-    member: undefined,
-    classType: undefined,
-    onlineType: undefined,
-    transferable: undefined,
-    gridable: undefined,
-    usedForGrid: undefined,
-    collection: undefined,
-  });
 
   function updateFilter<T extends keyof ObjektQueryParams>(
     key: T,

@@ -14,6 +14,7 @@ import { useInView } from "react-intersection-observer";
 import MemberFilter from "./member-filter";
 import { PropsWithClassName, cn } from "@/lib/utils";
 import { LockedObjektContext } from "@/context/objekt";
+import { parseCollectionParams } from "@/lib/universal";
 
 type Props = PropsWithClassName<{
   authenticated: boolean;
@@ -47,17 +48,8 @@ export default function ObjektList({
   }
 
   async function fetchObjekts({ pageParam = 0 }) {
-    const searchParams = new URLSearchParams({
-      startAfter: pageParam.toString(),
-      sort: filters.sort,
-      artist: filters.artist ?? "",
-      member: filters.member ?? "",
-      classType: filters.classType ? filters.classType.join(",") : "",
-      onlineType: filters.onlineType ? filters.onlineType.join(",") : "",
-      season: filters.season ? filters.season.join(",") : "",
-      transferable: filters.transferable ? "true" : "",
-      gridable: filters.gridable ? "true" : "",
-    });
+    const searchParams = parseCollectionParams(filters);
+    searchParams.set("startAfter", pageParam.toString());
 
     const result = await fetch(
       `/api/objekt/v1/owned-by/${address}?${searchParams.toString()}`
@@ -77,6 +69,7 @@ export default function ObjektList({
     queryFn: fetchObjekts,
     getNextPageParam: (lastPage) => lastPage.nextStartAfter,
     refetchOnWindowFocus: false,
+    staleTime: Infinity,
   });
 
   // infinite scroll loader
