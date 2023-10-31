@@ -52,15 +52,12 @@ type BannerItemProps = PropsWithClassName<{
 function BannerItem({ className, item, index, total }: BannerItemProps) {
   return (
     <Link href={item.url as Route} target="_blank" className={className}>
-      <AspectRatio
-        ratio={1.45 / 1}
-        className="relative rounded-xl border border-accent overflow-hidden"
-      >
+      <div className="relative aspect-video w-full rounded-xl border border-accent overflow-hidden">
         <Image
           src={item.imageUrl}
           alt={item.body}
           fill={true}
-          className="object-contain"
+          className="object-cover"
           quality={100}
           priority={true}
         />
@@ -77,7 +74,7 @@ function BannerItem({ className, item, index, total }: BannerItemProps) {
         <span className="absolute bottom-3 right-3 bg-background/25 text-xs rounded-full px-2 py-1">
           {index}/{total}
         </span>
-      </AspectRatio>
+      </div>
     </Link>
   );
 }
