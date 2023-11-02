@@ -28,7 +28,7 @@ export default function GridFourSlot({
     populateSlot,
     canComplete,
     completeGrid,
-    claimReward,
+    isPending,
     gridReward,
   ] = useGrid(slug, grid.ongoing.slotStatuses);
 
@@ -83,13 +83,8 @@ export default function GridFourSlot({
         })}
       </div>
 
-      <GridConfirmDialog onConfirm={() => completeGrid.mutate()}>
-        <Button
-          variant="cosmo"
-          disabled={
-            !canComplete || completeGrid.isLoading || claimReward.isLoading
-          }
-        >
+      <GridConfirmDialog onConfirm={completeGrid}>
+        <Button variant="cosmo" disabled={!canComplete || isPending}>
           Complete Grid
         </Button>
       </GridConfirmDialog>

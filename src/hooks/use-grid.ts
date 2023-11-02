@@ -1,3 +1,4 @@
+import { submitGrid } from "@/components/grid/actions";
 import { useToast } from "@/components/ui/use-toast";
 import { env } from "@/env.mjs";
 import {
@@ -6,8 +7,7 @@ import {
   CosmoOngoingGridSlot,
 } from "@/lib/server/cosmo";
 import { trackEvent } from "fathom-client";
-import { useEffect, useState } from "react";
-import { useMutation } from "react-query";
+import { useEffect, useState, useTransition } from "react";
 
 type EmptySlot = {
   populated: false;
@@ -57,6 +57,7 @@ function normalize(slots: CosmoOngoingGridSlot[]) {
 }
 
 export function useGrid(slug: string, slots: CosmoOngoingGridSlot[]) {
+  const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
 
   const [selectedObjekts, setSelectedObjekts] = useState<MinimalGridSlot[]>(
@@ -98,55 +99,27 @@ export function useGrid(slug: string, slots: CosmoOngoingGridSlot[]) {
     );
   }
 
-  const completeGrid = useMutation({
-    mutationFn: () => {
-      return fetch(`/api/grid/v1/${slug}/complete`, {
-        method: "POST",
-        body: JSON.stringify({
-          slots: slotsForCompletion,
-        }),
-      });
-    },
-    onError: (error) => {
-      console.error(error);
-      toast({
-        variant: "destructive",
-        description:
-          "Error submitting grid. Please check your collection and try again.",
-      });
-    },
-    onSuccess: () => {
-      claimReward.mutate();
-    },
-  });
-
-  const claimReward = useMutation({
-    mutationFn: () => {
-      return fetch(`/api/grid/v1/${slug}/claim-reward`, {
-        method: "POST",
-      });
-    },
-    onError: (error) => {
-      console.error(error);
-      toast({
-        variant: "destructive",
-        description:
-          "Error claiming grid reward. Please check your collection and try again.",
-      });
-    },
-    onSuccess: async (response) => {
-      const result: CosmoGridRewardClaimResult = await response.json();
-      setGridReward(result);
-      trackEvent("grid-objekt");
-    },
-  });
+  function completeGrid() {
+    startTransition(async () => {
+      const result = await submitGrid({ slug, slots: slotsForCompletion });
+      if (result.success) {
+        setGridReward(result.data);
+        trackEvent("grid-objekt");
+      } else {
+        toast({
+          variant: "destructive",
+          description: result.error,
+        });
+      }
+    });
+  }
 
   return [
     selectedObjekts,
     populateSlot,
     canComplete,
     completeGrid,
-    claimReward,
+    isPending,
     gridReward,
   ] as const;
 }
