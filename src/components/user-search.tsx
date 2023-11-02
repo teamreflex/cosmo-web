@@ -1,6 +1,6 @@
 "use client";
 
-import { PropsWithChildren, useState } from "react";
+import { PropsWithChildren, useMemo, useState } from "react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -13,6 +13,7 @@ import { SearchUser } from "@/lib/server/cosmo";
 import { useQuery } from "react-query";
 import { useDebounce } from "usehooks-ts";
 import { HeartCrack, Loader2 } from "lucide-react";
+import { isAddress } from "ethers/lib/utils";
 
 type Props = PropsWithChildren<{
   placeholder?: string;
@@ -32,6 +33,10 @@ export function UserSearch({
 }: Props) {
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounce<string>(query, 500);
+  const queryIsAddress = useMemo(
+    () => isAddress(debouncedQuery),
+    [debouncedQuery]
+  );
 
   const result = useQuery({
     queryKey: ["user-search", debouncedQuery],
@@ -41,13 +46,22 @@ export function UserSearch({
       );
       return (await response.json()) as SearchUser[];
     },
-    enabled: debouncedQuery.length > 3,
+    enabled: debouncedQuery.length > 3 && queryIsAddress === false,
   });
 
   // reset query before triggering handler
   function select(user: SearchUser) {
     setQuery("");
     onSelect(user);
+  }
+
+  function selectAddress(address: string) {
+    setQuery("");
+    onSelect({
+      address,
+      nickname: address,
+      profileImageUrl: "",
+    });
   }
 
   return (
@@ -72,9 +86,17 @@ export function UserSearch({
               <p className="text-semibold">Error searching for users</p>
             </CommandEmpty>
           ) : (
-            result.data && (
-              <CommandGroup heading="Results">
-                {result.data.map((user) => (
+            <CommandGroup heading="Results">
+              {queryIsAddress && (
+                <CommandItem
+                  onSelect={() => selectAddress(debouncedQuery)}
+                  className="cursor-pointer"
+                >
+                  {debouncedQuery}
+                </CommandItem>
+              )}
+              {result.data &&
+                result.data.map((user) => (
                   <CommandItem
                     key={user.address}
                     onSelect={() => select(user)}
@@ -83,8 +105,7 @@ export function UserSearch({
                     {user.nickname}
                   </CommandItem>
                 ))}
-              </CommandGroup>
-            )
+            </CommandGroup>
           )}
           {recent.length > 0 && (
             <CommandGroup heading="Recent">
