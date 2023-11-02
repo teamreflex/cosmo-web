@@ -8,7 +8,7 @@ import {
   validSorts,
 } from "../server/cosmo";
 
-const objektFilterSchema = object({
+const schema = object({
   showLocked: coerce.boolean(),
   startAfter: number(),
   nextStartAfter: number().optional(),
@@ -31,7 +31,8 @@ const objektFilterSchema = object({
 export function validateCollectionParams(
   params: URLSearchParams
 ): ObjektQueryParams {
-  const result = objektFilterSchema.safeParse({
+  const result = schema.safeParse({
+    showLocked: params.get("showLocked") === "true",
     startAfter: parseInt(params.get("startAfter") ?? "0"),
     nextStartAfter: parseInt(params.get("nextStartAfter") ?? "0"),
     member: params.get("member") || undefined,

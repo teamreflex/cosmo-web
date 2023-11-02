@@ -16,7 +16,7 @@ export function LockedFilter({ showLocked, setShowLocked }: Props) {
       onPressedChange={setShowLocked}
       aria-label="Toggle locked"
     >
-      {showLocked ? "Show" : "Hide"} Locked
+      {showLocked ? "Showing" : "Hiding"} Locked
     </Toggle>
   );
 }

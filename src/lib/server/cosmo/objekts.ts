@@ -8,6 +8,7 @@ import {
 } from "./common";
 
 export type ObjektQueryParams = {
+  showLocked?: boolean;
   startAfter: number;
   nextStartAfter?: number;
   member?: string;

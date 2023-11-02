@@ -26,6 +26,8 @@ type Props = {
   address: string;
   filters: ObjektQueryParams;
   setFilters: Dispatch<SetStateAction<ObjektQueryParams>>;
+  showLocked: boolean;
+  setShowLocked: (state: boolean) => void;
 };
 
 export default function CollectionRenderer({
@@ -35,10 +37,10 @@ export default function CollectionRenderer({
   address,
   filters,
   setFilters,
+  showLocked,
+  setShowLocked,
 }: Props) {
   const [showFilters, setShowFilters] = useState(false);
-  // make showLocked a separate filter so it doesn't trigger a re-fetch
-  const [showLocked, setShowLocked] = useState(true);
 
   function updateFilter<T extends keyof ObjektQueryParams>(
     key: T,

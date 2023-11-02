@@ -21,6 +21,7 @@ type Props = {
 export default function CollectionParams(props: Props) {
   const params = useSearchParams();
   const [filters, setFilters] = useState(validateCollectionParams(params));
+  const [showLocked, setShowLocked] = useState(filters.showLocked === false);
 
   // update the URL with filters upon change
   const pathname = usePathname();
@@ -33,10 +34,20 @@ export default function CollectionParams(props: Props) {
     }
 
     const parsed = parseCollectionParams(filters, "apollo", exclude);
+    if (showLocked === false) {
+      parsed.set("showLocked", "false");
+    }
+
     router.replace(`${pathname}?${parsed.toString()}` as Route);
-  }, [filters, pathname, router]);
+  }, [filters, pathname, router, showLocked]);
 
   return (
-    <CollectionRenderer {...props} filters={filters} setFilters={setFilters} />
+    <CollectionRenderer
+      {...props}
+      filters={filters}
+      setFilters={setFilters}
+      showLocked={showLocked}
+      setShowLocked={setShowLocked}
+    />
   );
 }

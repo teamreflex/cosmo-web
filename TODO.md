@@ -25,7 +25,6 @@
 - Como calendar?
   - might require indexing to be efficient
 - Consider using Alchemy NFT activity webhooks to delete locked objekts upon transfer
-- Add locked filter into URL
 - Add edition filter
 
 ### General
