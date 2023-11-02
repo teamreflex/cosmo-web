@@ -12,6 +12,10 @@ import { env } from "@/env.mjs";
 import { AlertCircle, Grid2X2, Lock, MailX } from "lucide-react";
 
 export default function HelpDialog() {
+  const str = env.NEXT_PUBLIC_APP_NAME.toLowerCase().match(/^[aeiou]/i)
+    ? "an"
+    : "a";
+
   return (
     <AlertDialog>
       <AlertDialogTrigger>
@@ -30,7 +34,7 @@ export default function HelpDialog() {
                   objekt. Useful for preventing accidental trading.
                 </p>
                 <p>
-                  This is a {env.NEXT_PUBLIC_APP_NAME} feature and{" "}
+                  This is {str} {env.NEXT_PUBLIC_APP_NAME} feature and{" "}
                   <b>does not prevent trading within the Cosmo app</b>.
                 </p>
               </div>
