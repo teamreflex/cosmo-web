@@ -33,6 +33,10 @@ type OwnedObjektCommonFields = {
 
 type OwnedObjektMinted = OwnedObjektCommonFields & {
   status: "minted";
+  nonTransferableReason?:
+    | "used-for-grid"
+    | "challenge-reward"
+    | "welcome-objekt";
 };
 
 type OwnedObjektPending = OwnedObjektCommonFields & {

@@ -7,7 +7,15 @@ import LockObjekt from "./lock-button";
 import SendObjekt from "./send-button";
 import { CSSProperties, PropsWithChildren, useContext, useState } from "react";
 import ReactCardFlip from "react-card-flip";
-import { ExternalLink, Grid2X2, Lock, MailX, Maximize2 } from "lucide-react";
+import {
+  DownloadCloud,
+  ExternalLink,
+  Grid2X2,
+  Lock,
+  MailX,
+  Maximize2,
+  PartyPopper,
+} from "lucide-react";
 import { format } from "date-fns";
 import Link from "next/link";
 import { useElementSize } from "usehooks-ts";
@@ -118,14 +126,24 @@ function ActionOverlay({
     >
       {/* buttons */}
       <div className="flex items-center gap-2">
-        {/* used in grid */}
-        {objekt.usedForGrid && (
-          <Grid2X2 className="h-3 w-3 sm:h-5 sm:w-5 shrink-0" />
+        {/* mint pending */}
+        {objekt.nonTransferableReason === "mint-pending" && (
+          <DownloadCloud className="h-3 w-3 sm:h-5 sm:w-5 shrink-0" />
         )}
 
-        {/* not transferable */}
-        {!objekt.usedForGrid && !objekt.transferable && (
+        {/* event reward */}
+        {objekt.nonTransferableReason === "challenge-reward" && (
+          <PartyPopper className="h-3 w-3 sm:h-5 sm:w-5 shrink-0" />
+        )}
+
+        {/* welcome reward */}
+        {objekt.nonTransferableReason === "welcome-objekt" && (
           <MailX className="h-3 w-3 sm:h-5 sm:w-5 shrink-0" />
+        )}
+
+        {/* used in grid */}
+        {objekt.nonTransferableReason === "used-for-grid" && (
+          <Grid2X2 className="h-3 w-3 sm:h-5 sm:w-5 shrink-0" />
         )}
 
         {/* send objekt */}
@@ -150,16 +168,21 @@ function ActionOverlay({
 
       {/* status text */}
       <div className="text-xs whitespace-nowrap max-w-0 group-hover:max-w-[12rem] overflow-hidden transition-all">
-        {!objekt.usedForGrid && isLocked && <StatusText>Locked</StatusText>}
-        {!objekt.transferable && objekt.status === "pending" && (
+        {!objekt.nonTransferableReason && isLocked && (
+          <StatusText>Locked</StatusText>
+        )}
+        {objekt.nonTransferableReason === "mint-pending" && (
           <StatusText>Mint pending</StatusText>
         )}
-        {!objekt.transferable &&
-          !objekt.usedForGrid &&
-          objekt.status === "minted" && (
-            <StatusText>Not transferable</StatusText>
-          )}
-        {objekt.usedForGrid && <StatusText>Used for grid</StatusText>}
+        {objekt.nonTransferableReason === "challenge-reward" && (
+          <StatusText>Event reward</StatusText>
+        )}
+        {objekt.nonTransferableReason === "welcome-objekt" && (
+          <StatusText>Welcome reward</StatusText>
+        )}
+        {objekt.nonTransferableReason === "used-for-grid" && (
+          <StatusText>Used for grid</StatusText>
+        )}
       </div>
     </div>
   );
