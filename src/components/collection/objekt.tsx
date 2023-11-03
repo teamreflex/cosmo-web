@@ -134,7 +134,7 @@ function ActionOverlay({
         )}
 
         {/* locked (viewing other user) */}
-        {isLocked && !authenticated && (
+        {!objekt.usedForGrid && isLocked && !authenticated && (
           <Lock className="h-3 w-3 sm:h-5 sm:w-5 shrink-0" />
         )}
 
@@ -150,7 +150,7 @@ function ActionOverlay({
 
       {/* status text */}
       <div className="text-xs whitespace-nowrap max-w-0 group-hover:max-w-[12rem] overflow-hidden transition-all">
-        {isLocked && <StatusText>Locked</StatusText>}
+        {!objekt.usedForGrid && isLocked && <StatusText>Locked</StatusText>}
         {!objekt.transferable && objekt.status === "pending" && (
           <StatusText>Mint pending</StatusText>
         )}
