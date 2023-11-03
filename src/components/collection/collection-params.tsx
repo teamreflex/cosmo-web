@@ -4,6 +4,7 @@ import { CosmoArtistWithMembers, ObjektQueryParams } from "@/lib/server/cosmo";
 import CollectionRenderer from "./collection-renderer";
 import { useEffect, useState } from "react";
 import {
+  MapMode,
   QueryParamsKey,
   parseCollectionParams,
   validateCollectionParams,
@@ -16,6 +17,7 @@ type Props = {
   artists: CosmoArtistWithMembers[];
   nickname?: string;
   address: string;
+  filterMode: MapMode;
 };
 
 export default function CollectionParams(props: Props) {

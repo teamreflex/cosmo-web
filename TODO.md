@@ -26,6 +26,7 @@
 - Add edition filter
   - fetching current editions requires auth, probably requires hardcoding to be reliable
 - Look into indexing now Alchemy Subgraphs are in GA
+- Look into why my `gridable` filter is broken on 2nd edition Heejin/Haseul
 
 ### General
 
@@ -36,7 +37,3 @@
 
 - Maybe remove barrel files so webpack doesn't suck
 - Consider replacing `loading.tsx` with `<Suspense>` where applicable
-- Directly query Cosmo for anything that doesn't require auth, to cut down on resource usage (redis, edge functions)
-  - Public collections
-  - All artists (without members)
-  - Individual artist (with members)

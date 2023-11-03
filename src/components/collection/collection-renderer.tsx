@@ -13,6 +13,7 @@ import { LockedFilter } from "./filter-locked";
 import { SortFilter } from "./filter-sort";
 import { Toggle } from "../ui/toggle";
 import HelpDialog from "./help-dialog";
+import { MapMode } from "@/lib/universal";
 
 export type PropsWithFilters<T extends keyof ObjektQueryParams> = {
   filters: ObjektQueryParams[T];
@@ -24,6 +25,7 @@ type Props = {
   artists: CosmoArtistWithMembers[];
   nickname?: string;
   address: string;
+  filterMode: MapMode;
   filters: ObjektQueryParams;
   setFilters: Dispatch<SetStateAction<ObjektQueryParams>>;
   showLocked: boolean;
@@ -36,6 +38,7 @@ export default function CollectionRenderer({
   nickname,
   address,
   filters,
+  filterMode,
   setFilters,
   showLocked,
   setShowLocked,
@@ -116,6 +119,7 @@ export default function CollectionRenderer({
         lockedTokenIds={locked}
         showLocked={showLocked}
         artists={artists}
+        filterMode={filterMode}
         filters={filters}
         setFilters={setFilters}
       />

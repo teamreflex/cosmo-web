@@ -65,7 +65,7 @@ export function validateCollectionParams(
 export type QueryParamsKey = keyof ObjektQueryParams;
 
 // cosmo uses snake_case and i don't like using snake_case
-type MapMode = "apollo" | "cosmo";
+export type MapMode = "apollo" | "cosmo";
 const cosmoKeyMap: Partial<Record<QueryParamsKey, string>> = {
   startAfter: "start_after",
   classType: "class",

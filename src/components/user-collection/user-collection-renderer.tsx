@@ -23,6 +23,7 @@ export default async function UserCollectionRenderer({
         artists={artists}
         nickname={nickname}
         address={address}
+        filterMode="cosmo"
       />
     </main>
   );
