@@ -50,17 +50,20 @@ export default function ApolloLogo({
           <AlertDialogDescription asChild>
             <div className="flex flex-col gap-2">
               <p>
-                {env.NEXT_PUBLIC_APP_NAME} is a fan-made platform aiming to
+                {env.NEXT_PUBLIC_APP_NAME} is an unofficial platform aiming to
                 replicate the Cosmo mobile app with a desktop interface.
               </p>
               <p>
-                It is not affiliated with Modhaus or its artists and is not
-                endorsed by its developers.
+                Some features require signing in to work, which is handled by
+                the Cosmo Ramper integration. This requires cookies to function.
               </p>
               <p>
-                There will be instances where certain features are not perfectly
-                replicated 1:1 with the mobile app, and cannot guarantee perfect
-                functionality despite best efforts.
+                {env.NEXT_PUBLIC_APP_NAME} is not affiliated with, endorsed by
+                or supported by Modhaus or its artists.{" "}
+              </p>
+              <p className="font-bold">
+                Some things may break between Cosmo updates. Use at your own
+                risk.
               </p>
               <p>Source code can be found below.</p>
             </div>
