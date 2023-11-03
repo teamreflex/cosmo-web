@@ -64,11 +64,10 @@ export default function GridRenderer({ grids }: Props) {
               {/* special objekt count */}
               <div className="inline-flex justify-center text-sm font-bold gap-1">
                 <span>You have</span>
-                <span className="text-cosmo">{selected.member}</span>
-                <span>&apos;s</span>
                 <span className="text-cosmo">
                   {data.ownedRewardObjektCount}
                 </span>
+                <span className="text-cosmo">{selected.member}</span>
                 <span>Special Objekts</span>
               </div>
 
