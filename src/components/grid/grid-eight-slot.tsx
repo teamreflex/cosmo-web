@@ -27,10 +27,8 @@ export default function GridEightSlot({
 
   return (
     <div className="flex flex-col gap-4 items-center w-full">
-      <div className="grid grid-cols-3 grid-rows-3 gap-4 w-full md:w-2/3">
-        <div className="aspect-photocard w-full flex justify-center items-center order-5">
-          <p className="text-5xl">?</p>
-        </div>
+      <div className="grid grid-cols-3 md:grid-cols-4 gap-4 w-full md:w-2/3">
+        <div className="aspect-photocard w-full flex justify-center items-center order-5 md:hidden" />
         {objekts.map((slot, idx) => {
           if (slot.populated) {
             return (
@@ -65,7 +63,9 @@ export default function GridEightSlot({
                 )}
                 key={slot.collectionNo}
               >
-                <p className="text-white/20 text-3xl">{slot.collectionNo}</p>
+                <p className="text-white/20 text-3xl select-none">
+                  {slot.collectionNo}
+                </p>
               </div>
             );
           }
