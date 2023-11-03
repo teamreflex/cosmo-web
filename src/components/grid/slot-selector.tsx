@@ -9,13 +9,18 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { PopulatedSlot } from "@/hooks/use-grid";
-import { OwnedObjekt, OwnedObjektsResult } from "@/lib/server/cosmo";
+import {
+  COSMO_ENDPOINT,
+  OwnedObjekt,
+  OwnedObjektsResult,
+} from "@/lib/server/cosmo";
 import { HeartCrack, Loader2 } from "lucide-react";
 import { PropsWithChildren, useState } from "react";
 import { useQuery } from "react-query";
 import GridObjekt from "./grid-objekt";
 import useEmblaCarousel from "embla-carousel-react";
 import { Button } from "../ui/button";
+import { getUser } from "@ramper/ethereum";
 
 type Props = PropsWithChildren<{
   collectionId: string;
@@ -34,6 +39,8 @@ export default function SlotSelector({
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<PopulatedSlot>(currentSlot);
 
+  const user = getUser();
+
   const { data, status } = useQuery({
     queryKey: ["grid-selection", collectionId],
     queryFn: async () => {
@@ -41,11 +48,13 @@ export default function SlotSelector({
         sort: "newest",
         collection: collectionId,
         member: currentSlot.member,
-        usedForGrid: "false",
+        used_for_grid: "false",
       });
 
       const response = await fetch(
-        `/api/objekt/v1/owned-by/me?${params.toString()}`
+        `${COSMO_ENDPOINT}/objekt/v1/owned-by/${
+          user?.wallets.ethereum.publicKey
+        }?${params.toString()}`
       );
       if (!response.ok) {
         throw new Error(
