@@ -36,6 +36,7 @@ import {
 } from "@/lib/client/blockchain";
 import { UserSearch } from "../user-search";
 import { trackEvent } from "fathom-client";
+import Link from "next/link";
 
 type Props = {
   objekt: OwnedObjekt;
@@ -69,6 +70,7 @@ export default function SendObjekt({ objekt }: Props) {
   const [transactionProgress, setTransactionProgress] =
     useState<TransactionStatus>(TransactionStatus.WAITING);
   const [percentage, setPercentage] = useState(0);
+  const [transactionHash, setTransactionHash] = useState("");
 
   const recent = useSearchStore((state) => state.recentSends);
   const addRecent = useSearchStore((state) => state.addRecentSend);
@@ -93,6 +95,13 @@ export default function SendObjekt({ objekt }: Props) {
     setRecipient(newRecipient);
     setOpenSearch(false);
     setOpenSend(true);
+  }
+
+  function updateProgress(progress: TransactionStatus, txHash?: string) {
+    if (txHash) {
+      setTransactionHash(txHash);
+    }
+    setTransactionProgress(progress);
   }
 
   const placeholder =
@@ -153,6 +162,13 @@ export default function SendObjekt({ objekt }: Props) {
               <div className="flex flex-col gap-2 justify-center items-center">
                 <Check className="h-10 w-10" />
                 <p className="text-sm">Objekt sent to {recipient.nickname}</p>
+                <Link
+                  className="text-sm underline"
+                  href={`https://polygonscan.com/tx/${transactionHash}`}
+                  target="_blank"
+                >
+                  View on PolygonScan
+                </Link>
               </div>
             )}
 
@@ -191,7 +207,7 @@ export default function SendObjekt({ objekt }: Props) {
                 <SendToUserButton
                   objekt={objekt}
                   user={recipient}
-                  updateTransactionProgress={setTransactionProgress}
+                  updateTransactionProgress={updateProgress}
                 />
               </DialogFooter>
             )}
@@ -205,7 +221,10 @@ export default function SendObjekt({ objekt }: Props) {
 type SendToUserButtonProps = {
   objekt: OwnedObjekt;
   user: SearchUser;
-  updateTransactionProgress: (status: TransactionStatus) => void;
+  updateTransactionProgress: (
+    status: TransactionStatus,
+    txHash?: string
+  ) => void;
 };
 
 function SendToUserButton({
@@ -260,7 +279,7 @@ function SendToUserButton({
       );
       updateTransactionProgress(TransactionStatus.SIGN_TRANSACTION);
 
-      await sendTransaction(alchemy, signResult);
+      const transaction = await sendTransaction(alchemy, signResult);
       updateTransactionProgress(TransactionStatus.SEND_TRANSACTION);
 
       toast({

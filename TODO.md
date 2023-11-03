@@ -5,6 +5,7 @@
 - Prevent submission when there's missing slots (API issue already reported to Modhaus)
 - Fix wording so it's not 1:1 with Cosmo
 - Adjust design so it suits desktop displays rather than copying the mobile design
+- When fetching objekts to slot, filter out anything that is locked
 
 ### Gravity
 
