@@ -149,6 +149,9 @@ dependencies:
   remeda:
     specifier: ^1.27.0
     version: 1.27.0
+  remix-params-helper:
+    specifier: ^0.4.10
+    version: 0.4.10(zod@3.22.3)
   server-only:
     specifier: ^0.0.1
     version: 0.0.1
@@ -5078,6 +5081,14 @@ packages:
 
   /remeda@1.27.0:
     resolution: {integrity: sha512-Vv4gz6z8WnKPA01ObvswV09bBOkB/jKjlszsfxAH82YEvEWfVvaelUuKOpKkLwlli1xyAwwlfWAAmpHlSXENRQ==}
+    dev: false
+
+  /remix-params-helper@0.4.10(zod@3.22.3):
+    resolution: {integrity: sha512-1LZ1FjxCtPekg4a1R50aKA0uB2+668Wd2a0ld7LDrQ0bJ2TzijnCVr822cs8epziS6MG2bG8ZHMPDAR2t4PK+Q==}
+    peerDependencies:
+      zod: ^3.11.6
+    dependencies:
+      zod: 3.22.3
     dev: false
 
   /remove-accents@0.4.2:

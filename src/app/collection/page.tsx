@@ -25,7 +25,6 @@ export default async function CollectionPage() {
           locked={lockedObjekts}
           artists={artists}
           address={user!.address}
-          filterMode="apollo"
         />
       </div>
     </main>

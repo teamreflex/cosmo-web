@@ -1,43 +1,90 @@
 "use client";
 
-import { CosmoArtistWithMembers, ObjektQueryParams } from "@/lib/server/cosmo";
+import { CosmoArtistWithMembers } from "@/lib/server/cosmo";
 import CollectionRenderer from "./collection-renderer";
 import { useEffect, useState } from "react";
-import {
-  MapMode,
-  QueryParamsKey,
-  parseCollectionParams,
-  validateCollectionParams,
-} from "@/lib/universal";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Route } from "next";
+import {
+  ValidKey,
+  toSearchParams,
+  useTypedSearchParams,
+} from "@/hooks/use-typed-search-params";
+import { z } from "zod";
+import {
+  validArtists,
+  validClasses,
+  validOnlineTypes,
+  validSeasons,
+  validSorts,
+} from "@/lib/server/cosmo";
+
+export const collectionFilters = z.object({
+  show_locked: z.boolean().optional(),
+  start_after: z.number(),
+  member: z.string().optional(),
+  artist: z.enum(validArtists).optional(),
+  sort: z.enum(validSorts),
+  class: z.enum(validClasses).array().optional(),
+  on_offline: z.enum(validOnlineTypes).array().optional(),
+  season: z.enum(validSeasons).array().optional(),
+  transferable: z.boolean().optional(),
+  gridable: z.boolean().optional(),
+  used_for_grid: z.boolean().optional(),
+  collection: z.string().optional(),
+});
+
+export type CollectionFilters = z.infer<typeof collectionFilters>;
 
 type Props = {
   locked: number[];
   artists: CosmoArtistWithMembers[];
   nickname?: string;
   address: string;
-  filterMode: MapMode;
 };
 
 export default function CollectionParams(props: Props) {
-  const params = useSearchParams();
-  const [filters, setFilters] = useState(validateCollectionParams(params));
-  const [showLocked, setShowLocked] = useState(filters.showLocked === false);
+  const params = useTypedSearchParams(collectionFilters, (params) => {
+    if (!params.has("start_after")) {
+      params.set("start_after", "0");
+    }
+    if (!params.has("sort")) {
+      params.set("sort", "newest");
+    }
+    return params;
+  });
+  const [showLocked, setShowLocked] = useState(
+    params.success ? params.data.show_locked ?? true : true
+  );
+  const [filters, setFilters] = useState<CollectionFilters>(
+    params.success
+      ? params.data
+      : {
+          show_locked: true,
+          start_after: 0,
+          sort: "newest",
+        }
+  );
 
   // update the URL with filters upon change
   const pathname = usePathname();
   const router = useRouter();
   useEffect(() => {
-    let exclude: QueryParamsKey[] = ["startAfter", "nextStartAfter"];
+    let exclude: ValidKey<typeof collectionFilters>[] = ["start_after"];
+
     // default, no need to litter the URL
     if (filters.sort === "newest") {
       exclude.push("sort");
     }
+    if (showLocked === true) {
+      exclude.push("show_locked");
+    }
 
-    const parsed = parseCollectionParams(filters, "apollo", exclude);
+    const parsed = toSearchParams(filters, false, exclude);
+
+    // handle locking state
     if (showLocked === false) {
-      parsed.set("showLocked", "false");
+      parsed.set("show_locked", "false");
     }
 
     router.replace(`${pathname}?${parsed.toString()}` as Route);

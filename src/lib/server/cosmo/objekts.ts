@@ -1,32 +1,4 @@
-import { parseCollectionParams } from "@/lib/universal";
-import {
-  COSMO_ENDPOINT,
-  ValidClass,
-  ValidOnlineType,
-  ValidSeason,
-  ValidSort,
-} from "./common";
-
-export type ObjektQueryParams = {
-  showLocked?: boolean;
-  startAfter: number;
-  nextStartAfter?: number;
-  member?: string;
-  artist?: "artms" | "tripleS";
-  sort: ValidSort;
-  season?: ValidSeason[];
-  classType?: ValidClass[];
-  onlineType?: ValidOnlineType[];
-  transferable?: boolean;
-  gridable?: boolean;
-  usedForGrid?: boolean;
-  collection?: string;
-};
-
-type OwnedByMeInput = ObjektQueryParams & {
-  address: "me" | (string & {});
-  token?: string;
-};
+import { COSMO_ENDPOINT } from "./common";
 
 export type OwnedObjektsResult = {
   hasNext: boolean;
@@ -69,50 +41,6 @@ type OwnedObjektPending = OwnedObjektCommonFields & {
 };
 
 export type OwnedObjekt = OwnedObjektMinted | OwnedObjektPending;
-
-/**
- * Fetch the list of objekts owned by the user.
- * @param {OwnedByMeInput} options
- * @param {string | undefined} options.token - Cosmo token to act upon
- * @param {string} options.address - address to fetch
- * @param {number} options.startAfter - pagination cursor
- * @param {number | undefined} options.nextStartAfter - next pagination cursor
- * @param {string | undefined} options.member - member name to filter by
- * @param {string | undefined} options.artist - artist name to filter by
- * @param {ValidSort} options.sort
- * @param {ValidClass[] | undefined} options.classType
- * @param {ValidOnlineType[] | undefined} options.onlineType
- * @param {boolean | undefined} options.transferable
- * @param {boolean | undefined} options.gridable
- * @param {boolean | undefined} options.usedForGrid
- * @param {string | undefined} options.collection
- * @returns Promise<OwnedObjektsResult>
- */
-export async function ownedBy({
-  token,
-  address,
-  ...params
-}: OwnedByMeInput): Promise<OwnedObjektsResult> {
-  const query = parseCollectionParams(params, "cosmo", ["nextStartAfter"]);
-
-  const res = await fetch(
-    `${COSMO_ENDPOINT}/objekt/v1/owned-by/${address}?${query.toString()}`,
-    {
-      method: "GET",
-      headers: {
-        ...(address === "me" && { Authorization: `Bearer ${token}` }), // only pass token when fetching for "me"
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-    }
-  );
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch objekts");
-  }
-
-  return (await res.json()) as OwnedObjektsResult;
-}
 
 export type GasStationResult = {
   safeLow: {

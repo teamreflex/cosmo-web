@@ -3,7 +3,6 @@
 import {
   COSMO_ENDPOINT,
   CosmoArtistWithMembers,
-  ObjektQueryParams,
   OwnedObjekt,
   OwnedObjektsResult,
 } from "@/lib/server/cosmo";
@@ -15,7 +14,8 @@ import { useInView } from "react-intersection-observer";
 import MemberFilter from "./member-filter";
 import { PropsWithClassName, cn } from "@/lib/utils";
 import { LockedObjektContext } from "@/context/objekt";
-import { MapMode, parseCollectionParams } from "@/lib/universal";
+import { CollectionFilters, collectionFilters } from "./collection-params";
+import { toSearchParams } from "@/hooks/use-typed-search-params";
 
 type Props = PropsWithClassName<{
   authenticated: boolean;
@@ -23,9 +23,8 @@ type Props = PropsWithClassName<{
   lockedTokenIds: number[];
   showLocked: boolean;
   artists: CosmoArtistWithMembers[];
-  filterMode: MapMode;
-  filters: ObjektQueryParams;
-  setFilters: (filters: ObjektQueryParams) => void;
+  filters: CollectionFilters;
+  setFilters: (filters: CollectionFilters) => void;
 }>;
 
 export default function ObjektList({
@@ -34,7 +33,6 @@ export default function ObjektList({
   lockedTokenIds,
   showLocked,
   artists,
-  filterMode,
   filters,
   setFilters,
   className,
@@ -51,22 +49,16 @@ export default function ObjektList({
   }
 
   async function fetchObjekts({ pageParam = 0 }) {
-    const currentFilters = {
-      ...filters,
-      startAfter: pageParam,
-    };
-    const searchParams = parseCollectionParams(
-      currentFilters,
-      filterMode,
-      // don't send showLocked to cosmo
-      filterMode === "cosmo" ? ["showLocked", "nextStartAfter"] : undefined
+    const searchParams = toSearchParams<typeof collectionFilters>(
+      filters,
+      true,
+      ["show_locked"]
     );
+    searchParams.set("start_after", pageParam.toString());
 
-    // fetch from cosmo directly when on a public page
-    const url = `${
-      filterMode === "apollo" ? "/api" : COSMO_ENDPOINT
-    }/objekt/v1/owned-by/${address}?${searchParams.toString()}`;
-    const result = await fetch(url);
+    const result = await fetch(
+      `${COSMO_ENDPOINT}/objekt/v1/owned-by/${address}?${searchParams.toString()}`
+    );
     return (await result.json()) as OwnedObjektsResult;
   }
 

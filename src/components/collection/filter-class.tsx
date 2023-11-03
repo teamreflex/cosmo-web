@@ -13,7 +13,7 @@ import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type Props = PropsWithFilters<"classType">;
+type Props = PropsWithFilters<"class">;
 
 export function ClassFilter({ filters, setFilters }: Props) {
   const [open, setOpen] = useState(false);

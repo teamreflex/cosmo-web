@@ -13,7 +13,7 @@ import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type Props = PropsWithFilters<"onlineType">;
+type Props = PropsWithFilters<"on_offline">;
 
 const map: Record<ValidOnlineType, string> = {
   online: "Digital",

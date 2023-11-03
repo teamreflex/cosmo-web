@@ -1,18 +1,15 @@
-import {
-  CosmoArtistWithMembers,
-  CosmoMember,
-  ObjektQueryParams,
-} from "@/lib/server/cosmo";
+import { CosmoArtistWithMembers, CosmoMember } from "@/lib/server/cosmo";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Fragment } from "react";
 import { cn } from "@/lib/utils";
 import { ValidArtist } from "@/lib/server/cosmo/common";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { CollectionFilters } from "./collection-params";
 
 type Props = {
   artists: CosmoArtistWithMembers[];
-  filters: ObjektQueryParams;
-  updateFilters: (filters: ObjektQueryParams) => void;
+  filters: CollectionFilters;
+  updateFilters: (filters: CollectionFilters) => void;
 };
 
 export default function MemberFilter({

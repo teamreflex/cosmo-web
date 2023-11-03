@@ -1,6 +1,6 @@
 "use client";
 
-import { CosmoArtistWithMembers, ObjektQueryParams } from "@/lib/server/cosmo";
+import { CosmoArtistWithMembers } from "@/lib/server/cosmo";
 import ObjektList from "@/components/collection/objekt-list";
 import { SlidersHorizontal } from "lucide-react";
 import { Dispatch, SetStateAction, useState } from "react";
@@ -13,11 +13,11 @@ import { LockedFilter } from "./filter-locked";
 import { SortFilter } from "./filter-sort";
 import { Toggle } from "../ui/toggle";
 import HelpDialog from "./help-dialog";
-import { MapMode } from "@/lib/universal";
+import { CollectionFilters } from "./collection-params";
 
-export type PropsWithFilters<T extends keyof ObjektQueryParams> = {
-  filters: ObjektQueryParams[T];
-  setFilters: (filters: ObjektQueryParams[T]) => void;
+export type PropsWithFilters<T extends keyof CollectionFilters> = {
+  filters: CollectionFilters[T];
+  setFilters: (filters: CollectionFilters[T]) => void;
 };
 
 type Props = {
@@ -25,9 +25,8 @@ type Props = {
   artists: CosmoArtistWithMembers[];
   nickname?: string;
   address: string;
-  filterMode: MapMode;
-  filters: ObjektQueryParams;
-  setFilters: Dispatch<SetStateAction<ObjektQueryParams>>;
+  filters: CollectionFilters;
+  setFilters: Dispatch<SetStateAction<CollectionFilters>>;
   showLocked: boolean;
   setShowLocked: (state: boolean) => void;
 };
@@ -38,16 +37,15 @@ export default function CollectionRenderer({
   nickname,
   address,
   filters,
-  filterMode,
   setFilters,
   showLocked,
   setShowLocked,
 }: Props) {
   const [showFilters, setShowFilters] = useState(false);
 
-  function updateFilter<T extends keyof ObjektQueryParams>(
+  function updateFilter<T extends keyof CollectionFilters>(
     key: T,
-    value: ObjektQueryParams[T]
+    value: CollectionFilters[T]
   ) {
     setFilters((filters) => ({
       ...filters,
@@ -99,12 +97,12 @@ export default function CollectionRenderer({
             setFilters={(f) => updateFilter("season", f)}
           />
           <OnlineFilter
-            filters={filters.onlineType}
-            setFilters={(f) => updateFilter("onlineType", f)}
+            filters={filters.on_offline}
+            setFilters={(f) => updateFilter("on_offline", f)}
           />
           <ClassFilter
-            filters={filters.classType}
-            setFilters={(f) => updateFilter("classType", f)}
+            filters={filters.class}
+            setFilters={(f) => updateFilter("class", f)}
           />
           <SortFilter
             filters={filters.sort}
@@ -119,7 +117,6 @@ export default function CollectionRenderer({
         lockedTokenIds={locked}
         showLocked={showLocked}
         artists={artists}
-        filterMode={filterMode}
         filters={filters}
         setFilters={setFilters}
       />
