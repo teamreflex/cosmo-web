@@ -35,7 +35,7 @@ export default function WarningDialog() {
           <AlertDialogDescription asChild>
             <div className="flex flex-col gap-2">
               <p>
-                {env.NEXT_PUBLIC_APP_NAME} is a fan-made platform aiming to
+                {env.NEXT_PUBLIC_APP_NAME} is an unofficial platform aiming to
                 replicate the Cosmo mobile app with a desktop interface.
               </p>
               <p>
@@ -64,7 +64,7 @@ export default function WarningDialog() {
           <div className="flex flex-col sm:flex-row gap-2">
             <AlertDialogCancel asChild>
               <Link
-                href="https://www.youtube.com/watch?v=UDxID0_A9x4"
+                href="https://www.youtube.com/watch?v=l6p8FDJqUj4"
                 target="_blank"
               >
                 Cancel

@@ -2,13 +2,16 @@
 
 This project aims to build a web based version of [Modhaus](https://www.mod-haus.com/)' **[Cosmo: the Gate](https://play.google.com/store/apps/details?id=com.modhaus.cosmo)** mobile application, replicate its core features as close as possible, and add new features on top.
 
-### Scope
+<details>
+  <summary><b>Scope</b></summary>
+  
+  - Account registration is out of scope. There's too much that goes into the onboarding process, not worth the effort.
+  - Account settings updates are out of scope. There's not enough in there to adjust right now.
+  - Purchasing objekts is out of scope due to Apple/Google services being used.
+</details>
 
-- Account registration is out of scope. There's too much that goes into the onboarding process, not worth the effort.
-- Account settings updates are out of scope. There's not enough in there to adjust right now.
-- Purchasing objekts is out of scope due to Apple/Google services being used.
-
-### Replicated Features
+<details>
+  <summary><b>Replicated Features</b></summary>
 
 - Authentication
   - Sign in with Ramper
@@ -17,11 +20,11 @@ This project aims to build a web based version of [Modhaus](https://www.mod-haus
   - Sign out
   - "My Page" displaying Cosmo ID and wallet address
 - Objekts/COMO
-  - Fetching owned objekts (paginated)
+  - Fetching owned objekts
   - Sending objekts to another Cosmo user
-  - Displaying reason for untransferable objekts - e.g. gridded vs. not transferrable (event, welcome)
+  - Displaying reason for untransferable objekts - e.g. used for grid vs. not transferrable (event, welcome) vs. pending mint
   - All available filters
-  - Display COMO balances (via Alchemy due to Cosmo's being outdated)
+  - Display COMO balances
 - Grid
   - Displaying grid completion stats
   - Displaying available seasons and editions
@@ -40,18 +43,24 @@ This project aims to build a web based version of [Modhaus](https://www.mod-haus
   - Render dynamic gravity event description
   - Display details about a specific gravity event (ranking, leaderboard etc)
 
-### New Features
+</details>
+
+<details>
+  <summary><b>New Features</b></summary>
 
 - Objekts/COMO
   - "lock" an objekt to prevent it from being sent to another user (like the Superstar games)
-  - View other user's collections
+  - Fetching other user's collections
     - Includes user search box with recent history
+    - Cosmo ID or Polygon address can be used
+    - Filter state is stored in the URL for sharing
+
+</details>
 
 ### Notes
 
 - **There's no app version or user agent spoofing. It's entirely possible for Modhaus to detect usage of this. Use at your own risk.**
-- Only the "happy path" is tested extensively. There's isn't a lot of good error handling.
-- Authentication can be fragile as there's two separate states. The process requires using the Ramper SDK to get the Ramper user, then use the received `idToken` to log into Cosmo. The Ramper user is stored by the SDK in localStorage, whereas the Cosmo user is encoded into a cookie by the application. If either one of these expires/invalidates, the other will not be and this will possibly result in a broken auth state.
+- Only the "happy path" is tested extensively. There isn't a lot of good error handling.
 
 ## Setup
 
