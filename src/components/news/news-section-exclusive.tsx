@@ -1,4 +1,4 @@
-import { CosmoNewsSectionExclusive } from "@/lib/server/cosmo";
+import { CosmoNewsSectionExclusive } from "@/lib/universal/cosmo";
 import NewsPostExclusive from "./news-post-exclusive";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";

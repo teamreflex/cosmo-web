@@ -1,4 +1,14 @@
-import { COSMO_ENDPOINT, ValidArtist, fetchArtist } from ".";
+import "server-only";
+import {
+  COSMO_ENDPOINT,
+  CosmoGrid,
+  CosmoGridEdition,
+  CosmoGridRewardClaimResult,
+  CosmoGridSlotCompletion,
+  CosmoOngoingGrid,
+  ValidArtist,
+} from "@/lib/universal/cosmo";
+import { fetchArtist } from ".";
 import { fetchSelectedArtist } from "../cache";
 
 export async function fetchSelectedArtistWithGrid(userId: number) {
@@ -9,16 +19,13 @@ export async function fetchSelectedArtistWithGrid(userId: number) {
   };
 }
 
-export type GridStatus = {
+type GridStatus = {
   totalCompletedGrids: number;
   totalSpecialObjekts: number;
 };
 
 /**
  * Fetch the total number of grids completed for the artist.
- * @param token string
- * @param artist ValidArtist
- * @returns Promise<GridStatus>
  */
 export async function fetchGridStatus(token: string, artist: ValidArtist) {
   const res = await fetch(`${COSMO_ENDPOINT}/grid/v3/${artist}/status`, {
@@ -42,39 +49,8 @@ type CosmoGridEditionResult = {
   editions: CosmoGridEdition[];
 };
 
-export type CosmoGridEdition = {
-  id: string;
-  artist: ValidArtist;
-  title: string;
-  subtitle: string;
-  image: string;
-  order: number;
-  createdAt: string;
-  status: {
-    totalGrids: number;
-    completedGrids: number;
-  };
-  season: {
-    createdAt: string;
-    createdBy: string;
-    updatedAt: string;
-    activeAt: string;
-    order: number;
-    id: number;
-    artist: ValidArtist;
-    title: string;
-    image: string | null;
-    startDate: string;
-    endDate: string;
-    ongoing: boolean;
-  };
-};
-
 /**
  * Fetch all grid editions for the artist.
- * @param token string
- * @param artist ValidArtist
- * @returns Promise<CosmoGridEdition[]>
  */
 export async function fetchEditions(token: string, artist: ValidArtist) {
   const res = await fetch(`${COSMO_ENDPOINT}/grid/v3/${artist}/edition`, {
@@ -94,58 +70,12 @@ export async function fetchEditions(token: string, artist: ValidArtist) {
   return editions;
 }
 
-type CosmoGridSlot = {
-  no: number;
-  collections: string[];
-};
-
-type CosmoGridReward = {
-  collectionId: string;
-};
-
-export type CosmoGrid = {
-  id: string;
-  member: string;
-  memberImage: string;
-  class: "First";
-  edition: {
-    createdAt: string;
-    createdBy: string;
-    updatedAt: string;
-    activeAt: string;
-    order: number;
-    id: string;
-    artist: ValidArtist;
-    title: string;
-    subtitle: string;
-    image: string;
-    season: {
-      createdAt: string;
-      createdBy: string;
-      updatedAt: string;
-      activeAt: string;
-      order: number;
-      id: number;
-      artist: ValidArtist;
-      title: string;
-      image: string | null;
-      startDate: string;
-      endDate: string | null;
-    };
-  };
-  slots: CosmoGridSlot[];
-  reward: CosmoGridReward[];
-};
-
 type CosmoGridResult = {
   grids: CosmoGrid[];
 };
 
 /**
  * Fetch all grids for the given edition.
- * @param token string
- * @param artist ValidArtist
- * @returns Promise<CosmoGrid[]>
  */
 export async function fetchEdition(
   token: string,
@@ -172,58 +102,8 @@ export async function fetchEdition(
   return grids;
 }
 
-export type CosmoOngoingGridSlotWithoutPreferred = {
-  no: number;
-  completed: false;
-  preferredObjekt: undefined;
-};
-
-export type CosmoGridSlotObjekt = {
-  collectionId: string;
-  season: string;
-  member: string;
-  collectionNo: string;
-  class: string;
-  artists: ValidArtist[];
-  thumbnailImage: string;
-  frontImage: string;
-  backImage: string;
-  accentColor: string;
-  backgroundColor: string;
-  textColor: string;
-  comoAmount: number;
-  transferableByDefault: boolean;
-  tokenId: string;
-  tokenAddress: string;
-  objektNo: number;
-  transferable: boolean;
-};
-
-export type CosmoOngoingGridSlotWithPreferred = {
-  no: number;
-  completed: false;
-  preferredObjekt: CosmoGridSlotObjekt;
-};
-
-export type CosmoOngoingGridSlot =
-  | CosmoOngoingGridSlotWithoutPreferred
-  | CosmoOngoingGridSlotWithPreferred;
-
-export type CosmoOngoingGrid = {
-  ongoing: {
-    id: number;
-    slotStatuses: CosmoOngoingGridSlot[];
-    allCompleted: boolean;
-    rewardClaimed: boolean;
-  };
-  ownedRewardObjektCount: number;
-};
-
 /**
  * Fetch status of a grid.
- * @param token string
- * @param gridSlug string
- * @returns Promise<CosmoOngoingGrid>
  */
 export async function fetchArtistGridStatus(token: string, gridSlug: string) {
   const res = await fetch(`${COSMO_ENDPOINT}/grid/v1/${gridSlug}/status`, {
@@ -243,17 +123,8 @@ export async function fetchArtistGridStatus(token: string, gridSlug: string) {
   return result;
 }
 
-export type CosmoGridSlotCompletion = {
-  no: number;
-  tokenIdToUse: string;
-};
-
 /**
  * Complete a grid
- * @param token string
- * @param gridSlug string
- * @param slots GridSlotCompletion[]
- * @returns Promise<boolean>
  */
 export async function completeGrid(
   token: string,
@@ -277,39 +148,8 @@ export async function completeGrid(
   return true;
 }
 
-export type CosmoGridRewardClaimResult = {
-  objekt: {
-    collectionId: string;
-    season: string;
-    member: string;
-    collectionNo: string;
-    class: "Special";
-    artists: ValidArtist[];
-    thumbnailImage: string;
-    frontImage: string;
-    backImage: string;
-    accentColor: string;
-    backgroundColor: string;
-    textColor: string;
-    comoAmount: number;
-    transferableByDefault: boolean;
-    tokenId: string;
-    tokenAddress: string;
-    objektNo: number;
-    transferable: boolean;
-  };
-  transaction: {
-    txId: string;
-    chainId: string;
-    ref: string;
-  };
-};
-
 /**
  * Claim a grid reward.
- * @param token string
- * @param gridSlug string
- * @returns Promise<CosmoGridRewardClaimResult>
  */
 export async function claimGridReward(token: string, gridSlug: string) {
   const res = await fetch(

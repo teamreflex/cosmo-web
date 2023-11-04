@@ -9,7 +9,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { SearchUser } from "@/lib/server/cosmo";
+import { SearchUser } from "@/lib/universal/cosmo";
 import { useQuery } from "react-query";
 import { useDebounce } from "usehooks-ts";
 import { HeartCrack, Loader2 } from "lucide-react";

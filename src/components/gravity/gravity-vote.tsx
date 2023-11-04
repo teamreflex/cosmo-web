@@ -5,9 +5,8 @@ import {
   CosmoPollChoices,
   PollChoice,
   PollViewDefaultContent,
-  PollViewSelectedContent,
   ValidArtist,
-} from "@/lib/server/cosmo";
+} from "@/lib/universal/cosmo";
 import { useAuthStore } from "@/store";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";

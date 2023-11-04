@@ -1,11 +1,5 @@
 "use client";
 
-import {
-  COSMO_ENDPOINT,
-  CosmoArtistWithMembers,
-  OwnedObjekt,
-  OwnedObjektsResult,
-} from "@/lib/server/cosmo";
 import Objekt from "./objekt";
 import { Fragment, useCallback, useEffect, useState } from "react";
 import { ChevronDown, HeartCrack, Loader2 } from "lucide-react";
@@ -16,6 +10,12 @@ import { PropsWithClassName, cn } from "@/lib/utils";
 import { LockedObjektContext } from "@/context/objekt";
 import { CollectionFilters, collectionFilters } from "./collection-params";
 import { toSearchParams } from "@/hooks/use-typed-search-params";
+import {
+  COSMO_ENDPOINT,
+  CosmoArtistWithMembers,
+  OwnedObjekt,
+  OwnedObjektsResult,
+} from "@/lib/universal/cosmo";
 
 type Props = PropsWithClassName<{
   authenticated: boolean;

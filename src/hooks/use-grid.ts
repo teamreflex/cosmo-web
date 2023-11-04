@@ -5,7 +5,7 @@ import {
   CosmoGridRewardClaimResult,
   CosmoGridSlotCompletion,
   CosmoOngoingGridSlot,
-} from "@/lib/server/cosmo";
+} from "@/lib/universal/cosmo";
 import { trackEvent } from "fathom-client";
 import { useEffect, useState, useTransition } from "react";
 
@@ -31,8 +31,6 @@ type MinimalGridSlot = EmptySlot | PopulatedSlot;
 
 /**
  * Normalizes the objekt format down to the absolute minimum required for grid display.
- * @param slots CosmoOngoingGridSlot[]
- * @returns MinimalGridSlot[]
  */
 function normalize(slots: CosmoOngoingGridSlot[]) {
   return slots.map((slot) => {

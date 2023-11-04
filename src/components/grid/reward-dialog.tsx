@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { CosmoGridRewardClaimResult } from "@/lib/server/cosmo";
+import { CosmoGridRewardClaimResult } from "@/lib/universal/cosmo";
 import { useEffect, useState } from "react";
 import GridObjekt from "./grid-objekt";
 import { Button } from "../ui/button";

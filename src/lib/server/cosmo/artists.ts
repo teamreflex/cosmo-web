@@ -1,18 +1,10 @@
-import { COSMO_ENDPOINT, ValidArtist } from "./common";
-
-export type CosmoArtist = {
-  name: string;
-  title: string;
-  logoImageUrl: string;
-  contracts: {
-    Como: string;
-    Objekt: string;
-    ObjektMinter: string;
-    Governor: string;
-    CommunityPool: string;
-    ComoMinter: string;
-  };
-};
+import "server-only";
+import {
+  COSMO_ENDPOINT,
+  ValidArtist,
+  CosmoArtist,
+  CosmoArtistWithMembers,
+} from "@/lib/universal/cosmo";
 
 type CosmoArtistsResult = {
   artists: CosmoArtist[];
@@ -20,7 +12,6 @@ type CosmoArtistsResult = {
 
 /**
  * Fetch all artists within Cosmo.
- * @returns Promise<CosmoArtist[]>
  */
 export async function fetchArtists() {
   const res = await fetch(`${COSMO_ENDPOINT}/artist/v1`, {
@@ -39,23 +30,8 @@ export async function fetchArtists() {
   return artists;
 }
 
-export type CosmoMember = {
-  name: string;
-  artist: ValidArtist;
-  units: string[];
-  alias: string;
-  profileImageUrl: string;
-  mainObjektImageUrl: string;
-  order: number;
-};
-
-export type CosmoArtistWithMembers = CosmoArtist & {
-  members: CosmoMember[];
-};
-
 /**
  * Fetch a single artist with its members.
- * @returns Promise<CosmoArtist[]>
  */
 export async function fetchArtist(artist: ValidArtist) {
   const res = await fetch(`${COSMO_ENDPOINT}/artist/v1/${artist}`, {

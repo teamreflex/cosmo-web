@@ -1,4 +1,4 @@
-import { env } from "@/env.mjs";
+import "server-only";
 
 export type BaseWebhook<TType extends string, TPayload> = {
   webhookId: string;
@@ -41,9 +41,6 @@ export type NFTMetadataWebhook = BaseWebhook<
 
 /**
  * Validates the incoming webhook.
- * @param signature string
- * @param payload string
- * @param key string
  */
 export async function validateWebhook(
   signature: string | null,
@@ -82,8 +79,6 @@ export async function validateWebhook(
 
 /**
  * Parse the incoming webhook payload.
- * @param request Request
- * @param key string
  */
 export async function parsePayload<T>(
   request: Request,

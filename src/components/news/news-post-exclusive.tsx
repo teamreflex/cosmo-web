@@ -1,6 +1,6 @@
 "use client";
 
-import { CosmoNewsSectionExclusiveContent } from "@/lib/server/cosmo";
+import { CosmoNewsSectionExclusiveContent } from "@/lib/universal/cosmo";
 import Image from "next/image";
 import Link from "next/link";
 import Timestamp from "../ui/timestamp";

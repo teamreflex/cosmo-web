@@ -1,5 +1,6 @@
 import { getUser } from "@/app/api/common";
-import { ValidArtist, fetchFeed, validArtists } from "@/lib/server/cosmo";
+import { fetchFeed } from "@/lib/server/cosmo";
+import { ValidArtist, validArtists } from "@/lib/universal/cosmo";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 

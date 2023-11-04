@@ -1,4 +1,4 @@
-import { CosmoGravityType } from "@/lib/server/cosmo";
+import { CosmoGravityType } from "@/lib/universal/cosmo";
 import { cn } from "@/lib/utils";
 
 export default function GravityEventType({ type }: { type: CosmoGravityType }) {

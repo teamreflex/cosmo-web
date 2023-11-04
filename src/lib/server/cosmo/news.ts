@@ -1,68 +1,20 @@
-import { COSMO_ENDPOINT, ValidArtist } from "./common";
-
-export type CosmoNewsSectionBar = {
-  type: "bar";
-  artist: ValidArtist;
-  contents: [];
-};
-
-export type CosmoNewsSectionBanner = {
-  type: "banner";
-  artist: ValidArtist;
-  contents: CosmoNewsSectionBannerContent[];
-};
-export type CosmoNewsSectionBannerContent = {
-  id: number;
-  url: string;
-  createdAt: string;
-  label: "release" | "event" | "notice";
-  order: number;
-  body: string;
-  imageUrl: string;
-};
-
-export type CosmoNewsSectionFeed = {
-  type: "feed";
-  artist: ValidArtist;
-  title: string;
-  contents: CosmoNewsSectionFeedContent[];
-};
-export type CosmoNewsSectionFeedContent = {
-  id: number;
-  url: string;
-  createdAt: string;
-  artist: ValidArtist;
-  logoImageUrl: string;
-  body: string;
-  imageUrls: string[];
-};
-
-export type CosmoNewsSectionExclusive = {
-  type: "exclusive";
-  artist: ValidArtist;
-  title: string;
-  contents: CosmoNewsSectionExclusiveContent[];
-};
-export type CosmoNewsSectionExclusiveContent = {
-  id: number;
-  url: string;
-  createdAt: string;
-  title: string;
-  body: string;
-  thumbnailImageUrl: string;
-  nativeVideoUrl: string;
-};
-
-type CosmoNewsSection =
-  | CosmoNewsSectionBar
-  | CosmoNewsSectionBanner
-  | CosmoNewsSectionFeed
-  | CosmoNewsSectionExclusive;
+import "server-only";
+import {
+  COSMO_ENDPOINT,
+  CosmoNewsFeedResult,
+  CosmoNewsSection,
+  CosmoNewsSectionExclusiveContent,
+  CosmoNewsSectionFeedContent,
+  ValidArtist,
+} from "@/lib/universal/cosmo";
 
 type CosmoNewsResult = {
   sections: CosmoNewsSection[];
 };
 
+/**
+ * Get news on the home page.
+ */
 export async function fetchHomeNews(token: string, artist: ValidArtist) {
   const params = new URLSearchParams({
     artist,
@@ -85,37 +37,9 @@ export async function fetchHomeNews(token: string, artist: ValidArtist) {
   return sections;
 }
 
-export function isBarSection(
-  section: CosmoNewsSection
-): section is CosmoNewsSectionBar {
-  return section.type === "bar";
-}
-
-export function isBannerSection(
-  section: CosmoNewsSection
-): section is CosmoNewsSectionBanner {
-  return section.type === "banner";
-}
-
-export function isFeedSection(
-  section: CosmoNewsSection
-): section is CosmoNewsSectionFeed {
-  return section.type === "feed";
-}
-
-export function isExclusiveSection(
-  section: CosmoNewsSection
-): section is CosmoNewsSectionExclusive {
-  return section.type === "exclusive";
-}
-
-export type CosmoNewsFeedResult<TPostType> = {
-  hasNext: boolean;
-  total: number;
-  nextStartAfter: string;
-  results: TPostType[];
-};
-
+/**
+ * Fetch the "todays atmosphere" feed.
+ */
 export async function fetchFeed(
   token: string,
   artist: ValidArtist,
@@ -146,6 +70,9 @@ export async function fetchFeed(
   return (await res.json()) as CosmoNewsFeedResult<CosmoNewsSectionFeedContent>;
 }
 
+/**
+ * Fetch the "cosmo exclusive" feed.
+ */
 export async function fetchExclusive(
   token: string,
   artist: ValidArtist,

@@ -1,6 +1,6 @@
 "use client";
 
-import { OwnedObjekt, SearchUser } from "@/lib/server/cosmo";
+import { OwnedObjekt, SearchUser } from "@/lib/universal/cosmo";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, Check, Loader2, Send } from "lucide-react";
 import { Button } from "../ui/button";
@@ -12,7 +12,6 @@ import {
   getRamperSigner,
 } from "@ramper/ethereum";
 import { parseUnits } from "ethers/lib/utils";
-
 import { env } from "@/env.mjs";
 import { useToast } from "@/components/ui/use-toast";
 import {

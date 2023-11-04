@@ -8,7 +8,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PropsWithFilters } from "./collection-renderer";
-import { ValidSort, validSorts } from "@/lib/server/cosmo";
+import { ValidSort, validSorts } from "@/lib/universal/cosmo";
 
 type Props = PropsWithFilters<"sort">;
 

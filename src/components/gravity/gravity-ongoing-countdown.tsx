@@ -1,6 +1,5 @@
 "use client";
 
-import { CosmoOngoingGravity } from "@/lib/server/cosmo";
 import { PropsWithClassName, cn } from "@/lib/utils";
 import { intervalToDuration } from "date-fns";
 import { useEffect, useState } from "react";

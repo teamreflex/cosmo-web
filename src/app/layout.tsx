@@ -2,7 +2,7 @@ import "./globals.css";
 import Navbar from "@/components/navbar/navbar";
 import ClientProviders from "@/components/client-providers";
 import { Suspense, cache } from "react";
-import { ValidArtist } from "@/lib/server/cosmo";
+import { ValidArtist } from "@/lib/universal/cosmo";
 import ComoBalances from "@/components/navbar/como-balances";
 import { Loader2 } from "lucide-react";
 import { decodeUser, fetchSelectedArtist } from "./data-fetching";

@@ -4,11 +4,9 @@ import { getParams } from "remix-params-helper";
 
 export type ValidKey<T extends z.Schema> = keyof z.infer<T>;
 
-type MutateCallback = (params: URLSearchParams) => URLSearchParams;
-
 export function useTypedSearchParams<T extends z.Schema>(
   schema: T,
-  callback?: MutateCallback
+  callback?: (params: URLSearchParams) => URLSearchParams
 ) {
   let params = new URLSearchParams(useSearchParams());
 
@@ -21,9 +19,6 @@ export function useTypedSearchParams<T extends z.Schema>(
 
 /**
  * Converts a parsed Zod object back into URLSearchParams.
- * @param params z.infer<T>
- * @param arrayJoin boolean | undefined
- * @param exclude ValidKey<T>[] | undefined
  */
 export function toSearchParams<T extends z.Schema>(
   params: z.infer<T>,
@@ -41,8 +36,9 @@ export function toSearchParams<T extends z.Schema>(
       value === undefined ||
       value === "" ||
       (Array.isArray(value) && value.length === 0)
-    )
+    ) {
       continue;
+    }
 
     switch (typeof value) {
       case "string":

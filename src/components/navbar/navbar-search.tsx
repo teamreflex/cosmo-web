@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { UserSearch } from "../user-search";
 import { Search } from "lucide-react";
-import { SearchUser } from "@/lib/server/cosmo";
+import { SearchUser } from "@/lib/universal/cosmo";
 import { useSearchStore } from "@/store";
 import { Route } from "next";
 

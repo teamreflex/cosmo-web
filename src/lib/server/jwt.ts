@@ -22,8 +22,6 @@ export type TokenPayload = {
 
 /**
  * Generate a token with the given payload.
- * @param payload TokenPayload
- * @returns Promise<string>
  */
 export async function signToken(payload: TokenPayload) {
   const secret = new TextEncoder().encode(env.JWT_SECRET);
@@ -43,8 +41,6 @@ type TokenResult =
 
 /**
  * Decode the given token.
- * @param token string
- * @returns Promise<TokenResult>
  */
 export async function decodeToken(token: string): Promise<TokenResult> {
   const secret = new TextEncoder().encode(env.JWT_SECRET);
@@ -67,18 +63,21 @@ export async function decodeToken(token: string): Promise<TokenResult> {
 
 /**
  * Checks the JWT for a valid exp claim.
- * @param token string
  */
 export function validateExpiry(token: string): boolean {
   const claims = decodeJwt(token);
   return claims.exp !== undefined && claims.exp > Date.now() / 1000;
 }
 
+/**
+ * Generate the payload for a cookie.
+ */
 export function generateCookiePayload() {
   return {
     path: "/",
     maxAge: 60 * 60 * 24 * 30, // 30 days
     sameSite: true,
+    httpOnly: true,
     secure: env.VERCEL_ENV !== "development",
   };
 }

@@ -1,5 +1,5 @@
 import { useGrid } from "@/hooks/use-grid";
-import { CosmoOngoingGrid } from "@/lib/server/cosmo";
+import { CosmoOngoingGrid } from "@/lib/universal/cosmo";
 import SlotSelector from "./slot-selector";
 import GridObjekt from "./grid-objekt";
 import { Button } from "../ui/button";

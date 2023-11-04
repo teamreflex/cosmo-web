@@ -1,5 +1,6 @@
 import { getUser } from "@/app/api/common";
-import { ValidArtist, fetchPoll } from "@/lib/server/cosmo";
+import { fetchPoll } from "@/lib/server/cosmo";
+import { ValidArtist } from "@/lib/universal/cosmo";
 import { NextResponse } from "next/server";
 
 export const runtime = "edge";

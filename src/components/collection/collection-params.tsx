@@ -1,6 +1,5 @@
 "use client";
 
-import { CosmoArtistWithMembers } from "@/lib/server/cosmo";
 import CollectionRenderer from "./collection-renderer";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
@@ -12,12 +11,13 @@ import {
 } from "@/hooks/use-typed-search-params";
 import { z } from "zod";
 import {
+  CosmoArtistWithMembers,
   validArtists,
   validClasses,
   validOnlineTypes,
   validSeasons,
   validSorts,
-} from "@/lib/server/cosmo";
+} from "@/lib/universal/cosmo";
 
 export const collectionFilters = z.object({
   show_locked: z.boolean().optional(),

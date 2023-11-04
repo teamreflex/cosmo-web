@@ -1,7 +1,7 @@
 import { User } from "@ramper/ethereum";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { SearchUser, ValidArtist } from "./lib/server/cosmo";
+import { ValidArtist, SearchUser } from "@/lib/universal/cosmo";
 
 /**
  * store for the current user

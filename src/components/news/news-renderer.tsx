@@ -2,7 +2,7 @@ import {
   isBannerSection,
   isExclusiveSection,
   isFeedSection,
-} from "@/lib/server/cosmo";
+} from "@/lib/universal/cosmo";
 import { TokenPayload } from "@/lib/server/jwt";
 import NewsSectionFeed from "./news-section-feed";
 import NewsSectionExclusive from "./news-section-exclusive";

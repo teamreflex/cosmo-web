@@ -1,4 +1,3 @@
-import { CosmoArtist, ValidArtist } from "@/lib/server/cosmo";
 import {
   Dialog,
   DialogContent,
@@ -6,11 +5,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useFormStatus } from "react-dom";
 import Image from "next/image";
 import { Check, Loader2 } from "lucide-react";
 import { useTransition } from "react";
 import { updateSelectedArtist } from "./actions";
+import { CosmoArtist, ValidArtist } from "@/lib/universal/cosmo";
 
 type SwitchArtistDialogProps = {
   open: boolean;

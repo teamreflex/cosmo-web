@@ -4,7 +4,7 @@ import {
   CosmoNewsFeedResult,
   CosmoNewsSectionFeedContent,
   ValidArtist,
-} from "@/lib/server/cosmo";
+} from "@/lib/universal/cosmo";
 import NewsInfiniteLoader from "./news-infinite-loader";
 import NewsPostFeed from "./news-post-feed";
 

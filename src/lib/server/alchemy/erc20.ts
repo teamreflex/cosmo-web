@@ -27,11 +27,6 @@ const POLYGON_DECIMALS = 18;
 
 /**
  * Fetch ERC20 token balances from the Alchemy API.
- *
- * @param {TokenBalanceRequest} config
- * @param {string} config.address
- * @param {string[]} config.contracts
- * @returns {Promise<DecodedTokenBalance[]>}
  */
 export async function fetchTokenBalances({
   address,

@@ -1,3 +1,4 @@
+import "server-only";
 import { and, eq, sql } from "drizzle-orm";
 import { db } from "../db";
 import { lockedObjekts } from "../db/schema";
@@ -10,7 +11,6 @@ const fetchLockedObjektsStatement = db
 
 /**
  * Fetch all locked objekts for a given user address.
- * @param userAddress string
  */
 export async function fetchLockedObjekts(userAddress: string) {
   const rows = await fetchLockedObjektsStatement.execute({
@@ -21,9 +21,6 @@ export async function fetchLockedObjekts(userAddress: string) {
 
 /**
  * Toggle the lock on an objekt.
- * @param userAddress string
- * @param tokenId number
- * @param locked boolean
  */
 export async function setObjektLock(
   userAddress: string,
@@ -39,8 +36,6 @@ export async function setObjektLock(
 
 /**
  * Lock an objekt.
- * @param userAddress string
- * @param tokenId number
  */
 async function lockObjekt(userAddress: string, tokenId: number) {
   // mysql doesn't support ON CONFLICT, so have to run two queries
@@ -76,8 +71,6 @@ async function lockObjekt(userAddress: string, tokenId: number) {
 
 /**
  * Unlock an objekt.
- * @param userAddress string
- * @param tokenId number
  */
 async function unlockObjekt(userAddress: string, tokenId: number) {
   const result = await db

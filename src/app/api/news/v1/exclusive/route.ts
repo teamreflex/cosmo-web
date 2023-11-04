@@ -1,5 +1,6 @@
 import { getUser } from "@/app/api/common";
-import { ValidArtist, fetchExclusive, validArtists } from "@/lib/server/cosmo";
+import { fetchExclusive } from "@/lib/server/cosmo";
+import { ValidArtist, validArtists } from "@/lib/universal/cosmo";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 

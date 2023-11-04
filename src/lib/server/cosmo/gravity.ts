@@ -1,5 +1,7 @@
+import "server-only";
 import {
   COSMO_ENDPOINT,
+  ValidArtist,
   CosmoGravity,
   CosmoGravityVoteCalldata,
   CosmoMyGravityResult,
@@ -8,8 +10,7 @@ import {
   CosmoPollChoices,
   CosmoUpcomingGravity,
   FabricateVotePayload,
-  ValidArtist,
-} from ".";
+} from "@/lib/universal/cosmo";
 
 export type CosmoGravityList = {
   upcoming: CosmoUpcomingGravity[];
@@ -19,9 +20,6 @@ export type CosmoGravityList = {
 
 /**
  * Fetch the list of gravities for the given artist.
- * @param token string
- * @param artist ValidArtist
- * @returns Promise<CosmoGravityList>
  */
 export async function fetchGravities(token: string, artist: ValidArtist) {
   const res = await fetch(`${COSMO_ENDPOINT}/gravity/v3/${artist}`, {
@@ -43,10 +41,6 @@ export async function fetchGravities(token: string, artist: ValidArtist) {
 
 /**
  * Fetch a single gravity.
- * @param token string
- * @param artist ValidArtist
- * @param gravityId number
- * @returns Promise<CosmoGravity | undefined>
  */
 export async function fetchGravity(
   token: string,
@@ -73,16 +67,12 @@ export async function fetchGravity(
   return gravity;
 }
 
-export type CosmoMyGravityResultResponse = {
+type CosmoMyGravityResultResponse = {
   status: CosmoMyGravityResult;
 };
 
 /**
  * Fetch the result for the given gravity.
- * @param token string
- * @param artist ValidArtist
- * @param gravityId number
- * @returns Promise<CosmoGravityList>
  */
 export async function fetchMyGravityResult(
   token: string,
@@ -109,15 +99,12 @@ export async function fetchMyGravityResult(
   return status;
 }
 
-export type CosmoGravityComoSpentResult = {
+type CosmoGravityComoSpentResult = {
   totalComoUsed: number;
 };
 
 /**
  * Fetch the total COMO
- * @param token string
- * @param artist ValidArtist
- * @returns Promise<number>
  */
 export async function fetchComoSpent(token: string, artist: ValidArtist) {
   const res = await fetch(
@@ -140,17 +127,12 @@ export async function fetchComoSpent(token: string, artist: ValidArtist) {
   return totalComoUsed;
 }
 
-export type CosmoPollDetail = {
+type CosmoPollDetail = {
   pollDetail: CosmoPollChoices;
 };
 
 /**
  * Fetch the poll fields.
- * @param token string
- * @param artist ValidArtist
- * @param gravityId number
- * @param pollId number
- * @returns Promise<CosmoPollDetail>
  */
 export async function fetchPoll(
   token: string,
@@ -182,10 +164,6 @@ export async function fetchPoll(
 
 /**
  * Get hashed vote data from Cosmo.
- * @param token string
- * @param artist ValidArtist
- * @param payload FabricateVotePayload
- * @returns Promise<CosmoGravityVoteCalldata>
  */
 export async function fabricateVote(
   token: string,

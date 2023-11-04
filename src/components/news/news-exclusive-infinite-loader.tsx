@@ -1,10 +1,10 @@
 "use client";
 
 import {
+  ValidArtist,
   CosmoNewsFeedResult,
   CosmoNewsSectionExclusiveContent,
-  ValidArtist,
-} from "@/lib/server/cosmo";
+} from "@/lib/universal/cosmo";
 import NewsInfiniteLoader from "./news-infinite-loader";
 import NewsPostExclusive from "./news-post-exclusive";
 

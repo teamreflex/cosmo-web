@@ -7,7 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { CosmoArtist, ValidArtist } from "@/lib/server/cosmo";
+import { CosmoArtist, ValidArtist } from "@/lib/universal/cosmo";
 import { TokenPayload } from "@/lib/server/jwt";
 import { Disc3, LogOut, User } from "lucide-react";
 import Link from "next/link";

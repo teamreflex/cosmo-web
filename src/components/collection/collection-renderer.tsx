@@ -1,6 +1,5 @@
 "use client";
 
-import { CosmoArtistWithMembers } from "@/lib/server/cosmo";
 import ObjektList from "@/components/collection/objekt-list";
 import { SlidersHorizontal } from "lucide-react";
 import { Dispatch, SetStateAction, useState } from "react";
@@ -14,6 +13,7 @@ import { SortFilter } from "./filter-sort";
 import { Toggle } from "../ui/toggle";
 import HelpDialog from "./help-dialog";
 import { CollectionFilters } from "./collection-params";
+import { CosmoArtistWithMembers } from "@/lib/universal/cosmo";
 
 export type PropsWithFilters<T extends keyof CollectionFilters> = {
   filters: CollectionFilters[T];

@@ -3,27 +3,36 @@ import { z } from "zod";
 
 export const env = createEnv({
   server: {
+    // cookie behavior changes depending on env
     VERCEL_ENV: z.enum(["development", "production"]),
-    RAMPER_ENDPOINT: z.string().url(),
+    // used for signing cookies
     JWT_SECRET: z.string().min(1),
+    // vercel kv/redis
     KV_URL: z.string().url(),
     KV_REST_API_URL: z.string().url(),
     KV_REST_API_TOKEN: z.string().min(1),
     KV_REST_API_READ_ONLY_TOKEN: z.string().min(1),
+    // alchemy webhook keys for verifying signatures
     ALCHEMY_ACTIVITY_WEBHOOK_KEY: z.string().min(1),
     ALCHEMY_METADATA_WEBHOOK_KEY: z.string().min(1),
+    // planetscale db
     DATABASE_HOST: z.string().min(1),
     DATABASE_USERNAME: z.string().min(1),
     DATABASE_PASSWORD: z.string().min(1),
     DATABASE_NAME: z.string().min(1),
   },
   client: {
+    // ramper app id for cosmo
     NEXT_PUBLIC_COSMO_APP_ID: z.string().min(1),
+    // alchemy api key
     NEXT_PUBLIC_ALCHEMY_KEY: z.string().min(1),
+    // info for rebranding the app
     NEXT_PUBLIC_APP_NAME: z.string().min(1),
     NEXT_PUBLIC_APP_VERSION: z.string().min(1),
+    // fathom analytics
     NEXT_PUBLIC_FATHOM_ID: z.string().min(1),
     NEXT_PUBLIC_FATHOM_URL: z.string().min(1),
+    // simulate successful grid response
     NEXT_PUBLIC_SIMULATE_GRID: z
       .string()
       .refine((s) => s === "true" || s === "false")

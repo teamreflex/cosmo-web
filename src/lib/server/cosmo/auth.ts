@@ -1,4 +1,5 @@
-import { COSMO_ENDPOINT } from "./common";
+import "server-only";
+import { COSMO_ENDPOINT, SearchUser } from "@/lib/universal/cosmo";
 
 type CosmoLoginResult = {
   user: {
@@ -25,9 +26,6 @@ type LoginResult = {
 
 /**
  * Logs in with Cosmo and returns the access token.
- * @param email string
- * @param accessToken string
- * @returns Promise<LoginResult>
  */
 export async function login(
   email: string,
@@ -103,8 +101,6 @@ export type CosmoUser = {
 
 /**
  * Fetches the user from the access token.
- * @param accessToken string
- * @returns Promise<CosmoUser>
  */
 export async function user(accessToken: string): Promise<CosmoUser> {
   const res = await fetch(`${COSMO_ENDPOINT}/user/v1/me`, {
@@ -137,16 +133,8 @@ type CosmoSearchResult = {
   }[];
 };
 
-export type SearchUser = {
-  nickname: string;
-  profileImageUrl: string;
-  address: string;
-};
-
 /**
  * Search for the given user.
- * @param term string
- * @returns Promise<User[]>
  */
 export async function search(term: string): Promise<SearchUser[]> {
   const res = await fetch(`${COSMO_ENDPOINT}/user/v1/search?query=${term}`);
@@ -166,8 +154,6 @@ type RefreshTokenResult = {
 
 /**
  * Refresh the given token.
- * @param refreshToken string
- * @returns Promise<RefreshTokenResult>
  */
 export async function refresh(
   refreshToken: string

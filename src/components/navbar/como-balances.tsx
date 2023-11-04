@@ -1,6 +1,5 @@
 import { DecodedTokenBalance, fetchTokenBalances } from "@/lib/server/alchemy";
-import { CosmoArtist } from "@/lib/server/cosmo";
-import { ValidArtist } from "@/lib/server/cosmo/common";
+import { CosmoArtist, ValidArtist } from "@/lib/universal/cosmo";
 import { Moon, Sparkle } from "lucide-react";
 import { ReactNode } from "react";
 import ComoBalancesClientHelper from "./como-balances-client-helper";

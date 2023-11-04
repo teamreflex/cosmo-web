@@ -3,10 +3,9 @@
 import {
   CosmoNewsSectionBanner,
   CosmoNewsSectionBannerContent,
-} from "@/lib/server/cosmo";
+} from "@/lib/universal/cosmo";
 import Image from "next/image";
 import Link from "next/link";
-import { AspectRatio } from "../ui/aspect-ratio";
 import { PropsWithClassName } from "@/lib/utils";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";

@@ -3,7 +3,7 @@ import {
   CosmoOngoingGravity,
   CosmoPastGravity,
   CosmoUpcomingGravity,
-} from "@/lib/server/cosmo";
+} from "@/lib/universal/cosmo";
 import { isFuture, isPast } from "date-fns";
 import GravityEventType from "./gravity-event-type";
 import GravityTimestamp from "./gravity-timestamp";

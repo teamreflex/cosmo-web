@@ -1,4 +1,6 @@
-import { fetchArtist, fetchArtists, validArtists } from "../cosmo";
+import "server-only";
+import { validArtists } from "@/lib/universal/cosmo";
+import { fetchArtist, fetchArtists } from "../cosmo";
 import { remember } from "./common";
 
 export async function cacheArtists() {

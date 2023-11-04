@@ -1,11 +1,8 @@
+import "server-only";
 import { kv } from "@vercel/kv";
 
 /**
  * Fetch data from cache and replenish the cache after fetching if empty.
- * @param key string
- * @param expiry number
- * @param fetcher () => Promise<T>
- * @returns Promise<T>
  */
 export async function remember<T>(
   key: string,

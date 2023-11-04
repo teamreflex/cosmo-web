@@ -1,6 +1,6 @@
 "use client";
 
-import { OwnedObjekt } from "@/lib/server/cosmo";
+import { OwnedObjekt } from "@/lib/universal/cosmo";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import LockObjekt from "./lock-button";

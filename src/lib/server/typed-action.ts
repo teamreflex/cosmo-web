@@ -17,9 +17,6 @@ type ValidForm = FormData | Record<string, unknown>;
 
 /**
  * Create a Zod-validated server form action.
- * @param schema {@link z.ZodObject} - Zod schema to validate form data
- * @param form {@link ValidForm} - Data from the request
- * @param callback {@link (data: z.infer<TSchema>) => Promise<TResponse>} - callback to execute upon successful validation
  */
 export async function typedAction<TResponse, TSchema extends z.AnyZodObject>(
   schema: TSchema,
@@ -43,9 +40,6 @@ export async function typedAction<TResponse, TSchema extends z.AnyZodObject>(
 
 /**
  * Create an authenticated & Zod-validated server form action.
- * @param schema {@link z.ZodObject} - Zod schema to validate form data
- * @param form {@link ValidForm} - Data from the request
- * @param callback {@link (data: z.infer<TSchema>) => Promise<TResponse>} - callback to execute upon successful validation
  */
 export async function authenticatedAction<
   TResponse,

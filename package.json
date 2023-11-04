@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "typecheck": "tsc --pretty --noEmit",
     "db:push": "drizzle-kit push:mysql"
   },
   "dependencies": {

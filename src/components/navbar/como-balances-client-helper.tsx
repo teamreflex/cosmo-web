@@ -1,7 +1,7 @@
 "use client";
 
 import { DecodedTokenBalance } from "@/lib/server/alchemy";
-import { CosmoArtist, ValidArtist } from "@/lib/server/cosmo";
+import { CosmoArtist, ValidArtist } from "@/lib/universal/cosmo";
 import { useAuthStore } from "@/store";
 import { useEffect } from "react";
 

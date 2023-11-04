@@ -6,10 +6,9 @@ import { ReactNode, useEffect, useTransition } from "react";
 import { cosmoLogin, logout } from "./actions";
 import { Loader2 } from "lucide-react";
 import { TokenPayload } from "@/lib/server/jwt";
-import { CosmoArtist } from "@/lib/server/cosmo";
-import { ValidArtist } from "@/lib/server/cosmo/common";
 import UserDropdown from "./user-dropdown";
 import SignInDialog from "./sign-in-dialog";
+import { CosmoArtist, ValidArtist } from "@/lib/universal/cosmo";
 
 type Props = {
   user: TokenPayload | undefined;

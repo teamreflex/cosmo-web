@@ -30,7 +30,6 @@
 ### General
 
 - Fix searchbox blur
-- Extract types from functions so they can be used on the frontend without `server-only` getting in the way
 
 ### Performance
 

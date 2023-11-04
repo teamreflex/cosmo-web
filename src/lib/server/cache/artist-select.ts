@@ -1,5 +1,6 @@
+import "server-only";
+import { ValidArtist } from "@/lib/universal/cosmo";
 import { kv } from "@vercel/kv";
-import { ValidArtist } from "../cosmo";
 
 const KEY = "selected-artist";
 

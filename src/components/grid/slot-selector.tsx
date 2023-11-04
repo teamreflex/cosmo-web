@@ -13,7 +13,7 @@ import {
   COSMO_ENDPOINT,
   OwnedObjekt,
   OwnedObjektsResult,
-} from "@/lib/server/cosmo";
+} from "@/lib/universal/cosmo";
 import { HeartCrack, Loader2 } from "lucide-react";
 import { PropsWithChildren, useState } from "react";
 import { useQuery } from "react-query";

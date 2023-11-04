@@ -4,8 +4,8 @@ import AuthOptions from "./auth/auth-options";
 import ApolloLogo from "./apollo-logo";
 import { ReactNode } from "react";
 import { TokenPayload } from "@/lib/server/jwt";
-import { CosmoArtist, ValidArtist } from "@/lib/server/cosmo";
 import NavbarSearch from "./navbar-search";
+import { CosmoArtist, ValidArtist } from "@/lib/universal/cosmo";
 
 const links = [
   { name: "Home", icon: Home, href: "/" },

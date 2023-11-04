@@ -1,5 +1,6 @@
 import { decodeUser } from "@/app/data-fetching";
-import { ValidArtist, fetchGridStatus } from "@/lib/server/cosmo";
+import { fetchGridStatus } from "@/lib/server/cosmo";
+import { ValidArtist } from "@/lib/universal/cosmo";
 
 export default async function GridStatus({ artist }: { artist: ValidArtist }) {
   const user = await decodeUser();

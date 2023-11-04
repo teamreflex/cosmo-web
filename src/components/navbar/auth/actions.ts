@@ -4,12 +4,13 @@ import "server-only";
 import { z } from "zod";
 import { cookies } from "next/headers";
 import { generateCookiePayload, signToken } from "@/lib/server/jwt";
-import { login, validArtists } from "@/lib/server/cosmo";
+import { login } from "@/lib/server/cosmo";
 import { redirect } from "next/navigation";
 import { setSelectedArtist } from "@/lib/server/cache/artist-select";
 import { revalidatePath } from "next/cache";
 import { authenticatedAction, typedAction } from "@/lib/server/typed-action";
 import { getUser } from "@/app/api/common";
+import { validArtists } from "@/lib/universal/cosmo";
 
 /**
  * Exchanges the idToken from Ramper for a JWT from Cosmo
