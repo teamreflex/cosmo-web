@@ -19,6 +19,8 @@ const buttonVariants = cva(
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
         cosmo: "rounded-xl bg-cosmo text-white hover:bg-cosmo-hover",
+        polygon: "rounded-xl text-white bg-[#8247E5] hover:bg-[#9630ce]",
+        opensea: "rounded-xl text-white bg-[#2081E2] hover:bg-[#1868B7]",
       },
       size: {
         default: "h-10 px-4 py-2",

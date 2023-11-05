@@ -4,7 +4,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Copy, Share } from "lucide-react";
+import { Copy, Link2, Share } from "lucide-react";
 import Link from "next/link";
 import PolygonLogo from "@/assets/polygon.svg";
 import OpenSeaLogo from "@/assets/opensea.svg";
@@ -22,12 +22,25 @@ export default function MobileOptions({ address }: { address: string }) {
     });
   }
 
+  function copyLink() {
+    copy(window.location.href);
+    toast({
+      description: "Profile link copied to clipboard",
+    });
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
         <Share />
       </DropdownMenuTrigger>
       <DropdownMenuContent>
+        {/* copy profile */}
+        <DropdownMenuItem>
+          <Link2 className="mr-2 h-5 w-5" />
+          <span onClick={copyLink}>Copy Profile</span>
+        </DropdownMenuItem>
+
         {/* copy address */}
         <DropdownMenuItem>
           <Copy className="mr-2 h-5 w-5" />

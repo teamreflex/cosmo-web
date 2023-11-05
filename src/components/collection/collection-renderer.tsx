@@ -14,9 +14,10 @@ import { Toggle } from "../ui/toggle";
 import HelpDialog from "./help-dialog";
 import { CollectionFilters } from "./collection-params";
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo";
-import OpenSeaButton from "./opensea-button";
-import PolygonButton from "./polygon-button";
-import MobileOptions from "./mobile-options";
+import OpenSeaButton from "./options/opensea-button";
+import PolygonButton from "./options/polygon-button";
+import MobileOptions from "./options/mobile-options";
+import CopyAddressButton from "./options/copy-address-button";
 
 export type PropsWithFilters<T extends keyof CollectionFilters> = {
   filters: CollectionFilters[T];
@@ -71,6 +72,7 @@ export default function CollectionRenderer({
 
           {/* desktop: options */}
           <div className="hidden sm:flex items-center gap-2">
+            <CopyAddressButton address={address} />
             <PolygonButton address={address} />
             <OpenSeaButton address={address} />
           </div>
