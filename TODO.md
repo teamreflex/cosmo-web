@@ -13,7 +13,6 @@
 
 ### Collection
 
-- Fix filters wrapping under member filter
 - Look into marking objekts as "up for trade" or go all-in on a WTT system
   - would probably require indexing all possible objekts
 - Wishlist creator tool?
