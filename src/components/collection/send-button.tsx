@@ -285,7 +285,7 @@ function SendToUserButton({
         description: "Transaction submitted!",
         variant: "default",
       });
-      updateTransactionProgress(TransactionStatus.COMPLETE);
+      updateTransactionProgress(TransactionStatus.COMPLETE, transaction.hash);
 
       trackEvent("send-objekt");
     } catch (err) {
