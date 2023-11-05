@@ -14,6 +14,9 @@ import { Toggle } from "../ui/toggle";
 import HelpDialog from "./help-dialog";
 import { CollectionFilters } from "./collection-params";
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo";
+import OpenSeaButton from "./opensea-button";
+import PolygonButton from "./polygon-button";
+import MobileOptions from "./mobile-options";
 
 export type PropsWithFilters<T extends keyof CollectionFilters> = {
   filters: CollectionFilters[T];
@@ -55,10 +58,7 @@ export default function CollectionRenderer({
 
   return (
     <>
-      <div
-        className="flex flex-col sm:flex-row justify-between group"
-        data-show={showFilters}
-      >
+      <div className="flex flex-col sm:gap-2 group" data-show={showFilters}>
         {/* header */}
         <div className="flex items-center justify-between pb-2 sm:pb-0">
           {/* title */}
@@ -69,15 +69,20 @@ export default function CollectionRenderer({
             <HelpDialog />
           </div>
 
-          {/* mobile: show filters */}
-          <div className="flex sm:hidden items-center">
-            <Toggle
-              size="sm"
-              pressed={showFilters}
-              onPressedChange={setShowFilters}
-            >
-              <SlidersHorizontal className="w-4 h-4 drop-shadow-lg" />
+          {/* desktop: options */}
+          <div className="hidden sm:flex items-center gap-2">
+            <PolygonButton address={address} />
+            <OpenSeaButton address={address} />
+          </div>
+
+          {/* mobile: options */}
+          <div className="flex sm:hidden items-center gap-2">
+            {/* show filters */}
+            <Toggle pressed={showFilters} onPressedChange={setShowFilters}>
+              <SlidersHorizontal className="drop-shadow-lg" />
             </Toggle>
+
+            <MobileOptions address={address} />
           </div>
         </div>
 
