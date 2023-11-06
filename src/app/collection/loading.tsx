@@ -1,24 +1,32 @@
-import HelpDialog from "@/components/collection/help-dialog";
 import { Loader } from "@/components/loader";
 import { PropsWithClassName, cn } from "@/lib/utils";
 
 export default function CollectionLoading() {
   return (
     <div className="container flex flex-col py-2">
-      <div
-        className="flex flex-col sm:flex-row justify-between group"
-        data-show={false}
-      >
+      <div className="flex flex-col sm:gap-2 group" data-show={false}>
         {/* header */}
         <div className="flex items-center justify-between pb-2 sm:pb-0">
           {/* title */}
           <div className="flex gap-2 items-center">
-            <h1 className="text-3xl font-cosmo uppercase">Collect</h1>
-            <HelpDialog />
+            <Skeleton className="w-48 h-10" />
           </div>
 
-          {/* mobile: show filters */}
-          <div className="flex sm:hidden items-center">
+          {/* desktop: options */}
+          <div className="hidden sm:flex items-center gap-2">
+            {/* copy address button */}
+            <Skeleton className="w-24 h-10" />
+            {/* polygon button */}
+            <Skeleton className="w-24 h-10" />
+            {/* opensea button */}
+            <Skeleton className="w-24 h-10" />
+          </div>
+
+          {/* mobile: options */}
+          <div className="flex sm:hidden items-center gap-2">
+            {/* show filters */}
+            <Skeleton className="w-8 h-8" />
+            {/* options dropdown */}
             <Skeleton className="w-8 h-8" />
           </div>
         </div>
