@@ -9,7 +9,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { SearchUser } from "@/lib/universal/cosmo";
+import { COSMO_ENDPOINT, SearchUser } from "@/lib/universal/cosmo";
 import { useQuery } from "react-query";
 import { useDebounce } from "usehooks-ts";
 import { HeartCrack, Loader2 } from "lucide-react";
@@ -42,9 +42,10 @@ export function UserSearch({
     queryKey: ["user-search", debouncedQuery],
     queryFn: async () => {
       const response = await fetch(
-        `/api/user/v1/search?query=${debouncedQuery}`
+        `${COSMO_ENDPOINT}/user/v1/search?query=${debouncedQuery}`
       );
-      return (await response.json()) as SearchUser[];
+      const data = await response.json();
+      return data.results as SearchUser[];
     },
     enabled: debouncedQuery.length > 3 && queryIsAddress === false,
   });

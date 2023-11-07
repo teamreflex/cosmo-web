@@ -24,7 +24,6 @@
 - Consider using Alchemy NFT activity webhooks to delete locked objekts upon transfer
 - Add edition filter
   - fetching current editions requires auth, probably requires hardcoding to be reliable
-- Look into why my `gridable` filter is broken on 2nd edition Heejin/Haseul
 
 ### General
 
@@ -32,5 +31,4 @@
 
 ### Performance
 
-- Maybe remove barrel files so webpack doesn't suck
 - Consider replacing `loading.tsx` with `<Suspense>` where applicable
