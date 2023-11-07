@@ -12,9 +12,6 @@ export const env = createEnv({
     KV_REST_API_URL: z.string().url(),
     KV_REST_API_TOKEN: z.string().min(1),
     KV_REST_API_READ_ONLY_TOKEN: z.string().min(1),
-    // alchemy webhook keys for verifying signatures
-    ALCHEMY_ACTIVITY_WEBHOOK_KEY: z.string().min(1),
-    ALCHEMY_METADATA_WEBHOOK_KEY: z.string().min(1),
     // planetscale db
     DATABASE_HOST: z.string().min(1),
     DATABASE_USERNAME: z.string().min(1),

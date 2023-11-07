@@ -28,6 +28,7 @@
 ### General
 
 - Fix searchbox blur
+- Consider moving app into a monorepo with the ingest server
 
 ### Performance
 
