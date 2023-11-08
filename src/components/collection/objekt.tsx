@@ -5,7 +5,13 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import LockObjekt from "./lock-button";
 import SendObjekt from "./send-button";
-import { CSSProperties, PropsWithChildren, useContext, useState } from "react";
+import {
+  CSSProperties,
+  PropsWithChildren,
+  memo,
+  useContext,
+  useState,
+} from "react";
 import ReactCardFlip from "react-card-flip";
 import {
   DownloadCloud,
@@ -27,7 +33,7 @@ type ObjektProps = {
   authenticated: boolean;
 };
 
-export default function Objekt({
+export default memo(function Objekt({
   objekt,
   showButtons,
   authenticated,
@@ -78,7 +84,7 @@ export default function Objekt({
       />
     </ReactCardFlip>
   );
-}
+});
 
 function ObjektNumber({ objekt }: { objekt: OwnedObjekt }) {
   const [ref, { width }] = useElementSize();
