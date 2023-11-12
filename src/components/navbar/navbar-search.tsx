@@ -7,6 +7,7 @@ import { Search } from "lucide-react";
 import { SearchUser } from "@/lib/universal/cosmo";
 import { useSearchStore } from "@/store";
 import { Route } from "next";
+import { cn } from "@/lib/utils";
 
 export default function NavbarSearch() {
   const recent = useSearchStore((state) => state.recentLookups);
@@ -33,7 +34,12 @@ export default function NavbarSearch() {
         aria-label="Search for user"
         onClick={() => setOpen(true)}
       >
-        <Search className="h-8 w-8 shrink-0" />
+        <Search
+          className={cn(
+            "h-8 w-8 shrink-0 transition-all fill-transparent",
+            open && "fill-white/50"
+          )}
+        />
       </button>
     </UserSearch>
   );

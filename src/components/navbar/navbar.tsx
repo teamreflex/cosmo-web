@@ -1,18 +1,9 @@
-import Link from "next/link";
-import { Home, LayoutGrid, PackageOpen, Vote } from "lucide-react";
 import AuthOptions from "./auth/auth-options";
 import ApolloLogo from "./apollo-logo";
 import { ReactNode } from "react";
 import { TokenPayload } from "@/lib/server/jwt";
-import NavbarSearch from "./navbar-search";
 import { CosmoArtist, ValidArtist } from "@/lib/universal/cosmo";
-
-const links = [
-  { name: "Home", icon: Home, href: "/" },
-  { name: "Gravity", icon: Vote, href: "/gravity" },
-  { name: "Collection", icon: PackageOpen, href: "/collection" },
-  { name: "Grid", icon: LayoutGrid, href: "/grid" },
-];
+import Links from "./links";
 
 type Props = {
   user: TokenPayload | undefined;
@@ -33,21 +24,7 @@ export default function Navbar({
         <div className="flex w-full items-center h-14">
           <div className="container grid grid-cols-3 items-center gap-2 text-sm text-foreground md:gap-4 md:py-6 lg:grid-cols-3 pointer-events-auto">
             <ApolloLogo color="white" />
-
-            <div className="flex flex-row items-center gap-6 md:gap-10 justify-center">
-              {links.map((link, i) => (
-                <Link
-                  key={i}
-                  href={{ pathname: link.href }}
-                  className="drop-shadow-lg hover:scale-110 transition-all"
-                  aria-label={link.name}
-                >
-                  <link.icon className="h-8 w-8 shrink-0" />
-                </Link>
-              ))}
-
-              <NavbarSearch />
-            </div>
+            <Links />
 
             <div className="flex items-center justify-end gap-2">
               <AuthOptions

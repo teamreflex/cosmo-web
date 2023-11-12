@@ -99,21 +99,23 @@ function PastDetails({ gravity }: { gravity: CosmoPastGravity }) {
             <p className="p-3 font-bold">Total Contribution Leaderboard</p>
 
             <table>
-              {gravity.leaderboard.userRanking.map((user) => (
-                <tr
-                  key={user.rank}
-                  className={cn(
-                    "flex w-full h-10 items-center px-3 hover:bg-black/70 transition-colors font-semibold",
-                    user.rank === 1 && "text-cosmo-text"
-                  )}
-                >
-                  <td className="w-10">{user.rank}</td>
-                  <td className="flex grow">{user.user.nickname}</td>
-                  <td className="flex justify-end">
-                    {user.totalComoUsed.toLocaleString()} COMO
-                  </td>
-                </tr>
-              ))}
+              <tbody>
+                {gravity.leaderboard.userRanking.map((user) => (
+                  <tr
+                    key={user.rank}
+                    className={cn(
+                      "flex w-full h-10 items-center px-3 hover:bg-black/70 transition-colors font-semibold",
+                      user.rank === 1 && "text-cosmo-text"
+                    )}
+                  >
+                    <td className="w-10">{user.rank}</td>
+                    <td className="flex grow">{user.user.nickname}</td>
+                    <td className="flex justify-end">
+                      {user.totalComoUsed.toLocaleString()} COMO
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
             </table>
           </div>
         </TabsContent>
