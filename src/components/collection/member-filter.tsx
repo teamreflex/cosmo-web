@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Fragment } from "react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
-import { CollectionFilters } from "./collection-params";
+import { CollectionFilters } from "@/hooks/use-collection-filters";
 
 type Props = {
   artists: CosmoArtistWithMembers[];

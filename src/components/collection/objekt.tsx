@@ -26,9 +26,16 @@ import { format } from "date-fns";
 import Link from "next/link";
 import { useElementSize } from "usehooks-ts";
 import { LockedObjektContext } from "@/context/objekt";
+import { IndexedObjekt } from "@/lib/universal/objekt-index";
+
+function isOwnedObjekt(
+  objekt: OwnedObjekt | IndexedObjekt
+): objekt is OwnedObjekt {
+  return "status" in objekt;
+}
 
 type ObjektProps = {
-  objekt: OwnedObjekt;
+  objekt: OwnedObjekt | IndexedObjekt;
   showButtons: boolean;
   authenticated: boolean;
 };
@@ -38,6 +45,7 @@ export default memo(function Objekt({
   showButtons,
   authenticated,
 }: ObjektProps) {
+  const isOwned = isOwnedObjekt(objekt);
   const [flipped, setFlipped] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
@@ -65,8 +73,13 @@ export default memo(function Objekt({
           alt={objekt.collectionId}
           quality={100}
         />
-        {loaded && <ObjektNumber objekt={objekt} />}
-        {loaded && showButtons && (
+        {loaded && (
+          <ObjektNumber
+            collection={objekt.collectionNo}
+            serial={isOwned ? objekt.objektNo : undefined}
+          />
+        )}
+        {loaded && showButtons && isOwned && (
           <>
             <InformationOverlay objekt={objekt} />
             <ActionOverlay objekt={objekt} authenticated={authenticated} />
@@ -86,7 +99,12 @@ export default memo(function Objekt({
   );
 });
 
-function ObjektNumber({ objekt }: { objekt: OwnedObjekt }) {
+type ObjektNumberProps = {
+  collection: string;
+  serial?: number;
+};
+
+function ObjektNumber({ collection, serial }: ObjektNumberProps) {
   const [ref, { width }] = useElementSize();
 
   // sometimes the first element in the grid is a couple pixels smaller on the width, resulting in an offset number
@@ -97,8 +115,8 @@ function ObjektNumber({ objekt }: { objekt: OwnedObjekt }) {
       className="absolute h-full items-center w-[11%] flex gap-2 justify-center top-0 right-0 [writing-mode:vertical-lr] font-semibold text-[var(--objekt-text-color)] select-none"
       style={{ lineHeight: `${width}px`, fontSize: `${width * 0.55}px` }}
     >
-      <span>{objekt.collectionNo}</span>
-      <span>#{objekt.objektNo.toString().padStart(5, "0")}</span>
+      <span>{collection}</span>
+      {serial && <span>#{serial.toString().padStart(5, "0")}</span>}
     </div>
   );
 }

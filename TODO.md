@@ -34,5 +34,3 @@
 
 - Fix searchbox blur
 - Consider moving app into a monorepo with the ingest server
-- Edge func/ISR/SSR optimizations:
-  - move dynamic rendering into suspended components where possible to prepare for partial prerendering

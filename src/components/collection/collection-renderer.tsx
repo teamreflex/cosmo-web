@@ -2,7 +2,7 @@
 
 import ObjektList from "@/components/collection/objekt-list";
 import { SlidersHorizontal } from "lucide-react";
-import { Dispatch, SetStateAction, useState } from "react";
+import { useState } from "react";
 import { ClassFilter } from "./filter-class";
 import { OnlineFilter } from "./filter-online";
 import { SeasonFilter } from "./filter-season";
@@ -12,12 +12,15 @@ import { LockedFilter } from "./filter-locked";
 import { SortFilter } from "./filter-sort";
 import { Toggle } from "../ui/toggle";
 import HelpDialog from "./help-dialog";
-import { CollectionFilters } from "./collection-params";
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo";
 import OpenSeaButton from "./options/opensea-button";
 import PolygonButton from "./options/polygon-button";
 import MobileOptions from "./options/mobile-options";
 import CopyAddressButton from "./options/copy-address-button";
+import {
+  CollectionFilters,
+  useCollectionFilters,
+} from "@/hooks/use-collection-filters";
 
 export type PropsWithFilters<T extends keyof CollectionFilters> = {
   filters: CollectionFilters[T];
@@ -29,10 +32,6 @@ type Props = {
   artists: CosmoArtistWithMembers[];
   nickname?: string;
   address: string;
-  filters: CollectionFilters;
-  setFilters: Dispatch<SetStateAction<CollectionFilters>>;
-  showLocked: boolean;
-  setShowLocked: (state: boolean) => void;
 };
 
 export default function CollectionRenderer({
@@ -40,22 +39,16 @@ export default function CollectionRenderer({
   artists,
   nickname,
   address,
-  filters,
-  setFilters,
-  showLocked,
-  setShowLocked,
 }: Props) {
-  const [showFilters, setShowFilters] = useState(false);
-
-  function updateFilter<T extends keyof CollectionFilters>(
-    key: T,
-    value: CollectionFilters[T]
-  ) {
-    setFilters((filters) => ({
-      ...filters,
-      [key]: value,
-    }));
-  }
+  const [
+    showFilters,
+    setShowFilters,
+    filters,
+    setFilters,
+    updateFilter,
+    showLocked,
+    setShowLocked,
+  ] = useCollectionFilters();
 
   return (
     <>

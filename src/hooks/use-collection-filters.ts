@@ -1,23 +1,19 @@
-"use client";
-
-import CollectionRenderer from "./collection-renderer";
-import { useEffect, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
-import { Route } from "next";
 import {
-  ValidKey,
-  toSearchParams,
-  useTypedSearchParams,
-} from "@/hooks/use-typed-search-params";
-import { z } from "zod";
-import {
-  CosmoArtistWithMembers,
   validArtists,
   validClasses,
   validOnlineTypes,
   validSeasons,
   validSorts,
 } from "@/lib/universal/cosmo";
+import { z } from "zod";
+import {
+  ValidKey,
+  toSearchParams,
+  useTypedSearchParams,
+} from "./use-typed-search-params";
+import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { Route } from "next";
 
 export const collectionFilters = z.object({
   show_locked: z.boolean().optional(),
@@ -36,14 +32,8 @@ export const collectionFilters = z.object({
 
 export type CollectionFilters = z.infer<typeof collectionFilters>;
 
-type Props = {
-  locked: number[];
-  artists: CosmoArtistWithMembers[];
-  nickname?: string;
-  address: string;
-};
-
-export default function CollectionParams(props: Props) {
+export function useCollectionFilters() {
+  // get and parse params from URL
   const params = useTypedSearchParams(collectionFilters, (params) => {
     if (!params.has("start_after")) {
       params.set("start_after", "0");
@@ -53,9 +43,16 @@ export default function CollectionParams(props: Props) {
     }
     return params;
   });
+
+  // mobile filter toggle
+  const [showFilters, setShowFilters] = useState(false);
+
+  // use separate state for apollo features so a refetch doesn't occur
   const [showLocked, setShowLocked] = useState(
     params.success ? params.data.show_locked ?? true : true
   );
+
+  // setup cosmo filters
   const [filters, setFilters] = useState<CollectionFilters>(
     params.success
       ? params.data
@@ -65,6 +62,17 @@ export default function CollectionParams(props: Props) {
           sort: "newest",
         }
   );
+
+  // type-safe filter update function
+  function updateFilter<T extends keyof CollectionFilters>(
+    key: T,
+    value: CollectionFilters[T]
+  ) {
+    setFilters((filters) => ({
+      ...filters,
+      [key]: value,
+    }));
+  }
 
   // update the URL with filters upon change
   const pathname = usePathname();
@@ -90,13 +98,13 @@ export default function CollectionParams(props: Props) {
     router.replace(`${pathname}?${parsed.toString()}` as Route);
   }, [filters, pathname, router, showLocked]);
 
-  return (
-    <CollectionRenderer
-      {...props}
-      filters={filters}
-      setFilters={setFilters}
-      showLocked={showLocked}
-      setShowLocked={setShowLocked}
-    />
-  );
+  return [
+    showFilters,
+    setShowFilters,
+    filters,
+    setFilters,
+    updateFilter,
+    showLocked,
+    setShowLocked,
+  ] as const;
 }

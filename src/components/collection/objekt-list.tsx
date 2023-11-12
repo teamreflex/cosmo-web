@@ -8,7 +8,6 @@ import { useInView } from "react-intersection-observer";
 import MemberFilter from "./member-filter";
 import { PropsWithClassName, cn } from "@/lib/utils";
 import { LockedObjektContext } from "@/context/objekt";
-import { CollectionFilters, collectionFilters } from "./collection-params";
 import { toSearchParams } from "@/hooks/use-typed-search-params";
 import {
   COSMO_ENDPOINT,
@@ -16,6 +15,10 @@ import {
   OwnedObjekt,
   OwnedObjektsResult,
 } from "@/lib/universal/cosmo";
+import {
+  CollectionFilters,
+  collectionFilters,
+} from "@/hooks/use-collection-filters";
 
 type Props = PropsWithClassName<{
   authenticated: boolean;
