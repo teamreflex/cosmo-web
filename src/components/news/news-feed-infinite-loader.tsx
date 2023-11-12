@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  COSMO_ENDPOINT,
   CosmoNewsFeedResult,
   CosmoNewsSectionFeedContent,
   ValidArtist,
@@ -19,7 +20,9 @@ export default function NewsFeedInfiniteLoader({ artist }: Props) {
       startAfter: pageParam.toString(),
     });
 
-    const result = await fetch(`/api/news/v1/feed?${searchParams.toString()}`);
+    const result = await fetch(
+      `${COSMO_ENDPOINT}/news/v1/feed?${searchParams.toString()}`
+    );
     return (await result.json()) as CosmoNewsFeedResult<CosmoNewsSectionFeedContent>;
   }
 

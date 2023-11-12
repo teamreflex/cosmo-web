@@ -36,8 +36,6 @@
 - Consider moving app into a monorepo with the ingest server
 - Edge func/ISR/SSR optimizations:
   - endpoints that don't require auth and should be queried directly:
-    - `/news/feed`
-    - `/news/exclusive`
     - gravity index
     - single gravity
   - move dynamic rendering into suspended components where possible to prepare for partial prerendering

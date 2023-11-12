@@ -4,6 +4,7 @@ import {
   ValidArtist,
   CosmoNewsFeedResult,
   CosmoNewsSectionExclusiveContent,
+  COSMO_ENDPOINT,
 } from "@/lib/universal/cosmo";
 import NewsInfiniteLoader from "./news-infinite-loader";
 import NewsPostExclusive from "./news-post-exclusive";
@@ -20,7 +21,7 @@ export default function NewsExclusiveInfiniteLoader({ artist }: Props) {
     });
 
     const result = await fetch(
-      `/api/news/v1/exclusive?${searchParams.toString()}`
+      `${COSMO_ENDPOINT}/news/v1/exclusive?${searchParams.toString()}`
     );
     return (await result.json()) as CosmoNewsFeedResult<CosmoNewsSectionExclusiveContent>;
   }
