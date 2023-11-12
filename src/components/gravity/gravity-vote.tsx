@@ -7,27 +7,23 @@ import {
   PollViewDefaultContent,
   ValidArtist,
 } from "@/lib/universal/cosmo";
-import { useAuthStore } from "@/store";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { useQuery } from "react-query";
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 import { HeartCrack, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 
-export default function GravityVote({
-  gravity,
-}: {
+type Props = {
   gravity: CosmoOngoingGravity;
-}) {
-  const balances = useAuthStore((state) => state.comoBalances);
+  availableComo: ReactNode;
+};
 
+export default function GravityVote({ gravity, availableComo }: Props) {
   return (
     <div className="flex flex-col items-center gap-2 w-full">
-      <h3 className="text-lg font-bold">
-        You have {balances[gravity.artist]} COMO to support this Gravity
-      </h3>
+      {availableComo}
 
       <div className="flex gap-2 items-center">
         {gravity.polls.map((poll) => (

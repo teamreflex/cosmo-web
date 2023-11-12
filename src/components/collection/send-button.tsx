@@ -5,11 +5,12 @@ import { cn } from "@/lib/utils";
 import { AlertTriangle, Check, Loader2, Send } from "lucide-react";
 import { Button } from "../ui/button";
 import { useEffect, useState } from "react";
-import { useAuthStore, useSearchStore } from "@/store";
+import { useSearchStore } from "@/store";
 import { ethers } from "ethers";
 import {
   SUPPORTED_ETHEREUM_CHAIN_IDS,
   getRamperSigner,
+  getUser,
 } from "@ramper/ethereum";
 import { parseUnits } from "ethers/lib/utils";
 import { env } from "@/env.mjs";
@@ -232,10 +233,10 @@ function SendToUserButton({
   updateTransactionProgress,
 }: SendToUserButtonProps) {
   const { toast } = useToast();
-  const ramperUser = useAuthStore((state) => state.ramperUser);
 
   async function sendObjekt() {
     setPending(true);
+    const ramperUser = getUser();
     const wallet = ramperUser!.wallets["ethereum"];
     const alchemy = new ethers.providers.AlchemyProvider(
       SUPPORTED_ETHEREUM_CHAIN_IDS.MATIC,

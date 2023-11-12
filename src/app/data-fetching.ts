@@ -1,4 +1,7 @@
-import { fetchSelectedArtist as redisSelectedArtist } from "@/lib/server/cache";
+import {
+  cacheArtists,
+  fetchSelectedArtist as redisSelectedArtist,
+} from "@/lib/server/cache";
 import { fetchHomeNews } from "@/lib/server/cosmo";
 import { cache } from "react";
 import { getUser } from "./api/common";
@@ -23,3 +26,5 @@ export const decodeUser = cache(async () => {
   const auth = await getUser();
   return auth.success ? auth.user : undefined;
 });
+
+export const fetchArtists = cache(async () => cacheArtists());

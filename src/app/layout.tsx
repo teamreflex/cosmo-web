@@ -5,8 +5,7 @@ import { Suspense, cache } from "react";
 import { ValidArtist } from "@/lib/universal/cosmo";
 import ComoBalances from "@/components/navbar/como-balances";
 import { Loader2 } from "lucide-react";
-import { decodeUser, fetchSelectedArtist } from "./data-fetching";
-import { cacheArtists } from "@/lib/server/cache";
+import { decodeUser, fetchArtists, fetchSelectedArtist } from "./data-fetching";
 import { Metadata } from "next";
 import { env } from "@/env.mjs";
 import { Inter } from "next/font/google";
@@ -54,7 +53,7 @@ export const metadata: Metadata = {
 
 const fetchData = cache(async (userId?: number) =>
   Promise.all([
-    cacheArtists(),
+    fetchArtists(),
     userId ? fetchSelectedArtist(userId) : Promise.resolve(undefined),
   ])
 );
@@ -87,10 +86,7 @@ export default async function RootLayout({
                           </div>
                         }
                       >
-                        <ComoBalances
-                          address={user.address}
-                          artists={artists}
-                        />
+                        <ComoBalances address={user.address} />
                       </Suspense>
                     ) : null
                   }

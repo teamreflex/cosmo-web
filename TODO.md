@@ -4,6 +4,7 @@
   - eg: `/complete` succeeds but `/claim-reward` fails. Reward claiming needs to be resumable.
 - Prevent submission when there's missing slots (API issue already reported to Modhaus)
 - When fetching objekts to slot, filter out anything that is locked
+- Add loading state to each objekt image
 
 ### Gravity
 
@@ -19,17 +20,24 @@
 - Expand on public collections/profiles
   - eg: set a favorite objekt? favorite member? profile picture?
   - private profile is probably useless due to other tools
-- Como calendar
-  - might require indexing to be efficient
 - Consider using Alchemy NFT activity webhooks to delete locked objekts upon transfer
-- Add edition filter
-  - fetching current editions requires auth, probably requires hardcoding to be reliable
+
+### Indexing
+
+- Leverage Alchemy webhooks
+- Count SCO transfers to accommodate a como calendar
+- Consider stack:
+  - spin up an ingest server (bun) that writes to the shared planetscale db?
+  - use the nextjs app and use upstash qstash as a queue?
 
 ### General
 
 - Fix searchbox blur
 - Consider moving app into a monorepo with the ingest server
-
-### Performance
-
-- Consider replacing `loading.tsx` with `<Suspense>` where applicable
+- Edge func/ISR/SSR optimizations:
+  - endpoints that don't require auth and should be queried directly:
+    - `/news/feed`
+    - `/news/exclusive`
+    - gravity index
+    - single gravity
+  - move dynamic rendering into suspended components where possible to prepare for partial prerendering

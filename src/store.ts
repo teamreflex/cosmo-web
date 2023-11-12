@@ -1,27 +1,6 @@
-import { User } from "@ramper/ethereum";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { ValidArtist, SearchUser } from "@/lib/universal/cosmo";
-
-/**
- * store for the current user
- */
-interface AuthState {
-  ramperUser: User | null;
-  setRamperUser: (user: User | null) => void;
-  comoBalances: Record<ValidArtist, number>;
-  setComoBalances: (balances: Record<ValidArtist, number>) => void;
-}
-export const useAuthStore = create<AuthState>((set) => ({
-  ramperUser: null,
-  setRamperUser: (user: User | null) => set(() => ({ ramperUser: user })),
-  comoBalances: {
-    artms: 0,
-    tripleS: 0,
-  },
-  setComoBalances: (balances: Record<ValidArtist, number>) =>
-    set(() => ({ comoBalances: balances })),
-}));
+import { SearchUser } from "@/lib/universal/cosmo";
 
 /**
  * store for various settings in the app

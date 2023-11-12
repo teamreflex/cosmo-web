@@ -8,7 +8,7 @@ import { isFuture, isPast } from "date-fns";
 import GravityEventType from "./gravity-event-type";
 import GravityTimestamp from "./gravity-timestamp";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Crown } from "lucide-react";
+import { Crown, Loader2 } from "lucide-react";
 import Image from "next/image";
 import GravityRankingCarousel from "./gravity-ranking-carousel";
 import { cn } from "@/lib/utils";
@@ -16,7 +16,7 @@ import { Suspense } from "react";
 import GravityMyRecord from "./gravity-my-record";
 import GravityOngoingCountdown from "./gravity-ongoing-countdown";
 import GravityVote from "./gravity-vote";
-import StoreHydrated from "../store-hydrated";
+import AvailableComo from "./available-como";
 
 type Props = {
   gravity: CosmoGravity;
@@ -167,9 +167,16 @@ function OngoingDetails({ gravity }: { gravity: CosmoOngoingGravity }) {
         />
 
         {currentPoll && (
-          <StoreHydrated>
-            <GravityVote gravity={gravity} />
-          </StoreHydrated>
+          <GravityVote
+            gravity={gravity}
+            availableComo={
+              <Suspense
+                fallback={<Loader2 className="animate-spin h-12 w-12" />}
+              >
+                <AvailableComo artist={gravity.artist} />
+              </Suspense>
+            }
+          />
         )}
       </div>
     </div>
