@@ -17,6 +17,15 @@ export const env = createEnv({
     DATABASE_USERNAME: z.string().min(1),
     DATABASE_PASSWORD: z.string().min(1),
     DATABASE_NAME: z.string().min(1),
+    // alchemy webhook keys for verifying signatures
+    ALCHEMY_ACTIVITY_WEBHOOK_KEY: z.string().min(1),
+    ALCHEMY_METADATA_WEBHOOK_KEY: z.string().min(1),
+    // upstash qstash keys for queue messaging
+    QSTASH_TOKEN: z.string().min(1),
+    QSTASH_CURRENT_SIGNING_KEY: z.string().min(1),
+    QSTASH_NEXT_SIGNING_KEY: z.string().min(1),
+    // queue messaging settings
+    QSTASH_OBJEKT_ACTIVITY_TOPIC: z.string().min(1),
   },
   client: {
     // ramper app id for cosmo

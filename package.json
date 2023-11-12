@@ -32,6 +32,7 @@
     "@types/node": "20.6.2",
     "@types/react": "18.2.21",
     "@types/react-dom": "18.2.14",
+    "@upstash/qstash": "^2.1.11",
     "@vercel/kv": "^0.2.3",
     "autoprefixer": "10.4.15",
     "bufferutil": "^4.0.7",
@@ -40,7 +41,7 @@
     "cmdk": "^0.2.0",
     "date-fns": "^2.30.0",
     "dotenv": "^16.3.1",
-    "drizzle-orm": "^0.28.6",
+    "drizzle-orm": "^0.29.0",
     "embla-carousel-autoplay": "8.0.0-rc14",
     "embla-carousel-react": "8.0.0-rc14",
     "eslint": "8.49.0",
@@ -74,6 +75,6 @@
   },
   "devDependencies": {
     "@types/uuid": "^9.0.4",
-    "drizzle-kit": "^0.19.13"
+    "drizzle-kit": "^0.20.1"
   }
 }

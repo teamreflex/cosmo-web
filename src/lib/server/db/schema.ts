@@ -5,6 +5,8 @@ import {
   mysqlTable,
   serial,
   varchar,
+  mysqlEnum,
+  datetime,
 } from "drizzle-orm/mysql-core";
 
 export const lockedObjekts = mysqlTable(
@@ -38,11 +40,15 @@ export const objekts = mysqlTable(
     backImage: varchar("backImage", { length: 255 }).notNull(),
     backgroundColor: varchar("background_color", { length: 8 }).notNull(),
     textColor: varchar("text_color", { length: 8 }).notNull(),
+    // snake case to match cosmo filter convention
+    on_offline: mysqlEnum("on_offline", ["online", "offline"]).notNull(),
+    createdAt: datetime("created_at", { mode: "string" }).notNull(),
   },
   (table) => ({
     seasonIdx: index("season_idx").on(table.season),
     memberIdx: index("member_idx").on(table.member),
     classIdx: index("class_idx").on(table.class),
     collectionNoIdx: index("collectionNo_idx").on(table.collectionNo),
+    onOfflineIdx: index("onOffline_idx").on(table.on_offline),
   })
 );
