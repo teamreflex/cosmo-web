@@ -1,6 +1,7 @@
-import { db } from "@/lib/server/db";
-import { objekts } from "@/lib/server/db/schema";
+import { indexer } from "@/lib/server/db/indexer";
+import { objekts } from "@/lib/server/db/indexer/schema";
 import {
+  withArtist,
   withClass,
   withMember,
   withOnlineType,
@@ -17,19 +18,19 @@ import {
 import { and } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
-export const runtime = "edge";
-
+export const preferredRegion = "sfo1";
 const PER_PAGE = 60;
 
 export async function GET(request: NextRequest) {
   const filters = parseParams(request.nextUrl.searchParams);
 
-  let query = db
+  let query = indexer
     .select()
     .from(objekts)
     .where(
       and(
         ...[
+          ...withArtist(filters.artist),
           ...withClass(filters.class),
           ...withSeason(filters.season),
           ...withOnlineType(filters.on_offline),

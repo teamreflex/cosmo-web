@@ -1,19 +1,20 @@
 import {
+  ValidArtist,
   ValidClass,
   ValidOnlineType,
   ValidSeason,
   ValidSort,
 } from "@/lib/universal/cosmo";
-import { objekts } from "../db/schema";
 import { asc, desc, eq, inArray } from "drizzle-orm";
-import { MySqlSelect } from "drizzle-orm/mysql-core";
+import { PgSelect } from "drizzle-orm/pg-core";
+import { objekts } from "../db/indexer/schema";
 
-export function withSort<T extends MySqlSelect>(qb: T, sort: ValidSort) {
+export function withSort<T extends PgSelect>(qb: T, sort: ValidSort) {
   switch (sort) {
     case "newest":
-      return qb.orderBy(desc(objekts.createdAt));
+      return qb.orderBy(desc(objekts.id));
     case "oldest":
-      return qb.orderBy(asc(objekts.createdAt));
+      return qb.orderBy(asc(objekts.id));
     case "noAscending":
       return qb.orderBy(asc(objekts.collectionNo));
     case "noDescending":
@@ -58,6 +59,6 @@ export function withMember(member: string | null | undefined) {
   return member ? [eq(objekts.member, member)] : [];
 }
 
-// export function withArtist<T extends MySqlSelect>(qb: T, artist: string) {
-//   return qb.where(eq(objekts.artist, artist));
-// }
+export function withArtist(artist: ValidArtist | undefined) {
+  return artist ? [eq(objekts.artist, artist)] : [];
+}

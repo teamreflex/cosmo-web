@@ -87,7 +87,6 @@ $ pnpm dev
 - [Drizzle ORM](https://orm.drizzle.team/)
 - [Fathom Analytics](https://usefathom.com/)
 - [Alchemy](https://www.alchemy.com/)
-- [Upstash QStash](https://upstash.com/docs/qstash/overall/getstarted)
 
 ## License
 
