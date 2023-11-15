@@ -12,16 +12,32 @@
 - Implement combination poll display
 - Clean up poll result display for multi-poll gravities
 
+### COMO Calendar
+
+- Experiment with UI design for it
+  - leading candidate: Tailwind UI's calendar component
+
+### Objekts Index
+
+- Add edition/collectionNo filters
+  - should probably add a generated column for this on the indexer side
+- Wishlist creator?
+  - select a member, add and remove objekts at will kinda like instagram wishlists
+  - could be used as a looking to trade list if it weren't named "wishlists"
+- Add caching
+  - `unstable_cache` + webhook for invalidation? redis?
+
 ### Collection
 
-- Look into marking objekts as "up for trade" or go all-in on a WTT system
-  - would probably require indexing all possible objekts
-- Wishlist creator tool?
-- Expand on public collections/profiles
-  - eg: set a favorite objekt? favorite member? profile picture?
-  - private profile is probably useless due to other tools
-- Consider using Alchemy NFT activity webhooks to delete locked objekts upon transfer
+- Delete locked objekts upon transfer
+  - either use Alchemy webhooks or setup a webhook for the indexer to post to
+
+### Profiles
+
+- Set a favorite objekt?
+- Set a favorite member?
 
 ### General
 
 - Fix searchbox blur
+- Extract `Objekt` sub-components (`ObjektNumber`, `ActionOverlay` etc) from `Objekt`, make `Objekt` composable
