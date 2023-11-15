@@ -23,16 +23,18 @@ export const config = {
 
 /**
  * allow unauthenticated access to these paths:
+ * - /
  * - /@:username
  * - /u/:username
- * - /
+ * - /objekts
+ * - /api/objekts
  * - /api/objekt/v1/owned-by/[nickname]
  * - /api/user/v1/search
  *
  * this is separate to the matcher as these paths still need token handling
  */
 const allowUnauthenticated = new RegExp(
-  "^(/@.*|/u/[^/]*|/|/api/objekt/v1/owned-by/.*|/api/user/v1/search)$"
+  "^(/|/@.*|/u/[^/]*|/objekts|/api/objekts|/api/objekt/v1/owned-by/.*|/api/user/v1/search)$"
 );
 
 export async function middleware(request: NextRequest) {
