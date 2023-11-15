@@ -32,13 +32,14 @@ export async function fetchTokenBalances({
   address,
   contracts,
 }: TokenBalanceRequest): Promise<DecodedTokenBalance[]> {
-  const endpoint = `https://polygon-mainnet.g.alchemy.com/v2/${env.NEXT_PUBLIC_ALCHEMY_KEY}`;
+  const endpoint = `https://polygon-mainnet.g.alchemy.com/v2`;
 
   const res = await fetch(endpoint, {
     method: "POST",
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
+      Authorization: `Bearer ${env.NEXT_PUBLIC_ALCHEMY_KEY}`,
     },
     body: JSON.stringify({
       id: 1,
