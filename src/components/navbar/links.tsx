@@ -1,14 +1,29 @@
 "use client";
 
-import { Home, LayoutGrid, PackageOpen, Vote } from "lucide-react";
+import {
+  Home,
+  LayoutGrid,
+  PackageOpen,
+  Vote,
+  LibraryBig,
+  Menu,
+} from "lucide-react";
 import Link from "next/link";
 import NavbarSearch from "./navbar-search";
 import { useSelectedLayoutSegment } from "next/navigation";
 import { cn } from "@/lib/utils";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Button } from "../ui/button";
+import { useEffect, useState } from "react";
 
 const links = [
   { name: "Home", icon: Home, href: "/", segment: null },
   { name: "Gravity", icon: Vote, href: "/gravity", segment: "gravity" },
+  { name: "Objekts", icon: LibraryBig, href: "/objekts", segment: "objekts" },
   {
     name: "Collection",
     icon: PackageOpen,
@@ -20,9 +35,42 @@ const links = [
 
 export default function Links() {
   const segment = useSelectedLayoutSegment();
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    setOpen(false);
+  }, [segment]);
 
   return (
-    <div className="flex flex-row items-center gap-6 md:gap-10 justify-center">
+    <div className="flex grow justify-end sm:justify-center">
+      {/* desktop */}
+      <div className="sm:flex flex-row items-center gap-8 hidden">
+        <LinkIcons segment={segment} />
+      </div>
+
+      {/* mobile */}
+      <div className="sm:hidden flex flex-row items-center">
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <Button variant="ghost" size="sm">
+              <Menu className="h-8 w-8 shrink-0" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent
+            sideOffset={10}
+            className="w-[calc(100vw-1rem)] mx-2 flex flex-row justify-between"
+          >
+            <LinkIcons segment={segment} />
+          </PopoverContent>
+        </Popover>
+      </div>
+    </div>
+  );
+}
+
+function LinkIcons({ segment }: { segment: string | null }) {
+  return (
+    <>
       {links.map((link, i) => (
         <Link
           key={i}
@@ -40,6 +88,6 @@ export default function Links() {
       ))}
 
       <NavbarSearch />
-    </div>
+    </>
   );
 }

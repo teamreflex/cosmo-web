@@ -22,11 +22,11 @@ export default function Navbar({
     <nav className="sticky left-0 right-0 top-0 h-14 z-10">
       <div className="glass">
         <div className="flex w-full items-center h-14">
-          <div className="container grid grid-cols-3 items-center gap-2 text-sm text-foreground md:gap-4 md:py-6 lg:grid-cols-3 pointer-events-auto">
+          <div className="container sm:grid sm:grid-cols-3 flex items-center gap-2 text-sm text-foreground md:gap-4 md:py-6 pointer-events-auto">
             <ApolloLogo color="white" />
             <Links />
 
-            <div className="flex items-center justify-end gap-2">
+            <div className="flex grow-0 items-center justify-end gap-2">
               <AuthOptions
                 user={user}
                 artists={artists}
