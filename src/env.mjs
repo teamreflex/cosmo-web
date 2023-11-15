@@ -17,6 +17,12 @@ export const env = createEnv({
     DATABASE_USERNAME: z.string().min(1),
     DATABASE_PASSWORD: z.string().min(1),
     DATABASE_NAME: z.string().min(1),
+    // indexer db
+    INDEXER_DB_HOST: z.string().min(1),
+    INDEXER_DB_USERNAME: z.string().min(1),
+    INDEXER_DB_PASSWORD: z.string().min(1),
+    INDEXER_DB_PORT: z.coerce.number().min(1),
+    INDEXER_DB_NAME: z.string().min(1),
   },
   client: {
     // ramper app id for cosmo

@@ -22,15 +22,6 @@
   - private profile is probably useless due to other tools
 - Consider using Alchemy NFT activity webhooks to delete locked objekts upon transfer
 
-### Indexing
-
-- Leverage Alchemy webhooks
-- Count SCO transfers to accommodate a como calendar
-- Consider stack:
-  - spin up an ingest server (bun) that writes to the shared planetscale db?
-  - use the nextjs app and use upstash qstash as a queue?
-
 ### General
 
 - Fix searchbox blur
-- Consider moving app into a monorepo with the ingest server

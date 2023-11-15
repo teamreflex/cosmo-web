@@ -6,6 +6,16 @@ const config = {
     typedRoutes: true,
   },
 
+  webpack: (config, { webpack }) => {
+    config.plugins.push(
+      new webpack.IgnorePlugin({
+        resourceRegExp: /^pg-native$|^cloudflare:sockets$/,
+      })
+    );
+
+    return config;
+  },
+
   rewrites() {
     return [
       {

@@ -1,4 +1,4 @@
-import { objekts } from "@/lib/server/db/schema";
+import { objekts } from "@/lib/server/db/indexer/schema";
 import { InferSelectModel } from "drizzle-orm";
 
 export type IndexedObjekt = InferSelectModel<typeof objekts>;

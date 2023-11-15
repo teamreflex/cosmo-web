@@ -54,6 +54,7 @@ This project aims to build a web based version of [Modhaus](https://www.mod-haus
     - Includes user search box with recent history
     - Cosmo ID or Polygon address can be used
     - Filter state is stored in the URL for sharing
+  - Indexing of all released objekts
 
 </details>
 
@@ -85,6 +86,7 @@ $ pnpm dev
 - [PlanetScale](https://planetscale.com/)
 - [Drizzle ORM](https://orm.drizzle.team/)
 - [Fathom Analytics](https://usefathom.com/)
+- [Alchemy](https://www.alchemy.com/)
 
 ## License
 
