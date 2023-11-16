@@ -11,9 +11,10 @@ import {
   CollectionFilters,
   collectionFilters,
 } from "@/hooks/use-collection-filters";
-import Objekt from "../collection/objekt";
+import Objekt from "../objekt/objekt";
 import MemberFilter from "../collection/member-filter";
 import { IndexedCosmoResponse } from "@/lib/universal/objekt-index";
+import ObjektSidebar from "../objekt/objekt-sidebar";
 
 type Props = PropsWithClassName<{
   artists: CosmoArtistWithMembers[];
@@ -97,9 +98,10 @@ export default function ObjektIndexList({
                       <Objekt
                         key={objekt.id}
                         objekt={objekt}
-                        showButtons={false}
                         authenticated={false}
-                      />
+                      >
+                        <ObjektSidebar />
+                      </Objekt>
                     ))}
                   </Fragment>
                 ))}

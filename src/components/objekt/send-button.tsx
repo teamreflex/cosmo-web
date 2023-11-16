@@ -187,11 +187,7 @@ export default function SendObjekt({ objekt }: Props) {
             {/* show preview before sending */}
             {transactionProgress === TransactionStatus.WAITING && (
               <div className="flex flex-col gap-4 justify-center items-center">
-                <Objekt
-                  objekt={objekt}
-                  showButtons={false}
-                  authenticated={false}
-                />
+                <Objekt objekt={objekt} authenticated={false} />
               </div>
             )}
 

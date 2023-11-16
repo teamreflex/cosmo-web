@@ -1,6 +1,6 @@
 "use client";
 
-import { toggleObjektLock } from "./actions";
+import { toggleObjektLock } from "../collection/actions";
 import { OwnedObjekt } from "@/lib/universal/cosmo";
 import { trackEvent } from "fathom-client";
 import { Loader2, Lock, Unlock } from "lucide-react";

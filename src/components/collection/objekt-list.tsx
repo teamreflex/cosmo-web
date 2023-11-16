@@ -1,6 +1,6 @@
 "use client";
 
-import Objekt from "./objekt";
+import Objekt from "../objekt/objekt";
 import { Fragment, useCallback, useEffect, useState } from "react";
 import { ChevronDown, HeartCrack, Loader2 } from "lucide-react";
 import { useInfiniteQuery } from "react-query";
@@ -19,6 +19,9 @@ import {
   CollectionFilters,
   collectionFilters,
 } from "@/hooks/use-collection-filters";
+import InformationOverlay from "../objekt/information-overlay";
+import ActionOverlay from "../objekt/action-overlay";
+import ObjektSidebar from "../objekt/objekt-sidebar";
 
 type Props = PropsWithClassName<{
   authenticated: boolean;
@@ -134,9 +137,12 @@ export default function ObjektList({
                         <Objekt
                           key={objekt.tokenId}
                           objekt={objekt}
-                          showButtons={true}
                           authenticated={authenticated}
-                        />
+                        >
+                          <ObjektSidebar />
+                          <InformationOverlay />
+                          <ActionOverlay />
+                        </Objekt>
                       ))}
                     </Fragment>
                   ))}

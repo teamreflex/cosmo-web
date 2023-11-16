@@ -1,7 +1,7 @@
 import { PropsWithClassName, cn } from "@/lib/utils";
 import { Check } from "lucide-react";
 import Image from "next/image";
-import { CSSProperties } from "react";
+import { CSSProperties, useState } from "react";
 import { useElementSize } from "usehooks-ts";
 
 type Props = PropsWithClassName<{
@@ -20,6 +20,7 @@ export default function GridObjekt({
   textColor,
   selected,
 }: Props) {
+  const [loaded, setLoaded] = useState(false);
   const css = {
     "--objekt-text-color": textColor,
   } as CSSProperties;
@@ -27,15 +28,23 @@ export default function GridObjekt({
   return (
     <div
       className={cn(
-        "relative aspect-photocard w-full flex justify-center items-center border-4 border-transparent rounded-2xl transition-colors",
+        "relative aspect-photocard w-full flex justify-center items-center bg-accent border-4 border-transparent rounded-2xl transition-colors",
         `text-[var(--objekt-text-color)]`,
         selected && "border-cosmo",
+        !loaded && "animate-pulse",
         className
       )}
       style={css}
     >
-      <Image src={image} fill={true} alt={collectionNo} />
-      <GridObjektNumber collectionNo={collectionNo} objektNo={objektNo} />
+      <Image
+        src={image}
+        fill={true}
+        alt={collectionNo}
+        onLoad={() => setLoaded(true)}
+      />
+      {loaded && (
+        <GridObjektNumber collectionNo={collectionNo} objektNo={objektNo} />
+      )}
       <div
         className={cn(
           "absolute top-1 left-1 bg-cosmo text-white rounded-full p-1 transition-all opacity-0",
