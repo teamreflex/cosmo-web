@@ -1,53 +1,43 @@
 "use client";
 
-import { SlidersHorizontal } from "lucide-react";
-import { Toggle } from "../ui/toggle";
+import { useCollectionFilters } from "@/hooks/use-collection-filters";
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo";
-import {
-  CollectionFilters,
-  useCollectionFilters,
-} from "@/hooks/use-collection-filters";
+import { Toggle } from "../ui/toggle";
+import { SlidersHorizontal } from "lucide-react";
 import { SeasonFilter } from "../collection/filter-season";
 import { OnlineFilter } from "../collection/filter-online";
 import { ClassFilter } from "../collection/filter-class";
 import { SortFilter } from "../collection/filter-sort";
-import ObjektIndexList from "./objekt-index-list";
-import ObjektLists from "./objekt-lists";
+import ObjektListList from "./objekt-list-list";
 import { ObjektList } from "@/lib/universal/objekt-index";
 
-export type PropsWithFilters<T extends keyof CollectionFilters> = {
-  filters: CollectionFilters[T];
-  setFilters: (filters: CollectionFilters[T]) => void;
-};
-
 type Props = {
+  list: ObjektList;
   artists: CosmoArtistWithMembers[];
-  objektLists?: ObjektList[];
   authenticated: boolean;
 };
-
-export default function ObjektIndexRenderer({
+export default function ObjektListRenderer({
+  list,
   artists,
-  objektLists,
   authenticated,
 }: Props) {
   const [showFilters, setShowFilters, filters, setFilters, updateFilter] =
     useCollectionFilters();
 
   return (
-    <>
+    <main className="container flex flex-col py-2">
       <div className="flex flex-col sm:gap-2 group" data-show={showFilters}>
         {/* header */}
         <div className="flex items-center justify-between pb-2 sm:pb-0">
           {/* title */}
           <div className="flex gap-2 items-center">
-            <h1 className="text-3xl font-cosmo uppercase drop-shadow-lg">
-              Objekts
+            <h1 className="text-lg lg:text-3xl font-cosmo uppercase drop-shadow-lg">
+              {list.name}
             </h1>
           </div>
 
-          {/* objekt list button */}
-          {objektLists !== undefined && <ObjektLists lists={objektLists} />}
+          {/* list-related buttons */}
+          {authenticated && <div>edit/delete</div>}
 
           {/* mobile: options */}
           <div className="flex sm:hidden items-center gap-2">
@@ -79,13 +69,13 @@ export default function ObjektIndexRenderer({
         </div>
       </div>
 
-      <ObjektIndexList
+      <ObjektListList
+        list={list}
         artists={artists}
-        lists={objektLists ?? []}
-        authenticated={authenticated}
         filters={filters}
         setFilters={setFilters}
+        authenticated={authenticated}
       />
-    </>
+    </main>
   );
 }

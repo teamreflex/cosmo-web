@@ -15,22 +15,21 @@ import Objekt from "../objekt/objekt";
 import MemberFilter from "../collection/member-filter";
 import { IndexedCosmoResponse, ObjektList } from "@/lib/universal/objekt-index";
 import ObjektSidebar from "../objekt/objekt-sidebar";
-import ListOverlay from "./list-overlay";
 
 type Props = PropsWithClassName<{
+  list: ObjektList;
   artists: CosmoArtistWithMembers[];
-  lists: ObjektList[];
-  authenticated: boolean;
   filters: CollectionFilters;
   setFilters: (filters: CollectionFilters) => void;
+  authenticated: boolean;
 }>;
 
-export default function ObjektIndexList({
+export default function ObjektListList({
+  list,
   artists,
-  lists,
-  authenticated,
   filters,
   setFilters,
+  authenticated,
   className,
 }: Props) {
   const { ref, inView } = useInView();
@@ -41,6 +40,7 @@ export default function ObjektIndexList({
       false
     );
     searchParams.set("page", pageParam.toString());
+    searchParams.set("list", list.slug);
 
     const result = await fetch(`/api/objekts?${searchParams.toString()}`);
     return (await result.json()) as IndexedCosmoResponse;
@@ -54,7 +54,7 @@ export default function ObjektIndexList({
     isFetchingNextPage,
     status,
   } = useInfiniteQuery({
-    queryKey: [`objekt-index`, filters],
+    queryKey: [`objekt-list`, filters],
     queryFn: fetchObjekts,
     getNextPageParam: (lastPage) => lastPage.nextPage,
     refetchOnWindowFocus: false,
@@ -106,7 +106,6 @@ export default function ObjektIndexList({
                         authenticated={authenticated}
                       >
                         <ObjektSidebar />
-                        {authenticated && <ListOverlay lists={lists} />}
                       </Objekt>
                     ))}
                   </Fragment>

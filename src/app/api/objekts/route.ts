@@ -1,13 +1,15 @@
 import { indexer } from "@/lib/server/db/indexer";
 import { objekts } from "@/lib/server/db/indexer/schema";
 import {
+  fetchObjektListWithEntries,
   withArtist,
   withClass,
   withMember,
+  withObjektListEntries,
   withOnlineType,
   withSeason,
   withSort,
-} from "@/lib/server/objekt-index";
+} from "@/lib/server/objekts";
 import {
   ValidArtist,
   ValidClass,
@@ -24,12 +26,30 @@ const PER_PAGE = 60;
 export async function GET(request: NextRequest) {
   const filters = parseParams(request.nextUrl.searchParams);
 
+  const objektList = filters.list
+    ? await fetchObjektListWithEntries(filters.list)
+    : undefined;
+  const entries: number[] = [];
+
+  if (filters.list) {
+    if (!objektList || (objektList && objektList.entries.length === 0)) {
+      return NextResponse.json({
+        total: 0,
+        hasNext: false,
+        objekts: [],
+      });
+    }
+
+    entries.push(...objektList.entries.map((e) => e.objektId));
+  }
+
   let query = indexer
     .select()
     .from(objekts)
     .where(
       and(
         ...[
+          ...(await withObjektListEntries(entries)),
           ...withArtist(filters.artist),
           ...withClass(filters.class),
           ...withSeason(filters.season),
@@ -57,6 +77,7 @@ export async function GET(request: NextRequest) {
 
 function parseParams(params: URLSearchParams) {
   return {
+    list: params.has("list") ? params.get("list") : undefined,
     page: parseInt(params.get("page") ?? "1"),
     sort: params.has("sort") ? (params.get("sort") as ValidSort) : "newest",
     season: params.getAll("season") as ValidSeason[],

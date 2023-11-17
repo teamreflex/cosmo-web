@@ -6,6 +6,7 @@ import { fetchHomeNews } from "@/lib/server/cosmo";
 import { cache } from "react";
 import { getUser } from "./api/common";
 import { remember } from "@/lib/server/cache/common";
+import { fetchObjektLists } from "@/lib/server/objekts";
 
 export const fetchSelectedArtist = cache(
   async (userId: number) => await redisSelectedArtist(userId)
@@ -28,3 +29,7 @@ export const decodeUser = cache(async () => {
 });
 
 export const fetchArtists = cache(async () => cacheArtists());
+
+export const fetchObjektListsForUser = cache(async (address?: string) =>
+  address ? await fetchObjektLists(address) : undefined
+);
