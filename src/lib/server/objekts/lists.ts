@@ -2,7 +2,6 @@ import "server-only";
 import { and, eq } from "drizzle-orm";
 import { db } from "../db";
 import { lists } from "../db/schema";
-import slugify from "slugify";
 import {
   CreateObjektList,
   ObjektList,
@@ -49,10 +48,7 @@ export async function fetchObjektListWithEntries(slug: string) {
  * Create a new objekt list.
  */
 export async function createObjektList(payload: CreateObjektList) {
-  const row = await db.insert(lists).values({
-    ...payload,
-    slug: createSlug(payload.name),
-  });
+  const row = await db.insert(lists).values(payload);
   return row.rowsAffected === 1;
 }
 
@@ -60,26 +56,16 @@ export async function createObjektList(payload: CreateObjektList) {
  * Update an objekt list.
  */
 export async function updateObjektList(payload: UpdateObjektList) {
-  const row = await db.update(lists).set({
-    ...payload,
-    slug: createSlug(payload.name),
-  });
+  const row = await db.update(lists).set(payload);
   return row.rowsAffected === 1;
 }
 
 /**
  * Delete an objekt list.
  */
-export async function deleteObjektList(slug: string, address: string) {
+export async function deleteObjektList(id: number, address: string) {
   const row = await db
     .delete(lists)
-    .where(and(eq(lists.slug, slug), eq(lists.userAddress, address)));
+    .where(and(eq(lists.id, id), eq(lists.userAddress, address)));
   return row.rowsAffected === 1;
-}
-
-function createSlug(name: string) {
-  return slugify(name, {
-    lower: true,
-    strict: true,
-  });
 }
