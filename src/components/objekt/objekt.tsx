@@ -1,23 +1,21 @@
 "use client";
 
-import { OwnedObjekt } from "@/lib/universal/cosmo";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { CSSProperties, PropsWithChildren, memo, useState } from "react";
 import ReactCardFlip from "react-card-flip";
-import { IndexedObjekt } from "@/lib/universal/objekt-index";
-import { ObjektContext } from "./util";
+import { ObjektContext, ValidObjekt } from "./util";
 
-type ObjektProps = PropsWithChildren<{
-  objekt: OwnedObjekt | IndexedObjekt;
+type ObjektProps<TObjektType extends ValidObjekt> = PropsWithChildren<{
+  objekt: TObjektType;
   authenticated: boolean;
 }>;
 
-export default memo(function Objekt({
+export default memo(function Objekt<TObjektType extends ValidObjekt>({
   children,
   objekt,
   authenticated,
-}: ObjektProps) {
+}: ObjektProps<TObjektType>) {
   const [flipped, setFlipped] = useState(false);
   const [loaded, setLoaded] = useState(false);
 

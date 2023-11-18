@@ -5,8 +5,8 @@ import { notFound, redirect } from "next/navigation";
 import ObjektListLoading from "./loading";
 import { search } from "@/lib/server/cosmo";
 import { cacheMembers } from "@/lib/server/cache";
-import ObjektListRenderer from "@/components/objekt-index/objekt-list-renderer";
 import { decodeUser } from "@/app/data-fetching";
+import ListRenderer from "@/components/lists/list-renderer";
 
 export const runtime = "nodejs";
 
@@ -48,7 +48,7 @@ export default async function ObjektListPage({ params }: Props) {
 
   return (
     <Suspense fallback={<ObjektListLoading />}>
-      <ObjektListRenderer
+      <ListRenderer
         list={list}
         artists={artists}
         authenticated={authenticated}

@@ -4,12 +4,21 @@ import "server-only";
 import { z } from "zod";
 import { authenticatedAction } from "@/lib/server/typed-action";
 import {
+  addObjekt,
   createObjektList,
   deleteObjektList,
+  removeObjekt,
   updateObjektList,
 } from "@/lib/server/objekts";
 import { revalidatePath } from "next/cache";
 import slugify from "slugify";
+
+function createSlug(name: string) {
+  return slugify(name, {
+    lower: true,
+    strict: true,
+  });
+}
 
 /**
  * Create a new objekt list.
@@ -65,9 +74,38 @@ export const destroy = async (form: { id: number }) =>
     }
   );
 
-function createSlug(name: string) {
-  return slugify(name, {
-    lower: true,
-    strict: true,
-  });
-}
+/**
+ * Add an objekt to a list
+ */
+export const addObjektToList = async (form: {
+  listId: number;
+  objektId: number;
+}) =>
+  authenticatedAction(
+    z.object({
+      listId: z.number(),
+      objektId: z.number(),
+    }),
+    form,
+    async ({ listId, objektId }, user) => {
+      return await addObjekt(listId, objektId);
+    }
+  );
+
+/**
+ * Remove an objekt from a list
+ */
+export const removeObjektFromList = async (form: {
+  listId: number;
+  objektId: number;
+}) =>
+  authenticatedAction(
+    z.object({
+      listId: z.number(),
+      objektId: z.number(),
+    }),
+    form,
+    async ({ listId, objektId }, user) => {
+      return await removeObjekt(listId, objektId);
+    }
+  );

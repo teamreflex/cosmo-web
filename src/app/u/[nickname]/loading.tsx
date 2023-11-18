@@ -1,7 +1,7 @@
 import { Loader } from "@/components/loader";
 import { PropsWithClassName, cn } from "@/lib/utils";
 
-export default function OtherCollectionLoading() {
+export default function UserCollectionLoading() {
   return (
     <div className="container flex flex-col py-2">
       <div className="flex flex-col sm:gap-2 group" data-show={false}>

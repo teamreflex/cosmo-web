@@ -34,7 +34,7 @@ type Props = {
   nickname: string;
 };
 
-export default function ObjektLists({ lists, nickname }: Props) {
+export default function ListDropdown({ lists, nickname }: Props) {
   const { toast } = useToast();
 
   const [isPending, startTransition] = useTransition();
@@ -74,7 +74,7 @@ export default function ObjektLists({ lists, nickname }: Props) {
             ))}
           </DropdownMenuGroup>
           <DialogTrigger asChild>
-            <DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer">
               <PlusCircle className="mr-2 h-4 w-4" />
               <span className="font-semibold">Create New</span>
             </DropdownMenuItem>

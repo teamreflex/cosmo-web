@@ -5,15 +5,23 @@ import { Toggle } from "../ui/toggle";
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo";
 import {
   CollectionFilters,
+  collectionFilters,
   useCollectionFilters,
 } from "@/hooks/use-collection-filters";
 import { SeasonFilter } from "../collection/filter-season";
 import { OnlineFilter } from "../collection/filter-online";
 import { ClassFilter } from "../collection/filter-class";
 import { SortFilter } from "../collection/filter-sort";
-import ObjektIndexList from "./objekt-index-list";
-import ObjektLists from "./objekt-lists";
-import { ObjektList } from "@/lib/universal/objekt-index";
+import ListDropdown from "../lists/list-dropdown";
+import {
+  IndexedCosmoResponse,
+  IndexedObjekt,
+  ObjektList,
+} from "@/lib/universal/objekt-index";
+import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
+import { toSearchParams } from "@/hooks/use-typed-search-params";
+import ObjektSidebar from "../objekt/objekt-sidebar";
+import ListOverlay from "../lists/list-overlay";
 
 export type PropsWithFilters<T extends keyof CollectionFilters> = {
   filters: CollectionFilters[T];
@@ -26,7 +34,7 @@ type Props = {
   nickname?: string;
 };
 
-export default function ObjektIndexRenderer({
+export default function IndexRenderer({
   artists,
   objektLists,
   nickname,
@@ -35,6 +43,17 @@ export default function ObjektIndexRenderer({
     useCollectionFilters();
 
   const authenticated = objektLists !== undefined && nickname !== undefined;
+
+  async function fetcher({ pageParam = 0 }) {
+    const searchParams = toSearchParams<typeof collectionFilters>(
+      filters,
+      false
+    );
+    searchParams.set("page", pageParam.toString());
+
+    const result = await fetch(`/api/objekts?${searchParams.toString()}`);
+    return (await result.json()) as IndexedCosmoResponse;
+  }
 
   return (
     <>
@@ -50,7 +69,7 @@ export default function ObjektIndexRenderer({
 
           {/* objekt list button */}
           {authenticated && (
-            <ObjektLists lists={objektLists} nickname={nickname} />
+            <ListDropdown lists={objektLists} nickname={nickname} />
           )}
 
           {/* mobile: options */}
@@ -83,12 +102,21 @@ export default function ObjektIndexRenderer({
         </div>
       </div>
 
-      <ObjektIndexList
+      <FilteredObjektDisplay
         artists={artists}
-        lists={objektLists ?? []}
-        authenticated={authenticated}
         filters={filters}
         setFilters={setFilters}
+        authenticated={authenticated}
+        queryFunction={fetcher}
+        queryKey="objekt-index"
+        getObjektId={(objekt: IndexedObjekt) => objekt.id}
+        getObjektDisplay={() => true}
+        objektSlot={
+          <>
+            <ObjektSidebar />
+            {authenticated && <ListOverlay lists={objektLists} />}
+          </>
+        }
       />
     </>
   );

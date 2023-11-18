@@ -1,7 +1,7 @@
 import "server-only";
 import { and, eq } from "drizzle-orm";
 import { db } from "../db";
-import { lists } from "../db/schema";
+import { listEntries, lists } from "../db/schema";
 import {
   CreateObjektList,
   ObjektList,
@@ -67,5 +67,28 @@ export async function deleteObjektList(id: number, address: string) {
   const row = await db
     .delete(lists)
     .where(and(eq(lists.id, id), eq(lists.userAddress, address)));
+  return row.rowsAffected === 1;
+}
+
+/**
+ * Add an objekt to a list.
+ */
+export async function addObjekt(listId: number, objektId: number) {
+  const row = await db.insert(listEntries).values({
+    listId,
+    objektId,
+  });
+  return row.rowsAffected === 1;
+}
+
+/**
+ * Remove an objekt from a list.
+ */
+export async function removeObjekt(listId: number, objektId: number) {
+  const row = await db
+    .delete(listEntries)
+    .where(
+      and(eq(listEntries.listId, listId), eq(listEntries.objektId, objektId))
+    );
   return row.rowsAffected === 1;
 }

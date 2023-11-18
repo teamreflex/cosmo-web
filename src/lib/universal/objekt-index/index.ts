@@ -6,7 +6,7 @@ export type IndexedObjekt = InferSelectModel<typeof objekts>;
 export type IndexedCosmoResponse = {
   hasNext: boolean;
   total: number;
-  nextPage: number | undefined;
+  nextStartAfter: number | undefined;
   objekts: IndexedObjekt[];
 };
 

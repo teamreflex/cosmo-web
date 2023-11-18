@@ -1,5 +1,5 @@
 import { getUser } from "@/app/api/common";
-import { z } from "zod";
+import { ZodIssue, z } from "zod";
 import { TokenPayload } from "./jwt";
 import { getErrorMessage } from "../error";
 
@@ -10,7 +10,7 @@ export type TypedActionResult<T> =
     }
   | {
       success: false;
-      error: string;
+      error: ZodIssue[] | string;
     };
 
 type ValidForm = FormData | Record<string, unknown>;
@@ -27,7 +27,7 @@ export async function typedAction<TResponse, TSchema extends z.AnyZodObject>(
     form instanceof FormData ? Object.fromEntries(form.entries()) : form;
   const result = schema.safeParse(input);
   if (!result.success) {
-    return { success: false, error: "Invalid action input" };
+    return { success: false, error: result.error.issues };
   }
 
   try {

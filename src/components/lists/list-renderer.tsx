@@ -1,6 +1,9 @@
 "use client";
 
-import { useCollectionFilters } from "@/hooks/use-collection-filters";
+import {
+  collectionFilters,
+  useCollectionFilters,
+} from "@/hooks/use-collection-filters";
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo";
 import { Toggle } from "../ui/toggle";
 import { SlidersHorizontal } from "lucide-react";
@@ -8,21 +11,35 @@ import { SeasonFilter } from "../collection/filter-season";
 import { OnlineFilter } from "../collection/filter-online";
 import { ClassFilter } from "../collection/filter-class";
 import { SortFilter } from "../collection/filter-sort";
-import ObjektListList from "./objekt-list-list";
-import { ObjektList } from "@/lib/universal/objekt-index";
+import {
+  IndexedCosmoResponse,
+  IndexedObjekt,
+  ObjektList,
+} from "@/lib/universal/objekt-index";
+import { toSearchParams } from "@/hooks/use-typed-search-params";
+import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
+import ObjektSidebar from "../objekt/objekt-sidebar";
 
 type Props = {
   list: ObjektList;
   artists: CosmoArtistWithMembers[];
   authenticated: boolean;
 };
-export default function ObjektListRenderer({
-  list,
-  artists,
-  authenticated,
-}: Props) {
+export default function ListRenderer({ list, artists, authenticated }: Props) {
   const [showFilters, setShowFilters, filters, setFilters, updateFilter] =
     useCollectionFilters();
+
+  async function fetcher({ pageParam = 0 }) {
+    const searchParams = toSearchParams<typeof collectionFilters>(
+      filters,
+      false
+    );
+    searchParams.set("page", pageParam.toString());
+    searchParams.set("list", list.slug);
+
+    const result = await fetch(`/api/objekts?${searchParams.toString()}`);
+    return (await result.json()) as IndexedCosmoResponse;
+  }
 
   return (
     <main className="container flex flex-col py-2">
@@ -69,12 +86,16 @@ export default function ObjektListRenderer({
         </div>
       </div>
 
-      <ObjektListList
-        list={list}
+      <FilteredObjektDisplay
         artists={artists}
         filters={filters}
         setFilters={setFilters}
         authenticated={authenticated}
+        queryFunction={fetcher}
+        queryKey={`objekt-list::${list.slug}`}
+        getObjektId={(objekt: IndexedObjekt) => objekt.id}
+        getObjektDisplay={() => true}
+        objektSlot={<ObjektSidebar />}
       />
     </main>
   );

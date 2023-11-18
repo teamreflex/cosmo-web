@@ -1,50 +1,50 @@
 "use client";
 
-import { Fragment, useCallback, useEffect, useState } from "react";
+import Objekt from "../objekt/objekt";
+import { Fragment, ReactNode, useCallback, useEffect } from "react";
 import { ChevronDown, HeartCrack, Loader2 } from "lucide-react";
 import { useInfiniteQuery } from "react-query";
 import { useInView } from "react-intersection-observer";
-import { PropsWithClassName, cn } from "@/lib/utils";
-import { toSearchParams } from "@/hooks/use-typed-search-params";
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo";
-import {
-  CollectionFilters,
-  collectionFilters,
-} from "@/hooks/use-collection-filters";
-import Objekt from "../objekt/objekt";
+import { CollectionFilters } from "@/hooks/use-collection-filters";
 import MemberFilter from "../collection/member-filter";
-import { IndexedCosmoResponse, ObjektList } from "@/lib/universal/objekt-index";
-import ObjektSidebar from "../objekt/objekt-sidebar";
+import { ValidObjekt } from "./util";
 
-type Props = PropsWithClassName<{
-  list: ObjektList;
+export type ObjektResponse<TObjektType extends ValidObjekt> = {
+  hasNext: boolean;
+  total: number;
+  objekts: TObjektType[];
+  nextStartAfter?: number | string | undefined;
+};
+
+type Props<TObjektType extends ValidObjekt> = {
+  authenticated: boolean;
   artists: CosmoArtistWithMembers[];
   filters: CollectionFilters;
   setFilters: (filters: CollectionFilters) => void;
-  authenticated: boolean;
-}>;
+  queryKey: string;
+  queryFunction: ({
+    pageParam,
+  }: {
+    pageParam?: number;
+  }) => Promise<ObjektResponse<TObjektType>>;
+  getObjektId: (objekt: TObjektType) => string | number;
+  getObjektDisplay: (objekt: TObjektType) => boolean;
+  objektSlot: ReactNode;
+};
 
-export default function ObjektListList({
-  list,
+export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
+  authenticated,
   artists,
   filters,
   setFilters,
-  authenticated,
-  className,
-}: Props) {
+  queryKey,
+  queryFunction,
+  getObjektId,
+  getObjektDisplay,
+  objektSlot,
+}: Props<TObjektType>) {
   const { ref, inView } = useInView();
-
-  async function fetchObjekts({ pageParam = 0 }) {
-    const searchParams = toSearchParams<typeof collectionFilters>(
-      filters,
-      false
-    );
-    searchParams.set("page", pageParam.toString());
-    searchParams.set("list", list.slug);
-
-    const result = await fetch(`/api/objekts?${searchParams.toString()}`);
-    return (await result.json()) as IndexedCosmoResponse;
-  }
 
   const {
     data,
@@ -54,9 +54,9 @@ export default function ObjektListList({
     isFetchingNextPage,
     status,
   } = useInfiniteQuery({
-    queryKey: [`objekt-list`, filters],
-    queryFn: fetchObjekts,
-    getNextPageParam: (lastPage) => lastPage.nextPage,
+    queryKey: [queryKey, filters],
+    queryFn: queryFunction,
+    getNextPageParam: (lastPage) => lastPage.nextStartAfter,
     refetchOnWindowFocus: false,
     staleTime: Infinity,
   });
@@ -79,7 +79,7 @@ export default function ObjektListList({
   }, [filters, refetchPage]);
 
   return (
-    <div className={cn("flex flex-col", className)}>
+    <div className="flex flex-col">
       <MemberFilter
         artists={artists}
         filters={filters}
@@ -99,13 +99,13 @@ export default function ObjektListList({
               {data !== undefined &&
                 data.pages.map((group, i) => (
                   <Fragment key={i}>
-                    {group.objekts.map((objekt) => (
+                    {group.objekts.filter(getObjektDisplay).map((objekt) => (
                       <Objekt
-                        key={objekt.id}
+                        key={getObjektId(objekt)}
                         objekt={objekt}
                         authenticated={authenticated}
                       >
-                        <ObjektSidebar />
+                        {objektSlot}
                       </Objekt>
                     ))}
                   </Fragment>

@@ -1,10 +1,11 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { useContext } from "react";
+import { PropsWithChildren, useContext } from "react";
 import { ObjektContext } from "../objekt/util";
 import { IndexedObjekt, ObjektList } from "@/lib/universal/objekt-index";
 import AddToList from "./add-to-list";
+import OverlayStatus from "../objekt/overlay-status";
 
 type Props = {
   lists: ObjektList[];
@@ -27,6 +28,11 @@ export default function ListOverlay({ lists }: Props) {
       <div className="flex items-center gap-2">
         {/* add to list */}
         <AddToList objekt={objekt} lists={lists} />
+      </div>
+
+      {/* status text */}
+      <div className="text-xs whitespace-nowrap max-w-0 group-hover:max-w-[12rem] overflow-hidden transition-all">
+        <OverlayStatus>Add to List</OverlayStatus>
       </div>
     </div>
   );

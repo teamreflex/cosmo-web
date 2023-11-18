@@ -1,7 +1,7 @@
-import ObjektIndexRenderer from "@/components/objekt-index/objekt-index-renderer";
 import { cacheMembers } from "@/lib/server/cache";
 import { Metadata } from "next";
 import { decodeUser, fetchObjektListsForUser } from "../data-fetching";
+import IndexRenderer from "@/components/objekt-index/index-renderer";
 
 export const runtime = "nodejs";
 export const metadata: Metadata = {
@@ -18,7 +18,7 @@ export default async function ObjektsIndexPage() {
   return (
     <main className="relative py-2">
       <div className="relative container flex flex-col">
-        <ObjektIndexRenderer
+        <IndexRenderer
           artists={artists}
           objektLists={objektLists}
           nickname={user?.nickname}
