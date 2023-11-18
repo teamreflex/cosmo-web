@@ -50,17 +50,18 @@ export default function UpdateList({ list }: Props) {
         <DialogHeader>
           <DialogTitle>Update Objekt List</DialogTitle>
         </DialogHeader>
-        <div className="w-full flex flex-col gap-1">
+        <form className="w-full flex flex-col gap-1">
           <Label htmlFor="name">Name</Label>
           <Input
             type="text"
-            autoComplete="false"
+            autoComplete="off"
             maxLength={24}
             onInput={(e) => setName(e.currentTarget.value)}
             id="name"
             placeholder="Want To Trade"
+            data-1p-ignore
           />
-        </div>
+        </form>
         <DialogFooter>
           <Button type="submit" disabled={isPending} onClick={submit}>
             {isPending ? "Saving..." : "Save"}
