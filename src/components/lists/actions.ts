@@ -51,12 +51,19 @@ export const update = async (form: { id: number; name: string }) =>
     }),
     form,
     async ({ id, name }, user) => {
-      return await updateObjektList({
+      const slug = createSlug(name);
+      const success = await updateObjektList({
         id,
         name,
-        slug: createSlug(name),
+        slug,
         userAddress: user.address,
       });
+
+      if (success) {
+        return `/@${user.nickname}/list/${slug}`;
+      } else {
+        return undefined;
+      }
     }
   );
 

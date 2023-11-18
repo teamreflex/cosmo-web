@@ -22,6 +22,7 @@ import ObjektSidebar from "../objekt/objekt-sidebar";
 import ListOverlay from "./list-overlay";
 import { useQueryClient } from "react-query";
 import DeleteList from "./delete-list";
+import UpdateList from "./update-list";
 
 type Props = {
   list: ObjektList;
@@ -66,6 +67,7 @@ export default function ListRenderer({ list, artists, authenticated }: Props) {
           {/* list-related buttons */}
           {authenticated && (
             <div className="flex gap-2">
+              <UpdateList list={list} />
               <DeleteList list={list} />
             </div>
           )}

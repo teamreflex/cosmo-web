@@ -53,7 +53,7 @@ export default function DeleteList({ list }: Props) {
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction onClick={submit} disabled={isPending}>
-            Delete
+            {isPending ? "Deleting..." : "Delete"}
             {isPending && <Loader2 className="ml-2 animate-spin" />}
           </AlertDialogAction>
         </AlertDialogFooter>
