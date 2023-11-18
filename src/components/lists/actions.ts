@@ -76,7 +76,11 @@ export const destroy = async (form: { id: number }) =>
     }),
     form,
     async ({ id }, user) => {
-      return await deleteObjektList(id, user.address);
+      const result = await deleteObjektList(id, user.address);
+      if (result) {
+        revalidatePath("/objekts");
+        return result;
+      }
     }
   );
 
