@@ -52,8 +52,7 @@ export const update = async (form: { id: number; name: string }) =>
     form,
     async ({ id, name }, user) => {
       const slug = createSlug(name);
-      const success = await updateObjektList({
-        id,
+      const success = await updateObjektList(id, {
         name,
         slug,
         userAddress: user.address,

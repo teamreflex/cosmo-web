@@ -54,8 +54,8 @@ export async function createObjektList(payload: CreateObjektList) {
 /**
  * Update an objekt list.
  */
-export async function updateObjektList(payload: UpdateObjektList) {
-  const row = await db.update(lists).set(payload);
+export async function updateObjektList(id: number, payload: UpdateObjektList) {
+  const row = await db.update(lists).set(payload).where(eq(lists.id, id));
   return row.rowsAffected === 1;
 }
 
