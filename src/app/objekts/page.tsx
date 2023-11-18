@@ -3,6 +3,7 @@ import { cacheMembers } from "@/lib/server/cache";
 import { Metadata } from "next";
 import { decodeUser, fetchObjektListsForUser } from "../data-fetching";
 
+export const runtime = "nodejs";
 export const metadata: Metadata = {
   title: "Objekts",
 };

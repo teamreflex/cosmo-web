@@ -20,7 +20,7 @@ import {
 import { and } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
-export const preferredRegion = "sfo1";
+export const runtime = "nodejs";
 const PER_PAGE = 60;
 
 export async function GET(request: NextRequest) {
