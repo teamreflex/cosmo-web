@@ -23,16 +23,18 @@ export type PropsWithFilters<T extends keyof CollectionFilters> = {
 type Props = {
   artists: CosmoArtistWithMembers[];
   objektLists?: ObjektList[];
-  authenticated: boolean;
+  nickname?: string;
 };
 
 export default function ObjektIndexRenderer({
   artists,
   objektLists,
-  authenticated,
+  nickname,
 }: Props) {
   const [showFilters, setShowFilters, filters, setFilters, updateFilter] =
     useCollectionFilters();
+
+  const authenticated = objektLists !== undefined && nickname !== undefined;
 
   return (
     <>
@@ -47,7 +49,9 @@ export default function ObjektIndexRenderer({
           </div>
 
           {/* objekt list button */}
-          {objektLists !== undefined && <ObjektLists lists={objektLists} />}
+          {authenticated && (
+            <ObjektLists lists={objektLists} nickname={nickname} />
+          )}
 
           {/* mobile: options */}
           <div className="flex sm:hidden items-center gap-2">

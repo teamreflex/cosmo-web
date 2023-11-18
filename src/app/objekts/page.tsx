@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   title: "Objekts",
 };
 
-export default async function CollectionPage() {
+export default async function ObjektsIndexPage() {
   const user = await decodeUser();
   const [objektLists, artists] = await Promise.all([
     fetchObjektListsForUser(user?.address),
@@ -20,7 +20,7 @@ export default async function CollectionPage() {
         <ObjektIndexRenderer
           artists={artists}
           objektLists={objektLists}
-          authenticated={user !== undefined}
+          nickname={user?.nickname}
         />
       </div>
     </main>

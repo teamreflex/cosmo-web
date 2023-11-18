@@ -31,9 +31,10 @@ import { Route } from "next";
 
 type Props = {
   lists: ObjektList[];
+  nickname: string;
 };
 
-export default function ObjektLists({ lists }: Props) {
+export default function ObjektLists({ lists, nickname }: Props) {
   const { toast } = useToast();
 
   const [isPending, startTransition] = useTransition();
@@ -63,7 +64,7 @@ export default function ObjektLists({ lists }: Props) {
             {lists.map((list) => (
               <DropdownMenuItem key={list.id} className="text-sm truncate">
                 <Link
-                  href={`/@Kairu/list/${list.slug}` as Route}
+                  href={`/@${nickname}/list/${list.slug}` as Route}
                   className="w-full flex items-center justify-between"
                 >
                   {list.name}
