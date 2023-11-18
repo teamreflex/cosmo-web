@@ -15,32 +15,13 @@ import {
 import { addObjektToList } from "./actions";
 import { useToast } from "../ui/use-toast";
 
-type Props = {
+type AddToListProps = {
   objekt: IndexedObjekt;
   lists: ObjektList[];
 };
 
-export default function AddToList({ objekt, lists }: Props) {
-  const { toast } = useToast();
+export default function AddToList({ objekt, lists }: AddToListProps) {
   const [open, setOpen] = useState(false);
-  const [isPending, startTransition] = useTransition();
-
-  function submit(event: MouseEvent<HTMLButtonElement>, list: ObjektList) {
-    event.preventDefault();
-
-    startTransition(async () => {
-      const result = await addObjektToList({
-        listId: list.id,
-        objektId: Number(objekt.id),
-      });
-      if (result.success && result.data) {
-        toast({
-          description: `Added ${objekt.collectionId} to ${list.name}`,
-        });
-      }
-      setOpen(false);
-    });
-  }
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -58,20 +39,57 @@ export default function AddToList({ objekt, lists }: Props) {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           {lists.map((list) => (
-            <DropdownMenuItem key={list.id} className="text-sm truncate">
-              <button
-                onClick={(e) => submit(e, list)}
-                disabled={isPending}
-                className="w-full flex items-center justify-between"
-                aria-label="Add objekt to list"
-              >
-                {list.name}
-                {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-              </button>
-            </DropdownMenuItem>
+            <ListItem
+              key={list.id}
+              objekt={objekt}
+              list={list}
+              onDone={() => setOpen(false)}
+            />
           ))}
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+type ListItemProps = {
+  objekt: IndexedObjekt;
+  list: ObjektList;
+  onDone: () => void;
+};
+
+function ListItem({ objekt, list, onDone }: ListItemProps) {
+  const { toast } = useToast();
+  const [isPending, startTransition] = useTransition();
+
+  function submit(event: MouseEvent<HTMLButtonElement>) {
+    event.preventDefault();
+
+    startTransition(async () => {
+      const result = await addObjektToList({
+        listId: list.id,
+        objektId: Number(objekt.id),
+      });
+      if (result.success && result.data) {
+        toast({
+          description: `Added ${objekt.collectionId} to ${list.name}`,
+        });
+      }
+      onDone();
+    });
+  }
+
+  return (
+    <DropdownMenuItem className="text-sm truncate">
+      <button
+        onClick={submit}
+        disabled={isPending}
+        className="w-full flex items-center justify-between"
+        aria-label="Add objekt to list"
+      >
+        {list.name}
+        {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+      </button>
+    </DropdownMenuItem>
   );
 }
