@@ -21,7 +21,7 @@ import {
 import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
 import { toSearchParams } from "@/hooks/use-typed-search-params";
 import ObjektSidebar from "../objekt/objekt-sidebar";
-import ListOverlay from "../lists/list-overlay";
+import IndexOverlay from "./index-overlay";
 
 export type PropsWithFilters<T extends keyof CollectionFilters> = {
   filters: CollectionFilters[T];
@@ -114,7 +114,7 @@ export default function IndexRenderer({
         objektSlot={
           <>
             <ObjektSidebar />
-            {authenticated && <ListOverlay lists={objektLists} />}
+            {authenticated && <IndexOverlay lists={objektLists} />}
           </>
         }
       />

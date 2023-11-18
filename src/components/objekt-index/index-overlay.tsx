@@ -4,15 +4,14 @@ import { cn } from "@/lib/utils";
 import { useContext } from "react";
 import { ObjektContext } from "../objekt/util";
 import { IndexedObjekt, ObjektList } from "@/lib/universal/objekt-index";
+import AddToList from "../lists/add-to-list";
 import OverlayStatus from "../objekt/overlay-status";
-import RemoveFromList from "./remove-from-list";
 
 type Props = {
-  list: ObjektList;
-  onRemove: (objekt: IndexedObjekt) => void;
+  lists: ObjektList[];
 };
 
-export default function ListOverlay({ list, onRemove }: Props) {
+export default function IndexOverlay({ lists }: Props) {
   const { objekt } = useContext(ObjektContext) as ObjektContext<IndexedObjekt>;
 
   return (
@@ -25,13 +24,13 @@ export default function ListOverlay({ list, onRemove }: Props) {
     >
       {/* buttons */}
       <div className="flex items-center gap-2">
-        {/* remove from list */}
-        <RemoveFromList objekt={objekt} list={list} onRemove={onRemove} />
+        {/* add to list */}
+        <AddToList objekt={objekt} lists={lists} />
       </div>
 
       {/* status text */}
       <div className="text-xs whitespace-nowrap max-w-0 group-hover:max-w-[12rem] overflow-hidden transition-all">
-        <OverlayStatus>Remove from List</OverlayStatus>
+        <OverlayStatus>Add to List</OverlayStatus>
       </div>
     </div>
   );

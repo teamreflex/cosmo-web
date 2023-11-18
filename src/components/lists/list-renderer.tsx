@@ -19,6 +19,8 @@ import {
 import { toSearchParams } from "@/hooks/use-typed-search-params";
 import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
 import ObjektSidebar from "../objekt/objekt-sidebar";
+import ListOverlay from "./list-overlay";
+import { useQueryClient } from "react-query";
 
 type Props = {
   list: ObjektList;
@@ -26,8 +28,11 @@ type Props = {
   authenticated: boolean;
 };
 export default function ListRenderer({ list, artists, authenticated }: Props) {
+  const queryClient = useQueryClient();
   const [showFilters, setShowFilters, filters, setFilters, updateFilter] =
     useCollectionFilters();
+
+  const queryKey = `objekt-list::${list.slug}`;
 
   async function fetcher({ pageParam = 0 }) {
     const searchParams = toSearchParams<typeof collectionFilters>(
@@ -39,6 +44,10 @@ export default function ListRenderer({ list, artists, authenticated }: Props) {
 
     const result = await fetch(`/api/objekts?${searchParams.toString()}`);
     return (await result.json()) as IndexedCosmoResponse;
+  }
+
+  function onRemove(objekt: IndexedObjekt) {
+    queryClient.invalidateQueries([queryKey, filters]);
   }
 
   return (
@@ -92,10 +101,15 @@ export default function ListRenderer({ list, artists, authenticated }: Props) {
         setFilters={setFilters}
         authenticated={authenticated}
         queryFunction={fetcher}
-        queryKey={`objekt-list::${list.slug}`}
+        queryKey={queryKey}
         getObjektId={(objekt: IndexedObjekt) => objekt.id}
         getObjektDisplay={() => true}
-        objektSlot={<ObjektSidebar />}
+        objektSlot={
+          <>
+            <ObjektSidebar />
+            <ListOverlay list={list} onRemove={onRemove} />
+          </>
+        }
       />
     </main>
   );

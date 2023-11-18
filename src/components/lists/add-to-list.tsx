@@ -31,7 +31,6 @@ export default function AddToList({ objekt, lists }: Props) {
         listId: list.id,
         objektId: Number(objekt.id),
       });
-      console.log(result);
       if (result.success && result.data) {
         toast({
           description: `Added ${objekt.collectionId} to ${list.name}`,
