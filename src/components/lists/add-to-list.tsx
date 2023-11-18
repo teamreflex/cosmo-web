@@ -2,7 +2,7 @@
 
 import { IndexedObjekt, ObjektList } from "@/lib/universal/objekt-index";
 import { ListPlus, Loader2 } from "lucide-react";
-import { useState, useTransition } from "react";
+import { MouseEvent, useState, useTransition } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,7 +25,9 @@ export default function AddToList({ objekt, lists }: Props) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
-  function submit(list: ObjektList) {
+  function submit(event: MouseEvent<HTMLButtonElement>, list: ObjektList) {
+    event.preventDefault();
+
     startTransition(async () => {
       const result = await addObjektToList({
         listId: list.id,
@@ -41,7 +43,7 @@ export default function AddToList({ objekt, lists }: Props) {
   }
 
   return (
-    <DropdownMenu open={open}>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <button
           onClick={() => setOpen((state) => !state)}
@@ -58,7 +60,7 @@ export default function AddToList({ objekt, lists }: Props) {
           {lists.map((list) => (
             <DropdownMenuItem key={list.id} className="text-sm truncate">
               <button
-                onClick={() => submit(list)}
+                onClick={(e) => submit(e, list)}
                 disabled={isPending}
                 className="w-full flex items-center justify-between"
                 aria-label="Add objekt to list"

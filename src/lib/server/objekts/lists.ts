@@ -18,11 +18,10 @@ export async function fetchObjektLists(address: string): Promise<ObjektList[]> {
 /**
  * Fetch a single list.
  */
-export async function fetchObjektList(slug: string): Promise<ObjektList> {
+export async function fetchObjektList(
+  slug: string
+): Promise<ObjektList | undefined> {
   const rows = await db.select().from(lists).where(eq(lists.slug, slug));
-  if (rows.length === 0) {
-    throw new Error(`ObjektList "${slug}" not found`);
-  }
   return rows[0];
 }
 
@@ -64,6 +63,10 @@ export async function updateObjektList(payload: UpdateObjektList) {
  * Delete an objekt list.
  */
 export async function deleteObjektList(id: number, address: string) {
+  // delete all entries first
+  await db.delete(listEntries).where(eq(listEntries.listId, id));
+
+  // then delete the list
   const row = await db
     .delete(lists)
     .where(and(eq(lists.id, id), eq(lists.userAddress, address)));

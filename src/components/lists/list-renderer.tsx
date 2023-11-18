@@ -21,6 +21,7 @@ import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
 import ObjektSidebar from "../objekt/objekt-sidebar";
 import ListOverlay from "./list-overlay";
 import { useQueryClient } from "react-query";
+import DeleteList from "./delete-list";
 
 type Props = {
   list: ObjektList;
@@ -63,7 +64,11 @@ export default function ListRenderer({ list, artists, authenticated }: Props) {
           </div>
 
           {/* list-related buttons */}
-          {authenticated && <div>edit/delete</div>}
+          {authenticated && (
+            <div className="flex gap-2">
+              <DeleteList list={list} />
+            </div>
+          )}
 
           {/* mobile: options */}
           <div className="flex sm:hidden items-center gap-2">
