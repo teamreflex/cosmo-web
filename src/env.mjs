@@ -4,7 +4,7 @@ import { z } from "zod";
 export const env = createEnv({
   server: {
     // cookie behavior changes depending on env
-    VERCEL_ENV: z.enum(["development", "production"]),
+    VERCEL_ENV: z.enum(["development", "production", "preview"]),
     // used for signing cookies
     JWT_SECRET: z.string().min(1),
     // vercel kv/redis
