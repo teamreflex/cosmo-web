@@ -22,6 +22,7 @@ import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
 import { toSearchParams } from "@/hooks/use-typed-search-params";
 import ObjektSidebar from "../objekt/objekt-sidebar";
 import IndexOverlay from "./index-overlay";
+import HelpDialog from "./help-dialog";
 
 export type PropsWithFilters<T extends keyof CollectionFilters> = {
   filters: CollectionFilters[T];
@@ -65,6 +66,7 @@ export default function IndexRenderer({
             <h1 className="text-3xl font-cosmo uppercase drop-shadow-lg">
               Objekts
             </h1>
+            <HelpDialog />
           </div>
 
           <div className="flex gap-2 items-center">

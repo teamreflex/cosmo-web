@@ -5,7 +5,6 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { env } from "@/env.mjs";
@@ -34,7 +33,9 @@ export default function HelpDialog() {
             <div className="flex flex-col gap-4">
               {/* objekt locking */}
               <div className="flex flex-col gap-1">
-                <h3 className="text-white text-xl font-bold">Objekt Locking</h3>
+                <h3 className="text-white text-lg font-semibold">
+                  Objekt Locking
+                </h3>
                 <p>
                   Locking an objekt hides the send button, allowing you to mark
                   anything you don&apos;t want to accidentally send or to
@@ -48,7 +49,7 @@ export default function HelpDialog() {
 
               {/* indicators */}
               <div className="flex flex-col gap-1">
-                <h3 className="text-white text-xl font-bold">Indicators</h3>
+                <h3 className="text-white text-lg font-semibold">Indicators</h3>
                 <p>
                   Different indicators in the top left denote different statuses
                   of an objekt.
