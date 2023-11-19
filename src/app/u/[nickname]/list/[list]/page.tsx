@@ -52,6 +52,7 @@ export default async function ObjektListPage({ params }: Props) {
         list={list}
         artists={artists}
         authenticated={authenticated}
+        user={user.nickname}
       />
     </Suspense>
   );

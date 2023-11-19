@@ -39,7 +39,7 @@ export default function DeleteList({ list }: Props) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive">
+        <Button variant="destructive" size="sm">
           <Trash />
         </Button>
       </AlertDialogTrigger>

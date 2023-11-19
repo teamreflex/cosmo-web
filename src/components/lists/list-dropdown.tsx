@@ -20,7 +20,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
-import { ChevronRight, Loader2, PlusCircle } from "lucide-react";
+import { ChevronRight, List, Loader2, PlusCircle } from "lucide-react";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { create } from "./actions";
@@ -55,7 +55,10 @@ export default function ListDropdown({ lists, nickname }: Props) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline">View Lists</Button>
+          <Button variant="outline" size="sm">
+            <List />
+            <span className="ml-2 hidden sm:block">View Lists</span>
+          </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-40 max-h-48">
           <DropdownMenuLabel>Objekt Lists</DropdownMenuLabel>

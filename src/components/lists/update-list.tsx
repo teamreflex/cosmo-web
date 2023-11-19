@@ -42,7 +42,7 @@ export default function UpdateList({ list }: Props) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="ghost">
+        <Button variant="ghost" size="sm">
           <Edit />
         </Button>
       </DialogTrigger>

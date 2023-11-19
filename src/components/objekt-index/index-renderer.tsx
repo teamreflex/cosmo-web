@@ -67,22 +67,25 @@ export default function IndexRenderer({
             </h1>
           </div>
 
-          {/* objekt list button */}
-          {authenticated && (
-            <ListDropdown lists={objektLists} nickname={nickname} />
-          )}
+          <div className="flex gap-2 items-center">
+            {/* objekt list button */}
+            {authenticated && (
+              <ListDropdown lists={objektLists} nickname={nickname} />
+            )}
 
-          {/* mobile: options */}
-          <div className="flex sm:hidden items-center gap-2">
-            {/* show filters */}
-            <Toggle pressed={showFilters} onPressedChange={setShowFilters}>
+            {/* mobile: filters */}
+            <Toggle
+              pressed={showFilters}
+              onPressedChange={setShowFilters}
+              className="block sm:hidden"
+            >
               <SlidersHorizontal className="drop-shadow-lg" />
             </Toggle>
           </div>
         </div>
 
         {/* filters */}
-        <div className="transition-all flex sm:group-data-[show=false]:visible sm:group-data-[show=true]:visible sm:group-data-[show=false]:opacity-100 sm:group-data-[show=true]:opacity-100 group-data-[show=true]:pb-2 sm:pb-1 sm:group-data-[show=false]:h-fit sm:group-data-[show=true]:h-fit group-data-[show=false]:h-0 group-data-[show=false]:invisible group-data-[show=false]:opacity-0 group-data-[show=true]:h-36 gap-2 items-center flex-wrap justify-center">
+        <div className="transition-all flex sm:group-data-[show=false]:visible sm:group-data-[show=true]:visible sm:group-data-[show=false]:opacity-100 sm:group-data-[show=true]:opacity-100 group-data-[show=true]:pb-2 sm:pb-1 sm:group-data-[show=false]:h-fit sm:group-data-[show=true]:h-fit group-data-[show=false]:h-0 group-data-[show=false]:invisible group-data-[show=false]:opacity-0 group-data-[show=true]:h-24 gap-2 items-center flex-wrap justify-center">
           <SeasonFilter
             filters={filters.season}
             setFilters={(f) => updateFilter("season", f)}

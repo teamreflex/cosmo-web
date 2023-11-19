@@ -1,7 +1,7 @@
 "use client";
 
 import { IndexedObjekt, ObjektList } from "@/lib/universal/objekt-index";
-import { ListPlus, Loader2 } from "lucide-react";
+import { ListPlus, Loader2, Plus } from "lucide-react";
 import { MouseEvent, useState, useTransition } from "react";
 import {
   DropdownMenu,
@@ -80,7 +80,7 @@ function ListItem({ objekt, list, onDone }: ListItemProps) {
   }
 
   return (
-    <DropdownMenuItem className="text-sm truncate">
+    <DropdownMenuItem className="text-sm truncate group">
       <button
         onClick={submit}
         disabled={isPending}
@@ -88,7 +88,11 @@ function ListItem({ objekt, list, onDone }: ListItemProps) {
         aria-label="Add objekt to list"
       >
         {list.name}
-        {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+        {isPending ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <Plus className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all" />
+        )}
       </button>
     </DropdownMenuItem>
   );
