@@ -1,8 +1,6 @@
 "use client";
 
-import ObjektList from "@/components/collection/objekt-list";
 import { SlidersHorizontal } from "lucide-react";
-import { useState } from "react";
 import { ClassFilter } from "./filter-class";
 import { OnlineFilter } from "./filter-online";
 import { SeasonFilter } from "./filter-season";
@@ -21,6 +19,7 @@ import {
   CollectionFilters,
   useCollectionFilters,
 } from "@/hooks/use-collection-filters";
+import CollectionObjektDisplay from "./collection-objekt-display";
 
 export type PropsWithFilters<T extends keyof CollectionFilters> = {
   filters: CollectionFilters[T];
@@ -111,7 +110,7 @@ export default function CollectionRenderer({
         </div>
       </div>
 
-      <ObjektList
+      <CollectionObjektDisplay
         authenticated={nickname === undefined}
         address={address}
         lockedTokenIds={locked}

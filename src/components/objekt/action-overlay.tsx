@@ -8,6 +8,7 @@ import { PropsWithChildren, useContext } from "react";
 import SendObjekt from "./send-button";
 import LockObjekt from "./lock-button";
 import { ObjektContext } from "./util";
+import OverlayStatus from "./overlay-status";
 
 export default function ActionOverlay() {
   const { objekt, authenticated } = useContext(
@@ -78,25 +79,21 @@ export default function ActionOverlay() {
       {/* status text */}
       <div className="text-xs whitespace-nowrap max-w-0 group-hover:max-w-[12rem] overflow-hidden transition-all">
         {!objekt.nonTransferableReason && isLocked && (
-          <StatusText>Locked</StatusText>
+          <OverlayStatus>Locked</OverlayStatus>
         )}
         {objekt.nonTransferableReason === "mint-pending" && (
-          <StatusText>Mint pending</StatusText>
+          <OverlayStatus>Mint pending</OverlayStatus>
         )}
         {objekt.nonTransferableReason === "challenge-reward" && (
-          <StatusText>Event reward</StatusText>
+          <OverlayStatus>Event reward</OverlayStatus>
         )}
         {objekt.nonTransferableReason === "welcome-objekt" && (
-          <StatusText>Welcome reward</StatusText>
+          <OverlayStatus>Welcome reward</OverlayStatus>
         )}
         {objekt.nonTransferableReason === "used-for-grid" && (
-          <StatusText>Used for grid</StatusText>
+          <OverlayStatus>Used for grid</OverlayStatus>
         )}
       </div>
     </div>
   );
-}
-
-function StatusText({ children }: PropsWithChildren) {
-  return <p className="pl-2">{children}</p>;
 }

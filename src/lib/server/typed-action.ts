@@ -27,7 +27,10 @@ export async function typedAction<TResponse, TSchema extends z.AnyZodObject>(
     form instanceof FormData ? Object.fromEntries(form.entries()) : form;
   const result = schema.safeParse(input);
   if (!result.success) {
-    return { success: false, error: "Invalid action input" };
+    return {
+      success: false,
+      error: result.error.issues.map((i) => i.message).join("\n"),
+    };
   }
 
   try {

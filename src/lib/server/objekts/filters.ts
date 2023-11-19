@@ -8,6 +8,8 @@ import {
 import { asc, desc, eq, inArray } from "drizzle-orm";
 import { PgSelect } from "drizzle-orm/pg-core";
 import { objekts } from "../db/indexer/schema";
+import { fetchObjektListWithEntries } from ".";
+import { ObjektList } from "@/lib/universal/objekt-index";
 
 export function withSort<T extends PgSelect>(qb: T, sort: ValidSort) {
   switch (sort) {
@@ -61,4 +63,12 @@ export function withMember(member: string | null | undefined) {
 
 export function withArtist(artist: ValidArtist | undefined) {
   return artist ? [eq(objekts.artist, artist)] : [];
+}
+
+export async function withObjektListEntries(entries: number[]) {
+  if (entries.length === 0) {
+    return [];
+  }
+
+  return [inArray(objekts.id, entries)];
 }

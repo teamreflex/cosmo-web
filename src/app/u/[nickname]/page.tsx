@@ -1,10 +1,12 @@
 import { Metadata } from "next";
 import { Suspense } from "react";
-import UserCollectionRenderer from "@/components/user-collection/user-collection-renderer";
 import { search } from "@/lib/server/cosmo";
 import { notFound } from "next/navigation";
-import OtherCollectionLoading from "./loading";
+import UserCollectionLoading from "./loading";
 import { isAddress } from "ethers/lib/utils";
+import { cacheMembers } from "@/lib/server/cache";
+import CollectionRenderer from "@/components/collection/collection-renderer";
+import { fetchLockedObjekts } from "@/lib/server/collection";
 
 export const runtime = "edge";
 
@@ -21,10 +23,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function OtherCollectionPage({ params }: Props) {
+export default async function UserCollectionPage({ params }: Props) {
   if (isAddress(params.nickname)) {
     return (
-      <Suspense fallback={<OtherCollectionLoading />}>
+      <Suspense fallback={<UserCollectionLoading />}>
         <UserCollectionRenderer
           nickname={params.nickname.substring(0, 6)}
           address={params.nickname}
@@ -41,8 +43,34 @@ export default async function OtherCollectionPage({ params }: Props) {
   if (!user) notFound();
 
   return (
-    <Suspense fallback={<OtherCollectionLoading />}>
+    <Suspense fallback={<UserCollectionLoading />}>
       <UserCollectionRenderer nickname={user.nickname} address={user.address} />
     </Suspense>
+  );
+}
+
+type UserCollectionProps = {
+  nickname: string;
+  address: string;
+};
+
+async function UserCollectionRenderer({
+  nickname,
+  address,
+}: UserCollectionProps) {
+  const [lockedObjekts, artists] = await Promise.all([
+    fetchLockedObjekts(address),
+    cacheMembers(),
+  ]);
+
+  return (
+    <main className="container flex flex-col py-2">
+      <CollectionRenderer
+        locked={lockedObjekts}
+        artists={artists}
+        nickname={nickname}
+        address={address}
+      />
+    </main>
   );
 }

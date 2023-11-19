@@ -4,7 +4,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Copy, Link2, Share } from "lucide-react";
+import { Copy, Link2, Share2 } from "lucide-react";
 import Link from "next/link";
 import PolygonLogo from "@/assets/polygon.svg";
 import OpenSeaLogo from "@/assets/opensea.svg";
@@ -32,7 +32,7 @@ export default function MobileOptions({ address }: { address: string }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
-        <Share />
+        <Share2 />
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         {/* copy profile */}

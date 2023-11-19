@@ -55,6 +55,7 @@ This project aims to build a web based version of [Modhaus](https://www.mod-haus
     - Cosmo ID or Polygon address can be used
     - Filter state is stored in the URL for sharing
   - Indexing of all released objekts
+  - Wishlist builder
 
 </details>
 

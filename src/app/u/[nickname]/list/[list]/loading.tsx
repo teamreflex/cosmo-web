@@ -1,7 +1,7 @@
 import { Loader } from "@/components/loader";
 import { PropsWithClassName, cn } from "@/lib/utils";
 
-export default function UserCollectionLoading() {
+export default function ObjektListLoading() {
   return (
     <div className="container flex flex-col py-2">
       <div className="flex flex-col sm:gap-2 group" data-show={false}>
@@ -10,16 +10,6 @@ export default function UserCollectionLoading() {
           {/* title */}
           <div className="flex gap-2 items-center">
             <Skeleton className="w-48 h-10" />
-          </div>
-
-          {/* desktop: options */}
-          <div className="hidden sm:flex items-center gap-2">
-            {/* copy address button */}
-            <Skeleton className="w-24 h-10" />
-            {/* polygon button */}
-            <Skeleton className="w-24 h-10" />
-            {/* opensea button */}
-            <Skeleton className="w-24 h-10" />
           </div>
 
           {/* mobile: options */}
