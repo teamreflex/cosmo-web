@@ -114,7 +114,7 @@ export default function ListRenderer({ list, artists, authenticated }: Props) {
         objektSlot={
           <>
             <ObjektSidebar />
-            <ListOverlay list={list} onRemove={onRemove} />
+            {authenticated && <ListOverlay list={list} onRemove={onRemove} />}
           </>
         }
       />
