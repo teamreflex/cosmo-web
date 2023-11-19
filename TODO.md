@@ -23,9 +23,6 @@
 
 - Add edition/collectionNo filters
   - should probably add a generated column for this on the indexer side
-- Wishlist creator?
-  - select a member, add and remove objekts at will kinda like instagram wishlists
-  - could be used as a looking to trade list if it weren't named "wishlists"
 - Add caching
   - `unstable_cache` + webhook for invalidation? redis?
 
