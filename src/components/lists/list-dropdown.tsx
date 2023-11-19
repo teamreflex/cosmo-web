@@ -40,14 +40,19 @@ export default function ListDropdown({ lists, nickname }: Props) {
   const [isPending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
+  const [error, setError] = useState("");
 
   function submit() {
     startTransition(async () => {
-      await create({ name });
-      setOpen(false);
-      toast({
-        description: "Objekt list created!",
-      });
+      const result = await create({ name });
+      if (result.success) {
+        setOpen(false);
+        toast({
+          description: "Objekt list created!",
+        });
+      } else {
+        setError(result.error);
+      }
     });
   }
 
@@ -85,32 +90,35 @@ export default function ListDropdown({ lists, nickname }: Props) {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Create Objekt List</DialogTitle>
-          <DialogDescription>
-            You can add objekts to the list later.
-          </DialogDescription>
-        </DialogHeader>
-        <form className="w-full flex flex-col gap-1">
-          <Label htmlFor="name">Name</Label>
-          <Input
-            type="text"
-            autoComplete="off"
-            maxLength={24}
-            onInput={(e) => setName(e.currentTarget.value)}
-            id="name"
-            placeholder="Want To Trade"
-            data-1p-ignore
-          />
-        </form>
-        <DialogFooter>
-          <Button type="submit" disabled={isPending} onClick={submit}>
-            {isPending ? "Saving..." : "Save"}
-            {isPending && <Loader2 className="ml-2 animate-spin" />}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
+      <form>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Create Objekt List</DialogTitle>
+            <DialogDescription>
+              You can add objekts to the list later.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="w-full flex flex-col gap-1">
+            <Label htmlFor="name">Name</Label>
+            <Input
+              type="text"
+              autoComplete="off"
+              maxLength={24}
+              onInput={(e) => setName(e.currentTarget.value)}
+              id="name"
+              placeholder="Want To Trade"
+              data-1p-ignore
+            />
+            <p className="text-red-500 text-sm font-semibold">{error}</p>
+          </div>
+          <DialogFooter>
+            <Button type="submit" disabled={isPending} onClick={submit}>
+              {isPending ? "Saving..." : "Save"}
+              {isPending && <Loader2 className="ml-2 animate-spin" />}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </form>
     </Dialog>
   );
 }

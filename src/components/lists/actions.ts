@@ -26,7 +26,10 @@ function createSlug(name: string) {
 export const create = async (form: { name: string }) =>
   authenticatedAction(
     z.object({
-      name: z.string().max(24),
+      name: z
+        .string()
+        .min(3, "Name must be at least 3 characters long")
+        .max(24, "Name cannot be longer than 24 characters"),
     }),
     form,
     async ({ name }, user) => {
@@ -47,7 +50,10 @@ export const update = async (form: { id: number; name: string }) =>
   authenticatedAction(
     z.object({
       id: z.number(),
-      name: z.string().max(24),
+      name: z
+        .string()
+        .min(3, "Name must be at least 3 characters long")
+        .max(24, "Name cannot be longer than 24 characters"),
     }),
     form,
     async ({ id, name }, user) => {
