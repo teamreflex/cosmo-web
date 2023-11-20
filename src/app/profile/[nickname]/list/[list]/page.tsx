@@ -22,7 +22,6 @@ const fetchData = cache((nickname: string, list: string) =>
 );
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  console.log(params);
   const [users, list] = await fetchData(params.nickname, params.list);
   const user = users.find(
     (u) => u.nickname.toLowerCase() === params.nickname.toLowerCase()

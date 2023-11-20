@@ -77,11 +77,7 @@ export default function ListRenderer({
           <div className="flex gap-2 items-center">
             {/* profile link */}
             <Button variant="outline" size="sm" asChild>
-              <Link
-                href={`/@${user}` as Route}
-                className="flex items-center"
-                // prefetch={false}
-              >
+              <Link href={`/@${user}` as Route} className="flex items-center">
                 <User />
                 <span className="ml-2 hidden sm:block">View Profile</span>
               </Link>
