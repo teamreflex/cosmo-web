@@ -15,6 +15,7 @@ type Props = {
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  console.log(params);
   const name = isAddress(params.nickname)
     ? params.nickname.substring(0, 6)
     : params.nickname;

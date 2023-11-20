@@ -80,7 +80,7 @@ export default function ListRenderer({
               <Link
                 href={`/@${user}` as Route}
                 className="flex items-center"
-                prefetch={false}
+                // prefetch={false}
               >
                 <User />
                 <span className="ml-2 hidden sm:block">View Profile</span>

@@ -16,17 +16,19 @@ const config = {
     return config;
   },
 
-  rewrites() {
-    return [
-      {
-        source: "/@:nickname",
-        destination: "/u/:nickname",
-      },
-      {
-        source: "/@:nickname/list/:list",
-        destination: "/u/:nickname/list/:list",
-      },
-    ];
+  async rewrites() {
+    return {
+      beforeFiles: [
+        {
+          source: "/@:nickname/list/:list",
+          destination: "/profile/:nickname/list/:list",
+        },
+        {
+          source: "/@:nickname",
+          destination: "/profile/:nickname",
+        },
+      ],
+    };
   },
 
   images: {

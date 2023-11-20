@@ -42,3 +42,4 @@
 - Fix searchbox blur
 - Fix `useContext` error (might be local-only?)
 - Fix "Kairu.prefetch's Collection" error when routing from list to profile
+  - actual TODO: add refetching back once the bug is fixed
