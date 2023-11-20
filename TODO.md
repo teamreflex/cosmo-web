@@ -1,3 +1,9 @@
+## Bugs
+
+- Fix searchbox blur
+- Fix `useContext` error
+  - might be local-only?
+
 ### Grid
 
 - Look into grid submission recovery
@@ -13,9 +19,8 @@
 
 ### COMO Calendar
 
-- Redo indexer to save transfers rather than calculate based on the day of the month
-  - incr/decr based on the day doesn't work due to UTC/timezone differences
-  - saving all transfers and letting the client calculate it probably works better
+- Switch pg details over to new server once it's done indexing
+- Implement day calculation based on transfers
 - Experiment with UI design for it
   - leading candidate: Tailwind UI's calendar component
 
@@ -36,10 +41,3 @@
 
 - Set a favorite objekt?
 - Set a favorite member?
-
-### Bugs
-
-- Fix searchbox blur
-- Fix `useContext` error (might be local-only?)
-- Fix "Kairu.prefetch's Collection" error when routing from list to profile
-  - actual TODO: add refetching back once the bug is fixed
