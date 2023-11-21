@@ -44,9 +44,7 @@ export default function ApolloLogo({
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>
-            {env.NEXT_PUBLIC_APP_NAME} v{env.NEXT_PUBLIC_APP_VERSION}
-          </AlertDialogTitle>
+          <AlertDialogTitle>{env.NEXT_PUBLIC_APP_NAME}</AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div className="flex flex-col gap-2">
               <p>

@@ -48,14 +48,14 @@ This project aims to build a web based version of [Modhaus](https://www.mod-haus
 <details>
   <summary><b>New Features</b></summary>
 
-- Objekts/COMO
-  - "lock" an objekt to prevent it from being sent to another user (like the Superstar games)
-  - Fetching other user's collections
-    - Includes user search box with recent history
-    - Cosmo ID or Polygon address can be used
-    - Filter state is stored in the URL for sharing
-  - Indexing of all released objekts
-  - Wishlist builder
+- "lock" an objekt to prevent it from being sent to another user (like the Superstar games)
+- Fetching other user's collections
+  - Includes user search box with recent history
+  - Cosmo ID or Polygon address can be used
+  - Filter state is stored in the URL for sharing
+- Indexing of all released objekts
+- Wishlist builder
+- COMO drop calendar
 
 </details>
 
