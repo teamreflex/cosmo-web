@@ -8,8 +8,6 @@ import {
 import { asc, desc, eq, inArray } from "drizzle-orm";
 import { PgSelect } from "drizzle-orm/pg-core";
 import { objekts } from "../db/indexer/schema";
-import { fetchObjektListWithEntries } from ".";
-import { ObjektList } from "@/lib/universal/objekt-index";
 
 export function withSort<T extends PgSelect>(qb: T, sort: ValidSort) {
   switch (sort) {
@@ -51,9 +49,9 @@ export function withOnlineType(onlineTypes: ValidOnlineType[]) {
     case 0:
       return [];
     case 1:
-      return [eq(objekts.on_offline, onlineTypes[0])];
+      return [eq(objekts.onOffline, onlineTypes[0])];
     default:
-      return [inArray(objekts.on_offline, onlineTypes)];
+      return [inArray(objekts.onOffline, onlineTypes)];
   }
 }
 

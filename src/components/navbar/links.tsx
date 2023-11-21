@@ -7,6 +7,7 @@ import {
   Vote,
   LibraryBig,
   Menu,
+  CalendarRange,
 } from "lucide-react";
 import Link from "next/link";
 import NavbarSearch from "./navbar-search";
@@ -30,6 +31,7 @@ const links = [
     href: "/collection",
     segment: "collection",
   },
+  { name: "COMO", icon: CalendarRange, href: "/como", segment: "como" },
   { name: "Grid", icon: LayoutGrid, href: "/grid", segment: "grid" },
 ];
 

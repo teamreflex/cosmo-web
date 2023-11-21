@@ -17,13 +17,6 @@
 - Implement combination poll display
 - Clean up poll result display for multi-poll gravities
 
-### COMO Calendar
-
-- Switch pg details over to new server once it's done indexing
-- Implement day calculation based on transfers
-- Experiment with UI design for it
-  - leading candidate: Tailwind UI's calendar component
-
 ### Objekts Index
 
 - Add edition/collectionNo filters
