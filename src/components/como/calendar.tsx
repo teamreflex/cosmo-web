@@ -1,10 +1,9 @@
 "use client";
 
 import { TransferObjekt, buildCalendar, getDays } from "@/lib/universal/como";
-import { CosmoArtist, ValidArtist } from "@/lib/universal/cosmo";
+import { CosmoArtist } from "@/lib/universal/cosmo";
 import { cn } from "@/lib/utils";
-import { Moon, Sparkle } from "lucide-react";
-import { ReactNode } from "react";
+import ArtistIcon from "../artist-icon";
 
 type Props = {
   artists: CosmoArtist[];
@@ -20,15 +19,6 @@ const remainder = Array.from(
   { length: startOffset === 6 ? 6 : 5 - startOffset },
   (_, i) => i + 1
 );
-
-const map: Record<ValidArtist, ReactNode> = {
-  artms: (
-    <Moon className="ring-1 p-px w-4 h-4 rounded-full text-teal-400 fill-teal-400 ring-teal-400" />
-  ),
-  tripleS: (
-    <Sparkle className="ring-1 p-px w-4 h-4 rounded-full text-purple-300 fill-purple-300 ring-purple-300" />
-  ),
-};
 
 export default function ComoCalendar({ artists, transfers }: Props) {
   const calendar = buildCalendar(transfers);
@@ -73,7 +63,7 @@ export default function ComoCalendar({ artists, transfers }: Props) {
                 )
                 .map((a) => (
                   <div key={a.name} className="flex items-center gap-2">
-                    {map[a.name as ValidArtist]}
+                    <ArtistIcon artist={a.name} />
                     <span>
                       {calendar[day]?.[a.contracts.Objekt.toLowerCase()] ?? 0}
                     </span>

@@ -5,6 +5,7 @@ import { fetchSpecialTransfers } from "@/lib/server/como";
 import ComoCalendar from "@/components/como/calendar";
 import CurrentMonth from "@/components/como/current-month";
 import HelpDialog from "@/components/como/help-dialog";
+import ArtistIcon from "@/components/artist-icon";
 
 export const runtime = "nodejs";
 export const metadata: Metadata = {
@@ -19,6 +20,18 @@ export default async function ComoPage() {
     fetchSpecialTransfers(user!.address),
   ]);
 
+  const totals = artists.map((artist) => {
+    const total = transfers
+      .filter(
+        (t) => t.objekt.contract === artist.contracts.Objekt.toLowerCase()
+      )
+      .reduce((sum, transfer) => {
+        return sum + transfer.objekt.comoAmount;
+      }, 0);
+
+    return { artist, total };
+  });
+
   return (
     <main className="container flex flex-col gap-2 py-2">
       <div className="flex items-center">
@@ -26,6 +39,15 @@ export default async function ComoPage() {
           <div className="flex items-center gap-2">
             <h1 className="text-3xl font-cosmo uppercase">COMO</h1>
             <HelpDialog />
+          </div>
+
+          <div className="flex items-center gap-2">
+            {totals.map((total) => (
+              <div className="flex items-center gap-1" key={total.artist.name}>
+                <ArtistIcon artist={total.artist.name} />
+                <span className="font-semibold">+{total.total}</span>
+              </div>
+            ))}
           </div>
 
           <CurrentMonth />
