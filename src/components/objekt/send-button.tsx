@@ -37,6 +37,7 @@ import {
 import { UserSearch } from "../user-search";
 import { trackEvent } from "fathom-client";
 import Link from "next/link";
+import ObjektSidebar from "./objekt-sidebar";
 
 type Props = {
   objekt: OwnedObjekt;
@@ -187,7 +188,9 @@ export default function SendObjekt({ objekt }: Props) {
             {/* show preview before sending */}
             {transactionProgress === TransactionStatus.WAITING && (
               <div className="flex flex-col gap-4 justify-center items-center">
-                <Objekt objekt={objekt} authenticated={false} />
+                <Objekt objekt={objekt} authenticated={false}>
+                  <ObjektSidebar />
+                </Objekt>
               </div>
             )}
 
