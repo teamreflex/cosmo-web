@@ -4,6 +4,7 @@ import {
   fetchObjektListWithEntries,
   withArtist,
   withClass,
+  withCollections,
   withMember,
   withObjektListEntries,
   withOnlineType,
@@ -55,6 +56,7 @@ export async function GET(request: NextRequest) {
           ...withSeason(filters.season),
           ...withOnlineType(filters.on_offline),
           ...withMember(filters.member),
+          ...withCollections(filters.collectionNo),
         ]
       )
     )
@@ -87,5 +89,6 @@ function parseParams(params: URLSearchParams) {
     artist: params.has("artist")
       ? (params.get("artist") as ValidArtist)
       : undefined,
+    collectionNo: params.getAll("collectionNo"),
   };
 }

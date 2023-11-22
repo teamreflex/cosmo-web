@@ -27,7 +27,10 @@ export const collectionFilters = z.object({
   transferable: z.boolean().optional(),
   gridable: z.boolean().optional(),
   used_for_grid: z.boolean().optional(),
+  // grid param: "Atom01 JinSoul 101Z"
   collection: z.string().optional(),
+  // index param: ["101Z", "102Z"]
+  collectionNo: z.string().array().optional(),
 });
 
 export type CollectionFilters = z.infer<typeof collectionFilters>;

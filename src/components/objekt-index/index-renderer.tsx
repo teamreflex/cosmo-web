@@ -4,7 +4,6 @@ import { SlidersHorizontal } from "lucide-react";
 import { Toggle } from "../ui/toggle";
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo";
 import {
-  CollectionFilters,
   collectionFilters,
   useCollectionFilters,
 } from "@/hooks/use-collection-filters";
@@ -23,20 +22,18 @@ import { toSearchParams } from "@/hooks/use-typed-search-params";
 import ObjektSidebar from "../objekt/objekt-sidebar";
 import IndexOverlay from "./index-overlay";
 import HelpDialog from "./help-dialog";
-
-export type PropsWithFilters<T extends keyof CollectionFilters> = {
-  filters: CollectionFilters[T];
-  setFilters: (filters: CollectionFilters[T]) => void;
-};
+import { CollectionFilter } from "./collection-filter";
 
 type Props = {
   artists: CosmoArtistWithMembers[];
+  collections: string[];
   objektLists?: ObjektList[];
   nickname?: string;
 };
 
 export default function IndexRenderer({
   artists,
+  collections,
   objektLists,
   nickname,
 }: Props) {
@@ -91,6 +88,11 @@ export default function IndexRenderer({
           <SeasonFilter
             filters={filters.season}
             setFilters={(f) => updateFilter("season", f)}
+          />
+          <CollectionFilter
+            filters={filters.collectionNo}
+            setFilters={(f) => updateFilter("collectionNo", f)}
+            collections={collections}
           />
           <OnlineFilter
             filters={filters.on_offline}

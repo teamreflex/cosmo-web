@@ -19,8 +19,6 @@
 
 ### Objekts Index
 
-- Add edition/collectionNo filters
-  - should probably add a generated column for this on the indexer side
 - Add caching
   - `unstable_cache` + webhook for invalidation? redis?
 

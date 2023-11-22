@@ -63,6 +63,12 @@ export function withArtist(artist: ValidArtist | undefined) {
   return artist ? [eq(objekts.artist, artist)] : [];
 }
 
+export function withCollections(collections: string[] | null | undefined) {
+  return collections && collections.length > 0
+    ? [inArray(objekts.collectionNo, collections)]
+    : [];
+}
+
 export async function withObjektListEntries(entries: number[]) {
   if (entries.length === 0) {
     return [];
