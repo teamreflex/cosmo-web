@@ -1,5 +1,5 @@
 import { indexer } from "@/lib/server/db/indexer";
-import { objekts } from "@/lib/server/db/indexer/schema";
+import { collections } from "@/lib/server/db/indexer/schema";
 import {
   fetchObjektListWithEntries,
   withArtist,
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
 
   let query = indexer
     .select()
-    .from(objekts)
+    .from(collections)
     .where(
       and(
         ...[

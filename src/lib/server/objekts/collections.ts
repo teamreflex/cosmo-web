@@ -1,6 +1,6 @@
 import { asc } from "drizzle-orm";
 import { indexer } from "../db/indexer";
-import { objekts } from "../db/indexer/schema";
+import { collections } from "../db/indexer/schema";
 
 /**
  * Fetch all unique collections from the index.
@@ -8,11 +8,11 @@ import { objekts } from "../db/indexer/schema";
 export async function fetchUniqueCollections() {
   try {
     const rows = await indexer
-      .selectDistinctOn([objekts.collectionNo], {
-        collectionNo: objekts.collectionNo,
+      .selectDistinctOn([collections.collectionNo], {
+        collectionNo: collections.collectionNo,
       })
-      .from(objekts)
-      .orderBy(asc(objekts.collectionNo));
+      .from(collections)
+      .orderBy(asc(collections.collectionNo));
 
     return rows.map((row) => row.collectionNo);
   } catch (err) {

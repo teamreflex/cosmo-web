@@ -9,12 +9,12 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 
-export const objekts = pgTable(
-  "objekt",
+export const collections = pgTable(
+  "collection",
   {
     id: serial("id").primaryKey(),
     contract: varchar("contract", { length: 42 }).notNull(),
-    timestamp: timestamp("timestamp", { mode: "string" }).notNull(),
+    createdAt: timestamp("created_at", { mode: "string" }).notNull(),
     collectionId: varchar("collection_id", { length: 255 }).notNull(),
     season: varchar("season", { length: 32 }).notNull(),
     member: varchar("member", { length: 32 }).notNull(),
@@ -40,8 +40,32 @@ export const objekts = pgTable(
   })
 );
 
-export const objektRelations = relations(objekts, ({ many }) => ({
+export const collectionRelations = relations(collections, ({ many }) => ({
   transfers: many(transfers),
+  objekts: many(objekts),
+}));
+
+export const objekts = pgTable(
+  "objekt",
+  {
+    id: serial("id").primaryKey(),
+    owner: varchar("owner", { length: 42 }).notNull(),
+    mintedAt: timestamp("minted_at", { mode: "string" }).notNull(),
+    receivedAt: timestamp("received_at", { mode: "string" }).notNull(),
+    serial: integer("serial").notNull(),
+    collectionId: varchar("collection_id", { length: 36 })
+      .notNull()
+      .references(() => collections.id),
+  },
+  (table) => ({
+    ownerIdx: index("owner_idx").on(table.owner),
+    collectionIdIdx: index("collection_id_idx").on(table.collectionId),
+  })
+);
+
+export const objektRelations = relations(objekts, ({ many, one }) => ({
+  transfers: many(transfers),
+  collection: one(collections),
 }));
 
 export const transfers = pgTable(
@@ -55,11 +79,15 @@ export const transfers = pgTable(
     objektId: integer("objekt_id")
       .notNull()
       .references(() => objekts.id),
+    collectionId: integer("collection_id")
+      .notNull()
+      .references(() => collections.id),
   },
   (table) => ({
     fromIdx: index("from_idx").on(table.from),
     toIdx: index("to_idx").on(table.to),
     objektIdIdx: index("objekt_id_idx").on(table.objektId),
+    collectionIdIdx: index("collection_id_idx").on(table.collectionId),
   })
 );
 
@@ -67,5 +95,9 @@ export const transferRelations = relations(transfers, ({ one }) => ({
   objekt: one(objekts, {
     fields: [transfers.objektId],
     references: [objekts.id],
+  }),
+  collection: one(collections, {
+    fields: [transfers.collectionId],
+    references: [collections.id],
   }),
 }));

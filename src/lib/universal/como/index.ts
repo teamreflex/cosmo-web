@@ -1,12 +1,10 @@
-import { objekts, transfers } from "@/lib/server/db/indexer/schema";
+import { collections, objekts } from "@/lib/server/db/indexer/schema";
 import { getDaysInMonth } from "date-fns";
 import { InferSelectModel } from "drizzle-orm";
 
-export type Transfer = InferSelectModel<typeof transfers>;
-export type Objekt = InferSelectModel<typeof objekts>;
-export type TransferObjekt = {
-  transfer: Transfer;
-  objekt: Objekt;
+export type ObjektWithCollection = {
+  collection: InferSelectModel<typeof collections>;
+  objekt: InferSelectModel<typeof objekts>;
 };
 
 type Calendar = {
@@ -18,22 +16,22 @@ type Calendar = {
 /**
  * Build a breakdown per day and per contract of all Como drops.
  */
-export function buildCalendar(transfers: TransferObjekt[]) {
+export function buildCalendar(objekts: ObjektWithCollection[]) {
   const calendar: Calendar = {};
 
   for (const day of getDays()) {
-    const filteredTransfers = transfers.filter((t) => {
-      const date = new Date(t.transfer.timestamp + "Z");
+    const filteredObjekts = objekts.filter((o) => {
+      const date = new Date(o.objekt.mintedAt);
       return date.getDate() === day;
     });
 
-    for (const transfer of filteredTransfers) {
+    for (const objekt of filteredObjekts) {
       if (!calendar[day]) {
         calendar[day] = {};
       }
-      calendar[day][transfer.objekt.contract] =
-        (calendar[day][transfer.objekt.contract] || 0) +
-        transfer.objekt.comoAmount;
+      calendar[day][objekt.collection.contract] =
+        (calendar[day][objekt.collection.contract] || 0) +
+        objekt.collection.comoAmount;
     }
   }
 

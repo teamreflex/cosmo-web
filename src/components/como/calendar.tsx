@@ -1,13 +1,17 @@
 "use client";
 
-import { TransferObjekt, buildCalendar, getDays } from "@/lib/universal/como";
+import {
+  ObjektWithCollection,
+  buildCalendar,
+  getDays,
+} from "@/lib/universal/como";
 import { CosmoArtist } from "@/lib/universal/cosmo";
 import { cn } from "@/lib/utils";
 import ArtistIcon from "../artist-icon";
 
 type Props = {
   artists: CosmoArtist[];
-  transfers: TransferObjekt[];
+  transfers: ObjektWithCollection[];
 };
 
 const week = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];

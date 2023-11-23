@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { decodeUser } from "../data-fetching";
 import { cacheArtists } from "@/lib/server/cache";
-import { fetchSpecialTransfers } from "@/lib/server/como";
+import { fetchSpecialObjekts } from "@/lib/server/como";
 import ComoCalendar from "@/components/como/calendar";
 import CurrentMonth from "@/components/como/current-month";
 import HelpDialog from "@/components/como/help-dialog";
@@ -15,18 +15,18 @@ export const metadata: Metadata = {
 export default async function ComoPage() {
   const user = await decodeUser();
 
-  const [artists, transfers] = await Promise.all([
+  const [artists, objekts] = await Promise.all([
     cacheArtists(),
-    fetchSpecialTransfers(user!.address),
+    fetchSpecialObjekts(user!.address),
   ]);
 
   const totals = artists.map((artist) => {
-    const total = transfers
+    const total = objekts
       .filter(
-        (t) => t.objekt.contract === artist.contracts.Objekt.toLowerCase()
+        (t) => t.collection.contract === artist.contracts.Objekt.toLowerCase()
       )
-      .reduce((sum, transfer) => {
-        return sum + transfer.objekt.comoAmount;
+      .reduce((sum, objekt) => {
+        return sum + objekt.collection.comoAmount;
       }, 0);
 
     return { artist, total };
@@ -54,7 +54,7 @@ export default async function ComoPage() {
         </div>
       </div>
 
-      <ComoCalendar artists={artists} transfers={transfers} />
+      <ComoCalendar artists={artists} transfers={objekts} />
     </main>
   );
 }

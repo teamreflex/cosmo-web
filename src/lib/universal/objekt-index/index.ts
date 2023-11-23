@@ -1,8 +1,8 @@
-import { objekts } from "@/lib/server/db/indexer/schema";
+import { collections } from "@/lib/server/db/indexer/schema";
 import { lists } from "@/lib/server/db/schema";
 import { InferInsertModel, InferSelectModel } from "drizzle-orm";
 
-export type IndexedObjekt = InferSelectModel<typeof objekts>;
+export type IndexedObjekt = InferSelectModel<typeof collections>;
 export type IndexedCosmoResponse = {
   hasNext: boolean;
   total: number;

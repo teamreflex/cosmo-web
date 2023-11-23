@@ -7,18 +7,18 @@ import {
 } from "@/lib/universal/cosmo";
 import { asc, desc, eq, inArray } from "drizzle-orm";
 import { PgSelect } from "drizzle-orm/pg-core";
-import { objekts } from "../db/indexer/schema";
+import { collections } from "../db/indexer/schema";
 
 export function withSort<T extends PgSelect>(qb: T, sort: ValidSort) {
   switch (sort) {
     case "newest":
-      return qb.orderBy(desc(objekts.timestamp));
+      return qb.orderBy(desc(collections.createdAt));
     case "oldest":
-      return qb.orderBy(asc(objekts.timestamp));
+      return qb.orderBy(asc(collections.createdAt));
     case "noAscending":
-      return qb.orderBy(asc(objekts.collectionNo));
+      return qb.orderBy(asc(collections.collectionNo));
     case "noDescending":
-      return qb.orderBy(desc(objekts.collectionNo));
+      return qb.orderBy(desc(collections.collectionNo));
   }
 }
 
@@ -27,9 +27,9 @@ export function withClass(classes: ValidClass[]) {
     case 0:
       return [];
     case 1:
-      return [eq(objekts.class, classes[0])];
+      return [eq(collections.class, classes[0])];
     default:
-      return [inArray(objekts.class, classes)];
+      return [inArray(collections.class, classes)];
   }
 }
 
@@ -38,9 +38,9 @@ export function withSeason(seasons: ValidSeason[]) {
     case 0:
       return [];
     case 1:
-      return [eq(objekts.season, seasons[0])];
+      return [eq(collections.season, seasons[0])];
     default:
-      return [inArray(objekts.season, seasons)];
+      return [inArray(collections.season, seasons)];
   }
 }
 
@@ -49,23 +49,23 @@ export function withOnlineType(onlineTypes: ValidOnlineType[]) {
     case 0:
       return [];
     case 1:
-      return [eq(objekts.onOffline, onlineTypes[0])];
+      return [eq(collections.onOffline, onlineTypes[0])];
     default:
-      return [inArray(objekts.onOffline, onlineTypes)];
+      return [inArray(collections.onOffline, onlineTypes)];
   }
 }
 
 export function withMember(member: string | null | undefined) {
-  return member ? [eq(objekts.member, member)] : [];
+  return member ? [eq(collections.member, member)] : [];
 }
 
 export function withArtist(artist: ValidArtist | undefined) {
-  return artist ? [eq(objekts.artist, artist)] : [];
+  return artist ? [eq(collections.artist, artist)] : [];
 }
 
-export function withCollections(collections: string[] | null | undefined) {
-  return collections && collections.length > 0
-    ? [inArray(objekts.collectionNo, collections)]
+export function withCollections(selected: string[] | null | undefined) {
+  return selected && selected.length > 0
+    ? [inArray(collections.collectionNo, selected)]
     : [];
 }
 
@@ -74,5 +74,5 @@ export async function withObjektListEntries(entries: number[]) {
     return [];
   }
 
-  return [inArray(objekts.id, entries)];
+  return [inArray(collections.id, entries)];
 }
