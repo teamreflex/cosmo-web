@@ -4,6 +4,11 @@
 - Fix `useContext` error
   - might be local-only?
 
+## General
+
+- Optimize component tree
+  - move anything that can be server rendered out of client components, like collection links (polygonscan, opensea)
+
 ### Grid
 
 - Look into grid submission recovery
@@ -19,6 +24,8 @@
 
 ### Objekts Index
 
+- Add serial/ownership lookup/details
+  - intercepting route usecase?
 - Add caching
   - `unstable_cache` + webhook for invalidation? redis?
 
