@@ -58,9 +58,13 @@ export async function fetchObjektListForUser(
  * Fetch a single list with entries.
  */
 export async function fetchObjektListWithEntries(
-  address: string,
+  address: string | null | undefined,
   slug: string
 ) {
+  if (!address) {
+    return undefined;
+  }
+
   const list = await db.query.lists.findFirst({
     where: and(eq(lists.slug, slug), eq(lists.userAddress, address)),
     with: {

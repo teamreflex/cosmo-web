@@ -26,13 +26,6 @@ const PER_PAGE = 60;
 
 export async function GET(request: NextRequest) {
   const filters = parseParams(request.nextUrl.searchParams);
-  if (!filters.address || !filters.list) {
-    return NextResponse.json({
-      total: 0,
-      hasNext: false,
-      objekts: [],
-    });
-  }
 
   const objektList = filters.list
     ? await fetchObjektListWithEntries(filters.address, filters.list)
