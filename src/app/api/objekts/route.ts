@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
   const objektList = filters.list
     ? await fetchObjektListWithEntries(filters.list)
     : undefined;
-  const entries: number[] = [];
+  const entries: string[] = [];
 
   if (filters.list) {
     if (!objektList || (objektList && objektList.entries.length === 0)) {
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    entries.push(...objektList.entries.map((e) => e.objektId));
+    entries.push(...objektList.entries.map((e) => e.collectionId));
   }
 
   let query = indexer

@@ -25,7 +25,7 @@ export default function IndexOverlay({ lists }: Props) {
       {/* buttons */}
       <div className="flex items-center gap-2">
         {/* add to list */}
-        <AddToList objekt={objekt} lists={lists} />
+        <AddToList collection={objekt} lists={lists} />
       </div>
 
       {/* status text */}

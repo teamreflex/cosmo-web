@@ -12,7 +12,7 @@ import {
 export const collections = pgTable(
   "collection",
   {
-    id: serial("id").primaryKey(),
+    id: uuid("id").primaryKey(),
     contract: varchar("contract", { length: 42 }).notNull(),
     createdAt: timestamp("created_at", { mode: "string" }).notNull(),
     collectionId: varchar("collection_id", { length: 255 }).notNull(),

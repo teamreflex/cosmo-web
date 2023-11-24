@@ -48,7 +48,7 @@ export const listEntries = mysqlTable(
   {
     id: serial("id").primaryKey(),
     listId: int("list_id").notNull(),
-    objektId: int("objekt_id").notNull(),
+    collectionId: varchar("collection_id", { length: 36 }).notNull(), // uuid
   },
   (table) => ({
     listIdx: index("list_idx").on(table.listId),

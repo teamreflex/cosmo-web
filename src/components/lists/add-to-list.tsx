@@ -16,11 +16,11 @@ import { addObjektToList } from "./actions";
 import { useToast } from "../ui/use-toast";
 
 type AddToListProps = {
-  objekt: IndexedObjekt;
+  collection: IndexedObjekt;
   lists: ObjektList[];
 };
 
-export default function AddToList({ objekt, lists }: AddToListProps) {
+export default function AddToList({ collection, lists }: AddToListProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -29,19 +29,19 @@ export default function AddToList({ objekt, lists }: AddToListProps) {
         <button
           onClick={() => setOpen((state) => !state)}
           className="hover:cursor-pointer hover:scale-110 transition-all flex items-center outline-none"
-          aria-label={`Select list to add ${objekt.collectionId} to`}
+          aria-label={`Select list to add ${collection.collectionId} to`}
         >
           <ListPlus className="h-3 w-3 sm:h-5 sm:w-5" />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="max-h-48">
-        <DropdownMenuLabel>{objekt.collectionId}</DropdownMenuLabel>
+        <DropdownMenuLabel>{collection.collectionId}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           {lists.map((list) => (
             <ListItem
               key={list.id}
-              objekt={objekt}
+              collection={collection}
               list={list}
               onDone={() => setOpen(false)}
             />
@@ -53,12 +53,12 @@ export default function AddToList({ objekt, lists }: AddToListProps) {
 }
 
 type ListItemProps = {
-  objekt: IndexedObjekt;
+  collection: IndexedObjekt;
   list: ObjektList;
   onDone: () => void;
 };
 
-function ListItem({ objekt, list, onDone }: ListItemProps) {
+function ListItem({ collection, list, onDone }: ListItemProps) {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
 
@@ -68,11 +68,11 @@ function ListItem({ objekt, list, onDone }: ListItemProps) {
     startTransition(async () => {
       const result = await addObjektToList({
         listId: list.id,
-        objektId: Number(objekt.id),
+        collectionId: collection.id,
       });
       if (result.success && result.data) {
         toast({
-          description: `Added ${objekt.collectionId} to ${list.name}`,
+          description: `Added ${collection.collectionId} to ${list.name}`,
         });
       }
       onDone();

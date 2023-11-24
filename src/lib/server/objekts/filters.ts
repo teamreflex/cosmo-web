@@ -69,7 +69,7 @@ export function withCollections(selected: string[] | null | undefined) {
     : [];
 }
 
-export async function withObjektListEntries(entries: number[]) {
+export async function withObjektListEntries(entries: string[]) {
   if (entries.length === 0) {
     return [];
   }

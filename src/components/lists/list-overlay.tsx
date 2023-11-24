@@ -26,7 +26,7 @@ export default function ListOverlay({ list, onRemove }: Props) {
       {/* buttons */}
       <div className="flex items-center gap-2">
         {/* remove from list */}
-        <RemoveFromList objekt={objekt} list={list} onRemove={onRemove} />
+        <RemoveFromList collection={objekt} list={list} onRemove={onRemove} />
       </div>
 
       {/* status text */}
