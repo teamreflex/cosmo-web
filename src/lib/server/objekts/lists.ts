@@ -7,6 +7,7 @@ import {
   ObjektList,
   UpdateObjektList,
 } from "@/lib/universal/objekt-index";
+import { search } from "../cosmo";
 
 /**
  * Fetch all lists for a given user.
@@ -26,11 +27,42 @@ export async function fetchObjektList(
 }
 
 /**
+ * Fetch a single list.
+ */
+export async function fetchObjektListForUser(
+  nickname: string,
+  slug: string
+): Promise<ObjektList | undefined> {
+  const users = await search(nickname);
+  const user = users.find(
+    (u) => u.nickname.toLowerCase() === nickname.toLowerCase()
+  );
+
+  if (!user) {
+    return undefined;
+  }
+
+  const rows = await db
+    .select()
+    .from(lists)
+    .where(and(eq(lists.slug, slug), eq(lists.userAddress, user.address)));
+
+  if (rows.length === 0) {
+    return undefined;
+  }
+
+  return rows[0];
+}
+
+/**
  * Fetch a single list with entries.
  */
-export async function fetchObjektListWithEntries(slug: string) {
+export async function fetchObjektListWithEntries(
+  address: string,
+  slug: string
+) {
   const list = await db.query.lists.findFirst({
-    where: eq(lists.slug, slug),
+    where: and(eq(lists.slug, slug), eq(lists.userAddress, address)),
     with: {
       entries: true,
     },

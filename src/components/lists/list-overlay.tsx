@@ -9,10 +9,9 @@ import RemoveFromList from "./remove-from-list";
 
 type Props = {
   list: ObjektList;
-  onRemove: (objekt: IndexedObjekt) => void;
 };
 
-export default function ListOverlay({ list, onRemove }: Props) {
+export default function ListOverlay({ list }: Props) {
   const { objekt } = useContext(ObjektContext) as ObjektContext<IndexedObjekt>;
 
   return (
@@ -26,7 +25,7 @@ export default function ListOverlay({ list, onRemove }: Props) {
       {/* buttons */}
       <div className="flex items-center gap-2">
         {/* remove from list */}
-        <RemoveFromList collection={objekt} list={list} onRemove={onRemove} />
+        <RemoveFromList collection={objekt} list={list} />
       </div>
 
       {/* status text */}

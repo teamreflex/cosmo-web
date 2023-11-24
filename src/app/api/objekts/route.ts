@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
   const filters = parseParams(request.nextUrl.searchParams);
 
   const objektList = filters.list
-    ? await fetchObjektListWithEntries(filters.list)
+    ? await fetchObjektListWithEntries(filters.address, filters.list)
     : undefined;
   const entries: string[] = [];
 
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
     .where(
       and(
         ...[
-          ...(await withObjektListEntries(entries)),
+          ...withObjektListEntries(entries),
           ...withArtist(filters.artist),
           ...withClass(filters.class),
           ...withSeason(filters.season),
@@ -80,6 +80,7 @@ export async function GET(request: NextRequest) {
 function parseParams(params: URLSearchParams) {
   return {
     list: params.has("list") ? params.get("list") : undefined,
+    address: params.has("address") ? params.get("address") : undefined,
     page: parseInt(params.get("page") ?? "1"),
     sort: params.has("sort") ? (params.get("sort") as ValidSort) : "newest",
     season: params.getAll("season") as ValidSeason[],

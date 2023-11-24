@@ -5,16 +5,18 @@ import { ListX, Loader2 } from "lucide-react";
 import { useTransition } from "react";
 import { removeObjektFromList } from "./actions";
 import { useToast } from "../ui/use-toast";
+import { useQueryClient } from "react-query";
 
 type Props = {
   collection: IndexedObjekt;
   list: ObjektList;
-  onRemove: (objekt: IndexedObjekt) => void;
 };
 
-export default function RemoveFromList({ collection, list, onRemove }: Props) {
+export default function RemoveFromList({ collection, list }: Props) {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
+
+  const queryClient = useQueryClient();
 
   function submit() {
     startTransition(async () => {
@@ -26,7 +28,7 @@ export default function RemoveFromList({ collection, list, onRemove }: Props) {
         toast({
           description: `Removed ${collection.collectionId} from ${list.name}`,
         });
-        onRemove(collection);
+        queryClient.invalidateQueries({ queryKey: ["objekt-list", list.slug] });
       }
     });
   }

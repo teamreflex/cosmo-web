@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { Suspense, cache } from "react";
-import { fetchObjektList } from "@/lib/server/objekts";
+import { fetchObjektList, fetchObjektListForUser } from "@/lib/server/objekts";
 import { notFound, redirect } from "next/navigation";
 import ObjektListLoading from "./loading";
 import { search } from "@/lib/server/cosmo";
@@ -18,7 +18,11 @@ type Props = {
 };
 
 const fetchData = cache((nickname: string, list: string) =>
-  Promise.all([search(nickname), fetchObjektList(list), cacheMembers()])
+  Promise.all([
+    search(nickname),
+    fetchObjektListForUser(nickname, list),
+    cacheMembers(),
+  ])
 );
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -26,7 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const user = users.find(
     (u) => u.nickname.toLowerCase() === params.nickname.toLowerCase()
   );
-  if (!user) notFound();
+  if (!user || !list) notFound();
   if (!list) redirect(`/@${params.nickname}`);
 
   return {
@@ -39,7 +43,7 @@ export default async function ObjektListPage({ params }: Props) {
   const user = users.find(
     (u) => u.nickname.toLowerCase() === params.nickname.toLowerCase()
   );
-  if (!user) notFound();
+  if (!user || !list) notFound();
   if (!list) redirect(`/@${params.nickname}`);
 
   const currentUser = await decodeUser();
@@ -52,7 +56,7 @@ export default async function ObjektListPage({ params }: Props) {
         list={list}
         artists={artists}
         authenticated={authenticated}
-        user={user.nickname}
+        user={user}
       />
     </Suspense>
   );

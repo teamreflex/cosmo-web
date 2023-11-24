@@ -4,7 +4,7 @@ import {
   collectionFilters,
   useCollectionFilters,
 } from "@/hooks/use-collection-filters";
-import { CosmoArtistWithMembers } from "@/lib/universal/cosmo";
+import { CosmoArtistWithMembers, SearchUser } from "@/lib/universal/cosmo";
 import { Toggle } from "../ui/toggle";
 import { SlidersHorizontal, User } from "lucide-react";
 import { SeasonFilter } from "../collection/filter-season";
@@ -20,7 +20,6 @@ import { toSearchParams } from "@/hooks/use-typed-search-params";
 import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
 import ObjektSidebar from "../objekt/objekt-sidebar";
 import ListOverlay from "./list-overlay";
-import { useQueryClient } from "react-query";
 import DeleteList from "./delete-list";
 import UpdateList from "./update-list";
 import { Button } from "../ui/button";
@@ -31,7 +30,7 @@ type Props = {
   list: ObjektList;
   artists: CosmoArtistWithMembers[];
   authenticated: boolean;
-  user: string;
+  user: SearchUser;
 };
 export default function ListRenderer({
   list,
@@ -39,11 +38,8 @@ export default function ListRenderer({
   authenticated,
   user,
 }: Props) {
-  const queryClient = useQueryClient();
   const [showFilters, setShowFilters, filters, setFilters, updateFilter] =
     useCollectionFilters();
-
-  const queryKey = `objekt-list::${list.slug}`;
 
   async function fetcher({ pageParam = 0 }) {
     const searchParams = toSearchParams<typeof collectionFilters>(
@@ -52,13 +48,10 @@ export default function ListRenderer({
     );
     searchParams.set("page", pageParam.toString());
     searchParams.set("list", list.slug);
+    searchParams.set("address", user.address);
 
     const result = await fetch(`/api/objekts?${searchParams.toString()}`);
     return (await result.json()) as IndexedCosmoResponse;
-  }
-
-  function onRemove(objekt: IndexedObjekt) {
-    queryClient.invalidateQueries([queryKey, filters]);
   }
 
   return (
@@ -69,7 +62,7 @@ export default function ListRenderer({
           {/* title */}
           <div className="flex gap-2 items-center">
             <h1 className="text-3xl font-cosmo uppercase drop-shadow-lg">
-              {user}
+              {user.nickname}
             </h1>
           </div>
 
@@ -77,7 +70,10 @@ export default function ListRenderer({
           <div className="flex gap-2 items-center">
             {/* profile link */}
             <Button variant="outline" size="sm" asChild>
-              <Link href={`/@${user}` as Route} className="flex items-center">
+              <Link
+                href={`/@${user.nickname}` as Route}
+                className="flex items-center"
+              >
                 <User />
                 <span className="ml-2 hidden sm:block">View Profile</span>
               </Link>
@@ -136,13 +132,13 @@ export default function ListRenderer({
         setFilters={setFilters}
         authenticated={authenticated}
         queryFunction={fetcher}
-        queryKey={queryKey}
+        queryKey={["objekt-list", list.slug]}
         getObjektId={(objekt: IndexedObjekt) => objekt.id}
         getObjektDisplay={() => true}
         objektSlot={
           <>
             <ObjektSidebar />
-            {authenticated && <ListOverlay list={list} onRemove={onRemove} />}
+            {authenticated && <ListOverlay list={list} />}
           </>
         }
       />

@@ -3,7 +3,7 @@
 import Objekt from "../objekt/objekt";
 import { Fragment, ReactNode, useCallback, useEffect } from "react";
 import { ChevronDown, HeartCrack, Loader2 } from "lucide-react";
-import { useInfiniteQuery } from "react-query";
+import { QueryKey, useInfiniteQuery } from "react-query";
 import { useInView } from "react-intersection-observer";
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo";
 import { CollectionFilters } from "@/hooks/use-collection-filters";
@@ -22,7 +22,7 @@ type Props<TObjektType extends ValidObjekt> = {
   artists: CosmoArtistWithMembers[];
   filters: CollectionFilters;
   setFilters: (filters: CollectionFilters) => void;
-  queryKey: string;
+  queryKey: QueryKey;
   queryFunction: ({
     pageParam,
   }: {
@@ -54,11 +54,11 @@ export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
     isFetchingNextPage,
     status,
   } = useInfiniteQuery({
-    queryKey: [queryKey, filters],
+    queryKey: [...queryKey, filters],
     queryFn: queryFunction,
     getNextPageParam: (lastPage) => lastPage.nextStartAfter,
     refetchOnWindowFocus: false,
-    staleTime: Infinity,
+    staleTime: 1000 * 60,
   });
 
   // infinite scroll loader

@@ -14,6 +14,7 @@ import {
 } from "../ui/dropdown-menu";
 import { addObjektToList } from "./actions";
 import { useToast } from "../ui/use-toast";
+import { useQueryClient } from "react-query";
 
 type AddToListProps = {
   collection: IndexedObjekt;
@@ -62,6 +63,8 @@ function ListItem({ collection, list, onDone }: ListItemProps) {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
 
+  const queryClient = useQueryClient();
+
   function submit(event: MouseEvent<HTMLButtonElement>) {
     event.preventDefault();
 
@@ -74,6 +77,7 @@ function ListItem({ collection, list, onDone }: ListItemProps) {
         toast({
           description: `Added ${collection.collectionId} to ${list.name}`,
         });
+        queryClient.removeQueries({ queryKey: ["objekt-list", list.slug] });
       }
       onDone();
     });

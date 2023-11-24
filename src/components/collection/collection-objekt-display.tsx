@@ -78,7 +78,7 @@ export default function CollectionObjektDisplay({
         setFilters={setFilters}
         authenticated={authenticated}
         queryFunction={fetcher}
-        queryKey={`collection::${address}`}
+        queryKey={["collection", address]}
         getObjektId={(objekt: OwnedObjekt) => objekt.tokenId}
         getObjektDisplay={shouldShowObjekt}
         objektSlot={

@@ -115,7 +115,7 @@ export default function IndexRenderer({
         setFilters={setFilters}
         authenticated={authenticated}
         queryFunction={fetcher}
-        queryKey="objekt-index"
+        queryKey={["objekt-index"]}
         getObjektId={(objekt: IndexedObjekt) => objekt.id}
         getObjektDisplay={() => true}
         objektSlot={
