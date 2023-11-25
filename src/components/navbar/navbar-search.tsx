@@ -30,7 +30,7 @@ export default function NavbarSearch() {
       recent={recent}
     >
       <button
-        className="drop-shadow-lg hover:scale-110 transition-all"
+        className="drop-shadow-lg hover:scale-110 transition-all outline-none"
         aria-label="Search for user"
         onClick={() => setOpen(true)}
       >
