@@ -7,7 +7,6 @@ import { decodeUser } from "./data-fetching";
 import ApolloErrorBoundary from "@/components/error-boundary";
 import LogoImage from "@/assets/logo.png";
 
-export const runtime = "edge";
 export const metadata: Metadata = {
   title: "Home",
 };

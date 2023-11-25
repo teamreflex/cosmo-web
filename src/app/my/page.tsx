@@ -5,6 +5,7 @@ import { Metadata } from "next";
 import { decodeUser } from "../data-fetching";
 import ProfileImage from "@/assets/profile.webp";
 
+export const runtime = "edge";
 export const metadata: Metadata = {
   title: "My Page",
 };

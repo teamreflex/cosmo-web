@@ -3,8 +3,6 @@ import { fetchPoll } from "@/lib/server/cosmo";
 import { ValidArtist } from "@/lib/universal/cosmo";
 import { NextResponse } from "next/server";
 
-export const runtime = "edge";
-
 export async function GET(
   _: Request,
   { params }: { params: { artist: ValidArtist; gravity: number; poll: number } }
