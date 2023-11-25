@@ -27,7 +27,6 @@ import { create } from "./actions";
 import { useToast } from "../ui/use-toast";
 import { ObjektList } from "@/lib/universal/objekt-index";
 import Link from "next/link";
-import { Route } from "next";
 
 type Props = {
   lists: ObjektList[];
@@ -72,7 +71,7 @@ export default function ListDropdown({ lists, nickname }: Props) {
             {lists.map((list) => (
               <DropdownMenuItem key={list.id} className="text-sm truncate">
                 <Link
-                  href={`/@${nickname}/list/${list.slug}` as Route}
+                  href={`/@${nickname}/list/${list.slug}`}
                   className="w-full flex items-center justify-between"
                 >
                   {list.name}

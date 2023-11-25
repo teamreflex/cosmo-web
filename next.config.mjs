@@ -2,10 +2,6 @@ import "./src/env.mjs";
 
 /** @type {import('next').NextConfig} */
 const config = {
-  experimental: {
-    typedRoutes: true,
-  },
-
   webpack: (config, { webpack }) => {
     config.plugins.push(
       new webpack.IgnorePlugin({

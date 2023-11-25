@@ -24,7 +24,6 @@ import DeleteList from "./delete-list";
 import UpdateList from "./update-list";
 import { Button } from "../ui/button";
 import Link from "next/link";
-import { Route } from "next";
 
 type Props = {
   list: ObjektList;
@@ -70,10 +69,7 @@ export default function ListRenderer({
           <div className="flex gap-2 items-center">
             {/* profile link */}
             <Button variant="outline" size="sm" asChild>
-              <Link
-                href={`/@${user.nickname}` as Route}
-                className="flex items-center"
-              >
+              <Link href={`/@${user.nickname}`} className="flex items-center">
                 <User />
                 <span className="ml-2 hidden sm:block">View Profile</span>
               </Link>

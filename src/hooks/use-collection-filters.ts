@@ -13,7 +13,6 @@ import {
 } from "./use-typed-search-params";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Route } from "next";
 
 export const collectionFilters = z.object({
   show_locked: z.boolean().optional(),
@@ -98,7 +97,7 @@ export function useCollectionFilters() {
       parsed.set("show_locked", "false");
     }
 
-    router.replace(`${pathname}?${parsed.toString()}` as Route);
+    router.replace(`${pathname}?${parsed.toString()}`);
   }, [filters, pathname, router, showLocked]);
 
   return [

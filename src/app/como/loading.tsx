@@ -50,7 +50,7 @@ export default async function ComoLoading() {
           {cells.map((day) => (
             <div
               key={day}
-              className="relative flex items-center justify-center h-24 sm:h-20 bg-background/70 hover:bg-background/50 transition-colors"
+              className="relative flex items-center justify-center h-24 sm:h-20 bg-background/70 hover:bg-background/50 transition-colors animate-pulse"
             />
           ))}
         </div>
