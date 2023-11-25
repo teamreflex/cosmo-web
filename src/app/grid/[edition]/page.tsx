@@ -7,8 +7,6 @@ import GridRenderer from "@/components/grid/grid-renderer";
 import { fetchSelectedArtist } from "@/lib/server/cache";
 import { decodeUser } from "../../data-fetching";
 
-export const runtime = "edge";
-
 type Props = {
   params: { edition: string };
 };

@@ -2,7 +2,6 @@ import NewsFeedInfiniteLoader from "@/components/news/news-feed-infinite-loader"
 import { decodeUser, fetchSelectedArtist } from "../../data-fetching";
 import { Metadata } from "next";
 
-export const runtime = "edge";
 export const metadata: Metadata = {
   title: "Feed",
 };

@@ -4,7 +4,6 @@ import { decodeUser } from "../data-fetching";
 import { fetchLockedObjekts } from "@/lib/server/collection";
 import CollectionRenderer from "@/components/collection/collection-renderer";
 
-export const runtime = "edge";
 export const metadata: Metadata = {
   title: "Collection",
 };

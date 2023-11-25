@@ -7,7 +7,6 @@ import CurrentMonth from "@/components/como/current-month";
 import HelpDialog from "@/components/como/help-dialog";
 import ArtistIcon from "@/components/artist-icon";
 
-export const runtime = "nodejs";
 export const metadata: Metadata = {
   title: "COMO Calendar",
 };

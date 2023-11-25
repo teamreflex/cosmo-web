@@ -8,8 +8,6 @@ import { cacheMembers } from "@/lib/server/cache";
 import { decodeUser } from "@/app/data-fetching";
 import ListRenderer from "@/components/lists/list-renderer";
 
-export const runtime = "nodejs";
-
 type Props = {
   params: {
     nickname: string;

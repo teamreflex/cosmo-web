@@ -4,7 +4,6 @@ import { decodeUser, fetchObjektListsForUser } from "../data-fetching";
 import IndexRenderer from "@/components/objekt-index/index-renderer";
 import { fetchUniqueCollections } from "@/lib/server/objekts/collections";
 
-export const runtime = "nodejs";
 export const metadata: Metadata = {
   title: "Objekts",
 };

@@ -6,7 +6,6 @@ import GravityRenderer, {
 } from "@/components/gravity/gravity-renderer";
 import { decodeUser } from "../data-fetching";
 
-export const runtime = "edge";
 export const metadata: Metadata = {
   title: "Gravity",
 };

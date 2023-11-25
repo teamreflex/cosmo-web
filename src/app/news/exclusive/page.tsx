@@ -2,7 +2,6 @@ import NewsExclusiveInfiniteLoader from "@/components/news/news-exclusive-infini
 import { decodeUser, fetchSelectedArtist } from "../../data-fetching";
 import { Metadata } from "next";
 
-export const runtime = "edge";
 export const metadata: Metadata = {
   title: "Exclusives",
 };

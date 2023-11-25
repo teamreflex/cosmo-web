@@ -8,8 +8,6 @@ import { cacheMembers } from "@/lib/server/cache";
 import CollectionRenderer from "@/components/collection/collection-renderer";
 import { fetchLockedObjekts } from "@/lib/server/collection";
 
-export const runtime = "edge";
-
 type Props = {
   params: { nickname: string };
 };

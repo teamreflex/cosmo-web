@@ -7,8 +7,6 @@ import GravityCoreDetails from "@/components/gravity/gravity-core-details";
 import { redirect } from "next/navigation";
 import { decodeUser } from "../../data-fetching";
 
-export const runtime = "edge";
-
 const fetchData = cache(async (gravity: number) => {
   const user = await decodeUser();
   const selectedArtist = await fetchSelectedArtist(user!.id);
