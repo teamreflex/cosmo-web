@@ -28,7 +28,7 @@ export default function GridObjekt({
   return (
     <div
       className={cn(
-        "relative aspect-photocard w-full flex justify-center items-center bg-accent border-4 border-transparent rounded-2xl transition-colors",
+        "relative aspect-photocard w-full flex justify-center items-center bg-accent border-4 border-background rounded-2xl transition-colors",
         `text-[var(--objekt-text-color)]`,
         selected && "border-cosmo",
         !loaded && "animate-pulse",
