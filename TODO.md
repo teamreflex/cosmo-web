@@ -6,8 +6,7 @@
 
 ## General
 
-- Optimize component tree
-  - move anything that can be server rendered out of client components, like collection links (polygonscan, opensea)
+- Improve loading skeletons
 
 ### Grid
 
@@ -33,7 +32,6 @@
 
 - Delete locked objekts upon transfer
   - either use Alchemy webhooks or setup a webhook for the indexer to post to
-- Connect to websocket to detect transaction success/failure
 
 ### Profiles
 

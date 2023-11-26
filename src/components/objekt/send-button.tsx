@@ -2,7 +2,7 @@
 
 import { OwnedObjekt, SearchUser } from "@/lib/universal/cosmo";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, Check, Loader2, Send } from "lucide-react";
+import { AlertTriangle, Check, Loader2, Satellite, Send } from "lucide-react";
 import { Button } from "../ui/button";
 import { useEffect, useState } from "react";
 import { useSearchStore } from "@/store";
@@ -38,6 +38,8 @@ import { UserSearch } from "../user-search";
 import { trackEvent } from "fathom-client";
 import Link from "next/link";
 import ObjektSidebar from "./objekt-sidebar";
+import { createConnection } from "@/lib/client/websocket";
+import { Alchemy } from "alchemy-sdk";
 
 type Props = {
   objekt: OwnedObjekt;
@@ -53,7 +55,8 @@ enum TransactionStatus {
   GET_FEE_DATA = 5,
   SIGN_TRANSACTION = 6,
   SEND_TRANSACTION = 7,
-  COMPLETE = 8,
+  PENDING_TRANSACTION = 8,
+  COMPLETE = 9,
 }
 
 const instagrams = [
@@ -70,26 +73,21 @@ export default function SendObjekt({ objekt }: Props) {
   const [recipient, setRecipient] = useState<SearchUser | null>(null);
   const [transactionProgress, setTransactionProgress] =
     useState<TransactionStatus>(TransactionStatus.WAITING);
-  const [percentage, setPercentage] = useState(0);
   const [transactionHash, setTransactionHash] = useState("");
+  const [connection, setConnection] = useState<Alchemy>();
 
   const recent = useSearchStore((state) => state.recentSends);
   const addRecent = useSearchStore((state) => state.addRecentSend);
 
   const queryClient = useQueryClient();
 
-  // calculate progress
   useEffect(() => {
-    setPercentage(
-      Math.round((transactionProgress / TransactionStatus.COMPLETE) * 100) || 0
-    );
-
     // trigger a refresh of the objekts query upon sending
     // delayed by a second to allow enough time for cosmo's api to update
     if (transactionProgress === TransactionStatus.COMPLETE) {
-      setTimeout(() => queryClient.invalidateQueries("objekts"), 1000);
+      setTimeout(() => queryClient.invalidateQueries(["collection"]), 1000);
     }
-  }, [transactionProgress, setPercentage, queryClient]);
+  }, [transactionProgress, queryClient]);
 
   function prepareSending(newRecipient: SearchUser) {
     addRecent(newRecipient);
@@ -103,6 +101,26 @@ export default function SendObjekt({ objekt }: Props) {
       setTransactionHash(txHash);
     }
     setTransactionProgress(progress);
+  }
+
+  function connect(sender: string, recipient: string) {
+    setConnection(
+      createConnection({
+        from: sender,
+        to: recipient,
+        onResult: (message) => {
+          const result = message.params.result;
+
+          if (
+            result.removed === false &&
+            result.transaction.blockNumber !== null &&
+            result.transaction.hash === transactionHash
+          ) {
+            transactionProgress === TransactionStatus.COMPLETE;
+          }
+        },
+      })
+    );
   }
 
   const placeholder =
@@ -158,11 +176,26 @@ export default function SendObjekt({ objekt }: Props) {
               </div>
             )}
 
+            {/* show waiting for mined tx state */}
+            {transactionProgress === TransactionStatus.PENDING_TRANSACTION && (
+              <div className="flex flex-col gap-2 justify-center items-center">
+                <Satellite className="h-16 w-16 animate-pulse" />
+                <p className="text-sm">Waiting for transaction...</p>
+                <Link
+                  className="text-sm underline"
+                  href={`https://polygonscan.com/tx/${transactionHash}`}
+                  target="_blank"
+                >
+                  View on PolygonScan
+                </Link>
+              </div>
+            )}
+
             {/* show complete state */}
             {transactionProgress === TransactionStatus.COMPLETE && (
               <div className="flex flex-col gap-2 justify-center items-center">
-                <Check className="h-10 w-10" />
-                <p className="text-sm">Objekt sent to {recipient.nickname}</p>
+                <Check className="h-16 w-16" />
+                <p className="text-sm">Objekt sent to {recipient.nickname}!</p>
                 <Link
                   className="text-sm underline"
                   href={`https://polygonscan.com/tx/${transactionHash}`}
@@ -175,13 +208,13 @@ export default function SendObjekt({ objekt }: Props) {
 
             {/* progress bar while sending */}
             {transactionProgress !== TransactionStatus.WAITING &&
-              transactionProgress !== TransactionStatus.COMPLETE &&
+              transactionProgress !== TransactionStatus.PENDING_TRANSACTION &&
               transactionProgress !== TransactionStatus.ERROR && (
-                <div className="w-full bg-accent h-2 shadow-sm rounded">
-                  <div
-                    className="bg-foreground h-2 rounded transition-all animate-pulse"
-                    style={{ width: `${percentage}%` }}
-                  />
+                <div className="flex flex-col gap-2 justify-center items-center">
+                  <Satellite className="h-16 w-16 animate-pulse" />
+                  <p className="text-sm">
+                    Sending objekt to {recipient.nickname}...
+                  </p>
                 </div>
               )}
 
@@ -206,6 +239,7 @@ export default function SendObjekt({ objekt }: Props) {
                 <SendToUserButton
                   objekt={objekt}
                   user={recipient}
+                  transactionStarted={connect}
                   updateTransactionProgress={updateProgress}
                 />
               </DialogFooter>
@@ -220,6 +254,7 @@ export default function SendObjekt({ objekt }: Props) {
 type SendToUserButtonProps = {
   objekt: OwnedObjekt;
   user: SearchUser;
+  transactionStarted: (sender: string, recipient: string) => void;
   updateTransactionProgress: (
     status: TransactionStatus,
     txHash?: string
@@ -229,6 +264,7 @@ type SendToUserButtonProps = {
 function SendToUserButton({
   objekt,
   user,
+  transactionStarted,
   updateTransactionProgress,
 }: SendToUserButtonProps) {
   const { toast } = useToast();
@@ -245,6 +281,9 @@ function SendToUserButton({
     try {
       const ramperSigner = await getRamperSigner(alchemy);
       updateTransactionProgress(TransactionStatus.GET_USER);
+
+      transactionStarted(wallet.publicKey, user.address);
+
       const value = ethers.utils.parseEther("0.0");
       const nonce = await fetchNonce(alchemy, wallet.publicKey);
       updateTransactionProgress(TransactionStatus.GET_NONCE);
@@ -285,7 +324,10 @@ function SendToUserButton({
         description: "Transaction submitted!",
         variant: "default",
       });
-      updateTransactionProgress(TransactionStatus.COMPLETE, transaction.hash);
+      updateTransactionProgress(
+        TransactionStatus.PENDING_TRANSACTION,
+        transaction.hash
+      );
 
       trackEvent("send-objekt");
     } catch (err) {
