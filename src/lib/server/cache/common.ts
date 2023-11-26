@@ -9,12 +9,12 @@ export async function remember<T>(
   expiry: number,
   fetcher: () => Promise<T>
 ): Promise<T> {
-  const cached = await kv.get<Awaited<ReturnType<typeof fetcher>>>(`${key}`);
+  const cached = await kv.get<Awaited<ReturnType<typeof fetcher>>>(key);
 
   if (cached === null) {
     console.log(`[redis] Cache miss for ${key}`);
     const data = await fetcher();
-    await kv.set(`${key}`, data, {
+    await kv.set(key, data, {
       ex: expiry,
     });
     return data;
