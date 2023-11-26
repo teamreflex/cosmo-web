@@ -1,4 +1,4 @@
-import { decodeUser, fetchArtists } from "@/app/data-fetching";
+import { decodeUser, getArtists } from "@/app/data-fetching";
 import { fetchTokenBalances } from "@/lib/server/alchemy";
 import { ValidArtist } from "@/lib/universal/cosmo";
 
@@ -8,7 +8,7 @@ export default async function AvailableComo({
   artist: ValidArtist;
 }) {
   const user = await decodeUser();
-  const artists = await fetchArtists();
+  const artists = await getArtists();
   const balances = await fetchTokenBalances({
     address: user!.address,
     contracts: artists.map((artist) => artist.contracts.Como),

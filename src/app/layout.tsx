@@ -5,7 +5,7 @@ import { Suspense, cache } from "react";
 import { ValidArtist } from "@/lib/universal/cosmo";
 import ComoBalances from "@/components/navbar/como-balances";
 import { Loader2 } from "lucide-react";
-import { decodeUser, fetchArtists, fetchSelectedArtist } from "./data-fetching";
+import { decodeUser, getArtists, getProfile } from "./data-fetching";
 import { Metadata } from "next";
 import { env } from "@/env.mjs";
 import { Inter } from "next/font/google";
@@ -51,10 +51,10 @@ export const metadata: Metadata = {
   ],
 };
 
-const fetchData = cache(async (userId?: number) =>
+const fetchData = cache(async (profileId?: number) =>
   Promise.all([
-    fetchArtists(),
-    userId ? fetchSelectedArtist(userId) : Promise.resolve(undefined),
+    getArtists(),
+    profileId ? getProfile(profileId) : Promise.resolve(undefined),
   ])
 );
 
@@ -64,7 +64,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const user = await decodeUser();
-  const [artists, selectedArtist] = await fetchData(user?.id);
+  const [artists, profile] = await fetchData(user?.profileId);
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -76,7 +76,7 @@ export default async function RootLayout({
                 <Navbar
                   user={user}
                   artists={artists}
-                  selectedArtist={selectedArtist as ValidArtist | undefined}
+                  selectedArtist={profile?.artist}
                   comoBalances={
                     user ? (
                       <Suspense

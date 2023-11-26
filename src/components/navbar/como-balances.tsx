@@ -2,10 +2,10 @@ import { DecodedTokenBalance, fetchTokenBalances } from "@/lib/server/alchemy";
 import { ValidArtist } from "@/lib/universal/cosmo";
 import { Moon, Sparkle } from "lucide-react";
 import { ReactNode } from "react";
-import { fetchArtists } from "@/app/data-fetching";
+import { getArtists } from "@/app/data-fetching";
 
 export default async function ComoBalances({ address }: { address: string }) {
-  const artists = await fetchArtists();
+  const artists = await getArtists();
   const balances = await fetchTokenBalances({
     address,
     contracts: artists.map((artist) => artist.contracts.Como),

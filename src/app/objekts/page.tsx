@@ -1,6 +1,6 @@
 import { cacheMembers } from "@/lib/server/cache";
 import { Metadata } from "next";
-import { decodeUser, fetchObjektListsForUser } from "../data-fetching";
+import { decodeUser, getObjektListsForUser } from "../data-fetching";
 import IndexRenderer from "@/components/objekt-index/index-renderer";
 import { fetchUniqueCollections } from "@/lib/server/objekts/collections";
 
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default async function ObjektsIndexPage() {
   const user = await decodeUser();
   const [objektLists, artists, collections] = await Promise.all([
-    fetchObjektListsForUser(user?.address),
+    getObjektListsForUser(user?.address),
     cacheMembers(),
     fetchUniqueCollections(),
   ]);

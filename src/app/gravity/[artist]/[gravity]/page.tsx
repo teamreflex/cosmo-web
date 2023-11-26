@@ -1,41 +1,36 @@
 import { Metadata } from "next";
 import { cache } from "react";
-import { fetchSelectedArtist } from "@/lib/server/cache";
 import { fetchGravity } from "@/lib/server/cosmo";
 import GravityBodyRenderer from "@/components/gravity/gravity-body-renderer";
 import GravityCoreDetails from "@/components/gravity/gravity-core-details";
 import { redirect } from "next/navigation";
-import { decodeUser } from "../../data-fetching";
+import { decodeUser } from "../../../data-fetching";
+import { ValidArtist } from "@/lib/universal/cosmo";
 
-const fetchData = cache(async (gravity: number) => {
+type Params = {
+  artist: ValidArtist;
+  gravity: number;
+};
+
+const fetchData = cache(async ({ artist, gravity }: Params) => {
   const user = await decodeUser();
-  const selectedArtist = await fetchSelectedArtist(user!.id);
-
-  return await fetchGravity(
-    user!.accessToken,
-    selectedArtist ?? "artms",
-    gravity
-  );
+  return await fetchGravity(user!.accessToken, artist, gravity);
 });
 
 export async function generateMetadata({
   params,
 }: {
-  params: { gravity: number };
+  params: Params;
 }): Promise<Metadata> {
-  const gravity = await fetchData(params.gravity);
+  const gravity = await fetchData(params);
 
   return {
     title: gravity?.title ?? "Gravity",
   };
 }
 
-export default async function GravityPage({
-  params,
-}: {
-  params: { gravity: number };
-}) {
-  const gravity = await fetchData(params.gravity);
+export default async function GravityPage({ params }: { params: Params }) {
+  const gravity = await fetchData(params);
   if (!gravity) {
     redirect("/gravity");
   }

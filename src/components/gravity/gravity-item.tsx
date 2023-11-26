@@ -28,7 +28,7 @@ export default function GravityItem({ gravity }: { gravity: CosmoGravity }) {
 function GravityPast({ gravity }: { gravity: CosmoPastGravity }) {
   return (
     <Link
-      href={`/gravity/${gravity.id}`}
+      href={`/gravity/${gravity.artist}/${gravity.id}`}
       className="w-full bg-accent/50 rounded-lg border border-white/20 flex items-center hover:bg-accent/40 transition-colors gap-4 p-4"
     >
       <div className="h-[70px] w-[70px] aspect-square relative rounded">
@@ -89,7 +89,7 @@ function GravityUpcomingOrOngoing({
 }: PropsWithChildren<{ gravity: CosmoUpcomingGravity | CosmoOngoingGravity }>) {
   return (
     <Link
-      href={`/gravity/${gravity.id}`}
+      href={`/gravity/${gravity.artist}/${gravity.id}`}
       className="w-full rounded-xl flex flex-col items-center overflow-hidden group"
     >
       <div className="relative w-full aspect-square">

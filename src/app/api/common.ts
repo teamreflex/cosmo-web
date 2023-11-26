@@ -1,4 +1,5 @@
-import { TokenPayload, readToken } from "@/lib/server/jwt";
+import { readToken } from "@/lib/server/jwt";
+import { TokenPayload } from "@/lib/universal/auth";
 import { cookies } from "next/headers";
 
 type AuthenticationResult =

@@ -8,16 +8,6 @@ import {
   CosmoOngoingGrid,
   ValidArtist,
 } from "@/lib/universal/cosmo";
-import { fetchArtist } from ".";
-import { fetchSelectedArtist } from "../cache";
-
-export async function fetchSelectedArtistWithGrid(userId: number) {
-  const selectedArtist = (await fetchSelectedArtist(userId)) ?? "artms";
-  return {
-    selectedArtist,
-    cosmoArtist: await fetchArtist(selectedArtist),
-  };
-}
 
 type GridStatus = {
   totalCompletedGrids: number;

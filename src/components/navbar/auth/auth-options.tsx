@@ -4,7 +4,7 @@ import { signIn, signOut } from "@ramper/ethereum";
 import { ReactNode, useTransition } from "react";
 import { cosmoLogin, logout } from "./actions";
 import { Loader2 } from "lucide-react";
-import { TokenPayload } from "@/lib/server/jwt";
+import { TokenPayload } from "@/lib/universal/auth";
 import UserDropdown from "./user-dropdown";
 import SignInDialog from "./sign-in-dialog";
 import { CosmoArtist, ValidArtist } from "@/lib/universal/cosmo";

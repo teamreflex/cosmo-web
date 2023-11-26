@@ -3,18 +3,18 @@ import {
   isExclusiveSection,
   isFeedSection,
 } from "@/lib/universal/cosmo";
-import { TokenPayload } from "@/lib/server/jwt";
+import { TokenPayload } from "@/lib/universal/auth";
 import NewsSectionFeed from "./news-section-feed";
 import NewsSectionExclusive from "./news-section-exclusive";
 import NewsSectionBanner from "./news-section-banner";
-import { fetchNewsForSelectedArtist } from "@/app/data-fetching";
+import { getNewsForSelectedArtist } from "@/app/data-fetching";
 
 type Props = {
   user: TokenPayload;
 };
 
 export default async function NewsRenderer({ user }: Props) {
-  const news = await fetchNewsForSelectedArtist(user.id, user.accessToken);
+  const news = await getNewsForSelectedArtist(user.profileId, user.accessToken);
 
   return (
     <div className="flex flex-col items-center divide-y-2 divide-accent container px-4">

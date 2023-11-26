@@ -1,3 +1,4 @@
+import { ValidArtist } from "@/lib/universal/cosmo";
 import { relations } from "drizzle-orm";
 import {
   boolean,
@@ -25,6 +26,13 @@ export const lockedObjekts = mysqlTable(
   })
 );
 
+export const lockedObjektsRelations = relations(lockedObjekts, ({ one }) => ({
+  profile: one(profiles, {
+    fields: [lockedObjekts.userAddress],
+    references: [profiles.userAddress],
+  }),
+}));
+
 export const lists = mysqlTable(
   "lists",
   {
@@ -39,8 +47,12 @@ export const lists = mysqlTable(
   })
 );
 
-export const listRelations = relations(lists, ({ many }) => ({
+export const listRelations = relations(lists, ({ many, one }) => ({
   entries: many(listEntries),
+  profile: one(profiles, {
+    fields: [lists.userAddress],
+    references: [profiles.userAddress],
+  }),
 }));
 
 export const listEntries = mysqlTable(
@@ -60,4 +72,26 @@ export const listEntryRelations = relations(listEntries, ({ one }) => ({
     fields: [listEntries.listId],
     references: [lists.id],
   }),
+}));
+
+export const profiles = mysqlTable(
+  "profiles",
+  {
+    id: serial("id").primaryKey(),
+    userAddress: varchar("user_address", { length: 42 }).notNull(),
+    cosmoId: int("cosmo_id").notNull(),
+    nickname: varchar("nickname", { length: 24 }).notNull(),
+    // using a string and casting output so the db doesn't have to know about the enum
+    artist: varchar("artist", { length: 24 }).notNull().$type<ValidArtist>(),
+  },
+  (table) => ({
+    addressIdx: index("address_idx").on(table.userAddress),
+    cosmoIdIdx: index("cosmo_id_idx").on(table.cosmoId),
+    nicknameIdx: index("nickname_idx").on(table.nickname),
+  })
+);
+
+export const profileRelations = relations(profiles, ({ many }) => ({
+  lockedObjekts: many(lockedObjekts),
+  lists: many(lists),
 }));

@@ -18,7 +18,6 @@ export default async function CollectionPage() {
 
   return (
     <main className="relative py-2">
-      {/* <div className="z-0 absolute w-full h-96 -top-16 left-0 bg-gradient-to-b from-[#FFFFFF]/75 to-transparent" /> */}
       <div className="relative container flex flex-col">
         <CollectionRenderer
           locked={lockedObjekts}

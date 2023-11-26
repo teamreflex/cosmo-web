@@ -39,7 +39,7 @@ export default async function HomePage() {
     <main className="flex flex-col items-center container">
       <Suspense fallback={<NewsSkeleton />}>
         <ApolloErrorBoundary message="Could not load news">
-          <NewsRenderer user={user!} />
+          <NewsRenderer user={user} />
         </ApolloErrorBoundary>
       </Suspense>
     </main>
@@ -49,8 +49,7 @@ export default async function HomePage() {
 function NewsSkeleton() {
   return (
     <div className="flex flex-col gap-2 items-center animate-pulse w-full sm:w-1/2 py-4">
-      <div className="bg-accent rounded-lg h-48 w-full" />
-      <div className="bg-accent rounded-lg h-24 w-full" />
+      <div className="bg-accent rounded-lg aspect-video w-full" />
     </div>
   );
 }

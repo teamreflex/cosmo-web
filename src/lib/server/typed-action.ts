@@ -1,7 +1,7 @@
 import { getUser } from "@/app/api/common";
 import { z } from "zod";
-import { TokenPayload } from "./jwt";
 import { getErrorMessage } from "../error";
+import { TokenPayload } from "../universal/auth";
 
 export type TypedActionResult<T> =
   | {

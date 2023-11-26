@@ -1,5 +1,5 @@
 import "server-only";
-import { COSMO_ENDPOINT, SearchUser } from "@/lib/universal/cosmo";
+import { COSMO_ENDPOINT, LoginResult, SearchUser } from "@/lib/universal/cosmo";
 
 type CosmoLoginResult = {
   user: {
@@ -13,15 +13,6 @@ type CosmoLoginResult = {
     accessToken: string;
     refreshToken: string;
   };
-};
-
-type LoginResult = {
-  id: number;
-  email: string;
-  nickname: string;
-  address: string;
-  accessToken: string;
-  refreshToken: string;
 };
 
 /**

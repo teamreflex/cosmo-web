@@ -1,5 +1,6 @@
 import { Loader } from "@/components/loader";
 import { PropsWithClassName, cn } from "@/lib/utils";
+import { AlertCircle } from "lucide-react";
 
 export default function ObjektsLoading() {
   return (
@@ -9,7 +10,10 @@ export default function ObjektsLoading() {
         <div className="flex items-center justify-between pb-2 sm:pb-0">
           {/* title */}
           <div className="flex gap-2 items-center">
-            <Skeleton className="w-48 h-10" />
+            <h1 className="text-3xl font-cosmo uppercase drop-shadow-lg">
+              Objekts
+            </h1>
+            <AlertCircle className="w-4 h-4 drop-shadow-lg" />
           </div>
 
           {/* mobile: options */}

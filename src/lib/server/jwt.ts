@@ -1,6 +1,7 @@
 import "server-only";
 import { SignJWT, decodeJwt, jwtVerify } from "jose";
 import { env } from "@/env.mjs";
+import { TokenPayload } from "@/lib/universal/auth";
 
 export async function readToken(token?: string) {
   if (token) {
@@ -10,15 +11,6 @@ export async function readToken(token?: string) {
     }
   }
 }
-
-export type TokenPayload = {
-  id: number;
-  email: string;
-  nickname: string;
-  address: string;
-  accessToken: string;
-  refreshToken: string;
-};
 
 /**
  * Generate a token with the given payload.
@@ -78,6 +70,6 @@ export function generateCookiePayload() {
     maxAge: 60 * 60 * 24 * 30, // 30 days
     sameSite: true,
     httpOnly: true,
-    secure: env.VERCEL_ENV !== "development",
+    secure: true,
   };
 }

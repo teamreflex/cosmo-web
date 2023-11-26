@@ -1,12 +1,12 @@
 import { Metadata } from "next";
 import { Suspense } from "react";
-import { search } from "@/lib/server/cosmo";
 import { notFound } from "next/navigation";
 import UserCollectionLoading from "./loading";
 import { isAddress } from "ethers/lib/utils";
 import { cacheMembers } from "@/lib/server/cache";
 import CollectionRenderer from "@/components/collection/collection-renderer";
-import { fetchLockedObjekts } from "@/lib/server/collection";
+import { fetchCollectionByNickname } from "@/lib/server/auth";
+import { PublicUser } from "@/lib/universal/auth";
 
 type Props = {
   params: { nickname: string };
@@ -26,48 +26,36 @@ export default async function UserCollectionPage({ params }: Props) {
     return (
       <Suspense fallback={<UserCollectionLoading />}>
         <UserCollectionRenderer
-          nickname={params.nickname.substring(0, 6)}
-          address={params.nickname}
+          user={{
+            nickname: params.nickname.substring(0, 6),
+            address: params.nickname,
+            lockedObjekts: [],
+          }}
         />
       </Suspense>
     );
   }
 
-  const result = await search(params.nickname);
-  const user = result.find(
-    (u) => u.nickname.toLowerCase() === params.nickname.toLowerCase()
-  );
-
+  const user = await fetchCollectionByNickname(params.nickname);
   if (!user) notFound();
 
   return (
     <Suspense fallback={<UserCollectionLoading />}>
-      <UserCollectionRenderer nickname={user.nickname} address={user.address} />
+      <UserCollectionRenderer user={user} />
     </Suspense>
   );
 }
 
-type UserCollectionProps = {
-  nickname: string;
-  address: string;
-};
-
-async function UserCollectionRenderer({
-  nickname,
-  address,
-}: UserCollectionProps) {
-  const [lockedObjekts, artists] = await Promise.all([
-    fetchLockedObjekts(address),
-    cacheMembers(),
-  ]);
+async function UserCollectionRenderer({ user }: { user: PublicUser }) {
+  const artists = await cacheMembers();
 
   return (
     <main className="container flex flex-col py-2">
       <CollectionRenderer
-        locked={lockedObjekts}
         artists={artists}
-        nickname={nickname}
-        address={address}
+        locked={user.lockedObjekts}
+        nickname={user.nickname}
+        address={user.address}
       />
     </main>
   );

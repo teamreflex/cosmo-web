@@ -4,13 +4,13 @@ import { env } from "@/env.mjs";
 export type CreateConnection = {
   from: string;
   to: string;
-  onResult: (tx: TransactionResult) => void;
+  onResult: (transactionHash: string) => void;
 };
 
 export type TransactionResult = {
   jsonrpc: string;
   method: "eth_subscription";
-  params: {
+  params?: {
     result: {
       removed: boolean;
       transaction: {
@@ -37,8 +37,12 @@ export function createConnection({ from, to, onResult }: CreateConnection) {
     },
     (tx: TransactionResult) => {
       // only send the result we want
-      if (tx.params.result) {
-        onResult(tx);
+      if (
+        tx?.params?.result &&
+        tx.params.result.removed === false &&
+        tx.params.result.transaction.blockNumber !== null
+      ) {
+        onResult(tx.params.result.transaction.hash);
       }
     }
   );

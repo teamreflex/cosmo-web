@@ -6,11 +6,11 @@ import { cookies } from "next/headers";
 import { generateCookiePayload, signToken } from "@/lib/server/jwt";
 import { login } from "@/lib/server/cosmo";
 import { redirect } from "next/navigation";
-import { setSelectedArtist } from "@/lib/server/cache/artist-select";
 import { revalidatePath } from "next/cache";
 import { authenticatedAction, typedAction } from "@/lib/server/typed-action";
 import { getUser } from "@/app/api/common";
 import { validArtists } from "@/lib/universal/cosmo";
+import { findOrCreateProfile, setSelectedArtist } from "@/lib/server/auth";
 
 /**
  * Exchanges the idToken from Ramper for a JWT from Cosmo
@@ -26,9 +26,15 @@ export const cosmoLogin = async (email: string, token: string) =>
       // login with cosmo
       const loginPayload = await login(email, token);
 
+      // find or create a profile for the user
+      const profile = await findOrCreateProfile(loginPayload);
+
       cookies().set(
         "token",
-        await signToken(loginPayload),
+        await signToken({
+          ...loginPayload,
+          profileId: profile.id,
+        }),
         generateCookiePayload()
       );
 
@@ -59,7 +65,7 @@ export const updateSelectedArtist = async (artist: string) =>
     }),
     { artist },
     async ({ artist }, user) => {
-      const result = await setSelectedArtist(user.id, artist);
+      const result = await setSelectedArtist(user.profileId, artist);
       revalidatePath("/");
       return result;
     }

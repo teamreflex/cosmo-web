@@ -1,11 +1,9 @@
-import { TokenPayload } from "@/lib/server/jwt";
 import { Metadata } from "next";
 import { cache } from "react";
 import { fetchEdition } from "@/lib/server/cosmo";
 import { redirect } from "next/navigation";
 import GridRenderer from "@/components/grid/grid-renderer";
-import { fetchSelectedArtist } from "@/lib/server/cache";
-import { decodeUser } from "../../data-fetching";
+import { decodeUser, getProfile } from "../../data-fetching";
 
 type Props = {
   params: { edition: string };
@@ -13,13 +11,9 @@ type Props = {
 
 const fetchGrids = cache(async (edition: string) => {
   const user = await decodeUser();
-  const selectedArtist = await fetchSelectedArtist(user!.id);
+  const profile = await getProfile(user!.profileId);
 
-  return await fetchEdition(
-    user!.accessToken,
-    selectedArtist ?? "artms",
-    edition
-  );
+  return await fetchEdition(user!.accessToken, profile.artist, edition);
 });
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

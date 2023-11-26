@@ -1,10 +1,9 @@
 import { Metadata } from "next";
 import { Suspense } from "react";
-import { fetchSelectedArtist } from "@/lib/server/cache";
 import GravityRenderer, {
   GravitySkeleton,
 } from "@/components/gravity/gravity-renderer";
-import { decodeUser } from "../data-fetching";
+import { decodeUser, getProfile } from "../data-fetching";
 
 export const metadata: Metadata = {
   title: "Gravity",
@@ -12,7 +11,7 @@ export const metadata: Metadata = {
 
 export default async function GravityPage() {
   const user = await decodeUser();
-  const selectedArtist = (await fetchSelectedArtist(user!.id)) ?? "artms";
+  const profile = await getProfile(user!.profileId);
 
   return (
     <main className="container flex flex-col py-2">
@@ -23,7 +22,7 @@ export default async function GravityPage() {
       </div>
 
       <Suspense fallback={<GravitySkeleton />}>
-        <GravityRenderer artist={selectedArtist} />
+        <GravityRenderer artist={profile.artist} />
       </Suspense>
     </main>
   );

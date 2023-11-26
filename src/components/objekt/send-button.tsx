@@ -4,7 +4,7 @@ import { OwnedObjekt, SearchUser } from "@/lib/universal/cosmo";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, Check, Loader2, Satellite, Send } from "lucide-react";
 import { Button } from "../ui/button";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useSearchStore } from "@/store";
 import { ethers } from "ethers";
 import {
@@ -81,14 +81,6 @@ export default function SendObjekt({ objekt }: Props) {
 
   const queryClient = useQueryClient();
 
-  useEffect(() => {
-    // trigger a refresh of the objekts query upon sending
-    // delayed by a second to allow enough time for cosmo's api to update
-    if (transactionProgress === TransactionStatus.COMPLETE) {
-      setTimeout(() => queryClient.invalidateQueries(["collection"]), 1000);
-    }
-  }, [transactionProgress, queryClient]);
-
   function prepareSending(newRecipient: SearchUser) {
     addRecent(newRecipient);
     setRecipient(newRecipient);
@@ -100,6 +92,15 @@ export default function SendObjekt({ objekt }: Props) {
     if (txHash) {
       setTransactionHash(txHash);
     }
+
+    if (progress === TransactionStatus.COMPLETE) {
+      // refresh collection upon transfer
+      setTimeout(() => queryClient.invalidateQueries(["collection"]), 1000);
+
+      // disconnect websocket upon transfer
+      connection?.ws.removeAllListeners();
+    }
+
     setTransactionProgress(progress);
   }
 
@@ -108,14 +109,8 @@ export default function SendObjekt({ objekt }: Props) {
       createConnection({
         from: sender,
         to: recipient,
-        onResult: (message) => {
-          const result = message.params.result;
-
-          if (
-            result.removed === false &&
-            result.transaction.blockNumber !== null &&
-            result.transaction.hash === transactionHash
-          ) {
+        onResult: (hash) => {
+          if (hash === transactionHash) {
             transactionProgress === TransactionStatus.COMPLETE;
           }
         },
