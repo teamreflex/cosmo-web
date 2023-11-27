@@ -67,12 +67,12 @@ export async function GET(request: NextRequest) {
   const result = await query;
 
   const hasNext = result.length === PER_PAGE;
-  const nextPage = hasNext ? filters.page + 1 : undefined;
+  const nextStartAfter = hasNext ? filters.page + 1 : undefined;
 
   return NextResponse.json({
     total: 0,
     hasNext,
-    nextPage,
+    nextStartAfter,
     objekts: result,
   });
 }
