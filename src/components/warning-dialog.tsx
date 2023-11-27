@@ -29,23 +29,21 @@ export default function WarningDialog() {
     <AlertDialog open={open}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>
-            {env.NEXT_PUBLIC_APP_NAME} v{env.NEXT_PUBLIC_APP_VERSION}
-          </AlertDialogTitle>
+          <AlertDialogTitle>{env.NEXT_PUBLIC_APP_NAME}</AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div className="flex flex-col gap-2">
               <p>
-                {env.NEXT_PUBLIC_APP_NAME} is an unofficial platform aiming to
-                replicate the Cosmo mobile app with a desktop interface.
+                {env.NEXT_PUBLIC_APP_NAME} is an unofficial desktop client for{" "}
+                <span className="italic">Cosmo: the Gate</span>.
               </p>
               <p>
-                It is not affiliated with Modhaus or its artists and is not
-                endorsed by its developers.
+                Features such as sending objekts, grids, wishlist building and
+                viewing gravities requires signing in via the Cosmo Ramper
+                integration. This requires cookies to function.
               </p>
               <p>
-                There will be instances where certain features are not perfectly
-                replicated 1:1 with the mobile app, and cannot guarantee perfect
-                functionality despite best efforts.
+                {env.NEXT_PUBLIC_APP_NAME} is not affiliated with, endorsed by
+                or supported by Modhaus or its artists.{" "}
               </p>
               <p>Source code can be found below.</p>
             </div>

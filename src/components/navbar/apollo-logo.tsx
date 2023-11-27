@@ -48,20 +48,8 @@ export default function ApolloLogo({
           <AlertDialogDescription asChild>
             <div className="flex flex-col gap-2">
               <p>
-                {env.NEXT_PUBLIC_APP_NAME} is an unofficial platform aiming to
-                replicate the Cosmo mobile app with a desktop interface.
-              </p>
-              <p>
-                Some features require signing in to work, which is handled by
-                the Cosmo Ramper integration. This requires cookies to function.
-              </p>
-              <p>
-                {env.NEXT_PUBLIC_APP_NAME} is not affiliated with, endorsed by
-                or supported by Modhaus or its artists.{" "}
-              </p>
-              <p className="font-bold">
-                Some things may break between Cosmo updates. Use at your own
-                risk.
+                {env.NEXT_PUBLIC_APP_NAME} is an unofficial desktop client for{" "}
+                <span className="italic">Cosmo: the Gate</span>.
               </p>
               <p>Source code can be found below.</p>
             </div>

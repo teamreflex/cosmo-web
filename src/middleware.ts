@@ -34,7 +34,7 @@ export const config = {
  * this is separate to the matcher as these paths still need token handling
  */
 const allowUnauthenticated = new RegExp(
-  "^(/|/@.*|/u/[^/]*|/objekts|/api/objekts|/api/objekt/v1/owned-by/.*|/api/user/v1/search)$"
+  "^(/@.*|/u/[^/]*|/objekts|/api/objekts|/api/objekt/v1/owned-by/.*|/api/user/v1/search)$"
 );
 
 export async function middleware(request: NextRequest) {
@@ -50,9 +50,9 @@ export async function middleware(request: NextRequest) {
       response.cookies.delete("token");
     }
 
-    // redirect to index when unauthenticated
+    // redirect to objekt index when unauthenticated
     if (allowUnauthenticated.test(path) === false) {
-      return NextResponse.redirect(new URL("/", request.url));
+      return NextResponse.redirect(new URL("/objekts", request.url));
     }
 
     return response;
