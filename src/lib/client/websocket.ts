@@ -31,7 +31,7 @@ export function createConnection({ from, to, onResult }: CreateConnection) {
   alchemy.ws.on(
     {
       method: AlchemySubscription.MINED_TRANSACTIONS,
-      addresses: [{ from }, { to }],
+      addresses: [{ from }],
       includeRemoved: true,
       hashesOnly: false,
     },
