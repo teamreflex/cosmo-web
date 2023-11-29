@@ -1,8 +1,7 @@
 import { DecodedTokenBalance, fetchTokenBalances } from "@/lib/server/alchemy";
 import { ValidArtist } from "@/lib/universal/cosmo";
-import { Moon, Sparkle } from "lucide-react";
-import { ReactNode } from "react";
 import { getArtists } from "@/app/data-fetching";
+import ArtistIcon from "../artist-icon";
 
 export default async function ComoBalances({ address }: { address: string }) {
   const artists = await getArtists();
@@ -26,15 +25,6 @@ export default async function ComoBalances({ address }: { address: string }) {
   );
 }
 
-const map: Record<ValidArtist, ReactNode> = {
-  artms: (
-    <Moon className="ring-1 p-px w-3 h-3 rounded-full text-teal-400 fill-teal-400 ring-teal-400" />
-  ),
-  tripleS: (
-    <Sparkle className="ring-1 p-px w-3 h-3 rounded-full text-purple-300 fill-purple-300 ring-purple-300" />
-  ),
-};
-
 function ComoBalance({
   artistName,
   balance,
@@ -43,8 +33,8 @@ function ComoBalance({
   balance: DecodedTokenBalance;
 }) {
   return (
-    <div className="flex justify-between items-center rounded bg-accent border border-black/30 dark:border-white/30 h-6 w-16 px-1 shadow">
-      {map[artistName]}
+    <div className="flex justify-between items-center rounded bg-accent border border-black/30 dark:border-white/30 h-[26px] w-16 px-1 shadow">
+      <ArtistIcon artist={artistName} />
       <span className="text-sm">{balance.tokenBalance}</span>
     </div>
   );

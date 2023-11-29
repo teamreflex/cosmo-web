@@ -3,11 +3,11 @@
 - Fix searchbox blur
 - Fix `useContext` error
   - might be local-only?
+- Fix collections search/dropdown jank
 
 ## General
 
 - Improve loading skeletons
-- Find better icons for tripleS and ARTMS COMO without using Cosmo assets
 - Replace Alchemy SDK with native websocket
   - should fix turbopack support
 
