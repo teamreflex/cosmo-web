@@ -12,9 +12,15 @@ import { collections } from "../db/indexer/schema";
 export function withSort<T extends PgSelect>(qb: T, sort: ValidSort) {
   switch (sort) {
     case "newest":
-      return qb.orderBy(desc(collections.createdAt));
+      return qb.orderBy(
+        desc(collections.createdAt),
+        asc(collections.collectionId)
+      );
     case "oldest":
-      return qb.orderBy(asc(collections.createdAt));
+      return qb.orderBy(
+        asc(collections.createdAt),
+        asc(collections.collectionId)
+      );
     case "noAscending":
       return qb.orderBy(asc(collections.collectionNo));
     case "noDescending":

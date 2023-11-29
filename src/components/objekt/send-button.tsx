@@ -108,7 +108,6 @@ export default function SendObjekt({ objekt }: Props) {
     setConnection(
       createConnection({
         from: sender,
-        to: recipient,
         onResult: (hash) => {
           if (hash === transactionHash) {
             transactionProgress === TransactionStatus.COMPLETE;

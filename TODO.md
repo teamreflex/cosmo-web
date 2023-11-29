@@ -7,6 +7,9 @@
 ## General
 
 - Improve loading skeletons
+- Find better icons for tripleS and ARTMS COMO without using Cosmo assets
+- Replace Alchemy SDK with native websocket
+  - should fix turbopack support
 
 ### Grid
 
@@ -32,6 +35,10 @@
 
 - Delete locked objekts upon transfer
   - either use Alchemy webhooks or setup a webhook for the indexer to post to
+
+### COMO Calendar
+
+- Handle instances where a drop occurs on the 31st, in a month with <31 days
 
 ### Profiles
 

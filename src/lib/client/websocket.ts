@@ -3,7 +3,6 @@ import { env } from "@/env.mjs";
 
 export type CreateConnection = {
   from: string;
-  to: string;
   onResult: (transactionHash: string) => void;
 };
 
@@ -22,7 +21,7 @@ export type TransactionResult = {
   };
 };
 
-export function createConnection({ from, to, onResult }: CreateConnection) {
+export function createConnection({ from, onResult }: CreateConnection) {
   const alchemy = new Alchemy({
     apiKey: env.NEXT_PUBLIC_ALCHEMY_KEY,
     network: Network.MATIC_MAINNET,
