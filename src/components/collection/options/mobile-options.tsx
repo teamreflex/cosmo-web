@@ -11,6 +11,7 @@ import OpenSeaLogo from "@/assets/opensea.svg";
 import Image from "next/image";
 import { useCopyToClipboard } from "usehooks-ts";
 import { toast } from "@/components/ui/use-toast";
+import { Button } from "@/components/ui/button";
 
 export default function MobileOptions({ address }: { address: string }) {
   const [_, copy] = useCopyToClipboard();
@@ -31,8 +32,10 @@ export default function MobileOptions({ address }: { address: string }) {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger>
-        <Share2 />
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="sm">
+          <Share2 />
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         {/* copy profile */}

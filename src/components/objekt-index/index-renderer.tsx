@@ -69,7 +69,11 @@ export default function IndexRenderer({
           <div className="flex gap-2 items-center">
             {/* objekt list button */}
             {authenticated && (
-              <ListDropdown lists={objektLists} nickname={nickname} />
+              <ListDropdown
+                lists={objektLists}
+                nickname={nickname}
+                allowCreate={authenticated}
+              />
             )}
 
             {/* mobile: filters */}

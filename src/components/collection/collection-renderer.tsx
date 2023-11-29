@@ -20,6 +20,9 @@ import {
   useCollectionFilters,
 } from "@/hooks/use-collection-filters";
 import CollectionObjektDisplay from "./collection-objekt-display";
+import { ObjektList } from "@/lib/universal/objekt-index";
+import ListDropdown from "../lists/list-dropdown";
+import { TokenPayload } from "@/lib/universal/auth";
 
 export type PropsWithFilters<T extends keyof CollectionFilters> = {
   filters: CollectionFilters[T];
@@ -31,6 +34,8 @@ type Props = {
   artists: CosmoArtistWithMembers[];
   nickname?: string;
   address: string;
+  lists: ObjektList[];
+  currentUser?: TokenPayload;
 };
 
 export default function CollectionRenderer({
@@ -38,6 +43,8 @@ export default function CollectionRenderer({
   artists,
   nickname,
   address,
+  lists,
+  currentUser,
 }: Props) {
   const [
     showFilters,
@@ -67,14 +74,34 @@ export default function CollectionRenderer({
             <CopyAddressButton address={address} />
             <PolygonButton address={address} />
             <OpenSeaButton address={address} />
+            {nickname && (
+              <ListDropdown
+                lists={lists}
+                nickname={nickname}
+                allowCreate={currentUser?.nickname === nickname}
+              />
+            )}
           </div>
 
           {/* mobile: options */}
-          <div className="flex sm:hidden items-center gap-2">
+          <div className="flex sm:hidden justify-center items-center gap-2">
             {/* show filters */}
-            <Toggle pressed={showFilters} onPressedChange={setShowFilters}>
+            <Toggle
+              variant="outline"
+              size="sm"
+              pressed={showFilters}
+              onPressedChange={setShowFilters}
+            >
               <SlidersHorizontal className="drop-shadow-lg" />
             </Toggle>
+
+            {nickname && (
+              <ListDropdown
+                lists={lists}
+                nickname={nickname}
+                allowCreate={currentUser?.nickname === nickname}
+              />
+            )}
 
             <MobileOptions address={address} />
           </div>

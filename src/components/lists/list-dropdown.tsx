@@ -31,9 +31,10 @@ import Link from "next/link";
 type Props = {
   lists: ObjektList[];
   nickname: string;
+  allowCreate: boolean;
 };
 
-export default function ListDropdown({ lists, nickname }: Props) {
+export default function ListDropdown({ lists, nickname, allowCreate }: Props) {
   const { toast } = useToast();
 
   const [isPending, startTransition] = useTransition();
@@ -79,45 +80,48 @@ export default function ListDropdown({ lists, nickname }: Props) {
                 </Link>
               </DropdownMenuItem>
             ))}
+            {lists.length === 0 && (
+              <DropdownMenuItem className="text-sm">0 lists</DropdownMenuItem>
+            )}
           </DropdownMenuGroup>
-          <DialogTrigger asChild>
-            <DropdownMenuItem className="cursor-pointer">
-              <PlusCircle className="mr-2 h-4 w-4" />
-              <span className="font-semibold">Create New</span>
-            </DropdownMenuItem>
-          </DialogTrigger>
+          {allowCreate && (
+            <DialogTrigger asChild>
+              <DropdownMenuItem className="cursor-pointer">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                <span className="font-semibold">Create New</span>
+              </DropdownMenuItem>
+            </DialogTrigger>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <form>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Create Objekt List</DialogTitle>
-            <DialogDescription>
-              You can add objekts to the list later.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="w-full flex flex-col gap-1">
-            <Label htmlFor="name">Name</Label>
-            <Input
-              type="text"
-              autoComplete="off"
-              maxLength={24}
-              onInput={(e) => setName(e.currentTarget.value)}
-              id="name"
-              placeholder="Want To Trade"
-              data-1p-ignore
-            />
-            <p className="text-red-500 text-sm font-semibold">{error}</p>
-          </div>
-          <DialogFooter>
-            <Button type="submit" disabled={isPending} onClick={submit}>
-              {isPending ? "Saving..." : "Save"}
-              {isPending && <Loader2 className="ml-2 animate-spin" />}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </form>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Create Objekt List</DialogTitle>
+          <DialogDescription>
+            You can add objekts to the list later.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="w-full flex flex-col gap-1">
+          <Label htmlFor="name">Name</Label>
+          <Input
+            type="text"
+            autoComplete="off"
+            maxLength={24}
+            onInput={(e) => setName(e.currentTarget.value)}
+            id="name"
+            placeholder="Want To Trade"
+            data-1p-ignore
+          />
+          <p className="text-red-500 text-sm font-semibold">{error}</p>
+        </div>
+        <DialogFooter>
+          <Button disabled={isPending} onClick={submit}>
+            {isPending ? "Saving..." : "Save"}
+            {isPending && <Loader2 className="ml-2 animate-spin" />}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
     </Dialog>
   );
 }

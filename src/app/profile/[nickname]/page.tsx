@@ -7,6 +7,7 @@ import { cacheMembers } from "@/lib/server/cache";
 import CollectionRenderer from "@/components/collection/collection-renderer";
 import { fetchCollectionByNickname } from "@/lib/server/auth";
 import { PublicUser } from "@/lib/universal/auth";
+import { decodeUser } from "@/app/data-fetching";
 
 type Props = {
   params: { nickname: string };
@@ -30,6 +31,7 @@ export default async function UserCollectionPage({ params }: Props) {
             nickname: params.nickname.substring(0, 6),
             address: params.nickname,
             lockedObjekts: [],
+            lists: [],
           }}
         />
       </Suspense>
@@ -48,6 +50,7 @@ export default async function UserCollectionPage({ params }: Props) {
 
 async function UserCollectionRenderer({ user }: { user: PublicUser }) {
   const artists = await cacheMembers();
+  const currentUser = await decodeUser();
 
   return (
     <main className="container flex flex-col py-2">
@@ -56,6 +59,8 @@ async function UserCollectionRenderer({ user }: { user: PublicUser }) {
         locked={user.lockedObjekts}
         nickname={user.nickname}
         address={user.address}
+        lists={user.lists}
+        currentUser={currentUser}
       />
     </main>
   );

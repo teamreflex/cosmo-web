@@ -1,3 +1,5 @@
+import { ObjektList } from "./objekt-index";
+
 export type TokenPayload = {
   id: number;
   email: string;
@@ -12,4 +14,5 @@ export type PublicUser = {
   nickname: string;
   address: string;
   lockedObjekts: number[];
+  lists: ObjektList[];
 };

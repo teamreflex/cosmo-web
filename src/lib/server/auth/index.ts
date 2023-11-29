@@ -87,6 +87,7 @@ export async function fetchCollectionByNickname(
     where: eq(profiles.nickname, nickname),
     with: {
       lockedObjekts: true,
+      lists: true,
     },
   });
 
@@ -97,6 +98,7 @@ export async function fetchCollectionByNickname(
       lockedObjekts: profile.lockedObjekts
         .filter((o) => o.locked)
         .map((o) => o.tokenId),
+      lists: profile.lists,
     };
   }
 
@@ -111,6 +113,7 @@ export async function fetchCollectionByNickname(
       nickname: user.nickname,
       address: user.address,
       lockedObjekts: [],
+      lists: [],
     };
   }
 

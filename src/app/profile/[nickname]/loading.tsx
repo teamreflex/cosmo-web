@@ -20,6 +20,8 @@ export default function UserCollectionLoading() {
             <Skeleton className="w-24 h-10" />
             {/* opensea button */}
             <Skeleton className="w-24 h-10" />
+            {/* objekt lists button */}
+            <Skeleton className="w-24 h-10" />
           </div>
 
           {/* mobile: options */}
