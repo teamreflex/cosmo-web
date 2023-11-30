@@ -104,13 +104,13 @@ export default function SendObjekt({ objekt }: Props) {
     setTransactionProgress(progress);
   }
 
-  function connect(sender: string, recipient: string) {
+  function connect(sender: string) {
     setConnection(
       createConnection({
         from: sender,
         onResult: (hash) => {
           if (hash === transactionHash) {
-            transactionProgress === TransactionStatus.COMPLETE;
+            setTransactionProgress(TransactionStatus.COMPLETE);
           }
         },
       })
@@ -248,7 +248,7 @@ export default function SendObjekt({ objekt }: Props) {
 type SendToUserButtonProps = {
   objekt: OwnedObjekt;
   user: SearchUser;
-  transactionStarted: (sender: string, recipient: string) => void;
+  transactionStarted: (sender: string) => void;
   updateTransactionProgress: (
     status: TransactionStatus,
     txHash?: string
@@ -276,7 +276,7 @@ function SendToUserButton({
       const ramperSigner = await getRamperSigner(alchemy);
       updateTransactionProgress(TransactionStatus.GET_USER);
 
-      transactionStarted(wallet.publicKey, user.address);
+      transactionStarted(wallet.publicKey);
 
       const value = ethers.utils.parseEther("0.0");
       const nonce = await fetchNonce(alchemy, wallet.publicKey);
