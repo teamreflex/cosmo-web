@@ -7,17 +7,10 @@ export type CreateConnection = {
 };
 
 export type TransactionResult = {
-  jsonrpc: string;
-  method: "eth_subscription";
-  params?: {
-    result: {
-      removed: boolean;
-      transaction: {
-        hash: string;
-        blockNumber: string | null;
-      };
-    };
-    subscription: string;
+  removed: boolean;
+  transaction: {
+    hash: string;
+    blockNumber: string | null;
   };
 };
 
@@ -35,15 +28,9 @@ export function createConnection({ from, onResult }: CreateConnection) {
       hashesOnly: false,
     },
     (tx: TransactionResult) => {
-      console.log(tx);
       // only send the result we want
-      if (
-        tx?.params?.result &&
-        tx.params.result.removed === false &&
-        tx.params.result.transaction.blockNumber !== null
-      ) {
-        console.log(tx.params.result.transaction.hash);
-        onResult(tx.params.result.transaction.hash);
+      if (tx.removed === false && tx.transaction.blockNumber !== null) {
+        onResult(tx.transaction.hash);
       }
     }
   );

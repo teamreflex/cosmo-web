@@ -24,7 +24,7 @@ export default function Navbar({
       <div className="glass">
         <div className="flex w-full items-center h-14">
           <div className="container sm:grid sm:grid-cols-3 flex items-center gap-2 text-sm text-foreground md:gap-4 md:py-6 pointer-events-auto">
-            <div className="flex gap-2 items-center">
+            <div className="flex gap-4 items-center">
               <ApolloLogo color="white" />
               <Suspense
                 fallback={
