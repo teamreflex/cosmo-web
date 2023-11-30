@@ -30,7 +30,6 @@
     "@radix-ui/react-toggle": "^1.0.3",
     "@radix-ui/react-tooltip": "^1.0.7",
     "@ramper/ethereum": "^0.0.30",
-    "@sentry/nextjs": "^7.84.0",
     "@t3-oss/env-nextjs": "^0.7.1",
     "@types/react": "18.2.21",
     "@types/react-dom": "18.2.14",
