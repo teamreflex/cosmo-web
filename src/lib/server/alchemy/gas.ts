@@ -34,7 +34,7 @@ export async function fetchGasPrice(): Promise<GasPrice> {
 
   const { result }: GasPriceResult = await res.json();
   const price = Math.round(parseInt(formatUnits(result, "gwei")));
-  const status = price < 100 ? "low" : price < 750 ? "medium" : "high";
+  const status = price < 400 ? "low" : price < 1000 ? "medium" : "high";
 
   return { price, status };
 }

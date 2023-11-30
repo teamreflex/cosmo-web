@@ -35,8 +35,8 @@ function ComoBalance({
 }) {
   return (
     <Tooltip>
-      <TooltipTrigger>
-        <div className="flex justify-between items-center rounded bg-accent border border-black/30 dark:border-white/30 h-[26px] w-16 px-1 shadow">
+      <TooltipTrigger asChild>
+        <div className="flex justify-between items-center rounded cursor-default bg-accent border border-black/30 dark:border-white/30 h-[26px] w-16 px-1 shadow">
           <ArtistIcon artist={artist.name} />
           <span className="text-sm">{balance.tokenBalance}</span>
         </div>
