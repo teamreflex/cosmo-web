@@ -1,16 +1,7 @@
-import { fetchGasPrice } from "@/lib/server/alchemy";
 import { cn } from "@/lib/utils";
 import { Fuel } from "lucide-react";
-import { unstable_cache } from "next/cache";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
-
-const cachedGasPrice = unstable_cache(
-  async () => fetchGasPrice(),
-  ["polygon-gas"],
-  {
-    revalidate: 60,
-  }
-);
+import { getCachedGasPrice } from "@/lib/server/cache/gas-price";
 
 const text = {
   low: "Network is normal, transfers should be fast",
@@ -19,7 +10,9 @@ const text = {
 };
 
 export default async function GasDisplay() {
-  const { price, status } = await cachedGasPrice();
+  const { price, status } = await getCachedGasPrice();
+
+  if (price === 0) return null;
 
   return (
     <Tooltip delayDuration={0}>
