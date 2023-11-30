@@ -35,12 +35,14 @@ export function createConnection({ from, onResult }: CreateConnection) {
       hashesOnly: false,
     },
     (tx: TransactionResult) => {
+      console.log(tx);
       // only send the result we want
       if (
         tx?.params?.result &&
         tx.params.result.removed === false &&
         tx.params.result.transaction.blockNumber !== null
       ) {
+        console.log(tx.params.result.transaction.hash);
         onResult(tx.params.result.transaction.hash);
       }
     }

@@ -1,7 +1,8 @@
 import { DecodedTokenBalance, fetchTokenBalances } from "@/lib/server/alchemy";
-import { ValidArtist } from "@/lib/universal/cosmo";
+import { CosmoArtist, ValidArtist } from "@/lib/universal/cosmo";
 import { getArtists } from "@/app/data-fetching";
 import ArtistIcon from "../artist-icon";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 export default async function ComoBalances({ address }: { address: string }) {
   const artists = await getArtists();
@@ -15,7 +16,7 @@ export default async function ComoBalances({ address }: { address: string }) {
       {artists.map((artist) => (
         <ComoBalance
           key={artist.name}
-          artistName={artist.name as ValidArtist}
+          artist={artist}
           balance={
             balances.find((b) => b.contractAddress === artist.contracts.Como)!
           }
@@ -26,16 +27,21 @@ export default async function ComoBalances({ address }: { address: string }) {
 }
 
 function ComoBalance({
-  artistName,
+  artist,
   balance,
 }: {
-  artistName: ValidArtist;
+  artist: CosmoArtist;
   balance: DecodedTokenBalance;
 }) {
   return (
-    <div className="flex justify-between items-center rounded bg-accent border border-black/30 dark:border-white/30 h-[26px] w-16 px-1 shadow">
-      <ArtistIcon artist={artistName} />
-      <span className="text-sm">{balance.tokenBalance}</span>
-    </div>
+    <Tooltip>
+      <TooltipTrigger>
+        <div className="flex justify-between items-center rounded bg-accent border border-black/30 dark:border-white/30 h-[26px] w-16 px-1 shadow">
+          <ArtistIcon artist={artist.name} />
+          <span className="text-sm">{balance.tokenBalance}</span>
+        </div>
+      </TooltipTrigger>
+      <TooltipContent>{artist.title} COMO</TooltipContent>
+    </Tooltip>
   );
 }

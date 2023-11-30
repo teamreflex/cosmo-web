@@ -1,9 +1,10 @@
 import AuthOptions from "./auth/auth-options";
 import ApolloLogo from "./apollo-logo";
-import { ReactNode } from "react";
+import { ReactNode, Suspense } from "react";
 import { TokenPayload } from "@/lib/universal/auth";
 import { CosmoArtist, ValidArtist } from "@/lib/universal/cosmo";
 import Links from "./links";
+import GasDisplay from "../misc/gas-display";
 
 type Props = {
   user: TokenPayload | undefined;
@@ -23,7 +24,17 @@ export default function Navbar({
       <div className="glass">
         <div className="flex w-full items-center h-14">
           <div className="container sm:grid sm:grid-cols-3 flex items-center gap-2 text-sm text-foreground md:gap-4 md:py-6 pointer-events-auto">
-            <ApolloLogo color="white" />
+            <div className="flex gap-2 items-center">
+              <ApolloLogo color="white" />
+              <Suspense
+                fallback={
+                  <div className="w-12 h-6 rounded-lg bg-accent animate-pulse" />
+                }
+              >
+                <GasDisplay />
+              </Suspense>
+            </div>
+
             <Links />
 
             <div className="flex grow-0 items-center justify-end gap-2">
