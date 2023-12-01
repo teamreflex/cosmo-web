@@ -5,7 +5,6 @@ import { useSettingsStore } from "@/store";
 import {
   AlertDialog,
   AlertDialogAction,
-  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
@@ -13,8 +12,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { env } from "@/env.mjs";
-import Link from "next/link";
-import { Github } from "lucide-react";
 
 export default function WarningDialog() {
   const warned = useSettingsStore((state) => state.warned);
@@ -45,33 +42,13 @@ export default function WarningDialog() {
                 {env.NEXT_PUBLIC_APP_NAME} is not affiliated with, endorsed by
                 or supported by Modhaus or its artists.{" "}
               </p>
-              <p>Source code can be found below.</p>
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter className="sm:justify-between">
-          <AlertDialogCancel asChild>
-            <Link
-              href="https://github.com/teamreflex/cosmo-web"
-              target="_blank"
-            >
-              <Github />
-            </Link>
-          </AlertDialogCancel>
-
-          <div className="flex flex-col sm:flex-row gap-2">
-            <AlertDialogCancel asChild>
-              <Link
-                href="https://www.youtube.com/watch?v=l6p8FDJqUj4"
-                target="_blank"
-              >
-                Cancel
-              </Link>
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={() => setWarned(true)}>
-              Continue
-            </AlertDialogAction>
-          </div>
+        <AlertDialogFooter>
+          <AlertDialogAction onClick={() => setWarned(true)}>
+            Continue
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
