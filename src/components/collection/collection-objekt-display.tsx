@@ -1,17 +1,10 @@
 import { LockedObjektContext } from "@/context/objekt";
-import {
-  CollectionFilters,
-  collectionFilters,
-} from "@/hooks/use-collection-filters";
-import { toSearchParams } from "@/hooks/use-typed-search-params";
-import {
-  COSMO_ENDPOINT,
-  CosmoArtistWithMembers,
-  OwnedObjekt,
-  OwnedObjektsResult,
-} from "@/lib/universal/cosmo";
+import { CollectionFilters } from "@/hooks/use-collection-filters";
+import { CosmoArtistWithMembers, OwnedObjekt } from "@/lib/universal/cosmo";
 import { useState } from "react";
-import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
+import FilteredObjektDisplay, {
+  ObjektResponse,
+} from "../objekt/filtered-objekt-display";
 import ObjektSidebar from "../objekt/objekt-sidebar";
 import InformationOverlay from "../objekt/information-overlay";
 import ActionOverlay from "../objekt/action-overlay";
@@ -24,6 +17,11 @@ type Props = {
   artists: CosmoArtistWithMembers[];
   filters: CollectionFilters;
   setFilters: (filters: CollectionFilters) => void;
+  queryFunction: ({
+    pageParam,
+  }: {
+    pageParam?: number;
+  }) => Promise<ObjektResponse<OwnedObjekt>>;
 };
 
 export default function CollectionObjektDisplay({
@@ -34,6 +32,7 @@ export default function CollectionObjektDisplay({
   artists,
   filters,
   setFilters,
+  queryFunction,
 }: Props) {
   const [lockedTokens, setLockedTokens] = useState<number[]>(lockedTokenIds);
 
@@ -51,20 +50,6 @@ export default function CollectionObjektDisplay({
       : lockedTokens.includes(parseInt(objekt.tokenId)) === false;
   }
 
-  async function fetcher({ pageParam = 0 }) {
-    const searchParams = toSearchParams<typeof collectionFilters>(
-      filters,
-      true,
-      ["show_locked"]
-    );
-    searchParams.set("start_after", pageParam.toString());
-
-    const result = await fetch(
-      `${COSMO_ENDPOINT}/objekt/v1/owned-by/${address}?${searchParams.toString()}`
-    );
-    return (await result.json()) as OwnedObjektsResult;
-  }
-
   return (
     <LockedObjektContext.Provider
       value={{
@@ -77,7 +62,7 @@ export default function CollectionObjektDisplay({
         filters={filters}
         setFilters={setFilters}
         authenticated={authenticated}
-        queryFunction={fetcher}
+        queryFunction={queryFunction}
         queryKey={["collection", address]}
         getObjektId={(objekt: OwnedObjekt) => objekt.tokenId}
         getObjektDisplay={shouldShowObjekt}

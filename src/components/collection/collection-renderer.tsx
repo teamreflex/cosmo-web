@@ -10,19 +10,26 @@ import { LockedFilter } from "./filter-locked";
 import { SortFilter } from "./filter-sort";
 import { Toggle } from "../ui/toggle";
 import HelpDialog from "./help-dialog";
-import { CosmoArtistWithMembers } from "@/lib/universal/cosmo";
+import {
+  COSMO_ENDPOINT,
+  CosmoArtistWithMembers,
+  OwnedObjektsResult,
+} from "@/lib/universal/cosmo";
 import OpenSeaButton from "./options/opensea-button";
 import PolygonButton from "./options/polygon-button";
 import MobileOptions from "./options/mobile-options";
 import CopyAddressButton from "./options/copy-address-button";
 import {
   CollectionFilters,
+  collectionFilters,
   useCollectionFilters,
 } from "@/hooks/use-collection-filters";
 import CollectionObjektDisplay from "./collection-objekt-display";
 import { ObjektList } from "@/lib/universal/objekt-index";
 import ListDropdown from "../lists/list-dropdown";
 import { TokenPayload } from "@/lib/universal/auth";
+import { toSearchParams } from "@/hooks/use-typed-search-params";
+import { useState } from "react";
 
 export type PropsWithFilters<T extends keyof CollectionFilters> = {
   filters: CollectionFilters[T];
@@ -46,6 +53,7 @@ export default function CollectionRenderer({
   lists,
   currentUser,
 }: Props) {
+  const [total, setTotal] = useState<number>();
   const [
     showFilters,
     setShowFilters,
@@ -55,6 +63,22 @@ export default function CollectionRenderer({
     showLocked,
     setShowLocked,
   ] = useCollectionFilters();
+
+  async function fetcher({ pageParam = 0 }) {
+    const searchParams = toSearchParams<typeof collectionFilters>(
+      filters,
+      true,
+      ["show_locked"]
+    );
+    searchParams.set("start_after", pageParam.toString());
+
+    const result = await fetch(
+      `${COSMO_ENDPOINT}/objekt/v1/owned-by/${address}?${searchParams.toString()}`
+    );
+    const page: OwnedObjektsResult = await result.json();
+    setTotal(page.total);
+    return page;
+  }
 
   return (
     <>
@@ -66,7 +90,12 @@ export default function CollectionRenderer({
             <h1 className="text-3xl font-cosmo uppercase drop-shadow-lg">
               {nickname ?? "Collect"}
             </h1>
+
             <HelpDialog />
+
+            {total !== undefined && (
+              <p className="font-semibold">{total} total</p>
+            )}
           </div>
 
           {/* desktop: options */}
@@ -145,6 +174,7 @@ export default function CollectionRenderer({
         artists={artists}
         filters={filters}
         setFilters={setFilters}
+        queryFunction={fetcher}
       />
     </>
   );

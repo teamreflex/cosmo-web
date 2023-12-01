@@ -23,6 +23,7 @@ import ObjektSidebar from "../objekt/objekt-sidebar";
 import IndexOverlay from "./index-overlay";
 import HelpDialog from "./help-dialog";
 import { CollectionFilter } from "./collection-filter";
+import { useState } from "react";
 
 type Props = {
   artists: CosmoArtistWithMembers[];
@@ -37,6 +38,7 @@ export default function IndexRenderer({
   objektLists,
   nickname,
 }: Props) {
+  const [total, setTotal] = useState<number>();
   const [showFilters, setShowFilters, filters, setFilters, updateFilter] =
     useCollectionFilters();
 
@@ -50,7 +52,9 @@ export default function IndexRenderer({
     searchParams.set("page", pageParam.toString());
 
     const result = await fetch(`/api/objekts?${searchParams.toString()}`);
-    return (await result.json()) as IndexedCosmoResponse;
+    const page: IndexedCosmoResponse = await result.json();
+    setTotal(page.total);
+    return page;
   }
 
   return (
@@ -63,7 +67,12 @@ export default function IndexRenderer({
             <h1 className="text-3xl font-cosmo uppercase drop-shadow-lg">
               Objekts
             </h1>
+
             <HelpDialog />
+
+            {total !== undefined && (
+              <p className="font-semibold">{total} total</p>
+            )}
           </div>
 
           <div className="flex gap-2 items-center">

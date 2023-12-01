@@ -18,7 +18,7 @@ import {
   ValidSeason,
   ValidSort,
 } from "@/lib/universal/cosmo";
-import { and } from "drizzle-orm";
+import { and, sql } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -45,7 +45,10 @@ export async function GET(request: NextRequest) {
   }
 
   let query = indexer
-    .select()
+    .select({
+      count: sql<number>`count(*) OVER() AS count`,
+      collections,
+    })
     .from(collections)
     .where(
       and(
@@ -66,14 +69,15 @@ export async function GET(request: NextRequest) {
 
   const result = await query;
 
-  const hasNext = result.length === PER_PAGE;
+  const collectionList = result.map((c) => c.collections);
+  const hasNext = collectionList.length === PER_PAGE;
   const nextStartAfter = hasNext ? filters.page + 1 : undefined;
 
   return NextResponse.json({
-    total: 0,
+    total: result[0]?.count ?? 0,
     hasNext,
     nextStartAfter,
-    objekts: result,
+    objekts: collectionList,
   });
 }
 

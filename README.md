@@ -56,6 +56,7 @@ This project aims to build a web based version of [Modhaus](https://www.mod-haus
 - Indexing of all released objekts
 - Wishlist builder
 - COMO drop calendar
+- Polygon gas price display
 
 </details>
 
