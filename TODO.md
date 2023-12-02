@@ -8,6 +8,7 @@
 ## General
 
 - Improve loading skeletons
+- Move any caching from Vercel KV to `unstable_cache`
 
 ### Grid
 
@@ -26,8 +27,6 @@
 
 - Add serial/ownership lookup/details
   - intercepting route usecase?
-- Add caching
-  - `unstable_cache` + webhook for invalidation? redis?
 
 ### Collection
 

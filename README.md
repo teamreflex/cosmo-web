@@ -1,13 +1,13 @@
-# cosmo-web
+# cosmo-web (Apollo)
 
 This project aims to build a web based version of [Modhaus](https://www.mod-haus.com/)' **[Cosmo: the Gate](https://play.google.com/store/apps/details?id=com.modhaus.cosmo)** mobile application, replicate its core features as close as possible, and add new features on top.
 
 <details>
   <summary><b>Scope</b></summary>
   
-  - Account registration is out of scope. There's too much that goes into the onboarding process, not worth the effort.
-  - Account settings updates are out of scope. There's not enough in there to adjust right now.
-  - Purchasing objekts is out of scope due to Apple/Google services being used.
+  - Account registration. There's too much that goes into the onboarding process, not worth the effort.
+  - Account settings. There's not enough in there to adjust right now.
+  - Purchasing objekts. Apple/Google services are used.
 </details>
 
 <details>
@@ -64,6 +64,17 @@ This project aims to build a web based version of [Modhaus](https://www.mod-haus
 
 - **There's no app version or user agent spoofing. It's entirely possible for Modhaus to detect usage of this. Use at your own risk.**
 - Only the "happy path" is tested extensively. There isn't a lot of good error handling.
+
+## Requirements
+
+- [Node.js](https://nodejs.org/en/) 18.17+
+- 1 [PlanetScale](https://planetscale.com/) instance
+  - Or swap this out for another MySQL compatible database with minimal code changes
+- 1 Postgres instance
+  - The accompanying [blockchain indexer](https://github.com/teamreflex/cosmo-db) has containerized Postgres 15.5. Migration files can also be found there
+- 1 [Vercel KV](https://vercel.com/docs/storage/vercel-kv) instance
+  - Upstash or standalone Redis _may_ work. If it works with the Vercel KV SDK, it'll work here
+- An [Alchemy](https://www.alchemy.com/) API key
 
 ## Setup
 
