@@ -1,12 +1,12 @@
 "use client";
 
-import { OwnedObjekt } from "@/lib/universal/cosmo";
 import { cn } from "@/lib/utils";
 import format from "date-fns/format";
 import { ExternalLink, Maximize2 } from "lucide-react";
 import Link from "next/link";
 import { useContext, useState } from "react";
 import { ObjektContext } from "./util";
+import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
 
 export default function InformationOverlay() {
   const { objekt } = useContext(ObjektContext) as ObjektContext<OwnedObjekt>;

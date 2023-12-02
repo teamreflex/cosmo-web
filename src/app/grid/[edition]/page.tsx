@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { cache } from "react";
-import { fetchEdition } from "@/lib/server/cosmo";
+import { fetchEdition } from "@/lib/server/cosmo/grid";
 import { redirect } from "next/navigation";
 import GridRenderer from "@/components/grid/grid-renderer";
 import { decodeUser, getProfile } from "../../data-fetching";

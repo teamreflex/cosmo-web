@@ -1,7 +1,6 @@
 import { indexer } from "@/lib/server/db/indexer";
 import { collections } from "@/lib/server/db/indexer/schema";
 import {
-  fetchObjektListWithEntries,
   withArtist,
   withClass,
   withCollections,
@@ -10,14 +9,15 @@ import {
   withOnlineType,
   withSeason,
   withSort,
-} from "@/lib/server/objekts";
+} from "@/lib/server/objekts/filters";
+import { fetchObjektListWithEntries } from "@/lib/server/objekts/lists";
 import {
   ValidArtist,
   ValidClass,
   ValidOnlineType,
   ValidSeason,
   ValidSort,
-} from "@/lib/universal/cosmo";
+} from "@/lib/universal/cosmo/common";
 import { and, sql } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 

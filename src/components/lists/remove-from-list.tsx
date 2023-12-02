@@ -1,6 +1,6 @@
 "use client";
 
-import { IndexedObjekt, ObjektList } from "@/lib/universal/objekt-index";
+import { IndexedObjekt, ObjektList } from "@/lib/universal/objekts";
 import { ListX, Loader2 } from "lucide-react";
 import { useTransition } from "react";
 import { removeObjektFromList } from "./actions";

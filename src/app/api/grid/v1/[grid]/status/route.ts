@@ -1,5 +1,5 @@
 import { getUser } from "@/app/api/common";
-import { fetchArtistGridStatus } from "@/lib/server/cosmo";
+import { fetchArtistGridStatus } from "@/lib/server/cosmo/grid";
 import { NextResponse } from "next/server";
 
 export async function GET(

@@ -4,7 +4,6 @@ import {
   collectionFilters,
   useCollectionFilters,
 } from "@/hooks/use-collection-filters";
-import { CosmoArtistWithMembers, SearchUser } from "@/lib/universal/cosmo";
 import { Toggle } from "../ui/toggle";
 import { SlidersHorizontal, User } from "lucide-react";
 import { SeasonFilter } from "../collection/filter-season";
@@ -15,7 +14,7 @@ import {
   IndexedCosmoResponse,
   IndexedObjekt,
   ObjektList,
-} from "@/lib/universal/objekt-index";
+} from "@/lib/universal/objekts";
 import { toSearchParams } from "@/hooks/use-typed-search-params";
 import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
 import ObjektSidebar from "../objekt/objekt-sidebar";
@@ -24,6 +23,8 @@ import DeleteList from "./delete-list";
 import UpdateList from "./update-list";
 import { Button } from "../ui/button";
 import Link from "next/link";
+import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
+import { SearchUser } from "@/lib/universal/cosmo/auth";
 
 type Props = {
   list: ObjektList;

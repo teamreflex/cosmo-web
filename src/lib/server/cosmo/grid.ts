@@ -1,13 +1,12 @@
 import "server-only";
 import {
-  COSMO_ENDPOINT,
   CosmoGrid,
   CosmoGridEdition,
   CosmoGridRewardClaimResult,
   CosmoGridSlotCompletion,
   CosmoOngoingGrid,
-  ValidArtist,
-} from "@/lib/universal/cosmo";
+} from "@/lib/universal/cosmo/grid";
+import { COSMO_ENDPOINT, ValidArtist } from "@/lib/universal/cosmo/common";
 
 type GridStatus = {
   totalCompletedGrids: number;

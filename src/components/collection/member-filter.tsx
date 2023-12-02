@@ -1,13 +1,13 @@
-import {
-  CosmoArtistWithMembers,
-  CosmoMember,
-  ValidArtist,
-} from "@/lib/universal/cosmo";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Fragment } from "react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { CollectionFilters } from "@/hooks/use-collection-filters";
+import {
+  CosmoArtistWithMembers,
+  CosmoMember,
+} from "@/lib/universal/cosmo/artists";
+import { ValidArtist } from "@/lib/universal/cosmo/common";
 
 type Props = {
   artists: CosmoArtistWithMembers[];

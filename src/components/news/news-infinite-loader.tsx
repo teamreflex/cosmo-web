@@ -1,6 +1,6 @@
 "use client";
 
-import { CosmoNewsFeedResult } from "@/lib/universal/cosmo";
+import { CosmoNewsFeedResult } from "@/lib/universal/cosmo/news";
 import { ChevronDown, HeartCrack, Loader2 } from "lucide-react";
 import { Fragment, ReactNode, useEffect } from "react";
 import { useInView } from "react-intersection-observer";

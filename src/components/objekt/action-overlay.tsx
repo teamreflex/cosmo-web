@@ -1,14 +1,14 @@
 "use client";
 
 import { LockedObjektContext } from "@/context/objekt";
-import { OwnedObjekt } from "@/lib/universal/cosmo";
 import { cn } from "@/lib/utils";
 import { DownloadCloud, Grid2X2, Lock, MailX, PartyPopper } from "lucide-react";
-import { PropsWithChildren, useContext } from "react";
+import { useContext } from "react";
 import SendObjekt from "./send-button";
 import LockObjekt from "./lock-button";
 import { ObjektContext } from "./util";
 import OverlayStatus from "./overlay-status";
+import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
 
 export default function ActionOverlay() {
   const { objekt, authenticated } = useContext(

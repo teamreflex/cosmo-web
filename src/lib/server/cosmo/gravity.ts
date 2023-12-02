@@ -1,7 +1,5 @@
 import "server-only";
 import {
-  COSMO_ENDPOINT,
-  ValidArtist,
   CosmoGravity,
   CosmoGravityVoteCalldata,
   CosmoMyGravityResult,
@@ -10,7 +8,8 @@ import {
   CosmoPollChoices,
   CosmoUpcomingGravity,
   FabricateVotePayload,
-} from "@/lib/universal/cosmo";
+} from "@/lib/universal/cosmo/gravity";
+import { COSMO_ENDPOINT, ValidArtist } from "@/lib/universal/cosmo/common";
 
 export type CosmoGravityList = {
   upcoming: CosmoUpcomingGravity[];

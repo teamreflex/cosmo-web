@@ -1,6 +1,6 @@
 import { getUser } from "@/app/api/common";
-import { fetchPoll } from "@/lib/server/cosmo";
-import { ValidArtist } from "@/lib/universal/cosmo";
+import { fetchPoll } from "@/lib/server/cosmo/gravity";
+import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { NextResponse } from "next/server";
 
 export async function GET(

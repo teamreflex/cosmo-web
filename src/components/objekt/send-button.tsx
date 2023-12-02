@@ -1,18 +1,16 @@
 "use client";
 
-import { OwnedObjekt, SearchUser } from "@/lib/universal/cosmo";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, Check, Loader2, Satellite, Send } from "lucide-react";
 import { Button } from "../ui/button";
 import { useState } from "react";
 import { useSearchStore } from "@/store";
-import { ethers } from "ethers";
 import {
   SUPPORTED_ETHEREUM_CHAIN_IDS,
   getRamperSigner,
   getUser,
 } from "@ramper/ethereum";
-import { parseUnits } from "ethers/lib/utils";
+import { parseEther, parseUnits } from "ethers/lib/utils";
 import { env } from "@/env.mjs";
 import { useToast } from "@/components/ui/use-toast";
 import {
@@ -38,6 +36,9 @@ import { UserSearch } from "../user-search";
 import { trackEvent } from "fathom-client";
 import Link from "next/link";
 import ObjektSidebar from "./objekt-sidebar";
+import { SearchUser } from "@/lib/universal/cosmo/auth";
+import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
+import { providers } from "ethers";
 
 type Props = {
   objekt: OwnedObjekt;
@@ -246,7 +247,7 @@ function SendToUserButton({
     setPending(true);
     const ramperUser = getUser();
     const wallet = ramperUser!.wallets["ethereum"];
-    const alchemy = new ethers.providers.AlchemyProvider(
+    const alchemy = new providers.AlchemyProvider(
       SUPPORTED_ETHEREUM_CHAIN_IDS.MATIC,
       env.NEXT_PUBLIC_ALCHEMY_KEY
     );
@@ -255,7 +256,7 @@ function SendToUserButton({
       const ramperSigner = await getRamperSigner(alchemy);
       updateTransactionProgress(TransactionStatus.GET_USER);
 
-      const value = ethers.utils.parseEther("0.0");
+      const value = parseEther("0.0");
       const nonce = await fetchNonce(alchemy, wallet.publicKey);
       updateTransactionProgress(TransactionStatus.GET_NONCE);
       const customData = encodeObjektTransfer(

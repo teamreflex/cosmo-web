@@ -7,7 +7,7 @@ import {
   CosmoBodyText,
   CosmoBodyVideo,
   CosmoGravity,
-} from "@/lib/universal/cosmo";
+} from "@/lib/universal/cosmo/gravity";
 import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
 import Image from "next/image";

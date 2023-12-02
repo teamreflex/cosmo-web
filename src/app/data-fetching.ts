@@ -1,9 +1,9 @@
-import { cacheArtists } from "@/lib/server/cache";
-import { fetchHomeNews } from "@/lib/server/cosmo";
+import { cacheArtists } from "@/lib/server/cache/available-artists";
+import { fetchHomeNews } from "@/lib/server/cosmo/news";
 import { cache } from "react";
 import { getUser } from "./api/common";
 import { remember } from "@/lib/server/cache/common";
-import { fetchObjektLists } from "@/lib/server/objekts";
+import { fetchObjektLists } from "@/lib/server/objekts/lists";
 import { fetchProfile } from "@/lib/server/auth";
 
 /**

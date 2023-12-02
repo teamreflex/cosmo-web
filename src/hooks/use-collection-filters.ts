@@ -4,8 +4,8 @@ import {
   validOnlineTypes,
   validSeasons,
   validSorts,
-} from "@/lib/universal/cosmo";
-import { z } from "zod";
+} from "@/lib/universal/cosmo/common";
+import * as z from "zod";
 import {
   ValidKey,
   toSearchParams,

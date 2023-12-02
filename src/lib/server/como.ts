@@ -1,6 +1,6 @@
-import { and, eq, or, sql } from "drizzle-orm";
-import { indexer } from "../db/indexer";
-import { collections, objekts } from "../db/indexer/schema";
+import { and, eq, sql } from "drizzle-orm";
+import { indexer } from "./db/indexer";
+import { collections, objekts } from "./db/indexer/schema";
 import { ObjektWithCollection } from "@/lib/universal/como";
 
 const statement = indexer

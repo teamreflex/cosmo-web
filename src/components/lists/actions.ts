@@ -1,7 +1,7 @@
 "use server";
 
 import "server-only";
-import { z } from "zod";
+import * as z from "zod";
 import { authenticatedAction } from "@/lib/server/typed-action";
 import {
   addObjekt,
@@ -9,7 +9,7 @@ import {
   deleteObjektList,
   removeObjekt,
   updateObjektList,
-} from "@/lib/server/objekts";
+} from "@/lib/server/objekts/lists";
 import { revalidatePath } from "next/cache";
 import slugify from "slugify";
 

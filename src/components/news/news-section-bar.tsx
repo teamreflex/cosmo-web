@@ -1,4 +1,4 @@
-import { CosmoNewsSectionBar } from "@/lib/universal/cosmo";
+import { CosmoNewsSectionBar } from "@/lib/universal/cosmo/news";
 
 type Props = {
   section: CosmoNewsSectionBar;

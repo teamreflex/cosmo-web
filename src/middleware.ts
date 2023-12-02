@@ -6,7 +6,7 @@ import {
   signToken,
   validateExpiry,
 } from "./lib/server/jwt";
-import { refresh } from "./lib/server/cosmo";
+import { refresh } from "./lib/server/cosmo/auth";
 
 export const config = {
   matcher: [

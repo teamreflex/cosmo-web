@@ -1,8 +1,8 @@
-import { ethers } from "ethers";
 import objektAbi from "@/abi/objekt.json";
 import { Interface } from "ethers/lib/utils";
-import { GasStationResult } from "@/lib/universal/cosmo";
 import { SUPPORTED_ETHEREUM_CHAIN_IDS } from "@ramper/ethereum";
+import { GasStationResult } from "../universal/cosmo/objekts";
+import { BigNumber, providers } from "ethers";
 
 export class TransactionError extends Error {
   constructor(message: string) {
@@ -15,7 +15,7 @@ export class TransactionError extends Error {
  * Fetch the wallet's transaction count to use as a nonce.
  */
 export async function fetchNonce(
-  alchemy: ethers.providers.AlchemyProvider,
+  alchemy: providers.AlchemyProvider,
   address: string
 ) {
   try {
@@ -51,7 +51,7 @@ export function encodeObjektTransfer(
  * Estimate the gas required for the transaction.
  */
 export async function fetchGasLimit(
-  alchemy: ethers.providers.AlchemyProvider,
+  alchemy: providers.AlchemyProvider,
   objektContract: string,
   transactionData: string
 ) {
@@ -70,7 +70,7 @@ export async function fetchGasLimit(
  * Fetch the fee data from Alchemy.
  * @deprecated use the Cosmo gas station instead
  */
-export async function fetchFeeData(alchemy: ethers.providers.AlchemyProvider) {
+export async function fetchFeeData(alchemy: providers.AlchemyProvider) {
   try {
     return await alchemy.getFeeData();
   } catch (err) {
@@ -109,11 +109,11 @@ export async function signTransaction(
   tokenAddress: string,
   ramperSigner: any,
   fromAddress: string,
-  value: ethers.BigNumber,
+  value: BigNumber,
   nonce: number,
-  gasLimit: ethers.BigNumber,
-  maxFeePerGas: ethers.BigNumber | null,
-  maxPriorityFeePerGas: ethers.BigNumber | null,
+  gasLimit: BigNumber,
+  maxFeePerGas: BigNumber | null,
+  maxPriorityFeePerGas: BigNumber | null,
   customData: string
 ) {
   try {
@@ -139,7 +139,7 @@ export async function signTransaction(
  * Submit the transaction to the blockchain.
  */
 export async function sendTransaction(
-  alchemy: ethers.providers.AlchemyProvider,
+  alchemy: providers.AlchemyProvider,
   signedTransaction: string
 ) {
   try {

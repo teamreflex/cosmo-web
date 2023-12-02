@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { decodeUser } from "../data-fetching";
-import { cacheArtists } from "@/lib/server/cache";
+import { cacheArtists } from "@/lib/server/cache/available-artists";
 import { fetchSpecialObjekts } from "@/lib/server/como";
 import ComoCalendar from "@/components/como/calendar";
 import CurrentMonth from "@/components/como/current-month";

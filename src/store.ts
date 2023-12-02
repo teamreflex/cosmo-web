@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { SearchUser } from "@/lib/universal/cosmo";
+import { SearchUser } from "./lib/universal/cosmo/auth";
 
 /**
  * store for various settings in the app

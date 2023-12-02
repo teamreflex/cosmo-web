@@ -3,7 +3,7 @@
 import {
   CosmoNewsSectionBanner,
   CosmoNewsSectionBannerContent,
-} from "@/lib/universal/cosmo";
+} from "@/lib/universal/cosmo/news";
 import Image from "next/image";
 import Link from "next/link";
 import { PropsWithClassName } from "@/lib/utils";

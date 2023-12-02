@@ -1,11 +1,11 @@
 import { Metadata } from "next";
 import { cache } from "react";
-import { fetchGravity } from "@/lib/server/cosmo";
+import { fetchGravity } from "@/lib/server/cosmo/gravity";
 import GravityBodyRenderer from "@/components/gravity/gravity-body-renderer";
 import GravityCoreDetails from "@/components/gravity/gravity-core-details";
 import { redirect } from "next/navigation";
 import { decodeUser } from "../../../data-fetching";
-import { ValidArtist } from "@/lib/universal/cosmo";
+import { ValidArtist } from "@/lib/universal/cosmo/common";
 
 type Params = {
   artist: ValidArtist;

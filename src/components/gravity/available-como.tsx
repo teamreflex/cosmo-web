@@ -1,6 +1,6 @@
 import { decodeUser, getArtists } from "@/app/data-fetching";
-import { fetchTokenBalances } from "@/lib/server/alchemy";
-import { ValidArtist } from "@/lib/universal/cosmo";
+import { fetchTokenBalances } from "@/lib/server/alchemy/erc20";
+import { ValidArtist } from "@/lib/universal/cosmo/common";
 
 export default async function AvailableComo({
   artist,

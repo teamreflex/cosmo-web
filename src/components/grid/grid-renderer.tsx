@@ -1,6 +1,6 @@
 "use client";
 
-import { CosmoGrid, CosmoOngoingGrid } from "@/lib/universal/cosmo";
+import { CosmoGrid, CosmoOngoingGrid } from "@/lib/universal/cosmo/grid";
 import { MemberFilterButton } from "../collection/member-filter";
 import { useState } from "react";
 import { useQuery } from "react-query";

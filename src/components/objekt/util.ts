@@ -1,5 +1,5 @@
-import { OwnedObjekt } from "@/lib/universal/cosmo";
-import { IndexedObjekt } from "@/lib/universal/objekt-index";
+import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
+import { IndexedObjekt } from "@/lib/universal/objekts";
 import { createContext } from "react";
 
 export type ValidObjekt = OwnedObjekt | IndexedObjekt;

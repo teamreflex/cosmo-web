@@ -1,11 +1,12 @@
-import { fetchEditions } from "@/lib/server/cosmo";
+import { fetchEditions } from "@/lib/server/cosmo/grid";
 import { ChevronRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import * as R from "remeda";
 import { decodeUser } from "@/app/data-fetching";
-import { CosmoGridEdition, ValidArtist } from "@/lib/universal/cosmo";
+import { ValidArtist } from "@/lib/universal/cosmo/common";
+import { CosmoGridEdition } from "@/lib/universal/cosmo/grid";
 
 export default async function GridEditions({
   artist,

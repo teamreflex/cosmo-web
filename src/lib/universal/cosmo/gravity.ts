@@ -1,4 +1,4 @@
-import { ValidArtist } from "@/lib/universal/cosmo";
+import { ValidArtist } from "@/lib/universal/cosmo/common";
 
 export type CosmoGravityType = "event-gravity" | "grand-gravity";
 export type CosmoPollType = "single-poll" | "combination-poll";

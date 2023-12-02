@@ -3,7 +3,7 @@ import {
   CosmoOngoingGravity,
   CosmoPastGravity,
   CosmoUpcomingGravity,
-} from "@/lib/universal/cosmo";
+} from "@/lib/universal/cosmo/gravity";
 import { isFuture, isPast } from "date-fns";
 import { ChevronRight } from "lucide-react";
 import Image from "next/image";

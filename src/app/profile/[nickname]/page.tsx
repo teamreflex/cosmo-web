@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import UserCollectionLoading from "./loading";
 import { isAddress } from "ethers/lib/utils";
-import { cacheMembers } from "@/lib/server/cache";
+import { cacheMembers } from "@/lib/server/cache/available-artists";
 import CollectionRenderer from "@/components/collection/collection-renderer";
 import { fetchCollectionByNickname } from "@/lib/server/auth";
 import { PublicUser } from "@/lib/universal/auth";

@@ -1,10 +1,9 @@
-import "server-only";
 import {
-  COSMO_ENDPOINT,
-  ValidArtist,
   CosmoArtist,
   CosmoArtistWithMembers,
-} from "@/lib/universal/cosmo";
+} from "@/lib/universal/cosmo/artists";
+import { COSMO_ENDPOINT, ValidArtist } from "@/lib/universal/cosmo/common";
+import "server-only";
 
 type CosmoArtistsResult = {
   artists: CosmoArtist[];

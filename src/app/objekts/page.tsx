@@ -1,4 +1,4 @@
-import { cacheMembers } from "@/lib/server/cache";
+import { cacheMembers } from "@/lib/server/cache/available-artists";
 import { Metadata } from "next";
 import { decodeUser, getObjektListsForUser } from "../data-fetching";
 import IndexRenderer from "@/components/objekt-index/index-renderer";

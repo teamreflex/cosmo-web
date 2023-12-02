@@ -10,11 +10,6 @@ import { LockedFilter } from "./filter-locked";
 import { SortFilter } from "./filter-sort";
 import { Toggle } from "../ui/toggle";
 import HelpDialog from "./help-dialog";
-import {
-  COSMO_ENDPOINT,
-  CosmoArtistWithMembers,
-  OwnedObjektsResult,
-} from "@/lib/universal/cosmo";
 import OpenSeaButton from "./options/opensea-button";
 import PolygonButton from "./options/polygon-button";
 import MobileOptions from "./options/mobile-options";
@@ -25,11 +20,14 @@ import {
   useCollectionFilters,
 } from "@/hooks/use-collection-filters";
 import CollectionObjektDisplay from "./collection-objekt-display";
-import { ObjektList } from "@/lib/universal/objekt-index";
+import { ObjektList } from "@/lib/universal/objekts";
 import ListDropdown from "../lists/list-dropdown";
 import { TokenPayload } from "@/lib/universal/auth";
 import { toSearchParams } from "@/hooks/use-typed-search-params";
 import { useState } from "react";
+import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
+import { COSMO_ENDPOINT } from "@/lib/universal/cosmo/common";
+import { OwnedObjektsResult } from "@/lib/universal/cosmo/objekts";
 
 export type PropsWithFilters<T extends keyof CollectionFilters> = {
   filters: CollectionFilters[T];

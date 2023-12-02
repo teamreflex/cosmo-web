@@ -1,5 +1,5 @@
 import { useSearchParams } from "next/navigation";
-import { z } from "zod";
+import * as z from "zod";
 import { getParams } from "remix-params-helper";
 
 export type ValidKey<T extends z.Schema> = keyof z.infer<T>;

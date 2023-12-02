@@ -1,4 +1,4 @@
-import { ObjektList } from "./objekt-index";
+import { ObjektList } from "./objekts";
 
 export type TokenPayload = {
   id: number;

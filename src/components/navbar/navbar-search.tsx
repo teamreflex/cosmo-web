@@ -4,10 +4,10 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { UserSearch } from "../user-search";
 import { Search } from "lucide-react";
-import { SearchUser } from "@/lib/universal/cosmo";
 import { useSearchStore } from "@/store";
 import { Route } from "next";
 import { cn } from "@/lib/utils";
+import { SearchUser } from "@/lib/universal/cosmo/auth";
 
 export default function NavbarSearch() {
   const recent = useSearchStore((state) => state.recentLookups);

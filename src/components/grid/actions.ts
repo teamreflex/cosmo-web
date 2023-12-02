@@ -1,14 +1,14 @@
 "use server";
 
 import "server-only";
-import { z } from "zod";
+import * as z from "zod";
 import { authenticatedAction } from "@/lib/server/typed-action";
-import { claimGridReward, completeGrid } from "@/lib/server/cosmo";
+import { claimGridReward, completeGrid } from "@/lib/server/cosmo/grid";
 import { env } from "@/env.mjs";
 import {
   CosmoGridRewardClaimResult,
   CosmoGridSlotCompletion,
-} from "@/lib/universal/cosmo";
+} from "@/lib/universal/cosmo/grid";
 
 type SubmitGridProps = {
   slug: string;

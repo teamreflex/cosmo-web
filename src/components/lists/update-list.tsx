@@ -1,4 +1,4 @@
-import { ObjektList } from "@/lib/universal/objekt-index";
+import { ObjektList } from "@/lib/universal/objekts";
 import { Button } from "../ui/button";
 import { Edit, Loader2 } from "lucide-react";
 import { useState, useTransition } from "react";

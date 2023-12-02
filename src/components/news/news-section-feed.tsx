@@ -1,4 +1,4 @@
-import { CosmoNewsSectionFeed } from "@/lib/universal/cosmo";
+import { CosmoNewsSectionFeed } from "@/lib/universal/cosmo/news";
 import NewsPostFeed from "./news-post-feed";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";

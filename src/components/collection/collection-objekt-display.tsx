@@ -1,6 +1,5 @@
 import { LockedObjektContext } from "@/context/objekt";
 import { CollectionFilters } from "@/hooks/use-collection-filters";
-import { CosmoArtistWithMembers, OwnedObjekt } from "@/lib/universal/cosmo";
 import { useState } from "react";
 import FilteredObjektDisplay, {
   ObjektResponse,
@@ -8,6 +7,8 @@ import FilteredObjektDisplay, {
 import ObjektSidebar from "../objekt/objekt-sidebar";
 import InformationOverlay from "../objekt/information-overlay";
 import ActionOverlay from "../objekt/action-overlay";
+import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
+import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
 
 type Props = {
   authenticated: boolean;

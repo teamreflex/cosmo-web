@@ -9,11 +9,12 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { COSMO_ENDPOINT, SearchUser } from "@/lib/universal/cosmo";
 import { useQuery } from "react-query";
 import { useDebounce } from "usehooks-ts";
 import { HeartCrack, Loader2 } from "lucide-react";
 import { isAddress } from "ethers/lib/utils";
+import { SearchUser } from "@/lib/universal/cosmo/auth";
+import { COSMO_ENDPOINT } from "@/lib/universal/cosmo/common";
 
 type Props = PropsWithChildren<{
   placeholder?: string;

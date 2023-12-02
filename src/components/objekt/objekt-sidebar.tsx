@@ -3,8 +3,8 @@
 import { useContext } from "react";
 import { useElementSize } from "usehooks-ts";
 import { ObjektContext, isOwnedObjekt } from "./util";
-import { OwnedObjekt } from "@/lib/universal/cosmo";
-import { IndexedObjekt } from "@/lib/universal/objekt-index";
+import { IndexedObjekt } from "@/lib/universal/objekts";
+import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
 
 export default function ObjektSidebar() {
   const { objekt } = useContext(ObjektContext) as ObjektContext<

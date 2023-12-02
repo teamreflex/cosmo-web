@@ -25,7 +25,7 @@ import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { create } from "./actions";
 import { useToast } from "../ui/use-toast";
-import { ObjektList } from "@/lib/universal/objekt-index";
+import { ObjektList } from "@/lib/universal/objekts";
 import Link from "next/link";
 
 type Props = {

@@ -1,4 +1,4 @@
-import { ValidArtist } from ".";
+import { ValidArtist } from "./common";
 
 export type CosmoNewsSectionBar = {
   type: "bar";

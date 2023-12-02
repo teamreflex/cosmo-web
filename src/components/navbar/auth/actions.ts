@@ -1,15 +1,15 @@
 "use server";
 
 import "server-only";
-import { z } from "zod";
+import * as z from "zod";
 import { cookies } from "next/headers";
 import { generateCookiePayload, signToken } from "@/lib/server/jwt";
-import { login } from "@/lib/server/cosmo";
+import { login } from "@/lib/server/cosmo/auth";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { authenticatedAction, typedAction } from "@/lib/server/typed-action";
 import { getUser } from "@/app/api/common";
-import { validArtists } from "@/lib/universal/cosmo";
+import { validArtists } from "@/lib/universal/cosmo/common";
 import { findOrCreateProfile, setSelectedArtist } from "@/lib/server/auth";
 
 /**

@@ -2,9 +2,10 @@ import AuthOptions from "./auth/auth-options";
 import ApolloLogo from "./apollo-logo";
 import { ReactNode, Suspense } from "react";
 import { TokenPayload } from "@/lib/universal/auth";
-import { CosmoArtist, ValidArtist } from "@/lib/universal/cosmo";
 import Links from "./links";
 import GasDisplay from "../misc/gas-display";
+import { CosmoArtist } from "@/lib/universal/cosmo/artists";
+import { ValidArtist } from "@/lib/universal/cosmo/common";
 
 type Props = {
   user: TokenPayload | undefined;

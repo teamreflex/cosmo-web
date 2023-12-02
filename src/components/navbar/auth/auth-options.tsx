@@ -7,7 +7,8 @@ import { Loader2 } from "lucide-react";
 import { TokenPayload } from "@/lib/universal/auth";
 import UserDropdown from "./user-dropdown";
 import SignInDialog from "./sign-in-dialog";
-import { CosmoArtist, ValidArtist } from "@/lib/universal/cosmo";
+import { CosmoArtist } from "@/lib/universal/cosmo/artists";
+import { ValidArtist } from "@/lib/universal/cosmo/common";
 
 type Props = {
   user: TokenPayload | undefined;

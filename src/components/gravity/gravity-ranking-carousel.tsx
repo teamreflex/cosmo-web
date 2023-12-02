@@ -4,7 +4,7 @@ import {
   CosmoCombinationPollVoteResult,
   CosmoPollFinalized,
   CosmoSinglePollVoteResult,
-} from "@/lib/universal/cosmo";
+} from "@/lib/universal/cosmo/gravity";
 import { ordinal } from "@/lib/utils";
 import useEmblaCarousel from "embla-carousel-react";
 import Image from "next/image";

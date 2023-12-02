@@ -2,7 +2,7 @@
 
 import { SlidersHorizontal } from "lucide-react";
 import { Toggle } from "../ui/toggle";
-import { CosmoArtistWithMembers } from "@/lib/universal/cosmo";
+import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
 import {
   collectionFilters,
   useCollectionFilters,
@@ -16,7 +16,7 @@ import {
   IndexedCosmoResponse,
   IndexedObjekt,
   ObjektList,
-} from "@/lib/universal/objekt-index";
+} from "@/lib/universal/objekts";
 import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
 import { toSearchParams } from "@/hooks/use-typed-search-params";
 import ObjektSidebar from "../objekt/objekt-sidebar";

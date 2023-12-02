@@ -9,7 +9,8 @@ import Image from "next/image";
 import { Check, Loader2 } from "lucide-react";
 import { useTransition } from "react";
 import { updateSelectedArtist } from "./actions";
-import { CosmoArtist, ValidArtist } from "@/lib/universal/cosmo";
+import { CosmoArtist } from "@/lib/universal/cosmo/artists";
+import { ValidArtist } from "@/lib/universal/cosmo/common";
 
 type SwitchArtistDialogProps = {
   open: boolean;

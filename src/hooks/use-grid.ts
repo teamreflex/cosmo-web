@@ -5,7 +5,7 @@ import {
   CosmoGridRewardClaimResult,
   CosmoGridSlotCompletion,
   CosmoOngoingGridSlot,
-} from "@/lib/universal/cosmo";
+} from "@/lib/universal/cosmo/grid";
 import { trackEvent } from "fathom-client";
 import { useEffect, useState, useTransition } from "react";
 

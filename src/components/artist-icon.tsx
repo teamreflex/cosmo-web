@@ -1,4 +1,4 @@
-import { ValidArtist } from "@/lib/universal/cosmo";
+import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { Sparkle } from "lucide-react";
 import { ReactNode } from "react";
 

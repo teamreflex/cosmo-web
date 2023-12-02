@@ -1,5 +1,5 @@
 import { getUser } from "@/app/api/common";
-import { z } from "zod";
+import * as z from "zod";
 import { getErrorMessage } from "../error";
 import { TokenPayload } from "../universal/auth";
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { IndexedObjekt, ObjektList } from "@/lib/universal/objekt-index";
+import { IndexedObjekt, ObjektList } from "@/lib/universal/objekts";
 import { ListPlus, Loader2, Plus } from "lucide-react";
 import { MouseEvent, useState, useTransition } from "react";
 import {

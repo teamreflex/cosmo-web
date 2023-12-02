@@ -1,5 +1,6 @@
 import "server-only";
-import { COSMO_ENDPOINT, ObjektMetadata } from "@/lib/universal/cosmo";
+import { COSMO_ENDPOINT } from "@/lib/universal/cosmo/common";
+import { ObjektMetadata } from "@/lib/universal/cosmo/objekts";
 
 /**
  * Fetch token metadata from Cosmo.

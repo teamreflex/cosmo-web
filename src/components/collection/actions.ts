@@ -1,7 +1,7 @@
 "use server";
 
 import "server-only";
-import { z } from "zod";
+import * as z from "zod";
 import { authenticatedAction } from "@/lib/server/typed-action";
 import { setObjektLock } from "@/lib/server/collection/locked-objekts";
 

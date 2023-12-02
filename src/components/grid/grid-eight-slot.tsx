@@ -1,5 +1,5 @@
 import { useGrid } from "@/hooks/use-grid";
-import { CosmoOngoingGrid } from "@/lib/universal/cosmo";
+import { CosmoOngoingGrid } from "@/lib/universal/cosmo/grid";
 import SlotSelector from "./slot-selector";
 import { cn } from "@/lib/utils";
 import GridObjekt from "./grid-objekt";

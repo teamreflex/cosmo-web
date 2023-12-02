@@ -6,8 +6,8 @@ import {
   CreateObjektList,
   ObjektList,
   UpdateObjektList,
-} from "@/lib/universal/objekt-index";
-import { search } from "../cosmo";
+} from "@/lib/universal/objekts";
+import { search } from "../cosmo/auth";
 
 /**
  * Fetch all lists for a given user.

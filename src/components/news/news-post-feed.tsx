@@ -1,4 +1,4 @@
-import { CosmoNewsSectionFeedContent } from "@/lib/universal/cosmo";
+import { CosmoNewsSectionFeedContent } from "@/lib/universal/cosmo/news";
 import Image from "next/image";
 import Timestamp from "../ui/timestamp";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";

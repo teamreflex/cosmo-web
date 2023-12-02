@@ -1,9 +1,9 @@
-import { fetchMyGravityResult } from "@/lib/server/cosmo";
+import { fetchMyGravityResult } from "@/lib/server/cosmo/gravity";
 import { ordinal } from "@/lib/utils";
 import Image from "next/image";
 import GravityVoteTimestamp from "./gravity-vote-timestamp";
 import { decodeUser } from "@/app/data-fetching";
-import { CosmoPastGravity } from "@/lib/universal/cosmo";
+import { CosmoPastGravity } from "@/lib/universal/cosmo/gravity";
 
 type Props = {
   gravity: CosmoPastGravity;

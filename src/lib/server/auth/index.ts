@@ -1,9 +1,10 @@
 import { InferInsertModel, eq } from "drizzle-orm";
 import { db } from "../db";
 import { profiles } from "../db/schema";
-import { LoginResult, SearchUser, ValidArtist } from "@/lib/universal/cosmo";
-import { search } from "../cosmo";
 import { PublicUser } from "@/lib/universal/auth";
+import { LoginResult } from "@/lib/universal/cosmo/auth";
+import { ValidArtist } from "@/lib/universal/cosmo/common";
+import { search } from "../cosmo/auth";
 
 type InsertProfile = InferInsertModel<typeof profiles>;
 

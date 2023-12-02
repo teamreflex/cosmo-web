@@ -1,13 +1,12 @@
 "use client";
 
 import {
-  COSMO_ENDPOINT,
   CosmoNewsFeedResult,
   CosmoNewsSectionFeedContent,
-  ValidArtist,
-} from "@/lib/universal/cosmo";
+} from "@/lib/universal/cosmo/news";
 import NewsInfiniteLoader from "./news-infinite-loader";
 import NewsPostFeed from "./news-post-feed";
+import { COSMO_ENDPOINT, ValidArtist } from "@/lib/universal/cosmo/common";
 
 type Props = {
   artist: ValidArtist;

@@ -1,6 +1,6 @@
 import "server-only";
 import { remember } from "./common";
-import { fetchGasPrice } from "../alchemy";
+import { fetchGasPrice } from "../alchemy/gas";
 import { GasPrice } from "@/lib/universal/alchemy/gas";
 
 /**

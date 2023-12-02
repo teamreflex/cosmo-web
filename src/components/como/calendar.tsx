@@ -5,7 +5,7 @@ import {
   buildCalendar,
   getDays,
 } from "@/lib/universal/como";
-import { CosmoArtist } from "@/lib/universal/cosmo";
+import { CosmoArtist } from "@/lib/universal/cosmo/artists";
 import { cn } from "@/lib/utils";
 import ArtistIcon from "../artist-icon";
 

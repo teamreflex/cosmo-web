@@ -9,11 +9,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { PopulatedSlot } from "@/hooks/use-grid";
-import {
-  COSMO_ENDPOINT,
-  OwnedObjekt,
-  OwnedObjektsResult,
-} from "@/lib/universal/cosmo";
+import { OwnedObjekt, OwnedObjektsResult } from "@/lib/universal/cosmo/objekts";
 import { HeartCrack, Loader2 } from "lucide-react";
 import { PropsWithChildren, useState } from "react";
 import { useQuery } from "react-query";
@@ -21,6 +17,7 @@ import GridObjekt from "./grid-objekt";
 import useEmblaCarousel from "embla-carousel-react";
 import { Button } from "../ui/button";
 import { getUser } from "@ramper/ethereum";
+import { COSMO_ENDPOINT } from "@/lib/universal/cosmo/common";
 
 type Props = PropsWithChildren<{
   collectionId: string;

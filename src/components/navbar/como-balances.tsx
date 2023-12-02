@@ -1,8 +1,11 @@
-import { DecodedTokenBalance, fetchTokenBalances } from "@/lib/server/alchemy";
-import { CosmoArtist, ValidArtist } from "@/lib/universal/cosmo";
+import {
+  DecodedTokenBalance,
+  fetchTokenBalances,
+} from "@/lib/server/alchemy/erc20";
 import { getArtists } from "@/app/data-fetching";
 import ArtistIcon from "../artist-icon";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { CosmoArtist } from "@/lib/universal/cosmo/artists";
 
 export default async function ComoBalances({ address }: { address: string }) {
   const artists = await getArtists();

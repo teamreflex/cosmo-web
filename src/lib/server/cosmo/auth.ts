@@ -1,5 +1,6 @@
+import { LoginResult, SearchUser } from "@/lib/universal/cosmo/auth";
+import { COSMO_ENDPOINT } from "@/lib/universal/cosmo/common";
 import "server-only";
-import { COSMO_ENDPOINT, LoginResult, SearchUser } from "@/lib/universal/cosmo";
 
 type CosmoLoginResult = {
   user: {

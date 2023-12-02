@@ -1,4 +1,4 @@
-import { ObjektList } from "@/lib/universal/objekt-index";
+import { ObjektList } from "@/lib/universal/objekts";
 import {
   AlertDialog,
   AlertDialogAction,

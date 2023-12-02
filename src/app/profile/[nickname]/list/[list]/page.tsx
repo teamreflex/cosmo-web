@@ -1,10 +1,10 @@
 import { Metadata } from "next";
 import { Suspense, cache } from "react";
-import { fetchObjektList, fetchObjektListForUser } from "@/lib/server/objekts";
+import { fetchObjektListForUser } from "@/lib/server/objekts/lists";
 import { notFound, redirect } from "next/navigation";
 import ObjektListLoading from "./loading";
-import { search } from "@/lib/server/cosmo";
-import { cacheMembers } from "@/lib/server/cache";
+import { search } from "@/lib/server/cosmo/auth";
+import { cacheMembers } from "@/lib/server/cache/available-artists";
 import { decodeUser } from "@/app/data-fetching";
 import ListRenderer from "@/components/lists/list-renderer";
 

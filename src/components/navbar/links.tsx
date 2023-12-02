@@ -79,6 +79,7 @@ function LinkIcons({ segment }: { segment: string | null }) {
           href={{ pathname: link.href }}
           className="drop-shadow-lg hover:scale-110 transition-all"
           aria-label={link.name}
+          prefetch={false}
         >
           <link.icon
             className={cn(

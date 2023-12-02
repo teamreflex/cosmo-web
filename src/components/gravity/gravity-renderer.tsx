@@ -1,8 +1,9 @@
-import { fetchGravities } from "@/lib/server/cosmo";
+import { fetchGravities } from "@/lib/server/cosmo/gravity";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import GravityItem from "./gravity-item";
 import { decodeUser } from "@/app/data-fetching";
-import { CosmoGravity, ValidArtist } from "@/lib/universal/cosmo";
+import { CosmoGravity } from "@/lib/universal/cosmo/gravity";
+import { ValidArtist } from "@/lib/universal/cosmo/common";
 
 type Props = {
   artist: ValidArtist;
