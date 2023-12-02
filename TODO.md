@@ -42,3 +42,4 @@
 
 - Set a favorite objekt?
 - Set a favorite member?
+- Social links? Twitter, Discord, Instagram etc

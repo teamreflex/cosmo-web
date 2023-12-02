@@ -10,7 +10,7 @@ const map: Record<ValidArtist, ReactNode> = {
       viewBox="0 0 24 24"
       strokeWidth={1.5}
       stroke="currentColor"
-      className="ring-1 p-px w-4 h-4 rounded-full text-teal-400 fill-teal-400 ring-teal-400"
+      className="ring-1 p-px w-4 h-4 rounded-full text-teal-400 fill-teal-400 ring-teal-400 saturate-[.60]"
     >
       <path
         strokeLinecap="round"
