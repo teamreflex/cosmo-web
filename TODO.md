@@ -8,8 +8,6 @@
 ## General
 
 - Improve loading skeletons
-- Replace Alchemy SDK with native websocket
-  - should fix turbopack support
 
 ### Grid
 

@@ -38,8 +38,6 @@ import { UserSearch } from "../user-search";
 import { trackEvent } from "fathom-client";
 import Link from "next/link";
 import ObjektSidebar from "./objekt-sidebar";
-import { createConnection } from "@/lib/client/websocket";
-import { Alchemy } from "alchemy-sdk";
 
 type Props = {
   objekt: OwnedObjekt;
@@ -74,7 +72,6 @@ export default function SendObjekt({ objekt }: Props) {
   const [transactionProgress, setTransactionProgress] =
     useState<TransactionStatus>(TransactionStatus.WAITING);
   const [transactionHash, setTransactionHash] = useState("");
-  const [connection, setConnection] = useState<Alchemy>();
 
   const recent = useSearchStore((state) => state.recentSends);
   const addRecent = useSearchStore((state) => state.addRecentSend);
@@ -96,25 +93,9 @@ export default function SendObjekt({ objekt }: Props) {
     if (progress === TransactionStatus.COMPLETE) {
       // refresh collection upon transfer
       setTimeout(() => queryClient.invalidateQueries(["collection"]), 1000);
-
-      // disconnect websocket upon transfer
-      connection?.ws.removeAllListeners();
     }
 
     setTransactionProgress(progress);
-  }
-
-  function connect(sender: string) {
-    setConnection(
-      createConnection({
-        from: sender,
-        onResult: (hash) => {
-          if (hash === transactionHash) {
-            setTransactionProgress(TransactionStatus.COMPLETE);
-          }
-        },
-      })
-    );
   }
 
   const placeholder =
@@ -203,6 +184,7 @@ export default function SendObjekt({ objekt }: Props) {
             {/* progress bar while sending */}
             {transactionProgress !== TransactionStatus.WAITING &&
               transactionProgress !== TransactionStatus.PENDING_TRANSACTION &&
+              transactionProgress !== TransactionStatus.COMPLETE &&
               transactionProgress !== TransactionStatus.ERROR && (
                 <div className="flex flex-col gap-2 justify-center items-center">
                   <Satellite className="h-16 w-16 animate-pulse" />
@@ -233,7 +215,6 @@ export default function SendObjekt({ objekt }: Props) {
                 <SendToUserButton
                   objekt={objekt}
                   user={recipient}
-                  transactionStarted={connect}
                   updateTransactionProgress={updateProgress}
                 />
               </DialogFooter>
@@ -248,7 +229,6 @@ export default function SendObjekt({ objekt }: Props) {
 type SendToUserButtonProps = {
   objekt: OwnedObjekt;
   user: SearchUser;
-  transactionStarted: (sender: string) => void;
   updateTransactionProgress: (
     status: TransactionStatus,
     txHash?: string
@@ -258,7 +238,6 @@ type SendToUserButtonProps = {
 function SendToUserButton({
   objekt,
   user,
-  transactionStarted,
   updateTransactionProgress,
 }: SendToUserButtonProps) {
   const { toast } = useToast();
@@ -275,8 +254,6 @@ function SendToUserButton({
     try {
       const ramperSigner = await getRamperSigner(alchemy);
       updateTransactionProgress(TransactionStatus.GET_USER);
-
-      transactionStarted(wallet.publicKey);
 
       const value = ethers.utils.parseEther("0.0");
       const nonce = await fetchNonce(alchemy, wallet.publicKey);
@@ -318,10 +295,7 @@ function SendToUserButton({
         description: "Transaction submitted!",
         variant: "default",
       });
-      updateTransactionProgress(
-        TransactionStatus.PENDING_TRANSACTION,
-        transaction.hash
-      );
+      updateTransactionProgress(TransactionStatus.COMPLETE, transaction.hash);
 
       trackEvent("send-objekt");
     } catch (err) {
