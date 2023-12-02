@@ -2,7 +2,6 @@ import { ObjektList } from "./objekt-index";
 
 export type TokenPayload = {
   id: number;
-  email: string;
   nickname: string;
   address: string;
   profileId: number;

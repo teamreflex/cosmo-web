@@ -24,16 +24,20 @@ export const cosmoLogin = async (email: string, token: string) =>
     { email, token },
     async ({ email, token }) => {
       // login with cosmo
-      const loginPayload = await login(email, token);
+      const loginResult = await login(email, token);
 
       // find or create a profile for the user
-      const profile = await findOrCreateProfile(loginPayload);
+      const profile = await findOrCreateProfile(loginResult);
 
       cookies().set(
         "token",
         await signToken({
-          ...loginPayload,
+          id: loginResult.id,
+          nickname: loginResult.nickname,
+          address: loginResult.address,
           profileId: profile.id,
+          accessToken: loginResult.accessToken,
+          refreshToken: loginResult.refreshToken,
         }),
         generateCookiePayload()
       );
