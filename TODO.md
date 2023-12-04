@@ -9,6 +9,9 @@
 
 - Improve loading skeletons
 - Move any caching from Vercel KV to `unstable_cache`
+- Fix account names pushing content off screen on mobile
+- Add tooltips to nav links
+- Add error boundaries to other pages
 
 ### Grid
 

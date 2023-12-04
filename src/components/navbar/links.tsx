@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import NavbarSearch from "./navbar-search";
-import { useSelectedLayoutSegment } from "next/navigation";
+import { usePathname, useSelectedLayoutSegment } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   Popover,
@@ -37,11 +37,12 @@ const links = [
 
 export default function Links() {
   const segment = useSelectedLayoutSegment();
+  const path = usePathname();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     setOpen(false);
-  }, [segment]);
+  }, [path]);
 
   return (
     <div className="flex grow justify-end sm:justify-center">
