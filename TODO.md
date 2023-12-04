@@ -4,12 +4,12 @@
 - Fix `useContext` error
   - might be local-only?
 - Fix collections search/dropdown jank
+- Fix tooltip issue on navbar search
 
 ## General
 
 - Improve loading skeletons
 - Move any caching from Vercel KV to `unstable_cache`
-- Add tooltips to nav links
 - Add error boundaries to other pages
 
 ### Grid

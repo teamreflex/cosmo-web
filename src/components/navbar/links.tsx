@@ -20,22 +20,48 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "../ui/button";
 import { useEffect, useState } from "react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 const links = [
-  { name: "Home", icon: Home, href: "/", segment: null },
-  { name: "Gravity", icon: Vote, href: "/gravity", segment: "gravity" },
-  { name: "Objekts", icon: LibraryBig, href: "/objekts", segment: "objekts" },
+  { name: "Home", icon: Home, href: "/", segment: null, requireAuth: true },
+  {
+    name: "Gravity",
+    icon: Vote,
+    href: "/gravity",
+    segment: "gravity",
+    requireAuth: true,
+  },
+  {
+    name: "Objekts",
+    icon: LibraryBig,
+    href: "/objekts",
+    segment: "objekts",
+    requireAuth: false,
+  },
   {
     name: "Collection",
     icon: PackageOpen,
     href: "/collection",
     segment: "collection",
+    requireAuth: true,
   },
-  { name: "COMO", icon: CalendarRange, href: "/como", segment: "como" },
-  { name: "Grid", icon: LayoutGrid, href: "/grid", segment: "grid" },
+  {
+    name: "COMO",
+    icon: CalendarRange,
+    href: "/como",
+    segment: "como",
+    requireAuth: true,
+  },
+  {
+    name: "Grid",
+    icon: LayoutGrid,
+    href: "/grid",
+    segment: "grid",
+    requireAuth: true,
+  },
 ];
 
-export default function Links() {
+export default function Links({ authenticated }: { authenticated: boolean }) {
   const segment = useSelectedLayoutSegment();
   const path = usePathname();
   const [open, setOpen] = useState(false);
@@ -48,7 +74,7 @@ export default function Links() {
     <div className="flex grow justify-end sm:justify-center">
       {/* desktop */}
       <div className="sm:flex flex-row items-center gap-8 hidden">
-        <LinkIcons segment={segment} />
+        <LinkIcons segment={segment} authenticated={authenticated} />
       </div>
 
       {/* mobile */}
@@ -63,7 +89,7 @@ export default function Links() {
             sideOffset={10}
             className="w-[calc(100vw-1rem)] mx-2 flex flex-row justify-between"
           >
-            <LinkIcons segment={segment} />
+            <LinkIcons segment={segment} authenticated={authenticated} />
           </PopoverContent>
         </Popover>
       </div>
@@ -71,23 +97,42 @@ export default function Links() {
   );
 }
 
-function LinkIcons({ segment }: { segment: string | null }) {
+function LinkIcons({
+  segment,
+  authenticated,
+}: {
+  segment: string | null;
+  authenticated: boolean;
+}) {
   return (
     <>
       {links.map((link, i) => (
-        <Link
-          key={i}
-          href={{ pathname: link.href }}
-          className="drop-shadow-lg hover:scale-110 transition-all"
-          aria-label={link.name}
-        >
-          <link.icon
-            className={cn(
-              "h-8 w-8 shrink-0 transition-all fill-transparent",
-              link.segment === segment && "fill-white/50"
-            )}
-          />
-        </Link>
+        <Tooltip key={i} delayDuration={0}>
+          <TooltipTrigger>
+            <Link
+              href={{ pathname: link.href }}
+              className="drop-shadow-lg hover:scale-110 transition-all"
+              aria-label={link.name}
+            >
+              <link.icon
+                className={cn(
+                  "h-8 w-8 shrink-0 transition-all fill-transparent",
+                  link.segment === segment && "fill-white/50",
+                  link.requireAuth &&
+                    !authenticated &&
+                    "text-slate-500 cursor-not-allowed"
+                )}
+              />
+            </Link>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>
+              {authenticated || (!link.requireAuth && !authenticated)
+                ? link.name
+                : "Sign in first!"}
+            </p>
+          </TooltipContent>
+        </Tooltip>
       ))}
 
       <NavbarSearch />

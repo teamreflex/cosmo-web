@@ -36,7 +36,7 @@ export default function Navbar({
               </Suspense>
             </div>
 
-            <Links />
+            <Links authenticated={user !== undefined} />
 
             <div className="flex grow-0 items-center justify-end gap-2">
               <AuthOptions
