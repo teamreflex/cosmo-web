@@ -17,7 +17,7 @@ export default function ApolloErrorBoundary({ children, message }: Props) {
   );
 }
 
-function Error({ message }: { message: string }) {
+export function Error({ message }: { message: string }) {
   function refresh() {
     window.location.reload();
   }
@@ -27,7 +27,7 @@ function Error({ message }: { message: string }) {
       <HeartCrack className="w-24 h-24" />
       <p className="font-semibold text-sm text-center">{message}</p>
 
-      <Button variant="ghost" onClick={refresh}>
+      <Button variant="outline" onClick={refresh}>
         <RefreshCcw className="mr-2" /> Refresh
       </Button>
     </div>

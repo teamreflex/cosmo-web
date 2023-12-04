@@ -4,6 +4,7 @@ import GravityRenderer, {
   GravitySkeleton,
 } from "@/components/gravity/gravity-renderer";
 import { decodeUser, getProfile } from "../data-fetching";
+import ApolloErrorBoundary from "@/components/error-boundary";
 
 export const metadata: Metadata = {
   title: "Gravity",
@@ -22,7 +23,9 @@ export default async function GravityPage() {
       </div>
 
       <Suspense fallback={<GravitySkeleton />}>
-        <GravityRenderer artist={profile.artist} />
+        <ApolloErrorBoundary message="Could not load gravity">
+          <GravityRenderer artist={profile.artist} />
+        </ApolloErrorBoundary>
       </Suspense>
     </main>
   );

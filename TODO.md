@@ -10,7 +10,6 @@
 
 - Improve loading skeletons
 - Move any caching from Vercel KV to `unstable_cache`
-- Add error boundaries to other pages
 
 ### Grid
 

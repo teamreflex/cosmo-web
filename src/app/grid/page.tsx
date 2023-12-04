@@ -5,6 +5,7 @@ import GridEditions, {
   GridEditionsSkeleton,
 } from "@/components/grid/grid-editions";
 import { decodeUser, getProfile } from "../data-fetching";
+import ApolloErrorBoundary from "@/components/error-boundary";
 
 export const metadata: Metadata = {
   title: "Grid",
@@ -23,15 +24,17 @@ export default async function GridPage() {
       </div>
 
       <div className="flex flex-col gap-4 items-center">
-        {/* grid status / completion totals */}
-        <Suspense fallback={<GridStatusSkeleton />}>
-          <GridStatus artist={profile.artist} />
-        </Suspense>
+        <ApolloErrorBoundary message="Could not load grid">
+          {/* grid status / completion totals */}
+          <Suspense fallback={<GridStatusSkeleton />}>
+            <GridStatus artist={profile.artist} />
+          </Suspense>
 
-        {/* available editions */}
-        <Suspense fallback={<GridEditionsSkeleton />}>
-          <GridEditions artist={profile.artist} />
-        </Suspense>
+          {/* available editions */}
+          <Suspense fallback={<GridEditionsSkeleton />}>
+            <GridEditions artist={profile.artist} />
+          </Suspense>
+        </ApolloErrorBoundary>
       </div>
     </main>
   );
