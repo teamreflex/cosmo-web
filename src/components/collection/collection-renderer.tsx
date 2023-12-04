@@ -82,14 +82,16 @@ export default function CollectionRenderer({
     <>
       <div className="flex flex-col sm:gap-2 group" data-show={showFilters}>
         {/* header */}
-        <div className="flex items-center justify-between pb-2 sm:pb-0">
+        <div className="flex flex-col md:flex-row items-center justify-between pb-2 sm:pb-0">
           {/* title */}
-          <div className="flex gap-2 items-center">
-            <h1 className="text-3xl font-cosmo uppercase drop-shadow-lg">
-              {nickname ?? "Collect"}
-            </h1>
+          <div className="flex gap-2 justify-between items-center w-full md:w-auto">
+            <div className="flex gap-2 items-center">
+              <h1 className="text-3xl font-cosmo uppercase drop-shadow-lg">
+                {nickname ?? "Collect"}
+              </h1>
 
-            <HelpDialog />
+              <HelpDialog />
+            </div>
 
             {total !== undefined && (
               <p className="font-semibold">{total} total</p>

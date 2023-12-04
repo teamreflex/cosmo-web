@@ -62,7 +62,9 @@ export default function ListDropdown({ lists, nickname, allowCreate }: Props) {
         <DropdownMenuTrigger asChild>
           <Button variant="outline" size="sm">
             <List />
-            <span className="ml-2 hidden sm:block">View Lists</span>
+            <span className="ml-2 hidden sm:block whitespace-nowrap">
+              View Lists
+            </span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-40 max-h-48">
