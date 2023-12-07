@@ -36,7 +36,7 @@ export default async function HomePage() {
   }
 
   return (
-    <main className="flex flex-col items-center container">
+    <main className="flex flex-col items-center container py-2">
       <Suspense fallback={<NewsSkeleton />}>
         <ApolloErrorBoundary message="Could not load news">
           <NewsRenderer user={user} />
