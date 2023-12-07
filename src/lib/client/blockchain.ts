@@ -22,7 +22,9 @@ export async function fetchNonce(
     return await alchemy.getTransactionCount(address);
   } catch (err) {
     console.error(err);
-    throw new TransactionError("Failed to get transaction count");
+    throw new TransactionError(
+      "Failed to get transaction count, please try again"
+    );
   }
 }
 
@@ -43,7 +45,7 @@ export function encodeObjektTransfer(
     ]);
   } catch (err) {
     console.error(err);
-    throw new TransactionError("Failed to encode objekt transfer data");
+    throw new TransactionError("Failed to generate transfer, please try again");
   }
 }
 
@@ -62,7 +64,9 @@ export async function fetchGasLimit(
     });
   } catch (err) {
     console.error(err);
-    throw new TransactionError("Failed to fetch gas limit");
+    throw new TransactionError(
+      "Failed to get gas price, please try again. The network may be congested"
+    );
   }
 }
 
@@ -75,7 +79,9 @@ export async function fetchFeeData(alchemy: providers.AlchemyProvider) {
     return await alchemy.getFeeData();
   } catch (err) {
     console.error(err);
-    throw new TransactionError("Failed to fetch transaction fee data");
+    throw new TransactionError(
+      "Failed to get gas price, please try again. The network may be congested"
+    );
   }
 }
 
@@ -95,10 +101,14 @@ export async function fetchGasStation() {
     }
 
     console.error(await response.text());
-    throw new TransactionError("Failed to fetch gas station data");
+    throw new TransactionError(
+      "Failed to get gas price, please try again. Cosmo may be down"
+    );
   } catch (err) {
     console.error(err);
-    throw new TransactionError("Failed to fetch gas station data");
+    throw new TransactionError(
+      "Failed to get gas price, please try again. Cosmo may be down"
+    );
   }
 }
 
@@ -131,7 +141,9 @@ export async function signTransaction(
     });
   } catch (err) {
     console.error(err);
-    throw new TransactionError("Failed to sign transaction");
+    throw new TransactionError(
+      "Confirmation window failed to open, please try again. If you are on mobile, this is a Ramper limitation and may not work"
+    );
   }
 }
 
@@ -146,6 +158,8 @@ export async function sendTransaction(
     return await alchemy.sendTransaction(signedTransaction);
   } catch (err) {
     console.error(err);
-    throw new TransactionError("Failed to send transaction");
+    throw new TransactionError(
+      "Failed to send transfer. The network may be congested"
+    );
   }
 }

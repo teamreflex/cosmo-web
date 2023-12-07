@@ -99,6 +99,13 @@ export default function SendObjekt({ objekt }: Props) {
     setTransactionProgress(progress);
   }
 
+  // close modal and reset state
+  function onOpenChange(state: boolean) {
+    setOpenSend(state);
+    setTransactionProgress(TransactionStatus.WAITING);
+    setRecipient(null);
+  }
+
   const placeholder =
     instagrams[
       Math.floor(Math.random() * (1 + (instagrams.length - 1) - 0)) + 0
@@ -124,7 +131,7 @@ export default function SendObjekt({ objekt }: Props) {
       </UserSearch>
 
       {recipient && (
-        <Dialog open={openSend} onOpenChange={setOpenSend}>
+        <Dialog open={openSend} onOpenChange={onOpenChange}>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
               <DialogTitle>

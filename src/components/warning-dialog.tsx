@@ -39,6 +39,9 @@ export default function WarningDialog() {
                 integration. This requires cookies to function.
               </p>
               <p>
+                Some features do not work on mobile, such as sending objekts.
+              </p>
+              <p>
                 {env.NEXT_PUBLIC_APP_NAME} is not affiliated with, endorsed by
                 or supported by Modhaus or its artists.{" "}
               </p>

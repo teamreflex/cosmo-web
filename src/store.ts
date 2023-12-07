@@ -17,6 +17,15 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: "settings",
+      partialize: (state) => ({ warned: state.warned }),
+      version: 1,
+      // cba validating the type here
+      migrate: (prevState: any, version) => {
+        if (version === 0) {
+          prevState.warned = false;
+        }
+        return prevState;
+      },
     }
   )
 );
