@@ -1,4 +1,3 @@
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Fragment, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
@@ -8,7 +7,6 @@ import {
   CosmoMember,
 } from "@/lib/universal/cosmo/artists";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
-import NextAvatar from "../ui/next-avatar";
 import Image from "next/image";
 
 type Props = {
