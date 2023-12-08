@@ -1,10 +1,6 @@
 import "./globals.css";
 import Navbar from "@/components/navbar/navbar";
 import ClientProviders from "@/components/client-providers";
-import { Suspense, cache } from "react";
-import ComoBalances from "@/components/navbar/como-balances";
-import { Loader2 } from "lucide-react";
-import { decodeUser, getArtists, getProfile } from "./data-fetching";
 import { Metadata } from "next";
 import { env } from "@/env.mjs";
 import { Inter } from "next/font/google";
@@ -50,21 +46,11 @@ export const metadata: Metadata = {
   ],
 };
 
-const fetchData = cache(async (profileId?: number) =>
-  Promise.all([
-    getArtists(),
-    profileId ? getProfile(profileId) : Promise.resolve(undefined),
-  ])
-);
-
 export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const user = await decodeUser();
-  const [artists, profile] = await fetchData(user?.profileId);
-
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${cosmo.variable} font-sans`}>
@@ -72,24 +58,7 @@ export default async function RootLayout({
           <TooltipProvider>
             <ClientProviders>
               <div className="relative flex min-h-screen flex-col">
-                <Navbar
-                  user={user}
-                  artists={artists}
-                  selectedArtist={profile?.artist}
-                  comoBalances={
-                    user ? (
-                      <Suspense
-                        fallback={
-                          <div className="flex items-center">
-                            <Loader2 className="animate-spin" />
-                          </div>
-                        }
-                      >
-                        <ComoBalances address={user.address} />
-                      </Suspense>
-                    ) : null
-                  }
-                />
+                <Navbar />
 
                 {/* content */}
                 <div className="flex min-w-full flex-col text-foreground">

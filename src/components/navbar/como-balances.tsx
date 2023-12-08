@@ -2,15 +2,18 @@ import {
   DecodedTokenBalance,
   fetchTokenBalances,
 } from "@/lib/server/alchemy/erc20";
-import { getArtists } from "@/app/data-fetching";
+import { decodeUser, getArtists } from "@/app/data-fetching";
 import ArtistIcon from "../artist-icon";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { CosmoArtist } from "@/lib/universal/cosmo/artists";
 
-export default async function ComoBalances({ address }: { address: string }) {
+export default async function ComoBalances() {
+  const user = await decodeUser();
+  if (!user) return null;
+
   const artists = await getArtists();
   const balances = await fetchTokenBalances({
-    address,
+    address: user.address,
     contracts: artists.map((artist) => artist.contracts.Como),
   });
 

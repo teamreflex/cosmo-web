@@ -1,25 +1,13 @@
 import AuthOptions from "./auth/auth-options";
 import ApolloLogo from "./apollo-logo";
-import { ReactNode, Suspense } from "react";
-import { TokenPayload } from "@/lib/universal/auth";
+import { Suspense } from "react";
 import Links from "./links";
 import GasDisplay from "../misc/gas-display";
-import { CosmoArtist } from "@/lib/universal/cosmo/artists";
-import { ValidArtist } from "@/lib/universal/cosmo/common";
+import { Loader2 } from "lucide-react";
+import ComoBalances from "./como-balances";
+import { decodeUser, getArtists, getProfile } from "@/app/data-fetching";
 
-type Props = {
-  user: TokenPayload | undefined;
-  artists: CosmoArtist[];
-  selectedArtist: ValidArtist | undefined;
-  comoBalances: ReactNode;
-};
-
-export default function Navbar({
-  user,
-  artists,
-  selectedArtist,
-  comoBalances,
-}: Props) {
+export default function Navbar() {
   return (
     <nav className="sticky left-0 right-0 top-0 h-14 z-10">
       <div className="glass">
@@ -36,15 +24,16 @@ export default function Navbar({
               </Suspense>
             </div>
 
-            <Links authenticated={user !== undefined} />
+            <LinksRenderer />
 
             <div className="flex grow-0 items-center justify-end gap-2">
-              <AuthOptions
-                user={user}
-                artists={artists}
-                selectedArtist={selectedArtist}
-                comoBalances={comoBalances}
-              />
+              <Suspense
+                fallback={
+                  <div className="h-10 w-10 rounded-full bg-accent animate-pulse" />
+                }
+              >
+                <Auth />
+              </Suspense>
             </div>
           </div>
         </div>
@@ -52,4 +41,43 @@ export default function Navbar({
       <div className="glass-edge"></div>
     </nav>
   );
+}
+
+async function Auth() {
+  const user = await decodeUser();
+  if (!user) return null;
+
+  const [artists, profile] = await Promise.all([
+    getArtists(),
+    getProfile(user.profileId),
+  ]);
+
+  return (
+    <AuthOptions
+      user={user}
+      artists={artists}
+      selectedArtist={profile.artist}
+      comoBalances={<ComoRenderer />}
+    />
+  );
+}
+
+function ComoRenderer() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center gap-2">
+          <div className="h-[26px] w-16 rounded bg-accent animate-pulse" />
+          <div className="h-[26px] w-16 rounded bg-accent animate-pulse" />
+        </div>
+      }
+    >
+      <ComoBalances />
+    </Suspense>
+  );
+}
+
+async function LinksRenderer() {
+  const user = await decodeUser();
+  return <Links authenticated={user !== undefined} />;
 }
