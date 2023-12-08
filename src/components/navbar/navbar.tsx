@@ -3,7 +3,6 @@ import ApolloLogo from "./apollo-logo";
 import { Suspense } from "react";
 import Links from "./links";
 import GasDisplay from "../misc/gas-display";
-import { Loader2 } from "lucide-react";
 import ComoBalances from "./como-balances";
 import { decodeUser, getArtists, getProfile } from "@/app/data-fetching";
 
