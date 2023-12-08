@@ -44,18 +44,16 @@ export default function Navbar() {
 
 async function Auth() {
   const user = await decodeUser();
-  if (!user) return null;
-
   const [artists, profile] = await Promise.all([
     getArtists(),
-    getProfile(user.profileId),
+    user ? getProfile(user.profileId) : Promise.resolve(undefined),
   ]);
 
   return (
     <AuthOptions
       user={user}
       artists={artists}
-      selectedArtist={profile.artist}
+      selectedArtist={profile?.artist}
       comoBalances={<ComoRenderer />}
     />
   );
