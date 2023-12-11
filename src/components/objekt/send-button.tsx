@@ -22,7 +22,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import Objekt from "./objekt";
-import { useQueryClient } from "react-query";
+import { useQueryClient } from '@tanstack/react-query';
 import {
   TransactionError,
   encodeObjektTransfer,

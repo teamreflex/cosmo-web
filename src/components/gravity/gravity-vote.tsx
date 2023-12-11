@@ -8,7 +8,7 @@ import {
 } from "@/lib/universal/cosmo/gravity";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { useQuery } from "react-query";
+import { useQuery } from '@tanstack/react-query';
 import { ReactNode, useState } from "react";
 import { HeartCrack, Loader2 } from "lucide-react";
 import Image from "next/image";

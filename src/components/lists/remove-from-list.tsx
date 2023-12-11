@@ -5,7 +5,7 @@ import { ListX, Loader2 } from "lucide-react";
 import { useTransition } from "react";
 import { removeObjektFromList } from "./actions";
 import { useToast } from "../ui/use-toast";
-import { useQueryClient } from "react-query";
+import { useQueryClient } from '@tanstack/react-query';
 
 type Props = {
   collection: IndexedObjekt;

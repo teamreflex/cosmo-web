@@ -3,7 +3,7 @@
 import Objekt from "../objekt/objekt";
 import { Fragment, ReactNode, useCallback, useEffect } from "react";
 import { ChevronDown, HeartCrack, Loader2 } from "lucide-react";
-import { QueryKey, useInfiniteQuery } from "react-query";
+import { QueryKey, useInfiniteQuery } from '@tanstack/react-query';
 import { useInView } from "react-intersection-observer";
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
 import { CollectionFilters } from "@/hooks/use-collection-filters";

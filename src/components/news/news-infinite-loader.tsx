@@ -4,14 +4,10 @@ import { CosmoNewsFeedResult } from "@/lib/universal/cosmo/news";
 import { ChevronDown, HeartCrack, Loader2 } from "lucide-react";
 import { Fragment, ReactNode, useEffect } from "react";
 import { useInView } from "react-intersection-observer";
-import { useInfiniteQuery } from "react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 
 type Props<TPostType> = {
-  fetcher: ({
-    pageParam,
-  }: {
-    pageParam: number;
-  }) => Promise<CosmoNewsFeedResult<TPostType>>;
+  fetcher: ({ pageParam = 0 }) => Promise<CosmoNewsFeedResult<TPostType>>;
   component: (post: TPostType) => ReactNode;
   queryKey: string;
   artist: string;
