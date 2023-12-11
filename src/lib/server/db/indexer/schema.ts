@@ -1,4 +1,4 @@
-import { relations } from "drizzle-orm";
+import { InferSelectModel, relations } from "drizzle-orm";
 import {
   index,
   integer,
@@ -101,3 +101,7 @@ export const transferRelations = relations(transfers, ({ one }) => ({
     references: [collections.id],
   }),
 }));
+
+export type Transfer = InferSelectModel<typeof transfers>;
+export type Objekt = InferSelectModel<typeof objekts>;
+export type Collection = InferSelectModel<typeof collections>;

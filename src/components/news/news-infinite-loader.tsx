@@ -7,7 +7,11 @@ import { useInView } from "react-intersection-observer";
 import { useInfiniteQuery } from "react-query";
 
 type Props<TPostType> = {
-  fetcher: ({ pageParam = 0 }) => Promise<CosmoNewsFeedResult<TPostType>>;
+  fetcher: ({
+    pageParam,
+  }: {
+    pageParam: number;
+  }) => Promise<CosmoNewsFeedResult<TPostType>>;
   component: (post: TPostType) => ReactNode;
   queryKey: string;
   artist: string;

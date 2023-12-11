@@ -1,10 +1,9 @@
-import { collections, objekts } from "@/lib/server/db/indexer/schema";
+import { Collection, Objekt } from "@/lib/server/db/indexer/schema";
 import { getDaysInMonth } from "date-fns";
-import { InferSelectModel } from "drizzle-orm";
 
 export type ObjektWithCollection = {
-  collection: InferSelectModel<typeof collections>;
-  objekt: InferSelectModel<typeof objekts>;
+  collection: Collection;
+  objekt: Objekt;
 };
 
 type Calendar = {

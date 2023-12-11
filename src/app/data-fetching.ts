@@ -5,6 +5,7 @@ import { getUser } from "./api/common";
 import { remember } from "@/lib/server/cache/common";
 import { fetchObjektLists } from "@/lib/server/objekts/lists";
 import { fetchProfile } from "@/lib/server/auth";
+import { notFound } from "next/navigation";
 
 /**
  * Decode the current token.
@@ -17,9 +18,14 @@ export const decodeUser = cache(async () => {
 /**
  * Fetch the user profile.
  */
-export const getProfile = cache(
-  async (profileId: number) => await fetchProfile(profileId)
-);
+export const getProfile = cache(async (profileId: number) => {
+  const profile = await fetchProfile({
+    column: "id",
+    identifier: profileId,
+  });
+  if (!profile) notFound();
+  return profile;
+});
 
 /**
  * Fetch cached Cosmo artists.
@@ -33,9 +39,9 @@ export const getNewsForSelectedArtist = cache(
   async (profileId: number, token: string) => {
     const profile = await getProfile(profileId);
     return await remember(
-      profile.artist,
+      profile!.artist,
       60 * 15, // 15 minutes
-      () => fetchHomeNews(token, profile.artist)
+      () => fetchHomeNews(token, profile!.artist)
     );
   }
 );

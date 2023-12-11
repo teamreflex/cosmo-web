@@ -1,10 +1,12 @@
 import { InferInsertModel, eq } from "drizzle-orm";
 import { db } from "../db";
 import { profiles } from "../db/schema";
-import { PublicUser } from "@/lib/universal/auth";
+import { FetchProfile, PublicUser } from "@/lib/universal/auth";
 import { LoginResult } from "@/lib/universal/cosmo/auth";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { search } from "../cosmo/auth";
+import { isAddress } from "ethers/lib/utils";
+import { notFound } from "next/navigation";
 
 type InsertProfile = InferInsertModel<typeof profiles>;
 
@@ -42,22 +44,6 @@ export async function findOrCreateProfile(payload: LoginResult) {
   if (rows.length === 0) {
     throw new Error("Failed to create profile");
   }
-  return rows[0];
-}
-
-/**
- * Fetches a profile by id.
- */
-export async function fetchProfile(profileId: number) {
-  const rows = await db
-    .select()
-    .from(profiles)
-    .where(eq(profiles.id, profileId));
-
-  if (rows.length === 0) {
-    throw new Error("Profile not found");
-  }
-
   return rows[0];
 }
 
@@ -119,4 +105,65 @@ export async function fetchCollectionByNickname(
   }
 
   return undefined;
+}
+
+/**
+ * Fetch a profile by various identifiers.
+ */
+export async function fetchUserByIdentifier(identifier: string) {
+  if (isAddress(identifier)) {
+    return {
+      nickname: identifier.substring(0, 6),
+      address: identifier,
+    };
+  }
+
+  // get address via profile first
+  const profile = await fetchProfile({ column: "nickname", identifier });
+  if (profile) {
+    return {
+      nickname: profile.nickname,
+      address: profile.userAddress,
+    };
+  }
+
+  // fall back to cosmo
+  const result = await search(identifier);
+  const user = result.find(
+    (u) => u.nickname.toLowerCase() === identifier.toLowerCase()
+  );
+
+  if (!user) {
+    notFound();
+  }
+
+  return {
+    nickname: user.nickname,
+    address: user.address,
+  };
+}
+
+/**
+ * Fetch a profile by a nickname, address or ID.
+ */
+export async function fetchProfile(payload: FetchProfile) {
+  const rows = await db
+    .select()
+    .from(profiles)
+    .where(
+      payload.column === "id"
+        ? eq(profiles.id, payload.identifier)
+        : eq(
+            payload.column === "nickname"
+              ? profiles.nickname
+              : profiles.userAddress,
+            payload.identifier
+          )
+    );
+
+  if (rows.length === 0) {
+    return undefined;
+  }
+
+  return rows[0];
 }

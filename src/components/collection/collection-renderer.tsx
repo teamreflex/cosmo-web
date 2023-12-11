@@ -1,6 +1,6 @@
 "use client";
 
-import { SlidersHorizontal } from "lucide-react";
+import { Send, SlidersHorizontal } from "lucide-react";
 import { ClassFilter } from "./filter-class";
 import { OnlineFilter } from "./filter-online";
 import { SeasonFilter } from "./filter-season";
@@ -28,6 +28,9 @@ import { useState } from "react";
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
 import { COSMO_ENDPOINT } from "@/lib/universal/cosmo/common";
 import { OwnedObjektsResult } from "@/lib/universal/cosmo/objekts";
+import { Button } from "../ui/button";
+import Link from "next/link";
+import TradesButton from "./options/trades-button";
 
 export type PropsWithFilters<T extends keyof CollectionFilters> = {
   filters: CollectionFilters[T];
@@ -110,6 +113,7 @@ export default function CollectionRenderer({
                 allowCreate={currentUser?.nickname === nickname}
               />
             )}
+            <TradesButton nickname={nickname ?? currentUser?.nickname} />
           </div>
 
           {/* mobile: options */}
@@ -131,6 +135,8 @@ export default function CollectionRenderer({
                 allowCreate={currentUser?.nickname === nickname}
               />
             )}
+
+            <TradesButton nickname={nickname ?? currentUser?.nickname} />
 
             <MobileOptions address={address} />
           </div>

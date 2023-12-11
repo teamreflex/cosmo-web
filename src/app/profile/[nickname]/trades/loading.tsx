@@ -1,7 +1,7 @@
 import { Loader } from "@/components/loader";
 import { PropsWithClassName, cn } from "@/lib/utils";
 
-export default function UserCollectionLoading() {
+export default function UserTransfersLoading() {
   return (
     <div className="container flex flex-col py-2">
       <div className="flex flex-col sm:gap-2 group" data-show={false}>
@@ -21,8 +21,6 @@ export default function UserCollectionLoading() {
             {/* opensea button */}
             <Skeleton className="w-24 h-10" />
             {/* objekt lists button */}
-            <Skeleton className="w-24 h-10" />
-            {/* trades button */}
             <Skeleton className="w-24 h-10" />
           </div>
 
