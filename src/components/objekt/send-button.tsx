@@ -93,7 +93,9 @@ export default function SendObjekt({ objekt }: Props) {
 
     if (progress === TransactionStatus.COMPLETE) {
       // refresh collection upon transfer
-      setTimeout(() => queryClient.invalidateQueries(["collection"]), 1000);
+      setTimeout(() => queryClient.invalidateQueries({
+        queryKey: ["collection"]
+      }), 1000);
     }
 
     setTransactionProgress(progress);

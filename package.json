@@ -31,7 +31,7 @@
     "@radix-ui/react-tooltip": "^1.0.7",
     "@ramper/ethereum": "^0.0.30",
     "@t3-oss/env-nextjs": "^0.7.1",
-    "@tanstack/react-query": "4",
+    "@tanstack/react-query": "^5.13.4",
     "@tanstack/react-table": "^8.10.7",
     "@types/react": "18.2.21",
     "@types/react-dom": "18.2.14",

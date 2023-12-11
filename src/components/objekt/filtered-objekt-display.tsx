@@ -1,9 +1,13 @@
 "use client";
 
 import Objekt from "../objekt/objekt";
-import { Fragment, ReactNode, useCallback, useEffect } from "react";
+import { Fragment, ReactNode, useEffect } from "react";
 import { ChevronDown, HeartCrack, Loader2 } from "lucide-react";
-import { QueryKey, useInfiniteQuery } from '@tanstack/react-query';
+import {
+  QueryFunction,
+  QueryKey,
+  useInfiniteQuery,
+} from "@tanstack/react-query";
 import { useInView } from "react-intersection-observer";
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
 import { CollectionFilters } from "@/hooks/use-collection-filters";
@@ -23,11 +27,11 @@ type Props<TObjektType extends ValidObjekt> = {
   filters: CollectionFilters;
   setFilters: (filters: CollectionFilters) => void;
   queryKey: QueryKey;
-  queryFunction: ({
-    pageParam,
-  }: {
-    pageParam?: number;
-  }) => Promise<ObjektResponse<TObjektType>>;
+  queryFunction: QueryFunction<
+    ObjektResponse<TObjektType>,
+    QueryKey,
+    string | number | undefined
+  >;
   getObjektId: (objekt: TObjektType) => string | number;
   getObjektDisplay: (objekt: TObjektType) => boolean;
   objektSlot: ReactNode;
@@ -46,20 +50,15 @@ export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
 }: Props<TObjektType>) {
   const { ref, inView } = useInView();
 
-  const {
-    data,
-    fetchNextPage,
-    refetch,
-    hasNextPage,
-    isFetchingNextPage,
-    status,
-  } = useInfiniteQuery({
-    queryKey: [...queryKey, filters],
-    queryFn: queryFunction,
-    getNextPageParam: (lastPage) => lastPage.nextStartAfter,
-    refetchOnWindowFocus: false,
-    staleTime: 1000 * 60,
-  });
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
+    useInfiniteQuery({
+      queryKey: [...queryKey, filters],
+      queryFn: queryFunction,
+      initialPageParam: "0",
+      getNextPageParam: (lastPage) => lastPage.nextStartAfter,
+      refetchOnWindowFocus: false,
+      staleTime: 1000 * 60,
+    });
 
   // infinite scroll loader
   useEffect(() => {
@@ -67,16 +66,6 @@ export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
       fetchNextPage();
     }
   }, [inView, fetchNextPage]);
-
-  // reset query upon filter change
-  const refetchPage = useCallback(
-    () => refetch({ refetchPage: (_, index) => index === 0 }),
-    [refetch]
-  );
-
-  useEffect(() => {
-    refetchPage();
-  }, [filters, refetchPage]);
 
   return (
     <div className="flex flex-col">
@@ -88,7 +77,7 @@ export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
 
       <div className="flex flex-col items-center">
         <div className="grid grid-cols-3 md:grid-cols-4 gap-4 py-2">
-          {status === "loading" ? (
+          {status === "pending" ? (
             <div className="flex col-span-full py-12">
               <Loader2 className="animate-spin h-24 w-24" />
             </div>

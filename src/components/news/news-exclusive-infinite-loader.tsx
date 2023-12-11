@@ -13,7 +13,7 @@ type Props = {
 };
 
 export default function NewsExclusiveInfiniteLoader({ artist }: Props) {
-  async function fetcher({ pageParam = 0 }) {
+  async function fetcher({ pageParam = 0 }: { pageParam?: string | number }) {
     const searchParams = new URLSearchParams({
       artist,
       startAfter: pageParam.toString(),
