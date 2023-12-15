@@ -6,6 +6,7 @@ import { useInView } from "react-intersection-observer";
 import { Fragment, useEffect } from "react";
 import { ChevronDown, HeartCrack, Loader2 } from "lucide-react";
 import TransferRow from "./transfer-row";
+import { cn } from "@/lib/utils";
 
 type Props = {
   nickname: string;
@@ -40,7 +41,12 @@ export default function TransfersRenderer({ nickname, address }: Props) {
   return (
     <>
       <div className="flex flex-col rounded-lg border border-accent text-sm">
-        <div className="items-center grid grid-cols-4 h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+        <div
+          className={cn(
+            "items-center grid grid-cols-4 h-12 px-4 text-left align-middle font-medium text-muted-foreground",
+            status === "pending" && "border-b border-accent"
+          )}
+        >
           <span>Objekt</span>
           <span>Action</span>
           <span>User</span>
@@ -49,8 +55,8 @@ export default function TransfersRenderer({ nickname, address }: Props) {
 
         <div className="flex flex-col">
           {status === "pending" ? (
-            <div className="flex col-span-full py-2">
-              <Loader2 className="animate-spin h-78 w-78" />
+            <div className="flex col-span-full justify-center py-4">
+              <Loader2 className="animate-spin h-12 w-12" />
             </div>
           ) : status === "error" ? (
             <Error />
