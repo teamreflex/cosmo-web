@@ -41,7 +41,6 @@
 ### Trades
 
 - Add filtering
-- Load known profiles
 
 ### Profiles
 

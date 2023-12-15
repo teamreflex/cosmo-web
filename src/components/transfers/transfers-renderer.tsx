@@ -110,7 +110,7 @@ function Loading() {
 
 function Error() {
   return (
-    <div className="col-span-full flex flex-col gap-2 items-center py-12">
+    <div className="col-span-full flex flex-col gap-2 justify-center items-center py-12">
       <HeartCrack className="h-12 w-12" />
       <p>There was an error loading transfers</p>
     </div>

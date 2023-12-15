@@ -28,7 +28,7 @@ export async function fetchTransfers(
     results,
     count,
     hasNext,
-    nextStartAfter: hasNext ? filters.page + 2 : undefined,
+    nextStartAfter: hasNext ? filters.page + 1 : undefined,
   };
 }
 

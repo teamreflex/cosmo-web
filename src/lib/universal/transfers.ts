@@ -4,6 +4,7 @@ export type AggregatedTransfer = {
   transfer: Transfer;
   objekt: Objekt;
   collection: Collection | null;
+  nickname?: string;
 };
 
 export type TransferResult = {

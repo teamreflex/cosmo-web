@@ -26,10 +26,10 @@ export default function TransferRow({ row, address }: Props) {
     row.transfer.from === nullAddress ? (
       <SenderCosmo />
     ) : (
-      <SenderUser address={row.transfer.from} />
+      <SenderUser address={row.transfer.from} nickname={row.nickname} />
     )
   ) : (
-    <SenderUser address={row.transfer.to} />
+    <SenderUser address={row.transfer.to} nickname={row.nickname} />
   );
 
   const timestamp = format(
@@ -62,7 +62,13 @@ function SenderCosmo() {
   );
 }
 
-function SenderUser({ address }: { address: string }) {
+function SenderUser({
+  address,
+  nickname,
+}: {
+  address: string;
+  nickname?: string;
+}) {
   return (
     <div className="flex gap-2 items-center">
       <Image
@@ -72,8 +78,8 @@ function SenderUser({ address }: { address: string }) {
         alt="Cosmo"
         className="rounded-full bg-cosmo-profile p-1"
       />
-      <Link href={`/@${address}`} className="underline">
-        {address.substring(0, 8)}
+      <Link href={`/@${nickname ?? address}`} className="underline">
+        {nickname ?? address.substring(0, 8)}
       </Link>
     </div>
   );
