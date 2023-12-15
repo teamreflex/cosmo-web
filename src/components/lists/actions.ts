@@ -14,10 +14,7 @@ import { revalidatePath } from "next/cache";
 import slugify from "slugify";
 
 function createSlug(name: string) {
-  return slugify(name, {
-    lower: true,
-    strict: true,
-  });
+  return slugify(name, { lower: true });
 }
 
 /**
@@ -29,7 +26,11 @@ export const create = async (form: { name: string }) =>
       name: z
         .string()
         .min(3, "Name must be at least 3 characters long")
-        .max(24, "Name cannot be longer than 24 characters"),
+        .max(24, "Name cannot be longer than 24 characters")
+        .refine(
+          (value) => /^[a-zA-Z0-9 ]+$/.test(value),
+          "Name should only use alphanumeric characters"
+        ),
     }),
     form,
     async ({ name }, user) => {
@@ -53,7 +54,11 @@ export const update = async (form: { id: number; name: string }) =>
       name: z
         .string()
         .min(3, "Name must be at least 3 characters long")
-        .max(24, "Name cannot be longer than 24 characters"),
+        .max(24, "Name cannot be longer than 24 characters")
+        .refine(
+          (value) => /^[a-zA-Z0-9 ]+$/.test(value),
+          "Name should only use alphanumeric characters"
+        ),
     }),
     form,
     async ({ id, name }, user) => {

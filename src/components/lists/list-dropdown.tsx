@@ -67,12 +67,12 @@ export default function ListDropdown({ lists, nickname, allowCreate }: Props) {
             </span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-40 max-h-48">
+        <DropdownMenuContent>
           <DropdownMenuLabel>Objekt Lists</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             {lists.map((list) => (
-              <DropdownMenuItem key={list.id} className="text-sm truncate">
+              <DropdownMenuItem key={list.id} className="text-sm">
                 <Link
                   href={`/@${nickname}/list/${list.slug}`}
                   className="w-full flex items-center justify-between"
