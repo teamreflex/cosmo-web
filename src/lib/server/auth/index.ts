@@ -86,6 +86,7 @@ export async function fetchCollectionByNickname(
         .filter((o) => o.locked)
         .map((o) => o.tokenId),
       lists: profile.lists,
+      isAddress: false,
     };
   }
 
@@ -101,6 +102,7 @@ export async function fetchCollectionByNickname(
       address: user.address,
       lockedObjekts: [],
       lists: [],
+      isAddress: false,
     };
   }
 
@@ -115,6 +117,7 @@ export async function fetchUserByIdentifier(identifier: string) {
     return {
       nickname: identifier.substring(0, 6),
       address: identifier,
+      isAddress: true,
     };
   }
 
@@ -124,6 +127,7 @@ export async function fetchUserByIdentifier(identifier: string) {
     return {
       nickname: profile.nickname,
       address: profile.userAddress,
+      isAddress: false,
     };
   }
 
@@ -140,6 +144,7 @@ export async function fetchUserByIdentifier(identifier: string) {
   return {
     nickname: user.nickname,
     address: user.address,
+    isAddress: false,
   };
 }
 

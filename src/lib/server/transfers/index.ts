@@ -22,11 +22,13 @@ export async function fetchTransfers(
 ): Promise<TransferResult> {
   const rows = await fetchRows(address, filters);
   const { count, results } = aggregateResults(rows);
+  const hasNext = count > (filters.page + 1) * PER_PAGE;
 
   return {
     results,
     count,
-    hasNext: count > (filters.page + 1) * PER_PAGE,
+    hasNext,
+    nextStartAfter: hasNext ? filters.page + 2 : undefined,
   };
 }
 

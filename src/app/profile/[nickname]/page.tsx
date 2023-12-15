@@ -32,6 +32,7 @@ export default async function UserCollectionPage({ params }: Props) {
             address: params.nickname,
             lockedObjekts: [],
             lists: [],
+            isAddress: true,
           }}
         />
       </Suspense>
@@ -55,11 +56,8 @@ async function UserCollectionRenderer({ user }: { user: PublicUser }) {
   return (
     <main className="container flex flex-col py-2">
       <CollectionRenderer
+        {...user}
         artists={artists}
-        locked={user.lockedObjekts}
-        nickname={user.nickname}
-        address={user.address}
-        lists={user.lists}
         currentUser={currentUser}
       />
     </main>

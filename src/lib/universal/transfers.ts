@@ -10,4 +10,5 @@ export type TransferResult = {
   results: AggregatedTransfer[];
   count: number;
   hasNext: boolean;
+  nextStartAfter?: number;
 };

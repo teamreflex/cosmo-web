@@ -2,7 +2,6 @@ import { Metadata } from "next";
 import { cache } from "react";
 import TransfersRenderer from "@/components/transfers/transfers-renderer";
 import { fetchUserByIdentifier } from "@/lib/server/auth";
-import { fetchTransfers } from "@/lib/server/transfers";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { User } from "lucide-react";
@@ -25,14 +24,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function UserTransfersPage({ params }: Props) {
   const user = await getUser(params.nickname);
-  const results = await fetchTransfers(user.address, {
-    page: 0,
-    sort: "newest",
-    season: [],
-    class: [],
-    on_offline: [],
-    collectionNo: [],
-  });
 
   return (
     <main className="container flex flex-col gap-2 py-2">
@@ -50,7 +41,10 @@ export default async function UserTransfersPage({ params }: Props) {
           <div className="flex gap-2 items-center">
             {/* profile link */}
             <Button variant="outline" size="sm" asChild>
-              <Link href={`/@${user.nickname}`} className="flex items-center">
+              <Link
+                href={`/@${user.isAddress ? user.address : user.nickname}`}
+                className="flex items-center"
+              >
                 <User />
                 <span className="ml-2 hidden sm:block">View Profile</span>
               </Link>
@@ -59,7 +53,7 @@ export default async function UserTransfersPage({ params }: Props) {
         </div>
       </div>
 
-      <TransfersRenderer {...user} results={results}></TransfersRenderer>
+      <TransfersRenderer {...user} />
     </main>
   );
 }

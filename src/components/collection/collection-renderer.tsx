@@ -38,19 +38,21 @@ export type PropsWithFilters<T extends keyof CollectionFilters> = {
 };
 
 type Props = {
-  locked: number[];
+  lockedObjekts: number[];
   artists: CosmoArtistWithMembers[];
   nickname?: string;
   address: string;
+  isAddress: boolean;
   lists: ObjektList[];
   currentUser?: TokenPayload;
 };
 
 export default function CollectionRenderer({
-  locked,
+  lockedObjekts,
   artists,
   nickname,
   address,
+  isAddress,
   lists,
   currentUser,
 }: Props) {
@@ -113,7 +115,7 @@ export default function CollectionRenderer({
                 allowCreate={currentUser?.nickname === nickname}
               />
             )}
-            <TradesButton nickname={nickname ?? currentUser?.nickname} />
+            <TradesButton nickname={isAddress ? address : nickname} />
           </div>
 
           {/* mobile: options */}
@@ -175,7 +177,7 @@ export default function CollectionRenderer({
       <CollectionObjektDisplay
         authenticated={nickname === undefined}
         address={address}
-        lockedTokenIds={locked}
+        lockedTokenIds={lockedObjekts}
         showLocked={showLocked}
         artists={artists}
         filters={filters}

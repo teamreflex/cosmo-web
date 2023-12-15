@@ -20,10 +20,11 @@ export default async function CollectionPage() {
     <main className="relative py-2">
       <div className="relative container flex flex-col">
         <CollectionRenderer
-          locked={lockedObjekts}
+          lockedObjekts={lockedObjekts}
           artists={artists}
           address={user!.address}
           lists={[]}
+          isAddress={false}
           currentUser={user}
         />
       </div>
