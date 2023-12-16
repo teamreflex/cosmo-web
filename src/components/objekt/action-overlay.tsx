@@ -57,9 +57,9 @@ export default function ActionOverlay() {
         )}
 
         {/* send objekt */}
-        {!isLocked && objekt.transferable && authenticated && (
+        {/* {!isLocked && objekt.transferable && authenticated && (
           <SendObjekt objekt={objekt} />
-        )}
+        )} */}
 
         {/* locked (viewing other user) */}
         {!objekt.usedForGrid && isLocked && !authenticated && (
