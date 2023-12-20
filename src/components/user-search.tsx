@@ -63,6 +63,7 @@ export function UserSearch({
       address,
       nickname: address,
       profileImageUrl: "",
+      isAddress: true,
     });
   }
 

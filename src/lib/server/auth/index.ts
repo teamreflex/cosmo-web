@@ -1,8 +1,8 @@
-import { InferInsertModel, eq } from "drizzle-orm";
+import { InferInsertModel, eq, or } from "drizzle-orm";
 import { db } from "../db";
 import { profiles } from "../db/schema";
 import { FetchProfile, PublicUser } from "@/lib/universal/auth";
-import { LoginResult } from "@/lib/universal/cosmo/auth";
+import { SearchUser } from "@/lib/universal/cosmo/auth";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { search } from "../cosmo/auth";
 import { isAddress } from "ethers/lib/utils";
@@ -10,26 +10,19 @@ import { notFound } from "next/navigation";
 
 type InsertProfile = InferInsertModel<typeof profiles>;
 
+type FindOrCreateProfile = {
+  userAddress: string;
+  nickname: string;
+  cosmoId: number;
+};
+
 /**
- * Find or create a profile for the user.
+ * Create a new profile.
  */
-export async function findOrCreateProfile(payload: LoginResult) {
-  // check the db for an existing profile
-  const found = await db
-    .select()
-    .from(profiles)
-    .where(eq(profiles.userAddress, payload.address))
-    .limit(1);
-
-  // return if it exists
-  if (found.length > 0) {
-    return found[0];
-  }
-
-  // insert if it doesn't
+async function createProfile(payload: FindOrCreateProfile) {
   const newProfile: InsertProfile = {
-    userAddress: payload.address,
-    cosmoId: payload.id,
+    userAddress: payload.userAddress,
+    cosmoId: payload.cosmoId,
     nickname: payload.nickname,
     artist: "artms",
   };
@@ -45,6 +38,45 @@ export async function findOrCreateProfile(payload: LoginResult) {
     throw new Error("Failed to create profile");
   }
   return rows[0];
+}
+
+/**
+ * Update a profile.
+ */
+export async function updateProfile(id: number, payload: FindOrCreateProfile) {
+  const result = await db
+    .update(profiles)
+    .set({
+      cosmoId: payload.cosmoId,
+    })
+    .where(eq(profiles.id, id));
+
+  return result.rowsAffected === 1;
+}
+
+/**
+ * Find or create a profile for the user.
+ */
+export async function findOrCreateProfile(payload: FindOrCreateProfile) {
+  // check the db for an existing profile
+  const found = await db
+    .select()
+    .from(profiles)
+    .where(
+      or(
+        eq(profiles.userAddress, payload.userAddress),
+        eq(profiles.nickname, payload.nickname)
+      )
+    )
+    .limit(1);
+
+  // return if it exists
+  if (found.length > 0) {
+    return found[0];
+  }
+
+  // insert if it doesn't
+  return await createProfile(payload);
 }
 
 /**
@@ -97,6 +129,13 @@ export async function fetchCollectionByNickname(
   );
 
   if (user) {
+    // insert a new profile for caching
+    await createProfile({
+      userAddress: user.address,
+      nickname: user.nickname,
+      cosmoId: 0,
+    });
+
     return {
       nickname: user.nickname,
       address: user.address,
@@ -112,11 +151,14 @@ export async function fetchCollectionByNickname(
 /**
  * Fetch a profile by various identifiers.
  */
-export async function fetchUserByIdentifier(identifier: string) {
+export async function fetchUserByIdentifier(
+  identifier: string
+): Promise<SearchUser> {
   if (isAddress(identifier)) {
     return {
       nickname: identifier.substring(0, 6),
       address: identifier,
+      profileImageUrl: "",
       isAddress: true,
     };
   }
@@ -127,6 +169,7 @@ export async function fetchUserByIdentifier(identifier: string) {
     return {
       nickname: profile.nickname,
       address: profile.userAddress,
+      profileImageUrl: "",
       isAddress: false,
     };
   }
@@ -141,9 +184,17 @@ export async function fetchUserByIdentifier(identifier: string) {
     notFound();
   }
 
+  // insert a new profile for caching
+  await createProfile({
+    userAddress: user.address,
+    nickname: user.nickname,
+    cosmoId: 0,
+  });
+
   return {
     nickname: user.nickname,
     address: user.address,
+    profileImageUrl: user.profileImageUrl,
     isAddress: false,
   };
 }

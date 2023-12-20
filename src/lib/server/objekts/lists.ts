@@ -8,6 +8,7 @@ import {
   UpdateObjektList,
 } from "@/lib/universal/objekts";
 import { search } from "../cosmo/auth";
+import { fetchUserByIdentifier } from "../auth";
 
 /**
  * Fetch all lists for a given user.
@@ -29,18 +30,8 @@ export async function fetchObjektList(
 /**
  * Fetch a single list.
  */
-export async function fetchObjektListForUser(
-  nickname: string,
-  slug: string
-): Promise<ObjektList | undefined> {
-  const users = await search(nickname);
-  const user = users.find(
-    (u) => u.nickname.toLowerCase() === nickname.toLowerCase()
-  );
-
-  if (!user) {
-    return undefined;
-  }
+export async function fetchObjektListWithUser(nickname: string, slug: string) {
+  const user = await fetchUserByIdentifier(nickname);
 
   const rows = await db
     .select()
@@ -51,7 +42,10 @@ export async function fetchObjektListForUser(
     return undefined;
   }
 
-  return rows[0];
+  return {
+    user,
+    list: rows[0],
+  };
 }
 
 /**

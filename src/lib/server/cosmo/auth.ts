@@ -133,7 +133,10 @@ export async function search(term: string): Promise<SearchUser[]> {
 
   if (res.ok) {
     const data: CosmoSearchResult = await res.json();
-    return data.results;
+    return data.results.map((r) => ({
+      ...r,
+      isAddress: false,
+    }));
   }
 
   return [];
