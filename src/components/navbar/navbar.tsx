@@ -5,6 +5,17 @@ import Links from "./links";
 import GasDisplay from "../misc/gas-display";
 import ComoBalances from "./como-balances";
 import { decodeUser, getArtists, getProfile } from "@/app/data-fetching";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "../ui/alert-dialog";
+import { AlertTriangle } from "lucide-react";
 
 export default function Navbar() {
   return (
@@ -21,6 +32,26 @@ export default function Navbar() {
               >
                 <GasDisplay />
               </Suspense>
+
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <button className="flex justify-center items-center py-1 px-2 rounded-xl bg-red-500 bg-opacity-25 hover:bg-opacity-40 transition-colors">
+                    <AlertTriangle className="text-red-500 w-6 h-6" />
+                  </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Notice</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Objekt sending has been disabled while an issue with
+                      Ramper is resolved.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogAction>Continue</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
 
             <LinksRenderer />
