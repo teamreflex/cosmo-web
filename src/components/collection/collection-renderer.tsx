@@ -115,7 +115,9 @@ export default function CollectionRenderer({
                 allowCreate={currentUser?.nickname === nickname}
               />
             )}
-            <TradesButton nickname={isAddress ? address : nickname} />
+            <TradesButton
+              nickname={isAddress ? address : nickname ?? currentUser?.nickname}
+            />
           </div>
 
           {/* mobile: options */}
