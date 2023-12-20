@@ -43,14 +43,14 @@ export default function TransfersRenderer({ nickname, address }: Props) {
       <div className="flex flex-col rounded-lg border border-accent text-sm">
         <div
           className={cn(
-            "items-center grid grid-cols-4 h-12 px-4 text-left align-middle font-medium text-muted-foreground",
+            "items-center grid grid-cols-[3fr_2fr_2fr_2fr] gap-2 h-12 px-4 text-left align-middle font-medium text-muted-foreground",
             status === "pending" && "border-b border-accent"
           )}
         >
           <span>Objekt</span>
           <span>Action</span>
           <span>User</span>
-          <span>Date</span>
+          <span className="text-right">Date</span>
         </div>
 
         <div className="flex flex-col">

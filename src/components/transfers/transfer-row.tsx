@@ -38,11 +38,11 @@ export default function TransferRow({ row, address }: Props) {
   );
 
   return (
-    <div className="items-center grid grid-cols-4 h-12 px-4 border-t border-accent hover:bg-accent/40 transition-colors">
+    <div className="text-xs sm:text-sm items-center grid grid-cols-[3fr_2fr_2fr_2fr] gap-2 h-16 sm:h-12 px-4 border-t border-accent hover:bg-accent/40 transition-colors">
       <span>{name}</span>
       <span>{action}</span>
       <span>{user}</span>
-      <span>{timestamp}</span>
+      <span className="text-right">{timestamp}</span>
     </div>
   );
 }
