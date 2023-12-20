@@ -3,7 +3,7 @@
 import { CosmoGrid, CosmoOngoingGrid } from "@/lib/universal/cosmo/grid";
 import { MemberFilterButton } from "../collection/member-filter";
 import { useState } from "react";
-import { useQuery } from "react-query";
+import { useQuery } from "@tanstack/react-query";
 import { HeartCrack, Loader2 } from "lucide-react";
 import GridEightSlot from "./grid-eight-slot";
 import GridFourSlot from "./grid-four-slot";
@@ -16,7 +16,7 @@ export default function GridRenderer({ grids }: Props) {
   const [selected, setSelected] = useState<CosmoGrid>();
 
   const { data, status, refetch, isRefetching } = useQuery({
-    queryKey: ["grid", selected?.id],
+    queryKey: ["grid", selected],
     queryFn: async () => {
       const response = await fetch(`/api/grid/v1/${selected?.id}/status`);
       if (!response.ok) {
@@ -48,7 +48,7 @@ export default function GridRenderer({ grids }: Props) {
         <h3 className="text-center">Select a member to get started</h3>
       )}
 
-      {status === "loading" || isRefetching ? (
+      {(status === "pending" || isRefetching) && selected !== undefined ? (
         <div className="flex justify-center w-full">
           <Loader2 className="animate-spin w-12 h-12" />
         </div>

@@ -14,4 +14,15 @@ export type PublicUser = {
   address: string;
   lockedObjekts: number[];
   lists: ObjektList[];
+  isAddress: boolean;
 };
+
+export type FetchProfile =
+  | {
+      identifier: string;
+      column: "nickname" | "address";
+    }
+  | {
+      identifier: number;
+      column: "id";
+    };

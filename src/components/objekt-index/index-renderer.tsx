@@ -44,7 +44,7 @@ export default function IndexRenderer({
 
   const authenticated = objektLists !== undefined && nickname !== undefined;
 
-  async function fetcher({ pageParam = 0 }) {
+  async function fetcher({ pageParam = 0 }: { pageParam?: string | number }) {
     const searchParams = toSearchParams<typeof collectionFilters>(
       filters,
       false

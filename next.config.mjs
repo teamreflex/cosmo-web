@@ -16,6 +16,10 @@ const config = {
     return {
       beforeFiles: [
         {
+          source: "/@:nickname/trades",
+          destination: "/profile/:nickname/trades",
+        },
+        {
           source: "/@:nickname/list/:list",
           destination: "/profile/:nickname/list/:list",
         },

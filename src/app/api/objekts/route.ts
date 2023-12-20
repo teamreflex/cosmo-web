@@ -11,13 +11,7 @@ import {
   withSort,
 } from "@/lib/server/objekts/filters";
 import { fetchObjektListWithEntries } from "@/lib/server/objekts/lists";
-import {
-  ValidArtist,
-  ValidClass,
-  ValidOnlineType,
-  ValidSeason,
-  ValidSort,
-} from "@/lib/universal/cosmo/common";
+import { parseParams } from "@/lib/universal/objekts";
 import { and, sql } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -79,21 +73,4 @@ export async function GET(request: NextRequest) {
     nextStartAfter,
     objekts: collectionList,
   });
-}
-
-function parseParams(params: URLSearchParams) {
-  return {
-    list: params.has("list") ? params.get("list") : undefined,
-    address: params.has("address") ? params.get("address") : undefined,
-    page: parseInt(params.get("page") ?? "1"),
-    sort: params.has("sort") ? (params.get("sort") as ValidSort) : "newest",
-    season: params.getAll("season") as ValidSeason[],
-    class: params.getAll("class") as ValidClass[],
-    on_offline: params.getAll("on_offline") as ValidOnlineType[],
-    member: params.has("member") ? params.get("member") : undefined,
-    artist: params.has("artist")
-      ? (params.get("artist") as ValidArtist)
-      : undefined,
-    collectionNo: params.getAll("collectionNo"),
-  };
 }

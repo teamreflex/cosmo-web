@@ -2,6 +2,7 @@ export type SearchUser = {
   nickname: string;
   profileImageUrl: string;
   address: string;
+  isAddress: boolean;
 };
 
 export type LoginResult = {

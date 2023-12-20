@@ -12,7 +12,7 @@ import { PopulatedSlot } from "@/hooks/use-grid";
 import { OwnedObjekt, OwnedObjektsResult } from "@/lib/universal/cosmo/objekts";
 import { HeartCrack, Loader2 } from "lucide-react";
 import { PropsWithChildren, useState } from "react";
-import { useQuery } from "react-query";
+import { useQuery } from "@tanstack/react-query";
 import GridObjekt from "./grid-objekt";
 import useEmblaCarousel from "embla-carousel-react";
 import { Button } from "../ui/button";
@@ -88,7 +88,7 @@ export default function SlotSelector({
             Select a different objekt to use in the grid.
           </DialogDescription>
 
-          {status === "loading" ? (
+          {status === "pending" ? (
             <div className="flex items-center justify-center w-full">
               <Loader2 className="w-12 h-12 animate-spin" />
             </div>

@@ -9,6 +9,7 @@ import InformationOverlay from "../objekt/information-overlay";
 import ActionOverlay from "../objekt/action-overlay";
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
 import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
+import { QueryFunction, QueryKey } from "@tanstack/react-query";
 
 type Props = {
   authenticated: boolean;
@@ -18,11 +19,11 @@ type Props = {
   artists: CosmoArtistWithMembers[];
   filters: CollectionFilters;
   setFilters: (filters: CollectionFilters) => void;
-  queryFunction: ({
-    pageParam,
-  }: {
-    pageParam?: number;
-  }) => Promise<ObjektResponse<OwnedObjekt>>;
+  queryFunction: QueryFunction<
+    ObjektResponse<OwnedObjekt>,
+    QueryKey,
+    string | number | undefined
+  >;
 };
 
 export default function CollectionObjektDisplay({

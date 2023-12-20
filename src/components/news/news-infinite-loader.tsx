@@ -4,10 +4,18 @@ import { CosmoNewsFeedResult } from "@/lib/universal/cosmo/news";
 import { ChevronDown, HeartCrack, Loader2 } from "lucide-react";
 import { Fragment, ReactNode, useEffect } from "react";
 import { useInView } from "react-intersection-observer";
-import { useInfiniteQuery } from "react-query";
+import {
+  QueryFunction,
+  QueryKey,
+  useInfiniteQuery,
+} from "@tanstack/react-query";
 
 type Props<TPostType> = {
-  fetcher: ({ pageParam = 0 }) => Promise<CosmoNewsFeedResult<TPostType>>;
+  fetcher: QueryFunction<
+    CosmoNewsFeedResult<TPostType>,
+    QueryKey,
+    string | number | undefined
+  >;
   component: (post: TPostType) => ReactNode;
   queryKey: string;
   artist: string;
@@ -25,6 +33,7 @@ export default function NewsInfiniteLoader<TPostType>({
     useInfiniteQuery({
       queryKey: [queryKey, { artist }],
       queryFn: fetcher,
+      initialPageParam: "0",
       getNextPageParam: (lastPage) => lastPage.nextStartAfter,
       refetchOnWindowFocus: false,
     });
@@ -38,7 +47,7 @@ export default function NewsInfiniteLoader<TPostType>({
 
   return (
     <div className="flex flex-col gap-8 justify-center w-full md:w-1/2">
-      {status === "loading" ? (
+      {status === "pending" ? (
         <div className="flex justify-center py-12">
           <Loader2 className="animate-spin h-24 w-24" />
         </div>

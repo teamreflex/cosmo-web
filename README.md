@@ -49,6 +49,7 @@ This project aims to build a web based version of [Modhaus](https://www.mod-haus
 - Wishlist builder
 - COMO drop calendar
 - Polygon gas price display
+- Displaying trade history
 
 </details>
 

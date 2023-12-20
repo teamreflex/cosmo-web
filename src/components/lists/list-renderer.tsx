@@ -41,7 +41,7 @@ export default function ListRenderer({
   const [showFilters, setShowFilters, filters, setFilters, updateFilter] =
     useCollectionFilters();
 
-  async function fetcher({ pageParam = 0 }) {
+  async function fetcher({ pageParam = 0 }: { pageParam?: string | number }) {
     const searchParams = toSearchParams<typeof collectionFilters>(
       filters,
       false

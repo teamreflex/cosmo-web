@@ -1,5 +1,5 @@
 import { ValidArtist } from "@/lib/universal/cosmo/common";
-import { relations } from "drizzle-orm";
+import { InferInsertModel, InferSelectModel, relations } from "drizzle-orm";
 import {
   boolean,
   index,
@@ -95,3 +95,7 @@ export const profileRelations = relations(profiles, ({ many }) => ({
   lockedObjekts: many(lockedObjekts),
   lists: many(lists),
 }));
+
+export type ObjektList = InferSelectModel<typeof lists>;
+export type CreateObjektList = InferInsertModel<typeof lists>;
+export type UpdateObjektList = InferInsertModel<typeof lists>;

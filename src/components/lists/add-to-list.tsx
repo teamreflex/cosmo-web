@@ -14,7 +14,7 @@ import {
 } from "../ui/dropdown-menu";
 import { addObjektToList } from "./actions";
 import { useToast } from "../ui/use-toast";
-import { useQueryClient } from "react-query";
+import { useQueryClient } from '@tanstack/react-query';
 
 type AddToListProps = {
   collection: IndexedObjekt;

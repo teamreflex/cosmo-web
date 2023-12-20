@@ -22,7 +22,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import Objekt from "./objekt";
-import { useQueryClient } from "react-query";
+import { useQueryClient } from '@tanstack/react-query';
 import {
   TransactionError,
   encodeObjektTransfer,
@@ -93,7 +93,9 @@ export default function SendObjekt({ objekt }: Props) {
 
     if (progress === TransactionStatus.COMPLETE) {
       // refresh collection upon transfer
-      setTimeout(() => queryClient.invalidateQueries(["collection"]), 1000);
+      setTimeout(() => queryClient.invalidateQueries({
+        queryKey: ["collection"]
+      }), 1000);
     }
 
     setTransactionProgress(progress);

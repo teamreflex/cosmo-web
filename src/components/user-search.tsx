@@ -9,7 +9,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { useQuery } from "react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useDebounce } from "usehooks-ts";
 import { HeartCrack, Loader2 } from "lucide-react";
 import { isAddress } from "ethers/lib/utils";
@@ -63,6 +63,7 @@ export function UserSearch({
       address,
       nickname: address,
       profileImageUrl: "",
+      isAddress: true,
     });
   }
 
@@ -78,7 +79,7 @@ export function UserSearch({
           onValueChange={setQuery}
         />
         <CommandList>
-          {result.status === "loading" ? (
+          {result.status === "pending" ? (
             <CommandEmpty className="flex items-center justify-center py-2">
               <Loader2 className="h-8 w-8 animate-spin" />
             </CommandEmpty>

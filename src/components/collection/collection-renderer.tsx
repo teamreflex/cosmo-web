@@ -1,6 +1,6 @@
 "use client";
 
-import { SlidersHorizontal } from "lucide-react";
+import { Send, SlidersHorizontal } from "lucide-react";
 import { ClassFilter } from "./filter-class";
 import { OnlineFilter } from "./filter-online";
 import { SeasonFilter } from "./filter-season";
@@ -28,6 +28,9 @@ import { useState } from "react";
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
 import { COSMO_ENDPOINT } from "@/lib/universal/cosmo/common";
 import { OwnedObjektsResult } from "@/lib/universal/cosmo/objekts";
+import { Button } from "../ui/button";
+import Link from "next/link";
+import TradesButton from "./options/trades-button";
 
 export type PropsWithFilters<T extends keyof CollectionFilters> = {
   filters: CollectionFilters[T];
@@ -35,19 +38,21 @@ export type PropsWithFilters<T extends keyof CollectionFilters> = {
 };
 
 type Props = {
-  locked: number[];
+  lockedObjekts: number[];
   artists: CosmoArtistWithMembers[];
   nickname?: string;
   address: string;
+  isAddress: boolean;
   lists: ObjektList[];
   currentUser?: TokenPayload;
 };
 
 export default function CollectionRenderer({
-  locked,
+  lockedObjekts,
   artists,
   nickname,
   address,
+  isAddress,
   lists,
   currentUser,
 }: Props) {
@@ -62,7 +67,7 @@ export default function CollectionRenderer({
     setShowLocked,
   ] = useCollectionFilters();
 
-  async function fetcher({ pageParam = 0 }) {
+  async function fetcher({ pageParam = 0 }: { pageParam?: string | number }) {
     const searchParams = toSearchParams<typeof collectionFilters>(
       filters,
       true,
@@ -110,6 +115,9 @@ export default function CollectionRenderer({
                 allowCreate={currentUser?.nickname === nickname}
               />
             )}
+            <TradesButton
+              nickname={isAddress ? address : nickname ?? currentUser?.nickname}
+            />
           </div>
 
           {/* mobile: options */}
@@ -131,6 +139,8 @@ export default function CollectionRenderer({
                 allowCreate={currentUser?.nickname === nickname}
               />
             )}
+
+            <TradesButton nickname={nickname ?? currentUser?.nickname} />
 
             <MobileOptions address={address} />
           </div>
@@ -169,7 +179,7 @@ export default function CollectionRenderer({
       <CollectionObjektDisplay
         authenticated={nickname === undefined}
         address={address}
-        lockedTokenIds={locked}
+        lockedTokenIds={lockedObjekts}
         showLocked={showLocked}
         artists={artists}
         filters={filters}

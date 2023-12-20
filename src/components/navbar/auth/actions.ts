@@ -10,7 +10,11 @@ import { revalidatePath } from "next/cache";
 import { authenticatedAction, typedAction } from "@/lib/server/typed-action";
 import { getUser } from "@/app/api/common";
 import { validArtists } from "@/lib/universal/cosmo/common";
-import { findOrCreateProfile, setSelectedArtist } from "@/lib/server/auth";
+import {
+  findOrCreateProfile,
+  setSelectedArtist,
+  updateProfile,
+} from "@/lib/server/auth";
 
 /**
  * Exchanges the idToken from Ramper for a JWT from Cosmo
@@ -27,7 +31,17 @@ export const cosmoLogin = async (email: string, token: string) =>
       const loginResult = await login(email, token);
 
       // find or create a profile for the user
-      const profile = await findOrCreateProfile(loginResult);
+      const payload = {
+        userAddress: loginResult.address,
+        nickname: loginResult.nickname,
+        cosmoId: loginResult.id,
+      };
+      const profile = await findOrCreateProfile(payload);
+
+      // update the pre-existing profile record
+      if (profile.cosmoId === 0) {
+        await updateProfile(profile.id, payload);
+      }
 
       cookies().set(
         "token",

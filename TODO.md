@@ -38,8 +38,13 @@
 
 - Handle instances where a drop occurs on the 31st, in a month with <31 days
 
+### Trades
+
+- Add filtering
+
 ### Profiles
 
 - Set a favorite objekt?
 - Set a favorite member?
 - Social links? Twitter, Discord, Instagram etc
+- Add proper profile header/info block
