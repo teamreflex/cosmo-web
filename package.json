@@ -29,7 +29,7 @@
     "@radix-ui/react-toast": "^1.1.5",
     "@radix-ui/react-toggle": "^1.0.3",
     "@radix-ui/react-tooltip": "^1.0.7",
-    "@ramper/ethereum": "^0.0.30",
+    "@ramper/ethereum": "^0.0.34",
     "@t3-oss/env-nextjs": "^0.7.1",
     "@tanstack/react-query": "^5.13.4",
     "@types/react": "18.2.21",

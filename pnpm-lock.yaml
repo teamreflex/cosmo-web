@@ -54,8 +54,8 @@ dependencies:
     specifier: ^1.0.7
     version: 1.0.7(@types/react-dom@18.2.14)(@types/react@18.2.21)(react-dom@18.2.0)(react@18.2.0)
   '@ramper/ethereum':
-    specifier: ^0.0.30
-    version: 0.0.30(bufferutil@4.0.7)(utf-8-validate@5.0.10)
+    specifier: ^0.0.34
+    version: 0.0.34(bufferutil@4.0.7)(utf-8-validate@5.0.10)
   '@t3-oss/env-nextjs':
     specifier: ^0.7.1
     version: 0.7.1(typescript@5.2.2)(zod@3.22.3)
@@ -2635,48 +2635,50 @@ packages:
       '@babel/runtime': 7.22.15
     dev: false
 
-  /@ramper/constants@0.0.15:
-    resolution: {integrity: sha512-xdM9F0w4rT9AW4DQwJAFDE9MUIj0IbrU1FtYbgkQueg+aOXVXf7tM3Jw+oVhhhfKnjahYgtxFchjEPOTInMHmA==}
+  /@ramper/constants@0.0.19:
+    resolution: {integrity: sha512-WHNAjQK5OMsHTmoDYFHzlLGsxsT18YB/K8dI8qO67j3EI626Uz1i9mAqZru9qHkxuar89Zgi9YN6IrFSJkR+rA==}
     dependencies:
-      '@ramper/utils': 0.0.2
+      '@ramper/utils': 0.0.7
     dev: false
 
-  /@ramper/core@0.0.30:
-    resolution: {integrity: sha512-f0WzKV9uXmf9K0NvVAKg8z+W3u22WpA5SzS1rJ6zsBm80QZdwScFZhDYNfAHZpaHG1c0iaGpHcrYsl1FXe3PKg==}
+  /@ramper/core@0.0.34:
+    resolution: {integrity: sha512-s9Uiri3GBI8/9eImOWglygCOVZnL6UUDHsomVH1DvVD3RbmW37KoY+KmG2vGYdiIoHgRlGwa/BnW6+EI3Ce5xA==}
     dependencies:
-      '@ramper/logger': 0.0.1
-      '@ramper/utils': 0.0.2
+      '@ramper/logger': 0.0.2
+      '@ramper/utils': 0.0.7
       jwt-decode: 3.1.2
       jwt-simple: 0.5.6
       postmate: 1.5.2
     dev: false
 
-  /@ramper/ethereum@0.0.30(bufferutil@4.0.7)(utf-8-validate@5.0.10):
-    resolution: {integrity: sha512-afGSbotNk/OuhpwHE+ZjJ9N1U1UaFW/40mWm64Qd/NhCF1zZJjagEDEZ8S1cXeA/LbZoUR1YQZjqvU8NwUzj4g==}
+  /@ramper/ethereum@0.0.34(bufferutil@4.0.7)(utf-8-validate@5.0.10):
+    resolution: {integrity: sha512-U19xzEze/scVQJr7XLToiMnjqy+Uz6RM2NY59WHcFUa0o65b2wovYtHDj6/dzLsMv8z7JnQ6TdyBHYDDY70aUw==}
     dependencies:
-      '@ramper/constants': 0.0.15
-      '@ramper/core': 0.0.30
-      '@ramper/sdk-loader': 0.0.1
-      '@ramper/utils': 0.0.2
+      '@ramper/constants': 0.0.19
+      '@ramper/core': 0.0.34
+      '@ramper/sdk-loader': 0.0.5
+      '@ramper/utils': 0.0.7
       ethers: 5.6.2(bufferutil@4.0.7)(utf-8-validate@5.0.10)
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
     dev: false
 
-  /@ramper/logger@0.0.1:
-    resolution: {integrity: sha512-G1A/P9XSS+41VNE2VdOOj8OkYjKSJHdCMs2YOEGPFRZUzuQFaMWOkc2ZxEA9zTdJWpcX0Hptp/d4Y2tXYsZX/A==}
+  /@ramper/logger@0.0.2:
+    resolution: {integrity: sha512-zVU2CFNuE1bfPS2RzkzdfR2t37c+O1hloraEJHhS5tJiNzLStBrIvcJSfXjXCS77zgykF2Ja2aJ4gchG1vtUIw==}
     dev: false
 
-  /@ramper/sdk-loader@0.0.1:
-    resolution: {integrity: sha512-nmjsh23Gy0jh9xNmoqzYEz2UoPRFzDh1yqYr1/32pK20TPH6xDxEyYiDynLD+/Vpff2ThjDGEyUI67RnvVsiRQ==}
+  /@ramper/sdk-loader@0.0.5:
+    resolution: {integrity: sha512-un0fXcQsZjoYil46lSXXKGxOH3wpscPTKbMFsWVrvZegwF9yMMizNo2TqI/8eF3/QTYdXstCxm84OVxtRilImw==}
     dev: false
 
-  /@ramper/utils@0.0.2:
-    resolution: {integrity: sha512-EZTAFInMXO9UoBWTrgKV8LXQHiwgDe5big+b1at7q1I3xxxdsCOs/9KhvG7uKlmyiDiz2PLTJsnU4qZ3KTWtVQ==}
+  /@ramper/utils@0.0.7:
+    resolution: {integrity: sha512-QDN6xUYBOfI1+W5LFvHTlqRALyL5HSC4h3RoJrPDDarnFe/wXU0CT6Q6w6cRAGPesE6vQZvkSe0rul/nX8gMGg==}
     dependencies:
       '@types/ua-parser-js': 0.7.37
       await-to-js: 3.0.0
+      js-big-decimal: 1.4.1
+      numbro: 2.4.0
       slugify: 1.6.6
       ua-parser-js: 1.0.36
     dev: false
@@ -3148,6 +3150,10 @@ packages:
 
   /bech32@1.1.4:
     resolution: {integrity: sha512-s0IrSOzLlbvX7yp4WBfPITzpAU8sqQcpsmwXDiKwrG4r491vwCO/XpejasRNl0piBMe/DvP4Tz0mIS/X1DPJBQ==}
+    dev: false
+
+  /bignumber.js@9.1.2:
+    resolution: {integrity: sha512-2/mKyZH9K85bzOEfhXDBFZTGd1CTs+5IHpeFQo9luiBG7hghdC851Pj2WAhb6E3R6b9tZj/XKhbg4fum+Kepug==}
     dev: false
 
   /binary-extensions@2.2.0:
@@ -4763,6 +4769,10 @@ packages:
     resolution: {integrity: sha512-EqJPEUlZD0/CSUMubKtMaYUOtWe91tZXTWMJZoKSbLk+KtdhNdcvppH8lA9XwVu2V4Ailvsj0GBZJ2ZwDjfesQ==}
     dev: false
 
+  /js-big-decimal@1.4.1:
+    resolution: {integrity: sha512-lEE6kXojqv1/ky/H0nTTg5gi+1g+V6O94T2GPpZTGayXGeYIC6f6PszckNsEa7S2+qgas9ZOEkONMryxXVKWwQ==}
+    dev: false
+
   /js-sha3@0.8.0:
     resolution: {integrity: sha512-gF1cRrHhIzNfToc802P800N8PpXS+evLLXfsVpowqmAFR9uwbi89WvXg2QspOmXL8QL86J4T1EpFu+yUkwJY3Q==}
     dev: false
@@ -5102,6 +5112,12 @@ packages:
   /normalize-range@0.1.2:
     resolution: {integrity: sha512-bdok/XvKII3nUpklnV6P2hxtMNrCboOjAcyBuQnWEhO665FwrSNRxU+AqpsyvO6LgGYPspN+lu5CLtw4jPRKNA==}
     engines: {node: '>=0.10.0'}
+    dev: false
+
+  /numbro@2.4.0:
+    resolution: {integrity: sha512-t6rVkO1CcKvffvOJJu/zMo70VIcQSR6w3AmIhfHGvmk4vHbNe6zHgomB0aWFAPZWM9JBVWBM0efJv9DBiRoSTA==}
+    dependencies:
+      bignumber.js: 9.1.2
     dev: false
 
   /object-assign@4.1.1:

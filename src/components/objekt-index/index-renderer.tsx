@@ -20,7 +20,7 @@ import {
 import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
 import { toSearchParams } from "@/hooks/use-typed-search-params";
 import ObjektSidebar from "../objekt/objekt-sidebar";
-import IndexOverlay from "./index-overlay";
+import { BottomOverlay, TopOverlay } from "./index-overlay";
 import HelpDialog from "./help-dialog";
 import { CollectionFilter } from "./collection-filter";
 import { useState } from "react";
@@ -134,7 +134,8 @@ export default function IndexRenderer({
         objektSlot={
           <>
             <ObjektSidebar />
-            {authenticated && <IndexOverlay lists={objektLists} />}
+            {authenticated && <TopOverlay lists={objektLists} />}
+            <BottomOverlay />
           </>
         }
       />
