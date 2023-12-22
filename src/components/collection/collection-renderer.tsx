@@ -140,7 +140,9 @@ export default function CollectionRenderer({
               />
             )}
 
-            <TradesButton nickname={nickname ?? currentUser?.nickname} />
+            <TradesButton
+              nickname={isAddress ? address : nickname ?? currentUser?.nickname}
+            />
 
             <MobileOptions address={address} />
           </div>
