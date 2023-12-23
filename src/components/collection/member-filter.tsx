@@ -41,11 +41,14 @@ export default function MemberFilter({
   }
 
   return (
-    <div className="flex flex-col h-fit p-1 w-full">
+    <div className="relative flex flex-col h-fit w-full">
+      <div className="absolute pointer-events-none z-50 top-0 left-0 h-full w-4 bg-gradient-to-r from-background to-transparent" />
+      <div className="absolute pointer-events-none z-50 top-0 right-0 h-full w-4 bg-gradient-to-l from-background to-transparent" />
+
       {artists.map((artist) => (
         <div
           key={artist.name}
-          className="flex flex-row gap-2 py-1 sm:justify-center justify-items-start overflow-x-scroll no-scrollbar"
+          className="flex flex-row gap-2 p-1 sm:justify-center justify-items-start overflow-x-scroll no-scrollbar"
         >
           <MemberFilterButton
             displayName={artist.title}

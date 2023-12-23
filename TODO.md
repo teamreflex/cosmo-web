@@ -1,10 +1,10 @@
 ## Bugs
 
 - Fix searchbox blur
-- Fix `useContext` error
-  - might be local-only?
 - Fix collections search/dropdown jank
 - Fix tooltip issue on navbar search
+- Fix objekt/collection total count not updating
+  - happens when swapping to an already loaded filter
 
 ## General
 

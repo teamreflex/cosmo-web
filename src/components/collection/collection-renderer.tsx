@@ -105,7 +105,6 @@ export default function CollectionRenderer({
 
           {/* desktop: options */}
           <div className="hidden sm:flex items-center gap-2">
-            <CopyAddressButton address={address} />
             <PolygonButton address={address} />
             <OpenSeaButton address={address} />
             {nickname && (
@@ -118,6 +117,7 @@ export default function CollectionRenderer({
             <TradesButton
               nickname={isAddress ? address : nickname ?? currentUser?.nickname}
             />
+            <CopyAddressButton address={address} />
           </div>
 
           {/* mobile: options */}
