@@ -57,7 +57,7 @@ export default async function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="dark">
           <TooltipProvider>
             <ClientProviders>
-              <div className="relative flex min-h-screen flex-col">
+              <div className="relative flex min-h-dvh flex-col">
                 <Navbar />
 
                 {/* content */}
