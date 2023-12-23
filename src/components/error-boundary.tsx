@@ -28,7 +28,7 @@ export function Error({ message }: { message: string }) {
       <p className="font-semibold text-sm text-center">{message}</p>
 
       <Button variant="outline" onClick={refresh}>
-        <RefreshCcw className="mr-2" /> Refresh
+        <RefreshCcw className="mr-2" /> Try Again
       </Button>
     </div>
   );
