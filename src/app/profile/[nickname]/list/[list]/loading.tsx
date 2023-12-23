@@ -1,4 +1,6 @@
+import { MemberFilterSkeleton } from "@/components/collection/member-filter";
 import { Loader } from "@/components/loader";
+import Skeleton from "@/components/skeleton";
 import { PropsWithClassName, cn } from "@/lib/utils";
 
 export default function ObjektListLoading() {
@@ -30,11 +32,7 @@ export default function ObjektListLoading() {
       </div>
 
       <div className="flex flex-col">
-        <div className="flex flex-row gap-2 pt-1 pb-1 px-1 h-fit sm:justify-center justify-items-start overflow-x-scroll no-scrollbar">
-          {Array.from({ length: 24 }).map((_, i) => (
-            <Skeleton key={i} className="w-10 h-10 rounded-full" />
-          ))}
-        </div>
+        <MemberFilterSkeleton />
         <div className="flex flex-col items-center">
           <div className="grid grid-cols-3 md:grid-cols-4 gap-4 py-2">
             <Loader className="col-span-full" />
@@ -42,13 +40,5 @@ export default function ObjektListLoading() {
         </div>
       </div>
     </div>
-  );
-}
-
-function Skeleton({ className }: PropsWithClassName<{}>) {
-  return (
-    <div
-      className={cn("animate-pulse rounded-lg bg-accent shrink-0", className)}
-    />
   );
 }

@@ -8,6 +8,7 @@ import {
 } from "@/lib/universal/cosmo/artists";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import Image from "next/image";
+import Skeleton from "../skeleton";
 
 type Props = {
   artists: CosmoArtistWithMembers[];
@@ -40,19 +41,19 @@ export default function MemberFilter({
   }
 
   return (
-    <div className="flex flex-row gap-2 pt-1 pb-1 px-1 h-fit sm:justify-center justify-items-start overflow-x-scroll no-scrollbar">
+    <div className="flex flex-col h-fit p-1 w-full">
       {artists.map((artist) => (
-        <MemberFilterButton
+        <div
           key={artist.name}
-          displayName={artist.title}
-          image={artist.logoImageUrl}
-          isActive={filters.artist === artist.name}
-          setActive={() => setActiveArtist(artist)}
-        />
-      ))}
+          className="flex flex-row gap-2 py-1 sm:justify-center justify-items-start overflow-x-scroll no-scrollbar"
+        >
+          <MemberFilterButton
+            displayName={artist.title}
+            image={artist.logoImageUrl}
+            isActive={filters.artist === artist.name}
+            setActive={() => setActiveArtist(artist)}
+          />
 
-      {artists.map((artist) => (
-        <Fragment key={artist.name}>
           {artist.members
             .sort((a, b) => a.order - b.order)
             .map((member) => (
@@ -64,7 +65,7 @@ export default function MemberFilter({
                 setActive={() => setActiveMember(member)}
               />
             ))}
-        </Fragment>
+        </div>
       ))}
     </div>
   );
@@ -116,5 +117,25 @@ export function MemberFilterButton({
       </TooltipTrigger>
       <TooltipContent side="bottom">{displayName}</TooltipContent>
     </Tooltip>
+  );
+}
+
+export function MemberFilterSkeleton() {
+  return (
+    <div className="flex flex-col gap-1 p-1 w-full">
+      {/* artms */}
+      <div className="flex flex-row gap-2 h-fit sm:justify-center justify-items-start overflow-x-scroll no-scrollbar">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <Skeleton key={i} className="w-10 h-10 rounded-full" />
+        ))}
+      </div>
+
+      {/* triples */}
+      <div className="flex flex-row gap-2 h-fit sm:justify-center justify-items-start overflow-x-scroll no-scrollbar">
+        {Array.from({ length: 25 }).map((_, i) => (
+          <Skeleton key={i} className="w-10 h-10 rounded-full" />
+        ))}
+      </div>
+    </div>
   );
 }
