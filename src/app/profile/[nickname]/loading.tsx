@@ -1,7 +1,6 @@
-import { MemberFilterSkeleton } from "@/components/collection/member-filter";
 import { Loader } from "@/components/loader";
-import Skeleton from "@/components/skeleton";
-import { PropsWithClassName, cn } from "@/lib/utils";
+import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
+import Skeleton from "@/components/skeleton/skeleton";
 
 export default function UserCollectionLoading() {
   return (

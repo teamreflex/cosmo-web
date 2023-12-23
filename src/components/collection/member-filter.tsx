@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { CollectionFilters } from "@/hooks/use-collection-filters";
@@ -8,7 +8,7 @@ import {
 } from "@/lib/universal/cosmo/artists";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import Image from "next/image";
-import Skeleton from "../skeleton";
+import Skeleton from "../skeleton/skeleton";
 
 type Props = {
   artists: CosmoArtistWithMembers[];
@@ -120,25 +120,5 @@ export function MemberFilterButton({
       </TooltipTrigger>
       <TooltipContent side="bottom">{displayName}</TooltipContent>
     </Tooltip>
-  );
-}
-
-export function MemberFilterSkeleton() {
-  return (
-    <div className="flex flex-col gap-1 p-1 w-full">
-      {/* artms */}
-      <div className="flex flex-row gap-2 h-fit sm:justify-center justify-items-start overflow-x-scroll no-scrollbar">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <Skeleton key={i} className="w-10 h-10 rounded-full" />
-        ))}
-      </div>
-
-      {/* triples */}
-      <div className="flex flex-row gap-2 h-fit sm:justify-center justify-items-start overflow-x-scroll no-scrollbar">
-        {Array.from({ length: 25 }).map((_, i) => (
-          <Skeleton key={i} className="w-10 h-10 rounded-full" />
-        ))}
-      </div>
-    </div>
   );
 }

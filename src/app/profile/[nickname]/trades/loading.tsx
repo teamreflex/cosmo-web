@@ -1,5 +1,4 @@
-import Skeleton from "@/components/skeleton";
-import { PropsWithClassName, cn } from "@/lib/utils";
+import Skeleton from "@/components/skeleton/skeleton";
 
 export default function UserTransfersLoading() {
   return (
