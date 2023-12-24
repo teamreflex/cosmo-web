@@ -19,7 +19,7 @@ import { AlertTriangle } from "lucide-react";
 
 export default function Navbar() {
   return (
-    <nav className="sticky left-0 right-0 top-0 h-14 z-10">
+    <nav className="sticky left-0 right-0 top-0 h-14 z-30">
       <div className="glass">
         <div className="flex w-full items-center h-14">
           <div className="container sm:grid sm:grid-cols-3 flex items-center gap-2 text-sm text-foreground md:gap-4 md:py-6 pointer-events-auto">
