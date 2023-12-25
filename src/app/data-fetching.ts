@@ -4,7 +4,7 @@ import { cache } from "react";
 import { getUser } from "./api/common";
 import { remember } from "@/lib/server/cache/common";
 import { fetchObjektLists } from "@/lib/server/objekts/lists";
-import { fetchProfile } from "@/lib/server/auth";
+import { fetchProfile, fetchUserByIdentifier } from "@/lib/server/auth";
 import { notFound } from "next/navigation";
 
 /**
@@ -52,3 +52,10 @@ export const getNewsForSelectedArtist = cache(
 export const getObjektListsForUser = async (address?: string) => {
   return address ? await fetchObjektLists(address) : undefined;
 };
+
+/**
+ * Fetch a user by nickname or address.
+ */
+export const getUserByIdentifier = cache(
+  async (identifier: string) => await fetchUserByIdentifier(identifier)
+);

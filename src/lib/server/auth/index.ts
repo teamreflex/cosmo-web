@@ -1,7 +1,7 @@
 import { InferInsertModel, eq, or } from "drizzle-orm";
 import { db } from "../db";
 import { profiles } from "../db/schema";
-import { FetchProfile, PublicUser } from "@/lib/universal/auth";
+import { FetchProfile } from "@/lib/universal/auth";
 import { SearchUser } from "@/lib/universal/cosmo/auth";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { search } from "../cosmo/auth";
@@ -95,82 +95,30 @@ export async function setSelectedArtist(
 }
 
 /**
- * Fetches a profile by address.
- * Checks database first, then falls back to Cosmo search.
- */
-export async function fetchCollectionByNickname(
-  nickname: string
-): Promise<PublicUser | undefined> {
-  // use profile db first
-  const profile = await db.query.profiles.findFirst({
-    where: eq(profiles.nickname, nickname),
-    with: {
-      lockedObjekts: true,
-      lists: true,
-    },
-  });
-
-  if (profile) {
-    return {
-      nickname: profile.nickname,
-      address: profile.userAddress,
-      lockedObjekts: profile.lockedObjekts
-        .filter((o) => o.locked)
-        .map((o) => o.tokenId),
-      lists: profile.lists,
-      isAddress: false,
-    };
-  }
-
-  // fall back to cosmo
-  const result = await search(nickname);
-  const user = result.find(
-    (u) => u.nickname.toLowerCase() === nickname.toLowerCase()
-  );
-
-  if (user) {
-    // insert a new profile for caching
-    await createProfile({
-      userAddress: user.address,
-      nickname: user.nickname,
-      cosmoId: 0,
-    });
-
-    return {
-      nickname: user.nickname,
-      address: user.address,
-      lockedObjekts: [],
-      lists: [],
-      isAddress: false,
-    };
-  }
-
-  return undefined;
-}
-
-/**
  * Fetch a profile by various identifiers.
  */
 export async function fetchUserByIdentifier(
   identifier: string
 ): Promise<SearchUser> {
+  // check db for a profile
+  const profile = await fetchProfileByIdentifier(identifier);
+
+  if (profile) {
+    return {
+      nickname: profile.nickname,
+      address: profile.userAddress,
+      profileImageUrl: "",
+      isAddress: false,
+    };
+  }
+
+  // if no profile and it's an address, return it
   if (isAddress(identifier)) {
     return {
       nickname: identifier.substring(0, 6),
       address: identifier,
       profileImageUrl: "",
       isAddress: true,
-    };
-  }
-
-  // get address via profile first
-  const profile = await fetchProfile({ column: "nickname", identifier });
-  if (profile) {
-    return {
-      nickname: profile.nickname,
-      address: profile.userAddress,
-      profileImageUrl: "",
-      isAddress: false,
     };
   }
 
@@ -215,6 +163,27 @@ export async function fetchProfile(payload: FetchProfile) {
               : profiles.userAddress,
             payload.identifier
           )
+    );
+
+  if (rows.length === 0) {
+    return undefined;
+  }
+
+  return rows[0];
+}
+
+/**
+ * Fetch a profile by a nickname or address.
+ */
+export async function fetchProfileByIdentifier(identifier: string) {
+  const rows = await db
+    .select()
+    .from(profiles)
+    .where(
+      or(
+        eq(profiles.nickname, identifier),
+        eq(profiles.userAddress, identifier)
+      )
     );
 
   if (rows.length === 0) {

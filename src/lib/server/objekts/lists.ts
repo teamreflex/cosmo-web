@@ -30,22 +30,17 @@ export async function fetchObjektList(
 /**
  * Fetch a single list.
  */
-export async function fetchObjektListWithUser(nickname: string, slug: string) {
-  const user = await fetchUserByIdentifier(nickname);
-
+export async function fetchObjektListWithUser(address: string, slug: string) {
   const rows = await db
     .select()
     .from(lists)
-    .where(and(eq(lists.slug, slug), eq(lists.userAddress, user.address)));
+    .where(and(eq(lists.slug, slug), eq(lists.userAddress, address)));
 
   if (rows.length === 0) {
     return undefined;
   }
 
-  return {
-    user,
-    list: rows[0],
-  };
+  return rows[0];
 }
 
 /**
