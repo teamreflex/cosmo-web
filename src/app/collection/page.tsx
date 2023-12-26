@@ -22,9 +22,8 @@ export default async function CollectionPage() {
         <CollectionRenderer
           lockedObjekts={lockedObjekts}
           artists={artists}
-          address={user!.address}
           isAddress={false}
-          currentUser={user}
+          user={user!}
         />
       </div>
     </main>

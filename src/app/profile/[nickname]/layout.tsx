@@ -72,7 +72,7 @@ export default async function ProfileLayout({ children, params }: Props) {
                 address={profile.address}
                 allowCreate={currentUser?.address === profile.address}
               />
-              <BackButton url={url} />
+              <BackButton url={url} tooltip="Return to profile" />
             </div>
 
             {/* content gets portaled in */}

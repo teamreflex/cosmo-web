@@ -8,9 +8,10 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 type Props = {
   url: string;
+  tooltip: string;
 };
 
-export default function BackButton({ url }: Props) {
+export default function BackButton({ url, tooltip }: Props) {
   const pathname = usePathname();
 
   if (pathname === url) return null;
@@ -29,7 +30,7 @@ export default function BackButton({ url }: Props) {
           </Link>
         </Button>
       </TooltipTrigger>
-      <TooltipContent side="bottom">Return to profile</TooltipContent>
+      <TooltipContent side="bottom">{tooltip}</TooltipContent>
     </Tooltip>
   );
 }

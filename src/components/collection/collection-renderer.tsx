@@ -26,6 +26,7 @@ import PolygonButton from "../profile/polygon-button";
 import OpenSeaButton from "../profile/opensea-button";
 import TradesButton from "../profile/trades-button";
 import CopyAddressButton from "../profile/copy-address-button";
+import BackButton from "../profile/back-button";
 
 export type PropsWithFilters<T extends keyof CollectionFilters> = {
   filters: CollectionFilters[T];
@@ -35,19 +36,15 @@ export type PropsWithFilters<T extends keyof CollectionFilters> = {
 type Props = {
   lockedObjekts: number[];
   artists: CosmoArtistWithMembers[];
-  nickname?: string;
-  address: string;
   isAddress: boolean;
-  currentUser?: TokenPayload;
+  user: TokenPayload;
 };
 
 export default function CollectionRenderer({
   lockedObjekts,
   artists,
-  nickname,
-  address,
   isAddress,
-  currentUser,
+  user,
 }: Props) {
   const [total, setTotal] = useState<number>();
   const [
@@ -69,7 +66,9 @@ export default function CollectionRenderer({
     searchParams.set("start_after", pageParam.toString());
 
     const result = await fetch(
-      `${COSMO_ENDPOINT}/objekt/v1/owned-by/${address}?${searchParams.toString()}`
+      `${COSMO_ENDPOINT}/objekt/v1/owned-by/${
+        user.address
+      }?${searchParams.toString()}`
     );
     const page: OwnedObjektsResult = await result.json();
     setTotal(page.total);
@@ -98,12 +97,11 @@ export default function CollectionRenderer({
 
           {/* desktop: options */}
           <div className="hidden sm:flex items-center gap-2">
-            <PolygonButton address={address} />
-            <OpenSeaButton address={address} />
-            <TradesButton
-              nickname={isAddress ? address : nickname ?? currentUser!.nickname}
-            />
-            <CopyAddressButton address={address} />
+            <PolygonButton address={user.address} />
+            <OpenSeaButton address={user.address} />
+            <BackButton url={`/@${user.nickname}`} tooltip="View profile" />
+            <TradesButton nickname={isAddress ? user.address : user.nickname} />
+            <CopyAddressButton address={user.address} />
           </div>
 
           {/* mobile: options */}
@@ -118,9 +116,7 @@ export default function CollectionRenderer({
               <SlidersHorizontal className="drop-shadow-lg" />
             </Toggle>
 
-            <TradesButton
-              nickname={isAddress ? address : nickname ?? currentUser!.nickname}
-            />
+            <TradesButton nickname={isAddress ? user.address : user.nickname} />
           </div>
         </div>
 
@@ -155,8 +151,8 @@ export default function CollectionRenderer({
       </div>
 
       <CollectionObjektDisplay
-        authenticated={nickname === undefined}
-        address={address}
+        authenticated={true}
+        address={user.address}
         lockedTokenIds={lockedObjekts}
         showLocked={showLocked}
         artists={artists}
