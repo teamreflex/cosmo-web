@@ -25,7 +25,7 @@ export default async function ProfileLayout({ children, params }: Props) {
 
   return (
     <main className="container flex flex-col gap-2 py-2">
-      <div className="flex gap-4 items-center">
+      <div className="flex gap-4 items-center h-32">
         <Avatar className="h-24 w-24">
           <AvatarFallback>
             {profile.nickname.charAt(0).toUpperCase()}
@@ -38,13 +38,12 @@ export default async function ProfileLayout({ children, params }: Props) {
         </Avatar>
 
         <div className="flex flex-col w-full">
+          {/* nickname & como */}
           <div className="flex flex-wrap items-center justify-between">
-            {/* nickname */}
             <span className="w-fit text-2xl sm:text-3xl font-cosmo font-bold uppercase">
               {profile.nickname}
             </span>
 
-            {/* como display */}
             <Suspense
               fallback={
                 <div className="flex items-center gap-2">
@@ -57,9 +56,9 @@ export default async function ProfileLayout({ children, params }: Props) {
             </Suspense>
           </div>
 
-          {/* buttons */}
-          <div className="flex flex-wrap items-center justify-between">
-            <div className="flex flex-wrap items-center gap-2 py-1">
+          <div className="flex flex-col sm:flex-row w-full sm:gap-2">
+            {/* buttons */}
+            <div className="flex flex-wrap justify-between sm:justify-start items-center gap-2 py-1">
               <OpenSeaButton address={profile.address} />
               <PolygonButton address={profile.address} />
               <HelpDialog />
@@ -72,11 +71,16 @@ export default async function ProfileLayout({ children, params }: Props) {
                 address={profile.address}
                 allowCreate={currentUser?.address === profile.address}
               />
-              <BackButton url={url} tooltip="Return to profile" />
             </div>
 
-            {/* content gets portaled in */}
-            <div id="objekt-total" />
+            {/* contextual elements */}
+            <div className="flex items-center sm:justify-end flex-grow sm:has-[a]:justify-start">
+              <BackButton url={url} tooltip="Return to profile" />
+              {/* content gets portaled in */}
+              <span className="h-10 flex items-center">
+                <div id="objekt-total" />
+              </span>
+            </div>
           </div>
         </div>
       </div>
