@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { Suspense, cache } from "react";
-import { fetchObjektListWithUser } from "@/lib/server/objekts/lists";
+import { fetchObjektList } from "@/lib/server/objekts/lists";
 import { redirect } from "next/navigation";
 import ObjektListLoading from "./loading";
 import { cacheMembers } from "@/lib/server/cache/available-artists";
@@ -16,10 +16,7 @@ type Props = {
 
 const getObjektList = cache(async (nickname: string, list: string) => {
   const profile = await getUserByIdentifier(nickname);
-  return Promise.all([
-    fetchObjektListWithUser(profile.address, list),
-    cacheMembers(),
-  ]);
+  return Promise.all([fetchObjektList(profile.address, list), cacheMembers()]);
 });
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

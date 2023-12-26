@@ -9,13 +9,14 @@ import {
 } from "@/components/ui/alert-dialog";
 import { env } from "@/env.mjs";
 import {
-  AlertCircle,
   DownloadCloud,
   Grid2X2,
+  HelpCircle,
   Lock,
   MailX,
   PartyPopper,
 } from "lucide-react";
+import { Button } from "../ui/button";
 
 export default function HelpDialog() {
   const str = env.NEXT_PUBLIC_APP_NAME.toLowerCase().match(/^[aeiou]/i)
@@ -24,8 +25,10 @@ export default function HelpDialog() {
 
   return (
     <AlertDialog>
-      <AlertDialogTrigger>
-        <AlertCircle className="w-4 h-4 drop-shadow-lg" />
+      <AlertDialogTrigger asChild>
+        <Button className="rounded-full" variant="secondary" size="icon">
+          <HelpCircle className="h-5 w-5" />
+        </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>

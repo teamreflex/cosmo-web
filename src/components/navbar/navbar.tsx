@@ -85,12 +85,12 @@ async function Auth() {
       user={user}
       artists={artists}
       selectedArtist={profile?.artist}
-      comoBalances={<ComoRenderer />}
+      comoBalances={user ? <ComoRenderer address={user.address} /> : null}
     />
   );
 }
 
-function ComoRenderer() {
+function ComoRenderer({ address }: { address: string }) {
   return (
     <Suspense
       fallback={
@@ -100,7 +100,7 @@ function ComoRenderer() {
         </div>
       }
     >
-      <ComoBalances />
+      <ComoBalances address={address} />
     </Suspense>
   );
 }

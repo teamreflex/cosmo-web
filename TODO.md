@@ -6,6 +6,7 @@
 - Objekt/collection total count doesn't update when swapping to a cached filter
 - Ring around artist/member filter doesn't show when refreshing
   - due to client components rendering on the server first
+- Add a tooltip to objekt list button
 
 ## General
 
@@ -50,4 +51,3 @@
 - Set a favorite objekt?
 - Set a favorite member?
 - Social links? Twitter, Discord, Instagram etc
-- Add proper profile header/info block

@@ -23,7 +23,6 @@ export default async function CollectionPage() {
           lockedObjekts={lockedObjekts}
           artists={artists}
           address={user!.address}
-          lists={[]}
           isAddress={false}
           currentUser={user}
         />

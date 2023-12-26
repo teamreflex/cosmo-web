@@ -4,22 +4,11 @@ import Skeleton from "@/components/skeleton/skeleton";
 
 export default function ObjektListLoading() {
   return (
-    <div className="container flex flex-col py-2">
-      <div className="flex flex-col sm:gap-2 group" data-show={false}>
-        {/* header */}
-        <div className="flex items-center justify-between pb-2 sm:pb-0">
-          {/* title */}
-          <div className="flex gap-2 items-center">
-            <Skeleton className="w-48 h-10" />
-          </div>
-
-          {/* mobile: options */}
-          <div className="flex sm:hidden items-center gap-2">
-            {/* show filters */}
-            <Skeleton className="w-8 h-8" />
-            {/* options dropdown */}
-            <Skeleton className="w-8 h-8" />
-          </div>
+    <div className="flex flex-col">
+      <div className="flex flex-col group" data-show={false}>
+        <div className="flex sm:hidden justify-center items-center gap-2 pb-2">
+          <Skeleton className="w-8 h-8" />
+          <Skeleton className="w-8 h-8" />
         </div>
 
         {/* filters */}

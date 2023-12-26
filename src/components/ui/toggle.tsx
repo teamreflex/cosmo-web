@@ -14,6 +14,8 @@ const toggleVariants = cva(
         default: "bg-transparent",
         outline:
           "border border-input bg-transparent hover:bg-accent hover:text-accent-foreground",
+        secondary:
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         cosmo:
           "border border-input bg-popover hover:bg-accent hover:text-accent-foreground data-[state=on]:bg-popover data-[state=on]:border-cosmo",
       },

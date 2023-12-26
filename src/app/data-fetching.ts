@@ -3,7 +3,6 @@ import { fetchHomeNews } from "@/lib/server/cosmo/news";
 import { cache } from "react";
 import { getUser } from "./api/common";
 import { remember } from "@/lib/server/cache/common";
-import { fetchObjektLists } from "@/lib/server/objekts/lists";
 import { fetchProfile, fetchUserByIdentifier } from "@/lib/server/auth";
 import { notFound } from "next/navigation";
 
@@ -45,13 +44,6 @@ export const getNewsForSelectedArtist = cache(
     );
   }
 );
-
-/**
- * Get objekt lists for the given address.
- */
-export const getObjektListsForUser = async (address?: string) => {
-  return address ? await fetchObjektLists(address) : undefined;
-};
 
 /**
  * Fetch a user by nickname or address.

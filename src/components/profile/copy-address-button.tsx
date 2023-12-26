@@ -1,7 +1,9 @@
+"use client";
+
 import { useCopyToClipboard } from "usehooks-ts";
 import { toast } from "@/components/ui/use-toast";
-import { Button } from "@/components/ui/button";
 import { Copy } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
@@ -19,13 +21,18 @@ export default function CopyAddressButton({ address }: { address: string }) {
   }
 
   return (
-    <Tooltip>
+    <Tooltip delayDuration={0}>
       <TooltipTrigger asChild>
-        <Button variant="outline" size="sm" onClick={copyAddress}>
-          <Copy className="mr-2 h-5 w-5" /> {address.substring(0, 8) + "..."}
+        <Button
+          className="rounded-full"
+          variant="secondary"
+          size="icon"
+          onClick={copyAddress}
+        >
+          <Copy className="h-5 w-5" />
         </Button>
       </TooltipTrigger>
-      <TooltipContent>Copy Address</TooltipContent>
+      <TooltipContent side="bottom">Copy Address</TooltipContent>
     </Tooltip>
   );
 }

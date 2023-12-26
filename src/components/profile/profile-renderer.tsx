@@ -1,31 +1,26 @@
 "use client";
 
 import { SlidersHorizontal } from "lucide-react";
-import { ClassFilter } from "./filter-class";
-import { OnlineFilter } from "./filter-online";
-import { SeasonFilter } from "./filter-season";
-import { TransferableFilter } from "./filter-transferable";
-import { GridableFilter } from "./filter-gridable";
-import { LockedFilter } from "./filter-locked";
-import { SortFilter } from "./filter-sort";
 import { Toggle } from "../ui/toggle";
 import {
   CollectionFilters,
   collectionFilters,
   useCollectionFilters,
 } from "@/hooks/use-collection-filters";
-import CollectionObjektDisplay from "./collection-objekt-display";
-import { TokenPayload } from "@/lib/universal/auth";
 import { toSearchParams } from "@/hooks/use-typed-search-params";
 import { useState } from "react";
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
 import { COSMO_ENDPOINT } from "@/lib/universal/cosmo/common";
 import { OwnedObjektsResult } from "@/lib/universal/cosmo/objekts";
-import HelpDialog from "../profile/help-dialog";
-import PolygonButton from "../profile/polygon-button";
-import OpenSeaButton from "../profile/opensea-button";
-import TradesButton from "../profile/trades-button";
-import CopyAddressButton from "../profile/copy-address-button";
+import { LockedFilter } from "../collection/filter-locked";
+import { GridableFilter } from "../collection/filter-gridable";
+import { TransferableFilter } from "../collection/filter-transferable";
+import { SeasonFilter } from "../collection/filter-season";
+import { OnlineFilter } from "../collection/filter-online";
+import { ClassFilter } from "../collection/filter-class";
+import { SortFilter } from "../collection/filter-sort";
+import CollectionObjektDisplay from "../collection/collection-objekt-display";
+import { createPortal } from "react-dom";
 
 export type PropsWithFilters<T extends keyof CollectionFilters> = {
   filters: CollectionFilters[T];
@@ -37,17 +32,13 @@ type Props = {
   artists: CosmoArtistWithMembers[];
   nickname?: string;
   address: string;
-  isAddress: boolean;
-  currentUser?: TokenPayload;
 };
 
-export default function CollectionRenderer({
+export default function ProfileRenderer({
   lockedObjekts,
   artists,
   nickname,
   address,
-  isAddress,
-  currentUser,
 }: Props) {
   const [total, setTotal] = useState<number>();
   const [
@@ -76,52 +67,30 @@ export default function CollectionRenderer({
     return page;
   }
 
+  const objektTotal = document?.getElementById("objekt-total");
+
   return (
     <>
-      <div className="flex flex-col sm:gap-2 group" data-show={showFilters}>
+      <div className="flex flex-col group" data-show={showFilters}>
+        {objektTotal &&
+          total &&
+          createPortal(
+            <p className="font-semibold">{total} total</p>,
+            objektTotal
+          )}
+
         {/* header */}
-        <div className="flex flex-col md:flex-row items-center justify-between pb-2 sm:pb-0">
-          {/* title */}
-          <div className="flex gap-2 justify-between items-center w-full md:w-auto">
-            <div className="flex gap-2 items-center">
-              <h1 className="text-3xl font-cosmo uppercase drop-shadow-lg">
-                Collect
-              </h1>
-
-              <HelpDialog />
-            </div>
-
-            {total !== undefined && (
-              <p className="font-semibold">{total} total</p>
-            )}
-          </div>
-
-          {/* desktop: options */}
-          <div className="hidden sm:flex items-center gap-2">
-            <PolygonButton address={address} />
-            <OpenSeaButton address={address} />
-            <TradesButton
-              nickname={isAddress ? address : nickname ?? currentUser!.nickname}
-            />
-            <CopyAddressButton address={address} />
-          </div>
-
-          {/* mobile: options */}
-          <div className="flex sm:hidden justify-center items-center gap-2">
-            {/* show filters */}
-            <Toggle
-              variant="outline"
-              size="sm"
-              pressed={showFilters}
-              onPressedChange={setShowFilters}
-            >
-              <SlidersHorizontal className="drop-shadow-lg" />
-            </Toggle>
-
-            <TradesButton
-              nickname={isAddress ? address : nickname ?? currentUser!.nickname}
-            />
-          </div>
+        <div className="flex sm:hidden justify-center items-center gap-2 pb-2">
+          {/* show filters */}
+          <Toggle
+            variant="secondary"
+            size="sm"
+            pressed={showFilters}
+            onPressedChange={setShowFilters}
+          >
+            <SlidersHorizontal className="mr-2" />
+            <span>Filters</span>
+          </Toggle>
         </div>
 
         {/* filters */}

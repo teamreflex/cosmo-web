@@ -3,11 +3,10 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import UserCollectionLoading from "./loading";
 import { cacheMembers } from "@/lib/server/cache/available-artists";
-import CollectionRenderer from "@/components/collection/collection-renderer";
-import { decodeUser, getUserByIdentifier } from "@/app/data-fetching";
-import { fetchProfileRelations } from "@/lib/server/profile";
+import { getUserByIdentifier } from "@/app/data-fetching";
 import { SearchUser } from "@/lib/universal/cosmo/auth";
-import { ObjektList } from "@/lib/universal/objekts";
+import { fetchLockedObjekts } from "@/lib/server/collection/locked-objekts";
+import ProfileRenderer from "@/components/profile/profile-renderer";
 
 type Props = {
   params: { nickname: string };
@@ -26,44 +25,30 @@ export default async function UserCollectionPage({ params }: Props) {
   const profile = await getUserByIdentifier(params.nickname);
   if (!profile) notFound();
 
-  const { lockedObjekts, lists } = await fetchProfileRelations(
-    profile.nickname
-  );
-
   return (
     <Suspense fallback={<UserCollectionLoading />}>
-      <UserCollectionRenderer
-        profile={profile}
-        lockedObjekts={lockedObjekts}
-        lists={lists}
-      />
+      <UserCollectionRenderer profile={profile} />
     </Suspense>
   );
 }
 
 type RendererProps = {
   profile: SearchUser;
-  lockedObjekts: number[];
-  lists: ObjektList[];
 };
 
-async function UserCollectionRenderer({
-  profile,
-  lockedObjekts,
-  lists,
-}: RendererProps) {
-  const artists = await cacheMembers();
-  const currentUser = await decodeUser();
+async function UserCollectionRenderer({ profile }: RendererProps) {
+  const [artists, lockedObjekts] = await Promise.all([
+    cacheMembers(),
+    fetchLockedObjekts(profile.address),
+  ]);
 
   return (
-    <main className="container flex flex-col py-2">
-      <CollectionRenderer
+    <section className="flex flex-col">
+      <ProfileRenderer
         {...profile}
         lockedObjekts={lockedObjekts}
-        lists={lists}
         artists={artists}
-        currentUser={currentUser}
       />
-    </main>
+    </section>
   );
 }

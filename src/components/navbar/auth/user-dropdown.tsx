@@ -12,7 +12,6 @@ import { Disc3, LogOut, User } from "lucide-react";
 import Link from "next/link";
 import { ReactNode, useState } from "react";
 import SwitchArtistDialog from "./switch-artist-dialog";
-import ProfileImage from "@/assets/profile.webp";
 import { CosmoArtist } from "@/lib/universal/cosmo/artists";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 
