@@ -45,8 +45,8 @@ export default function UserDropdown({
       />
 
       <DropdownMenu>
-        <DropdownMenuTrigger>
-          <Avatar className="ring-2 ring-white/30">
+        <DropdownMenuTrigger className="group">
+          <Avatar className="ring-2 ring-white/30 group-data-[state=open]:ring-cosmo transition-colors">
             <AvatarFallback>
               {user.nickname.charAt(0).toUpperCase()}
             </AvatarFallback>
