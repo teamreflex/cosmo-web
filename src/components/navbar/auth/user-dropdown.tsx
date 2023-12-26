@@ -33,6 +33,8 @@ export default function UserDropdown({
 }: UserDropdownProps) {
   const [openArtistSwitch, setOpenArtistSwitch] = useState(false);
 
+  const artist = artists.find((artist) => artist.name === selectedArtist);
+
   return (
     <>
       <SwitchArtistDialog
@@ -44,15 +46,11 @@ export default function UserDropdown({
 
       <DropdownMenu>
         <DropdownMenuTrigger>
-          <Avatar>
+          <Avatar className="ring-2 ring-white/30">
             <AvatarFallback>
               {user.nickname.charAt(0).toUpperCase()}
             </AvatarFallback>
-            <AvatarImage
-              className="bg-cosmo-profile p-[6px]"
-              src={ProfileImage.src}
-              alt={user.nickname}
-            />
+            <AvatarImage src={artist?.logoImageUrl} alt={artist?.title} />
           </Avatar>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
