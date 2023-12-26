@@ -12,6 +12,7 @@
 
 - Improve loading skeletons
 - Move any caching from Vercel KV to `unstable_cache`
+- Refactor `CollectionRenderer` and `ProfileRenderer` into just one component
 
 ### Grid
 

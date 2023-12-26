@@ -99,7 +99,7 @@ export default function CollectionRenderer({
           <div className="hidden sm:flex items-center gap-2">
             <PolygonButton address={user.address} />
             <OpenSeaButton address={user.address} />
-            <BackButton url={`/@${user.nickname}`} tooltip="View profile" />
+            <BackButton url={`/@${user.nickname}`} tooltip="View Profile" />
             <TradesButton nickname={isAddress ? user.address : user.nickname} />
             <CopyAddressButton address={user.address} />
           </div>
