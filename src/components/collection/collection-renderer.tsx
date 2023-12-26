@@ -75,7 +75,7 @@ export default function CollectionRenderer({
     <>
       <div className="flex flex-col sm:gap-2 group" data-show={showFilters}>
         {/* header */}
-        <div className="flex flex-col md:flex-row items-center justify-between pb-2 sm:pb-0">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-2 pb-2">
           {/* title */}
           <div className="flex gap-2 justify-between items-center w-full md:w-auto">
             <div className="flex gap-2 items-center">
@@ -102,15 +102,17 @@ export default function CollectionRenderer({
           <div className="flex sm:hidden justify-center items-center gap-2">
             {/* show filters */}
             <Toggle
-              variant="outline"
+              variant="secondary"
               size="sm"
               pressed={showFilters}
               onPressedChange={setShowFilters}
             >
-              <SlidersHorizontal className="drop-shadow-lg" />
+              <SlidersHorizontal className="mr-2" />
+              <span>Filters</span>
             </Toggle>
 
             <TradesButton nickname={isAddress ? user.address : user.nickname} />
+            <BackButton url={`/@${user.nickname}`} tooltip="View Profile" />
           </div>
         </div>
 
