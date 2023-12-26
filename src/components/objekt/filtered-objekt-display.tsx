@@ -13,6 +13,7 @@ import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
 import { CollectionFilters } from "@/hooks/use-collection-filters";
 import MemberFilter from "../collection/member-filter";
 import { ValidObjekt } from "./util";
+import Portal from "../portal";
 
 export type ObjektResponse<TObjektType extends ValidObjekt> = {
   hasNext: boolean;
@@ -60,6 +61,8 @@ export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
       staleTime: 1000 * 60,
     });
 
+  const total = data?.pages[0].total ?? 0;
+
   // infinite scroll loader
   useEffect(() => {
     if (inView) {
@@ -69,6 +72,10 @@ export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
 
   return (
     <div className="flex flex-col">
+      <Portal to="#objekt-total">
+        <p className="font-semibold">{total} total</p>
+      </Portal>
+
       <MemberFilter
         artists={artists}
         filters={filters}

@@ -20,7 +20,6 @@ import { OnlineFilter } from "../collection/filter-online";
 import { ClassFilter } from "../collection/filter-class";
 import { SortFilter } from "../collection/filter-sort";
 import CollectionObjektDisplay from "../collection/collection-objekt-display";
-import { createPortal } from "react-dom";
 
 export type PropsWithFilters<T extends keyof CollectionFilters> = {
   filters: CollectionFilters[T];
@@ -40,7 +39,6 @@ export default function ProfileRenderer({
   nickname,
   address,
 }: Props) {
-  const [total, setTotal] = useState<number>();
   const [
     showFilters,
     setShowFilters,
@@ -62,23 +60,12 @@ export default function ProfileRenderer({
     const result = await fetch(
       `${COSMO_ENDPOINT}/objekt/v1/owned-by/${address}?${searchParams.toString()}`
     );
-    const page: OwnedObjektsResult = await result.json();
-    setTotal(page.total);
-    return page;
+    return (await result.json()) as OwnedObjektsResult;
   }
-
-  const objektTotal = document?.getElementById("objekt-total");
 
   return (
     <>
       <div className="flex flex-col group" data-show={showFilters}>
-        {objektTotal &&
-          total &&
-          createPortal(
-            <p className="font-semibold">{total} total</p>,
-            objektTotal
-          )}
-
         {/* header */}
         <div className="flex sm:hidden justify-center items-center gap-2 pb-2">
           {/* show filters */}

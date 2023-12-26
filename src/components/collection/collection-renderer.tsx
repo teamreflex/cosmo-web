@@ -17,7 +17,6 @@ import {
 import CollectionObjektDisplay from "./collection-objekt-display";
 import { TokenPayload } from "@/lib/universal/auth";
 import { toSearchParams } from "@/hooks/use-typed-search-params";
-import { useState } from "react";
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
 import { COSMO_ENDPOINT } from "@/lib/universal/cosmo/common";
 import { OwnedObjektsResult } from "@/lib/universal/cosmo/objekts";
@@ -46,7 +45,6 @@ export default function CollectionRenderer({
   isAddress,
   user,
 }: Props) {
-  const [total, setTotal] = useState<number>();
   const [
     showFilters,
     setShowFilters,
@@ -70,9 +68,7 @@ export default function CollectionRenderer({
         user.address
       }?${searchParams.toString()}`
     );
-    const page: OwnedObjektsResult = await result.json();
-    setTotal(page.total);
-    return page;
+    return (await result.json()) as OwnedObjektsResult;
   }
 
   return (
@@ -90,9 +86,7 @@ export default function CollectionRenderer({
               <HelpDialog />
             </div>
 
-            {total !== undefined && (
-              <p className="font-semibold">{total} total</p>
-            )}
+            <div id="objekt-total" />
           </div>
 
           {/* desktop: options */}
