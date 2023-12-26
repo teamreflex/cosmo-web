@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { CollectionFilters } from "@/hooks/use-collection-filters";
@@ -7,8 +6,7 @@ import {
   CosmoMember,
 } from "@/lib/universal/cosmo/artists";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
-import Image from "next/image";
-import Skeleton from "../skeleton/skeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 type Props = {
   artists: CosmoArtistWithMembers[];
@@ -86,8 +84,6 @@ export function MemberFilterButton({
   isActive,
   setActive,
 }: MemberFilterButtonProps) {
-  const [imageLoaded, setImageLoaded] = useState(false);
-
   return (
     <Tooltip delayDuration={0}>
       <TooltipTrigger asChild>
@@ -98,24 +94,10 @@ export function MemberFilterButton({
             isActive && "ring ring-cosmo"
           )}
         >
-          <div className="relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full">
-            {/* fallback */}
-            {!imageLoaded && (
-              <div className="flex h-full w-full rounded-full bg-accent animate-pulse" />
-            )}
-
-            {/* image */}
-            <div className="aspect-square h-full w-full">
-              <Image
-                src={image}
-                alt={displayName}
-                onLoad={() => setImageLoaded(true)}
-                quality={100}
-                width={40}
-                height={40}
-              />
-            </div>
-          </div>
+          <Avatar>
+            <AvatarFallback>{displayName.at(0)}</AvatarFallback>
+            <AvatarImage src={image} alt={displayName} />
+          </Avatar>
         </button>
       </TooltipTrigger>
       <TooltipContent side="bottom">{displayName}</TooltipContent>
