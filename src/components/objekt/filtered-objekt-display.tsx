@@ -14,6 +14,8 @@ import { CollectionFilters } from "@/hooks/use-collection-filters";
 import MemberFilter from "../collection/member-filter";
 import { ValidObjekt } from "./util";
 import Portal from "../portal";
+import Hydrated from "../hydrated";
+import MemberFilterSkeleton from "../skeleton/member-filter-skeleton";
 
 export type ObjektResponse<TObjektType extends ValidObjekt> = {
   hasNext: boolean;
@@ -76,11 +78,13 @@ export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
         <p className="font-semibold">{total} total</p>
       </Portal>
 
-      <MemberFilter
-        artists={artists}
-        filters={filters}
-        updateFilters={setFilters}
-      />
+      <Hydrated fallback={<MemberFilterSkeleton />}>
+        <MemberFilter
+          artists={artists}
+          filters={filters}
+          updateFilters={setFilters}
+        />
+      </Hydrated>
 
       <div className="flex flex-col items-center">
         <div className="grid grid-cols-3 md:grid-cols-4 gap-4 py-2">

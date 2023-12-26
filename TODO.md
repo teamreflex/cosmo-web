@@ -3,8 +3,6 @@
 - User searchbox has blurred text
 - Collections search/dropdown has keyboard controls which makes the searchbox a little jank
 - Get tooltip working on the search icon in navbar
-- Ring around artist/member filter doesn't show when refreshing
-  - due to client components rendering on the server first
 - Add a tooltip to objekt list button
 
 ## General
