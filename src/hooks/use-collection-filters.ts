@@ -35,6 +35,7 @@ export const collectionFilters = z.object({
 export type CollectionFilters = z.infer<typeof collectionFilters>;
 
 export function useCollectionFilters() {
+  console.log("[update]: useCollectionFilters");
   // get and parse params from URL
   const params = useTypedSearchParams(collectionFilters, (params) => {
     if (!params.has("start_after")) {

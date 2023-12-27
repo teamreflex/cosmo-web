@@ -1,6 +1,11 @@
 import { cn } from "@/lib/utils";
 import { Fuel } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../ui/tooltip";
 import { getCachedGasPrice } from "@/lib/server/cache/gas-price";
 
 const text = {
@@ -15,21 +20,23 @@ export default async function GasDisplay() {
   if (price === 0) return null;
 
   return (
-    <Tooltip delayDuration={0}>
-      <TooltipTrigger asChild>
-        <div
-          className={cn(
-            "flex gap-1 items-center cursor-default",
-            status === "low" && "text-green-500",
-            status === "medium" && "text-yellow-500",
-            status === "high" && "text-red-600"
-          )}
-        >
-          <Fuel className="w-5 h-5" />
-          <span className="font-semibold">{price}</span>
-        </div>
-      </TooltipTrigger>
-      <TooltipContent>{text[status]}</TooltipContent>
-    </Tooltip>
+    <TooltipProvider>
+      <Tooltip delayDuration={0}>
+        <TooltipTrigger asChild>
+          <div
+            className={cn(
+              "flex gap-1 items-center cursor-default",
+              status === "low" && "text-green-500",
+              status === "medium" && "text-yellow-500",
+              status === "high" && "text-red-600"
+            )}
+          >
+            <Fuel className="w-5 h-5" />
+            <span className="font-semibold">{price}</span>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent>{text[status]}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }

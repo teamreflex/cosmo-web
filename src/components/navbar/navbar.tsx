@@ -16,8 +16,11 @@ import {
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
 import { AlertTriangle } from "lucide-react";
+import { TokenPayload } from "@/lib/universal/auth";
 
-export default function Navbar() {
+export default async function Navbar() {
+  const user = await decodeUser();
+
   return (
     <nav className="sticky left-0 right-0 top-0 h-14 z-30">
       <div className="glass">
@@ -54,7 +57,7 @@ export default function Navbar() {
               </AlertDialog>
             </div>
 
-            <LinksRenderer />
+            <Links authenticated={user !== undefined} />
 
             <div className="flex grow-0 items-center justify-end gap-2">
               <Suspense
@@ -62,7 +65,7 @@ export default function Navbar() {
                   <div className="h-10 w-10 rounded-full bg-accent animate-pulse" />
                 }
               >
-                <Auth />
+                <Auth user={user} />
               </Suspense>
             </div>
           </div>
@@ -73,8 +76,7 @@ export default function Navbar() {
   );
 }
 
-async function Auth() {
-  const user = await decodeUser();
+async function Auth({ user }: { user?: TokenPayload }) {
   const [artists, profile] = await Promise.all([
     getArtists(),
     user ? getProfile(user.profileId) : Promise.resolve(undefined),
@@ -103,9 +105,4 @@ function ComoRenderer({ address }: { address: string }) {
       <ComoBalances address={address} />
     </Suspense>
   );
-}
-
-async function LinksRenderer() {
-  const user = await decodeUser();
-  return <Links authenticated={user !== undefined} />;
 }

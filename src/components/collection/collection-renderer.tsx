@@ -45,6 +45,7 @@ export default function CollectionRenderer({
   isAddress,
   user,
 }: Props) {
+  console.log("[render]: CollectionRenderer");
   const [
     showFilters,
     setShowFilters,

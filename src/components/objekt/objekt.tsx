@@ -1,6 +1,5 @@
 "use client";
 
-import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { CSSProperties, PropsWithChildren, memo, useState } from "react";
 import ReactCardFlip from "react-card-flip";
@@ -17,7 +16,6 @@ export default memo(function Objekt<TObjektType extends ValidObjekt>({
   authenticated,
 }: ObjektProps<TObjektType>) {
   const [flipped, setFlipped] = useState(false);
-  const [loaded, setLoaded] = useState(false);
 
   const css = {
     "--objekt-background-color": objekt.backgroundColor,
@@ -28,15 +26,11 @@ export default memo(function Objekt<TObjektType extends ValidObjekt>({
     <ObjektContext.Provider value={{ objekt, authenticated }}>
       <ReactCardFlip isFlipped={flipped} flipDirection="horizontal">
         <div
-          className={cn(
-            "isolate relative overflow-hidden rounded-lg md:rounded-xl lg:rounded-2xl touch-manipulation bg-accent",
-            !loaded && "animate-pulse"
-          )}
+          className="isolate relative overflow-hidden rounded-lg md:rounded-xl lg:rounded-2xl touch-manipulation bg-accent"
           style={css}
         >
           <Image
             onClick={() => setFlipped((prev) => !prev)}
-            onLoad={() => setLoaded(true)}
             className="cursor-pointer"
             src={objekt.frontImage}
             width={291}
@@ -45,7 +39,7 @@ export default memo(function Objekt<TObjektType extends ValidObjekt>({
             quality={100}
           />
 
-          {loaded && children}
+          {children}
         </div>
 
         <Image

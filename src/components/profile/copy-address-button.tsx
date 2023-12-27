@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
+  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
@@ -21,18 +22,20 @@ export default function CopyAddressButton({ address }: { address: string }) {
   }
 
   return (
-    <Tooltip delayDuration={0}>
-      <TooltipTrigger asChild>
-        <Button
-          className="rounded-full"
-          variant="secondary"
-          size="icon"
-          onClick={copyAddress}
-        >
-          <Copy className="h-5 w-5" />
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent side="bottom">Copy Address</TooltipContent>
-    </Tooltip>
+    <TooltipProvider>
+      <Tooltip delayDuration={0}>
+        <TooltipTrigger asChild>
+          <Button
+            className="rounded-full"
+            variant="secondary"
+            size="icon"
+            onClick={copyAddress}
+          >
+            <Copy className="h-5 w-5" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom">Copy Address</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
