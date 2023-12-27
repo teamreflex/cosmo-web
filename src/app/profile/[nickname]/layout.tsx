@@ -24,7 +24,7 @@ export default async function ProfileLayout({ children, params }: Props) {
   const url = `/@${profile.isAddress ? profile.address : profile.nickname}`;
 
   return (
-    <main className="container flex flex-col gap-2 py-2">
+    <main className="container flex flex-col gap-2 sm:gap-0 py-2">
       <div className="flex gap-4 items-center h-32">
         <Avatar className="h-24 w-24">
           <AvatarFallback>
