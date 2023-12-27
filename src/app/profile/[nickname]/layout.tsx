@@ -74,7 +74,7 @@ export default async function ProfileLayout({ children, params }: Props) {
             </div>
 
             {/* contextual elements */}
-            <div className="flex items-center sm:justify-end flex-grow sm:has-[a]:justify-start">
+            <div className="flex items-center sm:justify-end flex-grow sm:has-[a]:justify-between">
               <BackButton url={url} tooltip="Return to profile" />
               {/* content gets portaled in */}
               <span className="h-10 flex items-center">

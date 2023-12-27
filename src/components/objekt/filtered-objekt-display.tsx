@@ -55,8 +55,6 @@ export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
   getObjektDisplay,
   objektSlot,
 }: Props<TObjektType>) {
-  console.log("[render]: FilteredObjektDisplay");
-
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
     useInfiniteQuery({
       queryKey: [...queryKey, filters],

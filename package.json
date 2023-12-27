@@ -61,7 +61,6 @@
     "react-intersection-observer": "^9.5.2",
     "react-player": "^2.13.0",
     "remeda": "^1.29.0",
-    "remix-params-helper": "^0.4.10",
     "server-only": "^0.0.1",
     "slugify": "^1.6.6",
     "tailwind-merge": "^1.14.0",
