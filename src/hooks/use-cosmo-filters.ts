@@ -14,7 +14,7 @@ import {
   useQueryState,
   useQueryStates,
 } from "next-usequerystate";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 export type CosmoFilters = {
   member: string | null;
@@ -41,7 +41,7 @@ export function useCosmoFilters() {
   );
 
   // setup cosmo filters
-  const [cosmoFilters, setCosmoFilters] = useQueryStates({
+  const [cosmoFilters, _setCosmoFilters] = useQueryStates({
     member: parseAsString,
     artist: parseAsStringEnum<ValidArtists>(Object.values(ValidArtists)),
     sort: parseAsStringEnum<ValidSorts>(Object.values(ValidSorts)).withDefault(
@@ -64,6 +64,9 @@ export function useCosmoFilters() {
     // index param: ["101Z", "102Z"]
     collectionNo: parseAsArrayOf(parseAsString),
   });
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const setCosmoFilters = useCallback(_setCosmoFilters, []);
 
   const searchParams = useMemo(() => {
     return toSearchParams(cosmoFilters);

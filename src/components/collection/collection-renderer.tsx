@@ -21,6 +21,7 @@ import TradesButton from "../profile/trades-button";
 import CopyAddressButton from "../profile/copy-address-button";
 import BackButton from "../profile/back-button";
 import { CosmoFilters, useCosmoFilters } from "@/hooks/use-cosmo-filters";
+import { useCallback } from "react";
 
 export type PropsWithFilters<T extends keyof CosmoFilters> = {
   filters: CosmoFilters[T];
@@ -51,19 +52,20 @@ export default function CollectionRenderer({
     updateCosmoFilters,
   ] = useCosmoFilters();
 
-  async function queryFunction({
-    pageParam = 0,
-  }: {
-    pageParam?: string | number;
-  }) {
-    const query = new URLSearchParams(searchParams);
-    query.set("start_after", pageParam.toString());
+  const queryFunction = useCallback(
+    async ({ pageParam = 0 }: { pageParam?: string | number }) => {
+      const query = new URLSearchParams(searchParams);
+      query.set("start_after", pageParam.toString());
 
-    const result = await fetch(
-      `${COSMO_ENDPOINT}/objekt/v1/owned-by/${user.address}?${query.toString()}`
-    );
-    return (await result.json()) as OwnedObjektsResult;
-  }
+      const result = await fetch(
+        `${COSMO_ENDPOINT}/objekt/v1/owned-by/${
+          user.address
+        }?${query.toString()}`
+      );
+      return (await result.json()) as OwnedObjektsResult;
+    },
+    [user.address, searchParams]
+  );
 
   return (
     <>

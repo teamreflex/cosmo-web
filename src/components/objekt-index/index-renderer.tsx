@@ -19,6 +19,7 @@ import { BottomOverlay, TopOverlay } from "./index-overlay";
 import HelpDialog from "./help-dialog";
 import { CollectionFilter } from "./collection-filter";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
+import { useCallback } from "react";
 
 type Props = {
   artists: CosmoArtistWithMembers[];
@@ -46,13 +47,16 @@ export default function IndexRenderer({
 
   const authenticated = objektLists !== undefined && nickname !== undefined;
 
-  async function fetcher({ pageParam = 0 }: { pageParam?: string | number }) {
-    const query = new URLSearchParams(searchParams);
-    query.set("page", pageParam.toString());
+  const queryFunction = useCallback(
+    async ({ pageParam = 0 }: { pageParam?: string | number }) => {
+      const query = new URLSearchParams(searchParams);
+      query.set("page", pageParam.toString());
 
-    const result = await fetch(`/api/objekts?${query.toString()}`);
-    return (await result.json()) as IndexedCosmoResponse;
-  }
+      const result = await fetch(`/api/objekts?${query.toString()}`);
+      return (await result.json()) as IndexedCosmoResponse;
+    },
+    [searchParams]
+  );
 
   return (
     <>
@@ -122,7 +126,7 @@ export default function IndexRenderer({
         filters={cosmoFilters}
         setFilters={setCosmoFilters}
         authenticated={authenticated}
-        queryFunction={fetcher}
+        queryFunction={queryFunction}
         queryKey={["objekt-index"]}
         getObjektId={(objekt: IndexedObjekt) => objekt.id}
         getObjektDisplay={() => true}

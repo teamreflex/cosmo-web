@@ -1,5 +1,5 @@
 import { LockedObjektContext } from "@/context/objekt";
-import { useState } from "react";
+import { memo, useCallback, useState } from "react";
 import FilteredObjektDisplay, {
   ObjektResponse,
 } from "../objekt/filtered-objekt-display";
@@ -26,7 +26,7 @@ type Props = {
   >;
 };
 
-export default function CollectionObjektDisplay({
+export default memo(function CollectionObjektDisplay({
   authenticated,
   address,
   lockedTokenIds,
@@ -52,6 +52,9 @@ export default function CollectionObjektDisplay({
       : lockedTokens.includes(parseInt(objekt.tokenId)) === false;
   }
 
+  const getObjektId = useCallback((objekt: OwnedObjekt) => objekt.tokenId, []);
+  const queryKey = ["collection", address];
+
   return (
     <LockedObjektContext.Provider
       value={{
@@ -65,8 +68,8 @@ export default function CollectionObjektDisplay({
         setFilters={setFilters}
         authenticated={authenticated}
         queryFunction={queryFunction}
-        queryKey={["collection", address]}
-        getObjektId={(objekt: OwnedObjekt) => objekt.tokenId}
+        queryKey={queryKey}
+        getObjektId={getObjektId}
         getObjektDisplay={shouldShowObjekt}
         objektSlot={
           <>
@@ -78,4 +81,4 @@ export default function CollectionObjektDisplay({
       />
     </LockedObjektContext.Provider>
   );
-}
+});

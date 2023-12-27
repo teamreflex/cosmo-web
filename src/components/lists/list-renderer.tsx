@@ -19,6 +19,7 @@ import UpdateList from "./update-list";
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
 import { SearchUser } from "@/lib/universal/cosmo/auth";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
+import { useCallback } from "react";
 
 type Props = {
   list: ObjektList;
@@ -43,15 +44,18 @@ export default function ListRenderer({
     updateCosmoFilters,
   ] = useCosmoFilters();
 
-  async function fetcher({ pageParam = 0 }: { pageParam?: string | number }) {
-    const query = new URLSearchParams(searchParams);
-    query.set("page", pageParam.toString());
-    query.set("list", list.slug);
-    query.set("address", user.address);
+  const queryFunction = useCallback(
+    async ({ pageParam = 0 }: { pageParam?: string | number }) => {
+      const query = new URLSearchParams(searchParams);
+      query.set("page", pageParam.toString());
+      query.set("list", list.slug);
+      query.set("address", user.address);
 
-    const result = await fetch(`/api/objekts?${query.toString()}`);
-    return (await result.json()) as IndexedCosmoResponse;
-  }
+      const result = await fetch(`/api/objekts?${query.toString()}`);
+      return (await result.json()) as IndexedCosmoResponse;
+    },
+    [searchParams, list.slug, user.address]
+  );
 
   return (
     <section className="flex flex-col">
@@ -108,7 +112,7 @@ export default function ListRenderer({
         filters={cosmoFilters}
         setFilters={setCosmoFilters}
         authenticated={authenticated}
-        queryFunction={fetcher}
+        queryFunction={queryFunction}
         queryKey={["objekt-list", list.slug]}
         getObjektId={(objekt: IndexedObjekt) => objekt.id}
         getObjektDisplay={() => true}

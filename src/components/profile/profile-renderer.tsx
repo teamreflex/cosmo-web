@@ -14,6 +14,7 @@ import { ClassFilter } from "../collection/filter-class";
 import { SortFilter } from "../collection/filter-sort";
 import CollectionObjektDisplay from "../collection/collection-objekt-display";
 import { CosmoFilters, useCosmoFilters } from "@/hooks/use-cosmo-filters";
+import { useCallback } from "react";
 
 export type PropsWithFilters<T extends keyof CosmoFilters> = {
   filters: CosmoFilters[T];
@@ -44,15 +45,18 @@ export default function ProfileRenderer({
     updateCosmoFilters,
   ] = useCosmoFilters();
 
-  async function fetcher({ pageParam = 0 }: { pageParam?: string | number }) {
-    const query = new URLSearchParams(searchParams);
-    query.set("start_after", pageParam.toString());
+  const queryFunction = useCallback(
+    async ({ pageParam = 0 }: { pageParam?: string | number }) => {
+      const query = new URLSearchParams(searchParams);
+      query.set("start_after", pageParam.toString());
 
-    const result = await fetch(
-      `${COSMO_ENDPOINT}/objekt/v1/owned-by/${address}?${query.toString()}`
-    );
-    return (await result.json()) as OwnedObjektsResult;
-  }
+      const result = await fetch(
+        `${COSMO_ENDPOINT}/objekt/v1/owned-by/${address}?${query.toString()}`
+      );
+      return (await result.json()) as OwnedObjektsResult;
+    },
+    [address, searchParams]
+  );
 
   return (
     <>
@@ -109,7 +113,7 @@ export default function ProfileRenderer({
         artists={artists}
         filters={cosmoFilters}
         setFilters={setCosmoFilters}
-        queryFunction={fetcher}
+        queryFunction={queryFunction}
       />
     </>
   );
