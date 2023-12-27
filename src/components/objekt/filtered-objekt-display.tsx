@@ -1,7 +1,7 @@
 "use client";
 
 import Objekt from "../objekt/objekt";
-import { Fragment, ReactNode, useEffect } from "react";
+import { ReactNode, useEffect } from "react";
 import { ChevronDown, HeartCrack, Loader2 } from "lucide-react";
 import {
   QueryFunction,
@@ -13,13 +13,13 @@ import {
   CosmoArtistWithMembers,
   CosmoMember,
 } from "@/lib/universal/cosmo/artists";
-import { CollectionFilters } from "@/hooks/use-collection-filters";
 import MemberFilter from "../collection/member-filter";
 import { ValidObjekt } from "./util";
 import Portal from "../portal";
 import Hydrated from "../hydrated";
 import MemberFilterSkeleton from "../skeleton/member-filter-skeleton";
-import { ValidArtist } from "@/lib/universal/cosmo/common";
+import { ValidArtists } from "@/lib/universal/cosmo/common";
+import { CosmoFilters } from "@/hooks/use-cosmo-filters";
 
 export type ObjektResponse<TObjektType extends ValidObjekt> = {
   hasNext: boolean;
@@ -31,8 +31,8 @@ export type ObjektResponse<TObjektType extends ValidObjekt> = {
 type Props<TObjektType extends ValidObjekt> = {
   authenticated: boolean;
   artists: CosmoArtistWithMembers[];
-  filters: CollectionFilters;
-  setFilters: (filters: CollectionFilters) => void;
+  filters: CosmoFilters;
+  setFilters: (filters: CosmoFilters) => void;
   queryKey: QueryKey;
   queryFunction: QueryFunction<
     ObjektResponse<TObjektType>,
@@ -83,19 +83,17 @@ export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
   function setActiveMember(member: CosmoMember) {
     setFilters({
       ...filters,
-      artist: undefined,
-      member: filters.member === member.name ? undefined : member.name,
+      artist: null,
+      member: filters.member === member.name ? null : member.name,
     });
   }
 
   function setActiveArtist(artist: CosmoArtistWithMembers) {
     setFilters({
       ...filters,
-      member: undefined,
+      member: null,
       artist:
-        filters.artist === artist.name
-          ? undefined
-          : (artist.name as ValidArtist),
+        filters.artist === artist.name ? null : (artist.name as ValidArtists),
     });
   }
 

@@ -9,14 +9,8 @@ import { GridableFilter } from "./filter-gridable";
 import { LockedFilter } from "./filter-locked";
 import { SortFilter } from "./filter-sort";
 import { Toggle } from "../ui/toggle";
-import {
-  CollectionFilters,
-  collectionFilters,
-  useCollectionFilters,
-} from "@/hooks/use-collection-filters";
 import CollectionObjektDisplay from "./collection-objekt-display";
 import { TokenPayload } from "@/lib/universal/auth";
-import { toSearchParams } from "@/hooks/use-typed-search-params";
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
 import { COSMO_ENDPOINT } from "@/lib/universal/cosmo/common";
 import { OwnedObjektsResult } from "@/lib/universal/cosmo/objekts";
@@ -26,10 +20,11 @@ import OpenSeaButton from "../profile/opensea-button";
 import TradesButton from "../profile/trades-button";
 import CopyAddressButton from "../profile/copy-address-button";
 import BackButton from "../profile/back-button";
+import { CosmoFilters, useCosmoFilters } from "@/hooks/use-cosmo-filters";
 
-export type PropsWithFilters<T extends keyof CollectionFilters> = {
-  filters: CollectionFilters[T];
-  setFilters: (filters: CollectionFilters[T]) => void;
+export type PropsWithFilters<T extends keyof CosmoFilters> = {
+  filters: CosmoFilters[T];
+  setFilters: (filters: CosmoFilters[T]) => void;
 };
 
 type Props = {
@@ -47,27 +42,26 @@ export default function CollectionRenderer({
 }: Props) {
   console.log("[render]: CollectionRenderer");
   const [
+    searchParams,
     showFilters,
     setShowFilters,
-    filters,
-    setFilters,
-    updateFilter,
     showLocked,
     setShowLocked,
-  ] = useCollectionFilters();
+    cosmoFilters,
+    setCosmoFilters,
+    updateCosmoFilters,
+  ] = useCosmoFilters();
 
-  async function fetcher({ pageParam = 0 }: { pageParam?: string | number }) {
-    const searchParams = toSearchParams<typeof collectionFilters>(
-      filters,
-      true,
-      ["show_locked"]
-    );
-    searchParams.set("start_after", pageParam.toString());
+  async function queryFunction({
+    pageParam = 0,
+  }: {
+    pageParam?: string | number;
+  }) {
+    const query = new URLSearchParams(searchParams);
+    query.set("start_after", pageParam.toString());
 
     const result = await fetch(
-      `${COSMO_ENDPOINT}/objekt/v1/owned-by/${
-        user.address
-      }?${searchParams.toString()}`
+      `${COSMO_ENDPOINT}/objekt/v1/owned-by/${user.address}?${query.toString()}`
     );
     return (await result.json()) as OwnedObjektsResult;
   }
@@ -121,28 +115,28 @@ export default function CollectionRenderer({
         <div className="transition-all flex sm:group-data-[show=false]:visible sm:group-data-[show=true]:visible sm:group-data-[show=false]:opacity-100 sm:group-data-[show=true]:opacity-100 group-data-[show=true]:pb-2 sm:pb-1 sm:group-data-[show=false]:h-fit sm:group-data-[show=true]:h-fit group-data-[show=false]:h-0 group-data-[show=false]:invisible group-data-[show=false]:opacity-0 group-data-[show=true]:h-36 gap-2 items-center flex-wrap justify-center">
           <LockedFilter showLocked={showLocked} setShowLocked={setShowLocked} />
           <GridableFilter
-            filters={filters.gridable}
-            setFilters={(f) => updateFilter("gridable", f)}
+            filters={cosmoFilters.gridable}
+            setFilters={(f) => updateCosmoFilters("gridable", f)}
           />
           <TransferableFilter
-            filters={filters.transferable}
-            setFilters={(f) => updateFilter("transferable", f)}
+            filters={cosmoFilters.transferable}
+            setFilters={(f) => updateCosmoFilters("transferable", f)}
           />
           <SeasonFilter
-            filters={filters.season}
-            setFilters={(f) => updateFilter("season", f)}
+            filters={cosmoFilters.season}
+            setFilters={(f) => updateCosmoFilters("season", f)}
           />
           <OnlineFilter
-            filters={filters.on_offline}
-            setFilters={(f) => updateFilter("on_offline", f)}
+            filters={cosmoFilters.on_offline}
+            setFilters={(f) => updateCosmoFilters("on_offline", f)}
           />
           <ClassFilter
-            filters={filters.class}
-            setFilters={(f) => updateFilter("class", f)}
+            filters={cosmoFilters.class}
+            setFilters={(f) => updateCosmoFilters("class", f)}
           />
           <SortFilter
-            filters={filters.sort}
-            setFilters={(f) => updateFilter("sort", f)}
+            filters={cosmoFilters.sort}
+            setFilters={(f) => updateCosmoFilters("sort", f)}
           />
         </div>
       </div>
@@ -153,9 +147,9 @@ export default function CollectionRenderer({
         lockedTokenIds={lockedObjekts}
         showLocked={showLocked}
         artists={artists}
-        filters={filters}
-        setFilters={setFilters}
-        queryFunction={fetcher}
+        filters={cosmoFilters}
+        setFilters={setCosmoFilters}
+        queryFunction={queryFunction}
       />
     </>
   );

@@ -10,8 +10,8 @@ export function TransferableFilter({ filters, setFilters }: Props) {
     <Toggle
       className="drop-shadow-lg"
       variant="cosmo"
-      pressed={filters}
-      onPressedChange={setFilters}
+      pressed={filters ?? false}
+      onPressedChange={(v) => setFilters(v ? true : null)}
       aria-label="Toggle transferable"
     >
       Transferable

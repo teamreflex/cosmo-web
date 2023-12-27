@@ -1,5 +1,4 @@
 import { LockedObjektContext } from "@/context/objekt";
-import { CollectionFilters } from "@/hooks/use-collection-filters";
 import { useState } from "react";
 import FilteredObjektDisplay, {
   ObjektResponse,
@@ -10,6 +9,7 @@ import ActionOverlay from "../objekt/action-overlay";
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
 import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
 import { QueryFunction, QueryKey } from "@tanstack/react-query";
+import { CosmoFilters } from "@/hooks/use-cosmo-filters";
 
 type Props = {
   authenticated: boolean;
@@ -17,8 +17,8 @@ type Props = {
   lockedTokenIds: number[];
   showLocked: boolean;
   artists: CosmoArtistWithMembers[];
-  filters: CollectionFilters;
-  setFilters: (filters: CollectionFilters) => void;
+  filters: CosmoFilters;
+  setFilters: (filters: CosmoFilters) => void;
   queryFunction: QueryFunction<
     ObjektResponse<OwnedObjekt>,
     QueryKey,

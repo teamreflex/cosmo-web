@@ -8,20 +8,23 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PropsWithFilters } from "./collection-renderer";
-import { ValidSort, validSorts } from "@/lib/universal/cosmo/common";
+import { ValidSorts, validSorts } from "@/lib/universal/cosmo/common";
 
 type Props = PropsWithFilters<"sort">;
 
-const map: Record<ValidSort, string> = {
-  newest: "Newest",
-  oldest: "Oldest",
-  noAscending: "Lowest No.",
-  noDescending: "Highest No.",
+const map: Record<ValidSorts, string> = {
+  [ValidSorts.NEWEST]: "Newest",
+  [ValidSorts.OLDEST]: "Oldest",
+  [ValidSorts.NO_ASCENDING]: "Lowest No.",
+  [ValidSorts.NO_DESCENDING]: "Highest No.",
 };
 
 export function SortFilter({ filters, setFilters }: Props) {
   return (
-    <Select value={filters} onValueChange={setFilters}>
+    <Select
+      value={filters ?? "newest"}
+      onValueChange={(v) => setFilters(v as ValidSorts)}
+    >
       <SelectTrigger className="w-32 drop-shadow-lg">
         <SelectValue placeholder="Sort" />
       </SelectTrigger>

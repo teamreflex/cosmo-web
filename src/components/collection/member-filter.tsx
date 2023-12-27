@@ -14,7 +14,7 @@ import { memo } from "react";
 
 type Props = {
   artists: CosmoArtistWithMembers[];
-  active: string | undefined;
+  active: string | null;
   updateArtist: (artist: CosmoArtistWithMembers) => void;
   updateMember: (member: CosmoMember) => void;
 };
