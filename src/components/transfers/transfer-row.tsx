@@ -4,6 +4,7 @@ import CosmoImage from "@/assets/cosmo.webp";
 import ProfileImage from "@/assets/profile.webp";
 import Link from "next/link";
 import { format } from "date-fns";
+import { memo } from "react";
 
 const nullAddress = "0x0000000000000000000000000000000000000000";
 
@@ -12,7 +13,7 @@ type Props = {
   address: string;
 };
 
-export default function TransferRow({ row, address }: Props) {
+export default memo(function TransferRow({ row, address }: Props) {
   const isReceiver = row.transfer.to.toLowerCase() === address.toLowerCase();
 
   const serial = row.objekt.serial.toString().padStart(5, "0");
@@ -45,7 +46,7 @@ export default function TransferRow({ row, address }: Props) {
       <span className="text-right">{timestamp}</span>
     </div>
   );
-}
+});
 
 function SenderCosmo() {
   return (

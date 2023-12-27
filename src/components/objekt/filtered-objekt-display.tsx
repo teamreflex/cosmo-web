@@ -1,15 +1,13 @@
 "use client";
 
 import Objekt from "../objekt/objekt";
-import { ReactNode, Ref, forwardRef, useCallback, useEffect } from "react";
-import { ChevronDown, HeartCrack, Loader2, PawPrint } from "lucide-react";
+import { ReactNode, useCallback } from "react";
+import { HeartCrack, Loader2 } from "lucide-react";
 import {
   QueryFunction,
   QueryKey,
-  QueryStatus,
   useInfiniteQuery,
 } from "@tanstack/react-query";
-import { useInView } from "react-intersection-observer";
 import {
   CosmoArtistWithMembers,
   CosmoMember,
@@ -21,6 +19,7 @@ import Hydrated from "../hydrated";
 import MemberFilterSkeleton from "../skeleton/member-filter-skeleton";
 import { ValidArtists } from "@/lib/universal/cosmo/common";
 import { CosmoFilters } from "@/hooks/use-cosmo-filters";
+import InfiniteQueryPending from "../infinite-query-pending";
 
 export type ObjektResponse<TObjektType extends ValidObjekt> = {
   hasNext: boolean;
@@ -135,7 +134,7 @@ export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
           )}
         </div>
 
-        <Pending
+        <InfiniteQueryPending
           status={status}
           hasNextPage={hasNextPage}
           isFetchingNextPage={isFetchingNextPage}
@@ -151,49 +150,6 @@ function Error() {
     <div className="col-span-full flex flex-col gap-2 items-center py-12">
       <HeartCrack className="h-12 w-12" />
       <p>There was an error loading objekts</p>
-    </div>
-  );
-}
-
-type PendingProps = {
-  status: QueryStatus;
-  hasNextPage: boolean;
-  isFetchingNextPage: boolean;
-  fetchNextPage: () => void;
-};
-function Pending({
-  status,
-  hasNextPage,
-  isFetchingNextPage,
-  fetchNextPage,
-}: PendingProps) {
-  const { ref, inView } = useInView();
-
-  // infinite scroll loader
-  useEffect(() => {
-    if (inView) {
-      fetchNextPage();
-    }
-  }, [inView, fetchNextPage]);
-
-  return (
-    <div className="flex justify-center py-6">
-      {/* ready to fetch next page */}
-      {status === "success" && hasNextPage && !isFetchingNextPage && (
-        <button
-          ref={ref}
-          onClick={fetchNextPage}
-          disabled={!hasNextPage || isFetchingNextPage}
-        >
-          <ChevronDown className="animate-bounce h-12 w-12" />
-        </button>
-      )}
-
-      {/* fetching next page */}
-      {isFetchingNextPage && <Loader2 className="animate-spin h-12 w-12" />}
-
-      {/* no more pages */}
-      {status === "success" && !hasNextPage && <PawPrint className="h-6 w-6" />}
     </div>
   );
 }
