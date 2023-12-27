@@ -3,10 +3,6 @@
 import { SlidersHorizontal } from "lucide-react";
 import { Toggle } from "../ui/toggle";
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
-import {
-  collectionFilters,
-  useCollectionFilters,
-} from "@/hooks/use-collection-filters";
 import { SeasonFilter } from "../collection/filter-season";
 import { OnlineFilter } from "../collection/filter-online";
 import { ClassFilter } from "../collection/filter-class";
@@ -18,11 +14,11 @@ import {
   ObjektList,
 } from "@/lib/universal/objekts";
 import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
-import { toSearchParams } from "@/hooks/use-typed-search-params";
 import ObjektSidebar from "../objekt/objekt-sidebar";
 import { BottomOverlay, TopOverlay } from "./index-overlay";
 import HelpDialog from "./help-dialog";
 import { CollectionFilter } from "./collection-filter";
+import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 
 type Props = {
   artists: CosmoArtistWithMembers[];
@@ -37,19 +33,24 @@ export default function IndexRenderer({
   objektLists,
   nickname,
 }: Props) {
-  const [showFilters, setShowFilters, filters, setFilters, updateFilter] =
-    useCollectionFilters();
+  const [
+    searchParams,
+    showFilters,
+    setShowFilters,
+    showLocked,
+    setShowLocked,
+    cosmoFilters,
+    setCosmoFilters,
+    updateCosmoFilters,
+  ] = useCosmoFilters();
 
   const authenticated = objektLists !== undefined && nickname !== undefined;
 
   async function fetcher({ pageParam = 0 }: { pageParam?: string | number }) {
-    const searchParams = toSearchParams<typeof collectionFilters>(
-      filters,
-      false
-    );
-    searchParams.set("page", pageParam.toString());
+    const query = new URLSearchParams(searchParams);
+    query.set("page", pageParam.toString());
 
-    const result = await fetch(`/api/objekts?${searchParams.toString()}`);
+    const result = await fetch(`/api/objekts?${query.toString()}`);
     return (await result.json()) as IndexedCosmoResponse;
   }
 
@@ -93,33 +94,33 @@ export default function IndexRenderer({
         {/* filters */}
         <div className="transition-all flex sm:group-data-[show=false]:visible sm:group-data-[show=true]:visible sm:group-data-[show=false]:opacity-100 sm:group-data-[show=true]:opacity-100 group-data-[show=true]:pb-2 sm:pb-1 sm:group-data-[show=false]:h-fit sm:group-data-[show=true]:h-fit group-data-[show=false]:h-0 group-data-[show=false]:invisible group-data-[show=false]:opacity-0 group-data-[show=true]:h-24 gap-2 items-center flex-wrap justify-center">
           <SeasonFilter
-            filters={filters.season}
-            setFilters={(f) => updateFilter("season", f)}
+            filters={cosmoFilters.season}
+            setFilters={(f) => updateCosmoFilters("season", f)}
           />
           <CollectionFilter
-            filters={filters.collectionNo}
-            setFilters={(f) => updateFilter("collectionNo", f)}
+            filters={cosmoFilters.collectionNo}
+            setFilters={(f) => updateCosmoFilters("collectionNo", f)}
             collections={collections}
           />
           <OnlineFilter
-            filters={filters.on_offline}
-            setFilters={(f) => updateFilter("on_offline", f)}
+            filters={cosmoFilters.on_offline}
+            setFilters={(f) => updateCosmoFilters("on_offline", f)}
           />
           <ClassFilter
-            filters={filters.class}
-            setFilters={(f) => updateFilter("class", f)}
+            filters={cosmoFilters.class}
+            setFilters={(f) => updateCosmoFilters("class", f)}
           />
           <SortFilter
-            filters={filters.sort}
-            setFilters={(f) => updateFilter("sort", f)}
+            filters={cosmoFilters.sort}
+            setFilters={(f) => updateCosmoFilters("sort", f)}
           />
         </div>
       </div>
 
       <FilteredObjektDisplay
         artists={artists}
-        filters={filters}
-        setFilters={setFilters}
+        filters={cosmoFilters}
+        setFilters={setCosmoFilters}
         authenticated={authenticated}
         queryFunction={fetcher}
         queryKey={["objekt-index"]}
