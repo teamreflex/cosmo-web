@@ -25,8 +25,6 @@ export default memo(function MemberFilter({
   updateArtist,
   updateMember,
 }: Props) {
-  console.log("[render]: MemberFilter");
-
   return (
     <div className="relative flex flex-col h-fit w-full">
       <div className="absolute pointer-events-none z-20 top-0 left-0 h-full w-4 bg-gradient-to-r from-background to-transparent" />

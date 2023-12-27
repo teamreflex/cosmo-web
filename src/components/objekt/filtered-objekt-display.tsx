@@ -1,11 +1,12 @@
 "use client";
 
 import Objekt from "../objekt/objekt";
-import { ReactNode, useEffect } from "react";
-import { ChevronDown, HeartCrack, Loader2 } from "lucide-react";
+import { ReactNode, Ref, forwardRef, useCallback, useEffect } from "react";
+import { ChevronDown, HeartCrack, Loader2, PawPrint } from "lucide-react";
 import {
   QueryFunction,
   QueryKey,
+  QueryStatus,
   useInfiniteQuery,
 } from "@tanstack/react-query";
 import { useInView } from "react-intersection-observer";
@@ -56,7 +57,6 @@ export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
   objektSlot,
 }: Props<TObjektType>) {
   console.log("[render]: FilteredObjektDisplay");
-  const { ref, inView } = useInView();
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
     useInfiniteQuery({
@@ -73,29 +73,28 @@ export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
     getObjektDisplay
   );
 
-  // infinite scroll loader
-  useEffect(() => {
-    if (inView) {
-      fetchNextPage();
-    }
-  }, [inView, fetchNextPage]);
+  const setActiveMember = useCallback(
+    (member: CosmoMember) => {
+      setFilters({
+        ...filters,
+        artist: null,
+        member: filters.member === member.name ? null : member.name,
+      });
+    },
+    [filters, setFilters]
+  );
 
-  function setActiveMember(member: CosmoMember) {
-    setFilters({
-      ...filters,
-      artist: null,
-      member: filters.member === member.name ? null : member.name,
-    });
-  }
-
-  function setActiveArtist(artist: CosmoArtistWithMembers) {
-    setFilters({
-      ...filters,
-      member: null,
-      artist:
-        filters.artist === artist.name ? null : (artist.name as ValidArtists),
-    });
-  }
+  const setActiveArtist = useCallback(
+    (artist: CosmoArtistWithMembers) => {
+      setFilters({
+        ...filters,
+        member: null,
+        artist:
+          filters.artist === artist.name ? null : (artist.name as ValidArtists),
+      });
+    },
+    [filters, setFilters]
+  );
 
   return (
     <div className="flex flex-col">
@@ -136,34 +135,15 @@ export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
           )}
         </div>
 
-        {status !== "error" && (
-          <div className="flex justify-center py-6">
-            <button
-              ref={ref}
-              onClick={() => fetchNextPage()}
-              disabled={!hasNextPage || isFetchingNextPage}
-            >
-              {isFetchingNextPage ? (
-                <Loading />
-              ) : hasNextPage ? (
-                <LoadMore />
-              ) : (
-                <></>
-              )}
-            </button>
-          </div>
-        )}
+        <Pending
+          status={status}
+          hasNextPage={hasNextPage}
+          isFetchingNextPage={isFetchingNextPage}
+          fetchNextPage={fetchNextPage}
+        />
       </div>
     </div>
   );
-}
-
-function LoadMore() {
-  return <ChevronDown className="animate-bounce h-12 w-12" />;
-}
-
-function Loading() {
-  return <Loader2 className="animate-spin h-12 w-12" />;
 }
 
 function Error() {
@@ -171,6 +151,49 @@ function Error() {
     <div className="col-span-full flex flex-col gap-2 items-center py-12">
       <HeartCrack className="h-12 w-12" />
       <p>There was an error loading objekts</p>
+    </div>
+  );
+}
+
+type PendingProps = {
+  status: QueryStatus;
+  hasNextPage: boolean;
+  isFetchingNextPage: boolean;
+  fetchNextPage: () => void;
+};
+function Pending({
+  status,
+  hasNextPage,
+  isFetchingNextPage,
+  fetchNextPage,
+}: PendingProps) {
+  const { ref, inView } = useInView();
+
+  // infinite scroll loader
+  useEffect(() => {
+    if (inView) {
+      fetchNextPage();
+    }
+  }, [inView, fetchNextPage]);
+
+  return (
+    <div className="flex justify-center py-6">
+      {/* ready to fetch next page */}
+      {status === "success" && hasNextPage && !isFetchingNextPage && (
+        <button
+          ref={ref}
+          onClick={fetchNextPage}
+          disabled={!hasNextPage || isFetchingNextPage}
+        >
+          <ChevronDown className="animate-bounce h-12 w-12" />
+        </button>
+      )}
+
+      {/* fetching next page */}
+      {isFetchingNextPage && <Loader2 className="animate-spin h-12 w-12" />}
+
+      {/* no more pages */}
+      {status === "success" && !hasNextPage && <PawPrint className="h-6 w-6" />}
     </div>
   );
 }
