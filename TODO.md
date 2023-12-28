@@ -11,6 +11,10 @@
 - Refactor `CollectionRenderer` and `ProfileRenderer` into just one component
 - Iron out any remaining jank/issues from performance refactoring
 
+## Performance
+
+- Prevent all Objekt components from rerendering upon a single objekt being locked
+
 ### Grid
 
 - When fetching objekts to slot, filter out anything that is locked
