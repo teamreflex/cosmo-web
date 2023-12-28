@@ -95,7 +95,7 @@ export default function IndexRenderer({
         </div>
 
         {/* filters */}
-        <FiltersContainer className="group-data-[show=true]:h-24">
+        <FiltersContainer>
           <IndexFilters
             cosmoFilters={cosmoFilters}
             updateCosmoFilters={updateCosmoFilters}

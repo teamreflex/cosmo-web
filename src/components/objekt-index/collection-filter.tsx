@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useState } from "react";
+import { memo, useState } from "react";
 import { ChevronDown, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PropsWithFilters } from "../collection/collection-renderer";
@@ -17,7 +17,11 @@ type Props = PropsWithFilters<"collectionNo"> & {
   collections: string[];
 };
 
-export function CollectionFilter({ filters, setFilters, collections }: Props) {
+export default memo(function CollectionFilter({
+  filters,
+  setFilters,
+  collections,
+}: Props) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
 
@@ -34,7 +38,7 @@ export function CollectionFilter({ filters, setFilters, collections }: Props) {
       }
     }
 
-    setFilters(newFilters);
+    setFilters("collectionNo", newFilters);
   }
 
   function onInput(e: React.FormEvent<HTMLInputElement>) {
@@ -65,7 +69,10 @@ export function CollectionFilter({ filters, setFilters, collections }: Props) {
             value={search}
             onInput={onInput}
           />
-          <button className="outline-none" onClick={() => setFilters([])}>
+          <button
+            className="outline-none"
+            onClick={() => setFilters("collectionNo", [])}
+          >
             <X className="mr-1 h-4 w-4 opacity-50 hover:opacity-100 transition-colors" />
           </button>
         </div>
@@ -86,4 +93,4 @@ export function CollectionFilter({ filters, setFilters, collections }: Props) {
       </DropdownMenuContent>
     </DropdownMenu>
   );
-}
+});

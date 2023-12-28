@@ -87,7 +87,7 @@ export default function ListRenderer({
         </div>
 
         {/* filters */}
-        <FiltersContainer className="group-data-[show=true]:h-24">
+        <FiltersContainer>
           <IndexFilters
             cosmoFilters={cosmoFilters}
             updateCosmoFilters={updateCosmoFilters}

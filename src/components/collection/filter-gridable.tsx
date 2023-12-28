@@ -2,19 +2,20 @@
 
 import { Toggle } from "@/components/ui/toggle";
 import { PropsWithFilters } from "./collection-renderer";
+import { memo } from "react";
 
 type Props = PropsWithFilters<"gridable">;
 
-export function GridableFilter({ filters, setFilters }: Props) {
+export default memo(function GridableFilter({ filters, setFilters }: Props) {
   return (
     <Toggle
       className="drop-shadow-lg"
       variant="cosmo"
       pressed={filters ?? false}
-      onPressedChange={(v) => setFilters(v ? true : null)}
+      onPressedChange={(v) => setFilters("gridable", v ? true : null)}
       aria-label="Toggle gridable"
     >
       Gridable
     </Toggle>
   );
-}
+});

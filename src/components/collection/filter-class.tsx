@@ -9,13 +9,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { PropsWithFilters } from "./collection-renderer";
 import { ValidClasses } from "@/lib/universal/cosmo/common";
-import { useState } from "react";
+import { memo, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Props = PropsWithFilters<"class">;
 
-export function ClassFilter({ filters, setFilters }: Props) {
+export default memo(function ClassFilter({ filters, setFilters }: Props) {
   const [open, setOpen] = useState(false);
 
   function updateFilter(property: ValidClasses, checked: boolean) {
@@ -31,7 +31,7 @@ export function ClassFilter({ filters, setFilters }: Props) {
       }
     }
 
-    setFilters(newFilters);
+    setFilters("class", newFilters);
   }
 
   return (
@@ -61,4 +61,4 @@ export function ClassFilter({ filters, setFilters }: Props) {
       </DropdownMenuContent>
     </DropdownMenu>
   );
-}
+});

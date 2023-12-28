@@ -78,14 +78,14 @@ export default function Links({ authenticated }: { authenticated: boolean }) {
   }, [path]);
 
   return (
-    <div className="flex grow justify-end sm:justify-center">
+    <div className="flex grow justify-end md:justify-center">
       {/* desktop */}
-      <div className="sm:flex flex-row items-center gap-8 hidden">
+      <div className="md:flex flex-row items-center gap-8 hidden">
         <LinkIcons path={path} authenticated={authenticated} />
       </div>
 
       {/* mobile */}
-      <div className="sm:hidden flex flex-row items-center">
+      <div className="md:hidden flex flex-row items-center">
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button variant="ghost" size="sm">

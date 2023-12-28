@@ -13,13 +13,17 @@ import OpenSeaButton from "../profile/opensea-button";
 import TradesButton from "../profile/trades-button";
 import CopyAddressButton from "../profile/copy-address-button";
 import BackButton from "../profile/back-button";
-import { CosmoFilters, useCosmoFilters } from "@/hooks/use-cosmo-filters";
+import {
+  CosmoFilters,
+  UpdateCosmoFilters,
+  useCosmoFilters,
+} from "@/hooks/use-cosmo-filters";
 import { useCallback } from "react";
 import { CollectionFilters, FiltersContainer } from "./filters-container";
 
 export type PropsWithFilters<T extends keyof CosmoFilters> = {
   filters: CosmoFilters[T];
-  setFilters: (filters: CosmoFilters[T]) => void;
+  setFilters: UpdateCosmoFilters;
 };
 
 type Props = {

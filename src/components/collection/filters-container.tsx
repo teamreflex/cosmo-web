@@ -1,43 +1,19 @@
 import { CosmoFilters, UpdateCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { Fragment, PropsWithChildren, memo } from "react";
-import { LockedFilter } from "./filter-locked";
-import { GridableFilter } from "./filter-gridable";
-import { TransferableFilter } from "./filter-transferable";
-import { SeasonFilter } from "./filter-season";
-import { OnlineFilter } from "./filter-online";
-import { ClassFilter } from "./filter-class";
-import { SortFilter } from "./filter-sort";
-import { PropsWithClassName, cn } from "@/lib/utils";
-import { CollectionFilter } from "../objekt-index/collection-filter";
+import LockedFilter from "./filter-locked";
+import GridableFilter from "./filter-gridable";
+import TransferableFilter from "./filter-transferable";
+import SeasonFilter from "./filter-season";
+import OnlineFilter from "./filter-online";
+import ClassFilter from "./filter-class";
+import SortFilter from "./filter-sort";
+import CollectionFilter from "../objekt-index/collection-filter";
 
-type FiltersContainerProps = PropsWithClassName<PropsWithChildren>;
 export const FiltersContainer = memo(function FiltersContainer({
   children,
-  className,
-}: FiltersContainerProps) {
+}: PropsWithChildren) {
   return (
-    <div
-      className={cn(
-        // general layout
-        "flex gap-2 items-center flex-wrap justify-center sm:pb-1 overflow-y-clip",
-        // animation
-        "transition-all",
-        // desktop: show filters
-        "sm:group-data-[show=false]:visible sm:group-data-[show=true]:visible",
-        // desktop: keep opacity at 100%
-        "sm:group-data-[show=false]:opacity-100 sm:group-data-[show=true]:opacity-100",
-        // desktop: add padding
-        "group-data-[show=true]:pb-2",
-        // desktop: keep height at min-content
-        "sm:group-data-[show=false]:h-fit sm:group-data-[show=true]:h-fit",
-        // mobile: hide filters when toggled off
-        "group-data-[show=false]:h-0",
-        // mobile: show filters when toggled on
-        "group-data-[show=true]:h-36",
-        // can update the height if necessary
-        className
-      )}
-    >
+    <div className="flex gap-2 items-center flex-wrap justify-center sm:pb-2 pb-1 sm:group-data-[show=false]:flex group-data-[show=false]:hidden">
       {children}
     </div>
   );
@@ -65,28 +41,25 @@ export const CollectionFilters = memo(function CollectionFilters({
       <LockedFilter showLocked={showLocked} setShowLocked={setShowLocked} />
       <GridableFilter
         filters={cosmoFilters.gridable}
-        setFilters={(f) => updateCosmoFilters("gridable", f)}
+        setFilters={updateCosmoFilters}
       />
       <TransferableFilter
         filters={cosmoFilters.transferable}
-        setFilters={(f) => updateCosmoFilters("transferable", f)}
+        setFilters={updateCosmoFilters}
       />
       <SeasonFilter
         filters={cosmoFilters.season}
-        setFilters={(f) => updateCosmoFilters("season", f)}
+        setFilters={updateCosmoFilters}
       />
       <OnlineFilter
         filters={cosmoFilters.on_offline}
-        setFilters={(f) => updateCosmoFilters("on_offline", f)}
+        setFilters={updateCosmoFilters}
       />
       <ClassFilter
         filters={cosmoFilters.class}
-        setFilters={(f) => updateCosmoFilters("class", f)}
+        setFilters={updateCosmoFilters}
       />
-      <SortFilter
-        filters={cosmoFilters.sort}
-        setFilters={(f) => updateCosmoFilters("sort", f)}
-      />
+      <SortFilter filters={cosmoFilters.sort} setFilters={updateCosmoFilters} />
     </Fragment>
   );
 });
@@ -110,27 +83,24 @@ export const IndexFilters = memo(function IndexFilters({
     <Fragment>
       <SeasonFilter
         filters={cosmoFilters.season}
-        setFilters={(f) => updateCosmoFilters("season", f)}
+        setFilters={updateCosmoFilters}
       />
       {collections.length > 0 && (
         <CollectionFilter
           filters={cosmoFilters.collectionNo}
-          setFilters={(f) => updateCosmoFilters("collectionNo", f)}
+          setFilters={updateCosmoFilters}
           collections={collections}
         />
       )}
       <OnlineFilter
         filters={cosmoFilters.on_offline}
-        setFilters={(f) => updateCosmoFilters("on_offline", f)}
+        setFilters={updateCosmoFilters}
       />
       <ClassFilter
         filters={cosmoFilters.class}
-        setFilters={(f) => updateCosmoFilters("class", f)}
+        setFilters={updateCosmoFilters}
       />
-      <SortFilter
-        filters={cosmoFilters.sort}
-        setFilters={(f) => updateCosmoFilters("sort", f)}
-      />
+      <SortFilter filters={cosmoFilters.sort} setFilters={updateCosmoFilters} />
     </Fragment>
   );
 });

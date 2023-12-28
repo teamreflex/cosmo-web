@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { PropsWithFilters } from "./collection-renderer";
 import { ValidOnlineTypes } from "@/lib/universal/cosmo/common";
-import { useState } from "react";
+import { memo, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -20,7 +20,7 @@ const map: Record<ValidOnlineTypes, string> = {
   [ValidOnlineTypes.OFFLINE]: "Physical",
 };
 
-export function OnlineFilter({ filters, setFilters }: Props) {
+export default memo(function OnlineFilter({ filters, setFilters }: Props) {
   const [open, setOpen] = useState(false);
 
   function updateFilter(property: ValidOnlineTypes, checked: boolean) {
@@ -36,7 +36,7 @@ export function OnlineFilter({ filters, setFilters }: Props) {
       }
     }
 
-    setFilters(newFilters);
+    setFilters("on_offline", newFilters);
   }
 
   return (
@@ -66,4 +66,4 @@ export function OnlineFilter({ filters, setFilters }: Props) {
       </DropdownMenuContent>
     </DropdownMenu>
   );
-}
+});
