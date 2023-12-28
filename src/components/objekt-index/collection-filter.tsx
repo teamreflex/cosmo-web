@@ -38,7 +38,7 @@ export default memo(function CollectionFilter({
       }
     }
 
-    setFilters("collectionNo", newFilters);
+    setFilters("collectionNo", newFilters.length > 0 ? newFilters : null);
   }
 
   function onInput(e: React.FormEvent<HTMLInputElement>) {

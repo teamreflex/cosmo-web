@@ -21,11 +21,15 @@ const map: Record<ValidSorts, string> = {
 };
 
 export default memo(function SortFilter({ filters, setFilters }: Props) {
+  function update(value: string) {
+    setFilters(
+      "sort",
+      value === ValidSorts.NEWEST ? null : (value as ValidSorts)
+    );
+  }
+
   return (
-    <Select
-      value={filters ?? "newest"}
-      onValueChange={(v) => setFilters("sort", v as ValidSorts)}
-    >
+    <Select value={filters ?? "newest"} onValueChange={update}>
       <SelectTrigger className="w-32 drop-shadow-lg">
         <SelectValue placeholder="Sort" />
       </SelectTrigger>

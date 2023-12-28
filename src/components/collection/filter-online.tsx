@@ -36,7 +36,7 @@ export default memo(function OnlineFilter({ filters, setFilters }: Props) {
       }
     }
 
-    setFilters("on_offline", newFilters);
+    setFilters("on_offline", newFilters.length > 0 ? newFilters : null);
   }
 
   return (

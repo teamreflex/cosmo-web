@@ -31,7 +31,7 @@ export default memo(function ClassFilter({ filters, setFilters }: Props) {
       }
     }
 
-    setFilters("class", newFilters);
+    setFilters("class", newFilters.length > 0 ? newFilters : null);
   }
 
   return (

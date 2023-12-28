@@ -31,7 +31,7 @@ export default memo(function SeasonFilter({ filters, setFilters }: Props) {
       }
     }
 
-    setFilters("season", newFilters);
+    setFilters("season", newFilters.length > 0 ? newFilters : null);
   }
 
   return (

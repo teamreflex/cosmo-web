@@ -49,9 +49,7 @@ export function useCosmoFilters() {
   const [cosmoFilters, _setCosmoFilters] = useQueryStates({
     member: parseAsString,
     artist: parseAsStringEnum<ValidArtists>(Object.values(ValidArtists)),
-    sort: parseAsStringEnum<ValidSorts>(Object.values(ValidSorts)).withDefault(
-      ValidSorts.NEWEST
-    ),
+    sort: parseAsStringEnum<ValidSorts>(Object.values(ValidSorts)),
     class: parseAsArrayOf(
       parseAsStringEnum<ValidClasses>(Object.values(ValidClasses))
     ),
