@@ -1,3 +1,4 @@
+import million from 'million/compiler';
 import "./src/env.mjs";
 
 /** @type {import('next').NextConfig} */
@@ -52,4 +53,6 @@ const config = {
   },
 };
 
-export default config;
+export default million.next(
+  config, { auto: { rsc: true } }
+);

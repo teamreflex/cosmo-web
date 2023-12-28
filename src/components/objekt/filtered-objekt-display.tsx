@@ -20,6 +20,7 @@ import MemberFilterSkeleton from "../skeleton/member-filter-skeleton";
 import { ValidArtists } from "@/lib/universal/cosmo/common";
 import { CosmoFilters } from "@/hooks/use-cosmo-filters";
 import InfiniteQueryPending from "../infinite-query-pending";
+import { For } from "million/react";
 
 export type ObjektResponse<TObjektType extends ValidObjekt> = {
   hasNext: boolean;
@@ -117,18 +118,17 @@ export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
           ) : status === "error" ? (
             <Error />
           ) : (
-            <>
-              {data !== undefined &&
-                objekts.map((objekt) => (
-                  <Objekt
-                    key={getObjektId(objekt)}
-                    objekt={objekt}
-                    authenticated={authenticated}
-                  >
-                    {objektSlot}
-                  </Objekt>
-                ))}
-            </>
+            <For each={objekts}>
+              {(objekt) => (
+                <Objekt
+                  key={getObjektId(objekt)}
+                  objekt={objekt}
+                  authenticated={authenticated}
+                >
+                  {objektSlot}
+                </Objekt>
+              )}
+            </For>
           )}
         </div>
 

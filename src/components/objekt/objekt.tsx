@@ -23,35 +23,35 @@ export default memo(function Objekt<TObjektType extends ValidObjekt>({
   } as CSSProperties;
 
   return (
-    <ObjektProvider objekt={objekt} authenticated={authenticated}>
-      <ReactCardFlip isFlipped={flipped} flipDirection="horizontal">
-        <div
-          className="isolate relative overflow-hidden rounded-lg md:rounded-xl lg:rounded-2xl touch-manipulation bg-accent"
-          style={css}
-        >
-          <Image
-            onClick={() => setFlipped((prev) => !prev)}
-            className="cursor-pointer"
-            src={objekt.frontImage}
-            width={291}
-            height={450}
-            alt={objekt.collectionId}
-            quality={100}
-          />
-
-          {children}
-        </div>
-
+    <ReactCardFlip isFlipped={flipped} flipDirection="horizontal">
+      <div
+        className="isolate relative overflow-hidden rounded-lg md:rounded-xl lg:rounded-2xl touch-manipulation bg-accent"
+        style={css}
+      >
         <Image
           onClick={() => setFlipped((prev) => !prev)}
           className="cursor-pointer"
-          src={objekt.backImage}
+          src={objekt.frontImage}
           width={291}
           height={450}
           alt={objekt.collectionId}
           quality={100}
         />
-      </ReactCardFlip>
-    </ObjektProvider>
+
+        <ObjektProvider objekt={objekt} authenticated={authenticated}>
+          {children}
+        </ObjektProvider>
+      </div>
+
+      <Image
+        onClick={() => setFlipped((prev) => !prev)}
+        className="cursor-pointer"
+        src={objekt.backImage}
+        width={291}
+        height={450}
+        alt={objekt.collectionId}
+        quality={100}
+      />
+    </ReactCardFlip>
   );
 });

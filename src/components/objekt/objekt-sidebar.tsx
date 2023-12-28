@@ -1,12 +1,12 @@
 "use client";
 
-import { useContext } from "react";
+import { memo, useContext } from "react";
 import { ObjektContext, isOwnedObjekt } from "./context";
 import { IndexedObjekt } from "@/lib/universal/objekts";
 import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
 import { useElementSize } from "@/hooks/use-element-size";
 
-export default function ObjektSidebar() {
+export default memo(function ObjektSidebar() {
   const { objekt } = useContext(ObjektContext) as ObjektContext<
     OwnedObjekt | IndexedObjekt
   >;
@@ -33,4 +33,4 @@ export default function ObjektSidebar() {
       {serial && <span>#{serial.toString().padStart(5, "0")}</span>}
     </div>
   );
-}
+});

@@ -4,11 +4,11 @@ import { cn } from "@/lib/utils";
 import format from "date-fns/format";
 import { ExternalLink, Maximize2 } from "lucide-react";
 import Link from "next/link";
-import { useContext, useState } from "react";
+import { memo, useContext, useState } from "react";
 import { ObjektContext } from "./context";
 import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
 
-export default function InformationOverlay() {
+export default memo(function InformationOverlay() {
   const { objekt } = useContext(ObjektContext) as ObjektContext<OwnedObjekt>;
 
   const [open, setOpen] = useState(false);
@@ -61,4 +61,4 @@ export default function InformationOverlay() {
       </div>
     </div>
   );
-}
+});
