@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { useContext } from "react";
-import { ObjektContext } from "../objekt/util";
+import { ObjektContext } from "../objekt/context";
 import { IndexedObjekt, ObjektList } from "@/lib/universal/objekts";
 import AddToList from "../lists/add-to-list";
 import OverlayStatus from "../objekt/overlay-status";

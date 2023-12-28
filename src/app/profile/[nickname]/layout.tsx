@@ -25,7 +25,7 @@ export default async function ProfileLayout({ children, params }: Props) {
 
   return (
     <main className="container flex flex-col gap-2 sm:gap-0 py-2">
-      <div className="flex gap-4 items-center h-32">
+      <div className="flex gap-4 items-center h-fit py-2">
         <Avatar className="h-24 w-24">
           <AvatarFallback>
             {profile.nickname.charAt(0).toUpperCase()}
@@ -56,31 +56,23 @@ export default async function ProfileLayout({ children, params }: Props) {
             </Suspense>
           </div>
 
-          <div className="flex flex-col sm:flex-row w-full sm:gap-2">
-            {/* buttons */}
-            <div className="flex flex-wrap justify-between sm:justify-start items-center gap-2 py-1">
-              <OpenSeaButton address={profile.address} />
-              <PolygonButton address={profile.address} />
-              <HelpDialog />
-              <CopyAddressButton address={profile.address} />
-              <TradesButton nickname={profile.nickname} />
-              <ListsButton
-                nickname={
-                  profile.isAddress ? profile.address : profile.nickname
-                }
-                address={profile.address}
-                allowCreate={currentUser?.address === profile.address}
-              />
-            </div>
-
-            {/* contextual elements */}
-            <div className="flex items-center sm:justify-end flex-grow sm:has-[a]:justify-between">
-              <BackButton url={url} tooltip="Return to profile" />
-              {/* content gets portaled in */}
-              <span className="h-10 flex items-center">
-                <div id="objekt-total" />
-              </span>
-            </div>
+          {/* buttons */}
+          <div className="flex flex-wrap gap-2 py-1">
+            <OpenSeaButton address={profile.address} />
+            <PolygonButton address={profile.address} />
+            <HelpDialog />
+            <CopyAddressButton address={profile.address} />
+            <TradesButton nickname={profile.nickname} />
+            <ListsButton
+              nickname={profile.isAddress ? profile.address : profile.nickname}
+              address={profile.address}
+              allowCreate={currentUser?.address === profile.address}
+            />
+            <BackButton url={url} tooltip="Return to profile" />
+            {/* content gets portaled in */}
+            <span className="h-10 flex items-center last:ml-auto">
+              <div id="objekt-total" />
+            </span>
           </div>
         </div>
       </div>

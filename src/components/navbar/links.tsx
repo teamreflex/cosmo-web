@@ -109,7 +109,7 @@ type LinkProps = {
   authenticated: boolean;
 };
 
-function LinkIcons({ path, authenticated }: LinkProps) {
+const LinkIcons = memo(function LinkIcons({ path, authenticated }: LinkProps) {
   return (
     <>
       {links.map((link, i) => (
@@ -124,7 +124,7 @@ function LinkIcons({ path, authenticated }: LinkProps) {
       <NavbarSearch />
     </>
   );
-}
+});
 
 type LinkButtonProps = {
   link: NavbarLink;
@@ -157,7 +157,7 @@ const LinkButton = memo(function LinkButton({
             />
           </Link>
         </TooltipTrigger>
-        <TooltipContent>
+        <TooltipContent className="hidden sm:block">
           <p>
             {authenticated || (!link.requireAuth && !authenticated)
               ? link.name

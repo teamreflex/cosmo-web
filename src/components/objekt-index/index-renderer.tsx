@@ -3,10 +3,6 @@
 import { SlidersHorizontal } from "lucide-react";
 import { Toggle } from "../ui/toggle";
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
-import { SeasonFilter } from "../collection/filter-season";
-import { OnlineFilter } from "../collection/filter-online";
-import { ClassFilter } from "../collection/filter-class";
-import { SortFilter } from "../collection/filter-sort";
 import ListDropdown from "../lists/list-dropdown";
 import {
   IndexedCosmoResponse,
@@ -17,9 +13,12 @@ import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
 import ObjektSidebar from "../objekt/objekt-sidebar";
 import { BottomOverlay, TopOverlay } from "./index-overlay";
 import HelpDialog from "./help-dialog";
-import { CollectionFilter } from "./collection-filter";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
-import { useCallback } from "react";
+import { Fragment, useCallback } from "react";
+import {
+  FiltersContainer,
+  IndexFilters,
+} from "../collection/filters-container";
 
 type Props = {
   artists: CosmoArtistWithMembers[];
@@ -96,29 +95,13 @@ export default function IndexRenderer({
         </div>
 
         {/* filters */}
-        <div className="transition-all flex sm:group-data-[show=false]:visible sm:group-data-[show=true]:visible sm:group-data-[show=false]:opacity-100 sm:group-data-[show=true]:opacity-100 group-data-[show=true]:pb-2 sm:pb-1 sm:group-data-[show=false]:h-fit sm:group-data-[show=true]:h-fit group-data-[show=false]:h-0 group-data-[show=false]:invisible group-data-[show=false]:opacity-0 group-data-[show=true]:h-24 gap-2 items-center flex-wrap justify-center">
-          <SeasonFilter
-            filters={cosmoFilters.season}
-            setFilters={(f) => updateCosmoFilters("season", f)}
-          />
-          <CollectionFilter
-            filters={cosmoFilters.collectionNo}
-            setFilters={(f) => updateCosmoFilters("collectionNo", f)}
+        <FiltersContainer className="group-data-[show=true]:h-24">
+          <IndexFilters
+            cosmoFilters={cosmoFilters}
+            updateCosmoFilters={updateCosmoFilters}
             collections={collections}
           />
-          <OnlineFilter
-            filters={cosmoFilters.on_offline}
-            setFilters={(f) => updateCosmoFilters("on_offline", f)}
-          />
-          <ClassFilter
-            filters={cosmoFilters.class}
-            setFilters={(f) => updateCosmoFilters("class", f)}
-          />
-          <SortFilter
-            filters={cosmoFilters.sort}
-            setFilters={(f) => updateCosmoFilters("sort", f)}
-          />
-        </div>
+        </FiltersContainer>
       </div>
 
       <FilteredObjektDisplay
@@ -131,11 +114,11 @@ export default function IndexRenderer({
         getObjektId={(objekt: IndexedObjekt) => objekt.id}
         getObjektDisplay={() => true}
         objektSlot={
-          <>
+          <Fragment>
             <ObjektSidebar />
             {authenticated && <TopOverlay lists={objektLists} />}
             <BottomOverlay />
-          </>
+          </Fragment>
         }
       />
     </>

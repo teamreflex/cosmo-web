@@ -5,7 +5,7 @@ import format from "date-fns/format";
 import { ExternalLink, Maximize2 } from "lucide-react";
 import Link from "next/link";
 import { useContext, useState } from "react";
-import { ObjektContext } from "./util";
+import { ObjektContext } from "./context";
 import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
 
 export default function InformationOverlay() {

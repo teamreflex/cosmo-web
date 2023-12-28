@@ -1,5 +1,5 @@
 import { LockedObjektContext } from "@/context/objekt";
-import { memo, useCallback, useState } from "react";
+import { Fragment, memo, useCallback, useState } from "react";
 import FilteredObjektDisplay, {
   ObjektResponse,
 } from "../objekt/filtered-objekt-display";
@@ -71,14 +71,18 @@ export default memo(function CollectionObjektDisplay({
         queryKey={queryKey}
         getObjektId={getObjektId}
         getObjektDisplay={shouldShowObjekt}
-        objektSlot={
-          <>
-            <ObjektSidebar />
-            <InformationOverlay />
-            <ActionOverlay />
-          </>
-        }
+        objektSlot={<ObjektSlot />}
       />
     </LockedObjektContext.Provider>
   );
 });
+
+function ObjektSlot() {
+  return (
+    <Fragment>
+      <ObjektSidebar />
+      <InformationOverlay />
+      <ActionOverlay />
+    </Fragment>
+  );
+}

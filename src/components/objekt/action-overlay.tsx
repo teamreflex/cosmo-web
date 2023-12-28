@@ -6,7 +6,7 @@ import { DownloadCloud, Grid2X2, Lock, MailX, PartyPopper } from "lucide-react";
 import { useContext } from "react";
 import SendObjekt from "./send-button";
 import LockObjekt from "./lock-button";
-import { ObjektContext } from "./util";
+import { ObjektContext } from "./context";
 import OverlayStatus from "./overlay-status";
 import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
 

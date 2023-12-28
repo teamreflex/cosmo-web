@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { CSSProperties, PropsWithChildren, memo, useState } from "react";
 import ReactCardFlip from "react-card-flip";
-import { ObjektContext, ValidObjekt } from "./util";
+import { ObjektContext, ObjektProvider, ValidObjekt } from "./context";
 
 type ObjektProps<TObjektType extends ValidObjekt> = PropsWithChildren<{
   objekt: TObjektType;
@@ -23,7 +23,7 @@ export default memo(function Objekt<TObjektType extends ValidObjekt>({
   } as CSSProperties;
 
   return (
-    <ObjektContext.Provider value={{ objekt, authenticated }}>
+    <ObjektProvider objekt={objekt} authenticated={authenticated}>
       <ReactCardFlip isFlipped={flipped} flipDirection="horizontal">
         <div
           className="isolate relative overflow-hidden rounded-lg md:rounded-xl lg:rounded-2xl touch-manipulation bg-accent"
@@ -52,6 +52,6 @@ export default memo(function Objekt<TObjektType extends ValidObjekt>({
           quality={100}
         />
       </ReactCardFlip>
-    </ObjektContext.Provider>
+    </ObjektProvider>
   );
 });

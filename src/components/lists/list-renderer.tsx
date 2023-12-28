@@ -2,10 +2,6 @@
 
 import { Toggle } from "../ui/toggle";
 import { SlidersHorizontal } from "lucide-react";
-import { SeasonFilter } from "../collection/filter-season";
-import { OnlineFilter } from "../collection/filter-online";
-import { ClassFilter } from "../collection/filter-class";
-import { SortFilter } from "../collection/filter-sort";
 import {
   IndexedCosmoResponse,
   IndexedObjekt,
@@ -19,7 +15,11 @@ import UpdateList from "./update-list";
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
 import { SearchUser } from "@/lib/universal/cosmo/auth";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
-import { useCallback } from "react";
+import { Fragment, useCallback } from "react";
+import {
+  FiltersContainer,
+  IndexFilters,
+} from "../collection/filters-container";
 
 type Props = {
   list: ObjektList;
@@ -87,24 +87,13 @@ export default function ListRenderer({
         </div>
 
         {/* filters */}
-        <div className="transition-all flex sm:group-data-[show=false]:visible sm:group-data-[show=true]:visible sm:group-data-[show=false]:opacity-100 sm:group-data-[show=true]:opacity-100 group-data-[show=true]:pb-2 sm:pb-1 sm:group-data-[show=false]:h-fit sm:group-data-[show=true]:h-fit group-data-[show=false]:h-0 group-data-[show=false]:invisible group-data-[show=false]:opacity-0 group-data-[show=true]:h-24 gap-2 items-center flex-wrap justify-center">
-          <SeasonFilter
-            filters={cosmoFilters.season}
-            setFilters={(f) => updateCosmoFilters("season", f)}
+        <FiltersContainer className="group-data-[show=true]:h-24">
+          <IndexFilters
+            cosmoFilters={cosmoFilters}
+            updateCosmoFilters={updateCosmoFilters}
+            collections={[]}
           />
-          <OnlineFilter
-            filters={cosmoFilters.on_offline}
-            setFilters={(f) => updateCosmoFilters("on_offline", f)}
-          />
-          <ClassFilter
-            filters={cosmoFilters.class}
-            setFilters={(f) => updateCosmoFilters("class", f)}
-          />
-          <SortFilter
-            filters={cosmoFilters.sort}
-            setFilters={(f) => updateCosmoFilters("sort", f)}
-          />
-        </div>
+        </FiltersContainer>
       </div>
 
       <FilteredObjektDisplay
@@ -117,10 +106,10 @@ export default function ListRenderer({
         getObjektId={(objekt: IndexedObjekt) => objekt.id}
         getObjektDisplay={() => true}
         objektSlot={
-          <>
+          <Fragment>
             <ObjektSidebar />
             {authenticated && <ListOverlay list={list} />}
-          </>
+          </Fragment>
         }
       />
     </section>

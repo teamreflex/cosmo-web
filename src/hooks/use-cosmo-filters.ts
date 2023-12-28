@@ -30,6 +30,11 @@ export type CosmoFilters = {
   collectionNo: string[] | null;
 };
 
+export type UpdateCosmoFilters = <TKey extends keyof CosmoFilters>(
+  key: TKey,
+  value: CosmoFilters[TKey]
+) => void;
+
 export function useCosmoFilters() {
   // mobile filter toggle
   const [showFilters, setShowFilters] = useState(false);
@@ -73,15 +78,18 @@ export function useCosmoFilters() {
   }, [cosmoFilters]);
 
   // type-safe filter update function
-  function updateCosmoFilters<TFilter extends keyof CosmoFilters>(
-    key: TFilter,
-    value: CosmoFilters[TFilter]
-  ) {
-    setCosmoFilters((filters) => ({
-      ...filters,
-      [key]: value,
-    }));
-  }
+  const updateCosmoFilters = useCallback(
+    <TFilter extends keyof CosmoFilters>(
+      key: TFilter,
+      value: CosmoFilters[TFilter]
+    ) => {
+      setCosmoFilters((filters) => ({
+        ...filters,
+        [key]: value,
+      }));
+    },
+    [setCosmoFilters]
+  );
 
   return [
     searchParams,

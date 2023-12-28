@@ -5,16 +5,13 @@ import { Toggle } from "../ui/toggle";
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
 import { COSMO_ENDPOINT } from "@/lib/universal/cosmo/common";
 import { OwnedObjektsResult } from "@/lib/universal/cosmo/objekts";
-import { LockedFilter } from "../collection/filter-locked";
-import { GridableFilter } from "../collection/filter-gridable";
-import { TransferableFilter } from "../collection/filter-transferable";
-import { SeasonFilter } from "../collection/filter-season";
-import { OnlineFilter } from "../collection/filter-online";
-import { ClassFilter } from "../collection/filter-class";
-import { SortFilter } from "../collection/filter-sort";
 import CollectionObjektDisplay from "../collection/collection-objekt-display";
 import { CosmoFilters, useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { useCallback } from "react";
+import {
+  CollectionFilters,
+  FiltersContainer,
+} from "../collection/filters-container";
 
 export type PropsWithFilters<T extends keyof CosmoFilters> = {
   filters: CosmoFilters[T];
@@ -76,33 +73,14 @@ export default function ProfileRenderer({
         </div>
 
         {/* filters */}
-        <div className="transition-all flex sm:group-data-[show=false]:visible sm:group-data-[show=true]:visible sm:group-data-[show=false]:opacity-100 sm:group-data-[show=true]:opacity-100 group-data-[show=true]:pb-2 sm:pb-1 sm:group-data-[show=false]:h-fit sm:group-data-[show=true]:h-fit group-data-[show=false]:h-0 group-data-[show=false]:invisible group-data-[show=false]:opacity-0 group-data-[show=true]:h-36 gap-2 items-center flex-wrap justify-center">
-          <LockedFilter showLocked={showLocked} setShowLocked={setShowLocked} />
-          <GridableFilter
-            filters={cosmoFilters.gridable}
-            setFilters={(f) => updateCosmoFilters("gridable", f)}
+        <FiltersContainer>
+          <CollectionFilters
+            showLocked={showLocked}
+            setShowLocked={setShowLocked}
+            cosmoFilters={cosmoFilters}
+            updateCosmoFilters={updateCosmoFilters}
           />
-          <TransferableFilter
-            filters={cosmoFilters.transferable}
-            setFilters={(f) => updateCosmoFilters("transferable", f)}
-          />
-          <SeasonFilter
-            filters={cosmoFilters.season}
-            setFilters={(f) => updateCosmoFilters("season", f)}
-          />
-          <OnlineFilter
-            filters={cosmoFilters.on_offline}
-            setFilters={(f) => updateCosmoFilters("on_offline", f)}
-          />
-          <ClassFilter
-            filters={cosmoFilters.class}
-            setFilters={(f) => updateCosmoFilters("class", f)}
-          />
-          <SortFilter
-            filters={cosmoFilters.sort}
-            setFilters={(f) => updateCosmoFilters("sort", f)}
-          />
-        </div>
+        </FiltersContainer>
       </div>
 
       <CollectionObjektDisplay

@@ -13,7 +13,7 @@ import {
   CosmoMember,
 } from "@/lib/universal/cosmo/artists";
 import MemberFilter from "../collection/member-filter";
-import { ValidObjekt } from "./util";
+import { ValidObjekt } from "./context";
 import Portal from "../portal";
 import Hydrated from "../hydrated";
 import MemberFilterSkeleton from "../skeleton/member-filter-skeleton";
