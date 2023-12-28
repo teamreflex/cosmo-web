@@ -85,11 +85,13 @@ export default function IndexRenderer({
 
             {/* mobile: filters */}
             <Toggle
+              variant="secondary"
+              size="sm"
               pressed={showFilters}
               onPressedChange={setShowFilters}
-              className="block sm:hidden"
+              className="h-10 w-10 sm:hidden rounded-full"
             >
-              <SlidersHorizontal className="drop-shadow-lg" />
+              <SlidersHorizontal />
             </Toggle>
           </div>
         </div>

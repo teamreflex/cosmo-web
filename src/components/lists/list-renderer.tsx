@@ -20,6 +20,7 @@ import {
   FiltersContainer,
   IndexFilters,
 } from "../collection/filters-container";
+import Portal from "../portal";
 
 type Props = {
   list: ObjektList;
@@ -74,15 +75,18 @@ export default function ListRenderer({
             )}
 
             {/* mobile: filters */}
-            <Toggle
-              variant="secondary"
-              size="sm"
-              pressed={showFilters}
-              onPressedChange={setShowFilters}
-              className="sm:hidden"
-            >
-              <SlidersHorizontal />
-            </Toggle>
+            <Portal to="#filters-button">
+              <Toggle
+                className="rounded-full"
+                variant="secondary"
+                size="sm"
+                pressed={showFilters}
+                onPressedChange={setShowFilters}
+              >
+                <SlidersHorizontal className="mr-2" />
+                <span>Filters</span>
+              </Toggle>
+            </Portal>
           </div>
         </div>
 

@@ -12,6 +12,7 @@ import {
   CollectionFilters,
   FiltersContainer,
 } from "../collection/filters-container";
+import Portal from "../portal";
 
 export type PropsWithFilters<T extends keyof CosmoFilters> = {
   filters: CosmoFilters[T];
@@ -58,10 +59,9 @@ export default function ProfileRenderer({
   return (
     <>
       <div className="flex flex-col group" data-show={showFilters}>
-        {/* header */}
-        <div className="flex sm:hidden justify-center items-center gap-2 pb-2">
-          {/* show filters */}
+        <Portal to="#filters-button">
           <Toggle
+            className="rounded-full"
             variant="secondary"
             size="sm"
             pressed={showFilters}
@@ -70,7 +70,7 @@ export default function ProfileRenderer({
             <SlidersHorizontal className="mr-2" />
             <span>Filters</span>
           </Toggle>
-        </div>
+        </Portal>
 
         {/* filters */}
         <FiltersContainer>

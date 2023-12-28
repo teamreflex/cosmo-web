@@ -96,6 +96,7 @@ export default function CollectionRenderer({
           <div className="flex sm:hidden justify-center items-center gap-2">
             {/* show filters */}
             <Toggle
+              className="rounded-full"
               variant="secondary"
               size="sm"
               pressed={showFilters}

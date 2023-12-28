@@ -46,7 +46,7 @@ export default function UpdateList({ list }: Props) {
     <form>
       <Dialog>
         <DialogTrigger asChild>
-          <Button variant="ghost" size="sm">
+          <Button variant="secondary" size="icon" className="rounded-full">
             <Edit />
           </Button>
         </DialogTrigger>

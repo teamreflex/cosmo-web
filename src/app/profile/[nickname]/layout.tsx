@@ -25,7 +25,7 @@ export default async function ProfileLayout({ children, params }: Props) {
 
   return (
     <main className="container flex flex-col gap-2 sm:gap-0 py-2">
-      <div className="flex gap-4 items-center h-fit py-2">
+      <div className="flex gap-4 items-center h-fit">
         <Avatar className="h-24 w-24">
           <AvatarFallback>
             {profile.nickname.charAt(0).toUpperCase()}
@@ -70,6 +70,9 @@ export default async function ProfileLayout({ children, params }: Props) {
             />
             <BackButton url={url} tooltip="Return to profile" />
             {/* content gets portaled in */}
+            <span className="h-10 flex items-center sm:hidden">
+              <div id="filters-button" />
+            </span>
             <span className="h-10 flex items-center last:ml-auto">
               <div id="objekt-total" />
             </span>
