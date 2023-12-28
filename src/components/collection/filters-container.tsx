@@ -26,7 +26,7 @@ export const FiltersContainer = memo(function FiltersContainer({
  */
 type CollectionFiltersProps = {
   showLocked: boolean;
-  setShowLocked: (showLocked: boolean) => void;
+  setShowLocked: (showLocked: boolean | null) => void;
   cosmoFilters: CosmoFilters;
   updateCosmoFilters: UpdateCosmoFilters;
 };
