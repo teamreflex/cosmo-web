@@ -19,7 +19,7 @@ export const FiltersContainer = memo(function FiltersContainer({
     <div
       className={cn(
         // general layout
-        "flex gap-2 items-center flex-wrap justify-center sm:pb-1",
+        "flex gap-2 items-center flex-wrap justify-center sm:pb-1 overflow-y-clip",
         // animation
         "transition-all",
         // desktop: show filters
@@ -31,7 +31,7 @@ export const FiltersContainer = memo(function FiltersContainer({
         // desktop: keep height at min-content
         "sm:group-data-[show=false]:h-fit sm:group-data-[show=true]:h-fit",
         // mobile: hide filters when toggled off
-        "group-data-[show=false]:h-0 group-data-[show=false]:invisible group-data-[show=false]:opacity-0",
+        "group-data-[show=false]:h-0",
         // mobile: show filters when toggled on
         "group-data-[show=true]:h-36",
         // can update the height if necessary
