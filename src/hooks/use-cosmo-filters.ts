@@ -74,7 +74,7 @@ export function useCosmoFilters() {
   const setCosmoFilters = useCallback(_setCosmoFilters, []);
 
   const searchParams = useMemo(() => {
-    return toSearchParams(cosmoFilters);
+    return toSearchParams(cosmoFilters, true);
   }, [cosmoFilters]);
 
   // type-safe filter update function
