@@ -46,11 +46,14 @@ export default memo(function CollectionObjektDisplay({
     }
   }
 
-  function shouldShowObjekt(objekt: OwnedObjekt) {
-    return showLocked
-      ? true
-      : lockedTokens.includes(parseInt(objekt.tokenId)) === false;
-  }
+  const lockFilter = useCallback(
+    (objekt: OwnedObjekt) => {
+      return showLocked
+        ? true
+        : lockedTokens.includes(parseInt(objekt.tokenId)) === false;
+    },
+    [showLocked]
+  );
 
   const getObjektId = useCallback((objekt: OwnedObjekt) => objekt.tokenId, []);
   const queryKey = ["collection", address];
@@ -70,7 +73,7 @@ export default memo(function CollectionObjektDisplay({
         queryFunction={queryFunction}
         queryKey={queryKey}
         getObjektId={getObjektId}
-        getObjektDisplay={shouldShowObjekt}
+        getObjektDisplay={lockFilter}
         objektSlot={<ObjektSlot />}
       />
     </LockedObjektContext.Provider>

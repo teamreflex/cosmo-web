@@ -1,7 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import { CSSProperties, PropsWithChildren, memo, useState } from "react";
+import {
+  CSSProperties,
+  PropsWithChildren,
+  memo,
+  useCallback,
+  useState,
+} from "react";
 import ReactCardFlip from "react-card-flip";
 import { ObjektContext, ObjektProvider, ValidObjekt } from "./context";
 
@@ -17,6 +23,8 @@ export default memo(function Objekt<TObjektType extends ValidObjekt>({
 }: ObjektProps<TObjektType>) {
   const [flipped, setFlipped] = useState(false);
 
+  const flip = useCallback(() => setFlipped((prev) => !prev), []);
+
   const css = {
     "--objekt-background-color": objekt.backgroundColor,
     "--objekt-text-color": objekt.textColor,
@@ -29,7 +37,7 @@ export default memo(function Objekt<TObjektType extends ValidObjekt>({
         style={css}
       >
         <Image
-          onClick={() => setFlipped((prev) => !prev)}
+          onClick={flip}
           className="cursor-pointer"
           src={objekt.frontImage}
           width={291}
@@ -44,7 +52,7 @@ export default memo(function Objekt<TObjektType extends ValidObjekt>({
       </div>
 
       <Image
-        onClick={() => setFlipped((prev) => !prev)}
+        onClick={flip}
         className="cursor-pointer"
         src={objekt.backImage}
         width={291}
