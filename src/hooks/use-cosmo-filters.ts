@@ -40,10 +40,7 @@ export function useCosmoFilters() {
   const [showFilters, setShowFilters] = useState(false);
 
   // use separate state for apollo features so a refetch doesn't occur
-  const [_showLocked, setShowLocked] = useQueryState(
-    "showLocked",
-    parseAsBoolean
-  );
+  const [_showLocked, setShowLocked] = useQueryState("locked", parseAsBoolean);
   // masks the fact that null means show locked
   const showLocked = _showLocked ?? true;
 
