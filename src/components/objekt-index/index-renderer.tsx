@@ -1,7 +1,5 @@
 "use client";
 
-import { SlidersHorizontal } from "lucide-react";
-import { Toggle } from "../ui/toggle";
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
 import ListDropdown from "../lists/list-dropdown";
 import {
@@ -14,7 +12,7 @@ import ObjektSidebar from "../objekt/objekt-sidebar";
 import { BottomOverlay, TopOverlay } from "./index-overlay";
 import HelpDialog from "./help-dialog";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
-import { Fragment, useCallback } from "react";
+import { Fragment, memo, useCallback } from "react";
 import {
   FiltersContainer,
   IndexFilters,
@@ -35,8 +33,6 @@ export default function IndexRenderer({
 }: Props) {
   const [
     searchParams,
-    showFilters,
-    setShowFilters,
     showLocked,
     setShowLocked,
     cosmoFilters,
@@ -58,53 +54,16 @@ export default function IndexRenderer({
   );
 
   return (
-    <>
-      <div className="flex flex-col sm:gap-2 group" data-show={showFilters}>
-        {/* header */}
-        <div className="flex items-center justify-between pb-2 sm:pb-0">
-          {/* title */}
-          <div className="flex gap-2 items-center">
-            <h1 className="text-3xl font-cosmo uppercase drop-shadow-lg">
-              Objekts
-            </h1>
+    <div className="flex flex-col">
+      <Title nickname={nickname} objektLists={objektLists} />
 
-            <HelpDialog />
-
-            <div id="objekt-total" />
-          </div>
-
-          <div className="flex gap-2 items-center">
-            {/* objekt list button */}
-            {authenticated && (
-              <ListDropdown
-                lists={objektLists}
-                nickname={nickname}
-                allowCreate={authenticated}
-              />
-            )}
-
-            {/* mobile: filters */}
-            <Toggle
-              variant="secondary"
-              size="sm"
-              pressed={showFilters}
-              onPressedChange={setShowFilters}
-              className="h-10 w-10 sm:hidden rounded-full"
-            >
-              <SlidersHorizontal />
-            </Toggle>
-          </div>
-        </div>
-
-        {/* filters */}
-        <FiltersContainer>
-          <IndexFilters
-            cosmoFilters={cosmoFilters}
-            updateCosmoFilters={updateCosmoFilters}
-            collections={collections}
-          />
-        </FiltersContainer>
-      </div>
+      <FiltersContainer>
+        <IndexFilters
+          cosmoFilters={cosmoFilters}
+          updateCosmoFilters={updateCosmoFilters}
+          collections={collections}
+        />
+      </FiltersContainer>
 
       <FilteredObjektDisplay
         artists={artists}
@@ -123,6 +82,48 @@ export default function IndexRenderer({
           </Fragment>
         }
       />
-    </>
+    </div>
   );
 }
+
+const Title = memo(function Title({
+  nickname,
+  objektLists,
+}: {
+  nickname?: string;
+  objektLists?: ObjektList[];
+}) {
+  return (
+    <div className="flex gap-2 items-center w-full pb-1">
+      <h1 className="text-3xl font-cosmo uppercase drop-shadow-lg">Objekts</h1>
+
+      <HelpDialog />
+
+      <div className="flex gap-2 items-center last:ml-auto">
+        <div id="objekt-total" />
+
+        {nickname !== undefined && objektLists !== undefined && (
+          <Options nickname={nickname} objektLists={objektLists} />
+        )}
+      </div>
+    </div>
+  );
+});
+
+const Options = memo(function Options({
+  nickname,
+  objektLists,
+}: {
+  nickname: string;
+  objektLists: ObjektList[];
+}) {
+  return (
+    <div className="flex gap-2 items-center">
+      <ListDropdown
+        lists={objektLists}
+        nickname={nickname}
+        allowCreate={true}
+      />
+    </div>
+  );
+});

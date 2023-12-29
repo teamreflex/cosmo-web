@@ -7,7 +7,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { PropsWithFilters } from "./collection-renderer";
+import { PropsWithFilters } from "@/hooks/use-cosmo-filters";
 import { ValidSeasons } from "@/lib/universal/cosmo/common";
 import { memo, useState } from "react";
 import { ChevronDown } from "lucide-react";

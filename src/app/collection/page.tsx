@@ -17,15 +17,12 @@ export default async function CollectionPage() {
   ]);
 
   return (
-    <main className="relative py-2">
-      <div className="relative container flex flex-col">
-        <CollectionRenderer
-          lockedObjekts={lockedObjekts}
-          artists={artists}
-          isAddress={false}
-          user={user!}
-        />
-      </div>
+    <main className="container flex flex-col py-2">
+      <CollectionRenderer
+        lockedObjekts={lockedObjekts}
+        artists={artists}
+        user={user!}
+      />
     </main>
   );
 }

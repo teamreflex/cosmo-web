@@ -1,23 +1,15 @@
 "use client";
 
-import { SlidersHorizontal } from "lucide-react";
-import { Toggle } from "../ui/toggle";
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
 import { COSMO_ENDPOINT } from "@/lib/universal/cosmo/common";
 import { OwnedObjektsResult } from "@/lib/universal/cosmo/objekts";
-import CollectionObjektDisplay from "../collection/collection-objekt-display";
-import { CosmoFilters, useCosmoFilters } from "@/hooks/use-cosmo-filters";
+import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { useCallback } from "react";
 import {
   CollectionFilters,
   FiltersContainer,
 } from "../collection/filters-container";
-import Portal from "../portal";
-
-export type PropsWithFilters<T extends keyof CosmoFilters> = {
-  filters: CosmoFilters[T];
-  setFilters: (filters: CosmoFilters[T]) => void;
-};
+import CollectionObjektDisplay from "../collection/collection-objekt-display";
 
 type Props = {
   lockedObjekts: number[];
@@ -34,8 +26,6 @@ export default function ProfileRenderer({
 }: Props) {
   const [
     searchParams,
-    showFilters,
-    setShowFilters,
     showLocked,
     setShowLocked,
     cosmoFilters,
@@ -57,31 +47,15 @@ export default function ProfileRenderer({
   );
 
   return (
-    <>
-      <div className="flex flex-col group" data-show={showFilters}>
-        <Portal to="#filters-button">
-          <Toggle
-            className="rounded-full"
-            variant="secondary"
-            size="sm"
-            pressed={showFilters}
-            onPressedChange={setShowFilters}
-          >
-            <SlidersHorizontal className="mr-2" />
-            <span>Filters</span>
-          </Toggle>
-        </Portal>
-
-        {/* filters */}
-        <FiltersContainer>
-          <CollectionFilters
-            showLocked={showLocked}
-            setShowLocked={setShowLocked}
-            cosmoFilters={cosmoFilters}
-            updateCosmoFilters={updateCosmoFilters}
-          />
-        </FiltersContainer>
-      </div>
+    <div className="flex flex-col">
+      <FiltersContainer isPortaled>
+        <CollectionFilters
+          showLocked={showLocked}
+          setShowLocked={setShowLocked}
+          cosmoFilters={cosmoFilters}
+          updateCosmoFilters={updateCosmoFilters}
+        />
+      </FiltersContainer>
 
       <CollectionObjektDisplay
         authenticated={nickname === undefined}
@@ -93,6 +67,6 @@ export default function ProfileRenderer({
         setFilters={setCosmoFilters}
         queryFunction={queryFunction}
       />
-    </>
+    </div>
   );
 }

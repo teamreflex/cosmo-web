@@ -9,7 +9,7 @@ import ActionOverlay from "../objekt/action-overlay";
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
 import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
 import { QueryFunction, QueryKey } from "@tanstack/react-query";
-import { CosmoFilters } from "@/hooks/use-cosmo-filters";
+import { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
 
 type Props = {
   authenticated: boolean;
@@ -18,7 +18,7 @@ type Props = {
   showLocked: boolean;
   artists: CosmoArtistWithMembers[];
   filters: CosmoFilters;
-  setFilters: (filters: CosmoFilters) => void;
+  setFilters: SetCosmoFilters;
   queryFunction: QueryFunction<
     ObjektResponse<OwnedObjekt>,
     QueryKey,

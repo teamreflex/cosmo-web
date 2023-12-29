@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PropsWithFilters } from "./collection-renderer";
+import { PropsWithFilters } from "@/hooks/use-cosmo-filters";
 import { ValidSorts, validSorts } from "@/lib/universal/cosmo/common";
 import { memo } from "react";
 

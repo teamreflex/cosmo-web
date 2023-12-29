@@ -9,7 +9,7 @@ import {
   useState,
 } from "react";
 import ReactCardFlip from "react-card-flip";
-import { ObjektContext, ObjektProvider, ValidObjekt } from "./context";
+import { ObjektProvider, ValidObjekt } from "./context";
 
 type ObjektProps<TObjektType extends ValidObjekt> = PropsWithChildren<{
   objekt: TObjektType;

@@ -5,7 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { memo, useState } from "react";
 import { ChevronDown, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { PropsWithFilters } from "../collection/collection-renderer";
+import { PropsWithFilters } from "@/hooks/use-cosmo-filters";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,

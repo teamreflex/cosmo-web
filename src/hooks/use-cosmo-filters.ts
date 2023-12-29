@@ -14,7 +14,7 @@ import {
   useQueryState,
   useQueryStates,
 } from "next-usequerystate";
-import { useCallback, useMemo, useState } from "react";
+import { Dispatch, SetStateAction, useCallback, useMemo } from "react";
 
 export type CosmoFilters = {
   member: string | null;
@@ -30,15 +30,18 @@ export type CosmoFilters = {
   collectionNo: string[] | null;
 };
 
+export type SetCosmoFilters = Dispatch<SetStateAction<CosmoFilters>>;
 export type UpdateCosmoFilters = <TKey extends keyof CosmoFilters>(
   key: TKey,
   value: CosmoFilters[TKey]
 ) => void;
 
-export function useCosmoFilters() {
-  // mobile filter toggle
-  const [showFilters, setShowFilters] = useState(false);
+export type PropsWithFilters<T extends keyof CosmoFilters> = {
+  filters: CosmoFilters[T];
+  setFilters: UpdateCosmoFilters;
+};
 
+export function useCosmoFilters() {
   // use separate state for apollo features so a refetch doesn't occur
   const [_showLocked, setShowLocked] = useQueryState("locked", parseAsBoolean);
   // masks the fact that null means show locked
@@ -96,8 +99,6 @@ export function useCosmoFilters() {
 
   return [
     searchParams,
-    showFilters,
-    setShowFilters,
     showLocked,
     setShowLocked,
     cosmoFilters,

@@ -18,7 +18,7 @@ import Portal from "../portal";
 import Hydrated from "../hydrated";
 import MemberFilterSkeleton from "../skeleton/member-filter-skeleton";
 import { ValidArtists } from "@/lib/universal/cosmo/common";
-import { CosmoFilters } from "@/hooks/use-cosmo-filters";
+import { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
 import InfiniteQueryPending from "../infinite-query-pending";
 
 export type ObjektResponse<TObjektType extends ValidObjekt> = {
@@ -32,7 +32,7 @@ type Props<TObjektType extends ValidObjekt> = {
   authenticated: boolean;
   artists: CosmoArtistWithMembers[];
   filters: CosmoFilters;
-  setFilters: (filters: CosmoFilters) => void;
+  setFilters: SetCosmoFilters;
   queryKey: QueryKey;
   queryFunction: QueryFunction<
     ObjektResponse<TObjektType>,
@@ -74,25 +74,25 @@ export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
 
   const setActiveMember = useCallback(
     (member: CosmoMember) => {
-      setFilters({
-        ...filters,
+      setFilters((prev) => ({
+        ...prev,
         artist: null,
-        member: filters.member === member.name ? null : member.name,
-      });
+        member: prev.member === member.name ? null : member.name,
+      }));
     },
-    [filters, setFilters]
+    [setFilters]
   );
 
   const setActiveArtist = useCallback(
     (artist: CosmoArtistWithMembers) => {
-      setFilters({
-        ...filters,
+      setFilters((prev) => ({
+        ...prev,
         member: null,
         artist:
-          filters.artist === artist.name ? null : (artist.name as ValidArtists),
-      });
+          prev.artist === artist.name ? null : (artist.name as ValidArtists),
+      }));
     },
-    [filters, setFilters]
+    [setFilters]
   );
 
   return (

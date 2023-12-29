@@ -1,7 +1,5 @@
 "use client";
 
-import { Toggle } from "../ui/toggle";
-import { SlidersHorizontal } from "lucide-react";
 import {
   IndexedCosmoResponse,
   IndexedObjekt,
@@ -15,12 +13,11 @@ import UpdateList from "./update-list";
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
 import { SearchUser } from "@/lib/universal/cosmo/auth";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
-import { Fragment, useCallback } from "react";
+import { Fragment, memo, useCallback } from "react";
 import {
   FiltersContainer,
   IndexFilters,
 } from "../collection/filters-container";
-import Portal from "../portal";
 
 type Props = {
   list: ObjektList;
@@ -36,8 +33,6 @@ export default function ListRenderer({
 }: Props) {
   const [
     searchParams,
-    showFilters,
-    setShowFilters,
     showLocked,
     setShowLocked,
     cosmoFilters,
@@ -60,45 +55,15 @@ export default function ListRenderer({
 
   return (
     <section className="flex flex-col">
-      <div className="flex flex-col group" data-show={showFilters}>
-        {/* list info */}
-        <div className="flex flex-wrap items-center justify-between pb-2 gap-2">
-          <h3 className="text-xl font-cosmo drop-shadow-lg">{list.name}</h3>
+      <Title authenticated={authenticated} list={list} />
 
-          <div className="flex items-center gap-2">
-            {/* list-related */}
-            {authenticated && (
-              <>
-                <UpdateList list={list} />
-                <DeleteList list={list} />
-              </>
-            )}
-
-            {/* mobile: filters */}
-            <Portal to="#filters-button">
-              <Toggle
-                className="rounded-full"
-                variant="secondary"
-                size="sm"
-                pressed={showFilters}
-                onPressedChange={setShowFilters}
-              >
-                <SlidersHorizontal className="mr-2" />
-                <span>Filters</span>
-              </Toggle>
-            </Portal>
-          </div>
-        </div>
-
-        {/* filters */}
-        <FiltersContainer>
-          <IndexFilters
-            cosmoFilters={cosmoFilters}
-            updateCosmoFilters={updateCosmoFilters}
-            collections={[]}
-          />
-        </FiltersContainer>
-      </div>
+      <FiltersContainer isPortaled>
+        <IndexFilters
+          cosmoFilters={cosmoFilters}
+          updateCosmoFilters={updateCosmoFilters}
+          collections={[]}
+        />
+      </FiltersContainer>
 
       <FilteredObjektDisplay
         artists={artists}
@@ -119,3 +84,24 @@ export default function ListRenderer({
     </section>
   );
 }
+
+const Title = memo(function Title({
+  authenticated,
+  list,
+}: {
+  authenticated: boolean;
+  list: ObjektList;
+}) {
+  return (
+    <div className="flex flex-wrap items-center justify-between pb-2 gap-2">
+      <h3 className="text-xl font-cosmo drop-shadow-lg">{list.name}</h3>
+
+      {authenticated && (
+        <div className="flex items-center gap-2">
+          <UpdateList list={list} />
+          <DeleteList list={list} />
+        </div>
+      )}
+    </div>
+  );
+});

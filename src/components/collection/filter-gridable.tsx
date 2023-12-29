@@ -1,7 +1,7 @@
 "use client";
 
 import { Toggle } from "@/components/ui/toggle";
-import { PropsWithFilters } from "./collection-renderer";
+import { PropsWithFilters } from "@/hooks/use-cosmo-filters";
 import { memo } from "react";
 
 type Props = PropsWithFilters<"gridable">;

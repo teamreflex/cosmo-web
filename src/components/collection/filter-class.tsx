@@ -7,11 +7,11 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { PropsWithFilters } from "./collection-renderer";
 import { ValidClasses } from "@/lib/universal/cosmo/common";
 import { memo, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PropsWithFilters } from "@/hooks/use-cosmo-filters";
 
 type Props = PropsWithFilters<"class">;
 
