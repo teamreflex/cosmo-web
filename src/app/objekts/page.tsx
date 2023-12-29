@@ -18,15 +18,13 @@ export default async function ObjektsIndexPage() {
   ]);
 
   return (
-    <main className="relative py-2">
-      <div className="relative container flex flex-col">
-        <IndexRenderer
-          artists={artists}
-          collections={collections}
-          objektLists={objektLists}
-          nickname={user?.nickname}
-        />
-      </div>
+    <main className="container flex flex-col py-2">
+      <IndexRenderer
+        artists={artists}
+        collections={collections}
+        objektLists={objektLists}
+        nickname={user?.nickname}
+      />
     </main>
   );
 }

@@ -6,6 +6,7 @@ export default function CollectionLoading() {
     <div className="container flex flex-col py-2">
       <div className="flex flex-col">
         <div className="flex flex-col md:flex-row items-center justify-between gap-2 pb-2">
+          {/* Title */}
           <div className="flex gap-2 justify-between items-center w-full md:w-auto">
             <div className="flex gap-2 items-center h-10">
               <h1 className="text-3xl font-cosmo uppercase drop-shadow-lg">
@@ -13,7 +14,8 @@ export default function CollectionLoading() {
               </h1>
             </div>
           </div>
-          {/* desktop: options */}
+
+          {/* DesktopOptions */}
           <div className="hidden sm:flex items-center gap-2">
             {Array.from({ length: 5 }).map((_, i) => (
               <Skeleton key={i} className="w-10 h-10 rounded-full" />

@@ -13,7 +13,7 @@ import { Button } from "../ui/button";
 export default function HelpDialog() {
   return (
     <AlertDialog>
-      <AlertDialogTrigger>
+      <AlertDialogTrigger asChild>
         <Button className="rounded-full" variant="secondary" size="icon">
           <HelpCircle className="h-5 w-5" />
         </Button>
