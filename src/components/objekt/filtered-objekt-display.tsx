@@ -1,7 +1,7 @@
 "use client";
 
 import Objekt from "../objekt/objekt";
-import { ReactNode, useCallback } from "react";
+import { ReactNode, useCallback, useMemo } from "react";
 import { HeartCrack, Loader2 } from "lucide-react";
 import {
   QueryFunction,
@@ -20,7 +20,6 @@ import MemberFilterSkeleton from "../skeleton/member-filter-skeleton";
 import { ValidArtists } from "@/lib/universal/cosmo/common";
 import { CosmoFilters } from "@/hooks/use-cosmo-filters";
 import InfiniteQueryPending from "../infinite-query-pending";
-import { For } from "million/react";
 
 export type ObjektResponse<TObjektType extends ValidObjekt> = {
   hasNext: boolean;
@@ -67,9 +66,11 @@ export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
     });
 
   const total = data?.pages[0].total ?? 0;
-  const objekts = (data?.pages.flatMap((page) => page.objekts) ?? []).filter(
-    getObjektDisplay
-  );
+  const objekts = useMemo(() => {
+    return (data?.pages.flatMap((page) => page.objekts) ?? []).filter(
+      getObjektDisplay
+    );
+  }, [data]);
 
   const setActiveMember = useCallback(
     (member: CosmoMember) => {
@@ -118,17 +119,15 @@ export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
           ) : status === "error" ? (
             <Error />
           ) : (
-            <For each={objekts}>
-              {(objekt) => (
-                <Objekt
-                  key={getObjektId(objekt)}
-                  objekt={objekt}
-                  authenticated={authenticated}
-                >
-                  {objektSlot}
-                </Objekt>
-              )}
-            </For>
+            objekts.map((objekt) => (
+              <Objekt
+                key={getObjektId(objekt)}
+                objekt={objekt}
+                authenticated={authenticated}
+              >
+                {objektSlot}
+              </Objekt>
+            ))
           )}
         </div>
 
