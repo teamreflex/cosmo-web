@@ -48,7 +48,7 @@ export function useCosmoFilters() {
   const showLocked = _showLocked ?? true;
 
   // setup cosmo filters
-  const [cosmoFilters, _setCosmoFilters] = useQueryStates({
+  const [cosmoFilters, setCosmoFilters] = useQueryStates({
     member: parseAsString,
     artist: parseAsStringEnum<ValidArtists>(Object.values(ValidArtists)),
     sort: parseAsStringEnum<ValidSorts>(Object.values(ValidSorts)),
@@ -69,9 +69,6 @@ export function useCosmoFilters() {
     // index param: ["101Z", "102Z"]
     collectionNo: parseAsArrayOf(parseAsString),
   });
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const setCosmoFilters = useCallback(_setCosmoFilters, []);
 
   const searchParams = useMemo(() => {
     return toSearchParams(

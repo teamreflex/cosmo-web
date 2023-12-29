@@ -1,6 +1,6 @@
 export type OwnedObjektsResult = {
   hasNext: boolean;
-  nextStartAfter?: string;
+  nextStartAfter?: number;
   total: number;
   objekts: OwnedObjekt[];
 };

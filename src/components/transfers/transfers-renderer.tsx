@@ -6,7 +6,7 @@ import { Fragment } from "react";
 import { HeartCrack, Loader2 } from "lucide-react";
 import TransferRow from "./transfer-row";
 import { cn } from "@/lib/utils";
-import InfiniteQueryPending from "../infinite-query-pending";
+import { InfiniteQueryNext } from "../infinite-query-pending";
 
 type Props = {
   address: string;
@@ -69,7 +69,7 @@ export default function TransfersRenderer({ address }: Props) {
         </div>
       </div>
 
-      <InfiniteQueryPending
+      <InfiniteQueryNext
         status={status}
         hasNextPage={hasNextPage}
         isFetchingNextPage={isFetchingNextPage}

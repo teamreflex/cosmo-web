@@ -17,6 +17,7 @@ import ObjektSidebar from "../objekt/objekt-sidebar";
 import InformationOverlay from "../objekt/information-overlay";
 import ActionOverlay from "../objekt/action-overlay";
 import CollectionObjektDisplay from "./collection-objekt-display";
+import { parsePage } from "@/lib/universal/objekts";
 
 type Props = {
   lockedObjekts: number[];
@@ -39,7 +40,7 @@ export default function CollectionRenderer({
   ] = useCosmoFilters();
 
   const queryFunction = useCallback(
-    async ({ pageParam = 0 }: { pageParam?: string | number }) => {
+    async ({ pageParam = 0 }: { pageParam?: number }) => {
       const query = new URLSearchParams(searchParams);
       query.set("start_after", pageParam.toString());
 
@@ -48,7 +49,7 @@ export default function CollectionRenderer({
           user.address
         }?${query.toString()}`
       );
-      return (await result.json()) as OwnedObjektsResult;
+      return parsePage<OwnedObjektsResult>(await result.json());
     },
     [searchParams]
   );

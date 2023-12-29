@@ -6,6 +6,7 @@ import {
   IndexedCosmoResponse,
   IndexedObjekt,
   ObjektList,
+  parsePage,
 } from "@/lib/universal/objekts";
 import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
 import ObjektSidebar from "../objekt/objekt-sidebar";
@@ -43,12 +44,12 @@ export default function IndexRenderer({
   const authenticated = objektLists !== undefined && nickname !== undefined;
 
   const queryFunction = useCallback(
-    async ({ pageParam = 0 }: { pageParam?: string | number }) => {
+    async ({ pageParam = 0 }: { pageParam?: number }) => {
       const query = new URLSearchParams(searchParams);
       query.set("page", pageParam.toString());
 
       const result = await fetch(`/api/objekts?${query.toString()}`);
-      return (await result.json()) as IndexedCosmoResponse;
+      return parsePage<IndexedCosmoResponse>(await result.json());
     },
     [searchParams]
   );

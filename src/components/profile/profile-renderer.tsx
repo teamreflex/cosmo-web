@@ -10,6 +10,7 @@ import {
   FiltersContainer,
 } from "../collection/filters-container";
 import CollectionObjektDisplay from "../collection/collection-objekt-display";
+import { parsePage } from "@/lib/universal/objekts";
 
 type Props = {
   lockedObjekts: number[];
@@ -34,14 +35,14 @@ export default function ProfileRenderer({
   ] = useCosmoFilters();
 
   const queryFunction = useCallback(
-    async ({ pageParam = 0 }: { pageParam?: string | number }) => {
+    async ({ pageParam = 0 }: { pageParam?: number }) => {
       const query = new URLSearchParams(searchParams);
       query.set("start_after", pageParam.toString());
 
       const result = await fetch(
         `${COSMO_ENDPOINT}/objekt/v1/owned-by/${address}?${query.toString()}`
       );
-      return (await result.json()) as OwnedObjektsResult;
+      return parsePage<OwnedObjektsResult>(await result.json());
     },
     [address, searchParams]
   );

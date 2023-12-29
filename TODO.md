@@ -14,6 +14,7 @@
 ## Performance
 
 - Prevent all Objekt components from rerendering upon a single objekt being locked
+- Virtualize the list of objekts
 
 ### Grid
 

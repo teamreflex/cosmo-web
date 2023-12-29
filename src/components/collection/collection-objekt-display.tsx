@@ -22,7 +22,7 @@ type Props = {
   queryFunction: QueryFunction<
     ObjektResponse<OwnedObjekt>,
     QueryKey,
-    string | number | undefined
+    number | undefined
   >;
 };
 

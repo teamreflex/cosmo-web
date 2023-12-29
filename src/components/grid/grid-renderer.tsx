@@ -35,6 +35,7 @@ export default function GridRenderer({ grids }: Props) {
         {grids.map((grid) => (
           <MemberFilterButton
             key={grid.member}
+            name={grid.member}
             displayName={grid.member}
             image={grid.memberImage}
             isActive={selected?.member === grid.member}

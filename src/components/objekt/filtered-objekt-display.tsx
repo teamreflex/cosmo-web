@@ -19,13 +19,13 @@ import Hydrated from "../hydrated";
 import MemberFilterSkeleton from "../skeleton/member-filter-skeleton";
 import { ValidArtists } from "@/lib/universal/cosmo/common";
 import { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
-import InfiniteQueryPending from "../infinite-query-pending";
+import { InfiniteQueryNext } from "../infinite-query-pending";
 
 export type ObjektResponse<TObjektType extends ValidObjekt> = {
   hasNext: boolean;
   total: number;
   objekts: TObjektType[];
-  nextStartAfter?: number | string | undefined;
+  nextStartAfter?: number | undefined;
 };
 
 type Props<TObjektType extends ValidObjekt> = {
@@ -37,7 +37,7 @@ type Props<TObjektType extends ValidObjekt> = {
   queryFunction: QueryFunction<
     ObjektResponse<TObjektType>,
     QueryKey,
-    string | number | undefined
+    number | undefined
   >;
   getObjektId: (objekt: TObjektType) => string | number;
   getObjektDisplay: (objekt: TObjektType) => boolean;
@@ -59,7 +59,7 @@ export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
     useInfiniteQuery({
       queryKey: [...queryKey, filters],
       queryFn: queryFunction,
-      initialPageParam: "0",
+      initialPageParam: 0,
       getNextPageParam: (lastPage) => lastPage.nextStartAfter,
       refetchOnWindowFocus: false,
       staleTime: 1000 * 60,
@@ -72,28 +72,21 @@ export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
     );
   }, [data]);
 
-  const setActiveMember = useCallback(
-    (member: CosmoMember) => {
-      setFilters((prev) => ({
-        ...prev,
-        artist: null,
-        member: prev.member === member.name ? null : member.name,
-      }));
-    },
-    [setFilters]
-  );
+  const setActiveMember = useCallback((member: string) => {
+    setFilters((prev) => ({
+      ...prev,
+      artist: null,
+      member: prev.member === member ? null : member,
+    }));
+  }, []);
 
-  const setActiveArtist = useCallback(
-    (artist: CosmoArtistWithMembers) => {
-      setFilters((prev) => ({
-        ...prev,
-        member: null,
-        artist:
-          prev.artist === artist.name ? null : (artist.name as ValidArtists),
-      }));
-    },
-    [setFilters]
-  );
+  const setActiveArtist = useCallback((artist: string) => {
+    setFilters((prev) => ({
+      ...prev,
+      member: null,
+      artist: prev.artist === artist ? null : (artist as ValidArtists),
+    }));
+  }, []);
 
   return (
     <div className="flex flex-col">
@@ -131,7 +124,7 @@ export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
           )}
         </div>
 
-        <InfiniteQueryPending
+        <InfiniteQueryNext
           status={status}
           hasNextPage={hasNextPage}
           isFetchingNextPage={isFetchingNextPage}

@@ -15,8 +15,8 @@ import { memo } from "react";
 type Props = {
   artists: CosmoArtistWithMembers[];
   active: string | null;
-  updateArtist: (artist: CosmoArtistWithMembers) => void;
-  updateMember: (member: CosmoMember) => void;
+  updateArtist: (artist: string) => void;
+  updateMember: (member: string) => void;
 };
 
 export default memo(function MemberFilter({
@@ -37,9 +37,10 @@ export default memo(function MemberFilter({
         >
           <MemberFilterButton
             displayName={artist.title}
+            name={artist.name}
             image={artist.logoImageUrl}
             isActive={active === artist.name}
-            setActive={() => updateArtist(artist)}
+            setActive={updateArtist}
           />
 
           {artist.members
@@ -47,10 +48,11 @@ export default memo(function MemberFilter({
             .map((member) => (
               <MemberFilterButton
                 key={member.name}
+                name={member.name}
                 displayName={member.name}
                 image={member.profileImageUrl}
                 isActive={active === member.name}
-                setActive={() => updateMember(member)}
+                setActive={updateMember}
               />
             ))}
         </div>
@@ -61,22 +63,24 @@ export default memo(function MemberFilter({
 
 type MemberFilterButtonProps = {
   displayName: string;
+  name: string;
   image: string;
   isActive: boolean;
-  setActive: () => void;
+  setActive: (name: string) => void;
 };
-export function MemberFilterButton({
+export const MemberFilterButton = memo(function MemberFilterButton({
   displayName,
+  name,
   image,
   isActive,
   setActive,
 }: MemberFilterButtonProps) {
   return (
     <TooltipProvider>
-      <Tooltip delayDuration={0}>
+      <Tooltip>
         <TooltipTrigger asChild>
           <button
-            onClick={() => setActive()}
+            onClick={() => setActive(name)}
             className={cn(
               "rounded-full drop-shadow-lg",
               isActive && "ring ring-cosmo"
@@ -92,4 +96,4 @@ export function MemberFilterButton({
       </Tooltip>
     </TooltipProvider>
   );
-}
+});

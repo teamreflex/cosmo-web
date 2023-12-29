@@ -10,7 +10,7 @@ type Props = {
   fetchNextPage: () => void;
 };
 
-export default function InfiniteQueryPending({
+export function InfiniteQueryNext({
   status,
   hasNextPage,
   isFetchingNextPage,
@@ -45,4 +45,24 @@ export default function InfiniteQueryPending({
       {status === "success" && !hasNextPage && <PawPrint className="h-6 w-6" />}
     </div>
   );
+}
+
+export function InfiniteQueryPrevious({
+  status,
+  hasNextPage,
+  isFetchingNextPage,
+  fetchNextPage,
+}: Props) {
+  const { ref, inView } = useInView();
+
+  // infinite scroll loader
+  useEffect(() => {
+    if (inView) {
+      fetchNextPage();
+    }
+  }, [inView, fetchNextPage]);
+
+  return status === "success" && hasNextPage && !isFetchingNextPage ? (
+    <div ref={ref} />
+  ) : null;
 }
