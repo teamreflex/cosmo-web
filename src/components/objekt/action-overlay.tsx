@@ -3,7 +3,7 @@
 import { LockedObjektContext } from "@/context/objekt";
 import { cn } from "@/lib/utils";
 import { DownloadCloud, Grid2X2, Lock, MailX, PartyPopper } from "lucide-react";
-import { memo, useCallback, useContext } from "react";
+import { memo, useContext } from "react";
 import SendObjekt from "./send-button";
 import LockObjekt from "./lock-button";
 import { ObjektContext } from "./context";
@@ -23,9 +23,7 @@ function LockProvider({ objekt }: { objekt: OwnedObjekt }) {
 
   const isLocked = lockedObjekts.includes(parseInt(objekt.tokenId));
 
-  const toggleLock = useCallback(lockObjekt, []);
-
-  return <Overlay isLocked={isLocked} toggleLock={toggleLock} />;
+  return <Overlay isLocked={isLocked} toggleLock={lockObjekt} />;
 }
 
 const Overlay = memo(function Overlay({
