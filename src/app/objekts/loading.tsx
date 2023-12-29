@@ -1,4 +1,3 @@
-import { Loader } from "@/components/loader";
 import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
 import Skeleton from "@/components/skeleton/skeleton";
 import { AlertCircle } from "lucide-react";
@@ -34,11 +33,6 @@ export default function ObjektsLoading() {
 
       <div className="flex flex-col">
         <MemberFilterSkeleton />
-        <div className="flex flex-col items-center">
-          <div className="grid grid-cols-3 md:grid-cols-4 gap-4 py-2">
-            <Loader className="col-span-full" />
-          </div>
-        </div>
       </div>
     </div>
   );

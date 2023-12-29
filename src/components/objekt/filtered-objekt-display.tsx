@@ -98,7 +98,7 @@ export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
   return (
     <div className="flex flex-col">
       <Portal to="#objekt-total">
-        <p className="font-semibold">{total} total</p>
+        <p className="font-semibold">{total.toLocaleString()} total</p>
       </Portal>
 
       <Hydrated fallback={<MemberFilterSkeleton />}>
