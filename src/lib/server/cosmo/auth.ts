@@ -1,6 +1,7 @@
 import { LoginResult, SearchUser } from "@/lib/universal/cosmo/auth";
 import { COSMO_ENDPOINT } from "@/lib/universal/cosmo/common";
 import "server-only";
+import { cosmo } from "../http";
 
 type CosmoLoginResult = {
   user: {
@@ -23,32 +24,21 @@ export async function login(
   email: string,
   accessToken: string
 ): Promise<LoginResult> {
-  const res = await fetch(`${COSMO_ENDPOINT}/auth/v1/signin`, {
+  return await cosmo<CosmoLoginResult>("/auth/v1/signin", {
     method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
+    body: {
       channel: "email",
       email,
       accessToken,
-    }),
-  });
-
-  if (!res.ok) {
-    throw new Error("Failed to login");
-  }
-
-  const result: CosmoLoginResult = await res.json();
-  return {
-    id: result.user.id,
-    email: result.user.email,
-    nickname: result.user.nickname,
-    address: result.user.address,
-    accessToken: result.credentials.accessToken,
-    refreshToken: result.credentials.refreshToken,
-  };
+    },
+  }).then((res) => ({
+    id: res.user.id,
+    email: res.user.email,
+    nickname: res.user.nickname,
+    address: res.user.address,
+    accessToken: res.credentials.accessToken,
+    refreshToken: res.credentials.refreshToken,
+  }));
 }
 
 type CosmoUserResult = {
@@ -95,26 +85,17 @@ export type CosmoUser = {
  * Fetches the user from the access token.
  */
 export async function user(accessToken: string): Promise<CosmoUser> {
-  const res = await fetch(`${COSMO_ENDPOINT}/user/v1/me`, {
-    method: "GET",
+  return await cosmo<CosmoUserResult>("/user/v1/me", {
+    cache: "no-cache",
     headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
       Authorization: `Bearer ${accessToken}`,
     },
-  });
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch user");
-  }
-
-  const result: CosmoUserResult = await res.json();
-  return {
-    nickname: result.profile.nickname,
-    address: result.profile.address,
-    profileImageUrl: result.profile.profileImageUrl,
-    artists: result.profile.followingArtists,
-  };
+  }).then((res) => ({
+    nickname: res.profile.nickname,
+    address: res.profile.address,
+    profileImageUrl: res.profile.profileImageUrl,
+    artists: res.profile.followingArtists,
+  }));
 }
 
 type CosmoSearchResult = {
@@ -129,17 +110,16 @@ type CosmoSearchResult = {
  * Search for the given user.
  */
 export async function search(term: string): Promise<SearchUser[]> {
-  const res = await fetch(`${COSMO_ENDPOINT}/user/v1/search?query=${term}`);
-
-  if (res.ok) {
-    const data: CosmoSearchResult = await res.json();
-    return data.results.map((r) => ({
-      ...r,
+  return await cosmo<CosmoSearchResult>("/user/v1/search", {
+    query: {
+      query: term,
+    },
+  }).then((res) =>
+    res.results.map((user) => ({
+      ...user,
       isAddress: false,
-    }));
-  }
-
-  return [];
+    }))
+  );
 }
 
 type RefreshTokenResult = {
@@ -153,20 +133,8 @@ type RefreshTokenResult = {
 export async function refresh(
   refreshToken: string
 ): Promise<RefreshTokenResult> {
-  const res = await fetch(`${COSMO_ENDPOINT}/auth/v1/refresh`, {
+  return await cosmo<RefreshTokenResult>("/auth/v1/refresh", {
     method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ refreshToken }),
+    body: { refreshToken },
   });
-
-  if (res.ok) {
-    const { credentials }: { credentials: RefreshTokenResult } =
-      await res.json();
-    return credentials;
-  }
-
-  throw new Error("Failed to refresh token");
 }

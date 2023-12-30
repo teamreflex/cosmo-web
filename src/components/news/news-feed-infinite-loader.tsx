@@ -7,6 +7,7 @@ import {
 import NewsInfiniteLoader from "./news-infinite-loader";
 import NewsPostFeed from "./news-post-feed";
 import { COSMO_ENDPOINT, ValidArtist } from "@/lib/universal/cosmo/common";
+import { ofetch } from "ofetch";
 
 type Props = {
   artist: ValidArtist;
@@ -14,15 +15,13 @@ type Props = {
 
 export default function NewsFeedInfiniteLoader({ artist }: Props) {
   async function fetcher({ pageParam = 0 }: { pageParam?: string | number }) {
-    const searchParams = new URLSearchParams({
-      artist,
-      startAfter: pageParam.toString(),
+    const url = `${COSMO_ENDPOINT}/news/v1/feed`;
+    return await ofetch<CosmoNewsFeedResult<CosmoNewsSectionFeedContent>>(url, {
+      query: {
+        artist,
+        startAfter: pageParam.toString(),
+      },
     });
-
-    const result = await fetch(
-      `${COSMO_ENDPOINT}/news/v1/feed?${searchParams.toString()}`
-    );
-    return (await result.json()) as CosmoNewsFeedResult<CosmoNewsSectionFeedContent>;
   }
 
   function generatePost(post: CosmoNewsSectionFeedContent) {

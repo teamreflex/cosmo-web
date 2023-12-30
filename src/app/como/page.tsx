@@ -1,11 +1,11 @@
 import { Metadata } from "next";
 import { decodeUser } from "../data-fetching";
-import { cacheArtists } from "@/lib/server/cache/available-artists";
 import { fetchSpecialObjekts } from "@/lib/server/como";
 import ComoCalendar from "@/components/como/calendar";
 import CurrentMonth from "@/components/como/current-month";
 import HelpDialog from "@/components/como/help-dialog";
 import ArtistIcon from "@/components/artist-icon";
+import { fetchArtists } from "@/lib/server/cosmo/artists";
 
 export const metadata: Metadata = {
   title: "COMO Calendar",
@@ -15,7 +15,7 @@ export default async function ComoPage() {
   const user = await decodeUser();
 
   const [artists, objekts] = await Promise.all([
-    cacheArtists(),
+    fetchArtists(),
     fetchSpecialObjekts(user!.address),
   ]);
 

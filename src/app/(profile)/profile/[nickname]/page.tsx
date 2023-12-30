@@ -2,11 +2,11 @@ import { Metadata } from "next";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import UserCollectionLoading from "./loading";
-import { cacheMembers } from "@/lib/server/cache/available-artists";
 import { getUserByIdentifier } from "@/app/data-fetching";
 import { SearchUser } from "@/lib/universal/cosmo/auth";
 import { fetchLockedObjekts } from "@/lib/server/collection/locked-objekts";
 import ProfileRenderer from "@/components/profile/profile-renderer";
+import { fetchArtistsWithMembers } from "@/lib/server/cosmo/artists";
 
 type Props = {
   params: { nickname: string };
@@ -38,7 +38,7 @@ type RendererProps = {
 
 async function UserCollectionRenderer({ profile }: RendererProps) {
   const [artists, lockedObjekts] = await Promise.all([
-    cacheMembers(),
+    fetchArtistsWithMembers(),
     fetchLockedObjekts(profile.address),
   ]);
 

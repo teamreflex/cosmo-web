@@ -3,6 +3,12 @@ import "./src/env.mjs";
 
 /** @type {import('next').NextConfig} */
 const config = {
+  logging: {
+    fetches: {
+      fullUrl: process.env.NODE_ENV === "development",
+    },
+  },
+
   webpack: (config, { webpack }) => {
     config.plugins.push(
       new webpack.IgnorePlugin({

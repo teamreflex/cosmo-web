@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { HeartCrack, Loader2 } from "lucide-react";
 import GridEightSlot from "./grid-eight-slot";
 import GridFourSlot from "./grid-four-slot";
+import { ofetch } from "ofetch";
 
 type Props = {
   grids: CosmoGrid[];
@@ -18,11 +19,9 @@ export default function GridRenderer({ grids }: Props) {
   const { data, status, refetch, isRefetching } = useQuery({
     queryKey: ["grid", selected],
     queryFn: async () => {
-      const response = await fetch(`/api/grid/v1/${selected?.id}/status`);
-      if (!response.ok) {
-        throw new Error("failed to fetch grid status");
-      }
-      return (await response.json()) as CosmoOngoingGrid;
+      return await ofetch<CosmoOngoingGrid>(
+        `/api/grid/v1/${selected?.id}/status`
+      );
     },
     enabled: selected !== undefined,
     refetchOnWindowFocus: false,

@@ -18,6 +18,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import { Button } from "../ui/button";
 import { getUser } from "@ramper/ethereum";
 import { COSMO_ENDPOINT } from "@/lib/universal/cosmo/common";
+import { ofetch } from "ofetch";
 
 type Props = PropsWithChildren<{
   collectionId: string;
@@ -41,26 +42,15 @@ export default function SlotSelector({
   const { data, status } = useQuery({
     queryKey: ["grid-selection", collectionId],
     queryFn: async () => {
-      const params = new URLSearchParams({
-        sort: "newest",
-        collection: collectionId,
-        member: currentSlot.member,
-        used_for_grid: "false",
-      });
-
-      const response = await fetch(
-        `${COSMO_ENDPOINT}/objekt/v1/owned-by/${
-          user?.wallets.ethereum.publicKey
-        }?${params.toString()}`
-      );
-      if (!response.ok) {
-        throw new Error(
-          `failed to fetch available objekts for grid slot "${collectionId}"`
-        );
-      }
-
-      const { objekts }: OwnedObjektsResult = await response.json();
-      return objekts;
+      const url = `${COSMO_ENDPOINT}/objekt/v1/owned-by/${user?.wallets.ethereum.publicKey}`;
+      return await ofetch<OwnedObjektsResult>(url, {
+        query: {
+          sort: "newest",
+          collection: collectionId,
+          member: currentSlot.member,
+          used_for_grid: "false",
+        },
+      }).then((res) => res.objekts);
     },
     enabled: open,
   });

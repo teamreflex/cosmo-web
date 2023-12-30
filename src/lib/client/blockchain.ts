@@ -3,6 +3,7 @@ import { Interface } from "ethers/lib/utils";
 import { SUPPORTED_ETHEREUM_CHAIN_IDS } from "@ramper/ethereum";
 import { GasStationResult } from "../universal/cosmo/objekts";
 import { BigNumber, providers } from "ethers";
+import { ofetch } from "ofetch";
 
 export class TransactionError extends Error {
   constructor(message: string) {
@@ -89,27 +90,16 @@ export async function fetchFeeData(alchemy: providers.AlchemyProvider) {
  * Fetch gas fee prices to use from the Cosmo gas station.
  */
 export async function fetchGasStation() {
-  try {
-    const response = await fetch(
-      "https://gas-station.cosmo.fans/v1/polygon-mainnet",
-      {
-        cache: "no-store",
-      }
-    );
-    if (response.ok) {
-      return (await response.json()) as GasStationResult;
+  return await ofetch<GasStationResult>(
+    "https://gas-station.cosmo.fans/v1/polygon-mainnet",
+    {
+      cache: "no-store",
     }
-
-    console.error(await response.text());
+  ).catch((_) => {
     throw new TransactionError(
       "Failed to get gas price, please try again. Cosmo may be down"
     );
-  } catch (err) {
-    console.error(err);
-    throw new TransactionError(
-      "Failed to get gas price, please try again. Cosmo may be down"
-    );
-  }
+  });
 }
 
 /**

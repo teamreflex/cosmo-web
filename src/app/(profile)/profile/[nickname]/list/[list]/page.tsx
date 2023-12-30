@@ -3,9 +3,9 @@ import { Suspense, cache } from "react";
 import { fetchObjektList } from "@/lib/server/objekts/lists";
 import { redirect } from "next/navigation";
 import ObjektListLoading from "./loading";
-import { cacheMembers } from "@/lib/server/cache/available-artists";
 import { decodeUser, getUserByIdentifier } from "@/app/data-fetching";
 import ListRenderer from "@/components/lists/list-renderer";
+import { fetchArtistsWithMembers } from "@/lib/server/cosmo/artists";
 
 type Props = {
   params: {
@@ -16,7 +16,10 @@ type Props = {
 
 const getObjektList = cache(async (nickname: string, list: string) => {
   const profile = await getUserByIdentifier(nickname);
-  return Promise.all([fetchObjektList(profile.address, list), cacheMembers()]);
+  return Promise.all([
+    fetchObjektList(profile.address, list),
+    fetchArtistsWithMembers(),
+  ]);
 });
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import Links from "./links";
 import GasDisplay from "../misc/gas-display";
 import ComoBalances from "./como-balances";
-import { decodeUser, getArtists, getProfile } from "@/app/data-fetching";
+import { decodeUser, getProfile } from "@/app/data-fetching";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,11 +16,9 @@ import {
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
 import { AlertTriangle } from "lucide-react";
-import { TokenPayload } from "@/lib/universal/auth";
+import { fetchArtists } from "@/lib/server/cosmo/artists";
 
 export default async function Navbar() {
-  const user = await decodeUser();
-
   return (
     <nav className="sticky left-0 right-0 top-0 h-14 z-30">
       <div className="glass">
@@ -57,7 +55,7 @@ export default async function Navbar() {
               </AlertDialog>
             </div>
 
-            <Links authenticated={user !== undefined} />
+            <LinksRenderer />
 
             <div className="flex grow-0 items-center justify-end gap-2">
               <Suspense
@@ -65,7 +63,7 @@ export default async function Navbar() {
                   <div className="h-10 w-10 rounded-full bg-accent animate-pulse" />
                 }
               >
-                <Auth user={user} />
+                <Auth />
               </Suspense>
             </div>
           </div>
@@ -76,9 +74,17 @@ export default async function Navbar() {
   );
 }
 
-async function Auth({ user }: { user?: TokenPayload }) {
+async function LinksRenderer() {
+  const user = await decodeUser();
+
+  return <Links authenticated={user !== undefined} />;
+}
+
+async function Auth() {
+  const user = await decodeUser();
+
   const [artists, profile] = await Promise.all([
-    getArtists(),
+    fetchArtists(),
     user ? getProfile(user.profileId) : Promise.resolve(undefined),
   ]);
 

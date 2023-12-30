@@ -1,7 +1,6 @@
 import { fetchGravities } from "@/lib/server/cosmo/gravity";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import GravityItem from "./gravity-item";
-import { decodeUser } from "@/app/data-fetching";
 import { CosmoGravity } from "@/lib/universal/cosmo/gravity";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 
@@ -10,9 +9,7 @@ type Props = {
 };
 
 export default async function GravityRenderer({ artist }: Props) {
-  const user = await decodeUser();
-  const gravities = await fetchGravities(user!.accessToken, artist);
-
+  const gravities = await fetchGravities(artist);
   const ongoing = [...gravities.upcoming, ...gravities.ongoing];
 
   return (

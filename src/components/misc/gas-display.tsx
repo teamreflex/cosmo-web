@@ -6,7 +6,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
-import { getCachedGasPrice } from "@/lib/server/cache/gas-price";
+import { fetchGasPrice } from "@/lib/server/alchemy/gas";
 
 const text = {
   low: "Network is normal, transfers should be fast",
@@ -15,7 +15,7 @@ const text = {
 };
 
 export default async function GasDisplay() {
-  const { price, status } = await getCachedGasPrice();
+  const { price, status } = await fetchGasPrice();
 
   if (price === 0) return null;
 

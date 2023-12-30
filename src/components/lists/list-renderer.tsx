@@ -20,6 +20,7 @@ import {
   IndexFilters,
 } from "../collection/filters-container";
 import Objekt from "../objekt/objekt";
+import { ofetch } from "ofetch";
 
 type Props = {
   list: ObjektList;
@@ -44,13 +45,14 @@ export default function ListRenderer({
 
   const queryFunction = useCallback(
     async ({ pageParam = 0 }: { pageParam?: number }) => {
-      const query = new URLSearchParams(searchParams);
-      query.set("page", pageParam.toString());
-      query.set("list", list.slug);
-      query.set("address", user.address);
-
-      const result = await fetch(`/api/objekts?${query.toString()}`);
-      return parsePage<IndexedCosmoResponse>(await result.json());
+      return await ofetch(`/api/objekts`, {
+        query: {
+          ...Object.fromEntries(searchParams.entries()),
+          page: pageParam.toString(),
+          list: list.slug,
+          address: user.address,
+        },
+      }).then((res) => parsePage<IndexedCosmoResponse>(res));
     },
     [searchParams, list.slug, user.address]
   );

@@ -15,6 +15,7 @@ import { HeartCrack, Loader2 } from "lucide-react";
 import { isAddress } from "ethers/lib/utils";
 import { SearchUser } from "@/lib/universal/cosmo/auth";
 import { COSMO_ENDPOINT } from "@/lib/universal/cosmo/common";
+import { ofetch } from "ofetch";
 
 type Props = PropsWithChildren<{
   placeholder?: string;
@@ -42,11 +43,14 @@ export function UserSearch({
   const result = useQuery({
     queryKey: ["user-search", debouncedQuery],
     queryFn: async () => {
-      const response = await fetch(
-        `${COSMO_ENDPOINT}/user/v1/search?query=${debouncedQuery}`
-      );
-      const data = await response.json();
-      return data.results as SearchUser[];
+      return await ofetch<{ results: SearchUser[] }>(
+        `${COSMO_ENDPOINT}/user/v1/search`,
+        {
+          query: {
+            query: debouncedQuery,
+          },
+        }
+      ).then((res) => res.results);
     },
     enabled: debouncedQuery.length > 3 && queryIsAddress === false,
   });
