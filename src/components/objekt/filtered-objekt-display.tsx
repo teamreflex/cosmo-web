@@ -76,6 +76,7 @@ export default typedMemo(function FilteredObjektDisplay<
       artist: null,
       member: prev.member === member ? null : member,
     }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const setActiveArtist = useCallback((artist: string) => {
@@ -84,6 +85,7 @@ export default typedMemo(function FilteredObjektDisplay<
       member: null,
       artist: prev.artist === artist ? null : (artist as ValidArtists),
     }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

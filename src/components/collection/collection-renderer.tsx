@@ -48,6 +48,7 @@ export default function CollectionRenderer({
       );
       return parsePage<OwnedObjektsResult>(await result.json());
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [searchParams]
   );
 
