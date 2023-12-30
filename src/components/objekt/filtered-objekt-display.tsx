@@ -63,7 +63,7 @@ export default typedMemo(function FilteredObjektDisplay<
       staleTime: 1000 * 60,
     });
 
-  const total = data?.pages[0].total ?? 0;
+  const total = Number(data?.pages[0].total ?? 0);
   const objekts = useMemo(() => {
     return (data?.pages.flatMap((page) => page.objekts) ?? []).filter(
       getObjektDisplay
