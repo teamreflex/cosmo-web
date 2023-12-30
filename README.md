@@ -43,13 +43,15 @@ This project aims to build a web based version of [Modhaus](https://www.mod-haus
 - "lock" an objekt to prevent it from being sent to another user (like the Superstar games)
 - Fetching other user's collections
   - Includes user search box with recent history
-  - Cosmo ID or Polygon address can be used
   - Filter state is stored in the URL for sharing
+  - Cosmo ID or Polygon address can be used
+  - Supports address -> Cosmo ID resolution if the ID has been logged
 - Indexing of all released objekts
 - Wishlist builder
 - COMO drop calendar
 - Polygon gas price display
 - Displaying trade history
+  - Includes displaying Cosmo ID if available
 
 </details>
 

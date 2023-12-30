@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import format from "date-fns/format";
+import { format } from "date-fns";
 import { ExternalLink, Maximize2 } from "lucide-react";
 import Link from "next/link";
 import { memo, useState } from "react";

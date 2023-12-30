@@ -5,11 +5,11 @@
   "rules": {
     "drizzle/enforce-delete-with-where": [
       "error",
-      { "drizzleObjectName": ["db"] }
+      { "drizzleObjectName": ["db", "indexer"] }
     ],
     "drizzle/enforce-update-with-where": [
       "error",
-      { "drizzleObjectName": ["db"] }
+      { "drizzleObjectName": ["db", "indexer"] }
     ]
   }
 }
