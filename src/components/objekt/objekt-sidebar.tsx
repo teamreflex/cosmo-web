@@ -1,19 +1,15 @@
 "use client";
 
-import { memo, useContext } from "react";
-import { ObjektContext, isOwnedObjekt } from "./context";
-import { IndexedObjekt } from "@/lib/universal/objekts";
-import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
+import { memo } from "react";
 import { useElementSize } from "@/hooks/use-element-size";
 
-export default memo(function ObjektSidebar() {
-  const { objekt } = useContext(ObjektContext) as ObjektContext<
-    OwnedObjekt | IndexedObjekt
-  >;
-  const [ref, { width }] = useElementSize();
+type Props = {
+  collection: string;
+  serial?: number;
+};
 
-  // have to run ownership check due to ambiguous typing
-  const serial = isOwnedObjekt(objekt) ? objekt.objektNo : undefined;
+export default memo(function ObjektSidebar({ collection, serial }: Props) {
+  const [ref, { width }] = useElementSize();
 
   /**
    * sometimes the first element in the grid is a couple pixels smaller on the width, resulting in an offset number, not sure why.
@@ -29,7 +25,7 @@ export default memo(function ObjektSidebar() {
         fontSize: `${width * 0.55}px`,
       }}
     >
-      <span>{objekt.collectionNo}</span>
+      <span>{collection}</span>
       {serial && <span>#{serial.toString().padStart(5, "0")}</span>}
     </div>
   );

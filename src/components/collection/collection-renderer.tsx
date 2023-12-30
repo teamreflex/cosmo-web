@@ -13,9 +13,6 @@ import BackButton from "../profile/back-button";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { Fragment, memo, useCallback } from "react";
 import { CollectionFilters, FiltersContainer } from "./filters-container";
-import ObjektSidebar from "../objekt/objekt-sidebar";
-import InformationOverlay from "../objekt/information-overlay";
-import ActionOverlay from "../objekt/action-overlay";
 import CollectionObjektDisplay from "./collection-objekt-display";
 import { parsePage } from "@/lib/universal/objekts";
 
@@ -127,16 +124,6 @@ const MobileOptions = memo(function MobileOptions({
     <Fragment>
       <TradesButton nickname={nickname} />
       <BackButton url={`/@${nickname}`} tooltip="View Profile" />
-    </Fragment>
-  );
-});
-
-const ObjektOverlay = memo(function ObjektOverlay() {
-  return (
-    <Fragment>
-      <ObjektSidebar />
-      <InformationOverlay />
-      <ActionOverlay />
     </Fragment>
   );
 });

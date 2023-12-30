@@ -1,5 +1,6 @@
 "use client";
 
+import { ValidObjekt } from "@/lib/universal/objekts";
 import Image from "next/image";
 import {
   CSSProperties,
@@ -9,20 +10,16 @@ import {
   useState,
 } from "react";
 import ReactCardFlip from "react-card-flip";
-import { ObjektProvider, ValidObjekt } from "./context";
 
-type ObjektProps<TObjektType extends ValidObjekt> = PropsWithChildren<{
+export type ObjektProps<TObjektType extends ValidObjekt> = PropsWithChildren<{
   objekt: TObjektType;
-  authenticated: boolean;
 }>;
 
 export default memo(function Objekt<TObjektType extends ValidObjekt>({
   children,
   objekt,
-  authenticated,
 }: ObjektProps<TObjektType>) {
   const [flipped, setFlipped] = useState(false);
-
   const flip = useCallback(() => setFlipped((prev) => !prev), []);
 
   const css = {
@@ -46,9 +43,7 @@ export default memo(function Objekt<TObjektType extends ValidObjekt>({
           quality={100}
         />
 
-        <ObjektProvider objekt={objekt} authenticated={authenticated}>
-          {children}
-        </ObjektProvider>
+        {children}
       </div>
 
       <Image

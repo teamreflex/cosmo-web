@@ -18,11 +18,11 @@ import { useToast } from "../ui/use-toast";
 import { Route } from "next";
 
 type Props = {
-  list: ObjektList;
+  objektList: ObjektList;
 };
 
-export default function UpdateList({ list }: Props) {
-  const [name, setName] = useState(list.name);
+export default function UpdateList({ objektList }: Props) {
+  const [name, setName] = useState(objektList.name);
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
@@ -30,10 +30,10 @@ export default function UpdateList({ list }: Props) {
 
   function submit() {
     startTransition(async () => {
-      const result = await update({ id: list.id, name });
+      const result = await update({ id: objektList.id, name });
       if (result.success) {
         toast({
-          description: `Updated ${list.name}`,
+          description: `Updated ${objektList.name}`,
         });
         router.push(result.data as Route);
       } else {

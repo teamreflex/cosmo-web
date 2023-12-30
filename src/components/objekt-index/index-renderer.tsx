@@ -18,6 +18,7 @@ import {
   FiltersContainer,
   IndexFilters,
 } from "../collection/filters-container";
+import Objekt from "../objekt/objekt";
 
 type Props = {
   artists: CosmoArtistWithMembers[];
@@ -70,19 +71,21 @@ export default function IndexRenderer({
         artists={artists}
         filters={cosmoFilters}
         setFilters={setCosmoFilters}
-        authenticated={authenticated}
         queryFunction={queryFunction}
         queryKey={["objekt-index"]}
         getObjektId={(objekt: IndexedObjekt) => objekt.id}
         getObjektDisplay={() => true}
-        objektSlot={
-          <Fragment>
-            <ObjektSidebar />
-            {authenticated && <TopOverlay lists={objektLists} />}
-            <BottomOverlay />
-          </Fragment>
-        }
-      />
+      >
+        {({ objekt }) => (
+          <Objekt objekt={objekt}>
+            <Overlay
+              objekt={objekt}
+              authenticated={authenticated}
+              objektLists={objektLists ?? []}
+            />
+          </Objekt>
+        )}
+      </FilteredObjektDisplay>
     </div>
   );
 }
@@ -126,5 +129,27 @@ const Options = memo(function Options({
         allowCreate={true}
       />
     </div>
+  );
+});
+
+type OverlayProps = {
+  objekt: IndexedObjekt;
+  authenticated: boolean;
+  objektLists: ObjektList[];
+};
+
+const Overlay = memo(function Overlay({
+  objekt,
+  authenticated,
+  objektLists,
+}: OverlayProps) {
+  return (
+    <Fragment>
+      <ObjektSidebar collection={objekt.collectionNo} />
+      {authenticated && (
+        <TopOverlay objekt={objekt} objektLists={objektLists} />
+      )}
+      <BottomOverlay objekt={objekt} />
+    </Fragment>
   );
 });

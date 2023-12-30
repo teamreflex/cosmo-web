@@ -91,7 +91,7 @@ export function useCosmoFilters() {
         [key]: value,
       }));
     },
-    [setCosmoFilters]
+    []
   );
 
   return [

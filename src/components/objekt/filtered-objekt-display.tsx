@@ -1,25 +1,22 @@
 "use client";
 
-import Objekt from "../objekt/objekt";
-import { ReactNode, useCallback, useMemo } from "react";
+import { ObjektProps } from "../objekt/objekt";
+import { ReactElement, cloneElement, useCallback, useMemo } from "react";
 import { HeartCrack, Loader2 } from "lucide-react";
 import {
   QueryFunction,
   QueryKey,
   useInfiniteQuery,
 } from "@tanstack/react-query";
-import {
-  CosmoArtistWithMembers,
-  CosmoMember,
-} from "@/lib/universal/cosmo/artists";
+import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
 import MemberFilter from "../collection/member-filter";
-import { ValidObjekt } from "./context";
 import Portal from "../portal";
 import Hydrated from "../hydrated";
 import MemberFilterSkeleton from "../skeleton/member-filter-skeleton";
 import { ValidArtists } from "@/lib/universal/cosmo/common";
 import { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { InfiniteQueryNext } from "../infinite-query-pending";
+import { ValidObjekt } from "@/lib/universal/objekts";
 
 export type ObjektResponse<TObjektType extends ValidObjekt> = {
   hasNext: boolean;
@@ -29,7 +26,7 @@ export type ObjektResponse<TObjektType extends ValidObjekt> = {
 };
 
 type Props<TObjektType extends ValidObjekt> = {
-  authenticated: boolean;
+  children: (props: ObjektProps<TObjektType>) => ReactElement;
   artists: CosmoArtistWithMembers[];
   filters: CosmoFilters;
   setFilters: SetCosmoFilters;
@@ -41,11 +38,10 @@ type Props<TObjektType extends ValidObjekt> = {
   >;
   getObjektId: (objekt: TObjektType) => string | number;
   getObjektDisplay: (objekt: TObjektType) => boolean;
-  objektSlot: ReactNode;
 };
 
 export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
-  authenticated,
+  children,
   artists,
   filters,
   setFilters,
@@ -53,7 +49,6 @@ export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
   queryFunction,
   getObjektId,
   getObjektDisplay,
-  objektSlot,
 }: Props<TObjektType>) {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
     useInfiniteQuery({
@@ -70,7 +65,7 @@ export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
     return (data?.pages.flatMap((page) => page.objekts) ?? []).filter(
       getObjektDisplay
     );
-  }, [data]);
+  }, [data, getObjektDisplay]);
 
   const setActiveMember = useCallback((member: string) => {
     setFilters((prev) => ({
@@ -112,15 +107,11 @@ export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
           ) : status === "error" ? (
             <Error />
           ) : (
-            objekts.map((objekt) => (
-              <Objekt
-                key={getObjektId(objekt)}
-                objekt={objekt}
-                authenticated={authenticated}
-              >
-                {objektSlot}
-              </Objekt>
-            ))
+            objekts.map((objekt) =>
+              cloneElement(children({ objekt }), {
+                key: getObjektId(objekt),
+              })
+            )
           )}
         </div>
 

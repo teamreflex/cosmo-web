@@ -19,6 +19,7 @@ import {
   FiltersContainer,
   IndexFilters,
 } from "../collection/filters-container";
+import Objekt from "../objekt/objekt";
 
 type Props = {
   list: ObjektList;
@@ -56,7 +57,7 @@ export default function ListRenderer({
 
   return (
     <section className="flex flex-col">
-      <Title authenticated={authenticated} list={list} />
+      <Title authenticated={authenticated} objektList={list} />
 
       <FiltersContainer isPortaled>
         <IndexFilters
@@ -70,39 +71,61 @@ export default function ListRenderer({
         artists={artists}
         filters={cosmoFilters}
         setFilters={setCosmoFilters}
-        authenticated={authenticated}
         queryFunction={queryFunction}
         queryKey={["objekt-list", list.slug]}
         getObjektId={(objekt: IndexedObjekt) => objekt.id}
         getObjektDisplay={() => true}
-        objektSlot={
-          <Fragment>
-            <ObjektSidebar />
-            {authenticated && <ListOverlay list={list} />}
-          </Fragment>
-        }
-      />
+      >
+        {({ objekt }) => (
+          <Objekt objekt={objekt}>
+            <Overlay
+              objekt={objekt}
+              authenticated={authenticated}
+              objektList={list}
+            />
+          </Objekt>
+        )}
+      </FilteredObjektDisplay>
     </section>
   );
 }
 
 const Title = memo(function Title({
   authenticated,
-  list,
+  objektList,
 }: {
   authenticated: boolean;
-  list: ObjektList;
+  objektList: ObjektList;
 }) {
   return (
     <div className="flex flex-wrap items-center justify-between pb-2 gap-2">
-      <h3 className="text-xl font-cosmo drop-shadow-lg">{list.name}</h3>
+      <h3 className="text-xl font-cosmo drop-shadow-lg">{objektList.name}</h3>
 
       {authenticated && (
         <div className="flex items-center gap-2">
-          <UpdateList list={list} />
-          <DeleteList list={list} />
+          <UpdateList objektList={objektList} />
+          <DeleteList objektList={objektList} />
         </div>
       )}
     </div>
+  );
+});
+
+type OverlayProps = {
+  objekt: IndexedObjekt;
+  authenticated: boolean;
+  objektList: ObjektList;
+};
+
+const Overlay = memo(function Overlay({
+  objekt,
+  authenticated,
+  objektList,
+}: OverlayProps) {
+  return (
+    <Fragment>
+      <ObjektSidebar collection={objekt.collectionNo} />
+      {authenticated && <ListOverlay objekt={objekt} objektList={objektList} />}
+    </Fragment>
   );
 });

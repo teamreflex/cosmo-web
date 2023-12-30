@@ -4,13 +4,14 @@ import { cn } from "@/lib/utils";
 import format from "date-fns/format";
 import { ExternalLink, Maximize2 } from "lucide-react";
 import Link from "next/link";
-import { memo, useContext, useState } from "react";
-import { ObjektContext } from "./context";
+import { memo, useState } from "react";
 import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
 
-export default memo(function InformationOverlay() {
-  const { objekt } = useContext(ObjektContext) as ObjektContext<OwnedObjekt>;
+type Props = {
+  objekt: OwnedObjekt;
+};
 
+export default memo(function InformationOverlay({ objekt }: Props) {
   const [open, setOpen] = useState(false);
 
   const formatted = format(Date.parse(objekt.receivedAt), "dd/MM/yy h:mmaa");

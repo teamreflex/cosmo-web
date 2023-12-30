@@ -1,42 +1,42 @@
 "use client";
 
-import { LockedObjektContext } from "@/context/objekt";
 import { cn } from "@/lib/utils";
 import { DownloadCloud, Grid2X2, Lock, MailX, PartyPopper } from "lucide-react";
-import { memo, useContext } from "react";
+import { memo } from "react";
 import SendObjekt from "./send-button";
 import LockObjekt from "./lock-button";
-import { ObjektContext } from "./context";
 import OverlayStatus from "./overlay-status";
 import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
 
-export default function ActionOverlay() {
-  const { objekt } = useContext(ObjektContext) as ObjektContext<OwnedObjekt>;
+type Props = {
+  objekt: OwnedObjekt;
+  authenticated: boolean;
+  isLocked: boolean;
+  toggleLock: (tokenId: number) => void;
+};
 
-  return <LockProvider objekt={objekt} />;
-}
-
-function LockProvider({ objekt }: { objekt: OwnedObjekt }) {
-  const { lockedObjekts, lockObjekt } = useContext(
-    LockedObjektContext
-  ) as LockedObjektContext;
-
-  const isLocked = lockedObjekts.includes(parseInt(objekt.tokenId));
-
-  return <Overlay isLocked={isLocked} toggleLock={lockObjekt} />;
+export default function ActionOverlay({ objekt, authenticated, isLocked, toggleLock }: Props) {
+  return (
+    <Overlay
+      objekt={objekt}
+      isLocked={isLocked}
+      toggleLock={toggleLock}
+      authenticated={authenticated}
+    />
+  );
 }
 
 const Overlay = memo(function Overlay({
+  objekt,
+  authenticated,
   isLocked,
   toggleLock,
 }: {
+  objekt: OwnedObjekt;
+  authenticated: boolean;
   isLocked: boolean;
   toggleLock: (tokenId: number) => void;
 }) {
-  const { objekt, authenticated } = useContext(
-    ObjektContext
-  ) as ObjektContext<OwnedObjekt>;
-
   const showActions =
     !objekt.transferable ||
     objekt.usedForGrid ||

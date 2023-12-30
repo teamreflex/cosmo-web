@@ -1,4 +1,3 @@
-import { LockedObjektContext } from "@/context/objekt";
 import { Fragment, memo, useCallback, useState } from "react";
 import FilteredObjektDisplay, {
   ObjektResponse,
@@ -10,6 +9,7 @@ import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
 import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
 import { QueryFunction, QueryKey } from "@tanstack/react-query";
 import { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
+import Objekt from "../objekt/objekt";
 
 type Props = {
   authenticated: boolean;
@@ -38,13 +38,13 @@ export default memo(function CollectionObjektDisplay({
 }: Props) {
   const [lockedTokens, setLockedTokens] = useState<number[]>(lockedTokenIds);
 
-  function onTokenLock(tokenId: number) {
-    if (lockedTokens.includes(tokenId)) {
-      setLockedTokens((prev) => prev.filter((id) => id !== tokenId));
-    } else {
-      setLockedTokens((prev) => [...prev, tokenId]);
-    }
-  }
+  const toggleLock = useCallback((tokenId: number) => {
+    setLockedTokens((prev) => {
+      return prev.includes(tokenId)
+        ? prev.filter((id) => id !== tokenId)
+        : [...prev, tokenId];
+    });
+  }, []);
 
   const lockFilter = useCallback(
     (objekt: OwnedObjekt) => {
@@ -52,40 +52,64 @@ export default memo(function CollectionObjektDisplay({
         ? true
         : lockedTokens.includes(parseInt(objekt.tokenId)) === false;
     },
-    [showLocked]
+    [showLocked, lockedTokens]
   );
 
   const getObjektId = useCallback((objekt: OwnedObjekt) => objekt.tokenId, []);
   const queryKey = ["collection", address];
 
   return (
-    <LockedObjektContext.Provider
-      value={{
-        lockedObjekts: lockedTokens,
-        lockObjekt: onTokenLock,
-      }}
+    <FilteredObjektDisplay
+      artists={artists}
+      filters={filters}
+      setFilters={setFilters}
+      queryFunction={queryFunction}
+      queryKey={queryKey}
+      getObjektId={getObjektId}
+      getObjektDisplay={lockFilter}
     >
-      <FilteredObjektDisplay
-        artists={artists}
-        filters={filters}
-        setFilters={setFilters}
-        authenticated={authenticated}
-        queryFunction={queryFunction}
-        queryKey={queryKey}
-        getObjektId={getObjektId}
-        getObjektDisplay={lockFilter}
-        objektSlot={<ObjektSlot />}
-      />
-    </LockedObjektContext.Provider>
+      {({ objekt }) => (
+        <Objekt objekt={objekt}>
+          <Overlay
+            objekt={objekt}
+            authenticated={authenticated}
+            lockedTokens={lockedTokens}
+            toggleLock={toggleLock}
+          />
+        </Objekt>
+      )}
+    </FilteredObjektDisplay>
   );
 });
 
-function ObjektSlot() {
+type OverlayProps = {
+  objekt: OwnedObjekt;
+  authenticated: boolean;
+  lockedTokens: number[];
+  toggleLock: (tokenId: number) => void;
+};
+
+const Overlay = memo(function Overlay({
+  objekt,
+  authenticated,
+  lockedTokens,
+  toggleLock,
+}: OverlayProps) {
+  const isLocked = lockedTokens.includes(parseInt(objekt.tokenId));
+
   return (
     <Fragment>
-      <ObjektSidebar />
-      <InformationOverlay />
-      <ActionOverlay />
+      <ObjektSidebar
+        collection={objekt.collectionNo}
+        serial={objekt.objektNo}
+      />
+      <InformationOverlay objekt={objekt} />
+      <ActionOverlay
+        objekt={objekt}
+        authenticated={authenticated}
+        isLocked={isLocked}
+        toggleLock={toggleLock}
+      />
     </Fragment>
   );
-}
+});

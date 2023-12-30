@@ -11,6 +11,7 @@ export type {
   CreateObjektList,
   UpdateObjektList,
 } from "@/lib/server/db/schema";
+import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
 
 export type IndexedObjekt = Collection;
 export type IndexedCosmoResponse = {
@@ -19,6 +20,7 @@ export type IndexedCosmoResponse = {
   nextStartAfter?: number;
   objekts: IndexedObjekt[];
 };
+export type ValidObjekt = OwnedObjekt | IndexedObjekt;
 
 export type ParsedObjektParams = {
   list?: string | null;
