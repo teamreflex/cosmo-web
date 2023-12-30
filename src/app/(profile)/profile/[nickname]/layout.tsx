@@ -62,7 +62,9 @@ export default async function ProfileLayout({ children, params }: Props) {
             <PolygonButton address={profile.address} />
             <HelpDialog />
             <CopyAddressButton address={profile.address} />
-            <TradesButton nickname={profile.nickname} />
+            <TradesButton
+              nickname={profile.isAddress ? profile.address : profile.nickname}
+            />
             <ListsButton
               nickname={profile.isAddress ? profile.address : profile.nickname}
               address={profile.address}
