@@ -78,14 +78,14 @@ export default function Links({ authenticated }: { authenticated: boolean }) {
   }, [path]);
 
   return (
-    <div className="flex grow justify-end sm:justify-center">
+    <div className="flex grow justify-end md:justify-center">
       {/* desktop */}
-      <div className="sm:flex flex-row items-center gap-8 hidden">
+      <div className="md:flex flex-row items-center gap-8 hidden">
         <LinkIcons path={path} authenticated={authenticated} />
       </div>
 
       {/* mobile */}
-      <div className="sm:hidden flex flex-row items-center">
+      <div className="md:hidden flex flex-row items-center">
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button variant="ghost" size="sm">
@@ -109,7 +109,7 @@ type LinkProps = {
   authenticated: boolean;
 };
 
-function LinkIcons({ path, authenticated }: LinkProps) {
+const LinkIcons = memo(function LinkIcons({ path, authenticated }: LinkProps) {
   return (
     <>
       {links.map((link, i) => (
@@ -124,7 +124,7 @@ function LinkIcons({ path, authenticated }: LinkProps) {
       <NavbarSearch />
     </>
   );
-}
+});
 
 type LinkButtonProps = {
   link: NavbarLink;
@@ -157,7 +157,7 @@ const LinkButton = memo(function LinkButton({
             />
           </Link>
         </TooltipTrigger>
-        <TooltipContent>
+        <TooltipContent className="hidden sm:block">
           <p>
             {authenticated || (!link.requireAuth && !authenticated)
               ? link.name

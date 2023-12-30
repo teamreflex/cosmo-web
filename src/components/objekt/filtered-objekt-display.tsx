@@ -1,51 +1,50 @@
 "use client";
 
-import Objekt from "../objekt/objekt";
-import { Fragment, ReactNode, useEffect } from "react";
-import { ChevronDown, HeartCrack, Loader2 } from "lucide-react";
+import { ObjektProps } from "../objekt/objekt";
+import { ReactElement, cloneElement, useCallback, useMemo } from "react";
+import { HeartCrack, Loader2 } from "lucide-react";
 import {
   QueryFunction,
   QueryKey,
   useInfiniteQuery,
 } from "@tanstack/react-query";
-import { useInView } from "react-intersection-observer";
-import {
-  CosmoArtistWithMembers,
-  CosmoMember,
-} from "@/lib/universal/cosmo/artists";
-import { CollectionFilters } from "@/hooks/use-collection-filters";
+import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
 import MemberFilter from "../collection/member-filter";
-import { ValidObjekt } from "./util";
 import Portal from "../portal";
 import Hydrated from "../hydrated";
 import MemberFilterSkeleton from "../skeleton/member-filter-skeleton";
-import { ValidArtist } from "@/lib/universal/cosmo/common";
+import { ValidArtists } from "@/lib/universal/cosmo/common";
+import { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
+import { InfiniteQueryNext } from "../infinite-query-pending";
+import { ValidObjekt } from "@/lib/universal/objekts";
+import { typedMemo } from "@/lib/utils";
 
 export type ObjektResponse<TObjektType extends ValidObjekt> = {
   hasNext: boolean;
   total: number;
   objekts: TObjektType[];
-  nextStartAfter?: number | string | undefined;
+  nextStartAfter?: number | undefined;
 };
 
 type Props<TObjektType extends ValidObjekt> = {
-  authenticated: boolean;
+  children: (props: ObjektProps<TObjektType>) => ReactElement;
   artists: CosmoArtistWithMembers[];
-  filters: CollectionFilters;
-  setFilters: (filters: CollectionFilters) => void;
+  filters: CosmoFilters;
+  setFilters: SetCosmoFilters;
   queryKey: QueryKey;
   queryFunction: QueryFunction<
     ObjektResponse<TObjektType>,
     QueryKey,
-    string | number | undefined
+    number | undefined
   >;
   getObjektId: (objekt: TObjektType) => string | number;
   getObjektDisplay: (objekt: TObjektType) => boolean;
-  objektSlot: ReactNode;
 };
 
-export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
-  authenticated,
+export default typedMemo(function FilteredObjektDisplay<
+  TObjektType extends ValidObjekt
+>({
+  children,
   artists,
   filters,
   setFilters,
@@ -53,56 +52,46 @@ export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
   queryFunction,
   getObjektId,
   getObjektDisplay,
-  objektSlot,
 }: Props<TObjektType>) {
-  console.log("[render]: FilteredObjektDisplay");
-  const { ref, inView } = useInView();
-
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
     useInfiniteQuery({
       queryKey: [...queryKey, filters],
       queryFn: queryFunction,
-      initialPageParam: "0",
+      initialPageParam: 0,
       getNextPageParam: (lastPage) => lastPage.nextStartAfter,
       refetchOnWindowFocus: false,
       staleTime: 1000 * 60,
     });
 
   const total = data?.pages[0].total ?? 0;
-  const objekts = (data?.pages.flatMap((page) => page.objekts) ?? []).filter(
-    getObjektDisplay
-  );
+  const objekts = useMemo(() => {
+    return (data?.pages.flatMap((page) => page.objekts) ?? []).filter(
+      getObjektDisplay
+    );
+  }, [data, getObjektDisplay]);
 
-  // infinite scroll loader
-  useEffect(() => {
-    if (inView) {
-      fetchNextPage();
-    }
-  }, [inView, fetchNextPage]);
+  const setActiveMember = useCallback((member: string) => {
+    setFilters((prev) => ({
+      ...prev,
+      artist: null,
+      member: prev.member === member ? null : member,
+    }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  function setActiveMember(member: CosmoMember) {
-    setFilters({
-      ...filters,
-      artist: undefined,
-      member: filters.member === member.name ? undefined : member.name,
-    });
-  }
-
-  function setActiveArtist(artist: CosmoArtistWithMembers) {
-    setFilters({
-      ...filters,
-      member: undefined,
-      artist:
-        filters.artist === artist.name
-          ? undefined
-          : (artist.name as ValidArtist),
-    });
-  }
+  const setActiveArtist = useCallback((artist: string) => {
+    setFilters((prev) => ({
+      ...prev,
+      member: null,
+      artist: prev.artist === artist ? null : (artist as ValidArtists),
+    }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="flex flex-col">
       <Portal to="#objekt-total">
-        <p className="font-semibold">{total} total</p>
+        <p className="font-semibold">{total.toLocaleString()} total</p>
       </Portal>
 
       <Hydrated fallback={<MemberFilterSkeleton />}>
@@ -123,50 +112,24 @@ export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
           ) : status === "error" ? (
             <Error />
           ) : (
-            <>
-              {data !== undefined &&
-                objekts.map((objekt) => (
-                  <Objekt
-                    key={getObjektId(objekt)}
-                    objekt={objekt}
-                    authenticated={authenticated}
-                  >
-                    {objektSlot}
-                  </Objekt>
-                ))}
-            </>
+            objekts.map((objekt) =>
+              cloneElement(children({ objekt }), {
+                key: getObjektId(objekt),
+              })
+            )
           )}
         </div>
 
-        {status !== "error" && (
-          <div className="flex justify-center py-6">
-            <button
-              ref={ref}
-              onClick={() => fetchNextPage()}
-              disabled={!hasNextPage || isFetchingNextPage}
-            >
-              {isFetchingNextPage ? (
-                <Loading />
-              ) : hasNextPage ? (
-                <LoadMore />
-              ) : (
-                <></>
-              )}
-            </button>
-          </div>
-        )}
+        <InfiniteQueryNext
+          status={status}
+          hasNextPage={hasNextPage}
+          isFetchingNextPage={isFetchingNextPage}
+          fetchNextPage={fetchNextPage}
+        />
       </div>
     </div>
   );
-}
-
-function LoadMore() {
-  return <ChevronDown className="animate-bounce h-12 w-12" />;
-}
-
-function Loading() {
-  return <Loader2 className="animate-spin h-12 w-12" />;
-}
+});
 
 function Error() {
   return (

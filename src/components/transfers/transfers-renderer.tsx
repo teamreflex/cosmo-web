@@ -2,19 +2,17 @@
 
 import { TransferResult } from "@/lib/universal/transfers";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useInView } from "react-intersection-observer";
-import { Fragment, useEffect } from "react";
-import { ChevronDown, HeartCrack, Loader2 } from "lucide-react";
+import { Fragment } from "react";
+import { HeartCrack, Loader2 } from "lucide-react";
 import TransferRow from "./transfer-row";
 import { cn } from "@/lib/utils";
+import { InfiniteQueryNext } from "../infinite-query-pending";
 
 type Props = {
   address: string;
 };
 
 export default function TransfersRenderer({ address }: Props) {
-  const { ref, inView } = useInView();
-
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
     useInfiniteQuery({
       queryKey: ["transfers", address],
@@ -29,13 +27,6 @@ export default function TransfersRenderer({ address }: Props) {
       refetchOnWindowFocus: false,
       staleTime: 1000 * 60,
     });
-
-  // infinite scroll loader
-  useEffect(() => {
-    if (inView) {
-      fetchNextPage();
-    }
-  }, [inView, fetchNextPage]);
 
   return (
     <>
@@ -78,33 +69,14 @@ export default function TransfersRenderer({ address }: Props) {
         </div>
       </div>
 
-      {status !== "error" && (
-        <div className="flex justify-center py-6">
-          <button
-            ref={ref}
-            onClick={() => fetchNextPage()}
-            disabled={!hasNextPage || isFetchingNextPage}
-          >
-            {isFetchingNextPage ? (
-              <Loading />
-            ) : hasNextPage ? (
-              <LoadMore />
-            ) : (
-              <></>
-            )}
-          </button>
-        </div>
-      )}
+      <InfiniteQueryNext
+        status={status}
+        hasNextPage={hasNextPage}
+        isFetchingNextPage={isFetchingNextPage}
+        fetchNextPage={fetchNextPage}
+      />
     </>
   );
-}
-
-function LoadMore() {
-  return <ChevronDown className="animate-bounce h-12 w-12" />;
-}
-
-function Loading() {
-  return <Loader2 className="animate-spin h-12 w-12" />;
 }
 
 function Error() {

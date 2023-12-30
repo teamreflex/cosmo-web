@@ -5,14 +5,14 @@ import { ListX, Loader2 } from "lucide-react";
 import { useTransition } from "react";
 import { removeObjektFromList } from "./actions";
 import { useToast } from "../ui/use-toast";
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from "@tanstack/react-query";
 
 type Props = {
   collection: IndexedObjekt;
-  list: ObjektList;
+  objektList: ObjektList;
 };
 
-export default function RemoveFromList({ collection, list }: Props) {
+export default function RemoveFromList({ collection, objektList }: Props) {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
 
@@ -21,14 +21,16 @@ export default function RemoveFromList({ collection, list }: Props) {
   function submit() {
     startTransition(async () => {
       const result = await removeObjektFromList({
-        listId: list.id,
+        listId: objektList.id,
         collectionId: collection.id,
       });
       if (result.success && result.data) {
         toast({
-          description: `Removed ${collection.collectionId} from ${list.name}`,
+          description: `Removed ${collection.collectionId} from ${objektList.name}`,
         });
-        queryClient.invalidateQueries({ queryKey: ["objekt-list", list.slug] });
+        queryClient.invalidateQueries({
+          queryKey: ["objekt-list", objektList.slug],
+        });
       }
     });
   }
@@ -38,7 +40,7 @@ export default function RemoveFromList({ collection, list }: Props) {
       onClick={submit}
       disabled={isPending}
       className="hover:cursor-pointer hover:scale-110 transition-all flex items-center outline-none"
-      aria-label={`Remove ${collection.collectionId} from ${list.name}`}
+      aria-label={`Remove ${collection.collectionId} from ${objektList.name}`}
     >
       {isPending ? (
         <Loader2 className="h-3 w-3 sm:h-5 sm:w-5 animate-spin" />

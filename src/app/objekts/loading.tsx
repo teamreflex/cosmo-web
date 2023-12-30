@@ -1,43 +1,35 @@
-import { Loader } from "@/components/loader";
 import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
 import Skeleton from "@/components/skeleton/skeleton";
-import { AlertCircle } from "lucide-react";
 
 export default function ObjektsLoading() {
   return (
     <div className="container flex flex-col py-2">
-      <div className="flex flex-col sm:gap-2 group" data-show={false}>
-        {/* header */}
-        <div className="flex items-center justify-between pb-2 sm:pb-0">
-          {/* title */}
-          <div className="flex gap-2 items-center">
+      <div className="flex flex-col">
+        {/* Title */}
+        <div className="flex gap-2 items-center w-full pb-1">
+          <div className="flex gap-2 items-center h-10">
             <h1 className="text-3xl font-cosmo uppercase drop-shadow-lg">
               Objekts
             </h1>
-            <AlertCircle className="w-4 h-4 drop-shadow-lg" />
-          </div>
-
-          {/* mobile: options */}
-          <div className="flex sm:hidden items-center gap-2">
-            {/* show filters */}
-            <Skeleton className="w-8 h-8" />
           </div>
         </div>
 
-        {/* filters */}
-        <div className="transition-all flex sm:group-data-[show=false]:visible sm:group-data-[show=true]:visible sm:group-data-[show=false]:opacity-100 sm:group-data-[show=true]:opacity-100 group-data-[show=true]:pb-2 sm:pb-1 sm:group-data-[show=false]:h-12 sm:group-data-[show=true]:h-12 group-data-[show=false]:h-0 group-data-[show=false]:invisible group-data-[show=false]:opacity-0 group-data-[show=true]:h-36 gap-2 items-center flex-wrap justify-center">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="w-24 h-10" />
-          ))}
-        </div>
-      </div>
-
-      <div className="flex flex-col">
-        <MemberFilterSkeleton />
-        <div className="flex flex-col items-center">
-          <div className="grid grid-cols-3 md:grid-cols-4 gap-4 py-2">
-            <Loader className="col-span-full" />
+        {/* FiltersContainer */}
+        <div className="flex flex-col gap-2 group sm:pb-2 pb-1">
+          <div className="flex flex-row items-center justify-center gap-2 sm:hidden">
+            <Skeleton className="w-20 h-9 rounded-full" />
           </div>
+
+          <div className="sm:flex gap-2 items-center flex-wrap justify-center hidden">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} className="w-24 h-10" />
+            ))}
+          </div>
+        </div>
+
+        {/* FilteredObjektDisplay */}
+        <div className="flex flex-col">
+          <MemberFilterSkeleton />
         </div>
       </div>
     </div>

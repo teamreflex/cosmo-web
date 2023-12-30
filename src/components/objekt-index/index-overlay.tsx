@@ -1,16 +1,15 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { useContext } from "react";
-import { ObjektContext } from "../objekt/util";
 import { IndexedObjekt, ObjektList } from "@/lib/universal/objekts";
 import AddToList from "../lists/add-to-list";
 import OverlayStatus from "../objekt/overlay-status";
 import Link from "next/link";
 import { ImageDown } from "lucide-react";
 
-type Props = {
-  lists: ObjektList[];
+type TopOverlayProps = {
+  objekt: IndexedObjekt;
+  objektLists: ObjektList[];
 };
 
 const classes = [
@@ -19,15 +18,13 @@ const classes = [
   "grid grid-flow-col grid-cols-[1fr_min-content]",
 ];
 
-export function TopOverlay({ lists }: Props) {
-  const { objekt } = useContext(ObjektContext) as ObjektContext<IndexedObjekt>;
-
+export function TopOverlay({ objekt, objektLists }: TopOverlayProps) {
   return (
     <div className={cn(...classes, "top-0 rounded-br-lg sm:rounded-br-xl")}>
       {/* buttons */}
       <div className="flex items-center gap-2">
         {/* add to list */}
-        <AddToList collection={objekt} lists={lists} />
+        <AddToList collection={objekt} lists={objektLists} />
       </div>
 
       {/* status text */}
@@ -38,9 +35,11 @@ export function TopOverlay({ lists }: Props) {
   );
 }
 
-export function BottomOverlay() {
-  const { objekt } = useContext(ObjektContext) as ObjektContext<IndexedObjekt>;
+type BottomOverlayProps = {
+  objekt: IndexedObjekt;
+};
 
+export function BottomOverlay({ objekt }: BottomOverlayProps) {
   return (
     <div className={cn(...classes, "bottom-0 rounded-tr-lg sm:rounded-tr-xl")}>
       {/* buttons */}

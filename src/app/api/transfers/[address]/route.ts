@@ -50,6 +50,8 @@ function parseParams(params: URLSearchParams) {
 }
 
 async function fetchKnownAddresses(addresses: string[]) {
+  if (addresses.length === 0) return [];
+
   return await db
     .select()
     .from(profiles)

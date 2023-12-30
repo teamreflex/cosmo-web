@@ -1,19 +1,16 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { useContext } from "react";
-import { ObjektContext } from "../objekt/util";
 import { IndexedObjekt, ObjektList } from "@/lib/universal/objekts";
 import OverlayStatus from "../objekt/overlay-status";
 import RemoveFromList from "./remove-from-list";
 
 type Props = {
-  list: ObjektList;
+  objekt: IndexedObjekt;
+  objektList: ObjektList;
 };
 
-export default function ListOverlay({ list }: Props) {
-  const { objekt } = useContext(ObjektContext) as ObjektContext<IndexedObjekt>;
-
+export default function ListOverlay({ objekt, objektList }: Props) {
   return (
     <div
       className={cn(
@@ -25,7 +22,7 @@ export default function ListOverlay({ list }: Props) {
       {/* buttons */}
       <div className="flex items-center gap-2">
         {/* remove from list */}
-        <RemoveFromList collection={objekt} list={list} />
+        <RemoveFromList collection={objekt} objektList={objektList} />
       </div>
 
       {/* status text */}

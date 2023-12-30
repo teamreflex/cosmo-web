@@ -17,10 +17,10 @@ import { destroy } from "./actions";
 import { useRouter } from "next/navigation";
 
 type Props = {
-  list: ObjektList;
+  objektList: ObjektList;
 };
 
-export default function DeleteList({ list }: Props) {
+export default function DeleteList({ objektList }: Props) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -29,7 +29,7 @@ export default function DeleteList({ list }: Props) {
     event.preventDefault();
 
     startTransition(async () => {
-      const result = await destroy({ id: list.id });
+      const result = await destroy({ id: objektList.id });
       if (result.success && result.data) {
         router.push("/objekts");
       }
@@ -39,7 +39,7 @@ export default function DeleteList({ list }: Props) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive" size="sm">
+        <Button variant="destructive" size="icon" className="rounded-full">
           <Trash />
         </Button>
       </AlertDialogTrigger>
@@ -47,7 +47,7 @@ export default function DeleteList({ list }: Props) {
         <AlertDialogHeader>
           <AlertDialogTitle>Are you sure?</AlertDialogTitle>
           <AlertDialogDescription>
-            This will permanently delete <b>{list.name}</b>.
+            This will permanently delete <b>{objektList.name}</b>.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

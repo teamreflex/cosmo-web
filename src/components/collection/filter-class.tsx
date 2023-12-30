@@ -7,18 +7,18 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { PropsWithFilters } from "./collection-renderer";
-import { ValidClass, validClasses } from "@/lib/universal/cosmo/common";
-import { useState } from "react";
+import { ValidClasses } from "@/lib/universal/cosmo/common";
+import { memo, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PropsWithFilters } from "@/hooks/use-cosmo-filters";
 
 type Props = PropsWithFilters<"class">;
 
-export function ClassFilter({ filters, setFilters }: Props) {
+export default memo(function ClassFilter({ filters, setFilters }: Props) {
   const [open, setOpen] = useState(false);
 
-  function updateFilter(property: ValidClass, checked: boolean) {
+  function updateFilter(property: ValidClasses, checked: boolean) {
     let newFilters = filters ?? [];
 
     if (checked) {
@@ -31,7 +31,7 @@ export function ClassFilter({ filters, setFilters }: Props) {
       }
     }
 
-    setFilters(newFilters);
+    setFilters("class", newFilters.length > 0 ? newFilters : null);
   }
 
   return (
@@ -49,7 +49,7 @@ export function ClassFilter({ filters, setFilters }: Props) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-36">
-        {validClasses.map((classType) => (
+        {Object.values(ValidClasses).map((classType) => (
           <DropdownMenuCheckboxItem
             key={classType}
             checked={filters?.includes(classType)}
@@ -61,4 +61,4 @@ export function ClassFilter({ filters, setFilters }: Props) {
       </DropdownMenuContent>
     </DropdownMenu>
   );
-}
+});

@@ -56,6 +56,8 @@ export async function fetchTokenBalances({
   const { result }: AlchemyBalanceResponse = await res.json();
   return result.tokenBalances.map((balance) => ({
     contractAddress: balance.contractAddress,
-    tokenBalance: parseInt(balance.tokenBalance) / 10 ** POLYGON_DECIMALS,
+    tokenBalance: Math.floor(
+      parseInt(balance.tokenBalance) / 10 ** POLYGON_DECIMALS
+    ),
   }));
 }

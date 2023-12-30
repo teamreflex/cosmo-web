@@ -7,9 +7,14 @@
 
 ## General
 
-- Improve loading skeletons
 - Move any caching from Vercel KV to `unstable_cache`
 - Refactor `CollectionRenderer` and `ProfileRenderer` into just one component
+- Iron out any remaining jank/issues from performance refactoring
+
+## Performance
+
+- Prevent all Objekt components from rerendering upon a single objekt being locked
+- Virtualize the list of objekts
 
 ### Grid
 

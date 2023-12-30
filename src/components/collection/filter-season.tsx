@@ -7,18 +7,18 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { PropsWithFilters } from "./collection-renderer";
-import { ValidSeason, validSeasons } from "@/lib/universal/cosmo/common";
-import { useState } from "react";
+import { PropsWithFilters } from "@/hooks/use-cosmo-filters";
+import { ValidSeasons } from "@/lib/universal/cosmo/common";
+import { memo, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Props = PropsWithFilters<"season">;
 
-export function SeasonFilter({ filters, setFilters }: Props) {
+export default memo(function SeasonFilter({ filters, setFilters }: Props) {
   const [open, setOpen] = useState(false);
 
-  function updateFilter(property: ValidSeason, checked: boolean) {
+  function updateFilter(property: ValidSeasons, checked: boolean) {
     let newFilters = filters ?? [];
 
     if (checked) {
@@ -31,7 +31,7 @@ export function SeasonFilter({ filters, setFilters }: Props) {
       }
     }
 
-    setFilters(newFilters);
+    setFilters("season", newFilters.length > 0 ? newFilters : null);
   }
 
   return (
@@ -49,7 +49,7 @@ export function SeasonFilter({ filters, setFilters }: Props) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-36">
-        {validSeasons.map((property) => (
+        {Object.values(ValidSeasons).map((property) => (
           <DropdownMenuCheckboxItem
             key={property}
             checked={filters?.includes(property)}
@@ -61,4 +61,4 @@ export function SeasonFilter({ filters, setFilters }: Props) {
       </DropdownMenuContent>
     </DropdownMenu>
   );
-}
+});

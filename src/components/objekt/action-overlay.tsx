@@ -1,24 +1,42 @@
 "use client";
 
-import { LockedObjektContext } from "@/context/objekt";
 import { cn } from "@/lib/utils";
 import { DownloadCloud, Grid2X2, Lock, MailX, PartyPopper } from "lucide-react";
-import { useContext } from "react";
+import { memo } from "react";
 import SendObjekt from "./send-button";
 import LockObjekt from "./lock-button";
-import { ObjektContext } from "./util";
 import OverlayStatus from "./overlay-status";
 import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
 
-export default function ActionOverlay() {
-  const { objekt, authenticated } = useContext(
-    ObjektContext
-  ) as ObjektContext<OwnedObjekt>;
-  const { lockedObjekts, lockObjekt } = useContext(
-    LockedObjektContext
-  ) as LockedObjektContext;
+type Props = {
+  objekt: OwnedObjekt;
+  authenticated: boolean;
+  isLocked: boolean;
+  toggleLock: (tokenId: number) => void;
+};
 
-  const isLocked = lockedObjekts.includes(parseInt(objekt.tokenId));
+export default function ActionOverlay({ objekt, authenticated, isLocked, toggleLock }: Props) {
+  return (
+    <Overlay
+      objekt={objekt}
+      isLocked={isLocked}
+      toggleLock={toggleLock}
+      authenticated={authenticated}
+    />
+  );
+}
+
+const Overlay = memo(function Overlay({
+  objekt,
+  authenticated,
+  isLocked,
+  toggleLock,
+}: {
+  objekt: OwnedObjekt;
+  authenticated: boolean;
+  isLocked: boolean;
+  toggleLock: (tokenId: number) => void;
+}) {
   const showActions =
     !objekt.transferable ||
     objekt.usedForGrid ||
@@ -71,7 +89,7 @@ export default function ActionOverlay() {
           <LockObjekt
             objekt={objekt}
             isLocked={isLocked}
-            onLockChange={lockObjekt}
+            onLockChange={toggleLock}
           />
         )}
       </div>
@@ -96,4 +114,4 @@ export default function ActionOverlay() {
       </div>
     </div>
   );
-}
+});

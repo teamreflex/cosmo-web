@@ -7,26 +7,23 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { PropsWithFilters } from "./collection-renderer";
-import {
-  ValidOnlineType,
-  validOnlineTypes,
-} from "@/lib/universal/cosmo/common";
-import { useState } from "react";
+import { PropsWithFilters } from "@/hooks/use-cosmo-filters";
+import { ValidOnlineTypes } from "@/lib/universal/cosmo/common";
+import { memo, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Props = PropsWithFilters<"on_offline">;
 
-const map: Record<ValidOnlineType, string> = {
-  online: "Digital",
-  offline: "Physical",
+const map: Record<ValidOnlineTypes, string> = {
+  [ValidOnlineTypes.ONLINE]: "Digital",
+  [ValidOnlineTypes.OFFLINE]: "Physical",
 };
 
-export function OnlineFilter({ filters, setFilters }: Props) {
+export default memo(function OnlineFilter({ filters, setFilters }: Props) {
   const [open, setOpen] = useState(false);
 
-  function updateFilter(property: ValidOnlineType, checked: boolean) {
+  function updateFilter(property: ValidOnlineTypes, checked: boolean) {
     let newFilters = filters ?? [];
 
     if (checked) {
@@ -39,7 +36,7 @@ export function OnlineFilter({ filters, setFilters }: Props) {
       }
     }
 
-    setFilters(newFilters);
+    setFilters("on_offline", newFilters.length > 0 ? newFilters : null);
   }
 
   return (
@@ -57,7 +54,7 @@ export function OnlineFilter({ filters, setFilters }: Props) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-36">
-        {validOnlineTypes.map((onlineType) => (
+        {Object.values(ValidOnlineTypes).map((onlineType) => (
           <DropdownMenuCheckboxItem
             key={onlineType}
             checked={filters?.includes(onlineType)}
@@ -69,4 +66,4 @@ export function OnlineFilter({ filters, setFilters }: Props) {
       </DropdownMenuContent>
     </DropdownMenu>
   );
-}
+});

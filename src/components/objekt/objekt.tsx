@@ -1,21 +1,29 @@
 "use client";
 
+import { ValidObjekt } from "@/lib/universal/objekts";
 import Image from "next/image";
-import { CSSProperties, PropsWithChildren, memo, useState } from "react";
+import {
+  CSSProperties,
+  PropsWithChildren,
+  memo,
+  useCallback,
+  useState,
+} from "react";
 import ReactCardFlip from "react-card-flip";
-import { ObjektContext, ValidObjekt } from "./util";
 
-type ObjektProps<TObjektType extends ValidObjekt> = PropsWithChildren<{
+export type ObjektProps<TObjektType extends ValidObjekt> = PropsWithChildren<{
   objekt: TObjektType;
-  authenticated: boolean;
 }>;
+
+const MemoizedImage = memo(Image);
+const MemoizedCardFlip = memo(ReactCardFlip);
 
 export default memo(function Objekt<TObjektType extends ValidObjekt>({
   children,
   objekt,
-  authenticated,
 }: ObjektProps<TObjektType>) {
   const [flipped, setFlipped] = useState(false);
+  const flip = useCallback(() => setFlipped((prev) => !prev), []);
 
   const css = {
     "--objekt-background-color": objekt.backgroundColor,
@@ -23,35 +31,33 @@ export default memo(function Objekt<TObjektType extends ValidObjekt>({
   } as CSSProperties;
 
   return (
-    <ObjektContext.Provider value={{ objekt, authenticated }}>
-      <ReactCardFlip isFlipped={flipped} flipDirection="horizontal">
-        <div
-          className="isolate relative overflow-hidden rounded-lg md:rounded-xl lg:rounded-2xl touch-manipulation bg-accent"
-          style={css}
-        >
-          <Image
-            onClick={() => setFlipped((prev) => !prev)}
-            className="cursor-pointer"
-            src={objekt.frontImage}
-            width={291}
-            height={450}
-            alt={objekt.collectionId}
-            quality={100}
-          />
-
-          {children}
-        </div>
-
-        <Image
-          onClick={() => setFlipped((prev) => !prev)}
+    <MemoizedCardFlip isFlipped={flipped} flipDirection="horizontal">
+      <div
+        className="isolate relative overflow-hidden rounded-lg md:rounded-xl lg:rounded-2xl touch-manipulation bg-accent"
+        style={css}
+      >
+        <MemoizedImage
+          onClick={flip}
           className="cursor-pointer"
-          src={objekt.backImage}
+          src={objekt.frontImage}
           width={291}
           height={450}
           alt={objekt.collectionId}
           quality={100}
         />
-      </ReactCardFlip>
-    </ObjektContext.Provider>
+
+        {children}
+      </div>
+
+      <MemoizedImage
+        onClick={flip}
+        className="cursor-pointer"
+        src={objekt.backImage}
+        width={291}
+        height={450}
+        alt={objekt.collectionId}
+        quality={100}
+      />
+    </MemoizedCardFlip>
   );
 });

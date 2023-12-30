@@ -11,14 +11,16 @@ export type {
   CreateObjektList,
   UpdateObjektList,
 } from "@/lib/server/db/schema";
+import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
 
 export type IndexedObjekt = Collection;
 export type IndexedCosmoResponse = {
   hasNext: boolean;
   total: number;
-  nextStartAfter: number | undefined;
+  nextStartAfter?: number;
   objekts: IndexedObjekt[];
 };
+export type ValidObjekt = OwnedObjekt | IndexedObjekt;
 
 export type ParsedObjektParams = {
   list?: string | null;
@@ -48,4 +50,13 @@ export function parseParams(params: URLSearchParams): ParsedObjektParams {
       : undefined,
     collectionNo: params.getAll("collectionNo"),
   };
+}
+
+export function parsePage<T>(data: any) {
+  return {
+    ...data,
+    nextStartAfter: data.nextStartAfter
+      ? parseInt(data.nextStartAfter)
+      : undefined,
+  } as T;
 }
