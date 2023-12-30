@@ -3,10 +3,11 @@ import { ChevronRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import * as R from "remeda";
 import { decodeUser } from "@/app/data-fetching";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { CosmoGridEdition } from "@/lib/universal/cosmo/grid";
+
+type SeasonGroup = Record<string, CosmoGridEdition[]>;
 
 export default async function GridEditions({
   artist,
@@ -16,7 +17,14 @@ export default async function GridEditions({
   const user = await decodeUser();
   const editions = await fetchEditions(user!.accessToken, artist);
 
-  const seasons = R.groupBy(editions, (edition) => edition.season.title);
+  const seasons = editions.reduce((acc, edition) => {
+    const season = edition.season.title;
+    if (!acc[season]) {
+      acc[season] = [];
+    }
+    acc[season].push(edition);
+    return acc;
+  }, {} as SeasonGroup);
   const seasonTitles = Object.keys(seasons);
 
   return (

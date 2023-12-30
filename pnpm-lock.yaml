@@ -149,9 +149,6 @@ dependencies:
   react-player:
     specifier: ^2.13.0
     version: 2.13.0(react@18.2.0)
-  remeda:
-    specifier: ^1.29.0
-    version: 1.29.0
   server-only:
     specifier: ^0.0.1
     version: 0.0.1
@@ -5958,10 +5955,6 @@ packages:
       define-properties: 1.2.1
       set-function-name: 2.0.1
     dev: true
-
-  /remeda@1.29.0:
-    resolution: {integrity: sha512-M3LQ14KtMdQ1879lj/kKji3zBk158s7Rwg963mEkTfQFMxnKrIEAMxJfo/+0sp/+uGgN/KMVU2MBA4LNjqf8YQ==}
-    dev: false
 
   /resolve-from@4.0.0:
     resolution: {integrity: sha512-pb/MYmXstAkysRFx8piNI1tGFNQIFA3vkE3Gq4EuA1dF6gHp/+vgZqsCGJapvy8N3Q+4o7FwvquPJcnZ7RYy4g==}
