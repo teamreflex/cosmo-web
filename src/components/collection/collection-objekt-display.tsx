@@ -11,6 +11,8 @@ import { QueryFunction, QueryKey } from "@tanstack/react-query";
 import { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
 import Objekt from "../objekt/objekt";
 
+const getObjektId = (objekt: OwnedObjekt) => objekt.tokenId;
+
 type Props = {
   authenticated: boolean;
   address: string;
@@ -55,16 +57,13 @@ export default memo(function CollectionObjektDisplay({
     [showLocked, lockedTokens]
   );
 
-  const getObjektId = useCallback((objekt: OwnedObjekt) => objekt.tokenId, []);
-  const queryKey = ["collection", address];
-
   return (
     <FilteredObjektDisplay
       artists={artists}
       filters={filters}
       setFilters={setFilters}
       queryFunction={queryFunction}
-      queryKey={queryKey}
+      queryKey={["collection", address]}
       getObjektId={getObjektId}
       getObjektDisplay={lockFilter}
     >

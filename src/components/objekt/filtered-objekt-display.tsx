@@ -17,6 +17,7 @@ import { ValidArtists } from "@/lib/universal/cosmo/common";
 import { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { InfiniteQueryNext } from "../infinite-query-pending";
 import { ValidObjekt } from "@/lib/universal/objekts";
+import { typedMemo } from "@/lib/utils";
 
 export type ObjektResponse<TObjektType extends ValidObjekt> = {
   hasNext: boolean;
@@ -40,7 +41,9 @@ type Props<TObjektType extends ValidObjekt> = {
   getObjektDisplay: (objekt: TObjektType) => boolean;
 };
 
-export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
+export default typedMemo(function FilteredObjektDisplay<
+  TObjektType extends ValidObjekt
+>({
   children,
   artists,
   filters,
@@ -124,7 +127,7 @@ export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
       </div>
     </div>
   );
-}
+});
 
 function Error() {
   return (

@@ -15,6 +15,9 @@ export type ObjektProps<TObjektType extends ValidObjekt> = PropsWithChildren<{
   objekt: TObjektType;
 }>;
 
+const MemoizedImage = memo(Image);
+const MemoizedCardFlip = memo(ReactCardFlip);
+
 export default memo(function Objekt<TObjektType extends ValidObjekt>({
   children,
   objekt,
@@ -28,12 +31,12 @@ export default memo(function Objekt<TObjektType extends ValidObjekt>({
   } as CSSProperties;
 
   return (
-    <ReactCardFlip isFlipped={flipped} flipDirection="horizontal">
+    <MemoizedCardFlip isFlipped={flipped} flipDirection="horizontal">
       <div
         className="isolate relative overflow-hidden rounded-lg md:rounded-xl lg:rounded-2xl touch-manipulation bg-accent"
         style={css}
       >
-        <Image
+        <MemoizedImage
           onClick={flip}
           className="cursor-pointer"
           src={objekt.frontImage}
@@ -46,7 +49,7 @@ export default memo(function Objekt<TObjektType extends ValidObjekt>({
         {children}
       </div>
 
-      <Image
+      <MemoizedImage
         onClick={flip}
         className="cursor-pointer"
         src={objekt.backImage}
@@ -55,6 +58,6 @@ export default memo(function Objekt<TObjektType extends ValidObjekt>({
         alt={objekt.collectionId}
         quality={100}
       />
-    </ReactCardFlip>
+    </MemoizedCardFlip>
   );
 });
