@@ -5,10 +5,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
-import {
-  CosmoArtistWithMembers,
-  CosmoMember,
-} from "@/lib/universal/cosmo/artists";
+import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { memo } from "react";
 
