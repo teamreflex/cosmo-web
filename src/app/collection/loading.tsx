@@ -19,12 +19,9 @@ export default function CollectionLoading() {
 
           {/* desktop: options */}
           <div className="hidden sm:flex items-center gap-2">
-            {/* copy address button */}
-            <Skeleton className="w-28 h-9" />
-            {/* polygon button */}
-            <Skeleton className="w-28 h-9" />
-            {/* opensea button */}
-            <Skeleton className="w-28 h-9" />
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} className="w-10 h-10 rounded-full" />
+            ))}
           </div>
 
           {/* mobile: options */}

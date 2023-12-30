@@ -9,11 +9,10 @@ import TransferRow from "./transfer-row";
 import { cn } from "@/lib/utils";
 
 type Props = {
-  nickname: string;
   address: string;
 };
 
-export default function TransfersRenderer({ nickname, address }: Props) {
+export default function TransfersRenderer({ address }: Props) {
   const { ref, inView } = useInView();
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =

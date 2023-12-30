@@ -3,20 +3,16 @@
 - User searchbox has blurred text
 - Collections search/dropdown has keyboard controls which makes the searchbox a little jank
 - Get tooltip working on the search icon in navbar
-- Objekt/collection total count doesn't update when swapping to a cached filter
-- Ring around artist/member filter doesn't show when refreshing
-  - due to client components rendering on the server first
+- Get tooltip working on the objekt list button
 
 ## General
 
 - Improve loading skeletons
 - Move any caching from Vercel KV to `unstable_cache`
+- Refactor `CollectionRenderer` and `ProfileRenderer` into just one component
 
 ### Grid
 
-- Look into grid submission recovery
-  - eg: `/complete` succeeds but `/claim-reward` fails. Reward claiming needs to be resumable.
-- Prevent submission when there's missing slots (API issue already reported to Modhaus)
 - When fetching objekts to slot, filter out anything that is locked
 
 ### Gravity
@@ -35,6 +31,7 @@
 - Delete locked objekts upon transfer
   - either use Alchemy webhooks or setup a webhook for the indexer to post to
 - Add a toggle to switch between Cosmo and blockchain as the data source
+  - would bring better filtering like jinsoultv
 - Add grid size options
 
 ### COMO Calendar
@@ -50,4 +47,3 @@
 - Set a favorite objekt?
 - Set a favorite member?
 - Social links? Twitter, Discord, Instagram etc
-- Add proper profile header/info block

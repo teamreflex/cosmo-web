@@ -7,8 +7,6 @@ import {
   ObjektList,
   UpdateObjektList,
 } from "@/lib/universal/objekts";
-import { search } from "../cosmo/auth";
-import { fetchUserByIdentifier } from "../auth";
 
 /**
  * Fetch all lists for a given user.
@@ -20,32 +18,17 @@ export async function fetchObjektLists(address: string): Promise<ObjektList[]> {
 /**
  * Fetch a single list.
  */
-export async function fetchObjektList(
-  slug: string
-): Promise<ObjektList | undefined> {
-  const rows = await db.select().from(lists).where(eq(lists.slug, slug));
-  return rows[0];
-}
-
-/**
- * Fetch a single list.
- */
-export async function fetchObjektListWithUser(nickname: string, slug: string) {
-  const user = await fetchUserByIdentifier(nickname);
-
+export async function fetchObjektList(address: string, slug: string) {
   const rows = await db
     .select()
     .from(lists)
-    .where(and(eq(lists.slug, slug), eq(lists.userAddress, user.address)));
+    .where(and(eq(lists.slug, slug), eq(lists.userAddress, address)));
 
   if (rows.length === 0) {
     return undefined;
   }
 
-  return {
-    user,
-    list: rows[0],
-  };
+  return rows[0];
 }
 
 /**

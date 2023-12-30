@@ -1,44 +1,31 @@
-import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
-import { CollectionFilters } from "@/hooks/use-collection-filters";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../ui/tooltip";
 import {
   CosmoArtistWithMembers,
   CosmoMember,
 } from "@/lib/universal/cosmo/artists";
-import { ValidArtist } from "@/lib/universal/cosmo/common";
-import Image from "next/image";
-import Skeleton from "../skeleton/skeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { memo } from "react";
 
 type Props = {
   artists: CosmoArtistWithMembers[];
-  filters: CollectionFilters;
-  updateFilters: (filters: CollectionFilters) => void;
+  active: string | undefined;
+  updateArtist: (artist: CosmoArtistWithMembers) => void;
+  updateMember: (member: CosmoMember) => void;
 };
 
-export default function MemberFilter({
+export default memo(function MemberFilter({
   artists,
-  filters,
-  updateFilters,
+  active,
+  updateArtist,
+  updateMember,
 }: Props) {
-  function setActiveMember(member: CosmoMember) {
-    updateFilters({
-      ...filters,
-      artist: undefined,
-      member: filters.member === member.name ? undefined : member.name,
-    });
-  }
-
-  function setActiveArtist(artist: CosmoArtistWithMembers) {
-    updateFilters({
-      ...filters,
-      member: undefined,
-      artist:
-        filters.artist === artist.name
-          ? undefined
-          : (artist.name as ValidArtist),
-    });
-  }
+  console.log("[render]: MemberFilter");
 
   return (
     <div className="relative flex flex-col h-fit w-full">
@@ -53,8 +40,8 @@ export default function MemberFilter({
           <MemberFilterButton
             displayName={artist.title}
             image={artist.logoImageUrl}
-            isActive={filters.artist === artist.name}
-            setActive={() => setActiveArtist(artist)}
+            isActive={active === artist.name}
+            setActive={() => updateArtist(artist)}
           />
 
           {artist.members
@@ -64,15 +51,15 @@ export default function MemberFilter({
                 key={member.name}
                 displayName={member.name}
                 image={member.profileImageUrl}
-                isActive={filters.member === member.name}
-                setActive={() => setActiveMember(member)}
+                isActive={active === member.name}
+                setActive={() => updateMember(member)}
               />
             ))}
         </div>
       ))}
     </div>
   );
-}
+});
 
 type MemberFilterButtonProps = {
   displayName: string;
@@ -86,39 +73,25 @@ export function MemberFilterButton({
   isActive,
   setActive,
 }: MemberFilterButtonProps) {
-  const [imageLoaded, setImageLoaded] = useState(false);
-
   return (
-    <Tooltip delayDuration={0}>
-      <TooltipTrigger asChild>
-        <button
-          onClick={() => setActive()}
-          className={cn(
-            "rounded-full drop-shadow-lg",
-            isActive && "ring ring-cosmo"
-          )}
-        >
-          <div className="relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full">
-            {/* fallback */}
-            {!imageLoaded && (
-              <div className="flex h-full w-full rounded-full bg-accent animate-pulse" />
+    <TooltipProvider>
+      <Tooltip delayDuration={0}>
+        <TooltipTrigger asChild>
+          <button
+            onClick={() => setActive()}
+            className={cn(
+              "rounded-full drop-shadow-lg",
+              isActive && "ring ring-cosmo"
             )}
-
-            {/* image */}
-            <div className="aspect-square h-full w-full">
-              <Image
-                src={image}
-                alt={displayName}
-                onLoad={() => setImageLoaded(true)}
-                quality={100}
-                width={40}
-                height={40}
-              />
-            </div>
-          </div>
-        </button>
-      </TooltipTrigger>
-      <TooltipContent side="bottom">{displayName}</TooltipContent>
-    </Tooltip>
+          >
+            <Avatar>
+              <AvatarFallback>{displayName.at(0)}</AvatarFallback>
+              <AvatarImage src={image} alt={displayName} />
+            </Avatar>
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom">{displayName}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }

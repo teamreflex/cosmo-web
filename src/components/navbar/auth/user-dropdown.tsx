@@ -12,7 +12,6 @@ import { Disc3, LogOut, User } from "lucide-react";
 import Link from "next/link";
 import { ReactNode, useState } from "react";
 import SwitchArtistDialog from "./switch-artist-dialog";
-import ProfileImage from "@/assets/profile.webp";
 import { CosmoArtist } from "@/lib/universal/cosmo/artists";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 
@@ -33,6 +32,8 @@ export default function UserDropdown({
 }: UserDropdownProps) {
   const [openArtistSwitch, setOpenArtistSwitch] = useState(false);
 
+  const artist = artists.find((artist) => artist.name === selectedArtist);
+
   return (
     <>
       <SwitchArtistDialog
@@ -43,16 +44,12 @@ export default function UserDropdown({
       />
 
       <DropdownMenu>
-        <DropdownMenuTrigger>
-          <Avatar>
+        <DropdownMenuTrigger className="group outline-none">
+          <Avatar className="ring-2 ring-white/30 group-data-[state=open]:ring-cosmo transition-colors">
             <AvatarFallback>
               {user.nickname.charAt(0).toUpperCase()}
             </AvatarFallback>
-            <AvatarImage
-              className="bg-cosmo-profile p-[6px]"
-              src={ProfileImage.src}
-              alt={user.nickname}
-            />
+            <AvatarImage src={artist?.logoImageUrl} alt={artist?.title} />
           </Avatar>
         </DropdownMenuTrigger>
         <DropdownMenuContent>

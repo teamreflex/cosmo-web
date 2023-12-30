@@ -60,11 +60,8 @@ export default function ListDropdown({ lists, nickname, allowCreate }: Props) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm">
-            <List />
-            <span className="ml-2 hidden sm:block whitespace-nowrap">
-              Lists
-            </span>
+          <Button className="rounded-full" variant="secondary" size="icon">
+            <List className="h-5 w-5" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>

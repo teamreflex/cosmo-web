@@ -6,7 +6,6 @@ import { env } from "@/env.mjs";
 import { Inter } from "next/font/google";
 import localFont from "next/font/local";
 import { ThemeProvider } from "@/components/theme-provider";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import Fathom from "@/components/fathom";
 
@@ -55,18 +54,16 @@ export default async function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${cosmo.variable} font-sans`}>
         <ThemeProvider attribute="class" defaultTheme="dark">
-          <TooltipProvider>
-            <ClientProviders>
-              <div className="relative flex min-h-dvh flex-col">
-                <Navbar />
+          <ClientProviders>
+            <div className="relative flex min-h-dvh flex-col">
+              <Navbar />
 
-                {/* content */}
-                <div className="flex min-w-full flex-col text-foreground">
-                  {children}
-                </div>
+              {/* content */}
+              <div className="flex min-w-full flex-col text-foreground">
+                {children}
               </div>
-            </ClientProviders>
-          </TooltipProvider>
+            </div>
+          </ClientProviders>
 
           <Toaster />
           <Fathom />

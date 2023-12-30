@@ -8,10 +8,11 @@ import {
   LibraryBig,
   Menu,
   CalendarRange,
+  LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
 import NavbarSearch from "./navbar-search";
-import { usePathname, useSelectedLayoutSegment } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   Popover,
@@ -19,50 +20,56 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "../ui/button";
-import { useEffect, useState } from "react";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { memo, useEffect, useState } from "react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../ui/tooltip";
 
-const links = [
-  { name: "Home", icon: Home, href: "/", segment: null, requireAuth: true },
+type NavbarLink = {
+  name: string;
+  icon: LucideIcon;
+  href: string;
+  requireAuth: boolean;
+};
+
+const links: NavbarLink[] = [
+  { name: "Home", icon: Home, href: "/", requireAuth: true },
   {
     name: "Gravity",
     icon: Vote,
     href: "/gravity",
-    segment: "gravity",
     requireAuth: true,
   },
   {
     name: "Objekts",
     icon: LibraryBig,
     href: "/objekts",
-    segment: "objekts",
     requireAuth: false,
   },
   {
     name: "Collection",
     icon: PackageOpen,
     href: "/collection",
-    segment: "collection",
     requireAuth: true,
   },
   {
     name: "COMO",
     icon: CalendarRange,
     href: "/como",
-    segment: "como",
     requireAuth: true,
   },
   {
     name: "Grid",
     icon: LayoutGrid,
     href: "/grid",
-    segment: "grid",
     requireAuth: true,
   },
 ];
 
 export default function Links({ authenticated }: { authenticated: boolean }) {
-  const segment = useSelectedLayoutSegment();
   const path = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -74,7 +81,7 @@ export default function Links({ authenticated }: { authenticated: boolean }) {
     <div className="flex grow justify-end sm:justify-center">
       {/* desktop */}
       <div className="sm:flex flex-row items-center gap-8 hidden">
-        <LinkIcons segment={segment} authenticated={authenticated} />
+        <LinkIcons path={path} authenticated={authenticated} />
       </div>
 
       {/* mobile */}
@@ -89,7 +96,7 @@ export default function Links({ authenticated }: { authenticated: boolean }) {
             sideOffset={10}
             className="w-[calc(100vw-1rem)] mx-2 flex flex-row justify-between"
           >
-            <LinkIcons segment={segment} authenticated={authenticated} />
+            <LinkIcons path={path} authenticated={authenticated} />
           </PopoverContent>
         </Popover>
       </div>
@@ -97,45 +104,67 @@ export default function Links({ authenticated }: { authenticated: boolean }) {
   );
 }
 
-function LinkIcons({
-  segment,
-  authenticated,
-}: {
-  segment: string | null;
+type LinkProps = {
+  path: string;
   authenticated: boolean;
-}) {
+};
+
+function LinkIcons({ path, authenticated }: LinkProps) {
   return (
     <>
       {links.map((link, i) => (
-        <Tooltip key={i} delayDuration={0}>
-          <TooltipTrigger>
-            <Link
-              href={{ pathname: link.href }}
-              className="drop-shadow-lg hover:scale-110 transition-all"
-              aria-label={link.name}
-            >
-              <link.icon
-                className={cn(
-                  "h-8 w-8 shrink-0 transition-all fill-transparent",
-                  link.segment === segment && "fill-white/50",
-                  link.requireAuth &&
-                    !authenticated &&
-                    "text-slate-500 cursor-not-allowed"
-                )}
-              />
-            </Link>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>
-              {authenticated || (!link.requireAuth && !authenticated)
-                ? link.name
-                : "Sign in first!"}
-            </p>
-          </TooltipContent>
-        </Tooltip>
+        <LinkButton
+          key={i}
+          link={link}
+          active={link.href === "/" ? path === "/" : path.startsWith(link.href)}
+          authenticated={authenticated}
+        />
       ))}
 
       <NavbarSearch />
     </>
   );
 }
+
+type LinkButtonProps = {
+  link: NavbarLink;
+  active: boolean;
+  authenticated: boolean;
+};
+
+const LinkButton = memo(function LinkButton({
+  link,
+  active,
+  authenticated,
+}: LinkButtonProps) {
+  return (
+    <TooltipProvider>
+      <Tooltip delayDuration={0}>
+        <TooltipTrigger>
+          <Link
+            href={{ pathname: link.href }}
+            className="drop-shadow-lg hover:scale-110 transition-all"
+            aria-label={link.name}
+          >
+            <link.icon
+              className={cn(
+                "h-8 w-8 shrink-0 transition-all fill-transparent",
+                active && "fill-white/50",
+                link.requireAuth &&
+                  !authenticated &&
+                  "text-slate-500 cursor-not-allowed"
+              )}
+            />
+          </Link>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>
+            {authenticated || (!link.requireAuth && !authenticated)
+              ? link.name
+              : "Sign in first!"}
+          </p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+});

@@ -8,12 +8,12 @@ export function useTypedSearchParams<T extends z.Schema>(
   schema: T,
   callback?: (params: URLSearchParams) => URLSearchParams
 ) {
-  let params = new URLSearchParams(useSearchParams());
+  console.log("[update]: useTypedSearchParams");
 
-  if (callback) {
-    params = callback(params);
-  }
-
+  const searchParams = useSearchParams();
+  const params = callback
+    ? callback(new URLSearchParams(searchParams))
+    : searchParams;
   return getParams(params, schema);
 }
 

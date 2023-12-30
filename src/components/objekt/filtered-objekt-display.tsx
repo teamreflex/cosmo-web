@@ -9,10 +9,17 @@ import {
   useInfiniteQuery,
 } from "@tanstack/react-query";
 import { useInView } from "react-intersection-observer";
-import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
+import {
+  CosmoArtistWithMembers,
+  CosmoMember,
+} from "@/lib/universal/cosmo/artists";
 import { CollectionFilters } from "@/hooks/use-collection-filters";
 import MemberFilter from "../collection/member-filter";
 import { ValidObjekt } from "./util";
+import Portal from "../portal";
+import Hydrated from "../hydrated";
+import MemberFilterSkeleton from "../skeleton/member-filter-skeleton";
+import { ValidArtist } from "@/lib/universal/cosmo/common";
 
 export type ObjektResponse<TObjektType extends ValidObjekt> = {
   hasNext: boolean;
@@ -48,6 +55,7 @@ export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
   getObjektDisplay,
   objektSlot,
 }: Props<TObjektType>) {
+  console.log("[render]: FilteredObjektDisplay");
   const { ref, inView } = useInView();
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
@@ -60,6 +68,11 @@ export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
       staleTime: 1000 * 60,
     });
 
+  const total = data?.pages[0].total ?? 0;
+  const objekts = (data?.pages.flatMap((page) => page.objekts) ?? []).filter(
+    getObjektDisplay
+  );
+
   // infinite scroll loader
   useEffect(() => {
     if (inView) {
@@ -67,13 +80,39 @@ export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
     }
   }, [inView, fetchNextPage]);
 
+  function setActiveMember(member: CosmoMember) {
+    setFilters({
+      ...filters,
+      artist: undefined,
+      member: filters.member === member.name ? undefined : member.name,
+    });
+  }
+
+  function setActiveArtist(artist: CosmoArtistWithMembers) {
+    setFilters({
+      ...filters,
+      member: undefined,
+      artist:
+        filters.artist === artist.name
+          ? undefined
+          : (artist.name as ValidArtist),
+    });
+  }
+
   return (
     <div className="flex flex-col">
-      <MemberFilter
-        artists={artists}
-        filters={filters}
-        updateFilters={setFilters}
-      />
+      <Portal to="#objekt-total">
+        <p className="font-semibold">{total} total</p>
+      </Portal>
+
+      <Hydrated fallback={<MemberFilterSkeleton />}>
+        <MemberFilter
+          artists={artists}
+          active={filters.artist ?? filters.member}
+          updateArtist={setActiveArtist}
+          updateMember={setActiveMember}
+        />
+      </Hydrated>
 
       <div className="flex flex-col items-center">
         <div className="grid grid-cols-3 md:grid-cols-4 gap-4 py-2">
@@ -86,18 +125,14 @@ export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
           ) : (
             <>
               {data !== undefined &&
-                data.pages.map((group, i) => (
-                  <Fragment key={i}>
-                    {group.objekts.filter(getObjektDisplay).map((objekt) => (
-                      <Objekt
-                        key={getObjektId(objekt)}
-                        objekt={objekt}
-                        authenticated={authenticated}
-                      >
-                        {objektSlot}
-                      </Objekt>
-                    ))}
-                  </Fragment>
+                objekts.map((objekt) => (
+                  <Objekt
+                    key={getObjektId(objekt)}
+                    objekt={objekt}
+                    authenticated={authenticated}
+                  >
+                    {objektSlot}
+                  </Objekt>
                 ))}
             </>
           )}

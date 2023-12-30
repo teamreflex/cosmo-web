@@ -2,64 +2,53 @@ import { Metadata } from "next";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import UserCollectionLoading from "./loading";
-import { isAddress } from "ethers/lib/utils";
 import { cacheMembers } from "@/lib/server/cache/available-artists";
-import CollectionRenderer from "@/components/collection/collection-renderer";
-import { fetchCollectionByNickname } from "@/lib/server/auth";
-import { PublicUser } from "@/lib/universal/auth";
-import { decodeUser } from "@/app/data-fetching";
+import { getUserByIdentifier } from "@/app/data-fetching";
+import { SearchUser } from "@/lib/universal/cosmo/auth";
+import { fetchLockedObjekts } from "@/lib/server/collection/locked-objekts";
+import ProfileRenderer from "@/components/profile/profile-renderer";
 
 type Props = {
   params: { nickname: string };
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const name = isAddress(params.nickname)
-    ? params.nickname.substring(0, 6)
-    : params.nickname;
+  const user = await getUserByIdentifier(params.nickname);
+  if (!user) notFound();
+
   return {
-    title: `${name}'s Collection`,
+    title: `${user.nickname}'s Collection`,
   };
 }
 
 export default async function UserCollectionPage({ params }: Props) {
-  if (isAddress(params.nickname)) {
-    return (
-      <Suspense fallback={<UserCollectionLoading />}>
-        <UserCollectionRenderer
-          user={{
-            nickname: params.nickname.substring(0, 6),
-            address: params.nickname,
-            lockedObjekts: [],
-            lists: [],
-            isAddress: true,
-          }}
-        />
-      </Suspense>
-    );
-  }
-
-  const user = await fetchCollectionByNickname(params.nickname);
-  if (!user) notFound();
+  const profile = await getUserByIdentifier(params.nickname);
+  if (!profile) notFound();
 
   return (
     <Suspense fallback={<UserCollectionLoading />}>
-      <UserCollectionRenderer user={user} />
+      <UserCollectionRenderer profile={profile} />
     </Suspense>
   );
 }
 
-async function UserCollectionRenderer({ user }: { user: PublicUser }) {
-  const artists = await cacheMembers();
-  const currentUser = await decodeUser();
+type RendererProps = {
+  profile: SearchUser;
+};
+
+async function UserCollectionRenderer({ profile }: RendererProps) {
+  const [artists, lockedObjekts] = await Promise.all([
+    cacheMembers(),
+    fetchLockedObjekts(profile.address),
+  ]);
 
   return (
-    <main className="container flex flex-col py-2">
-      <CollectionRenderer
-        {...user}
+    <section className="flex flex-col">
+      <ProfileRenderer
+        {...profile}
+        lockedObjekts={lockedObjekts}
         artists={artists}
-        currentUser={currentUser}
       />
-    </main>
+    </section>
   );
 }

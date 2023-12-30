@@ -55,27 +55,13 @@ export default function ListRenderer({
   }
 
   return (
-    <main className="container flex flex-col py-2">
+    <section className="flex flex-col">
       <div className="flex flex-col group" data-show={showFilters}>
-        {/* header */}
-        <div className="flex items-center justify-between gap-2">
-          {/* title */}
-          <div className="flex gap-2 items-center">
-            <h1 className="text-3xl font-cosmo uppercase drop-shadow-lg">
-              {user.nickname}
-            </h1>
-          </div>
+        {/* list info */}
+        <div className="flex flex-wrap items-center justify-between pb-2 gap-2">
+          <h3 className="text-xl font-cosmo drop-shadow-lg">{list.name}</h3>
 
-          {/* options */}
-          <div className="flex gap-2 items-center">
-            {/* profile link */}
-            <Button variant="outline" size="sm" asChild>
-              <Link href={`/@${user.nickname}`} className="flex items-center">
-                <User />
-                <span className="ml-2 hidden sm:block">View Profile</span>
-              </Link>
-            </Button>
-
+          <div className="flex items-center gap-2">
             {/* list-related */}
             {authenticated && (
               <>
@@ -86,20 +72,15 @@ export default function ListRenderer({
 
             {/* mobile: filters */}
             <Toggle
+              variant="secondary"
+              size="sm"
               pressed={showFilters}
               onPressedChange={setShowFilters}
-              className="block sm:hidden"
+              className="sm:hidden"
             >
-              <SlidersHorizontal className="drop-shadow-lg" />
+              <SlidersHorizontal />
             </Toggle>
           </div>
-        </div>
-
-        {/* list info */}
-        <div className="flex items-center justify-between pb-2 sm:pb-0 gap-2">
-          <h3 className="text-xl font-cosmo drop-shadow-lg">
-            LIST: {list.name}
-          </h3>
         </div>
 
         {/* filters */}
@@ -139,6 +120,6 @@ export default function ListRenderer({
           </>
         }
       />
-    </main>
+    </section>
   );
 }
