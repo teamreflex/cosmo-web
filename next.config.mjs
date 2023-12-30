@@ -1,4 +1,4 @@
-import million from 'million/compiler';
+import million from "million/compiler";
 import "./src/env.mjs";
 
 /** @type {import('next').NextConfig} */
@@ -53,6 +53,9 @@ const config = {
   },
 };
 
-export default million.next(
-  config, { auto: { rsc: true } }
-);
+export default million.next(config, {
+  mute: true,
+  auto: {
+    rsc: true,
+  },
+});
