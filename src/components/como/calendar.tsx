@@ -23,17 +23,25 @@ type Props = {
 };
 
 const week = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-const days = getDays();
-const now = new Date();
-const startOffset = new Date(now.getFullYear(), now.getMonth(), 1).getDay() - 1;
-const offset = Array.from({ length: startOffset }, (_, i) => i + 1);
-const remainder = Array.from(
-  { length: startOffset === 6 ? 6 : 5 - startOffset },
-  (_, i) => i + 1
-);
 
 export default function ComoCalendar({ artists, transfers }: Props) {
   const calendar = buildCalendar(transfers);
+
+  // run these in client
+  const days = getDays();
+  const now = new Date();
+  const startOffset =
+    new Date(now.getFullYear(), now.getMonth(), 1).getDay() - 1;
+  const offset = Array.from({ length: startOffset }, (_, i) => i + 1);
+  const remainder = Array.from(
+    { length: startOffset === 6 ? 6 : 5 - startOffset },
+    (_, i) => i + 1
+  );
+
+  // handles february edge case, i think
+  if (days.length + offset.length + remainder.length !== 35) {
+    remainder.push(remainder.length + 1);
+  }
 
   return (
     <div className="flex flex-col rounded-lg bg-accent border border-accent overflow-clip h-fit">
@@ -64,12 +72,13 @@ export default function ComoCalendar({ artists, transfers }: Props) {
               now.getDate() === day && "border border-cosmo"
             )}
           >
+            <p className="absolute top-1 left-2 font-semibold text-sm">{day}</p>
+
             {artists
               .filter((a) => calendar[day]?.[a.contracts.Objekt.toLowerCase()])
               .map((a) => (
                 <Fragment key={a.name}>
-                  <div className="absolute top-1 left-0 flex justify-between px-2 w-full">
-                    <p className="font-semibold text-sm">{day}</p>
+                  <div className="absolute top-1 right-1">
                     {calendar[day]?.[a.contracts.Objekt.toLowerCase()].carried >
                       0 && (
                       <TooltipProvider delayDuration={0}>
