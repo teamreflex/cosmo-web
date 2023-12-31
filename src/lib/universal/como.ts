@@ -8,7 +8,10 @@ export type ObjektWithCollection = {
 
 type Calendar = {
   [day: number]: {
-    [contract: string]: number;
+    [contract: string]: {
+      count: number;
+      carried: number;
+    };
   };
 };
 
@@ -18,19 +21,41 @@ type Calendar = {
 export function buildCalendar(objekts: ObjektWithCollection[]) {
   const calendar: Calendar = {};
 
-  for (const day of getDays()) {
+  // get all possible days in a month
+  const possibleDays = Array.from({ length: 31 }).map((_, i) => i + 1);
+  // get the days in the current month
+  const currentDays = getDays();
+
+  // loop over all possible to catch 30th/31st drops
+  for (const day of possibleDays) {
     const filteredObjekts = objekts.filter((o) => {
       const date = new Date(o.objekt.mintedAt);
       return date.getDate() === day;
     });
 
     for (const objekt of filteredObjekts) {
-      if (!calendar[day]) {
-        calendar[day] = {};
+      // initialize day per for the given artist contract
+      if (!calendar?.[day]?.[objekt.collection.contract]) {
+        calendar[day] = {
+          ...calendar[day],
+          [objekt.collection.contract]: {
+            count: 0,
+            carried: 0,
+          },
+        };
       }
-      calendar[day][objekt.collection.contract] =
-        (calendar[day][objekt.collection.contract] || 0) +
+
+      // increment count
+      calendar[day][objekt.collection.contract].count +=
         objekt.collection.comoAmount;
+
+      // carry over 30th/31st drops
+      if (!currentDays.includes(day)) {
+        calendar[currentDays.at(-1)!][objekt.collection.contract].carried +=
+          objekt.collection.comoAmount;
+        calendar[currentDays.at(-1)!][objekt.collection.contract].count +=
+          objekt.collection.comoAmount;
+      }
     }
   }
 
