@@ -14,6 +14,7 @@ import { HeartCrack, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
+import { ofetch } from "ofetch";
 
 type Props = {
   gravity: CosmoOngoingGravity;
@@ -57,13 +58,9 @@ function VoteDialog({
   const { data, status } = useQuery({
     queryKey: ["poll", poll],
     queryFn: async () => {
-      const response = await fetch(
+      return await ofetch<CosmoPollChoices>(
         `/api/gravity/v3/${artist}/gravity/${gravity}/polls/${poll}`
       );
-      if (!response.ok) {
-        throw new Error("failed to fetch poll");
-      }
-      return (await response.json()) as CosmoPollChoices;
     },
     enabled: open,
     refetchOnWindowFocus: false,

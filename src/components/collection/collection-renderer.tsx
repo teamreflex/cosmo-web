@@ -15,6 +15,8 @@ import { Fragment, memo, useCallback } from "react";
 import { CollectionFilters, FiltersContainer } from "./filters-container";
 import CollectionObjektDisplay from "./collection-objekt-display";
 import { parsePage } from "@/lib/universal/objekts";
+import { ofetch } from "ofetch";
+import ComoButton from "../profile/como-button";
 
 type Props = {
   lockedObjekts: number[];
@@ -38,15 +40,13 @@ export default function CollectionRenderer({
 
   const queryFunction = useCallback(
     async ({ pageParam = 0 }: { pageParam?: number }) => {
-      const query = new URLSearchParams(searchParams);
-      query.set("start_after", pageParam.toString());
-
-      const result = await fetch(
-        `${COSMO_ENDPOINT}/objekt/v1/owned-by/${
-          user.address
-        }?${query.toString()}`
-      );
-      return parsePage<OwnedObjektsResult>(await result.json());
+      const url = `${COSMO_ENDPOINT}/objekt/v1/owned-by/${user.address}`;
+      return await ofetch(url, {
+        query: {
+          ...Object.fromEntries(searchParams.entries()),
+          start_after: pageParam.toString(),
+        },
+      }).then((res) => parsePage<OwnedObjektsResult>(res));
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [searchParams]
@@ -59,7 +59,11 @@ export default function CollectionRenderer({
         <DesktopOptions nickname={user.nickname} address={user.address} />
       </div>
 
-      <FiltersContainer buttons={<MobileOptions nickname={user.nickname} />}>
+      <FiltersContainer
+        buttons={
+          <MobileOptions nickname={user.nickname} address={user.address} />
+        }
+      >
         <CollectionFilters
           showLocked={showLocked}
           setShowLocked={setShowLocked}
@@ -111,6 +115,7 @@ const DesktopOptions = memo(function DesktopOptions({
       <OpenSeaButton address={address} />
       <BackButton url={`/@${nickname}`} tooltip="View Profile" />
       <TradesButton nickname={nickname} />
+      <ComoButton nickname={nickname} />
       <CopyAddressButton address={address} />
     </div>
   );
@@ -118,13 +123,17 @@ const DesktopOptions = memo(function DesktopOptions({
 
 const MobileOptions = memo(function MobileOptions({
   nickname,
+  address,
 }: {
   nickname: string;
+  address: string;
 }) {
   return (
     <Fragment>
-      <TradesButton nickname={nickname} />
       <BackButton url={`/@${nickname}`} tooltip="View Profile" />
+      <TradesButton nickname={nickname} />
+      <ComoButton nickname={nickname} />
+      <CopyAddressButton address={address} />
     </Fragment>
   );
 });

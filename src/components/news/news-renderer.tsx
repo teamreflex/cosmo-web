@@ -7,14 +7,16 @@ import { TokenPayload } from "@/lib/universal/auth";
 import NewsSectionFeed from "./news-section-feed";
 import NewsSectionExclusive from "./news-section-exclusive";
 import NewsSectionBanner from "./news-section-banner";
-import { getNewsForSelectedArtist } from "@/app/data-fetching";
+import { getProfile } from "@/app/data-fetching";
+import { fetchHomeNews } from "@/lib/server/cosmo/news";
 
 type Props = {
   user: TokenPayload;
 };
 
 export default async function NewsRenderer({ user }: Props) {
-  const news = await getNewsForSelectedArtist(user.profileId, user.accessToken);
+  const profile = await getProfile(user.profileId);
+  const news = await fetchHomeNews(user.accessToken, profile.artist);
 
   return (
     <div className="flex flex-col items-center divide-y-2 divide-accent container px-4">

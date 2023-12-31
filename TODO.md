@@ -2,13 +2,9 @@
 
 - User searchbox has blurred text
 - Collections search/dropdown has keyboard controls which makes the searchbox a little jank
-- Get tooltip working on the search icon in navbar
-- Get tooltip working on the objekt list button
 
 ## General
 
-- Move any caching from Vercel KV to `unstable_cache`
-- Refactor `CollectionRenderer` and `ProfileRenderer` into just one component
 - Iron out any remaining jank/issues from performance refactoring
 
 ## Performance
@@ -38,10 +34,6 @@
 - Add a toggle to switch between Cosmo and blockchain as the data source
   - would bring better filtering like jinsoultv
 - Add grid size options
-
-### COMO Calendar
-
-- Handle instances where a drop occurs on the 31st, in a month with <31 days
 
 ### Trades
 

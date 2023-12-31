@@ -5,7 +5,8 @@ import {
   CosmoNewsSectionExclusiveContent,
   CosmoNewsSectionFeedContent,
 } from "@/lib/universal/cosmo/news";
-import { COSMO_ENDPOINT, ValidArtist } from "@/lib/universal/cosmo/common";
+import { ValidArtist } from "@/lib/universal/cosmo/common";
+import { cosmo } from "../http";
 
 type CosmoNewsResult = {
   sections: CosmoNewsSection[];
@@ -13,91 +14,73 @@ type CosmoNewsResult = {
 
 /**
  * Get news on the home page.
+ * Cached for 15 minutes.
  */
 export async function fetchHomeNews(token: string, artist: ValidArtist) {
-  const params = new URLSearchParams({
-    artist,
-  });
-
-  const res = await fetch(`${COSMO_ENDPOINT}/news/v1?${params.toString()}`, {
-    method: "GET",
+  return await cosmo<CosmoNewsResult>(`/news/v1`, {
+    query: { artist },
     headers: {
       Authorization: `Bearer ${token}`,
-      Accept: "application/json",
-      "Content-Type": "application/json",
     },
-  });
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch news");
-  }
-
-  const { sections }: CosmoNewsResult = await res.json();
-  return sections;
+    next: {
+      tags: ["home-news", artist],
+      revalidate: 60 * 15, // 15 minutes
+    },
+  }).then((res) => res.sections);
 }
 
 /**
  * Fetch the "todays atmosphere" feed.
+ * Cached for 15 minutes.
  */
 export async function fetchFeed(
   token: string,
   artist: ValidArtist,
   startAfter: number = 0
 ) {
-  const params = new URLSearchParams({
-    artist,
-    start_after: startAfter.toString(),
-    limit: "10",
-  });
-
-  const res = await fetch(
-    `${COSMO_ENDPOINT}/news/v1/feed?${params.toString()}`,
+  return await cosmo<CosmoNewsFeedResult<CosmoNewsSectionFeedContent>>(
+    `/news/v1/feed`,
     {
-      method: "GET",
+      query: {
+        artist,
+        start_after: startAfter.toString(),
+        limit: "10",
+      },
       headers: {
         Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-        "Content-Type": "application/json",
+      },
+      next: {
+        tags: ["news", "feed", artist],
+        revalidate: 60 * 15, // 15 minutes
       },
     }
   );
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch news feed");
-  }
-
-  return (await res.json()) as CosmoNewsFeedResult<CosmoNewsSectionFeedContent>;
 }
 
 /**
  * Fetch the "cosmo exclusive" feed.
+ * Cached for 15 minutes.
  */
 export async function fetchExclusive(
   token: string,
   artist: ValidArtist,
   startAfter: number = 0
 ) {
-  const params = new URLSearchParams({
-    artist,
-    start_after: startAfter.toString(),
-    limit: "10",
-  });
-
-  const res = await fetch(
-    `${COSMO_ENDPOINT}/news/v1/exclusive?${params.toString()}`,
+  return await cosmo<CosmoNewsFeedResult<CosmoNewsSectionExclusiveContent>>(
+    `/news/v1/exclusive`,
     {
-      method: "GET",
+      query: {
+        artist,
+        start_after: startAfter.toString(),
+        limit: "10",
+      },
       headers: {
         Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-        "Content-Type": "application/json",
+      },
+      next: {
+        tags: ["news", "exclusive", artist],
+        revalidate: 60 * 15, // 15 minutes
       },
     }
   );
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch news exclusive");
-  }
-
-  return (await res.json()) as CosmoNewsFeedResult<CosmoNewsSectionExclusiveContent>;
 }

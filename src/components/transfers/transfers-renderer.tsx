@@ -7,6 +7,7 @@ import { HeartCrack, Loader2 } from "lucide-react";
 import TransferRow from "./transfer-row";
 import { cn } from "@/lib/utils";
 import { InfiniteQueryNext } from "../infinite-query-pending";
+import { ofetch } from "ofetch";
 
 type Props = {
   address: string;
@@ -17,10 +18,11 @@ export default function TransfersRenderer({ address }: Props) {
     useInfiniteQuery({
       queryKey: ["transfers", address],
       queryFn: async ({ pageParam = 0 }: { pageParam?: string | number }) => {
-        const result = await fetch(
-          `/api/transfers/${address}?page=${pageParam}`
-        );
-        return (await result.json()) as TransferResult;
+        return await ofetch<TransferResult>(`/api/transfers/${address}`, {
+          query: {
+            page: pageParam.toString(),
+          },
+        });
       },
       initialPageParam: 0,
       getNextPageParam: (lastPage) => lastPage.nextStartAfter,

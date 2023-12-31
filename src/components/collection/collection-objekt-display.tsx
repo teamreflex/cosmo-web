@@ -58,26 +58,28 @@ export default memo(function CollectionObjektDisplay({
   );
 
   return (
-    <FilteredObjektDisplay
-      artists={artists}
-      filters={filters}
-      setFilters={setFilters}
-      queryFunction={queryFunction}
-      queryKey={["collection", address]}
-      getObjektId={getObjektId}
-      getObjektDisplay={lockFilter}
-    >
-      {({ objekt }) => (
-        <Objekt objekt={objekt}>
-          <Overlay
-            objekt={objekt}
-            authenticated={authenticated}
-            lockedTokens={lockedTokens}
-            toggleLock={toggleLock}
-          />
-        </Objekt>
-      )}
-    </FilteredObjektDisplay>
+    <Fragment>
+      <FilteredObjektDisplay
+        artists={artists}
+        filters={filters}
+        setFilters={setFilters}
+        queryFunction={queryFunction}
+        queryKey={["collection", address]}
+        getObjektId={getObjektId}
+        getObjektDisplay={lockFilter}
+      >
+        {({ objekt }) => (
+          <Objekt objekt={objekt}>
+            <Overlay
+              objekt={objekt}
+              authenticated={authenticated}
+              lockedTokens={lockedTokens}
+              toggleLock={toggleLock}
+            />
+          </Objekt>
+        )}
+      </FilteredObjektDisplay>
+    </Fragment>
   );
 });
 

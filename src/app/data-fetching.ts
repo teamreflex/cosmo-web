@@ -1,8 +1,5 @@
-import { cacheArtists } from "@/lib/server/cache/available-artists";
-import { fetchHomeNews } from "@/lib/server/cosmo/news";
 import { cache } from "react";
 import { getUser } from "./api/common";
-import { remember } from "@/lib/server/cache/common";
 import { fetchProfile, fetchUserByIdentifier } from "@/lib/server/auth";
 import { notFound } from "next/navigation";
 
@@ -25,25 +22,6 @@ export const getProfile = cache(async (profileId: number) => {
   if (!profile) notFound();
   return profile;
 });
-
-/**
- * Fetch cached Cosmo artists.
- */
-export const getArtists = cache(async () => cacheArtists());
-
-/**
- * Fetch the news for the selected artist of the currently logged in user.
- */
-export const getNewsForSelectedArtist = cache(
-  async (profileId: number, token: string) => {
-    const profile = await getProfile(profileId);
-    return await remember(
-      profile!.artist,
-      60 * 15, // 15 minutes
-      () => fetchHomeNews(token, profile!.artist)
-    );
-  }
-);
 
 /**
  * Fetch a user by nickname or address.

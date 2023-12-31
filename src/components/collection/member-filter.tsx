@@ -73,7 +73,7 @@ export const MemberFilterButton = memo(function MemberFilterButton({
   setActive,
 }: MemberFilterButtonProps) {
   return (
-    <TooltipProvider>
+    <TooltipProvider delayDuration={0}>
       <Tooltip>
         <TooltipTrigger asChild>
           <button

@@ -9,7 +9,9 @@ import {
   CosmoUpcomingGravity,
   FabricateVotePayload,
 } from "@/lib/universal/cosmo/gravity";
-import { COSMO_ENDPOINT, ValidArtist } from "@/lib/universal/cosmo/common";
+import { ValidArtist } from "@/lib/universal/cosmo/common";
+import { cosmo } from "../http";
+import { redirect } from "next/navigation";
 
 export type CosmoGravityList = {
   upcoming: CosmoUpcomingGravity[];
@@ -19,51 +21,33 @@ export type CosmoGravityList = {
 
 /**
  * Fetch the list of gravities for the given artist.
+ * Cached for 15 minutes.
  */
-export async function fetchGravities(token: string, artist: ValidArtist) {
-  const res = await fetch(`${COSMO_ENDPOINT}/gravity/v3/${artist}`, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: "application/json",
-      "Content-Type": "application/json",
+export async function fetchGravities(artist: ValidArtist) {
+  return await cosmo<CosmoGravityList>(`/gravity/v3/${artist}`, {
+    next: {
+      tags: ["gravity"],
+      revalidate: 60 * 15, // 15 minutes
     },
   });
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch gravity list");
-  }
-
-  const result: CosmoGravityList = await res.json();
-  return result;
 }
 
 /**
  * Fetch a single gravity.
+ * Cached for 15 minutes.
  */
-export async function fetchGravity(
-  token: string,
-  artist: ValidArtist,
-  gravityId: number
-) {
-  const res = await fetch(
-    `${COSMO_ENDPOINT}/gravity/v3/${artist}/gravity/${gravityId}`,
+export async function fetchGravity(artist: ValidArtist, gravityId: number) {
+  return await cosmo<{ gravity: CosmoGravity }>(
+    `/gravity/v3/${artist}/gravity/${gravityId}`,
     {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-        "Content-Type": "application/json",
+      next: {
+        tags: ["gravity", artist, gravityId.toString()],
+        revalidate: 60 * 15, // 15 minutes
       },
     }
-  );
-
-  if (!res.ok) {
-    return undefined;
-  }
-
-  const { gravity }: { gravity: CosmoGravity } = await res.json();
-  return gravity;
+  )
+    .then((res) => res.gravity)
+    .catch((_) => redirect("/gravity"));
 }
 
 type CosmoMyGravityResultResponse = {
@@ -78,24 +62,15 @@ export async function fetchMyGravityResult(
   artist: ValidArtist,
   gravityId: number
 ) {
-  const res = await fetch(
-    `${COSMO_ENDPOINT}/gravity/v3/${artist}/gravity/${gravityId}/status`,
+  return await cosmo<CosmoMyGravityResultResponse>(
+    `/gravity/v3/${artist}/gravity/${gravityId}/status`,
     {
-      method: "GET",
+      cache: "no-cache",
       headers: {
         Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-        "Content-Type": "application/json",
       },
     }
-  );
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch my gravity result");
-  }
-
-  const { status }: CosmoMyGravityResultResponse = await res.json();
-  return status;
+  ).then((res) => res.status);
 }
 
 type CosmoGravityComoSpentResult = {
@@ -106,24 +81,15 @@ type CosmoGravityComoSpentResult = {
  * Fetch the total COMO
  */
 export async function fetchComoSpent(token: string, artist: ValidArtist) {
-  const res = await fetch(
-    `${COSMO_ENDPOINT}/gravity/v3/${artist}/status/total`,
+  return await cosmo<CosmoGravityComoSpentResult>(
+    `/gravity/v3/${artist}/status/total`,
     {
-      method: "GET",
+      cache: "no-cache",
       headers: {
         Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-        "Content-Type": "application/json",
       },
     }
-  );
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch total como spent");
-  }
-
-  const { totalComoUsed }: CosmoGravityComoSpentResult = await res.json();
-  return totalComoUsed;
+  ).then((res) => res.totalComoUsed);
 }
 
 type CosmoPollDetail = {
@@ -139,26 +105,14 @@ export async function fetchPoll(
   gravityId: number,
   pollId: number
 ) {
-  const res = await fetch(
-    `${COSMO_ENDPOINT}/gravity/v3/${artist}/gravity/${gravityId}/polls/${pollId}`,
+  return await cosmo<CosmoPollDetail>(
+    `/gravity/v3/${artist}/gravity/${gravityId}/polls/${pollId}`,
     {
-      method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-        "Content-Type": "application/json",
       },
     }
-  );
-
-  if (!res.ok) {
-    throw new Error(
-      `Failed to fetch poll "${pollId}" for gravity "${gravityId}"`
-    );
-  }
-
-  const { pollDetail }: CosmoPollDetail = await res.json();
-  return pollDetail;
+  ).then((res) => res.pollDetail);
 }
 
 /**
@@ -169,25 +123,14 @@ export async function fabricateVote(
   artist: ValidArtist,
   payload: FabricateVotePayload
 ) {
-  const res = await fetch(
-    `${COSMO_ENDPOINT}/gravity/v3/${artist}/fabricate-vote`,
+  return await cosmo<CosmoGravityVoteCalldata>(
+    `/gravity/v3/${artist}/fabricate-vote`,
     {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-        "Content-Type": "application/json",
       },
-      body: JSON.stringify(payload),
+      body: payload,
     }
   );
-
-  if (!res.ok) {
-    throw new Error(
-      `Failed to create vote for poll "${payload.pollId}" for gravity "${artist}"`
-    );
-  }
-
-  const { callData }: { callData: CosmoGravityVoteCalldata } = await res.json();
-  return callData;
 }

@@ -3,8 +3,6 @@ import { cache } from "react";
 import { fetchGravity } from "@/lib/server/cosmo/gravity";
 import GravityBodyRenderer from "@/components/gravity/gravity-body-renderer";
 import GravityCoreDetails from "@/components/gravity/gravity-core-details";
-import { redirect } from "next/navigation";
-import { decodeUser } from "../../../data-fetching";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 
 type Params = {
@@ -13,8 +11,7 @@ type Params = {
 };
 
 const fetchData = cache(async ({ artist, gravity }: Params) => {
-  const user = await decodeUser();
-  return await fetchGravity(user!.accessToken, artist, gravity);
+  return await fetchGravity(artist, gravity);
 });
 
 export async function generateMetadata({
@@ -23,17 +20,13 @@ export async function generateMetadata({
   params: Params;
 }): Promise<Metadata> {
   const gravity = await fetchData(params);
-
   return {
-    title: gravity?.title ?? "Gravity",
+    title: gravity.title,
   };
 }
 
 export default async function GravityPage({ params }: { params: Params }) {
   const gravity = await fetchData(params);
-  if (!gravity) {
-    redirect("/gravity");
-  }
 
   return (
     <main className="container flex flex-col py-2">

@@ -8,6 +8,14 @@ import {
 import { CosmoArtist } from "@/lib/universal/cosmo/artists";
 import { cn } from "@/lib/utils";
 import ArtistIcon from "../artist-icon";
+import { Sparkles } from "lucide-react";
+import { Fragment } from "react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../ui/tooltip";
 
 type Props = {
   artists: CosmoArtist[];
@@ -15,17 +23,25 @@ type Props = {
 };
 
 const week = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-const days = getDays();
-const now = new Date();
-const startOffset = new Date(now.getFullYear(), now.getMonth(), 1).getDay() - 1;
-const offset = Array.from({ length: startOffset }, (_, i) => i + 1);
-const remainder = Array.from(
-  { length: startOffset === 6 ? 6 : 5 - startOffset },
-  (_, i) => i + 1
-);
 
 export default function ComoCalendar({ artists, transfers }: Props) {
   const calendar = buildCalendar(transfers);
+
+  // run these in client
+  const days = getDays();
+  const now = new Date();
+  const startOffset =
+    new Date(now.getFullYear(), now.getMonth(), 1).getDay() - 1;
+  const offset = Array.from({ length: startOffset }, (_, i) => i + 1);
+  const remainder = Array.from(
+    { length: startOffset === 6 ? 6 : 5 - startOffset },
+    (_, i) => i + 1
+  );
+
+  // handles february edge case, i think
+  if (days.length + offset.length + remainder.length !== 35) {
+    remainder.push(remainder.length + 1);
+  }
 
   return (
     <div className="flex flex-col rounded-lg bg-accent border border-accent overflow-clip h-fit">
@@ -52,28 +68,52 @@ export default function ComoCalendar({ artists, transfers }: Props) {
           <div
             key={day}
             className={cn(
-              "relative flex items-center justify-center h-24 sm:h-20 bg-background/70 hover:bg-background/50 transition-colors",
+              "relative flex items-center flex-col gap-1 justify-center h-24 sm:h-20 bg-background/70 hover:bg-background/50 transition-colors",
               now.getDate() === day && "border border-cosmo"
             )}
           >
-            <div className="absolute top-1 left-2 font-semibold text-sm">
-              {day}
-            </div>
+            <p className="absolute top-1 left-2 font-semibold text-sm">{day}</p>
 
-            <div className="flex flex-col gap-1">
-              {artists
-                .filter(
-                  (a) => calendar[day]?.[a.contracts.Objekt.toLowerCase()]
-                )
-                .map((a) => (
-                  <div key={a.name} className="flex items-center gap-2">
+            {artists
+              .filter((a) => calendar[day]?.[a.contracts.Objekt.toLowerCase()])
+              .map((a) => (
+                <Fragment key={a.name}>
+                  <div className="absolute top-1 right-1">
+                    {calendar[day]?.[a.contracts.Objekt.toLowerCase()].carried >
+                      0 && (
+                      <TooltipProvider delayDuration={0}>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <Sparkles className="text-yellow-600 h-5 w-5" />
+                          </TooltipTrigger>
+                          <TooltipContent asChild>
+                            <div className="flex flex-col gap-1">
+                              <p className="font-semibold">Carried over</p>
+
+                              <div className="flex justify-center items-center gap-2">
+                                <ArtistIcon artist={a.name} />
+                                <span>
+                                  {calendar[day]?.[
+                                    a.contracts.Objekt.toLowerCase()
+                                  ].carried ?? 0}
+                                </span>
+                              </div>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2">
                     <ArtistIcon artist={a.name} />
                     <span>
-                      {calendar[day]?.[a.contracts.Objekt.toLowerCase()] ?? 0}
+                      {calendar[day]?.[a.contracts.Objekt.toLowerCase()]
+                        .count ?? 0}
                     </span>
                   </div>
-                ))}
-            </div>
+                </Fragment>
+              ))}
           </div>
         ))}
 

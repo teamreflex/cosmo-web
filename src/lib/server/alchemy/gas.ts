@@ -1,6 +1,6 @@
-import { env } from "@/env.mjs";
 import { GasPrice } from "@/lib/universal/alchemy/gas";
 import { formatUnits } from "ethers/lib/utils";
+import { alchemy } from "../http";
 
 type GasPriceResult = {
   jsonrpc: string;
@@ -12,29 +12,21 @@ type GasPriceResult = {
  * Fetch current gas price from the Alchemy API.
  */
 export async function fetchGasPrice(): Promise<GasPrice> {
-  const endpoint = `https://polygon-mainnet.g.alchemy.com/v2`;
-
-  const res = await fetch(endpoint, {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${env.NEXT_PUBLIC_ALCHEMY_KEY}`,
-    },
-    body: JSON.stringify({
+  return await alchemy<GasPriceResult>("/", {
+    body: {
       id: 1,
       jsonrpc: "2.0",
       method: "eth_gasPrice",
-    }),
-  });
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch gas price");
-  }
-
-  const { result }: GasPriceResult = await res.json();
-  const price = Math.round(parseInt(formatUnits(result, "gwei")));
-  const status = price < 400 ? "low" : price < 1000 ? "medium" : "high";
-
-  return { price, status };
+    },
+    next: {
+      tags: ["gas-price"],
+      revalidate: 60, // 60s
+    },
+  })
+    .then((res) => {
+      const price = Math.round(parseInt(formatUnits(res.result, "gwei")));
+      const status = price < 400 ? "low" : price < 1000 ? "medium" : "high";
+      return { price, status } as const;
+    })
+    .catch((_) => ({ price: 0, status: "low" }));
 }

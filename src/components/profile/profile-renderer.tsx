@@ -11,19 +11,24 @@ import {
 } from "../collection/filters-container";
 import CollectionObjektDisplay from "../collection/collection-objekt-display";
 import { parsePage } from "@/lib/universal/objekts";
+import { ofetch } from "ofetch";
+import Portal from "../portal";
+import HelpDialog from "./help-dialog";
+import { TokenPayload } from "@/lib/universal/auth";
+import { SearchUser } from "@/lib/universal/cosmo/auth";
 
 type Props = {
   lockedObjekts: number[];
   artists: CosmoArtistWithMembers[];
-  nickname?: string;
-  address: string;
+  profile: SearchUser;
+  user?: TokenPayload;
 };
 
 export default function ProfileRenderer({
   lockedObjekts,
   artists,
-  nickname,
-  address,
+  profile,
+  user,
 }: Props) {
   const [
     searchParams,
@@ -36,19 +41,23 @@ export default function ProfileRenderer({
 
   const queryFunction = useCallback(
     async ({ pageParam = 0 }: { pageParam?: number }) => {
-      const query = new URLSearchParams(searchParams);
-      query.set("start_after", pageParam.toString());
-
-      const result = await fetch(
-        `${COSMO_ENDPOINT}/objekt/v1/owned-by/${address}?${query.toString()}`
-      );
-      return parsePage<OwnedObjektsResult>(await result.json());
+      const url = `${COSMO_ENDPOINT}/objekt/v1/owned-by/${profile.address}`;
+      return await ofetch(url, {
+        query: {
+          ...Object.fromEntries(searchParams.entries()),
+          start_after: pageParam.toString(),
+        },
+      }).then((res) => parsePage<OwnedObjektsResult>(res));
     },
-    [address, searchParams]
+    [profile.address, searchParams]
   );
 
   return (
     <div className="flex flex-col">
+      <Portal to="#help">
+        <HelpDialog />
+      </Portal>
+
       <FiltersContainer isPortaled>
         <CollectionFilters
           showLocked={showLocked}
@@ -59,8 +68,8 @@ export default function ProfileRenderer({
       </FiltersContainer>
 
       <CollectionObjektDisplay
-        authenticated={nickname === undefined}
-        address={address}
+        authenticated={profile.address === user?.address}
+        address={profile.address}
         lockedTokenIds={lockedObjekts}
         showLocked={showLocked}
         artists={artists}

@@ -1,5 +1,5 @@
 import "server-only";
-import { env } from "@/env.mjs";
+import { alchemy } from "../http";
 
 type TokenBalanceRequest = {
   address: string;
@@ -32,32 +32,23 @@ export async function fetchTokenBalances({
   address,
   contracts,
 }: TokenBalanceRequest): Promise<DecodedTokenBalance[]> {
-  const endpoint = `https://polygon-mainnet.g.alchemy.com/v2`;
-
-  const res = await fetch(endpoint, {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${env.NEXT_PUBLIC_ALCHEMY_KEY}`,
-    },
-    body: JSON.stringify({
+  return await alchemy<AlchemyBalanceResponse>("/", {
+    body: {
       id: 1,
       jsonrpc: "2.0",
       method: "alchemy_getTokenBalances",
       params: [address, contracts],
-    }),
-  });
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch como balances");
-  }
-
-  const { result }: AlchemyBalanceResponse = await res.json();
-  return result.tokenBalances.map((balance) => ({
-    contractAddress: balance.contractAddress,
-    tokenBalance: Math.floor(
-      parseInt(balance.tokenBalance) / 10 ** POLYGON_DECIMALS
-    ),
-  }));
+    },
+    next: {
+      tags: ["como", address],
+      revalidate: 60 * 5, // 5 minutes
+    },
+  }).then((res) =>
+    res.result.tokenBalances.map((balance) => ({
+      contractAddress: balance.contractAddress,
+      tokenBalance: Math.floor(
+        parseInt(balance.tokenBalance) / 10 ** POLYGON_DECIMALS
+      ),
+    }))
+  );
 }

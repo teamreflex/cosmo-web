@@ -6,7 +6,8 @@ import {
   CosmoGridSlotCompletion,
   CosmoOngoingGrid,
 } from "@/lib/universal/cosmo/grid";
-import { COSMO_ENDPOINT, ValidArtist } from "@/lib/universal/cosmo/common";
+import { ValidArtist } from "@/lib/universal/cosmo/common";
+import { cosmo } from "../http";
 
 type GridStatus = {
   totalCompletedGrids: number;
@@ -17,21 +18,13 @@ type GridStatus = {
  * Fetch the total number of grids completed for the artist.
  */
 export async function fetchGridStatus(token: string, artist: ValidArtist) {
-  const res = await fetch(`${COSMO_ENDPOINT}/grid/v3/${artist}/status`, {
-    method: "GET",
+  return await cosmo<GridStatus>(`/grid/v3/${artist}/status`, {
+    // endpoint is specific to the user
+    cache: "no-cache",
     headers: {
       Authorization: `Bearer ${token}`,
-      Accept: "application/json",
-      "Content-Type": "application/json",
     },
   });
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch grid status");
-  }
-
-  const result: GridStatus = await res.json();
-  return result;
 }
 
 type CosmoGridEditionResult = {
@@ -42,21 +35,13 @@ type CosmoGridEditionResult = {
  * Fetch all grid editions for the artist.
  */
 export async function fetchEditions(token: string, artist: ValidArtist) {
-  const res = await fetch(`${COSMO_ENDPOINT}/grid/v3/${artist}/edition`, {
-    method: "GET",
+  return await cosmo<CosmoGridEditionResult>(`/grid/v3/${artist}/edition`, {
+    // caching here would limit how quick people can grid a new release
+    cache: "no-cache",
     headers: {
       Authorization: `Bearer ${token}`,
-      Accept: "application/json",
-      "Content-Type": "application/json",
     },
-  });
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch grid editions");
-  }
-
-  const { editions }: CosmoGridEditionResult = await res.json();
-  return editions;
+  }).then((res) => res.editions);
 }
 
 type CosmoGridResult = {
@@ -71,45 +56,29 @@ export async function fetchEdition(
   artist: ValidArtist,
   editionSlug: string
 ) {
-  const res = await fetch(
-    `${COSMO_ENDPOINT}/grid/v3/${artist}/edition/${editionSlug}`,
+  return await cosmo<CosmoGridResult>(
+    `/grid/v3/${artist}/edition/${editionSlug}`,
     {
-      method: "GET",
+      // caching here would limit how quick people can grid a new release
+      cache: "no-cache",
       headers: {
         Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-        "Content-Type": "application/json",
       },
     }
-  );
-
-  if (!res.ok) {
-    throw new Error(`Failed to fetch grid edition "${editionSlug}"`);
-  }
-
-  const { grids }: CosmoGridResult = await res.json();
-  return grids;
+  ).then((res) => res.grids);
 }
 
 /**
  * Fetch status of a grid.
  */
 export async function fetchArtistGridStatus(token: string, gridSlug: string) {
-  const res = await fetch(`${COSMO_ENDPOINT}/grid/v1/${gridSlug}/status`, {
-    method: "GET",
+  return await cosmo<CosmoOngoingGrid>(`/grid/v1/${gridSlug}/status`, {
+    // endpoint is specific to the user
+    cache: "no-cache",
     headers: {
       Authorization: `Bearer ${token}`,
-      Accept: "application/json",
-      "Content-Type": "application/json",
     },
   });
-
-  if (!res.ok) {
-    throw new Error(`Failed to fetch grid "${gridSlug}"`);
-  }
-
-  const result: CosmoOngoingGrid = await res.json();
-  return result;
 }
 
 /**
@@ -120,42 +89,26 @@ export async function completeGrid(
   gridSlug: string,
   slots: CosmoGridSlotCompletion[]
 ) {
-  const res = await fetch(`${COSMO_ENDPOINT}/grid/v1/${gridSlug}/complete`, {
+  return await cosmo(`/grid/v1/${gridSlug}/complete`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
-      Accept: "application/json",
-      "Content-Type": "application/json",
     },
-    body: JSON.stringify({ slots }),
-  });
-
-  if (!res.ok) {
-    throw new Error(`Failed to complete grid "${gridSlug}"`);
-  }
-
-  return true;
+    body: { slots },
+  }).then(() => true);
 }
 
 /**
  * Claim a grid reward.
  */
 export async function claimGridReward(token: string, gridSlug: string) {
-  const res = await fetch(
-    `${COSMO_ENDPOINT}/grid/v1/${gridSlug}/claim-reward`,
+  return await cosmo<CosmoGridRewardClaimResult>(
+    `/grid/v1/${gridSlug}/claim-reward`,
     {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-        "Content-Type": "application/json",
       },
     }
   );
-
-  if (!res.ok) {
-    throw new Error(`Failed to claim grid reward for "${gridSlug}"`);
-  }
-
-  return (await res.json()) as CosmoGridRewardClaimResult;
 }
