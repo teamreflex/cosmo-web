@@ -7,7 +7,6 @@ import {
   Vote,
   LibraryBig,
   Menu,
-  CalendarRange,
   LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -53,12 +52,6 @@ const links: NavbarLink[] = [
     name: "Collection",
     icon: PackageOpen,
     href: "/collection",
-    requireAuth: true,
-  },
-  {
-    name: "COMO",
-    icon: CalendarRange,
-    href: "/como",
     requireAuth: true,
   },
   {

@@ -1,23 +1,11 @@
 import CurrentMonth from "@/components/como/current-month";
-import { AlertCircle } from "lucide-react";
 
-export default async function ComoLoading() {
+export default async function UserComoLoading() {
   const cells = Array.from({ length: 35 }, (_, i) => i + 1);
 
   return (
-    <main className="container flex flex-col gap-2 py-2">
-      <div className="flex items-center">
-        <div className="flex w-full gap-2 justify-between items-center">
-          <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-cosmo uppercase">COMO</h1>
-            <AlertCircle className="w-4 h-4 drop-shadow-lg" />
-          </div>
-
-          <div className="flex items-center gap-2"></div>
-
-          <CurrentMonth />
-        </div>
-      </div>
+    <main className="flex flex-col gap-2 py-2">
+      <CurrentMonth />
 
       <div className="flex flex-col rounded-lg bg-accent border border-accent overflow-clip h-fit">
         {/* days of the week */}

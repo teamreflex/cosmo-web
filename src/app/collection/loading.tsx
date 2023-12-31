@@ -17,7 +17,7 @@ export default function CollectionLoading() {
 
           {/* DesktopOptions */}
           <div className="hidden sm:flex items-center gap-2">
-            {Array.from({ length: 5 }).map((_, i) => (
+            {Array.from({ length: 6 }).map((_, i) => (
               <Skeleton key={i} className="w-10 h-10 rounded-full" />
             ))}
           </div>
@@ -27,8 +27,9 @@ export default function CollectionLoading() {
         <div className="flex flex-col gap-2 sm:pb-2 pb-1">
           <div className="flex flex-row items-center justify-center gap-2 sm:hidden">
             <Skeleton className="w-20 h-9 rounded-full" />
-            <Skeleton className="w-10 h-10 rounded-full" />
-            <Skeleton className="w-10 h-10 rounded-full" />
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="w-10 h-10 rounded-full" />
+            ))}
           </div>
 
           <div className="sm:flex gap-2 items-center flex-wrap justify-center hidden">

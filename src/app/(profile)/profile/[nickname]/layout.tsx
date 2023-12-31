@@ -10,6 +10,7 @@ import TradesButton from "@/components/profile/trades-button";
 import BackButton from "@/components/profile/back-button";
 import ListsButton from "@/components/profile/lists-button";
 import HelpDialog from "@/components/profile/help-dialog";
+import ComoButton from "@/components/profile/como-button";
 
 type Props = PropsWithChildren<{
   params: {
@@ -63,6 +64,9 @@ export default async function ProfileLayout({ children, params }: Props) {
             <HelpDialog />
             <CopyAddressButton address={profile.address} />
             <TradesButton
+              nickname={profile.isAddress ? profile.address : profile.nickname}
+            />
+            <ComoButton
               nickname={profile.isAddress ? profile.address : profile.nickname}
             />
             <ListsButton

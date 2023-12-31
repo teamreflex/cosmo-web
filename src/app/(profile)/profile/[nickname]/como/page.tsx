@@ -1,22 +1,29 @@
 import { Metadata } from "next";
-import { decodeUser } from "../data-fetching";
 import { fetchSpecialObjekts } from "@/lib/server/como";
 import ComoCalendar from "@/components/como/calendar";
 import CurrentMonth from "@/components/como/current-month";
-import HelpDialog from "@/components/como/help-dialog";
 import ArtistIcon from "@/components/artist-icon";
 import { fetchArtists } from "@/lib/server/cosmo/artists";
+import { getUserByIdentifier } from "@/app/data-fetching";
 
-export const metadata: Metadata = {
-  title: "COMO Calendar",
+type Props = {
+  params: { nickname: string };
 };
 
-export default async function ComoPage() {
-  const user = await decodeUser();
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { nickname } = await getUserByIdentifier(params.nickname);
+
+  return {
+    title: `${nickname}'s COMO`,
+  };
+}
+
+export default async function UserComoPage({ params }: Props) {
+  const profile = await getUserByIdentifier(params.nickname);
 
   const [artists, objekts] = await Promise.all([
     fetchArtists(),
-    fetchSpecialObjekts(user!.address),
+    fetchSpecialObjekts(profile.address),
   ]);
 
   const totals = artists.map((artist) => {
@@ -32,15 +39,12 @@ export default async function ComoPage() {
   });
 
   return (
-    <main className="container flex flex-col gap-2 py-2">
+    <main className="flex flex-col gap-2 py-2">
       <div className="flex items-center">
         <div className="flex w-full gap-2 justify-between items-center">
-          <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-cosmo uppercase">COMO</h1>
-            <HelpDialog />
-          </div>
+          <CurrentMonth />
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
             {totals.map((total) => (
               <div className="flex items-center gap-1" key={total.artist.name}>
                 <ArtistIcon artist={total.artist.name} />
@@ -48,8 +52,6 @@ export default async function ComoPage() {
               </div>
             ))}
           </div>
-
-          <CurrentMonth />
         </div>
       </div>
 

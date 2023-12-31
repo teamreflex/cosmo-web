@@ -51,6 +51,15 @@ export function buildCalendar(objekts: ObjektWithCollection[]) {
 
       // carry over 30th/31st drops
       if (!currentDays.includes(day)) {
+        // initialize final day if it doesn't exist
+        if (!calendar[currentDays.at(-1)!]) {
+          calendar[currentDays.at(-1)!] = {
+            [objekt.collection.contract]: {
+              count: 0,
+              carried: 0,
+            },
+          };
+        }
         calendar[currentDays.at(-1)!][objekt.collection.contract].carried +=
           objekt.collection.comoAmount;
         calendar[currentDays.at(-1)!][objekt.collection.contract].count +=
