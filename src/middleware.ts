@@ -44,6 +44,13 @@ export async function middleware(request: NextRequest) {
   // verifies token validity
   const auth = await getUser();
 
+  // TODO: remove once traffic to /collection dies down
+  if (path === "/collection") {
+    return NextResponse.redirect(
+      new URL(auth.success ? `/@${auth.user.nickname}` : "/", request.url)
+    );
+  }
+
   if (auth.success === false) {
     // delete the token if it exists, as it must be invalid
     if (request.cookies.has("token")) {

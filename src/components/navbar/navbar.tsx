@@ -77,7 +77,7 @@ export default async function Navbar() {
 async function LinksRenderer() {
   const user = await decodeUser();
 
-  return <Links authenticated={user !== undefined} />;
+  return <Links user={user} />;
 }
 
 async function Auth() {

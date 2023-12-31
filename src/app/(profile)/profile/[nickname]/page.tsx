@@ -1,9 +1,6 @@
 import { Metadata } from "next";
-import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import UserCollectionLoading from "./loading";
-import { getUserByIdentifier } from "@/app/data-fetching";
-import { SearchUser } from "@/lib/universal/cosmo/auth";
+import { decodeUser, getUserByIdentifier } from "@/app/data-fetching";
 import { fetchLockedObjekts } from "@/lib/server/collection/locked-objekts";
 import ProfileRenderer from "@/components/profile/profile-renderer";
 import { fetchArtistsWithMembers } from "@/lib/server/cosmo/artists";
@@ -25,18 +22,7 @@ export default async function UserCollectionPage({ params }: Props) {
   const profile = await getUserByIdentifier(params.nickname);
   if (!profile) notFound();
 
-  return (
-    <Suspense fallback={<UserCollectionLoading />}>
-      <UserCollectionRenderer profile={profile} />
-    </Suspense>
-  );
-}
-
-type RendererProps = {
-  profile: SearchUser;
-};
-
-async function UserCollectionRenderer({ profile }: RendererProps) {
+  const user = await decodeUser();
   const [artists, lockedObjekts] = await Promise.all([
     fetchArtistsWithMembers(),
     fetchLockedObjekts(profile.address),
@@ -45,9 +31,10 @@ async function UserCollectionRenderer({ profile }: RendererProps) {
   return (
     <section className="flex flex-col">
       <ProfileRenderer
-        {...profile}
         lockedObjekts={lockedObjekts}
         artists={artists}
+        profile={profile}
+        user={user}
       />
     </section>
   );
