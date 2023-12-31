@@ -12,6 +12,8 @@ import {
 import CollectionObjektDisplay from "../collection/collection-objekt-display";
 import { parsePage } from "@/lib/universal/objekts";
 import { ofetch } from "ofetch";
+import Portal from "../portal";
+import HelpDialog from "./help-dialog";
 
 type Props = {
   lockedObjekts: number[];
@@ -50,6 +52,10 @@ export default function ProfileRenderer({
 
   return (
     <div className="flex flex-col">
+      <Portal to="#help">
+        <HelpDialog />
+      </Portal>
+
       <FiltersContainer isPortaled>
         <CollectionFilters
           showLocked={showLocked}
