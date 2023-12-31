@@ -10,8 +10,6 @@ import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
 import { QueryFunction, QueryKey } from "@tanstack/react-query";
 import { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
 import Objekt from "../objekt/objekt";
-import Portal from "../portal";
-import HelpDialog from "../profile/help-dialog";
 
 const getObjektId = (objekt: OwnedObjekt) => objekt.tokenId;
 
@@ -61,10 +59,6 @@ export default memo(function CollectionObjektDisplay({
 
   return (
     <Fragment>
-      <Portal to="#help">
-        <HelpDialog />
-      </Portal>
-
       <FilteredObjektDisplay
         artists={artists}
         filters={filters}
