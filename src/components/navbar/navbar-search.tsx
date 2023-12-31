@@ -8,6 +8,12 @@ import { useSearchStore } from "@/store";
 import { Route } from "next";
 import { cn } from "@/lib/utils";
 import { SearchUser } from "@/lib/universal/cosmo/auth";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../ui/tooltip";
 
 export default function NavbarSearch() {
   const recent = useSearchStore((state) => state.recentLookups);
@@ -29,18 +35,25 @@ export default function NavbarSearch() {
       onSelect={onSelect}
       recent={recent}
     >
-      <button
-        className="drop-shadow-lg hover:scale-110 transition-all outline-none"
-        aria-label="Search for user"
-        onClick={() => setOpen(true)}
-      >
-        <Search
-          className={cn(
-            "h-8 w-8 shrink-0 transition-all fill-transparent",
-            open && "fill-white/50"
-          )}
-        />
-      </button>
+      <TooltipProvider delayDuration={0}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              className="drop-shadow-lg hover:scale-110 transition-all outline-none"
+              aria-label="Search for user"
+              onClick={() => setOpen(true)}
+            >
+              <Search
+                className={cn(
+                  "h-8 w-8 shrink-0 transition-all fill-transparent",
+                  open && "fill-white/50"
+                )}
+              />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>User Search</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     </UserSearch>
   );
 }

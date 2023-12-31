@@ -2,8 +2,6 @@
 
 - User searchbox has blurred text
 - Collections search/dropdown has keyboard controls which makes the searchbox a little jank
-- Get tooltip working on the search icon in navbar
-- Get tooltip working on the objekt list button
 
 ## General
 
