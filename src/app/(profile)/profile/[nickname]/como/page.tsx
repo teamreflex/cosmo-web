@@ -5,6 +5,8 @@ import CurrentMonth from "@/components/como/current-month";
 import ArtistIcon from "@/components/artist-icon";
 import { fetchArtists } from "@/lib/server/cosmo/artists";
 import { getUserByIdentifier } from "@/app/data-fetching";
+import Portal from "@/components/portal";
+import HelpDialog from "@/components/como/help-dialog";
 
 type Props = {
   params: { nickname: string };
@@ -56,6 +58,10 @@ export default async function UserComoPage({ params }: Props) {
       </div>
 
       <ComoCalendar artists={artists} transfers={objekts} />
+
+      <Portal to="#help">
+        <HelpDialog />
+      </Portal>
     </main>
   );
 }

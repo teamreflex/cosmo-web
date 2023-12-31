@@ -9,7 +9,6 @@ import PolygonButton from "@/components/profile/polygon-button";
 import TradesButton from "@/components/profile/trades-button";
 import BackButton from "@/components/profile/back-button";
 import ListsButton from "@/components/profile/lists-button";
-import HelpDialog from "@/components/profile/help-dialog";
 import ComoButton from "@/components/profile/como-button";
 
 type Props = PropsWithChildren<{
@@ -61,7 +60,6 @@ export default async function ProfileLayout({ children, params }: Props) {
           <div className="flex flex-wrap gap-2 py-1">
             <OpenSeaButton address={profile.address} />
             <PolygonButton address={profile.address} />
-            <HelpDialog />
             <CopyAddressButton address={profile.address} />
             <TradesButton
               nickname={profile.isAddress ? profile.address : profile.nickname}
@@ -76,6 +74,9 @@ export default async function ProfileLayout({ children, params }: Props) {
             />
             <BackButton url={url} tooltip="Return to profile" />
             {/* content gets portaled in */}
+            <span className="h-10 flex items-center">
+              <div id="help" />
+            </span>
             <span className="h-10 flex items-center sm:hidden">
               <div id="filters-button" />
             </span>

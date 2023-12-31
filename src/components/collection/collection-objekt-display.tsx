@@ -10,6 +10,8 @@ import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
 import { QueryFunction, QueryKey } from "@tanstack/react-query";
 import { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
 import Objekt from "../objekt/objekt";
+import Portal from "../portal";
+import HelpDialog from "../profile/help-dialog";
 
 const getObjektId = (objekt: OwnedObjekt) => objekt.tokenId;
 
@@ -58,26 +60,32 @@ export default memo(function CollectionObjektDisplay({
   );
 
   return (
-    <FilteredObjektDisplay
-      artists={artists}
-      filters={filters}
-      setFilters={setFilters}
-      queryFunction={queryFunction}
-      queryKey={["collection", address]}
-      getObjektId={getObjektId}
-      getObjektDisplay={lockFilter}
-    >
-      {({ objekt }) => (
-        <Objekt objekt={objekt}>
-          <Overlay
-            objekt={objekt}
-            authenticated={authenticated}
-            lockedTokens={lockedTokens}
-            toggleLock={toggleLock}
-          />
-        </Objekt>
-      )}
-    </FilteredObjektDisplay>
+    <Fragment>
+      <Portal to="#help">
+        <HelpDialog />
+      </Portal>
+
+      <FilteredObjektDisplay
+        artists={artists}
+        filters={filters}
+        setFilters={setFilters}
+        queryFunction={queryFunction}
+        queryKey={["collection", address]}
+        getObjektId={getObjektId}
+        getObjektDisplay={lockFilter}
+      >
+        {({ objekt }) => (
+          <Objekt objekt={objekt}>
+            <Overlay
+              objekt={objekt}
+              authenticated={authenticated}
+              lockedTokens={lockedTokens}
+              toggleLock={toggleLock}
+            />
+          </Objekt>
+        )}
+      </FilteredObjektDisplay>
+    </Fragment>
   );
 });
 
