@@ -29,12 +29,11 @@ export const config = {
  * - /objekts
  * - /api/objekts
  * - /api/objekt/v1/owned-by/[nickname]
- * - /api/user/v1/search
  *
  * this is separate to the matcher as these paths still need token handling
  */
 const allowUnauthenticated = new RegExp(
-  "^(/@.*|/u/[^/]*|/objekts|/api/objekts|/api/objekt/v1/owned-by/.*|/api/user/v1/search)$"
+  "^(/@.*|/u/[^/]*|/objekts|/api/objekts|/api/objekt/v1/owned-by/.*)$"
 );
 
 export async function middleware(request: NextRequest) {
@@ -48,6 +47,11 @@ export async function middleware(request: NextRequest) {
   if (path === "/collection") {
     return NextResponse.redirect(
       new URL(auth.success ? `/@${auth.user.nickname}` : "/", request.url)
+    );
+  }
+  if (path === "/como") {
+    return NextResponse.redirect(
+      new URL(auth.success ? `/@${auth.user.nickname}/como` : "/", request.url)
     );
   }
 
