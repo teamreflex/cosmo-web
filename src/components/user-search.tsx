@@ -68,6 +68,12 @@ export function UserSearch({
       nickname: address,
       profileImageUrl: "",
       isAddress: true,
+      privacy: {
+        nickname: false,
+        objekts: false,
+        como: false,
+        trades: false,
+      },
     });
   }
 

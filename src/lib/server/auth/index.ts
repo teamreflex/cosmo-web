@@ -105,10 +105,18 @@ export async function fetchUserByIdentifier(
 
   if (profile) {
     return {
-      nickname: profile.nickname,
+      nickname: profile.privacyNickname
+        ? profile.userAddress.substring(0, 6)
+        : profile.nickname,
       address: profile.userAddress,
       profileImageUrl: "",
-      isAddress: false,
+      isAddress: profile.privacyNickname,
+      privacy: {
+        nickname: profile.privacyNickname,
+        objekts: profile.privacyObjekts,
+        como: profile.privacyComo,
+        trades: profile.privacyTrades,
+      },
     };
   }
 
@@ -119,6 +127,12 @@ export async function fetchUserByIdentifier(
       address: identifier,
       profileImageUrl: "",
       isAddress: true,
+      privacy: {
+        nickname: false,
+        objekts: false,
+        como: false,
+        trades: false,
+      },
     };
   }
 
@@ -144,6 +158,12 @@ export async function fetchUserByIdentifier(
     address: user.address,
     profileImageUrl: user.profileImageUrl,
     isAddress: false,
+    privacy: {
+      nickname: false,
+      objekts: false,
+      como: false,
+      trades: false,
+    },
   };
 }
 

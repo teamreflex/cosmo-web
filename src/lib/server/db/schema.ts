@@ -83,6 +83,10 @@ export const profiles = mysqlTable(
     nickname: varchar("nickname", { length: 24 }).notNull(),
     // using a string and casting output so the db doesn't have to know about the enum
     artist: varchar("artist", { length: 24 }).notNull().$type<ValidArtist>(),
+    privacyNickname: boolean("privacy_nickname").notNull().default(false),
+    privacyObjekts: boolean("privacy_objekts").notNull().default(false),
+    privacyComo: boolean("privacy_como").notNull().default(false),
+    privacyTrades: boolean("privacy_trades").notNull().default(false),
   },
   (table) => ({
     addressIdx: index("address_idx").on(table.userAddress),

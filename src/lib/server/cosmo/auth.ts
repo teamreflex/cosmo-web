@@ -118,6 +118,12 @@ export async function search(term: string): Promise<SearchUser[]> {
     res.results.map((user) => ({
       ...user,
       isAddress: false,
+      privacy: {
+        nickname: false,
+        objekts: false,
+        como: false,
+        trades: false,
+      },
     }))
   );
 }
