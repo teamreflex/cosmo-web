@@ -24,3 +24,10 @@ export const typedMemo: <T>(
     nextProps: React.PropsWithChildren<T>
   ) => boolean
 ) => T = memo;
+
+/**
+ * Address compare, because those in PG are forced to lowercase.
+ */
+export function addrcomp(a?: string, b?: string) {
+  return a?.toLowerCase() === b?.toLowerCase();
+}
