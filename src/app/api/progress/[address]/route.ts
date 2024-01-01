@@ -66,18 +66,31 @@ type ProgressBreakdown = {
 };
 
 /**
- * Fetch objekt collection progress for the given user and member.
+ * Fetch objekt collection progress for the given user/member.
  */
 async function fetchProgress(
   address: string,
   member: string,
   selects: Record<string, SQL<number>>
 ): Promise<ProgressBreakdown> {
-  const result = await indexer
-    .select(selects)
+  const subquery = indexer
+    // ensure we only count each collection once
+    .selectDistinctOn([objekts.collectionId])
     .from(objekts)
     .innerJoin(collections, eq(objekts.collectionId, collections.id))
-    .where(and(eq(objekts.owner, address), eq(collections.member, member)));
+    .where(
+      and(
+        // only operate on objekts the address owns
+        eq(objekts.owner, address),
+        // only operate on objekts of the given member
+        eq(collections.member, member)
+      )
+    )
+    .orderBy(objekts.collectionId)
+    .as("subquery");
+
+  // count the results
+  const result = await indexer.select(selects).from(subquery);
   return result[0] ?? {};
 }
 
@@ -107,15 +120,9 @@ function zipResults(
   total: ProgressBreakdown,
   progress: ProgressBreakdown
 ): FinalProgress[] {
-  return matrix.map((m) => {
-    const mTotal = total[m.key] ?? 0;
-    const mProgress = progress[m.key] ?? 0;
-
-    return {
-      ...m,
-      total: mTotal,
-      // query fetches *all* objekts, so clamp to the total count
-      progress: mProgress > mTotal ? mTotal : mProgress,
-    };
-  });
+  return matrix.map((m) => ({
+    ...m,
+    total: total[m.key] ?? 0,
+    progress: progress[m.key] ?? 0,
+  }));
 }
