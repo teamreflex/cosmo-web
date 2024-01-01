@@ -12,7 +12,7 @@ type Props = {
 
 export default function ProgressTable({ address, member }: Props) {
   const { data } = useSuspenseQuery({
-    queryKey: ["progress", member],
+    queryKey: ["progress", address, member],
     queryFn: async () => {
       return await ofetch<FinalProgress[]>(`/api/progress/${address}`, {
         query: { member },
