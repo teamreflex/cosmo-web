@@ -58,34 +58,39 @@ export default function ProgressRenderer({ artists, address }: Props) {
         />
       </Hydrated>
 
-      <QueryErrorResetBoundary>
-        {({ reset }) => (
-          <ErrorBoundary
-            onReset={reset}
-            fallbackRender={({ error, resetErrorBoundary }) => (
-              <div className="flex flex-col gap-2 items-center py-6 text-sm font-semibold">
-                <p className="font-semibold text-sm text-center">
-                  Error fetching progress
-                </p>
+      <Hydrated>
+        <QueryErrorResetBoundary>
+          {({ reset }) => (
+            <ErrorBoundary
+              onReset={reset}
+              fallbackRender={({ resetErrorBoundary }) => (
+                <div className="flex flex-col gap-2 items-center py-6 text-sm font-semibold">
+                  <p className="font-semibold text-sm text-center">
+                    Error fetching progress
+                  </p>
 
-                <Button variant="outline" onClick={resetErrorBoundary}>
-                  <RefreshCcw className="mr-2" /> Try Again
-                </Button>
-              </div>
-            )}
-          >
-            {cosmoFilters.member !== null ? (
-              <Suspense fallback={<Loading />}>
-                <ProgressTable address={address} member={cosmoFilters.member} />
-              </Suspense>
-            ) : (
-              <p className="flex flex-col items-center py-6 text-sm font-semibold">
-                Select a member to view collection progress
-              </p>
-            )}
-          </ErrorBoundary>
-        )}
-      </QueryErrorResetBoundary>
+                  <Button variant="outline" onClick={resetErrorBoundary}>
+                    <RefreshCcw className="mr-2" /> Try Again
+                  </Button>
+                </div>
+              )}
+            >
+              {cosmoFilters.member !== null ? (
+                <Suspense fallback={<Loading />}>
+                  <ProgressTable
+                    address={address}
+                    member={cosmoFilters.member}
+                  />
+                </Suspense>
+              ) : (
+                <p className="flex flex-col items-center py-6 text-sm font-semibold">
+                  Select a member to view collection progress
+                </p>
+              )}
+            </ErrorBoundary>
+          )}
+        </QueryErrorResetBoundary>
+      </Hydrated>
     </div>
   );
 }
