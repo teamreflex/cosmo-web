@@ -15,6 +15,9 @@ import {
   setSelectedArtist,
   updateProfile,
 } from "@/lib/server/auth";
+import { db } from "@/lib/server/db";
+import { profiles } from "@/lib/server/db/schema";
+import { eq } from "drizzle-orm";
 
 /**
  * Exchanges the idToken from Ramper for a JWT from Cosmo
@@ -86,5 +89,27 @@ export const updateSelectedArtist = async (artist: string) =>
       const result = await setSelectedArtist(user.profileId, artist);
       revalidatePath("/");
       return result;
+    }
+  );
+
+/**
+ * Updates privacy settings.
+ */
+export const updatePrivacy = async (form: FormData) =>
+  authenticatedAction(
+    z.object({
+      privacyNickname: z.coerce.boolean(),
+      privacyObjekts: z.coerce.boolean(),
+      privacyTrades: z.coerce.boolean(),
+      privacyComo: z.coerce.boolean(),
+    }),
+    form,
+    async (data, user) => {
+      await db
+        .update(profiles)
+        .set(data)
+        .where(eq(profiles.id, user.profileId));
+
+      revalidatePath("/");
     }
   );

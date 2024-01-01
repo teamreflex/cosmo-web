@@ -100,6 +100,7 @@ export const profileRelations = relations(profiles, ({ many }) => ({
   lists: many(lists),
 }));
 
+export type Profile = InferSelectModel<typeof profiles>;
 export type ObjektList = InferSelectModel<typeof lists>;
 export type CreateObjektList = InferInsertModel<typeof lists>;
 export type UpdateObjektList = InferInsertModel<typeof lists>;

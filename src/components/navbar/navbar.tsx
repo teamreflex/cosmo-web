@@ -91,6 +91,7 @@ async function Auth() {
   return (
     <AuthOptions
       user={user}
+      profile={profile}
       artists={artists}
       selectedArtist={profile?.artist}
       comoBalances={user ? <ComoRenderer address={user.address} /> : null}

@@ -8,15 +8,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { TokenPayload } from "@/lib/universal/auth";
-import { Disc3, LogOut, User } from "lucide-react";
+import { Disc3, LogOut, Shield, User } from "lucide-react";
 import Link from "next/link";
 import { ReactNode, useState } from "react";
 import SwitchArtistDialog from "./switch-artist-dialog";
 import { CosmoArtist } from "@/lib/universal/cosmo/artists";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
+import { Profile } from "@/lib/server/db/schema";
+import PrivacyDialog from "./privacy-dialog";
 
 type UserDropdownProps = {
   user: TokenPayload;
+  profile: Profile;
   artists: CosmoArtist[];
   selectedArtist: ValidArtist | undefined;
   comoBalances: ReactNode;
@@ -25,17 +28,25 @@ type UserDropdownProps = {
 
 export default function UserDropdown({
   user,
+  profile,
   artists,
   selectedArtist,
   comoBalances,
   onSignOut,
 }: UserDropdownProps) {
   const [openArtistSwitch, setOpenArtistSwitch] = useState(false);
+  const [openPrivacy, setOpenPrivacy] = useState(false);
 
   const artist = artists.find((artist) => artist.name === selectedArtist);
 
   return (
     <>
+      <PrivacyDialog
+        open={openPrivacy}
+        onOpenChange={setOpenPrivacy}
+        profile={profile}
+      />
+
       <SwitchArtistDialog
         open={openArtistSwitch}
         onOpenChange={setOpenArtistSwitch}
@@ -63,6 +74,15 @@ export default function UserDropdown({
             <User className="mr-2 h-4 w-4" />
             <Link href="/my">My Page</Link>
           </DropdownMenuItem>
+
+          <DropdownMenuItem
+            onClick={() => setOpenPrivacy(true)}
+            className="cursor-pointer"
+          >
+            <Shield className="mr-2 h-4 w-4" />
+            <span>Privacy</span>
+          </DropdownMenuItem>
+
           <DropdownMenuItem
             onClick={() => setOpenArtistSwitch(true)}
             className="cursor-pointer"
