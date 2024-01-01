@@ -32,9 +32,9 @@ export default function StatsRenderer({ artists, collections }: Props) {
   ] = useCosmoFilters();
 
   const queryFunction = useCallback(async () => {
-    return await ofetch("/api/stats", {
+    return await ofetch<{ count: number }>("/api/stats", {
       query: Object.fromEntries(searchParams.entries()),
-    }).then((res) => parsePage<IndexedCosmoResponse>(res));
+    });
   }, [searchParams]);
 
   const setActiveMember = useCallback((member: string) => {
