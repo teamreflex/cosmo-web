@@ -52,6 +52,7 @@ This project aims to build a web based version of [Modhaus](https://www.mod-haus
 - Polygon gas price display
 - Displaying trade history
   - Includes displaying Cosmo ID if available
+- Privacy options to hide collection/trades/COMO
 
 </details>
 

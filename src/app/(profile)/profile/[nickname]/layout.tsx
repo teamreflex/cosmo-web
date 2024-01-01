@@ -10,6 +10,10 @@ import TradesButton from "@/components/profile/trades-button";
 import BackButton from "@/components/profile/back-button";
 import ListsButton from "@/components/profile/lists-button";
 import ComoButton from "@/components/profile/como-button";
+import { SearchUser } from "@/lib/universal/cosmo/auth";
+import { Shield } from "lucide-react";
+import { validArtists } from "@/lib/universal/cosmo/common";
+import ArtistIcon from "@/components/artist-icon";
 
 type Props = PropsWithChildren<{
   params: {
@@ -44,16 +48,7 @@ export default async function ProfileLayout({ children, params }: Props) {
               {profile.nickname}
             </span>
 
-            <Suspense
-              fallback={
-                <div className="flex items-center gap-2">
-                  <div className="h-[26px] w-16 rounded bg-accent animate-pulse" />
-                  <div className="h-[26px] w-16 rounded bg-accent animate-pulse" />
-                </div>
-              }
-            >
-              <ComoBalances address={profile.address} />
-            </Suspense>
+            <ComoBlock profile={profile} />
           </div>
 
           {/* buttons */}
@@ -89,5 +84,36 @@ export default async function ProfileLayout({ children, params }: Props) {
 
       {children}
     </main>
+  );
+}
+
+function ComoBlock({ profile }: { profile: SearchUser }) {
+  if (profile.privacy.como) {
+    return (
+      <div className="flex items-center gap-2">
+        {validArtists.map((artist) => (
+          <div
+            key={artist}
+            className="flex justify-between items-center rounded cursor-default bg-accent border border-black/30 dark:border-white/30 h-[26px] min-w-16 w-fit px-1 shadow"
+          >
+            <ArtistIcon artist={artist} />
+            <Shield className="w-5 h-5"></Shield>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center gap-2">
+          <div className="h-[26px] w-16 rounded bg-accent animate-pulse" />
+          <div className="h-[26px] w-16 rounded bg-accent animate-pulse" />
+        </div>
+      }
+    >
+      <ComoBalances address={profile.address} />
+    </Suspense>
   );
 }

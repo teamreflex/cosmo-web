@@ -7,6 +7,7 @@ import { fetchArtists } from "@/lib/server/cosmo/artists";
 import { getUserByIdentifier } from "@/app/data-fetching";
 import Portal from "@/components/portal";
 import HelpDialog from "@/components/como/help-dialog";
+import { Shield } from "lucide-react";
 
 type Props = {
   params: { nickname: string };
@@ -22,6 +23,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function UserComoPage({ params }: Props) {
   const profile = await getUserByIdentifier(params.nickname);
+  if (profile.privacy.como) {
+    return <Private nickname={profile.nickname} />;
+  }
 
   const [artists, objekts] = await Promise.all([
     fetchArtists(),
@@ -63,5 +67,14 @@ export default async function UserComoPage({ params }: Props) {
         <HelpDialog />
       </Portal>
     </main>
+  );
+}
+
+function Private({ nickname }: { nickname: string }) {
+  return (
+    <div className="flex flex-col items-center gap-2 py-6">
+      <Shield className="w-12 h-12" />
+      <p className="text-sm font-semibold">{nickname}&apos;s COMO is private</p>
+    </div>
   );
 }

@@ -4,6 +4,7 @@ import { decodeUser, getUserByIdentifier } from "@/app/data-fetching";
 import { fetchLockedObjekts } from "@/lib/server/collection/locked-objekts";
 import ProfileRenderer from "@/components/profile/profile-renderer";
 import { fetchArtistsWithMembers } from "@/lib/server/cosmo/artists";
+import { Shield } from "lucide-react";
 
 type Props = {
   params: { nickname: string };
@@ -22,6 +23,10 @@ export default async function UserCollectionPage({ params }: Props) {
   const profile = await getUserByIdentifier(params.nickname);
   if (!profile) notFound();
 
+  if (profile.privacy.objekts) {
+    return <Private nickname={profile.nickname} />;
+  }
+
   const user = await decodeUser();
   const [artists, lockedObjekts] = await Promise.all([
     fetchArtistsWithMembers(),
@@ -37,5 +42,16 @@ export default async function UserCollectionPage({ params }: Props) {
         user={user}
       />
     </section>
+  );
+}
+
+function Private({ nickname }: { nickname: string }) {
+  return (
+    <div className="flex flex-col items-center gap-2 py-6">
+      <Shield className="w-12 h-12" />
+      <p className="text-sm font-semibold">
+        {nickname}&apos;s collection is private
+      </p>
+    </div>
   );
 }

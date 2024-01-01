@@ -100,25 +100,43 @@ export async function setSelectedArtist(
 export async function fetchUserByIdentifier(
   identifier: string
 ): Promise<SearchUser> {
+  const identifierIsAddress = isAddress(identifier);
+
   // check db for a profile
   const profile = await fetchProfileByIdentifier(identifier);
 
+  const shouldHide = profile?.privacyNickname === true && identifierIsAddress;
+
   if (profile) {
     return {
-      nickname: profile.nickname,
+      nickname: shouldHide
+        ? profile.userAddress.substring(0, 6)
+        : profile.nickname,
       address: profile.userAddress,
       profileImageUrl: "",
-      isAddress: false,
+      isAddress: shouldHide,
+      privacy: {
+        nickname: profile.privacyNickname,
+        objekts: profile.privacyObjekts,
+        como: profile.privacyComo,
+        trades: profile.privacyTrades,
+      },
     };
   }
 
   // if no profile and it's an address, return it
-  if (isAddress(identifier)) {
+  if (identifierIsAddress) {
     return {
       nickname: identifier.substring(0, 6),
       address: identifier,
       profileImageUrl: "",
       isAddress: true,
+      privacy: {
+        nickname: false,
+        objekts: false,
+        como: false,
+        trades: false,
+      },
     };
   }
 
@@ -144,6 +162,12 @@ export async function fetchUserByIdentifier(
     address: user.address,
     profileImageUrl: user.profileImageUrl,
     isAddress: false,
+    privacy: {
+      nickname: false,
+      objekts: false,
+      como: false,
+      trades: false,
+    },
   };
 }
 
