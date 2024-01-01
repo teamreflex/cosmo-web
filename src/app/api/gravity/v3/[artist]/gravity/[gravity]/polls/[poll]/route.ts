@@ -3,6 +3,10 @@ import { fetchPoll } from "@/lib/server/cosmo/gravity";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { NextResponse } from "next/server";
 
+/**
+ * API route that services the /gravity/:artist/:gravity page.
+ * Fetches the poll options for the given gravity.
+ */
 export async function GET(
   _: Request,
   { params }: { params: { artist: ValidArtist; gravity: number; poll: number } }

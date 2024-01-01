@@ -18,6 +18,10 @@ import { NextRequest, NextResponse } from "next/server";
 export const runtime = "nodejs";
 const PER_PAGE = 60;
 
+/**
+ * API route that services the /objekts page and /@:nickname/list/* objekt list pages.
+ * Takes all Cosmo filters as query params.
+ */
 export async function GET(request: NextRequest) {
   const filters = parseParams(request.nextUrl.searchParams);
 
