@@ -3,14 +3,18 @@
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
 import { IndexedCosmoResponse, parsePage } from "@/lib/universal/objekts";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
-import { memo, useCallback } from "react";
+import { useCallback } from "react";
 import {
   FiltersContainer,
-  IndexFilters,
+  StatsFilters,
 } from "../collection/filters-container";
 import { ofetch } from "ofetch";
+import Hydrated from "../hydrated";
+import MemberFilterSkeleton from "../skeleton/member-filter-skeleton";
+import MemberFilter from "../collection/member-filter";
+import { ValidArtists } from "@/lib/universal/cosmo/common";
 
-const queryKey = ["objekt-index"];
+const queryKey = ["objekt-stats"];
 
 type Props = {
   artists: CosmoArtistWithMembers[];
@@ -33,29 +37,42 @@ export default function StatsRenderer({ artists, collections }: Props) {
     }).then((res) => parsePage<IndexedCosmoResponse>(res));
   }, [searchParams]);
 
+  const setActiveMember = useCallback((member: string) => {
+    setCosmoFilters((prev) => ({
+      ...prev,
+      artist: null,
+      member: prev.member === member ? null : member,
+    }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const setActiveArtist = useCallback((artist: string) => {
+    setCosmoFilters((prev) => ({
+      ...prev,
+      member: null,
+      artist: prev.artist === artist ? null : (artist as ValidArtists),
+    }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div className="flex flex-col">
-      <Title />
-
       <FiltersContainer>
-        <IndexFilters
+        <StatsFilters
           cosmoFilters={cosmoFilters}
           updateCosmoFilters={updateCosmoFilters}
           collections={collections}
         />
       </FiltersContainer>
 
-      <p>stats</p>
+      <Hydrated fallback={<MemberFilterSkeleton />}>
+        <MemberFilter
+          artists={artists}
+          active={cosmoFilters.artist ?? cosmoFilters.member}
+          updateArtist={setActiveArtist}
+          updateMember={setActiveMember}
+        />
+      </Hydrated>
     </div>
   );
 }
-
-const Title = memo(function Title() {
-  return (
-    <div className="flex gap-2 items-center w-full pb-1">
-      <h1 className="text-3xl font-cosmo uppercase drop-shadow-lg">
-        Objekt Stats
-      </h1>
-    </div>
-  );
-});

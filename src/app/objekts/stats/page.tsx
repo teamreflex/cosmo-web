@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   title: "Objekt Stats",
 };
 
-export default async function ObjektsStatsPage() {
+export default async function ObjektStatsPage() {
   const [artists, collections] = await Promise.all([
     fetchArtistsWithMembers(),
     fetchUniqueCollections(),
