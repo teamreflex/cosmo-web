@@ -39,15 +39,40 @@ export default function ProgressTable({ address, member }: Props) {
       <h1 className="text-3xl font-bold font-cosmo uppercase">{member}</h1>
 
       {Object.entries(items).map(([season, classes]) => (
-        <div key={season} className="flex flex-col">
-          <h3 className="text-xl font-bold font-cosmo uppercase">{season}</h3>
-          <div className="flex flex-row flex-wrap gap-2">
-            {classes.map((progress) => (
-              <ProgressItem key={progress.key} progress={progress} />
-            ))}
-          </div>
-        </div>
+        <ProgressSeason key={season} season={season} classes={classes} />
       ))}
+    </div>
+  );
+}
+
+function ProgressSeason({
+  season,
+  classes,
+}: {
+  season: string;
+  classes: FinalProgress[];
+}) {
+  const total = classes.reduce((acc, progress) => acc + progress.total, 0);
+  const progress = classes.reduce(
+    (acc, progress) => acc + progress.progress,
+    0
+  );
+  const percentage = Math.round((progress / total) * 100);
+
+  return (
+    <div className="flex flex-col">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xl font-bold font-cosmo uppercase">{season}</h3>
+        <p className="text-sm font-semibold">
+          {progress}/{total} ({percentage}%)
+        </p>
+      </div>
+
+      <div className="flex flex-row flex-wrap gap-2">
+        {classes.map((p) => (
+          <ProgressItem key={p.key} progress={p} />
+        ))}
+      </div>
     </div>
   );
 }
