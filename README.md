@@ -78,8 +78,6 @@ This project aims to build a web based version of [Modhaus](https://www.mod-haus
   - Or swap this out for another MySQL compatible database with minimal code changes
 - Postgres instance
   - The accompanying [blockchain indexer](https://github.com/teamreflex/cosmo-db) has containerized Postgres 15.5. Migration files can also be found there
-- [Vercel KV](https://vercel.com/docs/storage/vercel-kv) instance
-  - Upstash or standalone Redis _may_ work. If it works with the Vercel KV SDK, it'll work here
 - [Alchemy](https://www.alchemy.com/) API key
 
 ## Setup
@@ -101,7 +99,6 @@ $ pnpm dev
 - [Ramper SDK](https://www.ramper.xyz/)
 - [shadcn/ui](https://ui.shadcn.com/docs)
 - [Tailwind](https://tailwindcss.com/)
-- [Vercel KV](https://vercel.com/docs/storage/vercel-kv)
 - [PlanetScale](https://planetscale.com/)
 - [Drizzle ORM](https://orm.drizzle.team/)
 - [Fathom Analytics](https://usefathom.com/)

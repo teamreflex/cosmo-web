@@ -33,7 +33,6 @@
     "@ramper/ethereum": "^0.0.34",
     "@t3-oss/env-nextjs": "^0.7.1",
     "@tanstack/react-query": "^5.17.0",
-    "@vercel/kv": "^1.0.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "cmdk": "^0.2.0",
