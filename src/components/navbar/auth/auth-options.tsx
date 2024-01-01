@@ -9,9 +9,11 @@ import UserDropdown from "./user-dropdown";
 import SignInDialog from "./sign-in-dialog";
 import { CosmoArtist } from "@/lib/universal/cosmo/artists";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
+import { Profile } from "@/lib/server/db/schema";
 
 type Props = {
   user: TokenPayload | undefined;
+  profile: Profile | undefined;
   artists: CosmoArtist[];
   selectedArtist: ValidArtist | undefined;
   comoBalances: ReactNode;
@@ -19,6 +21,7 @@ type Props = {
 
 export default function AuthOptions({
   user,
+  profile,
   artists,
   selectedArtist,
   comoBalances,
@@ -47,13 +50,14 @@ export default function AuthOptions({
 
   return (
     <>
-      {user ? (
+      {user && profile ? (
         <div className="flex gap-2 items-center justify-center">
           <div className="md:flex gap-2 items-center hidden">
             {comoBalances}
           </div>
           <UserDropdown
             user={user}
+            profile={profile}
             artists={artists}
             selectedArtist={selectedArtist}
             comoBalances={comoBalances}

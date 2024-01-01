@@ -1,7 +1,7 @@
 import { db } from "@/lib/server/db";
 import { profiles } from "@/lib/server/db/schema";
 import { fetchTransfers } from "@/lib/server/transfers";
-import { inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -55,5 +55,10 @@ async function fetchKnownAddresses(addresses: string[]) {
   return await db
     .select()
     .from(profiles)
-    .where(inArray(profiles.userAddress, addresses));
+    .where(
+      and(
+        eq(profiles.privacyTrades, false),
+        inArray(profiles.userAddress, addresses)
+      )
+    );
 }

@@ -3,6 +3,12 @@ export type SearchUser = {
   profileImageUrl: string;
   address: string;
   isAddress: boolean;
+  privacy: {
+    nickname: boolean;
+    objekts: boolean;
+    como: boolean;
+    trades: boolean;
+  };
 };
 
 export type LoginResult = {
