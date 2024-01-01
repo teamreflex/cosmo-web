@@ -72,7 +72,7 @@ const schema = z.object({
   timeframe: z.tuple([z.string().datetime(), z.string().datetime()]).optional(),
 });
 
-export function parseParams(params: URLSearchParams): z.infer<typeof schema> {
+function parseParams(params: URLSearchParams): z.infer<typeof schema> {
   const timeframeStart = params.get("timeframeStart");
   const timeframeEnd = params.get("timeframeEnd");
 
