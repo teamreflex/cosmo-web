@@ -80,7 +80,7 @@ export default function ProgressRenderer({ artists, address }: Props) {
               </Suspense>
             ) : (
               <p className="flex flex-col items-center py-6 text-sm font-semibold">
-                Select a member to view your collection progress
+                Select a member to view collection progress
               </p>
             )}
           </ErrorBoundary>
