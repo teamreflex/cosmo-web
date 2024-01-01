@@ -53,6 +53,7 @@ This project aims to build a web based version of [Modhaus](https://www.mod-haus
 - Displaying trade history
   - Includes displaying Cosmo ID if available
 - Privacy options to hide collection/trades/COMO
+- Collection progress counter
 
 </details>
 
