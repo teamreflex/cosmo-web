@@ -110,6 +110,6 @@ export const updatePrivacy = async (form: FormData) =>
         .set(data)
         .where(eq(profiles.id, user.profileId));
 
-      revalidatePath("/");
+      revalidatePath(`@/${user.nickname}`);
     }
   );
