@@ -5,6 +5,7 @@ import { fetchLockedObjekts } from "@/lib/server/collection/locked-objekts";
 import ProfileRenderer from "@/components/profile/profile-renderer";
 import { fetchArtistsWithMembers } from "@/lib/server/cosmo/artists";
 import { Shield } from "lucide-react";
+import { addrcomp } from "@/lib/utils";
 
 type Props = {
   params: { nickname: string };
@@ -20,14 +21,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function UserCollectionPage({ params }: Props) {
+  const user = await decodeUser();
   const profile = await getUserByIdentifier(params.nickname);
   if (!profile) notFound();
 
-  if (profile.privacy.objekts) {
+  if (profile.privacy.objekts && !addrcomp(user?.address, profile.address)) {
     return <Private nickname={profile.nickname} />;
   }
 
-  const user = await decodeUser();
   const [artists, lockedObjekts] = await Promise.all([
     fetchArtistsWithMembers(),
     fetchLockedObjekts(profile.address),

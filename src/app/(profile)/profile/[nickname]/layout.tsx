@@ -10,11 +10,11 @@ import TradesButton from "@/components/profile/trades-button";
 import BackButton from "@/components/profile/back-button";
 import ListsButton from "@/components/profile/lists-button";
 import ComoButton from "@/components/profile/como-button";
-import { SearchUser } from "@/lib/universal/cosmo/auth";
 import { Shield } from "lucide-react";
 import { validArtists } from "@/lib/universal/cosmo/common";
 import ArtistIcon from "@/components/artist-icon";
 import ProgressButton from "@/components/profile/progress-button";
+import { addrcomp } from "@/lib/utils";
 
 type Props = PropsWithChildren<{
   params: {
@@ -27,6 +27,8 @@ export default async function ProfileLayout({ children, params }: Props) {
   const profile = await getUserByIdentifier(params.nickname);
 
   const url = `/@${profile.isAddress ? profile.address : profile.nickname}`;
+  const shouldHide =
+    profile.privacy.como && !addrcomp(currentUser?.address, profile.address);
 
   return (
     <main className="container flex flex-col gap-2 sm:gap-0 py-2">
@@ -49,7 +51,7 @@ export default async function ProfileLayout({ children, params }: Props) {
               {profile.nickname}
             </span>
 
-            <ComoBlock profile={profile} />
+            <ComoBlock hide={shouldHide} address={profile.address} />
           </div>
 
           {/* buttons */}
@@ -91,8 +93,8 @@ export default async function ProfileLayout({ children, params }: Props) {
   );
 }
 
-function ComoBlock({ profile }: { profile: SearchUser }) {
-  if (profile.privacy.como) {
+function ComoBlock({ hide, address }: { hide: boolean; address: string }) {
+  if (hide) {
     return (
       <div className="flex items-center gap-2">
         {validArtists.map((artist) => (
@@ -117,7 +119,7 @@ function ComoBlock({ profile }: { profile: SearchUser }) {
         </div>
       }
     >
-      <ComoBalances address={profile.address} />
+      <ComoBalances address={address} />
     </Suspense>
   );
 }

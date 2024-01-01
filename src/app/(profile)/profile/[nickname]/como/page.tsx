@@ -4,10 +4,11 @@ import ComoCalendar from "@/components/como/calendar";
 import CurrentMonth from "@/components/como/current-month";
 import ArtistIcon from "@/components/artist-icon";
 import { fetchArtists } from "@/lib/server/cosmo/artists";
-import { getUserByIdentifier } from "@/app/data-fetching";
+import { decodeUser, getUserByIdentifier } from "@/app/data-fetching";
 import Portal from "@/components/portal";
 import HelpDialog from "@/components/como/help-dialog";
 import { Shield } from "lucide-react";
+import { addrcomp } from "@/lib/utils";
 
 type Props = {
   params: { nickname: string };
@@ -22,8 +23,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function UserComoPage({ params }: Props) {
+  const user = await decodeUser();
   const profile = await getUserByIdentifier(params.nickname);
-  if (profile.privacy.como) {
+  if (profile.privacy.como && !addrcomp(user?.address, profile.address)) {
     return <Private nickname={profile.nickname} />;
   }
 
