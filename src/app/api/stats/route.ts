@@ -3,16 +3,13 @@ import { collections, objekts } from "@/lib/server/db/indexer/schema";
 import {
   withArtist,
   withClass,
+  withCollections,
   withMember,
   withOnlineType,
   withSeason,
   withTimeframe,
 } from "@/lib/server/objekts/filters";
 import {
-  ValidArtist,
-  ValidClass,
-  ValidOnlineType,
-  ValidSeason,
   validArtists,
   validClasses,
   validOnlineTypes,
@@ -24,6 +21,10 @@ import { z } from "zod";
 
 export const runtime = "nodejs";
 
+/**
+ * API route that services the /objekts/stats page.
+ * Takes most of the usual objekt filters to aggregate a count of those objekts.
+ */
 export async function GET(request: NextRequest) {
   const filters = parseParams(request.nextUrl.searchParams);
 
@@ -34,6 +35,7 @@ export async function GET(request: NextRequest) {
     ...withOnlineType(filters.on_offline),
     ...withMember(filters.member),
     ...withTimeframe(filters.timeframe),
+    ...withCollections(filters.collectionNo),
   ];
 
   if (where.length === 0) {
@@ -46,7 +48,7 @@ export async function GET(request: NextRequest) {
   const start = new Date().getTime();
   const result = await indexer
     .select({
-      count: sql<number>`count(*) OVER() AS count`,
+      count: sql<number>`count(*) AS count`,
     })
     .from(objekts)
     .where(and(...where))
@@ -66,6 +68,7 @@ const schema = z.object({
   on_offline: z.array(z.enum(validOnlineTypes)).default([]),
   member: z.string().optional(),
   artist: z.enum(validArtists).optional(),
+  collectionNo: z.array(z.string()).default([]),
   timeframe: z.tuple([z.string().datetime(), z.string().datetime()]).optional(),
 });
 
@@ -79,6 +82,7 @@ export function parseParams(params: URLSearchParams): z.infer<typeof schema> {
     on_offline: params.getAll("on_offline"),
     member: params.get("member") ?? undefined,
     artist: params.get("artist") ?? undefined,
+    collectionNo: params.getAll("collectionNo"),
     timeframe:
       timeframeStart && timeframeEnd
         ? [timeframeStart, timeframeEnd]
@@ -93,6 +97,7 @@ export function parseParams(params: URLSearchParams): z.infer<typeof schema> {
         on_offline: [],
         member: undefined,
         artist: undefined,
+        collectionNo: [],
         timeframe: undefined,
       };
 }
