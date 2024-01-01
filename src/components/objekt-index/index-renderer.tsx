@@ -21,6 +21,9 @@ import {
 import Objekt from "../objekt/objekt";
 import { ofetch } from "ofetch";
 
+const queryKey = ["objekt-index"];
+const getObjektId = (objekt: IndexedObjekt) => objekt.id;
+
 type Props = {
   artists: CosmoArtistWithMembers[];
   collections: string[];
@@ -74,16 +77,15 @@ export default function IndexRenderer({
         filters={cosmoFilters}
         setFilters={setCosmoFilters}
         queryFunction={queryFunction}
-        queryKey={["objekt-index"]}
-        getObjektId={(objekt: IndexedObjekt) => objekt.id}
-        getObjektDisplay={() => true}
+        queryKey={queryKey}
+        getObjektId={getObjektId}
       >
         {({ objekt }) => (
           <Objekt objekt={objekt}>
             <Overlay
               objekt={objekt}
               authenticated={authenticated}
-              objektLists={objektLists ?? []}
+              objektLists={objektLists}
             />
           </Objekt>
         )}
@@ -137,13 +139,13 @@ const Options = memo(function Options({
 type OverlayProps = {
   objekt: IndexedObjekt;
   authenticated: boolean;
-  objektLists: ObjektList[];
+  objektLists?: ObjektList[];
 };
 
 const Overlay = memo(function Overlay({
   objekt,
   authenticated,
-  objektLists,
+  objektLists = [],
 }: OverlayProps) {
   return (
     <Fragment>

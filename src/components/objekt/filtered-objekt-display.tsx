@@ -38,7 +38,7 @@ type Props<TObjektType extends ValidObjekt> = {
     number | undefined
   >;
   getObjektId: (objekt: TObjektType) => string | number;
-  getObjektDisplay: (objekt: TObjektType) => boolean;
+  getObjektDisplay?: (objekt: TObjektType) => boolean;
 };
 
 export default typedMemo(function FilteredObjektDisplay<
@@ -51,7 +51,7 @@ export default typedMemo(function FilteredObjektDisplay<
   queryKey,
   queryFunction,
   getObjektId,
-  getObjektDisplay,
+  getObjektDisplay = () => true,
 }: Props<TObjektType>) {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
     useInfiniteQuery({
