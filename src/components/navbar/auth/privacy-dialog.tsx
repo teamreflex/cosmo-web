@@ -33,7 +33,7 @@ export default function PrivacyDialog({
           <div className="grid grid-cols-4 grid-rows-3">
             <h2 className="col-span-3 font-semibold">Cosmo ID</h2>
             <p className="col-span-3 col-start-1 row-start-2 row-span-3 text-sm opacity-80">
-              Hides your Cosmo ID when viewing your profile.
+              Hides your Cosmo ID when viewing your profile via address.
             </p>
             <div className="row-span-3 col-start-4 row-start-1 flex items-center justify-end">
               <Switch
