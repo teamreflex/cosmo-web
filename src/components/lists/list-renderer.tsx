@@ -22,12 +22,15 @@ import {
 import Objekt from "../objekt/objekt";
 import { ofetch } from "ofetch";
 
+const getObjektId = (objekt: IndexedObjekt) => objekt.id;
+
 type Props = {
   list: ObjektList;
   artists: CosmoArtistWithMembers[];
   authenticated: boolean;
   user: SearchUser;
 };
+
 export default function ListRenderer({
   list,
   artists,
@@ -75,8 +78,7 @@ export default function ListRenderer({
         setFilters={setCosmoFilters}
         queryFunction={queryFunction}
         queryKey={["objekt-list", list.slug]}
-        getObjektId={(objekt: IndexedObjekt) => objekt.id}
-        getObjektDisplay={() => true}
+        getObjektId={getObjektId}
       >
         {({ objekt }) => (
           <Objekt objekt={objekt}>

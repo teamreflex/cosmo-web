@@ -136,3 +136,42 @@ export const IndexFilters = memo(function IndexFilters({
     </Fragment>
   );
 });
+
+/**
+ * used on:
+ * - /objekts/stats
+ */
+type StatsFiltersProps = {
+  cosmoFilters: CosmoFilters;
+  updateCosmoFilters: UpdateCosmoFilters;
+  collections: string[];
+};
+export const StatsFilters = memo(function StatsFilters({
+  cosmoFilters,
+  updateCosmoFilters,
+  collections,
+}: StatsFiltersProps) {
+  return (
+    <Fragment>
+      <SeasonFilter
+        filters={cosmoFilters.season}
+        setFilters={updateCosmoFilters}
+      />
+      {collections.length > 0 && (
+        <CollectionFilter
+          filters={cosmoFilters.collectionNo}
+          setFilters={updateCosmoFilters}
+          collections={collections}
+        />
+      )}
+      <OnlineFilter
+        filters={cosmoFilters.on_offline}
+        setFilters={updateCosmoFilters}
+      />
+      <ClassFilter
+        filters={cosmoFilters.class}
+        setFilters={updateCosmoFilters}
+      />
+    </Fragment>
+  );
+});

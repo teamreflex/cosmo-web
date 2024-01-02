@@ -23,6 +23,10 @@ const config = {
     return {
       beforeFiles: [
         {
+          source: "/@:nickname/progress",
+          destination: "/profile/:nickname/progress",
+        },
+        {
           source: "/@:nickname/como",
           destination: "/profile/:nickname/como",
         },

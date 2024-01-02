@@ -10,10 +10,10 @@ import TradesButton from "@/components/profile/trades-button";
 import BackButton from "@/components/profile/back-button";
 import ListsButton from "@/components/profile/lists-button";
 import ComoButton from "@/components/profile/como-button";
-import { SearchUser } from "@/lib/universal/cosmo/auth";
 import { Shield } from "lucide-react";
 import { validArtists } from "@/lib/universal/cosmo/common";
 import ArtistIcon from "@/components/artist-icon";
+import ProgressButton from "@/components/profile/progress-button";
 import { addrcomp } from "@/lib/utils";
 
 type Props = PropsWithChildren<{
@@ -65,12 +65,15 @@ export default async function ProfileLayout({ children, params }: Props) {
             <ComoButton
               nickname={profile.isAddress ? profile.address : profile.nickname}
             />
+            <ProgressButton
+              nickname={profile.isAddress ? profile.address : profile.nickname}
+            />
             <ListsButton
               nickname={profile.isAddress ? profile.address : profile.nickname}
               address={profile.address}
               allowCreate={currentUser?.address === profile.address}
             />
-            <BackButton url={url} tooltip="Return to profile" />
+            <BackButton url={url} tooltip="Return to Profile" />
             {/* content gets portaled in */}
             <span className="h-10 flex items-center">
               <div id="help" />

@@ -5,9 +5,9 @@ import {
   ValidSeason,
   ValidSort,
 } from "@/lib/universal/cosmo/common";
-import { asc, desc, eq, inArray } from "drizzle-orm";
+import { asc, between, desc, eq, inArray } from "drizzle-orm";
 import { PgSelect } from "drizzle-orm/pg-core";
-import { collections } from "../db/indexer/schema";
+import { collections, objekts } from "../db/indexer/schema";
 
 export function withSort<T extends PgSelect>(qb: T, sort: ValidSort) {
   switch (sort) {
@@ -81,4 +81,9 @@ export function withObjektListEntries(entries: string[]) {
   }
 
   return [inArray(collections.id, entries)];
+}
+
+export function withTimeframe(timeframe?: [string, string]) {
+  if (!timeframe) return [];
+  return [between(objekts.mintedAt, ...timeframe)];
 }

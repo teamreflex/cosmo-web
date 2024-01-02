@@ -6,6 +6,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 
+/**
+ * API route that services the /@:nickname/trades page.
+ * Fetches all of a user's transfers and maps any known Cosmo IDs onto them.
+ */
 export async function GET(
   request: NextRequest,
   { params }: { params: { address: string } }
@@ -43,12 +47,18 @@ export async function GET(
   });
 }
 
+/**
+ * Parse URL params.
+ */
 function parseParams(params: URLSearchParams) {
   return {
     page: parseInt(params.get("page") ?? "1"),
   };
 }
 
+/**
+ * Fetch all known addresses from the database.
+ */
 async function fetchKnownAddresses(addresses: string[]) {
   if (addresses.length === 0) return [];
 

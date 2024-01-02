@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { memo } from "react";
 
 type Props = {
+  showArtists?: boolean;
   artists: CosmoArtistWithMembers[];
   active: string | null;
   updateArtist: (artist: string) => void;
@@ -17,6 +18,7 @@ type Props = {
 };
 
 export default memo(function MemberFilter({
+  showArtists = true,
   artists,
   active,
   updateArtist,
@@ -32,13 +34,15 @@ export default memo(function MemberFilter({
           key={artist.name}
           className="flex flex-row z-10 gap-2 p-1 sm:justify-center justify-items-start overflow-x-scroll no-scrollbar"
         >
-          <MemberFilterButton
-            displayName={artist.title}
-            name={artist.name}
-            image={artist.logoImageUrl}
-            isActive={active === artist.name}
-            setActive={updateArtist}
-          />
+          {showArtists && (
+            <MemberFilterButton
+              displayName={artist.title}
+              name={artist.name}
+              image={artist.logoImageUrl}
+              isActive={active === artist.name}
+              setActive={updateArtist}
+            />
+          )}
 
           {artist.members
             .sort((a, b) => a.order - b.order)
