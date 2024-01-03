@@ -138,8 +138,8 @@ type RefreshTokenResult = {
 export async function refresh(
   refreshToken: string
 ): Promise<RefreshTokenResult> {
-  return await cosmo<RefreshTokenResult>("/auth/v1/refresh", {
+  return await cosmo<{ credentials: RefreshTokenResult }>("/auth/v1/refresh", {
     method: "POST",
     body: { refreshToken },
-  });
+  }).then((res) => res.credentials);
 }
