@@ -5,6 +5,7 @@ import {
   ValidOnlineType,
   ValidSeason,
   ValidSort,
+  validSorts,
 } from "./cosmo/common";
 export type {
   ObjektList,
@@ -22,6 +23,10 @@ export type IndexedCosmoResponse = {
 };
 export type ValidObjekt = OwnedObjekt | IndexedObjekt;
 
+// available sort options when using the chain as a data source
+export const chainSorts = [...validSorts, "serialAsc", "serialDesc"] as const;
+
+// TODO: replace with zod parsing
 export type ParsedObjektParams = {
   list?: string | null;
   address?: string | null;

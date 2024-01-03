@@ -65,7 +65,7 @@ export function withMember(member: string | null | undefined) {
   return member ? [eq(collections.member, member)] : [];
 }
 
-export function withArtist(artist: ValidArtist | undefined) {
+export function withArtist(artist: ValidArtist | undefined | null) {
   return artist ? [eq(collections.artist, artist)] : [];
 }
 
