@@ -6,7 +6,6 @@ import {
   validSeasons,
   validSorts,
 } from "./cosmo/common";
-import { chainSorts } from "./objekts";
 
 /**
  * Cosmo expects comma-separated values for array filters like:
@@ -33,6 +32,8 @@ export const cosmoSchema = z.object({
   on_offline: castToArray(z.enum(validOnlineTypes)).default([]),
   member: z.string().optional().nullable(),
   artist: z.enum(validArtists).optional().nullable(),
+  transferable: z.coerce.boolean().optional().nullable(),
+  gridable: z.coerce.boolean().optional().nullable(),
 });
 export type CosmoParams = z.infer<typeof cosmoSchema>;
 
@@ -49,6 +50,8 @@ export function parseCosmo(params: URLSearchParams) {
       on_offline: params.getAll("on_offline"),
       member: params.get("member"),
       artist: params.get("artist"),
+      transferable: params.get("transferable"),
+      gridable: params.get("gridable"),
     },
     {
       sort: "newest",
@@ -65,10 +68,12 @@ export function parseCosmo(params: URLSearchParams) {
  * Objekt index schema.
  * Extends Cosmo schema as it has the same filters.
  */
-export const objektIndex = cosmoSchema.extend({
-  page: z.coerce.number().optional().default(0),
-  collectionNo: z.array(z.string()).optional().default([]),
-});
+export const objektIndex = cosmoSchema
+  .omit({ transferable: true, gridable: true })
+  .extend({
+    page: z.coerce.number().optional().default(0),
+    collectionNo: z.array(z.string()).optional().default([]),
+  });
 export type ObjektIndexParams = z.infer<typeof objektIndex>;
 
 /**
@@ -103,7 +108,7 @@ export function parseObjektIndex(params: URLSearchParams) {
 /**
  * Objekt list schema.
  * Extends Cosmo & objekt index schema as it has the same filters.
- * Does not extend but this is in place for future compatibility.
+ * Does not add anything but this is in place for future compatibility.
  */
 export const objektList = objektIndex.extend({});
 export type ObjektListParams = z.infer<typeof objektList>;
@@ -139,11 +144,9 @@ export function parseObjektList(params: URLSearchParams) {
 
 /**
  * User collection schema.
- * Extends objekt index schema and overrides the `sort` filter to add serial sorting.
+ * Extends Cosmo & objekt index schemas as it has the same filters.
  */
-export const userCollection = objektIndex.extend({
-  sort: z.enum(chainSorts).optional().default("newest"),
-});
+export const userCollection = cosmoSchema.merge(objektIndex);
 export type UserCollectionParams = z.infer<typeof userCollection>;
 
 /**
@@ -160,6 +163,8 @@ export function parseUserCollection(params: URLSearchParams) {
       on_offline: params.getAll("on_offline"),
       member: params.get("member"),
       artist: params.get("artist"),
+      transferable: params.get("transferable"),
+      gridable: params.get("gridable"),
       collectionNo: params.getAll("collectionNo"),
     },
     {

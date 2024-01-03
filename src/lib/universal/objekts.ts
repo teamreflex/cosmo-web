@@ -1,5 +1,4 @@
 import type { Collection } from "@/lib/server/db/indexer/schema";
-import { validSorts } from "./cosmo/common";
 export type {
   ObjektList,
   CreateObjektList,
@@ -16,9 +15,9 @@ export type IndexedCosmoResponse = {
 };
 export type ValidObjekt = OwnedObjekt | IndexedObjekt;
 
-// available sort options when using the chain as a data source
-export const chainSorts = [...validSorts, "serialAsc", "serialDesc"] as const;
-
+/**
+ * Parse a Cosmo-compatible objekts response.
+ */
 export function parsePage<T>(data: any) {
   return {
     ...data,

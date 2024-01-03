@@ -12,6 +12,7 @@ import { collections, objekts } from "../db/indexer/schema";
 export function withSort<T extends PgSelect>(qb: T, sort: ValidSort) {
   switch (sort) {
     case "newest":
+    default:
       return qb.orderBy(
         desc(collections.createdAt),
         asc(collections.collectionId)

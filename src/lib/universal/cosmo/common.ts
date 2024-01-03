@@ -14,12 +14,17 @@ export enum ValidSorts {
   OLDEST = "oldest",
   NO_ASCENDING = "noAscending",
   NO_DESCENDING = "noDescending",
+  // should not be sent to cosmo
+  SERIAL_ASCENDING = "serialAsc",
+  SERIAL_DESCENDING = "serialDesc",
 }
 export const validSorts = [
   "newest",
   "oldest",
   "noAscending",
   "noDescending",
+  "serialAsc",
+  "serialDesc",
 ] as const;
 export type ValidSort = `${ValidSorts}`;
 

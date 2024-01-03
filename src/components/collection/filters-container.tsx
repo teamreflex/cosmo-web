@@ -61,12 +61,14 @@ type CollectionFiltersProps = {
   setShowLocked: (showLocked: boolean | null) => void;
   cosmoFilters: CosmoFilters;
   updateCosmoFilters: UpdateCosmoFilters;
+  allowSerials?: boolean;
 };
 export const CollectionFilters = memo(function CollectionFilters({
   showLocked,
   setShowLocked,
   cosmoFilters,
   updateCosmoFilters,
+  allowSerials = false,
 }: CollectionFiltersProps) {
   return (
     <Fragment>
@@ -91,7 +93,11 @@ export const CollectionFilters = memo(function CollectionFilters({
         filters={cosmoFilters.class}
         setFilters={updateCosmoFilters}
       />
-      <SortFilter filters={cosmoFilters.sort} setFilters={updateCosmoFilters} />
+      <SortFilter
+        filters={cosmoFilters.sort}
+        setFilters={updateCosmoFilters}
+        serials={allowSerials}
+      />
     </Fragment>
   );
 });
@@ -132,7 +138,11 @@ export const IndexFilters = memo(function IndexFilters({
         filters={cosmoFilters.class}
         setFilters={updateCosmoFilters}
       />
-      <SortFilter filters={cosmoFilters.sort} setFilters={updateCosmoFilters} />
+      <SortFilter
+        filters={cosmoFilters.sort}
+        setFilters={updateCosmoFilters}
+        serials={false}
+      />
     </Fragment>
   );
 });
