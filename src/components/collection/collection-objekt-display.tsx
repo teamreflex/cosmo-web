@@ -68,12 +68,12 @@ export default memo(function CollectionObjektDisplay({
         getObjektId={getObjektId}
         getObjektDisplay={lockFilter}
       >
-        {({ objekt }) => (
-          <Objekt objekt={objekt}>
+        {({ objekt, id }) => (
+          <Objekt objekt={objekt} id={id}>
             <Overlay
               objekt={objekt}
               authenticated={authenticated}
-              lockedTokens={lockedTokens}
+              isLocked={lockedTokens.includes(parseInt(id))}
               toggleLock={toggleLock}
             />
           </Objekt>
@@ -86,18 +86,16 @@ export default memo(function CollectionObjektDisplay({
 type OverlayProps = {
   objekt: OwnedObjekt;
   authenticated: boolean;
-  lockedTokens: number[];
+  isLocked: boolean;
   toggleLock: (tokenId: number) => void;
 };
 
 const Overlay = memo(function Overlay({
   objekt,
   authenticated,
-  lockedTokens,
+  isLocked,
   toggleLock,
 }: OverlayProps) {
-  const isLocked = lockedTokens.includes(parseInt(objekt.tokenId));
-
   return (
     <Fragment>
       <ObjektSidebar

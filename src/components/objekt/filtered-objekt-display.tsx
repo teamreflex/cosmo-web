@@ -37,7 +37,7 @@ type Props<TObjektType extends ValidObjekt> = {
     QueryKey,
     number | undefined
   >;
-  getObjektId: (objekt: TObjektType) => string | number;
+  getObjektId: (objekt: TObjektType) => string;
   getObjektDisplay?: (objekt: TObjektType) => boolean;
 };
 
@@ -113,7 +113,7 @@ export default typedMemo(function FilteredObjektDisplay<
             <Error />
           ) : (
             objekts.map((objekt) =>
-              cloneElement(children({ objekt }), {
+              cloneElement(children({ objekt, id: getObjektId(objekt) }), {
                 key: getObjektId(objekt),
               })
             )

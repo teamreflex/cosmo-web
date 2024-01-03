@@ -12,6 +12,7 @@ import {
 import ReactCardFlip from "react-card-flip";
 
 export type ObjektProps<TObjektType extends ValidObjekt> = PropsWithChildren<{
+  id: string;
   objekt: TObjektType;
 }>;
 

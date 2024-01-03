@@ -80,8 +80,8 @@ export default function ListRenderer({
         queryKey={["objekt-list", list.slug]}
         getObjektId={getObjektId}
       >
-        {({ objekt }) => (
-          <Objekt objekt={objekt}>
+        {({ objekt, id }) => (
+          <Objekt objekt={objekt} id={id}>
             <Overlay
               objekt={objekt}
               authenticated={authenticated}

@@ -80,8 +80,8 @@ export default function IndexRenderer({
         queryKey={queryKey}
         getObjektId={getObjektId}
       >
-        {({ objekt }) => (
-          <Objekt objekt={objekt}>
+        {({ objekt, id }) => (
+          <Objekt objekt={objekt} id={id}>
             <Overlay
               objekt={objekt}
               authenticated={authenticated}
