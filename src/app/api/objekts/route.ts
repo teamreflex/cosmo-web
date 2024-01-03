@@ -5,13 +5,11 @@ import {
   withClass,
   withCollections,
   withMember,
-  withObjektListEntries,
   withOnlineType,
   withSeason,
   withSort,
 } from "@/lib/server/objekts/filters";
-import { fetchObjektListWithEntries } from "@/lib/server/objekts/lists";
-import { parseParams } from "@/lib/universal/objekts";
+import { parseObjektIndex } from "@/lib/universal/parsers";
 import { and, sql } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -19,28 +17,12 @@ export const runtime = "nodejs";
 const PER_PAGE = 60;
 
 /**
- * API route that services the /objekts page and /@:nickname/list/* objekt list pages.
+ * API route that services the /objekts page.
  * Takes all Cosmo filters as query params.
  */
 export async function GET(request: NextRequest) {
-  const filters = parseParams(request.nextUrl.searchParams);
-
-  const objektList = filters.list
-    ? await fetchObjektListWithEntries(filters.address, filters.list)
-    : undefined;
-  const entries: string[] = [];
-
-  if (filters.list) {
-    if (!objektList || (objektList && objektList.entries.length === 0)) {
-      return NextResponse.json({
-        total: 0,
-        hasNext: false,
-        objekts: [],
-      });
-    }
-
-    entries.push(...objektList.entries.map((e) => e.collectionId));
-  }
+  // parse query params
+  const filters = parseObjektIndex(request.nextUrl.searchParams);
 
   let query = indexer
     .select({
@@ -51,7 +33,6 @@ export async function GET(request: NextRequest) {
     .where(
       and(
         ...[
-          ...withObjektListEntries(entries),
           ...withArtist(filters.artist),
           ...withClass(filters.class),
           ...withSeason(filters.season),
