@@ -1,20 +1,9 @@
-## Bugs
+## Issues
 
 - User searchbox has blurred text
 - Collections search/dropdown has keyboard controls which makes the searchbox a little jank
-
-## General
-
-- Iron out any remaining jank/issues from performance refactoring
-
-## Performance
-
-- Prevent all Objekt components from rerendering upon a single objekt being locked
-- Virtualize the list of objekts
-
-### Grid
-
-- When fetching objekts to slot, filter out anything that is locked
+- `<FilteredObjektDisplay>` should be virtualized
+- Grid slot selector doesn't have locked tokens filter
 
 ### Gravity
 
@@ -26,6 +15,7 @@
 
 - Add serial/ownership lookup/details
   - intercepting route usecase?
+  - come up with a good UI beforehand
 
 ### Collection
 
@@ -39,9 +29,14 @@
     - will require a rehydrate of the indexer
     - will require migration of existing objekt list entries
 
-### Trades
+### Trades / PolygonScan replacement
 
 - Add filtering
+- Add transfer hash
+
+### Stats / OpenSea replacement
+
+- Come up with a UI design first
 
 ### Profiles
 

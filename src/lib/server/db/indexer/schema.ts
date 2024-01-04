@@ -65,7 +65,10 @@ export const objekts = pgTable(
 
 export const objektRelations = relations(objekts, ({ many, one }) => ({
   transfers: many(transfers),
-  collection: one(collections),
+  collection: one(collections, {
+    fields: [objekts.collectionId],
+    references: [collections.id],
+  }),
 }));
 
 export const transfers = pgTable(
@@ -76,10 +79,10 @@ export const transfers = pgTable(
     to: varchar("to", { length: 42 }).notNull(),
     timestamp: timestamp("timestamp", { mode: "string" }).notNull(),
     tokenId: integer("token_id").notNull(),
-    objektId: integer("objekt_id")
+    objektId: varchar("objekt_id", { length: 12 })
       .notNull()
       .references(() => objekts.id),
-    collectionId: integer("collection_id")
+    collectionId: uuid("collection_id")
       .notNull()
       .references(() => collections.id),
   },
