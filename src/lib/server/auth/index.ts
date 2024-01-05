@@ -1,4 +1,4 @@
-import { InferInsertModel, eq, or } from "drizzle-orm";
+import { InferInsertModel, desc, eq, or } from "drizzle-orm";
 import { db } from "../db";
 import { profiles } from "../db/schema";
 import { FetchProfile } from "@/lib/universal/auth";
@@ -208,7 +208,10 @@ export async function fetchProfileByIdentifier(identifier: string) {
         eq(profiles.nickname, identifier),
         eq(profiles.userAddress, identifier)
       )
-    );
+    )
+    // fetch the latest profile instead of the first logged
+    .orderBy(desc(profiles.id))
+    .limit(1);
 
   if (rows.length === 0) {
     return undefined;
