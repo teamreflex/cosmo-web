@@ -4,8 +4,10 @@ import { decodeUser, getUserByIdentifier } from "@/app/data-fetching";
 import { fetchLockedObjekts } from "@/lib/server/collection/locked-objekts";
 import ProfileRenderer from "@/components/profile/profile-renderer";
 import { fetchArtistsWithMembers } from "@/lib/server/cosmo/artists";
-import { Shield } from "lucide-react";
+import { Loader2, Shield } from "lucide-react";
 import { addrcomp } from "@/lib/utils";
+import { Suspense } from "react";
+import PreviousIds from "@/components/profile/previous-ids";
 
 type Props = {
   params: { nickname: string };
@@ -34,6 +36,9 @@ export default async function UserCollectionPage({ params }: Props) {
     fetchLockedObjekts(profile.address),
   ]);
 
+  const shouldHideNickname =
+    profile.privacy.nickname && !addrcomp(user?.address, profile.address);
+
   return (
     <section className="flex flex-col">
       <ProfileRenderer
@@ -41,6 +46,19 @@ export default async function UserCollectionPage({ params }: Props) {
         artists={artists}
         profile={profile}
         user={user}
+        previousIds={
+          shouldHideNickname ? null : (
+            <Suspense
+              fallback={
+                <div className="flex justify-center">
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                </div>
+              }
+            >
+              <PreviousIds address={profile.address} />
+            </Suspense>
+          )
+        }
       />
     </section>
   );

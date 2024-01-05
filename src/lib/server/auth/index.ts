@@ -219,3 +219,13 @@ export async function fetchProfileByIdentifier(identifier: string) {
 
   return rows[0];
 }
+
+/**
+ * Fetch all known profiles for the given address.
+ */
+export async function fetchProfilesForAddress(address: string) {
+  return await db
+    .select()
+    .from(profiles)
+    .where(eq(profiles.userAddress, address));
+}
