@@ -15,6 +15,7 @@ import {
   Lock,
   MailX,
   PartyPopper,
+  Smartphone,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import {
@@ -117,6 +118,16 @@ export default function HelpDialog({ previousIds }: Props) {
                     </div>
                     <p className="font-semibold text-sm">
                       Objekt is an event reward (not transferable)
+                    </p>
+                  </div>
+
+                  {/* lenticular */}
+                  <div className="flex gap-2 items-center">
+                    <div className="bg-[#294a80] text-white rounded-lg p-1 flex items-center justify-center w-fit">
+                      <Smartphone className="h-5 w-5" />
+                    </div>
+                    <p className="font-semibold text-sm">
+                      Objekt is in a lenticular pair (not transferable)
                     </p>
                   </div>
                 </div>

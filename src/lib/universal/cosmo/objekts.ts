@@ -25,6 +25,7 @@ type OwnedObjektCommonFields = {
   objektNo: number;
   transferable: boolean;
   usedForGrid: boolean;
+  lenticularPairTokenId: string | null;
   mintedAt: string;
   receivedAt: string;
 };
@@ -34,7 +35,8 @@ type OwnedObjektMinted = OwnedObjektCommonFields & {
   nonTransferableReason?:
     | "used-for-grid"
     | "challenge-reward"
-    | "welcome-objekt";
+    | "welcome-objekt"
+    | "lenticular-objekt";
 };
 
 type OwnedObjektPending = OwnedObjektCommonFields & {
