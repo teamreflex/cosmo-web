@@ -1,4 +1,8 @@
-import { LoginResult, SearchUser } from "@/lib/universal/cosmo/auth";
+import {
+  CosmoPublicUser,
+  LoginResult,
+  SearchUser,
+} from "@/lib/universal/cosmo/auth";
 import "server-only";
 import { cosmo } from "../http";
 
@@ -142,4 +146,22 @@ export async function refresh(
     method: "POST",
     body: { refreshToken },
   }).then((res) => res.credentials);
+}
+
+/**
+ * Fetch a user by nickname.
+ */
+export async function fetchByNickname(
+  nickname: string
+): Promise<CosmoPublicUser | undefined> {
+  return await cosmo<{ profile: CosmoPublicUser }>(
+    `/user/v1/by-nickname/${nickname}`
+  )
+    .then((res) => res.profile)
+    .catch((err) => {
+      if (err.status === 404) {
+        return undefined;
+      }
+      throw err;
+    });
 }

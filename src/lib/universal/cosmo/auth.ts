@@ -1,3 +1,9 @@
+export type CosmoPublicUser = {
+  nickname: string;
+  profileImageUrl: string;
+  address: string;
+};
+
 export type SearchUser = {
   nickname: string;
   profileImageUrl: string;

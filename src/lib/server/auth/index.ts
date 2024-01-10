@@ -4,7 +4,7 @@ import { profiles } from "../db/schema";
 import { FetchProfile } from "@/lib/universal/auth";
 import { SearchUser } from "@/lib/universal/cosmo/auth";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
-import { search } from "../cosmo/auth";
+import { fetchByNickname } from "../cosmo/auth";
 import { isAddress } from "ethers/lib/utils";
 import { notFound } from "next/navigation";
 
@@ -141,11 +141,7 @@ export async function fetchUserByIdentifier(
   }
 
   // fall back to cosmo
-  const result = await search(identifier);
-  const user = result.find(
-    (u) => u.nickname.toLowerCase() === identifier.toLowerCase()
-  );
-
+  const user = await fetchByNickname(identifier);
   if (!user) {
     notFound();
   }
