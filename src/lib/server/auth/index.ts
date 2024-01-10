@@ -199,7 +199,7 @@ export async function fetchProfile(payload: FetchProfile) {
 /**
  * Fetch a profile by a nickname or address.
  */
-export async function fetchProfileByIdentifier(identifier: string) {
+async function fetchProfileByIdentifier(identifier: string) {
   const rows = await db
     .select()
     .from(profiles)

@@ -118,10 +118,7 @@ const parseAsNullableBoolean = createParser({
 /**
  * Converts a parsed query string into a Cosmo-compatible URLSearchParams.
  */
-export function toSearchParams(
-  input: CosmoFilters,
-  join = false
-): URLSearchParams {
+function toSearchParams(input: CosmoFilters, join = false): URLSearchParams {
   const query = new URLSearchParams();
 
   for (const [key, value] of Object.entries(input)) {

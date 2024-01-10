@@ -9,14 +9,6 @@ export type TokenPayload = {
   refreshToken: string;
 };
 
-export type PublicUser = {
-  nickname: string;
-  address: string;
-  lockedObjekts: number[];
-  lists: ObjektList[];
-  isAddress: boolean;
-};
-
 export type FetchProfile =
   | {
       identifier: string;
