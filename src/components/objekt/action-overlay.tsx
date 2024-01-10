@@ -15,7 +15,12 @@ type Props = {
   toggleLock: (tokenId: number) => void;
 };
 
-export default function ActionOverlay({ objekt, authenticated, isLocked, toggleLock }: Props) {
+export default function ActionOverlay({
+  objekt,
+  authenticated,
+  isLocked,
+  toggleLock,
+}: Props) {
   return (
     <Overlay
       objekt={objekt}

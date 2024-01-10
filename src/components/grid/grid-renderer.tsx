@@ -45,7 +45,9 @@ export default function GridRenderer({ grids }: Props) {
 
       {/* state: unselected */}
       {selected === undefined && (
-        <h3 className="text-center">Select a member to get started</h3>
+        <h3 className="text-center text-sm font-semibold">
+          Select a member to view grid progress
+        </h3>
       )}
 
       {(status === "pending" || isRefetching) && selected !== undefined ? (

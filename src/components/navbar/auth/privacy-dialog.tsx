@@ -43,11 +43,11 @@ export default function PrivacyDialog({
             </div>
           </div>
 
-          {/* objekts */}
+          {/* collection */}
           <div className="grid grid-cols-4 grid-rows-3">
             <h2 className="col-span-3 font-semibold">Collection</h2>
             <p className="col-span-3 col-start-1 row-start-2 row-span-3 text-sm opacity-80">
-              Hides your objekt collection.
+              Hides your objekt collection and per-member progress.
             </p>
             <div className="row-span-3 col-start-4 row-start-1 flex items-center justify-end">
               <Switch
