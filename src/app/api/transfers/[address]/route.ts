@@ -25,12 +25,19 @@ export async function GET(
       .filter((a) => a !== params.address.toLowerCase())
   );
 
+  // uses the latest profile for each address instead of the first
+  const deduplicatedAddresses = knownAddresses.filter((profile, _, arr) => {
+    return !arr.some(
+      (p) => p.userAddress === profile.userAddress && p.id > profile.id
+    );
+  });
+
   return NextResponse.json({
     ...aggregate,
     // map the nickname onto the results
     results: aggregate.results.map((row) => ({
       ...row,
-      nickname: knownAddresses.find((a) =>
+      nickname: deduplicatedAddresses.find((a) =>
         [
           row.transfer.from.toLowerCase(),
           row.transfer.to.toLowerCase(),

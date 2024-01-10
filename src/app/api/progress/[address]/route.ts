@@ -1,6 +1,10 @@
 import { indexer } from "@/lib/server/db/indexer";
 import { collections, objekts } from "@/lib/server/db/indexer/schema";
-import { validClasses, validSeasons } from "@/lib/universal/cosmo/common";
+import {
+  validClasses,
+  validOnlineTypes,
+  validSeasons,
+} from "@/lib/universal/cosmo/common";
 import { FinalProgress, SeasonMatrix } from "@/lib/universal/progress";
 import { SQL, and, eq, sql } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
@@ -35,17 +39,20 @@ export async function GET(
 }
 
 /**
- * Build a matrix of all available classes and seasons.
+ * Build a matrix of all available classes, seasons and online types.
  */
 function buildMatrix(): SeasonMatrix[] {
   const classes = validClasses.filter((c) => !["Zero", "Welcome"].includes(c));
-  return validSeasons.flatMap((season) => {
-    return classes.map((c) => ({
-      key: `${season.toLowerCase()}_${c.toLowerCase()}`,
-      season,
-      class: c,
-    }));
-  });
+  return validOnlineTypes.flatMap((type) =>
+    validSeasons.flatMap((season) => {
+      return classes.map((c) => ({
+        key: `${season.toLowerCase()}_${c.toLowerCase()}_${type}`,
+        season,
+        type,
+        class: c,
+      }));
+    })
+  );
 }
 
 /**
@@ -56,13 +63,13 @@ function buildSelects(matrix: SeasonMatrix[]) {
   return matrix.reduce((acc, m) => {
     acc[
       m.key
-    ] = sql<number>`cast(SUM(CASE WHEN (${collections.season} = ${m.season} AND ${collections.class} = ${m.class}) THEN 1 ELSE 0 END) as int)`;
+    ] = sql<number>`cast(SUM(CASE WHEN (${collections.season} = ${m.season} AND ${collections.class} = ${m.class} AND ${collections.onOffline} = ${m.type}) THEN 1 ELSE 0 END) as int)`;
     return acc;
   }, {} as Record<string, SQL<number>>);
 }
 
 type ProgressBreakdown = {
-  [season_class: string]: number;
+  [season_class_type: string]: number;
 };
 
 /**
@@ -108,7 +115,7 @@ const fetchTotal = unstable_cache(
 
     return result[0] ?? {};
   },
-  ["collection-total"], // param (member name) gets added to this
+  ["progress-total"], // param (member name) gets added to this
   { revalidate: 60 * 60 } // 1 hour
 );
 

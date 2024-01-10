@@ -61,31 +61,3 @@ export type GasStationResult = {
   blockTime: number;
   blockNumber: number;
 };
-
-export type ObjektMetadata = {
-  name: string;
-  description: string;
-  image: string;
-  background_color: string;
-  attributes: Record<string, string>[];
-  objekt: {
-    collectionId: string;
-    season: string;
-    member: string;
-    collectionNo: string;
-    class: string;
-    artists: ("artms" | "tripleS")[];
-    thumbnailImage: string;
-    frontImage: string;
-    backImage: string;
-    accentColor: string;
-    backgroundColor: string;
-    textColor: string;
-    comoAmount: number;
-    transferablebyDefault: boolean;
-    tokenId: string;
-    tokenAddress: string;
-    objektNo: number;
-    transferable: boolean;
-  };
-};

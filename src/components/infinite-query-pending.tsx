@@ -46,23 +46,3 @@ export function InfiniteQueryNext({
     </div>
   );
 }
-
-export function InfiniteQueryPrevious({
-  status,
-  hasNextPage,
-  isFetchingNextPage,
-  fetchNextPage,
-}: Props) {
-  const { ref, inView } = useInView();
-
-  // infinite scroll loader
-  useEffect(() => {
-    if (inView) {
-      fetchNextPage();
-    }
-  }, [inView, fetchNextPage]);
-
-  return status === "success" && hasNextPage && !isFetchingNextPage ? (
-    <div ref={ref} />
-  ) : null;
-}

@@ -27,7 +27,7 @@ export async function fetchArtists() {
  * Fetch a single artist with its members.
  * Cached for 1 hour.
  */
-export async function fetchArtist(artist: ValidArtist) {
+async function fetchArtist(artist: ValidArtist) {
   return await cosmo<{ artist: CosmoArtistWithMembers }>(
     `/artist/v1/${artist}`,
     {

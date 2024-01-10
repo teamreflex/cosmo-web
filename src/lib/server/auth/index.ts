@@ -1,4 +1,4 @@
-import { InferInsertModel, eq, or } from "drizzle-orm";
+import { InferInsertModel, desc, eq, or } from "drizzle-orm";
 import { db } from "../db";
 import { profiles } from "../db/schema";
 import { FetchProfile } from "@/lib/universal/auth";
@@ -199,7 +199,7 @@ export async function fetchProfile(payload: FetchProfile) {
 /**
  * Fetch a profile by a nickname or address.
  */
-export async function fetchProfileByIdentifier(identifier: string) {
+async function fetchProfileByIdentifier(identifier: string) {
   const rows = await db
     .select()
     .from(profiles)
@@ -208,11 +208,24 @@ export async function fetchProfileByIdentifier(identifier: string) {
         eq(profiles.nickname, identifier),
         eq(profiles.userAddress, identifier)
       )
-    );
+    )
+    // fetch the latest profile instead of the first logged
+    .orderBy(desc(profiles.id))
+    .limit(1);
 
   if (rows.length === 0) {
     return undefined;
   }
 
   return rows[0];
+}
+
+/**
+ * Fetch all known profiles for the given address.
+ */
+export async function fetchProfilesForAddress(address: string) {
+  return await db
+    .select()
+    .from(profiles)
+    .where(eq(profiles.userAddress, address));
 }

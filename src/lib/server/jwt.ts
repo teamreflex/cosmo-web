@@ -34,7 +34,7 @@ type TokenResult =
 /**
  * Decode the given token.
  */
-export async function decodeToken(token: string): Promise<TokenResult> {
+async function decodeToken(token: string): Promise<TokenResult> {
   const secret = new TextEncoder().encode(env.JWT_SECRET);
 
   try {
