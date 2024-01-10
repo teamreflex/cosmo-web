@@ -27,8 +27,10 @@ export default async function ProfileLayout({ children, params }: Props) {
   const profile = await getUserByIdentifier(params.nickname);
 
   const url = `/@${profile.isAddress ? profile.address : profile.nickname}`;
-  const shouldHide =
-    profile.privacy.como && !addrcomp(currentUser?.address, profile.address);
+
+  const showComo =
+    profile.privacy.como === false ||
+    addrcomp(currentUser?.address, profile.address);
 
   return (
     <main className="container flex flex-col gap-2 sm:gap-0 py-2">
@@ -51,7 +53,7 @@ export default async function ProfileLayout({ children, params }: Props) {
               {profile.nickname}
             </span>
 
-            <ComoBlock hide={shouldHide} address={profile.address} />
+            <ComoBlock hide={showComo === false} address={profile.address} />
           </div>
 
           {/* buttons */}

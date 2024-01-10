@@ -28,12 +28,11 @@ export const config = {
  * - /u/:username
  * - /objekts
  * - /api/objekts
- * - /api/objekt/v1/owned-by/[nickname]
  *
  * this is separate to the matcher as these paths still need token handling
  */
 const allowUnauthenticated = new RegExp(
-  "^(/@.*|/u/[^/]*|/objekts|/api/objekts|/api/objekt/v1/owned-by/.*)$"
+  "^(/@.*|/u/[^/]*|/objekts|/api/objekts)$"
 );
 
 export async function middleware(request: NextRequest) {
@@ -42,18 +41,6 @@ export async function middleware(request: NextRequest) {
 
   // verifies token validity
   const auth = await getUser();
-
-  // TODO: remove once traffic to /collection dies down
-  if (path === "/collection") {
-    return NextResponse.redirect(
-      new URL(auth.success ? `/@${auth.user.nickname}` : "/", request.url)
-    );
-  }
-  if (path === "/como") {
-    return NextResponse.redirect(
-      new URL(auth.success ? `/@${auth.user.nickname}/como` : "/", request.url)
-    );
-  }
 
   if (auth.success === false) {
     // delete the token if it exists, as it must be invalid

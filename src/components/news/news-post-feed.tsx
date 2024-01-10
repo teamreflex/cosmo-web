@@ -2,7 +2,7 @@ import { CosmoNewsSectionFeedContent } from "@/lib/universal/cosmo/news";
 import Timestamp from "../ui/timestamp";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { cn } from "@/lib/utils";
-import NewsImage from "./news-image";
+import ScaledImage from "../scaled-image";
 
 export default function NewsPostFeed({
   post,
@@ -42,7 +42,7 @@ export default function NewsPostFeed({
         )}
       >
         {post.imageUrls.map((image) => (
-          <NewsImage key={image} src={image} alt={post.body} />
+          <ScaledImage key={image} src={image} alt={post.body} />
         ))}
       </div>
     </div>

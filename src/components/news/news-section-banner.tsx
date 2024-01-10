@@ -4,11 +4,11 @@ import {
   CosmoNewsSectionBanner,
   CosmoNewsSectionBannerContent,
 } from "@/lib/universal/cosmo/news";
-import Image from "next/image";
 import Link from "next/link";
 import { PropsWithClassName } from "@/lib/utils";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
+import ScaledImage from "../scaled-image";
 
 type Props = {
   section: CosmoNewsSectionBanner;
@@ -50,14 +50,13 @@ type BannerItemProps = PropsWithClassName<{
 function BannerItem({ className, item, index, total }: BannerItemProps) {
   return (
     <Link href={item.url} target="_blank" className={className}>
-      <div className="relative aspect-video w-full rounded-xl border border-accent overflow-hidden">
-        <Image
+      <div className="relative w-full rounded-xl border border-accent overflow-hidden">
+        <ScaledImage
           src={item.imageUrl}
           alt={item.body}
-          fill={true}
-          className="object-cover"
-          quality={100}
           priority={true}
+          width={1920}
+          height={1325}
         />
 
         <div className="absolute bottom-0 left-0 w-full flex h-20 bg-gradient-to-t from-background/90 to-transparent" />
