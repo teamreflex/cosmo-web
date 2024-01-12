@@ -29,6 +29,7 @@ type Props = {
   artists: CosmoArtistWithMembers[];
   authenticated: boolean;
   user: PublicProfile;
+  gridColumns?: number;
 };
 
 export default function ListRenderer({
@@ -36,6 +37,7 @@ export default function ListRenderer({
   artists,
   authenticated,
   user,
+  gridColumns = 4,
 }: Props) {
   const [
     searchParams,
@@ -79,6 +81,7 @@ export default function ListRenderer({
         queryFunction={queryFunction}
         queryKey={["objekt-list", list.slug]}
         getObjektId={getObjektId}
+        gridColumns={gridColumns}
       >
         {({ objekt, id }) => (
           <Objekt objekt={objekt} id={id}>

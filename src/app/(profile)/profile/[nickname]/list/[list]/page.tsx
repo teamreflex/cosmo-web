@@ -3,7 +3,11 @@ import { Suspense, cache } from "react";
 import { fetchObjektList } from "@/lib/server/objekts/lists";
 import { redirect } from "next/navigation";
 import ObjektListLoading from "./loading";
-import { decodeUser, getUserByIdentifier } from "@/app/data-fetching";
+import {
+  decodeUser,
+  getProfile,
+  getUserByIdentifier,
+} from "@/app/data-fetching";
 import ListRenderer from "@/components/lists/list-renderer";
 import { fetchArtistsWithMembers } from "@/lib/server/cosmo/artists";
 
@@ -32,11 +36,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ObjektListPage({ params }: Props) {
-  const profile = await getUserByIdentifier(params.nickname);
-  const [list, artists] = await getObjektList(params.nickname, params.list);
+  const user = await decodeUser();
+  const [currentUser, profile, [list, artists]] = await Promise.all([
+    user ? getProfile(user.profileId) : undefined,
+    getUserByIdentifier(params.nickname),
+    getObjektList(params.nickname, params.list),
+  ]);
+
   if (!list) redirect(`/@${params.nickname}`);
 
-  const currentUser = await decodeUser();
   const authenticated =
     currentUser !== undefined && currentUser.address === profile.address;
 
@@ -47,6 +55,7 @@ export default async function ObjektListPage({ params }: Props) {
         artists={artists}
         authenticated={authenticated}
         user={profile}
+        gridColumns={currentUser?.gridColumns}
       />
     </Suspense>
   );

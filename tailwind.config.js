@@ -91,5 +91,8 @@ module.exports = {
     },
   },
   plugins: [require("tailwindcss-animate")],
-  safelist: [{ pattern: /grid-cols-./ }, { pattern: /order-./ }],
+  safelist: [
+    { pattern: /grid-cols-./, variants: ["xs", "md"] },
+    { pattern: /order-./ },
+  ],
 };

@@ -1,6 +1,10 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { decodeUser, getUserByIdentifier } from "@/app/data-fetching";
+import {
+  decodeUser,
+  getProfile,
+  getUserByIdentifier,
+} from "@/app/data-fetching";
 import { fetchLockedObjekts } from "@/lib/server/collection/locked-objekts";
 import ProfileRenderer from "@/components/profile/profile-renderer";
 import { fetchArtistsWithMembers } from "@/lib/server/cosmo/artists";
@@ -24,6 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function UserCollectionPage({ params }: Props) {
   const user = await decodeUser();
+  const currentUser = user ? await getProfile(user.profileId) : undefined;
   const profile = await getUserByIdentifier(params.nickname);
   if (!profile) notFound();
 
@@ -45,7 +50,7 @@ export default async function UserCollectionPage({ params }: Props) {
         lockedObjekts={lockedObjekts}
         artists={artists}
         profile={profile}
-        user={user}
+        user={currentUser}
         previousIds={
           shouldHideNickname ? null : (
             <Suspense

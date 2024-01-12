@@ -1,10 +1,11 @@
+import "server-only";
 import {
   CosmoPublicUser,
   LoginResult,
   PublicProfile,
 } from "@/lib/universal/cosmo/auth";
-import "server-only";
 import { cosmo } from "../http";
+import { defaultProfile } from "@/lib/utils";
 
 type CosmoLoginResult = {
   user: {
@@ -119,14 +120,8 @@ export async function search(term: string): Promise<PublicProfile[]> {
     },
   }).then((res) =>
     res.results.map((user) => ({
+      ...defaultProfile,
       ...user,
-      isAddress: false,
-      privacy: {
-        nickname: false,
-        objekts: false,
-        como: false,
-        trades: false,
-      },
     }))
   );
 }

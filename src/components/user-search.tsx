@@ -16,6 +16,7 @@ import { isAddress } from "ethers/lib/utils";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { COSMO_ENDPOINT } from "@/lib/universal/cosmo/common";
 import { ofetch } from "ofetch";
+import { defaultProfile } from "@/lib/utils";
 
 type Props = PropsWithChildren<{
   placeholder?: string;
@@ -64,16 +65,9 @@ export function UserSearch({
   function selectAddress(address: string) {
     setQuery("");
     onSelect({
+      ...defaultProfile,
       address,
       nickname: address,
-      profileImageUrl: "",
-      isAddress: true,
-      privacy: {
-        nickname: false,
-        objekts: false,
-        como: false,
-        trades: false,
-      },
     });
   }
 

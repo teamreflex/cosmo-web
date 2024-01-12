@@ -1,12 +1,13 @@
 import { InferInsertModel, desc, eq, or } from "drizzle-orm";
 import { db } from "../db";
-import { profiles } from "../db/schema";
+import { Profile, profiles } from "../db/schema";
 import { FetchProfile } from "@/lib/universal/auth";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { fetchByNickname } from "../cosmo/auth";
 import { isAddress } from "ethers/lib/utils";
 import { notFound } from "next/navigation";
+import { defaultProfile } from "@/lib/utils";
 
 type InsertProfile = InferInsertModel<typeof profiles>;
 
@@ -109,34 +110,20 @@ export async function fetchUserByIdentifier(
 
   if (profile) {
     return {
+      ...parseProfile(profile),
       nickname: shouldHide
         ? profile.userAddress.substring(0, 6)
         : profile.nickname,
-      address: profile.userAddress,
-      profileImageUrl: "",
       isAddress: shouldHide,
-      privacy: {
-        nickname: profile.privacyNickname,
-        objekts: profile.privacyObjekts,
-        como: profile.privacyComo,
-        trades: profile.privacyTrades,
-      },
     };
   }
 
   // if no profile and it's an address, return it
   if (identifierIsAddress) {
     return {
+      ...defaultProfile,
       nickname: identifier.substring(0, 6),
       address: identifier,
-      profileImageUrl: "",
-      isAddress: true,
-      privacy: {
-        nickname: false,
-        objekts: false,
-        como: false,
-        trades: false,
-      },
     };
   }
 
@@ -154,16 +141,10 @@ export async function fetchUserByIdentifier(
   });
 
   return {
+    ...defaultProfile,
     nickname: user.nickname,
     address: user.address,
     profileImageUrl: user.profileImageUrl,
-    isAddress: false,
-    privacy: {
-      nickname: false,
-      objekts: false,
-      como: false,
-      trades: false,
-    },
   };
 }
 
@@ -189,7 +170,7 @@ export async function fetchProfile(payload: FetchProfile) {
     return undefined;
   }
 
-  return rows[0];
+  return parseProfile(rows[0]);
 }
 
 /**
@@ -224,4 +205,24 @@ export async function fetchProfilesForAddress(address: string) {
     .select()
     .from(profiles)
     .where(eq(profiles.userAddress, address));
+}
+
+/**
+ * Convert a database profile to a more friendly type.
+ */
+function parseProfile(profile: Profile): PublicProfile {
+  return {
+    nickname: profile.nickname,
+    address: profile.userAddress,
+    profileImageUrl: "",
+    isAddress: false,
+    artist: profile.artist,
+    privacy: {
+      nickname: profile.privacyNickname,
+      objekts: profile.privacyObjekts,
+      como: profile.privacyComo,
+      trades: profile.privacyTrades,
+    },
+    gridColumns: profile.gridColumns,
+  };
 }

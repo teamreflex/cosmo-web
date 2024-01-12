@@ -33,7 +33,6 @@
   - either use Alchemy webhooks or setup a webhook for the indexer to post to
 - Add a toggle to switch between Cosmo and blockchain as the data source
   - would bring better filtering like jinsoultv
-- Add grid size options
 
 ### Trades
 

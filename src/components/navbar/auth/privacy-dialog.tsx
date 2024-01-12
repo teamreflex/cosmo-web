@@ -4,16 +4,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Profile } from "@/lib/server/db/schema";
 import { updatePrivacy } from "./actions";
 import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { useToast } from "@/components/ui/use-toast";
+import { PublicProfile } from "@/lib/universal/cosmo/auth";
 
 type PrivacyDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  profile: Profile;
+  profile: PublicProfile;
 };
 
 export default function PrivacyDialog({
@@ -21,6 +22,16 @@ export default function PrivacyDialog({
   onOpenChange,
   profile,
 }: PrivacyDialogProps) {
+  const { toast } = useToast();
+
+  async function update(form: FormData) {
+    await updatePrivacy(form);
+    toast({
+      description: "Privacy settings updated.",
+    });
+    onOpenChange(false);
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -28,7 +39,7 @@ export default function PrivacyDialog({
           <DialogTitle>Privacy Settings</DialogTitle>
         </DialogHeader>
 
-        <form className="flex flex-col gap-2" action={updatePrivacy}>
+        <form className="flex flex-col gap-2" action={update}>
           {/* cosmo id/nickname */}
           <div className="grid grid-cols-4 grid-rows-3">
             <h2 className="col-span-3 font-semibold">Cosmo ID</h2>
@@ -38,7 +49,7 @@ export default function PrivacyDialog({
             <div className="row-span-3 col-start-4 row-start-1 flex items-center justify-end">
               <Switch
                 name="privacyNickname"
-                defaultChecked={profile.privacyNickname}
+                defaultChecked={profile.privacy.nickname}
               />
             </div>
           </div>
@@ -52,7 +63,7 @@ export default function PrivacyDialog({
             <div className="row-span-3 col-start-4 row-start-1 flex items-center justify-end">
               <Switch
                 name="privacyObjekts"
-                defaultChecked={profile.privacyObjekts}
+                defaultChecked={profile.privacy.objekts}
               />
             </div>
           </div>
@@ -64,7 +75,10 @@ export default function PrivacyDialog({
               Hides your COMO balances and calendar.
             </p>
             <div className="row-span-3 col-start-4 row-start-1 flex items-center justify-end">
-              <Switch name="privacyComo" defaultChecked={profile.privacyComo} />
+              <Switch
+                name="privacyComo"
+                defaultChecked={profile.privacy.como}
+              />
             </div>
           </div>
 
@@ -78,7 +92,7 @@ export default function PrivacyDialog({
             <div className="row-span-3 col-start-4 row-start-1 flex items-center justify-end">
               <Switch
                 name="privacyTrades"
-                defaultChecked={profile.privacyTrades}
+                defaultChecked={profile.privacy.trades}
               />
             </div>
           </div>

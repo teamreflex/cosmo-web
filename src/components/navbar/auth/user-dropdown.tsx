@@ -8,18 +8,19 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { TokenPayload } from "@/lib/universal/auth";
-import { Disc3, LogOut, Shield, User } from "lucide-react";
+import { Cog, Disc3, LogOut, Shield, User } from "lucide-react";
 import Link from "next/link";
 import { ReactNode, useState } from "react";
 import SwitchArtistDialog from "./switch-artist-dialog";
 import { CosmoArtist } from "@/lib/universal/cosmo/artists";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
-import { Profile } from "@/lib/server/db/schema";
 import PrivacyDialog from "./privacy-dialog";
+import SettingsDialog from "./settings-dialog";
+import { PublicProfile } from "@/lib/universal/cosmo/auth";
 
 type UserDropdownProps = {
   user: TokenPayload;
-  profile: Profile;
+  profile: PublicProfile;
   artists: CosmoArtist[];
   selectedArtist: ValidArtist | undefined;
   comoBalances: ReactNode;
@@ -36,22 +37,29 @@ export default function UserDropdown({
 }: UserDropdownProps) {
   const [openArtistSwitch, setOpenArtistSwitch] = useState(false);
   const [openPrivacy, setOpenPrivacy] = useState(false);
+  const [openSettings, setOpenSettings] = useState(false);
 
   const artist = artists.find((artist) => artist.name === selectedArtist);
 
   return (
     <>
+      <SwitchArtistDialog
+        open={openArtistSwitch}
+        onOpenChange={setOpenArtistSwitch}
+        artists={artists}
+        selectedArtist={selectedArtist}
+      />
+
       <PrivacyDialog
         open={openPrivacy}
         onOpenChange={setOpenPrivacy}
         profile={profile}
       />
 
-      <SwitchArtistDialog
-        open={openArtistSwitch}
-        onOpenChange={setOpenArtistSwitch}
-        artists={artists}
-        selectedArtist={selectedArtist}
+      <SettingsDialog
+        open={openSettings}
+        onOpenChange={setOpenSettings}
+        profile={profile}
       />
 
       <DropdownMenu>
@@ -68,11 +76,17 @@ export default function UserDropdown({
             {comoBalances}
           </DropdownMenuItem>
           <DropdownMenuSeparator className="md:hidden" />
-          <DropdownMenuLabel>Settings</DropdownMenuLabel>
-          <DropdownMenuSeparator />
           <DropdownMenuItem>
             <User className="mr-2 h-4 w-4" />
             <Link href="/my">My Page</Link>
+          </DropdownMenuItem>
+
+          <DropdownMenuItem
+            onClick={() => setOpenArtistSwitch(true)}
+            className="cursor-pointer"
+          >
+            <Disc3 className="mr-2 h-4 w-4" />
+            <span>Switch Artist</span>
           </DropdownMenuItem>
 
           <DropdownMenuItem
@@ -84,12 +98,13 @@ export default function UserDropdown({
           </DropdownMenuItem>
 
           <DropdownMenuItem
-            onClick={() => setOpenArtistSwitch(true)}
+            onClick={() => setOpenSettings(true)}
             className="cursor-pointer"
           >
-            <Disc3 className="mr-2 h-4 w-4" />
-            <span>Switch Artist</span>
+            <Cog className="mr-2 h-4 w-4" />
+            <span>Settings</span>
           </DropdownMenuItem>
+
           <DropdownMenuSeparator />
           <DropdownMenuItem
             onClick={() => onSignOut()}

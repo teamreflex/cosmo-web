@@ -26,6 +26,7 @@ type Props = {
     QueryKey,
     number | undefined
   >;
+  gridColumns?: number;
 };
 
 export default memo(function CollectionObjektDisplay({
@@ -37,6 +38,7 @@ export default memo(function CollectionObjektDisplay({
   filters,
   setFilters,
   queryFunction,
+  gridColumns = 4,
 }: Props) {
   const [lockedTokens, setLockedTokens] = useState<number[]>(lockedTokenIds);
 
@@ -67,6 +69,7 @@ export default memo(function CollectionObjektDisplay({
         queryKey={["collection", address]}
         getObjektId={getObjektId}
         getObjektDisplay={lockFilter}
+        gridColumns={gridColumns}
       >
         {({ objekt, id }) => (
           <Objekt objekt={objekt} id={id}>

@@ -49,24 +49,40 @@ export default function HelpDialog({ previousIds }: Props) {
           <TooltipContent side="bottom">Help</TooltipContent>
           <AlertDialogContent>
             <div className="flex flex-col gap-4">
+              {/* grid/column size */}
+              <div className="flex flex-col gap-1 text-sm text-foreground/80">
+                <h3 className="text-lg font-semibold text-foreground">
+                  Grid Size
+                </h3>
+                <p>
+                  The number of columns to use when displaying objekts can be
+                  updated in your settings panel.
+                </p>
+                <p>Mobile will always use the default of 3 columns.</p>
+              </div>
+
               {/* objekt locking */}
-              <div className="flex flex-col gap-1">
-                <h3 className="text-lg font-semibold">Objekt Locking</h3>
-                <p className="text-sm text-foreground/80">
+              <div className="flex flex-col gap-1 text-sm text-foreground/80">
+                <h3 className="text-lg font-semibold text-foreground">
+                  Objekt Locking
+                </h3>
+                <p>
                   Locking an objekt hides the send button, allowing you to mark
                   anything you don&apos;t want to accidentally send or to
                   indicate to other people that it is not up for trade.
                 </p>
-                <p className="text-sm text-foreground/80">
+                <p>
                   This is {str} {env.NEXT_PUBLIC_APP_NAME} feature and{" "}
                   <b>does not prevent trading within the Cosmo app</b>.
                 </p>
               </div>
 
               {/* indicators */}
-              <div className="flex flex-col gap-1">
-                <h3 className="text-lg font-semibold">Indicators</h3>
-                <p className="text-sm text-foreground/80">
+              <div className="flex flex-col gap-1 text-sm text-foreground/80">
+                <h3 className="text-lg font-semibold text-foreground">
+                  Indicators
+                </h3>
+                <p>
                   Different indicators in the top left denote different statuses
                   of an objekt.
                 </p>

@@ -87,6 +87,7 @@ export const profiles = mysqlTable(
     privacyObjekts: boolean("privacy_objekts").notNull().default(false),
     privacyComo: boolean("privacy_como").notNull().default(false),
     privacyTrades: boolean("privacy_trades").notNull().default(false),
+    gridColumns: int("grid_columns").notNull().default(4),
   },
   (table) => ({
     addressIdx: index("address_idx").on(table.userAddress),
