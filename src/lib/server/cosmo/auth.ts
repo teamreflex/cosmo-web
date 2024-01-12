@@ -1,7 +1,7 @@
 import {
   CosmoPublicUser,
   LoginResult,
-  SearchUser,
+  PublicProfile,
 } from "@/lib/universal/cosmo/auth";
 import "server-only";
 import { cosmo } from "../http";
@@ -112,7 +112,7 @@ type CosmoSearchResult = {
 /**
  * Search for the given user.
  */
-export async function search(term: string): Promise<SearchUser[]> {
+export async function search(term: string): Promise<PublicProfile[]> {
   return await cosmo<CosmoSearchResult>("/user/v1/search", {
     query: {
       query: term,

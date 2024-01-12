@@ -4,7 +4,7 @@ export type CosmoPublicUser = {
   address: string;
 };
 
-export type SearchUser = {
+export type PublicProfile = {
   nickname: string;
   profileImageUrl: string;
   address: string;

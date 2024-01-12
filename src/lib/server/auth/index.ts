@@ -2,7 +2,7 @@ import { InferInsertModel, desc, eq, or } from "drizzle-orm";
 import { db } from "../db";
 import { profiles } from "../db/schema";
 import { FetchProfile } from "@/lib/universal/auth";
-import { SearchUser } from "@/lib/universal/cosmo/auth";
+import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { fetchByNickname } from "../cosmo/auth";
 import { isAddress } from "ethers/lib/utils";
@@ -99,7 +99,7 @@ export async function setSelectedArtist(
  */
 export async function fetchUserByIdentifier(
   identifier: string
-): Promise<SearchUser> {
+): Promise<PublicProfile> {
   const identifierIsAddress = isAddress(identifier);
 
   // check db for a profile

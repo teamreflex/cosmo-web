@@ -12,7 +12,7 @@ import ListOverlay from "./list-overlay";
 import DeleteList from "./delete-list";
 import UpdateList from "./update-list";
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
-import { SearchUser } from "@/lib/universal/cosmo/auth";
+import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { Fragment, memo, useCallback } from "react";
 import {
@@ -28,7 +28,7 @@ type Props = {
   list: ObjektList;
   artists: CosmoArtistWithMembers[];
   authenticated: boolean;
-  user: SearchUser;
+  user: PublicProfile;
 };
 
 export default function ListRenderer({

@@ -7,7 +7,7 @@ import { Search } from "lucide-react";
 import { useSearchStore } from "@/store";
 import { Route } from "next";
 import { cn } from "@/lib/utils";
-import { SearchUser } from "@/lib/universal/cosmo/auth";
+import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import {
   Tooltip,
   TooltipContent,
@@ -22,7 +22,7 @@ export default function NavbarSearch() {
   const [open, setOpen] = useState(false);
 
   const router = useRouter();
-  function onSelect(user: SearchUser) {
+  function onSelect(user: PublicProfile) {
     setOpen(false);
     addRecent(user);
     router.push(`/@${user.nickname}` as Route);
