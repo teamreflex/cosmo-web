@@ -73,6 +73,8 @@ export default function SettingsDialog({
                   <SelectItem value="4">4 Columns</SelectItem>
                   <SelectItem value="5">5 Columns</SelectItem>
                   <SelectItem value="6">6 Columns</SelectItem>
+                  <SelectItem value="7">7 Columns</SelectItem>
+                  <SelectItem value="8">8 Columns</SelectItem>
                 </SelectContent>
               </Select>
             </div>

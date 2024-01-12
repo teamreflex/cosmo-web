@@ -120,7 +120,7 @@ export const updatePrivacy = async (form: FormData) =>
 export const updateSettings = async (form: FormData) =>
   authenticatedAction(
     z.object({
-      gridColumns: z.coerce.number().min(3).max(6),
+      gridColumns: z.coerce.number().min(3).max(8),
     }),
     form,
     async (data, user) => {
