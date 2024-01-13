@@ -81,10 +81,18 @@ export function withObjektListEntries(entries: string[]) {
     return [];
   }
 
-  return [inArray(collections.id, entries)];
+  return [inArray(collections.slug, entries)];
 }
 
 export function withTimeframe(timeframe?: [string, string]) {
   if (!timeframe) return [];
   return [between(objekts.mintedAt, ...timeframe)];
+}
+
+export function withTransferable(transferable: boolean | null | undefined) {
+  return transferable ? [eq(objekts.transferable, transferable)] : [];
+}
+
+export function withGridable(gridable: boolean | null | undefined) {
+  return gridable ? [eq(objekts.used_for_grid, false)] : [];
 }

@@ -85,10 +85,10 @@ export async function deleteObjektList(id: number, address: string) {
 /**
  * Add an objekt to a list.
  */
-export async function addObjekt(listId: number, collectionId: string) {
+export async function addObjekt(listId: number, collectionSlug: string) {
   const row = await db.insert(listEntries).values({
     listId,
-    collectionId,
+    collectionId: collectionSlug,
   });
   return row.rowsAffected === 1;
 }
@@ -96,13 +96,13 @@ export async function addObjekt(listId: number, collectionId: string) {
 /**
  * Remove an objekt from a list.
  */
-export async function removeObjekt(listId: number, collectionId: string) {
+export async function removeObjekt(listId: number, collectionSlug: string) {
   const row = await db
     .delete(listEntries)
     .where(
       and(
         eq(listEntries.listId, listId),
-        eq(listEntries.collectionId, collectionId)
+        eq(listEntries.collectionId, collectionSlug)
       )
     );
   return row.rowsAffected === 1;

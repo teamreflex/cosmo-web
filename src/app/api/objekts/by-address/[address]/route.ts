@@ -9,9 +9,11 @@ import {
   withArtist,
   withClass,
   withCollections,
+  withGridable,
   withMember,
   withOnlineType,
   withSeason,
+  withTransferable,
 } from "@/lib/server/objekts/filters";
 import { ValidArtist, ValidSort } from "@/lib/universal/cosmo/common";
 import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
@@ -55,6 +57,8 @@ export async function GET(request: NextRequest, { params }: Params) {
           ...withOnlineType(filters.on_offline),
           ...withMember(filters.member),
           ...withCollections(filters.collectionNo),
+          ...withTransferable(filters.transferable),
+          ...withGridable(filters.gridable),
         ]
       )
     )
@@ -112,9 +116,11 @@ function mapResult(objekt: Objekt, collection: Collection): OwnedObjekt {
     mintedAt: objekt.mintedAt,
     receivedAt: objekt.receivedAt,
     status: "minted",
-    // these cannot currently be determined
+    transferable: objekt.transferable,
+    usedForGrid: objekt.used_for_grid,
+    // cannot currently be determined
+    lenticularPairTokenId: null,
+    // seemingly unused
     transferablebyDefault: true,
-    transferable: true,
-    usedForGrid: false,
   };
 }
