@@ -16,7 +16,10 @@ import {
   withTransferable,
 } from "@/lib/server/objekts/filters";
 import { ValidArtist, ValidSort } from "@/lib/universal/cosmo/common";
-import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
+import {
+  NonTransferableReason,
+  OwnedObjekt,
+} from "@/lib/universal/cosmo/objekts";
 import { parseUserCollection } from "@/lib/universal/parsers";
 import { and, asc, desc, eq, sql } from "drizzle-orm";
 import { PgSelect } from "drizzle-orm/pg-core";
@@ -118,9 +121,26 @@ function mapResult(objekt: Objekt, collection: Collection): OwnedObjekt {
     status: "minted",
     transferable: objekt.transferable,
     usedForGrid: objekt.used_for_grid,
+    nonTransferableReason: nonTransferableReason(objekt, collection),
     // cannot currently be determined
     lenticularPairTokenId: null,
     // seemingly unused
     transferablebyDefault: true,
   };
+}
+
+/**
+ * Derive the non transferable reason from the objekt/collection.
+ */
+function nonTransferableReason(
+  objekt: Objekt,
+  collection: Collection
+): NonTransferableReason | undefined {
+  if (collection.class === "Welcome") {
+    return "welcome-objekt";
+  }
+
+  if (collection.class === "First" && objekt.transferable === false) {
+    return objekt.used_for_grid ? "used-for-grid" : "challenge-reward";
+  }
 }

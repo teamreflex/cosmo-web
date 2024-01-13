@@ -30,13 +30,15 @@ type OwnedObjektCommonFields = {
   receivedAt: string;
 };
 
+export type NonTransferableReason =
+  | "used-for-grid"
+  | "challenge-reward"
+  | "welcome-objekt"
+  | "lenticular-objekt";
+
 type OwnedObjektMinted = OwnedObjektCommonFields & {
   status: "minted";
-  nonTransferableReason?:
-    | "used-for-grid"
-    | "challenge-reward"
-    | "welcome-objekt"
-    | "lenticular-objekt";
+  nonTransferableReason?: NonTransferableReason;
 };
 
 type OwnedObjektPending = OwnedObjektCommonFields & {

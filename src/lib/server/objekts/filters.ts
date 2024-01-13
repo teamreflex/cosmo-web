@@ -5,7 +5,7 @@ import {
   ValidSeason,
   ValidSort,
 } from "@/lib/universal/cosmo/common";
-import { asc, between, desc, eq, inArray } from "drizzle-orm";
+import { and, asc, between, desc, eq, inArray } from "drizzle-orm";
 import { PgSelect } from "drizzle-orm/pg-core";
 import { collections, objekts } from "../db/indexer/schema";
 
@@ -94,5 +94,7 @@ export function withTransferable(transferable: boolean | null | undefined) {
 }
 
 export function withGridable(gridable: boolean | null | undefined) {
-  return gridable ? [eq(objekts.used_for_grid, false)] : [];
+  return gridable
+    ? [and(eq(objekts.used_for_grid, false), eq(collections.class, "First"))]
+    : [];
 }
