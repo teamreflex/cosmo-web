@@ -42,8 +42,8 @@ export default function ProfileRenderer({
 
   const queryFunction = useCallback(
     async ({ pageParam = 0 }: { pageParam?: number }) => {
-      // const url = `${COSMO_ENDPOINT}/objekt/v1/owned-by/${profile.address}`;
-      const url = `/api/objekts/by-address/${profile.address}`;
+      const url = `${COSMO_ENDPOINT}/objekt/v1/owned-by/${profile.address}`;
+      // const url = `/api/objekts/by-address/${profile.address}`;
       return await ofetch(url, {
         query: {
           ...Object.fromEntries(searchParams.entries()),
