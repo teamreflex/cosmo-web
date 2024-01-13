@@ -1,6 +1,11 @@
-import { LoginResult, SearchUser } from "@/lib/universal/cosmo/auth";
 import "server-only";
+import {
+  CosmoPublicUser,
+  LoginResult,
+  PublicProfile,
+} from "@/lib/universal/cosmo/auth";
 import { cosmo } from "../http";
+import { defaultProfile } from "@/lib/utils";
 
 type CosmoLoginResult = {
   user: {
@@ -108,21 +113,15 @@ type CosmoSearchResult = {
 /**
  * Search for the given user.
  */
-export async function search(term: string): Promise<SearchUser[]> {
+export async function search(term: string): Promise<PublicProfile[]> {
   return await cosmo<CosmoSearchResult>("/user/v1/search", {
     query: {
       query: term,
     },
   }).then((res) =>
     res.results.map((user) => ({
+      ...defaultProfile,
       ...user,
-      isAddress: false,
-      privacy: {
-        nickname: false,
-        objekts: false,
-        como: false,
-        trades: false,
-      },
     }))
   );
 }
@@ -142,4 +141,22 @@ export async function refresh(
     method: "POST",
     body: { refreshToken },
   }).then((res) => res.credentials);
+}
+
+/**
+ * Fetch a user by nickname.
+ */
+export async function fetchByNickname(
+  nickname: string
+): Promise<CosmoPublicUser | undefined> {
+  return await cosmo<{ profile: CosmoPublicUser }>(
+    `/user/v1/by-nickname/${nickname}`
+  )
+    .then((res) => res.profile)
+    .catch((err) => {
+      if (err.status === 404) {
+        return undefined;
+      }
+      throw err;
+    });
 }

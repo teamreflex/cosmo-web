@@ -14,14 +14,13 @@ import { parsePage } from "@/lib/universal/objekts";
 import { ofetch } from "ofetch";
 import Portal from "../portal";
 import HelpDialog from "./help-dialog";
-import { TokenPayload } from "@/lib/universal/auth";
-import { SearchUser } from "@/lib/universal/cosmo/auth";
+import { PublicProfile } from "@/lib/universal/cosmo/auth";
 
 type Props = {
   lockedObjekts: number[];
   artists: CosmoArtistWithMembers[];
-  profile: SearchUser;
-  user?: TokenPayload;
+  profile: PublicProfile;
+  user?: PublicProfile;
   previousIds: ReactNode;
 };
 
@@ -80,6 +79,7 @@ export default function ProfileRenderer({
         filters={cosmoFilters}
         setFilters={setCosmoFilters}
         queryFunction={queryFunction}
+        gridColumns={user?.gridColumns}
       />
     </div>
   );

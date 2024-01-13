@@ -17,7 +17,7 @@ import { ValidArtists } from "@/lib/universal/cosmo/common";
 import { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { InfiniteQueryNext } from "../infinite-query-pending";
 import { ValidObjekt } from "@/lib/universal/objekts";
-import { typedMemo } from "@/lib/utils";
+import { cn, typedMemo } from "@/lib/utils";
 
 export type ObjektResponse<TObjektType extends ValidObjekt> = {
   hasNext: boolean;
@@ -39,6 +39,7 @@ type Props<TObjektType extends ValidObjekt> = {
   >;
   getObjektId: (objekt: TObjektType) => string;
   getObjektDisplay?: (objekt: TObjektType) => boolean;
+  gridColumns?: number;
 };
 
 export default typedMemo(function FilteredObjektDisplay<
@@ -52,6 +53,7 @@ export default typedMemo(function FilteredObjektDisplay<
   queryFunction,
   getObjektId,
   getObjektDisplay = () => true,
+  gridColumns = 4,
 }: Props<TObjektType>) {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
     useInfiniteQuery({
@@ -104,7 +106,12 @@ export default typedMemo(function FilteredObjektDisplay<
       </Hydrated>
 
       <div className="flex flex-col items-center">
-        <div className="grid grid-cols-3 md:grid-cols-4 gap-4 py-2">
+        <div
+          className={cn(
+            "grid grid-cols-3 gap-4 py-2",
+            `md:grid-cols-${gridColumns}`
+          )}
+        >
           {status === "pending" ? (
             <div className="flex col-span-full py-12">
               <Loader2 className="animate-spin h-24 w-24" />

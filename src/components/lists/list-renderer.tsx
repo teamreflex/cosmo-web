@@ -12,7 +12,7 @@ import ListOverlay from "./list-overlay";
 import DeleteList from "./delete-list";
 import UpdateList from "./update-list";
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
-import { SearchUser } from "@/lib/universal/cosmo/auth";
+import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { Fragment, memo, useCallback } from "react";
 import {
@@ -28,7 +28,8 @@ type Props = {
   list: ObjektList;
   artists: CosmoArtistWithMembers[];
   authenticated: boolean;
-  user: SearchUser;
+  user: PublicProfile;
+  gridColumns?: number;
 };
 
 export default function ListRenderer({
@@ -36,6 +37,7 @@ export default function ListRenderer({
   artists,
   authenticated,
   user,
+  gridColumns = 4,
 }: Props) {
   const [
     searchParams,
@@ -77,6 +79,7 @@ export default function ListRenderer({
         queryFunction={queryFunction}
         queryKey={["objekt-list", list.slug]}
         getObjektId={getObjektId}
+        gridColumns={gridColumns}
       >
         {({ objekt, id }) => (
           <Objekt objekt={objekt} id={id}>

@@ -113,3 +113,22 @@ export const updatePrivacy = async (form: FormData) =>
       revalidatePath(`@/${user.nickname}`);
     }
   );
+
+/**
+ * Updates general settings.
+ */
+export const updateSettings = async (form: FormData) =>
+  authenticatedAction(
+    z.object({
+      gridColumns: z.coerce.number().min(3).max(8),
+    }),
+    form,
+    async (data, user) => {
+      await db
+        .update(profiles)
+        .set(data)
+        .where(eq(profiles.id, user.profileId));
+
+      revalidatePath(`@/${user.nickname}`);
+    }
+  );

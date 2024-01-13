@@ -9,11 +9,11 @@ import UserDropdown from "./user-dropdown";
 import SignInDialog from "./sign-in-dialog";
 import { CosmoArtist } from "@/lib/universal/cosmo/artists";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
-import { Profile } from "@/lib/server/db/schema";
+import { PublicProfile } from "@/lib/universal/cosmo/auth";
 
 type Props = {
   user: TokenPayload | undefined;
-  profile: Profile | undefined;
+  profile: PublicProfile | undefined;
   artists: CosmoArtist[];
   selectedArtist: ValidArtist | undefined;
   comoBalances: ReactNode;

@@ -29,6 +29,7 @@ type Props = {
   collections: string[];
   objektLists?: ObjektList[];
   nickname?: string;
+  gridColumns?: number;
 };
 
 export default function IndexRenderer({
@@ -36,6 +37,7 @@ export default function IndexRenderer({
   collections,
   objektLists,
   nickname,
+  gridColumns = 4,
 }: Props) {
   const [
     searchParams,
@@ -79,6 +81,7 @@ export default function IndexRenderer({
         queryFunction={queryFunction}
         queryKey={queryKey}
         getObjektId={getObjektId}
+        gridColumns={gridColumns}
       >
         {({ objekt, id }) => (
           <Objekt objekt={objekt} id={id}>

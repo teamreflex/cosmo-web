@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { SearchUser } from "./lib/universal/cosmo/auth";
+import { PublicProfile } from "./lib/universal/cosmo/auth";
 
 /**
  * store for various settings in the app
@@ -34,16 +34,16 @@ export const useSettingsStore = create<SettingsState>()(
  * store recent user searches
  */
 interface SearchState {
-  recentLookups: SearchUser[];
-  addRecentLookup: (lookup: SearchUser) => void;
-  recentSends: SearchUser[];
-  addRecentSend: (send: SearchUser) => void;
+  recentLookups: PublicProfile[];
+  addRecentLookup: (lookup: PublicProfile) => void;
+  recentSends: PublicProfile[];
+  addRecentSend: (send: PublicProfile) => void;
 }
 export const useSearchStore = create<SearchState>()(
   persist(
     (set) => ({
       recentLookups: [],
-      addRecentLookup: (lookup: SearchUser) =>
+      addRecentLookup: (lookup: PublicProfile) =>
         set((state) => {
           const current = state.recentLookups;
           if (current.includes(lookup)) {
@@ -56,7 +56,7 @@ export const useSearchStore = create<SearchState>()(
         }),
 
       recentSends: [],
-      addRecentSend: (send: SearchUser) =>
+      addRecentSend: (send: PublicProfile) =>
         set((state) => {
           const current = state.recentSends;
           if (current.includes(send)) {

@@ -36,7 +36,7 @@ import { UserSearch } from "../user-search";
 import { trackEvent } from "fathom-client";
 import Link from "next/link";
 import ObjektSidebar from "./objekt-sidebar";
-import { SearchUser } from "@/lib/universal/cosmo/auth";
+import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
 import { providers } from "ethers";
 
@@ -69,7 +69,7 @@ const instagrams = [
 export default function SendObjekt({ objekt }: Props) {
   const [openSearch, setOpenSearch] = useState(false);
   const [openSend, setOpenSend] = useState(false);
-  const [recipient, setRecipient] = useState<SearchUser | null>(null);
+  const [recipient, setRecipient] = useState<PublicProfile | null>(null);
   const [transactionProgress, setTransactionProgress] =
     useState<TransactionStatus>(TransactionStatus.WAITING);
   const [transactionHash, setTransactionHash] = useState("");
@@ -79,7 +79,7 @@ export default function SendObjekt({ objekt }: Props) {
 
   const queryClient = useQueryClient();
 
-  function prepareSending(newRecipient: SearchUser) {
+  function prepareSending(newRecipient: PublicProfile) {
     addRecent(newRecipient);
     setRecipient(newRecipient);
     setOpenSearch(false);
@@ -245,7 +245,7 @@ export default function SendObjekt({ objekt }: Props) {
 
 type SendToUserButtonProps = {
   objekt: OwnedObjekt;
-  user: SearchUser;
+  user: PublicProfile;
   updateTransactionProgress: (
     status: TransactionStatus,
     txHash?: string

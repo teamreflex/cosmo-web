@@ -1,7 +1,14 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { DownloadCloud, Grid2X2, Lock, MailX, PartyPopper } from "lucide-react";
+import {
+  DownloadCloud,
+  Grid2X2,
+  Lock,
+  MailX,
+  PartyPopper,
+  Smartphone,
+} from "lucide-react";
 import { memo } from "react";
 import SendObjekt from "./send-button";
 import LockObjekt from "./lock-button";
@@ -79,6 +86,11 @@ const Overlay = memo(function Overlay({
           <Grid2X2 className="h-3 w-3 sm:h-5 sm:w-5 shrink-0" />
         )}
 
+        {/* used in lenticular, for some reason the nonTransferableReason isn't used here */}
+        {objekt.lenticularPairTokenId !== null && (
+          <Smartphone className="h-3 w-3 sm:h-5 sm:w-5 shrink-0" />
+        )}
+
         {/* send objekt */}
         {/* {!isLocked && objekt.transferable && authenticated && (
           <SendObjekt objekt={objekt} />
@@ -115,6 +127,9 @@ const Overlay = memo(function Overlay({
         )}
         {objekt.nonTransferableReason === "used-for-grid" && (
           <OverlayStatus>Used for grid</OverlayStatus>
+        )}
+        {objekt.lenticularPairTokenId !== null && (
+          <OverlayStatus>Lenticular pair</OverlayStatus>
         )}
       </div>
     </div>

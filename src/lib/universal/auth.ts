@@ -1,5 +1,3 @@
-import { ObjektList } from "./objekts";
-
 export type TokenPayload = {
   id: number;
   nickname: string;

@@ -1,6 +1,7 @@
 import { type ClassValue, clsx } from "clsx";
 import { memo } from "react";
 import { twMerge } from "tailwind-merge";
+import { PublicProfile } from "./universal/cosmo/auth";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -31,3 +32,21 @@ export const typedMemo: <T>(
 export function addrcomp(a?: string, b?: string) {
   return a?.toLowerCase() === b?.toLowerCase();
 }
+
+/**
+ * Default {@link PublicProfile} properties.
+ */
+export const defaultProfile: PublicProfile = {
+  address: "",
+  nickname: "",
+  profileImageUrl: "",
+  isAddress: true,
+  artist: "artms",
+  privacy: {
+    nickname: false,
+    objekts: false,
+    como: false,
+    trades: false,
+  },
+  gridColumns: 4,
+};

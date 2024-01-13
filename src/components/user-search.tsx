@@ -13,16 +13,17 @@ import { useQuery } from "@tanstack/react-query";
 import { useDebounce } from "usehooks-ts";
 import { HeartCrack, Loader2 } from "lucide-react";
 import { isAddress } from "ethers/lib/utils";
-import { SearchUser } from "@/lib/universal/cosmo/auth";
+import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { COSMO_ENDPOINT } from "@/lib/universal/cosmo/common";
 import { ofetch } from "ofetch";
+import { defaultProfile } from "@/lib/utils";
 
 type Props = PropsWithChildren<{
   placeholder?: string;
-  recent: SearchUser[];
+  recent: PublicProfile[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSelect: (user: SearchUser) => void;
+  onSelect: (user: PublicProfile) => void;
 }>;
 
 export function UserSearch({
@@ -43,7 +44,7 @@ export function UserSearch({
   const result = useQuery({
     queryKey: ["user-search", debouncedQuery],
     queryFn: async () => {
-      return await ofetch<{ results: SearchUser[] }>(
+      return await ofetch<{ results: PublicProfile[] }>(
         `${COSMO_ENDPOINT}/user/v1/search`,
         {
           query: {
@@ -56,7 +57,7 @@ export function UserSearch({
   });
 
   // reset query before triggering handler
-  function select(user: SearchUser) {
+  function select(user: PublicProfile) {
     setQuery("");
     onSelect(user);
   }
@@ -64,16 +65,9 @@ export function UserSearch({
   function selectAddress(address: string) {
     setQuery("");
     onSelect({
+      ...defaultProfile,
       address,
       nickname: address,
-      profileImageUrl: "",
-      isAddress: true,
-      privacy: {
-        nickname: false,
-        objekts: false,
-        como: false,
-        trades: false,
-      },
     });
   }
 
