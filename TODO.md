@@ -19,7 +19,6 @@
 
 ### Collection
 
-- Add grid size options
 - Delete locked objekts upon transfer
   - either use Alchemy webhooks or setup a webhook for the indexer to post to
 
