@@ -18,6 +18,7 @@ import {
   Dispatch,
   SetStateAction,
   useCallback,
+  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -100,6 +101,19 @@ export function useCosmoFilters() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
+
+  // upon first render, adjust data source based on source-specific filters
+  useEffect(() => {
+    if (dataSource === "cosmo") {
+      if (
+        cosmoFilters.sort === ValidSorts.SERIAL_ASCENDING ||
+        cosmoFilters.sort === ValidSorts.SERIAL_DESCENDING
+      ) {
+        setDataSource("blockchain");
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return [
     searchParams,

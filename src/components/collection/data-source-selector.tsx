@@ -1,7 +1,10 @@
 "use client";
 
 import { Dispatch, Fragment, SetStateAction, memo, useState } from "react";
-import { CollectionDataSource } from "@/hooks/use-cosmo-filters";
+import {
+  CollectionDataSource,
+  PropsWithFilters,
+} from "@/hooks/use-cosmo-filters";
 import {
   Select,
   SelectContent,
@@ -22,13 +25,16 @@ import {
   AlertDialogTitle,
 } from "../ui/alert-dialog";
 import { env } from "@/env.mjs";
+import { ValidSorts } from "@/lib/universal/cosmo/common";
 
-type Props = {
+type Props = PropsWithFilters<"sort"> & {
   dataSource: CollectionDataSource;
   setDataSource: Dispatch<SetStateAction<CollectionDataSource>>;
 };
 
 export default memo(function DataSourceSelector({
+  filters,
+  setFilters,
   dataSource,
   setDataSource,
 }: Props) {
@@ -45,6 +51,19 @@ export default memo(function DataSourceSelector({
   function close() {
     toggle("data-source");
     setOpenWarning(false);
+  }
+
+  function update(val: string) {
+    const source = val as CollectionDataSource;
+    // if switching to cosmo and using serial sort, reset sort
+    if (
+      source === "cosmo" &&
+      (filters === ValidSorts.SERIAL_ASCENDING ||
+        filters === ValidSorts.SERIAL_DESCENDING)
+    ) {
+      setFilters("sort", null);
+    }
+    setDataSource(source);
   }
 
   return (
@@ -83,11 +102,7 @@ export default memo(function DataSourceSelector({
         </AlertDialogContent>
       </AlertDialog>
 
-      <Select
-        value={dataSource}
-        onValueChange={(val) => setDataSource(val as CollectionDataSource)}
-        onOpenChange={warn}
-      >
+      <Select value={dataSource} onValueChange={update} onOpenChange={warn}>
         <SelectTrigger className="w-36 drop-shadow-lg">
           <SelectValue placeholder="Data Source" />
         </SelectTrigger>

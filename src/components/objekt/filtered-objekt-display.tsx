@@ -61,6 +61,10 @@ export default typedMemo(function FilteredObjektDisplay<
   gridColumns = 4,
   dataSource = "blockchain",
 }: Props<TObjektType>) {
+  // prevent the query from sending bad sort requests to the cosmo api
+  const isBadCosmoRequest =
+    dataSource === "cosmo" && filters.sort?.startsWith("serial") === true;
+
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
     useInfiniteQuery({
       queryKey: [...queryKey, dataSource, filters],
@@ -69,6 +73,7 @@ export default typedMemo(function FilteredObjektDisplay<
       getNextPageParam: (lastPage) => lastPage.nextStartAfter,
       refetchOnWindowFocus: false,
       staleTime: 1000 * 60,
+      enabled: isBadCosmoRequest === false,
     });
 
   const total = Number(data?.pages[0].total ?? 0);

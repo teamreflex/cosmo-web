@@ -116,6 +116,8 @@ export const CollectionFilters = memo(function CollectionFilters({
         serials={allowSerials}
       />
       <DataSourceSelector
+        filters={cosmoFilters.sort}
+        setFilters={updateCosmoFilters}
         dataSource={dataSource}
         setDataSource={setDataSource}
       />
