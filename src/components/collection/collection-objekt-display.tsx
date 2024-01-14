@@ -8,7 +8,11 @@ import ActionOverlay from "../objekt/action-overlay";
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
 import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
 import { QueryFunction, QueryKey } from "@tanstack/react-query";
-import { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
+import {
+  CollectionDataSource,
+  CosmoFilters,
+  SetCosmoFilters,
+} from "@/hooks/use-cosmo-filters";
 import Objekt from "../objekt/objekt";
 
 const getObjektId = (objekt: OwnedObjekt) => objekt.tokenId;
@@ -27,6 +31,7 @@ type Props = {
     number | undefined
   >;
   gridColumns?: number;
+  dataSource: CollectionDataSource;
 };
 
 export default memo(function CollectionObjektDisplay({
@@ -39,6 +44,7 @@ export default memo(function CollectionObjektDisplay({
   setFilters,
   queryFunction,
   gridColumns = 4,
+  dataSource,
 }: Props) {
   const [lockedTokens, setLockedTokens] = useState<number[]>(lockedTokenIds);
 
@@ -70,6 +76,7 @@ export default memo(function CollectionObjektDisplay({
         getObjektId={getObjektId}
         getObjektDisplay={lockFilter}
         gridColumns={gridColumns}
+        dataSource={dataSource}
       >
         {({ objekt, id }) => (
           <Objekt objekt={objekt} id={id}>

@@ -4,7 +4,7 @@ import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
 import { COSMO_ENDPOINT } from "@/lib/universal/cosmo/common";
 import { OwnedObjektsResult } from "@/lib/universal/cosmo/objekts";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
-import { ReactNode, useCallback } from "react";
+import { ReactNode, useCallback, useMemo } from "react";
 import {
   CollectionFilters,
   FiltersContainer,
@@ -38,20 +38,25 @@ export default function ProfileRenderer({
     cosmoFilters,
     setCosmoFilters,
     updateCosmoFilters,
+    dataSource,
+    setDataSource,
   ] = useCosmoFilters();
 
   const queryFunction = useCallback(
     async ({ pageParam = 0 }: { pageParam?: number }) => {
-      // const url = `${COSMO_ENDPOINT}/objekt/v1/owned-by/${profile.address}`;
-      const url = `/api/objekts/by-address/${profile.address}`;
-      return await ofetch(url, {
+      const endpoint =
+        dataSource === "cosmo"
+          ? `${COSMO_ENDPOINT}/objekt/v1/owned-by/${profile.address}`
+          : `/api/objekts/by-address/${profile.address}`;
+
+      return await ofetch(endpoint, {
         query: {
           ...Object.fromEntries(searchParams.entries()),
           page: pageParam.toString(),
         },
       }).then((res) => parsePage<OwnedObjektsResult>(res));
     },
-    [profile.address, searchParams]
+    [profile.address, searchParams, dataSource]
   );
 
   return (
@@ -66,7 +71,9 @@ export default function ProfileRenderer({
           setShowLocked={setShowLocked}
           cosmoFilters={cosmoFilters}
           updateCosmoFilters={updateCosmoFilters}
-          allowSerials={true}
+          allowSerials={dataSource === "blockchain"}
+          dataSource={dataSource}
+          setDataSource={setDataSource}
         />
       </FiltersContainer>
 
@@ -80,6 +87,7 @@ export default function ProfileRenderer({
         setFilters={setCosmoFilters}
         queryFunction={queryFunction}
         gridColumns={user?.gridColumns}
+        dataSource={dataSource}
       />
     </div>
   );

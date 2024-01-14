@@ -1,5 +1,17 @@
-import { CosmoFilters, UpdateCosmoFilters } from "@/hooks/use-cosmo-filters";
-import { Fragment, PropsWithChildren, ReactNode, memo, useState } from "react";
+import {
+  CollectionDataSource,
+  CosmoFilters,
+  UpdateCosmoFilters,
+} from "@/hooks/use-cosmo-filters";
+import {
+  Dispatch,
+  Fragment,
+  PropsWithChildren,
+  ReactNode,
+  SetStateAction,
+  memo,
+  useState,
+} from "react";
 import LockedFilter from "./filter-locked";
 import GridableFilter from "./filter-gridable";
 import TransferableFilter from "./filter-transferable";
@@ -11,6 +23,7 @@ import CollectionFilter from "../objekt-index/collection-filter";
 import { Toggle } from "../ui/toggle";
 import { SlidersHorizontal } from "lucide-react";
 import Portal from "../portal";
+import DataSourceSelector from "./data-source-selector";
 
 type FiltersContainerProps = PropsWithChildren<{
   buttons?: ReactNode;
@@ -62,6 +75,8 @@ type CollectionFiltersProps = {
   cosmoFilters: CosmoFilters;
   updateCosmoFilters: UpdateCosmoFilters;
   allowSerials?: boolean;
+  dataSource: CollectionDataSource;
+  setDataSource: Dispatch<SetStateAction<CollectionDataSource>>;
 };
 export const CollectionFilters = memo(function CollectionFilters({
   showLocked,
@@ -69,6 +84,8 @@ export const CollectionFilters = memo(function CollectionFilters({
   cosmoFilters,
   updateCosmoFilters,
   allowSerials = false,
+  dataSource,
+  setDataSource,
 }: CollectionFiltersProps) {
   return (
     <Fragment>
@@ -97,6 +114,10 @@ export const CollectionFilters = memo(function CollectionFilters({
         filters={cosmoFilters.sort}
         setFilters={updateCosmoFilters}
         serials={allowSerials}
+      />
+      <DataSourceSelector
+        dataSource={dataSource}
+        setDataSource={setDataSource}
       />
     </Fragment>
   );
