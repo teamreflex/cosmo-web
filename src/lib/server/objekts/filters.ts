@@ -5,13 +5,14 @@ import {
   ValidSeason,
   ValidSort,
 } from "@/lib/universal/cosmo/common";
-import { asc, between, desc, eq, inArray } from "drizzle-orm";
+import { and, asc, between, desc, eq, inArray } from "drizzle-orm";
 import { PgSelect } from "drizzle-orm/pg-core";
 import { collections, objekts } from "../db/indexer/schema";
 
 export function withSort<T extends PgSelect>(qb: T, sort: ValidSort) {
   switch (sort) {
     case "newest":
+    default:
       return qb.orderBy(
         desc(collections.createdAt),
         asc(collections.collectionId)
@@ -65,7 +66,7 @@ export function withMember(member: string | null | undefined) {
   return member ? [eq(collections.member, member)] : [];
 }
 
-export function withArtist(artist: ValidArtist | undefined) {
+export function withArtist(artist: ValidArtist | undefined | null) {
   return artist ? [eq(collections.artist, artist)] : [];
 }
 
@@ -80,10 +81,20 @@ export function withObjektListEntries(entries: string[]) {
     return [];
   }
 
-  return [inArray(collections.id, entries)];
+  return [inArray(collections.slug, entries)];
 }
 
 export function withTimeframe(timeframe?: [string, string]) {
   if (!timeframe) return [];
   return [between(objekts.mintedAt, ...timeframe)];
+}
+
+export function withTransferable(transferable: boolean | null | undefined) {
+  return transferable ? [eq(objekts.transferable, transferable)] : [];
+}
+
+export function withGridable(gridable: boolean | null | undefined) {
+  return gridable
+    ? [and(eq(objekts.used_for_grid, false), eq(collections.class, "First"))]
+    : [];
 }

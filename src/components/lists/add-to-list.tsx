@@ -14,7 +14,7 @@ import {
 } from "../ui/dropdown-menu";
 import { addObjektToList } from "./actions";
 import { useToast } from "../ui/use-toast";
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from "@tanstack/react-query";
 
 type AddToListProps = {
   collection: IndexedObjekt;
@@ -71,7 +71,7 @@ function ListItem({ collection, list, onDone }: ListItemProps) {
     startTransition(async () => {
       const result = await addObjektToList({
         listId: list.id,
-        collectionId: collection.id,
+        collectionSlug: collection.slug,
       });
       if (result.success && result.data) {
         toast({

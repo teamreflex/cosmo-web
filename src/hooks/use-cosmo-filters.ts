@@ -14,8 +14,16 @@ import {
   useQueryState,
   useQueryStates,
 } from "next-usequerystate";
-import { Dispatch, SetStateAction, useCallback, useMemo } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
+export type CollectionDataSource = "cosmo" | "blockchain";
 export type CosmoFilters = {
   member: string | null;
   artist: ValidArtists | null;
@@ -29,13 +37,11 @@ export type CosmoFilters = {
   collection: string | null;
   collectionNo: string[] | null;
 };
-
 export type SetCosmoFilters = Dispatch<SetStateAction<CosmoFilters>>;
 export type UpdateCosmoFilters = <TKey extends keyof CosmoFilters>(
   key: TKey,
   value: CosmoFilters[TKey]
 ) => void;
-
 export type PropsWithFilters<T extends keyof CosmoFilters> = {
   filters: CosmoFilters[T];
   setFilters: UpdateCosmoFilters;
@@ -44,6 +50,7 @@ export type PropsWithFilters<T extends keyof CosmoFilters> = {
 export function useCosmoFilters() {
   // use separate state for apollo features so a refetch doesn't occur
   const [_showLocked, setShowLocked] = useQueryState("locked", parseAsBoolean);
+  const [dataSource, setDataSource] = useState<CollectionDataSource>("cosmo");
   // masks the fact that null means show locked
   const showLocked = _showLocked ?? true;
 
@@ -95,6 +102,19 @@ export function useCosmoFilters() {
     []
   );
 
+  // upon first render, adjust data source based on source-specific filters
+  useEffect(() => {
+    if (dataSource === "cosmo") {
+      if (
+        cosmoFilters.sort === ValidSorts.SERIAL_ASCENDING ||
+        cosmoFilters.sort === ValidSorts.SERIAL_DESCENDING
+      ) {
+        setDataSource("blockchain");
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return [
     searchParams,
     showLocked,
@@ -102,6 +122,8 @@ export function useCosmoFilters() {
     cosmoFilters,
     setCosmoFilters,
     updateCosmoFilters,
+    dataSource,
+    setDataSource,
   ] as const;
 }
 

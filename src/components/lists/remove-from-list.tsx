@@ -22,7 +22,7 @@ export default function RemoveFromList({ collection, objektList }: Props) {
     startTransition(async () => {
       const result = await removeObjektFromList({
         listId: objektList.id,
-        collectionId: collection.id,
+        collectionSlug: collection.slug,
       });
       if (result.success && result.data) {
         toast({

@@ -1,20 +1,9 @@
-## Bugs
+## Issues
 
 - User searchbox has blurred text
 - Collections search/dropdown has keyboard controls which makes the searchbox a little jank
-
-## General
-
-- Iron out any remaining jank/issues from performance refactoring
-
-## Performance
-
-- Prevent all Objekt components from rerendering upon a single objekt being locked
-- Virtualize the list of objekts
-
-### Grid
-
-- When fetching objekts to slot, filter out anything that is locked
+- `<FilteredObjektDisplay>` should be virtualized
+- Grid slot selector doesn't have locked tokens filter
 
 ### Gravity
 
@@ -26,17 +15,28 @@
 
 - Add serial/ownership lookup/details
   - intercepting route usecase?
+  - come up with a good UI beforehand
 
 ### Collection
 
+- Add grid size options
 - Delete locked objekts upon transfer
   - either use Alchemy webhooks or setup a webhook for the indexer to post to
-- Add a toggle to switch between Cosmo and blockchain as the data source
-  - would bring better filtering like jinsoultv
+- Finish blockchain data source switch:
+  - add toggle on frontend: maybe add to profiles as a default?
+  - properly implement transferable & gridable filters
+  - add transferability to indexer
+    - will require a rehydrate of the indexer
+    - will require migration of existing objekt list entries
 
-### Trades
+### Trades / PolygonScan replacement
 
 - Add filtering
+- Add transfer hash
+
+### Stats / OpenSea replacement
+
+- Come up with a UI design first
 
 ### Profiles
 

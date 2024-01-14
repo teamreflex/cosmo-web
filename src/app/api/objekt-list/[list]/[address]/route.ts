@@ -5,25 +5,50 @@ import {
   withClass,
   withCollections,
   withMember,
+  withObjektListEntries,
   withOnlineType,
   withSeason,
   withSort,
 } from "@/lib/server/objekts/filters";
-import { parseObjektIndex } from "@/lib/universal/parsers";
+import { fetchObjektListWithEntries } from "@/lib/server/objekts/lists";
+import { parseObjektList } from "@/lib/universal/parsers";
 import { and, sql } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 const PER_PAGE = 60;
 
+type Params = {
+  params: {
+    list: string;
+    address: string;
+  };
+};
+
 /**
- * API route that services the /objekts page.
+ * API route that services the /@:nickname/list/* objekt list page.
  * Takes all Cosmo filters as query params.
  */
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest, { params }: Params) {
   // parse query params
-  const filters = parseObjektIndex(request.nextUrl.searchParams);
+  const filters = parseObjektList(request.nextUrl.searchParams);
 
+  // fetch objekt list from database
+  const objektList = await fetchObjektListWithEntries(
+    params.address,
+    params.list
+  );
+
+  // handle 404
+  if (objektList === undefined) {
+    return NextResponse.json(
+      { message: `Objekt list "${params.list}" not found` },
+      { status: 404 }
+    );
+  }
+
+  // fetch applicable collections
+  const entries = objektList.entries.map((e) => e.collectionId);
   let query = indexer
     .select({
       count: sql<number>`count(*) OVER() AS count`,
@@ -33,6 +58,7 @@ export async function GET(request: NextRequest) {
     .where(
       and(
         ...[
+          ...withObjektListEntries(entries),
           ...withArtist(filters.artist),
           ...withClass(filters.class),
           ...withSeason(filters.season),

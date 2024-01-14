@@ -1,5 +1,6 @@
 import { InferSelectModel, relations } from "drizzle-orm";
 import {
+  boolean,
   index,
   integer,
   pgTable,
@@ -15,22 +16,26 @@ export const collections = pgTable(
     id: uuid("id").primaryKey(),
     contract: varchar("contract", { length: 42 }).notNull(),
     createdAt: timestamp("created_at", { mode: "string" }).notNull(),
+    slug: varchar("slug", { length: 255 }).notNull(),
     collectionId: varchar("collection_id", { length: 255 }).notNull(),
     season: varchar("season", { length: 32 }).notNull(),
     member: varchar("member", { length: 32 }).notNull(),
     artist: varchar("artist", { length: 32 }).notNull(),
     collectionNo: varchar("collection_no", { length: 8 }).notNull(),
     class: varchar("class", { length: 8 }).notNull(),
+    thumbnailImage: varchar("thumbnail_image", { length: 255 }).notNull(),
     frontImage: varchar("front_image", { length: 255 }).notNull(),
     backImage: varchar("back_image", { length: 255 }).notNull(),
     backgroundColor: varchar("background_color", { length: 8 }).notNull(),
     textColor: varchar("text_color", { length: 8 }).notNull(),
+    accentColor: varchar("accent_color", { length: 8 }).notNull(),
     comoAmount: integer("como_amount").notNull(),
     onOffline: varchar("on_offline", { length: 16 })
       .notNull()
       .$type<"online" | "offline">(),
   },
   (table) => ({
+    slugIdx: index("slug_idx").on(table.slug),
     seasonIdx: index("season_idx").on(table.season),
     memberIdx: index("member_idx").on(table.member),
     artistIdx: index("artist_idx").on(table.artist),
@@ -53,6 +58,8 @@ export const objekts = pgTable(
     mintedAt: timestamp("minted_at", { mode: "string" }).notNull(),
     receivedAt: timestamp("received_at", { mode: "string" }).notNull(),
     serial: integer("serial").notNull(),
+    transferable: boolean("transferable").notNull(),
+    used_for_grid: boolean("used_for_grid").notNull(),
     collectionId: varchar("collection_id", { length: 36 })
       .notNull()
       .references(() => collections.id),
@@ -65,21 +72,25 @@ export const objekts = pgTable(
 
 export const objektRelations = relations(objekts, ({ many, one }) => ({
   transfers: many(transfers),
-  collection: one(collections),
+  collection: one(collections, {
+    fields: [objekts.collectionId],
+    references: [collections.id],
+  }),
 }));
 
 export const transfers = pgTable(
   "transfer",
   {
     id: uuid("id").primaryKey(),
+    hash: varchar("hash", { length: 255 }).notNull(),
     from: varchar("from", { length: 42 }).notNull(),
     to: varchar("to", { length: 42 }).notNull(),
     timestamp: timestamp("timestamp", { mode: "string" }).notNull(),
     tokenId: integer("token_id").notNull(),
-    objektId: integer("objekt_id")
+    objektId: varchar("objekt_id", { length: 12 })
       .notNull()
       .references(() => objekts.id),
-    collectionId: integer("collection_id")
+    collectionId: uuid("collection_id")
       .notNull()
       .references(() => collections.id),
   },

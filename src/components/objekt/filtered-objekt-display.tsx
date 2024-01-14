@@ -14,7 +14,11 @@ import Portal from "../portal";
 import Hydrated from "../hydrated";
 import MemberFilterSkeleton from "../skeleton/member-filter-skeleton";
 import { ValidArtists } from "@/lib/universal/cosmo/common";
-import { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
+import {
+  CollectionDataSource,
+  CosmoFilters,
+  SetCosmoFilters,
+} from "@/hooks/use-cosmo-filters";
 import { InfiniteQueryNext } from "../infinite-query-pending";
 import { ValidObjekt } from "@/lib/universal/objekts";
 import { cn, typedMemo } from "@/lib/utils";
@@ -40,6 +44,7 @@ type Props<TObjektType extends ValidObjekt> = {
   getObjektId: (objekt: TObjektType) => string;
   getObjektDisplay?: (objekt: TObjektType) => boolean;
   gridColumns?: number;
+  dataSource?: CollectionDataSource;
 };
 
 export default typedMemo(function FilteredObjektDisplay<
@@ -54,15 +59,21 @@ export default typedMemo(function FilteredObjektDisplay<
   getObjektId,
   getObjektDisplay = () => true,
   gridColumns = 4,
+  dataSource = "blockchain",
 }: Props<TObjektType>) {
+  // prevent the query from sending bad sort requests to the cosmo api
+  const isBadCosmoRequest =
+    dataSource === "cosmo" && filters.sort?.startsWith("serial") === true;
+
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
     useInfiniteQuery({
-      queryKey: [...queryKey, filters],
+      queryKey: [...queryKey, dataSource, filters],
       queryFn: queryFunction,
       initialPageParam: 0,
       getNextPageParam: (lastPage) => lastPage.nextStartAfter,
       refetchOnWindowFocus: false,
       staleTime: 1000 * 60,
+      enabled: isBadCosmoRequest === false,
     });
 
   const total = Number(data?.pages[0].total ?? 0);

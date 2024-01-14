@@ -100,16 +100,16 @@ export const destroy = async (form: { id: number }) =>
  */
 export const addObjektToList = async (form: {
   listId: number;
-  collectionId: string;
+  collectionSlug: string;
 }) =>
   authenticatedAction(
     z.object({
       listId: z.number(),
-      collectionId: z.string(),
+      collectionSlug: z.string(),
     }),
     form,
-    async ({ listId, collectionId }, user) => {
-      return await addObjekt(listId, collectionId);
+    async ({ listId, collectionSlug }, user) => {
+      return await addObjekt(listId, collectionSlug);
     }
   );
 
@@ -118,15 +118,15 @@ export const addObjektToList = async (form: {
  */
 export const removeObjektFromList = async (form: {
   listId: number;
-  collectionId: string;
+  collectionSlug: string;
 }) =>
   authenticatedAction(
     z.object({
       listId: z.number(),
-      collectionId: z.string(),
+      collectionSlug: z.string(),
     }),
     form,
-    async ({ listId, collectionId }, user) => {
-      return await removeObjekt(listId, collectionId);
+    async ({ listId, collectionSlug }, user) => {
+      return await removeObjekt(listId, collectionSlug);
     }
   );

@@ -50,12 +50,10 @@ export default function ListRenderer({
 
   const queryFunction = useCallback(
     async ({ pageParam = 0 }: { pageParam?: number }) => {
-      return await ofetch(`/api/objekts`, {
+      return await ofetch(`/api/objekt-list/${list.slug}/${user.address}`, {
         query: {
           ...Object.fromEntries(searchParams.entries()),
           page: pageParam.toString(),
-          list: list.slug,
-          address: user.address,
         },
       }).then((res) => parsePage<IndexedCosmoResponse>(res));
     },

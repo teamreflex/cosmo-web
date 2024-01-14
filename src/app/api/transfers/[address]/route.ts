@@ -14,16 +14,9 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { address: string } }
 ) {
-  const { page } = parseParams(request.nextUrl.searchParams);
+  const page = parseInt(request.nextUrl.searchParams.get("page") ?? "0");
 
-  const aggregate = await fetchTransfers(params.address, {
-    page,
-    sort: "newest",
-    season: [],
-    class: [],
-    on_offline: [],
-    collectionNo: [],
-  });
+  const aggregate = await fetchTransfers(params.address, page);
 
   const knownAddresses = await fetchKnownAddresses(
     aggregate.results
@@ -52,15 +45,6 @@ export async function GET(
       )?.nickname,
     })),
   });
-}
-
-/**
- * Parse URL params.
- */
-function parseParams(params: URLSearchParams) {
-  return {
-    page: parseInt(params.get("page") ?? "1"),
-  };
 }
 
 /**

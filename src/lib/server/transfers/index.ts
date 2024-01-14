@@ -1,14 +1,6 @@
-import { and, asc, desc, eq, or, sql } from "drizzle-orm";
+import { desc, eq, or, sql } from "drizzle-orm";
 import { collections, transfers, objekts } from "../db/indexer/schema";
 import { indexer } from "../db/indexer";
-import {
-  withArtist,
-  withClass,
-  withMember,
-  withOnlineType,
-  withSeason,
-} from "../objekts/filters";
-import { ParsedObjektParams } from "@/lib/universal/objekts";
 import { AggregatedTransfer, TransferResult } from "@/lib/universal/transfers";
 
 const PER_PAGE = 30;
@@ -18,21 +10,24 @@ const PER_PAGE = 30;
  */
 export async function fetchTransfers(
   address: string,
-  filters: ParsedObjektParams
+  page: number
 ): Promise<TransferResult> {
-  const rows = await fetchRows(address, filters);
+  const rows = await fetchRows(address, page);
   const { count, results } = aggregateResults(rows);
-  const hasNext = count > (filters.page + 1) * PER_PAGE;
+  const hasNext = count > (page + 1) * PER_PAGE;
 
   return {
     results,
     count,
     hasNext,
-    nextStartAfter: hasNext ? filters.page + 1 : undefined,
+    nextStartAfter: hasNext ? page + 1 : undefined,
   };
 }
 
-async function fetchRows(address: string, filters: ParsedObjektParams) {
+/**
+ * Fetch transfers from the database.
+ */
+async function fetchRows(address: string, page: number) {
   return await indexer
     .select({
       count: sql<number>`count(*) OVER() AS count`,
@@ -48,28 +43,15 @@ async function fetchRows(address: string, filters: ParsedObjektParams) {
       )
     )
     .innerJoin(objekts, eq(transfers.objektId, objekts.id))
-    .innerJoin(
-      collections,
-      and(
-        eq(transfers.collectionId, collections.id),
-        ...[
-          ...withArtist(filters.artist),
-          ...withClass(filters.class),
-          ...withSeason(filters.season),
-          ...withOnlineType(filters.on_offline),
-          ...withMember(filters.member),
-        ]
-      )
-    )
-    .orderBy(
-      filters.sort === "newest"
-        ? desc(transfers.timestamp)
-        : asc(transfers.timestamp)
-    )
+    .innerJoin(collections, eq(transfers.collectionId, collections.id))
+    .orderBy(desc(transfers.timestamp))
     .limit(PER_PAGE)
-    .offset(filters.page * PER_PAGE);
+    .offset(page * PER_PAGE);
 }
 
+/**
+ * Map data together from joins.
+ */
 function aggregateResults(rows: Awaited<ReturnType<typeof fetchRows>>) {
   let count = 0;
   const results = rows.reduce<AggregatedTransfer[]>((acc, row) => {
