@@ -23,6 +23,22 @@ export default function NewUpdateDialog() {
         </AlertDialogHeader>
 
         <div className="flex flex-col text-sm gap-2">
+          {/* jan 15th */}
+          <div className="flex flex-col gap-1">
+            <h3 className="font-semibold text-lg">January 15th 2024</h3>
+            <ul className="list-disc list-inside">
+              <li>
+                Added: Option to swap between Cosmo and Polygon for collection
+                display.
+              </li>
+              <li>
+                Added: Lowest Serial & Highest Serial sorting when using
+                Polygon.
+              </li>
+            </ul>
+          </div>
+
+          {/* jan 13th */}
           <div className="flex flex-col gap-1">
             <h3 className="font-semibold text-lg">January 13th 2024</h3>
             <ul className="list-disc list-inside">

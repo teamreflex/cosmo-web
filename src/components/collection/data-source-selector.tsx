@@ -86,8 +86,9 @@ export default memo(function DataSourceSelector({
                 Additional filters are available, such as sorting by serial.
               </li>
               <li>
-                Transferable and grid status is not perfect. Sometimes objekts
-                used in grids will show as event rewards, and vice versa.
+                Transferable and grid status indicators are not perfect.
+                Sometimes objekts used in grids will show as event rewards, and
+                vice versa.
               </li>
               <li>
                 Only minted objekts will be displayed, whereas the Cosmo option

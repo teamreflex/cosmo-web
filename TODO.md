@@ -22,12 +22,6 @@
 - Add grid size options
 - Delete locked objekts upon transfer
   - either use Alchemy webhooks or setup a webhook for the indexer to post to
-- Finish blockchain data source switch:
-  - add toggle on frontend: maybe add to profiles as a default?
-  - properly implement transferable & gridable filters
-  - add transferability to indexer
-    - will require a rehydrate of the indexer
-    - will require migration of existing objekt list entries
 
 ### Trades / PolygonScan replacement
 
