@@ -34,7 +34,8 @@ export type NonTransferableReason =
   | "used-for-grid"
   | "challenge-reward"
   | "welcome-objekt"
-  | "lenticular-objekt";
+  | "lenticular-objekt"
+  | "not-transferable"; // indexer
 
 type OwnedObjektMinted = OwnedObjektCommonFields & {
   status: "minted";
