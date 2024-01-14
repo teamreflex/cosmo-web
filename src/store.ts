@@ -2,27 +2,43 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { PublicProfile } from "./lib/universal/cosmo/auth";
 
+type Warning = "first-visit" | "data-source";
+
 /**
  * store for various settings in the app
  */
 interface SettingsState {
-  warned: boolean;
-  setWarned: (state: boolean) => void;
+  warnings: Record<Warning, boolean>;
+  toggleWarning: (type: Warning) => void;
 }
 export const useSettingsStore = create<SettingsState>()(
   persist(
     (set) => ({
-      warned: false,
-      setWarned: (state: boolean) => set(() => ({ warned: state })),
+      warnings: {
+        "first-visit": false,
+        "data-source": false,
+      },
+      toggleWarning: (type: Warning) =>
+        set((state) => ({
+          warnings: { ...state.warnings, [type]: !state.warnings[type] },
+        })),
     }),
     {
       name: "settings",
-      partialize: (state) => ({ warned: state.warned }),
-      version: 1,
+      partialize: (state) => ({ warnings: state.warnings }),
+      version: 2,
       // cba validating the type here
       migrate: (prevState: any, version) => {
+        // reset the first-visit warning
         if (version === 0) {
           prevState.warned = false;
+        }
+        // migrate over to object
+        if (version === 1) {
+          prevState.warnings = {
+            "first-visit": prevState.warned,
+            "data-source": false,
+          };
         }
         return prevState;
       },

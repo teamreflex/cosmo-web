@@ -13,8 +13,8 @@ import {
 import { env } from "@/env.mjs";
 
 export default function WarningDialog() {
-  const warned = useSettingsStore((state) => state.warned);
-  const setWarned = useSettingsStore((state) => state.setWarned);
+  const warned = useSettingsStore((state) => state.warnings["first-visit"]);
+  const toggle = useSettingsStore((state) => state.toggleWarning);
 
   const [open, setOpen] = useState(false);
   useEffect(() => {
@@ -49,7 +49,7 @@ export default function WarningDialog() {
           </p>
         </div>
         <AlertDialogFooter>
-          <AlertDialogAction onClick={() => setWarned(true)}>
+          <AlertDialogAction onClick={() => toggle("first-visit")}>
             Continue
           </AlertDialogAction>
         </AlertDialogFooter>
