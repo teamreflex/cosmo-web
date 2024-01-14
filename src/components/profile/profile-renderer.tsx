@@ -66,7 +66,7 @@ export default function ProfileRenderer({
           setShowLocked={setShowLocked}
           cosmoFilters={cosmoFilters}
           updateCosmoFilters={updateCosmoFilters}
-          allowSerials={false}
+          allowSerials={true}
         />
       </FiltersContainer>
 
