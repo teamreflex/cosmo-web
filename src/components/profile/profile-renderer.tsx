@@ -49,10 +49,15 @@ export default function ProfileRenderer({
           ? `${COSMO_ENDPOINT}/objekt/v1/owned-by/${profile.address}`
           : `/api/objekts/by-address/${profile.address}`;
 
+      const pagination =
+        dataSource === "cosmo"
+          ? { start_after: pageParam.toString() }
+          : { page: pageParam.toString() };
+
       return await ofetch(endpoint, {
         query: {
           ...Object.fromEntries(searchParams.entries()),
-          page: pageParam.toString(),
+          ...pagination,
         },
       }).then((res) => parsePage<OwnedObjektsResult>(res));
     },

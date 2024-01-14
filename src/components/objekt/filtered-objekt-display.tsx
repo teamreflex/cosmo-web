@@ -44,7 +44,7 @@ type Props<TObjektType extends ValidObjekt> = {
   getObjektId: (objekt: TObjektType) => string;
   getObjektDisplay?: (objekt: TObjektType) => boolean;
   gridColumns?: number;
-  dataSource: CollectionDataSource;
+  dataSource?: CollectionDataSource;
 };
 
 export default typedMemo(function FilteredObjektDisplay<
@@ -59,7 +59,7 @@ export default typedMemo(function FilteredObjektDisplay<
   getObjektId,
   getObjektDisplay = () => true,
   gridColumns = 4,
-  dataSource,
+  dataSource = "blockchain",
 }: Props<TObjektType>) {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
     useInfiniteQuery({
