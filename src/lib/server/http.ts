@@ -20,4 +20,6 @@ export const alchemy = ofetch.create({
   headers: {
     Authorization: `Bearer ${env.NEXT_PUBLIC_ALCHEMY_KEY}`,
   },
+  retry: 3,
+  retryDelay: 250, // 100ms
 });

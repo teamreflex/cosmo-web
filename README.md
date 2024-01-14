@@ -2,6 +2,8 @@
 
 This project aims to build a web based version of [Modhaus](https://www.mod-haus.com/)' **[Cosmo: the Gate](https://play.google.com/store/apps/details?id=com.modhaus.cosmo)** mobile application, replicate its core features as close as possible, and add new features on top.
 
+Supersedes the [objekts.jinsoul.tv](https://github.com/teamreflex/objekts-svelte) Svelte app.
+
 <details>
   <summary><b>Replicated Features</b></summary>
 
@@ -54,6 +56,7 @@ This project aims to build a web based version of [Modhaus](https://www.mod-haus
   - Includes displaying Cosmo ID if available
 - Privacy options to hide collection/trades/COMO
 - Collection progress counter
+- Toggle to display collections from the blockchain instead of Cosmo
 
 </details>
 
@@ -69,7 +72,8 @@ This project aims to build a web based version of [Modhaus](https://www.mod-haus
 ### Notes
 
 - **There's no app version or user agent spoofing. It's entirely possible for Modhaus to detect usage of this. Use at your own risk.**
-- Only the "happy path" is tested extensively. There isn't a lot of good error handling.
+- Only the happy path is tested extensively. Any error handling is mostly just HTTP retries and React error boundaries with a page refresh button.
+- Anything in `/scripts` are mostly just one-offs to migrate production data. They're not meant to be run again.
 
 ## Requirements
 
@@ -83,19 +87,20 @@ This project aims to build a web based version of [Modhaus](https://www.mod-haus
 ## Setup
 
 ```bash
-$ git clone git@github.com:teamreflex/cosmo-web.git
-$ cd cosmo-web
-$ pnpm install
-$ cp .env.example .env.local
-$ pnpm db:push
-$ pnpm dev
+git clone git@github.com:teamreflex/cosmo-web.git
+cd cosmo-web
+pnpm install
+cp .env.example .env.local
+pnpm db:push
+pnpm dev
 ```
 
 ## Tooling
 
-- [Nextjs](https://nextjs.org/)
+- [Next 14](https://nextjs.org/)
   - [Server Components](https://nextjs.org/docs/app/building-your-application/rendering/server-components)
   - [Server Actions](https://nextjs.org/docs/app/building-your-application/data-fetching/forms-and-mutations)
+- [Million](https://million.dev/)
 - [Ramper SDK](https://www.ramper.xyz/)
 - [shadcn/ui](https://ui.shadcn.com/docs)
 - [Tailwind](https://tailwindcss.com/)

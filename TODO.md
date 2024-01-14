@@ -5,6 +5,10 @@
 - `<FilteredObjektDisplay>` should be virtualized
 - Grid slot selector doesn't have locked tokens filter
 
+### General
+
+- Move project to a monorepo, move indexer into here
+
 ### Gravity
 
 - Remove voting modal, show options inline
@@ -21,6 +25,8 @@
 
 - Delete locked objekts upon transfer
   - either use Alchemy webhooks or setup a webhook for the indexer to post to
+- Refactor locking into "marking" objekts as different colors/statuses/icons/idk
+  - locking doesn't really make sense when sending is disabled
 
 ### Trades / PolygonScan replacement
 
@@ -36,3 +42,4 @@
 - Set a favorite objekt?
 - Set a favorite member?
 - Social links? Twitter, Discord, Instagram etc
+- Custom profile image?
