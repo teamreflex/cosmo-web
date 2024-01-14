@@ -130,13 +130,14 @@ export default memo(function DataSourceSelector({
           </SelectItem>
           <SelectItem value="blockchain">
             <div className="flex flex-row items-center gap-2">
-              <Image
-                src={PolygonImage.src}
-                alt="Polygon"
-                width={24}
-                height={24}
-                className="rounded-full"
-              />
+              <div className="relative bg-polygon h-6 w-6 rounded-full">
+                <Image
+                  src={PolygonImage.src}
+                  alt="Polygon"
+                  fill={true}
+                  className="p-1"
+                />
+              </div>
               <span>Polygon</span>
             </div>
           </SelectItem>

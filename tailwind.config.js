@@ -28,6 +28,14 @@ module.exports = {
           hover: colors.violet[900],
           profile: colors.violet[200],
         },
+        polygon: {
+          DEFAULT: "#8247E5",
+          hover: "#9630ce",
+        },
+        opensea: {
+          DEFAULT: "#2081E2",
+          hover: "#1868B7",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
