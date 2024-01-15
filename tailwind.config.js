@@ -96,6 +96,9 @@ module.exports = {
         sans: ["var(--font-inter)"],
         cosmo: ["var(--font-cosmo)"],
       },
+      fontSize: {
+        "2xs": ["10px", "14px"],
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],
