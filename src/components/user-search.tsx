@@ -14,7 +14,6 @@ import { useDebounce } from "usehooks-ts";
 import { HeartCrack, Loader2 } from "lucide-react";
 import { isAddress } from "ethers/lib/utils";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
-import { COSMO_ENDPOINT } from "@/lib/universal/cosmo/common";
 import { ofetch } from "ofetch";
 import { defaultProfile } from "@/lib/utils";
 
@@ -44,16 +43,13 @@ export function UserSearch({
   const result = useQuery({
     queryKey: ["user-search", debouncedQuery],
     queryFn: async () => {
-      return await ofetch<{ results: PublicProfile[] }>(
-        `${COSMO_ENDPOINT}/user/v1/search`,
-        {
-          query: {
-            query: debouncedQuery,
-          },
-        }
-      ).then((res) => res.results);
+      return await ofetch<{ results: PublicProfile[] }>(`/api/user/v1/search`, {
+        query: {
+          query: debouncedQuery,
+        },
+      }).then((res) => res.results);
     },
-    enabled: debouncedQuery.length > 3 && queryIsAddress === false,
+    enabled: debouncedQuery.length >= 4 && queryIsAddress === false,
   });
 
   // reset query before triggering handler

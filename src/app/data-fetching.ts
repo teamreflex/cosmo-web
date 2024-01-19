@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { getUser } from "./api/common";
 import { fetchProfile, fetchUserByIdentifier } from "@/lib/server/auth";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 /**
  * Decode the current token.
@@ -26,6 +26,7 @@ export const getProfile = cache(async (profileId: number) => {
 /**
  * Fetch a user by nickname or address.
  */
-export const getUserByIdentifier = cache(
-  async (identifier: string) => await fetchUserByIdentifier(identifier)
-);
+export const getUserByIdentifier = cache(async (identifier: string) => {
+  const user = await decodeUser();
+  return await fetchUserByIdentifier(identifier, user?.accessToken);
+});

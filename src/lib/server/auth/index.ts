@@ -6,7 +6,7 @@ import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { fetchByNickname } from "../cosmo/auth";
 import { isAddress } from "ethers/lib/utils";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { defaultProfile } from "@/lib/utils";
 
 type InsertProfile = InferInsertModel<typeof profiles>;
@@ -99,7 +99,8 @@ export async function setSelectedArtist(
  * Fetch a profile by various identifiers.
  */
 export async function fetchUserByIdentifier(
-  identifier: string
+  identifier: string,
+  token?: string
 ): Promise<PublicProfile> {
   const identifierIsAddress = isAddress(identifier);
 
@@ -127,8 +128,13 @@ export async function fetchUserByIdentifier(
     };
   }
 
+  // if the user is a guest, redirect to login due to cosmo auth block
+  if (!token) {
+    redirect("/auth");
+  }
+
   // fall back to cosmo
-  const user = await fetchByNickname(identifier);
+  const user = await fetchByNickname(token, identifier);
   if (!user) {
     notFound();
   }

@@ -15,7 +15,11 @@ import {
   TooltipTrigger,
 } from "../ui/tooltip";
 
-export default function NavbarSearch() {
+type Props = {
+  authenticated: boolean;
+};
+
+export default function NavbarSearch({ authenticated }: Props) {
   const recent = useSearchStore((state) => state.recentLookups);
   const addRecent = useSearchStore((state) => state.addRecentLookup);
 
@@ -39,19 +43,22 @@ export default function NavbarSearch() {
         <Tooltip>
           <TooltipTrigger asChild>
             <button
-              className="drop-shadow-lg hover:scale-110 transition-all outline-none"
+              className="drop-shadow-lg outline-none"
               aria-label="Search for user"
               onClick={() => setOpen(true)}
+              disabled={!authenticated}
             >
               <Search
                 className={cn(
                   "h-8 w-8 shrink-0 transition-all fill-transparent",
-                  open && "fill-white/50"
+                  !authenticated && "text-slate-500 cursor-not-allowed"
                 )}
               />
             </button>
           </TooltipTrigger>
-          <TooltipContent>User Search</TooltipContent>
+          <TooltipContent>
+            <p>{authenticated ? "User Search" : "Sign in first!"}</p>
+          </TooltipContent>
         </Tooltip>
       </TooltipProvider>
     </UserSearch>

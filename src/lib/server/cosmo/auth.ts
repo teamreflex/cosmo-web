@@ -113,17 +113,15 @@ type CosmoSearchResult = {
 /**
  * Search for the given user.
  */
-export async function search(term: string): Promise<PublicProfile[]> {
+export async function search(token: string, term: string) {
   return await cosmo<CosmoSearchResult>("/user/v1/search", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
     query: {
       query: term,
     },
-  }).then((res) =>
-    res.results.map((user) => ({
-      ...defaultProfile,
-      ...user,
-    }))
-  );
+  });
 }
 
 type RefreshTokenResult = {
@@ -147,16 +145,17 @@ export async function refresh(
  * Fetch a user by nickname.
  */
 export async function fetchByNickname(
+  token: string,
   nickname: string
 ): Promise<CosmoPublicUser | undefined> {
   return await cosmo<{ profile: CosmoPublicUser }>(
-    `/user/v1/by-nickname/${nickname}`
+    `/user/v1/by-nickname/${nickname}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
   )
     .then((res) => res.profile)
-    .catch((err) => {
-      if (err.status === 404) {
-        return undefined;
-      }
-      throw err;
-    });
+    .catch(() => undefined);
 }

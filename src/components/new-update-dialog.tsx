@@ -13,8 +13,8 @@ export default function NewUpdateDialog() {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <button className="flex justify-center items-center py-1 px-2 rounded-xl bg-cosmo-text bg-opacity-25 hover:bg-opacity-40 transition-colors">
-          <Newspaper className="text-cosmo-text w-6 h-6" />
+        <button className="flex justify-center items-center py-1 px-2 rounded-xl bg-red-500 bg-opacity-25 hover:bg-opacity-40 transition-colors">
+          <Newspaper className="text-red-500 w-6 h-6" />
         </button>
       </AlertDialogTrigger>
       <AlertDialogContent>
@@ -23,6 +23,22 @@ export default function NewUpdateDialog() {
         </AlertDialogHeader>
 
         <div className="flex flex-col text-sm gap-2">
+          {/* jan 19th */}
+          <div className="flex flex-col gap-1">
+            <h3 className="font-semibold text-lg">January 19th 2024</h3>
+            <ul className="list-disc list-inside">
+              <li>
+                Due to Cosmo changes, searching for users now requires signing
+                in. This also applies to viewing profiles that haven&apos;t been
+                added into the system.
+              </li>
+              <li>
+                Profiles that have been added to the system can continue to be
+                viewed without signing in.
+              </li>
+            </ul>
+          </div>
+
           {/* jan 15th */}
           <div className="flex flex-col gap-1">
             <h3 className="font-semibold text-lg">January 15th 2024</h3>

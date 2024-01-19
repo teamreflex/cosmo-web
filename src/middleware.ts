@@ -32,7 +32,7 @@ export const config = {
  * this is separate to the matcher as these paths still need token handling
  */
 const allowUnauthenticated = new RegExp(
-  "^(/@.*|/u/[^/]*|/objekts|/api/objekts)$"
+  "^(/@.*|/u/[^/]*|/objekts|/api/objekts|/auth)$"
 );
 
 export async function middleware(request: NextRequest) {

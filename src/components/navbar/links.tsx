@@ -125,7 +125,7 @@ const LinkIcons = memo(function LinkIcons({ path, user }: LinkProps) {
         );
       })}
 
-      <NavbarSearch />
+      <NavbarSearch authenticated={user !== undefined} />
     </Fragment>
   );
 });
