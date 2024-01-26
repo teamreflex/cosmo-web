@@ -6,7 +6,7 @@ import {
   validSeasons,
 } from "@/lib/universal/cosmo/common";
 import { FinalProgress, SeasonMatrix } from "@/lib/universal/progress";
-import { SQL, and, eq, sql } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -28,11 +28,9 @@ export async function GET(
   }
 
   const matrix = buildMatrix();
-  const selects = buildSelects(matrix);
-
   const [totals, progress] = await Promise.all([
     fetchTotal(member),
-    fetchProgress(params.address.toLowerCase(), member, selects),
+    fetchProgress(params.address.toLowerCase(), member),
   ]);
 
   return NextResponse.json(zipResults(matrix, totals, progress));
@@ -42,8 +40,10 @@ export async function GET(
  * Build a matrix of all available classes, seasons and online types.
  */
 function buildMatrix(): SeasonMatrix[] {
+  const onlineTypes = [...validOnlineTypes, "combined"] as const;
+
   const classes = validClasses.filter((c) => !["Zero", "Welcome"].includes(c));
-  return validOnlineTypes.flatMap((type) =>
+  return onlineTypes.flatMap((type) =>
     validSeasons.flatMap((season) => {
       return classes.map((c) => ({
         key: `${season.toLowerCase()}_${c.toLowerCase()}_${type}`,
@@ -56,33 +56,19 @@ function buildMatrix(): SeasonMatrix[] {
 }
 
 /**
- * Build the SQL queries for each season/class combination.
- * This is split out so `unstable_cache` can call it with clean input params for caching.
+ * Fetch unique collections the user owns for given member.
  */
-function buildSelects(matrix: SeasonMatrix[]) {
-  return matrix.reduce((acc, m) => {
-    acc[
-      m.key
-    ] = sql<number>`cast(SUM(CASE WHEN (${collections.season} = ${m.season} AND ${collections.class} = ${m.class} AND ${collections.onOffline} = ${m.type}) THEN 1 ELSE 0 END) as int)`;
-    return acc;
-  }, {} as Record<string, SQL<number>>);
-}
-
-type ProgressBreakdown = {
-  [season_class_type: string]: number;
-};
-
-/**
- * Fetch objekt collection progress for the given user/member.
- */
-async function fetchProgress(
-  address: string,
-  member: string,
-  selects: Record<string, SQL<number>>
-): Promise<ProgressBreakdown> {
-  const subquery = indexer
+async function fetchProgress(address: string, member: string) {
+  return await indexer
     // ensure we only count each collection once
-    .selectDistinctOn([objekts.collectionId])
+    .selectDistinctOn([objekts.collectionId], {
+      owner: objekts.owner,
+      collectionId: objekts.collectionId,
+      member: collections.member,
+      season: collections.season,
+      class: collections.class,
+      onOffline: collections.onOffline,
+    })
     .from(objekts)
     .innerJoin(collections, eq(objekts.collectionId, collections.id))
     .where(
@@ -93,43 +79,74 @@ async function fetchProgress(
         eq(collections.member, member)
       )
     )
-    .orderBy(objekts.collectionId)
-    .as("subquery");
-
-  // count the results
-  const result = await indexer.select(selects).from(subquery);
-  return result[0] ?? {};
+    .orderBy(objekts.collectionId);
 }
 
 /**
- * New objekts don't drop often, so cache this result.
+ * Fetch all collections for the given member.
+ * Cached for one hour.
  */
 const fetchTotal = unstable_cache(
-  async (member: string): Promise<ProgressBreakdown> => {
-    const selects = buildSelects(buildMatrix());
-
+  async (member: string) => {
     const result = await indexer
-      .select(selects)
+      .select({
+        id: collections.id,
+        collectionNo: collections.collectionNo,
+        frontImage: collections.frontImage,
+        textColor: collections.textColor,
+        member: collections.member,
+        season: collections.season,
+        class: collections.class,
+        onOffline: collections.onOffline,
+      })
       .from(collections)
       .where(eq(collections.member, member));
 
-    return result[0] ?? {};
+    return result;
   },
-  ["progress-total"], // param (member name) gets added to this
+  ["collections-for-member"], // param (member name) gets added to this
   { revalidate: 60 * 60 } // 1 hour
 );
+
+type PartialCollection = Awaited<ReturnType<typeof fetchTotal>>;
+type PartialObjekt = Awaited<ReturnType<typeof fetchProgress>>;
 
 /**
  * Merge the total and progress counts into the matrix.
  */
 function zipResults(
   matrix: SeasonMatrix[],
-  total: ProgressBreakdown,
-  progress: ProgressBreakdown
+  total: PartialCollection,
+  progress: PartialObjekt
 ): FinalProgress[] {
-  return matrix.map((m) => ({
-    ...m,
-    total: total[m.key] ?? 0,
-    progress: progress[m.key] ?? 0,
-  }));
+  return matrix.map((m) => {
+    const type = m.type === "combined" ? undefined : m.type;
+
+    const collectionsInScope = total.filter(
+      filterMatrix(m.class, m.season, type)
+    );
+    const ownedInScope = progress.filter(filterMatrix(m.class, m.season, type));
+
+    return {
+      ...m,
+      total: collectionsInScope.length,
+      progress: ownedInScope.length,
+      collections: collectionsInScope.map((c) => ({
+        ...c,
+        obtained: ownedInScope.some((p) => p.collectionId === c.id),
+      })),
+    };
+  });
+}
+
+/**
+ * Helper to filter down to the matrix.
+ */
+function filterMatrix<
+  T extends { class: string; season: string; onOffline: string }
+>(matrixClass: string, matrixSeason: string, matrixOnOffline?: string) {
+  return ({ class: className, season, onOffline }: T) =>
+    className === matrixClass &&
+    season === matrixSeason &&
+    (matrixOnOffline ? onOffline === matrixOnOffline : true);
 }
