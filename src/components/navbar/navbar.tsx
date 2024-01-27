@@ -6,7 +6,7 @@ import GasDisplay from "../misc/gas-display";
 import ComoBalances from "./como-balances";
 import { decodeUser, getProfile } from "@/app/data-fetching";
 import { fetchArtists } from "@/lib/server/cosmo/artists";
-import NewUpdateDialog from "../new-update-dialog";
+import UpdateDialog from "./updates/update-dialog";
 
 export default async function Navbar() {
   return (
@@ -24,7 +24,7 @@ export default async function Navbar() {
                 <GasDisplay />
               </Suspense>
 
-              <NewUpdateDialog />
+              <UpdateDialog />
             </div>
 
             <LinksRenderer />
