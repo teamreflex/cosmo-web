@@ -18,7 +18,7 @@ import { addWeeks, format, isWithinInterval, subWeeks } from "date-fns";
 import { env } from "@/env.mjs";
 
 export default function UpdateDialog() {
-  const isNew = isWithinInterval(new Date("2024-01-27"), {
+  const isNew = isWithinInterval(updates[0].date, {
     start: subWeeks(new Date(), 1),
     end: addWeeks(new Date(), 1),
   });
