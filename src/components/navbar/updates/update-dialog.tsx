@@ -14,7 +14,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { addWeeks, isWithinInterval, subWeeks } from "date-fns";
+import { addWeeks, format, isWithinInterval, subWeeks } from "date-fns";
+import { env } from "@/env.mjs";
 
 export default function UpdateDialog() {
   const isNew = isWithinInterval(new Date("2024-01-27"), {
@@ -34,84 +35,27 @@ export default function UpdateDialog() {
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Updates</AlertDialogTitle>
+          <AlertDialogTitle>
+            {env.NEXT_PUBLIC_APP_NAME} Updates
+          </AlertDialogTitle>
         </AlertDialogHeader>
 
         <div className="flex flex-col text-sm gap-2">
           <Accordion type="single" collapsible>
-            {/* 240127 */}
-            <AccordionItem value="240127">
-              <AccordionTrigger>January 27th 2024</AccordionTrigger>
-              <AccordionContent>
-                <ul className="list-disc list-inside">
-                  <li>
-                    Added: Visual display of obtained/missing objekts on
-                    progress pages.
-                  </li>
-                </ul>
-              </AccordionContent>
-            </AccordionItem>
-
-            {/* 240119 */}
-            <AccordionItem value="240119">
-              <AccordionTrigger>January 19th 2024</AccordionTrigger>
-              <AccordionContent>
-                <ul className="list-disc list-inside">
-                  <li>
-                    Due to Cosmo changes, searching for users now requires
-                    signing in. This also applies to viewing profiles that
-                    haven&apos;t been added into the system.
-                  </li>
-                  <li>
-                    Profiles that have been added to the system can continue to
-                    be viewed without signing in.
-                  </li>
-                </ul>
-              </AccordionContent>
-            </AccordionItem>
-
-            {/* 240115 */}
-            <AccordionItem value="240115">
-              <AccordionTrigger>January 15th 2024</AccordionTrigger>
-              <AccordionContent>
-                <ul className="list-disc list-inside">
-                  <li>
-                    Added: Option to swap between Cosmo and Polygon for
-                    collection display.
-                  </li>
-                  <li>
-                    Added: Lowest Serial & Highest Serial sorting when using
-                    Polygon.
-                  </li>
-                </ul>
-              </AccordionContent>
-            </AccordionItem>
-
-            {/* 240113 */}
-            <AccordionItem value="240113">
-              <AccordionTrigger>January 13th 2024</AccordionTrigger>
-              <AccordionContent>
-                <ul className="list-disc list-inside">
-                  <li>Removed: Objekt sending, due to Ramper changes.</li>
-                  <li>
-                    Added: Privacy options for changing how much of your profile
-                    is publicly available.
-                  </li>
-                  <li>
-                    Added: Options to change the number of columns when
-                    displaying objekts.
-                  </li>
-                  <li>
-                    Added: Objekt indicators now show when an objekt is in a
-                    lenticular pair, which prevents sending.
-                  </li>
-                  <li>
-                    Added: Icon to indicate when a COMO drop has been carried
-                    over from the previous month, due to landing on the 31st.
-                  </li>
-                </ul>
-              </AccordionContent>
-            </AccordionItem>
+            {updates.map((update) => (
+              <AccordionItem key={update.date} value={update.date}>
+                <AccordionTrigger>
+                  {format(update.date, "MMMM do y")}
+                </AccordionTrigger>
+                <AccordionContent>
+                  <ul className="list-disc list-inside">
+                    {update.changes.map((change, i) => (
+                      <li key={i}>{change}</li>
+                    ))}
+                  </ul>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
           </Accordion>
         </div>
         <AlertDialogFooter>
@@ -121,3 +65,37 @@ export default function UpdateDialog() {
     </AlertDialog>
   );
 }
+
+const updates = [
+  {
+    date: "2024-01-27",
+    changes: [
+      "Added: Visual display of obtained/missing objekts on progress pages.",
+      "Fixed: Scrolling member filter images getting cut off and not displaying on iOS.",
+    ],
+  },
+  {
+    date: "2024-01-19",
+    changes: [
+      `Due to Cosmo changes, searching for users now requires signing in. This also applies to viewing profiles that haven't been added into the system.`,
+      "Profiles that have been added to the system can continue to be viewed without signing in.",
+    ],
+  },
+  {
+    date: "2024-01-15",
+    changes: [
+      "Added: Option to swap between Cosmo and Polygon for collection display.",
+      "Added: Lowest Serial & Highest Serial sorting when using Polygon.",
+    ],
+  },
+  {
+    date: "2024-01-13",
+    changes: [
+      "Removed: Objekt sending, due to Ramper changes.",
+      "Added: Privacy options for changing how much of your profile is publicly available.",
+      "Added: Options to change the number of columns when displaying objekts.",
+      "Added: Objekt indicators now show when an objekt is in a lenticular pair, which prevents sending.",
+      "Added: Icon to indicate when a COMO drop has been carried over from the previous month, due to landing on the 31st.",
+    ],
+  },
+];

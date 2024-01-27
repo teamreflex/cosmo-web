@@ -8,6 +8,7 @@ import {
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { memo } from "react";
+import Image from "next/image";
 
 type Props = {
   showArtists?: boolean;
@@ -87,14 +88,32 @@ export const MemberFilterButton = memo(function MemberFilterButton({
               isActive && "ring ring-cosmo"
             )}
           >
-            <Avatar>
-              <AvatarFallback>{displayName.at(0)}</AvatarFallback>
-              <AvatarImage src={image} alt={displayName} />
-            </Avatar>
+            <MemberImage name={displayName} image={image} />
           </button>
         </TooltipTrigger>
         <TooltipContent side="bottom">{displayName}</TooltipContent>
       </Tooltip>
     </TooltipProvider>
+  );
+});
+
+const MemberImage = memo(function MemberImage({
+  name,
+  image,
+}: {
+  name: string;
+  image: string;
+}) {
+  return (
+    <div className="flex justify-center items-center relative h-10 w-10 bg-muted rounded-full overflow-hidden">
+      <span>{name.charAt(0)}</span>
+      <Image
+        src={image}
+        alt={name}
+        fill={true}
+        priority={true}
+        className="rounded-full"
+      />
+    </div>
   );
 });
