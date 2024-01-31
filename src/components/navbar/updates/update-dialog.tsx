@@ -14,13 +14,13 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { addWeeks, format, isWithinInterval, subWeeks } from "date-fns";
+import { addDays, format, isWithinInterval, subDays } from "date-fns";
 import { env } from "@/env.mjs";
 
 export default function UpdateDialog() {
   const isNew = isWithinInterval(updates[0].date, {
-    start: subWeeks(new Date(), 1),
-    end: addWeeks(new Date(), 1),
+    start: subDays(new Date(), 2),
+    end: addDays(new Date(), 2),
   });
 
   return (
