@@ -27,14 +27,14 @@ export const config = {
  * - /profile/:username
  * - /objekts
  * - /api/objekts
- * - /api/objekt-list
- * - /api/progress
- * - /api/transfers
+ * - /api/objekt-list/*
+ * - /api/progress/*
+ * - /api/transfers/*
  *
  * this is separate to the matcher as these paths still need token handling
  */
 const allowUnauthenticated = new RegExp(
-  "^(/@.*|/profile/[^/]*|/objekts|/api/objekts|/api/objekt-list/[^/]*|/api/progress/[^/]*|/api/transfers/[^/]*|/auth)$"
+  "^(/@.*|/profile/[^/]*|/objekts|/api/objekts|/api/objekt-list/.*|/api/progress/[^/]*|/api/transfers/[^/]*|/auth)$"
 );
 
 export async function middleware(request: NextRequest) {
