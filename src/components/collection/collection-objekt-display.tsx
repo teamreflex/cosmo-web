@@ -14,6 +14,7 @@ import {
   SetCosmoFilters,
 } from "@/hooks/use-cosmo-filters";
 import Objekt from "../objekt/objekt";
+import { GRID_COLUMNS } from "@/lib/utils";
 
 const getObjektId = (objekt: OwnedObjekt) => objekt.tokenId;
 
@@ -43,7 +44,7 @@ export default memo(function CollectionObjektDisplay({
   filters,
   setFilters,
   queryFunction,
-  gridColumns = 4,
+  gridColumns = GRID_COLUMNS,
   dataSource,
 }: Props) {
   const [lockedTokens, setLockedTokens] = useState<number[]>(lockedTokenIds);

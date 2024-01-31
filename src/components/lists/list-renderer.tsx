@@ -21,6 +21,7 @@ import {
 } from "../collection/filters-container";
 import Objekt from "../objekt/objekt";
 import { ofetch } from "ofetch";
+import { GRID_COLUMNS } from "@/lib/utils";
 
 const getObjektId = (objekt: IndexedObjekt) => objekt.id;
 
@@ -37,7 +38,7 @@ export default function ListRenderer({
   artists,
   authenticated,
   user,
-  gridColumns = 4,
+  gridColumns = GRID_COLUMNS,
 }: Props) {
   const [
     searchParams,

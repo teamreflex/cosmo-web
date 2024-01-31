@@ -1,5 +1,5 @@
-import million from "million/compiler";
 import "./src/env.mjs";
+import million from "million/compiler";
 
 /** @type {import('next').NextConfig} */
 const config = {
@@ -10,6 +10,9 @@ const config = {
   },
 
   webpack: (config, { webpack }) => {
+    config.plugins = config.plugins || [];
+
+    // postgres
     config.plugins.push(
       new webpack.IgnorePlugin({
         resourceRegExp: /^pg-native$|^cloudflare:sockets$/,

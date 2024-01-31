@@ -34,6 +34,11 @@ export function addrcomp(a?: string, b?: string) {
 }
 
 /**
+ * default grid columns
+ */
+export const GRID_COLUMNS = 5;
+
+/**
  * Default {@link PublicProfile} properties.
  */
 export const defaultProfile: PublicProfile = {
@@ -48,5 +53,5 @@ export const defaultProfile: PublicProfile = {
     como: false,
     trades: false,
   },
-  gridColumns: 4,
+  gridColumns: GRID_COLUMNS,
 };

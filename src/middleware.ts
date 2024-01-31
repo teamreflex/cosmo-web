@@ -12,12 +12,11 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
-     * - api (API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      */
-    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+    "/((?!_next/static|_next/image|favicon.ico).*)",
   ],
 };
 
@@ -25,14 +24,17 @@ export const config = {
  * allow unauthenticated access to these paths:
  * - /
  * - /@:username
- * - /u/:username
+ * - /profile/:username
  * - /objekts
  * - /api/objekts
+ * - /api/objekt-list
+ * - /api/progress
+ * - /api/transfers
  *
  * this is separate to the matcher as these paths still need token handling
  */
 const allowUnauthenticated = new RegExp(
-  "^(/@.*|/u/[^/]*|/objekts|/api/objekts|/auth)$"
+  "^(/@.*|/profile/[^/]*|/objekts|/api/objekts|/api/objekt-list/[^/]*|/api/progress/[^/]*|/api/transfers/[^/]*|/auth)$"
 );
 
 export async function middleware(request: NextRequest) {

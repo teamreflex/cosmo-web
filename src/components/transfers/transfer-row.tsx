@@ -79,7 +79,11 @@ function SenderUser({
         alt="Cosmo"
         className="rounded-full bg-cosmo-profile p-1"
       />
-      <Link href={`/@${nickname ?? address}`} className="underline">
+      <Link
+        href={`/@${nickname ?? address}`}
+        className="underline"
+        prefetch={false}
+      >
         {nickname ?? address.substring(0, 8)}
       </Link>
     </div>

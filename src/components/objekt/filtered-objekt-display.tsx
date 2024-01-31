@@ -21,7 +21,7 @@ import {
 } from "@/hooks/use-cosmo-filters";
 import { InfiniteQueryNext } from "../infinite-query-pending";
 import { ValidObjekt } from "@/lib/universal/objekts";
-import { cn, typedMemo } from "@/lib/utils";
+import { GRID_COLUMNS, cn, typedMemo } from "@/lib/utils";
 
 export type ObjektResponse<TObjektType extends ValidObjekt> = {
   hasNext: boolean;
@@ -58,7 +58,7 @@ export default typedMemo(function FilteredObjektDisplay<
   queryFunction,
   getObjektId,
   getObjektDisplay = () => true,
-  gridColumns = 4,
+  gridColumns = GRID_COLUMNS,
   dataSource = "blockchain",
 }: Props<TObjektType>) {
   // prevent the query from sending bad sort requests to the cosmo api
