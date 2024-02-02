@@ -68,6 +68,12 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2024-02-03",
+    changes: [
+      "Fixed: Error on COMO calendars when there is a drop being carried over.",
+    ],
+  },
+  {
     date: "2024-01-27",
     changes: [
       "Added: Visual display of obtained/missing objekts on progress pages.",

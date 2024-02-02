@@ -52,17 +52,28 @@ export function buildCalendar(objekts: ObjektWithCollection[]) {
       // carry over 30th/31st drops
       if (!currentDays.includes(day)) {
         // initialize final day if it doesn't exist
-        if (!calendar[currentDays.at(-1)!]) {
-          calendar[currentDays.at(-1)!] = {
+        const finalDay = currentDays.at(-1)!;
+        if (!calendar[finalDay]) {
+          calendar[finalDay] = {
             [objekt.collection.contract]: {
               count: 0,
               carried: 0,
             },
           };
         }
-        calendar[currentDays.at(-1)!][objekt.collection.contract].carried +=
+
+        // initialize the contract specific count if it doesn't exist
+        if (!calendar[finalDay][objekt.collection.contract]) {
+          calendar[finalDay][objekt.collection.contract] = {
+            count: 0,
+            carried: 0,
+          };
+        }
+
+        // increment counts
+        calendar[finalDay][objekt.collection.contract].carried +=
           objekt.collection.comoAmount;
-        calendar[currentDays.at(-1)!][objekt.collection.contract].count +=
+        calendar[finalDay][objekt.collection.contract].count +=
           objekt.collection.comoAmount;
       }
     }
