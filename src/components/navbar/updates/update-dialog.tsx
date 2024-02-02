@@ -71,6 +71,7 @@ const updates = [
     date: "2024-02-03",
     changes: [
       "Fixed: Error on COMO calendars when there is a drop being carried over.",
+      "Fixed: ARTMS COMO icon getting cut off on mobile.",
     ],
   },
   {
