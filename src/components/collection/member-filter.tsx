@@ -6,7 +6,6 @@ import {
   TooltipTrigger,
 } from "../ui/tooltip";
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { memo } from "react";
 import Image from "next/image";
 
