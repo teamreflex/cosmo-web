@@ -68,20 +68,6 @@ export default function PrivacyDialog({
             </div>
           </div>
 
-          {/* como */}
-          <div className="grid grid-cols-4 grid-rows-3">
-            <h2 className="col-span-3 font-semibold">COMO</h2>
-            <p className="col-span-3 col-start-1 row-start-2 row-span-3 text-sm opacity-80">
-              Hides your COMO balances and calendar.
-            </p>
-            <div className="row-span-3 col-start-4 row-start-1 flex items-center justify-end">
-              <Switch
-                name="privacyComo"
-                defaultChecked={profile.privacy.como}
-              />
-            </div>
-          </div>
-
           {/* trades */}
           <div className="grid grid-cols-4 grid-rows-3">
             <h2 className="col-span-3 font-semibold">Trades</h2>
@@ -93,6 +79,20 @@ export default function PrivacyDialog({
               <Switch
                 name="privacyTrades"
                 defaultChecked={profile.privacy.trades}
+              />
+            </div>
+          </div>
+
+          {/* como */}
+          <div className="grid grid-cols-4 grid-rows-3">
+            <h2 className="col-span-3 font-semibold">COMO</h2>
+            <p className="col-span-3 col-start-1 row-start-2 row-span-3 text-sm opacity-80">
+              Hides your COMO balances and calendar.
+            </p>
+            <div className="row-span-3 col-start-4 row-start-1 flex items-center justify-end">
+              <Switch
+                name="privacyComo"
+                defaultChecked={profile.privacy.como}
               />
             </div>
           </div>

@@ -2,6 +2,8 @@
 
 This project aims to build a web based version of [Modhaus](https://www.mod-haus.com/)' **[Cosmo: the Gate](https://play.google.com/store/apps/details?id=com.modhaus.cosmo)** mobile application, replicate its core features as close as possible, and add new features on top.
 
+While mostly an exercise in learning React, it makes extensive use of the latest Vercel & Next features like [streaming](https://nextjs.org/docs/app/building-your-application/routing/loading-ui-and-streaming#streaming-with-suspense), [React Server Components](https://nextjs.org/docs/app/building-your-application/rendering/server-components), [React Server Actions](https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations), [image optimization](https://nextjs.org/docs/app/building-your-application/optimizing/images), [Vercel Data Cache](https://nextjs.org/docs/app/building-your-application/caching#data-cache), [`unstable_cache`](https://nextjs.org/docs/app/api-reference/functions/unstable_cache).
+
 Supersedes the [objekts.jinsoul.tv](https://github.com/teamreflex/objekts-svelte) Svelte app.
 
 <details>

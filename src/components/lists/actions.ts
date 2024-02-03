@@ -10,7 +10,7 @@ import {
   removeObjekt,
   updateObjektList,
 } from "@/lib/server/objekts/lists";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidateTag } from "next/cache";
 import slugify from "slugify";
 
 function createSlug(name: string) {
