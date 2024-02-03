@@ -49,6 +49,16 @@ export async function GET(request: NextRequest, { params }: Params) {
 
   // fetch applicable collections
   const entries = objektList.entries.map((e) => e.collectionId);
+
+  // handle empty list
+  if (entries.length === 0) {
+    return NextResponse.json({
+      total: 0,
+      hasNext: false,
+      objekts: [],
+    });
+  }
+
   let query = indexer
     .select({
       count: sql<number>`count(*) OVER() AS count`,
