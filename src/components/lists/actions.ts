@@ -10,7 +10,7 @@ import {
   removeObjekt,
   updateObjektList,
 } from "@/lib/server/objekts/lists";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import slugify from "slugify";
 
 function createSlug(name: string) {
@@ -39,7 +39,7 @@ export const create = async (form: { name: string }) =>
         slug: createSlug(name),
         userAddress: user.address,
       });
-      revalidatePath("/objekts");
+      revalidateTag(`objekt-lists:${user.address}`);
       return result;
     }
   );
@@ -69,6 +69,8 @@ export const update = async (form: { id: number; name: string }) =>
         userAddress: user.address,
       });
 
+      revalidateTag(`objekt-lists:${user.address}`);
+
       if (success) {
         return `/@${user.nickname}/list/${slug}`;
       } else {
@@ -89,7 +91,7 @@ export const destroy = async (form: { id: number }) =>
     async ({ id }, user) => {
       const result = await deleteObjektList(id, user.address);
       if (result) {
-        revalidatePath("/objekts");
+        revalidateTag(`objekt-lists:${user.address}`);
         return result;
       }
     }

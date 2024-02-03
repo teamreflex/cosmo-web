@@ -7,13 +7,22 @@ import {
   ObjektList,
   UpdateObjektList,
 } from "@/lib/universal/objekts";
+import { unstable_cache } from "next/cache";
 
 /**
  * Fetch all lists for a given user.
+ * Cached for 4 hours.
  */
-export async function fetchObjektLists(address: string): Promise<ObjektList[]> {
-  return await db.select().from(lists).where(eq(lists.userAddress, address));
-}
+export const fetchObjektLists = (address: string) =>
+  unstable_cache(
+    async (address: string): Promise<ObjektList[]> =>
+      db.select().from(lists).where(eq(lists.userAddress, address)),
+    ["objekt-lists"],
+    {
+      revalidate: 60 * 60 * 4,
+      tags: [`objekt-lists:${address}`],
+    }
+  )(address);
 
 /**
  * Fetch a single list.
