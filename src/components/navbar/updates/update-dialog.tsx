@@ -68,10 +68,11 @@ export default function UpdateDialog() {
 
 const updates = [
   {
-    date: "2024-02-03",
+    date: "2024-02-04",
     changes: [
       "Fixed: Error on COMO calendars when there is a drop being carried over.",
       "Fixed: ARTMS COMO icon getting cut off on mobile.",
+      "Fixed: New or empty objekt lists no longer display every possible objekt.",
     ],
   },
   {
