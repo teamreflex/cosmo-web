@@ -9,6 +9,7 @@ import {
   Menu,
   LucideIcon,
   CalendarRange,
+  Camera,
 } from "lucide-react";
 import Link from "next/link";
 import NavbarSearch from "./navbar-search";
@@ -38,6 +39,12 @@ type NavbarLink = {
 
 const links: NavbarLink[] = [
   { name: "Home", icon: Home, href: () => "/", requireAuth: true },
+  {
+    name: "Rekord",
+    icon: Camera,
+    href: () => "/rekord",
+    requireAuth: true,
+  },
   {
     name: "Gravity",
     icon: Vote,
@@ -90,7 +97,7 @@ export default function Links({ user }: { user?: TokenPayload }) {
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button variant="ghost" size="sm">
-              <Menu className="h-8 w-8 shrink-0" />
+              <Menu className="h-8 w-8 shrink-0 outline-none focus:outline-none" />
             </Button>
           </PopoverTrigger>
           <PopoverContent
