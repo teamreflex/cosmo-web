@@ -9,14 +9,7 @@ type Props = {
 
 export default function HLSVideo({ videoUrl, thumbnailUrl, title }: Props) {
   return (
-    <MediaPlayer
-      title={title}
-      src={videoUrl}
-      controls={true}
-      playsInline={true}
-      load="play"
-      viewType="video"
-    >
+    <MediaPlayer title={title} src={videoUrl} controls={true} viewType="video">
       <MediaProvider>
         {thumbnailUrl !== undefined && (
           <Poster
