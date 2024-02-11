@@ -9,10 +9,9 @@ import {
   CosmoGravity,
 } from "@/lib/universal/cosmo/gravity";
 import { cn } from "@/lib/utils";
-import dynamic from "next/dynamic";
 import Image from "next/image";
 import GravityEventType from "./gravity-event-type";
-const ReactPlayer = dynamic(() => import("react-player/lazy"), { ssr: false });
+import HLSVideo from "../misc/hls-video";
 
 type Props = {
   gravity: CosmoGravity;
@@ -108,26 +107,9 @@ function TextElement({ item }: { item: CosmoBodyText }) {
 function VideoElement({ item }: { item: CosmoBodyVideo }) {
   return (
     <div className="cursor-pointer relative aspect-video">
-      <ReactPlayer
-        url={item.videoUrl}
-        controls={true}
-        width="100%"
-        height="100%"
-        config={{
-          file: {
-            forceSafariHLS: true,
-            hlsVersion: "1.4.12",
-          },
-        }}
-        light={
-          <Image
-            src={item.thumbnailImageUrl}
-            alt={item.id}
-            fill={true}
-            className="object-contain"
-            quality={100}
-          />
-        }
+      <HLSVideo
+        videoUrl={item.videoUrl}
+        thumbnailUrl={item.thumbnailImageUrl}
       />
     </div>
   );
