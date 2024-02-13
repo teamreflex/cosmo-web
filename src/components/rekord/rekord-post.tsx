@@ -14,6 +14,7 @@ import { Heart, Loader2 } from "lucide-react";
 import { PropsWithChildren } from "react";
 import ScaledImage from "../scaled-image";
 import RekordLikeButton from "./rekord-like";
+import Link from "next/link";
 
 type RekordPostProps = {
   post: CosmoRekordPost;
@@ -54,7 +55,12 @@ export function RekordPost({
       <DialogContent className="p-0 max-h-[80dvh]">
         <DialogHeader className="text-left px-6 pt-4">
           <DialogTitle>{name}</DialogTitle>
-          <DialogDescription>by {post.owner.nickname}</DialogDescription>
+          <DialogDescription>
+            by{" "}
+            <Link href={`/@${post.owner.nickname}`} className="underline">
+              {post.owner.nickname}
+            </Link>
+          </DialogDescription>
         </DialogHeader>
 
         <div className="relative w-full h-full">
