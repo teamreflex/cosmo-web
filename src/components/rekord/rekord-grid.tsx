@@ -3,7 +3,6 @@
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { RekordResponse } from "@/lib/universal/cosmo/rekord";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
 import { ofetch } from "ofetch";
 import { InfiniteQueryNext } from "../infinite-query-pending";
 import { Fragment } from "react";
@@ -16,7 +15,7 @@ type Props = {
 export default function RekordGrid({ artist }: Props) {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
     useInfiniteQuery({
-      queryKey: ["all-rekords"],
+      queryKey: ["all-rekords", artist],
       queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
         return await ofetch<RekordResponse>(`/api/rekord/v1/post`, {
           query: {
