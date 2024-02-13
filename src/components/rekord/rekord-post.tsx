@@ -45,7 +45,7 @@ export function RekordPost({
             unoptimized
           />
 
-          <div className="absolute z-50 w-full h-full bg-gradient-to-b from-transparent to-black/50" />
+          <div className="absolute z-20 w-full h-full bg-gradient-to-b from-transparent to-black/50" />
 
           {children}
         </button>
@@ -88,7 +88,7 @@ export function RekordMemberImage({ className, post }: RekordMemberImageProps) {
     <Avatar
       className={cn(
         className,
-        "z-50 rounded-full overflow-hidden border border-cosmo"
+        "z-20 rounded-full overflow-hidden border border-cosmo"
       )}
     >
       <AvatarFallback>{name.at(0)}</AvatarFallback>

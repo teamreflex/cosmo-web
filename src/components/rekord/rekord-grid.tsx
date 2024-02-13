@@ -53,7 +53,7 @@ export default function RekordGrid({ artist }: Props) {
                       post={post}
                       className="absolute top-2 left-2"
                     />
-                    <span className="absolute z-50 text-sm font-semibold bottom-2 left-2">
+                    <span className="absolute z-20 text-sm font-semibold bottom-2 left-2">
                       {post.owner.nickname}
                     </span>
                   </RekordPost>
