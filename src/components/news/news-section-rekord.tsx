@@ -17,7 +17,7 @@ type Props = {
 };
 
 export default function NewsSectionRekord({ section }: Props) {
-  const [carousel] = useEmblaCarousel({ loop: true }, [
+  const [carousel] = useEmblaCarousel({ loop: true, align: "start" }, [
     Autoplay({ delay: 10000, stopOnInteraction: false }),
   ]);
 
@@ -32,7 +32,7 @@ export default function NewsSectionRekord({ section }: Props) {
           <h2 className="font-bold text-xl">Today&apos;s Rekord</h2>
         </div>
 
-        <Button variant="cosmo" size="sm" asChild>
+        <Button variant="cosmo" size="xs" asChild>
           <Link href="/rekord">View More</Link>
         </Button>
       </div>

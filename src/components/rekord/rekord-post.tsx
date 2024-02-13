@@ -10,9 +10,10 @@ import {
 import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { PropsWithClassName, cn } from "@/lib/utils";
-import { Heart } from "lucide-react";
+import { Heart, Loader2 } from "lucide-react";
 import { PropsWithChildren } from "react";
 import ScaledImage from "../scaled-image";
+import RekordLikeButton from "./rekord-like";
 
 type RekordPostProps = {
   post: CosmoRekordPost;
@@ -57,7 +58,19 @@ export function RekordPost({
         </DialogHeader>
 
         <div className="relative w-full h-full">
+          <div className="absolute z-50 w-full h-24 bg-gradient-to-t from-transparent to-black/50" />
+
+          <div className="absolute w-full py-6 flex justify-center">
+            <Loader2 className="h-12 w-12 animate-spin" />
+          </div>
+
           <ScaledImage src={post.image.large} alt={post.artist.title} />
+
+          <RekordLikeButton post={post} />
+          <RekordMemberImage
+            post={post}
+            className="absolute top-2 left-3 h-12 w-12"
+          />
         </div>
       </DialogContent>
     </Dialog>

@@ -23,7 +23,6 @@ export async function fetchPosts(token: string, artist: ValidArtist) {
 
 /**
  * Fetch top rekord posts.
- * Cached for 15 minutes.
  */
 export async function fetchTopPosts(token: string, artist: ValidArtist) {
   return await cosmo<CosmoRekordTopPost[]>("/rekord/v1/post/top", {
@@ -32,10 +31,6 @@ export async function fetchTopPosts(token: string, artist: ValidArtist) {
     },
     headers: {
       Authorization: `Bearer ${token}`,
-    },
-    next: {
-      tags: ["rekord", "top-posts"],
-      revalidate: 60 * 15,
     },
   });
 }
@@ -108,6 +103,6 @@ export async function unlikePost(token: string, postId: number) {
       Authorization: `Bearer ${token}`,
     },
   })
-    .then(() => true)
-    .catch(() => false);
+    .then(() => false)
+    .catch(() => true);
 }
