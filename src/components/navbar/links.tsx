@@ -9,7 +9,7 @@ import {
   Menu,
   LucideIcon,
   CalendarRange,
-  Camera,
+  Disc3,
 } from "lucide-react";
 import Link from "next/link";
 import NavbarSearch from "./navbar-search";
@@ -41,7 +41,7 @@ const links: NavbarLink[] = [
   { name: "Home", icon: Home, href: () => "/", requireAuth: true },
   {
     name: "Rekord",
-    icon: Camera,
+    icon: Disc3,
     href: () => "/rekord",
     requireAuth: true,
   },
