@@ -6,6 +6,7 @@ import BestRekord from "@/components/rekord/best-rekord";
 import { Suspense } from "react";
 import Skeleton from "@/components/skeleton/skeleton";
 import { Flag } from "lucide-react";
+import RekordGrid from "@/components/rekord/rekord-grid";
 
 export const metadata: Metadata = {
   title: "Rekord",
@@ -25,18 +26,28 @@ export default async function RekordPage() {
         </Button>
       </div>
 
-      <div className="flex flex-col gap-2 w-full overflow-x-hidden">
-        {/* header */}
-        <div className="flex flex-row justify-between items-center">
-          <div className="flex flex-row gap-2 items-center">
-            <Flag className="w-6 h-6 fill-foreground" />
-            <h2 className="font-bold text-xl">Best Rekord</h2>
+      <div className="flex flex-col gap-4">
+        {/* best rekord */}
+        <div className="flex flex-col gap-2 w-full overflow-x-hidden">
+          {/* header */}
+          <div className="flex flex-row justify-between items-center">
+            <div className="flex flex-row gap-2 items-center">
+              <Flag className="w-6 h-6 fill-foreground" />
+              <h2 className="font-semibold text-xl">Best Rekord</h2>
+            </div>
           </div>
+
+          <Suspense fallback={<RekordSkeleton />}>
+            <BestRekord artist={profile.artist} />
+          </Suspense>
         </div>
 
-        <Suspense fallback={<RekordSkeleton />}>
-          <BestRekord artist={profile.artist} />
-        </Suspense>
+        {/* view all rekords */}
+        <div className="flex flex-col gap-2 w-full overflow-x-hidden">
+          <h3 className="text-lg">View all Rekords</h3>
+
+          <RekordGrid artist={profile.artist} />
+        </div>
       </div>
     </main>
   );

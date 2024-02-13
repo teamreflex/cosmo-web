@@ -1,3 +1,7 @@
+import { z } from "zod";
+import { parse } from "../parsers";
+import { validArtists } from "./common";
+
 export type CosmoRekordArtistMember = {
   id: number;
   name: string;
@@ -44,4 +48,44 @@ export type CosmoRekordArchiveStatus = {
   likeCount: number;
   followerCount: number;
   fandomName: string;
+};
+
+export const rekordFilterSchema = z.object({
+  artistName: z.enum(validArtists),
+  limit: z.coerce.number().optional().default(30),
+  sort: z.enum(["desc", "asc"]).optional().default("desc"),
+  includeFromPost: z.coerce.boolean().optional(),
+  fromPostId: z.coerce.number().optional(),
+  seekDirection: z.enum(["before_than"]).optional(),
+});
+export type RekordParams = z.infer<typeof rekordFilterSchema>;
+
+/**
+ * Parse rekord params with default fallback.
+ */
+export function parseRekordFilters(params: URLSearchParams) {
+  return parse(
+    rekordFilterSchema,
+    {
+      artistName: params.get("artistName"),
+      limit: params.get("limit"),
+      sort: params.get("sort") || undefined,
+      includeFromPost: params.get("includeFromPost"),
+      fromPostId: params.get("fromPostId"),
+      seekDirection: params.get("seekDirection"),
+    },
+    {
+      artistName: "artms",
+      limit: 30,
+      sort: "desc",
+      includeFromPost: undefined,
+      fromPostId: undefined,
+      seekDirection: undefined,
+    }
+  );
+}
+
+export type RekordResponse = {
+  results: CosmoRekordPost[];
+  fromPostId: number;
 };

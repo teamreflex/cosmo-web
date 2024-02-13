@@ -183,11 +183,11 @@ export function parseUserCollection(params: URLSearchParams) {
 /**
  * Parse URLSearchParams with Zod and provide defaults as an optional fallback.
  */
-function parse<TSchema extends z.AnyZodObject>(
+export function parse<TSchema extends z.AnyZodObject>(
   schema: TSchema,
   params: Record<
     keyof z.infer<TSchema>,
-    null | string | number | boolean | string[] | number[]
+    undefined | null | string | number | boolean | string[] | number[]
   >,
   defaults?: z.infer<TSchema>
 ): z.infer<TSchema> {
@@ -197,7 +197,7 @@ function parse<TSchema extends z.AnyZodObject>(
     return result.data;
   }
 
-  console.log(result.error);
+  console.error(result.error);
 
   // provide defaults for safe parsing
   if (defaults) {

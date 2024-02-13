@@ -2,19 +2,17 @@ import {
   CosmoRekordArchiveStatus,
   CosmoRekordPost,
   CosmoRekordTopPost,
+  RekordParams,
 } from "@/lib/universal/cosmo/rekord";
 import { cosmo } from "../http";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 
 /**
  * Fetch rekord posts.
- * TODO: filtering
  */
-export async function fetchPosts(token: string, artist: ValidArtist) {
+export async function fetchPosts(token: string, filters: RekordParams) {
   return await cosmo<CosmoRekordPost[]>("/rekord/v1/post", {
-    query: {
-      artistName: artist,
-    },
+    query: filters,
     headers: {
       Authorization: `Bearer ${token}`,
     },
