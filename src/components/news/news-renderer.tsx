@@ -2,6 +2,7 @@ import {
   isBannerSection,
   isExclusiveSection,
   isFeedSection,
+  isRekordSection,
 } from "@/lib/universal/cosmo/news";
 import { TokenPayload } from "@/lib/universal/auth";
 import NewsSectionFeed from "./news-section-feed";
@@ -9,6 +10,7 @@ import NewsSectionExclusive from "./news-section-exclusive";
 import NewsSectionBanner from "./news-section-banner";
 import { getProfile } from "@/app/data-fetching";
 import { fetchHomeNews } from "@/lib/server/cosmo/news";
+import NewsSectionRekord from "./news-section-rekord";
 
 type Props = {
   user: TokenPayload;
@@ -21,9 +23,14 @@ export default async function NewsRenderer({ user }: Props) {
   return (
     <div className="flex flex-col items-center divide-y-2 divide-accent container px-4">
       {news.map((section) => {
+        if (isRekordSection(section)) {
+          return <NewsSectionRekord key={section.type} section={section} />;
+        }
+
         if (isBannerSection(section)) {
           return <NewsSectionBanner key={section.type} section={section} />;
         }
+
         if (isFeedSection(section)) {
           return (
             <NewsSectionFeed
@@ -33,6 +40,7 @@ export default async function NewsRenderer({ user }: Props) {
             />
           );
         }
+
         if (isExclusiveSection(section)) {
           return <NewsSectionExclusive key={section.type} section={section} />;
         }

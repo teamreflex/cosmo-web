@@ -56,7 +56,7 @@ export type CosmoNewsSectionExclusiveContent = {
 export type CosmoNewsSectionRekord = {
   type: "rekord";
   artist: ValidArtist;
-  contents: CosmoNewsSectionBannerContent[];
+  contents: CosmoNewsSectionRekordContent[];
 };
 export type CosmoNewsSectionRekordContentArtistMember = {
   id: number;
