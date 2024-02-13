@@ -26,7 +26,6 @@ export default function RekordGrid({ artist }: Props) {
             limit: 30,
             sort: "desc",
           },
-          retry: false,
         });
       },
       initialPageParam: 0,
