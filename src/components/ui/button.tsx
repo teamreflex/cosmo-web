@@ -21,9 +21,11 @@ const buttonVariants = cva(
         cosmo: "rounded-xl bg-cosmo text-white hover:bg-cosmo-hover",
         polygon: "text-white bg-polygon hover:bg-polygon-hover",
         opensea: "text-white bg-opensea hover:bg-opensea-hover",
+        icon: "bg-transparent text-foreground disabled:opacity-100",
       },
       size: {
         default: "h-10 px-4 py-2",
+        xs: "h-7 rounded-md px-3",
         sm: "h-9 rounded-md px-3",
         lg: "h-11 rounded-md px-8",
         icon: "h-10 w-10 *:h-5 *:w-5",

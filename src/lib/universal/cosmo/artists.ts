@@ -3,6 +3,7 @@ import { ValidArtist } from "./common";
 export type CosmoArtist = {
   name: string;
   title: string;
+  fandomName: string;
   logoImageUrl: string;
   contracts: {
     Como: string;

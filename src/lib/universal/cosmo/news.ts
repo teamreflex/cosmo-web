@@ -53,11 +53,51 @@ export type CosmoNewsSectionExclusiveContent = {
   nativeVideoUrl: string;
 };
 
+export type CosmoNewsSectionRekord = {
+  type: "rekord";
+  artist: ValidArtist;
+  contents: CosmoNewsSectionRekordContent[];
+};
+export type CosmoNewsSectionRekordContentArtistMember = {
+  id: number;
+  name: string;
+  profileImage: string;
+};
+export type CosmoNewsSectionRekordContentArtist = {
+  name: string;
+  title: string;
+  profileImage: string;
+};
+export type CosmoNewsSectionRekordContent = {
+  id: number;
+  totalLikeCount: number;
+  createdAt: string;
+  updatedAt: string;
+  expiredAt: string;
+  isExpired: boolean;
+  isBlinded: boolean;
+  isDeleted: boolean;
+  isArchived: boolean;
+  isLikedPost: boolean;
+  isReportedPost: boolean;
+  owner: {
+    id: number;
+    nickname: string;
+  };
+  artistMembers: CosmoNewsSectionRekordContentArtistMember[];
+  artist: CosmoNewsSectionRekordContentArtist;
+  image: {
+    thumbnail: string;
+    large: string;
+  };
+};
+
 export type CosmoNewsSection =
   | CosmoNewsSectionBar
   | CosmoNewsSectionBanner
   | CosmoNewsSectionFeed
-  | CosmoNewsSectionExclusive;
+  | CosmoNewsSectionExclusive
+  | CosmoNewsSectionRekord;
 
 export function isBarSection(
   section: CosmoNewsSection
@@ -81,6 +121,12 @@ export function isExclusiveSection(
   section: CosmoNewsSection
 ): section is CosmoNewsSectionExclusive {
   return section.type === "exclusive";
+}
+
+export function isRekordSection(
+  section: CosmoNewsSection
+): section is CosmoNewsSectionRekord {
+  return section.type === "rekord";
 }
 
 export type CosmoNewsFeedResult<TPostType> = {
