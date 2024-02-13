@@ -21,12 +21,17 @@ export default async function RekordPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-cosmo uppercase">Rekord</h1>
 
-        <Button variant="secondary" size="sm" asChild>
-          <Link href="/rekord/archive">Archive</Link>
-        </Button>
+        <div className="flex gap-2 items-center">
+          <Button variant="secondary" size="sm" asChild>
+            <Link href="/rekord/my">My Rekord</Link>
+          </Button>
+          <Button variant="secondary" size="sm" asChild>
+            <Link href="/rekord/archive">Archive</Link>
+          </Button>
+        </div>
       </div>
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 py-2">
         {/* best rekord */}
         <div className="flex flex-col gap-2 w-full overflow-x-hidden">
           {/* header */}

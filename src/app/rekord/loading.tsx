@@ -17,7 +17,7 @@ export default async function RekordLoading() {
           </div>
         </div>
 
-        <div className="flex flex-row gap-2 justify-center">
+        <div className="flex flex-row gap-2 py-2 justify-center">
           {[...Array(5)].map((_, i) => (
             <Skeleton key={i} className="w-32 h-[198px]" />
           ))}
