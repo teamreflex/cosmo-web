@@ -10,15 +10,15 @@ import {
 import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { PropsWithClassName, cn } from "@/lib/utils";
-import { Heart, Loader2 } from "lucide-react";
-import { PropsWithChildren } from "react";
+import { Loader2 } from "lucide-react";
 import ScaledImage from "../scaled-image";
 import RekordLikeButton from "./rekord-like";
 import Link from "next/link";
+import { ReactNode } from "react";
 
-type RekordPostProps = {
+export type RekordPostProps = {
   post: CosmoRekordPost;
-  children: React.ReactNode;
+  children: ReactNode;
   className?: string;
 };
 
@@ -38,6 +38,12 @@ export function RekordPost({
             "relative embla__slide mx-2 flex flex-col justify-between gap-2 aspect-photocard rounded-lg"
           )}
         >
+          {post.isBlinded && (
+            <div className="absolute z-40 w-full h-full rounded-lg bg-opacity-50 bg-red-500 backdrop-blur flex items-center justify-center px-2">
+              <span className="font-semibold drop-shadow">Hidden</span>
+            </div>
+          )}
+
           <Image
             src={post.image.thumbnail}
             alt={post.artist.title}
@@ -64,7 +70,7 @@ export function RekordPost({
         </DialogHeader>
 
         <div className="relative w-full h-full">
-          <div className="absolute z-50 w-full h-24 bg-gradient-to-t from-transparent to-black/50" />
+          <div className="absolute z-20 w-full h-24 bg-gradient-to-t from-transparent to-black/50" />
 
           <div className="absolute w-full py-6 flex justify-center">
             <Loader2 className="h-12 w-12 animate-spin" />
@@ -75,7 +81,7 @@ export function RekordPost({
           <RekordLikeButton post={post} />
           <RekordMemberImage
             post={post}
-            className="absolute top-2 left-3 h-12 w-12"
+            className="z-30 absolute top-2 left-3 h-12 w-12"
           />
         </div>
       </DialogContent>

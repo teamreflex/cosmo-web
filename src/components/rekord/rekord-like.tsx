@@ -18,7 +18,7 @@ export default function RekordLikeButton({ post }: Props) {
   return (
     <form
       action={formAction}
-      className="absolute z-50 top-1 right-0 flex flex-col items-center drop-shadow"
+      className="absolute z-30 top-1 right-0 flex flex-col items-center drop-shadow"
     >
       <input type="text" name="postId" value={post.id} hidden readOnly />
       <input type="checkbox" name="isLiked" checked={isLiked} hidden readOnly />

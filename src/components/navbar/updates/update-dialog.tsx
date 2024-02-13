@@ -71,7 +71,7 @@ const updates = [
     date: "2024-02-13",
     changes: [
       "Implemented Rekord functionality.",
-      `Currently in progress: Rekord archive and "My Rekord" pages.`,
+      `Currently in progress: Rekord archive page.`,
       "Submitting new rekord posts will not supported.",
     ],
   },

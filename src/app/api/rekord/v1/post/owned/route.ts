@@ -1,10 +1,10 @@
 import { getUser } from "@/app/api/common";
-import { fetchPosts } from "@/lib/server/cosmo/rekord";
+import { fetchMyPosts, fetchPosts } from "@/lib/server/cosmo/rekord";
 import { parseRekordFilters } from "@/lib/universal/cosmo/rekord";
 import { NextRequest, NextResponse } from "next/server";
 
 /**
- * API route that services the /rekord page.
+ * API route that services the /rekord/my page.
  */
 export async function GET(request: NextRequest) {
   const auth = await getUser();
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
 
   const params = parseRekordFilters(request.nextUrl.searchParams);
 
-  const results = await fetchPosts(auth.user.accessToken, params);
+  const results = await fetchMyPosts(auth.user.accessToken, params);
   const fromPostId = results.at(-1)?.id ?? undefined;
 
   return NextResponse.json({

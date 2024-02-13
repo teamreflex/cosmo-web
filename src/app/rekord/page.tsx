@@ -1,12 +1,12 @@
 import { Metadata } from "next";
 import { decodeUser, getProfile } from "../data-fetching";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import BestRekord from "@/components/rekord/best-rekord";
 import { Suspense } from "react";
 import Skeleton from "@/components/skeleton/skeleton";
 import { Flag } from "lucide-react";
-import RekordGrid from "@/components/rekord/rekord-grid";
+import AllRekords from "@/components/rekord/all-rekords";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Rekord",
@@ -21,14 +21,14 @@ export default async function RekordPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-cosmo uppercase">Rekord</h1>
 
-        {/* <div className="flex gap-2 items-center">
+        <div className="flex gap-2 items-center">
           <Button variant="secondary" size="sm" asChild>
             <Link href="/rekord/my">My Rekord</Link>
           </Button>
-          <Button variant="secondary" size="sm" asChild>
+          {/* <Button variant="secondary" size="sm" asChild>
             <Link href="/rekord/archive">Archive</Link>
-          </Button>
-        </div> */}
+          </Button> */}
+        </div>
       </div>
 
       <div className="flex flex-col gap-4 py-2">
@@ -51,7 +51,7 @@ export default async function RekordPage() {
         <div className="flex flex-col gap-2 w-full overflow-x-hidden">
           <h3 className="text-lg">View all Rekords</h3>
 
-          <RekordGrid artist={profile.artist} />
+          <AllRekords artist={profile.artist} />
         </div>
       </div>
     </main>

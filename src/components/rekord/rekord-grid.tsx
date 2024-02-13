@@ -1,33 +1,30 @@
 "use client";
 
-import { ValidArtist } from "@/lib/universal/cosmo/common";
-import { RekordResponse } from "@/lib/universal/cosmo/rekord";
-import { useInfiniteQuery } from "@tanstack/react-query";
-import { ofetch } from "ofetch";
+import { CosmoRekordPost, RekordResponse } from "@/lib/universal/cosmo/rekord";
+import {
+  QueryFunction,
+  QueryKey,
+  useInfiniteQuery,
+} from "@tanstack/react-query";
 import { InfiniteQueryNext } from "../infinite-query-pending";
-import { Fragment } from "react";
-import { RekordMemberImage, RekordPost } from "./rekord-post";
+import { Fragment, ReactNode, cloneElement } from "react";
+import Skeleton from "../skeleton/skeleton";
 
 type Props = {
-  artist: ValidArtist;
+  queryKey: QueryKey;
+  queryFunction: QueryFunction<RekordResponse, QueryKey, number | undefined>;
+  children: (props: { post: CosmoRekordPost }) => ReactNode;
 };
 
-export default function RekordGrid({ artist }: Props) {
+export default function RekordGrid({
+  queryKey,
+  queryFunction,
+  children,
+}: Props) {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
     useInfiniteQuery({
-      queryKey: ["all-rekords", artist],
-      queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
-        return await ofetch<RekordResponse>(`/api/rekord/v1/post`, {
-          query: {
-            artistName: artist,
-            fromPostId: pageParam === 0 ? undefined : pageParam.toString(),
-            includeFromPost: false,
-            seekDirection: "before_than",
-            limit: 30,
-            sort: "desc",
-          },
-        });
-      },
+      queryKey,
+      queryFn: queryFunction,
       initialPageParam: 0,
       getNextPageParam: (lastPage) => lastPage.fromPostId,
       refetchOnWindowFocus: false,
@@ -36,7 +33,13 @@ export default function RekordGrid({ artist }: Props) {
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-5 gap-4 justify-center">
-      {status === "error" ? (
+      {status === "pending" ? (
+        <Fragment>
+          {[...Array(5)].map((_, i) => (
+            <Skeleton key={i} className="max-w-64 aspect-photocard" />
+          ))}
+        </Fragment>
+      ) : status === "error" ? (
         <div>error</div>
       ) : (
         <Fragment>
@@ -44,19 +47,7 @@ export default function RekordGrid({ artist }: Props) {
             data.pages.map((group, i) => (
               <Fragment key={i}>
                 {group.results.map((post) => (
-                  <RekordPost
-                    key={post.id}
-                    post={post}
-                    className="max-w-64 border border-accent"
-                  >
-                    <RekordMemberImage
-                      post={post}
-                      className="absolute top-2 left-2"
-                    />
-                    <span className="absolute z-20 text-sm font-semibold bottom-2 left-2">
-                      {post.owner.nickname}
-                    </span>
-                  </RekordPost>
+                  <Fragment key={post.id}>{children({ post })}</Fragment>
                 ))}
               </Fragment>
             ))}

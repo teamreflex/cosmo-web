@@ -66,11 +66,9 @@ export async function fetchArchivedStatus(token: string, artist: ValidArtist) {
  * Fetch archived rekord posts.
  * TODO: filtering
  */
-export async function fetchMyPosts(token: string, artist: ValidArtist) {
+export async function fetchMyPosts(token: string, filters: RekordParams) {
   return await cosmo<CosmoRekordPost[]>("/rekord/v1/post/owned", {
-    query: {
-      artistName: artist,
-    },
+    query: filters,
     headers: {
       Authorization: `Bearer ${token}`,
     },
