@@ -14,17 +14,28 @@ import { Heart } from "lucide-react";
 import { PropsWithChildren } from "react";
 import ScaledImage from "../scaled-image";
 
-type RekordPostProps = PropsWithChildren<{
+type RekordPostProps = {
   post: CosmoRekordPost;
-}>;
+  children: React.ReactNode;
+  className?: string;
+};
 
-export function RekordPost({ post, children }: RekordPostProps) {
+export function RekordPost({
+  post,
+  children,
+  className = "w-32 max-w-32",
+}: RekordPostProps) {
   const { name } = extractMember(post);
 
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <button className="relative embla__slide mx-2 flex flex-col justify-between gap-2 aspect-photocard w-32 max-w-[8rem] rounded-lg">
+        <button
+          className={cn(
+            className,
+            "relative embla__slide mx-2 flex flex-col justify-between gap-2 aspect-photocard rounded-lg"
+          )}
+        >
           <Image
             src={post.image.thumbnail}
             alt={post.artist.title}
@@ -39,7 +50,7 @@ export function RekordPost({ post, children }: RekordPostProps) {
         </button>
       </DialogTrigger>
 
-      <DialogContent className="p-0">
+      <DialogContent className="p-0 max-h-[80dvh]">
         <DialogHeader className="text-left px-6 pt-4">
           <DialogTitle>{name}</DialogTitle>
           <DialogDescription>by {post.owner.nickname}</DialogDescription>
