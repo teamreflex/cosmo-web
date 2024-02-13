@@ -7,10 +7,7 @@ import Timestamp from "../ui/timestamp";
 import { Copy } from "lucide-react";
 import { useCopyToClipboard } from "usehooks-ts";
 import { toast } from "../ui/use-toast";
-import dynamic from "next/dynamic";
-
-// gets around SSR hydration issues
-const ReactPlayer = dynamic(() => import("react-player/lazy"), { ssr: false });
+import HLSVideo from "../misc/hls-video";
 
 export default function NewsPostExclusive({
   post,
@@ -69,26 +66,10 @@ function ExclusiveVideoPost({
 }) {
   return (
     <div className="cursor-pointer relative aspect-video rounded-xl border border-accent overflow-hidden">
-      <ReactPlayer
-        url={post.nativeVideoUrl}
-        controls={true}
-        width="100%"
-        height="100%"
-        config={{
-          file: {
-            forceSafariHLS: true,
-            hlsVersion: "1.4.12",
-          },
-        }}
-        light={
-          <Image
-            src={post.thumbnailImageUrl}
-            alt={post.title}
-            fill={true}
-            className="object-contain"
-            quality={100}
-          />
-        }
+      <HLSVideo
+        videoUrl={post.nativeVideoUrl}
+        thumbnailUrl={post.thumbnailImageUrl}
+        title={post.title}
       />
     </div>
   );
