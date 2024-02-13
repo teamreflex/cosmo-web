@@ -54,7 +54,10 @@ export const rekordFilterSchema = z.object({
   artistName: z.enum(validArtists),
   limit: z.coerce.number().optional().default(30),
   sort: z.enum(["desc", "asc"]).optional().default("desc"),
-  includeFromPost: z.coerce.boolean().optional(),
+  includeFromPost: z
+    .string()
+    .refine((s) => s === "true" || s === "false")
+    .transform((s) => s === "true"),
   fromPostId: z.coerce.number().optional(),
   seekDirection: z.enum(["before_than"]).optional(),
 });
@@ -78,7 +81,7 @@ export function parseRekordFilters(params: URLSearchParams) {
       artistName: "artms",
       limit: 30,
       sort: "desc",
-      includeFromPost: undefined,
+      includeFromPost: false,
       fromPostId: undefined,
       seekDirection: undefined,
     }
