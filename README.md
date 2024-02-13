@@ -38,6 +38,10 @@ Supersedes the [objekts.jinsoul.tv](https://github.com/teamreflex/objekts-svelte
   - Displaying list of gravity events
   - Render dynamic gravity event description
   - Display details about a specific gravity event (ranking, leaderboard etc)
+- Rekord
+  - Displaying "today's rekord" on homepage
+  - Displaying "top rekords"
+  - Displaying all rekords
 
 </details>
 

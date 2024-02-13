@@ -68,6 +68,14 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2024-02-13",
+    changes: [
+      "Implemented Rekord functionality.",
+      `Currently in progress: Rekord archive and "My Rekord" pages.`,
+      "Submitting new rekord posts will not supported.",
+    ],
+  },
+  {
     date: "2024-02-04",
     changes: [
       "Fixed: Error on COMO calendars when there is a drop being carried over.",
