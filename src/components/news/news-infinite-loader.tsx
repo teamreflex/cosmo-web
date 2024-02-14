@@ -38,7 +38,10 @@ export default function NewsInfiniteLoader<TPostType>({
       refetchOnWindowFocus: false,
     });
 
-  // infinite scroll loader
+  /**
+   * infinite scroll loader
+   * removing the effect results in multiple fetches
+   */
   useEffect(() => {
     if (inView) {
       fetchNextPage();

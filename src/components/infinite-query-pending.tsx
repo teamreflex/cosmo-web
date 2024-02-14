@@ -18,7 +18,10 @@ export function InfiniteQueryNext({
 }: Props) {
   const { ref, inView } = useInView();
 
-  // infinite scroll loader
+  /**
+   * infinite scroll loader
+   * removing the effect results in multiple fetches
+   */
   useEffect(() => {
     if (inView) {
       fetchNextPage();
