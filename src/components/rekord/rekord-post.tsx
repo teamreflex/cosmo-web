@@ -44,6 +44,12 @@ export function RekordPost({
             </div>
           )}
 
+          {post.isExpired && (
+            <div className="absolute z-40 w-full h-full rounded-lg bg-opacity-50 bg-black flex items-center justify-center px-2">
+              <span className="font-semibold drop-shadow">Expired</span>
+            </div>
+          )}
+
           <Image
             src={post.image.thumbnail}
             alt={post.artist.title}
