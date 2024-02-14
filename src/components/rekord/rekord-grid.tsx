@@ -31,6 +31,8 @@ export default function RekordGrid({
       staleTime: 1000 * 60,
     });
 
+  const rekords = data?.pages.flatMap((group) => group.results) ?? [];
+
   return (
     <div className="grid grid-cols-2 md:grid-cols-5 gap-4 justify-center">
       {status === "pending" ? (
@@ -43,14 +45,9 @@ export default function RekordGrid({
         <div>error</div>
       ) : (
         <Fragment>
-          {data !== undefined &&
-            data.pages.map((group, i) => (
-              <Fragment key={i}>
-                {group.results.map((post) => (
-                  <Fragment key={post.id}>{children({ post })}</Fragment>
-                ))}
-              </Fragment>
-            ))}
+          {rekords.map((post) => (
+            <Fragment key={post.id}>{children({ post })}</Fragment>
+          ))}
 
           {hasNextPage && (
             <div className="flex col-span-full justify-center">
