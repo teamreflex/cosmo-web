@@ -25,6 +25,10 @@ export async function GET(request: NextRequest) {
  * Search the database for users with a nickname that starts with the query.
  */
 async function queryDatabase(query: string): Promise<CosmoSearchResult> {
+  if (query.length < 4) {
+    return { results: [] };
+  }
+
   const users = await db
     .select({
       nickname: profiles.nickname,
