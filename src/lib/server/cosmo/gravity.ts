@@ -13,7 +13,7 @@ import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { cosmo } from "../http";
 import { redirect } from "next/navigation";
 
-export type CosmoGravityList = {
+type CosmoGravityList = {
   upcoming: CosmoUpcomingGravity[];
   ongoing: CosmoOngoingGravity[];
   past: CosmoPastGravity[];

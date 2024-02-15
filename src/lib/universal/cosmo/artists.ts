@@ -15,7 +15,7 @@ export type CosmoArtist = {
   };
 };
 
-export type CosmoMember = {
+type CosmoMember = {
   name: string;
   artist: ValidArtist;
   units: string[];

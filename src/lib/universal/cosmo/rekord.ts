@@ -2,13 +2,13 @@ import { z } from "zod";
 import { parse } from "../parsers";
 import { validArtists } from "./common";
 
-export type CosmoRekordArtistMember = {
+type CosmoRekordArtistMember = {
   id: number;
   name: string;
   profileImage: string;
 };
 
-export type CosmoRekordArtist = {
+type CosmoRekordArtist = {
   name: string;
   title: string;
   profileImage: string;
@@ -64,7 +64,7 @@ export type CosmoRekordArchiveStatus = {
   fandomName: string;
 };
 
-export const rekordFilterSchema = z.object({
+const rekordFilterSchema = z.object({
   artistName: z.enum(validArtists),
   limit: z.coerce.number().optional().default(30),
   sort: z.enum(["desc", "asc"]).optional().default("desc"),

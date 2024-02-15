@@ -35,7 +35,6 @@ export const cosmoSchema = z.object({
   transferable: z.coerce.boolean().optional().nullable(),
   gridable: z.coerce.boolean().optional().nullable(),
 });
-export type CosmoParams = z.infer<typeof cosmoSchema>;
 
 /**
  * Parse Cosmo params with default fallback.
@@ -74,7 +73,6 @@ export const objektIndex = cosmoSchema
     page: z.coerce.number().optional().default(0),
     collectionNo: z.array(z.string()).optional().default([]),
   });
-export type ObjektIndexParams = z.infer<typeof objektIndex>;
 
 /**
  * Parse objekt index params with default fallback.
@@ -111,7 +109,6 @@ export function parseObjektIndex(params: URLSearchParams) {
  * Does not add anything but this is in place for future compatibility.
  */
 export const objektList = objektIndex.extend({});
-export type ObjektListParams = z.infer<typeof objektList>;
 
 /**
  * Parse objekt index params with default fallback.
@@ -147,7 +144,6 @@ export function parseObjektList(params: URLSearchParams) {
  * Extends Cosmo & objekt index schemas as it has the same filters.
  */
 export const userCollection = cosmoSchema.merge(objektIndex);
-export type UserCollectionParams = z.infer<typeof userCollection>;
 
 /**
  * Parse user collection params with default fallback.

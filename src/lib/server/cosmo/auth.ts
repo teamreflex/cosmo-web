@@ -67,7 +67,7 @@ type CosmoUserResult = {
   };
 };
 
-export type CosmoUser = {
+type CosmoUser = {
   nickname: string;
   address: string;
   profileImageUrl: string;

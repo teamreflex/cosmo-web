@@ -1,6 +1,6 @@
 import { ValidArtist } from "./common";
 
-export type CosmoNewsSectionBar = {
+type CosmoNewsSectionBar = {
   type: "bar";
   artist: ValidArtist;
   contents: [];
@@ -58,17 +58,17 @@ export type CosmoNewsSectionRekord = {
   artist: ValidArtist;
   contents: CosmoNewsSectionRekordContent[];
 };
-export type CosmoNewsSectionRekordContentArtistMember = {
+type CosmoNewsSectionRekordContentArtistMember = {
   id: number;
   name: string;
   profileImage: string;
 };
-export type CosmoNewsSectionRekordContentArtist = {
+type CosmoNewsSectionRekordContentArtist = {
   name: string;
   title: string;
   profileImage: string;
 };
-export type CosmoNewsSectionRekordContent = {
+type CosmoNewsSectionRekordContent = {
   id: number;
   totalLikeCount: number;
   createdAt: string;

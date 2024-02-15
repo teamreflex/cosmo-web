@@ -1,5 +1,5 @@
 import { getUser } from "@/app/api/common";
-import { fetchMyPosts, fetchPosts } from "@/lib/server/cosmo/rekord";
+import { fetchMyPosts } from "@/lib/server/cosmo/rekord";
 import { parseRekordFilters } from "@/lib/universal/cosmo/rekord";
 import { NextRequest, NextResponse } from "next/server";
 

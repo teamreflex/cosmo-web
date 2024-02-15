@@ -16,7 +16,7 @@ import RekordLikeButton from "./rekord-like";
 import Link from "next/link";
 import { ReactNode } from "react";
 
-export type RekordPostProps<TPostType extends CosmoRekordItem> = {
+type RekordPostProps<TPostType extends CosmoRekordItem> = {
   item: TPostType;
   children: ReactNode;
   className?: string;
