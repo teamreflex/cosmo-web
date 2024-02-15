@@ -102,7 +102,7 @@ export async function user(accessToken: string): Promise<CosmoUser> {
   }));
 }
 
-type CosmoSearchResult = {
+export type CosmoSearchResult = {
   results: {
     nickname: string;
     address: string;

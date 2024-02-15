@@ -72,13 +72,13 @@ const updates = [
     changes: [
       "Added: Rekord archive page.",
       `Added: "Hidden" and "Expired" indicators on My Rekords page.`,
+      "Changed: When signed in, the user search will query Cosmo. When not signed in, it will lookup users saved into the system.",
     ],
   },
   {
     date: "2024-02-13",
     changes: [
       "Implemented Rekord functionality.",
-      `Currently in progress: Rekord archive page.`,
       "Submitting new rekord posts will not supported.",
     ],
   },
