@@ -25,9 +25,9 @@ export default async function RekordPage() {
           <Button variant="secondary" size="sm" asChild>
             <Link href="/rekord/my">My Rekord</Link>
           </Button>
-          {/* <Button variant="secondary" size="sm" asChild>
+          <Button variant="secondary" size="sm" asChild>
             <Link href="/rekord/archive">Archive</Link>
-          </Button> */}
+          </Button>
         </div>
       </div>
 

@@ -17,7 +17,7 @@ export default async function NewsRenderer() {
   const news = await fetchHomeNews(user!.accessToken, profile.artist);
 
   return (
-    <div className="flex flex-col items-center container px-4">
+    <div className="flex flex-col items-center container py-2">
       {news.map((section) => {
         if (isRekordSection(section)) {
           return <NewsSectionRekord key={section.type} section={section} />;

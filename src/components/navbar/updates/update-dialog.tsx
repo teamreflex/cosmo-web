@@ -68,6 +68,13 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2024-02-16",
+    changes: [
+      "Added: Rekord archive page.",
+      `Added: "Hidden" and "Expired" indicators on My Rekords page.`,
+    ],
+  },
+  {
     date: "2024-02-13",
     changes: [
       "Implemented Rekord functionality.",
@@ -95,23 +102,6 @@ const updates = [
     changes: [
       `Due to Cosmo changes, searching for users now requires signing in. This also applies to viewing profiles that haven't been added into the system.`,
       "Profiles that have been added to the system can continue to be viewed without signing in.",
-    ],
-  },
-  {
-    date: "2024-01-15",
-    changes: [
-      "Added: Option to swap between Cosmo and Polygon for collection display.",
-      "Added: Lowest Serial & Highest Serial sorting when using Polygon.",
-    ],
-  },
-  {
-    date: "2024-01-13",
-    changes: [
-      "Removed: Objekt sending, due to Ramper changes.",
-      "Added: Privacy options for changing how much of your profile is publicly available.",
-      "Added: Options to change the number of columns when displaying objekts.",
-      "Added: Objekt indicators now show when an objekt is in a lenticular pair, which prevents sending.",
-      "Added: Icon to indicate when a COMO drop has been carried over from the previous month, due to landing on the 31st.",
     ],
   },
 ];

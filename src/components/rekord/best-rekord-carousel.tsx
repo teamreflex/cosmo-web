@@ -2,13 +2,13 @@
 
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
-import { CosmoRekordTopPost } from "@/lib/universal/cosmo/rekord";
+import { CosmoRekordTopItem } from "@/lib/universal/cosmo/rekord";
 import { RekordMemberImage, RekordPost } from "./rekord-post";
 import { Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Props = {
-  posts: CosmoRekordTopPost[];
+  posts: CosmoRekordTopItem[];
 };
 
 export default function BestRekordCarousel({ posts }: Props) {
@@ -22,7 +22,7 @@ export default function BestRekordCarousel({ posts }: Props) {
         {posts
           .sort((a, b) => a.rank - b.rank)
           .map((item) => (
-            <RekordTopPost key={item.post.id} post={item} />
+            <RekordTopPost key={item.post.id} item={item} />
           ))}
       </div>
     </div>
@@ -30,15 +30,15 @@ export default function BestRekordCarousel({ posts }: Props) {
 }
 
 type RekordPostProps = {
-  post: CosmoRekordTopPost;
+  item: CosmoRekordTopItem;
 };
 
-function RekordTopPost({ post }: RekordPostProps) {
+function RekordTopPost({ item }: RekordPostProps) {
   return (
-    <RekordPost post={post.post}>
-      <RekordMemberImage post={post.post} className="absolute top-1 left-2" />
-      <RekordLikes count={post.post.totalLikeCount} />
-      <RekordRank rank={post.rank} />
+    <RekordPost item={item}>
+      <RekordMemberImage post={item.post} className="absolute top-1 left-2" />
+      <RekordLikes count={item.post.totalLikeCount} />
+      <RekordRank rank={item.rank} />
     </RekordPost>
   );
 }

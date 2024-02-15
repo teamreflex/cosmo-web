@@ -1,4 +1,4 @@
-import { CosmoRekordPost } from "@/lib/universal/cosmo/rekord";
+import { CosmoRekordItem, CosmoRekordPost } from "@/lib/universal/cosmo/rekord";
 import {
   Dialog,
   DialogContent,
@@ -16,18 +16,20 @@ import RekordLikeButton from "./rekord-like";
 import Link from "next/link";
 import { ReactNode } from "react";
 
-export type RekordPostProps = {
-  post: CosmoRekordPost;
+export type RekordPostProps<TPostType extends CosmoRekordItem> = {
+  item: TPostType;
   children: ReactNode;
   className?: string;
+  showStatus?: boolean;
 };
 
-export function RekordPost({
-  post,
+export function RekordPost<TPostType extends CosmoRekordItem>({
+  item,
   children,
   className = "w-32 max-w-32",
-}: RekordPostProps) {
-  const { name } = extractMember(post);
+  showStatus = true,
+}: RekordPostProps<TPostType>) {
+  const { name } = extractMember(item.post);
 
   return (
     <Dialog>
@@ -38,27 +40,27 @@ export function RekordPost({
             "relative embla__slide mx-2 flex flex-col justify-between gap-2 aspect-photocard rounded-lg"
           )}
         >
-          {post.isBlinded && (
-            <div className="absolute z-40 w-full h-full rounded-lg bg-opacity-50 bg-red-500 backdrop-blur flex items-center justify-center px-2">
+          {showStatus && item.post.isBlinded && (
+            <div className="absolute z-20 w-full h-full rounded-lg bg-opacity-50 bg-red-500 backdrop-blur flex items-center justify-center px-2">
               <span className="font-semibold drop-shadow">Hidden</span>
             </div>
           )}
 
-          {post.isExpired && (
-            <div className="absolute z-40 w-full h-full rounded-lg bg-opacity-50 bg-black flex items-center justify-center px-2">
+          {showStatus && item.post.isExpired && (
+            <div className="absolute z-20 w-full h-full rounded-lg bg-opacity-50 bg-black flex items-center justify-center px-2">
               <span className="font-semibold drop-shadow">Expired</span>
             </div>
           )}
 
           <Image
-            src={post.image.thumbnail}
-            alt={post.artist.title}
+            src={item.post.image.thumbnail}
+            alt={item.post.artist.title}
             fill={true}
             className="object-cover rounded-lg"
             unoptimized
           />
 
-          <div className="absolute z-20 w-full h-full bg-gradient-to-b from-transparent to-black/50" />
+          <div className="absolute w-full h-full bg-gradient-to-b from-transparent to-black/50" />
 
           {children}
         </button>
@@ -69,8 +71,8 @@ export function RekordPost({
           <DialogTitle>{name}</DialogTitle>
           <DialogDescription>
             by{" "}
-            <Link href={`/@${post.owner.nickname}`} className="underline">
-              {post.owner.nickname}
+            <Link href={`/@${item.post.owner.nickname}`} className="underline">
+              {item.post.owner.nickname}
             </Link>
           </DialogDescription>
         </DialogHeader>
@@ -82,12 +84,15 @@ export function RekordPost({
             <Loader2 className="h-12 w-12 animate-spin" />
           </div>
 
-          <ScaledImage src={post.image.large} alt={post.artist.title} />
+          <ScaledImage
+            src={item.post.image.large}
+            alt={item.post.artist.title}
+          />
 
-          <RekordLikeButton post={post} />
+          <RekordLikeButton post={item.post} />
           <RekordMemberImage
-            post={post}
-            className="z-30 absolute top-2 left-3 h-12 w-12"
+            post={item.post}
+            className="z-30 absolute top-2 left-3"
           />
         </div>
       </DialogContent>
@@ -97,21 +102,24 @@ export function RekordPost({
 
 type RekordMemberImageProps = PropsWithClassName<{
   post: CosmoRekordPost;
+  showName?: boolean;
 }>;
 
-export function RekordMemberImage({ className, post }: RekordMemberImageProps) {
+export function RekordMemberImage({
+  className,
+  post,
+  showName = false,
+}: RekordMemberImageProps) {
   const { name, image } = extractMember(post);
 
   return (
-    <Avatar
-      className={cn(
-        className,
-        "z-20 rounded-full overflow-hidden border border-cosmo"
-      )}
-    >
-      <AvatarFallback>{name.at(0)}</AvatarFallback>
-      <AvatarImage src={image}></AvatarImage>
-    </Avatar>
+    <div className={cn(className, "flex flex-col w-fit gap-1")}>
+      <Avatar className="z-20 rounded-full overflow-hidden border border-cosmo">
+        <AvatarFallback>{name.at(0)}</AvatarFallback>
+        <AvatarImage src={image}></AvatarImage>
+      </Avatar>
+      {showName && <span className="text-sm font-semibold">{name}</span>}
+    </div>
   );
 }
 

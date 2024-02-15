@@ -1,7 +1,9 @@
 import {
+  CosmoRekordArchiveItem,
   CosmoRekordArchiveStatus,
+  CosmoRekordListItem,
   CosmoRekordPost,
-  CosmoRekordTopPost,
+  CosmoRekordTopItem,
   RekordParams,
 } from "@/lib/universal/cosmo/rekord";
 import { cosmo } from "../http";
@@ -9,21 +11,25 @@ import { ValidArtist } from "@/lib/universal/cosmo/common";
 
 /**
  * Fetch rekord posts.
+ * Map into {@link CosmoRekordListItem} to maintain a consistent interface.
  */
-export async function fetchPosts(token: string, filters: RekordParams) {
+export async function fetchPosts(
+  token: string,
+  filters: RekordParams
+): Promise<CosmoRekordListItem[]> {
   return await cosmo<CosmoRekordPost[]>("/rekord/v1/post", {
     query: filters,
     headers: {
       Authorization: `Bearer ${token}`,
     },
-  });
+  }).then((items) => items.map((item) => ({ post: item })));
 }
 
 /**
  * Fetch top rekord posts.
  */
 export async function fetchTopPosts(token: string, artist: ValidArtist) {
-  return await cosmo<CosmoRekordTopPost[]>("/rekord/v1/post/top", {
+  return await cosmo<CosmoRekordTopItem[]>("/rekord/v1/post/top", {
     query: {
       artistName: artist,
     },
@@ -35,13 +41,10 @@ export async function fetchTopPosts(token: string, artist: ValidArtist) {
 
 /**
  * Fetch archived rekord posts.
- * TODO: filtering
  */
-export async function fetchArchivedPosts(token: string, artist: ValidArtist) {
-  return await cosmo<CosmoRekordPost[]>("/rekord/v1/post/archived", {
-    query: {
-      artistName: artist,
-    },
+export async function fetchArchivedPosts(token: string, filters: RekordParams) {
+  return await cosmo<CosmoRekordArchiveItem[]>("/rekord/v1/post/archived", {
+    query: filters,
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -64,15 +67,18 @@ export async function fetchArchivedStatus(token: string, artist: ValidArtist) {
 
 /**
  * Fetch archived rekord posts.
- * TODO: filtering
+ * Map into {@link CosmoRekordListItem} to maintain a consistent interface.
  */
-export async function fetchMyPosts(token: string, filters: RekordParams) {
+export async function fetchMyPosts(
+  token: string,
+  filters: RekordParams
+): Promise<CosmoRekordListItem[]> {
   return await cosmo<CosmoRekordPost[]>("/rekord/v1/post/owned", {
     query: filters,
     headers: {
       Authorization: `Bearer ${token}`,
     },
-  });
+  }).then((items) => items.map((item) => ({ post: item })));
 }
 
 /**

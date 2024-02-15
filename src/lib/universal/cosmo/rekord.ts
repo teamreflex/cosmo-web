@@ -38,10 +38,24 @@ export type CosmoRekordPost = {
   };
 };
 
-export type CosmoRekordTopPost = {
+export type CosmoRekordListItem = {
+  post: CosmoRekordPost;
+};
+
+export type CosmoRekordArchiveItem = {
+  post: CosmoRekordPost;
+  archiveNo: number;
+};
+
+export type CosmoRekordTopItem = {
   post: CosmoRekordPost;
   rank: number;
 };
+
+export type CosmoRekordItem =
+  | CosmoRekordListItem
+  | CosmoRekordArchiveItem
+  | CosmoRekordTopItem;
 
 export type CosmoRekordArchiveStatus = {
   postCount: number;
@@ -88,7 +102,7 @@ export function parseRekordFilters(params: URLSearchParams) {
   );
 }
 
-export type RekordResponse = {
-  results: CosmoRekordPost[];
+export type RekordResponse<TPostType> = {
+  results: TPostType[];
   fromPostId: number;
 };

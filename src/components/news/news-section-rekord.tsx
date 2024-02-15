@@ -1,11 +1,7 @@
 "use client";
 
-import {
-  CosmoNewsSectionRekord,
-  CosmoNewsSectionRekordContent,
-} from "@/lib/universal/cosmo/news";
+import { CosmoNewsSectionRekord } from "@/lib/universal/cosmo/news";
 import Link from "next/link";
-import { PropsWithClassName } from "@/lib/utils";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 import { Button } from "../ui/button";
@@ -43,7 +39,11 @@ export default function NewsSectionRekord({ section }: Props) {
           {section.contents
             .sort((a, b) => a.id - b.id)
             .map((item) => (
-              <RekordPost key={item.id} post={item} className="w-24 max-w-24">
+              <RekordPost
+                key={item.id}
+                item={{ post: item }}
+                className="w-24 max-w-24"
+              >
                 <div className="absolute z-50 -bottom-4 left-0 w-full flex justify-center">
                   <RekordMemberImage post={item} />
                 </div>

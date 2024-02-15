@@ -1,26 +1,37 @@
 "use client";
 
-import { CosmoRekordPost, RekordResponse } from "@/lib/universal/cosmo/rekord";
+import {
+  CosmoRekordItem,
+  CosmoRekordPost,
+  RekordResponse,
+} from "@/lib/universal/cosmo/rekord";
 import {
   QueryFunction,
   QueryKey,
   useInfiniteQuery,
 } from "@tanstack/react-query";
 import { InfiniteQueryNext } from "../infinite-query-pending";
-import { Fragment, ReactNode, cloneElement } from "react";
+import { Fragment, ReactNode } from "react";
 import Skeleton from "../skeleton/skeleton";
+import { cn } from "@/lib/utils";
 
-type Props = {
+type Props<TPostType extends CosmoRekordItem> = {
+  gridClasses?: string;
   queryKey: QueryKey;
-  queryFunction: QueryFunction<RekordResponse, QueryKey, number | undefined>;
-  children: (props: { post: CosmoRekordPost }) => ReactNode;
+  queryFunction: QueryFunction<
+    RekordResponse<TPostType>,
+    QueryKey,
+    number | undefined
+  >;
+  children: (props: { item: TPostType }) => ReactNode;
 };
 
-export default function RekordGrid({
+export default function RekordGrid<TPostType extends CosmoRekordItem>({
+  gridClasses = "grid-cols-2 md:grid-cols-5 gap-4 justify-center",
   queryKey,
   queryFunction,
   children,
-}: Props) {
+}: Props<TPostType>) {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
     useInfiniteQuery({
       queryKey,
@@ -34,7 +45,7 @@ export default function RekordGrid({
   const rekords = data?.pages.flatMap((group) => group.results) ?? [];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-5 gap-4 justify-center">
+    <div className={cn("grid", gridClasses)}>
       {status === "pending" ? (
         <Fragment>
           {[...Array(5)].map((_, i) => (
@@ -45,8 +56,8 @@ export default function RekordGrid({
         <div>error</div>
       ) : (
         <Fragment>
-          {rekords.map((post) => (
-            <Fragment key={post.id}>{children({ post })}</Fragment>
+          {rekords.map((item) => (
+            <Fragment key={item.post.id}>{children({ item })}</Fragment>
           ))}
 
           {hasNextPage && (

@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
   const params = parseRekordFilters(request.nextUrl.searchParams);
 
   const results = await fetchMyPosts(auth.user.accessToken, params);
-  const fromPostId = results.at(-1)?.id ?? undefined;
+  const fromPostId = results.at(-1)?.post.id ?? undefined;
 
   return NextResponse.json({
     results,
