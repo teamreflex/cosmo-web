@@ -12,6 +12,7 @@ import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import { ErrorBoundary } from "react-error-boundary";
 import { Button } from "../ui/button";
 import { RefreshCcw } from "lucide-react";
+import Skeleton from "../skeleton/skeleton";
 
 type Props = {
   artists: CosmoArtistWithMembers[];
@@ -76,7 +77,7 @@ export default function ProgressRenderer({ artists, address }: Props) {
               )}
             >
               {cosmoFilters.member !== null ? (
-                <Suspense fallback={<Loading />}>
+                <Suspense fallback={<ProgressTableSkeleton />}>
                   <ProgressTable
                     address={address}
                     member={cosmoFilters.member}
@@ -95,8 +96,34 @@ export default function ProgressRenderer({ artists, address }: Props) {
   );
 }
 
-function Loading() {
+function ProgressTableSkeleton() {
   return (
-    <div className="mx-auto py-6 bg-accent rounded-lg animate-pulse h-24 w-full sm:w-1/2" />
+    <div className="grid grid-flow-row sm:items-center gap-4">
+      <div className="flex items-center justify-between w-full">
+        {/* member name */}
+        <Skeleton className="h-9 w-32" />
+
+        {/* type select */}
+        <Skeleton className="h-10 w-24" />
+      </div>
+
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-col sm:grid sm:grid-cols-3 gap-2">
+            <div className="flex items-center justify-between col-span-3">
+              {/* season */}
+              <Skeleton className="h-7 w-24" />
+
+              {/* percentage */}
+              <Skeleton className="h-5 w-16" />
+            </div>
+
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-20" />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

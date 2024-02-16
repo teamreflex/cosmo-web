@@ -19,7 +19,7 @@ export default function ProgressItem({
     <div
       onClick={onExpand}
       className={cn(
-        "flex flex-row justify-between items-center rounded-lg py-3 px-4 border border-transparent bg-accent cursor-pointer",
+        "flex flex-row justify-between items-center rounded-lg py-3 px-4 border border-transparent bg-accent cursor-pointer h-20",
         percentage === 100 && "border-cosmo"
       )}
     >
