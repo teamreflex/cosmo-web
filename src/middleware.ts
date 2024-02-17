@@ -8,6 +8,8 @@ import {
 } from "./lib/server/jwt";
 import { refresh } from "./lib/server/cosmo/auth";
 
+const COOKIE_NAME = "token";
+
 export const config = {
   matcher: [
     /*
@@ -35,16 +37,17 @@ const allowUnauthenticated = new RegExp(
 );
 
 export async function middleware(request: NextRequest) {
-  const response = NextResponse.next();
   const path = request.nextUrl.pathname;
 
   // verifies token validity
   const auth = await getUser();
 
   if (auth.success === false) {
+    const response = NextResponse.next();
+
     // delete the token if it exists, as it must be invalid
-    if (request.cookies.has("token")) {
-      response.cookies.delete("token");
+    if (request.cookies.has(COOKIE_NAME)) {
+      response.cookies.delete(COOKIE_NAME);
     }
 
     // redirect to objekt index when unauthenticated
@@ -63,29 +66,39 @@ export async function middleware(request: NextRequest) {
         // if valid, refresh the token
         const newTokens = await refresh(auth.user.refreshToken);
 
+        /**
+         * workaround for: https://github.com/vercel/next.js/issues/49442
+         * cookies.set() applies the Set-Cookie header to the response.
+         * RSCs don't take this into account when reading the cookie,
+         * so just using .next() results in the RSC receiving the old cookie until a page refresh occurs.
+         */
+        const response = NextResponse.redirect(request.url);
+
         // set the new cookie
         response.cookies.set(
-          "token",
+          COOKIE_NAME,
           await signToken({
             ...auth.user,
             ...newTokens,
           }),
           generateCookiePayload()
         );
+
+        return response;
       } else {
         // if invalid, delete the cookie since we can't refresh it
         const redirect = NextResponse.redirect(new URL("/", request.url));
-        redirect.cookies.delete("token");
+        redirect.cookies.delete(COOKIE_NAME);
         return redirect;
       }
     }
   } catch (err) {
     // something has failed (probably jwt payload change), nuke everything
     const redirect = NextResponse.redirect(new URL("/", request.url));
-    redirect.cookies.delete("token");
+    redirect.cookies.delete(COOKIE_NAME);
     return redirect;
   }
 
   // pass the request on when in the app
-  return response;
+  return NextResponse.next();
 }
