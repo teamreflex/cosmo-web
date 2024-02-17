@@ -20,7 +20,7 @@ export default function LockObjekt({ objekt, isLocked, onLockChange }: Props) {
   function toggle() {
     startTransition(async () => {
       const result = await toggleObjektLock({ tokenId, lock: !isLocked });
-      if (result.success && result.data === true) {
+      if (result.status === "success" && result.data === true) {
         trackEvent(`${isLocked ? "unlock" : "lock"}-objekt`);
         onLockChange(tokenId);
       }

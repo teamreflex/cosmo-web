@@ -14,7 +14,6 @@ import { Button } from "../ui/button";
 import { Loader2, Trash } from "lucide-react";
 import { MouseEvent, useTransition } from "react";
 import { destroy } from "./actions";
-import { useRouter } from "next/navigation";
 
 type Props = {
   objektList: ObjektList;
@@ -22,17 +21,12 @@ type Props = {
 
 export default function DeleteList({ objektList }: Props) {
   const [isPending, startTransition] = useTransition();
-  const router = useRouter();
 
   function submit(event: MouseEvent<HTMLButtonElement>) {
     // prevent alert from dismissing on click
     event.preventDefault();
-
     startTransition(async () => {
-      const result = await destroy({ id: objektList.id });
-      if (result.success && result.data) {
-        router.push("/objekts");
-      }
+      await destroy(objektList.id);
     });
   }
 

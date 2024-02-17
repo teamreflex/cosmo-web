@@ -73,7 +73,7 @@ function ListItem({ collection, list, onDone }: ListItemProps) {
         listId: list.id,
         collectionSlug: collection.slug,
       });
-      if (result.success && result.data) {
+      if (result.status === "success" && result.data) {
         toast({
           description: `Added ${collection.collectionId} to ${list.name}`,
         });

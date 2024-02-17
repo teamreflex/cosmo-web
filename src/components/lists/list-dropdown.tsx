@@ -10,12 +10,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { useState, useTransition } from "react";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -33,6 +32,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
+import { useFormState, useFormStatus } from "react-dom";
+import { FieldError } from "../form/error";
 
 type Props = {
   lists: ObjektList[];
@@ -42,25 +43,18 @@ type Props = {
 
 export default function ListDropdown({ lists, nickname, allowCreate }: Props) {
   const { toast } = useToast();
-
-  const [isPending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
-  const [name, setName] = useState("");
-  const [error, setError] = useState("");
 
-  function submit() {
-    startTransition(async () => {
-      const result = await create({ name });
-      if (result.success) {
-        setOpen(false);
-        toast({
-          description: "Objekt list created!",
-        });
-      } else {
-        setError(result.error);
-      }
-    });
-  }
+  const [state, formAction] = useFormState(create, { status: "idle" });
+
+  useEffect(() => {
+    if (state.status === "success") {
+      setOpen(false);
+      toast({
+        description: "Objekt list created!",
+      });
+    }
+  }, [state.status, toast]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -120,26 +114,35 @@ export default function ListDropdown({ lists, nickname, allowCreate }: Props) {
             You can add objekts to the list later.
           </DialogDescription>
         </DialogHeader>
-        <div className="w-full flex flex-col gap-1">
-          <Label htmlFor="name">Name</Label>
-          <Input
-            type="text"
-            autoComplete="off"
-            maxLength={24}
-            onInput={(e) => setName(e.currentTarget.value)}
-            id="name"
-            placeholder="Want To Trade"
-            data-1p-ignore
-          />
-          <p className="text-red-500 text-sm font-semibold">{error}</p>
-        </div>
-        <DialogFooter>
-          <Button disabled={isPending} onClick={submit}>
-            {isPending ? "Saving..." : "Save"}
-            {isPending && <Loader2 className="ml-2 animate-spin" />}
-          </Button>
-        </DialogFooter>
+        <form className="w-full flex flex-col gap-3" action={formAction}>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="name">Name</Label>
+            <Input
+              type="text"
+              autoComplete="off"
+              maxLength={24}
+              id="name"
+              name="name"
+              placeholder="Want To Trade"
+              data-1p-ignore
+            />
+            <FieldError state={state} field="name" />
+          </div>
+
+          <SubmitButton />
+        </form>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+
+  return (
+    <Button type="submit" disabled={pending}>
+      {pending ? "Saving..." : "Save"}
+      {pending && <Loader2 className="ml-2 animate-spin" />}
+    </Button>
   );
 }

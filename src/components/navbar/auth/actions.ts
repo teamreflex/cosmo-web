@@ -1,7 +1,7 @@
 "use server";
 
 import "server-only";
-import * as z from "zod";
+import { z } from "zod";
 import { cookies } from "next/headers";
 import { generateCookiePayload, signToken } from "@/lib/server/jwt";
 import { login } from "@/lib/server/cosmo/auth";
@@ -18,18 +18,19 @@ import {
 import { db } from "@/lib/server/db";
 import { profiles } from "@/lib/server/db/schema";
 import { eq } from "drizzle-orm";
+import { TypedActionResult } from "@/lib/server/typed-action/types";
 
 /**
  * Exchanges the idToken from Ramper for a JWT from Cosmo
  */
 export const cosmoLogin = async (email: string, token: string) =>
-  typedAction(
-    z.object({
+  typedAction({
+    form: { email, token },
+    schema: z.object({
       email: z.string().email(),
       token: z.string().min(1),
     }),
-    { email, token },
-    async ({ email, token }) => {
+    onValidate: async ({ data: { email, token } }) => {
       // login with cosmo
       const loginResult = await login(email, token);
 
@@ -58,10 +59,9 @@ export const cosmoLogin = async (email: string, token: string) =>
         }),
         generateCookiePayload()
       );
-
-      redirect("/");
-    }
-  );
+    },
+    redirectTo: () => "/",
+  });
 
 /**
  * Signs the user out
@@ -80,55 +80,63 @@ export const logout = async () => {
  * Sets the selected artist for the user.
  */
 export const updateSelectedArtist = async (artist: string) =>
-  authenticatedAction(
-    z.object({
+  authenticatedAction({
+    form: { artist },
+    schema: z.object({
       artist: z.enum(validArtists),
     }),
-    { artist },
-    async ({ artist }, user) => {
-      const result = await setSelectedArtist(user.profileId, artist);
+
+    onValidate: async ({ data, user }) => {
+      const result = await setSelectedArtist(user.profileId, data.artist);
       revalidatePath("/");
       return result;
-    }
-  );
+    },
+  });
 
 /**
  * Updates privacy settings.
  */
-export const updatePrivacy = async (form: FormData) =>
-  authenticatedAction(
-    z.object({
+export const updatePrivacy = async (
+  prev: TypedActionResult<void>,
+  form: FormData
+) =>
+  authenticatedAction({
+    form,
+    schema: z.object({
       privacyNickname: z.coerce.boolean(),
       privacyObjekts: z.coerce.boolean(),
       privacyTrades: z.coerce.boolean(),
       privacyComo: z.coerce.boolean(),
     }),
-    form,
-    async (data, user) => {
+    onValidate: async ({ data, user }) => {
       await db
         .update(profiles)
         .set(data)
         .where(eq(profiles.id, user.profileId));
 
       revalidatePath(`@/${user.nickname}`);
-    }
-  );
+    },
+  });
 
 /**
  * Updates general settings.
  */
-export const updateSettings = async (form: FormData) =>
-  authenticatedAction(
-    z.object({
+export const updateSettings = async (
+  prev: TypedActionResult<void>,
+  form: FormData
+) =>
+  authenticatedAction({
+    form,
+
+    schema: z.object({
       gridColumns: z.coerce.number().min(3).max(8),
     }),
-    form,
-    async (data, user) => {
+    onValidate: async ({ data, user }) => {
       await db
         .update(profiles)
         .set(data)
         .where(eq(profiles.id, user.profileId));
 
       revalidatePath(`@/${user.nickname}`);
-    }
-  );
+    },
+  });

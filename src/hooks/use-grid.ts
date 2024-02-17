@@ -100,10 +100,10 @@ export function useGrid(slug: string, slots: CosmoOngoingGridSlot[]) {
   function completeGrid() {
     startTransition(async () => {
       const result = await submitGrid({ slug, slots: slotsForCompletion });
-      if (result.success) {
+      if (result.status === "success") {
         setGridReward(result.data);
         trackEvent("grid-objekt");
-      } else {
+      } else if (result.status === "error") {
         toast({
           variant: "destructive",
           description: result.error,

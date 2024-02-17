@@ -125,6 +125,7 @@ export default function SendObjekt({ objekt }: Props) {
         onOpenChange={setOpenSearch}
         onSelect={prepareSending}
         recent={recent}
+        authenticated={true}
       >
         <button
           onClick={() => setOpenSearch(true)}

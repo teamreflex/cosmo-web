@@ -5,7 +5,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { updateSettings } from "./actions";
-import { useFormStatus } from "react-dom";
+import { useFormState, useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import {
@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
+import { useEffect } from "react";
 
 type SettingsDialogProps = {
   open: boolean;
@@ -29,14 +30,16 @@ export default function SettingsDialog({
   profile,
 }: SettingsDialogProps) {
   const { toast } = useToast();
+  const [state, formAction] = useFormState(updateSettings, { status: "idle" });
 
-  async function update(form: FormData) {
-    await updateSettings(form);
-    toast({
-      description: "Settings updated.",
-    });
-    onOpenChange(false);
-  }
+  useEffect(() => {
+    if (state.status === "success") {
+      toast({
+        description: "Settings updated.",
+      });
+      onOpenChange(false);
+    }
+  }, [state]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -45,7 +48,7 @@ export default function SettingsDialog({
           <DialogTitle>General Settings</DialogTitle>
         </DialogHeader>
 
-        <form className="flex flex-col gap-2" action={update}>
+        <form className="flex flex-col gap-2" action={formAction}>
           {/* grid column size */}
           <div className="grid grid-cols-4 grid-rows-3">
             <h2 className="col-span-3 font-semibold">Objekt Columns</h2>

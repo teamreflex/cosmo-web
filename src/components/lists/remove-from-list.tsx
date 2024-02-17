@@ -24,7 +24,7 @@ export default function RemoveFromList({ collection, objektList }: Props) {
         listId: objektList.id,
         collectionSlug: collection.slug,
       });
-      if (result.success && result.data) {
+      if (result.status === "success" && result.data) {
         toast({
           description: `Removed ${collection.collectionId} from ${objektList.name}`,
         });

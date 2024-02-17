@@ -1,7 +1,7 @@
 "use server";
 
 import "server-only";
-import * as z from "zod";
+import { z } from "zod";
 import { authenticatedAction } from "@/lib/server/typed-action";
 import {
   addObjekt,
@@ -12,6 +12,7 @@ import {
 } from "@/lib/server/objekts/lists";
 import { revalidateTag } from "next/cache";
 import slugify from "slugify";
+import { TypedActionResult } from "@/lib/server/typed-action/types";
 
 function createSlug(name: string) {
   return slugify(name, { lower: true });
@@ -20,9 +21,13 @@ function createSlug(name: string) {
 /**
  * Create a new objekt list.
  */
-export const create = async (form: { name: string }) =>
-  authenticatedAction(
-    z.object({
+export const create = async (
+  prev: TypedActionResult<boolean>,
+  form: FormData
+) =>
+  authenticatedAction({
+    form,
+    schema: z.object({
       name: z
         .string()
         .min(3, "Name must be at least 3 characters long")
@@ -32,8 +37,7 @@ export const create = async (form: { name: string }) =>
           "Name should only use alphanumeric characters"
         ),
     }),
-    form,
-    async ({ name }, user) => {
+    onValidate: async ({ data: { name }, user }) => {
       const result = await createObjektList({
         name,
         slug: createSlug(name),
@@ -41,16 +45,17 @@ export const create = async (form: { name: string }) =>
       });
       revalidateTag(`objekt-lists:${user.address}`);
       return result;
-    }
-  );
+    },
+  });
 
 /**
  * Update an objekt list.
  */
-export const update = async (form: { id: number; name: string }) =>
-  authenticatedAction(
-    z.object({
-      id: z.number(),
+export const update = async (prev: TypedActionResult<string>, form: FormData) =>
+  authenticatedAction({
+    form,
+    schema: z.object({
+      id: z.coerce.number(),
       name: z
         .string()
         .min(3, "Name must be at least 3 characters long")
@@ -60,10 +65,9 @@ export const update = async (form: { id: number; name: string }) =>
           "Name should only use alphanumeric characters"
         ),
     }),
-    form,
-    async ({ id, name }, user) => {
+    onValidate: async ({ data: { name, id }, user }) => {
       const slug = createSlug(name);
-      const success = await updateObjektList(id, {
+      await updateObjektList(id, {
         name,
         slug,
         userAddress: user.address,
@@ -71,31 +75,27 @@ export const update = async (form: { id: number; name: string }) =>
 
       revalidateTag(`objekt-lists:${user.address}`);
 
-      if (success) {
-        return `/@${user.nickname}/list/${slug}`;
-      } else {
-        return undefined;
-      }
-    }
-  );
+      return `/@${user.nickname}/list/${slug}`;
+    },
+    redirectTo: ({ result }) => result,
+  });
 
 /**
  * Delete an objekt list.
  */
-export const destroy = async (form: { id: number }) =>
-  authenticatedAction(
-    z.object({
+export const destroy = async (id: number) =>
+  authenticatedAction({
+    form: { id },
+    schema: z.object({
       id: z.number(),
     }),
-    form,
-    async ({ id }, user) => {
+    onValidate: async ({ data: { id }, user }) => {
       const result = await deleteObjektList(id, user.address);
-      if (result) {
-        revalidateTag(`objekt-lists:${user.address}`);
-        return result;
-      }
-    }
-  );
+      revalidateTag(`objekt-lists:${user.address}`);
+      return result;
+    },
+    redirectTo: () => "/objekts",
+  });
 
 /**
  * Add an objekt to a list
@@ -104,16 +104,17 @@ export const addObjektToList = async (form: {
   listId: number;
   collectionSlug: string;
 }) =>
-  authenticatedAction(
-    z.object({
+  authenticatedAction({
+    form,
+
+    schema: z.object({
       listId: z.number(),
       collectionSlug: z.string(),
     }),
-    form,
-    async ({ listId, collectionSlug }, user) => {
-      return await addObjekt(listId, collectionSlug);
-    }
-  );
+    onValidate: async ({ data }) => {
+      return await addObjekt(data.listId, data.collectionSlug);
+    },
+  });
 
 /**
  * Remove an objekt from a list
@@ -122,13 +123,13 @@ export const removeObjektFromList = async (form: {
   listId: number;
   collectionSlug: string;
 }) =>
-  authenticatedAction(
-    z.object({
+  authenticatedAction({
+    form,
+    schema: z.object({
       listId: z.number(),
       collectionSlug: z.string(),
     }),
-    form,
-    async ({ listId, collectionSlug }, user) => {
-      return await removeObjekt(listId, collectionSlug);
-    }
-  );
+    onValidate: async ({ data }) => {
+      return await removeObjekt(data.listId, data.collectionSlug);
+    },
+  });

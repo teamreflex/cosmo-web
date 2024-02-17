@@ -5,11 +5,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { updatePrivacy } from "./actions";
-import { useFormStatus } from "react-dom";
+import { useFormState, useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/use-toast";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
+import { useEffect } from "react";
 
 type PrivacyDialogProps = {
   open: boolean;
@@ -23,14 +24,16 @@ export default function PrivacyDialog({
   profile,
 }: PrivacyDialogProps) {
   const { toast } = useToast();
+  const [state, formAction] = useFormState(updatePrivacy, { status: "idle" });
 
-  async function update(form: FormData) {
-    await updatePrivacy(form);
-    toast({
-      description: "Privacy settings updated.",
-    });
-    onOpenChange(false);
-  }
+  useEffect(() => {
+    if (state.status === "success") {
+      toast({
+        description: "Privacy settings updated.",
+      });
+      onOpenChange(false);
+    }
+  }, [state]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -39,7 +42,7 @@ export default function PrivacyDialog({
           <DialogTitle>Privacy Settings</DialogTitle>
         </DialogHeader>
 
-        <form className="flex flex-col gap-2" action={update}>
+        <form className="flex flex-col gap-2" action={formAction}>
           {/* cosmo id/nickname */}
           <div className="grid grid-cols-4 grid-rows-3">
             <h2 className="col-span-3 font-semibold">Cosmo ID</h2>

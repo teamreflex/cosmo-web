@@ -1,7 +1,7 @@
 "use server";
 
 import "server-only";
-import * as z from "zod";
+import { z } from "zod";
 import { authenticatedAction } from "@/lib/server/typed-action";
 import { claimGridReward, completeGrid } from "@/lib/server/cosmo/grid";
 import { env } from "@/env.mjs";
@@ -19,8 +19,10 @@ type SubmitGridProps = {
  * Submit a grid and claim its reward.
  */
 export const submitGrid = async (form: SubmitGridProps) =>
-  authenticatedAction(
-    z.object({
+  authenticatedAction({
+    form,
+
+    schema: z.object({
       slug: z.string(),
       slots: z
         .object({
@@ -29,8 +31,7 @@ export const submitGrid = async (form: SubmitGridProps) =>
         })
         .array(),
     }),
-    form,
-    async ({ slug, slots }, user) => {
+    onValidate: async ({ data: { slug, slots }, user }) => {
       // dev: simulate grid completion
       if (env.NEXT_PUBLIC_SIMULATE_GRID) {
         console.log(`[apollo-dev] Simulating grid completion`);
@@ -39,8 +40,8 @@ export const submitGrid = async (form: SubmitGridProps) =>
 
       await completeGrid(user.accessToken, slug, slots);
       return await claimGridReward(user.accessToken, slug);
-    }
-  );
+    },
+  });
 
 const simulated: CosmoGridRewardClaimResult = {
   objekt: {

@@ -10,10 +10,9 @@ type Props = {
 };
 
 export default function RekordLikeButton({ post }: Props) {
-  const initialState = { success: true, data: post.isLikedPost } as const;
-  const [state, formAction] = useFormState(toggleLike, initialState);
+  const [state, formAction] = useFormState(toggleLike, { status: "idle" });
 
-  const isLiked = state.success && state.data;
+  const isLiked = state.status === "success" && state.data;
 
   return (
     <form
