@@ -4,15 +4,22 @@ import { useFormState, useFormStatus } from "react-dom";
 import { Button } from "../ui/button";
 import { Heart, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 
 type Props = {
   post: CosmoRekordPost;
+  isLiked: boolean;
+  setIsLiked: Dispatch<SetStateAction<boolean>>;
 };
 
-export default function RekordLikeButton({ post }: Props) {
+export default function RekordLikeButton({ post, isLiked, setIsLiked }: Props) {
   const [state, formAction] = useFormState(toggleLike, { status: "idle" });
 
-  const isLiked = state.status === "success" && state.data;
+  useEffect(() => {
+    if (state.status === "success") {
+      setIsLiked((prev) => !prev);
+    }
+  }, [state, setIsLiked]);
 
   return (
     <form

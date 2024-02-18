@@ -1,3 +1,4 @@
+"use client";
 import { CosmoRekordItem, CosmoRekordPost } from "@/lib/universal/cosmo/rekord";
 import {
   Dialog,
@@ -14,7 +15,7 @@ import { Loader2 } from "lucide-react";
 import ScaledImage from "../scaled-image";
 import RekordLikeButton from "./rekord-like";
 import Link from "next/link";
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 
 type RekordPostProps<TPostType extends CosmoRekordItem> = {
   item: TPostType;
@@ -29,6 +30,7 @@ export function RekordPost<TPostType extends CosmoRekordItem>({
   className = "w-32 max-w-32",
   showStatus = true,
 }: RekordPostProps<TPostType>) {
+  const [isLiked, setIsLiked] = useState(item.post.isLikedPost);
   const { name } = extractMember(item.post);
 
   return (
@@ -89,7 +91,11 @@ export function RekordPost<TPostType extends CosmoRekordItem>({
             alt={item.post.artist.title}
           />
 
-          <RekordLikeButton post={item.post} />
+          <RekordLikeButton
+            post={item.post}
+            isLiked={isLiked}
+            setIsLiked={setIsLiked}
+          />
           <RekordMemberImage
             post={item.post}
             className="z-30 absolute top-2 left-3"

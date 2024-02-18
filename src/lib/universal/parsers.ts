@@ -193,7 +193,9 @@ export function parse<TSchema extends z.AnyZodObject>(
     return result.data;
   }
 
-  console.error(result.error);
+  if (process.env.NODE_ENV === "development") {
+    console.error(result.error);
+  }
 
   // provide defaults for safe parsing
   if (defaults) {
