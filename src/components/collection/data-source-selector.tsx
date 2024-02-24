@@ -26,6 +26,7 @@ import {
 } from "../ui/alert-dialog";
 import { env } from "@/env.mjs";
 import { ValidSorts } from "@/lib/universal/cosmo/common";
+import { useCooldown } from "@/hooks/use-countdown";
 
 type Props = PropsWithFilters<"sort"> & {
   dataSource: CollectionDataSource;
@@ -38,19 +39,19 @@ export default memo(function DataSourceSelector({
   dataSource,
   setDataSource,
 }: Props) {
-  const [openWarning, setOpenWarning] = useState(false);
+  const { open, setOpen, count } = useCooldown();
   const warned = useSettingsStore((state) => state.warnings["data-source"]);
   const toggle = useSettingsStore((state) => state.toggleWarning);
 
   function warn() {
     if (warned === false) {
-      setOpenWarning(true);
+      setOpen(true);
     }
   }
 
   function close() {
     toggle("data-source");
-    setOpenWarning(false);
+    setOpen(false);
   }
 
   function update(val: string) {
@@ -68,7 +69,7 @@ export default memo(function DataSourceSelector({
 
   return (
     <Fragment>
-      <AlertDialog open={openWarning}>
+      <AlertDialog open={open} onOpenChange={setOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Objekt Data Source</AlertDialogTitle>
@@ -98,7 +99,9 @@ export default memo(function DataSourceSelector({
             </ul>
           </div>
           <AlertDialogFooter>
-            <AlertDialogAction onClick={close}>Continue</AlertDialogAction>
+            <AlertDialogAction onClick={close} disabled={count > 0}>
+              {count > 0 ? `Continue (${count})` : "Continue"}
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

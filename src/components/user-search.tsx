@@ -101,7 +101,8 @@ export function UserSearch({
                     <p>
                       Any search queries while not signed in will be made
                       against accounts that have been saved into the{" "}
-                      {env.NEXT_PUBLIC_APP_NAME} system.
+                      {env.NEXT_PUBLIC_APP_NAME} system, which does not include
+                      all accounts.
                     </p>
                   </div>
                 </PopoverContent>

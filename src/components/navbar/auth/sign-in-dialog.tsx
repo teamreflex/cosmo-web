@@ -10,11 +10,14 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { useCooldown } from "@/hooks/use-countdown";
 import { LogIn } from "lucide-react";
 
 export default function SignInDialog({ onClick }: { onClick: () => void }) {
+  const { open, setOpen, count } = useCooldown();
+
   return (
-    <AlertDialog>
+    <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
         <Button variant="link">
           <span className="hidden md:block">Sign In</span>
@@ -27,9 +30,9 @@ export default function SignInDialog({ onClick }: { onClick: () => void }) {
           <AlertDialogDescription asChild>
             <div className="flex flex-col gap-2">
               <p>You will be redirected to Ramper to sign in.</p>
-              <p>
+              <p className="text-lg">
                 Make sure to select{" "}
-                <span className="font-semibold underline">
+                <span className="font-semibold underline text-red-500">
                   confirm from a different device
                 </span>{" "}
                 in the email.
@@ -39,7 +42,9 @@ export default function SignInDialog({ onClick }: { onClick: () => void }) {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onClick}>Continue</AlertDialogAction>
+          <AlertDialogAction onClick={onClick} disabled={count > 0}>
+            {count > 0 ? `Continue (${count})` : "Continue"}
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
