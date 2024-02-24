@@ -29,6 +29,7 @@ export default function ProgressObjekt({ objekt }: Props) {
         quality={100}
         priority={false}
         loading="lazy"
+        unoptimized
       />
 
       <ObjektSidebar collection={objekt.collectionNo} />
