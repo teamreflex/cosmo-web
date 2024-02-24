@@ -50,7 +50,6 @@ const config = {
   },
 
   images: {
-    unoptimized: process.env.NODE_ENV === "development",
     remotePatterns: [
       // objekt images
       {

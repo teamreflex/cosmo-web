@@ -47,6 +47,7 @@ export default memo(function Objekt<TObjektType extends ValidObjekt>({
           quality={100}
           priority={false}
           loading="lazy"
+          unoptimized
         />
 
         {children}
@@ -62,6 +63,7 @@ export default memo(function Objekt<TObjektType extends ValidObjekt>({
         quality={100}
         priority={false}
         loading="lazy"
+        unoptimized
       />
     </MemoizedCardFlip>
   );
