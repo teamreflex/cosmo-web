@@ -89,6 +89,7 @@ export function RekordPost<TPostType extends CosmoRekordItem>({
           <ScaledImage
             src={item.post.image.large}
             alt={item.post.artist.title}
+            unoptimized={true}
           />
 
           <RekordLikeButton

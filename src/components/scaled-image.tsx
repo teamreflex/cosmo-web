@@ -9,6 +9,7 @@ type Props = {
   priority?: boolean;
   width?: number;
   height?: number;
+  unoptimized?: boolean;
 };
 
 export default function ScaledImage({
@@ -17,6 +18,7 @@ export default function ScaledImage({
   priority = false,
   width = 16,
   height = 9,
+  unoptimized = false,
 }: Props) {
   const [ratio, setRatio] = useState({ width, height });
 
@@ -32,6 +34,7 @@ export default function ScaledImage({
         priority={priority}
         quality={100}
         className="object-cover"
+        unoptimized={unoptimized}
         onLoad={(e) =>
           setRatio({
             width: e.currentTarget.naturalWidth,
