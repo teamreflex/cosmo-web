@@ -1,8 +1,8 @@
+import { useElementSize } from "@/hooks/use-element-size";
 import { PropsWithClassName, cn } from "@/lib/utils";
 import { Check } from "lucide-react";
 import Image from "next/image";
 import { CSSProperties, useState } from "react";
-import { useElementSize } from "usehooks-ts";
 
 type Props = PropsWithClassName<{
   image: string;
