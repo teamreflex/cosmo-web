@@ -13,7 +13,7 @@ import {
   parseAsStringEnum,
   useQueryState,
   useQueryStates,
-} from "next-usequerystate";
+} from "nuqs";
 import {
   Dispatch,
   SetStateAction,

@@ -2,7 +2,7 @@
 
 import { FinalProgress } from "@/lib/universal/progress";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { parseAsStringEnum, useQueryState } from "next-usequerystate";
+import { parseAsStringEnum, useQueryState } from "nuqs";
 import { ofetch } from "ofetch";
 import {
   Select,

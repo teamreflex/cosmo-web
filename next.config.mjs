@@ -72,6 +72,7 @@ const config = {
 
 export default million.next(config, {
   mute: true,
+  rsc: true,
   auto: {
     rsc: true,
   },
