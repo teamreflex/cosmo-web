@@ -1,4 +1,6 @@
 import { decodeUser, getUserByIdentifier } from "@/app/data-fetching";
+import Portal from "@/components/portal";
+import HelpDialog from "@/components/progress/help-dialog";
 import ProgressRenderer from "@/components/progress/progress-renderer";
 import { fetchArtistsWithMembers } from "@/lib/server/cosmo/artists";
 import { addrcomp } from "@/lib/utils";
@@ -34,6 +36,9 @@ export default async function ProgressPage({ params }: Props) {
   return (
     <section className="flex flex-col py-2">
       <ProgressRenderer artists={artists} address={profile.address} />
+      <Portal to="#help">
+        <HelpDialog />
+      </Portal>
     </section>
   );
 }
