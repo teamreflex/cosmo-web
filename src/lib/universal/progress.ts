@@ -20,3 +20,15 @@ export type FinalProgress = SeasonMatrix & {
   progress: number;
   collections: ObjektProgression[];
 };
+
+export type LeaderboardItem = {
+  count: number;
+  nickname: string;
+  address: string;
+  isAddress: boolean;
+};
+
+export type Leaderboard = {
+  total: number;
+  leaderboard: LeaderboardItem[];
+};

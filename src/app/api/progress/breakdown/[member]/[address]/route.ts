@@ -7,30 +7,27 @@ import {
 } from "@/lib/universal/cosmo/common";
 import { FinalProgress, SeasonMatrix } from "@/lib/universal/progress";
 import { and, eq } from "drizzle-orm";
-import { unstable_cache } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
+import { PartialCollection, fetchTotal } from "../../../common";
 
 export const runtime = "nodejs";
+
+type Params = {
+  params: {
+    address: string;
+    member: string;
+  };
+};
 
 /**
  * API route that services the /@:nickname/progress page.
  * Takes an address and a member name, and returns the collection progress breakdown of that member.
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { address: string } }
-) {
-  const member = request.nextUrl.searchParams.get("member");
-  if (!member) {
-    return NextResponse.json({
-      count: 0,
-    });
-  }
-
+export async function GET(request: NextRequest, { params }: Params) {
   const matrix = buildMatrix();
   const [totals, progress] = await Promise.all([
-    fetchTotal(member),
-    fetchProgress(params.address.toLowerCase(), member),
+    fetchTotal(params.member),
+    fetchProgress(params.address.toLowerCase(), params.member),
   ]);
 
   return NextResponse.json(zipResults(matrix, totals, progress));
@@ -82,33 +79,6 @@ async function fetchProgress(address: string, member: string) {
     .orderBy(objekts.collectionId);
 }
 
-/**
- * Fetch all collections for the given member.
- * Cached for one hour.
- */
-const fetchTotal = unstable_cache(
-  async (member: string) => {
-    const result = await indexer
-      .select({
-        id: collections.id,
-        collectionNo: collections.collectionNo,
-        frontImage: collections.frontImage,
-        textColor: collections.textColor,
-        member: collections.member,
-        season: collections.season,
-        class: collections.class,
-        onOffline: collections.onOffline,
-      })
-      .from(collections)
-      .where(eq(collections.member, member));
-
-    return result;
-  },
-  ["collections-for-member"], // param (member name) gets added to this
-  { revalidate: 60 * 60 } // 1 hour
-);
-
-type PartialCollection = Awaited<ReturnType<typeof fetchTotal>>;
 type PartialObjekt = Awaited<ReturnType<typeof fetchProgress>>;
 
 /**

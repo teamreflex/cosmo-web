@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "../ui/select";
 import ProgressSeason from "./progress-season";
+import ProgressLeaderboard from "./progress-leaderboard";
 
 type Props = {
   address: string;
@@ -30,9 +31,9 @@ export default function ProgressTable({ address, member }: Props) {
   const { data } = useSuspenseQuery({
     queryKey: ["progress", address, member],
     queryFn: async () => {
-      return await ofetch<FinalProgress[]>(`/api/progress/${address}`, {
-        query: { member },
-      });
+      return await ofetch<FinalProgress[]>(
+        `/api/progress/breakdown/${member}/${address}`
+      );
     },
   });
 
@@ -62,21 +63,30 @@ export default function ProgressTable({ address, member }: Props) {
   );
 
   return (
-    <div className="grid grid-flow-row sm:items-center gap-4">
-      <div className="flex items-center justify-between w-full">
-        <h1 className="text-3xl font-bold font-cosmo uppercase">{member}</h1>
-        <FilterSelect value={onlineType ?? "combined"} update={setOnlineType} />
-      </div>
+    <div className="flex flex-col gap-2">
+      <div className="grid grid-flow-row sm:items-center gap-4">
+        <div className="flex items-center justify-between w-full">
+          <h1 className="text-3xl font-bold font-cosmo uppercase">{member}</h1>
 
-      <div className="flex flex-col gap-6">
-        {seasons.map(([season, classes]) => (
-          <ProgressSeason
-            key={season}
-            season={season}
-            classes={classes}
-            filter={key}
-          />
-        ))}
+          <div className="flex gap-2 items-center">
+            <ProgressLeaderboard member={member} />
+            <FilterSelect
+              value={onlineType ?? "combined"}
+              update={setOnlineType}
+            />
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-6">
+          {seasons.map(([season, classes]) => (
+            <ProgressSeason
+              key={season}
+              season={season}
+              classes={classes}
+              filter={key}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

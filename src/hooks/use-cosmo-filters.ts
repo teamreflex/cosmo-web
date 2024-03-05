@@ -128,7 +128,7 @@ export function useCosmoFilters() {
 }
 
 // cosmo only accepts "true" or empty/null/undefined for boolean params
-const parseAsNullableBoolean = createParser({
+export const parseAsNullableBoolean = createParser({
   parse(query) {
     return query === "true" ? true : null;
   },

@@ -68,6 +68,13 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2024-03-05",
+    changes: [
+      "Added: Top 10 leaderboards on the progress page.",
+      "For now the leaderboard is calculated based on combined digital + physical collections. Additional filters will be added in the future.",
+    ],
+  },
+  {
     date: "2024-02-16",
     changes: [
       "Added: Rekord archive page.",
@@ -80,28 +87,6 @@ const updates = [
     changes: [
       "Implemented Rekord functionality.",
       "Submitting new rekord posts will not supported.",
-    ],
-  },
-  {
-    date: "2024-02-04",
-    changes: [
-      "Fixed: Error on COMO calendars when there is a drop being carried over.",
-      "Fixed: ARTMS COMO icon getting cut off on mobile.",
-      "Fixed: New or empty objekt lists no longer display every possible objekt.",
-    ],
-  },
-  {
-    date: "2024-01-27",
-    changes: [
-      "Added: Visual display of obtained/missing objekts on progress pages.",
-      "Fixed: Scrolling member filter images getting cut off and not displaying on iOS.",
-    ],
-  },
-  {
-    date: "2024-01-19",
-    changes: [
-      `Due to Cosmo changes, searching for users now requires signing in. This also applies to viewing profiles that haven't been added into the system.`,
-      "Profiles that have been added to the system can continue to be viewed without signing in.",
     ],
   },
 ];
