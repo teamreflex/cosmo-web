@@ -2,7 +2,7 @@ import users from "./users.json";
 import * as dotenv from "dotenv";
 import { drizzle } from "drizzle-orm/planetscale-serverless";
 import { connect } from "@planetscale/database";
-import * as schema from "../src/lib/server/db/schema";
+import * as schema from "./planetscale-migrate/schema";
 
 dotenv.config({
   path: ".env.local",

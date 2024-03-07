@@ -65,16 +65,20 @@ export async function fetchObjektListWithEntries(
  * Create a new objekt list.
  */
 export async function createObjektList(payload: CreateObjektList) {
-  const row = await db.insert(lists).values(payload);
-  return row.rowsAffected === 1;
+  const rows = await db.insert(lists).values(payload).returning();
+  return rows.length === 1;
 }
 
 /**
  * Update an objekt list.
  */
 export async function updateObjektList(id: number, payload: UpdateObjektList) {
-  const row = await db.update(lists).set(payload).where(eq(lists.id, id));
-  return row.rowsAffected === 1;
+  const rows = await db
+    .update(lists)
+    .set(payload)
+    .where(eq(lists.id, id))
+    .returning();
+  return rows.length === 1;
 }
 
 /**
@@ -85,34 +89,42 @@ export async function deleteObjektList(id: number, address: string) {
   await db.delete(listEntries).where(eq(listEntries.listId, id));
 
   // then delete the list
-  const row = await db
+  const rows = await db
     .delete(lists)
-    .where(and(eq(lists.id, id), eq(lists.userAddress, address)));
-  return row.rowsAffected === 1;
+    .where(and(eq(lists.id, id), eq(lists.userAddress, address)))
+    .returning();
+
+  return rows.length === 1;
 }
 
 /**
  * Add an objekt to a list.
  */
 export async function addObjekt(listId: number, collectionSlug: string) {
-  const row = await db.insert(listEntries).values({
-    listId,
-    collectionId: collectionSlug,
-  });
-  return row.rowsAffected === 1;
+  const rows = await db
+    .insert(listEntries)
+    .values({
+      listId,
+      collectionId: collectionSlug,
+    })
+    .returning();
+
+  return rows.length === 1;
 }
 
 /**
  * Remove an objekt from a list.
  */
 export async function removeObjekt(listId: number, collectionSlug: string) {
-  const row = await db
+  const rows = await db
     .delete(listEntries)
     .where(
       and(
         eq(listEntries.listId, listId),
         eq(listEntries.collectionId, collectionSlug)
       )
-    );
-  return row.rowsAffected === 1;
+    )
+    .returning();
+
+  return rows.length === 1;
 }

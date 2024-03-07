@@ -3,22 +3,22 @@ import { InferInsertModel, InferSelectModel, relations } from "drizzle-orm";
 import {
   boolean,
   index,
-  integer,
-  pgTable,
+  int,
+  mysqlTable,
   serial,
   varchar,
-} from "drizzle-orm/pg-core";
-import { citext } from "./columns";
+} from "drizzle-orm/mysql-core";
 
-export const lockedObjekts = pgTable(
+export const lockedObjekts = mysqlTable(
   "locked_objekts",
   {
     id: serial("id").primaryKey(),
-    userAddress: citext("user_address", { length: 42 }).notNull(),
-    tokenId: integer("tokenId").notNull(),
+    userAddress: varchar("user_address", { length: 42 }).notNull(),
+    tokenId: int("tokenId").notNull(),
     locked: boolean("locked").notNull(),
   },
   (table) => ({
+    addressIdx: index("address_idx").on(table.userAddress),
     addressTokenIdx: index("address_token_idx").on(
       table.userAddress,
       table.tokenId
@@ -33,17 +33,17 @@ export const lockedObjektsRelations = relations(lockedObjekts, ({ one }) => ({
   }),
 }));
 
-export const lists = pgTable(
+export const lists = mysqlTable(
   "lists",
   {
     id: serial("id").primaryKey(),
-    userAddress: citext("user_address", { length: 42 }).notNull(),
+    userAddress: varchar("user_address", { length: 42 }).notNull(),
     name: varchar("name", { length: 24 }).notNull(),
-    slug: citext("slug", { length: 24 }).notNull(),
+    slug: varchar("slug", { length: 24 }).notNull(),
   },
   (table) => ({
-    addressIdx: index("lists_address_idx").on(table.userAddress),
-    slugIdx: index("lists_slug_idx").on(table.slug),
+    addressIdx: index("address_idx").on(table.userAddress),
+    slugIdx: index("slug_idx").on(table.slug),
   })
 );
 
@@ -55,15 +55,15 @@ export const listRelations = relations(lists, ({ many, one }) => ({
   }),
 }));
 
-export const listEntries = pgTable(
+export const listEntries = mysqlTable(
   "list_entries",
   {
     id: serial("id").primaryKey(),
-    listId: integer("list_id").notNull(),
+    listId: int("list_id").notNull(),
     collectionId: varchar("collection_id", { length: 36 }).notNull(), // slug: atom01-jinsoul-101z
   },
   (table) => ({
-    listIdx: index("list_entries_list_idx").on(table.listId),
+    listIdx: index("list_idx").on(table.listId),
   })
 );
 
@@ -74,33 +74,25 @@ export const listEntryRelations = relations(listEntries, ({ one }) => ({
   }),
 }));
 
-export const profiles = pgTable(
+export const profiles = mysqlTable(
   "profiles",
   {
     id: serial("id").primaryKey(),
-    userAddress: citext("user_address", { length: 42 }).notNull(),
-    cosmoId: integer("cosmo_id").notNull(),
-    nickname: citext("nickname", { length: 24 }).notNull(),
+    userAddress: varchar("user_address", { length: 42 }).notNull(),
+    cosmoId: int("cosmo_id").notNull(),
+    nickname: varchar("nickname", { length: 24 }).notNull(),
     // using a string and casting output so the db doesn't have to know about the enum
     artist: varchar("artist", { length: 24 }).notNull().$type<ValidArtist>(),
     privacyNickname: boolean("privacy_nickname").notNull().default(false),
     privacyObjekts: boolean("privacy_objekts").notNull().default(false),
     privacyComo: boolean("privacy_como").notNull().default(false),
     privacyTrades: boolean("privacy_trades").notNull().default(false),
-    gridColumns: integer("grid_columns").notNull().default(5),
+    gridColumns: int("grid_columns").notNull().default(5),
   },
   (table) => ({
-    addressIdx: index("profiles_address_idx").on(table.userAddress),
-    cosmoIdIdx: index("profiles_cosmo_id_idx").on(table.cosmoId),
-    nicknameIdx: index("profiles_nickname_idx").on(table.nickname),
-    privacyNicknameIdx: index("profiles_priv_nickname_idx").on(
-      table.privacyNickname
-    ),
-    privacyObjektsIdx: index("profiles_priv_objekts_idx").on(
-      table.privacyObjekts
-    ),
-    privacyComoIdx: index("profiles_priv_como_idx").on(table.privacyComo),
-    privacyTradesIdx: index("profiles_priv_trades_idx").on(table.privacyTrades),
+    addressIdx: index("address_idx").on(table.userAddress),
+    cosmoIdIdx: index("cosmo_id_idx").on(table.cosmoId),
+    nicknameIdx: index("nickname_idx").on(table.nickname),
   })
 );
 

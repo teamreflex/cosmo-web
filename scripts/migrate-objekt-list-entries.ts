@@ -1,7 +1,7 @@
 import * as dotenv from "dotenv";
 import { drizzle as psDrizzle } from "drizzle-orm/planetscale-serverless";
 import { connect } from "@planetscale/database";
-import * as psSchema from "../src/lib/server/db/schema";
+import * as psSchema from "./planetscale-migrate/schema";
 import postgres from "postgres";
 import { drizzle as pgDrizzle } from "drizzle-orm/postgres-js";
 import * as pgSchema from "../src/lib/server/db/indexer/schema";
