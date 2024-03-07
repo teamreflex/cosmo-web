@@ -1,5 +1,7 @@
+import { profiles } from "@/lib/server/db/schema";
 import { fetchKnownAddresses } from "@/lib/server/profiles";
 import { fetchTransfers } from "@/lib/server/transfers";
+import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -20,7 +22,8 @@ export async function GET(
     aggregate.results
       .flatMap((r) => [r.transfer.from, r.transfer.to])
       // can't send to yourself, so filter out the current address
-      .filter((a) => a !== params.address.toLowerCase())
+      .filter((a) => a !== params.address.toLowerCase()),
+    [eq(profiles.privacyTrades, false)]
   );
 
   return NextResponse.json({
