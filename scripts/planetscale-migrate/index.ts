@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/planetscale-serverless";
 import * as planetscaleSchema from "./schema";
 import { db } from "@/lib/server/db";
 import * as neonSchema from "@/lib/server/db/schema";
+import { sql } from "drizzle-orm";
 
 // create the connection
 const client = new Client({
@@ -55,5 +56,19 @@ await chunk(listEntries, 500, async (rows) => {
   await db.insert(neonSchema.listEntries).values(rows);
 });
 console.log("List entries migrated");
+
+// fix autoincrement sequences
+await db.execute(
+  sql`SELECT setval('profiles_id_seq', (SELECT MAX(id) from "profiles"));`
+);
+await db.execute(
+  sql`SELECT setval('lists_id_seq', (SELECT MAX(id) from "lists"));`
+);
+await db.execute(
+  sql`SELECT setval('list_entries_id_seq', (SELECT MAX(id) from "list_entries"));`
+);
+await db.execute(
+  sql`SELECT setval('locked_objekts_id_seq', (SELECT MAX(id) from "locked_objekts"));`
+);
 
 console.log("Migration complete");

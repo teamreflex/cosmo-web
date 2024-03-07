@@ -1,5 +1,5 @@
 import "server-only";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "../db";
 import { lockedObjekts } from "../db/schema";
 
@@ -37,10 +37,6 @@ async function lockObjekt(userAddress: string, tokenId: number) {
   const result = await db
     .insert(lockedObjekts)
     .values({ userAddress, tokenId, locked: true })
-    .onConflictDoUpdate({
-      target: lockedObjekts.tokenId,
-      set: { locked: true },
-    })
     .returning();
 
   return result.length === 1;
@@ -59,5 +55,6 @@ async function unlockObjekt(userAddress: string, tokenId: number) {
       )
     )
     .returning();
+
   return result.length === 1;
 }
