@@ -50,6 +50,7 @@ function LeaderboardRow({ member, total, item, rank }: LeaderboardRowProps) {
           href={`/@${
             item.isAddress ? item.address : item.nickname
           }/progress?member=${member}`}
+          prefetch={false}
         >
           {item.nickname}
         </Link>
@@ -57,7 +58,7 @@ function LeaderboardRow({ member, total, item, rank }: LeaderboardRowProps) {
 
       <div className="relative h-4 w-full overflow-hidden rounded-full bg-secondary">
         <div className="z-20 absolute w-full h-full flex items-center justify-center">
-          <p className="text-sm font-semibold text-cosmo mix-blend-multiply">
+          <p className="text-sm font-semibold text-cosmo mix-blend-overlay">
             {progress}%
           </p>
         </div>

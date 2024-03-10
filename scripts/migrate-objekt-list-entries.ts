@@ -11,6 +11,11 @@ dotenv.config({
   path: ".env.local",
 });
 
+/**
+ * Migrate the list entries from using UUIDs for collectionIds, to using slugs.
+ * This was necessary so any rehyradation of the indexer doesn't break objekt lists.
+ */
+
 const planetscale = psDrizzle(
   connect({
     host: process.env.DATABASE_HOST,

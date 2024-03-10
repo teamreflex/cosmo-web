@@ -8,9 +8,6 @@ dependencies:
   '@neondatabase/serverless':
     specifier: ^0.9.0
     version: 0.9.0
-  '@planetscale/database':
-    specifier: ^1.16.0
-    version: 1.16.0
   '@radix-ui/react-accordion':
     specifier: ^1.1.2
     version: 1.1.2(@types/react-dom@18.2.18)(@types/react@18.2.46)(react-dom@18.2.0)(react@18.2.0)
@@ -163,6 +160,9 @@ dependencies:
     version: 4.4.7(@types/react@18.2.46)(react@18.2.0)
 
 devDependencies:
+  '@planetscale/database':
+    specifier: ^1.16.0
+    version: 1.16.0
   '@types/node':
     specifier: 20.6.2
     version: 20.6.2
@@ -1834,7 +1834,6 @@ packages:
   /@planetscale/database@1.16.0:
     resolution: {integrity: sha512-HNUrTqrd8aTRZYMDcsoZ62s36sIWkMMmKZBOehoCWR2WrfNPKq+Q1yQef5okl3pSVlldFnu2h/dbHjOsDTHXug==}
     engines: {node: '>=16'}
-    dev: false
 
   /@pnpm/constants@7.1.1:
     resolution: {integrity: sha512-31pZqMtjwV+Vaq7MaPrT1EoDFSYwye3dp6BiHIGRJmVThCQwySRKM7hCvqqI94epNkqFAAYoWrNynWoRYosGdw==}

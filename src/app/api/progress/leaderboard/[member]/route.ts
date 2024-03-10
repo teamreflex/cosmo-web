@@ -10,6 +10,7 @@ import { unstable_cache } from "next/cache";
 import { profiles } from "@/lib/server/db/schema";
 
 export const runtime = "nodejs";
+export const LEADERBOARD_COUNT = 25;
 
 type Params = {
   params: {
@@ -83,7 +84,7 @@ const fetchLeaderboard = unstable_cache(
       .from(subquery)
       .groupBy(subquery.owner)
       .orderBy(sql`count desc`)
-      .limit(10);
+      .limit(LEADERBOARD_COUNT);
   },
   ["progress-leaderboard"], // param (member name) gets added to this
   { revalidate: 60 * 60 } // 1 hour

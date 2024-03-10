@@ -61,7 +61,8 @@ Supersedes the [objekts.jinsoul.tv](https://github.com/teamreflex/objekts-svelte
 - Displaying trade history
   - Includes displaying Cosmo ID if available
 - Privacy options to hide collection/trades/COMO
-- Collection progress counter
+- Per-member collection progress breakdown
+  - Leaderboards displaying the top 25 users for the given member
 - Toggle to display collections from the blockchain instead of Cosmo
 
 </details>
@@ -84,8 +85,8 @@ Supersedes the [objekts.jinsoul.tv](https://github.com/teamreflex/objekts-svelte
 ## Requirements
 
 - [Node.js](https://nodejs.org/en/) 18.17+
-- [PlanetScale](https://planetscale.com/) instance
-  - Or swap this out for another MySQL compatible database with minimal code changes
+- [Neon](https://neon.tech/) instance
+  - Or swap this out for another Postgres compatible database with minimal code changes
 - Postgres instance
   - The accompanying [blockchain indexer](https://github.com/teamreflex/cosmo-db) has containerized Postgres 15.5. Migration files can also be found there
 - [Alchemy](https://www.alchemy.com/) API key
@@ -97,7 +98,7 @@ git clone git@github.com:teamreflex/cosmo-web.git
 cd cosmo-web
 pnpm install
 cp .env.example .env.local
-pnpm db:push
+pnpm db:migrate
 pnpm dev
 ```
 
@@ -110,7 +111,7 @@ pnpm dev
 - [Ramper SDK](https://www.ramper.xyz/)
 - [shadcn/ui](https://ui.shadcn.com/docs)
 - [Tailwind](https://tailwindcss.com/)
-- [PlanetScale](https://planetscale.com/)
+- [Neon](https://neon.tech/)
 - [Drizzle ORM](https://orm.drizzle.team/)
 - [Fathom Analytics](https://usefathom.com/)
 - [Alchemy](https://www.alchemy.com/)

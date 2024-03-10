@@ -5,6 +5,10 @@ import { db } from "@/lib/server/db";
 import * as neonSchema from "@/lib/server/db/schema";
 import { sql } from "drizzle-orm";
 
+/**
+ * Migrate the database from PlanetScale to Neon/Postgres.
+ */
+
 // create the connection
 const client = new Client({
   host: process.env.DATABASE_HOST,

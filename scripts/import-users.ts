@@ -4,6 +4,10 @@ import { drizzle } from "drizzle-orm/planetscale-serverless";
 import { connect } from "@planetscale/database";
 import * as schema from "./planetscale-migrate/schema";
 
+/**
+ * Import users from a JSON file, which comes from the objekts.jinsoul.tv Redis database.
+ */
+
 dotenv.config({
   path: ".env.local",
 });

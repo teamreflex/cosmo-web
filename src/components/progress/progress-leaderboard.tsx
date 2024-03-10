@@ -6,7 +6,6 @@ import {
   SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from "@/components/ui/sheet";
 import { parseAsNullableBoolean } from "@/hooks/use-cosmo-filters";
 import { useQueryState } from "nuqs";
@@ -53,7 +52,7 @@ export default function ProgressLeaderboard({ member }: Props) {
       </TooltipProvider>
 
       <Sheet open={open === true} onOpenChange={() => toggle()}>
-        <SheetContent>
+        <SheetContent className="overflow-y-scroll">
           <SheetHeader>
             <SheetTitle className="font-cosmo uppercase text-xl">
               Leaderboard

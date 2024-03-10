@@ -68,6 +68,13 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2024-03-10",
+    changes: [
+      "Fixed: Privacy setting for progress leaderboards is now the nickname option, not the trades option.",
+      "Changed: Progress leaderboards now have a maximum of 25 entries.",
+    ],
+  },
+  {
     date: "2024-03-05",
     changes: [
       "Added: Top 10 leaderboards on the progress page.",
