@@ -10,7 +10,7 @@ import { unstable_cache } from "next/cache";
 import { profiles } from "@/lib/server/db/schema";
 
 export const runtime = "nodejs";
-export const LEADERBOARD_COUNT = 25;
+const LEADERBOARD_COUNT = 25;
 
 type Params = {
   params: {
