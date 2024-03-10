@@ -7,6 +7,7 @@ import { fetchKnownAddresses } from "@/lib/server/profiles";
 import { addrcomp } from "@/lib/utils";
 import { LeaderboardItem } from "@/lib/universal/progress";
 import { unstable_cache } from "next/cache";
+import { profiles } from "@/lib/server/db/schema";
 
 export const runtime = "nodejs";
 
@@ -28,7 +29,8 @@ export async function GET(request: NextRequest, { params }: Params) {
 
   // fetch profiles for each address
   const knownAddresses = await fetchKnownAddresses(
-    leaderboard.map((a) => a.owner)
+    leaderboard.map((a) => a.owner),
+    [eq(profiles.privacyNickname, false)]
   );
 
   // map the nickname onto the results
