@@ -1,4 +1,4 @@
 {
   "regions": ["sfo1"],
-  "buildCommand": "NEXT_PUBLIC_APP_VERSION=$(node -pe 'require(\"./package.json\").version') next build"
+  "buildCommand": "next build && pnpm db:migrate"
 }

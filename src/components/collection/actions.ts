@@ -14,7 +14,6 @@ export const toggleObjektLock = async (form: {
 }) =>
   authenticatedAction({
     form,
-
     schema: z.object({
       tokenId: z.number(),
       lock: z.boolean(),

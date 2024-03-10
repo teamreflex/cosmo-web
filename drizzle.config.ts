@@ -4,12 +4,11 @@ dotenv.config({
   path: ".env.local",
 });
 
-const uri = `mysql://${process.env.DATABASE_USERNAME}:${process.env.DATABASE_PASSWORD}@${process.env.DATABASE_HOST}/${process.env.DATABASE_NAME}?ssl={"rejectUnauthorized":true}`;
-
 export default defineConfig({
   schema: "./src/lib/server/db/schema.ts",
-  driver: "mysql2",
+  out: "./drizzle",
+  driver: "pg",
   dbCredentials: {
-    uri,
+    connectionString: process.env.DATABASE_URL!,
   },
 });

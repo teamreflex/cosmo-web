@@ -27,17 +27,12 @@ async function createProfile(payload: FindOrCreateProfile) {
     nickname: payload.nickname,
     artist: "artms",
   };
-  const insertResult = await db.insert(profiles).values(newProfile);
-
-  // have to refetch because mysql has no RETURNING clause
-  const rows = await db
-    .select()
-    .from(profiles)
-    .where(eq(profiles.id, parseInt(insertResult.insertId)));
+  const rows = await db.insert(profiles).values(newProfile).returning();
 
   if (rows.length === 0) {
     throw new Error("Failed to create profile");
   }
+
   return rows[0];
 }
 
@@ -50,9 +45,10 @@ export async function updateProfile(id: number, payload: FindOrCreateProfile) {
     .set({
       cosmoId: payload.cosmoId,
     })
-    .where(eq(profiles.id, id));
+    .where(eq(profiles.id, id))
+    .returning();
 
-  return result.rowsAffected === 1;
+  return result.length === 1;
 }
 
 /**
@@ -90,9 +86,10 @@ export async function setSelectedArtist(
   const result = await db
     .update(profiles)
     .set({ artist })
-    .where(eq(profiles.id, profileId));
+    .where(eq(profiles.id, profileId))
+    .returning();
 
-  return result.rowsAffected === 1;
+  return result.length === 1;
 }
 
 /**
