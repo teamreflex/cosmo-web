@@ -1,6 +1,6 @@
 import { indexer } from "@/lib/server/db/indexer";
 import { collections, objekts } from "@/lib/server/db/indexer/schema";
-import { and, count, eq, inArray, not, sql } from "drizzle-orm";
+import { and, count, desc, eq, inArray, min, not, sql } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { fetchTotal } from "../../common";
 import { fetchKnownAddresses } from "@/lib/server/profiles";
@@ -61,9 +61,10 @@ export async function GET(request: NextRequest, { params }: Params) {
 const fetchLeaderboard = unstable_cache(
   async (member: string) => {
     const subquery = indexer
-      .select({
+      .selectDistinctOn([objekts.owner, objekts.collectionId], {
         owner: objekts.owner,
         collectionId: objekts.collectionId,
+        earliest: min(objekts.receivedAt).as("earliest"),
       })
       .from(objekts)
       .leftJoin(collections, eq(objekts.collectionId, collections.id))
@@ -74,6 +75,11 @@ const fetchLeaderboard = unstable_cache(
         )
       )
       .groupBy(objekts.owner, objekts.collectionId)
+      .orderBy(
+        desc(objekts.owner),
+        desc(objekts.collectionId),
+        sql`earliest asc`
+      )
       .as("subquery");
 
     return await indexer
