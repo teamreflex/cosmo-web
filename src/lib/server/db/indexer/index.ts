@@ -1,21 +1,31 @@
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
+import { drizzle } from "drizzle-orm/pg-proxy";
 import * as schema from "./schema";
 import { env } from "@/env.mjs";
 
-type PostgresDB = ReturnType<typeof postgres> | undefined;
+export const indexer = drizzle(
+  async (sql, params, method) => {
+    try {
+      const rows = await fetch(env.INDEXER_PROXY_URL, {
+        method: "POST",
+        headers: {
+          "proxy-key": env.INDEXER_PROXY_KEY,
+        },
+        body: JSON.stringify({
+          sql,
+          params,
+          method,
+        }),
+        cache: "no-cache",
+      }).then((res) => res.json());
 
-let postgresDb: PostgresDB = undefined;
+      console.log(rows);
 
-const databaseUrl = `postgres://${env.INDEXER_DB_USERNAME}:${env.INDEXER_DB_PASSWORD}@${env.INDEXER_DB_HOST}:${env.INDEXER_DB_PORT}/${env.INDEXER_DB_NAME}`;
-
-// prevents HMR from exhausing connections
-if (process.env.NODE_ENV !== "production") {
-  if (!postgresDb) {
-    postgresDb = postgres(databaseUrl);
-  }
-} else {
-  postgresDb = postgres(databaseUrl);
-}
-
-export const indexer = drizzle(postgresDb, { schema });
+      return { rows };
+    } catch (e: any) {
+      console.log(e);
+      console.error("Error from pg proxy server: ", e);
+      return { rows: [] };
+    }
+  },
+  { schema }
+);

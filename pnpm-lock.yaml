@@ -82,7 +82,7 @@ dependencies:
     version: 16.3.1
   drizzle-orm:
     specifier: ^0.29.5
-    version: 0.29.5(@neondatabase/serverless@0.9.0)(@planetscale/database@1.16.0)(@types/react@18.2.46)(postgres@3.4.3)(react@18.2.0)
+    version: 0.29.5(@neondatabase/serverless@0.9.0)(@planetscale/database@1.16.0)(@types/react@18.2.46)(react@18.2.0)
   embla-carousel-autoplay:
     specifier: 8.0.0
     version: 8.0.0(embla-carousel@8.0.0)
@@ -119,9 +119,6 @@ dependencies:
   ofetch:
     specifier: ^1.3.3
     version: 1.3.3
-  postgres:
-    specifier: ^3.4.3
-    version: 3.4.3
   react:
     specifier: 18.2.0
     version: 18.2.0
@@ -4064,7 +4061,7 @@ packages:
       - supports-color
     dev: true
 
-  /drizzle-orm@0.29.5(@neondatabase/serverless@0.9.0)(@planetscale/database@1.16.0)(@types/react@18.2.46)(postgres@3.4.3)(react@18.2.0):
+  /drizzle-orm@0.29.5(@neondatabase/serverless@0.9.0)(@planetscale/database@1.16.0)(@types/react@18.2.46)(react@18.2.0):
     resolution: {integrity: sha512-jS3+uyzTz4P0Y2CICx8FmRQ1eplURPaIMWDn/yq6k4ShRFj9V7vlJk67lSf2kyYPzQ60GkkNGXcJcwrxZ6QCRw==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
@@ -4138,7 +4135,6 @@ packages:
       '@neondatabase/serverless': 0.9.0
       '@planetscale/database': 1.16.0
       '@types/react': 18.2.46
-      postgres: 3.4.3
       react: 18.2.0
     dev: false
 
@@ -6414,11 +6410,6 @@ packages:
     engines: {node: '>=0.10.0'}
     dependencies:
       xtend: 4.0.2
-    dev: false
-
-  /postgres@3.4.3:
-    resolution: {integrity: sha512-iHJn4+M9vbTdHSdDzNkC0crHq+1CUdFhx+YqCE+SqWxPjm+Zu63jq7yZborOBF64c8pc58O5uMudyL1FQcHacA==}
-    engines: {node: '>=12'}
     dev: false
 
   /postmate@1.5.2:
