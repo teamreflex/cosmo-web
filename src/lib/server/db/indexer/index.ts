@@ -18,12 +18,9 @@ export const indexer = drizzle(
         cache: "no-cache",
       }).then((res) => res.json());
 
-      console.log(rows);
-
       return { rows };
     } catch (e: any) {
-      console.log(e);
-      console.error("Error from pg proxy server: ", e);
+      console.error("Error from Drizzle HTTP proxy: ", e);
       return { rows: [] };
     }
   },

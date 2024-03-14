@@ -43,7 +43,7 @@
     "drizzle-orm": "^0.29.5",
     "embla-carousel-autoplay": "8.0.0",
     "embla-carousel-react": "8.0.0",
-    "ethers": "5.7",
+    "ethers": "~5.7.2",
     "fathom-client": "^3.6.0",
     "hls.js": "^1.5.7",
     "jose": "^5.2.2",
