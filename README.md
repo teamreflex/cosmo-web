@@ -87,8 +87,9 @@ Supersedes the [objekts.jinsoul.tv](https://github.com/teamreflex/objekts-svelte
 - [Node.js](https://nodejs.org/en/) 18.17+
 - [Neon](https://neon.tech/) instance
   - Or swap this out for another Postgres compatible database with minimal code changes
-- Postgres instance
-  - The accompanying [blockchain indexer](https://github.com/teamreflex/cosmo-db) has containerized Postgres 15.5. Migration files can also be found there
+- Postgres instance with HTTP proxy
+  - The accompanying [blockchain indexer](https://github.com/teamreflex/cosmo-db) has containerized Postgres 15.5 and an HTTP proxy running under [Bun](https://bun.sh/).
+  - Migration files can also be found there
 - [Alchemy](https://www.alchemy.com/) API key
 
 ## Setup

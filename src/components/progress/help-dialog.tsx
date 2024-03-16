@@ -41,11 +41,12 @@ export default function HelpDialog() {
               Leaderboard
             </h3>
             <p>
-              Leaderboards display the top 10 users for the given member, which
+              Leaderboards display the top 25 users for the given member, which
               is based on the total number of unique collections the user has,
               not the total number of objekts they own.
             </p>
             <p>Progress percentages are recalculated every hour.</p>
+            <p>Any rank ties are random and may change upon refresh.</p>
           </div>
         </div>
         <AlertDialogFooter>

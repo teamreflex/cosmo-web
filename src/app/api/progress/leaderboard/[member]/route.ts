@@ -64,7 +64,6 @@ const fetchLeaderboard = unstable_cache(
       .selectDistinctOn([objekts.owner, objekts.collectionId], {
         owner: objekts.owner,
         collectionId: objekts.collectionId,
-        earliest: min(objekts.receivedAt).as("earliest"),
       })
       .from(objekts)
       .leftJoin(collections, eq(objekts.collectionId, collections.id))
@@ -75,11 +74,7 @@ const fetchLeaderboard = unstable_cache(
         )
       )
       .groupBy(objekts.owner, objekts.collectionId)
-      .orderBy(
-        desc(objekts.owner),
-        desc(objekts.collectionId),
-        sql`earliest asc`
-      )
+      .orderBy(desc(objekts.owner), desc(objekts.collectionId))
       .as("subquery");
 
     return await indexer
