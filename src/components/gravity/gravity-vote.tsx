@@ -89,12 +89,6 @@ function VoteDialog({
               <ChoiceRenderer choice={selected} />
             )}
 
-            {selected && (
-              <Button className="shadow-lg" variant="cosmo">
-                Vote
-              </Button>
-            )}
-
             <div className="flex flex-col gap-2 w-full sm:w-2/3">
               {data.choices.map((choice) => (
                 <button

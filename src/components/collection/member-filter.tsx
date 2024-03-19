@@ -109,9 +109,11 @@ const MemberImage = memo(function MemberImage({
       <Image
         src={image}
         alt={name}
-        fill={true}
+        width={40}
+        height={40}
         priority={true}
-        className="rounded-full"
+        quality={100}
+        className="absolute rounded-full"
       />
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { PropsWithChildren, useMemo, useState } from "react";
+import { PropsWithChildren, useState } from "react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -10,8 +10,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { useQuery } from "@tanstack/react-query";
-import { useDebounce } from "usehooks-ts";
-import { HeartCrack, HelpCircle, Loader2, X } from "lucide-react";
+import { HeartCrack, HelpCircle, Loader2 } from "lucide-react";
 import { isAddress } from "ethers/lib/utils";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { ofetch } from "ofetch";
@@ -19,6 +18,7 @@ import { defaultProfile } from "@/lib/utils";
 import { env } from "@/env.mjs";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { DialogClose } from "./ui/dialog";
+import { useDebounceValue } from "usehooks-ts";
 
 type Props = PropsWithChildren<{
   placeholder?: string;
@@ -38,17 +38,15 @@ export function UserSearch({
   onSelect,
   authenticated = false,
 }: Props) {
-  const [query, setQuery] = useState("");
-  const debouncedQuery = useDebounce<string>(query, 500);
+  const [query, setQuery] = useState<string>("");
+  const [debouncedQuery] = useDebounceValue<string>(query, 500);
   const queryIsAddress = isAddress(debouncedQuery);
 
   const { status, data, isFetching } = useQuery({
     queryKey: ["user-search", debouncedQuery],
     queryFn: async () => {
       return await ofetch<{ results: PublicProfile[] }>(`/api/user/v1/search`, {
-        query: {
-          query: debouncedQuery,
-        },
+        query: { query: debouncedQuery },
       }).then((res) => res.results);
     },
     enabled: debouncedQuery.length > 3 && queryIsAddress === false,
@@ -114,6 +112,8 @@ export function UserSearch({
         )}
 
         <CommandInput
+          autoFocus={true}
+          className="touch-manipulation"
           name="query"
           placeholder={placeholder ?? "Search for a user..."}
           value={query}

@@ -11,20 +11,21 @@
 
 ### Gravity
 
-- Remove voting modal, show options inline
 - Implement combination poll display
 - Clean up poll result display for multi-poll gravities
 
+### Progress
+
+- Add additional filters to leaderboards
+
 ### Objekts Index
 
-- Add serial/ownership lookup/details
+- Add detailed information about the collection
   - intercepting route usecase?
   - come up with a good UI beforehand
 
 ### Collection
 
-- Delete locked objekts upon transfer
-  - either use Alchemy webhooks or setup a webhook for the indexer to post to
 - Refactor locking into "marking" objekts as different colors/statuses/icons/idk
   - locking doesn't really make sense when sending is disabled
 
@@ -32,10 +33,6 @@
 
 - Add filtering
 - Add transfer hash
-
-### Stats / OpenSea replacement
-
-- Come up with a UI design first
 
 ### Profiles
 
