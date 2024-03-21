@@ -21,14 +21,11 @@ type CosmoGravityList = {
 
 /**
  * Fetch the list of gravities for the given artist.
- * Cached for 15 minutes.
+ * Not cached due to COMO updates.
  */
 export async function fetchGravities(artist: ValidArtist) {
   return await cosmo<CosmoGravityList>(`/gravity/v3/${artist}`, {
-    next: {
-      tags: ["gravity"],
-      revalidate: 60 * 15, // 15 minutes
-    },
+    cache: "no-cache",
   });
 }
 
