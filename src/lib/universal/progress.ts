@@ -8,18 +8,24 @@ export type SeasonMatrix = {
   key: string;
 };
 
-export type ObjektProgression = Pick<
-  Collection,
-  "collectionNo" | "frontImage" | "textColor" | "class" | "season" | "onOffline"
-> & {
+export interface ObjektProgression
+  extends Pick<
+    Collection,
+    | "collectionNo"
+    | "frontImage"
+    | "textColor"
+    | "class"
+    | "season"
+    | "onOffline"
+  > {
   obtained: boolean;
-};
+}
 
-export type FinalProgress = SeasonMatrix & {
+export interface FinalProgress extends SeasonMatrix {
   total: number;
   progress: number;
   collections: ObjektProgression[];
-};
+}
 
 export type LeaderboardItem = {
   count: number;

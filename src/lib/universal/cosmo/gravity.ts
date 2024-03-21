@@ -68,17 +68,17 @@ type CosmoPollCommon<PollType extends CosmoPollType> = {
   revealDate: string;
 };
 
-type CosmoSinglePollFinalized = CosmoPollCommon<"single-poll"> & {
+interface CosmoSinglePollFinalized extends CosmoPollCommon<"single-poll"> {
   finalized: true;
   result: {
     totalComoUsed: number;
     voteResults: CosmoSinglePollVoteResult[];
   };
-};
+}
 
-type CosmoSinglePollUpcoming = CosmoPollCommon<"single-poll"> & {
+interface CosmoSinglePollUpcoming extends CosmoPollCommon<"single-poll"> {
   finalized: false;
-};
+}
 
 type CosmoCombinationPollVoteSlot = {
   slotName: string;
@@ -92,17 +92,19 @@ export type CosmoCombinationPollVoteResult = {
   votedSlots: CosmoCombinationPollVoteSlot[];
 };
 
-type CosmoCombinationPollFinalized = CosmoPollCommon<"combination-poll"> & {
+interface CosmoCombinationPollFinalized
+  extends CosmoPollCommon<"combination-poll"> {
   finalized: true;
   result: {
     totalComoUsed: number;
     voteResults: CosmoCombinationPollVoteResult[];
   };
-};
+}
 
-type CosmoCombinationPollUpcoming = CosmoPollCommon<"combination-poll"> & {
+interface CosmoCombinationPollUpcoming
+  extends CosmoPollCommon<"combination-poll"> {
   finalized: false;
-};
+}
 
 export type CosmoPollFinalized =
   | CosmoSinglePollFinalized

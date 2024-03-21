@@ -28,10 +28,10 @@ import { env } from "@/env.mjs";
 import { ValidSorts } from "@/lib/universal/cosmo/common";
 import { useCooldown } from "@/hooks/use-countdown";
 
-type Props = PropsWithFilters<"sort"> & {
+interface Props extends PropsWithFilters<"sort"> {
   dataSource: CollectionDataSource;
   setDataSource: Dispatch<SetStateAction<CollectionDataSource>>;
-};
+}
 
 export default memo(function DataSourceSelector({
   filters,

@@ -25,6 +25,6 @@ type CosmoMember = {
   order: number;
 };
 
-export type CosmoArtistWithMembers = CosmoArtist & {
+export interface CosmoArtistWithMembers extends CosmoArtist {
   members: CosmoMember[];
-};
+}

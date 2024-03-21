@@ -11,9 +11,9 @@ import { PropsWithFilters } from "@/hooks/use-cosmo-filters";
 import { ValidSorts, validSorts } from "@/lib/universal/cosmo/common";
 import { memo } from "react";
 
-type Props = PropsWithFilters<"sort"> & {
+interface Props extends PropsWithFilters<"sort"> {
   serials: boolean;
-};
+}
 
 const map: Record<ValidSorts, string> = {
   [ValidSorts.NEWEST]: "Newest",

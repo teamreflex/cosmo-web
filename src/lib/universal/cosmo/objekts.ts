@@ -37,15 +37,15 @@ export type NonTransferableReason =
   | "lenticular-objekt"
   | "not-transferable"; // indexer
 
-type OwnedObjektMinted = OwnedObjektCommonFields & {
+interface OwnedObjektMinted extends OwnedObjektCommonFields {
   status: "minted";
   nonTransferableReason?: NonTransferableReason;
-};
+}
 
-type OwnedObjektPending = OwnedObjektCommonFields & {
+interface OwnedObjektPending extends OwnedObjektCommonFields {
   status: "pending";
   nonTransferableReason?: "mint-pending";
-};
+}
 
 export type OwnedObjekt = OwnedObjektMinted | OwnedObjektPending;
 

@@ -13,9 +13,9 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 
-type Props = PropsWithFilters<"collectionNo"> & {
+interface Props extends PropsWithFilters<"collectionNo"> {
   collections: string[];
-};
+}
 
 export default memo(function CollectionFilter({
   filters,
