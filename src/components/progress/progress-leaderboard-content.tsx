@@ -7,13 +7,19 @@ import Link from "next/link";
 
 type Props = {
   member: string;
+  onlineType: string | null;
 };
 
-export default function ProgressLeaderboardContent({ member }: Props) {
+export default function ProgressLeaderboardContent({
+  member,
+  onlineType,
+}: Props) {
   const { data } = useSuspenseQuery({
-    queryKey: ["progress-leaderboard", member],
+    queryKey: ["progress-leaderboard", member, onlineType ?? "combined"],
     queryFn: async () => {
-      return await ofetch<Leaderboard>(`/api/progress/leaderboard/${member}`);
+      return await ofetch<Leaderboard>(`/api/progress/leaderboard/${member}`, {
+        query: { onlineType },
+      });
     },
   });
 

@@ -1,5 +1,6 @@
 import { indexer } from "@/lib/server/db/indexer";
 import { collections } from "@/lib/server/db/indexer/schema";
+import { ValidOnlineType } from "@/lib/universal/cosmo/common";
 import { and, eq, inArray, not } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
 
@@ -8,7 +9,7 @@ import { unstable_cache } from "next/cache";
  * Cached for one hour.
  */
 export const fetchTotal = unstable_cache(
-  async (member: string) => {
+  async (member: string, onlineType: ValidOnlineType | null = null) => {
     const result = await indexer
       .select({
         id: collections.id,
@@ -24,7 +25,10 @@ export const fetchTotal = unstable_cache(
       .where(
         and(
           eq(collections.member, member),
-          not(inArray(collections.class, ["Welcome", "Zero"]))
+          not(inArray(collections.class, ["Welcome", "Zero"])),
+          ...(onlineType !== null
+            ? [eq(collections.onOffline, onlineType)]
+            : [])
         )
       );
 

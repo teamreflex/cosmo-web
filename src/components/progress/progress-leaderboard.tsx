@@ -8,7 +8,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { parseAsNullableBoolean } from "@/hooks/use-cosmo-filters";
-import { useQueryState } from "nuqs";
+import { parseAsStringEnum, useQueryState } from "nuqs";
 import { Fragment, Suspense } from "react";
 import ProgressLeaderboardContent, {
   LeaderboardSkeleton,
@@ -21,6 +21,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 type Props = {
   member: string;
@@ -28,6 +35,10 @@ type Props = {
 
 export default function ProgressLeaderboard({ member }: Props) {
   const [open, setOpen] = useQueryState("leaderboard", parseAsNullableBoolean);
+  const [onlineType, setOnlineType] = useQueryState(
+    "filter",
+    parseAsStringEnum(["combined", "online", "offline"])
+  );
 
   function toggle() {
     setOpen((prev) => (prev === true ? null : true));
@@ -62,11 +73,55 @@ export default function ProgressLeaderboard({ member }: Props) {
             </SheetDescription>
           </SheetHeader>
 
+          <div className="flex justify-between items-center border-b border-accent pb-4">
+            <p className="font-semibold">Filter</p>
+            <FilterSelect
+              value={onlineType ?? "combined"}
+              update={setOnlineType}
+            />
+          </div>
+
           <Suspense fallback={<LeaderboardSkeleton />}>
-            <ProgressLeaderboardContent member={member} />
+            <ProgressLeaderboardContent
+              member={member}
+              onlineType={onlineType}
+            />
           </Suspense>
         </SheetContent>
       </Sheet>
     </Fragment>
+  );
+}
+
+function FilterSelect({
+  value,
+  update,
+}: {
+  value: string;
+  update: (value: string | null) => void;
+}) {
+  function set(value: string) {
+    update(value === "combined" ? null : value);
+  }
+
+  return (
+    <Select value={value} onValueChange={set}>
+      <SelectTrigger className="w-32 drop-shadow-lg">
+        <SelectValue placeholder="Sort" />
+      </SelectTrigger>
+      <SelectContent
+        ref={(ref) => {
+          // fixes mobile touch-through bug in radix
+          if (!ref) return;
+          ref.ontouchstart = (e) => {
+            e.preventDefault();
+          };
+        }}
+      >
+        <SelectItem value="combined">Combined</SelectItem>
+        <SelectItem value="offline">Physical</SelectItem>
+        <SelectItem value="online">Digital</SelectItem>
+      </SelectContent>
+    </Select>
   );
 }

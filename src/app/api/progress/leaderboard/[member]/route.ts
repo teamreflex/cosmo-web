@@ -5,9 +5,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { fetchTotal } from "../../common";
 import { fetchKnownAddresses } from "@/lib/server/profiles";
 import { addrcomp } from "@/lib/utils";
-import { LeaderboardItem } from "@/lib/universal/progress";
+import { CombinedOnlineType, LeaderboardItem } from "@/lib/universal/progress";
 import { unstable_cache } from "next/cache";
 import { profiles } from "@/lib/server/db/schema";
+import { ValidOnlineType } from "@/lib/universal/cosmo/common";
 
 export const runtime = "nodejs";
 const LEADERBOARD_COUNT = 25;
@@ -23,9 +24,13 @@ type Params = {
  * Takes a member name, and returns the progress leaderboard for that member.
  */
 export async function GET(request: NextRequest, { params }: Params) {
+  // parse search params
+  const param = request.nextUrl.searchParams.get("onlineType");
+  const onlineType = isOnlineType(param) ? param : null;
+
   const [totals, leaderboard] = await Promise.all([
-    fetchTotal(params.member),
-    fetchLeaderboard(params.member),
+    fetchTotal(params.member, onlineType),
+    fetchLeaderboard(params.member, onlineType),
   ]);
 
   // fetch profiles for each address
@@ -55,11 +60,11 @@ export async function GET(request: NextRequest, { params }: Params) {
 }
 
 /**
- * Fetch top 10 for the given member.
+ * Fetch top 25 for the given member.
  * Cached for 1 hour.
  */
 const fetchLeaderboard = unstable_cache(
-  async (member: string) => {
+  async (member: string, onlineType: ValidOnlineType | null) => {
     const subquery = indexer
       .selectDistinctOn([objekts.owner, objekts.collectionId], {
         owner: objekts.owner,
@@ -70,7 +75,10 @@ const fetchLeaderboard = unstable_cache(
       .where(
         and(
           eq(collections.member, member),
-          not(inArray(collections.class, ["Welcome", "Zero"]))
+          not(inArray(collections.class, ["Welcome", "Zero"])),
+          ...(onlineType !== null
+            ? [eq(collections.onOffline, onlineType)]
+            : [])
         )
       )
       .groupBy(objekts.owner, objekts.collectionId)
@@ -87,6 +95,13 @@ const fetchLeaderboard = unstable_cache(
       .orderBy(sql`count desc`)
       .limit(LEADERBOARD_COUNT);
   },
-  ["progress-leaderboard"], // param (member name) gets added to this
+  ["progress-leaderboard"], // params (member name, onlineType) gets added to this
   { revalidate: 60 * 60 } // 1 hour
 );
+
+/**
+ * OnlineType type guard.
+ */
+function isOnlineType(type: string | null): type is ValidOnlineType {
+  return type === "online" || type === "offline";
+}

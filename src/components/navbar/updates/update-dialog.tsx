@@ -68,6 +68,10 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2024-04-09",
+    changes: ["Added: Physical & digital filters to progress leaderboards."],
+  },
+  {
     date: "2024-03-10",
     changes: [
       "Fixed: Privacy setting for progress leaderboards is now the nickname option, not the trades option.",
@@ -79,21 +83,6 @@ const updates = [
     changes: [
       "Added: Top 10 leaderboards on the progress page.",
       "For now the leaderboard is calculated based on combined digital + physical collections. Additional filters will be added in the future.",
-    ],
-  },
-  {
-    date: "2024-02-16",
-    changes: [
-      "Added: Rekord archive page.",
-      `Added: "Hidden" and "Expired" indicators on My Rekords page.`,
-      "Changed: When signed in, the user search will query Cosmo. When not signed in, it will lookup users saved into the system.",
-    ],
-  },
-  {
-    date: "2024-02-13",
-    changes: [
-      "Implemented Rekord functionality.",
-      "Submitting new rekord posts will not supported.",
     ],
   },
 ];
