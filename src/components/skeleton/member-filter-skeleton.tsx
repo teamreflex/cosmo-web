@@ -12,7 +12,7 @@ export default function MemberFilterSkeleton() {
 
       {/* triples */}
       <div className="flex flex-row gap-2 h-fit sm:justify-center justify-items-start overflow-x-scroll no-scrollbar">
-        {Array.from({ length: 21 }).map((_, i) => (
+        {Array.from({ length: 25 }).map((_, i) => (
           <Skeleton key={i} className="w-10 h-10 rounded-full" />
         ))}
       </div>

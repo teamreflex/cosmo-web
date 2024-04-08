@@ -26,13 +26,13 @@ export default memo(function MemberFilter({
 }: Props) {
   return (
     <div className="relative flex flex-col h-fit w-full">
-      <div className="absolute pointer-events-none z-20 top-0 left-0 h-full w-4 bg-gradient-to-r from-background to-transparent" />
-      <div className="absolute pointer-events-none z-20 top-0 right-0 h-full w-4 bg-gradient-to-l from-background to-transparent" />
+      <div className="absolute pointer-events-none z-20 top-0 left-0 h-full w-2 bg-gradient-to-r from-background to-transparent" />
+      <div className="absolute pointer-events-none z-20 top-0 right-0 h-full w-2 bg-gradient-to-l from-background to-transparent" />
 
       {artists.map((artist) => (
         <div
           key={artist.name}
-          className="flex flex-row z-10 gap-2 p-1 sm:justify-center justify-items-start overflow-x-scroll no-scrollbar"
+          className="flex flex-row z-10 gap-2 p-1 xl:justify-center justify-items-start overflow-x-scroll xl:no-scrollbar"
         >
           {showArtists && (
             <MemberFilterButton
@@ -77,22 +77,25 @@ export const MemberFilterButton = memo(function MemberFilterButton({
   setActive,
 }: MemberFilterButtonProps) {
   return (
-    <TooltipProvider delayDuration={0}>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            onClick={() => setActive(name)}
-            className={cn(
-              "rounded-full drop-shadow-lg",
-              isActive && "ring ring-cosmo"
-            )}
-          >
-            <MemberImage name={displayName} image={image} />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent side="bottom">{displayName}</TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <div className="flex flex-col justify-center items-center">
+      <TooltipProvider delayDuration={0}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={() => setActive(name)}
+              className={cn(
+                "rounded-full drop-shadow-lg",
+                isActive && "ring ring-cosmo"
+              )}
+            >
+              <MemberImage name={displayName} image={image} />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">{displayName}</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+      <p className="md:hidden text-xs text-foreground">{displayName}</p>
+    </div>
   );
 });
 
