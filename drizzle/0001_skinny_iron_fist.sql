@@ -2,7 +2,6 @@ CREATE TABLE IF NOT EXISTS "objekt_metadata" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"collection_id" varchar(36) NOT NULL,
 	"description" varchar(255) NOT NULL,
-	"dropped_at" timestamp NOT NULL,
 	"user_address" "citext" NOT NULL
 );
 --> statement-breakpoint

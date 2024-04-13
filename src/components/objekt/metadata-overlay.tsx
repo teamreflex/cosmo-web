@@ -4,18 +4,18 @@ import { ImageDown, Maximize2 } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "../ui/dialog";
 import { IndexedObjekt, ObjektMetadata } from "@/lib/universal/objekts";
 import Objekt from "./objekt";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { ofetch } from "ofetch";
 import ObjektSidebar from "./objekt-sidebar";
-import { cn } from "@/lib/utils";
-import { classes } from "../objekt-index/index-overlay";
 import Link from "next/link";
-import OverlayStatus from "./overlay-status";
-import { Fragment, Suspense } from "react";
+import { Suspense, useState, useTransition } from "react";
 import { Separator } from "../ui/separator";
 import Skeleton from "../skeleton/skeleton";
 import { useProfile } from "@/hooks/use-profile";
 import { Button } from "../ui/button";
+import { updateObjektMetadata } from "./actions";
+import { Textarea } from "../ui/textarea";
+import { useToast } from "../ui/use-toast";
 
 type Props = {
   objekt: IndexedObjekt;
@@ -29,7 +29,7 @@ export default function MetadataOverlay({ objekt }: Props) {
           <Maximize2 className="h-3 w-3 sm:h-5 sm:w-5" />
         </button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl grid-cols-auto grid-flow-row md:grid-flow-col p-0 gap-0 sm:rounded-2xl">
+      <DialogContent className="max-w-3xl grid-cols-auto grid-flow-row md:grid-flow-col p-0 gap-0 sm:rounded-2xl">
         <div className="flex w-fit mx-auto shrink pt-4 md:pt-0">
           <Objekt objekt={objekt} id={objekt.id}>
             <ObjektSidebar collection={objekt.collectionNo} />
@@ -75,6 +75,8 @@ function InfoPanel({ objekt }: Props) {
 }
 
 function Metadata({ objekt }: { objekt: IndexedObjekt }) {
+  const [showForm, setShowForm] = useState(false);
+
   const profile = useProfile();
   const { data } = useSuspenseQuery({
     queryKey: ["collection-metadata", objekt.slug],
@@ -86,15 +88,23 @@ function Metadata({ objekt }: { objekt: IndexedObjekt }) {
   });
 
   return (
-    <div className="flex grow flex-col gap-2 p-4">
+    <div className="flex grow flex-col justify-between gap-2 p-4">
       <div className="flex flex-wrap items-center gap-2 justify-center">
         <Pill label="Copies" value={data.copies.toLocaleString()} />
         <RarityPill copies={data.copies} />
       </div>
 
-      {data.metadata !== undefined && <p>{data.metadata.description}</p>}
+      {showForm ? (
+        <EditMetadata
+          objekt={objekt}
+          metadata={data}
+          close={() => setShowForm(false)}
+        />
+      ) : (
+        data.metadata !== undefined && <p>{data.metadata.description}</p>
+      )}
 
-      <div className="flex self-end gap-2 items-center mt-auto">
+      <div className="flex flex-row-reverse gap-2 items-center self-end mt-auto">
         {/* download image */}
         <Button variant="secondary" size="sm" asChild>
           <Link href={objekt.frontImage} target="_blank">
@@ -104,12 +114,67 @@ function Metadata({ objekt }: { objekt: IndexedObjekt }) {
 
         {/* edit metadata */}
         {profile !== undefined && profile.isObjektEditor && (
-          <Button variant="secondary" size="sm">
-            Edit Metadata
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setShowForm((prev) => !prev)}
+          >
+            {showForm ? "Cancel" : "Edit Metadata"}
           </Button>
         )}
       </div>
     </div>
+  );
+}
+
+type EditMetadataProps = {
+  objekt: IndexedObjekt;
+  metadata: ObjektMetadata;
+  close: () => void;
+};
+
+function EditMetadata({ objekt, metadata, close }: EditMetadataProps) {
+  const { toast } = useToast();
+  const [isPending, startTransition] = useTransition();
+  const queryClient = useQueryClient();
+
+  const formAction = updateObjektMetadata.bind(null, objekt.slug);
+
+  async function submit(form: FormData) {
+    startTransition(async () => {
+      const result = await formAction(form);
+      if (result.status === "success") {
+        queryClient.setQueryData(
+          ["collection-metadata", objekt.slug],
+          (old: ObjektMetadata) => {
+            return { ...old, metadata: result.data };
+          }
+        );
+        toast({
+          description: "Metadata updated.",
+        });
+        close();
+      } else if (result.status === "error") {
+        toast({
+          description: result.error,
+          variant: "destructive",
+        });
+      }
+    });
+  }
+
+  return (
+    <form className="flex flex-col gap-2" action={submit}>
+      <Textarea
+        name="description"
+        rows={3}
+        defaultValue={metadata.metadata?.description ?? ""}
+      />
+
+      <Button variant="secondary" size="sm" type="submit" disabled={isPending}>
+        {isPending ? "Saving..." : "Save"}
+      </Button>
+    </form>
   );
 }
 

@@ -20,7 +20,7 @@ interface ObjektInformation extends ObjektMetadataEntry {
 }
 export type ObjektMetadata = {
   copies: number;
-  metadata: ObjektInformation;
+  metadata: ObjektInformation | undefined;
 };
 
 /**

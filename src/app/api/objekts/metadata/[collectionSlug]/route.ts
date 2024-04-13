@@ -62,15 +62,19 @@ async function fetchCollectionMetadata(collectionSlug: string) {
  * Fetch information about a collection.
  * Cached for 15 minutes.
  */
-export const fetchMetadata = unstable_cache(
-  async (collection: string) => {
-    const [copies, metadata] = await Promise.all([
-      fetchCollectionCopies(collection),
-      fetchCollectionMetadata(collection),
-    ]);
+const fetchMetadata = (collection: string) =>
+  unstable_cache(
+    async (collection: string) => {
+      const [copies, metadata] = await Promise.all([
+        fetchCollectionCopies(collection),
+        fetchCollectionMetadata(collection),
+      ]);
 
-    return { copies, metadata: metadata };
-  },
-  ["collection-metadata"], // param (collection slug) gets added to this
-  { revalidate: 60 * 15 } // 15 minutes
-);
+      return { copies, metadata: metadata };
+    },
+    [`collection-metadata`],
+    {
+      revalidate: 60 * 15, // 15 minutes
+      tags: [`collection-metadata:${collection}`],
+    }
+  )(collection);

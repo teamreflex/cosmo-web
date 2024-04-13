@@ -6,7 +6,6 @@ import {
   integer,
   pgTable,
   serial,
-  timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
 import { citext } from "./columns";
@@ -116,9 +115,8 @@ export const objektMetadata = pgTable(
   "objekt_metadata",
   {
     id: serial("id").primaryKey(),
-    collectionId: varchar("collection_id", { length: 36 }).notNull(), // slug: atom01-jinsoul-101z
+    collectionId: varchar("collection_id", { length: 36 }).notNull().unique(), // slug: atom01-jinsoul-101z
     description: varchar("description", { length: 255 }).notNull(),
-    droppedAt: timestamp("dropped_at", { mode: "string" }).notNull(),
     contributor: citext("user_address", { length: 42 }).notNull(),
   },
   (table) => ({
