@@ -227,5 +227,6 @@ function parseProfile(profile: Profile): PublicProfile {
       trades: profile.privacyTrades,
     },
     gridColumns: profile.gridColumns,
+    isObjektEditor: profile.objektEditor,
   };
 }
