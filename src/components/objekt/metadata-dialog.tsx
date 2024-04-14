@@ -234,21 +234,40 @@ function Pill({ label, value }: PillProps) {
 }
 
 const rarityMap = {
+  // grey - consumer
   common: {
     label: "Common",
-    color: "#aba8a7",
+    color: "#afafaf",
   },
+  // light blue - industrial
+  // uncommon: {
+  //   label: "Uncommon",
+  //   color: "#6496e1",
+  // },
+  // blue - milspec
   uncommon: {
     label: "Uncommon",
-    color: "#1d48f5",
+    color: "#4b69cd",
   },
+  // purple - restricted
   rare: {
     label: "Rare",
-    color: "#ac1dc2",
+    color: "#8847ff",
   },
+  // pink - classified
+  "very-rare": {
+    label: "Very Rare",
+    color: "#d32ce6",
+  },
+  // red - covert
   "extremely-rare": {
     label: "Extremely Rare",
-    color: "#ed9a15",
+    color: "#eb4b4b",
+  },
+  // gold - contraband
+  impossible: {
+    label: "Impossible",
+    color: "#e3c427",
   },
 };
 type Rarity = keyof typeof rarityMap;
@@ -266,14 +285,21 @@ function RarityPill({ copies }: { copies: number }) {
   );
 }
 
+// counter-strike style rarity system
 function getRarity(copies: number): Rarity {
-  if (copies < 50) {
+  if (copies <= 10) {
+    return "impossible";
+  }
+  if (copies <= 50) {
     return "extremely-rare";
   }
-  if (copies < 250) {
+  if (copies <= 100) {
+    return "very-rare";
+  }
+  if (copies <= 250) {
     return "rare";
   }
-  if (copies < 500) {
+  if (copies <= 500) {
     return "uncommon";
   }
   return "common";
