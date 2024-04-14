@@ -8,7 +8,14 @@ import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { ofetch } from "ofetch";
 import ObjektSidebar from "./objekt-sidebar";
 import Link from "next/link";
-import { PropsWithChildren, Suspense, useState, useTransition } from "react";
+import {
+  Fragment,
+  PropsWithChildren,
+  ReactNode,
+  Suspense,
+  useState,
+  useTransition,
+} from "react";
 import { Separator } from "../ui/separator";
 import Skeleton from "../skeleton/skeleton";
 import { useProfile } from "@/hooks/use-profile";
@@ -17,33 +24,43 @@ import { updateObjektMetadata } from "./actions";
 import { Textarea } from "../ui/textarea";
 import { useToast } from "../ui/use-toast";
 import { getObjektArtist, getObjektId, getObjektType } from "./objekt-util";
+import { ErrorBoundary } from "react-error-boundary";
 
-type Props<TObjektType extends ValidObjekt> = {
+type CommonProps<TObjektType extends ValidObjekt> = {
   objekt: TObjektType;
 };
+
+interface MetadataDialogProps<TObjektType extends ValidObjekt>
+  extends CommonProps<TObjektType> {
+  children: (openDialog: () => void) => ReactNode;
+}
 
 export default function MetadataDialog<TObjektType extends ValidObjekt>({
   objekt,
   children,
-}: PropsWithChildren<Props<TObjektType>>) {
+}: MetadataDialogProps<TObjektType>) {
+  const [open, setOpen] = useState(false);
+
   return (
-    <Dialog>
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="max-w-3xl grid-cols-auto grid-flow-row md:grid-flow-col p-0 gap-0 sm:rounded-2xl">
-        <div className="flex w-fit mx-auto shrink pt-4 md:pt-0">
-          <FlippableObjekt objekt={objekt} id={getObjektId(objekt)}>
-            <ObjektSidebar collection={objekt.collectionNo} />
-          </FlippableObjekt>
-        </div>
-        <InfoPanel objekt={objekt} />
-      </DialogContent>
-    </Dialog>
+    <Fragment>
+      {children(() => setOpen(true))}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-3xl grid-cols-auto grid-flow-row md:grid-flow-col p-0 gap-0 sm:rounded-2xl">
+          <div className="flex w-fit mx-auto shrink pt-4 md:pt-0">
+            <FlippableObjekt objekt={objekt} id={getObjektId(objekt)}>
+              <ObjektSidebar collection={objekt.collectionNo} />
+            </FlippableObjekt>
+          </div>
+          <InfoPanel objekt={objekt} />
+        </DialogContent>
+      </Dialog>
+    </Fragment>
   );
 }
 
 function InfoPanel<TObjektType extends ValidObjekt>({
   objekt,
-}: Props<TObjektType>) {
+}: CommonProps<TObjektType>) {
   const artist = getObjektArtist(objekt);
   const onOffline = getObjektType(objekt);
 
@@ -63,15 +80,21 @@ function InfoPanel<TObjektType extends ValidObjekt>({
 
       <Separator orientation="horizontal" />
 
-      <Suspense
+      <ErrorBoundary
         fallback={
-          <div className="p-4">
-            <Skeleton className="w-full h-8" />
-          </div>
+          <div className="p-4 flex justify-center">Error loading metadata</div>
         }
       >
-        <Metadata objekt={objekt} />
-      </Suspense>
+        <Suspense
+          fallback={
+            <div className="p-4">
+              <Skeleton className="w-full h-8" />
+            </div>
+          }
+        >
+          <Metadata objekt={objekt} />
+        </Suspense>
+      </ErrorBoundary>
     </div>
   );
 }
@@ -91,6 +114,7 @@ function Metadata<TObjektType extends ValidObjekt>({
     queryFn: async () => {
       return await ofetch<ObjektMetadata>(`/api/objekts/metadata/${slug}`);
     },
+    retry: 1,
   });
 
   return (

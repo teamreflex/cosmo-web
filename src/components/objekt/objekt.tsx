@@ -79,24 +79,27 @@ export const ExpandableObjekt = memo(function ExpandableObjekt<
 
   return (
     <MetadataDialog objekt={objekt}>
-      <div
-        className="isolate relative overflow-hidden rounded-lg md:rounded-xl lg:rounded-2xl touch-manipulation bg-accent"
-        style={css}
-      >
-        <MemoizedImage
-          className="cursor-pointer"
-          src={objekt.frontImage}
-          width={291}
-          height={450}
-          alt={objekt.collectionId}
-          quality={100}
-          priority={false}
-          loading="lazy"
-          unoptimized
-        />
+      {(openDialog) => (
+        <div
+          className="isolate relative overflow-hidden rounded-lg md:rounded-xl lg:rounded-2xl touch-manipulation bg-accent"
+          style={css}
+        >
+          <MemoizedImage
+            onClick={openDialog}
+            className="cursor-pointer"
+            src={objekt.frontImage}
+            width={291}
+            height={450}
+            alt={objekt.collectionId}
+            quality={100}
+            priority={false}
+            loading="lazy"
+            unoptimized
+          />
 
-        {children}
-      </div>
+          {children}
+        </div>
+      )}
     </MetadataDialog>
   );
 });
