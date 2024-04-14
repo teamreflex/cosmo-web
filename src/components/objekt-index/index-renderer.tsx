@@ -21,6 +21,7 @@ import {
 import { ExpandableObjekt } from "../objekt/objekt";
 import { ofetch } from "ofetch";
 import { GRID_COLUMNS } from "@/lib/utils";
+import { parseAsString, useQueryState } from "nuqs";
 
 const queryKey = ["objekt-index"];
 const getObjektId = (objekt: IndexedObjekt) => objekt.id;
@@ -48,6 +49,7 @@ export default function IndexRenderer({
     setCosmoFilters,
     updateCosmoFilters,
   ] = useCosmoFilters();
+  const [activeObjekt, setActiveObjekt] = useQueryState("id", parseAsString);
 
   const authenticated = objektLists !== undefined && nickname !== undefined;
 
@@ -85,7 +87,12 @@ export default function IndexRenderer({
         gridColumns={gridColumns}
       >
         {({ objekt, id }) => (
-          <ExpandableObjekt objekt={objekt} id={id}>
+          <ExpandableObjekt
+            objekt={objekt}
+            id={id}
+            isActive={activeObjekt === objekt.slug}
+            setActive={setActiveObjekt}
+          >
             <Overlay
               objekt={objekt}
               authenticated={authenticated}

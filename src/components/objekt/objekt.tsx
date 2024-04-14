@@ -69,23 +69,44 @@ export const FlippableObjekt = memo(function FlippableObjekt<
   );
 });
 
+interface ExpandableObjektProps<TObjektType extends ValidObjekt>
+  extends ObjektProps<TObjektType> {
+  isActive?: boolean;
+  setActive?: (slug: string | null) => void;
+}
+
 export const ExpandableObjekt = memo(function ExpandableObjekt<
   TObjektType extends ValidObjekt
->({ children, objekt }: ObjektProps<TObjektType>) {
+>({
+  children,
+  objekt,
+  isActive = false,
+  setActive,
+}: ExpandableObjektProps<TObjektType>) {
   const css = {
     "--objekt-background-color": objekt.backgroundColor,
     "--objekt-text-color": objekt.textColor,
   } as CSSProperties;
 
+  const slug =
+    `${objekt.season}-${objekt.member}-${objekt.collectionNo}`.toLowerCase();
+
   return (
-    <MetadataDialog objekt={objekt}>
+    <MetadataDialog
+      objekt={objekt}
+      isActive={isActive}
+      // onClose={() => setActive?.(null)}
+    >
       {(openDialog) => (
         <div
           className="isolate relative overflow-hidden rounded-lg md:rounded-xl lg:rounded-2xl touch-manipulation bg-accent"
           style={css}
         >
           <MemoizedImage
-            onClick={openDialog}
+            onClick={() => {
+              // setActive?.(slug);
+              openDialog();
+            }}
             className="cursor-pointer"
             src={objekt.frontImage}
             width={291}

@@ -33,18 +33,29 @@ type CommonProps<TObjektType extends ValidObjekt> = {
 interface MetadataDialogProps<TObjektType extends ValidObjekt>
   extends CommonProps<TObjektType> {
   children: (openDialog: () => void) => ReactNode;
+  isActive: boolean;
+  onClose?: () => void;
 }
 
 export default function MetadataDialog<TObjektType extends ValidObjekt>({
   objekt,
   children,
+  isActive,
+  onClose,
 }: MetadataDialogProps<TObjektType>) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(isActive);
+
+  function onOpenChange(state: boolean) {
+    setOpen((prev) => !prev);
+    if (state === false && onClose !== undefined) {
+      onClose();
+    }
+  }
 
   return (
     <Fragment>
       {children(() => setOpen(true))}
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-3xl grid-cols-auto grid-flow-row md:grid-flow-col p-0 gap-0 sm:rounded-2xl">
           <div className="flex w-fit mx-auto shrink pt-4 md:pt-0">
             <FlippableObjekt objekt={objekt} id={getObjektId(objekt)}>
