@@ -68,6 +68,14 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2024-04-15",
+    changes: [
+      "Added: Information dialogs for objekts.",
+      "Click an objekt to see information like season, class, number of copies, rarity and the source of the objekt.",
+      "Source descriptions will be added over time.",
+    ],
+  },
+  {
     date: "2024-04-09",
     changes: ["Added: Physical & digital filters to progress leaderboards."],
   },

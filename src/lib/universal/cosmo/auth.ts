@@ -19,6 +19,7 @@ export type PublicProfile = {
     trades: boolean;
   };
   gridColumns: number;
+  isObjektEditor: boolean;
 };
 
 export type LoginResult = {

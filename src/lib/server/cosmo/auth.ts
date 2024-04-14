@@ -5,7 +5,6 @@ import {
   PublicProfile,
 } from "@/lib/universal/cosmo/auth";
 import { cosmo } from "../http";
-import { defaultProfile } from "@/lib/utils";
 
 type CosmoLoginResult = {
   user: {

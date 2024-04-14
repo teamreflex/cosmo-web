@@ -13,7 +13,7 @@ import {
   CosmoFilters,
   SetCosmoFilters,
 } from "@/hooks/use-cosmo-filters";
-import Objekt from "../objekt/objekt";
+import { ExpandableObjekt } from "../objekt/objekt";
 import { GRID_COLUMNS } from "@/lib/utils";
 
 const getObjektId = (objekt: OwnedObjekt) => objekt.tokenId;
@@ -80,14 +80,14 @@ export default memo(function CollectionObjektDisplay({
         dataSource={dataSource}
       >
         {({ objekt, id }) => (
-          <Objekt objekt={objekt} id={id}>
+          <ExpandableObjekt objekt={objekt} id={id}>
             <Overlay
               objekt={objekt}
               authenticated={authenticated}
               isLocked={lockedTokens.includes(parseInt(id))}
               toggleLock={toggleLock}
             />
-          </Objekt>
+          </ExpandableObjekt>
         )}
       </FilteredObjektDisplay>
     </Fragment>

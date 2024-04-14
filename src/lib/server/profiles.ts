@@ -1,4 +1,4 @@
-import { SQL, and, eq, inArray } from "drizzle-orm";
+import { SQL, and, inArray } from "drizzle-orm";
 import { db } from "./db";
 import { profiles } from "./db/schema";
 

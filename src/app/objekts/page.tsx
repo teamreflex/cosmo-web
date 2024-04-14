@@ -4,6 +4,7 @@ import IndexRenderer from "@/components/objekt-index/index-renderer";
 import { fetchUniqueCollections } from "@/lib/server/objekts/collections";
 import { fetchObjektLists } from "@/lib/server/objekts/lists";
 import { fetchArtistsWithMembers } from "@/lib/server/cosmo/artists";
+import { ProfileProvider } from "@/hooks/use-profile";
 
 export const metadata: Metadata = {
   title: "Objekts",
@@ -20,13 +21,15 @@ export default async function ObjektsIndexPage() {
 
   return (
     <main className="container flex flex-col py-2">
-      <IndexRenderer
-        artists={artists}
-        collections={collections}
-        objektLists={objektLists}
-        nickname={user?.nickname}
-        gridColumns={currentUser?.gridColumns}
-      />
+      <ProfileProvider profile={currentUser}>
+        <IndexRenderer
+          artists={artists}
+          collections={collections}
+          objektLists={objektLists}
+          nickname={user?.nickname}
+          gridColumns={currentUser?.gridColumns}
+        />
+      </ProfileProvider>
     </main>
   );
 }

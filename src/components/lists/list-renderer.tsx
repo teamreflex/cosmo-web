@@ -19,7 +19,7 @@ import {
   FiltersContainer,
   IndexFilters,
 } from "../collection/filters-container";
-import Objekt from "../objekt/objekt";
+import { ExpandableObjekt } from "../objekt/objekt";
 import { ofetch } from "ofetch";
 import { GRID_COLUMNS } from "@/lib/utils";
 
@@ -83,13 +83,13 @@ export default function ListRenderer({
         gridColumns={gridColumns}
       >
         {({ objekt, id }) => (
-          <Objekt objekt={objekt} id={id}>
+          <ExpandableObjekt objekt={objekt} id={id}>
             <Overlay
               objekt={objekt}
               authenticated={authenticated}
               objektList={list}
             />
-          </Objekt>
+          </ExpandableObjekt>
         )}
       </FilteredObjektDisplay>
     </section>

@@ -1,4 +1,5 @@
 import type { Collection } from "@/lib/server/db/indexer/schema";
+import { ObjektMetadataEntry, Profile } from "@/lib/server/db/schema";
 export type {
   ObjektList,
   CreateObjektList,
@@ -14,6 +15,13 @@ export type IndexedCosmoResponse = {
   objekts: IndexedObjekt[];
 };
 export type ValidObjekt = OwnedObjekt | IndexedObjekt;
+interface ObjektInformation extends ObjektMetadataEntry {
+  profile?: Profile;
+}
+export type ObjektMetadata = {
+  copies: number;
+  metadata: ObjektInformation | undefined;
+};
 
 /**
  * Parse a Cosmo-compatible objekts response.

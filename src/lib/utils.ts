@@ -54,4 +54,5 @@ export const defaultProfile: PublicProfile = {
     trades: false,
   },
   gridColumns: GRID_COLUMNS,
+  isObjektEditor: false,
 };

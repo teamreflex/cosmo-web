@@ -21,7 +21,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import Objekt from "./objekt";
+import { FlippableObjekt } from "./objekt";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   TransactionError,
@@ -212,12 +212,12 @@ export default function SendObjekt({ objekt }: Props) {
             {/* show preview before sending */}
             {transactionProgress === TransactionStatus.WAITING && (
               <div className="flex flex-col gap-4 justify-center items-center">
-                <Objekt objekt={objekt} id={objekt.tokenId}>
+                <FlippableObjekt objekt={objekt} id={objekt.tokenId}>
                   <ObjektSidebar
                     collection={objekt.collectionNo}
                     serial={objekt.objektNo}
                   />
-                </Objekt>
+                </FlippableObjekt>
               </div>
             )}
 

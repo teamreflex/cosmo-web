@@ -88,6 +88,7 @@ export const profiles = pgTable(
     privacyComo: boolean("privacy_como").notNull().default(false),
     privacyTrades: boolean("privacy_trades").notNull().default(false),
     gridColumns: integer("grid_columns").notNull().default(5),
+    objektEditor: boolean("objekt_editor").notNull().default(false),
   },
   (table) => ({
     addressIdx: index("profiles_address_idx").on(table.userAddress),
@@ -107,9 +108,36 @@ export const profiles = pgTable(
 export const profileRelations = relations(profiles, ({ many }) => ({
   lockedObjekts: many(lockedObjekts),
   lists: many(lists),
+  objektMetadata: many(objektMetadata),
+}));
+
+export const objektMetadata = pgTable(
+  "objekt_metadata",
+  {
+    id: serial("id").primaryKey(),
+    collectionId: varchar("collection_id", { length: 36 }).notNull().unique(), // slug: atom01-jinsoul-101z
+    description: varchar("description", { length: 255 }).notNull(),
+    contributor: citext("user_address", { length: 42 }).notNull(),
+  },
+  (table) => ({
+    collectionIdx: index("objekt_metadata_collection_idx").on(
+      table.collectionId
+    ),
+    contributorIdx: index("objekt_metadata_contributor_idx").on(
+      table.contributor
+    ),
+  })
+);
+
+export const objektMetadataRelations = relations(objektMetadata, ({ one }) => ({
+  profile: one(profiles, {
+    fields: [objektMetadata.contributor],
+    references: [profiles.userAddress],
+  }),
 }));
 
 export type Profile = InferSelectModel<typeof profiles>;
 export type ObjektList = InferSelectModel<typeof lists>;
 export type CreateObjektList = InferInsertModel<typeof lists>;
 export type UpdateObjektList = InferInsertModel<typeof lists>;
+export type ObjektMetadataEntry = InferSelectModel<typeof objektMetadata>;

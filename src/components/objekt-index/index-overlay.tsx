@@ -4,15 +4,13 @@ import { cn } from "@/lib/utils";
 import { IndexedObjekt, ObjektList } from "@/lib/universal/objekts";
 import AddToList from "../lists/add-to-list";
 import OverlayStatus from "../objekt/overlay-status";
-import Link from "next/link";
-import { ImageDown } from "lucide-react";
 
 type TopOverlayProps = {
   objekt: IndexedObjekt;
   objektLists: ObjektList[];
 };
 
-const classes = [
+export const classes = [
   "absolute left-0 p-1 sm:p-2 items-center group h-5 sm:h-9 transition-all overflow-hidden",
   "text-[var(--objekt-text-color)] bg-[var(--objekt-background-color)]",
   "grid grid-flow-col grid-cols-[1fr_min-content]",
@@ -30,29 +28,6 @@ export function TopOverlay({ objekt, objektLists }: TopOverlayProps) {
       {/* status text */}
       <div className="text-xs whitespace-nowrap max-w-0 group-hover:max-w-[12rem] overflow-hidden transition-all">
         <OverlayStatus>Add to List</OverlayStatus>
-      </div>
-    </div>
-  );
-}
-
-type BottomOverlayProps = {
-  objekt: IndexedObjekt;
-};
-
-export function BottomOverlay({ objekt }: BottomOverlayProps) {
-  return (
-    <div className={cn(...classes, "bottom-0 rounded-tr-lg sm:rounded-tr-xl")}>
-      {/* buttons */}
-      <div className="flex items-center gap-2">
-        {/* view image */}
-        <Link href={objekt.frontImage} target="_blank">
-          <ImageDown className="h-3 w-3 sm:h-5 sm:w-5 hover:scale-110 transition-all" />
-        </Link>
-      </div>
-
-      {/* status text */}
-      <div className="text-xs whitespace-nowrap max-w-0 group-hover:max-w-[12rem] overflow-hidden transition-all">
-        <OverlayStatus>Download Image</OverlayStatus>
       </div>
     </div>
   );
