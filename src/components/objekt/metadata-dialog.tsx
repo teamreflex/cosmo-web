@@ -116,8 +116,11 @@ function Metadata<TObjektType extends ValidObjekt>({
   objekt: TObjektType;
 }) {
   const [showForm, setShowForm] = useState(false);
+
+  // strip symbols from member name
+  const member = objekt.member.toLowerCase().replace(/[+()]+/g, "");
   const slug =
-    `${objekt.season}-${objekt.member}-${objekt.collectionNo}`.toLowerCase();
+    `${objekt.season}-${member}-${objekt.collectionNo}`.toLowerCase();
 
   const profile = useProfile();
   const { data } = useSuspenseQuery({
