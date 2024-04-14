@@ -1,14 +1,14 @@
 "use client";
 
-import { ImageDown, Maximize2 } from "lucide-react";
+import { ImageDown } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "../ui/dialog";
-import { IndexedObjekt, ObjektMetadata } from "@/lib/universal/objekts";
-import Objekt from "./objekt";
+import { ObjektMetadata, ValidObjekt } from "@/lib/universal/objekts";
+import { FlippableObjekt } from "./objekt";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { ofetch } from "ofetch";
 import ObjektSidebar from "./objekt-sidebar";
 import Link from "next/link";
-import { Suspense, useState, useTransition } from "react";
+import { PropsWithChildren, Suspense, useState, useTransition } from "react";
 import { Separator } from "../ui/separator";
 import Skeleton from "../skeleton/skeleton";
 import { useProfile } from "@/hooks/use-profile";
@@ -16,24 +16,24 @@ import { Button } from "../ui/button";
 import { updateObjektMetadata } from "./actions";
 import { Textarea } from "../ui/textarea";
 import { useToast } from "../ui/use-toast";
+import { getObjektArtist, getObjektId, getObjektType } from "./objekt-util";
 
-type Props = {
-  objekt: IndexedObjekt;
+type Props<TObjektType extends ValidObjekt> = {
+  objekt: TObjektType;
 };
 
-export default function MetadataOverlay({ objekt }: Props) {
+export default function MetadataDialog<TObjektType extends ValidObjekt>({
+  objekt,
+  children,
+}: PropsWithChildren<Props<TObjektType>>) {
   return (
     <Dialog>
-      <DialogTrigger asChild>
-        <button className="z-50 hover:cursor-pointer hover:scale-110 transition-all flex items-center place-self-end">
-          <Maximize2 className="h-3 w-3 sm:h-5 sm:w-5" />
-        </button>
-      </DialogTrigger>
+      <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="max-w-3xl grid-cols-auto grid-flow-row md:grid-flow-col p-0 gap-0 sm:rounded-2xl">
         <div className="flex w-fit mx-auto shrink pt-4 md:pt-0">
-          <Objekt objekt={objekt} id={objekt.id}>
+          <FlippableObjekt objekt={objekt} id={getObjektId(objekt)}>
             <ObjektSidebar collection={objekt.collectionNo} />
-          </Objekt>
+          </FlippableObjekt>
         </div>
         <InfoPanel objekt={objekt} />
       </DialogContent>
@@ -41,21 +41,23 @@ export default function MetadataOverlay({ objekt }: Props) {
   );
 }
 
-function InfoPanel({ objekt }: Props) {
+function InfoPanel<TObjektType extends ValidObjekt>({
+  objekt,
+}: Props<TObjektType>) {
+  const artist = getObjektArtist(objekt);
+  const onOffline = getObjektType(objekt);
+
   return (
     <div className="flex flex-col">
       {/* attributes */}
       <div className="flex flex-wrap items-center gap-2 justify-center p-4">
-        <Pill
-          label="Artist"
-          value={objekt.artist === "artms" ? "ARTMS" : "tripleS"}
-        />
+        <Pill label="Artist" value={artist} />
         <Pill label="Member" value={objekt.member} />
         <Pill label="Season" value={objekt.season} />
         <Pill label="Class" value={objekt.class} />
         <Pill
           label="Type"
-          value={objekt.onOffline === "online" ? "Digital" : "Physical"}
+          value={onOffline === "online" ? "Digital" : "Physical"}
         />
       </div>
 
@@ -74,16 +76,20 @@ function InfoPanel({ objekt }: Props) {
   );
 }
 
-function Metadata({ objekt }: { objekt: IndexedObjekt }) {
+function Metadata<TObjektType extends ValidObjekt>({
+  objekt,
+}: {
+  objekt: TObjektType;
+}) {
   const [showForm, setShowForm] = useState(false);
+  const slug =
+    `${objekt.season}-${objekt.member}-${objekt.collectionNo}`.toLowerCase();
 
   const profile = useProfile();
   const { data } = useSuspenseQuery({
-    queryKey: ["collection-metadata", objekt.slug],
+    queryKey: ["collection-metadata", slug],
     queryFn: async () => {
-      return await ofetch<ObjektMetadata>(
-        `/api/objekts/metadata/${objekt.slug}`
-      );
+      return await ofetch<ObjektMetadata>(`/api/objekts/metadata/${slug}`);
     },
   });
 
@@ -96,7 +102,7 @@ function Metadata({ objekt }: { objekt: IndexedObjekt }) {
 
       {showForm ? (
         <EditMetadata
-          objekt={objekt}
+          slug={slug}
           metadata={data}
           close={() => setShowForm(false)}
         />
@@ -128,24 +134,24 @@ function Metadata({ objekt }: { objekt: IndexedObjekt }) {
 }
 
 type EditMetadataProps = {
-  objekt: IndexedObjekt;
+  slug: string;
   metadata: ObjektMetadata;
   close: () => void;
 };
 
-function EditMetadata({ objekt, metadata, close }: EditMetadataProps) {
+function EditMetadata({ slug, metadata, close }: EditMetadataProps) {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const queryClient = useQueryClient();
 
-  const formAction = updateObjektMetadata.bind(null, objekt.slug);
+  const formAction = updateObjektMetadata.bind(null, slug);
 
   async function submit(form: FormData) {
     startTransition(async () => {
       const result = await formAction(form);
       if (result.status === "success") {
         queryClient.setQueryData(
-          ["collection-metadata", objekt.slug],
+          ["collection-metadata", slug],
           (old: ObjektMetadata) => {
             return { ...old, metadata: result.data };
           }

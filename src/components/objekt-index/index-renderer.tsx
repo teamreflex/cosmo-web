@@ -10,7 +10,7 @@ import {
 } from "@/lib/universal/objekts";
 import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
 import ObjektSidebar from "../objekt/objekt-sidebar";
-import { BottomOverlay, TopOverlay } from "./index-overlay";
+import { TopOverlay } from "./index-overlay";
 import HelpDialog from "./help-dialog";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { Fragment, memo, useCallback } from "react";
@@ -18,7 +18,7 @@ import {
   FiltersContainer,
   IndexFilters,
 } from "../collection/filters-container";
-import Objekt from "../objekt/objekt";
+import { ExpandableObjekt } from "../objekt/objekt";
 import { ofetch } from "ofetch";
 import { GRID_COLUMNS } from "@/lib/utils";
 
@@ -85,13 +85,13 @@ export default function IndexRenderer({
         gridColumns={gridColumns}
       >
         {({ objekt, id }) => (
-          <Objekt objekt={objekt} id={id}>
+          <ExpandableObjekt objekt={objekt} id={id}>
             <Overlay
               objekt={objekt}
               authenticated={authenticated}
               objektLists={objektLists}
             />
-          </Objekt>
+          </ExpandableObjekt>
         )}
       </FilteredObjektDisplay>
     </div>
@@ -157,7 +157,6 @@ const Overlay = memo(function Overlay({
       {authenticated && (
         <TopOverlay objekt={objekt} objektLists={objektLists} />
       )}
-      <BottomOverlay objekt={objekt} />
     </Fragment>
   );
 });

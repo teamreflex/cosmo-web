@@ -12,6 +12,7 @@ import { Loader2, Shield } from "lucide-react";
 import { addrcomp } from "@/lib/utils";
 import { Suspense } from "react";
 import PreviousIds from "@/components/profile/previous-ids";
+import { ProfileProvider } from "@/hooks/use-profile";
 
 type Props = {
   params: { nickname: string };
@@ -45,27 +46,29 @@ export default async function UserCollectionPage({ params }: Props) {
     profile.privacy.nickname && !addrcomp(user?.address, profile.address);
 
   return (
-    <section className="flex flex-col">
-      <ProfileRenderer
-        lockedObjekts={lockedObjekts}
-        artists={artists}
-        profile={profile}
-        user={currentUser}
-        previousIds={
-          shouldHideNickname ? null : (
-            <Suspense
-              fallback={
-                <div className="flex justify-center">
-                  <Loader2 className="w-6 h-6 animate-spin" />
-                </div>
-              }
-            >
-              <PreviousIds address={profile.address} />
-            </Suspense>
-          )
-        }
-      />
-    </section>
+    <ProfileProvider profile={profile}>
+      <section className="flex flex-col">
+        <ProfileRenderer
+          lockedObjekts={lockedObjekts}
+          artists={artists}
+          profile={profile}
+          user={currentUser}
+          previousIds={
+            shouldHideNickname ? null : (
+              <Suspense
+                fallback={
+                  <div className="flex justify-center">
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                  </div>
+                }
+              >
+                <PreviousIds address={profile.address} />
+              </Suspense>
+            )
+          }
+        />
+      </section>
+    </ProfileProvider>
   );
 }
 

@@ -10,6 +10,7 @@ import {
   useState,
 } from "react";
 import ReactCardFlip from "react-card-flip";
+import MetadataDialog from "./metadata-dialog";
 
 export type ObjektProps<TObjektType extends ValidObjekt> = PropsWithChildren<{
   id: string;
@@ -19,10 +20,9 @@ export type ObjektProps<TObjektType extends ValidObjekt> = PropsWithChildren<{
 const MemoizedImage = memo(Image);
 const MemoizedCardFlip = memo(ReactCardFlip);
 
-export default memo(function Objekt<TObjektType extends ValidObjekt>({
-  children,
-  objekt,
-}: ObjektProps<TObjektType>) {
+export const FlippableObjekt = memo(function FlippableObjekt<
+  TObjektType extends ValidObjekt
+>({ children, objekt }: ObjektProps<TObjektType>) {
   const [flipped, setFlipped] = useState(false);
   const flip = useCallback(() => setFlipped((prev) => !prev), []);
 
@@ -34,7 +34,7 @@ export default memo(function Objekt<TObjektType extends ValidObjekt>({
   return (
     <MemoizedCardFlip isFlipped={flipped} flipDirection="horizontal">
       <div
-        className="isolate relative overflow-hidden rounded-lg md:rounded-xl lg:rounded-2xl touch-manipulation bg-accent"
+        className="isolate relative overflow-hidden rounded-xl lg:rounded-2xl touch-manipulation bg-accent"
         style={css}
       >
         <MemoizedImage
@@ -66,5 +66,37 @@ export default memo(function Objekt<TObjektType extends ValidObjekt>({
         unoptimized
       />
     </MemoizedCardFlip>
+  );
+});
+
+export const ExpandableObjekt = memo(function ExpandableObjekt<
+  TObjektType extends ValidObjekt
+>({ children, objekt }: ObjektProps<TObjektType>) {
+  const css = {
+    "--objekt-background-color": objekt.backgroundColor,
+    "--objekt-text-color": objekt.textColor,
+  } as CSSProperties;
+
+  return (
+    <MetadataDialog objekt={objekt}>
+      <div
+        className="isolate relative overflow-hidden rounded-lg md:rounded-xl lg:rounded-2xl touch-manipulation bg-accent"
+        style={css}
+      >
+        <MemoizedImage
+          className="cursor-pointer"
+          src={objekt.frontImage}
+          width={291}
+          height={450}
+          alt={objekt.collectionId}
+          quality={100}
+          priority={false}
+          loading="lazy"
+          unoptimized
+        />
+
+        {children}
+      </div>
+    </MetadataDialog>
   );
 });
