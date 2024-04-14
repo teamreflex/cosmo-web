@@ -30,9 +30,7 @@
       "indexes": {
         "list_entries_list_idx": {
           "name": "list_entries_list_idx",
-          "columns": [
-            "list_id"
-          ],
+          "columns": ["list_id"],
           "isUnique": false
         }
       },
@@ -72,16 +70,12 @@
       "indexes": {
         "lists_address_idx": {
           "name": "lists_address_idx",
-          "columns": [
-            "user_address"
-          ],
+          "columns": ["user_address"],
           "isUnique": false
         },
         "lists_slug_idx": {
           "name": "lists_slug_idx",
-          "columns": [
-            "slug"
-          ],
+          "columns": ["slug"],
           "isUnique": false
         }
       },
@@ -121,10 +115,7 @@
       "indexes": {
         "address_token_idx": {
           "name": "address_token_idx",
-          "columns": [
-            "user_address",
-            "tokenId"
-          ],
+          "columns": ["user_address", "tokenId"],
           "isUnique": false
         }
       },
@@ -154,12 +145,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "dropped_at": {
-          "name": "dropped_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true
-        },
         "user_address": {
           "name": "user_address",
           "type": "citext",
@@ -170,16 +155,12 @@
       "indexes": {
         "objekt_metadata_collection_idx": {
           "name": "objekt_metadata_collection_idx",
-          "columns": [
-            "collection_id"
-          ],
+          "columns": ["collection_id"],
           "isUnique": false
         },
         "objekt_metadata_contributor_idx": {
           "name": "objekt_metadata_contributor_idx",
-          "columns": [
-            "user_address"
-          ],
+          "columns": ["user_address"],
           "isUnique": false
         }
       },
@@ -267,51 +248,37 @@
       "indexes": {
         "profiles_address_idx": {
           "name": "profiles_address_idx",
-          "columns": [
-            "user_address"
-          ],
+          "columns": ["user_address"],
           "isUnique": false
         },
         "profiles_cosmo_id_idx": {
           "name": "profiles_cosmo_id_idx",
-          "columns": [
-            "cosmo_id"
-          ],
+          "columns": ["cosmo_id"],
           "isUnique": false
         },
         "profiles_nickname_idx": {
           "name": "profiles_nickname_idx",
-          "columns": [
-            "nickname"
-          ],
+          "columns": ["nickname"],
           "isUnique": false
         },
         "profiles_priv_nickname_idx": {
           "name": "profiles_priv_nickname_idx",
-          "columns": [
-            "privacy_nickname"
-          ],
+          "columns": ["privacy_nickname"],
           "isUnique": false
         },
         "profiles_priv_objekts_idx": {
           "name": "profiles_priv_objekts_idx",
-          "columns": [
-            "privacy_objekts"
-          ],
+          "columns": ["privacy_objekts"],
           "isUnique": false
         },
         "profiles_priv_como_idx": {
           "name": "profiles_priv_como_idx",
-          "columns": [
-            "privacy_como"
-          ],
+          "columns": ["privacy_como"],
           "isUnique": false
         },
         "profiles_priv_trades_idx": {
           "name": "profiles_priv_trades_idx",
-          "columns": [
-            "privacy_trades"
-          ],
+          "columns": ["privacy_trades"],
           "isUnique": false
         }
       },
