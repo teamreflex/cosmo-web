@@ -40,3 +40,4 @@ next-env.d.ts
 
 # misc
 /scripts/*.json
+/scripts/metadata-import/metadata.txt
