@@ -18,12 +18,6 @@
 
 - Add additional filters to leaderboards
 
-### Objekts Index
-
-- Add detailed information about the collection
-  - intercepting route usecase?
-  - come up with a good UI beforehand
-
 ### Collection
 
 - Refactor locking into "marking" objekts as different colors/statuses/icons/idk
