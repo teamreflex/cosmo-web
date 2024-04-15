@@ -21,8 +21,10 @@ function TrackPageView() {
   useEffect(() => {
     if (!pathname) return;
 
+    const params = searchParams.toString();
+
     trackPageview({
-      url: pathname + searchParams.toString(),
+      url: pathname + (params.length > 0 ? `?${params}` : ""),
       referrer: document.referrer,
     });
   }, [pathname, searchParams]);
