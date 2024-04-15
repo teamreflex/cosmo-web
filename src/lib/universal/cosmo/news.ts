@@ -50,7 +50,7 @@ export type CosmoNewsSectionExclusiveContent = {
   title: string;
   body: string;
   thumbnailImageUrl: string;
-  nativeVideoUrl: string;
+  nativeVideoUrl: string | null;
 };
 
 export type CosmoNewsSectionRekord = {

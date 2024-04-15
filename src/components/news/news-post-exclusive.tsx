@@ -14,19 +14,19 @@ export default function NewsPostExclusive({
 }: {
   post: CosmoNewsSectionExclusiveContent;
 }) {
-  const isVideoPost = post.url.includes("update-notice");
-
   return (
     <div className="flex flex-col gap-2 w-full">
-      {isVideoPost ? (
-        <ExclusiveVideoPost post={post} />
-      ) : (
+      {post.nativeVideoUrl === null ? (
         <ExclusiveLinkPost post={post} />
+      ) : (
+        <ExclusiveVideoPost post={post} />
       )}
       <div className="flex flex-col">
         <p className="font-bold flex justify-between items-center">
           {post.title}
-          {isVideoPost && <CopyVideoLink link={post.nativeVideoUrl} />}
+          {post.nativeVideoUrl !== null && (
+            <CopyVideoLink link={post.nativeVideoUrl} />
+          )}
         </p>
         <p className="text-sm">{post.body}</p>
         <p className="text-muted-foreground text-sm">
@@ -64,6 +64,8 @@ function ExclusiveVideoPost({
 }: {
   post: CosmoNewsSectionExclusiveContent;
 }) {
+  if (post.nativeVideoUrl === null) return null;
+
   return (
     <div className="cursor-pointer relative aspect-video rounded-xl border border-accent overflow-hidden">
       <HLSVideo
