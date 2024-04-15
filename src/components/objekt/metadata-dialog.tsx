@@ -148,7 +148,7 @@ function Metadata<TObjektType extends ValidObjekt>({
         data.metadata !== undefined && <p>{data.metadata.description}</p>
       )}
 
-      <div className="flex flex-row-reverse gap-2 items-center self-end mt-auto w-full">
+      <div className="flex flex-row-reverse gap-2 items-center self-end mt-auto">
         {/* download image */}
         <Button variant="secondary" size="sm" asChild>
           <Link href={objekt.frontImage} target="_blank">
@@ -167,8 +167,7 @@ function Metadata<TObjektType extends ValidObjekt>({
           </Button>
         )}
 
-        {/* source */}
-        {data.metadata?.profile !== undefined && (
+        {/* {data.metadata?.profile !== undefined && (
           <div className="flex items-center gap-1 text-xs mr-auto">
             <p>Sourced by:</p>
             <Link
@@ -178,7 +177,7 @@ function Metadata<TObjektType extends ValidObjekt>({
               {data.metadata.profile.nickname}
             </Link>
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );
