@@ -99,7 +99,7 @@ function InfoPanel<TObjektType extends ValidObjekt>({
         <Suspense
           fallback={
             <div className="p-4">
-              <Skeleton className="w-full h-8" />
+              <Skeleton className="w-1/2 h-7 mx-auto" />
             </div>
           }
         >
@@ -148,7 +148,7 @@ function Metadata<TObjektType extends ValidObjekt>({
         data.metadata !== undefined && <p>{data.metadata.description}</p>
       )}
 
-      <div className="flex flex-row-reverse gap-2 items-center self-end mt-auto">
+      <div className="flex flex-row-reverse gap-2 items-center self-end mt-auto w-full">
         {/* download image */}
         <Button variant="secondary" size="sm" asChild>
           <Link href={objekt.frontImage} target="_blank">
@@ -165,6 +165,19 @@ function Metadata<TObjektType extends ValidObjekt>({
           >
             {showForm ? "Cancel" : "Edit Metadata"}
           </Button>
+        )}
+
+        {/* source */}
+        {data.metadata?.profile !== undefined && (
+          <div className="flex items-center gap-1 text-xs mr-auto">
+            <p>Sourced by:</p>
+            <Link
+              className="underline"
+              href={`/@${data.metadata.profile.nickname}`}
+            >
+              {data.metadata.profile.nickname}
+            </Link>
+          </div>
         )}
       </div>
     </div>
