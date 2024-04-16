@@ -12,17 +12,21 @@ import {
 import ReactCardFlip from "react-card-flip";
 import MetadataDialog from "./metadata-dialog";
 
-export type ObjektProps<TObjektType extends ValidObjekt> = PropsWithChildren<{
-  id: string;
-  objekt: TObjektType;
-}>;
+export type BaseObjektProps<TObjektType extends ValidObjekt> =
+  PropsWithChildren<{
+    id: string;
+    objekt: TObjektType;
+  }>;
 
 const MemoizedImage = memo(Image);
 const MemoizedCardFlip = memo(ReactCardFlip);
 
+interface FlippableObjektProps<TObjektType extends ValidObjekt>
+  extends BaseObjektProps<TObjektType> {}
+
 export const FlippableObjekt = memo(function FlippableObjekt<
   TObjektType extends ValidObjekt
->({ children, objekt }: ObjektProps<TObjektType>) {
+>({ children, objekt }: FlippableObjektProps<TObjektType>) {
   const [flipped, setFlipped] = useState(false);
   const flip = useCallback(() => setFlipped((prev) => !prev), []);
 
@@ -32,17 +36,18 @@ export const FlippableObjekt = memo(function FlippableObjekt<
   } as CSSProperties;
 
   return (
-    <MemoizedCardFlip isFlipped={flipped} flipDirection="horizontal">
-      <div
-        className="isolate relative overflow-hidden rounded-xl lg:rounded-2xl touch-manipulation bg-accent"
-        style={css}
-      >
+    <MemoizedCardFlip
+      isFlipped={flipped}
+      flipDirection="horizontal"
+      containerClassName="isolate relative h-full w-full aspect-photocard object-contain overflow-hidden rounded-xl lg:rounded-2xl touch-manipulation"
+      containerStyle={css}
+    >
+      <div>
         <MemoizedImage
           onClick={flip}
           className="cursor-pointer"
           src={objekt.frontImage}
-          width={291}
-          height={450}
+          fill={true}
           alt={objekt.collectionId}
           quality={100}
           priority={false}
@@ -53,24 +58,25 @@ export const FlippableObjekt = memo(function FlippableObjekt<
         {children}
       </div>
 
-      <MemoizedImage
-        onClick={flip}
-        className="cursor-pointer"
-        src={objekt.backImage}
-        width={291}
-        height={450}
-        alt={objekt.collectionId}
-        quality={100}
-        priority={false}
-        loading="lazy"
-        unoptimized
-      />
+      <div>
+        <MemoizedImage
+          onClick={flip}
+          className="cursor-pointer"
+          src={objekt.backImage}
+          fill={true}
+          alt={objekt.collectionId}
+          quality={100}
+          priority={false}
+          loading="lazy"
+          unoptimized
+        />
+      </div>
     </MemoizedCardFlip>
   );
 });
 
 interface ExpandableObjektProps<TObjektType extends ValidObjekt>
-  extends ObjektProps<TObjektType> {
+  extends BaseObjektProps<TObjektType> {
   isActive?: boolean;
   setActive?: (slug: string | null) => void;
 }

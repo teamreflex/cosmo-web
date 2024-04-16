@@ -1,6 +1,6 @@
 "use client";
 
-import { ObjektProps } from "../objekt/objekt";
+import { BaseObjektProps } from "../objekt/objekt";
 import { ReactElement, cloneElement, useCallback, useMemo } from "react";
 import { HeartCrack, Loader2 } from "lucide-react";
 import {
@@ -31,7 +31,7 @@ export type ObjektResponse<TObjektType extends ValidObjekt> = {
 };
 
 type Props<TObjektType extends ValidObjekt> = {
-  children: (props: ObjektProps<TObjektType>) => ReactElement;
+  children: (props: BaseObjektProps<TObjektType>) => ReactElement;
   artists: CosmoArtistWithMembers[];
   filters: CosmoFilters;
   setFilters: SetCosmoFilters;

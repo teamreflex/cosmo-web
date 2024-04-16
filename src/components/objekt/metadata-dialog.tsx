@@ -57,7 +57,7 @@ export default function MetadataDialog<TObjektType extends ValidObjekt>({
       {children(() => setOpen(true))}
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-3xl grid-cols-auto grid-flow-row md:grid-flow-col p-0 gap-0 sm:rounded-2xl">
-          <div className="flex w-fit mx-auto shrink pt-4 md:pt-0">
+          <div className="flex h-[28rem] aspect-photocard mx-auto shrink pt-4 md:pt-0">
             <FlippableObjekt objekt={objekt} id={getObjektId(objekt)}>
               <ObjektSidebar collection={objekt.collectionNo} />
             </FlippableObjekt>
@@ -83,6 +83,9 @@ function InfoPanel<TObjektType extends ValidObjekt>({
         <Pill label="Member" value={objekt.member} />
         <Pill label="Season" value={objekt.season} />
         <Pill label="Class" value={objekt.class} />
+        {objekt.class === "First" && (
+          <Pill label="Edition" value={getEdition(objekt.collectionNo)} />
+        )}
         <Pill
           label="Type"
           value={onOffline === "online" ? "Digital" : "Physical"}
@@ -148,7 +151,7 @@ function Metadata<TObjektType extends ValidObjekt>({
         data.metadata !== undefined && <p>{data.metadata.description}</p>
       )}
 
-      <div className="flex flex-row-reverse gap-2 items-center self-end mt-auto">
+      <div className="flex flex-row-reverse gap-2 items-center self-end mt-auto w-full">
         {/* download image */}
         <Button variant="secondary" size="sm" asChild>
           <Link href={objekt.frontImage} target="_blank">
@@ -167,17 +170,18 @@ function Metadata<TObjektType extends ValidObjekt>({
           </Button>
         )}
 
-        {/* {data.metadata?.profile !== undefined && (
+        {data.metadata?.profile !== undefined && (
           <div className="flex items-center gap-1 text-xs mr-auto">
             <p>Sourced by:</p>
             <Link
               className="underline"
               href={`/@${data.metadata.profile.nickname}`}
+              prefetch={false}
             >
               {data.metadata.profile.nickname}
             </Link>
           </div>
-        )} */}
+        )}
       </div>
     </div>
   );
@@ -318,4 +322,19 @@ function getRarity(copies: number): Rarity {
     return "uncommon";
   }
   return "common";
+}
+
+function getEdition(collectionNo: string): string {
+  const collection = parseInt(collectionNo);
+
+  if (collection >= 101 && collection <= 108) {
+    return "1st";
+  }
+  if (collection >= 109 && collection <= 116) {
+    return "2nd";
+  }
+  if (collection >= 117 && collection <= 120) {
+    return "3rd";
+  }
+  return "Unknown";
 }
