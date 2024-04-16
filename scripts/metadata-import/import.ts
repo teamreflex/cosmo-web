@@ -8,7 +8,18 @@ import { readFile } from "fs/promises";
  */
 
 const DELIMITER = " :: ";
-const USER = "";
+const USER = "0xcaB3C85ac8f4aE0153B7cF2Bbf1378397890848b";
+
+async function chunk<T>(
+  arr: T[],
+  chunkSize: number,
+  callback: (chunk: T[]) => Promise<void>
+) {
+  for (let i = 0; i < arr.length; i += chunkSize) {
+    const chunk = arr.slice(i, i + chunkSize);
+    await callback(chunk);
+  }
+}
 
 // read file
 const data = await readFile("./scripts/metadata-import/metadata.txt", {
@@ -46,6 +57,9 @@ const queries = entries.map(({ collectionId, description }) => {
     });
 });
 
-const result = await db.batch(queries as any);
+await chunk(queries, 250, async (entries) => {
+  console.log(`Starting chunk of ${entries.length} entries`);
+  await db.batch(entries as any);
+});
 
 console.log("Import complete");
