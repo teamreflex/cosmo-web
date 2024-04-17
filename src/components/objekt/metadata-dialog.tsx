@@ -309,16 +309,16 @@ function getRarity(copies: number): Rarity {
   if (copies <= 10) {
     return "impossible";
   }
-  if (copies <= 50) {
+  if (copies <= 25) {
     return "extremely-rare";
   }
-  if (copies <= 100) {
+  if (copies <= 50) {
     return "very-rare";
   }
-  if (copies <= 250) {
+  if (copies <= 100) {
     return "rare";
   }
-  if (copies <= 500) {
+  if (copies <= 350) {
     return "uncommon";
   }
   return "common";
