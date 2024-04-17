@@ -138,7 +138,7 @@ function Metadata<TObjektType extends ValidObjekt>({
     <div className="flex grow flex-col justify-between gap-2 p-4">
       <div className="flex flex-wrap items-center gap-2 justify-center">
         <Pill label="Copies" value={data.copies.toLocaleString()} />
-        <RarityPill copies={data.copies} />
+        <RarityPill rarity={getRarity(data.copies)} />
       </div>
 
       {showForm ? (
@@ -291,15 +291,15 @@ const rarityMap = {
 };
 type Rarity = keyof typeof rarityMap;
 
-function RarityPill({ copies }: { copies: number }) {
-  const rarity = rarityMap[getRarity(copies)];
+export function RarityPill({ rarity }: { rarity: Rarity }) {
+  const { label, color } = rarityMap[rarity];
 
   return (
     <div
-      style={{ backgroundColor: rarity.color }}
-      className="flex items-center gap-1 rounded-full px-2 py-1 text-sm"
+      style={{ backgroundColor: color }}
+      className="flex items-center gap-1 rounded-full px-2 py-1 text-sm w-fit"
     >
-      <span className="font-semibold">{rarity.label}</span>
+      <span className="font-semibold">{label}</span>
     </div>
   );
 }
