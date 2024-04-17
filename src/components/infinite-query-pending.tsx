@@ -23,10 +23,10 @@ export function InfiniteQueryNext({
    * removing the effect results in multiple fetches
    */
   useEffect(() => {
-    if (inView) {
+    if (inView && isFetchingNextPage === false) {
       fetchNextPage();
     }
-  }, [inView, fetchNextPage]);
+  }, [inView, fetchNextPage, isFetchingNextPage]);
 
   return (
     <div className="flex justify-center py-6">

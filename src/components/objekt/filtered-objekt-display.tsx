@@ -1,7 +1,13 @@
 "use client";
 
 import { BaseObjektProps } from "../objekt/objekt";
-import { ReactElement, cloneElement, useCallback, useMemo } from "react";
+import {
+  ReactElement,
+  cloneElement,
+  forwardRef,
+  useCallback,
+  useMemo,
+} from "react";
 import { HeartCrack, Loader2 } from "lucide-react";
 import {
   QueryFunction,
@@ -21,7 +27,9 @@ import {
 } from "@/hooks/use-cosmo-filters";
 import { InfiniteQueryNext } from "../infinite-query-pending";
 import { ValidObjekt } from "@/lib/universal/objekts";
-import { GRID_COLUMNS, cn, typedMemo } from "@/lib/utils";
+import { GRID_COLUMNS, typedMemo } from "@/lib/utils";
+import { VirtuosoGrid } from "react-virtuoso";
+import { useMediaQuery } from "usehooks-ts";
 
 export type ObjektResponse<TObjektType extends ValidObjekt> = {
   hasNext: boolean;
@@ -101,6 +109,12 @@ export default typedMemo(function FilteredObjektDisplay<
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const isDesktop = useMediaQuery("(min-width: 768px)");
+  const gridComponents = useMemo(
+    () => buildGrid(gridColumns, isDesktop),
+    [gridColumns, isDesktop]
+  );
+
   return (
     <div className="flex flex-col">
       <Portal to="#objekt-total">
@@ -117,24 +131,32 @@ export default typedMemo(function FilteredObjektDisplay<
       </Hydrated>
 
       <div className="flex flex-col items-center">
-        <div
-          className={cn(
-            "grid grid-cols-3 gap-4 py-2",
-            `md:grid-cols-${gridColumns}`
-          )}
-        >
+        <div className="flex w-full">
           {status === "pending" ? (
-            <div className="flex col-span-full py-12">
+            <div className="flex w-full justify-center py-12">
               <Loader2 className="animate-spin h-24 w-24" />
             </div>
           ) : status === "error" ? (
             <Error />
           ) : (
-            objekts.map((objekt) =>
-              cloneElement(children({ objekt, id: getObjektId(objekt) }), {
-                key: getObjektId(objekt),
-              })
-            )
+            <VirtuosoGrid
+              useWindowScroll
+              className="w-full h-full"
+              totalCount={objekts.length}
+              // @ts-ignore
+              components={gridComponents}
+              itemContent={(index) =>
+                cloneElement(
+                  children({
+                    objekt: objekts[index],
+                    id: getObjektId(objekts[index]),
+                  }),
+                  {
+                    key: getObjektId(objekts[index]),
+                  }
+                )
+              }
+            />
           )}
         </div>
 
@@ -151,9 +173,48 @@ export default typedMemo(function FilteredObjektDisplay<
 
 function Error() {
   return (
-    <div className="col-span-full flex flex-col gap-2 items-center py-12">
+    <div className="flex flex-col gap-2 items-center justify-center py-12">
       <HeartCrack className="h-12 w-12" />
       <p>There was an error loading objekts</p>
     </div>
   );
+}
+
+function buildGrid(columns: number, isDesktop: boolean) {
+  const width = 100 / columns;
+
+  // @ts-ignore
+  const List = forwardRef(({ style, children, ...props }, ref) => (
+    <div
+      // @ts-ignore
+      ref={ref}
+      {...props}
+      style={{
+        display: "flex",
+        flexWrap: "wrap",
+        ...style,
+      }}
+    >
+      {children}
+    </div>
+  ));
+  List.displayName = "List";
+
+  // @ts-ignore
+  const Item = ({ children, ...props }) => (
+    <div
+      {...props}
+      style={{
+        display: "flex",
+        flex: "none",
+        justifyContent: "center",
+        padding: "0.5rem",
+        width: isDesktop ? `${width}%` : "33%",
+      }}
+    >
+      {children}
+    </div>
+  );
+
+  return { List, Item };
 }
