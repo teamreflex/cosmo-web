@@ -2,7 +2,6 @@
 
 - User searchbox has blurred text
 - Collections search/dropdown has keyboard controls which makes the searchbox a little jank
-- `<FilteredObjektDisplay>` should be virtualized
 - Grid slot selector doesn't have locked tokens filter
 
 ### General
