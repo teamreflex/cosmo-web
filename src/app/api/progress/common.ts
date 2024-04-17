@@ -6,7 +6,7 @@ import { unstable_cache } from "next/cache";
 
 /**
  * Fetch all collections for the given member.
- * Cached for one hour.
+ * Cached for 15 minutes.
  */
 export const fetchTotal = unstable_cache(
   async (member: string, onlineType: ValidOnlineType | null = null) => {
@@ -35,7 +35,7 @@ export const fetchTotal = unstable_cache(
     return result;
   },
   ["collections-for-member"], // param (member name) gets added to this
-  { revalidate: 60 * 60 } // 1 hour
+  { revalidate: 60 * 15 } // 15 minutes
 );
 
 export type PartialCollection = Awaited<ReturnType<typeof fetchTotal>>;
