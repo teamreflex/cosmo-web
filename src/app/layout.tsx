@@ -8,6 +8,7 @@ import localFont from "next/font/local";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import Fathom from "@/components/fathom";
+import TailwindIndicator from "@/components/tailwind-indicator";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -67,6 +68,7 @@ export default async function RootLayout({
 
           <Toaster />
           <Fathom />
+          <TailwindIndicator />
         </ThemeProvider>
       </body>
     </html>
