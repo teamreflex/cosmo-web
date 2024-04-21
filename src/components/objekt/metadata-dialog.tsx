@@ -1,21 +1,14 @@
 "use client";
 
-import { ImageDown } from "lucide-react";
-import { Dialog, DialogContent, DialogTrigger } from "../ui/dialog";
+import { ImageDown, Loader2 } from "lucide-react";
+import { Dialog, DialogContent } from "../ui/dialog";
 import { ObjektMetadata, ValidObjekt } from "@/lib/universal/objekts";
 import { FlippableObjekt } from "./objekt";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { ofetch } from "ofetch";
 import ObjektSidebar from "./objekt-sidebar";
 import Link from "next/link";
-import {
-  Fragment,
-  PropsWithChildren,
-  ReactNode,
-  Suspense,
-  useState,
-  useTransition,
-} from "react";
+import { Fragment, ReactNode, Suspense, useState, useTransition } from "react";
 import { Separator } from "../ui/separator";
 import Skeleton from "../skeleton/skeleton";
 import { useProfile } from "@/hooks/use-profile";
@@ -23,26 +16,31 @@ import { Button } from "../ui/button";
 import { updateObjektMetadata } from "./actions";
 import { Textarea } from "../ui/textarea";
 import { useToast } from "../ui/use-toast";
-import { getObjektArtist, getObjektId, getObjektType } from "./objekt-util";
+import {
+  getObjektArtist,
+  getObjektId,
+  getObjektSlug,
+  getObjektType,
+} from "./objekt-util";
 import { ErrorBoundary } from "react-error-boundary";
 
 type CommonProps<TObjektType extends ValidObjekt> = {
   objekt: TObjektType;
 };
 
-interface MetadataDialogProps<TObjektType extends ValidObjekt>
-  extends CommonProps<TObjektType> {
-  children: (openDialog: () => void) => ReactNode;
+type MetadataDialogProps = {
+  slug: string;
+  children?: (openDialog: () => void) => ReactNode;
   isActive: boolean;
   onClose?: () => void;
-}
+};
 
-export default function MetadataDialog<TObjektType extends ValidObjekt>({
-  objekt,
+export default function MetadataDialog({
+  slug,
   children,
   isActive,
   onClose,
-}: MetadataDialogProps<TObjektType>) {
+}: MetadataDialogProps) {
   const [open, setOpen] = useState(isActive);
 
   function onOpenChange(state: boolean) {
@@ -54,62 +52,107 @@ export default function MetadataDialog<TObjektType extends ValidObjekt>({
 
   return (
     <Fragment>
-      {children(() => setOpen(true))}
+      {children?.(() => setOpen(true))}
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-3xl grid-cols-auto grid-flow-row md:grid-flow-col p-0 gap-0 sm:rounded-2xl">
-          <div className="flex h-[28rem] aspect-photocard mx-auto shrink pt-4 md:pt-0">
-            <FlippableObjekt objekt={objekt} id={getObjektId(objekt)}>
-              <ObjektSidebar collection={objekt.collectionNo} />
-            </FlippableObjekt>
-          </div>
-          <InfoPanel objekt={objekt} />
+          <ErrorBoundary
+            fallback={
+              <div className="p-4 flex justify-center">
+                Error loading objekt
+              </div>
+            }
+          >
+            <Suspense
+              fallback={
+                <div className="w-full h-[28rem] flex justify-center items-center">
+                  <Loader2 className="animate-spin h-12 w-12" />
+                </div>
+              }
+            >
+              <MetadataDialogContent slug={slug} />
+            </Suspense>
+          </ErrorBoundary>
         </DialogContent>
       </Dialog>
     </Fragment>
   );
 }
 
-function InfoPanel<TObjektType extends ValidObjekt>({
+type MetadataDialogContentProps = {
+  slug: string;
+  onClose?: () => void;
+};
+
+export const fetchObjektQuery = (slug: string) => ({
+  queryKey: ["collection-metadata", "objekt", slug],
+  queryFn: async () => {
+    return await ofetch<ValidObjekt>(`/api/objekts/by-slug/${slug}`);
+  },
+  retry: 1,
+});
+
+function MetadataDialogContent({ slug, onClose }: MetadataDialogContentProps) {
+  const { data } = useSuspenseQuery(fetchObjektQuery(slug));
+
+  return (
+    <Fragment>
+      <div className="flex h-[28rem] aspect-photocard mx-auto shrink pt-4 md:pt-0">
+        <FlippableObjekt objekt={data} id={getObjektId(data)}>
+          <ObjektSidebar collection={data.collectionNo} />
+        </FlippableObjekt>
+      </div>
+
+      <div className="flex flex-col">
+        <AttributePanel objekt={data} />
+        <Separator orientation="horizontal" />
+        <MetadataPanel objekt={data} />
+      </div>
+    </Fragment>
+  );
+}
+
+function AttributePanel<TObjektType extends ValidObjekt>({
   objekt,
 }: CommonProps<TObjektType>) {
   const artist = getObjektArtist(objekt);
   const onOffline = getObjektType(objekt);
 
   return (
-    <div className="flex flex-col">
-      {/* attributes */}
-      <div className="flex flex-wrap items-center gap-2 justify-center p-4">
-        <Pill label="Artist" value={artist} />
-        <Pill label="Member" value={objekt.member} />
-        <Pill label="Season" value={objekt.season} />
-        <Pill label="Class" value={objekt.class} />
-        {objekt.class === "First" && (
-          <Pill label="Edition" value={getEdition(objekt.collectionNo)} />
-        )}
-        <Pill
-          label="Type"
-          value={onOffline === "online" ? "Digital" : "Physical"}
-        />
-      </div>
+    <div className="flex flex-wrap items-center gap-2 justify-center p-4">
+      <Pill label="Artist" value={artist} />
+      <Pill label="Member" value={objekt.member} />
+      <Pill label="Season" value={objekt.season} />
+      <Pill label="Class" value={objekt.class} />
+      {objekt.class === "First" && (
+        <Pill label="Edition" value={getEdition(objekt.collectionNo)} />
+      )}
+      <Pill
+        label="Type"
+        value={onOffline === "online" ? "Digital" : "Physical"}
+      />
+    </div>
+  );
+}
 
-      <Separator orientation="horizontal" />
-
-      <ErrorBoundary
+function MetadataPanel<TObjektType extends ValidObjekt>({
+  objekt,
+}: CommonProps<TObjektType>) {
+  return (
+    <ErrorBoundary
+      fallback={
+        <div className="p-4 flex justify-center">Error loading metadata</div>
+      }
+    >
+      <Suspense
         fallback={
-          <div className="p-4 flex justify-center">Error loading metadata</div>
+          <div className="p-4">
+            <Skeleton className="w-1/2 h-7 mx-auto" />
+          </div>
         }
       >
-        <Suspense
-          fallback={
-            <div className="p-4">
-              <Skeleton className="w-1/2 h-7 mx-auto" />
-            </div>
-          }
-        >
-          <Metadata objekt={objekt} />
-        </Suspense>
-      </ErrorBoundary>
-    </div>
+        <Metadata objekt={objekt} />
+      </Suspense>
+    </ErrorBoundary>
   );
 }
 
@@ -119,15 +162,11 @@ function Metadata<TObjektType extends ValidObjekt>({
   objekt: TObjektType;
 }) {
   const [showForm, setShowForm] = useState(false);
-
-  // strip symbols from member name
-  const member = objekt.member.toLowerCase().replace(/[+()]+/g, "");
-  const slug =
-    `${objekt.season}-${member}-${objekt.collectionNo}`.toLowerCase();
-
   const profile = useProfile();
+
+  const slug = getObjektSlug(objekt);
   const { data } = useSuspenseQuery({
-    queryKey: ["collection-metadata", slug],
+    queryKey: ["collection-metadata", "metadata", slug],
     queryFn: async () => {
       return await ofetch<ObjektMetadata>(`/api/objekts/metadata/${slug}`);
     },

@@ -46,3 +46,11 @@ export function getObjektType(objekt: ValidObjekt) {
 
   throw new Error("Invalid objekt");
 }
+
+/**
+ * Parse a valid slug from an ambiguous objekt.
+ */
+export function getObjektSlug(objekt: ValidObjekt) {
+  const member = objekt.member.toLowerCase().replace(/[+()]+/g, "");
+  return `${objekt.season}-${member}-${objekt.collectionNo}`.toLowerCase();
+}

@@ -10,7 +10,9 @@ import {
   useState,
 } from "react";
 import ReactCardFlip from "react-card-flip";
-import MetadataDialog from "./metadata-dialog";
+import MetadataDialog, { fetchObjektQuery } from "./metadata-dialog";
+import { getObjektSlug } from "./objekt-util";
+import { useQueryClient } from "@tanstack/react-query";
 
 export type BaseObjektProps<TObjektType extends ValidObjekt> =
   PropsWithChildren<{
@@ -77,31 +79,26 @@ export const FlippableObjekt = memo(function FlippableObjekt<
 
 interface ExpandableObjektProps<TObjektType extends ValidObjekt>
   extends BaseObjektProps<TObjektType> {
-  isActive?: boolean;
   setActive?: (slug: string | null) => void;
 }
 
 export const ExpandableObjekt = memo(function ExpandableObjekt<
   TObjektType extends ValidObjekt
->({
-  children,
-  objekt,
-  isActive = false,
-  setActive,
-}: ExpandableObjektProps<TObjektType>) {
+>({ children, objekt, setActive }: ExpandableObjektProps<TObjektType>) {
+  const queryClient = useQueryClient();
+
   const css = {
     "--objekt-background-color": objekt.backgroundColor,
     "--objekt-text-color": objekt.textColor,
   } as CSSProperties;
 
-  const slug =
-    `${objekt.season}-${objekt.member}-${objekt.collectionNo}`.toLowerCase();
+  const slug = getObjektSlug(objekt);
 
   return (
     <MetadataDialog
-      objekt={objekt}
-      isActive={isActive}
-      // onClose={() => setActive?.(null)}
+      slug={slug}
+      isActive={false}
+      onClose={() => setActive?.(null)}
     >
       {(openDialog) => (
         <div
@@ -110,7 +107,11 @@ export const ExpandableObjekt = memo(function ExpandableObjekt<
         >
           <MemoizedImage
             onClick={() => {
-              // setActive?.(slug);
+              // populate the query cache so it doesn't re-fetch
+              queryClient.setQueryData(fetchObjektQuery(slug).queryKey, objekt);
+              // update the url
+              setActive?.(slug);
+              // open the dialog
               openDialog();
             }}
             className="cursor-pointer"
@@ -128,5 +129,23 @@ export const ExpandableObjekt = memo(function ExpandableObjekt<
         </div>
       )}
     </MetadataDialog>
+  );
+});
+
+type RoutedExpandableObjektProps = {
+  slug: string;
+  setActive: (slug: string | null) => void;
+};
+
+export const RoutedExpandableObjekt = memo(function RoutedExpandableObjekt({
+  slug,
+  setActive,
+}: RoutedExpandableObjektProps) {
+  return (
+    <MetadataDialog
+      slug={slug}
+      isActive={true}
+      onClose={() => setActive(null)}
+    />
   );
 });

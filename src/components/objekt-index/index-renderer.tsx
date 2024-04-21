@@ -18,10 +18,11 @@ import {
   FiltersContainer,
   IndexFilters,
 } from "../collection/filters-container";
-import { ExpandableObjekt } from "../objekt/objekt";
+import { ExpandableObjekt, RoutedExpandableObjekt } from "../objekt/objekt";
 import { ofetch } from "ofetch";
 import { GRID_COLUMNS } from "@/lib/utils";
 import { parseAsString, useQueryState } from "nuqs";
+import Hydrated from "../hydrated";
 
 const queryKey = ["objekt-index"];
 const getObjektId = (objekt: IndexedObjekt) => objekt.id;
@@ -87,12 +88,7 @@ export default function IndexRenderer({
         gridColumns={gridColumns}
       >
         {({ objekt, id }) => (
-          <ExpandableObjekt
-            objekt={objekt}
-            id={id}
-            isActive={activeObjekt === objekt.slug}
-            setActive={setActiveObjekt}
-          >
+          <ExpandableObjekt objekt={objekt} id={id} setActive={setActiveObjekt}>
             <Overlay
               objekt={objekt}
               authenticated={authenticated}
@@ -101,6 +97,16 @@ export default function IndexRenderer({
           </ExpandableObjekt>
         )}
       </FilteredObjektDisplay>
+
+      {/* if there's a slug in the url, open an expandable objekt dialog */}
+      <Hydrated>
+        {activeObjekt !== null && (
+          <RoutedExpandableObjekt
+            slug={activeObjekt}
+            setActive={setActiveObjekt}
+          />
+        )}
+      </Hydrated>
     </div>
   );
 }

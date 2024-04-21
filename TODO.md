@@ -14,15 +14,6 @@
 - Implement combination poll display
 - Clean up poll result display for multi-poll gravities
 
-### Progress
-
-- Add additional filters to leaderboards
-
-### Collection
-
-- Refactor locking into "marking" objekts as different colors/statuses/icons/idk
-  - locking doesn't really make sense when sending is disabled
-
 ### Trades / PolygonScan replacement
 
 - Add filtering
