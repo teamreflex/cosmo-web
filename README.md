@@ -109,7 +109,6 @@ pnpm dev
 - [Next 14](https://nextjs.org/)
   - [Server Components](https://nextjs.org/docs/app/building-your-application/rendering/server-components)
   - [Server Actions](https://nextjs.org/docs/app/building-your-application/data-fetching/forms-and-mutations)
-- [Million](https://million.dev/)
 - [Ramper SDK](https://www.ramper.xyz/)
 - [shadcn/ui](https://ui.shadcn.com/docs)
 - [Tailwind](https://tailwindcss.com/)

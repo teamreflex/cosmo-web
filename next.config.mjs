@@ -1,5 +1,4 @@
 import "./src/env.mjs";
-import million from "million/compiler";
 
 /** @type {import('next').NextConfig} */
 const config = {
@@ -7,19 +6,6 @@ const config = {
     fetches: {
       fullUrl: process.env.NODE_ENV === "development",
     },
-  },
-
-  webpack: (config, { webpack }) => {
-    config.plugins = config.plugins || [];
-
-    // postgres
-    config.plugins.push(
-      new webpack.IgnorePlugin({
-        resourceRegExp: /^pg-native$|^cloudflare:sockets$/,
-      })
-    );
-
-    return config;
   },
 
   async rewrites() {
@@ -70,10 +56,4 @@ const config = {
   },
 };
 
-export default million.next(config, {
-  mute: true,
-  rsc: true,
-  auto: {
-    rsc: true,
-  },
-});
+export default config;

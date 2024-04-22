@@ -14,7 +14,7 @@ import {
  * - `?season=Atom01&season=Binary01`
  * Provides a helper function to cast the value to an array before running it through validation.
  */
-function castToArray(schema: z.Schema) {
+function castToArray<TSchema extends z.Schema>(schema: TSchema) {
   return z.preprocess((val) => {
     const str = String(val);
     if (str === "") return [];
@@ -27,9 +27,9 @@ function castToArray(schema: z.Schema) {
  */
 export const cosmoSchema = z.object({
   sort: z.enum(validSorts).optional().default("newest"),
-  season: castToArray(z.enum(validSeasons)).default([]),
-  class: castToArray(z.enum(validClasses)).default([]),
-  on_offline: castToArray(z.enum(validOnlineTypes)).default([]),
+  season: castToArray(z.enum(validSeasons)),
+  class: castToArray(z.enum(validClasses)),
+  on_offline: castToArray(z.enum(validOnlineTypes)),
   member: z.string().optional().nullable(),
   artist: z.enum(validArtists).optional().nullable(),
   transferable: z.coerce.boolean().optional().nullable(),
@@ -108,7 +108,7 @@ export function parseObjektIndex(params: URLSearchParams) {
  * Extends Cosmo & objekt index schema as it has the same filters.
  * Does not add anything but this is in place for future compatibility.
  */
-export const objektList = objektIndex.extend({});
+export const objektList = objektIndex;
 
 /**
  * Parse objekt index params with default fallback.
