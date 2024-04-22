@@ -68,6 +68,10 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2024-04-23",
+    changes: ["Fixed: Adding & removing from lists resulting in a long delay."],
+  },
+  {
     date: "2024-04-15",
     changes: [
       "Added: Information dialogs for objekts.",
