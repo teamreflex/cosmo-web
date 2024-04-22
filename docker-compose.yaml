@@ -1,0 +1,44 @@
+services:
+  postgres:
+    image: postgres:15
+    command: "-d 1" # set debug-level
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=main
+
+  neon-proxy:
+    build:
+      context: .
+      dockerfile: ./docker/neon.Dockerfile
+    environment:
+      - PG_CONNECTION_STRING=postgres://postgres:postgres@postgres:5432/main
+    ports:
+      - "4444:4444"
+    depends_on:
+      - postgres
+
+  drizzle-proxy:
+    build:
+      context: .
+      dockerfile: ./docker/drizzle.Dockerfile
+    restart: always
+    environment:
+      - PROXY_HOST=postgres
+      - PROXY_USER=postgres
+      - PROXY_PASS=postgres
+      - PROXY_NAME=indexer
+      - PROXY_PORT=5432
+      - PROXY_HTTP_PORT=613
+      - PROXY_KEY=key
+    ports:
+      - "613:613"
+    depends_on:
+      - postgres
+
+volumes:
+  db_data:

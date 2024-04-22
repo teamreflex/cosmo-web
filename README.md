@@ -86,20 +86,40 @@ Supersedes the [objekts.jinsoul.tv](https://github.com/teamreflex/objekts-svelte
 ## Requirements
 
 - [Node.js](https://nodejs.org/en/) 18.17+
+- [Alchemy](https://www.alchemy.com/) API key
 - [Neon](https://neon.tech/) instance
   - Or swap this out for another Postgres compatible database with minimal code changes
 - Postgres instance with HTTP proxy
   - The accompanying [blockchain indexer](https://github.com/teamreflex/cosmo-db) has containerized Postgres 15.5 and an HTTP proxy running under [Bun](https://bun.sh/).
   - Migration files can also be found there
-- [Alchemy](https://www.alchemy.com/) API key
+- Alternatively, you can use Docker to run a local Postgres instance with two databases, a Neon serverless proxy and a Drizzle HTTP proxy.
 
-## Setup
+## Setup (Neon)
 
 ```bash
 git clone git@github.com:teamreflex/cosmo-web.git
 cd cosmo-web
 pnpm install
 cp .env.example .env.local
+pnpm db:migrate
+pnpm dev
+```
+
+## Setup (Local Docker)
+
+Download a copy of the indexer database from [MEGA](https://mega.nz/file/LgkWQKjD#21rkI2A0f1yO5RV712IoJgZHAbWUIn6ntU7p_BHfTtk) and place it into the root of the project. This contains:
+
+- All objekt collections as of 240422
+- Objekt transfers between 240422 and 240330~
+- Objekt ownership between 240422 and 240330~
+
+```bash
+git clone git@github.com:teamreflex/cosmo-web.git
+cd cosmo-web
+pnpm install
+cp .env.example .env.local
+docker compose up -d
+psql -U postgres -h db.localtest.me -d indexer -f indexer-trimmed.sql
 pnpm db:migrate
 pnpm dev
 ```

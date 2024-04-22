@@ -69,6 +69,7 @@
   "devDependencies": {
     "@planetscale/database": "^1.16.0",
     "@types/node": "20.6.2",
+    "@types/pg": "^8.11.5",
     "@types/react": "18.2.46",
     "@types/react-dom": "18.2.18",
     "@typescript-eslint/eslint-plugin": "^6.13.1",
@@ -78,7 +79,9 @@
     "eslint": "8.54.0",
     "eslint-config-next": "14.1.1",
     "eslint-plugin-drizzle": "^0.2.3",
+    "hono": "^4.2.6",
     "knip": "^3.13.0",
+    "pg": "^8.11.5",
     "postcss": "8.4.29",
     "postgres": "^3.4.3",
     "tailwindcss": "3.4.1",

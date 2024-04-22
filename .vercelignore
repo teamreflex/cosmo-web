@@ -1,1 +1,3 @@
 /scripts
+/docker
+http-proxy.ts
