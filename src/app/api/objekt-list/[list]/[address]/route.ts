@@ -13,7 +13,6 @@ import {
 import { fetchObjektListWithEntries } from "@/lib/server/objekts/lists";
 import { parseObjektList } from "@/lib/universal/parsers";
 import { and, sql } from "drizzle-orm";
-import { unstable_noStore } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -31,10 +30,6 @@ type Params = {
  * Takes all Cosmo filters as query params.
  */
 export async function GET(request: NextRequest, { params }: Params) {
-  // forces cache to be skipped
-  // for some reason, the neon driver is caching
-  unstable_noStore();
-
   // parse query params
   const filters = parseObjektList(request.nextUrl.searchParams);
 
