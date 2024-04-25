@@ -31,21 +31,22 @@ export default function WarningDialog() {
         <div className="flex flex-col gap-2 text-sm text-muted-foreground">
           <p>
             {env.NEXT_PUBLIC_APP_NAME} is an unofficial desktop client for{" "}
-            <span className="italic">Cosmo: the Gate</span>.
+            <span className="italic">Cosmo: the Gate</span>, and is not
+            affiliated with, endorsed by or supported by MODHAUS or its artists.
           </p>
           <p>
-            Features such as sending objekts, gridding objekts, wishlist
-            building and viewing gravities requires signing in via the Cosmo
-            Ramper integration. This requires cookies to function.
+            Features such as gridding objekts, wishlist building, viewing
+            gravities, viewing rekords and adjusting privacy settings requires
+            signing in via the Cosmo Ramper integration. This requires cookies
+            to function.
           </p>
           <p>
             Viewing user profiles (collections, trades, wishlists etc){" "}
-            <span className="font-bold">does not require logging in</span>.
+            <span className="font-bold">does not require signing in</span>.
           </p>
-          <p>Some features do not work on mobile, such as sending objekts.</p>
           <p>
-            {env.NEXT_PUBLIC_APP_NAME} is not affiliated with, endorsed by or
-            supported by Modhaus or its artists.{" "}
+            As this platform was built with desktop usage in mind, mobile usage
+            may not be a perfect experience.
           </p>
         </div>
         <AlertDialogFooter>
