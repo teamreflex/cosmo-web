@@ -21,6 +21,7 @@ export async function GET(
       results: [],
       count: 0,
       hasNext: false,
+      nextStartAfter: undefined,
     };
   }
 
