@@ -17,12 +17,12 @@ export async function GET(
 ) {
   // too much data, bail
   if (params.address.toLowerCase() === NULL_ADDRESS) {
-    return {
+    return NextResponse.json({
       results: [],
       count: 0,
       hasNext: false,
       nextStartAfter: undefined,
-    };
+    });
   }
 
   const page = parseInt(request.nextUrl.searchParams.get("page") ?? "0");
