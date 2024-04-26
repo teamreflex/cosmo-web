@@ -1,6 +1,7 @@
 import { profiles } from "@/lib/server/db/schema";
 import { fetchKnownAddresses } from "@/lib/server/profiles";
 import { fetchTransfers } from "@/lib/server/transfers";
+import { NULL_ADDRESS } from "@/lib/utils";
 import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -14,6 +15,15 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { address: string } }
 ) {
+  // too much data, bail
+  if (params.address.toLowerCase() === NULL_ADDRESS) {
+    return {
+      results: [],
+      count: 0,
+      hasNext: false,
+    };
+  }
+
   const page = parseInt(request.nextUrl.searchParams.get("page") ?? "0");
 
   const aggregate = await fetchTransfers(params.address, page);
