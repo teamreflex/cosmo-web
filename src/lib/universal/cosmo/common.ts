@@ -33,8 +33,14 @@ export enum ValidSeasons {
   ATOM = "Atom01",
   BINARY = "Binary01",
   CREAM = "Cream01",
+  DIVINE = "Divine01",
 }
-export const validSeasons = ["Atom01", "Binary01", "Cream01"] as const;
+export const validSeasons = [
+  "Atom01",
+  "Binary01",
+  "Cream01",
+  "Divine01",
+] as const;
 export type ValidSeason = `${ValidSeasons}`;
 
 // classes
