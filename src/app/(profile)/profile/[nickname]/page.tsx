@@ -19,39 +19,43 @@ type Props = {
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const user = await getUserByIdentifier(params.nickname);
-  if (!user) notFound();
+  const targetUser = await getUserByIdentifier(params.nickname);
+  if (!targetUser) notFound();
 
   return {
-    title: `${user.nickname}'s Collection`,
+    title: `${targetUser.nickname}'s Collection`,
   };
 }
 
 export default async function UserCollectionPage({ params }: Props) {
   const user = await decodeUser();
-  const currentUser = user ? await getProfile(user.profileId) : undefined;
-  const profile = await getUserByIdentifier(params.nickname);
-  if (!profile) notFound();
-
-  if (profile.privacy.objekts && !addrcomp(user?.address, profile.address)) {
-    return <Private nickname={profile.nickname} />;
-  }
-
-  const [artists, lockedObjekts] = await Promise.all([
+  const [currentUser, targetUser, artists, lockedObjekts] = await Promise.all([
+    user ? getProfile(user.profileId) : undefined,
+    getUserByIdentifier(params.nickname),
     fetchArtistsWithMembers(),
-    fetchLockedObjekts(profile.address),
+    fetchLockedObjekts(params.nickname),
   ]);
 
+  if (!targetUser) notFound();
+
+  if (
+    targetUser.privacy.objekts &&
+    !addrcomp(currentUser?.address, targetUser.address)
+  ) {
+    return <Private nickname={targetUser.nickname} />;
+  }
+
   const shouldHideNickname =
-    profile.privacy.nickname && !addrcomp(user?.address, profile.address);
+    targetUser.privacy.nickname &&
+    !addrcomp(currentUser?.address, targetUser.address);
 
   return (
-    <ProfileProvider profile={profile}>
+    <ProfileProvider profile={targetUser}>
       <section className="flex flex-col">
         <ProfileRenderer
           lockedObjekts={lockedObjekts}
           artists={artists}
-          profile={profile}
+          profile={targetUser}
           user={currentUser}
           previousIds={
             shouldHideNickname ? null : (
@@ -62,7 +66,7 @@ export default async function UserCollectionPage({ params }: Props) {
                   </div>
                 }
               >
-                <PreviousIds address={profile.address} />
+                <PreviousIds address={targetUser.address} />
               </Suspense>
             )
           }

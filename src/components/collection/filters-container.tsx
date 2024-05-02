@@ -38,7 +38,10 @@ export function FiltersContainer({
   const [show, setShow] = useState(false);
 
   return (
-    <div className="flex flex-col gap-2 group sm:pb-2 pb-1" data-show={show}>
+    <div
+      className="flex flex-col gap-2 group py-1 sm:pb-2 pb-1"
+      data-show={show}
+    >
       <div className="flex flex-row items-center justify-center gap-2 sm:hidden">
         {!isPortaled && <div id="filters-button" />}
         <Portal to="#filters-button">

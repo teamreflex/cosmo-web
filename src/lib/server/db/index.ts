@@ -12,18 +12,11 @@ neonConfig.fetchEndpoint = (host) => {
   return `${protocol}://${host}:${port}/sql`;
 };
 
-/**
- * Prevents Next from caching any queries.
- */
-neonConfig.fetchFunction = async (
-  input: RequestInfo | URL,
-  init?: RequestInit | undefined
-) =>
-  fetch(input, {
-    ...init,
-    cache: "no-cache",
-  });
-
 // create the connection
-const sql = neon(env.DATABASE_URL);
+const sql = neon(env.DATABASE_URL, {
+  // prevents nextjs from caching any queries
+  fetchOptions: {
+    cache: "no-cache",
+  },
+});
 export const db = drizzle(sql, { schema });

@@ -19,12 +19,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ProgressPage({ params }: Props) {
-  const [profile, artists] = await Promise.all([
+  const [currentUser, profile, artists] = await Promise.all([
+    decodeUser(),
     getUserByIdentifier(params.nickname),
     fetchArtistsWithMembers(),
   ]);
 
-  const currentUser = await decodeUser();
   const showProgress =
     profile.privacy.objekts === false ||
     addrcomp(currentUser?.address, profile.address);

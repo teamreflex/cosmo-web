@@ -32,7 +32,10 @@ export default memo(function MemberFilter({
       {artists.map((artist) => (
         <div
           key={artist.name}
-          className="flex flex-row z-10 gap-2 p-1 xl:justify-center justify-items-start overflow-x-scroll xl:no-scrollbar"
+          className={cn(
+            "flex flex-row z-10 gap-2 p-1 xl:justify-center justify-items-start",
+            artist.members.length > 5 && "overflow-x-scroll xl:no-scrollbar"
+          )}
         >
           {showArtists && (
             <MemberFilterButton

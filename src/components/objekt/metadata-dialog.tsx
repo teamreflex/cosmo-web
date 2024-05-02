@@ -1,10 +1,14 @@
 "use client";
 
-import { ImageDown, Loader2 } from "lucide-react";
+import { HeartCrack, ImageDown, Loader2, RefreshCcw } from "lucide-react";
 import { Dialog, DialogContent } from "../ui/dialog";
 import { ObjektMetadata, ValidObjekt } from "@/lib/universal/objekts";
 import { FlippableObjekt } from "./objekt";
-import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import {
+  QueryErrorResetBoundary,
+  useQueryClient,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
 import { ofetch } from "ofetch";
 import ObjektSidebar from "./objekt-sidebar";
 import Link from "next/link";
@@ -55,26 +59,45 @@ export default function MetadataDialog({
       {children?.(() => setOpen(true))}
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-3xl grid-cols-auto grid-flow-row md:grid-flow-col p-0 gap-0 sm:rounded-2xl">
-          <ErrorBoundary
-            fallback={
-              <div className="p-4 flex justify-center">
-                Error loading objekt
-              </div>
-            }
-          >
-            <Suspense
-              fallback={
-                <div className="w-full h-[28rem] flex justify-center items-center">
-                  <Loader2 className="animate-spin h-12 w-12" />
-                </div>
-              }
-            >
-              <MetadataDialogContent slug={slug} />
-            </Suspense>
-          </ErrorBoundary>
+          <QueryErrorResetBoundary>
+            {({ reset }) => (
+              <ErrorBoundary
+                FallbackComponent={MetadataDialogError}
+                onReset={reset}
+              >
+                <Suspense
+                  fallback={
+                    <div className="w-full h-[28rem] flex justify-center items-center">
+                      <Loader2 className="animate-spin h-12 w-12" />
+                    </div>
+                  }
+                >
+                  <MetadataDialogContent slug={slug} />
+                </Suspense>
+              </ErrorBoundary>
+            )}
+          </QueryErrorResetBoundary>
         </DialogContent>
       </Dialog>
     </Fragment>
+  );
+}
+
+function MetadataDialogError({
+  resetErrorBoundary,
+}: {
+  resetErrorBoundary: () => void;
+}) {
+  return (
+    <div className="p-4 flex flex-col gap-2 justify-center items-center">
+      <div className="flex gap-2 items-center">
+        <HeartCrack className="w-6 h-6" />
+        <span className="text-sm font-semibold">Error loading objekt</span>
+      </div>
+      <Button size="sm" variant="outline" onClick={resetErrorBoundary}>
+        <RefreshCcw className="mr-2" /> Retry
+      </Button>
+    </div>
   );
 }
 
@@ -138,21 +161,21 @@ function MetadataPanel<TObjektType extends ValidObjekt>({
   objekt,
 }: CommonProps<TObjektType>) {
   return (
-    <ErrorBoundary
-      fallback={
-        <div className="p-4 flex justify-center">Error loading metadata</div>
-      }
-    >
-      <Suspense
-        fallback={
-          <div className="p-4">
-            <Skeleton className="w-1/2 h-7 mx-auto" />
-          </div>
-        }
-      >
-        <Metadata objekt={objekt} />
-      </Suspense>
-    </ErrorBoundary>
+    <QueryErrorResetBoundary>
+      {({ reset }) => (
+        <ErrorBoundary FallbackComponent={MetadataDialogError} onReset={reset}>
+          <Suspense
+            fallback={
+              <div className="p-4">
+                <Skeleton className="w-1/2 h-7 mx-auto" />
+              </div>
+            }
+          >
+            <Metadata objekt={objekt} />
+          </Suspense>
+        </ErrorBoundary>
+      )}
+    </QueryErrorResetBoundary>
   );
 }
 

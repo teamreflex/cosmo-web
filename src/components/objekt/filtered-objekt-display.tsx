@@ -2,8 +2,9 @@
 
 import { BaseObjektProps } from "../objekt/objekt";
 import { ReactElement, cloneElement, useCallback, useMemo } from "react";
-import { HeartCrack, Loader2 } from "lucide-react";
+import { HeartCrack, Loader2, RefreshCcw } from "lucide-react";
 import {
+  QueryErrorResetBoundary,
   QueryFunction,
   QueryKey,
   useInfiniteQuery,
@@ -22,6 +23,7 @@ import {
 import { InfiniteQueryNext } from "../infinite-query-pending";
 import { ValidObjekt } from "@/lib/universal/objekts";
 import { GRID_COLUMNS, cn, typedMemo } from "@/lib/utils";
+import { Button } from "../ui/button";
 
 export type ObjektResponse<TObjektType extends ValidObjekt> = {
   hasNext: boolean;
@@ -117,26 +119,40 @@ export default typedMemo(function FilteredObjektDisplay<
       </Hydrated>
 
       <div className="flex flex-col items-center">
-        <div
-          className={cn(
-            "grid grid-cols-3 gap-4 py-2",
-            `md:grid-cols-${gridColumns}`
-          )}
-        >
-          {status === "pending" ? (
-            <div className="flex col-span-full py-12">
-              <Loader2 className="animate-spin h-24 w-24" />
+        <QueryErrorResetBoundary>
+          {({ reset }) => (
+            <div
+              className={cn(
+                "grid grid-cols-3 gap-4 py-2",
+                `md:grid-cols-${gridColumns}`
+              )}
+            >
+              {status === "pending" ? (
+                <div className="flex col-span-full py-12">
+                  <Loader2 className="animate-spin h-24 w-24" />
+                </div>
+              ) : status === "error" ? (
+                <div className="col-span-full flex flex-col gap-2 items-center py-12">
+                  <div className="flex items-center gap-2">
+                    <HeartCrack className="h-6 w-6" />
+                    <p className="text-sm font-semibold">
+                      Error loading objekts
+                    </p>
+                  </div>
+                  <Button variant="outline" onClick={reset}>
+                    <RefreshCcw className="mr-2" /> Retry
+                  </Button>
+                </div>
+              ) : (
+                objekts.map((objekt) =>
+                  cloneElement(children({ objekt, id: getObjektId(objekt) }), {
+                    key: getObjektId(objekt),
+                  })
+                )
+              )}
             </div>
-          ) : status === "error" ? (
-            <Error />
-          ) : (
-            objekts.map((objekt) =>
-              cloneElement(children({ objekt, id: getObjektId(objekt) }), {
-                key: getObjektId(objekt),
-              })
-            )
           )}
-        </div>
+        </QueryErrorResetBoundary>
 
         <InfiniteQueryNext
           status={status}
@@ -148,12 +164,3 @@ export default typedMemo(function FilteredObjektDisplay<
     </div>
   );
 });
-
-function Error() {
-  return (
-    <div className="col-span-full flex flex-col gap-2 items-center py-12">
-      <HeartCrack className="h-12 w-12" />
-      <p>There was an error loading objekts</p>
-    </div>
-  );
-}

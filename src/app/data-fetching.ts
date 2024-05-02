@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { getUser } from "./api/common";
 import { fetchProfile, fetchUserByIdentifier } from "@/lib/server/auth";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
 /**
  * Decode the current token.
