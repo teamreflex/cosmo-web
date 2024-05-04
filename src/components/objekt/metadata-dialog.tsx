@@ -209,7 +209,9 @@ function Metadata<TObjektType extends ValidObjekt>({
   function copyUrl() {
     const scheme =
       env.NEXT_PUBLIC_VERCEL_ENV === "development" ? "http" : "https";
-    copy(`${scheme}://${env.NEXT_PUBLIC_VERCEL_URL}/objekts?id=${slug}`);
+    copy(
+      `${scheme}://${env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL}/objekts?id=${slug}`
+    );
     toast({
       description: "Objekt URL copied to clipboard",
     });
