@@ -20,6 +20,10 @@ export const env = createEnv({
     NEXT_PUBLIC_ALCHEMY_KEY: z.string().min(1),
     // info for rebranding the app
     NEXT_PUBLIC_APP_NAME: z.string().min(1),
+    // url of the app
+    NEXT_PUBLIC_VERCEL_URL: z.string().min(1),
+    // environment type
+    NEXT_PUBLIC_VERCEL_ENV: z.string().min(1),
     // fathom analytics
     NEXT_PUBLIC_FATHOM_ID: z.string().min(1),
     NEXT_PUBLIC_FATHOM_URL: z.string().min(1),
@@ -33,6 +37,8 @@ export const env = createEnv({
     NEXT_PUBLIC_COSMO_APP_ID: process.env.NEXT_PUBLIC_COSMO_APP_ID,
     NEXT_PUBLIC_ALCHEMY_KEY: process.env.NEXT_PUBLIC_ALCHEMY_KEY,
     NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
+    NEXT_PUBLIC_VERCEL_URL: process.env.NEXT_PUBLIC_VERCEL_URL,
+    NEXT_PUBLIC_VERCEL_ENV: process.env.NEXT_PUBLIC_VERCEL_ENV,
     NEXT_PUBLIC_FATHOM_ID: process.env.NEXT_PUBLIC_FATHOM_ID,
     NEXT_PUBLIC_FATHOM_URL: process.env.NEXT_PUBLIC_FATHOM_URL,
     NEXT_PUBLIC_SIMULATE_GRID: process.env.NEXT_PUBLIC_SIMULATE_GRID,

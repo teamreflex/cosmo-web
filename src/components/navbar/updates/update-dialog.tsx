@@ -69,7 +69,10 @@ export default function UpdateDialog() {
 const updates = [
   {
     date: "2024-05-04",
-    changes: ["Fixed: Ramper error preventing signing in."],
+    changes: [
+      "Fixed: Ramper error preventing signing in.",
+      "Added: Button to copy a direct link to an objekt to the clipboard.",
+    ],
   },
   {
     date: "2024-04-23",

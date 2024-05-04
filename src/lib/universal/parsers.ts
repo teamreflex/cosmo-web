@@ -6,6 +6,7 @@ import {
   validSeasons,
   validSorts,
 } from "./cosmo/common";
+import { env } from "@/env.mjs";
 
 /**
  * Cosmo expects comma-separated values for array filters like:
@@ -193,7 +194,7 @@ export function parse<TSchema extends z.AnyZodObject>(
     return result.data;
   }
 
-  if (process.env.NODE_ENV === "development") {
+  if (env.VERCEL_ENV === "development") {
     console.error(result.error);
   }
 

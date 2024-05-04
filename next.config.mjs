@@ -4,7 +4,7 @@ import "./src/env.mjs";
 const config = {
   logging: {
     fetches: {
-      fullUrl: process.env.NODE_ENV === "development",
+      fullUrl: process.env.VERCEL_ENV === "development",
     },
   },
 

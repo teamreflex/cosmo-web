@@ -1,6 +1,12 @@
 "use client";
 
-import { HeartCrack, ImageDown, Loader2, RefreshCcw } from "lucide-react";
+import {
+  HeartCrack,
+  ImageDown,
+  LinkIcon,
+  Loader2,
+  RefreshCcw,
+} from "lucide-react";
 import { Dialog, DialogContent } from "../ui/dialog";
 import { ObjektMetadata, ValidObjekt } from "@/lib/universal/objekts";
 import { FlippableObjekt } from "./objekt";
@@ -27,6 +33,8 @@ import {
   getObjektType,
 } from "./objekt-util";
 import { ErrorBoundary } from "react-error-boundary";
+import { useCopyToClipboard } from "usehooks-ts";
+import { env } from "@/env.mjs";
 
 type CommonProps<TObjektType extends ValidObjekt> = {
   objekt: TObjektType;
@@ -184,6 +192,8 @@ function Metadata<TObjektType extends ValidObjekt>({
 }: {
   objekt: TObjektType;
 }) {
+  const { toast } = useToast();
+  const [_, copy] = useCopyToClipboard();
   const [showForm, setShowForm] = useState(false);
   const profile = useProfile();
 
@@ -195,6 +205,15 @@ function Metadata<TObjektType extends ValidObjekt>({
     },
     retry: 1,
   });
+
+  function copyUrl() {
+    const scheme =
+      env.NEXT_PUBLIC_VERCEL_ENV === "development" ? "http" : "https";
+    copy(`${scheme}://${env.NEXT_PUBLIC_VERCEL_URL}/objekts?id=${slug}`);
+    toast({
+      description: "Objekt URL copied to clipboard",
+    });
+  }
 
   return (
     <div className="flex grow flex-col justify-between gap-2 p-4">
@@ -214,6 +233,11 @@ function Metadata<TObjektType extends ValidObjekt>({
       )}
 
       <div className="flex flex-row-reverse gap-2 items-center self-end mt-auto w-full">
+        {/* copy url */}
+        <Button variant="secondary" size="sm" onClick={copyUrl}>
+          <LinkIcon />
+        </Button>
+
         {/* download image */}
         <Button variant="secondary" size="sm" asChild>
           <Link href={objekt.frontImage} target="_blank">
