@@ -68,6 +68,10 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2024-05-04",
+    changes: ["Fixed: Ramper error preventing signing in."],
+  },
+  {
     date: "2024-04-23",
     changes: ["Fixed: Adding & removing from lists resulting in a long delay."],
   },
