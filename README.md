@@ -71,10 +71,11 @@ Supersedes the [objekts.jinsoul.tv](https://github.com/teamreflex/objekts-svelte
 <details>
   <summary><b>Out of Scope</b></summary>
   
-  - Account registration. There's too much that goes into the onboarding process, not worth the effort.
-  - Account settings. There's not enough in there to adjust right now.
-  - Purchasing objekts. Apple/Google services are used.
-  - Gravity voting. Maybe if the transaction calldata is figured out.
+  - Social login (Google etc): Ramper has repeatedly blocked usage of its SDK.
+  - Account registration: There's too much that goes into the onboarding process, not worth the effort.
+  - Account settings: There's not enough in there to adjust right now.
+  - Purchasing objekts: Apple/Google services are used.
+  - Gravity voting: Maybe if the transaction calldata is figured out.
 </details>
 
 ### Notes
@@ -129,7 +130,6 @@ pnpm dev
 - [Next 14](https://nextjs.org/)
   - [Server Components](https://nextjs.org/docs/app/building-your-application/rendering/server-components)
   - [Server Actions](https://nextjs.org/docs/app/building-your-application/data-fetching/forms-and-mutations)
-- [Ramper SDK](https://www.ramper.xyz/)
 - [shadcn/ui](https://ui.shadcn.com/docs)
 - [Tailwind](https://tailwindcss.com/)
 - [Neon](https://neon.tech/)
