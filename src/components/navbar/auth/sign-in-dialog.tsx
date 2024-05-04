@@ -50,7 +50,7 @@ export default function SignInDialog() {
           <AlertDialogTitle>Sign In</AlertDialogTitle>
 
           <AlertDialogDescription>
-            Signing in allows to grid objekts, build wishlists and more.
+            Signing in allows to you grid objekts, build wishlists and more.
           </AlertDialogDescription>
         </AlertDialogHeader>
 
@@ -130,6 +130,7 @@ function ExchangeTokenForm({ payload, onBack }: ExchangeTokenProps) {
     }, 1000);
 
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function submit(form: FormData) {
