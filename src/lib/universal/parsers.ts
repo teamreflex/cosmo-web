@@ -194,7 +194,7 @@ export function parse<TSchema extends z.AnyZodObject>(
     return result.data;
   }
 
-  if (env.VERCEL_ENV === "development") {
+  if (env.NEXT_PUBLIC_VERCEL_ENV === "development") {
     console.error(result.error);
   }
 
