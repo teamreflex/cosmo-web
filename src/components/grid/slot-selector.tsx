@@ -16,9 +16,9 @@ import { useQuery } from "@tanstack/react-query";
 import GridObjekt from "./grid-objekt";
 import useEmblaCarousel from "embla-carousel-react";
 import { Button } from "../ui/button";
-import { getUser } from "@ramper/ethereum";
 import { COSMO_ENDPOINT } from "@/lib/universal/cosmo/common";
 import { ofetch } from "ofetch";
+import { useProfile } from "@/hooks/use-profile";
 
 type Props = PropsWithChildren<{
   collectionId: string;
@@ -33,16 +33,14 @@ export default function SlotSelector({
   populateSlot,
 }: Props) {
   const [carousel] = useEmblaCarousel();
-
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<PopulatedSlot>(currentSlot);
-
-  const user = getUser();
+  const profile = useProfile();
 
   const { data, status } = useQuery({
     queryKey: ["grid-selection", collectionId],
     queryFn: async () => {
-      const url = `${COSMO_ENDPOINT}/objekt/v1/owned-by/${user?.wallets.ethereum.publicKey}`;
+      const url = `${COSMO_ENDPOINT}/objekt/v1/owned-by/${profile!.address}`;
       return await ofetch<OwnedObjektsResult>(url, {
         query: {
           sort: "newest",

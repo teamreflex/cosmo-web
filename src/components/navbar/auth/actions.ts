@@ -19,20 +19,63 @@ import { db } from "@/lib/server/db";
 import { profiles } from "@/lib/server/db/schema";
 import { eq } from "drizzle-orm";
 import { TypedActionResult } from "@/lib/server/typed-action/types";
+import { exchangeToken, sendLoginEmail } from "@/lib/server/ramper";
+import { AuthenticatedActionError } from "@/lib/server/typed-action/errors";
 
 /**
- * Exchanges the idToken from Ramper for a JWT from Cosmo
+ * Requests a Ramper magic link email.
  */
-export const cosmoLogin = async (email: string, token: string) =>
+export const sendRamperEmail = async (form: FormData) =>
   typedAction({
-    form: { email, token },
+    form,
     schema: z.object({
+      transactionId: z.string().uuid(),
       email: z.string().email(),
-      token: z.string().min(1),
     }),
-    onValidate: async ({ data: { email, token } }) => {
+    onValidate: async ({ data }) => {
+      const result = await sendLoginEmail(data);
+      if (result.success === false) {
+        throw new AuthenticatedActionError({
+          status: "error",
+          error: result.error,
+        });
+      }
+
+      return {
+        email: data.email,
+        pendingToken: result.pendingToken,
+      };
+    },
+  });
+
+/**
+ * Exchanges the pendingToken from Ramper,
+ * then the idToken from Ramper for a JWT from Cosmo
+ */
+export const exchangeRamperToken = async (form: FormData) =>
+  typedAction({
+    form,
+    schema: z.object({
+      transactionId: z.string().uuid(),
+      email: z.string().email(),
+      pendingToken: z.string(),
+    }),
+    onValidate: async ({ data: { transactionId, email, pendingToken } }) => {
+      // exchange pendingToken with ramper
+      const exchange = await exchangeToken({
+        transactionId,
+        pendingToken,
+      });
+
+      if (exchange.success === false) {
+        throw new AuthenticatedActionError({
+          status: "error",
+          error: exchange.error,
+        });
+      }
+
       // login with cosmo
-      const loginResult = await login(email, token);
+      const loginResult = await login(email, exchange.ssoCredential.idToken);
 
       // find or create a profile for the user
       const payload = {
@@ -59,8 +102,10 @@ export const cosmoLogin = async (email: string, token: string) =>
         }),
         generateCookiePayload()
       );
+
+      return profile;
     },
-    redirectTo: () => "/",
+    redirectTo: ({ result }) => `/@${result.nickname}`,
   });
 
 /**
