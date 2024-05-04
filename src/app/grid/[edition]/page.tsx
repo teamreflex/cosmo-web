@@ -4,16 +4,26 @@ import { fetchEdition } from "@/lib/server/cosmo/grid";
 import { redirect } from "next/navigation";
 import GridRenderer from "@/components/grid/grid-renderer";
 import { decodeUser, getProfile } from "../../data-fetching";
+import { ProfileProvider } from "@/hooks/use-profile";
 
 type Props = {
   params: { edition: string };
 };
 
-const fetchGrids = cache(async (edition: string) => {
+const getEdition = cache(async (edition: string) => {
   const user = await decodeUser();
   const profile = await getProfile(user!.profileId);
 
-  return await fetchEdition(user!.accessToken, profile.artist, edition);
+  const cosmoEdition = await fetchEdition(
+    user!.accessToken,
+    profile.artist,
+    edition
+  );
+
+  return {
+    profile,
+    edition: cosmoEdition,
+  };
 });
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -28,22 +38,25 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function GridEditionPage({ params }: Props) {
-  const grids = await fetchGrids(params.edition);
-  if (grids.length === 0) {
+  const { profile, edition } = await getEdition(params.edition);
+
+  if (edition.length === 0) {
     redirect("/grid");
   }
 
   return (
-    <main className="container flex flex-col py-2">
-      <div className="flex items-center">
-        <div className="flex gap-2 items-center">
-          <h1 className="text-3xl font-cosmo uppercase">Grid</h1>
+    <ProfileProvider profile={profile}>
+      <main className="container flex flex-col py-2">
+        <div className="flex items-center">
+          <div className="flex gap-2 items-center">
+            <h1 className="text-3xl font-cosmo uppercase">Grid</h1>
+          </div>
         </div>
-      </div>
 
-      <div className="flex flex-col gap-4 items-center">
-        <GridRenderer grids={grids} />
-      </div>
-    </main>
+        <div className="flex flex-col gap-4 items-center">
+          <GridRenderer grids={edition} />
+        </div>
+      </main>
+    </ProfileProvider>
   );
 }
