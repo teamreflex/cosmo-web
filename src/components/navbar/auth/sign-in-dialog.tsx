@@ -80,12 +80,19 @@ type SendEmailProps = {
 
 function SendEmailForm({ payload, onComplete }: SendEmailProps) {
   const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string>();
 
   async function submit(form: FormData) {
     startTransition(async () => {
       const result = await sendRamperEmail(form);
-      if (result.status === "success") {
-        onComplete(result.data.email, result.data.pendingToken);
+
+      switch (result.status) {
+        case "error":
+          setError(result.error);
+          break;
+        case "success":
+          onComplete(result.data.email, result.data.pendingToken);
+          break;
       }
     });
   }
@@ -95,6 +102,8 @@ function SendEmailForm({ payload, onComplete }: SendEmailProps) {
       <AlertDialogDescription>
         Enter your Cosmo email address to request a sign-in email.
       </AlertDialogDescription>
+
+      {error && <p className="text-sm text-red-500">{error}</p>}
 
       <input type="hidden" name="transactionId" value={payload.transactionId} />
       <Input type="email" name="email" placeholder="example@example.com" />
