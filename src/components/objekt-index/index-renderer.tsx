@@ -125,7 +125,7 @@ const Title = memo(function Title({
       <HelpDialog />
 
       <div className="flex gap-2 items-center last:ml-auto">
-        <div id="objekt-total" />
+        <div className="min-w-24 text-right" id="objekt-total" />
 
         {nickname !== undefined && objektLists !== undefined && (
           <Options nickname={nickname} objektLists={objektLists} />

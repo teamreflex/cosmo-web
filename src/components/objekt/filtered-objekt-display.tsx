@@ -123,12 +123,12 @@ export default typedMemo(function FilteredObjektDisplay<
           {({ reset }) => (
             <div
               className={cn(
-                "grid grid-cols-3 gap-4 py-2",
+                "grid grid-cols-3 gap-4 py-2 w-full",
                 `md:grid-cols-${gridColumns}`
               )}
             >
               {status === "pending" ? (
-                <div className="flex col-span-full py-12">
+                <div className="flex justify-center col-span-full py-12 w-full">
                   <Loader2 className="animate-spin h-24 w-24" />
                 </div>
               ) : status === "error" ? (
