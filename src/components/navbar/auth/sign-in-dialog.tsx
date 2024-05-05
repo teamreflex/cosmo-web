@@ -66,7 +66,7 @@ export default function SignInDialog() {
         )}
 
         <AlertDialogFooter>
-          <div className="flex gap-2" id="sign-in-footer" />
+          <div className="flex items-center gap-2" id="sign-in-footer" />
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
@@ -109,7 +109,7 @@ function SendEmailForm({ payload, onComplete }: SendEmailProps) {
       <Input type="email" name="email" placeholder="example@example.com" />
 
       <Portal to="#sign-in-footer">
-        <AlertDialogCancel>Cancel</AlertDialogCancel>
+        <AlertDialogCancel className="mt-0">Cancel</AlertDialogCancel>
 
         <Button type="submit" disabled={isPending} form="email-submit">
           Send Email
@@ -186,7 +186,7 @@ function ExchangeTokenForm({ payload, onBack }: ExchangeTokenProps) {
           Back
         </Button>
 
-        <AlertDialogCancel>Cancel</AlertDialogCancel>
+        <AlertDialogCancel className="mt-0">Cancel</AlertDialogCancel>
 
         <Button
           type="submit"

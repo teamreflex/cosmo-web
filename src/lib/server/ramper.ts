@@ -2,6 +2,8 @@ import "server-only";
 import { env } from "@/env.mjs";
 import { ofetch } from "ofetch";
 
+const ORIGIN = "https://modhaus.v1.ramper.xyz";
+
 type SendLoginEmail = {
   transactionId: string;
   email: string;
@@ -27,6 +29,10 @@ export async function sendLoginEmail({ transactionId, email }: SendLoginEmail) {
       appId: env.NEXT_PUBLIC_COSMO_APP_ID,
       transactionId,
       email,
+    },
+    headers: {
+      Origin: ORIGIN,
+      Referer: ORIGIN + "/",
     },
   });
 }
@@ -65,6 +71,10 @@ export async function exchangeToken({
       appId: env.NEXT_PUBLIC_COSMO_APP_ID,
       transactionId,
       pendingToken,
+    },
+    headers: {
+      Origin: ORIGIN,
+      Referer: ORIGIN + "/",
     },
   });
 }
