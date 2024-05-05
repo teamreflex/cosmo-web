@@ -33,7 +33,10 @@ export type ObjektResponse<TObjektType extends ValidObjekt> = {
 };
 
 type Props<TObjektType extends ValidObjekt> = {
-  children: (props: BaseObjektProps<TObjektType>) => ReactElement;
+  children: (
+    props: BaseObjektProps<TObjektType>,
+    priority: boolean
+  ) => ReactElement;
   artists: CosmoArtistWithMembers[];
   filters: CosmoFilters;
   setFilters: SetCosmoFilters;
@@ -144,10 +147,16 @@ export default typedMemo(function FilteredObjektDisplay<
                   </Button>
                 </div>
               ) : (
-                objekts.map((objekt) =>
-                  cloneElement(children({ objekt, id: getObjektId(objekt) }), {
-                    key: getObjektId(objekt),
-                  })
+                objekts.map((objekt, i) =>
+                  cloneElement(
+                    children(
+                      { objekt, id: getObjektId(objekt) },
+                      i < gridColumns * 3
+                    ),
+                    {
+                      key: getObjektId(objekt),
+                    }
+                  )
                 )
               )}
             </div>

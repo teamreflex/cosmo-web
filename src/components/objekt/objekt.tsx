@@ -11,7 +11,7 @@ import {
 } from "react";
 import ReactCardFlip from "react-card-flip";
 import MetadataDialog, { fetchObjektQuery } from "./metadata-dialog";
-import { getObjektSlug } from "./objekt-util";
+import { getObjektImageUrls, getObjektSlug } from "./objekt-util";
 import { useQueryClient } from "@tanstack/react-query";
 
 export type BaseObjektProps<TObjektType extends ValidObjekt> =
@@ -32,6 +32,8 @@ export const FlippableObjekt = memo(function FlippableObjekt<
   const [flipped, setFlipped] = useState(false);
   const flip = useCallback(() => setFlipped((prev) => !prev), []);
 
+  const { front, back } = getObjektImageUrls(objekt);
+
   const css = {
     "--objekt-background-color": objekt.backgroundColor,
     "--objekt-text-color": objekt.textColor,
@@ -48,7 +50,7 @@ export const FlippableObjekt = memo(function FlippableObjekt<
         <MemoizedImage
           onClick={flip}
           className="cursor-pointer"
-          src={objekt.frontImage}
+          src={front.display}
           fill={true}
           alt={objekt.collectionId}
           quality={100}
@@ -64,7 +66,7 @@ export const FlippableObjekt = memo(function FlippableObjekt<
         <MemoizedImage
           onClick={flip}
           className="cursor-pointer"
-          src={objekt.backImage}
+          src={back.display}
           fill={true}
           alt={objekt.collectionId}
           quality={100}
@@ -80,11 +82,17 @@ export const FlippableObjekt = memo(function FlippableObjekt<
 interface ExpandableObjektProps<TObjektType extends ValidObjekt>
   extends BaseObjektProps<TObjektType> {
   setActive?: (slug: string | null) => void;
+  priority: boolean;
 }
 
 export const ExpandableObjekt = memo(function ExpandableObjekt<
   TObjektType extends ValidObjekt
->({ children, objekt, setActive }: ExpandableObjektProps<TObjektType>) {
+>({
+  children,
+  objekt,
+  setActive,
+  priority,
+}: ExpandableObjektProps<TObjektType>) {
   const queryClient = useQueryClient();
 
   const css = {
@@ -93,6 +101,7 @@ export const ExpandableObjekt = memo(function ExpandableObjekt<
   } as CSSProperties;
 
   const slug = getObjektSlug(objekt);
+  const { front } = getObjektImageUrls(objekt);
 
   return (
     <MetadataDialog
@@ -115,13 +124,12 @@ export const ExpandableObjekt = memo(function ExpandableObjekt<
               openDialog();
             }}
             className="cursor-pointer"
-            src={objekt.frontImage}
+            src={front.display}
             width={291}
             height={450}
             alt={objekt.collectionId}
             quality={100}
-            priority={false}
-            loading="lazy"
+            priority={priority}
             unoptimized
           />
 

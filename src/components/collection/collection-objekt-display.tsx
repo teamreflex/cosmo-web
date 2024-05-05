@@ -79,8 +79,8 @@ export default memo(function CollectionObjektDisplay({
         gridColumns={gridColumns}
         dataSource={dataSource}
       >
-        {({ objekt, id }) => (
-          <ExpandableObjekt objekt={objekt} id={id}>
+        {({ objekt, id }, priority) => (
+          <ExpandableObjekt objekt={objekt} id={id} priority={priority}>
             <Overlay
               objekt={objekt}
               authenticated={authenticated}

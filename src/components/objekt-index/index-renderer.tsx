@@ -87,8 +87,13 @@ export default function IndexRenderer({
         getObjektId={getObjektId}
         gridColumns={gridColumns}
       >
-        {({ objekt, id }) => (
-          <ExpandableObjekt objekt={objekt} id={id} setActive={setActiveObjekt}>
+        {({ objekt, id }, priority) => (
+          <ExpandableObjekt
+            objekt={objekt}
+            id={id}
+            setActive={setActiveObjekt}
+            priority={priority}
+          >
             <Overlay
               objekt={objekt}
               authenticated={authenticated}

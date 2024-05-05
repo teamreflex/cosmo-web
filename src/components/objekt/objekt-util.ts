@@ -54,3 +54,24 @@ export function getObjektSlug(objekt: ValidObjekt) {
   const member = objekt.member.toLowerCase().replace(/[+()]+/g, "");
   return `${objekt.season}-${member}-${objekt.collectionNo}`.toLowerCase();
 }
+
+const SIZE_REGEX = /4x$/i;
+
+/**
+ * Trims the 4x suffix from the image URLs.
+ */
+export function getObjektImageUrls(objekt: ValidObjekt) {
+  const front = objekt.frontImage.replace(SIZE_REGEX, "2x");
+  const back = objekt.backImage.replace(SIZE_REGEX, "2x");
+
+  return {
+    front: {
+      display: front,
+      download: objekt.frontImage,
+    },
+    back: {
+      display: back,
+      download: objekt.backImage,
+    },
+  };
+}

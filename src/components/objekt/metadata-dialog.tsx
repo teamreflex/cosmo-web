@@ -29,6 +29,7 @@ import { useToast } from "../ui/use-toast";
 import {
   getObjektArtist,
   getObjektId,
+  getObjektImageUrls,
   getObjektSlug,
   getObjektType,
 } from "./objekt-util";
@@ -198,6 +199,8 @@ function Metadata<TObjektType extends ValidObjekt>({
   const profile = useProfile();
 
   const slug = getObjektSlug(objekt);
+  const { front } = getObjektImageUrls(objekt);
+
   const { data } = useSuspenseQuery({
     queryKey: ["collection-metadata", "metadata", slug],
     queryFn: async () => {
@@ -242,7 +245,7 @@ function Metadata<TObjektType extends ValidObjekt>({
 
         {/* download image */}
         <Button variant="secondary" size="sm" asChild>
-          <Link href={objekt.frontImage} target="_blank">
+          <Link href={front.download} target="_blank">
             <ImageDown />
           </Link>
         </Button>
