@@ -106,7 +106,12 @@ function SendEmailForm({ payload, onComplete }: SendEmailProps) {
       {error && <p className="text-sm text-red-500">{error}</p>}
 
       <input type="hidden" name="transactionId" value={payload.transactionId} />
-      <Input type="email" name="email" placeholder="example@example.com" />
+      <Input
+        type="email"
+        name="email"
+        placeholder="example@example.com"
+        className="touch-manipulation"
+      />
 
       <Portal to="#sign-in-footer">
         <AlertDialogCancel className="mt-0">Cancel</AlertDialogCancel>

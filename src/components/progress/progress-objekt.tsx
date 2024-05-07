@@ -3,6 +3,7 @@ import Image from "next/image";
 import ObjektSidebar from "../objekt/objekt-sidebar";
 import { cn } from "@/lib/utils";
 import { CSSProperties } from "react";
+import { replaceUrlSize } from "../objekt/objekt-util";
 
 type Props = {
   objekt: ObjektProgression;
@@ -13,6 +14,8 @@ export default function ProgressObjekt({ objekt }: Props) {
     "--objekt-text-color": objekt.textColor,
   } as CSSProperties;
 
+  const image = replaceUrlSize(objekt.frontImage, "thumbnail");
+
   return (
     <div
       style={css}
@@ -22,13 +25,11 @@ export default function ProgressObjekt({ objekt }: Props) {
       )}
     >
       <Image
-        src={objekt.frontImage}
+        src={image}
         width={291}
         height={450}
         alt={objekt.collectionNo}
         quality={100}
-        priority={false}
-        loading="lazy"
         unoptimized
       />
 

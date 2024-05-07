@@ -55,14 +55,19 @@ export function getObjektSlug(objekt: ValidObjekt) {
   return `${objekt.season}-${member}-${objekt.collectionNo}`.toLowerCase();
 }
 
-const SIZE_REGEX = /4x$/i;
+/**
+ * Replaces the 4x suffix from an image URL.
+ */
+export function replaceUrlSize(url: string, size: "2x" | "thumbnail" = "2x") {
+  return url.replace(/4x$/i, size);
+}
 
 /**
- * Trims the 4x suffix from the image URLs.
+ * Replaces the 4x suffix from both image URLs.
  */
 export function getObjektImageUrls(objekt: ValidObjekt) {
-  const front = objekt.frontImage.replace(SIZE_REGEX, "2x");
-  const back = objekt.backImage.replace(SIZE_REGEX, "2x");
+  const front = replaceUrlSize(objekt.frontImage);
+  const back = replaceUrlSize(objekt.backImage);
 
   return {
     front: {

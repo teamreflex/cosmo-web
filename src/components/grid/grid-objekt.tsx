@@ -3,6 +3,7 @@ import { PropsWithClassName, cn } from "@/lib/utils";
 import { Check } from "lucide-react";
 import Image from "next/image";
 import { CSSProperties, useState } from "react";
+import { replaceUrlSize } from "../objekt/objekt-util";
 
 type Props = PropsWithClassName<{
   image: string;
@@ -25,6 +26,8 @@ export default function GridObjekt({
     "--objekt-text-color": textColor,
   } as CSSProperties;
 
+  const scaledImage = replaceUrlSize(image, "2x");
+
   return (
     <div
       className={cn(
@@ -37,10 +40,11 @@ export default function GridObjekt({
       style={css}
     >
       <Image
-        src={image}
+        src={scaledImage}
         fill={true}
         alt={collectionNo}
         onLoad={() => setLoaded(true)}
+        unoptimized
       />
       {loaded && (
         <GridObjektNumber collectionNo={collectionNo} objektNo={objektNo} />
