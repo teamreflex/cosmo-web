@@ -33,6 +33,7 @@ export async function sendLoginEmail({ transactionId, email }: SendLoginEmail) {
     headers: {
       Origin: ORIGIN,
       Referer: ORIGIN + "/",
+      "User-Agent": env.RAMPER_USERAGENT,
     },
   });
 }
@@ -75,6 +76,7 @@ export async function exchangeToken({
     headers: {
       Origin: ORIGIN,
       Referer: ORIGIN + "/",
+      "User-Agent": env.RAMPER_USERAGENT,
     },
   });
 }

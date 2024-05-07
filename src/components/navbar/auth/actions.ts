@@ -35,6 +35,7 @@ export const sendRamperEmail = async (form: FormData) =>
     onValidate: async ({ data }) => {
       const result = await sendLoginEmail(data);
       if (result.success === false) {
+        console.error(`ramper::sendLoginEmail`, result);
         throw new AuthenticatedActionError({
           status: "error",
           error: result.error,
@@ -68,6 +69,7 @@ export const exchangeRamperToken = async (form: FormData) =>
       });
 
       if (exchange.success === false) {
+        console.error(`ramper::exchangeToken`, exchange);
         throw new AuthenticatedActionError({
           status: "error",
           error: exchange.error,

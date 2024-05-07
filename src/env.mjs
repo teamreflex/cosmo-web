@@ -5,6 +5,8 @@ export const env = createEnv({
   server: {
     // ramper auth endpoint
     RAMPER_URL: z.string().url(),
+    // user agent to use when making requests to ramper
+    RAMPER_USERAGENT: z.string(),
     // used for signing cookies
     JWT_SECRET: z.string().min(1),
     // neon db
