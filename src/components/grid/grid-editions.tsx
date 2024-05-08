@@ -27,7 +27,7 @@ export default async function GridEditions({
     acc[season].push(edition);
     return acc;
   }, {} as SeasonGroup);
-  const seasonTitles = Object.keys(seasons);
+  const seasonTitles = Object.keys(seasons).sort();
 
   return (
     <Tabs defaultValue="Atom01" className="w-full sm:w-1/2">
