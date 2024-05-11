@@ -72,7 +72,6 @@ export default function SettingsDialog({
                     };
                   }}
                 >
-                  <SelectItem value="3">3 Columns</SelectItem>
                   <SelectItem value="4">4 Columns</SelectItem>
                   <SelectItem value="5">5 Columns</SelectItem>
                   <SelectItem value="6">6 Columns</SelectItem>
