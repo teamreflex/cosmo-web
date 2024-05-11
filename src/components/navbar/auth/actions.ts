@@ -19,7 +19,11 @@ import { db } from "@/lib/server/db";
 import { profiles } from "@/lib/server/db/schema";
 import { eq } from "drizzle-orm";
 import { TypedActionResult } from "@/lib/server/typed-action/types";
-import { exchangeToken, sendLoginEmail } from "@/lib/server/ramper";
+import {
+  exchangeToken,
+  getRamperErrorMessage,
+  sendLoginEmail,
+} from "@/lib/server/ramper";
 import { AuthenticatedActionError } from "@/lib/server/typed-action/errors";
 
 /**
@@ -35,10 +39,9 @@ export const sendRamperEmail = async (form: FormData) =>
     onValidate: async ({ data }) => {
       const result = await sendLoginEmail(data);
       if (result.success === false) {
-        console.error(`ramper::sendLoginEmail`, result);
         throw new AuthenticatedActionError({
           status: "error",
-          error: result.error,
+          error: getRamperErrorMessage(result, "sendLoginEmail"),
         });
       }
 
@@ -69,10 +72,9 @@ export const exchangeRamperToken = async (form: FormData) =>
       });
 
       if (exchange.success === false) {
-        console.error(`ramper::exchangeToken`, exchange);
         throw new AuthenticatedActionError({
           status: "error",
-          error: exchange.error,
+          error: getRamperErrorMessage(exchange, "exchangeToken"),
         });
       }
 

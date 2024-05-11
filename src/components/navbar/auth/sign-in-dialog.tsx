@@ -110,7 +110,8 @@ function SendEmailForm({ payload, onComplete }: SendEmailProps) {
         type="email"
         name="email"
         placeholder="example@example.com"
-        className="touch-manipulation"
+        // fixes iOS zoom when focusing input
+        className="touch-manipulation text-base sm:text-sm"
       />
 
       <Portal to="#sign-in-footer">

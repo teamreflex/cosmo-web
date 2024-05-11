@@ -8,7 +8,7 @@ import { readFile } from "fs/promises";
  */
 
 const DELIMITER = " :: ";
-const USER = "0xcaB3C85ac8f4aE0153B7cF2Bbf1378397890848b";
+const USER = "0x7e3ea1850696E9aA34EEaD1d7d64CD78679B2e43";
 
 async function chunk<T>(
   arr: T[],
