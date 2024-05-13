@@ -1,4 +1,19 @@
+const plugin = require("tailwindcss/plugin");
 const colors = require("tailwindcss/colors");
+
+const flipUtilities = plugin(function ({ addUtilities }) {
+  addUtilities({
+    ".preserve-3d": {
+      "transform-style": "preserve-3d",
+    },
+    ".rotate-y-180": {
+      transform: "rotateY(180deg)",
+    },
+    ".backface-hidden": {
+      "backface-visibility": "hidden",
+    },
+  });
+});
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
@@ -101,7 +116,7 @@ module.exports = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [require("tailwindcss-animate"), flipUtilities],
   safelist: [
     { pattern: /grid-cols-./, variants: ["xs", "md"] },
     { pattern: /order-./ },

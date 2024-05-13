@@ -2,14 +2,7 @@
 
 import { ValidObjekt } from "@/lib/universal/objekts";
 import Image from "next/image";
-import {
-  CSSProperties,
-  PropsWithChildren,
-  memo,
-  useCallback,
-  useState,
-} from "react";
-import ReactCardFlip from "react-card-flip";
+import { CSSProperties, PropsWithChildren, memo, useState } from "react";
 import MetadataDialog, { fetchObjektQuery } from "./metadata-dialog";
 import { getObjektImageUrls, getObjektSlug } from "./objekt-util";
 import { useQueryClient } from "@tanstack/react-query";
@@ -21,7 +14,6 @@ export type BaseObjektProps<TObjektType extends ValidObjekt> =
   }>;
 
 const MemoizedImage = memo(Image);
-const MemoizedCardFlip = memo(ReactCardFlip);
 
 interface FlippableObjektProps<TObjektType extends ValidObjekt>
   extends BaseObjektProps<TObjektType> {}
@@ -30,9 +22,6 @@ export const FlippableObjekt = memo(function FlippableObjekt<
   TObjektType extends ValidObjekt
 >({ children, objekt }: FlippableObjektProps<TObjektType>) {
   const [flipped, setFlipped] = useState(false);
-  const flip = useCallback(() => setFlipped((prev) => !prev), []);
-
-  const { front, back } = getObjektImageUrls(objekt);
 
   const css = {
     "--objekt-background-color": objekt.backgroundColor,
@@ -40,42 +29,34 @@ export const FlippableObjekt = memo(function FlippableObjekt<
   } as CSSProperties;
 
   return (
-    <MemoizedCardFlip
-      isFlipped={flipped}
-      flipDirection="horizontal"
-      containerClassName="isolate relative h-full w-full aspect-photocard object-contain overflow-hidden rounded-xl lg:rounded-2xl touch-manipulation"
-      containerStyle={css}
+    <div
+      onClick={() => setFlipped((prev) => !prev)}
+      data-flipped={flipped}
+      className="relative w-full aspect-photocard cursor-pointer object-contain touch-manipulation transition-transform preserve-3d transform-gpu duration-500 data-[flipped=true]:rotate-y-180"
+      style={css}
     >
-      <div>
+      {/* front */}
+      <div className="absolute inset-0 backface-hidden">
         <MemoizedImage
-          onClick={flip}
-          className="cursor-pointer"
-          src={front.display}
+          src={objekt.frontImage}
           fill={true}
           alt={objekt.collectionId}
-          quality={100}
-          priority={false}
-          loading="lazy"
           unoptimized
         />
 
         {children}
       </div>
 
-      <div>
+      {/* back */}
+      <div className="absolute inset-0 backface-hidden rotate-y-180">
         <MemoizedImage
-          onClick={flip}
-          className="cursor-pointer"
-          src={back.display}
+          src={objekt.backImage}
           fill={true}
           alt={objekt.collectionId}
-          quality={100}
-          priority={false}
-          loading="lazy"
           unoptimized
         />
       </div>
-    </MemoizedCardFlip>
+    </div>
   );
 });
 

@@ -82,7 +82,6 @@ const fetchLeaderboard = unstable_cache(
         )
       )
       .groupBy(objekts.owner, objekts.collectionId)
-      .orderBy(desc(objekts.owner), desc(objekts.collectionId))
       .as("subquery");
 
     return await indexer
