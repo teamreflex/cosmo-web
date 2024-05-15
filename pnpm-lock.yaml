@@ -66,8 +66,8 @@ dependencies:
     specifier: ^5.29.2
     version: 5.29.2(react@18.2.0)
   '@vidstack/react':
-    specifier: ^1.10.9
-    version: 1.10.9(@types/react@18.2.46)(react@18.2.0)
+    specifier: ^1.11.21
+    version: 1.11.21(@types/react@18.2.46)(react@18.2.0)
   class-variance-authority:
     specifier: ^0.7.0
     version: 0.7.0
@@ -99,8 +99,8 @@ dependencies:
     specifier: ^3.6.0
     version: 3.6.0
   hls.js:
-    specifier: ^1.5.7
-    version: 1.5.7
+    specifier: ^1.5.8
+    version: 1.5.8
   jose:
     specifier: ^5.2.2
     version: 5.2.2
@@ -3203,15 +3203,15 @@ packages:
     resolution: {integrity: sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==}
     dev: true
 
-  /@vidstack/react@1.10.9(@types/react@18.2.46)(react@18.2.0):
-    resolution: {integrity: sha512-xMRhk8T2V/ULmDylYm2+a6F6zDAjXG2lHIUL/oRbERXDV/Ou+ZE+QDxcBFu2aIQ2rQriCyhh3pNpST8f9ePWVw==}
+  /@vidstack/react@1.11.21(@types/react@18.2.46)(react@18.2.0):
+    resolution: {integrity: sha512-eaMh8raSJw8L523UtmooC7IkBxMriny9X1LMk0qsJ1oZ+JGjvgLEYTPkdyLsDIJjrP4hmeeK+12kPZepHSC1pw==}
     engines: {node: '>=18'}
     peerDependencies:
       '@types/react': ^18.0.0
       react: ^18.0.0
     dependencies:
       '@types/react': 18.2.46
-      media-captions: 1.0.2
+      media-captions: 1.0.3
       react: 18.2.0
     dev: false
 
@@ -5014,8 +5014,8 @@ packages:
     resolution: {integrity: sha512-2bsegYkkHO+h/9MGbn6KWcE45cHZgPANo5LXF7EvWdT0yT2EguSVO1nDgU5c8+ZOPwp2vMNa7YFsJhVcDR9Sdg==}
     dev: true
 
-  /hls.js@1.5.7:
-    resolution: {integrity: sha512-Hnyf7ojTBtXHeOW1/t6wCBJSiK1WpoKF9yg7juxldDx8u3iswrkPt2wbOA/1NiwU4j27DSIVoIEJRAhcdMef/A==}
+  /hls.js@1.5.8:
+    resolution: {integrity: sha512-hJYMPfLhWO7/7+n4f9pn6bOheCGx0WgvVz7k3ouq3Pp1bja48NN+HeCQu3XCGYzqWQF/wo7Sk6dJAyWVJD8ECA==}
     dev: false
 
   /hmac-drbg@1.0.1:
@@ -5568,8 +5568,8 @@ packages:
     engines: {node: '>=4'}
     dev: true
 
-  /media-captions@1.0.2:
-    resolution: {integrity: sha512-QxAFc+XTGZeMx+ZvLtMxEDgAjd0kr1LJ2NekLr1cw/UKENOxK7B9g6HwtuTQzCXxmb4Dknd4T8M7FOqqCK9buA==}
+  /media-captions@1.0.3:
+    resolution: {integrity: sha512-y2Qi5rqjwgH97zoko1vzu5Q6nnS0KzEQSvd4NOjnFym9JqnFb5VSsUg21RNb5cQ/nhCFJ0wz/XK+2uMwFCr6TQ==}
     engines: {node: '>=16'}
     dev: false
 
