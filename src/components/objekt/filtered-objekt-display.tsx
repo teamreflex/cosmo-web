@@ -1,7 +1,13 @@
 "use client";
 
 import { BaseObjektProps } from "../objekt/objekt";
-import { ReactElement, cloneElement, useCallback, useMemo } from "react";
+import {
+  Fragment,
+  ReactElement,
+  cloneElement,
+  useCallback,
+  useMemo,
+} from "react";
 import { HeartCrack, Loader2, RefreshCcw } from "lucide-react";
 import {
   QueryErrorResetBoundary,
@@ -24,6 +30,7 @@ import { InfiniteQueryNext } from "../infinite-query-pending";
 import { ValidObjekt } from "@/lib/universal/objekts";
 import { GRID_COLUMNS, cn, typedMemo } from "@/lib/utils";
 import { Button } from "../ui/button";
+import { useObjektRewards } from "@/hooks/use-objekt-rewards";
 
 export type ObjektResponse<TObjektType extends ValidObjekt> = {
   hasNext: boolean;
@@ -66,6 +73,8 @@ export default typedMemo(function FilteredObjektDisplay<
   gridColumns = GRID_COLUMNS,
   dataSource = "blockchain",
 }: Props<TObjektType>) {
+  const { rewardsDialog } = useObjektRewards();
+
   // prevent the query from sending bad sort requests to the cosmo api
   const isBadCosmoRequest =
     dataSource === "cosmo" && filters.sort?.startsWith("serial") === true;
@@ -147,17 +156,20 @@ export default typedMemo(function FilteredObjektDisplay<
                   </Button>
                 </div>
               ) : (
-                objekts.map((objekt, i) =>
-                  cloneElement(
-                    children(
-                      { objekt, id: getObjektId(objekt) },
-                      i < gridColumns * 3
-                    ),
-                    {
-                      key: getObjektId(objekt),
-                    }
-                  )
-                )
+                <Fragment>
+                  {rewardsDialog}
+                  {objekts.map((objekt, i) =>
+                    cloneElement(
+                      children(
+                        { objekt, id: getObjektId(objekt) },
+                        i < gridColumns * 3
+                      ),
+                      {
+                        key: getObjektId(objekt),
+                      }
+                    )
+                  )}
+                </Fragment>
               )}
             </div>
           )}

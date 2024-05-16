@@ -13,6 +13,8 @@ import { addrcomp } from "@/lib/utils";
 import { Suspense } from "react";
 import PreviousIds from "@/components/profile/previous-ids";
 import { ProfileProvider } from "@/hooks/use-profile";
+import RewardsRenderer from "@/components/rewards/rewards-renderer";
+import { ObjektRewardProvider } from "@/hooks/use-objekt-rewards";
 
 type Props = {
   params: { nickname: string };
@@ -38,40 +40,48 @@ export default async function UserCollectionPage({ params }: Props) {
 
   if (!targetUser) notFound();
 
-  if (
-    targetUser.privacy.objekts &&
-    !addrcomp(currentUser?.address, targetUser.address)
-  ) {
+  const isOwnProfile =
+    user !== undefined && addrcomp(user.address, targetUser.address);
+
+  if (targetUser.privacy.objekts && !isOwnProfile) {
     return <Private nickname={targetUser.nickname} />;
   }
 
-  const shouldHideNickname =
-    targetUser.privacy.nickname &&
-    !addrcomp(currentUser?.address, targetUser.address);
+  const shouldHideNickname = targetUser.privacy.nickname && !isOwnProfile;
 
   return (
     <ProfileProvider profile={targetUser}>
-      <section className="flex flex-col">
-        <ProfileRenderer
-          lockedObjekts={lockedObjekts}
-          artists={artists}
-          profile={targetUser}
-          user={currentUser}
-          previousIds={
-            shouldHideNickname ? null : (
-              <Suspense
-                fallback={
-                  <div className="flex justify-center">
-                    <Loader2 className="w-6 h-6 animate-spin" />
-                  </div>
-                }
-              >
-                <PreviousIds address={targetUser.address} />
-              </Suspense>
-            )
-          }
-        />
-      </section>
+      <ObjektRewardProvider
+        rewardsDialog={
+          isOwnProfile && (
+            <Suspense>
+              <RewardsRenderer user={user} />
+            </Suspense>
+          )
+        }
+      >
+        <section className="flex flex-col">
+          <ProfileRenderer
+            lockedObjekts={lockedObjekts}
+            artists={artists}
+            profile={targetUser}
+            user={currentUser}
+            previousIds={
+              shouldHideNickname ? null : (
+                <Suspense
+                  fallback={
+                    <div className="flex justify-center">
+                      <Loader2 className="w-6 h-6 animate-spin" />
+                    </div>
+                  }
+                >
+                  <PreviousIds address={targetUser.address} />
+                </Suspense>
+              )
+            }
+          />
+        </section>
+      </ObjektRewardProvider>
     </ProfileProvider>
   );
 }

@@ -21,6 +21,7 @@ Supersedes the [objekts.jinsoul.tv](https://github.com/teamreflex/objekts-svelte
   - Displaying reason for untransferable objekts - e.g. used for grid vs. not transferrable (event, welcome) vs. pending mint
   - All available filters
   - Display COMO balances
+  - Claiming event rewards
 - Grid
   - Displaying grid completion stats
   - Displaying available seasons and editions

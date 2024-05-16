@@ -68,6 +68,10 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2024-05-16",
+    changes: ["Added: Functionality for claiming objekt event rewards."],
+  },
+  {
     date: "2024-05-04",
     changes: [
       "Fixed: Ramper error preventing signing in.",
@@ -77,17 +81,5 @@ const updates = [
   {
     date: "2024-04-23",
     changes: ["Fixed: Adding & removing from lists resulting in a long delay."],
-  },
-  {
-    date: "2024-04-15",
-    changes: [
-      "Added: Information dialogs for objekts.",
-      "Click an objekt to see information like season, class, number of copies, rarity and the source of the objekt.",
-      "Source descriptions will be added over time.",
-    ],
-  },
-  {
-    date: "2024-04-09",
-    changes: ["Added: Physical & digital filters to progress leaderboards."],
   },
 ];
