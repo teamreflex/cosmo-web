@@ -1,5 +1,4 @@
 import {
-  CosmoRewardItem,
   fetchEventRewardAvailable,
   fetchPendingEventRewards,
 } from "@/lib/server/cosmo/rewards";
@@ -7,6 +6,7 @@ import { TokenPayload } from "@/lib/universal/auth";
 import Image from "next/image";
 import RewardTimestamp from "./reward-timestamp";
 import RewardDialog from "./reward-dialog";
+import { CosmoRewardItem } from "@/lib/universal/cosmo/rewards";
 
 type Props = {
   user: TokenPayload;

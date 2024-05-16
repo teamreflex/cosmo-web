@@ -1,5 +1,7 @@
 import "server-only";
 import {
+  CosmoBFFNewsFeedItem,
+  CosmoBFFNewsFeedResult,
   CosmoNewsFeedResult,
   CosmoNewsSection,
   CosmoNewsSectionExclusiveContent,
@@ -7,6 +9,7 @@ import {
 } from "@/lib/universal/cosmo/news";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { cosmo } from "../http";
+import { v4 } from "uuid";
 
 type CosmoNewsResult = {
   sections: CosmoNewsSection[];
@@ -15,6 +18,7 @@ type CosmoNewsResult = {
 /**
  * Get news on the home page.
  * Cached for 15 minutes.
+ * @deprecated Replaced by fetchFeedBff
  */
 export async function fetchHomeNews(token: string, artist: ValidArtist) {
   return await cosmo<CosmoNewsResult>(`/news/v1`, {
@@ -79,6 +83,35 @@ export async function fetchExclusive(
       },
       next: {
         tags: ["news", "exclusive", artist],
+        revalidate: 60 * 15, // 15 minutes
+      },
+    }
+  );
+}
+
+/**
+ * Get the bff news feed.
+ * Cached for 15 minutes.
+ */
+export async function fetchFeedBff(
+  token: string,
+  artistName: ValidArtist,
+  page: number = 1
+) {
+  return await cosmo<CosmoBFFNewsFeedResult<CosmoBFFNewsFeedItem>>(
+    `/bff/v1/news/feed`,
+    {
+      query: {
+        artistName,
+        page: page.toString(),
+        size: "10",
+        tid: v4(),
+      },
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      next: {
+        tags: ["bff-news", "feed", artistName],
         revalidate: 60 * 15, // 15 minutes
       },
     }

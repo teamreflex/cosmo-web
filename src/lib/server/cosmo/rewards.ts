@@ -1,5 +1,6 @@
 import { v4 } from "uuid";
 import { cosmo } from "../http";
+import { CosmoRewardItem } from "@/lib/universal/cosmo/rewards";
 
 type CosmoRewardAvailable = {
   isClaimable: boolean;
@@ -19,15 +20,6 @@ export async function fetchEventRewardAvailable(token: string) {
     cache: "no-cache",
   }).then((res) => res.isClaimable);
 }
-
-export type CosmoRewardItem = {
-  id: number;
-  isClaimed: boolean;
-  thumbnailImage: string;
-  title: string;
-  category: string;
-  endedAt: string;
-};
 
 type CosmoRewardList = {
   count: number;

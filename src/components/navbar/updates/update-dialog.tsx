@@ -69,7 +69,10 @@ export default function UpdateDialog() {
 const updates = [
   {
     date: "2024-05-16",
-    changes: ["Added: Functionality for claiming objekt event rewards."],
+    changes: [
+      "Added: Functionality for claiming objekt event rewards.",
+      "Updated: Today's Atmosphere feed switched over to new functionality, post liking coming soon.",
+    ],
   },
   {
     date: "2024-05-04",

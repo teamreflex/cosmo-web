@@ -1,4 +1,7 @@
-import { ValidArtist } from "./common";
+import { z } from "zod";
+import { CosmoArtist } from "./artists";
+import { ValidArtist, validArtists } from "./common";
+import { parse } from "../parsers";
 
 type CosmoNewsSectionBar = {
   type: "bar";
@@ -135,3 +138,53 @@ export type CosmoNewsFeedResult<TPostType> = {
   nextStartAfter: string;
   results: TPostType[];
 };
+
+export type CosmoBFFNewsFeedResult<TPostType> = {
+  count: number;
+  sets: TPostType[];
+};
+
+export type CosmoBFFNewsFeedItemImage = {
+  thumbnail: string;
+  original: string;
+};
+
+export type CosmoBFFNewsFeedItem = {
+  data: {
+    activeAt: string;
+    updatedAt: string;
+    createdAt: string;
+    artistMembers: unknown[];
+    artist: string;
+    body: string;
+    id: number;
+    totalLikeCount: number;
+    url: string;
+  };
+  artist: CosmoArtist;
+  images: CosmoBFFNewsFeedItemImage[];
+  isLiked: boolean;
+};
+
+const bffNewsSchema = z.object({
+  artistName: z.enum(validArtists),
+  page: z.coerce.number().optional().default(1),
+});
+export type BFFNewsParams = z.infer<typeof bffNewsSchema>;
+
+/**
+ * Parse BFF news params with default fallback.
+ */
+export function parseBffNewsParams(params: URLSearchParams) {
+  return parse(
+    bffNewsSchema,
+    {
+      artistName: params.get("artistName"),
+      page: params.get("page"),
+    },
+    {
+      artistName: "artms",
+      page: 1,
+    }
+  );
+}

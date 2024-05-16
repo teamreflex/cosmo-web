@@ -1,35 +1,37 @@
 "use client";
 
 import {
-  CosmoNewsFeedResult,
-  CosmoNewsSectionFeedContent,
+  CosmoBFFNewsFeedItem,
+  CosmoBFFNewsFeedResult,
 } from "@/lib/universal/cosmo/news";
-import NewsInfiniteLoader from "./news-infinite-loader";
-import NewsPostFeed from "./news-post-feed";
-import { COSMO_ENDPOINT, ValidArtist } from "@/lib/universal/cosmo/common";
+import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { ofetch } from "ofetch";
+import BFFNewsPostFeed from "./bff/bff-news-post-feed";
+import BFFNewsInfiniteLoader from "./bff/bff-news-infinite-loader";
 
 type Props = {
   artist: ValidArtist;
 };
 
 export default function NewsFeedInfiniteLoader({ artist }: Props) {
-  async function fetcher({ pageParam = 0 }: { pageParam?: string | number }) {
-    const url = `${COSMO_ENDPOINT}/news/v1/feed`;
-    return await ofetch<CosmoNewsFeedResult<CosmoNewsSectionFeedContent>>(url, {
-      query: {
-        artist,
-        startAfter: pageParam.toString(),
-      },
-    });
+  async function fetcher({ pageParam = 1 }: { pageParam?: string | number }) {
+    return await ofetch<CosmoBFFNewsFeedResult<CosmoBFFNewsFeedItem>>(
+      "/api/bff/v1/news/feed",
+      {
+        query: {
+          artistName: artist,
+          page: pageParam.toString(),
+        },
+      }
+    );
   }
 
-  function generatePost(post: CosmoNewsSectionFeedContent) {
-    return <NewsPostFeed key={post.id} post={post} fullWidth={true} />;
+  function generatePost(post: CosmoBFFNewsFeedItem) {
+    return <BFFNewsPostFeed key={post.data.id} post={post} />;
   }
 
   return (
-    <NewsInfiniteLoader
+    <BFFNewsInfiniteLoader
       fetcher={fetcher}
       component={generatePost}
       queryKey="news-feed"
