@@ -2,23 +2,31 @@ import { getUser } from "@/app/api/common";
 import { CosmoSearchResult, search } from "@/lib/server/cosmo/auth";
 import { db } from "@/lib/server/db";
 import { profiles } from "@/lib/server/db/schema";
+import { validateExpiry } from "@/lib/server/jwt";
 import { like } from "drizzle-orm";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 
 /**
  * API route for user search.
- * When authenticated, it proxies the Cosmo search endpoint.
- * When unauthenticated, it searches the database for cached users.
  */
 export async function GET(request: NextRequest) {
   const query = request.nextUrl.searchParams.get("query") ?? "";
   const auth = await getUser();
 
-  if (!auth.success) {
-    return NextResponse.json(await queryDatabase(query));
+  /**
+   * use the database if:
+   * - user is not authenticated
+   * - or, user is authenticated but the token is expired
+   */
+  if (
+    auth.success === false ||
+    (auth.success === true && validateExpiry(auth.user.accessToken) === false)
+  ) {
+    return Response.json(await queryDatabase(query));
   }
 
-  return NextResponse.json(await search(auth.user.accessToken, query));
+  // otherwise, use cosmo
+  return Response.json(await search(auth.user.accessToken, query));
 }
 
 /**
