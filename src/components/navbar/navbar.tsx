@@ -2,11 +2,11 @@ import AuthOptions from "./auth/auth-options";
 import ApolloLogo from "./apollo-logo";
 import { Suspense } from "react";
 import Links from "./links";
-import GasDisplay from "../misc/gas-display";
-import ComoBalances from "./como-balances";
 import { decodeUser, getProfile } from "@/app/data-fetching";
 import { fetchArtists } from "@/lib/server/cosmo/artists";
 import UpdateDialog from "./updates/update-dialog";
+import PolygonGasRenderer from "../misc/gas-display";
+import ComoBalanceRenderer from "./como-balances";
 
 export default async function Navbar() {
   return (
@@ -16,13 +16,7 @@ export default async function Navbar() {
           <div className="container md:grid md:grid-cols-3 flex items-center gap-2 text-sm text-foreground md:gap-4 md:py-6 pointer-events-auto">
             <div className="flex gap-4 items-center">
               <ApolloLogo color="white" />
-              <Suspense
-                fallback={
-                  <div className="w-12 h-6 rounded-lg bg-accent animate-pulse" />
-                }
-              >
-                <GasDisplay />
-              </Suspense>
+              <PolygonGasRenderer />
 
               <UpdateDialog />
             </div>
@@ -66,22 +60,9 @@ async function Auth() {
       profile={profile}
       artists={artists}
       selectedArtist={profile?.artist}
-      comoBalances={user ? <ComoRenderer address={user.address} /> : null}
-    />
-  );
-}
-
-function ComoRenderer({ address }: { address: string }) {
-  return (
-    <Suspense
-      fallback={
-        <div className="flex items-center gap-2">
-          <div className="h-[26px] w-16 rounded bg-accent animate-pulse" />
-          <div className="h-[26px] w-16 rounded bg-accent animate-pulse" />
-        </div>
+      comoBalances={
+        user ? <ComoBalanceRenderer address={user.address} /> : null
       }
-    >
-      <ComoBalances address={address} />
-    </Suspense>
+    />
   );
 }

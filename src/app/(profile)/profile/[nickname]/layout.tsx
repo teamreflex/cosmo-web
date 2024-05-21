@@ -15,6 +15,7 @@ import { validArtists } from "@/lib/universal/cosmo/common";
 import ArtistIcon from "@/components/artist-icon";
 import ProgressButton from "@/components/profile/progress-button";
 import { addrcomp } from "@/lib/utils";
+import ComoBalanceRenderer from "@/components/navbar/como-balances";
 
 type Props = PropsWithChildren<{
   params: {
@@ -112,16 +113,5 @@ function ComoBlock({ hide, address }: { hide: boolean; address: string }) {
     );
   }
 
-  return (
-    <Suspense
-      fallback={
-        <div className="flex items-center gap-2">
-          <div className="h-[26px] w-16 rounded bg-accent animate-pulse" />
-          <div className="h-[26px] w-16 rounded bg-accent animate-pulse" />
-        </div>
-      }
-    >
-      <ComoBalances address={address} />
-    </Suspense>
-  );
+  return <ComoBalanceRenderer address={address} />;
 }
