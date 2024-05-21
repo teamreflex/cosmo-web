@@ -200,6 +200,7 @@ function Metadata<TObjektType extends ValidObjekt>({
 
   const slug = getObjektSlug(objekt);
   const { front } = getObjektImageUrls(objekt);
+  const onOffline = getObjektType(objekt);
 
   const { data } = useSuspenseQuery({
     queryKey: ["collection-metadata", "metadata", slug],
@@ -223,7 +224,10 @@ function Metadata<TObjektType extends ValidObjekt>({
   return (
     <div className="flex grow flex-col justify-between gap-2 p-4">
       <div className="flex flex-wrap items-center gap-2 justify-center">
-        <Pill label="Copies" value={data.copies.toLocaleString()} />
+        <Pill
+          label={onOffline === "online" ? "Copies" : "Scanned Copies"}
+          value={data.copies.toLocaleString()}
+        />
         <RarityPill rarity={getRarity(data.copies)} />
       </div>
 
