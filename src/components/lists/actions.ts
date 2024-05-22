@@ -21,10 +21,7 @@ function createSlug(name: string) {
 /**
  * Create a new objekt list.
  */
-export const create = async (
-  prev: TypedActionResult<boolean>,
-  form: FormData
-) =>
+export const create = async (form: FormData) =>
   authenticatedAction({
     form,
     schema: z.object({
@@ -106,7 +103,6 @@ export const addObjektToList = async (form: {
 }) =>
   authenticatedAction({
     form,
-
     schema: z.object({
       listId: z.number(),
       collectionSlug: z.string(),

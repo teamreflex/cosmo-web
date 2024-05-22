@@ -1,7 +1,6 @@
 import { ObjektList } from "@/lib/universal/objekts";
 import { Button } from "../ui/button";
 import { Edit, Loader2 } from "lucide-react";
-import { useEffect } from "react";
 import { update } from "./actions";
 import {
   Dialog,
@@ -12,7 +11,6 @@ import {
 } from "../ui/dialog";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
-import { useToast } from "../ui/use-toast";
 import { useFormState, useFormStatus } from "react-dom";
 import { FieldError } from "../form/error";
 
@@ -21,17 +19,7 @@ type Props = {
 };
 
 export default function UpdateList({ objektList }: Props) {
-  const { toast } = useToast();
-
   const [state, formAction] = useFormState(update, { status: "idle" });
-
-  useEffect(() => {
-    if (state.status === "success") {
-      toast({
-        description: `Objekt list updated!`,
-      });
-    }
-  }, [state.status, toast]);
 
   return (
     <form>

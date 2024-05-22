@@ -16,6 +16,7 @@ import { useEffect, useState, useTransition } from "react";
 import { v4 } from "uuid";
 import { exchangeRamperToken, sendRamperEmail } from "./actions";
 import Portal from "@/components/portal";
+import { trackEvent } from "fathom-client";
 
 type SignInState = "sending-email" | "exchanging-token";
 type Payload = {
@@ -151,8 +152,14 @@ function ExchangeTokenForm({ payload, onBack }: ExchangeTokenProps) {
   async function submit(form: FormData) {
     startTransition(async () => {
       const result = await exchangeRamperToken(form);
-      if (result.status === "error") {
-        setError(result.error);
+
+      switch (result.status) {
+        case "error":
+          setError(result.error);
+          break;
+        case "success":
+          trackEvent("sign-in");
+          break;
       }
     });
   }

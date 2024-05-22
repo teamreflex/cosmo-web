@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { useState, useTransition } from "react";
 import {
   Dialog,
   DialogContent,
@@ -32,8 +32,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
-import { useFormState, useFormStatus } from "react-dom";
 import { FieldError } from "../form/error";
+import { trackEvent } from "fathom-client";
+import { TypedActionResult } from "@/lib/server/typed-action/types";
 
 type Props = {
   lists: ObjektList[];
@@ -43,22 +44,31 @@ type Props = {
 
 export default function ListDropdown({ lists, nickname, allowCreate }: Props) {
   const { toast } = useToast();
-  const [open, setOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const [createOpen, setCreateOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [state, setState] = useState<TypedActionResult<boolean>>({
+    status: "idle",
+  });
 
-  const [state, formAction] = useFormState(create, { status: "idle" });
+  function createNewList(form: FormData) {
+    startTransition(async () => {
+      const result = await create(form);
+      setState(result);
 
-  useEffect(() => {
-    if (state.status === "success") {
-      setOpen(false);
-      toast({
-        description: "Objekt list created!",
-      });
-    }
-  }, [state.status, toast]);
+      if (result.status === "success") {
+        trackEvent("create-list");
+        toast({
+          description: "Objekt list created!",
+        });
+        setCreateOpen(false);
+      }
+    });
+  }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DropdownMenu>
+    <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+      <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
         <TooltipProvider delayDuration={0}>
           <Tooltip>
             <DropdownMenuTrigger asChild>
@@ -78,7 +88,11 @@ export default function ListDropdown({ lists, nickname, allowCreate }: Props) {
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
                 {lists.map((list) => (
-                  <DropdownMenuItem key={list.id} className="text-sm">
+                  <DropdownMenuItem
+                    key={list.id}
+                    className="text-sm"
+                    onClick={() => setDropdownOpen(false)}
+                  >
                     <Link
                       href={`/@${nickname}/list/${list.slug}`}
                       className="w-full flex items-center justify-between"
@@ -114,7 +128,7 @@ export default function ListDropdown({ lists, nickname, allowCreate }: Props) {
             You can add objekts to the list later.
           </DialogDescription>
         </DialogHeader>
-        <form className="w-full flex flex-col gap-3" action={formAction}>
+        <form className="w-full flex flex-col gap-3" action={createNewList}>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="name">Name</Label>
             <Input
@@ -129,20 +143,12 @@ export default function ListDropdown({ lists, nickname, allowCreate }: Props) {
             <FieldError state={state} field="name" />
           </div>
 
-          <SubmitButton />
+          <Button type="submit" disabled={isPending}>
+            {isPending ? "Creating..." : "Create"}
+            {isPending && <Loader2 className="ml-2 animate-spin" />}
+          </Button>
         </form>
       </DialogContent>
     </Dialog>
-  );
-}
-
-function SubmitButton() {
-  const { pending } = useFormStatus();
-
-  return (
-    <Button type="submit" disabled={pending}>
-      {pending ? "Saving..." : "Save"}
-      {pending && <Loader2 className="ml-2 animate-spin" />}
-    </Button>
   );
 }
