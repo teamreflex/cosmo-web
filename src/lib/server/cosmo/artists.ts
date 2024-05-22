@@ -5,6 +5,7 @@ import {
 } from "@/lib/universal/cosmo/artists";
 import { ValidArtist, validArtists } from "@/lib/universal/cosmo/common";
 import { cosmo } from "../http";
+import { unstable_cache } from "next/cache";
 
 type CosmoArtistsResult = {
   artists: CosmoArtist[];
@@ -25,24 +26,22 @@ export async function fetchArtists() {
 
 /**
  * Fetch a single artist with its members.
- * Cached for 1 hour.
  */
 async function fetchArtist(artist: ValidArtist) {
   return await cosmo<{ artist: CosmoArtistWithMembers }>(
-    `/artist/v1/${artist}`,
-    {
-      next: {
-        tags: ["artist-with-members", artist],
-        revalidate: 60 * 60,
-      },
-    }
+    `/artist/v1/${artist}`
   ).then((res) => res.artist);
 }
 
 /**
  * Fetch all artists with their members.
- * Cached for 1 hour.
+ * Cached for 2 hours.
  */
-export async function fetchArtistsWithMembers() {
-  return await Promise.all(validArtists.map((artist) => fetchArtist(artist)));
-}
+export const fetchArtistsWithMembers = unstable_cache(
+  async () => Promise.all(validArtists.map((artist) => fetchArtist(artist))),
+  ["artists-with-members"],
+  {
+    revalidate: 60 * 60 * 2,
+    tags: ["artists-with-members"],
+  }
+);
