@@ -69,6 +69,7 @@
   },
   "devDependencies": {
     "@planetscale/database": "^1.16.0",
+    "@tanstack/react-query-devtools": "^5.37.1",
     "@types/node": "20.6.2",
     "@types/pg": "^8.11.5",
     "@types/react": "18.2.46",

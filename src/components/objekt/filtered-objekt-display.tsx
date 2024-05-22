@@ -18,8 +18,6 @@ import {
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
 import MemberFilter from "../collection/member-filter";
 import Portal from "../portal";
-import Hydrated from "../hydrated";
-import MemberFilterSkeleton from "../skeleton/member-filter-skeleton";
 import { ValidArtists } from "@/lib/universal/cosmo/common";
 import {
   CollectionDataSource,
@@ -121,14 +119,12 @@ export default typedMemo(function FilteredObjektDisplay<
         <p className="font-semibold">{total.toLocaleString()} total</p>
       </Portal>
 
-      <Hydrated fallback={<MemberFilterSkeleton />}>
-        <MemberFilter
-          artists={artists}
-          active={filters.artist ?? filters.member}
-          updateArtist={setActiveArtist}
-          updateMember={setActiveMember}
-        />
-      </Hydrated>
+      <MemberFilter
+        artists={artists}
+        active={filters.artist ?? filters.member}
+        updateArtist={setActiveArtist}
+        updateMember={setActiveMember}
+      />
 
       <div className="flex flex-col items-center">
         <QueryErrorResetBoundary>

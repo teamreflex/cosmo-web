@@ -4,7 +4,6 @@ import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { Suspense, useCallback } from "react";
 import Hydrated from "../hydrated";
-import MemberFilterSkeleton from "../skeleton/member-filter-skeleton";
 import MemberFilter from "../collection/member-filter";
 import { ValidArtists } from "@/lib/universal/cosmo/common";
 import ProgressTable from "./progress-table";
@@ -49,49 +48,47 @@ export default function ProgressRenderer({ artists, address }: Props) {
 
   return (
     <div className="flex flex-col gap-6">
-      <Hydrated fallback={<MemberFilterSkeleton />}>
-        <MemberFilter
-          showArtists={false}
-          artists={artists}
-          active={cosmoFilters.artist ?? cosmoFilters.member}
-          updateArtist={setActiveArtist}
-          updateMember={setActiveMember}
-        />
-      </Hydrated>
+      <MemberFilter
+        showArtists={false}
+        artists={artists}
+        active={cosmoFilters.artist ?? cosmoFilters.member}
+        updateArtist={setActiveArtist}
+        updateMember={setActiveMember}
+      />
 
-      <Hydrated>
-        <QueryErrorResetBoundary>
-          {({ reset }) => (
-            <ErrorBoundary
-              onReset={reset}
-              fallbackRender={({ resetErrorBoundary }) => (
-                <div className="flex flex-col gap-2 items-center py-6 text-sm font-semibold">
-                  <p className="font-semibold text-sm text-center">
-                    Error fetching progress
-                  </p>
+      <QueryErrorResetBoundary>
+        {({ reset }) => (
+          <ErrorBoundary
+            onReset={reset}
+            fallbackRender={({ resetErrorBoundary }) => (
+              <div className="flex flex-col gap-2 items-center py-6 text-sm font-semibold">
+                <p className="font-semibold text-sm text-center">
+                  Error fetching progress
+                </p>
 
-                  <Button variant="outline" onClick={resetErrorBoundary}>
-                    <RefreshCcw className="mr-2" /> Try Again
-                  </Button>
-                </div>
-              )}
-            >
-              {cosmoFilters.member !== null ? (
+                <Button variant="outline" onClick={resetErrorBoundary}>
+                  <RefreshCcw className="mr-2" /> Try Again
+                </Button>
+              </div>
+            )}
+          >
+            {cosmoFilters.member !== null ? (
+              <Hydrated>
                 <Suspense fallback={<ProgressTableSkeleton />}>
                   <ProgressTable
                     address={address}
                     member={cosmoFilters.member}
                   />
                 </Suspense>
-              ) : (
-                <p className="flex flex-col items-center py-6 text-sm font-semibold">
-                  Select a member to view collection progress
-                </p>
-              )}
-            </ErrorBoundary>
-          )}
-        </QueryErrorResetBoundary>
-      </Hydrated>
+              </Hydrated>
+            ) : (
+              <p className="flex flex-col items-center py-6 text-sm font-semibold">
+                Select a member to view collection progress
+              </p>
+            )}
+          </ErrorBoundary>
+        )}
+      </QueryErrorResetBoundary>
     </div>
   );
 }
