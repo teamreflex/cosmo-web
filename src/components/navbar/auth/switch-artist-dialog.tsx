@@ -70,7 +70,7 @@ function SelectArtistButton({
       const result = await updateSelectedArtist(artist.name);
       if (result.status === "success" && result.data) {
         toast({
-          description: `Switched to ${artist.name}`,
+          description: `Switched to ${artist.title}`,
         });
         onOpenChange(false);
       }
