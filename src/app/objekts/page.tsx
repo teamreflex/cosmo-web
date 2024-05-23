@@ -1,8 +1,7 @@
 import { Metadata } from "next";
-import { decodeUser, getProfile, getProfileAndLists } from "../data-fetching";
+import { decodeUser, getProfileAndLists } from "../data-fetching";
 import IndexRenderer from "@/components/objekt-index/index-renderer";
 import { fetchUniqueCollections } from "@/lib/server/objekts/collections";
-import { fetchObjektLists } from "@/lib/server/objekts/lists";
 import { fetchArtistsWithMembers } from "@/lib/server/cosmo/artists";
 import { ProfileProvider } from "@/hooks/use-profile";
 import {

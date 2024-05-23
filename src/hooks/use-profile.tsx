@@ -1,24 +1,32 @@
 "use client";
 
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
+import { ObjektList } from "@/lib/universal/objekts";
 import { ReactNode, createContext, useContext } from "react";
 
 type ContextProps = {
   profile: PublicProfile | undefined;
+  objektLists: ObjektList[];
 };
 
 const ProfileContext = createContext<ContextProps>({
   profile: undefined,
+  objektLists: [],
 });
 
 type ProviderProps = {
-  profile: PublicProfile | undefined;
   children: ReactNode;
+  profile: PublicProfile | undefined;
+  objektLists?: ObjektList[];
 };
 
-export function ProfileProvider({ profile, children }: ProviderProps) {
+export function ProfileProvider({
+  children,
+  profile,
+  objektLists = [],
+}: ProviderProps) {
   return (
-    <ProfileContext.Provider value={{ profile }}>
+    <ProfileContext.Provider value={{ profile, objektLists }}>
       {children}
     </ProfileContext.Provider>
   );
@@ -30,5 +38,5 @@ export function useProfile() {
     throw new Error("useProfile must be used within a ProfileProvider");
   }
 
-  return ctx.profile;
+  return ctx;
 }

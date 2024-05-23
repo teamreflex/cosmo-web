@@ -196,7 +196,7 @@ function Metadata<TObjektType extends ValidObjekt>({
   const { toast } = useToast();
   const [_, copy] = useCopyToClipboard();
   const [showForm, setShowForm] = useState(false);
-  const profile = useProfile();
+  const { profile } = useProfile();
 
   const slug = getObjektSlug(objekt);
   const { front } = getObjektImageUrls(objekt);

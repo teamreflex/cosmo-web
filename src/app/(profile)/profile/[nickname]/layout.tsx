@@ -74,7 +74,6 @@ export default async function ProfileLayout({ children, params }: Props) {
             />
             <ListsButton
               nickname={profile.isAddress ? profile.address : profile.nickname}
-              address={profile.address}
               allowCreate={currentUser?.address === profile.address}
             />
             <BackButton url={url} tooltip="Return to Profile" />

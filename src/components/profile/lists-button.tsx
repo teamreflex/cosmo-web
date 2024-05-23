@@ -1,19 +1,14 @@
-import { fetchObjektLists } from "@/lib/server/objekts/lists";
 import ListDropdown from "../lists/list-dropdown";
 import { Suspense } from "react";
+import { getObjektLists } from "@/app/data-fetching";
 
 type Props = {
   nickname: string;
-  address: string;
   allowCreate: boolean;
 };
 
-export default async function ListsButton({
-  nickname,
-  address,
-  allowCreate,
-}: Props) {
-  const lists = await fetchObjektLists(address);
+export default async function ListsButton({ nickname, allowCreate }: Props) {
+  const lists = await getObjektLists(nickname);
 
   return (
     <Suspense

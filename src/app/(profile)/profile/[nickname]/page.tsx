@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
   decodeUser,
+  getObjektLists,
   getProfile,
   getUserByIdentifier,
 } from "@/app/data-fetching";
@@ -31,17 +32,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function UserCollectionPage({ params }: Props) {
   const user = await decodeUser();
-  const [currentUser, targetUser, artists, lockedObjekts] = await Promise.all([
-    user ? getProfile(user.profileId) : undefined,
-    getUserByIdentifier(params.nickname),
-    fetchArtistsWithMembers(),
-    fetchLockedObjekts(params.nickname),
-  ]);
-
-  if (!targetUser) notFound();
 
   const isOwnProfile =
-    user !== undefined && addrcomp(user.address, targetUser.address);
+    user !== undefined && addrcomp(user.nickname, params.nickname);
+
+  const [currentUser, objektLists, targetUser, artists, lockedObjekts] =
+    await Promise.all([
+      user ? getProfile(user.profileId) : undefined,
+      getObjektLists(params.nickname),
+      getUserByIdentifier(params.nickname),
+      fetchArtistsWithMembers(),
+      fetchLockedObjekts(params.nickname),
+    ]);
+
+  if (!targetUser) notFound();
 
   if (targetUser.privacy.objekts && !isOwnProfile) {
     return <Private nickname={targetUser.nickname} />;
@@ -50,7 +54,7 @@ export default async function UserCollectionPage({ params }: Props) {
   const shouldHideNickname = targetUser.privacy.nickname && !isOwnProfile;
 
   return (
-    <ProfileProvider profile={targetUser}>
+    <ProfileProvider profile={targetUser} objektLists={objektLists}>
       <ObjektRewardProvider
         rewardsDialog={
           isOwnProfile && (

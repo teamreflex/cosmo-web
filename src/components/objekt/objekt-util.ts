@@ -1,5 +1,16 @@
 import { ValidObjekt } from "@/lib/universal/objekts";
 
+export type Hoverable =
+  | "send"
+  | "lock"
+  | "locked"
+  | "list"
+  | "mint-pending"
+  | "challenge-reward"
+  | "welcome-objekt"
+  | "used-for-grid"
+  | "lenticular-objekt";
+
 /**
  * Parse a valid key from an ambiguous objekt.
  */

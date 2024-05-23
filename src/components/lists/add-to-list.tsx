@@ -17,11 +17,16 @@ import { useToast } from "../ui/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 
 type AddToListProps = {
-  collection: IndexedObjekt;
+  collectionId: string;
+  collectionSlug: string;
   lists: ObjektList[];
 };
 
-export default function AddToList({ collection, lists }: AddToListProps) {
+export default function AddToList({
+  collectionId,
+  collectionSlug,
+  lists,
+}: AddToListProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -30,19 +35,20 @@ export default function AddToList({ collection, lists }: AddToListProps) {
         <button
           onClick={() => setOpen((state) => !state)}
           className="hover:cursor-pointer hover:scale-110 transition-all flex items-center outline-none"
-          aria-label={`Select list to add ${collection.collectionId} to`}
+          aria-label={`Select list to add ${collectionId} to`}
         >
           <ListPlus className="h-3 w-3 sm:h-5 sm:w-5" />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="max-h-48">
-        <DropdownMenuLabel>{collection.collectionId}</DropdownMenuLabel>
+        <DropdownMenuLabel>{collectionId}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           {lists.map((list) => (
             <ListItem
               key={list.id}
-              collection={collection}
+              collectionId={collectionId}
+              collectionSlug={collectionSlug}
               list={list}
               onDone={() => setOpen(false)}
             />
@@ -54,12 +60,18 @@ export default function AddToList({ collection, lists }: AddToListProps) {
 }
 
 type ListItemProps = {
-  collection: IndexedObjekt;
+  collectionId: string;
+  collectionSlug: string;
   list: ObjektList;
   onDone: () => void;
 };
 
-function ListItem({ collection, list, onDone }: ListItemProps) {
+function ListItem({
+  collectionId,
+  collectionSlug,
+  list,
+  onDone,
+}: ListItemProps) {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
 
@@ -71,11 +83,11 @@ function ListItem({ collection, list, onDone }: ListItemProps) {
     startTransition(async () => {
       const result = await addObjektToList({
         listId: list.id,
-        collectionSlug: collection.slug,
+        collectionSlug: collectionSlug,
       });
       if (result.status === "success" && result.data) {
         toast({
-          description: `Added ${collection.collectionId} to ${list.name}`,
+          description: `Added ${collectionId} to ${list.name}`,
         });
         queryClient.removeQueries({ queryKey: ["objekt-list", list.slug] });
       }

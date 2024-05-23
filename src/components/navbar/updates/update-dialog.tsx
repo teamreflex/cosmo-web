@@ -70,6 +70,7 @@ const updates = [
   {
     date: "2024-05-24",
     changes: [
+      "Added: Add Objekt to List button on profile pages.",
       "Updated: Replaced mobile navigation menu.",
       "Fixed: Failure to fetch gas price and COMO balances should no longer crash the page.",
       "Fixed: Reduced reliance on COSMO servers to fetch members, should reduce crashes when COSMO is struggling.",

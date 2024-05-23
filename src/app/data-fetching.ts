@@ -10,6 +10,7 @@ import { db } from "@/lib/server/db";
 import { eq } from "drizzle-orm";
 import { profiles } from "@/lib/server/db/schema";
 import { fetchArtistsWithMembers } from "@/lib/server/cosmo/artists";
+import { fetchObjektLists } from "@/lib/server/objekts/lists";
 
 /**
  * Decode the current token.
@@ -61,4 +62,11 @@ export async function getProfileAndLists(profileId: number) {
  */
 export const getArtistsWithMembers = cache(async () => {
   return await fetchArtistsWithMembers();
+});
+
+/**
+ * Fetch a user's objekt lists.
+ */
+export const getObjektLists = cache(async (nickname: string) => {
+  return fetchObjektLists(nickname);
 });
