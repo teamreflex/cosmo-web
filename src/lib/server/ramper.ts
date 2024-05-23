@@ -1,6 +1,7 @@
 import "server-only";
 import { env } from "@/env.mjs";
 import { ofetch } from "ofetch";
+import { getErrorMessage } from "../error";
 
 const ORIGIN = "https://modhaus.v1.ramper.xyz";
 
@@ -37,6 +38,11 @@ export async function sendLoginEmail({ transactionId, email }: SendLoginEmail) {
       Referer: ORIGIN + "/",
       "User-Agent": env.RAMPER_USERAGENT,
     },
+  }).catch((e) => {
+    return {
+      success: false,
+      error: getErrorMessage(e),
+    } satisfies RamperError;
   });
 }
 
@@ -77,6 +83,11 @@ export async function exchangeToken({
       Referer: ORIGIN + "/",
       "User-Agent": env.RAMPER_USERAGENT,
     },
+  }).catch((e) => {
+    return {
+      success: false,
+      error: getErrorMessage(e),
+    } satisfies RamperError;
   });
 }
 
