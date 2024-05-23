@@ -18,7 +18,6 @@ type CosmoNewsResult = {
 /**
  * Get news on the home page.
  * Cached for 15 minutes.
- * @deprecated Replaced by fetchFeedBff
  */
 export async function fetchHomeNews(token: string, artist: ValidArtist) {
   return await cosmo<CosmoNewsResult>(`/news/v1`, {

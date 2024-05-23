@@ -1,18 +1,17 @@
 import NewsExclusiveInfiniteLoader from "@/components/news/news-exclusive-infinite-loader";
-import { decodeUser, getProfile } from "../../data-fetching";
 import { Metadata } from "next";
+import { getSelectedArtist } from "@/lib/server/profiles";
 
 export const metadata: Metadata = {
   title: "Exclusives",
 };
 
 export default async function NewsExclusivePage() {
-  const user = await decodeUser();
-  const profile = await getProfile(user!.profileId);
+  const artist = getSelectedArtist();
 
   return (
     <main className="flex flex-col items-center container py-2">
-      <NewsExclusiveInfiniteLoader artist={profile.artist} />
+      <NewsExclusiveInfiniteLoader artist={artist} />
     </main>
   );
 }

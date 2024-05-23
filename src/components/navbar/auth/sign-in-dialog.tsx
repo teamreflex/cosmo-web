@@ -41,7 +41,7 @@ export default function SignInDialog() {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="link">
+        <Button variant="link" className="px-0 md:px-4">
           <span className="hidden md:block">Sign In</span>
           <LogIn className="md:hidden h-8 w-8 shrink-0" />
         </Button>

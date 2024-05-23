@@ -1,6 +1,6 @@
+import { getCookie } from "@/lib/server/cookies";
 import { readToken } from "@/lib/server/jwt";
 import { TokenPayload } from "@/lib/universal/auth";
-import { cookies } from "next/headers";
 
 type AuthenticationResult =
   | {
@@ -14,7 +14,7 @@ type AuthenticationResult =
     };
 
 export async function getUser(): Promise<AuthenticationResult> {
-  const token = cookies().get("token");
+  const token = getCookie("token");
   if (!token) {
     return {
       success: false,
@@ -22,7 +22,7 @@ export async function getUser(): Promise<AuthenticationResult> {
       error: "unauthorized",
     };
   }
-  const user = await readToken(token.value);
+  const user = await readToken(token);
   if (!user) {
     return {
       success: false,

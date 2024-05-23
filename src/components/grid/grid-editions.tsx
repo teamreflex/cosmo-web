@@ -3,21 +3,21 @@ import { ChevronRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { decodeUser } from "@/app/data-fetching";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { CosmoGridEdition } from "@/lib/universal/cosmo/grid";
 import { cn } from "@/lib/utils";
 import { addWeeks, isWithinInterval, subWeeks } from "date-fns";
+import { TokenPayload } from "@/lib/universal/auth";
 
 type SeasonGroup = Record<string, CosmoGridEdition[]>;
 
-export default async function GridEditions({
-  artist,
-}: {
+type Props = {
+  user: TokenPayload;
   artist: ValidArtist;
-}) {
-  const user = await decodeUser();
-  const editions = await fetchEditions(user!.accessToken, artist);
+};
+
+export default async function GridEditions({ user, artist }: Props) {
+  const editions = await fetchEditions(user.accessToken, artist);
 
   const seasons = editions.reduce((acc, edition) => {
     const season = edition.season.title;

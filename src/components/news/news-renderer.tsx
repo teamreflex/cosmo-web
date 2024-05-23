@@ -7,14 +7,14 @@ import {
 import NewsSectionFeed from "./news-section-feed";
 import NewsSectionExclusive from "./news-section-exclusive";
 import NewsSectionBanner from "./news-section-banner";
-import { decodeUser, getProfile } from "@/app/data-fetching";
+import { decodeUser } from "@/app/data-fetching";
 import { fetchHomeNews } from "@/lib/server/cosmo/news";
 import NewsSectionRekord from "./news-section-rekord";
+import { getSelectedArtist } from "@/lib/server/profiles";
 
 export default async function NewsRenderer() {
   const user = await decodeUser();
-  const profile = await getProfile(user!.profileId);
-  const news = await fetchHomeNews(user!.accessToken, profile.artist);
+  const news = await fetchHomeNews(user!.accessToken, getSelectedArtist());
 
   return (
     <div className="flex flex-col items-center container py-2">

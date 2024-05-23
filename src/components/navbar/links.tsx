@@ -15,13 +15,7 @@ import Link from "next/link";
 import NavbarSearch from "./navbar-search";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Button } from "../ui/button";
-import { Fragment, memo, useEffect, useState } from "react";
+import { Fragment, memo } from "react";
 import {
   Tooltip,
   TooltipContent,
@@ -29,6 +23,14 @@ import {
   TooltipTrigger,
 } from "../ui/tooltip";
 import { TokenPayload } from "@/lib/universal/auth";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 
 type NavbarLink = {
   name: string;
@@ -79,11 +81,8 @@ const links: NavbarLink[] = [
 
 export default function Links({ user }: { user?: TokenPayload }) {
   const path = usePathname();
-  const [open, setOpen] = useState(false);
 
-  useEffect(() => {
-    setOpen(false);
-  }, [path]);
+  const authenticated = user !== undefined;
 
   return (
     <div className="flex grow justify-end md:justify-center">
@@ -93,20 +92,43 @@ export default function Links({ user }: { user?: TokenPayload }) {
       </div>
 
       {/* mobile */}
-      <div className="md:hidden flex flex-row items-center">
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <Button variant="ghost" size="sm">
-              <Menu className="h-8 w-8 shrink-0 outline-none focus:outline-none" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent
-            sideOffset={10}
-            className="w-[calc(100vw-1rem)] mx-2 flex flex-row justify-between"
-          >
-            <LinkIcons path={path} user={user} />
-          </PopoverContent>
-        </Popover>
+      <div className="md:hidden flex flex-row gap-2 items-center">
+        <NavbarSearch authenticated={user !== undefined} />
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="drop-shadow-lg outline-none" aria-label="Menu">
+              <Menu className="h-8 w-8 shrink-0" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuLabel>Menu</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+
+            {links.map((link) => {
+              const href = link.href(user);
+              const active = href === "/" ? path === "/" : path === href;
+              const disabled = link.requireAuth && !authenticated;
+
+              return (
+                <DropdownMenuItem key={href} disabled={disabled} asChild>
+                  <Link href={href}>
+                    <link.icon
+                      className={cn(
+                        "h-4 w-4 mr-2 shrink-0 transition-all fill-transparent",
+                        active && "fill-white/50",
+                        disabled && "text-slate-500"
+                      )}
+                    />
+                    <span className={cn(disabled && "text-slate-500")}>
+                      {link.name}
+                    </span>
+                  </Link>
+                </DropdownMenuItem>
+              );
+            })}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );
@@ -157,7 +179,7 @@ const LinkButton = memo(function LinkButton({
         <TooltipTrigger>
           <Link
             href={{ pathname }}
-            className="drop-shadow-lg hover:scale-110 transition-all"
+            className="drop-shadow-lg outline-none focus:outline-none"
             aria-label={link.name}
           >
             <link.icon

@@ -1,5 +1,4 @@
 import { Metadata } from "next";
-import { decodeUser, getProfile } from "../data-fetching";
 import BestRekord from "@/components/rekord/best-rekord";
 import { Suspense } from "react";
 import Skeleton from "@/components/skeleton/skeleton";
@@ -7,14 +6,14 @@ import { Flag } from "lucide-react";
 import AllRekords from "@/components/rekord/all-rekords";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { getSelectedArtist } from "@/lib/server/profiles";
 
 export const metadata: Metadata = {
   title: "Rekord",
 };
 
 export default async function RekordPage() {
-  const user = await decodeUser();
-  const profile = await getProfile(user!.profileId);
+  const artist = getSelectedArtist();
 
   return (
     <main className="container flex flex-col py-2">
@@ -43,7 +42,7 @@ export default async function RekordPage() {
           </div>
 
           <Suspense fallback={<RekordSkeleton />}>
-            <BestRekord artist={profile.artist} />
+            <BestRekord artist={artist} />
           </Suspense>
         </div>
 
@@ -51,7 +50,7 @@ export default async function RekordPage() {
         <div className="flex flex-col gap-2 w-full overflow-x-hidden">
           <h3 className="text-lg">View all Rekords</h3>
 
-          <AllRekords artist={profile.artist} />
+          <AllRekords artist={artist} />
         </div>
       </div>
     </main>

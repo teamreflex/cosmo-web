@@ -2,16 +2,10 @@ import { fetchGravities } from "@/lib/server/cosmo/gravity";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import GravityItem from "./gravity-item";
 import { CosmoGravity } from "@/lib/universal/cosmo/gravity";
-import { TokenPayload } from "@/lib/universal/auth";
-import { getProfile } from "@/app/data-fetching";
+import { getSelectedArtist } from "@/lib/server/profiles";
 
-type Props = {
-  user: TokenPayload;
-};
-
-export default async function GravityRenderer({ user }: Props) {
-  const profile = await getProfile(user.profileId);
-  const gravities = await fetchGravities(profile.artist);
+export default async function GravityRenderer() {
+  const gravities = await fetchGravities(getSelectedArtist());
   const ongoing = [...gravities.upcoming, ...gravities.ongoing];
 
   return (

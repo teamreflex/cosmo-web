@@ -1,10 +1,10 @@
 import { InferInsertModel, desc, eq, or } from "drizzle-orm";
-import { db } from "../db";
-import { Profile, profiles } from "../db/schema";
+import { db } from "./db";
+import { Profile, profiles } from "./db/schema";
 import { FetchProfile } from "@/lib/universal/auth";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
-import { fetchByNickname } from "../cosmo/auth";
+import { fetchByNickname } from "./cosmo/auth";
 import { isAddress } from "ethers/lib/utils";
 import { notFound, redirect } from "next/navigation";
 import { defaultProfile } from "@/lib/utils";
@@ -180,24 +180,13 @@ export async function fetchProfile(payload: FetchProfile) {
  * Fetch a profile by a nickname or address.
  */
 async function fetchProfileByIdentifier(identifier: string) {
-  const rows = await db
-    .select()
-    .from(profiles)
-    .where(
-      or(
-        eq(profiles.nickname, identifier),
-        eq(profiles.userAddress, identifier)
-      )
-    )
-    // fetch the latest profile instead of the first logged
-    .orderBy(desc(profiles.id))
-    .limit(1);
-
-  if (rows.length === 0) {
-    return undefined;
-  }
-
-  return rows[0];
+  return db.query.profiles.findFirst({
+    where: or(
+      eq(profiles.nickname, identifier),
+      eq(profiles.userAddress, identifier)
+    ),
+    orderBy: desc(profiles.id),
+  });
 }
 
 /**
@@ -213,7 +202,7 @@ export async function fetchProfilesForAddress(address: string) {
 /**
  * Convert a database profile to a more friendly type.
  */
-function parseProfile(profile: Profile): PublicProfile {
+export function parseProfile(profile: Profile): PublicProfile {
   return {
     nickname: profile.nickname,
     address: profile.userAddress,

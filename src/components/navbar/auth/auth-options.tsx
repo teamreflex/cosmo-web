@@ -40,6 +40,7 @@ export default function AuthOptions({
           <div className="md:flex gap-2 items-center hidden">
             {comoBalances}
           </div>
+
           <UserDropdown
             user={user}
             profile={profile}

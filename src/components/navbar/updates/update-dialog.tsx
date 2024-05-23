@@ -68,6 +68,15 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2024-05-24",
+    changes: [
+      "Updated: Replaced mobile navigation menu.",
+      "Fixed: Failure to fetch gas price and COMO balances should no longer crash the page.",
+      "Fixed: Reduced reliance on COSMO servers to fetch members, should reduce crashes when COSMO is struggling.",
+      "Fixed: Small performance improvements, things should feel a little snappier. Artist selections have been reset to accomodate this.",
+    ],
+  },
+  {
     date: "2024-05-16",
     changes: [
       "Added: Functionality for claiming objekt event rewards.",
@@ -80,9 +89,5 @@ const updates = [
       "Fixed: Ramper error preventing signing in.",
       "Added: Button to copy a direct link to an objekt to the clipboard.",
     ],
-  },
-  {
-    date: "2024-04-23",
-    changes: ["Fixed: Adding & removing from lists resulting in a long delay."],
   },
 ];

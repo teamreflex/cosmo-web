@@ -1,8 +1,7 @@
 import { decodeUser, getUserByIdentifier } from "@/app/data-fetching";
-import { PropsWithChildren, Suspense } from "react";
+import { PropsWithChildren } from "react";
 import ProfileImage from "@/assets/profile.webp";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import ComoBalances from "@/components/navbar/como-balances";
 import CopyAddressButton from "@/components/profile/copy-address-button";
 import OpenSeaButton from "@/components/profile/opensea-button";
 import PolygonButton from "@/components/profile/polygon-button";
@@ -24,8 +23,10 @@ type Props = PropsWithChildren<{
 }>;
 
 export default async function ProfileLayout({ children, params }: Props) {
-  const currentUser = await decodeUser();
-  const profile = await getUserByIdentifier(params.nickname);
+  const [currentUser, profile] = await Promise.all([
+    decodeUser(),
+    getUserByIdentifier(params.nickname),
+  ]);
 
   const url = `/@${profile.isAddress ? profile.address : profile.nickname}`;
 

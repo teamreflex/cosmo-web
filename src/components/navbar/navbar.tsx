@@ -2,13 +2,19 @@ import AuthOptions from "./auth/auth-options";
 import ApolloLogo from "./apollo-logo";
 import { Suspense } from "react";
 import Links from "./links";
-import { decodeUser, getProfile } from "@/app/data-fetching";
-import { fetchArtists } from "@/lib/server/cosmo/artists";
+import {
+  decodeUser,
+  getArtistsWithMembers,
+  getProfile,
+} from "@/app/data-fetching";
 import UpdateDialog from "./updates/update-dialog";
 import PolygonGasRenderer from "../misc/gas-display";
 import ComoBalanceRenderer from "./como-balances";
+import { TokenPayload } from "@/lib/universal/auth";
 
 export default async function Navbar() {
+  const user = await decodeUser();
+
   return (
     <nav className="sticky left-0 right-0 top-0 h-14 z-30">
       <div className="glass">
@@ -21,7 +27,7 @@ export default async function Navbar() {
               <UpdateDialog />
             </div>
 
-            <LinksRenderer />
+            <Links user={user} />
 
             <div className="flex grow-0 items-center justify-end gap-2">
               <Suspense
@@ -29,7 +35,7 @@ export default async function Navbar() {
                   <div className="h-10 w-10 rounded-full bg-accent animate-pulse" />
                 }
               >
-                <Auth />
+                <Auth user={user} />
               </Suspense>
             </div>
           </div>
@@ -40,18 +46,10 @@ export default async function Navbar() {
   );
 }
 
-async function LinksRenderer() {
-  const user = await decodeUser();
-
-  return <Links user={user} />;
-}
-
-async function Auth() {
-  const user = await decodeUser();
-
+async function Auth({ user }: { user?: TokenPayload }) {
   const [artists, profile] = await Promise.all([
-    fetchArtists(),
-    user ? getProfile(user.profileId) : Promise.resolve(undefined),
+    getArtistsWithMembers(),
+    user ? getProfile(user.profileId) : undefined,
   ]);
 
   return (

@@ -3,8 +3,11 @@ import { fetchSpecialObjekts } from "@/lib/server/como";
 import ComoCalendar from "@/components/como/calendar";
 import CurrentMonth from "@/components/como/current-month";
 import ArtistIcon from "@/components/artist-icon";
-import { fetchArtists } from "@/lib/server/cosmo/artists";
-import { decodeUser, getUserByIdentifier } from "@/app/data-fetching";
+import {
+  decodeUser,
+  getArtistsWithMembers,
+  getUserByIdentifier,
+} from "@/app/data-fetching";
 import Portal from "@/components/portal";
 import HelpDialog from "@/components/como/help-dialog";
 import { Shield } from "lucide-react";
@@ -30,7 +33,7 @@ export default async function UserComoPage({ params }: Props) {
   }
 
   const [artists, objekts] = await Promise.all([
-    fetchArtists(),
+    getArtistsWithMembers(),
     fetchSpecialObjekts(profile.address),
   ]);
 

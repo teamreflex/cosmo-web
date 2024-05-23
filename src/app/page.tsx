@@ -10,11 +10,11 @@ export const metadata: Metadata = {
 export default async function HomePage() {
   return (
     <main className="flex flex-col items-center container py-2">
-      <Suspense fallback={<NewsSkeleton />}>
-        <ApolloErrorBoundary message="Could not load news">
+      <ApolloErrorBoundary message="Could not load news">
+        <Suspense fallback={<NewsSkeleton />}>
           <NewsRenderer />
-        </ApolloErrorBoundary>
-      </Suspense>
+        </Suspense>
+      </ApolloErrorBoundary>
     </main>
   );
 }

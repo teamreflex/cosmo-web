@@ -10,10 +10,10 @@ import {
   TooltipTrigger,
 } from "../ui/tooltip";
 import { CosmoArtist } from "@/lib/universal/cosmo/artists";
-import { fetchArtists } from "@/lib/server/cosmo/artists";
 import { Suspense } from "react";
 import { X } from "lucide-react";
 import { ErrorBoundary } from "react-error-boundary";
+import { getArtistsWithMembers } from "@/app/data-fetching";
 
 type Props = {
   address: string;
@@ -55,7 +55,7 @@ function ComoBalanceErrorFallback() {
 }
 
 async function UserBalances({ address }: Props) {
-  const artists = await fetchArtists();
+  const artists = await getArtistsWithMembers();
   const balances = await fetchTokenBalances({
     address,
     contracts: artists.map((artist) => artist.contracts.Como),

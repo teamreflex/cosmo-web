@@ -3,7 +3,6 @@ import { Suspense } from "react";
 import GravityRenderer, {
   GravitySkeleton,
 } from "@/components/gravity/gravity-renderer";
-import { decodeUser } from "../data-fetching";
 import ApolloErrorBoundary from "@/components/error-boundary";
 
 export const metadata: Metadata = {
@@ -11,8 +10,6 @@ export const metadata: Metadata = {
 };
 
 export default async function GravityPage() {
-  const user = await decodeUser();
-
   return (
     <main className="container flex flex-col py-2">
       <div className="flex items-center">
@@ -21,11 +18,11 @@ export default async function GravityPage() {
         </div>
       </div>
 
-      <Suspense fallback={<GravitySkeleton />}>
-        <ApolloErrorBoundary message="Could not load gravity">
-          <GravityRenderer user={user!} />
-        </ApolloErrorBoundary>
-      </Suspense>
+      <ApolloErrorBoundary message="Could not load gravity">
+        <Suspense fallback={<GravitySkeleton />}>
+          <GravityRenderer />
+        </Suspense>
+      </ApolloErrorBoundary>
     </main>
   );
 }

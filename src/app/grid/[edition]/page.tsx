@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import GridRenderer from "@/components/grid/grid-renderer";
 import { decodeUser, getProfile } from "../../data-fetching";
 import { ProfileProvider } from "@/hooks/use-profile";
+import { getSelectedArtist } from "@/lib/server/profiles";
 
 type Props = {
   params: { edition: string };
@@ -12,13 +13,10 @@ type Props = {
 
 const getEdition = cache(async (edition: string) => {
   const user = await decodeUser();
-  const profile = await getProfile(user!.profileId);
-
-  const cosmoEdition = await fetchEdition(
-    user!.accessToken,
-    profile.artist,
-    edition
-  );
+  const [profile, cosmoEdition] = await Promise.all([
+    getProfile(user!.profileId),
+    fetchEdition(user!.accessToken, getSelectedArtist(), edition),
+  ]);
 
   return {
     profile,

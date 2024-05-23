@@ -1,5 +1,5 @@
-import { decodeUser, getProfile } from "@/app/data-fetching";
 import MyRekords from "@/components/rekord/my-rekords";
+import { getSelectedArtist } from "@/lib/server/profiles";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -7,8 +7,7 @@ export const metadata: Metadata = {
 };
 
 export default async function MyRekordPage() {
-  const user = await decodeUser();
-  const profile = await getProfile(user!.profileId);
+  const artist = getSelectedArtist();
 
   return (
     <main className="container flex flex-col py-2">
@@ -19,7 +18,7 @@ export default async function MyRekordPage() {
       </div>
 
       <div className="flex flex-col gap-4 py-2 w-full">
-        <MyRekords artist={profile.artist} />
+        <MyRekords artist={artist} />
       </div>
     </main>
   );

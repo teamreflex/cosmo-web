@@ -2,8 +2,7 @@
 
 import "server-only";
 import { z } from "zod";
-import { cookies } from "next/headers";
-import { generateCookiePayload, signToken } from "@/lib/server/jwt";
+import { signToken } from "@/lib/server/jwt";
 import { login } from "@/lib/server/cosmo/auth";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -25,6 +24,7 @@ import {
   sendLoginEmail,
 } from "@/lib/server/ramper";
 import { AuthenticatedActionError } from "@/lib/server/typed-action/errors";
+import { deleteCookie, setCookie } from "@/lib/server/cookies";
 
 /**
  * Requests a Ramper magic link email.
@@ -94,9 +94,17 @@ export const exchangeRamperToken = async (form: FormData) =>
         await updateProfile(profile.id, payload);
       }
 
-      cookies().set(
-        "token",
-        await signToken({
+      setCookie({
+        key: "artist",
+        value: profile.artist,
+        cookie: {
+          maxAge: 60 * 60 * 24 * 365, // 1 year
+        },
+      });
+
+      setCookie({
+        key: "token",
+        value: await signToken({
           id: loginResult.id,
           nickname: loginResult.nickname,
           address: loginResult.address,
@@ -104,8 +112,7 @@ export const exchangeRamperToken = async (form: FormData) =>
           accessToken: loginResult.accessToken,
           refreshToken: loginResult.refreshToken,
         }),
-        generateCookiePayload()
-      );
+      });
 
       return profile;
     },
@@ -121,7 +128,7 @@ export const logout = async () => {
     return { success: false, error: "Invalid user" };
   }
 
-  cookies().delete("token");
+  deleteCookie("token");
   redirect("/");
 };
 
@@ -137,6 +144,7 @@ export const updateSelectedArtist = async (artist: string) =>
 
     onValidate: async ({ data, user }) => {
       const result = await setSelectedArtist(user.profileId, data.artist);
+      setCookie({ key: "artist", value: data.artist });
       revalidatePath("/");
       return result;
     },
