@@ -20,22 +20,6 @@ export default async function RewardsRenderer({ user }: Props) {
     user.accessToken
   );
 
-  // const { count, items, claimCount } = {
-  //   count: 1,
-  //   items: [
-  //     {
-  //       id: 1110,
-  //       isClaimed: true,
-  //       thumbnailImage:
-  //         "https://resources.cosmo.fans/images/manual-claim/2024/05/16/06/600/f41094e5add14b08a6cc1107bb59b32f20240516060340215.jpeg",
-  //       title: "1st Music Show Win",
-  //       category: "Gift",
-  //       endedAt: "2024-05-31T14:59:00.000Z",
-  //     },
-  //   ],
-  //   claimCount: 0,
-  // };
-
   return (
     <RewardDialog
       availableForClaim={claimCount}

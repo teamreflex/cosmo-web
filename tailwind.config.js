@@ -118,7 +118,7 @@ module.exports = {
   },
   plugins: [require("tailwindcss-animate"), flipUtilities],
   safelist: [
-    { pattern: /grid-cols-./, variants: ["xs", "md"] },
-    { pattern: /order-./ },
+    { pattern: /grid-cols-\d/, variants: ["xs", "md"] },
+    { pattern: /order-\d/ },
   ],
 };

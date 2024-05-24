@@ -16,6 +16,7 @@ import PreviousIds from "@/components/profile/previous-ids";
 import { ProfileProvider } from "@/hooks/use-profile";
 import RewardsRenderer from "@/components/rewards/rewards-renderer";
 import { ObjektRewardProvider } from "@/hooks/use-objekt-rewards";
+import { ErrorBoundary } from "react-error-boundary";
 
 type Props = {
   params: { nickname: string };
@@ -58,9 +59,11 @@ export default async function UserCollectionPage({ params }: Props) {
       <ObjektRewardProvider
         rewardsDialog={
           isOwnProfile && (
-            <Suspense>
-              <RewardsRenderer user={user} />
-            </Suspense>
+            <ErrorBoundary fallback={null}>
+              <Suspense>
+                <RewardsRenderer user={user} />
+              </Suspense>
+            </ErrorBoundary>
           )
         }
       >
