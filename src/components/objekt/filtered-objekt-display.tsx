@@ -84,7 +84,7 @@ export default typedMemo(function FilteredObjektDisplay<
       initialPageParam: 0,
       getNextPageParam: (lastPage) => lastPage.nextStartAfter,
       refetchOnWindowFocus: false,
-      staleTime: 1000 * 60,
+      staleTime: 1000 * 60 * 5, // 5 minutes
       enabled: isBadCosmoRequest === false,
     });
 
