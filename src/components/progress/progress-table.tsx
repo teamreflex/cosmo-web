@@ -62,11 +62,34 @@ export default function ProgressTable({ address, member }: Props) {
     ([_, classes]) => classes.length > 0
   );
 
+  // calculate total progress
+  const { progress, total } = Object.values(items).reduce(
+    (acc, progresses) => {
+      for (const progress of progresses) {
+        acc.progress += progress.progress;
+        acc.total += progress.total;
+      }
+      return acc;
+    },
+    {
+      progress: 0,
+      total: 0,
+    }
+  );
+  const percentage = Math.round((progress / total) * 100);
+
   return (
     <div className="flex flex-col gap-2">
       <div className="grid grid-flow-row sm:items-center gap-4">
         <div className="flex items-center justify-between w-full">
-          <h1 className="text-3xl font-bold font-cosmo uppercase">{member}</h1>
+          <div className="flex flex-col md:flex-row md:items-center md:gap-2">
+            <h1 className="text-2xl md:text-3xl font-bold font-cosmo uppercase">
+              {member}
+            </h1>
+            <p className="text-sm font-semibold">
+              {progress}/{total} ({percentage}%)
+            </p>
+          </div>
 
           <div className="flex gap-2 items-center">
             <ProgressLeaderboard member={member} />
