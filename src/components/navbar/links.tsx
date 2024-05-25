@@ -37,45 +37,58 @@ type NavbarLink = {
   icon: LucideIcon;
   href: (user?: TokenPayload) => string;
   requireAuth: boolean;
+  prefetch: boolean | undefined;
 };
 
 const links: NavbarLink[] = [
-  { name: "Home", icon: Home, href: () => "/", requireAuth: true },
+  {
+    name: "Home",
+    icon: Home,
+    href: () => "/",
+    requireAuth: true,
+    prefetch: undefined,
+  },
   {
     name: "Rekord",
     icon: Disc3,
     href: () => "/rekord",
     requireAuth: true,
+    prefetch: undefined,
   },
   {
     name: "Gravity",
     icon: Vote,
     href: () => "/gravity",
     requireAuth: true,
+    prefetch: undefined,
   },
   {
     name: "Objekts",
     icon: LibraryBig,
     href: () => "/objekts",
     requireAuth: false,
+    prefetch: true,
   },
   {
     name: "Collection",
     icon: PackageOpen,
     href: (user) => (user ? `/@${user.nickname}` : "/"),
     requireAuth: true,
+    prefetch: true,
   },
   {
     name: "COMO",
     icon: CalendarRange,
     href: (user) => (user ? `/@${user.nickname}/como` : "/"),
     requireAuth: true,
+    prefetch: undefined,
   },
   {
     name: "Grid",
     icon: LayoutGrid,
     href: () => "/grid",
     requireAuth: true,
+    prefetch: undefined,
   },
 ];
 
@@ -109,10 +122,11 @@ export default function Links({ user }: { user?: TokenPayload }) {
               const href = link.href(user);
               const active = href === "/" ? path === "/" : path === href;
               const disabled = link.requireAuth && !authenticated;
+              const prefetch = disabled === false && link.prefetch === true;
 
               return (
                 <DropdownMenuItem key={href} disabled={disabled} asChild>
-                  <Link href={href}>
+                  <Link href={href} prefetch={prefetch} aria-label={link.name}>
                     <link.icon
                       className={cn(
                         "h-4 w-4 mr-2 shrink-0 transition-all fill-transparent",
@@ -172,6 +186,8 @@ const LinkButton = memo(function LinkButton({
 }: LinkButtonProps) {
   const authenticated = user !== undefined;
   const pathname = link.href(user);
+  const disabled = link.requireAuth && !authenticated;
+  const prefetch = disabled === false && link.prefetch === true;
 
   return (
     <TooltipProvider>
@@ -180,15 +196,14 @@ const LinkButton = memo(function LinkButton({
           <Link
             href={{ pathname }}
             className="drop-shadow-lg outline-none focus:outline-none"
+            prefetch={prefetch}
             aria-label={link.name}
           >
             <link.icon
               className={cn(
                 "h-8 w-8 shrink-0 transition-all fill-transparent",
                 active && "fill-white/50",
-                link.requireAuth &&
-                  !authenticated &&
-                  "text-slate-500 cursor-not-allowed"
+                disabled && "text-slate-500 cursor-not-allowed"
               )}
             />
           </Link>
