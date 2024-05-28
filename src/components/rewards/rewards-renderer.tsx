@@ -59,7 +59,7 @@ export default async function RewardsRenderer({ user }: Props) {
 
 function RewardTrigger() {
   return (
-    <button className="flex flex-col shrink-0 aspect-photocard h-full rounded-lg md:rounded-xl lg:rounded-2xl bg-gradient-to-b from-cosmo-text to-cosmo overflow-hidden">
+    <button className="flex flex-col shrink-0 aspect-photocard w-full rounded-lg md:rounded-xl lg:rounded-2xl bg-gradient-to-b from-cosmo-text to-cosmo overflow-hidden">
       <p className="text-left text-xl lg:text-3xl font-semibold pt-4 px-4 drop-shadow">
         Objekt reward available
       </p>
