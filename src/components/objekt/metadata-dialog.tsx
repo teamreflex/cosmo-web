@@ -299,12 +299,9 @@ function EditMetadata({ slug, metadata, close }: EditMetadataProps) {
     startTransition(async () => {
       const result = await formAction(form);
       if (result.status === "success") {
-        queryClient.setQueryData(
-          ["collection-metadata", slug],
-          (old: ObjektMetadata) => {
-            return { ...old, metadata: result.data };
-          }
-        );
+        queryClient.invalidateQueries({
+          queryKey: ["collection-metadata", "metadata", slug],
+        });
         toast({
           description: "Metadata updated.",
         });
