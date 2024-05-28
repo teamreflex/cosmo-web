@@ -20,6 +20,22 @@ export default async function RewardsRenderer({ user }: Props) {
     user.accessToken
   );
 
+  // const { count, items, claimCount } = {
+  //   count: 1,
+  //   items: [
+  //     {
+  //       id: 1110,
+  //       isClaimed: true,
+  //       thumbnailImage:
+  //         "https://resources.cosmo.fans/images/manual-claim/2024/05/16/06/600/f41094e5add14b08a6cc1107bb59b32f20240516060340215.jpeg",
+  //       title: "1st Music Show Win",
+  //       category: "Gift",
+  //       endedAt: "2024-05-31T14:59:00.000Z",
+  //     },
+  //   ],
+  //   claimCount: 0,
+  // };
+
   return (
     <RewardDialog
       availableForClaim={claimCount}
@@ -43,7 +59,7 @@ export default async function RewardsRenderer({ user }: Props) {
 
 function RewardTrigger() {
   return (
-    <button className="flex flex-col w-full h-full rounded-lg md:rounded-xl lg:rounded-2xl bg-gradient-to-b from-cosmo-text to-cosmo overflow-hidden">
+    <button className="flex flex-col shrink-0 aspect-photocard h-full rounded-lg md:rounded-xl lg:rounded-2xl bg-gradient-to-b from-cosmo-text to-cosmo overflow-hidden">
       <p className="text-left text-xl lg:text-3xl font-semibold pt-4 px-4 drop-shadow">
         Objekt reward available
       </p>
