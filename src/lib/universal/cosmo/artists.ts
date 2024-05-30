@@ -28,3 +28,24 @@ type CosmoMember = {
 export interface CosmoArtistWithMembers extends CosmoArtist {
   members: CosmoMember[];
 }
+
+export type CosmoArtistBFF = {
+  name: string;
+  title: string;
+  fandomName: string;
+  logoImageUrl: string;
+  primaryImageUrl: string;
+  contracts: {
+    Como: string;
+    Objekt: string;
+    ObjektMinter: string;
+    Governor: string;
+    CommunityPool: string;
+    ComoMinter: string;
+  };
+  createdAt: string;
+  createdBy: string;
+  updatedAt: string;
+  activeAt: string;
+  order: number;
+};

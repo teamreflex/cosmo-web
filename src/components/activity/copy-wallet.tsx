@@ -4,7 +4,11 @@ import { Copy } from "lucide-react";
 import { useCopyToClipboard } from "usehooks-ts";
 import { toast } from "../ui/use-toast";
 
-export default function CopyWallet({ address }: { address: string }) {
+type Props = {
+  address: string;
+};
+
+export default function CopyWallet({ address }: Props) {
   const [_, copy] = useCopyToClipboard();
 
   function copyAddress() {
@@ -17,7 +21,7 @@ export default function CopyWallet({ address }: { address: string }) {
   return (
     <button className="flex gap-1 items-center" onClick={() => copyAddress()}>
       <Copy className="w-4 h-4" />
-      <span className="underline">Copy the wallet address</span>
+      <span className="underline">Copy your wallet address</span>
     </button>
   );
 }

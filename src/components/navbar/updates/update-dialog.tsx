@@ -68,6 +68,10 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2024-05-31",
+    changes: ['Added: Activity page, replaces the old "My Page" page.'],
+  },
+  {
     date: "2024-05-24",
     changes: [
       "Added: Add Objekt to List button on profile pages.",

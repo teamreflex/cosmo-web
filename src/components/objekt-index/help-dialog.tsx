@@ -2,9 +2,7 @@ import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogContent,
-  AlertDialogDescription,
   AlertDialogFooter,
-  AlertDialogHeader,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { HelpCircle } from "lucide-react";
@@ -15,7 +13,11 @@ export default function HelpDialog() {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button className="rounded-full" variant="secondary" size="icon">
+        <Button
+          className="rounded-full shrink-0"
+          variant="secondary"
+          size="icon"
+        >
           <HelpCircle className="h-5 w-5" />
         </Button>
       </AlertDialogTrigger>

@@ -8,6 +8,16 @@ const config = {
     },
   },
 
+  async redirects() {
+    return [
+      {
+        source: "/my",
+        destination: "/activity",
+        permanent: true,
+      },
+    ];
+  },
+
   async rewrites() {
     return {
       beforeFiles: [
@@ -51,6 +61,11 @@ const config = {
         protocol: "https",
         hostname: "s3.ap-northeast-2.amazonaws.com",
         pathname: "/static.cosmo.fans/**",
+      },
+      {
+        protocol: "https",
+        hostname: "s3.ap-northeast-2.amazonaws.com",
+        pathname: "/resources.cosmo.fans/**",
       },
     ],
   },

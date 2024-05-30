@@ -1,11 +1,13 @@
 import "server-only";
 import {
   CosmoArtist,
+  CosmoArtistBFF,
   CosmoArtistWithMembers,
 } from "@/lib/universal/cosmo/artists";
 import { ValidArtist, validArtists } from "@/lib/universal/cosmo/common";
 import { cosmo } from "../http";
 import { unstable_cache } from "next/cache";
+import { v4 } from "uuid";
 
 type CosmoArtistsResult = {
   artists: CosmoArtist[];
@@ -45,3 +47,19 @@ export const fetchArtistsWithMembers = unstable_cache(
     tags: ["artists-with-members"],
   }
 );
+
+/**
+ * Fetch an artist.
+ */
+export async function fetchArtistBff(token: string, artistName: ValidArtist) {
+  return await cosmo<CosmoArtistBFF>(`/bff/v1/artist`, {
+    query: {
+      artistName,
+      tid: v4(),
+    },
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    cache: "no-cache",
+  });
+}

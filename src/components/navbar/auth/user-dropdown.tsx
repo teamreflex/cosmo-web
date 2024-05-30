@@ -3,20 +3,20 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { TokenPayload } from "@/lib/universal/auth";
 import { Cog, Disc3, LogOut, Shield, User } from "lucide-react";
 import Link from "next/link";
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import SwitchArtistDialog from "./switch-artist-dialog";
 import { CosmoArtist } from "@/lib/universal/cosmo/artists";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import PrivacyDialog from "./privacy-dialog";
 import SettingsDialog from "./settings-dialog";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
+import { usePathname } from "next/navigation";
 
 type UserDropdownProps = {
   user: TokenPayload;
@@ -38,6 +38,12 @@ export default function UserDropdown({
   const [openArtistSwitch, setOpenArtistSwitch] = useState(false);
   const [openPrivacy, setOpenPrivacy] = useState(false);
   const [openSettings, setOpenSettings] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState(false);
+  const pathname = usePathname();
+
+  useEffect(() => {
+    setOpenDropdown(false);
+  }, [pathname]);
 
   const artist = artists.find((artist) => artist.name === selectedArtist);
 
@@ -62,7 +68,7 @@ export default function UserDropdown({
         profile={profile}
       />
 
-      <DropdownMenu>
+      <DropdownMenu open={openDropdown} onOpenChange={setOpenDropdown}>
         <DropdownMenuTrigger className="group outline-none">
           <Avatar className="ring-2 ring-white/30 group-data-[state=open]:ring-cosmo transition-colors">
             <AvatarFallback>
@@ -78,7 +84,7 @@ export default function UserDropdown({
           <DropdownMenuSeparator className="md:hidden" />
           <DropdownMenuItem>
             <User className="mr-2 h-4 w-4" />
-            <Link href="/my">My Page</Link>
+            <Link href="/activity">Activity</Link>
           </DropdownMenuItem>
 
           <DropdownMenuItem
