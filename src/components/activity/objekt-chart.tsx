@@ -1,7 +1,7 @@
 "use client";
 
 import { CosmoActivityMyObjektMember } from "@/lib/universal/cosmo/activity";
-import { PieChart, Pie, ResponsiveContainer, Cell } from "recharts";
+import { PieChart, Pie, Cell } from "recharts";
 import Hydrated from "../hydrated";
 
 const RADIAN = Math.PI / 180;
@@ -11,6 +11,7 @@ type Props = {
 };
 
 export default function ObjektChart({ members }: Props) {
+  console.log(members);
   return (
     <Hydrated>
       <PieChart className="outline-none" height={224} width={224}>
