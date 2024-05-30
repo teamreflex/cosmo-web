@@ -11,7 +11,6 @@ type Props = {
 };
 
 export default function ObjektChart({ members }: Props) {
-  console.log(members);
   return (
     <Hydrated>
       <PieChart className="outline-none" height={224} width={224}>
