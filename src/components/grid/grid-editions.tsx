@@ -28,9 +28,10 @@ export default async function GridEditions({ user, artist }: Props) {
     return acc;
   }, {} as SeasonGroup);
   const seasonTitles = Object.keys(seasons).sort();
+  const defaultSeason = seasonTitles.at(-1) ?? "Atom01";
 
   return (
-    <Tabs defaultValue="Atom01" className="w-full sm:w-1/2">
+    <Tabs defaultValue={defaultSeason} className="w-full sm:w-1/2">
       <TabsList className="w-fit">
         {seasonTitles.map((s) => (
           <TabsTrigger value={s} key={s}>
