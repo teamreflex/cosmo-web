@@ -13,32 +13,36 @@ type Props = {
 
 const getEdition = cache(async (edition: string) => {
   const user = await decodeUser();
-  const [profile, cosmoEdition] = await Promise.all([
+  const [profile, grids] = await Promise.all([
     getProfile(user!.profileId),
     fetchEdition(user!.accessToken, getSelectedArtist(), edition),
   ]);
 
-  return {
-    profile,
-    edition: cosmoEdition,
-  };
+  // parse a grid title
+  let title = "Grid";
+  if (grids.length > 0) {
+    const e = grids[0].edition;
+    title = `${e.season.title} · ${e.subtitle}`;
+  } else {
+    // extract season from the edition string
+    const matches = edition.match(/\b\w*01\b/);
+    title = matches
+      ? matches[0].charAt(0).toUpperCase() + matches[0].slice(1)
+      : "Grid";
+  }
+
+  return { title, profile, grids };
 });
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  // extract season from the edition string
-  const matches = params.edition.match(/\b\w*01\b/);
-  if (!matches) return { title: "Grid" };
-  const capitalized = matches[0].charAt(0).toUpperCase() + matches[0].slice(1);
-
-  return {
-    title: capitalized,
-  };
+  const { title } = await getEdition(params.edition);
+  return { title: `Grid · ${title}` };
 }
 
 export default async function GridEditionPage({ params }: Props) {
-  const { profile, edition } = await getEdition(params.edition);
+  const { title, profile, grids } = await getEdition(params.edition);
 
-  if (edition.length === 0) {
+  if (grids.length === 0) {
     redirect("/grid");
   }
 
@@ -46,13 +50,14 @@ export default async function GridEditionPage({ params }: Props) {
     <ProfileProvider profile={profile}>
       <main className="container flex flex-col py-2">
         <div className="flex items-center">
-          <div className="flex gap-2 items-center">
+          <div className="w-full flex gap-2 items-center justify-between">
             <h1 className="text-3xl font-cosmo uppercase">Grid</h1>
+            <h4 className="text-sm font-semibold">{title}</h4>
           </div>
         </div>
 
         <div className="flex flex-col gap-4 items-center">
-          <GridRenderer grids={edition} />
+          <GridRenderer edition={params.edition} grids={grids} />
         </div>
       </main>
     </ProfileProvider>

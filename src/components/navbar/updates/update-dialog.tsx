@@ -68,6 +68,14 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2024-06-05",
+    changes: [
+      "Fixed: Grid season selector now defaults to the current season.",
+      "Added: Grid member selector now adds the selected member to the URL.",
+      "Updated: Artist & member fetching is now cached for 12 hours, should reduce errors when COSMO is struggling with high traffic.",
+    ],
+  },
+  {
     date: "2024-05-31",
     changes: ['Added: Activity page, replaces the old "My Page" page.'],
   },
@@ -86,13 +94,6 @@ const updates = [
     changes: [
       "Added: Functionality for claiming objekt event rewards.",
       "Updated: Today's Atmosphere feed switched over to new functionality, post liking coming soon.",
-    ],
-  },
-  {
-    date: "2024-05-04",
-    changes: [
-      "Fixed: Ramper error preventing signing in.",
-      "Added: Button to copy a direct link to an objekt to the clipboard.",
     ],
   },
 ];

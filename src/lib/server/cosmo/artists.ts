@@ -37,13 +37,13 @@ async function fetchArtist(artist: ValidArtist) {
 
 /**
  * Fetch all artists with their members.
- * Cached for 4 hours.
+ * Cached for 12 hours.
  */
 export const fetchArtistsWithMembers = unstable_cache(
   async () => Promise.all(validArtists.map((artist) => fetchArtist(artist))),
   ["artists-with-members"],
   {
-    revalidate: 60 * 60 * 4,
+    revalidate: 60 * 60 * 12,
     tags: ["artists-with-members"],
   }
 );
