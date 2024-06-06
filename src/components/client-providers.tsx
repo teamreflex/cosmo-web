@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 // import AuthProvider from "./navbar/auth/auth-provider";
 import WarningDialog from "./warning-dialog";
+import { preconnect, prefetchDNS } from "react-dom";
 
 type Props = PropsWithChildren;
 
@@ -30,6 +31,13 @@ function getQueryClient() {
 }
 
 export default function ClientProviders({ children }: Props) {
+  // preconnect for objekt images
+  preconnect("https://imagedelivery.net");
+  prefetchDNS("https://imagedelivery.net");
+  // preconnect to cosmo
+  preconnect("https://api.cosmo.fans");
+  prefetchDNS("https://api.cosmo.fans");
+
   const queryClient = getQueryClient();
 
   return (
