@@ -46,6 +46,7 @@ const config = {
   },
 
   images: {
+    unoptimized: true,
     remotePatterns: [
       // objekt images
       {
