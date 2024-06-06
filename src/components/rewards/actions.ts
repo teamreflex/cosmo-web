@@ -7,7 +7,6 @@ import {
   ActionResultSuccess,
   TypedActionResult,
 } from "@/lib/server/typed-action/types";
-import { revalidatePath } from "next/cache";
 
 /**
  * Claim all event rewards for the user.
@@ -25,7 +24,6 @@ export async function submitEventRewards(): Promise<
 
   const result = await claimEventRewards(user.accessToken);
   if (result) {
-    revalidatePath(`/@${user.nickname}`);
     return {
       status: "success",
       data: result,

@@ -5,7 +5,6 @@ import { z } from "zod";
 import { signToken } from "@/lib/server/jwt";
 import { login } from "@/lib/server/cosmo/auth";
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
 import { authenticatedAction, typedAction } from "@/lib/server/typed-action";
 import { getUser } from "@/app/api/common";
 import { validArtists } from "@/lib/universal/cosmo/common";
@@ -145,7 +144,6 @@ export const updateSelectedArtist = async (artist: string) =>
     onValidate: async ({ data, user }) => {
       const result = await setSelectedArtist(user.profileId, data.artist);
       setCookie({ key: "artist", value: data.artist });
-      revalidatePath("/");
       return result;
     },
   });
@@ -170,21 +168,15 @@ export const updatePrivacy = async (
         .update(profiles)
         .set(data)
         .where(eq(profiles.id, user.profileId));
-
-      revalidatePath(`@/${user.nickname}`);
     },
   });
 
 /**
  * Updates general settings.
  */
-export const updateSettings = async (
-  prev: TypedActionResult<void>,
-  form: FormData
-) =>
+export const updateSettings = async (form: FormData) =>
   authenticatedAction({
     form,
-
     schema: z.object({
       gridColumns: z.coerce.number().min(3).max(8),
     }),
@@ -193,7 +185,5 @@ export const updateSettings = async (
         .update(profiles)
         .set(data)
         .where(eq(profiles.id, user.profileId));
-
-      revalidatePath(`@/${user.nickname}`);
     },
   });

@@ -14,6 +14,7 @@ import { Button } from "../ui/button";
 import { useToast } from "../ui/use-toast";
 import { submitEventRewards } from "./actions";
 import { trackEvent } from "fathom-client";
+import { useRouter } from "next/navigation";
 
 type Props = {
   availableForClaim: number;
@@ -27,6 +28,7 @@ export default function RewardDialog({
   content,
 }: Props) {
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
 
@@ -47,6 +49,7 @@ export default function RewardDialog({
             title: "Reward claimed!",
             description: "Objekts will be available soon.",
           });
+          router.refresh();
           setOpen(false);
           break;
       }

@@ -12,6 +12,7 @@ import { updateSelectedArtist } from "./actions";
 import { CosmoArtist } from "@/lib/universal/cosmo/artists";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { useToast } from "@/components/ui/use-toast";
+import { useRouter } from "next/navigation";
 
 type SwitchArtistDialogProps = {
   open: boolean;
@@ -64,6 +65,7 @@ function SelectArtistButton({
 }: SelectArtistButtonProps) {
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
+  const router = useRouter();
 
   function select() {
     startTransition(async () => {
@@ -72,6 +74,7 @@ function SelectArtistButton({
         toast({
           description: `Switched to ${artist.title}`,
         });
+        router.refresh();
         onOpenChange(false);
       }
     });

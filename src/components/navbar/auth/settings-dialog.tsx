@@ -5,7 +5,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { updateSettings } from "./actions";
-import { useFormState, useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import {
@@ -16,7 +15,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
-import { useEffect } from "react";
+import { useTransition } from "react";
+import { useRouter } from "next/navigation";
 
 type SettingsDialogProps = {
   open: boolean;
@@ -29,17 +29,22 @@ export default function SettingsDialog({
   onOpenChange,
   profile,
 }: SettingsDialogProps) {
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
   const { toast } = useToast();
-  const [state, formAction] = useFormState(updateSettings, { status: "idle" });
 
-  useEffect(() => {
-    if (state.status === "success") {
-      toast({
-        description: "Settings updated.",
-      });
-      onOpenChange(false);
-    }
-  }, [state]);
+  function update(form: FormData) {
+    startTransition(async () => {
+      const result = await updateSettings(form);
+      if (result.status === "success") {
+        toast({
+          description: "Settings updated.",
+        });
+        router.refresh();
+        onOpenChange(false);
+      }
+    });
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -48,7 +53,7 @@ export default function SettingsDialog({
           <DialogTitle>General Settings</DialogTitle>
         </DialogHeader>
 
-        <form className="flex flex-col gap-2" action={formAction}>
+        <form className="flex flex-col gap-2" action={update}>
           {/* grid column size */}
           <div className="grid grid-cols-4 grid-rows-3">
             <h2 className="col-span-3 font-semibold">Objekt Columns</h2>
@@ -82,18 +87,11 @@ export default function SettingsDialog({
             </div>
           </div>
 
-          <SubmitButton />
+          <Button type="submit" disabled={isPending}>
+            {isPending ? "Saving..." : "Save"}
+          </Button>
         </form>
       </DialogContent>
     </Dialog>
-  );
-}
-
-function SubmitButton() {
-  const { pending } = useFormStatus();
-  return (
-    <Button type="submit" disabled={pending}>
-      {pending ? "Saving..." : "Save"}
-    </Button>
   );
 }
