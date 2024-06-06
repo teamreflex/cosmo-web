@@ -4,7 +4,6 @@ import { collections, objekts } from "@/lib/server/db/indexer/schema";
 import { objektMetadata } from "@/lib/server/db/schema";
 import { count, eq } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
-import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 
@@ -18,9 +17,9 @@ type Params = {
  * API route for individual objekt dialogs.
  * Fetches metadata about a collection.
  */
-export async function GET(request: NextRequest, { params }: Params) {
+export async function GET(request: Request, { params }: Params) {
   const metadata = await fetchMetadata(params.collectionSlug);
-  return NextResponse.json(metadata);
+  return Response.json(metadata);
 }
 
 /**
@@ -60,7 +59,7 @@ async function fetchCollectionMetadata(collectionSlug: string) {
 
 /**
  * Fetch information about a collection.
- * Cached for 15 minutes.
+ * Cached for 30 minutes.
  */
 const fetchMetadata = (collection: string) =>
   unstable_cache(
@@ -74,7 +73,7 @@ const fetchMetadata = (collection: string) =>
     },
     [`collection-metadata`],
     {
-      revalidate: 60 * 15, // 15 minutes
+      revalidate: 60 * 30, // 30 minutes
       tags: [`collection-metadata:${collection}`],
     }
   )(collection);

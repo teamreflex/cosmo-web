@@ -21,7 +21,9 @@ export default async function GravityRenderer() {
           className="flex items-center justify-center"
         >
           {ongoing.length === 0 ? (
-            <p className="py-12">Coming Soon</p>
+            <p className="py-12 text-sm font-semibold">
+              No ongoing gravities, check back soon!
+            </p>
           ) : (
             <GravityList gravities={ongoing} />
           )}
@@ -29,7 +31,9 @@ export default async function GravityRenderer() {
 
         <TabsContent value="past" className="flex items-center justify-center">
           {gravities.past.length === 0 ? (
-            <p className="py-12">Coming Soon</p>
+            <p className="py-12 text-sm font-semibold">
+              No past gravities found
+            </p>
           ) : (
             <GravityList gravities={gravities.past} />
           )}

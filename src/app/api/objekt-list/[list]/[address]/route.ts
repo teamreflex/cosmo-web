@@ -13,7 +13,7 @@ import {
 import { fetchObjektListWithEntries } from "@/lib/server/objekts/lists";
 import { parseObjektList } from "@/lib/universal/parsers";
 import { and, sql } from "drizzle-orm";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 
 export const runtime = "nodejs";
 const PER_PAGE = 60;
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest, { params }: Params) {
 
   // handle 404
   if (objektList === undefined) {
-    return NextResponse.json(
+    return Response.json(
       { message: `Objekt list "${params.list}" not found` },
       { status: 404 }
     );
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest, { params }: Params) {
 
   // handle empty list
   if (entries.length === 0) {
-    return NextResponse.json({
+    return Response.json({
       total: 0,
       hasNext: false,
       objekts: [],
@@ -88,7 +88,7 @@ export async function GET(request: NextRequest, { params }: Params) {
   const hasNext = collectionList.length === PER_PAGE;
   const nextStartAfter = hasNext ? filters.page + 1 : undefined;
 
-  return NextResponse.json({
+  return Response.json({
     total: result[0]?.count ?? 0,
     hasNext,
     nextStartAfter,

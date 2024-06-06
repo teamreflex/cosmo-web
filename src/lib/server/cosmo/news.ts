@@ -17,17 +17,12 @@ type CosmoNewsResult = {
 
 /**
  * Get news on the home page.
- * Cached for 15 minutes.
  */
 export async function fetchHomeNews(token: string, artist: ValidArtist) {
   return await cosmo<CosmoNewsResult>(`/news/v1`, {
     query: { artist },
     headers: {
       Authorization: `Bearer ${token}`,
-    },
-    next: {
-      tags: ["home-news", artist],
-      revalidate: 60 * 15, // 15 minutes
     },
   }).then((res) => res.sections);
 }
@@ -62,7 +57,6 @@ export async function fetchFeed(
 
 /**
  * Fetch the "cosmo exclusive" feed.
- * Cached for 15 minutes.
  */
 export async function fetchExclusive(
   token: string,
@@ -80,17 +74,12 @@ export async function fetchExclusive(
       headers: {
         Authorization: `Bearer ${token}`,
       },
-      next: {
-        tags: ["news", "exclusive", artist],
-        revalidate: 60 * 15, // 15 minutes
-      },
     }
   );
 }
 
 /**
  * Get the bff news feed.
- * Cached for 15 minutes.
  */
 export async function fetchFeedBff(
   token: string,
@@ -108,10 +97,6 @@ export async function fetchFeedBff(
       },
       headers: {
         Authorization: `Bearer ${token}`,
-      },
-      next: {
-        tags: ["bff-news", "feed", artistName],
-        revalidate: 60 * 15, // 15 minutes
       },
     }
   );

@@ -15,23 +15,30 @@ type CosmoArtistsResult = {
 
 /**
  * Fetch all artists within Cosmo.
- * Cached for 1 hour.
+ * Cached for 12 hours.
  */
 export async function fetchArtists() {
   return await cosmo<CosmoArtistsResult>("/artist/v1", {
     next: {
       tags: ["artists"],
-      revalidate: 60 * 60,
+      revalidate: 60 * 60 * 12,
     },
   }).then((res) => res.artists);
 }
 
 /**
  * Fetch a single artist with its members.
+ * Cached for 12 hours.
  */
 async function fetchArtist(artist: ValidArtist) {
   return await cosmo<{ artist: CosmoArtistWithMembers }>(
-    `/artist/v1/${artist}`
+    `/artist/v1/${artist}`,
+    {
+      next: {
+        revalidate: 60 * 60 * 12,
+        tags: ["artist", artist],
+      },
+    }
   ).then((res) => res.artist);
 }
 
@@ -39,14 +46,9 @@ async function fetchArtist(artist: ValidArtist) {
  * Fetch all artists with their members.
  * Cached for 12 hours.
  */
-export const fetchArtistsWithMembers = unstable_cache(
-  async () => Promise.all(validArtists.map((artist) => fetchArtist(artist))),
-  ["artists-with-members"],
-  {
-    revalidate: 60 * 60 * 12,
-    tags: ["artists-with-members"],
-  }
-);
+export async function fetchArtistsWithMembers() {
+  return await Promise.all(validArtists.map((artist) => fetchArtist(artist)));
+}
 
 /**
  * Fetch an artist.

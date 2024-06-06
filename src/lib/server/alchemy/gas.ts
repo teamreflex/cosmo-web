@@ -10,6 +10,7 @@ type GasPriceResult = {
 
 /**
  * Fetch current gas price from the Alchemy API.
+ * Cached for 1 minute.
  */
 export async function fetchGasPrice(): Promise<GasPrice> {
   return await alchemy<GasPriceResult>("/", {

@@ -1,12 +1,10 @@
 import { Collection } from "../server/db/indexer/schema";
 import { ValidClass, ValidOnlineType, ValidSeason } from "./cosmo/common";
 
-export type CombinedOnlineType = ValidOnlineType | "combined";
-
 export type SeasonMatrix = {
   season: ValidSeason;
   class: ValidClass;
-  type: CombinedOnlineType;
+  type: ValidOnlineType | "combined";
   key: string;
 };
 

@@ -1,7 +1,7 @@
 import { getUser } from "@/app/api/common";
 import { fetchArchivedPosts } from "@/lib/server/cosmo/rekord";
 import { parseRekordFilters } from "@/lib/universal/cosmo/rekord";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 
 /**
  * API route that services the /rekord/archive page.
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
   const fromPostId = results.at(-1)?.post.id ?? undefined;
   const hasNextPage = results.length === params.limit;
 
-  return NextResponse.json({
+  return Response.json({
     results,
     // for whatever reason, the archive endpoint doesn't use a cursor
     fromPostId: hasNextPage ? fromPostId : undefined,

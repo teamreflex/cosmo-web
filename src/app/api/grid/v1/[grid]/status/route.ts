@@ -1,6 +1,5 @@
 import { getUser } from "@/app/api/common";
 import { fetchArtistGridStatus } from "@/lib/server/cosmo/grid";
-import { NextResponse } from "next/server";
 
 /**
  * API route that services the /grid/:grid page.
@@ -16,5 +15,5 @@ export async function GET(
   }
 
   const grid = await fetchArtistGridStatus(auth.user.accessToken, params.grid);
-  return NextResponse.json(grid);
+  return Response.json(grid);
 }

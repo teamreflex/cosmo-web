@@ -7,8 +7,8 @@ import { env } from "@/env.mjs";
  */
 export const cosmo = ofetch.create({
   baseURL: COSMO_ENDPOINT,
-  retry: 3,
-  retryDelay: 250, // 250ms
+  retry: 2,
+  retryDelay: 500, // 500ms
 });
 
 /**
@@ -20,6 +20,6 @@ export const alchemy = ofetch.create({
   headers: {
     Authorization: `Bearer ${env.NEXT_PUBLIC_ALCHEMY_KEY}`,
   },
-  retry: 3,
-  retryDelay: 250, // 100ms
+  retry: 2,
+  retryDelay: 500, // 500ms
 });

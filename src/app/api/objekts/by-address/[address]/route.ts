@@ -23,7 +23,7 @@ import {
 import { parseUserCollection } from "@/lib/universal/parsers";
 import { and, asc, desc, eq, sql } from "drizzle-orm";
 import { PgSelect } from "drizzle-orm/pg-core";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 
 export const runtime = "nodejs";
 const PER_PAGE = 30;
@@ -74,7 +74,7 @@ export async function GET(request: NextRequest, { params }: Params) {
   const hasNext = result.length === PER_PAGE;
   const nextStartAfter = hasNext ? filters.page + 1 : undefined;
 
-  return NextResponse.json({
+  return Response.json({
     total: result[0]?.count ?? 0,
     hasNext,
     nextStartAfter,

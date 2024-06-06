@@ -3,7 +3,7 @@ import { fetchKnownAddresses } from "@/lib/server/profiles";
 import { fetchTransfers } from "@/lib/server/transfers";
 import { NULL_ADDRESS } from "@/lib/utils";
 import { eq } from "drizzle-orm";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 
 export const runtime = "nodejs";
 
@@ -17,7 +17,7 @@ export async function GET(
 ) {
   // too much data, bail
   if (params.address.toLowerCase() === NULL_ADDRESS) {
-    return NextResponse.json({
+    return Response.json({
       results: [],
       count: 0,
       hasNext: false,
@@ -37,7 +37,7 @@ export async function GET(
     [eq(profiles.privacyTrades, false)]
   );
 
-  return NextResponse.json({
+  return Response.json({
     ...aggregate,
     // map the nickname onto the results
     results: aggregate.results.map((row) => ({

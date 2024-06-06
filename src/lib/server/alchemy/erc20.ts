@@ -27,6 +27,7 @@ const POLYGON_DECIMALS = 18;
 
 /**
  * Fetch ERC20 token balances from the Alchemy API.
+ * Cached for 15 minutes,
  */
 export async function fetchTokenBalances({
   address,
@@ -41,7 +42,7 @@ export async function fetchTokenBalances({
     },
     next: {
       tags: ["como", address],
-      revalidate: 60 * 5, // 5 minutes
+      revalidate: 60 * 15, // 15 minutes
     },
   }).then((res) =>
     res.result.tokenBalances.map((balance) => ({

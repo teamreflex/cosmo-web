@@ -7,7 +7,6 @@ import {
 } from "@/lib/universal/cosmo/common";
 import { FinalProgress, SeasonMatrix } from "@/lib/universal/progress";
 import { and, eq } from "drizzle-orm";
-import { NextRequest, NextResponse } from "next/server";
 import { PartialCollection, fetchTotal } from "../../../common";
 
 export const runtime = "nodejs";
@@ -23,14 +22,14 @@ type Params = {
  * API route that services the /@:nickname/progress page.
  * Takes an address and a member name, and returns the collection progress breakdown of that member.
  */
-export async function GET(request: NextRequest, { params }: Params) {
+export async function GET(request: Request, { params }: Params) {
   const matrix = buildMatrix();
   const [totals, progress] = await Promise.all([
     fetchTotal(params.member),
     fetchProgress(params.address.toLowerCase(), params.member),
   ]);
 
-  return NextResponse.json(zipResults(matrix, totals, progress));
+  return Response.json(zipResults(matrix, totals, progress));
 }
 
 /**

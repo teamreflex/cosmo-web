@@ -1,11 +1,11 @@
 import { indexer } from "@/lib/server/db/indexer";
 import { collections, objekts } from "@/lib/server/db/indexer/schema";
-import { and, count, desc, eq, inArray, min, not, sql } from "drizzle-orm";
-import { NextRequest, NextResponse } from "next/server";
+import { and, count, eq, inArray, not, sql } from "drizzle-orm";
+import { NextRequest } from "next/server";
 import { fetchTotal } from "../../common";
 import { fetchKnownAddresses } from "@/lib/server/profiles";
 import { addrcomp } from "@/lib/utils";
-import { CombinedOnlineType, LeaderboardItem } from "@/lib/universal/progress";
+import { LeaderboardItem } from "@/lib/universal/progress";
 import { unstable_cache } from "next/cache";
 import { profiles } from "@/lib/server/db/schema";
 import { ValidOnlineType } from "@/lib/universal/cosmo/common";
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest, { params }: Params) {
     };
   }) satisfies LeaderboardItem[];
 
-  return NextResponse.json({
+  return Response.json({
     total: totals.length,
     leaderboard: results,
   });
