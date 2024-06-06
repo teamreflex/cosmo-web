@@ -2,35 +2,21 @@ import "server-only";
 import { and, eq } from "drizzle-orm";
 import { db } from "../db";
 import { listEntries, lists, profiles } from "../db/schema";
-import {
-  CreateObjektList,
-  ObjektList,
-  UpdateObjektList,
-} from "@/lib/universal/objekts";
-import { unstable_cache } from "next/cache";
+import { CreateObjektList, UpdateObjektList } from "@/lib/universal/objekts";
 
 /**
  * Fetch all lists for a given user.
- * Cached for 4 hours.
  */
-export const fetchObjektLists = (nickname: string) =>
-  unstable_cache(
-    async (nickname: string): Promise<ObjektList[]> => {
-      const result = await db.query.profiles.findFirst({
-        where: eq(profiles.nickname, nickname),
-        with: {
-          lists: true,
-        },
-      });
-
-      return result?.lists ?? [];
+export async function fetchObjektLists(nickname: string) {
+  const result = await db.query.profiles.findFirst({
+    where: eq(profiles.nickname, nickname),
+    with: {
+      lists: true,
     },
-    ["objekt-lists"],
-    {
-      revalidate: 60 * 60 * 4,
-      tags: [`objekt-lists:${nickname}`],
-    }
-  )(nickname);
+  });
+
+  return result?.lists ?? [];
+}
 
 /**
  * Fetch a single list.

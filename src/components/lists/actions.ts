@@ -10,7 +10,6 @@ import {
   removeObjekt,
   updateObjektList,
 } from "@/lib/server/objekts/lists";
-import { revalidateTag } from "next/cache";
 import slugify from "slugify";
 import { TypedActionResult } from "@/lib/server/typed-action/types";
 
@@ -35,13 +34,11 @@ export const create = async (form: FormData) =>
         ),
     }),
     onValidate: async ({ data: { name }, user }) => {
-      const result = await createObjektList({
+      return await createObjektList({
         name,
         slug: createSlug(name),
         userAddress: user.address,
       });
-      revalidateTag(`objekt-lists:${user.address}`);
-      return result;
     },
   });
 
@@ -70,8 +67,6 @@ export const update = async (prev: TypedActionResult<string>, form: FormData) =>
         userAddress: user.address,
       });
 
-      revalidateTag(`objekt-lists:${user.address}`);
-
       return `/@${user.nickname}/list/${slug}`;
     },
     redirectTo: ({ result }) => result,
@@ -87,9 +82,7 @@ export const destroy = async (id: number) =>
       id: z.number(),
     }),
     onValidate: async ({ data: { id }, user }) => {
-      const result = await deleteObjektList(id, user.address);
-      revalidateTag(`objekt-lists:${user.address}`);
-      return result;
+      return await deleteObjektList(id, user.address);
     },
     redirectTo: () => "/objekts",
   });
