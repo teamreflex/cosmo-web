@@ -110,6 +110,10 @@ const errorMap: Record<string, string> = {
   // account was made with social auth maybe?
   "Error creating email login record":
     "Error logging in, please try again later.",
+
+  // login expired
+  "This login attempt has expired.":
+    "Login attempt expired, please try logging in again.",
 };
 
 /**
