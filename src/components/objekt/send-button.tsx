@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { cn, track } from "@/lib/utils";
 import { AlertTriangle, Check, Loader2, Satellite, Send } from "lucide-react";
 import { Button } from "../ui/button";
 import { useState } from "react";
@@ -33,7 +33,6 @@ import {
   signTransaction,
 } from "@/lib/client/blockchain";
 import { UserSearch } from "../user-search";
-import { trackEvent } from "fathom-client";
 import Link from "next/link";
 import ObjektSidebar from "./objekt-sidebar";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
@@ -315,7 +314,7 @@ function SendToUserButton({
       });
       updateTransactionProgress(TransactionStatus.COMPLETE, transaction.hash);
 
-      trackEvent("send-objekt");
+      track("send-objekt");
     } catch (err) {
       if (err instanceof TransactionError) {
         updateTransactionProgress(TransactionStatus.ERROR);

@@ -16,7 +16,7 @@ import { useEffect, useState, useTransition } from "react";
 import { v4 } from "uuid";
 import { exchangeRamperToken, sendRamperEmail } from "./actions";
 import Portal from "@/components/portal";
-import { trackEvent } from "fathom-client";
+import { track } from "@/lib/utils";
 
 type SignInState = "sending-email" | "exchanging-token";
 type Payload = {
@@ -158,7 +158,7 @@ function ExchangeTokenForm({ payload, onBack }: ExchangeTokenProps) {
           setError(result.error);
           break;
         case "success":
-          trackEvent("sign-in");
+          track("sign-in");
           break;
       }
     });

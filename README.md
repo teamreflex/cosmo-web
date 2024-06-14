@@ -135,7 +135,6 @@ pnpm dev
 - [Tailwind](https://tailwindcss.com/)
 - [Neon](https://neon.tech/)
 - [Drizzle ORM](https://orm.drizzle.team/)
-- [Fathom Analytics](https://usefathom.com/)
 - [Alchemy](https://www.alchemy.com/)
 
 ## License

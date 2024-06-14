@@ -26,9 +26,9 @@ export const env = createEnv({
     NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL: z.string().min(1),
     // environment type
     NEXT_PUBLIC_VERCEL_ENV: z.string().min(1),
-    // fathom analytics
-    NEXT_PUBLIC_FATHOM_ID: z.string().min(1),
-    NEXT_PUBLIC_FATHOM_URL: z.string().min(1),
+    // umami analytics
+    NEXT_PUBLIC_UMAMI_ID: z.string().min(1),
+    NEXT_PUBLIC_UMAMI_SCRIPT_URL: z.string().min(1),
     // simulate successful grid response
     NEXT_PUBLIC_SIMULATE_GRID: z
       .string()
@@ -42,8 +42,8 @@ export const env = createEnv({
     NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL:
       process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL,
     NEXT_PUBLIC_VERCEL_ENV: process.env.NEXT_PUBLIC_VERCEL_ENV,
-    NEXT_PUBLIC_FATHOM_ID: process.env.NEXT_PUBLIC_FATHOM_ID,
-    NEXT_PUBLIC_FATHOM_URL: process.env.NEXT_PUBLIC_FATHOM_URL,
+    NEXT_PUBLIC_UMAMI_ID: process.env.NEXT_PUBLIC_UMAMI_ID,
+    NEXT_PUBLIC_UMAMI_SCRIPT_URL: process.env.NEXT_PUBLIC_UMAMI_SCRIPT_URL,
     NEXT_PUBLIC_SIMULATE_GRID: process.env.NEXT_PUBLIC_SIMULATE_GRID,
   },
 });

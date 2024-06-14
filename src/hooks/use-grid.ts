@@ -6,7 +6,7 @@ import {
   CosmoGridSlotCompletion,
   CosmoOngoingGridSlot,
 } from "@/lib/universal/cosmo/grid";
-import { trackEvent } from "fathom-client";
+import { track } from "@/lib/utils";
 import { useEffect, useState, useTransition } from "react";
 
 type EmptySlot = {
@@ -102,7 +102,7 @@ export function useGrid(slug: string, slots: CosmoOngoingGridSlot[]) {
       const result = await submitGrid({ slug, slots: slotsForCompletion });
       if (result.status === "success") {
         setGridReward(result.data);
-        trackEvent("grid-objekt");
+        track("grid-objekt");
       } else if (result.status === "error") {
         toast({
           variant: "destructive",

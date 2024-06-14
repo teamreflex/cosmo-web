@@ -2,9 +2,9 @@
 
 import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
 import { toggleObjektLock } from "../collection/actions";
-import { trackEvent } from "fathom-client";
 import { Loader2, Lock, Unlock } from "lucide-react";
 import { useTransition } from "react";
+import { track } from "@/lib/utils";
 
 type Props = {
   objekt: OwnedObjekt;
@@ -21,7 +21,7 @@ export default function LockObjekt({ objekt, isLocked, onLockChange }: Props) {
     startTransition(async () => {
       const result = await toggleObjektLock({ tokenId, lock: !isLocked });
       if (result.status === "success" && result.data === true) {
-        trackEvent(`${isLocked ? "unlock" : "lock"}-objekt`);
+        track(`${isLocked ? "unlock" : "lock"}-objekt`);
         onLockChange(tokenId);
       }
     });

@@ -2,9 +2,8 @@ import { CosmoRekordPost } from "@/lib/universal/cosmo/rekord";
 import { toggleLike } from "./actions";
 import { Button } from "../ui/button";
 import { Heart, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, track } from "@/lib/utils";
 import { Dispatch, SetStateAction, useTransition } from "react";
-import { trackEvent } from "fathom-client";
 
 type Props = {
   post: CosmoRekordPost;
@@ -19,7 +18,7 @@ export default function RekordLikeButton({ post, isLiked, setIsLiked }: Props) {
     startTransition(async () => {
       const result = await toggleLike(form);
       if (result.status === "success" && result.data) {
-        trackEvent(`${isLiked ? "unlike" : "like"}-rekord`);
+        track(`${isLiked ? "unlike" : "like"}-rekord`);
         setIsLiked((prev) => !prev);
       }
     });

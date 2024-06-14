@@ -33,8 +33,8 @@ import {
   TooltipTrigger,
 } from "../ui/tooltip";
 import { FieldError } from "../form/error";
-import { trackEvent } from "fathom-client";
 import { TypedActionResult } from "@/lib/server/typed-action/types";
+import { track } from "@/lib/utils";
 
 type Props = {
   lists: ObjektList[];
@@ -57,7 +57,7 @@ export default function ListDropdown({ lists, nickname, allowCreate }: Props) {
       setState(result);
 
       if (result.status === "success") {
-        trackEvent("create-list");
+        track("create-list");
         toast({
           description: "Objekt list created!",
         });

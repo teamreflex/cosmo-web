@@ -7,8 +7,8 @@ import { Inter } from "next/font/google";
 import localFont from "next/font/local";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
-import Fathom from "@/components/fathom";
 import TailwindIndicator from "@/components/tailwind-indicator";
+import Script from "next/script";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -67,8 +67,17 @@ export default async function RootLayout({
           </ClientProviders>
 
           <Toaster />
-          <Fathom />
           <TailwindIndicator />
+
+          {/* umami analytics */}
+          {env.NEXT_PUBLIC_UMAMI_ID !== "dev" && (
+            <Script
+              strategy="afterInteractive"
+              async
+              src={env.NEXT_PUBLIC_UMAMI_SCRIPT_URL}
+              data-website-id={env.NEXT_PUBLIC_UMAMI_ID}
+            />
+          )}
         </ThemeProvider>
       </body>
     </html>

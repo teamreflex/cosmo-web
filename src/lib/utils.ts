@@ -2,6 +2,7 @@ import { type ClassValue, clsx } from "clsx";
 import { memo } from "react";
 import { twMerge } from "tailwind-merge";
 import { PublicProfile } from "./universal/cosmo/auth";
+import { env } from "@/env.mjs";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -58,3 +59,15 @@ export const defaultProfile: PublicProfile = {
 };
 
 export const NULL_ADDRESS = "0x0000000000000000000000000000000000000000";
+
+/**
+ * Track an event with Umami.
+ * Handles when the tracking script isn't loaded.
+ */
+export function track(event: string) {
+  try {
+    umami.track(event);
+  } catch (err) {
+    // ignore
+  }
+}

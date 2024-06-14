@@ -13,8 +13,8 @@ import { ReactNode, useState, useTransition } from "react";
 import { Button } from "../ui/button";
 import { useToast } from "../ui/use-toast";
 import { submitEventRewards } from "./actions";
-import { trackEvent } from "fathom-client";
 import { useRouter } from "next/navigation";
+import { track } from "@/lib/utils";
 
 type Props = {
   availableForClaim: number;
@@ -44,7 +44,7 @@ export default function RewardDialog({
           });
           break;
         case "success":
-          trackEvent("reward-claim");
+          track("reward-claim");
           toast({
             title: "Reward claimed!",
             description: "Objekts will be available soon.",

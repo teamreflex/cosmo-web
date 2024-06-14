@@ -95,9 +95,6 @@ dependencies:
   ethers:
     specifier: ~5.7.2
     version: 5.7.2
-  fathom-client:
-    specifier: ^3.6.0
-    version: 3.6.0
   hls.js:
     specifier: ^1.5.8
     version: 1.5.8
@@ -178,6 +175,9 @@ devDependencies:
   '@types/react-dom':
     specifier: 18.2.18
     version: 18.2.18
+  '@types/umami':
+    specifier: ^2.10.0
+    version: 2.10.0
   '@types/uuid':
     specifier: ^9.0.8
     version: 9.0.8
@@ -3125,6 +3125,10 @@ packages:
     resolution: {integrity: sha512-4sOxS3ZWXC0uHJLYcWAaLMxTvjRX3hT96eF4YWUh1ovTaenvibaZOE5uXtIp4mksKMLRwo7YDiCBCw6vBiUPVg==}
     dev: false
 
+  /@types/umami@2.10.0:
+    resolution: {integrity: sha512-iWcs1KkcO3ooIi2rR9M5drmpQzlsT+sFiyWElIGmVwjdGlp+vQmy/VYIChYnF5ETqx7KrL80JfSkroS6dm37Hg==}
+    dev: true
+
   /@types/uuid@9.0.8:
     resolution: {integrity: sha512-jg+97EGIcY9AGHJJRaaPVgetKDsrTgbRjQ5Msgjh/DQKEFl0DtyRr/VCOyD1T2R1MNeWPK/u7JoGhlDZnKBAfA==}
     dev: true
@@ -4840,10 +4844,6 @@ packages:
     dependencies:
       reusify: 1.0.4
     dev: true
-
-  /fathom-client@3.6.0:
-    resolution: {integrity: sha512-/mrgmVvpw4HqDCcqUfPulERhONKgnJGL74RAxfqKDuRQ+7w9lKoTHMzqBWE7WNBvmsgZEthQWJFOWOEjv+T3gA==}
-    dev: false
 
   /fetch-blob@2.1.2:
     resolution: {integrity: sha512-YKqtUDwqLyfyMnmbw8XD6Q8j9i/HggKtPEI+pZ1+8bvheBu78biSmNaXWusx1TauGqtUUGx/cBb1mKdq2rLYow==}
