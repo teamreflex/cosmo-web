@@ -2,15 +2,14 @@
 
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { Tabs, TabsList, TabsTrigger } from "../ui/tabs";
-import { HTMLAttributes, Suspense, useState } from "react";
+import { Fragment, HTMLAttributes, useState } from "react";
 import {
   CosmoActivityHistoryItem,
   CosmoActivityHistoryType,
 } from "@/lib/universal/cosmo/activity";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { ofetch } from "ofetch";
 import Skeleton from "../skeleton/skeleton";
-import { ErrorBoundary } from "react-error-boundary";
 import { HeartCrack } from "lucide-react";
 import { format } from "date-fns";
 import Image from "next/image";
@@ -71,34 +70,21 @@ export default function AccountHistory({ artist }: Props) {
 
       {/* content */}
       <div className="w-full sm:w-2/3 md:w-1/2 flex flex-col gap-4 mx-auto">
-        <ErrorBoundary
-          fallback={
-            <div className="w-full flex flex-col items-center mx-auto">
-              <HeartCrack className="w-12 h-12" />
-              <span className="text-sm font-semibold">
-                Could not load history
-              </span>
-            </div>
-          }
-        >
-          <div className="flex flex-col gap-2 items-center">
-            {tab === "objekt_all" && (
-              <ObjektFilter
-                historyType={historyType}
-                setHistoryType={setHistoryType}
-              />
-            )}
-            <DateRangePicker value={timestamp} onValueChange={setTimestamp} />
-          </div>
-
-          <Suspense fallback={<HistoryListSkeleton />}>
-            <HistoryList
+        <div className="flex flex-col gap-2 items-center">
+          {tab === "objekt_all" && (
+            <ObjektFilter
               historyType={historyType}
-              artist={artist}
-              timestamp={timestamp}
+              setHistoryType={setHistoryType}
             />
-          </Suspense>
-        </ErrorBoundary>
+          )}
+          <DateRangePicker value={timestamp} onValueChange={setTimestamp} />
+        </div>
+
+        <HistoryList
+          historyType={historyType}
+          artist={artist}
+          timestamp={timestamp}
+        />
       </div>
     </main>
   );
@@ -111,24 +97,25 @@ type HistoryListProps = {
 };
 
 function HistoryList({ historyType, artist, timestamp }: HistoryListProps) {
-  const { data } = useSuspenseQuery({
+  // if i use useSuspenseQuery here, the URL fails to parse
+  const { status, data } = useQuery({
     queryKey: ["activity-history", artist, historyType, timestamp],
     queryFn: async () => {
       return await ofetch<CosmoActivityHistoryItem[]>(
-        `/api/bff/v1/activity/history`,
+        "/api/bff/v1/activity/history",
         {
           query: {
             artistName: artist,
             historyType,
-            fromTimestamp: timestamp?.from?.toISOString(),
-            toTimestamp: timestamp?.to?.toISOString(),
+            fromTimestamp: timestamp?.from?.toISOString() ?? "",
+            toTimestamp: timestamp?.to?.toISOString() ?? "",
           },
         }
       );
     },
   });
 
-  const groupedResults = data.reduce((acc, item) => {
+  const groupedResults = (data ?? []).reduce((acc, item) => {
     const date = new Date(item.timestamp);
     const formatted = format(date, "MMMM do yyyy");
     if (!acc[formatted]) {
@@ -139,40 +126,63 @@ function HistoryList({ historyType, artist, timestamp }: HistoryListProps) {
   }, {} as Record<string, CosmoActivityHistoryItem[]>);
 
   return (
-    <div className="flex flex-col gap-4">
-      {Object.entries(groupedResults).map(([month, items]) => (
-        <div key={month} className="flex flex-col divide-y divide-accent gap-2">
-          <h4 className="font-semibold">{month}</h4>
-
-          {/* rows */}
-          <div className="flex flex-col gap-2 py-2">
-            {items.map((item, i) => (
-              <div
-                key={`${month}-row-${i}`}
-                className="w-full flex gap-2 items-center h-16 p-4"
-              >
-                <div className="flex gap-4">
-                  <div className="relative aspect-square size-4 mt-[2px]">
-                    <Image src={item.icon} alt={item.title} fill={true} />
-                  </div>
-
-                  <div className="flex flex-col font-semibold">
-                    <p className="text-sm text-muted-foreground">
-                      {item.title}
-                    </p>
-                    <p className="text-base">{item.body}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {item.caption !== undefined ? `${item.caption} | ` : null}
-                      {format(item.timestamp, "h:mmaa")}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+    <Fragment>
+      {status === "pending" && <HistoryListSkeleton />}
+      {status === "error" && (
+        <div className="w-full flex flex-col items-center mx-auto">
+          <HeartCrack className="w-12 h-12" />
+          <span className="text-sm font-semibold">Could not load history</span>
         </div>
-      ))}
-    </div>
+      )}
+
+      {status === "success" && (
+        <div className="flex flex-col gap-4">
+          {data.length === 0 && (
+            <p className="text-sm font-semibold mx-auto">
+              No history found for this timeframe
+            </p>
+          )}
+
+          {Object.entries(groupedResults).map(([month, items]) => (
+            <div
+              key={month}
+              className="flex flex-col divide-y divide-accent gap-2"
+            >
+              <h4 className="font-semibold">{month}</h4>
+
+              {/* rows */}
+              <div className="flex flex-col gap-2 py-2">
+                {items.map((item, i) => (
+                  <div
+                    key={`${month}-row-${i}`}
+                    className="w-full flex gap-2 items-center h-16 p-4"
+                  >
+                    <div className="flex gap-4">
+                      <div className="relative aspect-square size-4 mt-[2px]">
+                        <Image src={item.icon} alt={item.title} fill={true} />
+                      </div>
+
+                      <div className="flex flex-col font-semibold">
+                        <p className="text-sm text-muted-foreground">
+                          {item.title}
+                        </p>
+                        <p className="text-base">{item.body}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {item.caption !== undefined
+                            ? `${item.caption} | `
+                            : null}
+                          {format(item.timestamp, "h:mmaa")}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </Fragment>
   );
 }
 
