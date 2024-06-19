@@ -1,11 +1,14 @@
 import { drizzle } from "drizzle-orm/pg-proxy";
 import * as schema from "./schema";
 import { env } from "@/env.mjs";
+import { ofetch } from "ofetch";
 
 export const indexer = drizzle(
   async (sql, params, method) => {
     try {
-      const rows = await fetch(env.INDEXER_PROXY_URL, {
+      const rows = await ofetch(env.INDEXER_PROXY_URL, {
+        retry: 1,
+        retryDelay: 500, // retry after 500ms
         method: "POST",
         headers: {
           "proxy-key": env.INDEXER_PROXY_KEY,
@@ -16,7 +19,7 @@ export const indexer = drizzle(
           method,
         }),
         cache: "no-cache",
-      }).then((res) => res.json());
+      });
 
       return { rows };
     } catch (e: any) {
