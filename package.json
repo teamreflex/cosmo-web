@@ -13,7 +13,8 @@
     "db:generate": "drizzle-kit generate",
     "db:upgrade": "drizzle-kit up",
     "db:migrate": "tsx ./migrate.mts",
-    "knip": "knip"
+    "knip": "knip",
+    "metadata:import": "bun run ./scripts/metadata-import/import.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.9.1",

@@ -3,7 +3,6 @@ import { indexer } from "@/lib/server/db/indexer";
 import { collections, objekts } from "@/lib/server/db/indexer/schema";
 import { objektMetadata } from "@/lib/server/db/schema";
 import { count, eq } from "drizzle-orm";
-import { unstable_cache } from "next/cache";
 
 export const runtime = "nodejs";
 
@@ -59,21 +58,12 @@ async function fetchCollectionMetadata(collectionSlug: string) {
 
 /**
  * Fetch information about a collection.
- * Cached for 30 minutes.
  */
-const fetchMetadata = (collection: string) =>
-  unstable_cache(
-    async (collection: string) => {
-      const [copies, metadata] = await Promise.all([
-        fetchCollectionCopies(collection),
-        fetchCollectionMetadata(collection),
-      ]);
+async function fetchMetadata(collection: string) {
+  const [copies, metadata] = await Promise.all([
+    fetchCollectionCopies(collection),
+    fetchCollectionMetadata(collection),
+  ]);
 
-      return { copies, metadata: metadata };
-    },
-    [`collection-metadata`],
-    {
-      revalidate: 60 * 30, // 30 minutes
-      tags: [`collection-metadata:${collection}`],
-    }
-  )(collection);
+  return { copies, metadata: metadata };
+}
