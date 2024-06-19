@@ -14,6 +14,7 @@ export default async function ActivityLoading() {
 
       {/* content */}
       <div className="w-full sm:w-2/3 md:w-1/2 flex flex-col gap-4 mx-auto">
+        <HistoryBlockSkeleton />
         <ArtistBlockSkeleton />
         <ObjektBlockSkeleton />
       </div>
@@ -32,4 +33,8 @@ export function ArtistBlockSkeleton() {
 
 export function ObjektBlockSkeleton() {
   return <Skeleton className="w-full rounded-xl h-56" />;
+}
+
+export function HistoryBlockSkeleton() {
+  return <Skeleton className="w-full rounded-xl h-16" />;
 }

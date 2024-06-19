@@ -4,10 +4,15 @@ import UserDialog from "@/components/activity/user-dialog";
 import { getSelectedArtist } from "@/lib/server/profiles";
 import { Suspense } from "react";
 import ArtistBlock from "@/components/activity/artist-block";
-import { ArtistBlockSkeleton, ObjektBlockSkeleton } from "./loading";
+import {
+  ArtistBlockSkeleton,
+  HistoryBlockSkeleton,
+  ObjektBlockSkeleton,
+} from "./loading";
 import ObjektsBlock from "@/components/activity/objekts-block";
 import { ErrorBoundary } from "react-error-boundary";
 import { HeartCrack } from "lucide-react";
+import HistoryBlock from "@/components/activity/history-block";
 
 export const metadata: Metadata = {
   title: "Activity",
@@ -30,6 +35,12 @@ export default async function ActivityPage() {
 
       {/* content */}
       <div className="w-full sm:w-2/3 md:w-1/2 flex flex-col gap-4 mx-auto">
+        <ErrorBoundary fallback={<Error error="Could not load history" />}>
+          <Suspense fallback={<HistoryBlockSkeleton />}>
+            <HistoryBlock user={user!} artist={artist} />
+          </Suspense>
+        </ErrorBoundary>
+
         <ErrorBoundary
           fallback={<Error error="Could not load artist information" />}
         >

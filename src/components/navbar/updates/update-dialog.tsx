@@ -68,6 +68,10 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2024-06-20",
+    changes: ["Added: History section to the new Activity tab."],
+  },
+  {
     date: "2024-06-05",
     changes: [
       "Fixed: Grid season selector now defaults to the current season.",
@@ -87,13 +91,6 @@ const updates = [
       "Fixed: Failure to fetch gas price and COMO balances should no longer crash the page.",
       "Fixed: Reduced reliance on COSMO servers to fetch members, should reduce crashes when COSMO is struggling.",
       "Fixed: Small performance improvements, things should feel a little snappier. Artist selections have been reset to accomodate this.",
-    ],
-  },
-  {
-    date: "2024-05-16",
-    changes: [
-      "Added: Functionality for claiming objekt event rewards.",
-      "Updated: Today's Atmosphere feed switched over to new functionality, post liking coming soon.",
     ],
   },
 ];

@@ -43,6 +43,10 @@ Supersedes the [objekts.jinsoul.tv](https://github.com/teamreflex/objekts-svelte
   - Displaying "today's rekord" on homepage
   - Displaying "top rekords", all rekords, my rekords and rekord archive
   - Liking & unliking of rekords
+- Activity
+  - Per-member objekt breakdown
+  - Day countdown since joining (welcome panel)
+  - Objekt, grid and gravity history
 
 </details>
 
