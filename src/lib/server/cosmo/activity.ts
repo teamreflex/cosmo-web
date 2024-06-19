@@ -1,6 +1,8 @@
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { cosmo } from "../http";
 import {
+  BFFActivityHistoryParams,
+  CosmoActivityHistoryItem,
   CosmoActivityMyObjektResult,
   CosmoActivityWelcomeResult,
 } from "@/lib/universal/cosmo/activity";
@@ -80,4 +82,23 @@ export async function fetchActivityMyObjekts(
       cache: "no-cache",
     }
   );
+}
+
+/**
+ * Fetch a user's history.
+ */
+export async function fetchActivityHistory(
+  token: string,
+  options: BFFActivityHistoryParams
+) {
+  return await cosmo<CosmoActivityHistoryItem[]>(`/bff/v1/activity/history`, {
+    query: {
+      ...options,
+      tid: v4(),
+    },
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    cache: "no-cache",
+  });
 }
