@@ -199,7 +199,7 @@ export function HistoryListSkeleton() {
 
           {/* rows */}
           <div className="flex flex-col gap-2 py-2">
-            {Array.from({ length: 3 }).map((_, i) => (
+            {Array.from({ length: 2 }).map((_, i) => (
               <div
                 key={`row-${i}`}
                 className="w-full flex gap-2 items-center h-16 p-4"

@@ -48,7 +48,7 @@ export default async function RekordPage() {
 
         {/* view all rekords */}
         <div className="flex flex-col gap-2 w-full overflow-x-hidden">
-          <h3 className="text-lg">View all Rekords</h3>
+          <h3 className="text-lg font-semibold">View all Rekords</h3>
 
           <AllRekords artist={artist} />
         </div>

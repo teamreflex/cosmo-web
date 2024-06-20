@@ -29,9 +29,9 @@ function GravityPast({ gravity }: { gravity: CosmoPastGravity }) {
   return (
     <Link
       href={`/gravity/${gravity.artist}/${gravity.id}`}
-      className="w-full bg-accent/50 rounded-lg border border-white/20 flex items-center hover:bg-accent/40 transition-colors gap-4 p-4"
+      className="w-full bg-accent/50 rounded-lg border border-white/20 flex items-center hover:bg-accent/40 transition-colors gap-4 p-4 h-28"
     >
-      <div className="h-[70px] w-[70px] aspect-square relative rounded">
+      <div className="h-[70px] aspect-square relative rounded">
         <Image
           className="rounded"
           src={gravity.bannerImageUrl}

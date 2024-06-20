@@ -55,9 +55,15 @@ function GravityList({ gravities }: { gravities: CosmoGravity[] }) {
 
 export function GravitySkeleton() {
   return (
-    <div className="flex flex-col gap-4 items-center w-full animate-pulse">
+    <div className="relative flex flex-col gap-4 items-center w-full animate-pulse">
       <div className="flex w-full sm:w-1/2 bg-accent rounded-lg h-10" />
-      <div className="flex w-full sm:w-1/2 bg-accent rounded-lg h-24" />
+      <div className="z-20 absolute top-0 w-full h-full bg-gradient-to-b from-transparent to-75% to-background" />
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div
+          key={i}
+          className="z-10 flex w-full sm:w-1/2 bg-accent rounded-lg h-28"
+        />
+      ))}
     </div>
   );
 }

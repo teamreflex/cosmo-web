@@ -45,15 +45,18 @@ export default function RekordGrid<TPostType extends CosmoRekordItem>({
   const rekords = data?.pages.flatMap((group) => group.results) ?? [];
 
   return (
-    <div className={cn("grid", gridClasses)}>
+    <div className={cn("relative grid", gridClasses)}>
       {status === "pending" ? (
         <Fragment>
-          {[...Array(5)].map((_, i) => (
-            <Skeleton key={i} className="max-w-64 aspect-photocard" />
+          <div className="z-20 absolute top-0 w-full h-full bg-gradient-to-b from-transparent to-75% to-background" />
+          {[...Array(10)].map((_, i) => (
+            <Skeleton key={i} className="z-10 max-w-64 aspect-photocard" />
           ))}
         </Fragment>
       ) : status === "error" ? (
-        <div>error</div>
+        <div className="col-span-full font-semibold text-sm text-center">
+          Could not load rekords
+        </div>
       ) : (
         <Fragment>
           {rekords.map((item) => (
