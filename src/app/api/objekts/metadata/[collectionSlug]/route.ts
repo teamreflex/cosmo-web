@@ -1,3 +1,4 @@
+import { cacheHeaders } from "@/app/api/common";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import { collections, objekts } from "@/lib/server/db/indexer/schema";
@@ -15,10 +16,13 @@ type Params = {
 /**
  * API route for individual objekt dialogs.
  * Fetches metadata about a collection.
+ * Cached for 5 minutes.
  */
 export async function GET(request: Request, { params }: Params) {
   const metadata = await fetchMetadata(params.collectionSlug);
-  return Response.json(metadata);
+  return Response.json(metadata, {
+    headers: cacheHeaders(60 * 5),
+  });
 }
 
 /**

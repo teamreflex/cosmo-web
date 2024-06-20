@@ -8,6 +8,7 @@ import {
 import { FinalProgress, SeasonMatrix } from "@/lib/universal/progress";
 import { and, eq } from "drizzle-orm";
 import { PartialCollection, fetchTotal } from "../../../common";
+import { cacheHeaders } from "@/app/api/common";
 
 export const runtime = "nodejs";
 
@@ -21,6 +22,7 @@ type Params = {
 /**
  * API route that services the /@:nickname/progress page.
  * Takes an address and a member name, and returns the collection progress breakdown of that member.
+ * Cached for 5 minutes.
  */
 export async function GET(request: Request, { params }: Params) {
   const matrix = buildMatrix();
@@ -29,7 +31,9 @@ export async function GET(request: Request, { params }: Params) {
     fetchProgress(params.address.toLowerCase(), params.member),
   ]);
 
-  return Response.json(zipResults(matrix, totals, progress));
+  return Response.json(zipResults(matrix, totals, progress), {
+    headers: cacheHeaders(60 * 5),
+  });
 }
 
 /**

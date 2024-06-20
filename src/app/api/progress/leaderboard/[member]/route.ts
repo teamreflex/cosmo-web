@@ -9,6 +9,7 @@ import { LeaderboardItem } from "@/lib/universal/progress";
 import { unstable_cache } from "next/cache";
 import { profiles } from "@/lib/server/db/schema";
 import { ValidOnlineType } from "@/lib/universal/cosmo/common";
+import { cacheHeaders } from "@/app/api/common";
 
 export const runtime = "nodejs";
 const LEADERBOARD_COUNT = 25;
@@ -22,6 +23,7 @@ type Params = {
 /**
  * API route that services the progress leaderboard component.
  * Takes a member name, and returns the progress leaderboard for that member.
+ * Cached for 1 hour.
  */
 export async function GET(request: NextRequest, { params }: Params) {
   // parse search params
@@ -53,50 +55,51 @@ export async function GET(request: NextRequest, { params }: Params) {
     };
   }) satisfies LeaderboardItem[];
 
-  return Response.json({
-    total: totals.length,
-    leaderboard: results,
-  });
+  return Response.json(
+    {
+      total: totals.length,
+      leaderboard: results,
+    },
+    {
+      headers: cacheHeaders(60 * 60),
+    }
+  );
 }
 
 /**
  * Fetch top 25 for the given member.
- * Cached for 1 hour.
  */
-const fetchLeaderboard = unstable_cache(
-  async (member: string, onlineType: ValidOnlineType | null) => {
-    const subquery = indexer
-      .selectDistinctOn([objekts.owner, objekts.collectionId], {
-        owner: objekts.owner,
-        collectionId: objekts.collectionId,
-      })
-      .from(objekts)
-      .leftJoin(collections, eq(objekts.collectionId, collections.id))
-      .where(
-        and(
-          eq(collections.member, member),
-          not(inArray(collections.class, ["Welcome", "Zero"])),
-          ...(onlineType !== null
-            ? [eq(collections.onOffline, onlineType)]
-            : [])
-        )
+async function fetchLeaderboard(
+  member: string,
+  onlineType: ValidOnlineType | null
+) {
+  const subquery = indexer
+    .selectDistinctOn([objekts.owner, objekts.collectionId], {
+      owner: objekts.owner,
+      collectionId: objekts.collectionId,
+    })
+    .from(objekts)
+    .leftJoin(collections, eq(objekts.collectionId, collections.id))
+    .where(
+      and(
+        eq(collections.member, member),
+        not(inArray(collections.class, ["Welcome", "Zero"])),
+        ...(onlineType !== null ? [eq(collections.onOffline, onlineType)] : [])
       )
-      .groupBy(objekts.owner, objekts.collectionId)
-      .as("subquery");
+    )
+    .groupBy(objekts.owner, objekts.collectionId)
+    .as("subquery");
 
-    return await indexer
-      .select({
-        owner: subquery.owner,
-        count: count(subquery.collectionId).as("count"),
-      })
-      .from(subquery)
-      .groupBy(subquery.owner)
-      .orderBy(sql`count desc`)
-      .limit(LEADERBOARD_COUNT);
-  },
-  ["progress-leaderboard"], // params (member name, onlineType) gets added to this
-  { revalidate: 60 * 60 } // 1 hour
-);
+  return await indexer
+    .select({
+      owner: subquery.owner,
+      count: count(subquery.collectionId).as("count"),
+    })
+    .from(subquery)
+    .groupBy(subquery.owner)
+    .orderBy(sql`count desc`)
+    .limit(LEADERBOARD_COUNT);
+}
 
 /**
  * OnlineType type guard.

@@ -33,3 +33,17 @@ export async function getUser(): Promise<AuthenticationResult> {
 
   return { success: true, user };
 }
+
+/**
+ * Default cache headers for API responses.
+ */
+export function cacheHeaders(ttl: number) {
+  return {
+    // browser: cache for 10 seconds
+    "Cache-Control": `max-age=10`,
+    // cloudflare: cache for 60 seconds
+    "CDN-Cache-Control": "max-age=60",
+    // vercel: cache for X seconds
+    "Vercel-CDN-Cache-Control": `max-age=${ttl}, stale-while-revalidate=30`,
+  };
+}

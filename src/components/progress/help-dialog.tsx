@@ -29,10 +29,7 @@ export default function HelpDialog() {
               Each member can be further broken down into just physical (A) or
               digital (Z) collections, instead of combined.
             </p>
-            <p>
-              Objekts are recalculated every hour, so new drops may result in
-              progresses displaying over 100% for a short period.
-            </p>
+            <p>Progress breakdowns are updated every 5 minutes.</p>
           </div>
 
           {/* leaderboard */}
