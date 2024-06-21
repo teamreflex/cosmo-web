@@ -6,13 +6,30 @@ import { fetchTotal } from "../../common";
 import { fetchKnownAddresses } from "@/lib/server/profiles";
 import { addrcomp } from "@/lib/utils";
 import { LeaderboardItem } from "@/lib/universal/progress";
-import { unstable_cache } from "next/cache";
 import { profiles } from "@/lib/server/db/schema";
-import { ValidOnlineType } from "@/lib/universal/cosmo/common";
+import {
+  ValidOnlineType,
+  ValidSeason,
+  validOnlineTypes,
+  validSeasons,
+} from "@/lib/universal/cosmo/common";
 import { cacheHeaders } from "@/app/api/common";
+import { z } from "zod";
 
 export const runtime = "nodejs";
 const LEADERBOARD_COUNT = 25;
+
+const schema = z.object({
+  member: z.string(),
+  onlineType: z.preprocess(
+    (v) => (v === "" ? null : v),
+    z.enum(validOnlineTypes).nullable()
+  ),
+  season: z.preprocess(
+    (v) => (v === "" ? null : v),
+    z.enum(validSeasons).nullable()
+  ),
+});
 
 type Params = {
   params: {
@@ -27,12 +44,23 @@ type Params = {
  */
 export async function GET(request: NextRequest, { params }: Params) {
   // parse search params
-  const param = request.nextUrl.searchParams.get("onlineType");
-  const onlineType = isOnlineType(param) ? param : null;
+  const result = schema.safeParse({
+    member: params.member,
+    ...Object.fromEntries(request.nextUrl.searchParams.entries()),
+  });
+
+  // use fallbacks if parsing fails
+  const options = result.success
+    ? result.data
+    : {
+        member: params.member,
+        onlineType: null,
+        season: null,
+      };
 
   const [totals, leaderboard] = await Promise.all([
-    fetchTotal(params.member, onlineType),
-    fetchLeaderboard(params.member, onlineType),
+    fetchTotal(options),
+    fetchLeaderboard(options),
   ]);
 
   // fetch profiles for each address
@@ -66,13 +94,20 @@ export async function GET(request: NextRequest, { params }: Params) {
   );
 }
 
+type FetchLeaderboard = {
+  member: string;
+  onlineType: ValidOnlineType | null;
+  season: ValidSeason | null;
+};
+
 /**
  * Fetch top 25 for the given member.
  */
-async function fetchLeaderboard(
-  member: string,
-  onlineType: ValidOnlineType | null
-) {
+async function fetchLeaderboard({
+  member,
+  onlineType,
+  season,
+}: FetchLeaderboard) {
   const subquery = indexer
     .selectDistinctOn([objekts.owner, objekts.collectionId], {
       owner: objekts.owner,
@@ -84,7 +119,8 @@ async function fetchLeaderboard(
       and(
         eq(collections.member, member),
         not(inArray(collections.class, ["Welcome", "Zero"])),
-        ...(onlineType !== null ? [eq(collections.onOffline, onlineType)] : [])
+        ...(onlineType !== null ? [eq(collections.onOffline, onlineType)] : []),
+        ...(season !== null ? [eq(collections.season, season)] : [])
       )
     )
     .groupBy(objekts.owner, objekts.collectionId)
@@ -99,11 +135,4 @@ async function fetchLeaderboard(
     .groupBy(subquery.owner)
     .orderBy(sql`count desc`)
     .limit(LEADERBOARD_COUNT);
-}
-
-/**
- * OnlineType type guard.
- */
-function isOnlineType(type: string | null): type is ValidOnlineType {
-  return type === "online" || type === "offline";
 }

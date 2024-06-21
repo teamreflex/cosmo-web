@@ -68,6 +68,10 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2024-06-21",
+    changes: ["Added: Season filter to progress leaderboards"],
+  },
+  {
     date: "2024-06-20",
     changes: ["Added: History section to the new Activity tab."],
   },

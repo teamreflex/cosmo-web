@@ -28,6 +28,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { ValidSeason, validSeasons } from "@/lib/universal/cosmo/common";
+import { Separator } from "../ui/separator";
 
 type Props = {
   member: string;
@@ -39,9 +41,16 @@ export default function ProgressLeaderboard({ member }: Props) {
     "filter",
     parseAsStringEnum(["combined", "online", "offline"])
   );
+  const [season, setSeason] = useQueryState(
+    "season",
+    parseAsStringEnum([...validSeasons])
+  );
 
   function toggle() {
     setOpen((prev) => (prev === true ? null : true));
+    if (open) {
+      setSeason(null);
+    }
   }
 
   return (
@@ -63,7 +72,7 @@ export default function ProgressLeaderboard({ member }: Props) {
       </TooltipProvider>
 
       <Sheet open={open === true} onOpenChange={() => toggle()}>
-        <SheetContent className="overflow-y-scroll">
+        <SheetContent className="overflow-y-scroll outline-none">
           <SheetHeader>
             <SheetTitle className="font-cosmo uppercase text-xl">
               Leaderboard
@@ -73,20 +82,26 @@ export default function ProgressLeaderboard({ member }: Props) {
             </SheetDescription>
           </SheetHeader>
 
-          <div className="flex justify-between items-center border-b border-accent pb-4">
-            <p className="font-semibold">Filter</p>
-            <FilterSelect
-              value={onlineType ?? "combined"}
-              update={setOnlineType}
-            />
-          </div>
+          <div className="flex flex-col">
+            {/* filters */}
+            <div className="flex items-center justify-center gap-2 pb-4 pt-2">
+              <FilterSelect
+                value={onlineType ?? "combined"}
+                update={setOnlineType}
+              />
+              <SeasonSelect value={season ?? "all"} update={setSeason} />
+            </div>
 
-          <Suspense fallback={<LeaderboardSkeleton />}>
-            <ProgressLeaderboardContent
-              member={member}
-              onlineType={onlineType}
-            />
-          </Suspense>
+            <Separator orientation="horizontal" />
+
+            <Suspense fallback={<LeaderboardSkeleton />}>
+              <ProgressLeaderboardContent
+                member={member}
+                onlineType={onlineType}
+                season={season}
+              />
+            </Suspense>
+          </div>
         </SheetContent>
       </Sheet>
     </Fragment>
@@ -106,10 +121,11 @@ function FilterSelect({
 
   return (
     <Select value={value} onValueChange={set}>
-      <SelectTrigger className="w-32 drop-shadow-lg">
+      <SelectTrigger className="drop-shadow-lg">
         <SelectValue placeholder="Sort" />
       </SelectTrigger>
       <SelectContent
+        className="outline-none"
         ref={(ref) => {
           // fixes mobile touch-through bug in radix
           if (!ref) return;
@@ -121,6 +137,42 @@ function FilterSelect({
         <SelectItem value="combined">Combined</SelectItem>
         <SelectItem value="offline">Physical</SelectItem>
         <SelectItem value="online">Digital</SelectItem>
+      </SelectContent>
+    </Select>
+  );
+}
+
+function SeasonSelect({
+  value,
+  update,
+}: {
+  value: string;
+  update: (value: ValidSeason | null) => void;
+}) {
+  function set(value: string) {
+    update(value === "all" ? null : (value as ValidSeason));
+  }
+
+  return (
+    <Select value={value} onValueChange={set}>
+      <SelectTrigger className="drop-shadow-lg">
+        <SelectValue placeholder="Sort" />
+      </SelectTrigger>
+      <SelectContent
+        ref={(ref) => {
+          // fixes mobile touch-through bug in radix
+          if (!ref) return;
+          ref.ontouchstart = (e) => {
+            e.preventDefault();
+          };
+        }}
+      >
+        <SelectItem value="all">All</SelectItem>
+        {validSeasons.map((season) => (
+          <SelectItem key={season} value={season}>
+            {season}
+          </SelectItem>
+        ))}
       </SelectContent>
     </Select>
   );

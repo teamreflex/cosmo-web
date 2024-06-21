@@ -27,7 +27,7 @@ type Params = {
 export async function GET(request: Request, { params }: Params) {
   const matrix = buildMatrix();
   const [totals, progress] = await Promise.all([
-    fetchTotal(params.member),
+    fetchTotal({ member: params.member }),
     fetchProgress(params.address.toLowerCase(), params.member),
   ]);
 
