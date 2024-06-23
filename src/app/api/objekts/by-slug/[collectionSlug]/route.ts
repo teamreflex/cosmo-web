@@ -1,3 +1,4 @@
+import { cacheHeaders } from "@/app/api/common";
 import { indexer } from "@/lib/server/db/indexer";
 import { collections } from "@/lib/server/db/indexer/schema";
 import { eq } from "drizzle-orm";
@@ -13,6 +14,7 @@ type Params = {
 /**
  * API route for individual objekt dialogs.
  * Fetches a single objekt from the database.
+ * Cached for 1 hour.
  */
 export async function GET(request: Request, { params }: Params) {
   const rows = await indexer
@@ -25,5 +27,7 @@ export async function GET(request: Request, { params }: Params) {
     return Response.json({ message: `Collection not found` }, { status: 404 });
   }
 
-  return Response.json(rows[0]);
+  return Response.json(rows[0], {
+    headers: cacheHeaders(60 * 60),
+  });
 }
