@@ -1,5 +1,5 @@
 import { cache } from "react";
-import { getToken } from "./api/common";
+import { getUser } from "./api/common";
 import {
   fetchProfile,
   fetchUserByIdentifier,
@@ -16,7 +16,7 @@ import { fetchObjektLists } from "@/lib/server/objekts/lists";
  * Decode the current token.
  */
 export const decodeUser = cache(async () => {
-  const auth = await getToken();
+  const auth = await getUser();
   return auth.success ? auth.user : undefined;
 });
 

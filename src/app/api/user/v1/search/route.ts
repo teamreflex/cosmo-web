@@ -1,7 +1,8 @@
-import { getAuth } from "@/app/api/common";
+import { getUser } from "@/app/api/common";
 import { CosmoSearchResult, search } from "@/lib/server/cosmo/auth";
 import { db } from "@/lib/server/db";
 import { profiles } from "@/lib/server/db/schema";
+import { validateExpiry } from "@/lib/server/jwt";
 import { like } from "drizzle-orm";
 import { NextRequest } from "next/server";
 
@@ -10,10 +11,17 @@ import { NextRequest } from "next/server";
  */
 export async function GET(request: NextRequest) {
   const query = request.nextUrl.searchParams.get("query") ?? "";
-  const auth = await getAuth();
+  const auth = await getUser();
 
-  // use the database if there's no valid auth token
-  if (auth.status === "invalid") {
+  /**
+   * use the database if:
+   * - user is not authenticated
+   * - or, user is authenticated but the token is expired
+   */
+  if (
+    auth.success === false ||
+    (auth.success === true && validateExpiry(auth.user.accessToken) === false)
+  ) {
     return Response.json(await queryDatabase(query));
   }
 

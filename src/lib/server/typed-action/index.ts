@@ -3,7 +3,7 @@ import { getErrorMessage } from "../../error";
 import { redirect } from "next/navigation";
 import { Action, AuthenticatedAction, TypedActionResult } from "./types";
 import { AuthenticatedActionError } from "./errors";
-import { getAuth } from "@/app/api/common";
+import { getUser } from "@/app/api/common";
 
 /**
  * Create a Zod-validated server form action.
@@ -56,8 +56,8 @@ export async function authenticatedAction<TResponse, TSchema extends z.Schema>({
 }: AuthenticatedAction<TResponse, TSchema>): Promise<
   TypedActionResult<TResponse>
 > {
-  const auth = await getAuth();
-  if (auth.status === "invalid") {
+  const auth = await getUser();
+  if (!auth.success) {
     return { status: "error", error: "invalid user" };
   }
 
