@@ -69,7 +69,7 @@ export default function UpdateDialog() {
 const updates = [
   {
     date: "2024-06-21",
-    changes: ["Added: Season filter to progress leaderboards"],
+    changes: ["Added: Season filter to progress leaderboards."],
   },
   {
     date: "2024-06-20",
@@ -86,15 +86,5 @@ const updates = [
   {
     date: "2024-05-31",
     changes: ['Added: Activity page, replaces the old "My Page" page.'],
-  },
-  {
-    date: "2024-05-24",
-    changes: [
-      "Added: Add Objekt to List button on profile pages.",
-      "Updated: Replaced mobile navigation menu.",
-      "Fixed: Failure to fetch gas price and COMO balances should no longer crash the page.",
-      "Fixed: Reduced reliance on COSMO servers to fetch members, should reduce crashes when COSMO is struggling.",
-      "Fixed: Small performance improvements, things should feel a little snappier. Artist selections have been reset to accomodate this.",
-    ],
   },
 ];

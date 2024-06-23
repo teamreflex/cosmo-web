@@ -3,6 +3,8 @@ import { SignJWT, decodeJwt, jwtVerify } from "jose";
 import { env } from "@/env.mjs";
 import { TokenPayload } from "@/lib/universal/auth";
 
+export const COOKIE_NAME = "token";
+
 export async function readToken(token?: string) {
   if (token) {
     const decoded = await decodeToken(token);

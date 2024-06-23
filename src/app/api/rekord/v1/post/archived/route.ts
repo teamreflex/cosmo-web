@@ -1,4 +1,4 @@
-import { getUser } from "@/app/api/common";
+import { getAuth } from "@/app/api/common";
 import { fetchArchivedPosts } from "@/lib/server/cosmo/rekord";
 import { parseRekordFilters } from "@/lib/universal/cosmo/rekord";
 import { NextRequest } from "next/server";
@@ -7,9 +7,9 @@ import { NextRequest } from "next/server";
  * API route that services the /rekord/archive page.
  */
 export async function GET(request: NextRequest) {
-  const auth = await getUser();
-  if (!auth.success) {
-    return new Response(auth.error, { status: auth.status });
+  const auth = await getAuth();
+  if (auth.status === "invalid") {
+    return new Response("unauthorized", { status: 401 });
   }
 
   const params = parseRekordFilters(request.nextUrl.searchParams);

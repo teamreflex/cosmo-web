@@ -1,4 +1,4 @@
-import { getUser } from "@/app/api/common";
+import { getAuth } from "@/app/api/common";
 import { fetchArtistGridStatus } from "@/lib/server/cosmo/grid";
 
 /**
@@ -9,9 +9,9 @@ export async function GET(
   _: Request,
   { params }: { params: { grid: string } }
 ) {
-  const auth = await getUser();
-  if (!auth.success) {
-    return new Response(auth.error, { status: auth.status });
+  const auth = await getAuth();
+  if (auth.status === "invalid") {
+    return new Response("unauthorized", { status: 401 });
   }
 
   const grid = await fetchArtistGridStatus(auth.user.accessToken, params.grid);
