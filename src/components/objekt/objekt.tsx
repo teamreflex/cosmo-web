@@ -1,11 +1,12 @@
 "use client";
 
 import { ValidObjekt } from "@/lib/universal/objekts";
-import Image from "next/image";
+import { default as NextImage } from "next/image";
 import { CSSProperties, PropsWithChildren, memo, useState } from "react";
 import MetadataDialog, { fetchObjektQuery } from "./metadata-dialog";
 import { getObjektImageUrls, getObjektSlug } from "./objekt-util";
 import { useQueryClient } from "@tanstack/react-query";
+import { cn } from "@/lib/utils";
 
 export type BaseObjektProps<TObjektType extends ValidObjekt> =
   PropsWithChildren<{
@@ -13,7 +14,7 @@ export type BaseObjektProps<TObjektType extends ValidObjekt> =
     objekt: TObjektType;
   }>;
 
-const MemoizedImage = memo(Image);
+const MemoizedImage = memo(NextImage);
 
 interface FlippableObjektProps<TObjektType extends ValidObjekt>
   extends BaseObjektProps<TObjektType> {}
@@ -32,7 +33,9 @@ export const FlippableObjekt = memo(function FlippableObjekt<
     <div
       onClick={() => setFlipped((prev) => !prev)}
       data-flipped={flipped}
-      className="relative w-full aspect-photocard cursor-pointer object-contain touch-manipulation transition-transform preserve-3d transform-gpu duration-500 data-[flipped=true]:rotate-y-180"
+      className={cn(
+        "relative bg-accent w-full aspect-photocard cursor-pointer object-contain touch-manipulation transition-transform preserve-3d transform-gpu duration-500 data-[flipped=true]:rotate-y-180 rounded-2xl"
+      )}
       style={css}
     >
       {/* front */}
@@ -74,6 +77,7 @@ export const ExpandableObjekt = memo(function ExpandableObjekt<
   setActive,
   priority,
 }: ExpandableObjektProps<TObjektType>) {
+  const [isLoaded, setIsLoaded] = useState(false);
   const queryClient = useQueryClient();
 
   const css = {
@@ -83,6 +87,11 @@ export const ExpandableObjekt = memo(function ExpandableObjekt<
 
   const slug = getObjektSlug(objekt);
   const { front } = getObjektImageUrls(objekt);
+
+  function prefetch() {
+    const img = new Image();
+    img.src = front.download;
+  }
 
   return (
     <MetadataDialog
@@ -96,6 +105,8 @@ export const ExpandableObjekt = memo(function ExpandableObjekt<
           style={css}
         >
           <MemoizedImage
+            onMouseOver={prefetch}
+            onLoad={() => setIsLoaded(true)}
             onClick={() => {
               // populate the query cache so it doesn't re-fetch
               queryClient.setQueryData(fetchObjektQuery(slug).queryKey, objekt);
@@ -104,7 +115,10 @@ export const ExpandableObjekt = memo(function ExpandableObjekt<
               // open the dialog
               openDialog();
             }}
-            className="cursor-pointer"
+            className={cn(
+              "cursor-pointer transition-opacity",
+              isLoaded === false && "opacity-0"
+            )}
             src={front.display}
             width={291}
             height={450}

@@ -2,7 +2,7 @@ import { ObjektProgression } from "@/lib/universal/progress";
 import Image from "next/image";
 import ObjektSidebar from "../objekt/objekt-sidebar";
 import { cn } from "@/lib/utils";
-import { CSSProperties } from "react";
+import { CSSProperties, useState } from "react";
 import { replaceUrlSize } from "../objekt/objekt-util";
 
 type Props = {
@@ -10,6 +10,8 @@ type Props = {
 };
 
 export default function ProgressObjekt({ objekt }: Props) {
+  const [isLoaded, setIsLoaded] = useState(false);
+
   const css = {
     "--objekt-text-color": objekt.textColor,
   } as CSSProperties;
@@ -25,6 +27,8 @@ export default function ProgressObjekt({ objekt }: Props) {
       )}
     >
       <Image
+        onLoad={() => setIsLoaded(true)}
+        className={cn("transition-opacity", isLoaded === false && "opacity-0")}
         src={image}
         width={291}
         height={450}
@@ -33,7 +37,7 @@ export default function ProgressObjekt({ objekt }: Props) {
         unoptimized
       />
 
-      <ObjektSidebar collection={objekt.collectionNo} />
+      {isLoaded && <ObjektSidebar collection={objekt.collectionNo} />}
     </div>
   );
 }

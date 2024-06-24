@@ -21,7 +21,8 @@ export default function GridObjekt({
   textColor,
   selected,
 }: Props) {
-  const [loaded, setLoaded] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
+
   const css = {
     "--objekt-text-color": textColor,
   } as CSSProperties;
@@ -34,19 +35,20 @@ export default function GridObjekt({
         "relative aspect-photocard w-full flex justify-center items-center bg-accent border-4 border-background rounded-2xl transition-colors",
         `text-[var(--objekt-text-color)]`,
         selected && "border-cosmo",
-        !loaded && "animate-pulse",
+        !isLoaded && "animate-pulse",
         className
       )}
       style={css}
     >
       <Image
+        onLoad={() => setIsLoaded(true)}
+        className={cn("transition-opacity", isLoaded === false && "opacity-0")}
         src={scaledImage}
         fill={true}
         alt={collectionNo}
-        onLoad={() => setLoaded(true)}
         unoptimized
       />
-      {loaded && (
+      {isLoaded && (
         <GridObjektNumber collectionNo={collectionNo} objektNo={objektNo} />
       )}
       <div
