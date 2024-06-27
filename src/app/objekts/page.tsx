@@ -37,23 +37,26 @@ export default async function ObjektsIndexPage({ searchParams }: Params) {
     })
   );
 
-  // prefetch objekts
-  queryClient.prefetchInfiniteQuery({
-    queryKey: ["objekt-index", "blockchain", parseObjektIndexFilters(filters)],
-    queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
-      return fetchObjektsIndex({
-        ...filters,
-        page: pageParam,
-      });
-    },
-    initialPageParam: 0,
-  });
-
   const user = await decodeUser();
   const [artists, data, collections] = await Promise.all([
     getArtistsWithMembers(),
     user ? getProfileAndLists(user.profileId) : undefined,
     fetchUniqueCollections(),
+    // prefetch objekts
+    queryClient.prefetchInfiniteQuery({
+      queryKey: [
+        "objekt-index",
+        "blockchain",
+        parseObjektIndexFilters(filters),
+      ],
+      queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
+        return fetchObjektsIndex({
+          ...filters,
+          page: pageParam,
+        });
+      },
+      initialPageParam: 0,
+    }),
   ]);
 
   const { profile, objektLists = [] } = data ?? {};
