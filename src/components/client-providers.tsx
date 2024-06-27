@@ -1,8 +1,14 @@
 "use client";
 
 import { PropsWithChildren } from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  defaultShouldDehydrateQuery,
+  isServer,
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { ReactQueryStreamedHydration } from "@tanstack/react-query-next-experimental";
 // import AuthProvider from "./navbar/auth/auth-provider";
 import WarningDialog from "./warning-dialog";
 import { preconnect, prefetchDNS } from "react-dom";
@@ -15,6 +21,11 @@ function makeQueryClient() {
       queries: {
         staleTime: 1000 * 60 * 5, // 5 minutes
       },
+      dehydrate: {
+        shouldDehydrateQuery: (query) =>
+          defaultShouldDehydrateQuery(query) ||
+          query.state.status === "pending",
+      },
     },
   });
 }
@@ -22,7 +33,7 @@ function makeQueryClient() {
 let browserQueryClient: QueryClient | undefined = undefined;
 
 function getQueryClient() {
-  if (typeof window === "undefined") {
+  if (isServer) {
     return makeQueryClient();
   } else {
     if (!browserQueryClient) browserQueryClient = makeQueryClient();
@@ -42,7 +53,7 @@ export default function ClientProviders({ children }: Props) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {children}
+      <ReactQueryStreamedHydration>{children}</ReactQueryStreamedHydration>
 
       <WarningDialog />
       <ReactQueryDevtools />

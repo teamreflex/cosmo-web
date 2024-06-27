@@ -8,7 +8,7 @@ import {
   useCallback,
   useMemo,
 } from "react";
-import { HeartCrack, Loader2, RefreshCcw } from "lucide-react";
+import { HeartCrack, RefreshCcw } from "lucide-react";
 import {
   QueryErrorResetBoundary,
   QueryFunction,

@@ -1,7 +1,7 @@
 import "server-only";
 import { and, eq } from "drizzle-orm";
 import { db } from "../db";
-import { listEntries, lists, profiles } from "../db/schema";
+import { listEntries, lists, ObjektList, profiles } from "../db/schema";
 import { CreateObjektList, UpdateObjektList } from "@/lib/universal/objekts";
 
 /**
@@ -22,37 +22,10 @@ export async function fetchObjektLists(nickname: string) {
  * Fetch a single list.
  */
 export async function fetchObjektList(address: string, slug: string) {
-  const rows = await db
-    .select()
-    .from(lists)
-    .where(and(eq(lists.slug, slug), eq(lists.userAddress, address)));
-
-  if (rows.length === 0) {
-    return undefined;
-  }
-
-  return rows[0];
-}
-
-/**
- * Fetch a single list with entries.
- */
-export async function fetchObjektListWithEntries(
-  address: string,
-  slug: string
-) {
-  const list = await db.query.lists.findFirst({
-    where: and(eq(lists.slug, slug), eq(lists.userAddress, address)),
-    with: {
-      entries: true,
-    },
+  return await db.query.lists.findFirst({
+    where: (lists, { and, eq }) =>
+      and(eq(lists.slug, slug), eq(lists.userAddress, address)),
   });
-
-  if (!list) {
-    return undefined;
-  }
-
-  return list;
 }
 
 /**

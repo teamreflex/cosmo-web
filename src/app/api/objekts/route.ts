@@ -1,4 +1,4 @@
-import { fetchObjektsIndex } from "@/lib/server/objekts/fetch";
+import { fetchObjektsIndex } from "@/lib/server/objekts/prefetching/objekt-index";
 import { parseObjektIndex } from "@/lib/universal/parsers";
 import { NextRequest } from "next/server";
 

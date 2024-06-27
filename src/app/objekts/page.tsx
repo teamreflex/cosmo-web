@@ -1,13 +1,16 @@
 import { Metadata } from "next";
-import { decodeUser, getProfileAndLists } from "../data-fetching";
+import {
+  decodeUser,
+  getArtistsWithMembers,
+  getProfileAndLists,
+} from "../data-fetching";
 import IndexRenderer from "@/components/objekt-index/index-renderer";
 import { fetchUniqueCollections } from "@/lib/server/objekts/collections";
-import { fetchArtistsWithMembers } from "@/lib/server/cosmo/artists";
 import { ProfileProvider } from "@/hooks/use-profile";
 import {
   fetchObjektsIndex,
   parseObjektIndexFilters,
-} from "@/lib/server/objekts/fetch";
+} from "@/lib/server/objekts/prefetching/objekt-index";
 import { parseObjektIndex } from "@/lib/universal/parsers";
 import {
   HydrationBoundary,
@@ -25,6 +28,8 @@ type Params = {
 
 export default async function ObjektsIndexPage({ searchParams }: Params) {
   const queryClient = new QueryClient();
+
+  // parse search params
   const filters = parseObjektIndex(
     new URLSearchParams({
       ...searchParams,
@@ -32,28 +37,23 @@ export default async function ObjektsIndexPage({ searchParams }: Params) {
     })
   );
 
-  const queryKey = [
-    "objekt-index",
-    "blockchain",
-    parseObjektIndexFilters(filters),
-  ];
-  const queryFn = async ({ pageParam = 0 }: { pageParam?: number }) => {
-    return fetchObjektsIndex({
-      ...filters,
-      page: pageParam,
-    });
-  };
+  // prefetch objekts
+  queryClient.prefetchInfiniteQuery({
+    queryKey: ["objekt-index", "blockchain", parseObjektIndexFilters(filters)],
+    queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
+      return fetchObjektsIndex({
+        ...filters,
+        page: pageParam,
+      });
+    },
+    initialPageParam: 0,
+  });
 
   const user = await decodeUser();
-  const [data, artists, collections] = await Promise.all([
+  const [artists, data, collections] = await Promise.all([
+    getArtistsWithMembers(),
     user ? getProfileAndLists(user.profileId) : undefined,
-    fetchArtistsWithMembers(),
     fetchUniqueCollections(),
-    queryClient.prefetchInfiniteQuery({
-      queryKey,
-      queryFn,
-      initialPageParam: 0,
-    }),
   ]);
 
   const { profile, objektLists = [] } = data ?? {};

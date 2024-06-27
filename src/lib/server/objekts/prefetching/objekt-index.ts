@@ -1,6 +1,4 @@
 import { and, sql } from "drizzle-orm";
-import { indexer } from "../db/indexer";
-import { collections } from "../db/indexer/schema";
 import {
   withArtist,
   withClass,
@@ -9,11 +7,13 @@ import {
   withOnlineType,
   withSeason,
   withSort,
-} from "./filters";
+} from "../filters";
 import { z } from "zod";
 import { objektIndex } from "@/lib/universal/parsers";
+import { indexer } from "../../db/indexer";
+import { collections } from "../../db/indexer/schema";
 
-const OBJEKT_INDEX_LIMIT = 60;
+const LIMIT = 60;
 
 /**
  * Ensures the Zod-parsed filters match what the frontend parses.
@@ -59,14 +59,12 @@ export async function fetchObjektsIndex(filters: z.infer<typeof objektIndex>) {
     )
     .$dynamic();
   query = withSort(query, filters.sort);
-  query = query
-    .limit(OBJEKT_INDEX_LIMIT)
-    .offset(filters.page * OBJEKT_INDEX_LIMIT);
+  query = query.limit(LIMIT).offset(filters.page * LIMIT);
 
   const result = await query;
 
   const collectionList = result.map((c) => c.collections);
-  const hasNext = collectionList.length === OBJEKT_INDEX_LIMIT;
+  const hasNext = collectionList.length === LIMIT;
   const nextStartAfter = hasNext ? filters.page + 1 : undefined;
 
   return {
