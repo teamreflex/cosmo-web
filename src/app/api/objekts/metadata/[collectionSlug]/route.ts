@@ -16,36 +16,75 @@ type Params = {
 /**
  * API route for individual objekt dialogs.
  * Fetches metadata about a collection.
- * Cached for 5 minutes.
  */
-export async function GET(request: Request, { params }: Params) {
-  const metadata = await fetchMetadata(params.collectionSlug);
-  return Response.json(metadata, {
-    headers: cacheHeaders(60 * 5),
-  });
+export async function GET(_: Request, { params }: Params) {
+  const [copies, metadata] = await Promise.all([
+    fetchCollection(params.collectionSlug),
+    fetchCollectionMetadata(params.collectionSlug),
+  ]);
+
+  const timestamp = copies.createdAt.getTime();
+  const now = new Date().getTime();
+  const hourInMs = 1000 * 60 * 60;
+
+  let cacheTime: number;
+
+  /**
+   * cache for:
+   * - within 12 hours: 5 minutes
+   * - within 24 hours: 1 hour
+   * - within 48 hours: 8 hours
+   * - older than 48 hours: 24 hours
+   */
+  if (now - timestamp <= 12 * hourInMs) {
+    cacheTime = 5 * 60;
+  } else if (now - timestamp <= 24 * hourInMs) {
+    cacheTime = 60 * 60;
+  } else if (now - timestamp <= 48 * hourInMs) {
+    cacheTime = 8 * 60 * 60;
+  } else {
+    cacheTime = 24 * 60 * 60;
+  }
+
+  return Response.json(
+    {
+      copies: copies.count,
+      metadata,
+    },
+    {
+      headers: cacheHeaders(cacheTime),
+    }
+  );
 }
 
 /**
  * Fetch the number of copies of a collection.
  */
-async function fetchCollectionCopies(collectionSlug: string) {
+async function fetchCollection(collectionSlug: string) {
   const subquery = indexer
     .select({
       objektCollectionId: objekts.collectionId,
       collectionSlug: collections.slug,
+      createdAt: collections.createdAt,
     })
     .from(objekts)
     .leftJoin(collections, eq(objekts.collectionId, collections.id))
     .where(eq(collections.slug, collectionSlug))
     .as("subquery");
 
-  const result = await indexer
+  const rows = await indexer
     .select({
-      count: count(),
+      count: count().as("count"),
+      createdAt: subquery.createdAt,
     })
-    .from(subquery);
+    .from(subquery)
+    .groupBy(subquery.createdAt);
 
-  return result[0]?.count ?? 0;
+  const result = rows[0];
+  return {
+    count: result?.count ?? 0,
+    createdAt: result?.createdAt ? new Date(result.createdAt) : new Date(),
+  };
 }
 
 /**
@@ -58,16 +97,4 @@ async function fetchCollectionMetadata(collectionSlug: string) {
       profile: true,
     },
   });
-}
-
-/**
- * Fetch information about a collection.
- */
-async function fetchMetadata(collection: string) {
-  const [copies, metadata] = await Promise.all([
-    fetchCollectionCopies(collection),
-    fetchCollectionMetadata(collection),
-  ]);
-
-  return { copies, metadata: metadata };
 }
