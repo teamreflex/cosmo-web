@@ -1,7 +1,9 @@
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { cosmo } from "../http";
 import {
+  BFFActivityBadgeParams,
   BFFActivityHistoryParams,
+  CosmoActivityBadgeResult,
   CosmoActivityHistoryItem,
   CosmoActivityMyObjektResult,
   CosmoActivityWelcomeResult,
@@ -92,6 +94,25 @@ export async function fetchActivityHistory(
   options: BFFActivityHistoryParams
 ) {
   return await cosmo<CosmoActivityHistoryItem[]>(`/bff/v1/activity/history`, {
+    query: {
+      ...options,
+      tid: v4(),
+    },
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    cache: "no-cache",
+  });
+}
+
+/**
+ * Fetch a user's badges
+ */
+export async function fetchActivityBadges(
+  token: string,
+  options: BFFActivityBadgeParams
+) {
+  return await cosmo<CosmoActivityBadgeResult>(`/bff/v1/activity/badge`, {
     query: {
       ...options,
       tid: v4(),

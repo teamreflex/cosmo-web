@@ -68,12 +68,19 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2024-07-04",
+    changes: [
+      "Added: Badge section to the Activity page.",
+      "Changed: Moved Activity page to the navbar.",
+    ],
+  },
+  {
     date: "2024-06-21",
-    changes: ["Added: Season filter to progress leaderboards"],
+    changes: ["Added: Season filter to progress leaderboards."],
   },
   {
     date: "2024-06-20",
-    changes: ["Added: History section to the new Activity tab."],
+    changes: ["Added: History section to the new Activity page."],
   },
   {
     date: "2024-06-05",
@@ -82,9 +89,5 @@ const updates = [
       "Added: Grid member selector now adds the selected member to the URL.",
       "Updated: Artist & member fetching is now cached for 12 hours, should reduce errors when COSMO is struggling with high traffic.",
     ],
-  },
-  {
-    date: "2024-05-31",
-    changes: ['Added: Activity page, replaces the old "My Page" page.'],
   },
 ];

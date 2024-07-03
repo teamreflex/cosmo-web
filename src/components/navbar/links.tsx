@@ -10,6 +10,7 @@ import {
   LucideIcon,
   CalendarRange,
   Disc3,
+  CircleUserRound,
 } from "lucide-react";
 import Link from "next/link";
 import NavbarSearch from "./navbar-search";
@@ -90,6 +91,13 @@ const links: NavbarLink[] = [
     requireAuth: true,
     prefetch: undefined,
   },
+  {
+    name: "Activity",
+    icon: CircleUserRound,
+    href: () => "/activity",
+    requireAuth: true,
+    prefetch: undefined,
+  },
 ];
 
 export default function Links({ user }: { user?: TokenPayload }) {
@@ -98,14 +106,14 @@ export default function Links({ user }: { user?: TokenPayload }) {
   const authenticated = user !== undefined;
 
   return (
-    <div className="flex grow justify-end md:justify-center">
+    <div className="flex grow justify-end lg:justify-center">
       {/* desktop */}
-      <div className="md:flex flex-row items-center gap-8 hidden">
+      <div className="lg:flex flex-row items-center gap-8 hidden">
         <LinkIcons path={path} user={user} />
       </div>
 
       {/* mobile */}
-      <div className="md:hidden flex flex-row gap-2 items-center">
+      <div className="lg:hidden flex flex-row gap-2 items-center">
         <NavbarSearch authenticated={user !== undefined} />
 
         <DropdownMenu>

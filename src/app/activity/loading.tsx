@@ -15,7 +15,10 @@ export default async function ActivityLoading() {
       {/* content */}
       <div className="w-full sm:w-2/3 md:w-1/2 flex flex-col gap-4 mx-auto">
         <HistoryBlockSkeleton />
-        <ArtistBlockSkeleton />
+        <div className="grid grid-cols-2 gap-4">
+          <ArtistBlockSkeleton />
+          <BadgeBlockSkeleton />
+        </div>
         <ObjektBlockSkeleton />
       </div>
     </main>
@@ -23,12 +26,11 @@ export default async function ActivityLoading() {
 }
 
 export function ArtistBlockSkeleton() {
-  return (
-    <div className="w-full grid grid-cols-2 gap-4">
-      <Skeleton className="rounded-xl aspect-square" />
-      <Skeleton className="rounded-xl aspect-square" />
-    </div>
-  );
+  return <Skeleton className="w-full rounded-xl aspect-square" />;
+}
+
+export function BadgeBlockSkeleton() {
+  return <Skeleton className="w-full rounded-xl aspect-square" />;
 }
 
 export function ObjektBlockSkeleton() {

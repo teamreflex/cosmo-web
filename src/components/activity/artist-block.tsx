@@ -31,16 +31,8 @@ export default async function ArtistBlock({ user, artist }: Props) {
   }
 
   return (
-    <div className="w-full grid grid-cols-2 gap-4 mx-auto">
-      <div className="relative rounded-xl object-contain aspect-square overflow-hidden">
-        <Image
-          src={cosmoArtist.primaryImageUrl}
-          fill={true}
-          alt={cosmoArtist.title}
-        />
-      </div>
-
-      <div className="rounded-xl aspect-square bg-accent p-4">
+    <div className="w-full relative rounded-xl object-contain aspect-square overflow-hidden border border-accent">
+      <div className="z-20 absolute inset-0 p-4 bg-black/50">
         <p className="text-xl lg:text-3xl font-semibold">
           with {welcome.result.fandomName}
         </p>
@@ -48,6 +40,13 @@ export default async function ArtistBlock({ user, artist }: Props) {
           D+{welcome.result.durationCount}
         </p>
       </div>
+
+      <Image
+        className="z-10"
+        src={cosmoArtist.primaryImageUrl}
+        fill={true}
+        alt={cosmoArtist.title}
+      />
     </div>
   );
 }

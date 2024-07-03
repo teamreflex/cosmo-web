@@ -7,8 +7,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { TokenPayload } from "@/lib/universal/auth";
-import { Cog, Disc3, LogOut, Shield, User } from "lucide-react";
-import Link from "next/link";
+import { Cog, Disc3, LogOut, Shield } from "lucide-react";
 import { ReactNode, useEffect, useState } from "react";
 import SwitchArtistDialog from "./switch-artist-dialog";
 import { CosmoArtist } from "@/lib/universal/cosmo/artists";
@@ -82,10 +81,6 @@ export default function UserDropdown({
             {comoBalances}
           </DropdownMenuItem>
           <DropdownMenuSeparator className="md:hidden" />
-          <DropdownMenuItem>
-            <User className="mr-2 h-4 w-4" />
-            <Link href="/activity">Activity</Link>
-          </DropdownMenuItem>
 
           <DropdownMenuItem
             onClick={() => setOpenArtistSwitch(true)}

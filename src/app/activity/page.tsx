@@ -6,6 +6,7 @@ import { Suspense } from "react";
 import ArtistBlock from "@/components/activity/artist-block";
 import {
   ArtistBlockSkeleton,
+  BadgeBlockSkeleton,
   HistoryBlockSkeleton,
   ObjektBlockSkeleton,
 } from "./loading";
@@ -13,6 +14,7 @@ import ObjektsBlock from "@/components/activity/objekts-block";
 import { ErrorBoundary } from "react-error-boundary";
 import { HeartCrack } from "lucide-react";
 import HistoryBlock from "@/components/activity/history-block";
+import BadgeBlock from "@/components/activity/badge-block";
 
 export const metadata: Metadata = {
   title: "Activity",
@@ -41,13 +43,23 @@ export default async function ActivityPage() {
           </Suspense>
         </ErrorBoundary>
 
-        <ErrorBoundary
-          fallback={<Error error="Could not load artist information" />}
-        >
-          <Suspense fallback={<ArtistBlockSkeleton />}>
-            <ArtistBlock user={user!} artist={artist} />
-          </Suspense>
-        </ErrorBoundary>
+        <div className="grid grid-cols-2 gap-4">
+          <ErrorBoundary
+            fallback={<Error error="Could not load artist information" />}
+          >
+            <Suspense fallback={<ArtistBlockSkeleton />}>
+              <ArtistBlock user={user!} artist={artist} />
+            </Suspense>
+          </ErrorBoundary>
+
+          <ErrorBoundary
+            fallback={<Error error="Could not load badge information" />}
+          >
+            <Suspense fallback={<BadgeBlockSkeleton />}>
+              <BadgeBlock user={user!} artist={artist} />
+            </Suspense>
+          </ErrorBoundary>
+        </div>
 
         <ErrorBoundary fallback={<Error error="Could not load objekts" />}>
           <Suspense fallback={<ObjektBlockSkeleton />}>

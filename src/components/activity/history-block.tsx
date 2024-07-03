@@ -29,7 +29,7 @@ export default async function HistoryBlock({ user, artist }: Props) {
   return (
     <Link
       href="/activity/history"
-      className="w-full flex gap-2 justify-between items-center h-16 bg-accent rounded-xl p-4"
+      className="w-full flex gap-2 justify-between items-center h-16 bg-accent rounded-xl p-4 transition-colors border border-transparent hover:border-cosmo"
     >
       <div className="flex gap-4 items-center">
         <div className="relative aspect-square size-5">

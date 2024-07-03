@@ -47,6 +47,7 @@ Supersedes the [objekts.jinsoul.tv](https://github.com/teamreflex/objekts-svelte
   - Per-member objekt breakdown
   - Day countdown since joining (welcome panel)
   - Objekt, grid and gravity history
+  - Badge display
 
 </details>
 
