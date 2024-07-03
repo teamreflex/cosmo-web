@@ -106,7 +106,7 @@ export type CosmoActivityBadge = {
     thumbnailImage: string;
   };
   "3DImage": string[];
-  claim: {
+  claim?: {
     hid: string;
     owner: string;
     badgeHid: string;

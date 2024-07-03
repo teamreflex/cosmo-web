@@ -68,7 +68,7 @@ export default function UpdateDialog() {
 
 const updates = [
   {
-    date: "2024-07-04",
+    date: "2024-07-03",
     changes: [
       "Added: Badge section to the Activity page.",
       "Changed: Moved Activity page to the navbar.",
