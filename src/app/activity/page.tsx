@@ -15,14 +15,21 @@ import { ErrorBoundary } from "react-error-boundary";
 import { HeartCrack } from "lucide-react";
 import HistoryBlock from "@/components/activity/history-block";
 import BadgeBlock from "@/components/activity/badge-block";
+import { user } from "@/lib/server/cosmo/auth";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "Activity",
 };
 
 export default async function ActivityPage() {
-  const user = await decodeUser();
+  const token = await decodeUser();
+  if (!token) {
+    redirect("/");
+  }
+
   const artist = getSelectedArtist();
+  const cosmoUser = await user(token.accessToken);
 
   return (
     <main className="container flex flex-col gap-2 py-2">
@@ -31,7 +38,7 @@ export default async function ActivityPage() {
         <div className="w-full flex gap-2 items-center justify-between">
           <h1 className="text-3xl font-cosmo uppercase">Activity</h1>
 
-          <UserDialog user={user!} />
+          <UserDialog user={cosmoUser} artist={artist} />
         </div>
       </div>
 
@@ -39,7 +46,7 @@ export default async function ActivityPage() {
       <div className="w-full sm:w-2/3 md:w-1/2 flex flex-col gap-4 mx-auto">
         <ErrorBoundary fallback={<Error error="Could not load history" />}>
           <Suspense fallback={<HistoryBlockSkeleton />}>
-            <HistoryBlock user={user!} artist={artist} />
+            <HistoryBlock user={token} artist={artist} />
           </Suspense>
         </ErrorBoundary>
 
@@ -48,7 +55,7 @@ export default async function ActivityPage() {
             fallback={<Error error="Could not load artist information" />}
           >
             <Suspense fallback={<ArtistBlockSkeleton />}>
-              <ArtistBlock user={user!} artist={artist} />
+              <ArtistBlock user={token} artist={artist} />
             </Suspense>
           </ErrorBoundary>
 
@@ -56,14 +63,14 @@ export default async function ActivityPage() {
             fallback={<Error error="Could not load badge information" />}
           >
             <Suspense fallback={<BadgeBlockSkeleton />}>
-              <BadgeBlock user={user!} artist={artist} />
+              <BadgeBlock user={token} artist={artist} />
             </Suspense>
           </ErrorBoundary>
         </div>
 
         <ErrorBoundary fallback={<Error error="Could not load objekts" />}>
           <Suspense fallback={<ObjektBlockSkeleton />}>
-            <ObjektsBlock user={user!} artist={artist} />
+            <ObjektsBlock user={token} artist={artist} />
           </Suspense>
         </ErrorBoundary>
       </div>
