@@ -55,10 +55,10 @@ function SenderCosmo() {
         src={CosmoImage.src}
         width={30}
         height={30}
-        alt="Cosmo"
+        alt="COSMO"
         className="rounded-full"
       />
-      <span>Cosmo</span>
+      <span>COSMO</span>
     </div>
   );
 }

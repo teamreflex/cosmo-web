@@ -10,15 +10,16 @@ type TopOverlayProps = {
   objektLists: ObjektList[];
 };
 
-export const classes = [
-  "absolute left-0 p-1 sm:p-2 items-center group h-5 sm:h-9 transition-all overflow-hidden",
-  "text-[var(--objekt-text-color)] bg-[var(--objekt-background-color)]",
-  "grid grid-flow-col grid-cols-[1fr_min-content]",
-];
-
 export function TopOverlay({ objekt, objektLists }: TopOverlayProps) {
   return (
-    <div className={cn(...classes, "top-0 rounded-br-lg sm:rounded-br-xl")}>
+    <div
+      className={cn(
+        "absolute left-0 p-1 sm:p-2 items-center group h-5 sm:h-9 transition-all overflow-hidden",
+        "text-[var(--objekt-text-color)] bg-[var(--objekt-background-color)]",
+        "grid grid-flow-col grid-cols-[1fr_min-content]",
+        "top-0 rounded-br-lg sm:rounded-br-xl"
+      )}
+    >
       {/* buttons */}
       <div className="flex items-center gap-2">
         {/* add to list */}

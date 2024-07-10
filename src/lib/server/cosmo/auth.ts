@@ -1,8 +1,9 @@
 import "server-only";
 import {
   CosmoPublicUser,
+  CosmoSearchResult,
+  CosmoUserResult,
   LoginResult,
-  PublicProfile,
 } from "@/lib/universal/cosmo/auth";
 import { cosmo } from "../http";
 
@@ -21,7 +22,7 @@ type CosmoLoginResult = {
 };
 
 /**
- * Logs in with Cosmo and returns the access token.
+ * Logs in with COSMO and returns the access token.
  */
 export async function login(
   email: string,
@@ -44,70 +45,17 @@ export async function login(
   }));
 }
 
-type CosmoUserResult = {
-  profile: {
-    id: number;
-    email: string;
-    nickname: string;
-    address: string;
-    profileImageUrl: string;
-    followingArtists: {
-      name: string;
-      title: string;
-      contracts: {
-        Como: string;
-        Objekt: string;
-      };
-      assetBalance: {
-        totalComo: number;
-        totalObjekt: number;
-      };
-    }[];
-  };
-};
-
-type CosmoUser = {
-  nickname: string;
-  address: string;
-  profileImageUrl: string;
-  artists: {
-    name: string;
-    title: string;
-    contracts: {
-      Como: string;
-      Objekt: string;
-    };
-    assetBalance: {
-      totalComo: number;
-      totalObjekt: number;
-    };
-  }[];
-};
-
 /**
  * Fetches the user from the access token.
  */
-export async function user(accessToken: string): Promise<CosmoUser> {
+export async function user(accessToken: string) {
   return await cosmo<CosmoUserResult>("/user/v1/me", {
     cache: "no-cache",
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
-  }).then((res) => ({
-    nickname: res.profile.nickname,
-    address: res.profile.address,
-    profileImageUrl: res.profile.profileImageUrl,
-    artists: res.profile.followingArtists,
-  }));
+  }).then((res) => res.profile);
 }
-
-export type CosmoSearchResult = {
-  results: {
-    nickname: string;
-    address: string;
-    profileImageUrl: string;
-  }[];
-};
 
 /**
  * Search for the given user.

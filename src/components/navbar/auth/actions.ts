@@ -140,13 +140,28 @@ export const updateSelectedArtist = async (artist: string) =>
     schema: z.object({
       artist: z.enum(validArtists),
     }),
-
     onValidate: async ({ data, user }) => {
       const result = await setSelectedArtist(user.profileId, data.artist);
       setCookie({ key: "artist", value: data.artist });
       return result;
     },
   });
+
+/**
+ * Sets the selected artist for a guest user.
+ */
+export const setArtistCookie = async (artist: string) => {
+  const schema = z.object({
+    artist: z.enum(validArtists),
+  });
+
+  const result = schema.safeParse({ artist });
+  if (result.success) {
+    setCookie({ key: "artist", value: artist });
+  }
+
+  return result.success;
+};
 
 /**
  * Updates privacy settings.

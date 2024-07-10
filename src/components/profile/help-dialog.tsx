@@ -73,7 +73,7 @@ export default function HelpDialog({ previousIds }: Props) {
                 </p>
                 <p>
                   This is {str} {env.NEXT_PUBLIC_APP_NAME} feature and{" "}
-                  <b>does not prevent trading within the Cosmo app</b>.
+                  <b>does not prevent trading within the COSMO app</b>.
                 </p>
               </div>
 

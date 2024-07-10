@@ -14,19 +14,27 @@ import { CosmoArtist } from "@/lib/universal/cosmo/artists";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import PrivacyDialog from "./privacy-dialog";
 import SettingsDialog from "./settings-dialog";
-import { PublicProfile } from "@/lib/universal/cosmo/auth";
+import {
+  CosmoProfile,
+  CosmoUser,
+  PublicProfile,
+} from "@/lib/universal/cosmo/auth";
 import { usePathname } from "next/navigation";
+import ProfileImage from "@/assets/profile.webp";
+import { cn } from "@/lib/utils";
 
 type UserDropdownProps = {
-  user: TokenPayload;
+  token: TokenPayload;
+  user: CosmoUser;
   profile: PublicProfile;
   artists: CosmoArtist[];
-  selectedArtist: ValidArtist | undefined;
+  selectedArtist: ValidArtist;
   comoBalances: ReactNode;
   onSignOut: () => void;
 };
 
 export default function UserDropdown({
+  token,
   user,
   profile,
   artists,
@@ -43,8 +51,6 @@ export default function UserDropdown({
   useEffect(() => {
     setOpenDropdown(false);
   }, [pathname]);
-
-  const artist = artists.find((artist) => artist.name === selectedArtist);
 
   return (
     <>
@@ -69,12 +75,11 @@ export default function UserDropdown({
 
       <DropdownMenu open={openDropdown} onOpenChange={setOpenDropdown}>
         <DropdownMenuTrigger className="group outline-none">
-          <Avatar className="ring-2 ring-white/30 group-data-[state=open]:ring-cosmo transition-colors">
-            <AvatarFallback>
-              {user.nickname.charAt(0).toUpperCase()}
-            </AvatarFallback>
-            <AvatarImage src={artist?.logoImageUrl} alt={artist?.title} />
-          </Avatar>
+          <UserAvatar
+            nickname={token.nickname}
+            artist={selectedArtist}
+            profiles={user.profile}
+          />
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           <DropdownMenuItem className="md:hidden flex gap-2 items-center">
@@ -117,5 +122,31 @@ export default function UserDropdown({
         </DropdownMenuContent>
       </DropdownMenu>
     </>
+  );
+}
+
+type UserAvatarProps = {
+  nickname: string;
+  artist: ValidArtist;
+  profiles: CosmoProfile[];
+};
+
+function UserAvatar({ nickname, artist, profiles }: UserAvatarProps) {
+  const profileImage = profiles.find(
+    (p) => p.artistName.toLowerCase() === artist.toLowerCase()
+  );
+
+  const hasImage = profileImage !== undefined;
+  const src = profileImage?.image.thumbnail ?? ProfileImage.src;
+
+  return (
+    <Avatar className="ring-2 ring-white/30 group-data-[state=open]:ring-cosmo transition-colors">
+      <AvatarFallback>{nickname.charAt(0).toUpperCase()}</AvatarFallback>
+      <AvatarImage
+        src={src}
+        alt={nickname}
+        className={cn(!hasImage && "bg-cosmo-profile p-1")}
+      />
+    </Avatar>
   );
 }

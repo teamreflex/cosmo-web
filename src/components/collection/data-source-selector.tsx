@@ -77,7 +77,7 @@ export default memo(function DataSourceSelector({
 
           <div className="flex flex-col gap-2 text-sm text-muted-foreground">
             <p>
-              By default, {env.NEXT_PUBLIC_APP_NAME} will use Cosmo to display
+              By default, {env.NEXT_PUBLIC_APP_NAME} will use COSMO to display
               your collection.
             </p>
             <p>This option allows you to use the Polygon blockchain instead.</p>
@@ -92,7 +92,7 @@ export default memo(function DataSourceSelector({
                 vice versa.
               </li>
               <li>
-                Only minted objekts will be displayed, whereas the Cosmo option
+                Only minted objekts will be displayed, whereas the COSMO option
                 will show any objekts that are pending mint.
               </li>
               <li>Lenticular indicators are not available.</li>

@@ -40,7 +40,7 @@ export default function HelpDialog() {
               <div className="flex flex-col gap-1">
                 <p>
                   Dates and times of your daily COMO drops may not perfectly
-                  align with Cosmo due to timezones and batches.
+                  align with COSMO due to timezones and batches.
                 </p>
 
                 <span>

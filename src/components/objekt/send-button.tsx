@@ -35,7 +35,7 @@ import {
 import { UserSearch } from "../user-search";
 import Link from "next/link";
 import ObjektSidebar from "./objekt-sidebar";
-import { PublicProfile } from "@/lib/universal/cosmo/auth";
+import { CosmoPublicUser } from "@/lib/universal/cosmo/auth";
 import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
 import { providers } from "ethers";
 
@@ -68,7 +68,7 @@ const instagrams = [
 export default function SendObjekt({ objekt }: Props) {
   const [openSearch, setOpenSearch] = useState(false);
   const [openSend, setOpenSend] = useState(false);
-  const [recipient, setRecipient] = useState<PublicProfile | null>(null);
+  const [recipient, setRecipient] = useState<CosmoPublicUser | null>(null);
   const [transactionProgress, setTransactionProgress] =
     useState<TransactionStatus>(TransactionStatus.WAITING);
   const [transactionHash, setTransactionHash] = useState("");
@@ -78,7 +78,7 @@ export default function SendObjekt({ objekt }: Props) {
 
   const queryClient = useQueryClient();
 
-  function prepareSending(newRecipient: PublicProfile) {
+  function prepareSending(newRecipient: CosmoPublicUser) {
     addRecent(newRecipient);
     setRecipient(newRecipient);
     setOpenSearch(false);
@@ -245,7 +245,7 @@ export default function SendObjekt({ objekt }: Props) {
 
 type SendToUserButtonProps = {
   objekt: OwnedObjekt;
-  user: PublicProfile;
+  user: CosmoPublicUser;
   updateTransactionProgress: (
     status: TransactionStatus,
     txHash?: string

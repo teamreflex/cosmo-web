@@ -97,7 +97,7 @@ export async function fetchGasStation() {
     }
   ).catch((_) => {
     throw new TransactionError(
-      "Failed to get gas price, please try again. Cosmo may be down"
+      "Failed to get gas price, please try again. COSMO may be down"
     );
   });
 }

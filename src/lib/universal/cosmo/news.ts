@@ -144,7 +144,7 @@ export type CosmoBFFNewsFeedResult<TPostType> = {
   sets: TPostType[];
 };
 
-export type CosmoBFFNewsFeedItemImage = {
+type CosmoBFFNewsFeedItemImage = {
   thumbnail: string;
   original: string;
 };
@@ -170,7 +170,7 @@ const bffNewsSchema = z.object({
   artistName: z.enum(validArtists),
   page: z.coerce.number().optional().default(1),
 });
-export type BFFNewsParams = z.infer<typeof bffNewsSchema>;
+type BFFNewsParams = z.infer<typeof bffNewsSchema>;
 
 /**
  * Parse BFF news params with default fallback.

@@ -6,7 +6,7 @@ import { UserSearch } from "../user-search";
 import { Search } from "lucide-react";
 import { useSearchStore } from "@/store";
 import { Route } from "next";
-import { PublicProfile } from "@/lib/universal/cosmo/auth";
+import { CosmoPublicUser } from "@/lib/universal/cosmo/auth";
 import {
   Tooltip,
   TooltipContent,
@@ -21,13 +21,16 @@ type Props = {
 export default function NavbarSearch({ authenticated }: Props) {
   const recent = useSearchStore((state) => state.recentLookups);
   const addRecent = useSearchStore((state) => state.addRecentLookup);
-
   const [open, setOpen] = useState(false);
-
   const router = useRouter();
-  function onSelect(user: PublicProfile) {
+
+  function onSelect(user: CosmoPublicUser) {
     setOpen(false);
-    addRecent(user);
+    addRecent({
+      nickname: user.nickname,
+      address: user.address,
+      profileImageUrl: user.profileImageUrl,
+    });
     router.push(`/@${user.nickname}` as Route);
   }
 

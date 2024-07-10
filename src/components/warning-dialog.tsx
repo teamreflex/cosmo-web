@@ -34,12 +34,7 @@ export default function WarningDialog() {
             <span className="italic">Cosmo: the Gate</span>, and is not
             affiliated with, endorsed by or supported by MODHAUS or its artists.
           </p>
-          <p>
-            Features such as gridding objekts, wishlist building, viewing
-            gravities, viewing rekords and adjusting privacy settings requires
-            signing in via the Cosmo Ramper integration. This requires cookies
-            to function.
-          </p>
+          <p>Some features require signing in with your COSMO account.</p>
           <p>
             Viewing user profiles (collections, trades, wishlists etc){" "}
             <span className="font-bold">does not require signing in</span>.

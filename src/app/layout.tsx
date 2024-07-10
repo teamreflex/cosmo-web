@@ -9,6 +9,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import TailwindIndicator from "@/components/tailwind-indicator";
 import Script from "next/script";
+import { getSelectedArtist } from "@/lib/server/profiles";
+import { SelectedArtistProvider } from "@/hooks/use-selected-artist";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -51,20 +53,24 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const artist = getSelectedArtist();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${cosmo.variable} font-sans`}>
         <ThemeProvider attribute="class" defaultTheme="dark" forcedTheme="dark">
-          <ClientProviders>
-            <div className="relative flex min-h-dvh flex-col">
-              <Navbar />
+          <SelectedArtistProvider selectedArtist={artist}>
+            <ClientProviders>
+              <div className="relative flex min-h-dvh flex-col">
+                <Navbar />
 
-              {/* content */}
-              <div className="flex min-w-full flex-col text-foreground">
-                {children}
+                {/* content */}
+                <div className="flex min-w-full flex-col text-foreground">
+                  {children}
+                </div>
               </div>
-            </div>
-          </ClientProviders>
+            </ClientProviders>
+          </SelectedArtistProvider>
 
           <Toaster />
           <TailwindIndicator />

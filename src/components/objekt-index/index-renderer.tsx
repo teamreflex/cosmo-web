@@ -24,7 +24,7 @@ import { GRID_COLUMNS } from "@/lib/utils";
 import { parseAsString, useQueryState } from "nuqs";
 import Hydrated from "../hydrated";
 
-export const queryKey = ["objekt-index"];
+const queryKey = ["objekt-index"];
 const getObjektId = (objekt: IndexedObjekt) => objekt.id;
 
 type Props = {

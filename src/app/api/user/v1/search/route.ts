@@ -1,8 +1,9 @@
 import { getUser } from "@/app/api/common";
-import { CosmoSearchResult, search } from "@/lib/server/cosmo/auth";
+import { search } from "@/lib/server/cosmo/auth";
 import { db } from "@/lib/server/db";
 import { profiles } from "@/lib/server/db/schema";
 import { validateExpiry } from "@/lib/server/jwt";
+import { CosmoSearchResult } from "@/lib/universal/cosmo/auth";
 import { like } from "drizzle-orm";
 import { NextRequest } from "next/server";
 
@@ -49,6 +50,7 @@ async function queryDatabase(query: string): Promise<CosmoSearchResult> {
     results: users.map((result) => ({
       ...result,
       profileImageUrl: "",
+      profile: [],
     })),
   };
 }

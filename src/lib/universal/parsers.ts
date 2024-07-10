@@ -9,7 +9,7 @@ import {
 import { env } from "@/env.mjs";
 
 /**
- * Cosmo expects comma-separated values for array filters like:
+ * COSMO expects comma-separated values for array filters like:
  * - `?season=Atom01,Binary01`
  * URLSearchParams.getAll() returns `Atom01,Binary01` as it expects arrays in the format of:
  * - `?season=Atom01&season=Binary01`
@@ -38,7 +38,7 @@ export const cosmoSchema = z.object({
 });
 
 /**
- * Parse Cosmo params with default fallback.
+ * Parse COSMO params with default fallback.
  */
 export function parseCosmo(params: URLSearchParams) {
   return parse(
@@ -66,7 +66,7 @@ export function parseCosmo(params: URLSearchParams) {
 
 /**
  * Objekt index schema.
- * Extends Cosmo schema as it has the same filters.
+ * Extends COSMO schema as it has the same filters.
  */
 export const objektIndex = cosmoSchema
   .omit({ transferable: true, gridable: true })
@@ -106,7 +106,7 @@ export function parseObjektIndex(params: URLSearchParams) {
 
 /**
  * Objekt list schema.
- * Extends Cosmo & objekt index schema as it has the same filters.
+ * Extends COSMO & objekt index schema as it has the same filters.
  * Does not add anything but this is in place for future compatibility.
  */
 export const objektList = objektIndex;
@@ -142,7 +142,7 @@ export function parseObjektList(params: URLSearchParams) {
 
 /**
  * User collection schema.
- * Extends Cosmo & objekt index schemas as it has the same filters.
+ * Extends COSMO & objekt index schemas as it has the same filters.
  */
 export const userCollection = cosmoSchema.merge(objektIndex);
 

@@ -45,9 +45,9 @@ export default function PrivacyDialog({
         <form className="flex flex-col gap-2" action={formAction}>
           {/* cosmo id/nickname */}
           <div className="grid grid-cols-4 grid-rows-3">
-            <h2 className="col-span-3 font-semibold">Cosmo ID</h2>
+            <h2 className="col-span-3 font-semibold">COSMO ID</h2>
             <p className="col-span-3 col-start-1 row-start-2 row-span-3 text-sm opacity-80">
-              Hides your Cosmo ID when viewing your profile via address, and on
+              Hides your COSMO ID when viewing your profile via address, and on
               progress leaderboards.
             </p>
             <div className="row-span-3 col-start-4 row-start-1 flex items-center justify-end">
@@ -76,7 +76,7 @@ export default function PrivacyDialog({
           <div className="grid grid-cols-4 grid-rows-3">
             <h2 className="col-span-3 font-semibold">Trades</h2>
             <p className="col-span-3 col-start-1 row-start-2 row-span-3 text-sm opacity-80">
-              Hides your trades and removes your Cosmo ID from other user&apos;s
+              Hides your trades and removes your COSMO ID from other user&apos;s
               trades.
             </p>
             <div className="row-span-3 col-start-4 row-start-1 flex items-center justify-end">

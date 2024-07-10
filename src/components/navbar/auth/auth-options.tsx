@@ -8,17 +8,20 @@ import UserDropdown from "./user-dropdown";
 import SignInDialog from "./sign-in-dialog";
 import { CosmoArtist } from "@/lib/universal/cosmo/artists";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
-import { PublicProfile } from "@/lib/universal/cosmo/auth";
+import { CosmoUser, PublicProfile } from "@/lib/universal/cosmo/auth";
+// import GuestArtistSwitch from "./guest-artist-switch";
 
 type Props = {
-  user: TokenPayload | undefined;
+  token: TokenPayload | undefined;
+  user: CosmoUser | undefined;
   profile: PublicProfile | undefined;
   artists: CosmoArtist[];
-  selectedArtist: ValidArtist | undefined;
+  selectedArtist: ValidArtist;
   comoBalances: ReactNode;
 };
 
 export default function AuthOptions({
+  token,
   user,
   profile,
   artists,
@@ -26,6 +29,8 @@ export default function AuthOptions({
   comoBalances,
 }: Props) {
   const [isPending, startTransition] = useTransition();
+
+  const isAuthenticated = !!token && !!user && !!profile;
 
   function executeSignOut() {
     startTransition(async () => {
@@ -35,13 +40,14 @@ export default function AuthOptions({
 
   return (
     <>
-      {user && profile ? (
+      {isAuthenticated ? (
         <div className="flex gap-2 items-center justify-center">
           <div className="md:flex gap-2 items-center hidden">
             {comoBalances}
           </div>
 
           <UserDropdown
+            token={token}
             user={user}
             profile={profile}
             artists={artists}
@@ -51,8 +57,13 @@ export default function AuthOptions({
           />
         </div>
       ) : (
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
           {isPending ? <Loader2 className="animate-spin" /> : <SignInDialog />}
+
+          {/* <GuestArtistSwitch
+            artists={artists}
+            selectedArtist={selectedArtist}
+          /> */}
         </div>
       )}
     </>

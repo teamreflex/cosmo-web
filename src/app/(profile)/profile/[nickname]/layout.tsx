@@ -1,5 +1,5 @@
 import { decodeUser, getUserByIdentifier } from "@/app/data-fetching";
-import { PropsWithChildren } from "react";
+import { PropsWithChildren, Suspense } from "react";
 import ProfileImage from "@/assets/profile.webp";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import CopyAddressButton from "@/components/profile/copy-address-button";
@@ -15,6 +15,8 @@ import ArtistIcon from "@/components/artist-icon";
 import ProgressButton from "@/components/profile/progress-button";
 import { addrcomp } from "@/lib/utils";
 import ComoBalanceRenderer from "@/components/navbar/como-balances";
+import UserAvatar from "@/components/profile/user-avatar";
+import Skeleton from "@/components/skeleton/skeleton";
 
 type Props = PropsWithChildren<{
   params: {
@@ -37,16 +39,12 @@ export default async function ProfileLayout({ children, params }: Props) {
   return (
     <main className="container flex flex-col gap-2 sm:gap-0 py-2">
       <div className="flex gap-4 items-center h-fit">
-        <Avatar className="h-24 w-24">
-          <AvatarFallback>
-            {profile.nickname.charAt(0).toUpperCase()}
-          </AvatarFallback>
-          <AvatarImage
-            className="bg-cosmo-profile p-3"
-            src={ProfileImage.src}
-            alt={profile.nickname}
+        <Suspense fallback={<Skeleton className="h-24 w-24 rounded-full" />}>
+          <UserAvatar
+            token={currentUser?.accessToken}
+            nickname={profile.nickname}
           />
-        </Avatar>
+        </Suspense>
 
         <div className="flex flex-col w-full">
           {/* nickname & como */}

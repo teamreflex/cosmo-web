@@ -49,17 +49,24 @@ export const useSettingsStore = create<SettingsState>()(
 /**
  * store recent user searches
  */
+
+export type RecentUser = {
+  nickname: string;
+  address: string;
+  profileImageUrl: string;
+};
+
 interface SearchState {
-  recentLookups: PublicProfile[];
-  addRecentLookup: (lookup: PublicProfile) => void;
-  recentSends: PublicProfile[];
-  addRecentSend: (send: PublicProfile) => void;
+  recentLookups: RecentUser[];
+  addRecentLookup: (lookup: RecentUser) => void;
+  recentSends: RecentUser[];
+  addRecentSend: (send: RecentUser) => void;
 }
 export const useSearchStore = create<SearchState>()(
   persist(
     (set) => ({
       recentLookups: [],
-      addRecentLookup: (lookup: PublicProfile) =>
+      addRecentLookup: (lookup: RecentUser) =>
         set((state) => {
           const current = state.recentLookups;
           if (current.includes(lookup)) {
@@ -72,7 +79,7 @@ export const useSearchStore = create<SearchState>()(
         }),
 
       recentSends: [],
-      addRecentSend: (send: PublicProfile) =>
+      addRecentSend: (send: RecentUser) =>
         set((state) => {
           const current = state.recentSends;
           if (current.includes(send)) {

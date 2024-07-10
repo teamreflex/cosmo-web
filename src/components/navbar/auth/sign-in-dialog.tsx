@@ -101,7 +101,7 @@ function SendEmailForm({ payload, onComplete }: SendEmailProps) {
   return (
     <form action={submit} className="flex flex-col gap-2" id="email-submit">
       <AlertDialogDescription>
-        Enter your Cosmo email address to request a sign-in email.
+        Enter your COSMO email address to request a sign-in email.
       </AlertDialogDescription>
 
       {error && <p className="text-sm text-red-500">{error}</p>}
@@ -175,7 +175,7 @@ function ExchangeTokenForm({ payload, onBack }: ExchangeTokenProps) {
       <input type="hidden" name="pendingToken" value={payload.pendingToken} />
 
       <p className="text-sm text-muted-foreground">
-        A Cosmo login email has been sent to your{" "}
+        A COSMO login email has been sent to your{" "}
         <span className="font-semibold">{emailDomain}</span> address.
       </p>
 

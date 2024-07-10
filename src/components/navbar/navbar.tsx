@@ -11,6 +11,8 @@ import UpdateDialog from "./updates/update-dialog";
 import PolygonGasRenderer from "../misc/gas-display";
 import ComoBalanceRenderer from "./como-balances";
 import { TokenPayload } from "@/lib/universal/auth";
+import { user } from "@/lib/server/cosmo/auth";
+import { getSelectedArtist } from "@/lib/server/profiles";
 
 export default async function Navbar() {
   const user = await decodeUser();
@@ -35,7 +37,7 @@ export default async function Navbar() {
                   <div className="h-10 w-10 rounded-full bg-accent animate-pulse" />
                 }
               >
-                <Auth user={user} />
+                <Auth token={user} />
               </Suspense>
             </div>
           </div>
@@ -46,20 +48,23 @@ export default async function Navbar() {
   );
 }
 
-async function Auth({ user }: { user?: TokenPayload }) {
-  const [artists, profile] = await Promise.all([
+async function Auth({ token }: { token?: TokenPayload }) {
+  const selectedArtist = getSelectedArtist();
+  const [artists, profile, cosmoUser] = await Promise.all([
     getArtistsWithMembers(),
-    user ? getProfile(user.profileId) : undefined,
+    token ? getProfile(token.profileId) : undefined,
+    token ? user(token.accessToken) : undefined,
   ]);
 
   return (
     <AuthOptions
-      user={user}
+      token={token}
+      user={cosmoUser}
       profile={profile}
       artists={artists}
-      selectedArtist={profile?.artist}
+      selectedArtist={selectedArtist}
       comoBalances={
-        user ? <ComoBalanceRenderer address={user.address} /> : null
+        token ? <ComoBalanceRenderer address={token.address} /> : null
       }
     />
   );

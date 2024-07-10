@@ -3,7 +3,6 @@
 import { PropsWithChildren, useState } from "react";
 import {
   CommandDialog,
-  CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
@@ -12,20 +11,24 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { HeartCrack, HelpCircle, Loader2 } from "lucide-react";
 import { isAddress } from "ethers/lib/utils";
-import { PublicProfile } from "@/lib/universal/cosmo/auth";
+import { CosmoPublicUser, CosmoSearchResult } from "@/lib/universal/cosmo/auth";
 import { ofetch } from "ofetch";
-import { defaultProfile } from "@/lib/utils";
 import { env } from "@/env.mjs";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { DialogClose } from "./ui/dialog";
 import { useDebounceValue } from "usehooks-ts";
+import ProfileImage from "@/assets/profile.webp";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { RecentUser } from "@/store";
+import { useSelectedArtist } from "@/hooks/use-selected-artist";
+import { ValidArtist } from "@/lib/universal/cosmo/common";
 
 type Props = PropsWithChildren<{
   placeholder?: string;
-  recent: PublicProfile[];
+  recent: RecentUser[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSelect: (user: PublicProfile) => void;
+  onSelect: (user: CosmoPublicUser) => void;
   authenticated?: boolean;
 }>;
 
@@ -38,22 +41,28 @@ export function UserSearch({
   onSelect,
   authenticated = false,
 }: Props) {
+  const { artist } = useSelectedArtist();
   const [query, setQuery] = useState<string>("");
   const [debouncedQuery] = useDebounceValue<string>(query, 500);
   const queryIsAddress = isAddress(debouncedQuery);
+  const enableQuery = debouncedQuery.length > 3 && queryIsAddress === false;
 
-  const { status, data, isFetching } = useQuery({
+  const { status, data } = useQuery({
     queryKey: ["user-search", debouncedQuery],
     queryFn: async () => {
-      return await ofetch<{ results: PublicProfile[] }>(`/api/user/v1/search`, {
+      return await ofetch<CosmoSearchResult>(`/api/user/v1/search`, {
         query: { query: debouncedQuery },
       }).then((res) => res.results);
     },
-    enabled: debouncedQuery.length > 3 && queryIsAddress === false,
+    enabled: enableQuery,
   });
 
-  // reset query before triggering handler
-  function select(user: PublicProfile) {
+  // filter out recent users who exist in the search results
+  const recentUsers = data
+    ? recent.filter((r) => !data.some((u) => u.nickname === r.nickname))
+    : recent;
+
+  function selectResult(user: CosmoPublicUser) {
     setQuery("");
     onSelect(user);
   }
@@ -61,9 +70,18 @@ export function UserSearch({
   function selectAddress(address: string) {
     setQuery("");
     onSelect({
-      ...defaultProfile,
-      address,
       nickname: address,
+      address,
+      profileImageUrl: "",
+      profile: [],
+    });
+  }
+
+  function selectRecent(user: RecentUser) {
+    setQuery("");
+    onSelect({
+      ...user,
+      profile: [],
     });
   }
 
@@ -79,7 +97,7 @@ export function UserSearch({
         {authenticated === false && (
           <div className="flex items-center justify-between px-4 py-2 text-xs font-semibold bg-cosmo">
             <div className="flex gap-2 items-center">
-              <p>Sign in to fully search Cosmo</p>
+              <p>Sign in to fully search COSMO</p>
 
               <Popover>
                 <PopoverTrigger asChild>
@@ -94,7 +112,7 @@ export function UserSearch({
                 >
                   <div className="flex flex-col gap-1 text-sm">
                     <p className="font-semibold">
-                      Cosmo requires signing in to search for users.
+                      COSMO requires signing in to search for users.
                     </p>
                     <p>
                       Any search queries while not signed in will be made
@@ -121,17 +139,23 @@ export function UserSearch({
         />
 
         <CommandList>
-          {isFetching && (
-            <CommandEmpty className="flex items-center justify-center py-2">
+          {status === "pending" && enableQuery && (
+            <div className="flex items-center justify-center py-2">
               <Loader2 className="h-8 w-8 animate-spin" />
-            </CommandEmpty>
+            </div>
           )}
 
           {status === "error" && (
-            <CommandEmpty className="flex items-center justify-center gap-2 py-2">
+            <div className="flex items-center justify-center gap-2 py-2">
               <HeartCrack className="h-8 w-8" />
               <p className="text-semibold">Error searching for users</p>
-            </CommandEmpty>
+            </div>
+          )}
+
+          {status === "success" && data.length === 0 && (
+            <div className="flex items-center justify-center text-sm font-semibold gap-2 py-2">
+              No users found
+            </div>
           )}
 
           {status === "success" && (
@@ -144,26 +168,29 @@ export function UserSearch({
                   {debouncedQuery}
                 </CommandItem>
               )}
-              {data &&
+              {data.length > 0 &&
                 data.map((user) => (
                   <CommandItem
                     key={user.address}
-                    onSelect={() => select(user)}
-                    className="cursor-pointer"
+                    onSelect={() => selectResult(user)}
+                    className="gap-2 cursor-pointer"
+                    value={user.nickname}
                   >
-                    {user.nickname}
+                    <UserAvatar artist={artist} user={user} />
+                    <span>{user.nickname}</span>
                   </CommandItem>
                 ))}
             </CommandGroup>
           )}
 
-          {recent.length > 0 && (
+          {recentUsers.length > 0 && (
             <CommandGroup heading="Recent">
-              {recent.map((user) => (
+              {recentUsers.map((user) => (
                 <CommandItem
                   key={user.address}
-                  onSelect={() => select(user)}
+                  onSelect={() => selectRecent(user)}
                   className="cursor-pointer"
+                  value={user.nickname}
                 >
                   {user.nickname}
                 </CommandItem>
@@ -173,5 +200,32 @@ export function UserSearch({
         </CommandList>
       </CommandDialog>
     </>
+  );
+}
+
+type UserResultProps = {
+  artist: ValidArtist;
+  user: CosmoPublicUser;
+};
+
+function UserAvatar({ artist, user }: UserResultProps) {
+  const profile = user.profile.find(
+    (p) => p.artistName.toLowerCase() === artist.toLowerCase()
+  );
+
+  return (
+    <Avatar className="h-5 w-5">
+      <AvatarFallback>{user.nickname.charAt(0).toUpperCase()}</AvatarFallback>
+
+      {profile !== undefined ? (
+        <AvatarImage src={profile.image.thumbnail} alt={user.nickname} />
+      ) : (
+        <AvatarImage
+          className="bg-cosmo-profile p-1"
+          src={ProfileImage.src}
+          alt={user.nickname}
+        />
+      )}
+    </Avatar>
   );
 }

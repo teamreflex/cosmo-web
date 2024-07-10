@@ -11,13 +11,13 @@ Supersedes the [objekts.jinsoul.tv](https://github.com/teamreflex/objekts-svelte
 
 - Authentication
   - Sign in with Ramper
-  - Cosmo user/token fetching
+  - COSMO user/token fetching
   - Token refreshing
   - Sign out
-  - "My Page" displaying Cosmo ID and wallet address
+  - "My Page" displaying COSMO ID and wallet address
 - Objekts/COMO
   - Fetching owned objekts
-  - Sending objekts to another Cosmo user
+  - Sending objekts to another COSMO user
   - Displaying reason for untransferable objekts - e.g. used for grid vs. not transferrable (event, welcome) vs. pending mint
   - All available filters
   - Display COMO balances
@@ -33,7 +33,7 @@ Supersedes the [objekts.jinsoul.tv](https://github.com/teamreflex/objekts-svelte
   - Artist switching (homepage defaults to selected)
 - News
   - Displaying homepage news feed
-  - Displaying "today's atmosphere" and "Cosmo exclusive" feeds
+  - Displaying "today's atmosphere" and "COSMO exclusive" feeds
   - Inline playback of exclusive m3u8 streams (broken on iOS due to HLS)
 - Gravity
   - Displaying list of gravity events
@@ -58,18 +58,18 @@ Supersedes the [objekts.jinsoul.tv](https://github.com/teamreflex/objekts-svelte
 - Fetching other user's collections
   - Includes user search box with recent history
   - Filter state is stored in the URL for sharing
-  - Cosmo ID or Polygon address can be used
-  - Supports address -> Cosmo ID resolution if the ID has been logged
+  - COSMO ID or Polygon address can be used
+  - Supports address -> COSMO ID resolution if the ID has been logged
 - Indexing of all released objekts
 - Wishlist builder
 - COMO drop calendar
 - Polygon gas price display
 - Displaying trade history
-  - Includes displaying Cosmo ID if available
+  - Includes displaying COSMO ID if available
 - Privacy options to hide collection/trades/COMO
 - Per-member collection progress breakdown
   - Leaderboards displaying the top 25 users for the given member
-- Toggle to display collections from the blockchain instead of Cosmo
+- Toggle to display collections from the blockchain instead of COSMO
 - Descriptions/source of all objekts
 
 </details>

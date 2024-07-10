@@ -68,6 +68,14 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2024-07-10",
+    changes: [
+      "Added: User profile images are now displayed.",
+      "As users can select a unique image per artist, you will be shown the image for your own currently selected artist.",
+      "Unfortunately, COSMO requires signing in to view full profiles. Users not signed in will see the default squid placeholder profile image.",
+    ],
+  },
+  {
     date: "2024-07-03",
     changes: [
       "Added: Badge section to the Activity page.",
@@ -81,13 +89,5 @@ const updates = [
   {
     date: "2024-06-20",
     changes: ["Added: History section to the new Activity page."],
-  },
-  {
-    date: "2024-06-05",
-    changes: [
-      "Fixed: Grid season selector now defaults to the current season.",
-      "Added: Grid member selector now adds the selected member to the URL.",
-      "Updated: Artist & member fetching is now cached for 12 hours, should reduce errors when COSMO is struggling with high traffic.",
-    ],
   },
 ];
