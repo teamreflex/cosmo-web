@@ -59,7 +59,7 @@ function Member({ total, member, isFirst }: MemberProps) {
     "--member-color": member.color,
   } as CSSProperties;
 
-  const percentage = Math.round((member.count / total) * 100);
+  const percentage = Math.floor((member.count / total) * 100);
 
   return (
     <div className="flex items-center justify-between" style={css}>

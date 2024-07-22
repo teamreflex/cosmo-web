@@ -76,7 +76,7 @@ export default function ProgressTable({ address, member }: Props) {
       total: 0,
     }
   );
-  const percentage = Math.round((progress / total) * 100);
+  const percentage = Math.floor((progress / total) * 100);
 
   return (
     <div className="flex flex-col gap-2">

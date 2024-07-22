@@ -56,7 +56,7 @@ type LeaderboardRowProps = {
   rank: number;
 };
 function LeaderboardRow({ member, total, item, rank }: LeaderboardRowProps) {
-  const progress = Math.round((item.count / total) * 100);
+  const progress = Math.floor((item.count / total) * 100);
 
   return (
     <div className="flex flex-col">

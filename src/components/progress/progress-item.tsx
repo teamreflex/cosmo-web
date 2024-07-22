@@ -13,7 +13,7 @@ export default function ProgressItem({
   isSelected,
   onExpand,
 }: Props) {
-  const percentage = Math.round((progress.progress / progress.total) * 100);
+  const percentage = Math.floor((progress.progress / progress.total) * 100);
 
   return (
     <div

@@ -22,7 +22,7 @@ export default function ProgressSeason({ season, classes, filter }: Props) {
     (acc, progress) => acc + progress.progress,
     0
   );
-  const percentage = Math.round((progress / total) * 100);
+  const percentage = Math.floor((progress / total) * 100);
 
   function toggleSelected(item: FinalProgress) {
     setSelectedClass((prev) => {
