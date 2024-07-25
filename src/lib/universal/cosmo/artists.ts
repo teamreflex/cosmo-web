@@ -16,6 +16,7 @@ export type CosmoArtist = {
 };
 
 type CosmoMember = {
+  id: number;
   name: string;
   artist: ValidArtist;
   units: string[];

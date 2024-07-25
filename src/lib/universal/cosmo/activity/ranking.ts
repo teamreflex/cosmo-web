@@ -5,6 +5,7 @@ import { parse } from "../../parsers";
 const bffActivityRankingNearSchema = z.object({
   artistName: z.enum(validArtists),
   kind: z.enum(["hold_objekts_per_season", "grid_per_season"]),
+  memberId: z.coerce.number().optional(),
   marginAbove: z.coerce.number().optional().default(1),
   marginBefore: z.coerce.number().optional().default(1),
 });
@@ -22,6 +23,7 @@ export function parseBffActivityRankingNearParams(params: URLSearchParams) {
     {
       artistName: params.get("artistName"),
       kind: params.get("kind"),
+      memberId: params.get("memberId"),
       marginAbove: params.get("marginAbove"),
       marginBefore: params.get("marginBefore"),
     },
@@ -37,8 +39,8 @@ export function parseBffActivityRankingNearParams(params: URLSearchParams) {
 const bffActivityRankingTopSchema = z.object({
   artistName: z.enum(validArtists),
   kind: z.enum(["hold_objekts_per_season", "grid_per_season"]),
-  size: z.coerce.number().optional().default(10),
   memberId: z.coerce.number().optional(),
+  size: z.coerce.number().optional().default(10),
 });
 
 export type BFFActivityRankingTopParams = z.infer<
@@ -83,7 +85,7 @@ export type CosmoActivityRankingArtistRank = {
   memberId: number;
   rangeFrom: string;
   rangeTo: string;
-  maxRank: string;
+  maxRank: number;
 };
 
 export type CosmoActivityRankingUser = {

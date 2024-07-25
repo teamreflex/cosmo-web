@@ -68,6 +68,10 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2024-07-25",
+    changes: ["Added: Ranking section to the Activity page."],
+  },
+  {
     date: "2024-07-10",
     changes: [
       "Added: User profile images are now displayed.",
@@ -81,13 +85,5 @@ const updates = [
       "Added: Badge section to the Activity page.",
       "Changed: Moved Activity page to the navbar.",
     ],
-  },
-  {
-    date: "2024-06-21",
-    changes: ["Added: Season filter to progress leaderboards."],
-  },
-  {
-    date: "2024-06-20",
-    changes: ["Added: History section to the new Activity page."],
   },
 ];

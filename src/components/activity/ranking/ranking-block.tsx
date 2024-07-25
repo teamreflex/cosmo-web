@@ -10,12 +10,20 @@ import {
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { cn, ordinal } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronDown, ChevronUp, HeartCrack, Minus } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  ChevronUp,
+  HeartCrack,
+  Minus,
+} from "lucide-react";
 import { ofetch } from "ofetch";
 import { useState } from "react";
 import ProfileImage from "@/assets/profile.webp";
 import Skeleton from "@/components/skeleton/skeleton";
 import { format } from "date-fns";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 type Props = {
   artist: ValidArtist;
@@ -38,7 +46,12 @@ export default function RankingBlock({ artist }: Props) {
           <p className="text-sm">As of {formatted}</p>
         </div>
 
-        <p></p>
+        <Button variant="link" asChild>
+          <Link href="/activity/ranking" className="flex items-center gap-2">
+            <span>Details</span>
+            <ChevronRight className="w-5 h-5" />
+          </Link>
+        </Button>
       </div>
 
       {/* content */}
@@ -70,7 +83,7 @@ const sortMap = {
 
 function RankingList({ artist, kind }: RankingListProps) {
   const { data, status } = useQuery({
-    queryKey: ["activity-ranking", artist, kind],
+    queryKey: ["activity-ranking", artist, kind, "0"],
     queryFn: async () => {
       return await ofetch<CosmoActivityRankingNearResult>(
         `/api/bff/v1/activity/artist-rank/near-people`,
