@@ -1,7 +1,6 @@
 import { fetchActivityHistory } from "@/lib/server/cosmo/activity";
 import { TokenPayload } from "@/lib/universal/auth";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
-import { subMonths } from "date-fns";
 import { ChevronRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -13,10 +12,11 @@ type Props = {
 
 export default async function HistoryBlock({ user, artist }: Props) {
   const now = new Date();
+  const first = new Date(now.getFullYear(), now.getMonth(), 1);
   const history = await fetchActivityHistory(user.accessToken, {
     artistName: artist,
     historyType: "all",
-    fromTimestamp: subMonths(now, 1).toISOString(),
+    fromTimestamp: first.toISOString(),
     toTimestamp: now.toISOString(),
   });
 
