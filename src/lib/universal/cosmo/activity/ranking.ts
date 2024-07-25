@@ -89,8 +89,6 @@ export type CosmoActivityRankingArtistRank = {
 export type CosmoActivityRankingUser = {
   id: number;
   nickname: string;
-  address: string;
-  // contains a lot more but it's PII
 };
 
 export type CosmoActivityRankingProfileImage = {
