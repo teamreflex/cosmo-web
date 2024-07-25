@@ -1,6 +1,6 @@
 import { fetchActivityMyObjekts } from "@/lib/server/cosmo/activity";
 import { TokenPayload } from "@/lib/universal/auth";
-import { CosmoActivityMyObjektMember } from "@/lib/universal/cosmo/activity";
+import { CosmoActivityMyObjektMember } from "@/lib/universal/cosmo/activity/my-objekt";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import Image from "next/image";
 import { CSSProperties } from "react";

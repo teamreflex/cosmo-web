@@ -2,10 +2,7 @@
 
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { Fragment } from "react";
-import {
-  CosmoActivityBadge,
-  CosmoActivityBadgeResult,
-} from "@/lib/universal/cosmo/activity";
+import { CosmoActivityBadgeResult } from "@/lib/universal/cosmo/activity/badges";
 import {
   QueryErrorResetBoundary,
   useInfiniteQuery,

@@ -1,6 +1,6 @@
 import { getUser } from "@/app/api/common";
 import { fetchActivityBadges } from "@/lib/server/cosmo/activity";
-import { parseBffActivityBadgeParams } from "@/lib/universal/cosmo/activity";
+import { parseBffActivityBadgeParams } from "@/lib/universal/cosmo/activity/badges";
 import { NextRequest } from "next/server";
 
 /**

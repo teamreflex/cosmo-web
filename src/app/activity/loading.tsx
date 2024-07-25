@@ -19,6 +19,7 @@ export default async function ActivityLoading() {
           <ArtistBlockSkeleton />
           <BadgeBlockSkeleton />
         </div>
+        <Skeleton className="w-full h-[21.5rem]" />
         <ObjektBlockSkeleton />
       </div>
     </main>

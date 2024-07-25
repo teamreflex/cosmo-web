@@ -6,7 +6,7 @@ import { Fragment, HTMLAttributes, useState } from "react";
 import {
   CosmoActivityHistoryItem,
   CosmoActivityHistoryType,
-} from "@/lib/universal/cosmo/activity";
+} from "@/lib/universal/cosmo/activity/history";
 import { useQuery } from "@tanstack/react-query";
 import { ofetch } from "ofetch";
 import Skeleton from "../skeleton/skeleton";

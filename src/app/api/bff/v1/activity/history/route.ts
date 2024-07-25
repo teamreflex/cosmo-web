@@ -1,6 +1,6 @@
 import { getUser } from "@/app/api/common";
 import { fetchActivityHistory } from "@/lib/server/cosmo/activity";
-import { parseBffActivityHistoryParams } from "@/lib/universal/cosmo/activity";
+import { parseBffActivityHistoryParams } from "@/lib/universal/cosmo/activity/history";
 import { NextRequest } from "next/server";
 
 /**

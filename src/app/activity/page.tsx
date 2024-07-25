@@ -17,6 +17,7 @@ import HistoryBlock from "@/components/activity/history-block";
 import BadgeBlock from "@/components/activity/badge-block";
 import { user } from "@/lib/server/cosmo/auth";
 import { redirect } from "next/navigation";
+import RankingBlock from "@/components/activity/ranking/ranking-block";
 
 export const metadata: Metadata = {
   title: "Activity",
@@ -67,6 +68,8 @@ export default async function ActivityPage() {
             </Suspense>
           </ErrorBoundary>
         </div>
+
+        <RankingBlock artist={artist} />
 
         <ErrorBoundary fallback={<Error error="Could not load objekts" />}>
           <Suspense fallback={<ObjektBlockSkeleton />}>

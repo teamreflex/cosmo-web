@@ -1,6 +1,6 @@
 "use client";
 
-import { CosmoActivityBadge } from "@/lib/universal/cosmo/activity";
+import { CosmoActivityBadge } from "@/lib/universal/cosmo/activity/badges";
 import Image from "next/image";
 import Timestamp from "../ui/timestamp";
 

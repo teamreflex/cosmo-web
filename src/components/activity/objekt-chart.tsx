@@ -1,6 +1,6 @@
 "use client";
 
-import { CosmoActivityMyObjektMember } from "@/lib/universal/cosmo/activity";
+import { CosmoActivityMyObjektMember } from "@/lib/universal/cosmo/activity/my-objekt";
 import { PieChart, Pie, Cell } from "recharts";
 import Hydrated from "../hydrated";
 
