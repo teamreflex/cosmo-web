@@ -51,12 +51,15 @@ export default function ListRenderer({
 
   const queryFunction = useCallback(
     async ({ pageParam = 0 }: { pageParam?: number }) => {
-      return await ofetch(`/api/objekt-list/${list.slug}/${user.address}`, {
-        query: {
-          ...Object.fromEntries(searchParams.entries()),
-          page: pageParam.toString(),
-        },
-      }).then((res) => parsePage<IndexedCosmoResponse>(res));
+      return await ofetch(
+        `/api/objekt-list/entries/${list.slug}/${user.address}`,
+        {
+          query: {
+            ...Object.fromEntries(searchParams.entries()),
+            page: pageParam.toString(),
+          },
+        }
+      ).then((res) => parsePage<IndexedCosmoResponse>(res));
     },
     [searchParams, list.slug, user.address]
   );
