@@ -4,7 +4,7 @@ import { fetchProfile } from "@/lib/server/auth";
 import { db } from "@/lib/server/db";
 import { objektMetadata } from "@/lib/server/db/schema";
 import { authenticatedAction } from "@/lib/server/typed-action";
-import { AuthenticatedActionError } from "@/lib/server/typed-action/errors";
+import { ActionError } from "@/lib/server/typed-action/errors";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -30,7 +30,7 @@ export const updateObjektMetadata = async (
       });
 
       if (!profile || !profile.isObjektEditor) {
-        throw new AuthenticatedActionError({
+        throw new ActionError({
           status: "error",
           error: "You do not have permission to edit this collection",
         });

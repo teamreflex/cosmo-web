@@ -22,7 +22,7 @@ import {
   getRamperErrorMessage,
   sendLoginEmail,
 } from "@/lib/server/ramper";
-import { AuthenticatedActionError } from "@/lib/server/typed-action/errors";
+import { ActionError } from "@/lib/server/typed-action/errors";
 import { deleteCookie, setCookie } from "@/lib/server/cookies";
 
 /**
@@ -38,8 +38,8 @@ export const sendRamperEmail = async (form: FormData) =>
     onValidate: async ({ data }) => {
       const result = await sendLoginEmail(data);
       if (result.success === false) {
-        console.log(result);
-        throw new AuthenticatedActionError({
+        console.warn(result);
+        throw new ActionError({
           status: "error",
           error: getRamperErrorMessage(result, "sendLoginEmail"),
         });
@@ -72,8 +72,8 @@ export const exchangeRamperToken = async (form: FormData) =>
       });
 
       if (exchange.success === false) {
-        console.log(exchange);
-        throw new AuthenticatedActionError({
+        console.warn(exchange);
+        throw new ActionError({
           status: "error",
           error: getRamperErrorMessage(exchange, "exchangeToken"),
         });

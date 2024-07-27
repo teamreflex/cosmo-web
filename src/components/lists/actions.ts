@@ -7,11 +7,14 @@ import {
   addObjekt,
   createObjektList,
   deleteObjektList,
+  fetchObjektList,
   removeObjekt,
   updateObjektList,
 } from "@/lib/server/objekts/lists";
 import slugify from "slugify";
 import { TypedActionResult } from "@/lib/server/typed-action/types";
+import { ActionError } from "@/lib/server/typed-action/errors";
+import { db } from "@/lib/server/db";
 
 function createSlug(name: string) {
   return slugify(name, { lower: true });
@@ -34,9 +37,22 @@ export const create = async (form: FormData) =>
         ),
     }),
     onValidate: async ({ data: { name }, user }) => {
+      const slug = createSlug(name);
+
+      // check if the slug is already taken
+      const list = await fetchObjektList(user.address, slug);
+      if (list !== undefined) {
+        throw new ActionError({
+          status: "error",
+          validationErrors: {
+            name: ["You already have a list with this name"],
+          },
+        });
+      }
+
       return await createObjektList({
         name,
-        slug: createSlug(name),
+        slug,
         userAddress: user.address,
       });
     },
@@ -61,6 +77,26 @@ export const update = async (prev: TypedActionResult<string>, form: FormData) =>
     }),
     onValidate: async ({ data: { name, id }, user }) => {
       const slug = createSlug(name);
+
+      // check if the slug is already taken
+      const list = await db.query.lists.findFirst({
+        where: (lists, { and, eq, not }) =>
+          and(
+            eq(lists.slug, slug),
+            eq(lists.userAddress, user.address),
+            not(eq(lists.id, id))
+          ),
+      });
+
+      if (list !== undefined) {
+        throw new ActionError({
+          status: "error",
+          validationErrors: {
+            name: ["You already have a list with this name"],
+          },
+        });
+      }
+
       await updateObjektList(id, {
         name,
         slug,

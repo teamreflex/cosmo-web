@@ -2,7 +2,7 @@ import * as z from "zod";
 import { getErrorMessage } from "../../error";
 import { redirect } from "next/navigation";
 import { Action, AuthenticatedAction, TypedActionResult } from "./types";
-import { AuthenticatedActionError } from "./errors";
+import { ActionError } from "./errors";
 import { getUser } from "@/app/api/common";
 
 /**
@@ -33,6 +33,10 @@ export async function typedAction<TResponse, TSchema extends z.Schema>({
   try {
     var response = await onValidate({ data: result.data });
   } catch (err) {
+    if (err instanceof ActionError) {
+      return err.result;
+    }
+
     return { status: "error", error: getErrorMessage(err) };
   }
 
@@ -66,7 +70,7 @@ export async function authenticatedAction<TResponse, TSchema extends z.Schema>({
     try {
       await onAuthenticate({ user: auth.user });
     } catch (err) {
-      if (err instanceof AuthenticatedActionError) {
+      if (err instanceof ActionError) {
         return err.result;
       }
 
