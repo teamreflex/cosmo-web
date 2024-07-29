@@ -191,46 +191,52 @@ function MyRank({ artist, kind, memberId }: MyRankProps) {
       <div className="flex flex-col gap-2">
         <h3 className="text-xl font-semibold">My Rank</h3>
         <div className="grid grid-cols-2 grid-rows-2 bg-accent rounded-lg">
-          {/* current */}
-          {current !== undefined && (
-            <div className="col-span-2 flex flex-col border-b border-foreground/25 p-4">
-              <p className="font-semibold text-lg">
-                {current.representUser.user.nickname}
-              </p>
-              <p className="font-semibold text-xl">
-                {ordinal(current.rankNumber)} (Top {percentage}%)
-              </p>
-              <p className="text-sm">
-                Number of {type}: {current.rankData}
-              </p>
-            </div>
-          )}
+          <div className="col-span-2 flex flex-col border-b border-foreground/25 p-4">
+            {/* current */}
+            {current !== undefined && (
+              <>
+                <p className="font-semibold text-lg">
+                  {current.representUser.user.nickname}
+                </p>
+                <p className="font-semibold text-xl">
+                  {ordinal(current.rankNumber)} (Top {percentage}%)
+                </p>
+                <p className="text-sm">
+                  Number of {type}: {current.rankData}
+                </p>
+              </>
+            )}
+          </div>
 
           {/* above */}
-          {above !== undefined && (
-            <div className="flex flex-col justify-center gap-1 text-sm p-4 border-r border-foreground/25">
-              <p className="font-semibold">Rank just above</p>
-              <p className="font-semibold text-red-500">
-                {ordinal(above.rankNumber)} place
-              </p>
-              <p>
-                {above.rankData} {type}
-              </p>
-            </div>
-          )}
+          <div className="flex flex-col justify-center gap-1 text-sm p-4 border-r border-foreground/25">
+            {above !== undefined && (
+              <>
+                <p className="font-semibold">Rank just above</p>
+                <p className="font-semibold text-red-500">
+                  {ordinal(above.rankNumber)} place
+                </p>
+                <p>
+                  {above.rankData} {type}
+                </p>
+              </>
+            )}
+          </div>
 
           {/* below */}
-          {below !== undefined && (
-            <div className="flex flex-col justify-center gap-1 text-sm p-4">
-              <p className="font-semibold">Rank just below</p>
-              <p className="font-semibold text-blue-500">
-                {ordinal(below.rankNumber)} place
-              </p>
-              <p>
-                {below.rankData} {type}
-              </p>
-            </div>
-          )}
+          <div className="flex flex-col justify-center gap-1 text-sm p-4">
+            {below !== undefined && (
+              <>
+                <p className="font-semibold">Rank just below</p>
+                <p className="font-semibold text-blue-500">
+                  {ordinal(below.rankNumber)} place
+                </p>
+                <p>
+                  {below.rankData} {type}
+                </p>
+              </>
+            )}
+          </div>
         </div>
 
         <Portal to="#ranking-season">

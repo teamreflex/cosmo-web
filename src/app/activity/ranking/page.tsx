@@ -55,7 +55,7 @@ export default async function ActivityRankingPage() {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <TopRanking selectedArtist={artist} artists={artists} />
+      <TopRanking key={artist} selectedArtist={artist} artists={artists} />
     </HydrationBoundary>
   );
 }

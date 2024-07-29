@@ -14,7 +14,7 @@ Supersedes the [objekts.jinsoul.tv](https://github.com/teamreflex/objekts-svelte
   - COSMO user/token fetching
   - Token refreshing
   - Sign out
-  - "My Page" displaying COSMO ID and wallet address
+  - Per-artist profile image display
 - Objekts/COMO
   - Fetching owned objekts
   - Sending objekts to another COSMO user
@@ -48,6 +48,7 @@ Supersedes the [objekts.jinsoul.tv](https://github.com/teamreflex/objekts-svelte
   - Day countdown since joining (welcome panel)
   - Objekt, grid and gravity history
   - Badge display
+  - Rankings
 
 </details>
 
