@@ -23,13 +23,12 @@ export async function submitEventRewards(): Promise<
   }
 
   try {
-    const result = await claimEventRewards(user.accessToken);
-    if (result) {
-      return {
-        status: "success",
-        data: result,
-      } satisfies ActionResultSuccess<boolean>;
-    }
+    await claimEventRewards(user.accessToken);
+
+    return {
+      status: "success",
+      data: true,
+    } satisfies ActionResultSuccess<boolean>;
   } catch (err) {
     console.error(err);
   }

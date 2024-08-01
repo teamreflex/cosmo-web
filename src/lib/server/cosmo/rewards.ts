@@ -46,7 +46,7 @@ export async function fetchPendingEventRewards(token: string) {
  * Claim all pending event rewards for the given user.
  */
 export async function claimEventRewards(token: string) {
-  return await cosmo(`/bff/v1/event-rewards`, {
+  await cosmo(`/bff/v1/event-rewards`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -55,5 +55,7 @@ export async function claimEventRewards(token: string) {
       tid: v4(),
     },
     cache: "no-cache",
-  }).then(() => true);
+  });
+
+  return true;
 }
