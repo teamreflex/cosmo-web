@@ -22,16 +22,21 @@ export async function submitEventRewards(): Promise<
     } satisfies ActionResultError;
   }
 
-  const result = await claimEventRewards(user.accessToken);
-  if (result) {
-    return {
-      status: "success",
-      data: result,
-    } satisfies ActionResultSuccess<boolean>;
+  try {
+    const result = await claimEventRewards(user.accessToken);
+    if (result) {
+      return {
+        status: "success",
+        data: result,
+      } satisfies ActionResultSuccess<boolean>;
+    }
+  } catch (err) {
+    console.error(err);
   }
 
   return {
     status: "error",
-    error: "Could not claim event rewards",
+    error:
+      "Error claiming event rewards. Try again or use the app to claim your rewards.",
   } satisfies ActionResultError;
 }
