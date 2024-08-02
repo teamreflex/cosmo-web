@@ -55,6 +55,14 @@ export async function claimEventRewards(token: string) {
       tid: v4(),
     },
     cache: "no-cache",
+    async onResponseError({ response }) {
+      try {
+        const json = await response.json();
+        console.log("[claimEventRewards::error]", response.status, json);
+      } catch {
+        // ignore
+      }
+    },
   });
 
   return true;
