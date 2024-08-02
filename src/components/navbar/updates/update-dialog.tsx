@@ -68,6 +68,12 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2024-08-02",
+    changes: [
+      "Fixed: Reward claiming now works like COSMO, in that it is per-artist. You must switch artists to claim rewards for both.",
+    ],
+  },
+  {
     date: "2024-07-25",
     changes: ["Added: Ranking section to the Activity page."],
   },

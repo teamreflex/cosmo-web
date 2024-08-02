@@ -17,6 +17,7 @@ import { ProfileProvider } from "@/hooks/use-profile";
 import RewardsRenderer from "@/components/rewards/rewards-renderer";
 import { ObjektRewardProvider } from "@/hooks/use-objekt-rewards";
 import { ErrorBoundary } from "react-error-boundary";
+import { getSelectedArtist } from "@/lib/server/profiles";
 
 type Props = {
   params: { nickname: string };
@@ -53,6 +54,7 @@ export default async function UserCollectionPage({ params }: Props) {
   }
 
   const shouldHideNickname = targetUser.privacy.nickname && !isOwnProfile;
+  const selectedArtist = getSelectedArtist();
 
   return (
     <ProfileProvider profile={targetUser} objektLists={objektLists}>
@@ -61,7 +63,7 @@ export default async function UserCollectionPage({ params }: Props) {
           isOwnProfile && (
             <ErrorBoundary fallback={null}>
               <Suspense>
-                <RewardsRenderer user={user} />
+                <RewardsRenderer user={user} artist={selectedArtist} />
               </Suspense>
             </ErrorBoundary>
           )

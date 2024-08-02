@@ -13,6 +13,14 @@ import ComoBalanceRenderer from "./como-balances";
 import { TokenPayload } from "@/lib/universal/auth";
 import { user } from "@/lib/server/cosmo/auth";
 import { getSelectedArtist } from "@/lib/server/profiles";
+import { ErrorBoundary } from "react-error-boundary";
+import {
+  Tooltip,
+  TooltipProvider,
+  TooltipTrigger,
+  TooltipContent,
+} from "../ui/tooltip";
+import { AlertTriangle } from "lucide-react";
 
 export default async function Navbar() {
   const user = await decodeUser();
@@ -25,20 +33,21 @@ export default async function Navbar() {
             <div className="flex gap-4 items-center">
               <ApolloLogo color="white" />
               <PolygonGasRenderer />
-
               <UpdateDialog />
             </div>
 
             <Links user={user} />
 
             <div className="flex grow-0 items-center justify-end gap-2">
-              <Suspense
-                fallback={
-                  <div className="h-10 w-10 rounded-full bg-accent animate-pulse" />
-                }
-              >
-                <Auth token={user} />
-              </Suspense>
+              <ErrorBoundary fallback={<AuthFallback />}>
+                <Suspense
+                  fallback={
+                    <div className="h-10 w-10 rounded-full bg-accent animate-pulse" />
+                  }
+                >
+                  <Auth token={user} />
+                </Suspense>
+              </ErrorBoundary>
             </div>
           </div>
         </div>
@@ -67,5 +76,22 @@ async function Auth({ token }: { token?: TokenPayload }) {
         token ? <ComoBalanceRenderer address={token.address} /> : null
       }
     />
+  );
+}
+
+function AuthFallback() {
+  return (
+    <TooltipProvider delayDuration={0}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="relative flex justify-center items-center py-1 px-2 rounded-xl bg-red-500 bg-opacity-25 hover:bg-opacity-40 transition-colors">
+            <AlertTriangle className="text-red-500 w-6 h-6" />
+          </div>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" align="end">
+          Error loading user from COSMO
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }

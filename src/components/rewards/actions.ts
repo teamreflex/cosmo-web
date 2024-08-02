@@ -2,6 +2,7 @@
 
 import { decodeUser } from "@/app/data-fetching";
 import { claimEventRewards } from "@/lib/server/cosmo/rewards";
+import { getSelectedArtist } from "@/lib/server/profiles";
 import {
   ActionResultError,
   ActionResultSuccess,
@@ -23,7 +24,8 @@ export async function submitEventRewards(): Promise<
   }
 
   try {
-    await claimEventRewards(user.accessToken);
+    const artist = getSelectedArtist();
+    await claimEventRewards(user.accessToken, artist);
 
     return {
       status: "success",

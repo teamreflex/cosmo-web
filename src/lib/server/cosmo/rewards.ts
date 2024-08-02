@@ -1,6 +1,7 @@
 import { v4 } from "uuid";
 import { cosmo } from "../http";
 import { CosmoRewardItem } from "@/lib/universal/cosmo/rewards";
+import { ValidArtist } from "@/lib/universal/cosmo/common";
 
 type CosmoRewardAvailable = {
   isClaimable: boolean;
@@ -9,13 +10,17 @@ type CosmoRewardAvailable = {
 /**
  * Check if the given user is eligible for an event reward.
  */
-export async function fetchEventRewardAvailable(token: string) {
+export async function fetchEventRewardAvailable(
+  token: string,
+  artist: ValidArtist
+) {
   return await cosmo<CosmoRewardAvailable>(`/bff/v1/check-event-rewards`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
     query: {
       tid: v4(),
+      artistName: artist,
     },
     cache: "no-cache",
   }).then((res) => res.isClaimable);
@@ -30,13 +35,17 @@ type CosmoRewardList = {
 /**
  * Fetch the list of pending event rewards for the given user.
  */
-export async function fetchPendingEventRewards(token: string) {
+export async function fetchPendingEventRewards(
+  token: string,
+  artist: ValidArtist
+) {
   return await cosmo<CosmoRewardList>(`/bff/v1/event-rewards`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
     query: {
       tid: v4(),
+      artistName: artist,
     },
     cache: "no-cache",
   });
@@ -45,7 +54,7 @@ export async function fetchPendingEventRewards(token: string) {
 /**
  * Claim all pending event rewards for the given user.
  */
-export async function claimEventRewards(token: string) {
+export async function claimEventRewards(token: string, artist: ValidArtist) {
   await cosmo(`/bff/v1/event-rewards`, {
     method: "POST",
     headers: {
@@ -53,16 +62,9 @@ export async function claimEventRewards(token: string) {
     },
     query: {
       tid: v4(),
+      artistName: artist,
     },
     cache: "no-cache",
-    async onResponseError({ response }) {
-      try {
-        const json = await response.json();
-        console.log("[claimEventRewards::error]", response.status, json);
-      } catch {
-        // ignore
-      }
-    },
   });
 
   return true;

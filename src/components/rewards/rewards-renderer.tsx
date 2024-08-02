@@ -7,17 +7,20 @@ import Image from "next/image";
 import RewardTimestamp from "./reward-timestamp";
 import RewardDialog from "./reward-dialog";
 import { CosmoRewardItem } from "@/lib/universal/cosmo/rewards";
+import { ValidArtist } from "@/lib/universal/cosmo/common";
 
 type Props = {
   user: TokenPayload;
+  artist: ValidArtist;
 };
 
-export default async function RewardsRenderer({ user }: Props) {
-  const isClaimable = await fetchEventRewardAvailable(user.accessToken);
+export default async function RewardsRenderer({ user, artist }: Props) {
+  const isClaimable = await fetchEventRewardAvailable(user.accessToken, artist);
   if (isClaimable === false) return null;
 
   const { count, items, claimCount } = await fetchPendingEventRewards(
-    user.accessToken
+    user.accessToken,
+    artist
   );
 
   // const { count, items, claimCount } = {
