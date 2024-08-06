@@ -10,7 +10,6 @@ import {
   Smartphone,
 } from "lucide-react";
 import { memo } from "react";
-import SendObjekt from "./send-button";
 import LockObjekt from "./lock-button";
 import OverlayStatus from "./overlay-status";
 import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
@@ -77,11 +76,6 @@ const Overlay = memo(function Overlay({
       <div className="flex items-center gap-2">
         {/* buttons */}
 
-        {/* send objekt */}
-        {/* {!isLocked && objekt.transferable && authenticated && (
-          <SendObjekt objekt={objekt} />
-        )} */}
-
         {/* locked (viewing other user) */}
         {!objekt.usedForGrid && isLocked && !authenticated && (
           <Lock className="h-3 w-3 sm:h-5 sm:w-5 shrink-0" />
@@ -110,6 +104,14 @@ const Overlay = memo(function Overlay({
         )}
 
         {/* statsuses */}
+
+        {/* generic non-transferable */}
+        {objekt.nonTransferableReason === "not-transferable" && (
+          <MailX
+            {...createHoverProps("not-transferable")}
+            className="h-3 w-3 sm:h-5 sm:w-5 shrink-0"
+          />
+        )}
 
         {/* mint pending */}
         {objekt.nonTransferableReason === "mint-pending" && (
@@ -159,6 +161,9 @@ const Overlay = memo(function Overlay({
         )}
         {hoverState === "lock" && (
           <OverlayStatus>{isLocked ? "Unlock" : "Lock"}</OverlayStatus>
+        )}
+        {objekt.nonTransferableReason === "not-transferable" && (
+          <OverlayStatus>Not transferable</OverlayStatus>
         )}
         {objekt.nonTransferableReason === "mint-pending" && (
           <OverlayStatus>Mint pending</OverlayStatus>

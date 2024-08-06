@@ -29,7 +29,7 @@ export async function sendLoginEmail({ transactionId, email }: SendLoginEmail) {
   return await ofetch<SendLoginEmailResult>(`${env.RAMPER_URL}/appSend`, {
     method: "POST",
     body: {
-      appId: env.NEXT_PUBLIC_COSMO_APP_ID,
+      appId: env.RAMPER_APP_ID,
       transactionId,
       email,
     },
@@ -74,7 +74,7 @@ export async function exchangeToken({
   return await ofetch<ExchangeTokenResult>(`${env.RAMPER_URL}/exchangeToken`, {
     method: "POST",
     body: {
-      appId: env.NEXT_PUBLIC_COSMO_APP_ID,
+      appId: env.RAMPER_APP_ID,
       transactionId,
       pendingToken,
     },
