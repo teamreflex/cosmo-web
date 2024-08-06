@@ -41,9 +41,12 @@ type OwnedObjektCommonFields = {
 };
 
 export type NonTransferableReason =
+  | "mint-pending"
   | "used-for-grid"
   | "challenge-reward"
   | "welcome-objekt"
+  | "effect-objekt"
+  | "bookmark-objekt"
   | "lenticular-objekt"
   | "not-transferable"; // indexer
 
@@ -82,8 +85,8 @@ const bffCollectionGroupSchema = z.object({
   size: z.coerce.number().optional().default(20),
   page: z.coerce.number().optional().default(1),
   order: z.enum(validSorts),
-  collectionIds: z.string().optional(),
-  memberIds: z.coerce.number().optional(),
+  collectionIds: z.string().array().optional(),
+  memberIds: z.coerce.number().array().optional(),
   class: z.enum(validClasses).array().optional(),
   season: z.enum(validSeasons).array().optional(),
   on_offline: z.enum(validOnlineTypes).optional(),
@@ -104,8 +107,8 @@ export function parseBffCollectionGroupParams(params: URLSearchParams) {
       size: params.get("size"),
       page: params.get("page"),
       order: params.get("order"),
-      collectionIds: params.get("collectionIds"),
-      memberIds: params.get("memberIds"),
+      collectionIds: params.getAll("collectionIds"),
+      memberIds: params.getAll("memberIds"),
       class: params.getAll("class"),
       season: params.getAll("season"),
       on_offline: params.get("on_offline"),
@@ -153,10 +156,7 @@ export type BFFCollectionGroupCollection = {
 };
 
 export type BFFCollectionGroupObjekt = {
-  nonTransferableReason?:
-    | "mint-pending"
-    | "challenge-reward"
-    | "welcome-objekt";
+  nonTransferableReason?: NonTransferableReason;
   metadata: {
     collectionId: string;
     objektNo: number;
