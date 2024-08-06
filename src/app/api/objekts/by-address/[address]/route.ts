@@ -9,7 +9,6 @@ import {
   withArtist,
   withClass,
   withCollections,
-  withGridable,
   withMember,
   withOnlineType,
   withSeason,
@@ -61,7 +60,6 @@ export async function GET(request: NextRequest, { params }: Params) {
           ...withMember(filters.member),
           ...withCollections(filters.collectionNo),
           ...withTransferable(filters.transferable),
-          ...withGridable(filters.gridable),
         ]
       )
     )
@@ -120,7 +118,7 @@ function mapResult(objekt: Objekt, collection: Collection): OwnedObjekt {
     receivedAt: objekt.receivedAt,
     status: "minted",
     transferable: objekt.transferable,
-    usedForGrid: objekt.used_for_grid,
+    usedForGrid: false,
     nonTransferableReason: nonTransferableReason(objekt, collection),
     // cannot currently be determined
     lenticularPairTokenId: null,
@@ -140,7 +138,5 @@ function nonTransferableReason(
     return "welcome-objekt";
   }
 
-  if (collection.class === "First" && objekt.transferable === false) {
-    return objekt.used_for_grid ? "used-for-grid" : "challenge-reward";
-  }
+  return objekt.transferable === false ? "not-transferable" : undefined;
 }
