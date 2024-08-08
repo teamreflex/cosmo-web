@@ -61,12 +61,12 @@ async function UserBalances({ address }: Props) {
 
   return (
     <div className="flex flex-row gap-2">
-      {balances.map((balance) => (
+      {artists.map((artist) => (
         <Balance
-          key={balance.id}
-          balance={balance}
-          artist={
-            artists.find((a) => addrcomp(a.contracts.Como, balance.contract))!
+          key={artist.name}
+          artist={artist}
+          balance={
+            balances.find((b) => addrcomp(b.contract, artist.contracts.Como))!
           }
         />
       ))}
@@ -79,7 +79,7 @@ function Balance({
   balance,
 }: {
   artist: CosmoArtist;
-  balance: ComoBalance;
+  balance?: ComoBalance;
 }) {
   return (
     <TooltipProvider>
@@ -88,7 +88,7 @@ function Balance({
           <div className="flex justify-between items-center rounded cursor-default bg-accent border border-black/30 dark:border-white/30 h-[26px] min-w-16 w-fit px-1 shadow">
             <ArtistIcon artist={artist.name} />
             <span className="pl-2 text-sm">
-              {balance.amount.toLocaleString()}
+              {balance?.amount.toLocaleString() ?? "0"}
             </span>
           </div>
         </TooltipTrigger>
