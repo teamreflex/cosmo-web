@@ -59,10 +59,6 @@ async function SystemStatusPopover() {
         </button>
       </PopoverTrigger>
       <PopoverContent align="start" className="p-2">
-        <h3 className="text-sm font-semibold">System Status</h3>
-
-        <Separator orientation="horizontal" className="my-2" />
-
         {/* gas */}
         <div className="flex flex-col">
           <div className="flex items-center justify-between">

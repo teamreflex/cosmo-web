@@ -1,9 +1,10 @@
 "use client";
 
-import { Dispatch, Fragment, SetStateAction, memo, useState } from "react";
+import { Dispatch, Fragment, SetStateAction, memo } from "react";
 import {
   CollectionDataSource,
-  PropsWithFilters,
+  CosmoFilters,
+  UpdateCosmoFilters,
 } from "@/hooks/use-cosmo-filters";
 import {
   Select,
@@ -28,10 +29,12 @@ import { env } from "@/env.mjs";
 import { ValidSorts } from "@/lib/universal/cosmo/common";
 import { useCooldown } from "@/hooks/use-countdown";
 
-interface Props extends PropsWithFilters<"sort"> {
+type Props = {
+  filters: CosmoFilters;
+  setFilters: UpdateCosmoFilters;
   dataSource: CollectionDataSource;
   setDataSource: Dispatch<SetStateAction<CollectionDataSource>>;
-}
+};
 
 export default memo(function DataSourceSelector({
   filters,
@@ -56,14 +59,27 @@ export default memo(function DataSourceSelector({
 
   function update(val: string) {
     const source = val as CollectionDataSource;
-    // if switching to cosmo and using serial sort, reset sort
-    if (
-      source === "cosmo" &&
-      (filters === ValidSorts.SERIAL_ASCENDING ||
-        filters === ValidSorts.SERIAL_DESCENDING)
-    ) {
-      setFilters("sort", null);
+
+    // reset any source-specific filters
+    switch (source) {
+      case "cosmo":
+        // reset serial sort
+        if (
+          filters.sort === ValidSorts.SERIAL_ASCENDING ||
+          filters.sort === ValidSorts.SERIAL_DESCENDING
+        ) {
+          setFilters("sort", null);
+        }
+        break;
+
+      case "blockchain":
+        // reset gridable
+        if (filters.gridable) {
+          setFilters("gridable", null);
+        }
+        break;
     }
+
     setDataSource(source);
   }
 
@@ -84,7 +100,8 @@ export default memo(function DataSourceSelector({
             <p>This does have its pros & cons:</p>
             <ul className="list-disc list-inside">
               <li>
-                Additional filters are available, such as sorting by serial.
+                Sorting by serial is available, while sorting by gridable is
+                unavailable.
               </li>
               <li>
                 Any unsendable objekts will only be shown as non-transferable,

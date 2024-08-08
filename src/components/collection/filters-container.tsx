@@ -93,10 +93,12 @@ export const CollectionFilters = memo(function CollectionFilters({
   return (
     <Fragment>
       <LockedFilter showLocked={showLocked} setShowLocked={setShowLocked} />
-      <GridableFilter
-        filters={cosmoFilters.gridable}
-        setFilters={updateCosmoFilters}
-      />
+      {dataSource === "cosmo" && (
+        <GridableFilter
+          filters={cosmoFilters.gridable}
+          setFilters={updateCosmoFilters}
+        />
+      )}
       <TransferableFilter
         filters={cosmoFilters.transferable}
         setFilters={updateCosmoFilters}
@@ -119,7 +121,7 @@ export const CollectionFilters = memo(function CollectionFilters({
         serials={allowSerials}
       />
       <DataSourceSelector
-        filters={cosmoFilters.sort}
+        filters={cosmoFilters}
         setFilters={updateCosmoFilters}
         dataSource={dataSource}
         setDataSource={setDataSource}
