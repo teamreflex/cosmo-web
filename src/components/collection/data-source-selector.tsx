@@ -87,15 +87,14 @@ export default memo(function DataSourceSelector({
                 Additional filters are available, such as sorting by serial.
               </li>
               <li>
-                Transferable and grid status indicators are not perfect.
-                Sometimes objekts used in grids will show as event rewards, and
-                vice versa.
+                Any unsendable objekts will only be shown as non-transferable,
+                rather than their real status like event reward, used for grid
+                etc.
               </li>
               <li>
                 Only minted objekts will be displayed, whereas the COSMO option
                 will show any objekts that are pending mint.
               </li>
-              <li>Lenticular indicators are not available.</li>
             </ul>
           </div>
           <AlertDialogFooter>

@@ -23,7 +23,7 @@ export default async function SystemStatus() {
     <ErrorBoundary fallback={<ErrorFallback />}>
       <Suspense
         fallback={
-          <div className="w-12 h-6 rounded-lg bg-accent animate-pulse" />
+          <div className="h-8 w-9 rounded-l-lg bg-accent animate-pulse" />
         }
       >
         <SystemStatusPopover />
@@ -50,7 +50,7 @@ async function SystemStatusPopover() {
       <PopoverTrigger asChild>
         <button
           className={cn(
-            "py-1.5 px-2 rounded-xl bg-opacity-25 hover:bg-opacity-40 transition-colors",
+            "h-8 w-9 flex justify-center items-center rounded-l-lg bg-opacity-25 hover:bg-opacity-40 transition-colors",
             textStatus(status),
             bgStatus(status)
           )}
