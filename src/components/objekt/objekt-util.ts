@@ -1,3 +1,4 @@
+import { NonTransferableReason } from "@/lib/universal/cosmo/objekts";
 import { ValidObjekt } from "@/lib/universal/objekts";
 
 export type Hoverable =
@@ -5,11 +6,7 @@ export type Hoverable =
   | "lock"
   | "locked"
   | "list"
-  | "mint-pending"
-  | "challenge-reward"
-  | "welcome-objekt"
-  | "used-for-grid"
-  | "lenticular-objekt";
+  | NonTransferableReason;
 
 /**
  * Parse a valid key from an ambiguous objekt.

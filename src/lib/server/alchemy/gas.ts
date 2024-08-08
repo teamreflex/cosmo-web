@@ -1,12 +1,12 @@
-import { GasPrice } from "@/lib/universal/alchemy/gas";
 import { formatUnits } from "ethers/lib/utils";
 import { alchemy } from "../http";
 import { unstable_cache } from "next/cache";
+import { RPCResponse } from "./common";
+import { SystemStatus } from "@/lib/universal/system";
 
-type GasPriceResult = {
-  jsonrpc: string;
-  id: number;
-  result: string;
+type GasPrice = {
+  price: number;
+  status: SystemStatus;
 };
 
 /**
@@ -15,7 +15,7 @@ type GasPriceResult = {
  */
 export const fetchGasPrice = unstable_cache(
   async (): Promise<GasPrice> =>
-    alchemy<GasPriceResult>("/", {
+    alchemy<RPCResponse>("/", {
       body: {
         id: 1,
         jsonrpc: "2.0",
@@ -24,10 +24,11 @@ export const fetchGasPrice = unstable_cache(
     })
       .then((res) => {
         const price = Math.round(parseInt(formatUnits(res.result, "gwei")));
-        const status = price < 400 ? "low" : price < 1000 ? "medium" : "high";
+        const status =
+          price < 400 ? "normal" : price < 1000 ? "degraded" : "down";
         return { price, status } as const;
       })
-      .catch((_) => ({ price: 0, status: "low" })),
+      .catch((_) => ({ price: 0, status: "normal" })),
   ["gas-price"],
   {
     revalidate: 60, // 60s

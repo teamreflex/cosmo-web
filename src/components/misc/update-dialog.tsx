@@ -7,7 +7,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "../../ui/alert-dialog";
+} from "../ui/alert-dialog";
 import {
   Accordion,
   AccordionContent,
@@ -26,8 +26,8 @@ export default function UpdateDialog() {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <button className="relative flex justify-center items-center py-1 px-2 rounded-xl bg-cosmo-text bg-opacity-25 hover:bg-opacity-40 transition-colors">
-          <Newspaper className="text-cosmo-text w-6 h-6" />
+        <button className="relative h-8 w-9 flex justify-center items-center rounded-r-lg bg-cosmo-text bg-opacity-25 hover:bg-opacity-40 transition-colors">
+          <Newspaper className="text-cosmo-text w-5 h-5" />
           {isNew && (
             <span className="absolute top-0 right-0 rounded-full h-2 w-2 bg-red-500 animate-pulse" />
           )}
@@ -68,6 +68,14 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2024-08-08",
+    changes: [
+      "Polygon gas indicator now shows an overall system status.",
+      "Database should now be more reliable and not lag 30 minutes behind as often.",
+      "Fixed mismatched grid/event reward indicators when viewing user profiles via Polygon database.",
+    ],
+  },
+  {
     date: "2024-08-02",
     changes: [
       "Fixed: Reward claiming now works like COSMO, in that it is per-artist. You must switch artists to claim rewards for both.",
@@ -83,13 +91,6 @@ const updates = [
       "Added: User profile images are now displayed.",
       "As users can select a unique image per artist, you will be shown the image for your own currently selected artist.",
       "Unfortunately, COSMO requires signing in to view full profiles. Users not signed in will see the default squid placeholder profile image.",
-    ],
-  },
-  {
-    date: "2024-07-03",
-    changes: [
-      "Added: Badge section to the Activity page.",
-      "Changed: Moved Activity page to the navbar.",
     ],
   },
 ];

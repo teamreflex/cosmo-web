@@ -1,5 +1,6 @@
 import { InferSelectModel, relations } from "drizzle-orm";
 import {
+  bigint,
   boolean,
   index,
   integer,
@@ -59,7 +60,6 @@ export const objekts = pgTable(
     receivedAt: timestamp("received_at", { mode: "string" }).notNull(),
     serial: integer("serial").notNull(),
     transferable: boolean("transferable").notNull(),
-    used_for_grid: boolean("used_for_grid").notNull(),
     collectionId: varchar("collection_id", { length: 36 })
       .notNull()
       .references(() => collections.id),
@@ -113,6 +113,41 @@ export const transferRelations = relations(transfers, ({ one }) => ({
   }),
 }));
 
-export type Transfer = InferSelectModel<typeof transfers>;
-export type Objekt = InferSelectModel<typeof objekts>;
-export type Collection = InferSelectModel<typeof collections>;
+export const comoBalances = pgTable(
+  "como_balance",
+  {
+    id: uuid("id").primaryKey(),
+    contract: varchar("contract", { length: 42 }).notNull(),
+    owner: varchar("owner", { length: 42 }).notNull(),
+    amount: bigint("amount", { mode: "number" }).notNull(),
+  },
+  (table) => ({
+    contractIdx: index("contract_idx").on(table.contract),
+    ownerIdx: index("owner_idx").on(table.owner),
+  })
+);
+
+export const votes = pgTable(
+  "vote",
+  {
+    id: uuid("id").primaryKey(),
+    from: varchar("from", { length: 42 }).notNull(),
+    createdAt: timestamp("created_at", { mode: "string" }).notNull(),
+    contract: varchar("contract", { length: 42 }).notNull(),
+    pollId: integer("poll_id").notNull(),
+    candidateId: integer("candidate_id"),
+    index: integer("index").notNull(),
+    amount: bigint("amount", { mode: "number" }).notNull(),
+  },
+  (table) => ({
+    fromIdx: index("from_idx").on(table.from),
+    contractIdx: index("contract_idx").on(table.contract),
+    pollIdIdx: index("poll_id_idx").on(table.pollId),
+  })
+);
+
+export type Transfer = typeof transfers.$inferSelect;
+export type Objekt = typeof objekts.$inferSelect;
+export type Collection = typeof collections.$inferSelect;
+export type ComoBalance = typeof comoBalances.$inferSelect;
+export type Vote = typeof votes.$inferSelect;
