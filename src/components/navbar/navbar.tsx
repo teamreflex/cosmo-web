@@ -7,8 +7,7 @@ import {
   getArtistsWithMembers,
   getProfile,
 } from "@/app/data-fetching";
-import UpdateDialog from "./updates/update-dialog";
-import PolygonGasRenderer from "../misc/gas-display";
+import UpdateDialog from "../misc/update-dialog";
 import ComoBalanceRenderer from "./como-balances";
 import { TokenPayload } from "@/lib/universal/auth";
 import { user } from "@/lib/server/cosmo/auth";
@@ -21,6 +20,7 @@ import {
   TooltipContent,
 } from "../ui/tooltip";
 import { AlertTriangle } from "lucide-react";
+import SystemStatus from "../misc/system-status";
 
 export default async function Navbar() {
   const user = await decodeUser();
@@ -32,8 +32,10 @@ export default async function Navbar() {
           <div className="container lg:grid lg:grid-cols-3 flex items-center gap-2 text-sm text-foreground lg:gap-4 lg:py-6 pointer-events-auto">
             <div className="flex gap-4 items-center">
               <ApolloLogo color="white" />
-              <PolygonGasRenderer />
-              <UpdateDialog />
+              <div className="relative flex divide-x divide-border items-center">
+                <SystemStatus />
+                <UpdateDialog />
+              </div>
             </div>
 
             <Links user={user} />

@@ -1,7 +1,4 @@
-import {
-  DecodedTokenBalance,
-  fetchTokenBalances,
-} from "@/lib/server/alchemy/erc20";
+import { fetchTokenBalances } from "@/lib/server/como";
 import ArtistIcon from "../artist-icon";
 import {
   Tooltip,
@@ -14,6 +11,8 @@ import { Suspense } from "react";
 import { X } from "lucide-react";
 import { ErrorBoundary } from "react-error-boundary";
 import { getArtistsWithMembers } from "@/app/data-fetching";
+import { addrcomp } from "@/lib/utils";
+import { ComoBalance } from "@/lib/server/db/indexer/schema";
 
 type Props = {
   address: string;
@@ -55,11 +54,10 @@ function ComoBalanceErrorFallback() {
 }
 
 async function UserBalances({ address }: Props) {
-  const artists = await getArtistsWithMembers();
-  const balances = await fetchTokenBalances({
-    address,
-    contracts: artists.map((artist) => artist.contracts.Como),
-  });
+  const [artists, balances] = await Promise.all([
+    getArtistsWithMembers(),
+    fetchTokenBalances(address),
+  ]);
 
   return (
     <div className="flex flex-row gap-2">
@@ -68,7 +66,7 @@ async function UserBalances({ address }: Props) {
           key={artist.name}
           artist={artist}
           balance={
-            balances.find((b) => b.contractAddress === artist.contracts.Como)!
+            balances.find((b) => addrcomp(b.contract, artist.contracts.Como))!
           }
         />
       ))}
@@ -81,7 +79,7 @@ function Balance({
   balance,
 }: {
   artist: CosmoArtist;
-  balance: DecodedTokenBalance;
+  balance: ComoBalance;
 }) {
   return (
     <TooltipProvider>
@@ -90,7 +88,7 @@ function Balance({
           <div className="flex justify-between items-center rounded cursor-default bg-accent border border-black/30 dark:border-white/30 h-[26px] min-w-16 w-fit px-1 shadow">
             <ArtistIcon artist={artist.name} />
             <span className="pl-2 text-sm">
-              {balance.tokenBalance.toLocaleString()}
+              {balance.amount.toLocaleString()}
             </span>
           </div>
         </TooltipTrigger>
