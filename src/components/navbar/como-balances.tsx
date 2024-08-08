@@ -61,12 +61,12 @@ async function UserBalances({ address }: Props) {
 
   return (
     <div className="flex flex-row gap-2">
-      {artists.map((artist) => (
+      {balances.map((balance) => (
         <Balance
-          key={artist.name}
-          artist={artist}
-          balance={
-            balances.find((b) => addrcomp(b.contract, artist.contracts.Como))!
+          key={balance.id}
+          balance={balance}
+          artist={
+            artists.find((a) => addrcomp(a.contracts.Como, balance.contract))!
           }
         />
       ))}
