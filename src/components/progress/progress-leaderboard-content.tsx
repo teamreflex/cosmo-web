@@ -2,7 +2,7 @@ import { Leaderboard, LeaderboardItem } from "@/lib/universal/progress";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ofetch } from "ofetch";
 import Skeleton from "../skeleton/skeleton";
-import { ordinal } from "@/lib/utils";
+import { baseUrl, ordinal } from "@/lib/utils";
 import Link from "next/link";
 import { ValidSeason } from "@/lib/universal/cosmo/common";
 
@@ -25,7 +25,9 @@ export default function ProgressLeaderboardContent({
       season ?? "all",
     ],
     queryFn: async () => {
-      return await ofetch<Leaderboard>(`/api/progress/leaderboard/${member}`, {
+      const url = new URL(`/api/progress/leaderboard/${member}`, baseUrl());
+
+      return await ofetch<Leaderboard>(url.toString(), {
         query: {
           onlineType,
           season,

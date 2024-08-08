@@ -16,13 +16,13 @@ import {
 } from "@/lib/universal/cosmo/activity/ranking";
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
-import { useQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import { ofetch } from "ofetch";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import ProfileImage from "@/assets/profile.webp";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ordinal } from "@/lib/utils";
+import { baseUrl, ordinal } from "@/lib/utils";
 import Portal from "@/components/portal";
 import {
   AlertDialog,
@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { HelpCircle } from "lucide-react";
+import { ErrorBoundary } from "react-error-boundary";
 
 type Props = {
   selectedArtist: ValidArtist;
@@ -125,8 +126,65 @@ export default function TopRanking({ selectedArtist, artists }: Props) {
 
       {/* content */}
       <div className="w-full sm:w-2/3 md:w-1/2 flex flex-col gap-4 mx-auto">
-        <MyRank artist={selectedArtist} kind={tab} memberId={memberId} />
-        <RankingList artist={selectedArtist} kind={tab} memberId={memberId} />
+        <ErrorBoundary
+          fallback={
+            <p className="text-center text-sm font-semibold">
+              Error loading rank
+            </p>
+          }
+        >
+          <Suspense
+            fallback={
+              <div className="flex flex-col gap-2">
+                <h3 className="text-xl font-semibold">My Rank</h3>
+                <Skeleton className="h-[218px] rounded-lg" />
+              </div>
+            }
+          >
+            <MyRank artist={selectedArtist} kind={tab} memberId={memberId} />
+          </Suspense>
+        </ErrorBoundary>
+
+        <ErrorBoundary
+          fallback={
+            <p className="text-center text-sm font-semibold">
+              Error loading top 10
+            </p>
+          }
+        >
+          <Suspense
+            fallback={
+              <div className="flex flex-col gap-2">
+                <h3 className="text-xl font-semibold">TOP 10</h3>
+                <div className="flex flex-col gap-2">
+                  {Array.from({ length: 10 }).map((_, i) => (
+                    <div key={i} className="flex gap-4 items-center">
+                      {/* ranking position */}
+                      <Skeleton className="w-5 h-5 rounded-full" />
+
+                      {/* profile image */}
+                      <Skeleton className="h-10 w-10 rounded-full" />
+
+                      {/* name */}
+                      <div className="flex-grow">
+                        <Skeleton className="h-3 w-24 rounded-full" />
+                      </div>
+
+                      {/* ranking data */}
+                      <Skeleton className="w-5 h-5 rounded-full" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            }
+          >
+            <RankingList
+              artist={selectedArtist}
+              kind={tab}
+              memberId={memberId}
+            />
+          </Suspense>
+        </ErrorBoundary>
       </div>
     </main>
   );
@@ -139,43 +197,29 @@ type MyRankProps = {
 };
 
 function MyRank({ artist, kind, memberId }: MyRankProps) {
-  const { data, status } = useQuery({
+  const { data } = useSuspenseQuery({
     queryKey: ["activity-ranking", artist, kind, memberId],
     queryFn: async () => {
-      return await ofetch<CosmoActivityRankingNearResult>(
+      const url = new URL(
         `/api/bff/v1/activity/artist-rank/near-people`,
-        {
-          query: {
-            artistName: artist,
-            kind,
-            memberId,
-            marginAbove: 1,
-            marginBelow: 1,
-          },
-        }
+        baseUrl()
       );
+      return await ofetch<CosmoActivityRankingNearResult>(url.toString(), {
+        query: {
+          artistName: artist,
+          kind,
+          memberId,
+          marginAbove: 1,
+          marginBelow: 1,
+        },
+      });
     },
   });
 
   const type =
     kind === "hold_objekts_per_season" ? "Objekts owned" : "Grids completed";
 
-  if (status === "error") {
-    return (
-      <p className="text-center text-sm font-semibold">Error loading rank</p>
-    );
-  }
-
-  if (status === "pending") {
-    return (
-      <div className="flex flex-col gap-2">
-        <h3 className="text-xl font-semibold">My Rank</h3>
-        <Skeleton className="h-[218px] rounded-lg" />
-      </div>
-    );
-  }
-
-  if (status === "success" && data !== undefined) {
+  if (data !== undefined) {
     const current = data.nearPeoples.find(
       (p) => p.relativePosition === "current"
     );
@@ -245,6 +289,8 @@ function MyRank({ artist, kind, memberId }: MyRankProps) {
       </div>
     );
   }
+
+  return null;
 }
 
 function MyRankHelpDialog() {
@@ -293,7 +339,7 @@ type RankingListProps = {
 };
 
 function RankingList({ artist, kind, memberId }: RankingListProps) {
-  const { data, status } = useQuery({
+  const { data } = useSuspenseQuery({
     queryKey: ["ranking-detail", artist, kind, memberId],
     queryFn: async () => {
       return await ofetch<CosmoActivityRankingTopEntry[]>(
@@ -310,40 +356,7 @@ function RankingList({ artist, kind, memberId }: RankingListProps) {
     },
   });
 
-  if (status === "error") {
-    return (
-      <p className="text-center text-sm font-semibold">Error loading top 10</p>
-    );
-  }
-
-  if (status === "pending") {
-    return (
-      <div className="flex flex-col gap-2">
-        <h3 className="text-xl font-semibold">TOP 10</h3>
-        <div className="flex flex-col gap-2">
-          {Array.from({ length: 10 }).map((_, i) => (
-            <div key={i} className="flex gap-4 items-center">
-              {/* ranking position */}
-              <Skeleton className="w-5 h-5 rounded-full" />
-
-              {/* profile image */}
-              <Skeleton className="h-10 w-10 rounded-full" />
-
-              {/* name */}
-              <div className="flex-grow">
-                <Skeleton className="h-3 w-24 rounded-full" />
-              </div>
-
-              {/* ranking data */}
-              <Skeleton className="w-5 h-5 rounded-full" />
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (status === "success" && data !== undefined) {
+  if (data !== undefined) {
     return (
       <div className="flex flex-col gap-2">
         <h3 className="text-xl font-semibold">TOP 10</h3>
@@ -355,6 +368,8 @@ function RankingList({ artist, kind, memberId }: RankingListProps) {
       </div>
     );
   }
+
+  return null;
 }
 
 type RankingRowProps = {

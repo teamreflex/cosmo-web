@@ -4,6 +4,7 @@ import { BaseObjektProps } from "../objekt/objekt";
 import {
   Fragment,
   ReactElement,
+  Suspense,
   cloneElement,
   useCallback,
   useMemo,
@@ -13,7 +14,7 @@ import {
   QueryErrorResetBoundary,
   QueryFunction,
   QueryKey,
-  useInfiniteQuery,
+  useSuspenseInfiniteQuery,
 } from "@tanstack/react-query";
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
 import MemberFilter from "../collection/member-filter";
@@ -30,6 +31,7 @@ import { GRID_COLUMNS, cn, typedMemo } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { useObjektRewards } from "@/hooks/use-objekt-rewards";
 import Skeleton from "../skeleton/skeleton";
+import { ErrorBoundary } from "react-error-boundary";
 
 export type ObjektResponse<TObjektType extends ValidObjekt> = {
   hasNext: boolean;
@@ -72,30 +74,6 @@ export default typedMemo(function FilteredObjektDisplay<
   gridColumns = GRID_COLUMNS,
   dataSource = "blockchain",
 }: Props<TObjektType>) {
-  const { rewardsDialog } = useObjektRewards();
-
-  // prevent the query from sending bad sort requests to the cosmo api
-  const isBadCosmoRequest =
-    dataSource === "cosmo" && filters.sort?.startsWith("serial") === true;
-
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
-    useInfiniteQuery({
-      queryKey: [...queryKey, dataSource, filters],
-      queryFn: queryFunction,
-      initialPageParam: 0,
-      getNextPageParam: (lastPage) => lastPage.nextStartAfter,
-      refetchOnWindowFocus: false,
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      enabled: isBadCosmoRequest === false,
-    });
-
-  const total = Number(data?.pages[0].total ?? 0);
-  const objekts = useMemo(() => {
-    return (data?.pages.flatMap((page) => page.objekts) ?? []).filter(
-      getObjektDisplay
-    );
-  }, [data, getObjektDisplay]);
-
   const setActiveMember = useCallback((member: string) => {
     setFilters((prev) => ({
       ...prev,
@@ -116,10 +94,6 @@ export default typedMemo(function FilteredObjektDisplay<
 
   return (
     <div className="flex flex-col">
-      <Portal to="#objekt-total">
-        <p className="font-semibold">{total.toLocaleString()} total</p>
-      </Portal>
-
       <MemberFilter
         artists={artists}
         active={filters.artist ?? filters.member}
@@ -136,55 +110,117 @@ export default typedMemo(function FilteredObjektDisplay<
                 `md:grid-cols-${gridColumns}`
               )}
             >
-              {status === "pending" ? (
-                <Fragment>
-                  <div className="z-20 absolute top-0 w-full h-full bg-gradient-to-b from-transparent to-75% to-background" />
-                  {Array.from({ length: gridColumns * 3 }).map((_, i) => (
-                    <Skeleton
-                      key={i}
-                      className="z-10 w-full aspect-photocard rounded-lg md:rounded-xl lg:rounded-2xl"
-                    />
-                  ))}
-                </Fragment>
-              ) : status === "error" ? (
-                <div className="col-span-full flex flex-col gap-2 items-center py-12">
-                  <div className="flex items-center gap-2">
-                    <HeartCrack className="h-6 w-6" />
-                    <p className="text-sm font-semibold">
-                      Error loading objekts
-                    </p>
+              <ErrorBoundary
+                fallback={
+                  <div className="col-span-full flex flex-col gap-2 items-center py-12">
+                    <div className="flex items-center gap-2">
+                      <HeartCrack className="h-6 w-6" />
+                      <p className="text-sm font-semibold">
+                        Error loading objekts
+                      </p>
+                    </div>
+                    <Button variant="outline" onClick={reset}>
+                      <RefreshCcw className="mr-2" /> Retry
+                    </Button>
                   </div>
-                  <Button variant="outline" onClick={reset}>
-                    <RefreshCcw className="mr-2" /> Retry
-                  </Button>
-                </div>
-              ) : (
-                <Fragment>
-                  {rewardsDialog}
-                  {objekts.map((objekt, i) =>
-                    cloneElement(
-                      children(
-                        { objekt, id: getObjektId(objekt) },
-                        i < gridColumns * 3
-                      ),
-                      {
-                        key: getObjektId(objekt),
-                      }
-                    )
-                  )}
-                </Fragment>
-              )}
+                }
+              >
+                <Suspense
+                  fallback={
+                    <Fragment>
+                      <div className="z-20 absolute top-0 w-full h-full bg-gradient-to-b from-transparent to-75% to-background" />
+                      {Array.from({ length: gridColumns * 3 }).map((_, i) => (
+                        <Skeleton
+                          key={i}
+                          className="z-10 w-full aspect-photocard rounded-lg md:rounded-xl lg:rounded-2xl"
+                        />
+                      ))}
+                    </Fragment>
+                  }
+                >
+                  <ObjektGrid
+                    filters={filters}
+                    queryFunction={queryFunction}
+                    queryKey={queryKey}
+                    getObjektId={getObjektId}
+                    getObjektDisplay={getObjektDisplay}
+                    gridColumns={gridColumns}
+                    dataSource={dataSource}
+                  >
+                    {children}
+                  </ObjektGrid>
+                </Suspense>
+              </ErrorBoundary>
             </div>
           )}
         </QueryErrorResetBoundary>
 
+        <div id="pagination" />
+      </div>
+    </div>
+  );
+});
+
+type ObjektGridProps<TObjektType extends ValidObjekt> = Omit<
+  Props<TObjektType>,
+  "artists" | "setFilters"
+>;
+
+const ObjektGrid = typedMemo(function ObjektGrid<
+  TObjektType extends ValidObjekt
+>({
+  children,
+  filters,
+  queryKey,
+  queryFunction,
+  getObjektId,
+  getObjektDisplay = () => true,
+  gridColumns = GRID_COLUMNS,
+  dataSource = "blockchain",
+}: ObjektGridProps<TObjektType>) {
+  const { rewardsDialog } = useObjektRewards();
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useSuspenseInfiniteQuery({
+      queryKey: [...queryKey, dataSource, filters],
+      queryFn: queryFunction,
+      initialPageParam: 0,
+      getNextPageParam: (lastPage) => lastPage.nextStartAfter,
+      refetchOnWindowFocus: false,
+      staleTime: 1000 * 60 * 5, // 5 minutes
+    });
+
+  const total = Number(data?.pages[0].total ?? 0);
+  const objekts = useMemo(() => {
+    return (data?.pages.flatMap((page) => page.objekts) ?? []).filter(
+      getObjektDisplay
+    );
+  }, [data, getObjektDisplay]);
+
+  return (
+    <Fragment>
+      <Portal to="#objekt-total">
+        <p className="font-semibold">{total.toLocaleString()} total</p>
+      </Portal>
+
+      {rewardsDialog}
+
+      {objekts.map((objekt, i) =>
+        cloneElement(
+          children({ objekt, id: getObjektId(objekt) }, i < gridColumns * 3),
+          {
+            key: getObjektId(objekt),
+          }
+        )
+      )}
+
+      <Portal to="#pagination">
         <InfiniteQueryNext
-          status={status}
+          status="success"
           hasNextPage={hasNextPage}
           isFetchingNextPage={isFetchingNextPage}
           fetchNextPage={fetchNextPage}
         />
-      </div>
-    </div>
+      </Portal>
+    </Fragment>
   );
 });

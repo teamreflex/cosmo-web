@@ -1,10 +1,10 @@
 "use client";
 
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
-import { COSMO_ENDPOINT } from "@/lib/universal/cosmo/common";
+import { COSMO_ENDPOINT, ValidSorts } from "@/lib/universal/cosmo/common";
 import { OwnedObjektsResult } from "@/lib/universal/cosmo/objekts";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
-import { ReactNode, useCallback, useMemo } from "react";
+import { ReactNode, useCallback } from "react";
 import {
   CollectionFilters,
   FiltersContainer,
@@ -15,6 +15,7 @@ import { ofetch } from "ofetch";
 import Portal from "../portal";
 import HelpDialog from "./help-dialog";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
+import { baseUrl } from "@/lib/utils";
 
 type Props = {
   lockedObjekts: number[];
@@ -47,17 +48,30 @@ export default function ProfileRenderer({
       const endpoint =
         dataSource === "cosmo"
           ? `${COSMO_ENDPOINT}/objekt/v1/owned-by/${profile.address}`
-          : `/api/objekts/by-address/${profile.address}`;
+          : new URL(
+              `/api/objekts/by-address/${profile.address}`,
+              baseUrl()
+            ).toString();
 
       const pagination =
         dataSource === "cosmo"
           ? { start_after: pageParam.toString() }
           : { page: pageParam.toString() };
 
+      // ensure we don't send serial sorting to cosmo or else it 400's
+      const sort = searchParams.get("sort");
+      const sortReset =
+        dataSource === "cosmo" &&
+        (sort === ValidSorts.SERIAL_ASCENDING ||
+          sort === ValidSorts.SERIAL_DESCENDING)
+          ? { sort: "newest" }
+          : {};
+
       return await ofetch(endpoint, {
         query: {
           ...Object.fromEntries(searchParams.entries()),
           ...pagination,
+          ...sortReset,
         },
       }).then((res) => parsePage<OwnedObjektsResult>(res));
     },

@@ -8,8 +8,8 @@ import {
   CosmoActivityRankingNearUser,
 } from "@/lib/universal/cosmo/activity/ranking";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
-import { cn, ordinal } from "@/lib/utils";
-import { useQuery } from "@tanstack/react-query";
+import { baseUrl, cn, ordinal } from "@/lib/utils";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import {
   ChevronDown,
   ChevronRight,
@@ -18,12 +18,13 @@ import {
   Minus,
 } from "lucide-react";
 import { ofetch } from "ofetch";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import ProfileImage from "@/assets/profile.webp";
 import Skeleton from "@/components/skeleton/skeleton";
 import { format } from "date-fns";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { ErrorBoundary } from "react-error-boundary";
 
 type Props = {
   artist: ValidArtist;
@@ -65,7 +66,20 @@ export default function RankingBlock({ artist }: Props) {
         </TabsList>
       </Tabs>
 
-      <RankingList artist={artist} kind={kind} />
+      <ErrorBoundary
+        fallback={
+          <div className="w-full flex flex-col items-center mx-auto">
+            <HeartCrack className="w-12 h-12" />
+            <span className="text-sm font-semibold">
+              Could not load ranking
+            </span>
+          </div>
+        }
+      >
+        <Suspense fallback={<Skeleton className="w-full h-60" />}>
+          <RankingList artist={artist} kind={kind} />
+        </Suspense>
+      </ErrorBoundary>
     </div>
   );
 }
@@ -82,20 +96,21 @@ const sortMap = {
 };
 
 function RankingList({ artist, kind }: RankingListProps) {
-  const { data, status } = useQuery({
+  const { data } = useSuspenseQuery({
     queryKey: ["activity-ranking", artist, kind, "0"],
     queryFn: async () => {
-      return await ofetch<CosmoActivityRankingNearResult>(
+      const url = new URL(
         `/api/bff/v1/activity/artist-rank/near-people`,
-        {
-          query: {
-            artistName: artist,
-            kind,
-            marginAbove: 1,
-            marginBelow: 1,
-          },
-        }
+        baseUrl()
       );
+      return await ofetch<CosmoActivityRankingNearResult>(url.toString(), {
+        query: {
+          artistName: artist,
+          kind,
+          marginAbove: 1,
+          marginBelow: 1,
+        },
+      });
     },
   });
 
@@ -103,10 +118,7 @@ function RankingList({ artist, kind }: RankingListProps) {
 
   return (
     <div className="flex flex-col">
-      {status === "pending" && <Skeleton className="w-full h-60" />}
-
-      {status === "success" &&
-        sorted !== undefined &&
+      {sorted !== undefined &&
         sorted.map((item) => (
           <RankingItem
             key={item.rankNumber}
@@ -115,13 +127,6 @@ function RankingList({ artist, kind }: RankingListProps) {
             item={item}
           />
         ))}
-
-      {status === "error" && (
-        <div className="w-full flex flex-col items-center mx-auto">
-          <HeartCrack className="w-12 h-12" />
-          <span className="text-sm font-semibold">Could not load ranking</span>
-        </div>
-      )}
     </div>
   );
 }

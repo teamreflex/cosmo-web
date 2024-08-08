@@ -20,7 +20,7 @@ import {
 } from "../collection/filters-container";
 import { ExpandableObjekt, RoutedExpandableObjekt } from "../objekt/objekt";
 import { ofetch } from "ofetch";
-import { GRID_COLUMNS } from "@/lib/utils";
+import { baseUrl, GRID_COLUMNS } from "@/lib/utils";
 import { parseAsString, useQueryState } from "nuqs";
 import Hydrated from "../hydrated";
 
@@ -56,7 +56,8 @@ export default function IndexRenderer({
 
   const queryFunction = useCallback(
     async ({ pageParam = 0 }: { pageParam?: number }) => {
-      return await ofetch("/api/objekts", {
+      const url = new URL("/api/objekts", baseUrl());
+      return await ofetch(url.toString(), {
         query: {
           ...Object.fromEntries(searchParams.entries()),
           page: pageParam.toString(),

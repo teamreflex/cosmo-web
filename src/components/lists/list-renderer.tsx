@@ -21,7 +21,7 @@ import {
 } from "../collection/filters-container";
 import { ExpandableObjekt } from "../objekt/objekt";
 import { ofetch } from "ofetch";
-import { GRID_COLUMNS } from "@/lib/utils";
+import { baseUrl, GRID_COLUMNS } from "@/lib/utils";
 
 const getObjektId = (objekt: IndexedObjekt) => objekt.id;
 
@@ -51,15 +51,17 @@ export default function ListRenderer({
 
   const queryFunction = useCallback(
     async ({ pageParam = 0 }: { pageParam?: number }) => {
-      return await ofetch(
+      const url = new URL(
         `/api/objekt-list/entries/${list.slug}/${user.address}`,
-        {
-          query: {
-            ...Object.fromEntries(searchParams.entries()),
-            page: pageParam.toString(),
-          },
-        }
-      ).then((res) => parsePage<IndexedCosmoResponse>(res));
+        baseUrl()
+      );
+
+      return await ofetch(url.toString(), {
+        query: {
+          ...Object.fromEntries(searchParams.entries()),
+          page: pageParam.toString(),
+        },
+      }).then((res) => parsePage<IndexedCosmoResponse>(res));
     },
     [searchParams, list.slug, user.address]
   );
