@@ -9,7 +9,6 @@ import {
 } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ReactQueryStreamedHydration } from "@tanstack/react-query-next-experimental";
-// import AuthProvider from "./navbar/auth/auth-provider";
 import WarningDialog from "./warning-dialog";
 import { preconnect, prefetchDNS } from "react-dom";
 

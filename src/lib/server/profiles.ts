@@ -1,6 +1,5 @@
-import { SQL, and, inArray } from "drizzle-orm";
+import { SQL } from "drizzle-orm";
 import { db } from "./db";
-import { profiles } from "./db/schema";
 import { getCookie } from "./cookies";
 import { ValidArtist } from "../universal/cosmo/common";
 
@@ -15,10 +14,10 @@ export async function fetchKnownAddresses(addresses: string[], privacy: SQL[]) {
   }
 
   // fetch known profiles
-  const results = await db
-    .select()
-    .from(profiles)
-    .where(and(...privacy, inArray(profiles.userAddress, addresses)));
+  const results = await db.query.profiles.findMany({
+    where: (profiles, { and, inArray }) =>
+      and(...privacy, inArray(profiles.userAddress, addresses)),
+  });
 
   // uses the latest profile for each address instead of the first
   return results.filter((profile, _, arr) => {

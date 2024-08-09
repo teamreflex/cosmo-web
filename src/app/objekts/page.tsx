@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import {
   decodeUser,
   getArtistsWithMembers,
-  getProfileAndLists,
+  getUserByIdentifier,
 } from "../data-fetching";
 import IndexRenderer from "@/components/objekt-index/index-renderer";
 import { fetchUniqueCollections } from "@/lib/server/objekts/collections";
@@ -40,7 +40,7 @@ export default async function ObjektsIndexPage({ searchParams }: Params) {
   const user = await decodeUser();
   const [artists, data, collections] = await Promise.all([
     getArtistsWithMembers(),
-    user ? getProfileAndLists(user.profileId) : undefined,
+    user ? getUserByIdentifier(user.address) : undefined,
     fetchUniqueCollections(),
     // prefetch objekts
     queryClient.prefetchInfiniteQuery({

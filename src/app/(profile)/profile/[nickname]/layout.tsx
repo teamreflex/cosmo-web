@@ -1,13 +1,10 @@
 import { decodeUser, getUserByIdentifier } from "@/app/data-fetching";
 import { PropsWithChildren, Suspense } from "react";
-import ProfileImage from "@/assets/profile.webp";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import CopyAddressButton from "@/components/profile/copy-address-button";
 import OpenSeaButton from "@/components/profile/opensea-button";
 import PolygonButton from "@/components/profile/polygon-button";
 import TradesButton from "@/components/profile/trades-button";
 import BackButton from "@/components/profile/back-button";
-import ListsButton from "@/components/profile/lists-button";
 import ComoButton from "@/components/profile/como-button";
 import { Shield } from "lucide-react";
 import { validArtists } from "@/lib/universal/cosmo/common";
@@ -17,6 +14,7 @@ import { addrcomp } from "@/lib/utils";
 import ComoBalanceRenderer from "@/components/navbar/como-balances";
 import UserAvatar from "@/components/profile/user-avatar";
 import Skeleton from "@/components/skeleton/skeleton";
+import ListDropdown from "@/components/lists/list-dropdown";
 
 type Props = PropsWithChildren<{
   params: {
@@ -25,10 +23,12 @@ type Props = PropsWithChildren<{
 }>;
 
 export default async function ProfileLayout({ children, params }: Props) {
-  const [currentUser, profile] = await Promise.all([
+  const [currentUser, targetUser] = await Promise.all([
     decodeUser(),
     getUserByIdentifier(params.nickname),
   ]);
+
+  const { profile, objektLists } = targetUser;
 
   const url = `/@${profile.isAddress ? profile.address : profile.nickname}`;
 
@@ -70,7 +70,8 @@ export default async function ProfileLayout({ children, params }: Props) {
             <ProgressButton
               nickname={profile.isAddress ? profile.address : profile.nickname}
             />
-            <ListsButton
+            <ListDropdown
+              lists={objektLists}
               nickname={profile.isAddress ? profile.address : profile.nickname}
               allowCreate={currentUser?.address === profile.address}
             />

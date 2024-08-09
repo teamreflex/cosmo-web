@@ -11,19 +11,21 @@ type Props = {
   params: { nickname: string };
 };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { nickname } = await getUserByIdentifier(params.nickname);
+  const { profile } = await getUserByIdentifier(params.nickname);
 
   return {
-    title: `${nickname}'s Progress`,
+    title: `${profile.nickname}'s Progress`,
   };
 }
 
 export default async function ProgressPage({ params }: Props) {
-  const [currentUser, profile, artists] = await Promise.all([
+  const [currentUser, targetUser, artists] = await Promise.all([
     decodeUser(),
     getUserByIdentifier(params.nickname),
     fetchArtistsWithMembers(),
   ]);
+
+  const { profile } = targetUser;
 
   const showProgress =
     profile.privacy.objekts === false ||

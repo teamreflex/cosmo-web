@@ -1,5 +1,5 @@
 import { ValidArtist } from "@/lib/universal/cosmo/common";
-import { InferInsertModel, InferSelectModel, relations } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import {
   boolean,
   index,
@@ -136,8 +136,8 @@ export const objektMetadataRelations = relations(objektMetadata, ({ one }) => ({
   }),
 }));
 
-export type Profile = InferSelectModel<typeof profiles>;
-export type ObjektList = InferSelectModel<typeof lists>;
-export type CreateObjektList = InferInsertModel<typeof lists>;
-export type UpdateObjektList = InferInsertModel<typeof lists>;
-export type ObjektMetadataEntry = InferSelectModel<typeof objektMetadata>;
+export type Profile = typeof profiles.$inferSelect;
+export type ObjektList = typeof lists.$inferSelect;
+export type CreateObjektList = typeof lists.$inferInsert;
+export type UpdateObjektList = typeof lists.$inferInsert;
+export type ObjektMetadataEntry = typeof objektMetadata.$inferSelect;

@@ -3,7 +3,7 @@ import { validArtists } from "../common";
 import { parse } from "../../parsers";
 import { subMonths } from "date-fns";
 
-export const activityHistoryTypes = [
+const activityHistoryTypes = [
   "all",
   "grid_complete",
   "gravity_vote",

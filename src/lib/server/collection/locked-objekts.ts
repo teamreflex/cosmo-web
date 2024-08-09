@@ -1,23 +1,7 @@
 import "server-only";
 import { and, eq } from "drizzle-orm";
 import { db } from "../db";
-import { lockedObjekts, profiles } from "../db/schema";
-
-/**
- * Fetch all locked objekts for a given nickname.
- */
-export async function fetchLockedObjekts(nickname: string) {
-  const result = await db.query.profiles.findFirst({
-    where: eq(profiles.nickname, nickname),
-    with: {
-      lockedObjekts: true,
-    },
-  });
-
-  return (result?.lockedObjekts ?? [])
-    .filter((row) => row.locked)
-    .map((row) => row.tokenId);
-}
+import { lockedObjekts } from "../db/schema";
 
 /**
  * Toggle the lock on an objekt.

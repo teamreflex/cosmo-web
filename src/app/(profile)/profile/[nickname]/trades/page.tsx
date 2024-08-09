@@ -8,16 +8,16 @@ type Props = {
   params: { nickname: string };
 };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { nickname } = await getUserByIdentifier(params.nickname);
+  const { profile } = await getUserByIdentifier(params.nickname);
 
   return {
-    title: `${nickname}'s Trades`,
+    title: `${profile.nickname}'s Trades`,
   };
 }
 
 export default async function UserTransfersPage({ params }: Props) {
   const user = await decodeUser();
-  const profile = await getUserByIdentifier(params.nickname);
+  const { profile } = await getUserByIdentifier(params.nickname);
   if (profile.privacy.trades && !addrcomp(user?.address, profile.address)) {
     return <Private nickname={profile.nickname} />;
   }

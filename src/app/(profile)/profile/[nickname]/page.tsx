@@ -1,12 +1,9 @@
 import { Metadata } from "next";
-import { notFound } from "next/navigation";
 import {
   decodeUser,
-  getObjektLists,
   getProfile,
   getUserByIdentifier,
 } from "@/app/data-fetching";
-import { fetchLockedObjekts } from "@/lib/server/collection/locked-objekts";
 import ProfileRenderer from "@/components/profile/profile-renderer";
 import { fetchArtistsWithMembers } from "@/lib/server/cosmo/artists";
 import { Loader2, Shield } from "lucide-react";
@@ -20,44 +17,41 @@ import { ErrorBoundary } from "react-error-boundary";
 import { getSelectedArtist } from "@/lib/server/profiles";
 
 type Props = {
-  params: { nickname: string };
+  params: {
+    nickname: string;
+  };
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const targetUser = await getUserByIdentifier(params.nickname);
-  if (!targetUser) notFound();
+  const { profile } = await getUserByIdentifier(params.nickname);
 
   return {
-    title: `${targetUser.nickname}'s Collection`,
+    title: `${profile.nickname}'s Collection`,
   };
 }
 
 export default async function UserCollectionPage({ params }: Props) {
   const user = await decodeUser();
+  const selectedArtist = getSelectedArtist();
 
   const isOwnProfile =
     user !== undefined && addrcomp(user.nickname, params.nickname);
 
-  const [currentUser, objektLists, targetUser, artists, lockedObjekts] =
-    await Promise.all([
-      user ? getProfile(user.profileId) : undefined,
-      getObjektLists(params.nickname),
-      getUserByIdentifier(params.nickname),
-      fetchArtistsWithMembers(),
-      fetchLockedObjekts(params.nickname),
-    ]);
+  const [artists, currentUser, targetUser] = await Promise.all([
+    fetchArtistsWithMembers(),
+    user ? getProfile(user.profileId) : undefined,
+    getUserByIdentifier(params.nickname),
+  ]);
 
-  if (!targetUser) notFound();
-
-  if (targetUser.privacy.objekts && !isOwnProfile) {
-    return <Private nickname={targetUser.nickname} />;
+  if (targetUser.profile.privacy.objekts && !isOwnProfile) {
+    return <Private nickname={targetUser.profile.nickname} />;
   }
 
-  const shouldHideNickname = targetUser.privacy.nickname && !isOwnProfile;
-  const selectedArtist = getSelectedArtist();
-
   return (
-    <ProfileProvider profile={targetUser} objektLists={objektLists}>
+    <ProfileProvider
+      profile={targetUser.profile}
+      objektLists={targetUser.objektLists}
+    >
       <ObjektRewardProvider
         rewardsDialog={
           isOwnProfile && (
@@ -71,12 +65,12 @@ export default async function UserCollectionPage({ params }: Props) {
       >
         <section className="flex flex-col">
           <ProfileRenderer
-            lockedObjekts={lockedObjekts}
+            lockedObjekts={targetUser.lockedObjekts}
             artists={artists}
-            profile={targetUser}
+            profile={targetUser.profile}
             user={currentUser}
             previousIds={
-              shouldHideNickname ? null : (
+              targetUser.profile.privacy.nickname && !isOwnProfile ? null : (
                 <Suspense
                   fallback={
                     <div className="flex justify-center">
@@ -84,7 +78,7 @@ export default async function UserCollectionPage({ params }: Props) {
                     </div>
                   }
                 >
-                  <PreviousIds address={targetUser.address} />
+                  <PreviousIds address={targetUser.profile.address} />
                 </Suspense>
               )
             }

@@ -55,7 +55,7 @@ async function fetchRows(address: string, page: number) {
 function aggregateResults(rows: Awaited<ReturnType<typeof fetchRows>>) {
   let count = 0;
   const results = rows.reduce<AggregatedTransfer[]>((acc, row) => {
-    count = row.count;
+    count += row.count;
     acc.push({
       transfer: row.transfers,
       objekt: row.objekt,

@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ObjektListPage({ params, searchParams }: Props) {
   // get de-duplicated profile
-  const profile = await getUserByIdentifier(params.nickname);
+  const { profile } = await getUserByIdentifier(params.nickname);
 
   // parse search params
   const filters = parseObjektList(
@@ -97,7 +97,7 @@ export default async function ObjektListPage({ params, searchParams }: Props) {
 
 const getData = cache(async (nickname: string, list: string) => {
   const user = await decodeUser();
-  const profile = await getUserByIdentifier(nickname);
+  const { profile } = await getUserByIdentifier(nickname);
 
   const [artists, currentUser, objektList] = await Promise.all([
     getArtistsWithMembers(),

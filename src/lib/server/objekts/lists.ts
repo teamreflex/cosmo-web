@@ -1,22 +1,8 @@
 import "server-only";
 import { and, eq } from "drizzle-orm";
 import { db } from "../db";
-import { listEntries, lists, ObjektList, profiles } from "../db/schema";
+import { listEntries, lists } from "../db/schema";
 import { CreateObjektList, UpdateObjektList } from "@/lib/universal/objekts";
-
-/**
- * Fetch all lists for a given user.
- */
-export async function fetchObjektLists(nickname: string) {
-  const result = await db.query.profiles.findFirst({
-    where: eq(profiles.nickname, nickname),
-    with: {
-      lists: true,
-    },
-  });
-
-  return result?.lists ?? [];
-}
 
 /**
  * Fetch a single list.

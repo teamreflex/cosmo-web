@@ -1,3 +1,4 @@
+import { ObjektList } from "../objekts";
 import { ValidArtist } from "./common";
 
 export type CosmoProfile = {
@@ -22,6 +23,12 @@ export type PublicProfile = {
   };
   gridColumns: number;
   isObjektEditor: boolean;
+};
+
+export type IdentifiedUser = {
+  profile: PublicProfile;
+  objektLists: ObjektList[];
+  lockedObjekts: number[];
 };
 
 export type LoginResult = {
