@@ -19,6 +19,12 @@ export const lockedObjekts = pgTable(
     locked: boolean("locked").notNull(),
   },
   (table) => ({
+    addressIdx: index("locked_objekts_user_address_idx").on(table.userAddress),
+    lockedIdx: index("locked_objekts_locked_idx").on(table.locked),
+    addressLockedIdx: index("address_locked_idx").on(
+      table.userAddress,
+      table.locked
+    ),
     addressTokenIdx: index("address_token_idx").on(
       table.userAddress,
       table.tokenId

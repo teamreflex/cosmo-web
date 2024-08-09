@@ -113,9 +113,7 @@ export async function fetchUserByIdentifier(
         isAddress: shouldHide,
       },
       objektLists: profile.lists,
-      lockedObjekts: profile.lockedObjekts
-        .filter((row) => row.locked)
-        .map((row) => row.tokenId),
+      lockedObjekts: profile.lockedObjekts.map((row) => row.tokenId),
     };
   }
 
@@ -196,7 +194,12 @@ async function fetchProfileByIdentifier(identifier: string) {
     orderBy: (profiles, { desc }) => desc(profiles.id),
     with: {
       lists: true,
-      lockedObjekts: true,
+      lockedObjekts: {
+        where: (lockedObjekts, { eq }) => eq(lockedObjekts.locked, true),
+        columns: {
+          tokenId: true,
+        },
+      },
     },
   });
 }
