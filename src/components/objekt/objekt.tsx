@@ -12,6 +12,7 @@ export type BaseObjektProps<TObjektType extends ValidObjekt> =
   PropsWithChildren<{
     id: string;
     objekt: TObjektType;
+    serial?: number;
   }>;
 
 const MemoizedImage = memo(NextImage);

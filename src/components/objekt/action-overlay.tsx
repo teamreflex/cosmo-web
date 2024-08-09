@@ -7,35 +7,37 @@ import {
   Lock,
   MailX,
   PartyPopper,
+  Pin,
   Smartphone,
 } from "lucide-react";
 import { memo } from "react";
 import LockObjekt from "./lock-button";
 import OverlayStatus from "./overlay-status";
 import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
-import { useProfile } from "@/hooks/use-profile";
+import { useProfileContext } from "@/hooks/use-profile";
 import AddToList from "../lists/add-to-list";
 import { getObjektSlug } from "./objekt-util";
 import useOverlayHover from "@/hooks/use-overlay-hover";
+import PinObjekt from "./pin-button";
 
 type Props = {
   objekt: OwnedObjekt;
   authenticated: boolean;
   isLocked: boolean;
-  toggleLock: (tokenId: number) => void;
+  isPinned: boolean;
 };
 
 export default function ActionOverlay({
   objekt,
   authenticated,
   isLocked,
-  toggleLock,
+  isPinned,
 }: Props) {
   return (
     <Overlay
       objekt={objekt}
       isLocked={isLocked}
-      toggleLock={toggleLock}
+      isPinned={isPinned}
       authenticated={authenticated}
     />
   );
@@ -45,15 +47,15 @@ const Overlay = memo(function Overlay({
   objekt,
   authenticated,
   isLocked,
-  toggleLock,
+  isPinned,
 }: {
   objekt: OwnedObjekt;
   authenticated: boolean;
   isLocked: boolean;
-  toggleLock: (tokenId: number) => void;
+  isPinned: boolean;
 }) {
+  const objektLists = useProfileContext((ctx) => ctx.objektLists);
   const [hoverState, createHoverProps] = useOverlayHover();
-  const { objektLists } = useProfile();
 
   const slug = getObjektSlug(objekt);
 
@@ -76,6 +78,11 @@ const Overlay = memo(function Overlay({
       <div className="flex items-center gap-2">
         {/* buttons */}
 
+        {/* pinned (viewing other user) */}
+        {isPinned && !authenticated && (
+          <Pin className="h-3 w-3 sm:h-5 sm:w-5 shrink-0" />
+        )}
+
         {/* locked (viewing other user) */}
         {!objekt.usedForGrid && isLocked && !authenticated && (
           <Lock className="h-3 w-3 sm:h-5 sm:w-5 shrink-0" />
@@ -95,11 +102,13 @@ const Overlay = memo(function Overlay({
         {/* lock/unlock (authenticated) */}
         {objekt.transferable && authenticated && (
           <div {...createHoverProps("lock")}>
-            <LockObjekt
-              objekt={objekt}
-              isLocked={isLocked}
-              onLockChange={toggleLock}
-            />
+            <LockObjekt objekt={objekt} isLocked={isLocked} />
+          </div>
+        )}
+
+        {authenticated && (
+          <div {...createHoverProps("pin")}>
+            <PinObjekt objekt={objekt} isPinned={isPinned} />
           </div>
         )}
 
@@ -161,6 +170,9 @@ const Overlay = memo(function Overlay({
         )}
         {hoverState === "lock" && (
           <OverlayStatus>{isLocked ? "Unlock" : "Lock"}</OverlayStatus>
+        )}
+        {hoverState === "pin" && (
+          <OverlayStatus>{isPinned ? "Unpin" : "Pin"}</OverlayStatus>
         )}
         {objekt.nonTransferableReason === "not-transferable" && (
           <OverlayStatus>Not transferable</OverlayStatus>

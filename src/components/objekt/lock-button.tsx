@@ -3,16 +3,17 @@
 import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
 import { toggleObjektLock } from "../collection/actions";
 import { Loader2, Lock, Unlock } from "lucide-react";
-import { useTransition } from "react";
+import { memo, useTransition } from "react";
 import { track } from "@/lib/utils";
+import { useProfileContext } from "@/hooks/use-profile";
 
 type Props = {
   objekt: OwnedObjekt;
   isLocked: boolean;
-  onLockChange: (tokenId: number) => void;
 };
 
-export default function LockObjekt({ objekt, isLocked, onLockChange }: Props) {
+export default memo(function LockObjekt({ objekt, isLocked }: Props) {
+  const toggleLock = useProfileContext((ctx) => ctx.toggleLock);
   const [isPending, startTransition] = useTransition();
 
   const tokenId = parseInt(objekt.tokenId);
@@ -22,7 +23,7 @@ export default function LockObjekt({ objekt, isLocked, onLockChange }: Props) {
       const result = await toggleObjektLock({ tokenId, lock: !isLocked });
       if (result.status === "success" && result.data === true) {
         track(`${isLocked ? "unlock" : "lock"}-objekt`);
-        onLockChange(tokenId);
+        toggleLock(tokenId);
       }
     });
   }
@@ -43,4 +44,4 @@ export default function LockObjekt({ objekt, isLocked, onLockChange }: Props) {
       )}
     </button>
   );
-}
+});

@@ -29,6 +29,13 @@
       "when": 1723191703988,
       "tag": "0003_regular_the_call",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1723198461292,
+      "tag": "0004_bouncy_ghost_rider",
+      "breakpoints": true
     }
   ]
 }

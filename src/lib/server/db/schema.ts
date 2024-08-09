@@ -10,6 +10,44 @@ import {
 } from "drizzle-orm/pg-core";
 import { citext } from "./columns";
 
+export const profiles = pgTable(
+  "profiles",
+  {
+    id: serial("id").primaryKey(),
+    userAddress: citext("user_address", { length: 42 }).notNull(),
+    cosmoId: integer("cosmo_id").notNull(),
+    nickname: citext("nickname", { length: 24 }).notNull(),
+    // using a string and casting output so the db doesn't have to know about the enum
+    artist: varchar("artist", { length: 24 }).notNull().$type<ValidArtist>(),
+    privacyNickname: boolean("privacy_nickname").notNull().default(false),
+    privacyObjekts: boolean("privacy_objekts").notNull().default(false),
+    privacyComo: boolean("privacy_como").notNull().default(false),
+    privacyTrades: boolean("privacy_trades").notNull().default(false),
+    gridColumns: integer("grid_columns").notNull().default(5),
+    objektEditor: boolean("objekt_editor").notNull().default(false),
+  },
+  (table) => ({
+    addressIdx: index("profiles_address_idx").on(table.userAddress),
+    cosmoIdIdx: index("profiles_cosmo_id_idx").on(table.cosmoId),
+    nicknameIdx: index("profiles_nickname_idx").on(table.nickname),
+    privacyNicknameIdx: index("profiles_priv_nickname_idx").on(
+      table.privacyNickname
+    ),
+    privacyObjektsIdx: index("profiles_priv_objekts_idx").on(
+      table.privacyObjekts
+    ),
+    privacyComoIdx: index("profiles_priv_como_idx").on(table.privacyComo),
+    privacyTradesIdx: index("profiles_priv_trades_idx").on(table.privacyTrades),
+  })
+);
+
+export const profileRelations = relations(profiles, ({ many }) => ({
+  lockedObjekts: many(lockedObjekts),
+  lists: many(lists),
+  objektMetadata: many(objektMetadata),
+  pins: many(pins),
+}));
+
 export const lockedObjekts = pgTable(
   "locked_objekts",
   {
@@ -80,43 +118,6 @@ export const listEntryRelations = relations(listEntries, ({ one }) => ({
   }),
 }));
 
-export const profiles = pgTable(
-  "profiles",
-  {
-    id: serial("id").primaryKey(),
-    userAddress: citext("user_address", { length: 42 }).notNull(),
-    cosmoId: integer("cosmo_id").notNull(),
-    nickname: citext("nickname", { length: 24 }).notNull(),
-    // using a string and casting output so the db doesn't have to know about the enum
-    artist: varchar("artist", { length: 24 }).notNull().$type<ValidArtist>(),
-    privacyNickname: boolean("privacy_nickname").notNull().default(false),
-    privacyObjekts: boolean("privacy_objekts").notNull().default(false),
-    privacyComo: boolean("privacy_como").notNull().default(false),
-    privacyTrades: boolean("privacy_trades").notNull().default(false),
-    gridColumns: integer("grid_columns").notNull().default(5),
-    objektEditor: boolean("objekt_editor").notNull().default(false),
-  },
-  (table) => ({
-    addressIdx: index("profiles_address_idx").on(table.userAddress),
-    cosmoIdIdx: index("profiles_cosmo_id_idx").on(table.cosmoId),
-    nicknameIdx: index("profiles_nickname_idx").on(table.nickname),
-    privacyNicknameIdx: index("profiles_priv_nickname_idx").on(
-      table.privacyNickname
-    ),
-    privacyObjektsIdx: index("profiles_priv_objekts_idx").on(
-      table.privacyObjekts
-    ),
-    privacyComoIdx: index("profiles_priv_como_idx").on(table.privacyComo),
-    privacyTradesIdx: index("profiles_priv_trades_idx").on(table.privacyTrades),
-  })
-);
-
-export const profileRelations = relations(profiles, ({ many }) => ({
-  lockedObjekts: many(lockedObjekts),
-  lists: many(lists),
-  objektMetadata: many(objektMetadata),
-}));
-
 export const objektMetadata = pgTable(
   "objekt_metadata",
   {
@@ -142,8 +143,29 @@ export const objektMetadataRelations = relations(objektMetadata, ({ one }) => ({
   }),
 }));
 
+export const pins = pgTable(
+  "pins",
+  {
+    id: serial("id").primaryKey(),
+    userAddress: citext("user_address", { length: 42 }).notNull(),
+    tokenId: integer("token_id").notNull(),
+  },
+  (table) => ({
+    userAddressIdx: index("pins_userAddress_idx").on(table.userAddress),
+    tokenIdIdx: index("pins_token_id_idx").on(table.tokenId),
+  })
+);
+
+export const pinRelations = relations(pins, ({ one }) => ({
+  profile: one(profiles, {
+    fields: [pins.userAddress],
+    references: [profiles.userAddress],
+  }),
+}));
+
 export type Profile = typeof profiles.$inferSelect;
 export type ObjektList = typeof lists.$inferSelect;
 export type CreateObjektList = typeof lists.$inferInsert;
 export type UpdateObjektList = typeof lists.$inferInsert;
 export type ObjektMetadataEntry = typeof objektMetadata.$inferSelect;
+export type Pin = typeof pins.$inferSelect;

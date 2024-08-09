@@ -21,7 +21,7 @@ import Link from "next/link";
 import { Fragment, ReactNode, Suspense, useState, useTransition } from "react";
 import { Separator } from "../ui/separator";
 import Skeleton from "../skeleton/skeleton";
-import { useProfile } from "@/hooks/use-profile";
+import { useProfileContext } from "@/hooks/use-profile";
 import { Button } from "../ui/button";
 import { updateObjektMetadata } from "./actions";
 import { Textarea } from "../ui/textarea";
@@ -196,7 +196,7 @@ function Metadata<TObjektType extends ValidObjekt>({
   const { toast } = useToast();
   const [_, copy] = useCopyToClipboard();
   const [showForm, setShowForm] = useState(false);
-  const { profile } = useProfile();
+  const profile = useProfileContext((ctx) => ctx.profile);
 
   const slug = getObjektSlug(objekt);
   const { front } = getObjektImageUrls(objekt);

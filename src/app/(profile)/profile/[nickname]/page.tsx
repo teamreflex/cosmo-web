@@ -15,6 +15,7 @@ import RewardsRenderer from "@/components/rewards/rewards-renderer";
 import { ObjektRewardProvider } from "@/hooks/use-objekt-rewards";
 import { ErrorBoundary } from "react-error-boundary";
 import { getSelectedArtist } from "@/lib/server/profiles";
+import { fetchPins } from "@/lib/server/objekts/pins";
 
 type Props = {
   params: {
@@ -47,10 +48,14 @@ export default async function UserCollectionPage({ params }: Props) {
     return <Private nickname={targetUser.profile.nickname} />;
   }
 
+  const pins = await fetchPins(targetUser.pins.map((p) => p.tokenId));
+
   return (
     <ProfileProvider
       profile={targetUser.profile}
       objektLists={targetUser.objektLists}
+      lockedObjekts={targetUser.lockedObjekts}
+      pins={pins}
     >
       <ObjektRewardProvider
         rewardsDialog={
@@ -65,7 +70,6 @@ export default async function UserCollectionPage({ params }: Props) {
       >
         <section className="flex flex-col">
           <ProfileRenderer
-            lockedObjekts={targetUser.lockedObjekts}
             artists={artists}
             profile={targetUser.profile}
             user={currentUser}

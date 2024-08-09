@@ -178,3 +178,22 @@ function toSearchParams(input: CosmoFilters, join = false): URLSearchParams {
 
   return query;
 }
+
+/**
+ * Determine if the given filters are dirty.
+ */
+export function filtersAreDirty(filters: CosmoFilters) {
+  return (
+    filters.member !== null ||
+    filters.artist !== null ||
+    filters.sort !== null ||
+    filters.class !== null ||
+    filters.season !== null ||
+    filters.on_offline !== null ||
+    filters.transferable !== null ||
+    filters.gridable !== null ||
+    filters.used_for_grid !== null ||
+    filters.collectionNo !== null ||
+    filters.collection !== null
+  );
+}

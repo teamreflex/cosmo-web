@@ -1,4 +1,4 @@
-import { Fragment, memo, useCallback, useState } from "react";
+import { Fragment, memo, useCallback } from "react";
 import FilteredObjektDisplay, {
   ObjektResponse,
 } from "../objekt/filtered-objekt-display";
@@ -15,13 +15,13 @@ import {
 } from "@/hooks/use-cosmo-filters";
 import { ExpandableObjekt } from "../objekt/objekt";
 import { GRID_COLUMNS } from "@/lib/utils";
+import { useProfileContext } from "@/hooks/use-profile";
 
 const getObjektId = (objekt: OwnedObjekt) => objekt.tokenId;
 
 type Props = {
   authenticated: boolean;
   address: string;
-  lockedTokenIds: number[];
   showLocked: boolean;
   artists: CosmoArtistWithMembers[];
   filters: CosmoFilters;
@@ -38,7 +38,6 @@ type Props = {
 export default memo(function CollectionObjektDisplay({
   authenticated,
   address,
-  lockedTokenIds,
   showLocked,
   artists,
   filters,
@@ -47,50 +46,41 @@ export default memo(function CollectionObjektDisplay({
   gridColumns = GRID_COLUMNS,
   dataSource,
 }: Props) {
-  const [lockedTokens, setLockedTokens] = useState<number[]>(lockedTokenIds);
-
-  const toggleLock = useCallback((tokenId: number) => {
-    setLockedTokens((prev) => {
-      return prev.includes(tokenId)
-        ? prev.filter((id) => id !== tokenId)
-        : [...prev, tokenId];
-    });
-  }, []);
+  const lockedObjekts = useProfileContext((ctx) => ctx.lockedObjekts);
+  const pins = useProfileContext((ctx) => ctx.pins);
 
   const lockFilter = useCallback(
     (objekt: OwnedObjekt) => {
       return showLocked
         ? true
-        : lockedTokens.includes(parseInt(objekt.tokenId)) === false;
+        : lockedObjekts.includes(parseInt(objekt.tokenId)) === false;
     },
-    [showLocked, lockedTokens]
+    [showLocked, lockedObjekts]
   );
 
   return (
-    <Fragment>
-      <FilteredObjektDisplay
-        artists={artists}
-        filters={filters}
-        setFilters={setFilters}
-        queryFunction={queryFunction}
-        queryKey={["collection", address]}
-        getObjektId={getObjektId}
-        getObjektDisplay={lockFilter}
-        gridColumns={gridColumns}
-        dataSource={dataSource}
-      >
-        {({ objekt, id }, priority) => (
-          <ExpandableObjekt objekt={objekt} id={id} priority={priority}>
-            <Overlay
-              objekt={objekt}
-              authenticated={authenticated}
-              isLocked={lockedTokens.includes(parseInt(id))}
-              toggleLock={toggleLock}
-            />
-          </ExpandableObjekt>
-        )}
-      </FilteredObjektDisplay>
-    </Fragment>
+    <FilteredObjektDisplay
+      artists={artists}
+      filters={filters}
+      setFilters={setFilters}
+      queryFunction={queryFunction}
+      queryKey={["collection", address]}
+      getObjektId={getObjektId}
+      getObjektDisplay={lockFilter}
+      gridColumns={gridColumns}
+      dataSource={dataSource}
+    >
+      {({ objekt, id }, priority) => (
+        <ExpandableObjekt objekt={objekt} id={id} priority={priority}>
+          <Overlay
+            objekt={objekt}
+            authenticated={authenticated}
+            isLocked={lockedObjekts.includes(parseInt(id))}
+            isPinned={pins.findIndex((p) => p.tokenId === id) !== -1}
+          />
+        </ExpandableObjekt>
+      )}
+    </FilteredObjektDisplay>
   );
 });
 
@@ -98,14 +88,14 @@ type OverlayProps = {
   objekt: OwnedObjekt;
   authenticated: boolean;
   isLocked: boolean;
-  toggleLock: (tokenId: number) => void;
+  isPinned: boolean;
 };
 
 const Overlay = memo(function Overlay({
   objekt,
   authenticated,
   isLocked,
-  toggleLock,
+  isPinned,
 }: OverlayProps) {
   return (
     <Fragment>
@@ -118,7 +108,7 @@ const Overlay = memo(function Overlay({
         objekt={objekt}
         authenticated={authenticated}
         isLocked={isLocked}
-        toggleLock={toggleLock}
+        isPinned={isPinned}
       />
     </Fragment>
   );
