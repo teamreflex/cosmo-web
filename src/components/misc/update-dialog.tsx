@@ -68,7 +68,7 @@ export default function UpdateDialog() {
 
 const updates = [
   {
-    date: "2024-08-09",
+    date: "2024-08-10",
     changes: [
       "Changed: Your grid columns setting is now used when other users view your collection.",
       "Added: Pin objekts to the top of your collection.",

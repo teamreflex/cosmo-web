@@ -36,7 +36,7 @@ type ProviderProps = {
   profile: PublicProfile | undefined;
   objektLists?: ObjektList[];
   lockedObjekts?: number[];
-  pins: OwnedObjekt[];
+  pins?: OwnedObjekt[];
 };
 
 export function ProfileProvider({
