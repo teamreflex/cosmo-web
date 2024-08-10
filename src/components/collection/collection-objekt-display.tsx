@@ -70,13 +70,19 @@ export default memo(function CollectionObjektDisplay({
       gridColumns={gridColumns}
       dataSource={dataSource}
     >
-      {({ objekt, id }, priority) => (
-        <ExpandableObjekt objekt={objekt} id={id} priority={priority}>
+      {({ objekt, id }, priority, isPin) => (
+        <ExpandableObjekt
+          objekt={objekt}
+          id={id}
+          priority={priority}
+          isPin={isPin}
+        >
           <Overlay
             objekt={objekt}
             authenticated={authenticated}
             isLocked={lockedObjekts.includes(parseInt(id))}
             isPinned={pins.findIndex((p) => p.tokenId === id) !== -1}
+            isPin={isPin}
           />
         </ExpandableObjekt>
       )}
@@ -89,6 +95,7 @@ type OverlayProps = {
   authenticated: boolean;
   isLocked: boolean;
   isPinned: boolean;
+  isPin: boolean;
 };
 
 const Overlay = memo(function Overlay({
@@ -96,6 +103,7 @@ const Overlay = memo(function Overlay({
   authenticated,
   isLocked,
   isPinned,
+  isPin,
 }: OverlayProps) {
   return (
     <Fragment>
@@ -109,6 +117,7 @@ const Overlay = memo(function Overlay({
         authenticated={authenticated}
         isLocked={isLocked}
         isPinned={isPinned}
+        isPin={isPin}
       />
     </Fragment>
   );

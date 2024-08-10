@@ -10,7 +10,7 @@ import {
   Pin,
   Smartphone,
 } from "lucide-react";
-import { memo } from "react";
+import { Fragment, memo } from "react";
 import LockObjekt from "./lock-button";
 import OverlayStatus from "./overlay-status";
 import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
@@ -25,35 +25,16 @@ type Props = {
   authenticated: boolean;
   isLocked: boolean;
   isPinned: boolean;
+  isPin: boolean;
 };
 
-export default function ActionOverlay({
+export default memo(function ActionOverlay({
   objekt,
   authenticated,
   isLocked,
   isPinned,
+  isPin,
 }: Props) {
-  return (
-    <Overlay
-      objekt={objekt}
-      isLocked={isLocked}
-      isPinned={isPinned}
-      authenticated={authenticated}
-    />
-  );
-}
-
-const Overlay = memo(function Overlay({
-  objekt,
-  authenticated,
-  isLocked,
-  isPinned,
-}: {
-  objekt: OwnedObjekt;
-  authenticated: boolean;
-  isLocked: boolean;
-  isPinned: boolean;
-}) {
   const objektLists = useProfileContext((ctx) => ctx.objektLists);
   const [hoverState, createHoverProps] = useOverlayHover();
 
@@ -79,17 +60,23 @@ const Overlay = memo(function Overlay({
         {/* buttons */}
 
         {/* pinned (viewing other user) */}
-        {isPinned && !authenticated && (
+        {isPin && isPinned && !authenticated && (
           <Pin className="h-3 w-3 sm:h-5 sm:w-5 shrink-0" />
         )}
 
         {/* locked (viewing other user) */}
-        {!objekt.usedForGrid && isLocked && !authenticated && (
+        {!objekt.usedForGrid && !isPin && isLocked && !authenticated && (
           <Lock className="h-3 w-3 sm:h-5 sm:w-5 shrink-0" />
         )}
 
-        {/* add to list (authenticated) */}
         {authenticated && (
+          <div {...createHoverProps("pin")}>
+            <PinObjekt objekt={objekt} isPinned={isPinned} />
+          </div>
+        )}
+
+        {/* add to list (authenticated) */}
+        {authenticated && !isPin && (
           <div {...createHoverProps("list")}>
             <AddToList
               collectionId={objekt.collectionId}
@@ -100,100 +87,104 @@ const Overlay = memo(function Overlay({
         )}
 
         {/* lock/unlock (authenticated) */}
-        {objekt.transferable && authenticated && (
+        {objekt.transferable && authenticated && !isPin && (
           <div {...createHoverProps("lock")}>
             <LockObjekt objekt={objekt} isLocked={isLocked} />
           </div>
         )}
 
-        {authenticated && (
-          <div {...createHoverProps("pin")}>
-            <PinObjekt objekt={objekt} isPinned={isPinned} />
-          </div>
-        )}
-
         {/* statsuses */}
 
-        {/* generic non-transferable */}
-        {objekt.nonTransferableReason === "not-transferable" && (
-          <MailX
-            {...createHoverProps("not-transferable")}
-            className="h-3 w-3 sm:h-5 sm:w-5 shrink-0"
-          />
-        )}
+        {!isPin && (
+          <Fragment>
+            {/* generic non-transferable */}
+            {objekt.nonTransferableReason === "not-transferable" && (
+              <MailX
+                {...createHoverProps("not-transferable")}
+                className="h-3 w-3 sm:h-5 sm:w-5 shrink-0"
+              />
+            )}
 
-        {/* mint pending */}
-        {objekt.nonTransferableReason === "mint-pending" && (
-          <DownloadCloud
-            {...createHoverProps("mint-pending")}
-            className="h-3 w-3 sm:h-5 sm:w-5 shrink-0"
-          />
-        )}
+            {/* mint pending */}
+            {objekt.nonTransferableReason === "mint-pending" && (
+              <DownloadCloud
+                {...createHoverProps("mint-pending")}
+                className="h-3 w-3 sm:h-5 sm:w-5 shrink-0"
+              />
+            )}
 
-        {/* event reward */}
-        {objekt.nonTransferableReason === "challenge-reward" && (
-          <PartyPopper
-            {...createHoverProps("challenge-reward")}
-            className="h-3 w-3 sm:h-5 sm:w-5 shrink-0"
-          />
-        )}
+            {/* event reward */}
+            {objekt.nonTransferableReason === "challenge-reward" && (
+              <PartyPopper
+                {...createHoverProps("challenge-reward")}
+                className="h-3 w-3 sm:h-5 sm:w-5 shrink-0"
+              />
+            )}
 
-        {/* welcome reward */}
-        {objekt.nonTransferableReason === "welcome-objekt" && (
-          <MailX
-            {...createHoverProps("welcome-objekt")}
-            className="h-3 w-3 sm:h-5 sm:w-5 shrink-0"
-          />
-        )}
+            {/* welcome reward */}
+            {objekt.nonTransferableReason === "welcome-objekt" && (
+              <MailX
+                {...createHoverProps("welcome-objekt")}
+                className="h-3 w-3 sm:h-5 sm:w-5 shrink-0"
+              />
+            )}
 
-        {/* used for grid */}
-        {objekt.nonTransferableReason === "used-for-grid" && (
-          <Grid2X2
-            {...createHoverProps("used-for-grid")}
-            className="h-3 w-3 sm:h-5 sm:w-5 shrink-0"
-          />
-        )}
+            {/* used for grid */}
+            {objekt.nonTransferableReason === "used-for-grid" && (
+              <Grid2X2
+                {...createHoverProps("used-for-grid")}
+                className="h-3 w-3 sm:h-5 sm:w-5 shrink-0"
+              />
+            )}
 
-        {/* used in lenticular, for some reason the nonTransferableReason isn't used here */}
-        {objekt.lenticularPairTokenId !== null && (
-          <Smartphone
-            {...createHoverProps("lenticular-objekt")}
-            className="h-3 w-3 sm:h-5 sm:w-5 shrink-0"
-          />
+            {/* used in lenticular, for some reason the nonTransferableReason isn't used here */}
+            {objekt.lenticularPairTokenId !== null && (
+              <Smartphone
+                {...createHoverProps("lenticular-objekt")}
+                className="h-3 w-3 sm:h-5 sm:w-5 shrink-0"
+              />
+            )}
+          </Fragment>
         )}
       </div>
 
       {/* status text */}
       <div className="text-xs whitespace-nowrap max-w-0 group-hover:max-w-48 overflow-hidden transition-all">
-        {hoverState === "list" && authenticated && (
-          <OverlayStatus>Add to List</OverlayStatus>
-        )}
-        {hoverState === "lock" && (
-          <OverlayStatus>{isLocked ? "Unlock" : "Lock"}</OverlayStatus>
-        )}
-        {hoverState === "pin" && (
-          <OverlayStatus>{isPinned ? "Unpin" : "Pin"}</OverlayStatus>
-        )}
-        {objekt.nonTransferableReason === "not-transferable" && (
-          <OverlayStatus>Not transferable</OverlayStatus>
-        )}
-        {objekt.nonTransferableReason === "mint-pending" && (
-          <OverlayStatus>Mint pending</OverlayStatus>
-        )}
-        {objekt.nonTransferableReason === "challenge-reward" && (
-          <OverlayStatus>Event reward</OverlayStatus>
-        )}
-        {objekt.nonTransferableReason === "welcome-objekt" && (
-          <OverlayStatus>Welcome reward</OverlayStatus>
-        )}
-        {objekt.nonTransferableReason === "used-for-grid" && (
-          <OverlayStatus>Used for grid</OverlayStatus>
-        )}
-        {objekt.lenticularPairTokenId !== null && (
-          <OverlayStatus>Lenticular pair</OverlayStatus>
-        )}
-        {hoverState === undefined && !objekt.nonTransferableReason && (
-          <OverlayStatus>{isLocked ? "Locked" : "Unlocked"}</OverlayStatus>
+        {isPin ? (
+          <OverlayStatus>Pinned</OverlayStatus>
+        ) : (
+          <Fragment>
+            {hoverState === "list" && authenticated && (
+              <OverlayStatus>Add to List</OverlayStatus>
+            )}
+            {hoverState === "lock" && (
+              <OverlayStatus>{isLocked ? "Unlock" : "Lock"}</OverlayStatus>
+            )}
+            {hoverState === "pin" && (
+              <OverlayStatus>{isPinned ? "Unpin" : "Pin"}</OverlayStatus>
+            )}
+            {objekt.nonTransferableReason === "not-transferable" && (
+              <OverlayStatus>Not transferable</OverlayStatus>
+            )}
+            {objekt.nonTransferableReason === "mint-pending" && (
+              <OverlayStatus>Mint pending</OverlayStatus>
+            )}
+            {objekt.nonTransferableReason === "challenge-reward" && (
+              <OverlayStatus>Event reward</OverlayStatus>
+            )}
+            {objekt.nonTransferableReason === "welcome-objekt" && (
+              <OverlayStatus>Welcome reward</OverlayStatus>
+            )}
+            {objekt.nonTransferableReason === "used-for-grid" && (
+              <OverlayStatus>Used for grid</OverlayStatus>
+            )}
+            {objekt.lenticularPairTokenId !== null && (
+              <OverlayStatus>Lenticular pair</OverlayStatus>
+            )}
+            {hoverState === undefined && !objekt.nonTransferableReason && (
+              <OverlayStatus>{isLocked ? "Locked" : "Unlocked"}</OverlayStatus>
+            )}
+          </Fragment>
         )}
       </div>
     </div>

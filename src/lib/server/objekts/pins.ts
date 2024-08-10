@@ -25,7 +25,14 @@ export async function fetchPins(pins: Pin[]): Promise<OwnedObjekt[]> {
     },
   });
 
-  return results.map(normalizePin);
+  const mapped = results.map(normalizePin);
+
+  // sort by pin order
+  return mapped.sort((a, b) => {
+    const indexA = pins.findIndex((item) => item.tokenId === Number(a.tokenId));
+    const indexB = pins.findIndex((item) => item.tokenId === Number(b.tokenId));
+    return indexA - indexB;
+  });
 }
 
 /**

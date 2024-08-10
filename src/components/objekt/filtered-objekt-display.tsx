@@ -45,7 +45,8 @@ export type ObjektResponse<TObjektType extends ValidObjekt> = {
 type Props<TObjektType extends ValidObjekt> = {
   children: (
     props: BaseObjektProps<TObjektType>,
-    priority: boolean
+    priority: boolean,
+    isPin: boolean
   ) => ReactElement;
   artists: CosmoArtistWithMembers[];
   filters: CosmoFilters;
@@ -216,7 +217,8 @@ const ObjektGrid = typedMemo(function ObjektGrid<
                 objekt: objekt as TObjektType,
                 id: getObjektId(objekt as TObjektType),
               },
-              i < gridColumns * 3
+              i < gridColumns * 3,
+              true
             ),
             {
               key: getObjektId(objekt as TObjektType),
@@ -226,7 +228,11 @@ const ObjektGrid = typedMemo(function ObjektGrid<
 
       {objekts.map((objekt, i) =>
         cloneElement(
-          children({ objekt, id: getObjektId(objekt) }, i < gridColumns * 3),
+          children(
+            { objekt, id: getObjektId(objekt) },
+            i < gridColumns * 3,
+            false
+          ),
           {
             key: getObjektId(objekt),
           }
