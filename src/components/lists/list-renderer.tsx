@@ -88,7 +88,12 @@ export default function ListRenderer({
         gridColumns={gridColumns}
       >
         {({ objekt, id }, priority) => (
-          <ExpandableObjekt objekt={objekt} id={id} priority={priority}>
+          <ExpandableObjekt
+            objekt={objekt}
+            id={id}
+            priority={priority}
+            isPin={false}
+          >
             <Overlay
               objekt={objekt}
               authenticated={authenticated}
