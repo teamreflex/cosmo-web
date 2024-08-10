@@ -6,6 +6,7 @@ import { Loader2, Pin, PinOff } from "lucide-react";
 import { memo, useTransition } from "react";
 import { track } from "@/lib/utils";
 import { useProfileContext } from "@/hooks/use-profile";
+import { useToast } from "../ui/use-toast";
 
 type Props = {
   objekt: OwnedObjekt;
@@ -16,6 +17,7 @@ export default memo(function PinObjekt({ objekt, isPinned }: Props) {
   const addPin = useProfileContext((ctx) => ctx.addPin);
   const removePin = useProfileContext((ctx) => ctx.removePin);
   const [isPending, startTransition] = useTransition();
+  const { toast } = useToast();
 
   const tokenId = parseInt(objekt.tokenId);
 
@@ -27,6 +29,9 @@ export default memo(function PinObjekt({ objekt, isPinned }: Props) {
         if (result.status === "success" && result.data === true) {
           track("unpin-objekt");
           removePin(tokenId);
+          toast({
+            description: `Unpinned ${objekt.collectionId}`,
+          });
         }
       } else {
         // pin if not pinned
@@ -34,6 +39,9 @@ export default memo(function PinObjekt({ objekt, isPinned }: Props) {
         if (result.status === "success") {
           track("pin-objekt");
           addPin(result.data);
+          toast({
+            description: `Pinned ${objekt.collectionId}`,
+          });
         }
       }
     });
@@ -43,7 +51,7 @@ export default memo(function PinObjekt({ objekt, isPinned }: Props) {
     <button
       className="hover:cursor-pointer hover:scale-110 transition-all flex items-center"
       disabled={isPending}
-      aria-label={`${isPinned ? "unpin" : "pin"} this objekt`}
+      aria-label={`${isPinned ? "unpin" : "pin"} ${objekt.collectionId}`}
       onClick={toggle}
     >
       {isPending ? (
