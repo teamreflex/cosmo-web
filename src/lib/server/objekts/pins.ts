@@ -14,16 +14,21 @@ interface ObjektWithCollection extends Objekt {
 export async function fetchPins(pins: Pin[]): Promise<OwnedObjekt[]> {
   if (pins.length === 0) return [];
 
-  const results = await indexer.query.objekts.findMany({
-    where: (objekts, { inArray }) =>
-      inArray(
-        objekts.id,
-        pins.map((p) => p.tokenId)
-      ),
-    with: {
-      collection: true,
-    },
-  });
+  try {
+    var results = await indexer.query.objekts.findMany({
+      where: (objekts, { inArray }) =>
+        inArray(
+          objekts.id,
+          pins.map((p) => p.tokenId)
+        ),
+      with: {
+        collection: true,
+      },
+    });
+  } catch (err) {
+    console.error("Error fetching pins:", err);
+    return [];
+  }
 
   const mapped = results.map(normalizePin);
 
