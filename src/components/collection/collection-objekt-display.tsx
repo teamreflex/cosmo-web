@@ -1,4 +1,4 @@
-import { Fragment, memo, useCallback } from "react";
+import { Fragment, memo, useCallback, useMemo } from "react";
 import FilteredObjektDisplay, {
   ObjektResponse,
 } from "../objekt/filtered-objekt-display";
@@ -11,6 +11,7 @@ import { QueryFunction, QueryKey } from "@tanstack/react-query";
 import {
   CollectionDataSource,
   CosmoFilters,
+  filtersAreDirty,
   SetCosmoFilters,
 } from "@/hooks/use-cosmo-filters";
 import { ExpandableObjekt } from "../objekt/objekt";
@@ -46,16 +47,25 @@ export default memo(function CollectionObjektDisplay({
   gridColumns = GRID_COLUMNS,
   dataSource,
 }: Props) {
+  const hidePins = useMemo(() => filtersAreDirty(filters), [filters]);
   const lockedObjekts = useProfileContext((ctx) => ctx.lockedObjekts);
   const pins = useProfileContext((ctx) => ctx.pins);
 
-  const lockFilter = useCallback(
+  const collectionFilter = useCallback(
     (objekt: OwnedObjekt) => {
-      return showLocked
+      // hide objekt from list when it's pinned
+      const pinFilter =
+        hidePins === false &&
+        pins.findIndex((pin) => pin.tokenId === objekt.tokenId) === -1;
+
+      // hide locked objekts when the filter is toggled
+      const lockFilter = showLocked
         ? true
         : lockedObjekts.includes(parseInt(objekt.tokenId)) === false;
+
+      return hidePins ? lockFilter : lockFilter && pinFilter;
     },
-    [showLocked, lockedObjekts]
+    [showLocked, lockedObjekts, hidePins, pins]
   );
 
   return (
@@ -66,9 +76,10 @@ export default memo(function CollectionObjektDisplay({
       queryFunction={queryFunction}
       queryKey={["collection", address]}
       getObjektId={getObjektId}
-      getObjektDisplay={lockFilter}
+      getObjektDisplay={collectionFilter}
       gridColumns={gridColumns}
       dataSource={dataSource}
+      hidePins={hidePins}
     >
       {({ objekt, id }, priority, isPin) => (
         <ExpandableObjekt

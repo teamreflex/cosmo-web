@@ -23,7 +23,6 @@ import { ValidArtists } from "@/lib/universal/cosmo/common";
 import {
   CollectionDataSource,
   CosmoFilters,
-  filtersAreDirty,
   SetCosmoFilters,
 } from "@/hooks/use-cosmo-filters";
 import { InfiniteQueryNext } from "../infinite-query-pending";
@@ -61,6 +60,7 @@ type Props<TObjektType extends ValidObjekt> = {
   getObjektDisplay?: (objekt: TObjektType) => boolean;
   gridColumns?: number;
   dataSource?: CollectionDataSource;
+  hidePins?: boolean;
 };
 
 export default typedMemo(function FilteredObjektDisplay<
@@ -76,6 +76,7 @@ export default typedMemo(function FilteredObjektDisplay<
   getObjektDisplay = () => true,
   gridColumns = GRID_COLUMNS,
   dataSource = "blockchain",
+  hidePins = true,
 }: Props<TObjektType>) {
   const setActiveMember = useCallback((member: string) => {
     setFilters((prev) => ({
@@ -149,6 +150,7 @@ export default typedMemo(function FilteredObjektDisplay<
                     getObjektDisplay={getObjektDisplay}
                     gridColumns={gridColumns}
                     dataSource={dataSource}
+                    hidePins={hidePins}
                   >
                     {children}
                   </ObjektGrid>
@@ -164,10 +166,10 @@ export default typedMemo(function FilteredObjektDisplay<
   );
 });
 
-type ObjektGridProps<TObjektType extends ValidObjekt> = Omit<
-  Props<TObjektType>,
-  "artists" | "setFilters"
->;
+interface ObjektGridProps<TObjektType extends ValidObjekt>
+  extends Omit<Props<TObjektType>, "artists" | "setFilters"> {
+  hidePins: boolean;
+}
 
 const ObjektGrid = typedMemo(function ObjektGrid<
   TObjektType extends ValidObjekt
@@ -180,8 +182,8 @@ const ObjektGrid = typedMemo(function ObjektGrid<
   getObjektDisplay = () => true,
   gridColumns = GRID_COLUMNS,
   dataSource = "blockchain",
+  hidePins,
 }: ObjektGridProps<TObjektType>) {
-  const hidePins = useMemo(() => filtersAreDirty(filters), [filters]);
   const pins = useProfileContext((ctx) => ctx.pins);
   const { rewardsDialog } = useObjektRewards();
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
