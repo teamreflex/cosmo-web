@@ -114,6 +114,7 @@ export async function fetchUserByIdentifier(
       },
       objektLists: profile.lists,
       lockedObjekts: profile.lockedObjekts.map((row) => row.tokenId),
+      pins: profile.pins,
     };
   }
 
@@ -127,6 +128,7 @@ export async function fetchUserByIdentifier(
       },
       objektLists: [],
       lockedObjekts: [],
+      pins: [],
     };
   }
 
@@ -157,6 +159,7 @@ export async function fetchUserByIdentifier(
     },
     objektLists: [],
     lockedObjekts: [],
+    pins: [],
   };
 }
 
@@ -199,6 +202,9 @@ async function fetchProfileByIdentifier(identifier: string) {
         columns: {
           tokenId: true,
         },
+      },
+      pins: {
+        orderBy: (pins, { desc }) => desc(pins.id),
       },
     },
   });

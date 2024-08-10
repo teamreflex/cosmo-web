@@ -72,6 +72,7 @@ Supersedes the [objekts.jinsoul.tv](https://github.com/teamreflex/objekts-svelte
   - Leaderboards displaying the top 25 users for the given member
 - Toggle to display collections from the blockchain instead of COSMO
 - Descriptions/source of all objekts
+- Pinning objekts to the top of your collection
 
 </details>
 

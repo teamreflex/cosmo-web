@@ -68,6 +68,15 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2024-08-10",
+    changes: [
+      "Changed: Your grid columns setting is now used when other users view your collection.",
+      "Added: Pin objekts to the top of your collection.",
+      "Pins are separate to COSMO pins, it's not possible to sync the two.",
+      "There is no limit to the number of pins you can have.",
+    ],
+  },
+  {
     date: "2024-08-08",
     changes: [
       "Polygon gas indicator now shows an overall system status.",
@@ -84,13 +93,5 @@ const updates = [
   {
     date: "2024-07-25",
     changes: ["Added: Ranking section to the Activity page."],
-  },
-  {
-    date: "2024-07-10",
-    changes: [
-      "Added: User profile images are now displayed.",
-      "As users can select a unique image per artist, you will be shown the image for your own currently selected artist.",
-      "Unfortunately, COSMO requires signing in to view full profiles. Users not signed in will see the default squid placeholder profile image.",
-    ],
   },
 ];

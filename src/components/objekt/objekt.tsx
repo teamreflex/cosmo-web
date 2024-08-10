@@ -12,6 +12,7 @@ export type BaseObjektProps<TObjektType extends ValidObjekt> =
   PropsWithChildren<{
     id: string;
     objekt: TObjektType;
+    serial?: number;
   }>;
 
 const MemoizedImage = memo(NextImage);
@@ -67,6 +68,7 @@ interface ExpandableObjektProps<TObjektType extends ValidObjekt>
   extends BaseObjektProps<TObjektType> {
   setActive?: (slug: string | null) => void;
   priority: boolean;
+  isPin: boolean;
 }
 
 export const ExpandableObjekt = memo(function ExpandableObjekt<
@@ -76,6 +78,7 @@ export const ExpandableObjekt = memo(function ExpandableObjekt<
   objekt,
   setActive,
   priority,
+  isPin,
 }: ExpandableObjektProps<TObjektType>) {
   const [isLoaded, setIsLoaded] = useState(false);
   const queryClient = useQueryClient();

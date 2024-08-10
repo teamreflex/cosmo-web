@@ -23,6 +23,7 @@ import { ValidArtists } from "@/lib/universal/cosmo/common";
 import {
   CollectionDataSource,
   CosmoFilters,
+  filtersAreDirty,
   SetCosmoFilters,
 } from "@/hooks/use-cosmo-filters";
 import { InfiniteQueryNext } from "../infinite-query-pending";
@@ -32,6 +33,7 @@ import { Button } from "../ui/button";
 import { useObjektRewards } from "@/hooks/use-objekt-rewards";
 import Skeleton from "../skeleton/skeleton";
 import { ErrorBoundary } from "react-error-boundary";
+import { useProfileContext } from "@/hooks/use-profile";
 
 export type ObjektResponse<TObjektType extends ValidObjekt> = {
   hasNext: boolean;
@@ -43,7 +45,8 @@ export type ObjektResponse<TObjektType extends ValidObjekt> = {
 type Props<TObjektType extends ValidObjekt> = {
   children: (
     props: BaseObjektProps<TObjektType>,
-    priority: boolean
+    priority: boolean,
+    isPin: boolean
   ) => ReactElement;
   artists: CosmoArtistWithMembers[];
   filters: CosmoFilters;
@@ -178,6 +181,8 @@ const ObjektGrid = typedMemo(function ObjektGrid<
   gridColumns = GRID_COLUMNS,
   dataSource = "blockchain",
 }: ObjektGridProps<TObjektType>) {
+  const hidePins = useMemo(() => filtersAreDirty(filters), [filters]);
+  const pins = useProfileContext((ctx) => ctx.pins);
   const { rewardsDialog } = useObjektRewards();
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useSuspenseInfiniteQuery({
@@ -204,9 +209,30 @@ const ObjektGrid = typedMemo(function ObjektGrid<
 
       {rewardsDialog}
 
+      {hidePins === false &&
+        pins.map((objekt, i) =>
+          cloneElement(
+            children(
+              {
+                objekt: objekt as TObjektType,
+                id: getObjektId(objekt as TObjektType),
+              },
+              i < gridColumns * 3,
+              true
+            ),
+            {
+              key: getObjektId(objekt as TObjektType),
+            }
+          )
+        )}
+
       {objekts.map((objekt, i) =>
         cloneElement(
-          children({ objekt, id: getObjektId(objekt) }, i < gridColumns * 3),
+          children(
+            { objekt, id: getObjektId(objekt) },
+            i < gridColumns * 3,
+            false
+          ),
           {
             key: getObjektId(objekt),
           }

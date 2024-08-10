@@ -18,7 +18,6 @@ import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { baseUrl } from "@/lib/utils";
 
 type Props = {
-  lockedObjekts: number[];
   artists: CosmoArtistWithMembers[];
   profile: PublicProfile;
   user?: PublicProfile;
@@ -26,7 +25,6 @@ type Props = {
 };
 
 export default function ProfileRenderer({
-  lockedObjekts,
   artists,
   profile,
   user,
@@ -99,13 +97,12 @@ export default function ProfileRenderer({
       <CollectionObjektDisplay
         authenticated={profile.address === user?.address}
         address={profile.address}
-        lockedTokenIds={lockedObjekts}
         showLocked={showLocked}
         artists={artists}
         filters={cosmoFilters}
         setFilters={setCosmoFilters}
         queryFunction={queryFunction}
-        gridColumns={user?.gridColumns}
+        gridColumns={profile?.gridColumns ?? user?.gridColumns}
         dataSource={dataSource}
       />
     </div>

@@ -17,6 +17,7 @@
     "metadata:import": "bun run ./scripts/metadata-import/import.ts"
   },
   "dependencies": {
+    "@fluentui/react-context-selector": "^9.1.65",
     "@neondatabase/serverless": "^0.9.1",
     "@radix-ui/react-accordion": "^1.1.2",
     "@radix-ui/react-alert-dialog": "^1.0.5",
