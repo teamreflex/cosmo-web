@@ -48,7 +48,7 @@ export default async function UserCollectionPage({ params }: Props) {
     return <Private nickname={targetUser.profile.nickname} />;
   }
 
-  const pins = await fetchPins(targetUser.pins.map((p) => p.tokenId));
+  const pins = await fetchPins(targetUser.pins);
 
   return (
     <ProfileProvider

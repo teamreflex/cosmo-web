@@ -203,7 +203,9 @@ async function fetchProfileByIdentifier(identifier: string) {
           tokenId: true,
         },
       },
-      pins: true,
+      pins: {
+        orderBy: (pins, { desc }) => desc(pins.id),
+      },
     },
   });
 }

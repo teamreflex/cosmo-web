@@ -2,6 +2,7 @@ import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
 import { indexer } from "../db/indexer";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { Collection, Objekt } from "../db/indexer/schema";
+import { Pin } from "../db/schema";
 
 interface ObjektWithCollection extends Objekt {
   collection: Collection;
@@ -10,11 +11,15 @@ interface ObjektWithCollection extends Objekt {
 /**
  * Fetch all pins for the given token ids.
  */
-export async function fetchPins(tokenIds: number[]): Promise<OwnedObjekt[]> {
-  if (tokenIds.length === 0) return [];
+export async function fetchPins(pins: Pin[]): Promise<OwnedObjekt[]> {
+  if (pins.length === 0) return [];
 
   const results = await indexer.query.objekts.findMany({
-    where: (objekts, { inArray }) => inArray(objekts.id, tokenIds),
+    where: (objekts, { inArray }) =>
+      inArray(
+        objekts.id,
+        pins.map((p) => p.tokenId)
+      ),
     with: {
       collection: true,
     },
