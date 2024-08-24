@@ -68,6 +68,10 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2024-08-25",
+    changes: ["Signing in should be fixed, yet again."],
+  },
+  {
     date: "2024-08-10",
     changes: [
       "Changed: Your grid columns setting is now used when other users view your collection.",
@@ -89,9 +93,5 @@ const updates = [
     changes: [
       "Fixed: Reward claiming now works like COSMO, in that it is per-artist. You must switch artists to claim rewards for both.",
     ],
-  },
-  {
-    date: "2024-07-25",
-    changes: ["Added: Ranking section to the Activity page."],
   },
 ];

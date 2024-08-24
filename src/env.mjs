@@ -3,8 +3,10 @@ import * as z from "zod";
 
 export const env = createEnv({
   server: {
-    // ramper auth endpoint
+    // ramper misc endpoint
     RAMPER_URL: z.string().url(),
+    // ramper api endpoint
+    RAMPER_API_URL: z.string().url(),
     // ramper app id for cosmo
     RAMPER_APP_ID: z.string().min(1),
     // user agent to use when making requests to ramper

@@ -37,17 +37,28 @@ export const sendRamperEmail = async (form: FormData) =>
     }),
     onValidate: async ({ data }) => {
       const result = await sendLoginEmail(data);
+
+      // complete failure
       if (result.success === false) {
         console.warn(result);
         throw new ActionError({
           status: "error",
-          error: getRamperErrorMessage(result, "sendLoginEmail"),
+          error: getRamperErrorMessage(result.data, "sendLoginEmail"),
+        });
+      }
+
+      // request failure? why is there errors in the success type?
+      if (result.data.success === false) {
+        console.warn(result);
+        throw new ActionError({
+          status: "error",
+          error: getRamperErrorMessage(result.data, "sendLoginEmail"),
         });
       }
 
       return {
         email: data.email,
-        pendingToken: result.pendingToken,
+        pendingToken: result.data.pendingToken,
       };
     },
   });
