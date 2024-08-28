@@ -4,6 +4,7 @@ import { indexer } from "@/lib/server/db/indexer";
 import { collections, objekts } from "@/lib/server/db/indexer/schema";
 import { objektMetadata } from "@/lib/server/db/schema";
 import { count, eq } from "drizzle-orm";
+import { unstable_cache } from "next/cache";
 
 export const runtime = "nodejs";
 
@@ -90,11 +91,20 @@ async function fetchCollection(collectionSlug: string) {
 /**
  * Fetch metadata for a collection.
  */
-async function fetchCollectionMetadata(collectionSlug: string) {
-  return await db.query.objektMetadata.findFirst({
-    where: eq(objektMetadata.collectionId, collectionSlug),
-    with: {
-      profile: true,
+async function fetchCollectionMetadata(slug: string) {
+  return await unstable_cache(
+    async (slug: string) => {
+      return await db.query.objektMetadata.findFirst({
+        where: eq(objektMetadata.collectionId, slug),
+        with: {
+          profile: true,
+        },
+      });
     },
-  });
+    ["objekt-metadata", slug],
+    {
+      tags: ["objekt-metadata", slug],
+      revalidate: 60 * 60 * 24 * 7, // 7 days
+    }
+  )(slug);
 }

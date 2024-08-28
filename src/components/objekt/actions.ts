@@ -6,7 +6,7 @@ import { objektMetadata } from "@/lib/server/db/schema";
 import { authenticatedAction } from "@/lib/server/typed-action";
 import { ActionError } from "@/lib/server/typed-action/errors";
 import { eq } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 
 const schema = z.object({
@@ -55,6 +55,7 @@ export const updateObjektMetadata = async (
         .returning();
 
       revalidatePath(`/api/objekts/metadata/${collectionSlug}`);
+      revalidateTag(collectionSlug);
 
       return result[0];
     },
