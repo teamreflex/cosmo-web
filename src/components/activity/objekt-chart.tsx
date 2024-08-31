@@ -20,6 +20,7 @@ export default function ObjektChart({ members }: Props) {
           dataKey="count"
           innerRadius={60}
           outerRadius={100}
+          labelLine={false}
           stroke="#1e293b"
           strokeWidth={2}
           label={({
