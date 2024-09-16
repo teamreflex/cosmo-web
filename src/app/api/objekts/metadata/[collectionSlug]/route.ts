@@ -92,19 +92,10 @@ async function fetchCollection(collectionSlug: string) {
  * Fetch metadata for a collection.
  */
 async function fetchCollectionMetadata(slug: string) {
-  return await unstable_cache(
-    async (slug: string) => {
-      return await db.query.objektMetadata.findFirst({
-        where: eq(objektMetadata.collectionId, slug),
-        with: {
-          profile: true,
-        },
-      });
+  return await db.query.objektMetadata.findFirst({
+    where: eq(objektMetadata.collectionId, slug),
+    with: {
+      profile: true,
     },
-    ["objekt-metadata", slug],
-    {
-      tags: ["objekt-metadata", slug],
-      revalidate: 60 * 60 * 24 * 7, // 7 days
-    }
-  )(slug);
+  });
 }
