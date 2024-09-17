@@ -128,7 +128,7 @@ function MetadataDialogContent({ slug, onClose }: MetadataDialogContentProps) {
 
   return (
     <Fragment>
-      <div className="flex h-[28rem] mx-auto shrink pt-4 md:pt-0">
+      <div className="flex h-[28rem] aspect-photocard mx-auto shrink pt-4 md:pt-0">
         <FlippableObjekt objekt={data} id={getObjektId(data)}>
           <ObjektSidebar collection={data.collectionNo} />
         </FlippableObjekt>
