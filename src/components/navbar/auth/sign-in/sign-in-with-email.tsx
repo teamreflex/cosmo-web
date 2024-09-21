@@ -1,22 +1,14 @@
+import Portal from "@/components/portal";
 import {
-  AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
-  AlertDialogContent,
   AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { LogIn } from "lucide-react";
-import { useEffect, useState, useTransition } from "react";
-import { v4 } from "uuid";
-import { exchangeRamperToken, sendRamperEmail } from "./actions";
-import Portal from "@/components/portal";
 import { track } from "@/lib/utils";
+import { useEffect, useState, useTransition } from "react";
+import { exchangeRamperToken, sendRamperEmail } from "./actions";
+import { Input } from "@/components/ui/input";
+import { v4 } from "uuid";
 
 type SignInState = "sending-email" | "exchanging-token";
 type Payload = {
@@ -25,7 +17,7 @@ type Payload = {
   pendingToken: string;
 };
 
-export default function SignInDialog() {
+export default function SignInWithEmail() {
   const [state, setState] = useState<SignInState>("sending-email");
   const [payload, setPayload] = useState({
     transactionId: v4(),
@@ -38,39 +30,13 @@ export default function SignInDialog() {
     setState("exchanging-token");
   }
 
-  return (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button variant="link" className="px-0 md:px-4">
-          <span className="hidden md:block">Sign In</span>
-          <LogIn className="md:hidden h-8 w-8 shrink-0" />
-        </Button>
-      </AlertDialogTrigger>
-      <AlertDialogContent className="sm:max-w-xl">
-        <AlertDialogHeader>
-          <AlertDialogTitle>Sign In</AlertDialogTitle>
-
-          <AlertDialogDescription>
-            Signing in allows you to grid objekts, build wishlists and more.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-
-        {state === "sending-email" && (
-          <SendEmailForm payload={payload} onComplete={emailSent} />
-        )}
-
-        {state === "exchanging-token" && (
-          <ExchangeTokenForm
-            payload={payload}
-            onBack={() => setState("sending-email")}
-          />
-        )}
-
-        <AlertDialogFooter>
-          <div className="flex items-center gap-2" id="sign-in-footer" />
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+  return state === "sending-email" ? (
+    <SendEmailForm payload={payload} onComplete={emailSent} />
+  ) : (
+    <ExchangeTokenForm
+      payload={payload}
+      onBack={() => setState("sending-email")}
+    />
   );
 }
 

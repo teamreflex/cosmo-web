@@ -5,7 +5,7 @@ import { logout } from "./actions";
 import { Loader2 } from "lucide-react";
 import { TokenPayload } from "@/lib/universal/auth";
 import UserDropdown from "./user-dropdown";
-import SignInDialog from "./sign-in-dialog";
+import SignInDialog from "./sign-in/sign-in-dialog";
 import { CosmoArtist } from "@/lib/universal/cosmo/artists";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { CosmoUser, PublicProfile } from "@/lib/universal/cosmo/auth";

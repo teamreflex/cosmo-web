@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { generateCookiePayload } from "@/lib/server/jwt";
 import { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 
-type CookieKey = "artist" | "token";
+type CookieKey = "artist" | "token" | "user-session";
 
 /**
  * Read the value from a cookie.
