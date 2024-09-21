@@ -58,7 +58,7 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${cosmo.variable} font-sans`}>
-        <ThemeProvider attribute="class" defaultTheme="dark" forcedTheme="dark">
+        <ThemeProvider attribute="class" defaultTheme="dark">
           <SelectedArtistProvider selectedArtist={artist}>
             <ClientProviders>
               <div className="relative flex min-h-dvh flex-col">

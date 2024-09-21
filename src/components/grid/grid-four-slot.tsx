@@ -53,7 +53,7 @@ export default function GridFourSlot({
                 className="relative aspect-photocard rounded-lg bg-accent w-full flex justify-center items-center"
                 key={slot.collectionNo}
               >
-                <p className="text-white/20 text-3xl select-none">
+                <p className="text-background dark:text-foreground/20 text-3xl select-none">
                   {slot.collectionNo}
                 </p>
               </div>

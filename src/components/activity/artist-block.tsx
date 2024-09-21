@@ -33,7 +33,7 @@ export default async function ArtistBlock({ user, artist }: Props) {
   return (
     <div className="w-full relative rounded-xl object-contain aspect-square overflow-hidden border border-accent">
       <div className="z-20 absolute inset-0 p-4 bg-black/50">
-        <p className="text-xl lg:text-3xl font-semibold">
+        <p className="text-xl lg:text-3xl font-semibold text-background dark:text-foreground">
           with {welcome.result.fandomName}
         </p>
         <p className="text-2xl lg:text-4xl font-semibold text-cosmo-text">

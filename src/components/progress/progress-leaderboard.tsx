@@ -121,7 +121,7 @@ function FilterSelect({
 
   return (
     <Select value={value} onValueChange={set}>
-      <SelectTrigger className="drop-shadow-lg">
+      <SelectTrigger>
         <SelectValue placeholder="Sort" />
       </SelectTrigger>
       <SelectContent
@@ -155,7 +155,7 @@ function SeasonSelect({
 
   return (
     <Select value={value} onValueChange={set}>
-      <SelectTrigger className="drop-shadow-lg">
+      <SelectTrigger>
         <SelectValue placeholder="Sort" />
       </SelectTrigger>
       <SelectContent

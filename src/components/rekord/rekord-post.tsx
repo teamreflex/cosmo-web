@@ -62,7 +62,7 @@ export function RekordPost<TPostType extends CosmoRekordItem>({
             unoptimized
           />
 
-          <div className="absolute w-full h-full bg-gradient-to-b from-transparent to-black/50" />
+          <div className="absolute w-full h-full rounded-lg bg-gradient-to-b from-transparent to-black/50" />
 
           {children}
         </button>

@@ -45,7 +45,7 @@ export default memo(function OnlineFilter({ filters, setFilters }: Props) {
         <Button
           variant="outline"
           className={cn(
-            "flex gap-2 items-center drop-shadow-lg",
+            "flex gap-2 items-center",
             filters && filters.length > 0 && "border-cosmo"
           )}
         >

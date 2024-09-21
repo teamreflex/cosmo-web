@@ -18,6 +18,8 @@ const toggleVariants = cva(
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         cosmo:
           "border border-input bg-popover hover:bg-accent hover:text-accent-foreground data-[state=on]:bg-popover data-[state=on]:border-cosmo",
+        ghost:
+          "data-[state=off]:bg-transparent data-[state=on]:bg-transparent hover:data-[state=off]:bg-accent hover:data-[state=on]:bg-accent ",
       },
       size: {
         default: "h-10 px-3",

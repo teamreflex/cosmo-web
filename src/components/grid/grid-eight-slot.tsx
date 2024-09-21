@@ -63,7 +63,7 @@ export default function GridEightSlot({
                 )}
                 key={slot.collectionNo}
               >
-                <p className="text-white/20 text-3xl select-none">
+                <p className="dark:text-foreground/20 text-3xl select-none">
                   {slot.collectionNo}
                 </p>
               </div>

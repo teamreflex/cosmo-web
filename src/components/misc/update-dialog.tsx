@@ -68,30 +68,11 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2024-09-21",
+    changes: ["Added: Light mode, switch can be found in settings."],
+  },
+  {
     date: "2024-08-25",
     changes: ["Signing in should be fixed, yet again."],
-  },
-  {
-    date: "2024-08-10",
-    changes: [
-      "Changed: Your grid columns setting is now used when other users view your collection.",
-      "Added: Pin objekts to the top of your collection.",
-      "Pins are separate to COSMO pins, it's not possible to sync the two.",
-      "There is no limit to the number of pins you can have.",
-    ],
-  },
-  {
-    date: "2024-08-08",
-    changes: [
-      "Polygon gas indicator now shows an overall system status.",
-      "Database should now be more reliable and not lag 30 minutes behind as often.",
-      "Fixed mismatched grid/event reward indicators when viewing user profiles via Polygon database.",
-    ],
-  },
-  {
-    date: "2024-08-02",
-    changes: [
-      "Fixed: Reward claiming now works like COSMO, in that it is per-artist. You must switch artists to claim rewards for both.",
-    ],
   },
 ];

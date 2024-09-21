@@ -59,16 +59,18 @@ function BannerItem({ className, item, index, total }: BannerItemProps) {
           height={1325}
         />
 
-        <div className="absolute bottom-0 left-0 w-full flex h-20 bg-gradient-to-t from-background/90 to-transparent" />
+        <div className="absolute bottom-0 left-0 w-full flex h-20 bg-gradient-to-t from-foreground/90 dark:from-background/90 to-transparent" />
 
         <span className="absolute bottom-3 left-3 flex flex-col gap-2">
-          <span className="bg-background/75 border border-foreground/50 p-1 text-xs rounded-lg w-fit capitalize">
+          <span className="bg-foreground/75 dark:bg-background/75 border border-background/50 dark:border-foreground/50 text-xs text-background dark:text-foreground p-1 rounded-lg w-fit capitalize">
             {item.label}
           </span>
-          <p className="font-bold text-base md:text-lg">{item.body}</p>
+          <p className="font-bold text-base md:text-lg text-background dark:text-foreground">
+            {item.body}
+          </p>
         </span>
 
-        <span className="absolute bottom-3 right-3 bg-background/25 text-xs rounded-full px-2 py-1">
+        <span className="absolute bottom-3 right-3 bg-foreground/25 dark:bg-background/25 text-background dark:text-foreground text-xs rounded-full px-2 py-1">
           {index}/{total}
         </span>
       </div>

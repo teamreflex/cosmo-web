@@ -128,7 +128,7 @@ function FilterSelect({
 
   return (
     <Select value={value} onValueChange={set}>
-      <SelectTrigger className="w-32 drop-shadow-lg">
+      <SelectTrigger className="w-32">
         <SelectValue placeholder="Sort" />
       </SelectTrigger>
       <SelectContent

@@ -9,6 +9,8 @@ import SignInDialog from "./sign-in/sign-in-dialog";
 import { CosmoArtist } from "@/lib/universal/cosmo/artists";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { CosmoUser, PublicProfile } from "@/lib/universal/cosmo/auth";
+import GuestThemeSwitch from "./guest-theme-switch";
+import Hydrated from "@/components/hydrated";
 // import GuestArtistSwitch from "./guest-artist-switch";
 
 type Props = {
@@ -59,6 +61,10 @@ export default function AuthOptions({
       ) : (
         <div className="flex items-center gap-2">
           {isPending ? <Loader2 className="animate-spin" /> : <SignInDialog />}
+
+          <Hydrated>
+            <GuestThemeSwitch />
+          </Hydrated>
 
           {/* <GuestArtistSwitch
             artists={artists}

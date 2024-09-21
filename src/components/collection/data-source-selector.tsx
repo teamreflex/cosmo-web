@@ -123,7 +123,7 @@ export default memo(function DataSourceSelector({
       </AlertDialog>
 
       <Select value={dataSource} onValueChange={update} onOpenChange={warn}>
-        <SelectTrigger className="w-36 drop-shadow-lg">
+        <SelectTrigger className="w-36">
           <SelectValue placeholder="Data Source" />
         </SelectTrigger>
         <SelectContent

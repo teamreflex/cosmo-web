@@ -12,7 +12,6 @@ export default memo(function TransferableFilter({
 }: Props) {
   return (
     <Toggle
-      className="drop-shadow-lg"
       variant="cosmo"
       pressed={filters ?? false}
       onPressedChange={(v) => setFilters("transferable", v ? true : null)}

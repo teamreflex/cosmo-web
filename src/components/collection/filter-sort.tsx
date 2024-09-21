@@ -42,7 +42,7 @@ export default memo(function SortFilter({
 
   return (
     <Select value={filters ?? "newest"} onValueChange={update}>
-      <SelectTrigger className="w-32 drop-shadow-lg">
+      <SelectTrigger className="w-32">
         <SelectValue placeholder="Sort" />
       </SelectTrigger>
       <SelectContent

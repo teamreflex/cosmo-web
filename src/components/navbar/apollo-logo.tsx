@@ -1,4 +1,3 @@
-import { cn } from "@/lib/utils";
 import Image from "next/image";
 import {
   AlertDialog,
@@ -20,14 +19,12 @@ type Props = {
   className?: string;
   height?: number;
   width?: number;
-  color?: "white" | "black";
 };
 
 export default function ApolloLogo({
   className,
   height = 35,
   width = 51,
-  color = "white",
 }: Props) {
   return (
     <AlertDialog>
@@ -38,7 +35,7 @@ export default function ApolloLogo({
           width={width}
           quality={100}
           alt={env.NEXT_PUBLIC_APP_NAME}
-          className={cn(className, color === "black" && "invert")}
+          className="invert dark:invert-0"
           priority={true}
         />
       </AlertDialogTrigger>

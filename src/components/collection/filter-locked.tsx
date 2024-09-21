@@ -14,7 +14,7 @@ export default memo(function LockedFilter({
 }: Props) {
   return (
     <Toggle
-      className="drop-shadow-lg w-36"
+      className="w-36"
       variant="cosmo"
       pressed={showLocked}
       onPressedChange={(v) => setShowLocked(v ? null : false)}
