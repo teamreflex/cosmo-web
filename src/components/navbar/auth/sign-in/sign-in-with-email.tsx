@@ -9,6 +9,7 @@ import { useEffect, useState, useTransition } from "react";
 import { exchangeRamperToken, sendRamperEmail } from "./actions";
 import { Input } from "@/components/ui/input";
 import { v4 } from "uuid";
+import { Loader2 } from "lucide-react";
 
 type SignInState = "sending-email" | "exchanging-token";
 type Payload = {
@@ -85,7 +86,8 @@ function SendEmailForm({ payload, onComplete }: SendEmailProps) {
         <AlertDialogCancel className="mt-0">Cancel</AlertDialogCancel>
 
         <Button type="submit" disabled={isPending} form="email-submit">
-          Send Email
+          {isPending && <Loader2 className="size-4 mr-2 animate-spin" />}
+          <span>Send Email</span>
         </Button>
       </Portal>
     </form>
@@ -172,6 +174,7 @@ function ExchangeTokenForm({ payload, onBack }: ExchangeTokenProps) {
           disabled={isPending || !enableSubmission}
           form="token-submit"
         >
+          {isPending && <Loader2 className="size-4 mr-2 animate-spin" />}
           {enableSubmission ? "Sign In" : `Sign In (${realCount})`}
         </Button>
       </Portal>
