@@ -69,56 +69,44 @@ export default function ListDropdown({ lists, nickname, allowCreate }: Props) {
   return (
     <Dialog open={createOpen} onOpenChange={setCreateOpen}>
       <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
-        <TooltipProvider delayDuration={0}>
-          <Tooltip>
-            <DropdownMenuTrigger asChild>
-              <TooltipTrigger asChild>
-                <Button
-                  className="rounded-full"
-                  variant="secondary"
-                  size="icon"
+        <DropdownMenuTrigger asChild>
+          <Button variant="secondary" size="profile">
+            <List className="h-5 w-5" />
+            <span className="hidden sm:block">Lists</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuLabel>Objekt Lists</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuGroup>
+            {lists.map((list) => (
+              <DropdownMenuItem
+                key={list.id}
+                className="text-sm"
+                onClick={() => setDropdownOpen(false)}
+              >
+                <Link
+                  href={`/@${nickname}/list/${list.slug}`}
+                  className="w-full flex items-center justify-between"
                 >
-                  <List className="h-5 w-5" />
-                </Button>
-              </TooltipTrigger>
-            </DropdownMenuTrigger>
-            <TooltipContent side="bottom">Objekt Lists</TooltipContent>
-            <DropdownMenuContent>
-              <DropdownMenuLabel>Objekt Lists</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                {lists.map((list) => (
-                  <DropdownMenuItem
-                    key={list.id}
-                    className="text-sm"
-                    onClick={() => setDropdownOpen(false)}
-                  >
-                    <Link
-                      href={`/@${nickname}/list/${list.slug}`}
-                      className="w-full flex items-center justify-between"
-                    >
-                      {list.name}
-                      <ChevronRight className="h-4 w-4" />
-                    </Link>
-                  </DropdownMenuItem>
-                ))}
-                {lists.length === 0 && (
-                  <DropdownMenuItem className="text-sm">
-                    0 lists
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuGroup>
-              {allowCreate && (
-                <DialogTrigger asChild>
-                  <DropdownMenuItem className="cursor-pointer">
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    <span className="font-semibold">Create New</span>
-                  </DropdownMenuItem>
-                </DialogTrigger>
-              )}
-            </DropdownMenuContent>
-          </Tooltip>
-        </TooltipProvider>
+                  {list.name}
+                  <ChevronRight className="h-4 w-4" />
+                </Link>
+              </DropdownMenuItem>
+            ))}
+            {lists.length === 0 && (
+              <DropdownMenuItem className="text-sm">0 lists</DropdownMenuItem>
+            )}
+          </DropdownMenuGroup>
+          {allowCreate && (
+            <DialogTrigger asChild>
+              <DropdownMenuItem className="cursor-pointer">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                <span className="font-semibold">Create New</span>
+              </DropdownMenuItem>
+            </DialogTrigger>
+          )}
+        </DropdownMenuContent>
       </DropdownMenu>
 
       <DialogContent className="sm:max-w-[425px]">

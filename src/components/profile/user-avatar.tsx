@@ -8,13 +8,19 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
+import { cn, PropsWithClassName } from "@/lib/utils";
 
 type Props = {
+  className?: string;
   token?: string;
   nickname: string;
 };
 
-export default async function UserAvatar({ token, nickname }: Props) {
+export default async function UserAvatar({
+  className,
+  token,
+  nickname,
+}: Props) {
   const artist = getSelectedArtist();
 
   if (token === undefined) {
@@ -41,20 +47,24 @@ export default async function UserAvatar({ token, nickname }: Props) {
   );
 
   if (profile === undefined) {
-    return <Fallback nickname={nickname} />;
+    return <Fallback className={className} nickname={nickname} />;
   }
 
   return (
-    <Avatar className="h-24 w-24">
+    <Avatar className={cn("h-24 w-24", className)}>
       <AvatarFallback>{user!.nickname.charAt(0).toUpperCase()}</AvatarFallback>
       <AvatarImage src={profile.image.original} alt={user!.nickname} />
     </Avatar>
   );
 }
 
-function Fallback({ nickname }: { nickname: string }) {
+type FallbackProps = PropsWithClassName<{
+  nickname: string;
+}>;
+
+function Fallback({ className, nickname }: FallbackProps) {
   return (
-    <Avatar className="h-24 w-24">
+    <Avatar className={cn("h-24 w-24", className)}>
       <AvatarFallback>{nickname.charAt(0).toUpperCase()}</AvatarFallback>
       <AvatarImage
         className="bg-cosmo-profile p-3"

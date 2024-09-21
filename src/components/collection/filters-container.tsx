@@ -7,7 +7,6 @@ import {
   Dispatch,
   Fragment,
   PropsWithChildren,
-  ReactNode,
   SetStateAction,
   memo,
   useState,
@@ -26,20 +25,18 @@ import Portal from "../portal";
 import DataSourceSelector from "./data-source-selector";
 
 type FiltersContainerProps = PropsWithChildren<{
-  buttons?: ReactNode;
   isPortaled?: boolean;
 }>;
 
 export function FiltersContainer({
   children,
-  buttons,
   isPortaled,
 }: FiltersContainerProps) {
   const [show, setShow] = useState(false);
 
   return (
     <div
-      className="flex flex-col gap-2 group py-1 sm:pb-2 pb-1"
+      className="flex flex-col gap-2 group lg:data-[show=false]:pb-2 data-[show=false]:pb-0"
       data-show={show}
     >
       <div className="flex flex-row items-center justify-center gap-2 sm:hidden">
@@ -56,11 +53,9 @@ export function FiltersContainer({
             <span>Filters</span>
           </Toggle>
         </Portal>
-
-        {buttons}
       </div>
 
-      <div className="flex gap-2 items-center flex-wrap justify-center sm:group-data-[show=false]:flex group-data-[show=false]:hidden">
+      <div className="flex gap-2 items-center flex-wrap justify-center lg:group-data-[show=false]:flex group-data-[show=false]:hidden">
         {children}
       </div>
     </div>

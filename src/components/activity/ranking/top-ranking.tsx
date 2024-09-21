@@ -297,7 +297,7 @@ function MyRankHelpDialog() {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button className="rounded-full" variant="secondary" size="icon">
+        <Button variant="secondary" size="profile">
           <HelpCircle className="h-5 w-5" />
         </Button>
       </AlertDialogTrigger>
