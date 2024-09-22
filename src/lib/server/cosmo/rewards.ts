@@ -1,7 +1,7 @@
-import { v4 } from "uuid";
 import { cosmo } from "../http";
 import { CosmoRewardItem } from "@/lib/universal/cosmo/rewards";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
+import { randomUUID } from "crypto";
 
 type CosmoRewardAvailable = {
   isClaimable: boolean;
@@ -19,7 +19,7 @@ export async function fetchEventRewardAvailable(
       Authorization: `Bearer ${token}`,
     },
     query: {
-      tid: v4(),
+      tid: randomUUID(),
       artistName: artist,
     },
     cache: "no-cache",
@@ -44,7 +44,7 @@ export async function fetchPendingEventRewards(
       Authorization: `Bearer ${token}`,
     },
     query: {
-      tid: v4(),
+      tid: randomUUID(),
       artistName: artist,
     },
     cache: "no-cache",
@@ -61,7 +61,7 @@ export async function claimEventRewards(token: string, artist: ValidArtist) {
       Authorization: `Bearer ${token}`,
     },
     query: {
-      tid: v4(),
+      tid: randomUUID(),
       artistName: artist,
     },
     cache: "no-cache",

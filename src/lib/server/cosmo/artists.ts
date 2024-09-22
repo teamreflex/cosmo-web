@@ -6,7 +6,7 @@ import {
 import { ValidArtist, validArtists } from "@/lib/universal/cosmo/common";
 import { cosmo } from "../http";
 import { unstable_cache } from "next/cache";
-import { v4 } from "uuid";
+import { randomUUID } from "crypto";
 
 /**
  * Fetch a single artist with its members.
@@ -34,7 +34,7 @@ export async function fetchArtistBff(token: string, artistName: ValidArtist) {
   return await cosmo<CosmoArtistBFF>(`/bff/v1/artist`, {
     query: {
       artistName,
-      tid: v4(),
+      tid: randomUUID(),
     },
     headers: {
       Authorization: `Bearer ${token}`,

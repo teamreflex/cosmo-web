@@ -10,9 +10,9 @@ import { ofetch } from "ofetch";
 import { useEffect, useState } from "react";
 import QRCode from "react-qr-code";
 import { COSMO_ENDPOINT } from "@/lib/universal/cosmo/common";
-import { v4 } from "uuid";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
+import { randomUUID } from "crypto";
 
 export default function SignInWithQR() {
   // get recaptcha token and exchange it for a ticket on mount
@@ -181,7 +181,7 @@ function OTP({ ticket }: OTPProps) {
             ticket: ticket.ticket,
           },
           query: {
-            tid: v4(),
+            tid: randomUUID(),
           },
         }
       ),

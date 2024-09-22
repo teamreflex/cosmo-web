@@ -1,6 +1,5 @@
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { cosmo } from "../http";
-import { v4 } from "uuid";
 import { FetchError } from "ofetch";
 import {
   BFFActivityBadgeParams,
@@ -18,6 +17,7 @@ import {
   CosmoActivityRankingNearResult,
   CosmoActivityRankingTopEntry,
 } from "@/lib/universal/cosmo/activity/ranking";
+import { randomUUID } from "crypto";
 
 type FetchActivityWelcomeResultSuccess = {
   success: true;
@@ -43,7 +43,7 @@ export async function fetchActivityWelcome(
   return await cosmo<CosmoActivityWelcomeResult>(`/bff/v1/activity/welcome`, {
     query: {
       artistName,
-      tid: v4(),
+      tid: randomUUID(),
     },
     headers: {
       Authorization: `Bearer ${token}`,
@@ -84,7 +84,7 @@ export async function fetchActivityMyObjekts(
     {
       query: {
         artistName,
-        tid: v4(),
+        tid: randomUUID(),
       },
       headers: {
         Authorization: `Bearer ${token}`,
@@ -104,7 +104,7 @@ export async function fetchActivityHistory(
   return await cosmo<CosmoActivityHistoryItem[]>(`/bff/v1/activity/history`, {
     query: {
       ...options,
-      tid: v4(),
+      tid: randomUUID(),
     },
     headers: {
       Authorization: `Bearer ${token}`,
@@ -123,7 +123,7 @@ export async function fetchActivityBadges(
   return await cosmo<CosmoActivityBadgeResult>(`/bff/v1/activity/badge`, {
     query: {
       ...options,
-      tid: v4(),
+      tid: randomUUID(),
     },
     headers: {
       Authorization: `Bearer ${token}`,
@@ -144,7 +144,7 @@ export async function fetchActivityRankingNear(
     {
       query: {
         ...options,
-        tid: v4(),
+        tid: randomUUID(),
       },
       headers: {
         Authorization: `Bearer ${token}`,
@@ -166,7 +166,7 @@ export async function fetchActivityRankingTop(
     {
       query: {
         ...options,
-        tid: v4(),
+        tid: randomUUID(),
       },
       headers: {
         Authorization: `Bearer ${token}`,

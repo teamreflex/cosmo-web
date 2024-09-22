@@ -1,7 +1,7 @@
 import { chromium } from "playwright";
 import { cosmo } from "../http";
-import { v4 } from "uuid";
 import { AuthTicket, QueryTicket } from "@/lib/universal/cosmo/qr-auth";
+import { randomUUID } from "crypto";
 
 /**
  * Use a headless browser to get the reCAPTCHA token.
@@ -52,7 +52,7 @@ export async function exchangeLoginTicket(recaptchaToken: string) {
       },
     },
     query: {
-      tid: v4(),
+      tid: randomUUID(),
     },
     cache: "no-cache",
   });
@@ -64,7 +64,7 @@ export async function exchangeLoginTicket(recaptchaToken: string) {
 export async function queryTicket(ticket: string) {
   return await cosmo<QueryTicket>(`/bff/v1/users/auth/login/native/qr/ticket`, {
     query: {
-      tid: v4(),
+      tid: randomUUID(),
       ticket,
     },
     cache: "no-cache",
@@ -84,7 +84,7 @@ export async function certifyTicket(otp: number, ticket: string) {
         ticket,
       },
       query: {
-        tid: v4(),
+        tid: randomUUID(),
       },
       cache: "no-cache",
     }
