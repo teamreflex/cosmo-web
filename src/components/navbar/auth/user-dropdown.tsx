@@ -81,7 +81,7 @@ export default function UserDropdown({
             profiles={user.profile}
           />
         </DropdownMenuTrigger>
-        <DropdownMenuContent>
+        <DropdownMenuContent align="end">
           <DropdownMenuItem className="md:hidden flex gap-2 items-center">
             {comoBalances}
           </DropdownMenuItem>

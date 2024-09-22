@@ -75,7 +75,7 @@ export default function ListDropdown({ lists, nickname, allowCreate }: Props) {
             <span className="hidden sm:block">Lists</span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent>
+        <DropdownMenuContent align="end">
           <DropdownMenuLabel>Objekt Lists</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
