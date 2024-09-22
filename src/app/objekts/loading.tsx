@@ -7,7 +7,7 @@ export default function ObjektsLoading() {
       <div className="flex flex-col">
         {/* Title */}
         <div className="flex gap-2 items-center w-full pb-1">
-          <div className="flex gap-2 items-center h-10">
+          <div className="flex gap-2 items-center h-9">
             <h1 className="text-3xl font-cosmo uppercase drop-shadow-lg">
               Objekts
             </h1>
@@ -15,7 +15,7 @@ export default function ObjektsLoading() {
         </div>
 
         {/* FiltersContainer */}
-        <div className="flex flex-col gap-2 group sm:pb-2 pb-1">
+        <div className="flex flex-col gap-2 group lg:pb-2 pb-0">
           <div className="flex flex-row items-center justify-center gap-2 sm:hidden">
             <Skeleton className="w-20 h-9 rounded-full" />
           </div>
