@@ -52,7 +52,8 @@ export default async function UserCollectionPage({ params }: Props) {
 
   return (
     <ProfileProvider
-      profile={targetUser.profile}
+      currentProfile={currentUser}
+      targetProfile={targetUser.profile}
       objektLists={targetUser.objektLists}
       lockedObjekts={targetUser.lockedObjekts}
       pins={pins}

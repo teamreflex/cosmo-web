@@ -1,18 +1,18 @@
 "use client";
 
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
-import { ObjektList, ValidObjekt } from "@/lib/universal/objekts";
+import { ObjektList } from "@/lib/universal/objekts";
 import { ReactNode, useCallback, useState } from "react";
 import {
   createContext,
   useContextSelector,
   ContextSelector,
 } from "@fluentui/react-context-selector";
-import { Pin } from "@/lib/server/db/schema";
 import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
 
 type ContextProps = {
-  profile: PublicProfile | undefined;
+  currentProfile: PublicProfile | undefined;
+  targetProfile: PublicProfile | undefined;
   objektLists: ObjektList[];
   lockedObjekts: number[];
   toggleLock: (tokenId: number) => void;
@@ -22,7 +22,8 @@ type ContextProps = {
 };
 
 const ProfileContext = createContext<ContextProps>({
-  profile: undefined,
+  currentProfile: undefined,
+  targetProfile: undefined,
   objektLists: [],
   lockedObjekts: [],
   toggleLock: () => {},
@@ -33,7 +34,8 @@ const ProfileContext = createContext<ContextProps>({
 
 type ProviderProps = {
   children: ReactNode;
-  profile: PublicProfile | undefined;
+  currentProfile?: PublicProfile;
+  targetProfile?: PublicProfile;
   objektLists?: ObjektList[];
   lockedObjekts?: number[];
   pins?: OwnedObjekt[];
@@ -41,7 +43,8 @@ type ProviderProps = {
 
 export function ProfileProvider({
   children,
-  profile,
+  currentProfile,
+  targetProfile,
   objektLists = [],
   lockedObjekts = [],
   pins = [],
@@ -66,7 +69,8 @@ export function ProfileProvider({
   return (
     <ProfileContext.Provider
       value={{
-        profile,
+        currentProfile,
+        targetProfile,
         objektLists,
         lockedObjekts: lockedTokens,
         toggleLock,

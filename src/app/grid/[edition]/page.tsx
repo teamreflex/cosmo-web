@@ -47,7 +47,7 @@ export default async function GridEditionPage({ params }: Props) {
   }
 
   return (
-    <ProfileProvider profile={profile}>
+    <ProfileProvider currentProfile={profile}>
       <main className="container flex flex-col py-2">
         <div className="flex items-center">
           <div className="w-full flex gap-2 items-center justify-between">

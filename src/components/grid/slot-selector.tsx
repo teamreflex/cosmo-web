@@ -35,7 +35,7 @@ export default function SlotSelector({
   const [carousel] = useEmblaCarousel();
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<PopulatedSlot>(currentSlot);
-  const profile = useProfileContext((ctx) => ctx.profile);
+  const profile = useProfileContext((ctx) => ctx.currentProfile);
 
   const { data, status } = useQuery({
     queryKey: ["grid-selection", collectionId],
