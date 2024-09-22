@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { PublicProfile } from "./lib/universal/cosmo/auth";
 
 type Warning = "first-visit" | "data-source";
 
@@ -59,8 +58,6 @@ export type RecentUser = {
 interface SearchState {
   recentLookups: RecentUser[];
   addRecentLookup: (lookup: RecentUser) => void;
-  recentSends: RecentUser[];
-  addRecentSend: (send: RecentUser) => void;
 }
 export const useSearchStore = create<SearchState>()(
   persist(
@@ -69,26 +66,16 @@ export const useSearchStore = create<SearchState>()(
       addRecentLookup: (lookup: RecentUser) =>
         set((state) => {
           const current = state.recentLookups;
-          if (current.includes(lookup)) {
+          const currentIndex = current.findIndex(
+            (l) => l.nickname.toLowerCase() === lookup.nickname.toLowerCase()
+          );
+          if (currentIndex !== -1) {
             return state;
           }
           if (current.length === 3) {
             current.pop();
           }
           return { recentLookups: [lookup, ...current] };
-        }),
-
-      recentSends: [],
-      addRecentSend: (send: RecentUser) =>
-        set((state) => {
-          const current = state.recentSends;
-          if (current.includes(send)) {
-            return state;
-          }
-          if (current.length === 3) {
-            current.pop();
-          }
-          return { recentSends: [send, ...current] };
         }),
     }),
     {
