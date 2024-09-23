@@ -18,21 +18,14 @@ export default async function CosmoAvatar({ token, artist }: Props) {
     );
   }
 
-  try {
-    const cosmoUser = await user(token.accessToken);
-    return (
-      <CosmoProfileImage
-        nickname={cosmoUser.nickname}
-        artist={artist}
-        profiles={cosmoUser.profile}
-      />
-    );
-  } catch (err) {
-    console.warn(`could not fetch user "${token.nickname}" for avatar`, err);
-    return (
-      <CosmoProfileImage nickname="Anonymous" artist={artist} profiles={[]} />
-    );
-  }
+  const cosmoUser = await user(token.accessToken);
+  return (
+    <CosmoProfileImage
+      nickname={cosmoUser.nickname}
+      artist={artist}
+      profiles={cosmoUser.profile}
+    />
+  );
 }
 
 type CosmoProfileImageProps = {

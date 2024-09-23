@@ -76,7 +76,11 @@ async function Auth({ token }: { token?: TokenPayload }) {
       comoBalances={
         token ? <ComoBalanceRenderer address={token.address} /> : null
       }
-      cosmoAvatar={<CosmoAvatar token={token} artist={selectedArtist} />}
+      cosmoAvatar={
+        <ErrorBoundary fallback={<AuthFallback />}>
+          <CosmoAvatar token={token} artist={selectedArtist} />
+        </ErrorBoundary>
+      }
     />
   );
 }
