@@ -69,7 +69,10 @@ export default function UpdateDialog() {
 const updates = [
   {
     date: "2024-09-23",
-    changes: ["Fixed sign in button."],
+    changes: [
+      "Fixed: Sign in button.",
+      "Fixed: Activity page errors due to authentication not getting refreshed after 2 weeks.",
+    ],
   },
   {
     date: "2024-09-21",
