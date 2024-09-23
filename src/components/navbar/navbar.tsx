@@ -21,6 +21,7 @@ import {
 } from "../ui/tooltip";
 import { AlertTriangle } from "lucide-react";
 import SystemStatus from "../misc/system-status";
+import CosmoAvatar from "./auth/cosmo-avatar";
 
 export default async function Navbar() {
   const user = await decodeUser();
@@ -61,22 +62,21 @@ export default async function Navbar() {
 
 async function Auth({ token }: { token?: TokenPayload }) {
   const selectedArtist = getSelectedArtist();
-  const [artists, profile, cosmoUser] = await Promise.all([
+  const [artists, profile] = await Promise.all([
     getArtistsWithMembers(),
     token ? getProfile(token.profileId) : undefined,
-    token ? user(token.accessToken) : undefined,
   ]);
 
   return (
     <AuthOptions
       token={token}
-      user={cosmoUser}
       profile={profile}
       artists={artists}
       selectedArtist={selectedArtist}
       comoBalances={
         token ? <ComoBalanceRenderer address={token.address} /> : null
       }
+      cosmoAvatar={<CosmoAvatar token={token} artist={selectedArtist} />}
     />
   );
 }

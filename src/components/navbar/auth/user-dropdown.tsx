@@ -1,4 +1,3 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,28 +13,22 @@ import { CosmoArtist } from "@/lib/universal/cosmo/artists";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import PrivacyDialog from "./privacy-dialog";
 import SettingsDialog from "./settings-dialog";
-import {
-  CosmoProfile,
-  CosmoUser,
-  PublicProfile,
-} from "@/lib/universal/cosmo/auth";
+import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { usePathname } from "next/navigation";
-import ProfileImage from "@/assets/profile.webp";
-import { cn } from "@/lib/utils";
 
 type UserDropdownProps = {
   token: TokenPayload;
-  user: CosmoUser;
   profile: PublicProfile;
   artists: CosmoArtist[];
   selectedArtist: ValidArtist;
   comoBalances: ReactNode;
   onSignOut: () => void;
+  cosmoAvatar: ReactNode;
 };
 
 export default function UserDropdown({
   token,
-  user,
+  cosmoAvatar,
   profile,
   artists,
   selectedArtist,
@@ -75,11 +68,7 @@ export default function UserDropdown({
 
       <DropdownMenu open={openDropdown} onOpenChange={setOpenDropdown}>
         <DropdownMenuTrigger className="group outline-none">
-          <UserAvatar
-            nickname={token.nickname}
-            artist={selectedArtist}
-            profiles={user.profile}
-          />
+          {cosmoAvatar}
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem className="md:hidden flex gap-2 items-center">
@@ -122,31 +111,5 @@ export default function UserDropdown({
         </DropdownMenuContent>
       </DropdownMenu>
     </>
-  );
-}
-
-type UserAvatarProps = {
-  nickname: string;
-  artist: ValidArtist;
-  profiles: CosmoProfile[];
-};
-
-function UserAvatar({ nickname, artist, profiles }: UserAvatarProps) {
-  const profileImage = profiles.find(
-    (p) => p.artistName.toLowerCase() === artist.toLowerCase()
-  );
-
-  const hasImage = profileImage !== undefined;
-  const src = profileImage?.image.thumbnail ?? ProfileImage.src;
-
-  return (
-    <Avatar className="ring-2 ring-white/30 group-data-[state=open]:ring-cosmo transition-colors">
-      <AvatarFallback>{nickname.charAt(0).toUpperCase()}</AvatarFallback>
-      <AvatarImage
-        src={src}
-        alt={nickname}
-        className={cn(!hasImage && "bg-cosmo-profile p-1")}
-      />
-    </Avatar>
   );
 }
