@@ -66,13 +66,7 @@ export async function middleware(request: NextRequest) {
         // if valid, refresh the token
         const newTokens = await refresh(auth.user.refreshToken);
 
-        /**
-         * workaround for: https://github.com/vercel/next.js/issues/49442
-         * cookies.set() applies the Set-Cookie header to the response.
-         * RSCs don't take this into account when reading the cookie,
-         * so just using .next() results in the RSC receiving the old cookie until a page refresh occurs.
-         */
-        const response = NextResponse.redirect(request.url);
+        const response = NextResponse.next();
 
         // set the new cookie
         response.cookies.set(
