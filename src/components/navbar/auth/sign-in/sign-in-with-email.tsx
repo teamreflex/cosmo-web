@@ -9,7 +9,6 @@ import { useEffect, useState, useTransition } from "react";
 import { exchangeRamperToken, sendRamperEmail } from "./actions";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
-import { randomUUID } from "crypto";
 
 type SignInState = "sending-email" | "exchanging-token";
 type Payload = {
@@ -21,7 +20,7 @@ type Payload = {
 export default function SignInWithEmail() {
   const [state, setState] = useState<SignInState>("sending-email");
   const [payload, setPayload] = useState({
-    transactionId: randomUUID(),
+    transactionId: crypto.randomUUID(),
     email: "",
     pendingToken: "",
   });

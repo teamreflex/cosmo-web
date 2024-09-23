@@ -68,14 +68,14 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2024-09-23",
+    changes: ["Fixed sign in button."],
+  },
+  {
     date: "2024-09-21",
     changes: [
       "Added: Light mode, switch can be found in settings.",
       "Changed: Touched up profile pages so they're less cluttered and fit longer IDs better.",
     ],
-  },
-  {
-    date: "2024-08-25",
-    changes: ["Signing in should be fixed, yet again."],
   },
 ];

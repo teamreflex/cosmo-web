@@ -12,7 +12,6 @@ import QRCode from "react-qr-code";
 import { COSMO_ENDPOINT } from "@/lib/universal/cosmo/common";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
-import { randomUUID } from "crypto";
 
 export default function SignInWithQR() {
   // get recaptcha token and exchange it for a ticket on mount
@@ -181,7 +180,7 @@ function OTP({ ticket }: OTPProps) {
             ticket: ticket.ticket,
           },
           query: {
-            tid: randomUUID(),
+            tid: crypto.randomUUID(),
           },
         }
       ),
