@@ -9,7 +9,7 @@ export const cosmo = ofetch.create({
   baseURL: COSMO_ENDPOINT,
   retry: 2,
   retryDelay: 500, // 500ms
-  timeout: 1000 * 5, // 5s
+  timeout: 1000 * 10, // 10s
 });
 
 /**
