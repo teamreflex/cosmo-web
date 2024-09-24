@@ -19,7 +19,7 @@ import {
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
 import MemberFilter from "../collection/member-filter";
 import Portal from "../portal";
-import { ValidArtists } from "@/lib/universal/cosmo/common";
+import { ValidArtist } from "@/lib/universal/cosmo/common";
 import {
   CollectionDataSource,
   CosmoFilters,
@@ -91,7 +91,7 @@ export default typedMemo(function FilteredObjektDisplay<
     setFilters((prev) => ({
       ...prev,
       member: null,
-      artist: prev.artist === artist ? null : (artist as ValidArtists),
+      artist: prev.artist === artist ? null : (artist as ValidArtist),
     }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

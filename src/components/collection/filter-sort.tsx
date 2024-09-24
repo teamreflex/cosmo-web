@@ -8,20 +8,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PropsWithFilters } from "@/hooks/use-cosmo-filters";
-import { ValidSorts, validSorts } from "@/lib/universal/cosmo/common";
+import { ValidSort, validSorts } from "@/lib/universal/cosmo/common";
 import { memo } from "react";
 
 interface Props extends PropsWithFilters<"sort"> {
   serials: boolean;
 }
 
-const map: Record<ValidSorts, string> = {
-  [ValidSorts.NEWEST]: "Newest",
-  [ValidSorts.OLDEST]: "Oldest",
-  [ValidSorts.NO_ASCENDING]: "Lowest No.",
-  [ValidSorts.NO_DESCENDING]: "Highest No.",
-  [ValidSorts.SERIAL_ASCENDING]: "Lowest Serial",
-  [ValidSorts.SERIAL_DESCENDING]: "Highest Serial",
+const map: Record<ValidSort, string> = {
+  newest: "Newest",
+  oldest: "Oldest",
+  noAscending: "Lowest No.",
+  noDescending: "Highest No.",
+  serialAsc: "Lowest Serial",
+  serialDesc: "Highest Serial",
 };
 
 export default memo(function SortFilter({
@@ -30,10 +30,7 @@ export default memo(function SortFilter({
   serials,
 }: Props) {
   function update(value: string) {
-    setFilters(
-      "sort",
-      value === ValidSorts.NEWEST ? null : (value as ValidSorts)
-    );
+    setFilters("sort", value === "newest" ? null : (value as ValidSort));
   }
 
   const availableSorts = validSorts.filter((s) =>

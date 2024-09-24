@@ -7,7 +7,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ValidClasses } from "@/lib/universal/cosmo/common";
+import { ValidClass, validClasses } from "@/lib/universal/cosmo/common";
 import { memo, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -18,7 +18,7 @@ type Props = PropsWithFilters<"class">;
 export default memo(function ClassFilter({ filters, setFilters }: Props) {
   const [open, setOpen] = useState(false);
 
-  function updateFilter(property: ValidClasses, checked: boolean) {
+  function updateFilter(property: ValidClass, checked: boolean) {
     let newFilters = filters ?? [];
 
     if (checked) {
@@ -49,7 +49,7 @@ export default memo(function ClassFilter({ filters, setFilters }: Props) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-36">
-        {Object.values(ValidClasses).map((classType) => (
+        {Object.values(validClasses).map((classType) => (
           <DropdownMenuCheckboxItem
             key={classType}
             checked={filters?.includes(classType)}

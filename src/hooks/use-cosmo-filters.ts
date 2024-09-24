@@ -1,9 +1,14 @@
 import {
-  ValidArtists,
-  ValidClasses,
-  ValidOnlineTypes,
-  ValidSeasons,
-  ValidSorts,
+  ValidArtist,
+  validArtists,
+  ValidClass,
+  validClasses,
+  ValidOnlineType,
+  validOnlineTypes,
+  ValidSeason,
+  validSeasons,
+  ValidSort,
+  validSorts,
 } from "@/lib/universal/cosmo/common";
 import {
   createParser,
@@ -26,11 +31,11 @@ import {
 export type CollectionDataSource = "cosmo" | "blockchain";
 export type CosmoFilters = {
   member: string | null;
-  artist: ValidArtists | null;
-  sort: ValidSorts | null;
-  class: ValidClasses[] | null;
-  season: ValidSeasons[] | null;
-  on_offline: ValidOnlineTypes[] | null;
+  artist: ValidArtist | null;
+  sort: ValidSort | null;
+  class: ValidClass[] | null;
+  season: ValidSeason[] | null;
+  on_offline: ValidOnlineType[] | null;
   transferable: true | null | undefined;
   gridable: true | null | undefined;
   used_for_grid: true | null | undefined;
@@ -57,16 +62,16 @@ export function useCosmoFilters() {
   // setup cosmo filters
   const [cosmoFilters, setCosmoFilters] = useQueryStates({
     member: parseAsString,
-    artist: parseAsStringEnum<ValidArtists>(Object.values(ValidArtists)),
-    sort: parseAsStringEnum<ValidSorts>(Object.values(ValidSorts)),
+    artist: parseAsStringEnum<ValidArtist>(Object.values(validArtists)),
+    sort: parseAsStringEnum<ValidSort>(Object.values(validSorts)),
     class: parseAsArrayOf(
-      parseAsStringEnum<ValidClasses>(Object.values(ValidClasses))
+      parseAsStringEnum<ValidClass>(Object.values(validClasses))
     ),
     season: parseAsArrayOf(
-      parseAsStringEnum<ValidSeasons>(Object.values(ValidSeasons))
+      parseAsStringEnum<ValidSeason>(Object.values(validSeasons))
     ),
     on_offline: parseAsArrayOf(
-      parseAsStringEnum<ValidOnlineTypes>(Object.values(ValidOnlineTypes))
+      parseAsStringEnum<ValidOnlineType>(Object.values(validOnlineTypes))
     ),
     transferable: parseAsNullableBoolean,
     gridable: parseAsNullableBoolean,
@@ -81,7 +86,7 @@ export function useCosmoFilters() {
     return toSearchParams(
       {
         ...cosmoFilters,
-        sort: cosmoFilters.sort ?? ValidSorts.NEWEST,
+        sort: cosmoFilters.sort ?? "newest",
       },
       true
     );
@@ -106,8 +111,8 @@ export function useCosmoFilters() {
   useEffect(() => {
     if (dataSource === "cosmo") {
       if (
-        cosmoFilters.sort === ValidSorts.SERIAL_ASCENDING ||
-        cosmoFilters.sort === ValidSorts.SERIAL_DESCENDING
+        cosmoFilters.sort === "serialAsc" ||
+        cosmoFilters.sort === "serialDesc"
       ) {
         setDataSource("blockchain");
       }

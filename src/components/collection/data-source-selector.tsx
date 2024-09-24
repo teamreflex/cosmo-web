@@ -26,7 +26,7 @@ import {
   AlertDialogTitle,
 } from "../ui/alert-dialog";
 import { env } from "@/env.mjs";
-import { ValidSorts } from "@/lib/universal/cosmo/common";
+import { ValidSort } from "@/lib/universal/cosmo/common";
 import { useCooldown } from "@/hooks/use-countdown";
 
 type Props = {
@@ -64,10 +64,7 @@ export default memo(function DataSourceSelector({
     switch (source) {
       case "cosmo":
         // reset serial sort
-        if (
-          filters.sort === ValidSorts.SERIAL_ASCENDING ||
-          filters.sort === ValidSorts.SERIAL_DESCENDING
-        ) {
+        if (filters.sort === "serialAsc" || filters.sort === "serialDesc") {
           setFilters("sort", null);
         }
         break;

@@ -9,7 +9,7 @@ import {
 } from "@/lib/universal/cosmo/activity/ranking";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { baseUrl, cn, ordinal } from "@/lib/utils";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import {
   ChevronDown,
   ChevronRight,
@@ -18,13 +18,12 @@ import {
   Minus,
 } from "lucide-react";
 import { ofetch } from "ofetch";
-import { Suspense, useState } from "react";
+import { useState } from "react";
 import ProfileImage from "@/assets/profile.webp";
 import Skeleton from "@/components/skeleton/skeleton";
 import { format } from "date-fns";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ErrorBoundary } from "react-error-boundary";
 
 type Props = {
   artist: ValidArtist;
@@ -66,20 +65,7 @@ export default function RankingBlock({ artist }: Props) {
         </TabsList>
       </Tabs>
 
-      <ErrorBoundary
-        fallback={
-          <div className="w-full flex flex-col items-center mx-auto">
-            <HeartCrack className="w-12 h-12" />
-            <span className="text-sm font-semibold">
-              Could not load ranking
-            </span>
-          </div>
-        }
-      >
-        <Suspense fallback={<Skeleton className="w-full h-60" />}>
-          <RankingList artist={artist} kind={kind} />
-        </Suspense>
-      </ErrorBoundary>
+      <RankingList artist={artist} kind={kind} />
     </div>
   );
 }
@@ -96,7 +82,11 @@ const sortMap = {
 };
 
 function RankingList({ artist, kind }: RankingListProps) {
-  const { data } = useSuspenseQuery({
+  /**
+   * useSuspenseQuery pre-renders and fetches on the server,
+   * resulting in the user token not being available, and 401 errors.
+   */
+  const { data, status } = useQuery({
     queryKey: ["activity-ranking", artist, kind, "0"],
     queryFn: async () => {
       const url = new URL(
@@ -115,6 +105,19 @@ function RankingList({ artist, kind }: RankingListProps) {
   });
 
   const sorted = data?.nearPeoples.toSorted((i) => sortMap[i.relativePosition]);
+
+  if (status === "pending") {
+    return <Skeleton className="w-full h-60" />;
+  }
+
+  if (status === "error") {
+    return (
+      <div className="w-full flex flex-col items-center mx-auto">
+        <HeartCrack className="w-12 h-12" />
+        <span className="text-sm font-semibold">Could not load ranking</span>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col">

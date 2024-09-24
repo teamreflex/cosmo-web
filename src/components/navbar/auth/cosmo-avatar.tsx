@@ -4,7 +4,7 @@ import ProfileImage from "@/assets/profile.webp";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { TokenPayload } from "@/lib/universal/auth";
-import { user } from "@/lib/server/cosmo/auth";
+import { getCosmoUser } from "@/app/data-fetching";
 
 type Props = {
   token: TokenPayload | undefined;
@@ -18,7 +18,7 @@ export default async function CosmoAvatar({ token, artist }: Props) {
     );
   }
 
-  const cosmoUser = await user(token.accessToken);
+  const cosmoUser = await getCosmoUser(token.accessToken);
   return (
     <CosmoProfileImage
       nickname={cosmoUser.nickname}

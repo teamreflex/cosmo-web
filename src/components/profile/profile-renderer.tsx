@@ -1,7 +1,7 @@
 "use client";
 
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
-import { COSMO_ENDPOINT, ValidSorts } from "@/lib/universal/cosmo/common";
+import { COSMO_ENDPOINT, ValidSort } from "@/lib/universal/cosmo/common";
 import { OwnedObjektsResult } from "@/lib/universal/cosmo/objekts";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { ReactNode, useCallback } from "react";
@@ -57,11 +57,10 @@ export default function ProfileRenderer({
           : { page: pageParam.toString() };
 
       // ensure we don't send serial sorting to cosmo or else it 400's
-      const sort = searchParams.get("sort");
+      const sort = searchParams.get("sort") as ValidSort;
       const sortReset =
         dataSource === "cosmo" &&
-        (sort === ValidSorts.SERIAL_ASCENDING ||
-          sort === ValidSorts.SERIAL_DESCENDING)
+        (sort === "serialAsc" || sort === "serialDesc")
           ? { sort: "newest" }
           : {};
 

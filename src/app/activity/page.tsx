@@ -12,12 +12,18 @@ import {
 } from "./loading";
 import ObjektsBlock from "@/components/activity/objekts-block";
 import { ErrorBoundary } from "react-error-boundary";
-import { HeartCrack } from "lucide-react";
+import { AlertTriangle, HeartCrack } from "lucide-react";
 import HistoryBlock from "@/components/activity/history-block";
 import BadgeBlock from "@/components/activity/badge-block";
-import { user } from "@/lib/server/cosmo/auth";
 import { redirect } from "next/navigation";
 import RankingBlock from "@/components/activity/ranking/ranking-block";
+import Skeleton from "@/components/skeleton/skeleton";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export const metadata: Metadata = {
   title: "Activity",
@@ -30,16 +36,21 @@ export default async function ActivityPage() {
   }
 
   const artist = getSelectedArtist();
-  const cosmoUser = await user(token.accessToken);
 
   return (
     <main className="container flex flex-col gap-2 py-2">
       {/* header */}
       <div className="flex items-center">
-        <div className="w-full flex gap-2 items-center justify-between">
+        <div className="w-full flex gap-2 items-center justify-between h-10">
           <h1 className="text-3xl font-cosmo uppercase">Activity</h1>
 
-          <UserDialog user={cosmoUser} artist={artist} />
+          <ErrorBoundary fallback={<CosmoUserFallback />}>
+            <Suspense
+              fallback={<Skeleton className="h-10 w-10 rounded-full" />}
+            >
+              <UserDialog token={token} artist={artist} />
+            </Suspense>
+          </ErrorBoundary>
         </div>
       </div>
 
@@ -87,5 +98,22 @@ function Error({ error }: { error: string }) {
       <HeartCrack className="w-12 h-12" />
       <span className="text-sm font-semibold">{error}</span>
     </div>
+  );
+}
+
+function CosmoUserFallback() {
+  return (
+    <TooltipProvider delayDuration={0}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="relative flex justify-center items-center py-1 px-2 rounded-xl bg-red-500 bg-opacity-25 hover:bg-opacity-40 transition-colors">
+            <AlertTriangle className="text-red-500 w-6 h-6" />
+          </div>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" align="end">
+          Error loading user from COSMO
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }

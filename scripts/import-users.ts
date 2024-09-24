@@ -1,3 +1,4 @@
+// @ts-ignore
 import users from "./users.json";
 import * as dotenv from "dotenv";
 import { drizzle } from "drizzle-orm/planetscale-serverless";
@@ -25,6 +26,7 @@ const db = drizzle(connection, {
 
 const artist = "artms" as const;
 const result = await db.insert(schema.profiles).values(
+  // @ts-ignore
   users.map((u) => ({
     nickname: u.nickname,
     userAddress: u.userAddress,

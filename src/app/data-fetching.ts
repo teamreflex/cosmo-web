@@ -3,6 +3,7 @@ import { getUser } from "./api/common";
 import { fetchProfile, fetchUserByIdentifier } from "@/lib/server/auth";
 import { notFound } from "next/navigation";
 import { fetchArtistsWithMembers } from "@/lib/server/cosmo/artists";
+import { user } from "@/lib/server/cosmo/auth";
 
 /**
  * Decode the current token.
@@ -37,4 +38,11 @@ export const getUserByIdentifier = cache(async (identifier: string) => {
  */
 export const getArtistsWithMembers = cache(async () => {
   return await fetchArtistsWithMembers();
+});
+
+/**
+ * Fetch the current given user from Cosmo.
+ */
+export const getCosmoUser = cache(async (accessToken: string) => {
+  return await user(accessToken);
 });

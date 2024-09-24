@@ -10,7 +10,6 @@ import {
 import UpdateDialog from "../misc/update-dialog";
 import ComoBalanceRenderer from "./como-balances";
 import { TokenPayload } from "@/lib/universal/auth";
-import { user } from "@/lib/server/cosmo/auth";
 import { getSelectedArtist } from "@/lib/server/profiles";
 import { ErrorBoundary } from "react-error-boundary";
 import {

@@ -5,7 +5,7 @@ import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { Suspense, useCallback } from "react";
 import Hydrated from "../hydrated";
 import MemberFilter from "../collection/member-filter";
-import { ValidArtists } from "@/lib/universal/cosmo/common";
+import { ValidArtist } from "@/lib/universal/cosmo/common";
 import ProgressTable from "./progress-table";
 import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import { ErrorBoundary } from "react-error-boundary";
@@ -41,7 +41,7 @@ export default function ProgressRenderer({ artists, address }: Props) {
     setCosmoFilters((prev) => ({
       ...prev,
       member: null,
-      artist: prev.artist === artist ? null : (artist as ValidArtists),
+      artist: prev.artist === artist ? null : (artist as ValidArtist),
     }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
