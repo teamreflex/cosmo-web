@@ -27,11 +27,11 @@ export default function GlobalError({
       <body
         className={`dark ${inter.variable} font-sans bg-background text-foreground`}
       >
-        <div className="flex flex-col items-center justify-center h-dvh w-full">
+        <div className="flex flex-col gap-1.5 items-center justify-center h-dvh w-full">
           <h2 className="font-semibold text-lg">Something went wrong!</h2>
           <p className="text-sm">
-            Either a bug needs to be fixed, COSMO is under maintenance or is
-            under heavy load.
+            This means COSMO is under maintenance, experiencing heavy traffic,
+            or a bug in {env.NEXT_PUBLIC_APP_NAME} needs to be fixed.
           </p>
           <Button variant="outline" onClick={() => window.location.reload()}>
             <RefreshCcw className="mr-2" />
