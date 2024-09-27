@@ -38,7 +38,12 @@ export default async function UserAvatar({
     );
   }
 
-  const { results } = await search(token, nickname);
+  try {
+    var { results } = await search(token, nickname);
+  } catch (err) {
+    return <Fallback className={className} nickname={nickname} />;
+  }
+
   const user = results.find(
     (u) => u.nickname.toLowerCase() === nickname.toLowerCase()
   );
