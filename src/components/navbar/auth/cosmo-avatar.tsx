@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { TokenPayload } from "@/lib/universal/auth";
 import { getCosmoUser } from "@/app/data-fetching";
+import AuthFallback from "../auth-fallback";
 
 type Props = {
   token: TokenPayload | undefined;
@@ -18,14 +19,18 @@ export default async function CosmoAvatar({ token, artist }: Props) {
     );
   }
 
-  const cosmoUser = await getCosmoUser(token.accessToken);
-  return (
-    <CosmoProfileImage
-      nickname={cosmoUser.nickname}
-      artist={artist}
-      profiles={cosmoUser.profile}
-    />
-  );
+  try {
+    const cosmoUser = await getCosmoUser(token.accessToken);
+    return (
+      <CosmoProfileImage
+        nickname={cosmoUser.nickname}
+        artist={artist}
+        profiles={cosmoUser.profile}
+      />
+    );
+  } catch (err) {
+    return <AuthFallback />;
+  }
 }
 
 type CosmoProfileImageProps = {

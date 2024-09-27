@@ -12,15 +12,9 @@ import ComoBalanceRenderer from "./como-balances";
 import { TokenPayload } from "@/lib/universal/auth";
 import { getSelectedArtist } from "@/lib/server/profiles";
 import { ErrorBoundary } from "react-error-boundary";
-import {
-  Tooltip,
-  TooltipProvider,
-  TooltipTrigger,
-  TooltipContent,
-} from "../ui/tooltip";
-import { AlertTriangle } from "lucide-react";
 import SystemStatus from "../misc/system-status";
 import CosmoAvatar from "./auth/cosmo-avatar";
+import AuthFallback from "./auth-fallback";
 
 export default async function Navbar() {
   const user = await decodeUser();
@@ -81,22 +75,5 @@ async function Auth({ token }: { token?: TokenPayload }) {
         </ErrorBoundary>
       }
     />
-  );
-}
-
-function AuthFallback() {
-  return (
-    <TooltipProvider delayDuration={0}>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div className="relative flex justify-center items-center py-1 px-2 rounded-xl bg-red-500 bg-opacity-25 hover:bg-opacity-40 transition-colors">
-            <AlertTriangle className="text-red-500 w-6 h-6" />
-          </div>
-        </TooltipTrigger>
-        <TooltipContent side="bottom" align="end">
-          Error loading user from COSMO
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
   );
 }

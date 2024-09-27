@@ -13,6 +13,7 @@ import { CosmoUser } from "@/lib/universal/cosmo/auth";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { TokenPayload } from "@/lib/universal/auth";
 import { getCosmoUser } from "@/app/data-fetching";
+import AuthFallback from "../navbar/auth-fallback";
 
 type Props = {
   artist: ValidArtist;
@@ -20,7 +21,11 @@ type Props = {
 };
 
 export default async function UserDialog({ token, artist }: Props) {
-  const cosmoUser = await getCosmoUser(token.accessToken);
+  try {
+    var cosmoUser = await getCosmoUser(token.accessToken);
+  } catch (err) {
+    return <AuthFallback />;
+  }
 
   return (
     <AlertDialog>
