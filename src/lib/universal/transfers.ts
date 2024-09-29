@@ -1,9 +1,9 @@
-import type { Collection, Objekt, Transfer } from "../server/db/indexer/schema";
+import type { Transfer } from "../server/db/indexer/schema";
 
 export type AggregatedTransfer = {
   transfer: Transfer;
-  objekt: Objekt;
-  collection: Collection | null;
+  serial: number | null;
+  collectionId: string | null;
   nickname?: string;
 };
 

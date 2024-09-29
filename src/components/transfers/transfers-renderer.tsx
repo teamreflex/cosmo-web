@@ -30,6 +30,8 @@ export default function TransfersRenderer({ address }: Props) {
       staleTime: 1000 * 60,
     });
 
+  const rows = data?.pages.flatMap((p) => p.results) ?? [];
+
   return (
     <>
       <div className="flex flex-col rounded-lg border border-accent text-sm">
@@ -53,20 +55,9 @@ export default function TransfersRenderer({ address }: Props) {
           ) : status === "error" ? (
             <Error />
           ) : (
-            <>
-              {data !== undefined &&
-                data.pages.map((group, i) => (
-                  <Fragment key={i}>
-                    {group.results.map((row) => (
-                      <TransferRow
-                        key={row.transfer.id}
-                        row={row}
-                        address={address}
-                      />
-                    ))}
-                  </Fragment>
-                ))}
-            </>
+            rows.map((row) => (
+              <TransferRow key={row.transfer.id} row={row} address={address} />
+            ))
           )}
         </div>
       </div>

@@ -68,6 +68,10 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2024-09-29",
+    changes: ["Trades showing duplicate and missing transfers has been fixed."],
+  },
+  {
     date: "2024-09-23",
     changes: [
       "Fixed: Sign in button.",
