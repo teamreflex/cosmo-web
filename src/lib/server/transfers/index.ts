@@ -33,7 +33,7 @@ async function fetchRows(address: string, page: number) {
       count: sql<number>`count(*) OVER() AS count`,
       transfer: transfers,
       serial: objekts.serial,
-      collectionId: collections.collectionId,
+      collection: collections,
     })
     .from(transfers)
     .where(

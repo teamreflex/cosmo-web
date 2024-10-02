@@ -17,7 +17,9 @@ export default memo(function TransferRow({ row, address }: Props) {
   const isReceiver = row.transfer.to.toLowerCase() === address.toLowerCase();
 
   const serial = row.serial?.toString().padStart(5, "0");
-  const name = row.collectionId ? `${row.collectionId} #${serial}` : "Unknown";
+  const name = row.collection
+    ? `${row.collection.collectionId} #${serial}`
+    : "Unknown";
 
   const action = isReceiver ? "Received From" : "Sent To";
 
