@@ -28,7 +28,10 @@ export const sendRamperEmail = async (form: FormData) =>
 
       // complete failure
       if (result.success === false) {
-        console.warn(result);
+        console.warn({
+          context: "sendRamperEmail::sendLoginEmail-1",
+          result,
+        });
         throw new ActionError({
           status: "error",
           error: getRamperErrorMessage(result.data, "sendLoginEmail"),
@@ -37,7 +40,10 @@ export const sendRamperEmail = async (form: FormData) =>
 
       // request failure? why is there errors in the success type?
       if (result.data.success === false) {
-        console.warn(result);
+        console.warn({
+          context: "sendRamperEmail::sendLoginEmail-2",
+          result,
+        });
         throw new ActionError({
           status: "error",
           error: getRamperErrorMessage(result.data, "sendLoginEmail"),
@@ -71,17 +77,31 @@ export const exchangeRamperToken = async (form: FormData) =>
       });
 
       if (exchange.success === false) {
-        console.warn(exchange);
+        console.warn({
+          context: "exchangeRamperToken::exchangeToken",
+          exchange,
+        });
         throw new ActionError({
           status: "error",
           error: getRamperErrorMessage(exchange, "exchangeToken"),
         });
       }
 
-      console.warn(exchange);
-
       // login with cosmo
-      const loginResult = await login(email, exchange.ssoCredential.idToken);
+      try {
+        var loginResult = await login(email, exchange.ssoCredential.idToken);
+      } catch (err) {
+        console.warn({
+          context: "exchangeRamperToken::login",
+          exchange,
+          error: err,
+        });
+        throw new ActionError({
+          status: "error",
+          error:
+            "COSMO error, are you sure you're using the correct email address?",
+        });
+      }
 
       // find or create a profile for the user
       const payload = {
