@@ -78,6 +78,8 @@ export const exchangeRamperToken = async (form: FormData) =>
         });
       }
 
+      console.warn(exchange);
+
       // login with cosmo
       const loginResult = await login(email, exchange.ssoCredential.idToken);
 
