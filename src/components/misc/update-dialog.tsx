@@ -68,6 +68,13 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2024-10-08",
+    changes: [
+      "Added: Discord Format option for objekt lists. Select a have list and a want list, and it will format them for usage in #objekt-trade channels.",
+      "Option can be found in your Lists dropdown button.",
+    ],
+  },
+  {
     date: "2024-09-29",
     changes: ["Trades showing duplicate and missing transfers has been fixed."],
   },

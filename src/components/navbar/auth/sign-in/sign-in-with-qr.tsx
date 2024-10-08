@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 import QRCode from "react-qr-code";
 import { COSMO_ENDPOINT } from "@/lib/universal/cosmo/common";
 import { useRouter } from "next/navigation";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "@/components/ui/use-toast";
 
 export default function SignInWithQR() {
   // get recaptcha token and exchange it for a ticket on mount
@@ -165,7 +165,6 @@ type OTPProps = {
 
 function OTP({ ticket }: OTPProps) {
   const router = useRouter();
-  const { toast } = useToast();
   const { mutate, status } = useMutation({
     mutationFn: (otp: number) =>
       ofetch(

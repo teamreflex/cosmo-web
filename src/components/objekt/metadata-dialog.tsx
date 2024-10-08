@@ -25,7 +25,6 @@ import { useProfileContext } from "@/hooks/use-profile";
 import { Button } from "../ui/button";
 import { updateObjektMetadata } from "./actions";
 import { Textarea } from "../ui/textarea";
-import { useToast } from "../ui/use-toast";
 import {
   getObjektArtist,
   getObjektId,
@@ -36,6 +35,7 @@ import {
 import { ErrorBoundary } from "react-error-boundary";
 import { useCopyToClipboard } from "usehooks-ts";
 import { env } from "@/env.mjs";
+import { toast } from "../ui/use-toast";
 
 type CommonProps<TObjektType extends ValidObjekt> = {
   objekt: TObjektType;
@@ -193,7 +193,6 @@ function Metadata<TObjektType extends ValidObjekt>({
 }: {
   objekt: TObjektType;
 }) {
-  const { toast } = useToast();
   const [_, copy] = useCopyToClipboard();
   const [showForm, setShowForm] = useState(false);
   const profile = useProfileContext((ctx) => ctx.currentProfile);
@@ -289,7 +288,6 @@ type EditMetadataProps = {
 };
 
 function EditMetadata({ slug, metadata, close }: EditMetadataProps) {
-  const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const queryClient = useQueryClient();
 

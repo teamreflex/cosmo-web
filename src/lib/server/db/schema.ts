@@ -165,6 +165,7 @@ export const pinRelations = relations(pins, ({ one }) => ({
 
 export type Profile = typeof profiles.$inferSelect;
 export type ObjektList = typeof lists.$inferSelect;
+export type ObjektListEntry = typeof listEntries.$inferSelect;
 export type CreateObjektList = typeof lists.$inferInsert;
 export type UpdateObjektList = typeof lists.$inferInsert;
 export type ObjektMetadataEntry = typeof objektMetadata.$inferSelect;

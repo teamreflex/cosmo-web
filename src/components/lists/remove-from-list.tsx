@@ -4,8 +4,8 @@ import { IndexedObjekt, ObjektList } from "@/lib/universal/objekts";
 import { ListX, Loader2 } from "lucide-react";
 import { useTransition } from "react";
 import { removeObjektFromList } from "./actions";
-import { useToast } from "../ui/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "../ui/use-toast";
 
 type Props = {
   collection: IndexedObjekt;
@@ -13,7 +13,6 @@ type Props = {
 };
 
 export default function RemoveFromList({ collection, objektList }: Props) {
-  const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
 
   const queryClient = useQueryClient();

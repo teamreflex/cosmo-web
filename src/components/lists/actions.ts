@@ -15,6 +15,9 @@ import slugify from "slugify";
 import { TypedActionResult } from "@/lib/server/typed-action/types";
 import { ActionError } from "@/lib/server/typed-action/errors";
 import { db } from "@/lib/server/db";
+import { indexer } from "@/lib/server/db/indexer";
+import { Collection } from "@/lib/server/db/indexer/schema";
+import { ObjektListEntry } from "@/lib/server/db/schema";
 
 function createSlug(name: string) {
   return slugify(name, { lower: true });
@@ -158,3 +161,109 @@ export const removeObjektFromList = async (form: {
       return await removeObjekt(data.listId, data.collectionSlug);
     },
   });
+
+/**
+ * Generate a Discord have/want list.
+ */
+export const generateDiscordList = async (form: {
+  have: string;
+  want: string;
+}) =>
+  authenticatedAction({
+    form,
+    schema: z.object({
+      have: z.string(),
+      want: z.string(),
+    }),
+    onValidate: async ({ data, user }) => {
+      // fetch lists and associated entries
+      const lists = await db.query.lists.findMany({
+        where: (table, { and, inArray, eq }) =>
+          and(
+            eq(table.userAddress, user.address),
+            inArray(table.slug, [data.have, data.want])
+          ),
+        with: {
+          entries: true,
+        },
+      });
+
+      const have = lists.find((l) => l.slug === data.have);
+      const want = lists.find((l) => l.slug === data.want);
+
+      if (!have || !want) {
+        throw new ActionError({
+          status: "error",
+          error: "Please select both lists.",
+        });
+      }
+
+      // fetch collections from the indexer
+      const unique = new Set([
+        ...have.entries.map((e) => e.collectionId),
+        ...want.entries.map((e) => e.collectionId),
+      ]);
+
+      if (unique.size === 0) {
+        throw new ActionError({
+          status: "error",
+          error: "Please select lists that are not empty",
+        });
+      }
+
+      const collections = await indexer.query.collections.findMany({
+        where: (table, { inArray }) => inArray(table.slug, Array.from(unique)),
+        columns: {
+          slug: true,
+          season: true,
+          collectionNo: true,
+          member: true,
+        },
+      });
+
+      // map into discord format
+      const haveCollections = format(collections, have.entries);
+      const wantCollections = format(collections, want.entries);
+
+      return [
+        "Have:",
+        haveCollections.join("\n"),
+        "",
+        "Want:",
+        wantCollections.join("\n"),
+      ].join("\n");
+    },
+  });
+
+type CollectionSubset = Pick<
+  Collection,
+  "slug" | "member" | "season" | "collectionNo"
+>;
+
+function format(collections: CollectionSubset[], entries: ObjektListEntry[]) {
+  const mappedEntries = entries
+    .map((e) => collections.find((c) => c.slug === e.collectionId))
+    .filter((e) => e !== undefined);
+
+  // group entries by member
+  const groupedCollections = mappedEntries.reduce((acc, entry) => {
+    if (!acc[entry.member]) {
+      acc[entry.member] = [];
+    }
+    acc[entry.member].push(entry);
+    return acc;
+  }, {} as Record<string, CollectionSubset[]>);
+
+  // sort members alphabetically
+  const sortedMembers = Object.keys(groupedCollections).sort();
+
+  // format each member's entry
+  return sortedMembers.map((member) => {
+    const memberCollections = groupedCollections[member];
+    const formattedCollections = memberCollections
+      .map((c) => `${c.season.at(0)}${c.collectionNo}`)
+      .sort()
+      .join(", ");
+    return `${member} ${formattedCollections}`;
+  });
+}

@@ -1,6 +1,5 @@
 "use client";
 
-import { useToast } from "@/components/ui/use-toast";
 import { CosmoArtist } from "@/lib/universal/cosmo/artists";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { useRouter } from "next/navigation";
@@ -15,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Loader2 } from "lucide-react";
+import { toast } from "@/components/ui/use-toast";
 
 type Props = {
   artists: CosmoArtist[];
@@ -23,7 +23,6 @@ type Props = {
 
 export default function GuestArtistSwitch({ artists, selectedArtist }: Props) {
   const [isPending, startTransition] = useTransition();
-  const { toast } = useToast();
   const router = useRouter();
 
   const currentArtist = artists.find(

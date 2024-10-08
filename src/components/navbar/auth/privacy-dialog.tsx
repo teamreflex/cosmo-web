@@ -8,9 +8,9 @@ import { updatePrivacy } from "./actions";
 import { useFormState, useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { useToast } from "@/components/ui/use-toast";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { useEffect } from "react";
+import { toast } from "@/components/ui/use-toast";
 
 type PrivacyDialogProps = {
   open: boolean;
@@ -23,7 +23,6 @@ export default function PrivacyDialog({
   onOpenChange,
   profile,
 }: PrivacyDialogProps) {
-  const { toast } = useToast();
   const [state, formAction] = useFormState(updatePrivacy, { status: "idle" });
 
   useEffect(() => {

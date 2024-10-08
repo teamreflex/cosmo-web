@@ -10,31 +10,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { useState, useTransition } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "../ui/dialog";
-import { ChevronRight, List, Loader2, PlusCircle } from "lucide-react";
-import { Label } from "../ui/label";
-import { Input } from "../ui/input";
-import { create } from "./actions";
-import { useToast } from "../ui/use-toast";
+import { Fragment, useState } from "react";
+import { ChevronRight, LetterText, List, PlusCircle } from "lucide-react";
 import { ObjektList } from "@/lib/universal/objekts";
 import Link from "next/link";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "../ui/tooltip";
-import { FieldError } from "../form/error";
-import { TypedActionResult } from "@/lib/server/typed-action/types";
-import { track } from "@/lib/utils";
+import CreateListDialog from "./create-list-dialog";
+import DiscordFormatDialog from "./discord-format-dialog";
 
 type Props = {
   lists: ObjektList[];
@@ -43,31 +24,19 @@ type Props = {
 };
 
 export default function ListDropdown({ lists, nickname, allowCreate }: Props) {
-  const { toast } = useToast();
-  const [isPending, startTransition] = useTransition();
   const [createOpen, setCreateOpen] = useState(false);
+  const [compareOpen, setCompareOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [state, setState] = useState<TypedActionResult<boolean>>({
-    status: "idle",
-  });
-
-  function createNewList(form: FormData) {
-    startTransition(async () => {
-      const result = await create(form);
-      setState(result);
-
-      if (result.status === "success") {
-        track("create-list");
-        toast({
-          description: "Objekt list created!",
-        });
-        setCreateOpen(false);
-      }
-    });
-  }
 
   return (
-    <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+    <Fragment>
+      <CreateListDialog open={createOpen} onOpenChange={setCreateOpen} />
+      <DiscordFormatDialog
+        open={compareOpen}
+        onOpenChange={setCompareOpen}
+        lists={lists}
+      />
+
       <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
         <DropdownMenuTrigger asChild>
           <Button variant="secondary" size="profile">
@@ -97,46 +66,30 @@ export default function ListDropdown({ lists, nickname, allowCreate }: Props) {
             {lists.length === 0 && (
               <DropdownMenuItem className="text-sm">0 lists</DropdownMenuItem>
             )}
+
+            {allowCreate && (
+              <Fragment>
+                <DropdownMenuSeparator />
+
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onClick={() => setCreateOpen(true)}
+                >
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  <span className="font-semibold">Create New</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onClick={() => setCompareOpen(true)}
+                >
+                  <LetterText className="mr-2 h-4 w-4" />
+                  <span className="font-semibold">Discord Format</span>
+                </DropdownMenuItem>
+              </Fragment>
+            )}
           </DropdownMenuGroup>
-          {allowCreate && (
-            <DialogTrigger asChild>
-              <DropdownMenuItem className="cursor-pointer">
-                <PlusCircle className="mr-2 h-4 w-4" />
-                <span className="font-semibold">Create New</span>
-              </DropdownMenuItem>
-            </DialogTrigger>
-          )}
         </DropdownMenuContent>
       </DropdownMenu>
-
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Create Objekt List</DialogTitle>
-          <DialogDescription>
-            You can add objekts to the list later.
-          </DialogDescription>
-        </DialogHeader>
-        <form className="w-full flex flex-col gap-3" action={createNewList}>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="name">Name</Label>
-            <Input
-              type="text"
-              autoComplete="off"
-              maxLength={24}
-              id="name"
-              name="name"
-              placeholder="Want To Trade"
-              data-1p-ignore
-            />
-            <FieldError state={state} field="name" />
-          </div>
-
-          <Button type="submit" disabled={isPending}>
-            {isPending ? "Creating..." : "Create"}
-            {isPending && <Loader2 className="ml-2 animate-spin" />}
-          </Button>
-        </form>
-      </DialogContent>
-    </Dialog>
+    </Fragment>
   );
 }

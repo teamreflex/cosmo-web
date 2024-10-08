@@ -1,5 +1,5 @@
 import { submitGrid } from "@/components/grid/actions";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import { env } from "@/env.mjs";
 import {
   CosmoGridRewardClaimResult,
@@ -56,7 +56,6 @@ function normalize(slots: CosmoOngoingGridSlot[]) {
 
 export function useGrid(slug: string, slots: CosmoOngoingGridSlot[]) {
   const [isPending, startTransition] = useTransition();
-  const { toast } = useToast();
 
   const [selectedObjekts, setSelectedObjekts] = useState<MinimalGridSlot[]>(
     normalize(slots)

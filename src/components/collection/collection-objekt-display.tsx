@@ -82,12 +82,7 @@ export default memo(function CollectionObjektDisplay({
       hidePins={hidePins}
     >
       {({ objekt, id }, priority, isPin) => (
-        <ExpandableObjekt
-          objekt={objekt}
-          id={id}
-          priority={priority}
-          isPin={isPin}
-        >
+        <ExpandableObjekt objekt={objekt} id={id} priority={priority}>
           <Overlay
             objekt={objekt}
             authenticated={authenticated}

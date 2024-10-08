@@ -6,7 +6,6 @@ import {
 } from "@/components/ui/dialog";
 import { updateSettings } from "./actions";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
 import {
   Select,
   SelectContent,
@@ -18,6 +17,7 @@ import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
+import { toast } from "@/components/ui/use-toast";
 
 type SettingsDialogProps = {
   open: boolean;
@@ -32,7 +32,6 @@ export default function SettingsDialog({
 }: SettingsDialogProps) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
-  const { toast } = useToast();
   const { theme, setTheme } = useTheme();
 
   function update(form: FormData) {

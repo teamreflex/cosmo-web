@@ -11,10 +11,10 @@ import {
 } from "@/components/ui/dialog";
 import { ReactNode, useState, useTransition } from "react";
 import { Button } from "../ui/button";
-import { useToast } from "../ui/use-toast";
 import { submitEventRewards } from "./actions";
 import { useRouter } from "next/navigation";
 import { track } from "@/lib/utils";
+import { toast } from "../ui/use-toast";
 
 type Props = {
   availableForClaim: number;
@@ -29,7 +29,6 @@ export default function RewardDialog({
 }: Props) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
-  const { toast } = useToast();
   const [open, setOpen] = useState(false);
 
   function claim() {

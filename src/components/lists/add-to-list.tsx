@@ -13,8 +13,8 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { addObjektToList } from "./actions";
-import { useToast } from "../ui/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "../ui/use-toast";
 
 type AddToListProps = {
   collectionId: string;
@@ -72,7 +72,6 @@ function ListItem({
   list,
   onDone,
 }: ListItemProps) {
-  const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
 
   const queryClient = useQueryClient();

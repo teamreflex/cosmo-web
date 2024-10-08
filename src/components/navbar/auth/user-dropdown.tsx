@@ -6,7 +6,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { TokenPayload } from "@/lib/universal/auth";
-import { Cog, Disc3, LogOut, Shield } from "lucide-react";
+import { Disc3, LogOut, Shield, Wrench } from "lucide-react";
 import { ReactNode, useEffect, useState } from "react";
 import SwitchArtistDialog from "./switch-artist-dialog";
 import { CosmoArtist } from "@/lib/universal/cosmo/artists";
@@ -15,6 +15,7 @@ import PrivacyDialog from "./privacy-dialog";
 import SettingsDialog from "./settings-dialog";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { usePathname } from "next/navigation";
+import Discord from "@/components/icons/discord";
 
 type UserDropdownProps = {
   token: TokenPayload;
@@ -96,8 +97,15 @@ export default function UserDropdown({
             onClick={() => setOpenSettings(true)}
             className="cursor-pointer"
           >
-            <Cog className="mr-2 h-4 w-4" />
+            <Wrench className="mr-2 h-4 w-4" />
             <span>Settings</span>
+          </DropdownMenuItem>
+
+          <DropdownMenuItem className="cursor-pointer" asChild>
+            <a href="https://discord.gg/A72VRX8FgK" target="_blank">
+              <Discord className="mr-2 h-4 w-4" />
+              <span>Discord</span>
+            </a>
           </DropdownMenuItem>
 
           <DropdownMenuSeparator />

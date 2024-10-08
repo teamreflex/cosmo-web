@@ -94,7 +94,6 @@ export default function IndexRenderer({
             id={id}
             setActive={setActiveObjekt}
             priority={priority}
-            isPin={false}
           >
             <Overlay
               objekt={objekt}
