@@ -2,6 +2,8 @@ import { Pin } from "@/lib/server/db/schema";
 import { ObjektList } from "../objekts";
 import { ValidArtist } from "./common";
 
+export type LoginChannel = "email";
+
 export type CosmoProfile = {
   artistName: ValidArtist;
   image: {
@@ -51,7 +53,9 @@ export type CosmoUser = {
   email: string;
   nickname: string;
   address: string;
+  birth: string;
   profileImageUrl: string;
+  isEligibleForWelcomeObjekt: false;
   followingArtists: {
     name: string;
     title: string;
@@ -67,6 +71,9 @@ export type CosmoUser = {
       totalComo: number;
       totalObjekt: number;
     };
+    lastViewedArtist: ValidArtist;
+    marketingConsentDate: string;
+    createdAt: string;
   }[];
   profile: CosmoProfile[];
 };

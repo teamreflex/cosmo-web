@@ -2,10 +2,13 @@ import "server-only";
 import {
   CosmoPublicUser,
   CosmoSearchResult,
+  CosmoUser,
   CosmoUserResult,
+  LoginChannel,
   LoginResult,
 } from "@/lib/universal/cosmo/auth";
 import { cosmo } from "../http";
+import { ValidArtist } from "@/lib/universal/cosmo/common";
 
 type CosmoLoginResult = {
   user: {
@@ -14,7 +17,12 @@ type CosmoLoginResult = {
     nickname: string;
     address: string;
     profileImageUrl: string;
+    loginChannel: LoginChannel;
+    socialLoginUserId: string;
+    isBanned: boolean;
+    lastViewedArtist: ValidArtist;
   };
+  profile: CosmoUser;
   credentials: {
     accessToken: string;
     refreshToken: string;

@@ -11,7 +11,7 @@ import {
 import Portal from "@/components/portal";
 import HelpDialog from "@/components/como/help-dialog";
 import { Shield } from "lucide-react";
-import { addrcomp } from "@/lib/utils";
+import { isAddressEqual } from "@/lib/utils";
 
 type Props = {
   params: { nickname: string };
@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function UserComoPage({ params }: Props) {
   const user = await decodeUser();
   const { profile } = await getUserByIdentifier(params.nickname);
-  if (profile.privacy.como && !addrcomp(user?.address, profile.address)) {
+  if (profile.privacy.como && !isAddressEqual(user?.address, profile.address)) {
     return <Private nickname={profile.nickname} />;
   }
 

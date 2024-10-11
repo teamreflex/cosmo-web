@@ -7,7 +7,7 @@ import {
 import ProfileRenderer from "@/components/profile/profile-renderer";
 import { fetchArtistsWithMembers } from "@/lib/server/cosmo/artists";
 import { Loader2, Shield } from "lucide-react";
-import { addrcomp } from "@/lib/utils";
+import { isAddressEqual } from "@/lib/utils";
 import { Suspense } from "react";
 import PreviousIds from "@/components/profile/previous-ids";
 import { ProfileProvider } from "@/hooks/use-profile";
@@ -36,7 +36,7 @@ export default async function UserCollectionPage({ params }: Props) {
   const selectedArtist = getSelectedArtist();
 
   const isOwnProfile =
-    user !== undefined && addrcomp(user.nickname, params.nickname);
+    user !== undefined && isAddressEqual(user.nickname, params.nickname);
 
   const [artists, currentUser, targetUser] = await Promise.all([
     fetchArtistsWithMembers(),

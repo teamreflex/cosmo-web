@@ -1,4 +1,4 @@
-import { formatUnits } from "ethers/lib/utils";
+import { formatGwei } from "viem";
 import { alchemy } from "../http";
 import { unstable_cache } from "next/cache";
 import { RPCResponse } from "./common";
@@ -23,7 +23,7 @@ export const fetchGasPrice = unstable_cache(
       },
     })
       .then((res) => {
-        const price = Math.round(parseInt(formatUnits(res.result, "gwei")));
+        const price = Math.round(Number(formatGwei(BigInt(res.result))));
         const status =
           price < 400 ? "normal" : price < 1000 ? "degraded" : "down";
         return { price, status } as const;

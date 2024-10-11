@@ -3,7 +3,7 @@ import Portal from "@/components/portal";
 import HelpDialog from "@/components/progress/help-dialog";
 import ProgressRenderer from "@/components/progress/progress-renderer";
 import { fetchArtistsWithMembers } from "@/lib/server/cosmo/artists";
-import { addrcomp } from "@/lib/utils";
+import { isAddressEqual } from "@/lib/utils";
 import { Shield } from "lucide-react";
 import { Metadata } from "next";
 
@@ -29,7 +29,7 @@ export default async function ProgressPage({ params }: Props) {
 
   const showProgress =
     profile.privacy.objekts === false ||
-    addrcomp(currentUser?.address, profile.address);
+    isAddressEqual(currentUser?.address, profile.address);
 
   if (showProgress === false) {
     return <Private nickname={profile.nickname} />;

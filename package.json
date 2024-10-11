@@ -47,7 +47,6 @@
     "drizzle-orm": "^0.30.10",
     "embla-carousel-autoplay": "8.0.0",
     "embla-carousel-react": "8.0.0",
-    "ethers": "~5.7.2",
     "hls.js": "^1.5.8",
     "jose": "^5.2.2",
     "lucide-react": "^0.447.0",
@@ -68,6 +67,7 @@
     "tailwind-merge": "^2.2.0",
     "typescript": "5.5.2",
     "usehooks-ts": "^3.1.0",
+    "viem": "^2.21.22",
     "zod": "^3.23.0",
     "zustand": "^4.5.2"
   },
