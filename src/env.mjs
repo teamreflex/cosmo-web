@@ -15,8 +15,6 @@ export const env = createEnv({
     JWT_SECRET: z.string().min(1),
     // neon db
     DATABASE_URL: z.string().min(1),
-    // alchemy api key
-    ALCHEMY_KEY: z.string().min(1),
     // indexer db http proxy
     INDEXER_PROXY_KEY: z.string().min(1),
     INDEXER_PROXY_URL: z.string().min(1),
@@ -36,6 +34,11 @@ export const env = createEnv({
       .string()
       .refine((s) => s === "true" || s === "false")
       .transform((s) => s === "true"),
+    // alchemy api key
+    NEXT_PUBLIC_ALCHEMY_KEY: z.string().min(1),
+    // ramper firebase
+    NEXT_PUBLIC_RAMPER_FIREBASE_KEY: z.string().min(1),
+    NEXT_PUBLIC_RAMPER_FIREBASE_ID: z.string().min(1),
   },
   experimental__runtimeEnv: {
     NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
@@ -45,5 +48,9 @@ export const env = createEnv({
     NEXT_PUBLIC_UMAMI_ID: process.env.NEXT_PUBLIC_UMAMI_ID,
     NEXT_PUBLIC_UMAMI_SCRIPT_URL: process.env.NEXT_PUBLIC_UMAMI_SCRIPT_URL,
     NEXT_PUBLIC_SIMULATE_GRID: process.env.NEXT_PUBLIC_SIMULATE_GRID,
+    NEXT_PUBLIC_ALCHEMY_KEY: process.env.NEXT_PUBLIC_ALCHEMY_KEY,
+    NEXT_PUBLIC_RAMPER_FIREBASE_KEY:
+      process.env.NEXT_PUBLIC_RAMPER_FIREBASE_KEY,
+    NEXT_PUBLIC_RAMPER_FIREBASE_ID: process.env.NEXT_PUBLIC_RAMPER_FIREBASE_ID,
   },
 });

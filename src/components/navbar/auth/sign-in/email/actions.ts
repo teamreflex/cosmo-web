@@ -89,7 +89,10 @@ export const exchangeRamperToken = async (form: FormData) =>
 
       // login with cosmo
       try {
-        var loginResult = await login(email, exchange.ssoCredential.idToken);
+        var { user, credentials } = await login(
+          email,
+          exchange.ssoCredential.idToken
+        );
       } catch (err) {
         console.warn({
           context: "exchangeRamperToken::login",
@@ -105,9 +108,9 @@ export const exchangeRamperToken = async (form: FormData) =>
 
       // find or create a profile for the user
       const payload = {
-        userAddress: loginResult.address,
-        nickname: loginResult.nickname,
-        cosmoId: loginResult.id,
+        userAddress: user.address,
+        nickname: user.nickname,
+        cosmoId: user.id,
       };
       const profile = await findOrCreateProfile(payload);
 
@@ -127,16 +130,21 @@ export const exchangeRamperToken = async (form: FormData) =>
       setCookie({
         key: "token",
         value: await signToken({
-          id: loginResult.id,
-          nickname: loginResult.nickname,
-          address: loginResult.address,
+          id: user.id,
+          nickname: user.nickname,
+          address: user.address,
           profileId: profile.id,
-          accessToken: loginResult.accessToken,
-          refreshToken: loginResult.refreshToken,
+          accessToken: credentials.accessToken,
+          refreshToken: credentials.refreshToken,
         }),
       });
 
-      return profile;
+      // custom token is only valid for an hour, so send to client
+      return {
+        nickname: user.nickname,
+        address: user.address,
+        customToken: exchange.customToken,
+        socialLoginUserId: user.socialLoginUserId,
+      };
     },
-    redirectTo: ({ result }) => `/@${result.nickname}`,
   });
