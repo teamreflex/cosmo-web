@@ -1,9 +1,10 @@
 import { Address, Hex, parseEther } from "viem";
 import { useWallet } from "./use-wallet";
-import { useMutation } from "@tanstack/react-query";
+import { MutationOptions, useMutation } from "@tanstack/react-query";
 import { encodeObjektTransfer } from "@/lib/client/wallet/util";
 import { useCallback } from "react";
 import { toast } from "@/components/ui/use-toast";
+import { D } from "@vidstack/react/types/vidstack-framework.js";
 
 type SendTransaction = {
   to: string;
@@ -32,8 +33,6 @@ function useWalletTransaction() {
         maxPriorityFeePerGas,
         type: "eip1559",
       });
-
-      //0x23b872dd000000000000000000000000cab3c85ac8f4ae0153b7cf2bbf1378397890848b000000000000000000000000528fe954280e887f6d0166b82566560f812b32440000000000000000000000000000000000000000000000000000000000546ac3
 
       // prepare transaction
       const request = await wallet.prepareTransactionRequest({
@@ -77,7 +76,10 @@ export function useSendObjekt() {
   const { mutate, data, status } = useWalletTransaction();
 
   const send = useCallback(
-    (params: SendObjekt) => {
+    (
+      params: SendObjekt,
+      opts?: MutationOptions<Hex, Error, SendTransaction>
+    ) => {
       if (!wallet || !wallet.account) {
         toast({
           variant: "destructive",
@@ -94,12 +96,15 @@ export function useSendObjekt() {
       });
 
       // objekt transfers are made via the contract
-      mutate({
-        to: params.contract,
-        contract: params.contract,
-        calldata,
-        value: parseEther("0.0"),
-      });
+      mutate(
+        {
+          to: params.contract,
+          contract: params.contract,
+          calldata,
+          value: parseEther("0.0"),
+        },
+        opts
+      );
     },
     [wallet, mutate]
   );

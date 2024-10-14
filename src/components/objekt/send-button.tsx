@@ -19,6 +19,7 @@ import ObjektSidebar from "./objekt-sidebar";
 import { CosmoPublicUser } from "@/lib/universal/cosmo/auth";
 import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
 import { useSendObjekt } from "@/hooks/use-wallet-transaction";
+import { useQueryClient } from "@tanstack/react-query";
 
 type Props = {
   objekt: OwnedObjekt;
@@ -37,6 +38,7 @@ export default function SendObjekt({ objekt }: Props) {
   const [openSend, setOpenSend] = useState(false);
   const [recipient, setRecipient] = useState<CosmoPublicUser | null>(null);
   const { send, status, hash } = useSendObjekt();
+  const queryClient = useQueryClient();
 
   function prepareSending(newRecipient: CosmoPublicUser) {
     setRecipient(newRecipient);
@@ -51,11 +53,21 @@ export default function SendObjekt({ objekt }: Props) {
   }
 
   function sendObjekt(recipientAddress: string) {
-    send({
-      to: recipientAddress,
-      contract: objekt.tokenAddress,
-      tokenId: Number(objekt.tokenId),
-    });
+    send(
+      {
+        to: recipientAddress,
+        contract: objekt.tokenAddress,
+        tokenId: Number(objekt.tokenId),
+      },
+      {
+        // refresh collection query
+        onSuccess: () => {
+          queryClient.invalidateQueries({
+            queryKey: ["collection"],
+          });
+        },
+      }
+    );
   }
 
   const placeholder =

@@ -6,7 +6,12 @@ import {
   EncryptedWallet,
   exchangeKMS,
 } from "@/lib/client/wallet/decryption";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  MutationOptions,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import {
   createWalletClient,
   Hex,
@@ -68,10 +73,7 @@ export function useWallet() {
    */
   function connect(
     credentials: DecryptRamperWallet,
-    opts?: {
-      onSuccess?: () => void;
-      onError?: () => void;
-    }
+    opts?: MutationOptions<EncryptedWallet, Error, DecryptRamperWallet>
   ) {
     mutation.mutate(credentials, opts);
   }
