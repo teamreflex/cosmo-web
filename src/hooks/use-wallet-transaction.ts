@@ -4,7 +4,8 @@ import { MutationOptions, useMutation } from "@tanstack/react-query";
 import { encodeObjektTransfer } from "@/lib/client/wallet/util";
 import { useCallback } from "react";
 import { toast } from "@/components/ui/use-toast";
-import { D } from "@vidstack/react/types/vidstack-framework.js";
+
+const WALLET_MISSING = "You may need to re-sign in to connect your wallet.";
 
 type SendTransaction = {
   to: string;
@@ -18,7 +19,7 @@ function useWalletTransaction() {
   const mutation = useMutation({
     mutationFn: async (params: SendTransaction) => {
       if (!wallet || !wallet.account) {
-        throw new Error("Wallet is not connected");
+        throw new Error(WALLET_MISSING);
       }
 
       // estimate fees per gas
@@ -83,7 +84,7 @@ export function useSendObjekt() {
       if (!wallet || !wallet.account) {
         toast({
           variant: "destructive",
-          description: "Wallet is not connected",
+          description: WALLET_MISSING,
         });
         return;
       }
