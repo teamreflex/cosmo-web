@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { AlertTriangle, Check, Satellite, Send } from "lucide-react";
+import { AlertTriangle, CheckCircle, Satellite, Send } from "lucide-react";
 import { Button } from "../ui/button";
 import { Fragment, useState } from "react";
 import {
@@ -114,7 +114,7 @@ export default function SendObjekt({ objekt }: Props) {
             {/* success state */}
             {status === "success" && (
               <div className="flex flex-col gap-2 justify-center items-center">
-                <Check className="h-16 w-16" />
+                <CheckCircle className="h-16 w-16" />
                 <p className="text-sm">Objekt sent to {recipient.nickname}!</p>
                 <Link
                   className="text-sm underline"
