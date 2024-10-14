@@ -19,6 +19,7 @@ import AddToList from "../lists/add-to-list";
 import { getObjektSlug } from "./objekt-util";
 import useOverlayHover from "@/hooks/use-overlay-hover";
 import PinObjekt from "./pin-button";
+import SendObjekt from "./send-button";
 
 type Props = {
   objekt: OwnedObjekt;
@@ -93,7 +94,17 @@ export default memo(function ActionOverlay({
           </div>
         )}
 
-        {/* statsuses */}
+        {/* send (authenticated) */}
+        {objekt.transferable && authenticated && !isPin && !isLocked && (
+          <div
+            {...createHoverProps("send")}
+            className="h-3 w-3 sm:h-5 sm:w-5 shrink-0"
+          >
+            <SendObjekt objekt={objekt} />
+          </div>
+        )}
+
+        {/* statuses */}
 
         {!isPin && (
           <Fragment>
@@ -154,6 +165,9 @@ export default memo(function ActionOverlay({
           <OverlayStatus>Pinned</OverlayStatus>
         ) : (
           <Fragment>
+            {hoverState === "send" && authenticated && (
+              <OverlayStatus>Send</OverlayStatus>
+            )}
             {hoverState === "list" && authenticated && (
               <OverlayStatus>Add to List</OverlayStatus>
             )}

@@ -1,40 +1,23 @@
-import { EncryptedWallet } from "@/lib/client/wallet/decryption";
+import abi from "@/abi/objekt.json";
+import { encodeFunctionData } from "viem";
 
-export const STORAGE_KEY = "wallet";
-
-export type UserState = {
-  nickname: string;
-  address: string;
-  customToken: string;
-  socialLoginUserId: string;
+type EncodeObjektTransfer = {
+  from: string;
+  to: string;
+  tokenId: number;
 };
 
 /**
- * Load the encrypted wallet from localStorage.
+ * Encode custom data for objekt transfers.
  */
-export function loadWallet() {
-  const encryptedWallet = localStorage.getItem(STORAGE_KEY);
-  if (!encryptedWallet) {
-    throw new WalletMissingError();
-  }
-
-  try {
-    var json = JSON.parse(encryptedWallet);
-  } catch (err) {
-    throw new WalletParseError();
-  }
-
-  const isValid =
-    typeof json.decryptedDek === "string" &&
-    typeof json.encryptedKey === "string" &&
-    typeof json.version === "number";
-  if (!isValid) {
-    throw new WalletStructureError();
-  }
-
-  return json as EncryptedWallet;
+export function encodeObjektTransfer({
+  from,
+  to,
+  tokenId,
+}: EncodeObjektTransfer) {
+  return encodeFunctionData({
+    abi,
+    functionName: "transferFrom",
+    args: [from, to, tokenId],
+  });
 }
-
-export class WalletMissingError extends Error {}
-export class WalletParseError extends Error {}
-export class WalletStructureError extends Error {}

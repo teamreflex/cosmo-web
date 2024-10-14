@@ -11,8 +11,6 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ReactQueryStreamedHydration } from "@tanstack/react-query-next-experimental";
 import WarningDialog from "./warning-dialog";
 import { preconnect, prefetchDNS } from "react-dom";
-import { WagmiProvider } from "wagmi";
-import { config } from "@/lib/client/wallet/wagmi.config";
 
 type Props = PropsWithChildren;
 
@@ -53,13 +51,11 @@ export default function ClientProviders({ children }: Props) {
   const queryClient = getQueryClient();
 
   return (
-    <WagmiProvider config={config}>
-      <QueryClientProvider client={queryClient}>
-        <ReactQueryStreamedHydration>{children}</ReactQueryStreamedHydration>
+    <QueryClientProvider client={queryClient}>
+      <ReactQueryStreamedHydration>{children}</ReactQueryStreamedHydration>
 
-        <WarningDialog />
-        <ReactQueryDevtools />
-      </QueryClientProvider>
-    </WagmiProvider>
+      <WarningDialog />
+      <ReactQueryDevtools />
+    </QueryClientProvider>
   );
 }

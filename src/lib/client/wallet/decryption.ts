@@ -6,7 +6,7 @@ import { buildKMSAwsAlpha } from "./aws-kms/alpha";
 import { buildKMSAwsV1 } from "./aws-kms/v1";
 import { buildKMSAwsV1_1 } from "./aws-kms/v1_1";
 
-type DecryptRamperWallet = {
+export type DecryptRamperWallet = {
   socialLoginUserId: string;
   customToken: string;
   address: string;

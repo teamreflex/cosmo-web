@@ -6,7 +6,7 @@ import Portal from "@/components/portal";
 import { Button } from "@/components/ui/button";
 import { AlertDialogCancel } from "@/components/ui/alert-dialog";
 import { Loader2 } from "lucide-react";
-import { UserState } from "@/lib/client/wallet/util";
+import { UserState } from "@/hooks/use-wallet";
 
 type Props = {
   payload: EmailSignInPayload;

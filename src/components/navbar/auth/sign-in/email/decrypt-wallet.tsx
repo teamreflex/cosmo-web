@@ -1,6 +1,6 @@
 import Portal from "@/components/portal";
 import { Button } from "@/components/ui/button";
-import { UserState } from "@/lib/client/wallet/util";
+import { UserState } from "@/hooks/use-wallet";
 import { MutationStatus } from "@tanstack/react-query";
 import { CheckCircle, HeartCrack, Loader2 } from "lucide-react";
 import Link from "next/link";

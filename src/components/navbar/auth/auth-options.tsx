@@ -11,7 +11,7 @@ import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import GuestThemeSwitch from "./guest-theme-switch";
 import Hydrated from "@/components/hydrated";
-import { useDisconnect } from "wagmi";
+import { useWallet } from "@/hooks/use-wallet";
 // import GuestArtistSwitch from "./guest-artist-switch";
 
 type Props = {
@@ -32,7 +32,7 @@ export default function AuthOptions({
   cosmoAvatar,
 }: Props) {
   const [isPending, startTransition] = useTransition();
-  const { disconnect } = useDisconnect();
+  const { disconnect } = useWallet();
 
   const isAuthenticated = !!token && !!profile;
 

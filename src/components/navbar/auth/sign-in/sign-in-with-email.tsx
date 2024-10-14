@@ -2,10 +2,8 @@ import { useState } from "react";
 import SendEmailForm from "./email/send-email";
 import ExchangeTokenForm from "./email/exchange-token";
 import DecryptWallet from "./email/decrypt-wallet";
-import { UserState } from "@/lib/client/wallet/util";
-import { useConnect } from "wagmi";
-import { ramper } from "@/lib/client/wallet/ramper-connector";
 import { useRouter } from "next/navigation";
+import { UserState, useWallet } from "@/hooks/use-wallet";
 
 type SignInState = "sending-email" | "exchanging-token" | "decrypting-wallet";
 
@@ -17,7 +15,7 @@ export default function SignInWithEmail() {
     pendingToken: "",
   });
   const [userState, setUserState] = useState<UserState>();
-  const { connect, status } = useConnect();
+  const { connect, connectStatus } = useWallet();
   const router = useRouter();
 
   function onEmailSent(email: string, pendingToken: string) {
@@ -27,14 +25,11 @@ export default function SignInWithEmail() {
 
   function onTokenExchanged(userState: UserState) {
     setUserState(userState);
-    connect(
-      { connector: ramper(userState) },
-      {
-        onSuccess: () => {
-          router.push(`/@${userState.nickname}`);
-        },
-      }
-    );
+    connect(userState, {
+      onSuccess: () => {
+        router.push(`/@${userState.nickname}`);
+      },
+    });
     setStep("decrypting-wallet");
   }
 
@@ -53,6 +48,6 @@ export default function SignInWithEmail() {
       if (!userState) {
         return <div>Loading...</div>;
       }
-      return <DecryptWallet user={userState} status={status} />;
+      return <DecryptWallet user={userState} status={connectStatus} />;
   }
 }
