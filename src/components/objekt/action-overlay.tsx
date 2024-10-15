@@ -96,10 +96,7 @@ export default memo(function ActionOverlay({
 
         {/* send (authenticated) */}
         {objekt.transferable && authenticated && !isPin && !isLocked && (
-          <div
-            {...createHoverProps("send")}
-            className="h-3 w-3 sm:h-5 sm:w-5 shrink-0"
-          >
+          <div {...createHoverProps("send")}>
             <SendObjekt objekt={objekt} />
           </div>
         )}

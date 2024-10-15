@@ -87,13 +87,9 @@ export default function SendObjekt({ objekt }: Props) {
       >
         <button
           onClick={() => setOpenSearch(true)}
-          className={cn(
-            objekt.transferable && "hover:scale-110 transition-all"
-          )}
+          className="hover:cursor-pointer hover:scale-110 transition-all flex items-center"
         >
-          {objekt.transferable && (
-            <Send className="h-3 w-3 sm:h-5 sm:w-5 shrink-0" />
-          )}
+          <Send className="h-3 w-3 sm:h-5 sm:w-5" />
         </button>
       </UserSearch>
 
