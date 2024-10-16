@@ -24,7 +24,8 @@ type Params = {
  * Takes an address and a member name, and returns the collection progress breakdown of that member.
  * Cached for 5 minutes.
  */
-export async function GET(request: Request, { params }: Params) {
+export async function GET(request: Request, props: Params) {
+  const params = await props.params;
   const matrix = buildMatrix();
   const [totals, progress] = await Promise.all([
     fetchTotal({ member: params.member }),

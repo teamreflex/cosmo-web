@@ -29,7 +29,8 @@ type Props = {
   };
 };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params;
   const { objektList } = await getData(params.nickname, params.list);
   if (!objektList) redirect(`/@${params.nickname}`);
 
@@ -38,7 +39,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function ObjektListPage({ params, searchParams }: Props) {
+export default async function ObjektListPage(props: Props) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   // get de-duplicated profile
   const { profile } = await getUserByIdentifier(params.nickname);
 

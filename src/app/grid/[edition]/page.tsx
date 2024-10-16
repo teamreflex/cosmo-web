@@ -13,9 +13,10 @@ type Props = {
 
 const getEdition = cache(async (edition: string) => {
   const user = await decodeUser();
+  const artist = await getSelectedArtist();
   const [profile, grids] = await Promise.all([
     getProfile(user!.profileId),
-    fetchEdition(user!.accessToken, getSelectedArtist(), edition),
+    fetchEdition(user!.accessToken, artist, edition),
   ]);
 
   // parse a grid title
@@ -34,12 +35,14 @@ const getEdition = cache(async (edition: string) => {
   return { title, profile, grids };
 });
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params;
   const { title } = await getEdition(params.edition);
   return { title: `Grid · ${title}` };
 }
 
-export default async function GridEditionPage({ params }: Props) {
+export default async function GridEditionPage(props: Props) {
+  const params = await props.params;
   const { title, profile, grids } = await getEdition(params.edition);
 
   if (grids.length === 0) {

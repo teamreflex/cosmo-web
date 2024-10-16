@@ -23,7 +23,8 @@ type Props = {
   };
 };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params;
   const { profile } = await getUserByIdentifier(params.nickname);
 
   return {
@@ -31,9 +32,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function UserCollectionPage({ params }: Props) {
+export default async function UserCollectionPage(props: Props) {
+  const params = await props.params;
   const user = await decodeUser();
-  const selectedArtist = getSelectedArtist();
+  const selectedArtist = await getSelectedArtist();
 
   const isOwnProfile =
     user !== undefined && isAddressEqual(user.nickname, params.nickname);

@@ -30,7 +30,7 @@ export default async function ActivityPage() {
     redirect("/");
   }
 
-  const artist = getSelectedArtist();
+  const artist = await getSelectedArtist();
 
   return (
     <main className="container flex flex-col gap-2 py-2">

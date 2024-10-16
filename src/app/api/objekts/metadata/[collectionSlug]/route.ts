@@ -18,7 +18,8 @@ type Params = {
  * API route for individual objekt dialogs.
  * Fetches metadata about a collection.
  */
-export async function GET(_: Request, { params }: Params) {
+export async function GET(_: Request, props: Params) {
+  const params = await props.params;
   const [copies, metadata] = await Promise.all([
     fetchCollection(params.collectionSlug),
     fetchCollectionMetadata(params.collectionSlug),

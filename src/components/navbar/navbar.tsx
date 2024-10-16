@@ -54,7 +54,7 @@ export default async function Navbar() {
 }
 
 async function Auth({ token }: { token?: TokenPayload }) {
-  const selectedArtist = getSelectedArtist();
+  const selectedArtist = await getSelectedArtist();
   const [artists, profile] = await Promise.all([
     getArtistsWithMembers(),
     token ? getProfile(token.profileId) : undefined,

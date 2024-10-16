@@ -3,6 +3,7 @@ import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogContent,
+  AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
@@ -16,6 +17,7 @@ import {
 } from "@/components/ui/accordion";
 import { addDays, format, isWithinInterval, subDays } from "date-fns";
 import { env } from "@/env.mjs";
+import VisuallyHidden from "../ui/visually-hidden";
 
 export default function UpdateDialog() {
   const isNew = isWithinInterval(updates[0].date, {
@@ -38,6 +40,11 @@ export default function UpdateDialog() {
           <AlertDialogTitle>
             {env.NEXT_PUBLIC_APP_NAME} Updates
           </AlertDialogTitle>
+          <VisuallyHidden>
+            <AlertDialogDescription>
+              {env.NEXT_PUBLIC_APP_NAME} Updates
+            </AlertDialogDescription>
+          </VisuallyHidden>
         </AlertDialogHeader>
 
         <div className="flex flex-col text-sm gap-2">

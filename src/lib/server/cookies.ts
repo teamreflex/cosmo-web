@@ -7,8 +7,9 @@ type CookieKey = "artist" | "token" | "user-session";
 /**
  * Read the value from a cookie.
  */
-export function getCookie<T = string>(key: CookieKey) {
-  return cookies().get(key)?.value as T | undefined;
+export async function getCookie<T = string>(key: CookieKey) {
+  const store = await cookies();
+  return store.get(key)?.value as T | undefined;
 }
 
 type SetCookie = {
@@ -20,8 +21,9 @@ type SetCookie = {
 /**
  * Save a new cookie.
  */
-export function setCookie({ key, value, cookie }: SetCookie) {
-  return cookies().set(key, value, {
+export async function setCookie({ key, value, cookie }: SetCookie) {
+  const store = await cookies();
+  return store.set(key, value, {
     ...generateCookiePayload(),
     ...cookie,
   });
@@ -30,6 +32,7 @@ export function setCookie({ key, value, cookie }: SetCookie) {
 /**
  * Delete a cookie.
  */
-export function deleteCookie(key: CookieKey) {
-  return cookies().delete(key);
+export async function deleteCookie(key: CookieKey) {
+  const store = await cookies();
+  return store.delete(key);
 }

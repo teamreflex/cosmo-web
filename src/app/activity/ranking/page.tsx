@@ -21,7 +21,7 @@ const kind: CosmoActivityRankingKind = "hold_objekts_per_season";
 
 export default async function ActivityRankingPage() {
   const queryClient = new QueryClient();
-  const artist = getSelectedArtist();
+  const artist = await getSelectedArtist();
 
   const user = await decodeUser();
   const [artists] = await Promise.all([

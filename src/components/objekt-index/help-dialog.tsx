@@ -2,12 +2,16 @@ import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogContent,
+  AlertDialogDescription,
   AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { HelpCircle } from "lucide-react";
 import { Button } from "../ui/button";
 import { RarityPill } from "../objekt/metadata-dialog";
+import VisuallyHidden from "../ui/visually-hidden";
 
 export default function HelpDialog() {
   return (
@@ -18,6 +22,15 @@ export default function HelpDialog() {
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
+        <VisuallyHidden>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Help: Objekts</AlertDialogTitle>
+            <AlertDialogDescription>
+              Help information for objekt index
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+        </VisuallyHidden>
+
         <div className="flex flex-col gap-4 text-sm text-foreground/80">
           {/* index */}
           <div className="flex flex-col gap-1">

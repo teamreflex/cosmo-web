@@ -5,7 +5,6 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { DialogContentProps } from "@radix-ui/react-alert-dialog";
 
 const Dialog = DialogPrimitive.Root;
 
@@ -46,7 +45,8 @@ const DialogOverlay = React.forwardRef<
 ));
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
-export interface CustomDialogContentProps extends DialogContentProps {
+export interface CustomDialogContentProps
+  extends DialogPrimitive.DialogContentProps {
   showClose?: boolean;
 }
 

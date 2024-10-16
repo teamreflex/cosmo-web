@@ -1,7 +1,7 @@
+import type { NextConfig } from "next";
 import "./src/env.mjs";
 
-/** @type {import('next').NextConfig} */
-const config = {
+const config: NextConfig = {
   logging: {
     fetches: {
       fullUrl: process.env.VERCEL_ENV === "development",
@@ -19,30 +19,28 @@ const config = {
   },
 
   async rewrites() {
-    return {
-      beforeFiles: [
-        {
-          source: "/@:nickname/progress",
-          destination: "/profile/:nickname/progress",
-        },
-        {
-          source: "/@:nickname/como",
-          destination: "/profile/:nickname/como",
-        },
-        {
-          source: "/@:nickname/trades",
-          destination: "/profile/:nickname/trades",
-        },
-        {
-          source: "/@:nickname/list/:list",
-          destination: "/profile/:nickname/list/:list",
-        },
-        {
-          source: "/@:nickname",
-          destination: "/profile/:nickname",
-        },
-      ],
-    };
+    return [
+      {
+        source: "/@:nickname/progress",
+        destination: "/profile/:nickname/progress",
+      },
+      {
+        source: "/@:nickname/como",
+        destination: "/profile/:nickname/como",
+      },
+      {
+        source: "/@:nickname/trades",
+        destination: "/profile/:nickname/trades",
+      },
+      {
+        source: "/@:nickname/list/:list",
+        destination: "/profile/:nickname/list/:list",
+      },
+      {
+        source: "/@:nickname",
+        destination: "/profile/:nickname",
+      },
+    ];
   },
 
   images: {

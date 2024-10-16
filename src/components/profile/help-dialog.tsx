@@ -2,7 +2,10 @@ import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogContent,
+  AlertDialogDescription,
   AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { env } from "@/env.mjs";
@@ -17,6 +20,7 @@ import {
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { ReactNode } from "react";
+import VisuallyHidden from "../ui/visually-hidden";
 
 type Props = {
   previousIds: ReactNode;
@@ -35,6 +39,14 @@ export default function HelpDialog({ previousIds }: Props) {
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
+        <VisuallyHidden>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Help: Profile</AlertDialogTitle>
+            <AlertDialogDescription>
+              Help information for profiles
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+        </VisuallyHidden>
         <div className="flex flex-col gap-4">
           {/* grid/column size */}
           <div className="flex flex-col gap-1 text-sm text-foreground/80">

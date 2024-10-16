@@ -11,7 +11,7 @@ type Size = {
  * src: https://github.com/juliencrn/usehooks-ts/issues/236#issuecomment-1291001854
  */
 export const useElementSize = <T extends HTMLElement = HTMLDivElement>(): [
-  RefObject<T>,
+  RefObject<T | null>,
   Size
 ] => {
   const ref = useRef<T>(null);

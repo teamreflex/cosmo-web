@@ -24,7 +24,7 @@ export async function submitEventRewards(): Promise<
   }
 
   try {
-    const artist = getSelectedArtist();
+    const artist = await getSelectedArtist();
     await claimEventRewards(user.accessToken, artist);
 
     return {

@@ -1,15 +1,15 @@
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { updatePrivacy } from "./actions";
-import { useFormState, useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
-import { useEffect } from "react";
+import { useActionState, useEffect, useTransition } from "react";
 import { toast } from "@/components/ui/use-toast";
 
 type PrivacyDialogProps = {
@@ -23,25 +23,31 @@ export default function PrivacyDialog({
   onOpenChange,
   profile,
 }: PrivacyDialogProps) {
-  const [state, formAction] = useFormState(updatePrivacy, { status: "idle" });
+  const [isPending, startTransition] = useTransition();
 
-  useEffect(() => {
-    if (state.status === "success") {
-      toast({
-        description: "Privacy settings updated.",
-      });
-      onOpenChange(false);
-    }
-  }, [state]);
+  function update(form: FormData) {
+    startTransition(async () => {
+      const result = await updatePrivacy(form);
+      if (result.status === "success") {
+        toast({
+          description: "Privacy settings updated.",
+        });
+        onOpenChange(false);
+      }
+    });
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Privacy Settings</DialogTitle>
+          <DialogDescription>
+            Various options to adjust your privacy level.
+          </DialogDescription>
         </DialogHeader>
 
-        <form className="flex flex-col gap-2" action={formAction}>
+        <form className="flex flex-col gap-2" action={update}>
           {/* cosmo id/nickname */}
           <div className="grid grid-cols-4 grid-rows-3">
             <h2 className="col-span-3 font-semibold">COSMO ID</h2>
@@ -100,18 +106,11 @@ export default function PrivacyDialog({
             </div>
           </div>
 
-          <SubmitButton />
+          <Button type="submit" disabled={isPending}>
+            {isPending ? "Saving..." : "Save"}
+          </Button>
         </form>
       </DialogContent>
     </Dialog>
-  );
-}
-
-function SubmitButton() {
-  const { pending } = useFormStatus();
-  return (
-    <Button type="submit" disabled={pending}>
-      {pending ? "Saving..." : "Save"}
-    </Button>
   );
 }

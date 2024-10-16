@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default async function RekordArchivePage() {
   const user = await decodeUser();
-  const artist = getSelectedArtist();
+  const artist = await getSelectedArtist();
 
   return (
     <main className="container flex flex-col py-2 mx-auto w-full sm:w-1/2">

@@ -22,7 +22,7 @@ export const logout = async () => {
     return { success: false, error: "Invalid user" };
   }
 
-  deleteCookie("token");
+  await deleteCookie("token");
   redirect("/");
 };
 
@@ -37,7 +37,7 @@ export const updateSelectedArtist = async (artist: string) =>
     }),
     onValidate: async ({ data, user }) => {
       const result = await setSelectedArtist(user.profileId, data.artist);
-      setCookie({ key: "artist", value: data.artist });
+      await setCookie({ key: "artist", value: data.artist });
       return result;
     },
   });
@@ -52,7 +52,7 @@ export const setArtistCookie = async (artist: string) => {
 
   const result = schema.safeParse({ artist });
   if (result.success) {
-    setCookie({ key: "artist", value: artist });
+    await setCookie({ key: "artist", value: artist });
   }
 
   return result.success;
@@ -61,10 +61,7 @@ export const setArtistCookie = async (artist: string) => {
 /**
  * Updates privacy settings.
  */
-export const updatePrivacy = async (
-  prev: TypedActionResult<void>,
-  form: FormData
-) =>
+export const updatePrivacy = async (form: FormData) =>
   authenticatedAction({
     form,
     schema: z.object({

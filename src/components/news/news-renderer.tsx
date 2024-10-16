@@ -14,7 +14,8 @@ import { getSelectedArtist } from "@/lib/server/profiles";
 
 export default async function NewsRenderer() {
   const user = await decodeUser();
-  const news = await fetchHomeNews(user!.accessToken, getSelectedArtist());
+  const artist = await getSelectedArtist();
+  const news = await fetchHomeNews(user!.accessToken, artist);
 
   return (
     <div className="flex flex-col items-center container py-2">

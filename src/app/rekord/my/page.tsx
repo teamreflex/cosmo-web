@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 };
 
 export default async function MyRekordPage() {
-  const artist = getSelectedArtist();
+  const artist = await getSelectedArtist();
 
   return (
     <main className="container flex flex-col py-2">

@@ -11,15 +11,17 @@ import {
 } from "../ui/dialog";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
-import { useFormState, useFormStatus } from "react-dom";
 import { FieldError } from "../form/error";
+import { useActionState } from "react";
 
 type Props = {
   objektList: ObjektList;
 };
 
 export default function UpdateList({ objektList }: Props) {
-  const [state, formAction] = useFormState(update, { status: "idle" });
+  const [state, formAction, isPending] = useActionState(update, {
+    status: "idle",
+  });
 
   return (
     <form>
@@ -56,21 +58,13 @@ export default function UpdateList({ objektList }: Props) {
               <FieldError state={state} field="name" />
             </div>
 
-            <SubmitButton />
+            <Button type="submit" disabled={isPending}>
+              <span>Save</span>
+              {isPending && <Loader2 className="ml-2 animate-spin" />}
+            </Button>
           </form>
         </DialogContent>
       </Dialog>
     </form>
-  );
-}
-
-function SubmitButton() {
-  const { pending } = useFormStatus();
-
-  return (
-    <Button type="submit" disabled={pending}>
-      {pending ? "Saving..." : "Save"}
-      {pending && <Loader2 className="ml-2 animate-spin" />}
-    </Button>
   );
 }

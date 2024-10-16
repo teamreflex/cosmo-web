@@ -53,7 +53,7 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const artist = getSelectedArtist();
+  const artist = await getSelectedArtist();
 
   return (
     <html lang="en" suppressHydrationWarning>

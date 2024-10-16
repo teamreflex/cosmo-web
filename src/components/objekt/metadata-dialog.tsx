@@ -7,7 +7,13 @@ import {
   Loader2,
   RefreshCcw,
 } from "lucide-react";
-import { Dialog, DialogContent } from "../ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "../ui/dialog";
 import { ObjektMetadata, ValidObjekt } from "@/lib/universal/objekts";
 import { FlippableObjekt } from "./objekt";
 import {
@@ -36,6 +42,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import { useCopyToClipboard } from "usehooks-ts";
 import { env } from "@/env.mjs";
 import { toast } from "../ui/use-toast";
+import VisuallyHidden from "../ui/visually-hidden";
 
 type CommonProps<TObjektType extends ValidObjekt> = {
   objekt: TObjektType;
@@ -128,6 +135,13 @@ function MetadataDialogContent({ slug, onClose }: MetadataDialogContentProps) {
 
   return (
     <Fragment>
+      <VisuallyHidden>
+        <DialogHeader>
+          <DialogTitle>{data.collectionId}</DialogTitle>
+          <DialogDescription>{data.collectionId}</DialogDescription>
+        </DialogHeader>
+      </VisuallyHidden>
+
       <div className="flex h-[28rem] aspect-photocard mx-auto shrink pt-4 md:pt-0">
         <FlippableObjekt objekt={data} id={getObjektId(data)}>
           <ObjektSidebar collection={data.collectionNo} />

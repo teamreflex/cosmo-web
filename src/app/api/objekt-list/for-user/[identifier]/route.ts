@@ -12,7 +12,8 @@ type Params = {
 /**
  * API route that returns all objekt lists for a given user.
  */
-export async function GET(_: NextRequest, { params }: Params) {
+export async function GET(_: NextRequest, props: Params) {
+  const params = await props.params;
   const profile = await db.query.profiles.findFirst({
     where: (profiles, { eq, or }) =>
       or(

@@ -119,7 +119,7 @@ export const exchangeRamperToken = async (form: FormData) =>
         await updateProfile(profile.id, payload);
       }
 
-      setCookie({
+      await setCookie({
         key: "artist",
         value: profile.artist,
         cookie: {
@@ -127,7 +127,7 @@ export const exchangeRamperToken = async (form: FormData) =>
         },
       });
 
-      setCookie({
+      await setCookie({
         key: "token",
         value: await signToken({
           id: user.id,

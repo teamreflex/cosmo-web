@@ -16,7 +16,8 @@ type Params = {
  * Fetches a single objekt from the database.
  * Cached for 1 hour.
  */
-export async function GET(request: Request, { params }: Params) {
+export async function GET(request: Request, props: Params) {
+  const params = await props.params;
   const rows = await indexer
     .select()
     .from(collections)

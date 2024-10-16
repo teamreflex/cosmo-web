@@ -15,13 +15,19 @@ import { CosmoPublicUser, CosmoSearchResult } from "@/lib/universal/cosmo/auth";
 import { ofetch } from "ofetch";
 import { env } from "@/env.mjs";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import { DialogClose } from "./ui/dialog";
+import {
+  DialogClose,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "./ui/dialog";
 import { useDebounceValue } from "usehooks-ts";
 import ProfileImage from "@/assets/profile.webp";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { RecentUser } from "@/store";
 import { useSelectedArtist } from "@/hooks/use-selected-artist";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
+import VisuallyHidden from "./ui/visually-hidden";
 
 type Props = PropsWithChildren<{
   placeholder?: string;
@@ -94,6 +100,12 @@ export function UserSearch({
         onOpenChange={onOpenChange}
         showClose={authenticated}
       >
+        <VisuallyHidden>
+          <DialogHeader>
+            <DialogTitle>User Search</DialogTitle>
+            <DialogDescription>Search for a user...</DialogDescription>
+          </DialogHeader>
+        </VisuallyHidden>
         {authenticated === false && (
           <div className="flex items-center justify-between px-4 py-2 text-xs font-semibold bg-cosmo">
             <div className="flex gap-2 items-center">

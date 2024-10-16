@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 
 export default async function ActivityBadgesPage() {
   const user = await decodeUser();
-  const artist = getSelectedArtist();
+  const artist = await getSelectedArtist();
   const queryClient = new QueryClient();
 
   // prefetch data

@@ -26,7 +26,8 @@ type Params = {
   searchParams: Record<string, string>;
 };
 
-export default async function ObjektsIndexPage({ searchParams }: Params) {
+export default async function ObjektsIndexPage(props: Params) {
+  const searchParams = await props.searchParams;
   const queryClient = new QueryClient();
 
   // parse search params

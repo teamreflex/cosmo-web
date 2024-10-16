@@ -30,6 +30,6 @@ export async function fetchKnownAddresses(addresses: string[], privacy: SQL[]) {
 /**
  * Gets the current selected artist via cookies.
  */
-export function getSelectedArtist() {
-  return getCookie<ValidArtist>("artist") ?? "artms";
+export async function getSelectedArtist() {
+  return (await getCookie<ValidArtist>("artist")) ?? "artms";
 }

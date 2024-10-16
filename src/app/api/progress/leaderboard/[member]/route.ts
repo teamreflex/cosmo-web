@@ -42,7 +42,8 @@ type Params = {
  * Takes a member name, and returns the progress leaderboard for that member.
  * Cached for 1 hour.
  */
-export async function GET(request: NextRequest, { params }: Params) {
+export async function GET(request: NextRequest, props: Params) {
+  const params = await props.params;
   // parse search params
   const result = schema.safeParse({
     member: params.member,

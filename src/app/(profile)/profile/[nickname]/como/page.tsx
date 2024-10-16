@@ -17,7 +17,8 @@ type Props = {
   params: { nickname: string };
 };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params;
   const { profile } = await getUserByIdentifier(params.nickname);
 
   return {
@@ -25,7 +26,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function UserComoPage({ params }: Props) {
+export default async function UserComoPage(props: Props) {
+  const params = await props.params;
   const user = await decodeUser();
   const { profile } = await getUserByIdentifier(params.nickname);
   if (profile.privacy.como && !isAddressEqual(user?.address, profile.address)) {
