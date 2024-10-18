@@ -5,7 +5,7 @@ export type {
   CreateObjektList,
   UpdateObjektList,
 } from "@/lib/server/db/schema";
-import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
+import { ObjektBaseFields, OwnedObjekt } from "@/lib/universal/cosmo/objekts";
 
 export type IndexedObjekt = Collection;
 export type IndexedCosmoResponse = {
@@ -14,7 +14,7 @@ export type IndexedCosmoResponse = {
   nextStartAfter?: number;
   objekts: IndexedObjekt[];
 };
-export type ValidObjekt = OwnedObjekt | IndexedObjekt;
+export type ValidObjekt = ObjektBaseFields | OwnedObjekt | IndexedObjekt;
 interface ObjektInformation extends ObjektMetadataEntry {
   profile?: Profile;
 }

@@ -75,6 +75,16 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2024-10-19",
+    changes: [
+      "Added: Objekt sending.",
+      "Signing out and back in again is required to load your wallet.",
+      "Option to send multiple at a time is coming soon.",
+      "Added: Objekt scanning.",
+      "You can view the objekt and serial before claiming.",
+    ],
+  },
+  {
     date: "2024-10-08",
     changes: [
       "Added: Discord Format option for objekt lists. Select a have list and a want list, and it will format them for usage in #objekt-trade channels.",

@@ -102,7 +102,7 @@ export const ExpandableObjekt = memo(function ExpandableObjekt<
     >
       {(openDialog) => (
         <div
-          className="isolate [content-visibility:auto] relative overflow-hidden rounded-lg md:rounded-xl lg:rounded-2xl touch-manipulation bg-accent"
+          className="isolate relative overflow-hidden rounded-lg md:rounded-xl lg:rounded-2xl touch-manipulation bg-accent"
           style={css}
         >
           <MemoizedImage

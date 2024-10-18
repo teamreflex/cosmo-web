@@ -15,6 +15,7 @@ Supersedes the [objekts.jinsoul.tv](https://github.com/teamreflex/objekts-svelte
   - Token refreshing
   - Sign out
   - Per-artist profile image display
+  - Ramper wallet decryption
 - Objekts/COMO
   - Fetching owned objekts
   - Sending objekts to another COSMO user
@@ -22,6 +23,7 @@ Supersedes the [objekts.jinsoul.tv](https://github.com/teamreflex/objekts-svelte
   - All available filters
   - Display COMO balances
   - Claiming event rewards
+  - Scan QR codes for claiming objekts
 - Grid
   - Displaying grid completion stats
   - Displaying available seasons and editions

@@ -55,7 +55,7 @@ export default function ClientProviders({ children }: Props) {
       <ReactQueryStreamedHydration>{children}</ReactQueryStreamedHydration>
 
       <WarningDialog />
-      <ReactQueryDevtools />
+      <ReactQueryDevtools buttonPosition="top-right" />
     </QueryClientProvider>
   );
 }
