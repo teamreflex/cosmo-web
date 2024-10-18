@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 };
 
 type Params = {
-  searchParams: Record<string, string>;
+  searchParams: Promise<Record<string, string>>;
 };
 
 export default async function ObjektsIndexPage(props: Params) {

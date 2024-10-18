@@ -17,17 +17,15 @@ import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { ObjektList } from "@/lib/universal/objekts";
 
 type Props = PropsWithChildren<{
-  params: {
+  params: Promise<{
     nickname: string;
-  };
+  }>;
 }>;
 
 export default async function ProfileLayout(props: Props) {
   const params = await props.params;
 
-  const {
-    children
-  } = props;
+  const { children } = props;
 
   const [currentUser, targetUser] = await Promise.all([
     decodeUser(),

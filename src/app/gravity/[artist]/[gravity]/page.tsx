@@ -14,11 +14,9 @@ const fetchData = cache(async ({ artist, gravity }: Params) => {
   return await fetchGravity(artist, gravity);
 });
 
-export async function generateMetadata(
-  props: {
-    params: Promise<Params>;
-  }
-): Promise<Metadata> {
+export async function generateMetadata(props: {
+  params: Promise<Params>;
+}): Promise<Metadata> {
   const params = await props.params;
   const gravity = await fetchData(params);
   return {

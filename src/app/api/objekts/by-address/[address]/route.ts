@@ -28,9 +28,9 @@ export const runtime = "nodejs";
 const PER_PAGE = 30;
 
 type Params = {
-  params: {
+  params: Promise<{
     address: string;
-  };
+  }>;
 };
 
 /**

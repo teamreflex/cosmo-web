@@ -9,9 +9,9 @@ import { unstable_cache } from "next/cache";
 export const runtime = "nodejs";
 
 type Params = {
-  params: {
+  params: Promise<{
     collectionSlug: string;
-  };
+  }>;
 };
 
 /**

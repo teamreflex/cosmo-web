@@ -8,7 +8,7 @@ import { ProfileProvider } from "@/hooks/use-profile";
 import { getSelectedArtist } from "@/lib/server/profiles";
 
 type Props = {
-  params: { edition: string };
+  params: Promise<{ edition: string }>;
 };
 
 const getEdition = cache(async (edition: string) => {

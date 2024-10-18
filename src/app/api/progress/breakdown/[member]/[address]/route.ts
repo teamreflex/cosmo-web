@@ -13,10 +13,10 @@ import { cacheHeaders } from "@/app/api/common";
 export const runtime = "nodejs";
 
 type Params = {
-  params: {
+  params: Promise<{
     address: string;
     member: string;
-  };
+  }>;
 };
 
 /**

@@ -5,7 +5,7 @@ import { Shield } from "lucide-react";
 import { isAddressEqual } from "@/lib/utils";
 
 type Props = {
-  params: { nickname: string };
+  params: Promise<{ nickname: string }>;
 };
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params;

@@ -8,7 +8,13 @@ import { ValidArtist } from "@/lib/universal/cosmo/common";
  */
 export async function GET(
   _: Request,
-  props: { params: Promise<{ artist: ValidArtist; gravity: number; poll: number }> }
+  props: {
+    params: Promise<{
+      artist: ValidArtist;
+      gravity: number;
+      poll: number;
+    }>;
+  }
 ) {
   const params = await props.params;
   const auth = await getUser();

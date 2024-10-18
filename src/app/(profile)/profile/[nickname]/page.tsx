@@ -18,9 +18,9 @@ import { getSelectedArtist } from "@/lib/server/profiles";
 import { fetchPins } from "@/lib/server/objekts/pins";
 
 type Props = {
-  params: {
+  params: Promise<{
     nickname: string;
-  };
+  }>;
 };
 
 export async function generateMetadata(props: Props): Promise<Metadata> {

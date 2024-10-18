@@ -22,11 +22,11 @@ import {
 import { fetchObjektList } from "@/lib/server/objekts/lists";
 
 type Props = {
-  searchParams: Record<string, string>;
-  params: {
+  searchParams: Promise<Record<string, string>>;
+  params: Promise<{
     nickname: string;
     list: string;
-  };
+  }>;
 };
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
@@ -42,6 +42,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 export default async function ObjektListPage(props: Props) {
   const searchParams = await props.searchParams;
   const params = await props.params;
+
   // get de-duplicated profile
   const { profile } = await getUserByIdentifier(params.nickname);
 

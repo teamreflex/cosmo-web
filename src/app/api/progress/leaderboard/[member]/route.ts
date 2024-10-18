@@ -32,9 +32,9 @@ const schema = z.object({
 });
 
 type Params = {
-  params: {
+  params: Promise<{
     member: string;
-  };
+  }>;
 };
 
 /**

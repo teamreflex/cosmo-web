@@ -8,7 +8,7 @@ import { Shield } from "lucide-react";
 import { Metadata } from "next";
 
 type Props = {
-  params: { nickname: string };
+  params: Promise<{ nickname: string }>;
 };
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params;

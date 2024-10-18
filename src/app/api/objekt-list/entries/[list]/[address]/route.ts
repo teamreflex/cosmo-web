@@ -5,10 +5,10 @@ import { NextRequest } from "next/server";
 export const runtime = "nodejs";
 
 type Params = {
-  params: {
+  params: Promise<{
     list: string;
     address: string;
-  };
+  }>;
 };
 
 /**

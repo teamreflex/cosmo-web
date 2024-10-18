@@ -6,9 +6,9 @@ import { eq } from "drizzle-orm";
 export const runtime = "nodejs";
 
 type Params = {
-  params: {
+  params: Promise<{
     collectionSlug: string;
-  };
+  }>;
 };
 
 /**

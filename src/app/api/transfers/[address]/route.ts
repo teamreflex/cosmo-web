@@ -11,7 +11,10 @@ export const runtime = "nodejs";
  * API route that services the /@:nickname/trades page.
  * Fetches all of a user's transfers and maps any known Cosmo IDs onto them.
  */
-export async function GET(request: NextRequest, props: { params: Promise<{ address: string }> }) {
+export async function GET(
+  request: NextRequest,
+  props: { params: Promise<{ address: string }> }
+) {
   const params = await props.params;
   // too much data, bail
   if (params.address.toLowerCase() === NULL_ADDRESS) {
