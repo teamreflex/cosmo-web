@@ -170,30 +170,30 @@ export function UserSearch({
             </div>
           )}
 
-          {status === "success" && (
-            <CommandGroup heading="Results">
-              {queryIsAddress && (
+          <CommandGroup heading="Results">
+            {queryIsAddress && (
+              <CommandItem
+                onSelect={() => selectAddress(debouncedQuery)}
+                className="cursor-pointer"
+              >
+                {debouncedQuery}
+              </CommandItem>
+            )}
+
+            {status === "success" &&
+              data.length > 0 &&
+              data.map((user) => (
                 <CommandItem
-                  onSelect={() => selectAddress(debouncedQuery)}
-                  className="cursor-pointer"
+                  key={user.address}
+                  onSelect={() => selectResult(user)}
+                  className="gap-2 cursor-pointer"
+                  value={user.nickname}
                 >
-                  {debouncedQuery}
+                  <UserAvatar artist={artist} user={user} />
+                  <span>{user.nickname}</span>
                 </CommandItem>
-              )}
-              {data.length > 0 &&
-                data.map((user) => (
-                  <CommandItem
-                    key={user.address}
-                    onSelect={() => selectResult(user)}
-                    className="gap-2 cursor-pointer"
-                    value={user.nickname}
-                  >
-                    <UserAvatar artist={artist} user={user} />
-                    <span>{user.nickname}</span>
-                  </CommandItem>
-                ))}
-            </CommandGroup>
-          )}
+              ))}
+          </CommandGroup>
 
           {recentUsers.length > 0 && (
             <CommandGroup heading="Recent">
