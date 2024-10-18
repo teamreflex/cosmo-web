@@ -25,15 +25,17 @@ export default function ExchangeTokenForm({
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (count === 0) {
-        clearInterval(interval);
-      } else {
-        setCount((c) => c - 1);
-      }
+      setCount((prev) => {
+        if (prev === 0) {
+          clearInterval(interval);
+          return 0;
+        }
+
+        return prev - 1;
+      });
     }, 1000);
 
     return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function submit(form: FormData) {

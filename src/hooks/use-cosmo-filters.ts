@@ -103,7 +103,6 @@ export function useCosmoFilters() {
         [key]: value,
       }));
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
 
@@ -117,7 +116,6 @@ export function useCosmoFilters() {
         setDataSource("blockchain");
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return [

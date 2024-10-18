@@ -28,23 +28,27 @@ export default function ProgressRenderer({ artists, address }: Props) {
     updateCosmoFilters,
   ] = useCosmoFilters();
 
-  const setActiveMember = useCallback((member: string) => {
-    setCosmoFilters((prev) => ({
-      ...prev,
-      artist: null,
-      member: prev.member === member ? null : member,
-    }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const setActiveMember = useCallback(
+    (member: string) => {
+      setCosmoFilters((prev) => ({
+        ...prev,
+        artist: null,
+        member: prev.member === member ? null : member,
+      }));
+    },
+    [setCosmoFilters]
+  );
 
-  const setActiveArtist = useCallback((artist: string) => {
-    setCosmoFilters((prev) => ({
-      ...prev,
-      member: null,
-      artist: prev.artist === artist ? null : (artist as ValidArtist),
-    }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const setActiveArtist = useCallback(
+    (artist: string) => {
+      setCosmoFilters((prev) => ({
+        ...prev,
+        member: null,
+        artist: prev.artist === artist ? null : (artist as ValidArtist),
+      }));
+    },
+    [setCosmoFilters]
+  );
 
   return (
     <div className="flex flex-col gap-6">
