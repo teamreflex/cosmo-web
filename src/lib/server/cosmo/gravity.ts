@@ -47,10 +47,6 @@ export async function fetchGravity(artist: ValidArtist, gravityId: number) {
     .catch((_) => redirect("/gravity"));
 }
 
-type CosmoMyGravityResultResponse = {
-  status: CosmoMyGravityResult;
-};
-
 /**
  * Fetch the result for the given gravity.
  */
@@ -59,7 +55,7 @@ export async function fetchMyGravityResult(
   artist: ValidArtist,
   gravityId: number
 ) {
-  return await cosmo<CosmoMyGravityResultResponse>(
+  return await cosmo<{ status: CosmoMyGravityResult }>(
     `/gravity/v3/${artist}/gravity/${gravityId}/status`,
     {
       cache: "no-cache",
@@ -70,15 +66,11 @@ export async function fetchMyGravityResult(
   ).then((res) => res.status);
 }
 
-type CosmoGravityComoSpentResult = {
-  totalComoUsed: number;
-};
-
 /**
  * Fetch the total COMO
  */
 export async function fetchComoSpent(token: string, artist: ValidArtist) {
-  return await cosmo<CosmoGravityComoSpentResult>(
+  return await cosmo<{ totalComoUsed: number }>(
     `/gravity/v3/${artist}/status/total`,
     {
       cache: "no-cache",
@@ -89,10 +81,6 @@ export async function fetchComoSpent(token: string, artist: ValidArtist) {
   ).then((res) => res.totalComoUsed);
 }
 
-type CosmoPollDetail = {
-  pollDetail: CosmoPollChoices;
-};
-
 /**
  * Fetch the poll fields.
  */
@@ -102,7 +90,7 @@ export async function fetchPoll(
   gravityId: number,
   pollId: number
 ) {
-  return await cosmo<CosmoPollDetail>(
+  return await cosmo<{ pollDetail: CosmoPollChoices }>(
     `/gravity/v3/${artist}/gravity/${gravityId}/polls/${pollId}`,
     {
       headers: {

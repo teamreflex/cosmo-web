@@ -3,18 +3,18 @@
 import {
   CosmoOngoingGravity,
   CosmoPollChoices,
+  CosmoPollUpcoming,
   PollChoice,
   PollViewDefaultContent,
 } from "@/lib/universal/cosmo/gravity";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { useQuery } from "@tanstack/react-query";
-import { ReactNode, useState } from "react";
-import { HeartCrack, Loader2 } from "lucide-react";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { ReactNode, Suspense, useState } from "react";
 import Image from "next/image";
-import { cn } from "@/lib/utils";
-import { ValidArtist } from "@/lib/universal/cosmo/common";
+import { baseUrl, cn } from "@/lib/utils";
 import { ofetch } from "ofetch";
+import Skeleton from "../skeleton/skeleton";
 
 type Props = {
   gravity: CosmoOngoingGravity;
@@ -28,98 +28,77 @@ export default function GravityVote({ gravity, availableComo }: Props) {
 
       <div className="flex gap-2 items-center">
         {gravity.polls.map((poll) => (
-          <VoteDialog
+          <Suspense
             key={poll.id}
-            artist={gravity.artist}
-            gravity={gravity.id}
-            poll={poll.id}
-            title={poll.title}
-          />
+            fallback={<Skeleton className="h-12 w-full" />}
+          >
+            <VoteDialog gravity={gravity} poll={poll} />
+          </Suspense>
         ))}
       </div>
     </div>
   );
 }
 
-function VoteDialog({
-  artist,
-  gravity,
-  poll,
-  title,
-}: {
-  artist: ValidArtist;
-  gravity: number;
-  poll: number;
-  title: string;
-}) {
+type VoteDialogProps = {
+  gravity: CosmoOngoingGravity;
+  poll: CosmoPollUpcoming;
+};
+
+function VoteDialog({ gravity, poll }: VoteDialogProps) {
   const [selected, setSelected] = useState<PollChoice>();
   const [open, setOpen] = useState(false);
 
-  const { data, status } = useQuery({
-    queryKey: ["poll", poll],
+  const { data } = useSuspenseQuery({
+    queryKey: ["gravity-poll", gravity.artist, gravity.id, poll.id],
     queryFn: async () => {
-      return await ofetch<CosmoPollChoices>(
-        `/api/gravity/v3/${artist}/gravity/${gravity}/polls/${poll}`
+      const url = new URL(
+        `/api/gravity/v3/${gravity.artist}/gravity/${gravity.id}/polls/${poll.id}`,
+        baseUrl()
       );
+      return await ofetch<CosmoPollChoices>(url.toString());
     },
-    enabled: open,
     refetchOnWindowFocus: false,
+    staleTime: Infinity,
   });
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="cosmo">Start {title}</Button>
+        <Button variant="cosmo">Start {poll.title}</Button>
       </DialogTrigger>
       <DialogContent className="flex flex-col gap-6 items-center overflow-y-scroll">
-        <h3 className="text-lg font-bold">{selected?.title ?? title}</h3>
+        <h3 className="text-lg font-bold">{selected?.title ?? poll.title}</h3>
 
-        {status === "pending" ? (
-          <Loader2 className="h-12 w-12 animate-spin" />
-        ) : status === "error" ? (
-          <div className="flex flex-col gap-2 items-center">
-            <HeartCrack className="h-12 w-12" />
-            <p className="text-sm">Error fetching poll</p>
-          </div>
-        ) : data !== undefined ? (
-          <>
-            {selected === undefined ? (
-              <DefaultContent content={data.pollViewMetadata.defaultContent} />
-            ) : (
-              <ChoiceRenderer choice={selected} />
-            )}
+        {selected === undefined ? (
+          <DefaultContent content={data.pollViewMetadata.defaultContent} />
+        ) : (
+          <ChoiceRenderer choice={selected} />
+        )}
 
-            <div className="flex flex-col gap-2 w-full sm:w-2/3">
-              {data.choices.map((choice) => (
-                <button
-                  key={choice.id}
-                  onClick={() => setSelected(choice)}
-                  className={cn(
-                    "flex gap-4 items-center rounded-lg bg-accent border-2 border-transparent transition-colors w-full p-3",
-                    selected !== undefined &&
-                      choice?.id === selected?.id &&
-                      "border-cosmo"
-                  )}
-                >
-                  <div className="relative aspect-square rounded-lg h-12 bg-black overflow-hidden">
-                    <Image
-                      src={choice.txImageUrl}
-                      alt={choice.title}
-                      fill={true}
-                    />
-                  </div>
+        <div className="flex flex-col gap-2 w-full sm:w-2/3">
+          {data.choices.map((choice) => (
+            <button
+              key={choice.id}
+              onClick={() => setSelected(choice)}
+              className={cn(
+                "flex gap-4 items-center rounded-lg bg-accent border-2 border-transparent transition-colors w-full p-3",
+                selected !== undefined &&
+                  choice?.id === selected?.id &&
+                  "border-cosmo"
+              )}
+            >
+              <div className="relative aspect-square rounded-lg h-12 bg-black overflow-hidden">
+                <Image src={choice.txImageUrl} alt={choice.title} fill={true} />
+              </div>
 
-                  <div className="flex flex-col justify-between items-start text-start">
-                    <h3 className="font-bold">{choice.title}</h3>
-                    <p className="text-white/75 text-xs">
-                      {choice.description}
-                    </p>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </>
-        ) : null}
+              <div className="flex flex-col justify-between items-start text-start">
+                <h3 className="font-bold">{choice.title}</h3>
+                <p className="text-white/75 text-xs">{choice.description}</p>
+              </div>
+            </button>
+          ))}
+        </div>
       </DialogContent>
     </Dialog>
   );

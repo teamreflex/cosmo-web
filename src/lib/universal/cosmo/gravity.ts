@@ -109,7 +109,9 @@ interface CosmoCombinationPollUpcoming
 export type CosmoPollFinalized =
   | CosmoSinglePollFinalized
   | CosmoCombinationPollFinalized;
-type CosmoPollUpcoming = CosmoSinglePollUpcoming | CosmoCombinationPollUpcoming;
+export type CosmoPollUpcoming =
+  | CosmoSinglePollUpcoming
+  | CosmoCombinationPollUpcoming;
 
 type CosmoLeaderboardItem = {
   rank: number;
@@ -121,8 +123,7 @@ type CosmoLeaderboardItem = {
   };
 };
 
-// TODO: check if past, upcoming and ongoing are the same
-export type CosmoPastGravity = {
+export type CosmoGravityCommonFields = {
   id: number;
   artist: ValidArtist;
   title: string;
@@ -133,6 +134,11 @@ export type CosmoPastGravity = {
   entireStartDate: string;
   entireEndDate: string;
   body: CosmoBodyItem[];
+  contractOutlink: string;
+};
+
+// TODO: check if past, upcoming and ongoing are the same
+export interface CosmoPastGravity extends CosmoGravityCommonFields {
   polls: CosmoPollFinalized[];
   result: {
     totalComoUsed: number;
@@ -142,35 +148,15 @@ export type CosmoPastGravity = {
   leaderboard: {
     userRanking: CosmoLeaderboardItem[];
   };
-};
+}
 
-export type CosmoUpcomingGravity = {
-  id: number;
-  artist: ValidArtist;
-  title: string;
-  description: string;
-  type: CosmoGravityType;
-  pollType: CosmoPollType;
-  bannerImageUrl: string;
-  entireStartDate: string;
-  entireEndDate: string;
-  body: CosmoBodyItem[];
+export interface CosmoUpcomingGravity extends CosmoGravityCommonFields {
   polls: CosmoPollUpcoming[];
-};
+}
 
-export type CosmoOngoingGravity = {
-  id: number;
-  artist: ValidArtist;
-  title: string;
-  description: string;
-  type: CosmoGravityType;
-  pollType: CosmoPollType;
-  bannerImageUrl: string;
-  entireStartDate: string;
-  entireEndDate: string;
-  body: CosmoBodyItem[];
+export interface CosmoOngoingGravity extends CosmoGravityCommonFields {
   polls: CosmoPollUpcoming[];
-};
+}
 
 export type CosmoGravity =
   | CosmoPastGravity
@@ -237,7 +223,7 @@ type CosmoSinglePollChoices = {
   startDate: string;
   endDate: string;
   revealDate: string;
-  finalized: false;
+  finalized: boolean;
   pollViewMetadata: {
     title: string;
     background: null;
