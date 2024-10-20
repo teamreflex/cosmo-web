@@ -41,3 +41,7 @@ export function ObjektBlockSkeleton() {
 export function HistoryBlockSkeleton() {
   return <Skeleton className="w-full rounded-xl h-16" />;
 }
+
+export function RankingBlockSkeleton() {
+  return <Skeleton className="w-full h-60" />;
+}

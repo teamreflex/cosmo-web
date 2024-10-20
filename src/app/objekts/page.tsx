@@ -12,11 +12,8 @@ import {
   parseObjektIndexFilters,
 } from "@/lib/server/objekts/prefetching/objekt-index";
 import { parseObjektIndex } from "@/lib/universal/parsers";
-import {
-  HydrationBoundary,
-  QueryClient,
-  dehydrate,
-} from "@tanstack/react-query";
+import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
+import { getQueryClient } from "@/lib/query-client";
 
 export const metadata: Metadata = {
   title: "Objekts",
@@ -28,7 +25,7 @@ type Params = {
 
 export default async function ObjektsIndexPage(props: Params) {
   const searchParams = await props.searchParams;
-  const queryClient = new QueryClient();
+  const queryClient = getQueryClient();
 
   // parse search params
   const filters = parseObjektIndex(
@@ -38,26 +35,23 @@ export default async function ObjektsIndexPage(props: Params) {
     })
   );
 
+  // prefetch objekts
+  queryClient.prefetchInfiniteQuery({
+    queryKey: ["objekt-index", "blockchain", parseObjektIndexFilters(filters)],
+    queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
+      return fetchObjektsIndex({
+        ...filters,
+        page: pageParam,
+      });
+    },
+    initialPageParam: 0,
+  });
+
   const user = await decodeUser();
   const [artists, data, collections] = await Promise.all([
     getArtistsWithMembers(),
     user ? getUserByIdentifier(user.address) : undefined,
     fetchUniqueCollections(),
-    // prefetch objekts
-    queryClient.prefetchInfiniteQuery({
-      queryKey: [
-        "objekt-index",
-        "blockchain",
-        parseObjektIndexFilters(filters),
-      ],
-      queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
-        return fetchObjektsIndex({
-          ...filters,
-          page: pageParam,
-        });
-      },
-      initialPageParam: 0,
-    }),
   ]);
 
   const { profile, objektLists = [] } = data ?? {};
