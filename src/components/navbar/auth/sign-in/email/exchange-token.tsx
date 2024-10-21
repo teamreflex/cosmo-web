@@ -25,14 +25,11 @@ export default function ExchangeTokenForm({
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCount((prev) => {
-        if (prev === 0) {
-          clearInterval(interval);
-          return 0;
-        }
-
-        return prev - 1;
-      });
+      if (count === 0) {
+        clearInterval(interval);
+      } else {
+        setCount((c) => c - 1);
+      }
     }, 1000);
 
     return () => clearInterval(interval);

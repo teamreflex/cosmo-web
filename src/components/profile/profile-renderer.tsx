@@ -16,6 +16,7 @@ import Portal from "../portal";
 import HelpDialog from "./help-dialog";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { baseUrl } from "@/lib/utils";
+import { ObjektSelectionProvider } from "@/hooks/use-objekt-selection";
 
 type Props = {
   artists: CosmoArtistWithMembers[];
@@ -76,7 +77,7 @@ export default function ProfileRenderer({
   );
 
   return (
-    <div className="flex flex-col">
+    <div className="relative flex flex-col">
       <Portal to="#help">
         <HelpDialog previousIds={previousIds} />
       </Portal>
@@ -93,17 +94,19 @@ export default function ProfileRenderer({
         />
       </FiltersContainer>
 
-      <CollectionObjektDisplay
-        authenticated={profile.address === user?.address}
-        address={profile.address}
-        showLocked={showLocked}
-        artists={artists}
-        filters={cosmoFilters}
-        setFilters={setCosmoFilters}
-        queryFunction={queryFunction}
-        gridColumns={profile?.gridColumns ?? user?.gridColumns}
-        dataSource={dataSource}
-      />
+      <ObjektSelectionProvider>
+        <CollectionObjektDisplay
+          authenticated={profile.address === user?.address}
+          address={profile.address}
+          showLocked={showLocked}
+          artists={artists}
+          filters={cosmoFilters}
+          setFilters={setCosmoFilters}
+          queryFunction={queryFunction}
+          gridColumns={profile?.gridColumns ?? user?.gridColumns}
+          dataSource={dataSource}
+        />
+      </ObjektSelectionProvider>
     </div>
   );
 }

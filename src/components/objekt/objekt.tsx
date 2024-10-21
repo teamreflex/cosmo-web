@@ -68,6 +68,7 @@ interface ExpandableObjektProps<TObjektType extends ValidObjekt>
   extends BaseObjektProps<TObjektType> {
   setActive?: (slug: string | null) => void;
   priority: boolean;
+  isSelected?: boolean;
 }
 
 export const ExpandableObjekt = memo(function ExpandableObjekt<
@@ -77,6 +78,7 @@ export const ExpandableObjekt = memo(function ExpandableObjekt<
   objekt,
   setActive,
   priority,
+  isSelected = false,
 }: ExpandableObjektProps<TObjektType>) {
   const [isLoaded, setIsLoaded] = useState(false);
   const queryClient = useQueryClient();
@@ -102,7 +104,10 @@ export const ExpandableObjekt = memo(function ExpandableObjekt<
     >
       {(openDialog) => (
         <div
-          className="isolate relative overflow-hidden rounded-lg md:rounded-xl lg:rounded-2xl touch-manipulation bg-accent"
+          className={cn(
+            "isolate relative overflow-hidden rounded-lg md:rounded-xl lg:rounded-2xl touch-manipulation bg-accent transition-colors ring-2 ring-transparent",
+            isSelected && "ring-foreground"
+          )}
           style={css}
         >
           <MemoizedImage

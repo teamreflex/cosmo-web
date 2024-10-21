@@ -31,7 +31,7 @@ import VisuallyHidden from "./ui/visually-hidden";
 
 type Props = PropsWithChildren<{
   placeholder?: string;
-  recent: RecentUser[];
+  recent?: RecentUser[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSelect: (user: CosmoPublicUser) => void;
@@ -40,7 +40,7 @@ type Props = PropsWithChildren<{
 
 export function UserSearch({
   children,
-  recent,
+  recent = [],
   placeholder,
   open,
   onOpenChange,

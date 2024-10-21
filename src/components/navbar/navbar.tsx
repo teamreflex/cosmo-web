@@ -1,5 +1,5 @@
 import AuthOptions from "./auth/auth-options";
-import ApolloLogo from "./apollo-logo";
+import Logo from "./logo";
 import { Suspense } from "react";
 import Links from "./links";
 import {
@@ -25,7 +25,7 @@ export default async function Navbar() {
         <div className="flex w-full items-center h-14">
           <div className="container lg:grid lg:grid-cols-3 flex items-center gap-2 text-sm text-foreground lg:gap-4 lg:py-6 pointer-events-auto">
             <div className="flex gap-4 items-center">
-              <ApolloLogo />
+              <Logo className="h-10" />
               <div className="relative flex divide-x divide-border items-center">
                 <SystemStatus />
                 <UpdateDialog />

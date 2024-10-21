@@ -12,13 +12,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import {
-  createWalletClient,
-  Hex,
-  http,
-  nonceManager,
-  publicActions,
-} from "viem";
+import { createWalletClient, Hex, http, publicActions } from "viem";
 import { mnemonicToAccount } from "viem/accounts";
 import { polygon } from "viem/chains";
 import { env } from "@/env.mjs";
@@ -126,9 +120,7 @@ function loadWallet() {
  */
 async function decrypt(encrypted: EncryptedWallet) {
   const mnemonic = await decryptMnemonic(encrypted);
-  const account = mnemonicToAccount(mnemonic as Hex, {
-    nonceManager,
-  });
+  const account = mnemonicToAccount(mnemonic as Hex);
 
   console.log("wallet decrypted");
   return createWalletClient({

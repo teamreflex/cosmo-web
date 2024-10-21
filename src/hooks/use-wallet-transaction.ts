@@ -11,12 +11,14 @@ import { ofetch } from "ofetch";
 import { CosmoGravityVoteCalldata } from "@/lib/universal/cosmo/gravity";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 
-const WALLET_MISSING = "You may need to re-sign in to connect your wallet.";
+export const WALLET_MISSING =
+  "You may need to re-sign in to connect your wallet.";
 
 type SendTransaction = {
   to: string;
   calldata: string;
   value: bigint;
+  nonce?: number;
 };
 
 function useWalletTransaction() {
@@ -25,6 +27,15 @@ function useWalletTransaction() {
     mutationFn: async (params: SendTransaction) => {
       if (!wallet || !wallet.account) {
         throw new Error(WALLET_MISSING);
+      }
+
+      let nonce = params.nonce;
+
+      // get nonce if none was provided
+      if (!nonce) {
+        nonce = await wallet.getTransactionCount({
+          address: wallet.account.address,
+        });
       }
 
       // estimate fees per gas
@@ -37,6 +48,7 @@ function useWalletTransaction() {
         data: params.calldata as Hex,
         maxFeePerGas,
         maxPriorityFeePerGas,
+        nonce,
         type: "eip1559",
       });
 
@@ -48,6 +60,7 @@ function useWalletTransaction() {
         gas,
         maxFeePerGas,
         maxPriorityFeePerGas,
+        nonce,
         type: "eip1559",
       });
 
@@ -71,21 +84,20 @@ function useWalletTransaction() {
   return mutation;
 }
 
-type SendObjekt = {
+export type SendObjekt = {
   to: string;
   tokenId: number;
   contract: string;
+  nonce?: number;
+  opts?: MutationOptions<Hex, Error, SendTransaction>;
 };
 
 export function useSendObjekt() {
   const { wallet } = useWallet();
-  const { mutate, data, status } = useWalletTransaction();
+  const { mutateAsync, data, status } = useWalletTransaction();
 
   const send = useCallback(
-    (
-      params: SendObjekt,
-      opts?: MutationOptions<Hex, Error, SendTransaction>
-    ) => {
+    async (params: SendObjekt) => {
       if (!wallet || !wallet.account) {
         toast({
           variant: "destructive",
@@ -102,16 +114,17 @@ export function useSendObjekt() {
       });
 
       // objekt transfers are made via the contract
-      mutate(
+      return await mutateAsync(
         {
           to: params.contract,
           calldata,
           value: parseEther("0.0"),
+          nonce: params.nonce,
         },
-        opts
+        params.opts
       );
     },
-    [wallet, mutate]
+    [wallet, mutateAsync]
   );
 
   return {

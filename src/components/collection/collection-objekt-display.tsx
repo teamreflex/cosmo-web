@@ -17,6 +17,7 @@ import {
 import { ExpandableObjekt } from "../objekt/objekt";
 import { GRID_COLUMNS } from "@/lib/utils";
 import { useProfileContext } from "@/hooks/use-profile";
+import { useObjektSelection } from "@/hooks/use-objekt-selection";
 
 const getObjektId = (objekt: OwnedObjekt) => objekt.tokenId;
 
@@ -50,6 +51,7 @@ export default memo(function CollectionObjektDisplay({
   const hidePins = useMemo(() => filtersAreDirty(filters), [filters]);
   const lockedObjekts = useProfileContext((ctx) => ctx.lockedObjekts);
   const pins = useProfileContext((ctx) => ctx.pins);
+  const isSelected = useObjektSelection((ctx) => ctx.isSelected);
 
   const collectionFilter = useCallback(
     (objekt: OwnedObjekt) => {
@@ -82,7 +84,12 @@ export default memo(function CollectionObjektDisplay({
       hidePins={hidePins}
     >
       {({ objekt, id }, priority, isPin) => (
-        <ExpandableObjekt objekt={objekt} id={id} priority={priority}>
+        <ExpandableObjekt
+          objekt={objekt}
+          id={id}
+          priority={priority}
+          isSelected={isSelected(parseInt(objekt.tokenId))}
+        >
           <Overlay
             objekt={objekt}
             authenticated={authenticated}
