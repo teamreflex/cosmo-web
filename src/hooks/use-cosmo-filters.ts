@@ -103,7 +103,7 @@ export function useCosmoFilters() {
         [key]: value,
       }));
     },
-    []
+    [setCosmoFilters]
   );
 
   // upon first render, adjust data source based on source-specific filters
