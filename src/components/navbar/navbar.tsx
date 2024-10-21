@@ -1,5 +1,5 @@
 import AuthOptions from "./auth/auth-options";
-import Logo from "./logo";
+import Logo from "../logo";
 import { Suspense } from "react";
 import Links from "./links";
 import {
