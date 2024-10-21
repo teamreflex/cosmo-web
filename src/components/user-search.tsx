@@ -25,9 +25,9 @@ import { useDebounceValue } from "usehooks-ts";
 import ProfileImage from "@/assets/profile.webp";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { RecentUser } from "@/store";
-import { useSelectedArtist } from "@/hooks/use-selected-artist";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import VisuallyHidden from "./ui/visually-hidden";
+import { useUserState } from "@/hooks/use-user-state";
 
 type Props = PropsWithChildren<{
   placeholder?: string;
@@ -47,7 +47,7 @@ export function UserSearch({
   onSelect,
   authenticated = false,
 }: Props) {
-  const { artist } = useSelectedArtist();
+  const { artist } = useUserState();
   const [query, setQuery] = useState<string>("");
   const [debouncedQuery] = useDebounceValue<string>(query, 500);
   const queryIsAddress = isAddress(debouncedQuery);

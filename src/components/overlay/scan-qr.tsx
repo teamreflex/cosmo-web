@@ -2,7 +2,6 @@
 
 import {
   Drawer,
-  DrawerClose,
   DrawerContent,
   DrawerDescription,
   DrawerFooter,
@@ -13,7 +12,6 @@ import {
 import { Button } from "../ui/button";
 import { CheckCircle, Loader2, QrCode } from "lucide-react";
 import { useState } from "react";
-import { useToken } from "@/hooks/use-token";
 import VisuallyHidden from "../ui/visually-hidden";
 import { IDetectedBarcode, Scanner } from "@yudiel/react-qr-scanner";
 import { cn } from "@/lib/utils";
@@ -25,6 +23,7 @@ import { toast } from "../ui/use-toast";
 import { FlippableObjekt } from "../objekt/objekt";
 import ObjektSidebar from "../objekt/objekt-sidebar";
 import { useCamera } from "@/hooks/use-camera";
+import { useUserState } from "@/hooks/use-user-state";
 
 type State = "scan" | "claim" | "success";
 type ScanResult = {
@@ -33,7 +32,7 @@ type ScanResult = {
 };
 
 export default function ScanQR() {
-  const token = useToken();
+  const { token } = useUserState();
   const [open, setOpen] = useState(false);
   const { isAvailable, isLoading } = useCamera();
 
@@ -116,7 +115,7 @@ type QRScannerProps = {
 };
 
 function QRScanner({ onResult, onClose }: QRScannerProps) {
-  const token = useToken();
+  const { token } = useUserState();
   const { mutate, status } = useMutation({
     mutationFn: async (serial: string) => {
       return await ofetch<ScannedObjekt>(
@@ -209,7 +208,7 @@ type ClaimObjektProps = {
 };
 
 function ClaimObjekt({ serial, result, onClaim, onClose }: ClaimObjektProps) {
-  const token = useToken();
+  const { token } = useUserState();
   const { mutate, status } = useMutation({
     mutationFn: async () => {
       return await ofetch(

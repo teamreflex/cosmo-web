@@ -10,10 +10,9 @@ import { Toaster } from "@/components/ui/toaster";
 import TailwindIndicator from "@/components/tailwind-indicator";
 import Script from "next/script";
 import { getSelectedArtist } from "@/lib/server/profiles";
-import { SelectedArtistProvider } from "@/hooks/use-selected-artist";
-import { TokenProvider } from "@/hooks/use-token";
 import { decodeUser } from "./data-fetching";
 import Overlay from "@/components/overlay/overlay";
+import { UserStateProvider } from "@/hooks/use-user-state";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -62,22 +61,20 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${cosmo.variable} font-sans`}>
-        <TokenProvider token={token}>
+        <UserStateProvider artist={artist} token={token}>
           <ThemeProvider attribute="class" defaultTheme="dark">
-            <SelectedArtistProvider selectedArtist={artist}>
-              <ClientProviders>
-                <div className="relative flex min-h-dvh flex-col">
-                  <Navbar />
+            <ClientProviders>
+              <div className="relative flex min-h-dvh flex-col">
+                <Navbar />
 
-                  {/* content */}
-                  <div className="flex min-w-full flex-col text-foreground">
-                    {children}
-                  </div>
-
-                  <Overlay />
+                {/* content */}
+                <div className="flex min-w-full flex-col text-foreground">
+                  {children}
                 </div>
-              </ClientProviders>
-            </SelectedArtistProvider>
+
+                <Overlay />
+              </div>
+            </ClientProviders>
 
             <Toaster />
             <TailwindIndicator />
@@ -92,7 +89,7 @@ export default async function RootLayout({
               />
             )}
           </ThemeProvider>
-        </TokenProvider>
+        </UserStateProvider>
       </body>
     </html>
   );
