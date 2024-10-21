@@ -24,12 +24,8 @@ import VisuallyHidden from "../ui/visually-hidden";
 import { ScrollArea } from "../ui/scroll-area";
 import Image from "next/image";
 import { Button } from "../ui/button";
-import {
-  SendObjekt,
-  useSendObjekt,
-  WALLET_MISSING,
-} from "@/hooks/use-wallet-transaction";
-import { CosmoPublicUser, CosmoSearchResult } from "@/lib/universal/cosmo/auth";
+import { useSendObjekt, WALLET_MISSING } from "@/hooks/use-wallet-transaction";
+import { CosmoPublicUser } from "@/lib/universal/cosmo/auth";
 import { UserSearch } from "../user-search";
 import { useQueryClient } from "@tanstack/react-query";
 import { useWallet } from "@/hooks/use-wallet";
@@ -126,17 +122,12 @@ type SelectRecipientsProps = {
 
 function SelectRecipients({ selected, onComplete }: SelectRecipientsProps) {
   const [searchOpen, setSearchOpen] = useState(false);
-  const setSelected = useObjektSelection((ctx) => ctx.setSelected);
+  const selectUser = useObjektSelection((ctx) => ctx.selectUser);
   const isDisabled = selected.some((selection) => selection.recipient === null);
 
   function onSelect(user: CosmoPublicUser) {
     setSearchOpen(false);
-    setSelected((prev) => {
-      return prev.map((selection) => ({
-        ...selection,
-        recipient: user,
-      }));
-    });
+    selectUser(user);
   }
 
   return (

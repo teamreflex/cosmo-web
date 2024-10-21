@@ -16,7 +16,7 @@ import Portal from "../portal";
 import HelpDialog from "./help-dialog";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { baseUrl } from "@/lib/utils";
-import { ObjektSelectionProvider } from "@/hooks/use-objekt-selection";
+import SendObjekts from "../overlay/send-objekts";
 
 type Props = {
   artists: CosmoArtistWithMembers[];
@@ -94,19 +94,19 @@ export default function ProfileRenderer({
         />
       </FiltersContainer>
 
-      <ObjektSelectionProvider>
-        <CollectionObjektDisplay
-          authenticated={profile.address === user?.address}
-          address={profile.address}
-          showLocked={showLocked}
-          artists={artists}
-          filters={cosmoFilters}
-          setFilters={setCosmoFilters}
-          queryFunction={queryFunction}
-          gridColumns={profile?.gridColumns ?? user?.gridColumns}
-          dataSource={dataSource}
-        />
-      </ObjektSelectionProvider>
+      <CollectionObjektDisplay
+        authenticated={profile.address === user?.address}
+        address={profile.address}
+        showLocked={showLocked}
+        artists={artists}
+        filters={cosmoFilters}
+        setFilters={setCosmoFilters}
+        queryFunction={queryFunction}
+        gridColumns={profile?.gridColumns ?? user?.gridColumns}
+        dataSource={dataSource}
+      />
+
+      <SendObjekts />
     </div>
   );
 }

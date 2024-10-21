@@ -7,6 +7,8 @@ import MetadataDialog, { fetchObjektQuery } from "./metadata-dialog";
 import { getObjektImageUrls, getObjektSlug } from "./objekt-util";
 import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
+import { useObjektSelection } from "@/hooks/use-objekt-selection";
+import { useShallow } from "zustand/react/shallow";
 
 export type BaseObjektProps<TObjektType extends ValidObjekt> =
   PropsWithChildren<{
@@ -68,20 +70,22 @@ interface ExpandableObjektProps<TObjektType extends ValidObjekt>
   extends BaseObjektProps<TObjektType> {
   setActive?: (slug: string | null) => void;
   priority: boolean;
-  isSelected?: boolean;
 }
 
 export const ExpandableObjekt = memo(function ExpandableObjekt<
   TObjektType extends ValidObjekt
 >({
   children,
+  id,
   objekt,
   setActive,
   priority,
-  isSelected = false,
 }: ExpandableObjektProps<TObjektType>) {
   const [isLoaded, setIsLoaded] = useState(false);
   const queryClient = useQueryClient();
+  const isSelected = useObjektSelection(
+    useShallow((state) => state.isSelected(parseInt(id)))
+  );
 
   const css = {
     "--objekt-background-color": objekt.backgroundColor,
