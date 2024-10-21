@@ -1,4 +1,5 @@
 import { ValidArtist } from "@/lib/universal/cosmo/common";
+import { z } from "zod";
 
 export type CosmoGravityType = "event-gravity" | "grand-gravity";
 type CosmoPollType = "single-poll" | "combination-poll";
@@ -261,11 +262,13 @@ export type CosmoPollChoices =
   | CosmoSinglePollChoices
   | CosmoCombinationPollChoices;
 
-export type FabricateVotePayload = {
-  pollId: number;
-  choiceId: string;
-  comoAmount: number;
-};
+export const fabricateVotePayloadSchema = z.object({
+  pollId: z.number(),
+  choiceId: z.string(),
+  comoAmount: z.number(),
+});
+
+export type FabricateVotePayload = z.infer<typeof fabricateVotePayloadSchema>;
 
 export type CosmoGravityVoteCalldata = {
   artist: ValidArtist;

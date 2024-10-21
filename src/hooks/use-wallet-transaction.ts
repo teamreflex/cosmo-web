@@ -1,15 +1,20 @@
-import { Address, Hex, parseEther } from "viem";
+import { Address, encodeAbiParameters, Hex, parseEther } from "viem";
 import { useWallet } from "./use-wallet";
 import { MutationOptions, useMutation } from "@tanstack/react-query";
-import { encodeObjektTransfer } from "@/lib/client/wallet/util";
+import {
+  encodeComoTransfer,
+  encodeObjektTransfer,
+} from "@/lib/client/wallet/util";
 import { useCallback } from "react";
 import { toast } from "@/components/ui/use-toast";
+import { ofetch } from "ofetch";
+import { CosmoGravityVoteCalldata } from "@/lib/universal/cosmo/gravity";
+import { ValidArtist } from "@/lib/universal/cosmo/common";
 
 const WALLET_MISSING = "You may need to re-sign in to connect your wallet.";
 
 type SendTransaction = {
   to: string;
-  contract: string;
   calldata: string;
   value: bigint;
 };
@@ -100,12 +105,82 @@ export function useSendObjekt() {
       mutate(
         {
           to: params.contract,
-          contract: params.contract,
           calldata,
           value: parseEther("0.0"),
         },
         opts
       );
+    },
+    [wallet, mutate]
+  );
+
+  return {
+    send,
+    status,
+    hash: data,
+  };
+}
+
+type GravityVote = {
+  artist: ValidArtist;
+  contract: string;
+  pollId: string;
+  comoAmount: number;
+  choiceId: string;
+};
+
+export function useGravityVote() {
+  const { wallet } = useWallet();
+  const { mutateAsync } = useWalletTransaction();
+  const { mutate, data, status } = useMutation({
+    mutationFn: async (params: GravityVote) => {
+      // fabricate vote in cosmo
+      const vote = await ofetch<CosmoGravityVoteCalldata>(
+        `/api/gravity/v3/${params.artist}/fabricate-vote`,
+        {
+          method: "POST",
+          body: {
+            pollId: params.pollId,
+            comoAmount: params.comoAmount,
+            choiceId: params.choiceId,
+          },
+        }
+      );
+
+      // encode calldata
+      const calldata = encodeComoTransfer({
+        contract: params.contract,
+        value: params.comoAmount,
+        data: encodeAbiParameters(
+          [
+            { type: "uint256", name: "pollIdOnChain" },
+            { type: "bytes32", name: "hash" },
+            { type: "bytes", name: "signature" },
+          ],
+          [BigInt(vote.pollIdOnChain), vote.hash as Hex, vote.signature as Hex]
+        ),
+      });
+
+      // send transaction
+      return await mutateAsync({
+        to: params.contract,
+        calldata,
+        value: parseEther(params.comoAmount.toString()),
+      });
+    },
+  });
+
+  const send = useCallback(
+    (params: GravityVote, opts?: MutationOptions<Hex, Error, GravityVote>) => {
+      if (!wallet || !wallet.account) {
+        toast({
+          variant: "destructive",
+          description: WALLET_MISSING,
+        });
+        return;
+      }
+
+      mutate(params, opts);
     },
     [wallet, mutate]
   );

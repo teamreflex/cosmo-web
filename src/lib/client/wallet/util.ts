@@ -1,5 +1,6 @@
-import abi from "@/abi/objekt.json";
-import { encodeFunctionData } from "viem";
+import objektAbi from "@/abi/objekt.json";
+import comoAbi from "@/abi/como.json";
+import { encodeFunctionData, parseEther } from "viem";
 
 type EncodeObjektTransfer = {
   from: string;
@@ -16,8 +17,29 @@ export function encodeObjektTransfer({
   tokenId,
 }: EncodeObjektTransfer) {
   return encodeFunctionData({
-    abi,
+    abi: objektAbi,
     functionName: "transferFrom",
     args: [from, to, tokenId],
+  });
+}
+
+type EncodeComoTransfer = {
+  contract: string;
+  value: number;
+  data: string;
+};
+
+/**
+ * Encode custom data for COMO transfers.
+ */
+export function encodeComoTransfer({
+  contract,
+  value,
+  data,
+}: EncodeComoTransfer) {
+  return encodeFunctionData({
+    abi: comoAbi,
+    functionName: "send",
+    args: [contract, parseEther(value.toString()), data],
   });
 }
