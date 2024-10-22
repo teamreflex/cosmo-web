@@ -2,6 +2,12 @@ import type { NextConfig } from "next";
 import "./src/env.mjs";
 
 const config: NextConfig = {
+  experimental: {
+    staleTimes: {
+      dynamic: 60,
+    },
+  },
+
   logging: {
     fetches: {
       fullUrl: process.env.VERCEL_ENV === "development",
