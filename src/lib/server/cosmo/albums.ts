@@ -14,6 +14,5 @@ export async function fetchAlbums(token: string, artistName: ValidArtist) {
     headers: {
       Authorization: `Bearer ${token}`,
     },
-    cache: "no-cache",
   });
 }

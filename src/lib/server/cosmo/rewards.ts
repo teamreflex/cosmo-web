@@ -22,7 +22,6 @@ export async function fetchEventRewardAvailable(
       tid: randomUUID(),
       artistName: artist,
     },
-    cache: "no-cache",
   }).then((res) => res.isClaimable);
 }
 
@@ -47,7 +46,6 @@ export async function fetchPendingEventRewards(
       tid: randomUUID(),
       artistName: artist,
     },
-    cache: "no-cache",
   });
 }
 
@@ -64,7 +62,6 @@ export async function claimEventRewards(token: string, artist: ValidArtist) {
       tid: randomUUID(),
       artistName: artist,
     },
-    cache: "no-cache",
   });
 
   return true;

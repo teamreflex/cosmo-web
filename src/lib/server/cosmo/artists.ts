@@ -10,10 +10,17 @@ import { randomUUID } from "crypto";
 
 /**
  * Fetch a single artist with its members.
+ * Cached for 12 hours.
  */
 async function fetchArtist(artist: ValidArtist) {
   return await cosmo<{ artist: CosmoArtistWithMembers }>(
-    `/artist/v1/${artist}`
+    `/artist/v1/${artist}`,
+    {
+      cache: "force-cache",
+      next: {
+        revalidate: 60 * 60 * 12,
+      },
+    }
   ).then((res) => res.artist);
 }
 
@@ -39,6 +46,5 @@ export async function fetchArtistBff(token: string, artistName: ValidArtist) {
     headers: {
       Authorization: `Bearer ${token}`,
     },
-    cache: "no-cache",
   });
 }

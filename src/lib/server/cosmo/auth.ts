@@ -48,7 +48,6 @@ export async function login(email: string, accessToken: string) {
  */
 export async function user(accessToken: string) {
   return await cosmo<CosmoUserResult>("/user/v1/me", {
-    cache: "no-cache",
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
