@@ -1,13 +1,13 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { indexer } from "./db/indexer";
 import { collections, ComoBalance, objekts } from "./db/indexer/schema";
 import { ObjektWithCollection } from "@/lib/universal/como";
 import { unstable_cache } from "next/cache";
 
 /**
- * Fetch incoming transfers for Special objekts for a given address
+ * Fetch incoming transfers for Special & Premier objekts for a given address
  */
-export async function fetchSpecialObjekts(
+export async function fetchObjektsWithComo(
   address: string
 ): Promise<ObjektWithCollection[]> {
   const addr = address.toLowerCase();
@@ -23,7 +23,7 @@ export async function fetchSpecialObjekts(
       collections,
       and(
         eq(objekts.collectionId, collections.id),
-        eq(collections.class, "Special")
+        inArray(collections.class, ["Special", "Premier"])
       )
     );
 }

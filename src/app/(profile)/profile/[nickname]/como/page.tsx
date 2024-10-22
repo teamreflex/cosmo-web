@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { fetchSpecialObjekts } from "@/lib/server/como";
+import { fetchObjektsWithComo } from "@/lib/server/como";
 import ComoCalendar from "@/components/como/calendar";
 import CurrentMonth from "@/components/como/current-month";
 import ArtistIcon from "@/components/artist-icon";
@@ -36,7 +36,7 @@ export default async function UserComoPage(props: Props) {
 
   const [artists, objekts] = await Promise.all([
     getArtistsWithMembers(),
-    fetchSpecialObjekts(profile.address),
+    fetchObjektsWithComo(profile.address),
   ]);
 
   const totals = artists.map((artist) => {

@@ -77,11 +77,10 @@ const updates = [
   {
     date: "2024-10-19",
     changes: [
-      "Added: Objekt sending.",
-      "Signing out and back in again is required to load your wallet.",
-      "Option to send multiple at a time is coming soon.",
-      "Added: Objekt scanning.",
-      "You can view the objekt and serial before claiming.",
+      "Added: Objekt sending. Signing out and back in again is required to load your wallet. Option to send multiple at a time is coming soon.",
+      "Added: Objekt scanning. You can view the objekt and serial before claiming.",
+      "Added: Premier class is now factored into COMO calendars.",
+      "Changed: New logo",
     ],
   },
   {
