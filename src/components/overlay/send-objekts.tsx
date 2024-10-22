@@ -3,9 +3,9 @@ import {
   CheckCircle,
   Loader2,
   LoaderIcon,
-  RotateCcw,
   Send,
   TriangleAlert,
+  X,
 } from "lucide-react";
 import { Separator } from "../ui/separator";
 import { cn } from "@/lib/utils";
@@ -70,7 +70,7 @@ export default function SendObjekts() {
             selected.length > 0 && "opacity-100 pointer-events-auto"
           )}
         >
-          <RotateCcw />
+          <X />
         </button>
       </div>
 
