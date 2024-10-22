@@ -1,6 +1,6 @@
+import { toast } from "@/components/ui/use-toast";
 import { CosmoPublicUser } from "@/lib/universal/cosmo/auth";
 import { MutationStatus } from "@tanstack/react-query";
-import { Dispatch, SetStateAction } from "react";
 import { create } from "zustand";
 
 type SelectedObjekt = {
@@ -42,6 +42,14 @@ export const useObjektSelection = create<ObjektSelectionState>()(
         const existing = state.selected.find(
           (p) => p.objekt.tokenId === objekt.tokenId
         );
+
+        // TODO: solve transaction nonce issue
+        if (!existing && state.selected.length >= 1) {
+          toast({
+            description: "Currently only one objekt can be selected",
+          });
+          return state;
+        }
 
         if (existing) {
           return {
