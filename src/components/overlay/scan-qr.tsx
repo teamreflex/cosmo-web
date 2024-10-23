@@ -14,7 +14,7 @@ import { CheckCircle, Loader2, QrCode } from "lucide-react";
 import { useState } from "react";
 import VisuallyHidden from "../ui/visually-hidden";
 import { IDetectedBarcode, Scanner } from "@yudiel/react-qr-scanner";
-import { cn } from "@/lib/utils";
+import { cn, track } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ofetch } from "ofetch";
 import { COSMO_ENDPOINT } from "@/lib/universal/cosmo/common";
@@ -73,6 +73,7 @@ function ScanObjekt(props: ScanObjektProps) {
   function onClaim() {
     setResult(undefined);
     setState("success");
+    track("scan-objekt");
     queryClient.invalidateQueries({
       queryKey: ["collection"],
     });

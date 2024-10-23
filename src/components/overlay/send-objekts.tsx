@@ -8,7 +8,7 @@ import {
   X,
 } from "lucide-react";
 import { Separator } from "../ui/separator";
-import { cn } from "@/lib/utils";
+import { cn, track } from "@/lib/utils";
 import {
   Drawer,
   DrawerClose,
@@ -263,6 +263,7 @@ function Sending({ selected, onBack, onClose }: SendingProps) {
             ...selection,
             status: "success",
           });
+          track("send-objekt");
         })
         .catch(() => {
           update({
