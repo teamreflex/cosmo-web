@@ -24,9 +24,7 @@ type CosmoGravityList = {
  * Not cached due to COMO updates.
  */
 export async function fetchGravities(artist: ValidArtist) {
-  return await cosmo<CosmoGravityList>(`/gravity/v3/${artist}`, {
-    cache: "no-cache",
-  });
+  return await cosmo<CosmoGravityList>(`/gravity/v3/${artist}`);
 }
 
 /**
@@ -35,21 +33,11 @@ export async function fetchGravities(artist: ValidArtist) {
  */
 export async function fetchGravity(artist: ValidArtist, gravityId: number) {
   return await cosmo<{ gravity: CosmoGravity }>(
-    `/gravity/v3/${artist}/gravity/${gravityId}`,
-    {
-      next: {
-        tags: ["gravity", artist, gravityId.toString()],
-        revalidate: 60 * 15, // 15 minutes
-      },
-    }
+    `/gravity/v3/${artist}/gravity/${gravityId}`
   )
     .then((res) => res.gravity)
     .catch((_) => redirect("/gravity"));
 }
-
-type CosmoMyGravityResultResponse = {
-  status: CosmoMyGravityResult;
-};
 
 /**
  * Fetch the result for the given gravity.
@@ -59,10 +47,9 @@ export async function fetchMyGravityResult(
   artist: ValidArtist,
   gravityId: number
 ) {
-  return await cosmo<CosmoMyGravityResultResponse>(
+  return await cosmo<{ status: CosmoMyGravityResult }>(
     `/gravity/v3/${artist}/gravity/${gravityId}/status`,
     {
-      cache: "no-cache",
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -70,28 +57,19 @@ export async function fetchMyGravityResult(
   ).then((res) => res.status);
 }
 
-type CosmoGravityComoSpentResult = {
-  totalComoUsed: number;
-};
-
 /**
  * Fetch the total COMO
  */
 export async function fetchComoSpent(token: string, artist: ValidArtist) {
-  return await cosmo<CosmoGravityComoSpentResult>(
+  return await cosmo<{ totalComoUsed: number }>(
     `/gravity/v3/${artist}/status/total`,
     {
-      cache: "no-cache",
       headers: {
         Authorization: `Bearer ${token}`,
       },
     }
   ).then((res) => res.totalComoUsed);
 }
-
-type CosmoPollDetail = {
-  pollDetail: CosmoPollChoices;
-};
 
 /**
  * Fetch the poll fields.
@@ -102,7 +80,7 @@ export async function fetchPoll(
   gravityId: number,
   pollId: number
 ) {
-  return await cosmo<CosmoPollDetail>(
+  return await cosmo<{ pollDetail: CosmoPollChoices }>(
     `/gravity/v3/${artist}/gravity/${gravityId}/polls/${pollId}`,
     {
       headers: {

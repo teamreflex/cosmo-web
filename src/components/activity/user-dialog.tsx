@@ -2,7 +2,10 @@ import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogContent,
+  AlertDialogDescription,
   AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -14,6 +17,7 @@ import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { TokenPayload } from "@/lib/universal/auth";
 import { getCosmoUser } from "@/app/data-fetching";
 import AuthFallback from "../navbar/auth-fallback";
+import VisuallyHidden from "../ui/visually-hidden";
 
 type Props = {
   artist: ValidArtist;
@@ -40,6 +44,14 @@ export default async function UserDialog({ token, artist }: Props) {
         </button>
       </AlertDialogTrigger>
       <AlertDialogContent>
+        <VisuallyHidden>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{cosmoUser.nickname}</AlertDialogTitle>
+            <AlertDialogDescription>
+              Copy your wallet address
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+        </VisuallyHidden>
         <div className="flex flex-col gap-2 items-center py-3">
           <UserImage user={cosmoUser} artist={artist} />
           <p className="font-bold text-xl">{cosmoUser.nickname}</p>

@@ -54,7 +54,6 @@ export async function exchangeLoginTicket(recaptchaToken: string) {
     query: {
       tid: randomUUID(),
     },
-    cache: "no-cache",
   });
 }
 
@@ -67,7 +66,6 @@ export async function queryTicket(ticket: string) {
       tid: randomUUID(),
       ticket,
     },
-    cache: "no-cache",
   });
 }
 
@@ -86,7 +84,6 @@ export async function certifyTicket(otp: number, ticket: string) {
       query: {
         tid: randomUUID(),
       },
-      cache: "no-cache",
     }
   );
 }

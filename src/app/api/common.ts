@@ -14,7 +14,7 @@ type AuthenticationResult =
     };
 
 export async function getUser(): Promise<AuthenticationResult> {
-  const token = getCookie("token");
+  const token = await getCookie("token");
   if (!token) {
     return {
       success: false,

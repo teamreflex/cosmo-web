@@ -1,6 +1,7 @@
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -52,6 +53,9 @@ export default function SettingsDialog({
       <DialogContent className="max-w-xl">
         <DialogHeader>
           <DialogTitle>General Settings</DialogTitle>
+          <DialogDescription>
+            Adjust any site-wide settings here.
+          </DialogDescription>
         </DialogHeader>
 
         <form className="flex flex-col gap-2" action={update}>

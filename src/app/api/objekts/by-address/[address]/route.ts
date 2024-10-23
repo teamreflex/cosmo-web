@@ -28,16 +28,17 @@ export const runtime = "nodejs";
 const PER_PAGE = 30;
 
 type Params = {
-  params: {
+  params: Promise<{
     address: string;
-  };
+  }>;
 };
 
 /**
  * API route that services the user collection page when using the blockchain as a data source.
  * Takes all Cosmo filters as query params.
  */
-export async function GET(request: NextRequest, { params }: Params) {
+export async function GET(request: NextRequest, props: Params) {
+  const params = await props.params;
   // parse query params
   const filters = parseUserCollection(request.nextUrl.searchParams);
 

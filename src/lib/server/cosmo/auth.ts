@@ -2,10 +2,13 @@ import "server-only";
 import {
   CosmoPublicUser,
   CosmoSearchResult,
+  CosmoUser,
   CosmoUserResult,
+  LoginChannel,
   LoginResult,
 } from "@/lib/universal/cosmo/auth";
 import { cosmo } from "../http";
+import { ValidArtist } from "@/lib/universal/cosmo/common";
 
 type CosmoLoginResult = {
   user: {
@@ -14,7 +17,12 @@ type CosmoLoginResult = {
     nickname: string;
     address: string;
     profileImageUrl: string;
+    loginChannel: LoginChannel;
+    socialLoginUserId: string;
+    isBanned: boolean;
+    lastViewedArtist: ValidArtist;
   };
+  profile: CosmoUser;
   credentials: {
     accessToken: string;
     refreshToken: string;
@@ -24,10 +32,7 @@ type CosmoLoginResult = {
 /**
  * Logs in with COSMO and returns the access token.
  */
-export async function login(
-  email: string,
-  accessToken: string
-): Promise<LoginResult> {
+export async function login(email: string, accessToken: string) {
   return await cosmo<CosmoLoginResult>("/auth/v1/signin", {
     method: "POST",
     body: {
@@ -35,14 +40,7 @@ export async function login(
       email,
       accessToken,
     },
-  }).then((res) => ({
-    id: res.user.id,
-    email: res.user.email,
-    nickname: res.user.nickname,
-    address: res.user.address,
-    accessToken: res.credentials.accessToken,
-    refreshToken: res.credentials.refreshToken,
-  }));
+  });
 }
 
 /**
@@ -50,7 +48,6 @@ export async function login(
  */
 export async function user(accessToken: string) {
   return await cosmo<CosmoUserResult>("/user/v1/me", {
-    cache: "no-cache",
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },

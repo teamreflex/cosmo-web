@@ -7,6 +7,8 @@ import MetadataDialog, { fetchObjektQuery } from "./metadata-dialog";
 import { getObjektImageUrls, getObjektSlug } from "./objekt-util";
 import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
+import { useObjektSelection } from "@/hooks/use-objekt-selection";
+import { useShallow } from "zustand/react/shallow";
 
 export type BaseObjektProps<TObjektType extends ValidObjekt> =
   PropsWithChildren<{
@@ -74,12 +76,16 @@ export const ExpandableObjekt = memo(function ExpandableObjekt<
   TObjektType extends ValidObjekt
 >({
   children,
+  id,
   objekt,
   setActive,
   priority,
 }: ExpandableObjektProps<TObjektType>) {
   const [isLoaded, setIsLoaded] = useState(false);
   const queryClient = useQueryClient();
+  const isSelected = useObjektSelection(
+    useShallow((state) => state.isSelected(parseInt(id)))
+  );
 
   const css = {
     "--objekt-background-color": objekt.backgroundColor,
@@ -102,7 +108,10 @@ export const ExpandableObjekt = memo(function ExpandableObjekt<
     >
       {(openDialog) => (
         <div
-          className="isolate [content-visibility:auto] relative overflow-hidden rounded-lg md:rounded-xl lg:rounded-2xl touch-manipulation bg-accent"
+          className={cn(
+            "isolate relative overflow-hidden rounded-lg md:rounded-xl lg:rounded-2xl touch-manipulation bg-accent transition-colors ring-2 ring-transparent",
+            isSelected && "ring-foreground"
+          )}
           style={css}
         >
           <MemoizedImage

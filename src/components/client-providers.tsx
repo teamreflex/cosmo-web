@@ -1,44 +1,14 @@
 "use client";
 
 import { PropsWithChildren } from "react";
-import {
-  defaultShouldDehydrateQuery,
-  isServer,
-  QueryClient,
-  QueryClientProvider,
-} from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ReactQueryStreamedHydration } from "@tanstack/react-query-next-experimental";
 import WarningDialog from "./warning-dialog";
 import { preconnect, prefetchDNS } from "react-dom";
+import { getQueryClient } from "@/lib/query-client";
 
 type Props = PropsWithChildren;
-
-function makeQueryClient() {
-  return new QueryClient({
-    defaultOptions: {
-      queries: {
-        staleTime: 1000 * 60 * 5, // 5 minutes
-      },
-      dehydrate: {
-        shouldDehydrateQuery: (query) =>
-          defaultShouldDehydrateQuery(query) ||
-          query.state.status === "pending",
-      },
-    },
-  });
-}
-
-let browserQueryClient: QueryClient | undefined = undefined;
-
-function getQueryClient() {
-  if (isServer) {
-    return makeQueryClient();
-  } else {
-    if (!browserQueryClient) browserQueryClient = makeQueryClient();
-    return browserQueryClient;
-  }
-}
 
 export default function ClientProviders({ children }: Props) {
   // preconnect for objekt images
@@ -55,7 +25,7 @@ export default function ClientProviders({ children }: Props) {
       <ReactQueryStreamedHydration>{children}</ReactQueryStreamedHydration>
 
       <WarningDialog />
-      <ReactQueryDevtools />
+      <ReactQueryDevtools buttonPosition="top-right" />
     </QueryClientProvider>
   );
 }

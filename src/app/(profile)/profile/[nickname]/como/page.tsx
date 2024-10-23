@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { fetchSpecialObjekts } from "@/lib/server/como";
+import { fetchObjektsWithComo } from "@/lib/server/como";
 import ComoCalendar from "@/components/como/calendar";
 import CurrentMonth from "@/components/como/current-month";
 import ArtistIcon from "@/components/artist-icon";
@@ -11,13 +11,14 @@ import {
 import Portal from "@/components/portal";
 import HelpDialog from "@/components/como/help-dialog";
 import { Shield } from "lucide-react";
-import { addrcomp } from "@/lib/utils";
+import { isAddressEqual } from "@/lib/utils";
 
 type Props = {
-  params: { nickname: string };
+  params: Promise<{ nickname: string }>;
 };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params;
   const { profile } = await getUserByIdentifier(params.nickname);
 
   return {
@@ -25,16 +26,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function UserComoPage({ params }: Props) {
+export default async function UserComoPage(props: Props) {
+  const params = await props.params;
   const user = await decodeUser();
   const { profile } = await getUserByIdentifier(params.nickname);
-  if (profile.privacy.como && !addrcomp(user?.address, profile.address)) {
+  if (profile.privacy.como && !isAddressEqual(user?.address, profile.address)) {
     return <Private nickname={profile.nickname} />;
   }
 
   const [artists, objekts] = await Promise.all([
     getArtistsWithMembers(),
-    fetchSpecialObjekts(profile.address),
+    fetchObjektsWithComo(profile.address),
   ]);
 
   const totals = artists.map((artist) => {

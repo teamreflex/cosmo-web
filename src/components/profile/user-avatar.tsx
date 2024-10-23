@@ -21,7 +21,7 @@ export default async function UserAvatar({
   token,
   nickname,
 }: Props) {
-  const artist = getSelectedArtist();
+  const artist = await getSelectedArtist();
 
   if (token === undefined) {
     return (

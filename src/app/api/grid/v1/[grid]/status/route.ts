@@ -7,8 +7,9 @@ import { fetchArtistGridStatus } from "@/lib/server/cosmo/grid";
  */
 export async function GET(
   _: Request,
-  { params }: { params: { grid: string } }
+  props: { params: Promise<{ grid: string }> }
 ) {
+  const params = await props.params;
   const auth = await getUser();
   if (!auth.success) {
     return new Response(auth.error, { status: auth.status });

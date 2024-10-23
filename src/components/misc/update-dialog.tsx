@@ -3,6 +3,7 @@ import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogContent,
+  AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
@@ -16,6 +17,7 @@ import {
 } from "@/components/ui/accordion";
 import { addDays, format, isWithinInterval, subDays } from "date-fns";
 import { env } from "@/env.mjs";
+import VisuallyHidden from "../ui/visually-hidden";
 
 export default function UpdateDialog() {
   const isNew = isWithinInterval(updates[0].date, {
@@ -38,6 +40,11 @@ export default function UpdateDialog() {
           <AlertDialogTitle>
             {env.NEXT_PUBLIC_APP_NAME} Updates
           </AlertDialogTitle>
+          <VisuallyHidden>
+            <AlertDialogDescription>
+              {env.NEXT_PUBLIC_APP_NAME} Updates
+            </AlertDialogDescription>
+          </VisuallyHidden>
         </AlertDialogHeader>
 
         <div className="flex flex-col text-sm gap-2">
@@ -67,6 +74,15 @@ export default function UpdateDialog() {
 }
 
 const updates = [
+  {
+    date: "2024-10-23",
+    changes: [
+      "Objekt sending is back: Signing out and back in again is required to load your wallet. Option to send multiple at a time is coming soon.",
+      "Added: Objekt scanning. You can view the objekt and serial before claiming.",
+      "Added: Premier class is now factored into COMO calendars.",
+      "Changed: New logo",
+    ],
+  },
   {
     date: "2024-10-08",
     changes: [

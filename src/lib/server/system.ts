@@ -19,7 +19,6 @@ async function fetchProcessorHeight() {
     headers: {
       "proxy-key": env.INDEXER_PROXY_KEY,
     },
-    cache: "no-cache",
   });
 
   return result.height;

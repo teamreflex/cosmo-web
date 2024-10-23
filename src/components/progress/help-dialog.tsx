@@ -2,11 +2,15 @@ import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogContent,
+  AlertDialogDescription,
   AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import VisuallyHidden from "../ui/visually-hidden";
 
 export default function HelpDialog() {
   return (
@@ -17,6 +21,14 @@ export default function HelpDialog() {
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
+        <VisuallyHidden>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Help: Progress</AlertDialogTitle>
+            <AlertDialogDescription>
+              Help information for progress pages
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+        </VisuallyHidden>
         <div className="flex flex-col gap-4 text-sm text-foreground/80">
           {/* progress */}
           <div className="flex flex-col gap-1">

@@ -30,7 +30,7 @@ export const typedMemo: <T>(
 /**
  * Address compare, because those in PG are forced to lowercase.
  */
-export function addrcomp(a?: string, b?: string) {
+export function isAddressEqual(a?: string, b?: string) {
   return a?.toLowerCase() === b?.toLowerCase();
 }
 

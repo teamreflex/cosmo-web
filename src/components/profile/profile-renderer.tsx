@@ -16,6 +16,7 @@ import Portal from "../portal";
 import HelpDialog from "./help-dialog";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { baseUrl } from "@/lib/utils";
+import SendObjekts from "../overlay/send-objekts";
 
 type Props = {
   artists: CosmoArtistWithMembers[];
@@ -76,7 +77,7 @@ export default function ProfileRenderer({
   );
 
   return (
-    <div className="flex flex-col">
+    <div className="relative flex flex-col">
       <Portal to="#help">
         <HelpDialog previousIds={previousIds} />
       </Portal>
@@ -104,6 +105,8 @@ export default function ProfileRenderer({
         gridColumns={profile?.gridColumns ?? user?.gridColumns}
         dataSource={dataSource}
       />
+
+      <SendObjekts />
     </div>
   );
 }

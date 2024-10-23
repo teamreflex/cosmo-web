@@ -9,7 +9,7 @@ import {
 } from "@/lib/universal/cosmo/activity/ranking";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { baseUrl, cn, ordinal } from "@/lib/utils";
-import { useQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import {
   ChevronDown,
   ChevronRight,
@@ -86,7 +86,7 @@ function RankingList({ artist, kind }: RankingListProps) {
    * useSuspenseQuery pre-renders and fetches on the server,
    * resulting in the user token not being available, and 401 errors.
    */
-  const { data, status } = useQuery({
+  const { data } = useSuspenseQuery({
     queryKey: ["activity-ranking", artist, kind, "0"],
     queryFn: async () => {
       const url = new URL(
@@ -104,20 +104,7 @@ function RankingList({ artist, kind }: RankingListProps) {
     },
   });
 
-  const sorted = data?.nearPeoples.toSorted((i) => sortMap[i.relativePosition]);
-
-  if (status === "pending") {
-    return <Skeleton className="w-full h-60" />;
-  }
-
-  if (status === "error") {
-    return (
-      <div className="w-full flex flex-col items-center mx-auto">
-        <HeartCrack className="w-12 h-12" />
-        <span className="text-sm font-semibold">Could not load ranking</span>
-      </div>
-    );
-  }
+  const sorted = data.nearPeoples.toSorted((i) => sortMap[i.relativePosition]);
 
   return (
     <div className="flex flex-col">

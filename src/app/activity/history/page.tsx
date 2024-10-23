@@ -6,8 +6,8 @@ export const metadata: Metadata = {
   title: "History · Activity",
 };
 
-export default function ActivityHistoryPage() {
-  const artist = getSelectedArtist();
+export default async function ActivityHistoryPage() {
+  const artist = await getSelectedArtist();
 
   return <AccountHistory artist={artist} />;
 }

@@ -8,7 +8,7 @@ import { Shield } from "lucide-react";
 import { validArtists } from "@/lib/universal/cosmo/common";
 import ArtistIcon from "@/components/artist-icon";
 import ProgressButton from "@/components/profile/progress-button";
-import { addrcomp, cn, PropsWithClassName } from "@/lib/utils";
+import { isAddressEqual, cn, PropsWithClassName } from "@/lib/utils";
 import ComoBalanceRenderer from "@/components/navbar/como-balances";
 import UserAvatar from "@/components/profile/user-avatar";
 import Skeleton from "@/components/skeleton/skeleton";
@@ -17,12 +17,16 @@ import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { ObjektList } from "@/lib/universal/objekts";
 
 type Props = PropsWithChildren<{
-  params: {
+  params: Promise<{
     nickname: string;
-  };
+  }>;
 }>;
 
-export default async function ProfileLayout({ children, params }: Props) {
+export default async function ProfileLayout(props: Props) {
+  const params = await props.params;
+
+  const { children } = props;
+
   const [currentUser, targetUser] = await Promise.all([
     decodeUser(),
     getUserByIdentifier(params.nickname),
@@ -32,7 +36,7 @@ export default async function ProfileLayout({ children, params }: Props) {
 
   const showComo =
     profile.privacy.como === false ||
-    addrcomp(currentUser?.address, profile.address);
+    isAddressEqual(currentUser?.address, profile.address);
 
   return (
     <main className="relative container flex flex-col gap-2 py-2 lg:gap-0">

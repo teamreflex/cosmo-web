@@ -1,7 +1,7 @@
 {
   "extends": ["next/core-web-vitals", "plugin:drizzle/all"],
   "parser": "@typescript-eslint/parser",
-  "plugins": ["drizzle"],
+  "plugins": ["drizzle", "eslint-plugin-react-compiler"],
   "rules": {
     "drizzle/enforce-delete-with-where": [
       "error",
@@ -10,6 +10,7 @@
     "drizzle/enforce-update-with-where": [
       "error",
       { "drizzleObjectName": ["db", "indexer"] }
-    ]
+    ],
+    "react-compiler/react-compiler": "error"
   }
 }

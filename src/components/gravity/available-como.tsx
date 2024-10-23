@@ -1,7 +1,7 @@
 import { decodeUser, getArtistsWithMembers } from "@/app/data-fetching";
 import { fetchTokenBalances } from "@/lib/server/como";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
-import { addrcomp } from "@/lib/utils";
+import { isAddressEqual } from "@/lib/utils";
 
 export default async function AvailableComo({
   artist,
@@ -15,7 +15,10 @@ export default async function AvailableComo({
   ]);
 
   const balance = balances.find((b) =>
-    addrcomp(b.contract, artists.find((a) => a.name === artist)?.contracts.Como)
+    isAddressEqual(
+      b.contract,
+      artists.find((a) => a.name === artist)?.contracts.Como
+    )
   );
 
   if (!balance) {

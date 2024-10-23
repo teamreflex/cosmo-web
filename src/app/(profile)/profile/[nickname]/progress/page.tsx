@@ -3,14 +3,15 @@ import Portal from "@/components/portal";
 import HelpDialog from "@/components/progress/help-dialog";
 import ProgressRenderer from "@/components/progress/progress-renderer";
 import { fetchArtistsWithMembers } from "@/lib/server/cosmo/artists";
-import { addrcomp } from "@/lib/utils";
+import { isAddressEqual } from "@/lib/utils";
 import { Shield } from "lucide-react";
 import { Metadata } from "next";
 
 type Props = {
-  params: { nickname: string };
+  params: Promise<{ nickname: string }>;
 };
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params;
   const { profile } = await getUserByIdentifier(params.nickname);
 
   return {
@@ -18,7 +19,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function ProgressPage({ params }: Props) {
+export default async function ProgressPage(props: Props) {
+  const params = await props.params;
   const [currentUser, targetUser, artists] = await Promise.all([
     decodeUser(),
     getUserByIdentifier(params.nickname),
@@ -29,7 +31,7 @@ export default async function ProgressPage({ params }: Props) {
 
   const showProgress =
     profile.privacy.objekts === false ||
-    addrcomp(currentUser?.address, profile.address);
+    isAddressEqual(currentUser?.address, profile.address);
 
   if (showProgress === false) {
     return <Private nickname={profile.nickname} />;

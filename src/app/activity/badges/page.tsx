@@ -1,5 +1,6 @@
 import { decodeUser } from "@/app/data-fetching";
 import BadgeList from "@/components/activity/badge-list";
+import { getQueryClient } from "@/lib/query-client";
 import { fetchActivityBadges } from "@/lib/server/cosmo/activity";
 import { getSelectedArtist } from "@/lib/server/profiles";
 import {
@@ -15,8 +16,8 @@ export const metadata: Metadata = {
 
 export default async function ActivityBadgesPage() {
   const user = await decodeUser();
-  const artist = getSelectedArtist();
-  const queryClient = new QueryClient();
+  const artist = await getSelectedArtist();
+  const queryClient = getQueryClient();
 
   // prefetch data
   await queryClient.prefetchInfiniteQuery({

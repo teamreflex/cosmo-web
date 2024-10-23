@@ -18,7 +18,6 @@ export const indexer = drizzle(
           params,
           method,
         }),
-        cache: "no-cache",
       });
 
       return { rows };

@@ -15,7 +15,7 @@ export type OwnedObjektsResult = {
   objekts: OwnedObjekt[];
 };
 
-type OwnedObjektCommonFields = {
+export type ObjektBaseFields = {
   collectionId: string;
   season: string;
   member: string;
@@ -34,11 +34,14 @@ type OwnedObjektCommonFields = {
   tokenAddress: string;
   objektNo: number;
   transferable: boolean;
+};
+
+interface OwnedObjektCommonFields extends ObjektBaseFields {
   usedForGrid: boolean;
   lenticularPairTokenId: string | null;
   mintedAt: string;
   receivedAt: string;
-};
+}
 
 export type NonTransferableReason =
   | "mint-pending"
@@ -61,6 +64,11 @@ interface OwnedObjektPending extends OwnedObjektCommonFields {
 }
 
 export type OwnedObjekt = OwnedObjektMinted | OwnedObjektPending;
+
+export type ScannedObjekt = {
+  objekt: ObjektBaseFields;
+  isClaimed: boolean;
+};
 
 export type GasStationResult = {
   safeLow: {

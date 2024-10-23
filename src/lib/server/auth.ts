@@ -5,7 +5,7 @@ import { FetchProfile } from "@/lib/universal/auth";
 import { IdentifiedUser, PublicProfile } from "@/lib/universal/cosmo/auth";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { fetchByNickname } from "./cosmo/auth";
-import { isAddress } from "ethers/lib/utils";
+import { isAddress } from "viem";
 import { notFound, redirect } from "next/navigation";
 import { defaultProfile } from "@/lib/utils";
 

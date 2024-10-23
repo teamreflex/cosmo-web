@@ -13,10 +13,5 @@ neonConfig.fetchEndpoint = (host) => {
 };
 
 // create the connection
-const sql = neon(env.DATABASE_URL, {
-  // prevents nextjs from caching any queries
-  fetchOptions: {
-    cache: "no-cache",
-  },
-});
+const sql = neon(env.DATABASE_URL);
 export const db = drizzle(sql, { schema });

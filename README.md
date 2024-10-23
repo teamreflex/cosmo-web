@@ -15,6 +15,7 @@ Supersedes the [objekts.jinsoul.tv](https://github.com/teamreflex/objekts-svelte
   - Token refreshing
   - Sign out
   - Per-artist profile image display
+  - Ramper wallet decryption
 - Objekts/COMO
   - Fetching owned objekts
   - Sending objekts to another COSMO user
@@ -22,6 +23,7 @@ Supersedes the [objekts.jinsoul.tv](https://github.com/teamreflex/objekts-svelte
   - All available filters
   - Display COMO balances
   - Claiming event rewards
+  - Scan QR codes for claiming objekts
 - Grid
   - Displaying grid completion stats
   - Displaying available seasons and editions
@@ -39,6 +41,7 @@ Supersedes the [objekts.jinsoul.tv](https://github.com/teamreflex/objekts-svelte
   - Displaying list of gravity events
   - Render dynamic gravity event description
   - Display details about a specific gravity event (ranking, leaderboard etc)
+  - Voting on gravity events
 - Rekord
   - Displaying "today's rekord" on homepage
   - Displaying "top rekords", all rekords, my rekords and rekord archive
@@ -83,7 +86,6 @@ Supersedes the [objekts.jinsoul.tv](https://github.com/teamreflex/objekts-svelte
   - Account registration: There's too much that goes into the onboarding process, not worth the effort.
   - Account settings: There's not enough in there to adjust right now.
   - Purchasing objekts: Apple/Google services are used.
-  - Gravity voting: Maybe if the transaction calldata is figured out.
 </details>
 
 ### Notes

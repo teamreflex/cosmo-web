@@ -10,7 +10,9 @@ import { Toaster } from "@/components/ui/toaster";
 import TailwindIndicator from "@/components/tailwind-indicator";
 import Script from "next/script";
 import { getSelectedArtist } from "@/lib/server/profiles";
-import { SelectedArtistProvider } from "@/hooks/use-selected-artist";
+import { decodeUser } from "./data-fetching";
+import Overlay from "@/components/overlay/overlay";
+import { UserStateProvider } from "@/hooks/use-user-state";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -53,13 +55,14 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const artist = getSelectedArtist();
+  const artist = await getSelectedArtist();
+  const token = await decodeUser();
 
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${cosmo.variable} font-sans`}>
-        <ThemeProvider attribute="class" defaultTheme="dark">
-          <SelectedArtistProvider selectedArtist={artist}>
+        <UserStateProvider artist={artist} token={token}>
+          <ThemeProvider attribute="class" defaultTheme="dark">
             <ClientProviders>
               <div className="relative flex min-h-dvh flex-col">
                 <Navbar />
@@ -68,23 +71,25 @@ export default async function RootLayout({
                 <div className="flex min-w-full flex-col text-foreground">
                   {children}
                 </div>
+
+                <Overlay />
               </div>
             </ClientProviders>
-          </SelectedArtistProvider>
 
-          <Toaster />
-          <TailwindIndicator />
+            <Toaster />
+            <TailwindIndicator />
 
-          {/* umami analytics */}
-          {env.NEXT_PUBLIC_UMAMI_ID !== "dev" && (
-            <Script
-              strategy="afterInteractive"
-              async
-              src={env.NEXT_PUBLIC_UMAMI_SCRIPT_URL}
-              data-website-id={env.NEXT_PUBLIC_UMAMI_ID}
-            />
-          )}
-        </ThemeProvider>
+            {/* umami analytics */}
+            {env.NEXT_PUBLIC_UMAMI_ID !== "dev" && (
+              <Script
+                strategy="afterInteractive"
+                async
+                src={env.NEXT_PUBLIC_UMAMI_SCRIPT_URL}
+                data-website-id={env.NEXT_PUBLIC_UMAMI_ID}
+              />
+            )}
+          </ThemeProvider>
+        </UserStateProvider>
       </body>
     </html>
   );

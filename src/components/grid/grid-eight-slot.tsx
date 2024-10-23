@@ -16,14 +16,14 @@ export default function GridEightSlot({
   grid: CosmoOngoingGrid;
   onComplete: () => void;
 }) {
-  const [
+  const {
     objekts,
     populateSlot,
     canComplete,
     completeGrid,
     isPending,
     gridReward,
-  ] = useGrid(slug, grid.ongoing.slotStatuses);
+  } = useGrid(slug, grid.ongoing.slotStatuses);
 
   return (
     <div className="flex flex-col gap-4 items-center w-full">

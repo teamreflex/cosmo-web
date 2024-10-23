@@ -56,37 +56,23 @@ function normalize(slots: CosmoOngoingGridSlot[]) {
 
 export function useGrid(slug: string, slots: CosmoOngoingGridSlot[]) {
   const [isPending, startTransition] = useTransition();
-
-  const [selectedObjekts, setSelectedObjekts] = useState<MinimalGridSlot[]>(
-    normalize(slots)
-  );
-  const [slotsForCompletion, setSlotsForCompletion] = useState<
-    CosmoGridSlotCompletion[]
-  >([]);
-  const [canComplete, setCanComplete] = useState(false);
+  const [objekts, setObjekts] = useState<MinimalGridSlot[]>(normalize(slots));
   const [gridReward, setGridReward] = useState<CosmoGridRewardClaimResult>();
 
-  useEffect(() => {
-    const completionSlots: CosmoGridSlotCompletion[] = [];
-    for (const slot of selectedObjekts) {
+  const slotsForCompletion: CosmoGridSlotCompletion[] = objekts
+    .map((slot) => {
       if (slot.populated) {
-        completionSlots.push({
+        return {
           no: parseInt(slot.collectionNo), // parseInt handles "101A"/"101Z" -> 101
           tokenIdToUse: slot.tokenId,
-        });
+        };
       }
-    }
-    setSlotsForCompletion(completionSlots);
-    setCanComplete(
-      env.NEXT_PUBLIC_SIMULATE_GRID
-        ? true
-        : completionSlots.length === slots.length
-    );
-  }, [selectedObjekts, slots]);
+    })
+    .filter((slot) => slot !== undefined);
 
   function populateSlot(collectionNo: number, objekt: PopulatedSlot) {
     // idk copilot generated this
-    setSelectedObjekts((prev) =>
+    setObjekts((prev) =>
       prev.map((slot) => {
         if (parseInt(slot.collectionNo.toString()) === collectionNo) {
           return objekt;
@@ -111,12 +97,14 @@ export function useGrid(slug: string, slots: CosmoOngoingGridSlot[]) {
     });
   }
 
-  return [
-    selectedObjekts,
+  return {
+    objekts,
     populateSlot,
-    canComplete,
+    canComplete: env.NEXT_PUBLIC_SIMULATE_GRID
+      ? true
+      : slotsForCompletion.length === slots.length,
     completeGrid,
     isPending,
     gridReward,
-  ] as const;
+  };
 }

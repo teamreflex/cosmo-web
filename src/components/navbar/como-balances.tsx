@@ -11,7 +11,7 @@ import { Suspense } from "react";
 import { X } from "lucide-react";
 import { ErrorBoundary } from "react-error-boundary";
 import { getArtistsWithMembers } from "@/app/data-fetching";
-import { addrcomp } from "@/lib/utils";
+import { isAddressEqual } from "@/lib/utils";
 import { ComoBalance } from "@/lib/server/db/indexer/schema";
 
 type Props = {
@@ -66,7 +66,9 @@ async function UserBalances({ address }: Props) {
           key={artist.name}
           artist={artist}
           balance={
-            balances.find((b) => addrcomp(b.contract, artist.contracts.Como))!
+            balances.find((b) =>
+              isAddressEqual(b.contract, artist.contracts.Como)
+            )!
           }
         />
       ))}

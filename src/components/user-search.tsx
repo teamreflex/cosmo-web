@@ -10,22 +10,28 @@ import {
 } from "@/components/ui/command";
 import { useQuery } from "@tanstack/react-query";
 import { HeartCrack, HelpCircle, Loader2 } from "lucide-react";
-import { isAddress } from "ethers/lib/utils";
+import { isAddress } from "viem";
 import { CosmoPublicUser, CosmoSearchResult } from "@/lib/universal/cosmo/auth";
 import { ofetch } from "ofetch";
 import { env } from "@/env.mjs";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import { DialogClose } from "./ui/dialog";
+import {
+  DialogClose,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "./ui/dialog";
 import { useDebounceValue } from "usehooks-ts";
 import ProfileImage from "@/assets/profile.webp";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { RecentUser } from "@/store";
-import { useSelectedArtist } from "@/hooks/use-selected-artist";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
+import VisuallyHidden from "./ui/visually-hidden";
+import { useUserState } from "@/hooks/use-user-state";
 
 type Props = PropsWithChildren<{
   placeholder?: string;
-  recent: RecentUser[];
+  recent?: RecentUser[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSelect: (user: CosmoPublicUser) => void;
@@ -34,14 +40,14 @@ type Props = PropsWithChildren<{
 
 export function UserSearch({
   children,
-  recent,
+  recent = [],
   placeholder,
   open,
   onOpenChange,
   onSelect,
   authenticated = false,
 }: Props) {
-  const { artist } = useSelectedArtist();
+  const { artist } = useUserState();
   const [query, setQuery] = useState<string>("");
   const [debouncedQuery] = useDebounceValue<string>(query, 500);
   const queryIsAddress = isAddress(debouncedQuery);
@@ -94,6 +100,12 @@ export function UserSearch({
         onOpenChange={onOpenChange}
         showClose={authenticated}
       >
+        <VisuallyHidden>
+          <DialogHeader>
+            <DialogTitle>User Search</DialogTitle>
+            <DialogDescription>Search for a user...</DialogDescription>
+          </DialogHeader>
+        </VisuallyHidden>
         {authenticated === false && (
           <div className="flex items-center justify-between px-4 py-2 text-xs font-semibold bg-cosmo">
             <div className="flex gap-2 items-center">
@@ -158,30 +170,30 @@ export function UserSearch({
             </div>
           )}
 
-          {status === "success" && (
-            <CommandGroup heading="Results">
-              {queryIsAddress && (
+          <CommandGroup heading="Results">
+            {queryIsAddress && (
+              <CommandItem
+                onSelect={() => selectAddress(debouncedQuery)}
+                className="cursor-pointer"
+              >
+                {debouncedQuery}
+              </CommandItem>
+            )}
+
+            {status === "success" &&
+              data.length > 0 &&
+              data.map((user) => (
                 <CommandItem
-                  onSelect={() => selectAddress(debouncedQuery)}
-                  className="cursor-pointer"
+                  key={user.address}
+                  onSelect={() => selectResult(user)}
+                  className="gap-2 cursor-pointer"
+                  value={user.nickname}
                 >
-                  {debouncedQuery}
+                  <UserAvatar artist={artist} user={user} />
+                  <span>{user.nickname}</span>
                 </CommandItem>
-              )}
-              {data.length > 0 &&
-                data.map((user) => (
-                  <CommandItem
-                    key={user.address}
-                    onSelect={() => selectResult(user)}
-                    className="gap-2 cursor-pointer"
-                    value={user.nickname}
-                  >
-                    <UserAvatar artist={artist} user={user} />
-                    <span>{user.nickname}</span>
-                  </CommandItem>
-                ))}
-            </CommandGroup>
-          )}
+              ))}
+          </CommandGroup>
 
           {recentUsers.length > 0 && (
             <CommandGroup heading="Recent">

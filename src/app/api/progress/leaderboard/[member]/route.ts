@@ -4,7 +4,7 @@ import { and, count, eq, inArray, not, sql } from "drizzle-orm";
 import { NextRequest } from "next/server";
 import { fetchTotal } from "../../common";
 import { fetchKnownAddresses } from "@/lib/server/profiles";
-import { addrcomp } from "@/lib/utils";
+import { isAddressEqual } from "@/lib/utils";
 import { LeaderboardItem } from "@/lib/universal/progress";
 import { profiles } from "@/lib/server/db/schema";
 import {
@@ -32,9 +32,9 @@ const schema = z.object({
 });
 
 type Params = {
-  params: {
+  params: Promise<{
     member: string;
-  };
+  }>;
 };
 
 /**
@@ -42,7 +42,8 @@ type Params = {
  * Takes a member name, and returns the progress leaderboard for that member.
  * Cached for 1 hour.
  */
-export async function GET(request: NextRequest, { params }: Params) {
+export async function GET(request: NextRequest, props: Params) {
+  const params = await props.params;
   // parse search params
   const result = schema.safeParse({
     member: params.member,
@@ -72,7 +73,7 @@ export async function GET(request: NextRequest, { params }: Params) {
   // map the nickname onto the results
   const results = leaderboard.map((row) => {
     const known = knownAddresses.find((a) =>
-      addrcomp(a.userAddress, row.owner)
+      isAddressEqual(a.userAddress, row.owner)
     );
 
     return {

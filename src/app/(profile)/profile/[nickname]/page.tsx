@@ -7,7 +7,7 @@ import {
 import ProfileRenderer from "@/components/profile/profile-renderer";
 import { fetchArtistsWithMembers } from "@/lib/server/cosmo/artists";
 import { Loader2, Shield } from "lucide-react";
-import { addrcomp } from "@/lib/utils";
+import { isAddressEqual } from "@/lib/utils";
 import { Suspense } from "react";
 import PreviousIds from "@/components/profile/previous-ids";
 import { ProfileProvider } from "@/hooks/use-profile";
@@ -18,12 +18,13 @@ import { getSelectedArtist } from "@/lib/server/profiles";
 import { fetchPins } from "@/lib/server/objekts/pins";
 
 type Props = {
-  params: {
+  params: Promise<{
     nickname: string;
-  };
+  }>;
 };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params;
   const { profile } = await getUserByIdentifier(params.nickname);
 
   return {
@@ -31,12 +32,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function UserCollectionPage({ params }: Props) {
+export default async function UserCollectionPage(props: Props) {
+  const params = await props.params;
   const user = await decodeUser();
-  const selectedArtist = getSelectedArtist();
+  const selectedArtist = await getSelectedArtist();
 
   const isOwnProfile =
-    user !== undefined && addrcomp(user.nickname, params.nickname);
+    user !== undefined && isAddressEqual(user.nickname, params.nickname);
 
   const [artists, currentUser, targetUser] = await Promise.all([
     fetchArtistsWithMembers(),

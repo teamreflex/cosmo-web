@@ -1,4 +1,4 @@
-import { RefObject, useRef, useState } from "react";
+import { RefObject, useRef, useState, useCallback } from "react";
 import { useIsomorphicLayoutEffect } from "usehooks-ts";
 
 type Size = {
@@ -6,12 +6,8 @@ type Size = {
   height: number;
 };
 
-/**
- * cuts re-renders by like 10x
- * src: https://github.com/juliencrn/usehooks-ts/issues/236#issuecomment-1291001854
- */
 export const useElementSize = <T extends HTMLElement = HTMLDivElement>(): [
-  RefObject<T>,
+  RefObject<T | null>,
   Size
 ] => {
   const ref = useRef<T>(null);
@@ -20,29 +16,31 @@ export const useElementSize = <T extends HTMLElement = HTMLDivElement>(): [
     height: 0,
   });
 
-  useIsomorphicLayoutEffect(() => {
-    const updateSize = (element: Element | null) => {
-      const { width, height } = element?.getBoundingClientRect() ?? {
-        width: 0,
-        height: 0,
-      };
+  const updateSize = useCallback(() => {
+    const element = ref.current;
+    if (element) {
+      const { width, height } = element.getBoundingClientRect();
       setSize({ width, height });
-    };
+    }
+  }, []);
 
-    updateSize(ref.current);
+  useIsomorphicLayoutEffect(() => {
+    updateSize();
 
-    const resizeObserver = new ResizeObserver((entries) => {
-      const entry = entries[0];
-      if (entry) {
-        updateSize(entry.target);
-      }
+    const resizeObserver = new ResizeObserver(() => {
+      updateSize();
     });
 
-    ref.current && resizeObserver.observe(ref.current);
+    if (ref.current) {
+      resizeObserver.observe(ref.current);
+    }
+
     return () => {
-      ref.current && resizeObserver.unobserve(ref.current);
+      if (ref.current) {
+        resizeObserver.unobserve(ref.current);
+      }
     };
-  }, [ref.current]);
+  }, [updateSize]);
 
   return [ref, size];
 };

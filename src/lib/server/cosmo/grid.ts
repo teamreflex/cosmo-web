@@ -19,8 +19,6 @@ type GridStatus = {
  */
 export async function fetchGridStatus(token: string, artist: ValidArtist) {
   return await cosmo<GridStatus>(`/grid/v3/${artist}/status`, {
-    // endpoint is specific to the user
-    cache: "no-cache",
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -36,8 +34,6 @@ type CosmoGridEditionResult = {
  */
 export async function fetchEditions(token: string, artist: ValidArtist) {
   return await cosmo<CosmoGridEditionResult>(`/grid/v3/${artist}/edition`, {
-    // caching here would limit how quick people can grid a new release
-    cache: "no-cache",
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -59,8 +55,6 @@ export async function fetchEdition(
   return await cosmo<CosmoGridResult>(
     `/grid/v3/${artist}/edition/${editionSlug}`,
     {
-      // caching here would limit how quick people can grid a new release
-      cache: "no-cache",
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -73,8 +67,6 @@ export async function fetchEdition(
  */
 export async function fetchArtistGridStatus(token: string, gridSlug: string) {
   return await cosmo<CosmoOngoingGrid>(`/grid/v1/${gridSlug}/status`, {
-    // endpoint is specific to the user
-    cache: "no-cache",
     headers: {
       Authorization: `Bearer ${token}`,
     },

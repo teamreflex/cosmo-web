@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 };
 
 export default async function NewsExclusivePage() {
-  const artist = getSelectedArtist();
+  const artist = await getSelectedArtist();
 
   return (
     <main className="flex flex-col items-center container py-2">

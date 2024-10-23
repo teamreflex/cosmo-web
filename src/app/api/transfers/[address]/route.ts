@@ -13,8 +13,9 @@ export const runtime = "nodejs";
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { address: string } }
+  props: { params: Promise<{ address: string }> }
 ) {
+  const params = await props.params;
   // too much data, bail
   if (params.address.toLowerCase() === NULL_ADDRESS) {
     return Response.json({

@@ -29,5 +29,5 @@
     ".next/types/**/*.ts",
     "migrate.mts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "scripts"]
 }

@@ -20,9 +20,10 @@ import AvailableComo from "./available-como";
 
 type Props = {
   gravity: CosmoGravity;
+  authenticated: boolean;
 };
 
-export default function GravityCoreDetails({ gravity }: Props) {
+export default function GravityCoreDetails({ gravity, authenticated }: Props) {
   if (isPast(new Date(gravity.entireEndDate))) {
     return <PastDetails gravity={gravity as CosmoPastGravity} />;
   }
@@ -31,7 +32,12 @@ export default function GravityCoreDetails({ gravity }: Props) {
     return <UpcomingDetails gravity={gravity as CosmoUpcomingGravity} />;
   }
 
-  return <OngoingDetails gravity={gravity as CosmoOngoingGravity} />;
+  return (
+    <OngoingDetails
+      gravity={gravity as CosmoOngoingGravity}
+      authenticated={authenticated}
+    />
+  );
 }
 
 function PastDetails({ gravity }: { gravity: CosmoPastGravity }) {
@@ -149,7 +155,12 @@ function UpcomingDetails({ gravity }: { gravity: CosmoUpcomingGravity }) {
   );
 }
 
-function OngoingDetails({ gravity }: { gravity: CosmoOngoingGravity }) {
+type OngoingDetailsProps = {
+  gravity: CosmoOngoingGravity;
+  authenticated: boolean;
+};
+
+function OngoingDetails({ gravity, authenticated }: OngoingDetailsProps) {
   const currentPoll = gravity.polls.find((poll) => {
     return (
       new Date(poll.startDate) <= new Date() &&
@@ -168,7 +179,7 @@ function OngoingDetails({ gravity }: { gravity: CosmoOngoingGravity }) {
           gravityEndDate={gravity.entireEndDate}
         />
 
-        {currentPoll && (
+        {authenticated && currentPoll && (
           <GravityVote
             gravity={gravity}
             availableComo={
@@ -186,7 +197,7 @@ function OngoingDetails({ gravity }: { gravity: CosmoOngoingGravity }) {
 }
 
 // common to all types
-function Header({ gravity }: Props) {
+function Header({ gravity }: { gravity: CosmoGravity }) {
   return (
     <>
       <h2 className="text-xl font-bold">{gravity.title}</h2>

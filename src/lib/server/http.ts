@@ -19,7 +19,7 @@ export const alchemy = ofetch.create({
   baseURL: "https://polygon-mainnet.g.alchemy.com/v2",
   method: "POST",
   headers: {
-    Authorization: `Bearer ${env.ALCHEMY_KEY}`,
+    Authorization: `Bearer ${env.NEXT_PUBLIC_ALCHEMY_KEY}`,
   },
   retry: 2,
   retryDelay: 500, // 500ms

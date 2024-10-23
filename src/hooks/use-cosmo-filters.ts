@@ -103,8 +103,7 @@ export function useCosmoFilters() {
         [key]: value,
       }));
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [setCosmoFilters]
   );
 
   // upon first render, adjust data source based on source-specific filters
@@ -117,7 +116,6 @@ export function useCosmoFilters() {
         setDataSource("blockchain");
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return [

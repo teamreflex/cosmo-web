@@ -48,7 +48,6 @@ export async function fetchActivityWelcome(
     headers: {
       Authorization: `Bearer ${token}`,
     },
-    cache: "no-cache",
   })
     .then(
       (result) =>
@@ -89,7 +88,6 @@ export async function fetchActivityMyObjekts(
       headers: {
         Authorization: `Bearer ${token}`,
       },
-      cache: "no-cache",
     }
   );
 }
@@ -109,7 +107,6 @@ export async function fetchActivityHistory(
     headers: {
       Authorization: `Bearer ${token}`,
     },
-    cache: "no-cache",
   });
 }
 
@@ -128,7 +125,6 @@ export async function fetchActivityBadges(
     headers: {
       Authorization: `Bearer ${token}`,
     },
-    cache: "no-cache",
   });
 }
 
@@ -149,7 +145,6 @@ export async function fetchActivityRankingNear(
       headers: {
         Authorization: `Bearer ${token}`,
       },
-      cache: "no-cache",
     }
   );
 }
@@ -171,7 +166,6 @@ export async function fetchActivityRankingTop(
       headers: {
         Authorization: `Bearer ${token}`,
       },
-      cache: "no-cache",
     }
   );
 }

@@ -4,6 +4,7 @@ import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogContent,
+  AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
@@ -11,6 +12,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { HelpCircle, Sparkles } from "lucide-react";
 import { Button } from "../ui/button";
+import VisuallyHidden from "../ui/visually-hidden";
 
 export default function HelpDialog() {
   return (
@@ -22,6 +24,11 @@ export default function HelpDialog() {
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
+          <VisuallyHidden>
+            <AlertDialogDescription>
+              Help information for COMO caldenar
+            </AlertDialogDescription>
+          </VisuallyHidden>
           <AlertDialogTitle>COMO Calendar</AlertDialogTitle>
         </AlertDialogHeader>
 

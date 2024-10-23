@@ -5,7 +5,8 @@ import { CosmoGravity } from "@/lib/universal/cosmo/gravity";
 import { getSelectedArtist } from "@/lib/server/profiles";
 
 export default async function GravityRenderer() {
-  const gravities = await fetchGravities(getSelectedArtist());
+  const artist = await getSelectedArtist();
+  const gravities = await fetchGravities(artist);
   const ongoing = [...gravities.upcoming, ...gravities.ongoing];
 
   return (

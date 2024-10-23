@@ -19,8 +19,3 @@
 
 - Add filtering
 - Add transfer hash
-
-### Profiles
-
-- Set a favorite member?
-- Social links? Twitter, Discord, Instagram etc
