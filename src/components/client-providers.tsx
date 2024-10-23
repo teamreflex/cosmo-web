@@ -7,6 +7,7 @@ import { ReactQueryStreamedHydration } from "@tanstack/react-query-next-experime
 import WarningDialog from "./warning-dialog";
 import { preconnect, prefetchDNS } from "react-dom";
 import { getQueryClient } from "@/lib/query-client";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 type Props = PropsWithChildren;
 
@@ -21,11 +22,13 @@ export default function ClientProviders({ children }: Props) {
   const queryClient = getQueryClient();
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <ReactQueryStreamedHydration>{children}</ReactQueryStreamedHydration>
+    <NuqsAdapter>
+      <QueryClientProvider client={queryClient}>
+        <ReactQueryStreamedHydration>{children}</ReactQueryStreamedHydration>
 
-      <WarningDialog />
-      <ReactQueryDevtools buttonPosition="top-right" />
-    </QueryClientProvider>
+        <WarningDialog />
+        <ReactQueryDevtools buttonPosition="top-right" />
+      </QueryClientProvider>
+    </NuqsAdapter>
   );
 }

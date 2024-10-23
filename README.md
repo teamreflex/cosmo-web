@@ -137,7 +137,7 @@ pnpm dev
 
 ## Tooling
 
-- [Next 14](https://nextjs.org/)
+- [Next 15](https://nextjs.org/)
   - [Server Components](https://nextjs.org/docs/app/building-your-application/rendering/server-components)
   - [Server Actions](https://nextjs.org/docs/app/building-your-application/data-fetching/forms-and-mutations)
 - [shadcn/ui](https://ui.shadcn.com/docs)
