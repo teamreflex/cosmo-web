@@ -16,7 +16,6 @@ async function fetchArtist(artist: ValidArtist) {
   return await cosmo<{ artist: CosmoArtistWithMembers }>(
     `/artist/v1/${artist}`,
     {
-      cache: "force-cache",
       next: {
         revalidate: 60 * 60 * 12,
       },

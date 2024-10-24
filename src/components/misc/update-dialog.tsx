@@ -94,18 +94,4 @@ const updates = [
     date: "2024-09-29",
     changes: ["Trades showing duplicate and missing transfers has been fixed."],
   },
-  {
-    date: "2024-09-23",
-    changes: [
-      "Fixed: Sign in button.",
-      "Fixed: Activity page errors due to authentication not getting refreshed after 2 weeks.",
-    ],
-  },
-  {
-    date: "2024-09-21",
-    changes: [
-      "Added: Light mode, switch can be found in settings.",
-      "Changed: Touched up profile pages so they're less cluttered and fit longer IDs better.",
-    ],
-  },
 ];

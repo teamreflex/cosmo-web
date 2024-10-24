@@ -41,11 +41,9 @@ export default async function UserComoPage(props: Props) {
 
   const totals = artists.map((artist) => {
     const total = objekts
-      .filter(
-        (t) => t.collection.contract === artist.contracts.Objekt.toLowerCase()
-      )
+      .filter((t) => t.contract === artist.contracts.Objekt.toLowerCase())
       .reduce((sum, objekt) => {
-        return sum + objekt.collection.comoAmount;
+        return sum + objekt.amount;
       }, 0);
 
     return { artist, total };

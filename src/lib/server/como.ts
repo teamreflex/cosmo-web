@@ -1,4 +1,4 @@
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { indexer } from "./db/indexer";
 import { collections, ComoBalance, objekts } from "./db/indexer/schema";
 import { ObjektWithCollection } from "@/lib/universal/como";
@@ -14,8 +14,15 @@ export async function fetchObjektsWithComo(
 
   return await indexer
     .select({
-      objekt: objekts,
-      collection: collections,
+      contract: collections.contract,
+      mintedAt: objekts.mintedAt,
+      amount: sql<number>`
+        case 
+          when ${collections.class} = 'Special' then 1
+          when ${collections.class} = 'Premier' then 2
+          else 0
+        end
+      `.mapWith(Number),
     })
     .from(objekts)
     .where(eq(objekts.owner, addr))

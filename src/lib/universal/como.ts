@@ -1,9 +1,9 @@
-import { Collection, Objekt } from "@/lib/server/db/indexer/schema";
 import { getDaysInMonth } from "date-fns";
 
 export type ObjektWithCollection = {
-  collection: Collection;
-  objekt: Objekt;
+  contract: string;
+  mintedAt: string;
+  amount: number;
 };
 
 type Calendar = {
@@ -29,16 +29,16 @@ export function buildCalendar(objekts: ObjektWithCollection[]) {
   // loop over all possible to catch 30th/31st drops
   for (const day of possibleDays) {
     const filteredObjekts = objekts.filter((o) => {
-      const date = new Date(o.objekt.mintedAt);
+      const date = new Date(o.mintedAt);
       return date.getDate() === day;
     });
 
     for (const objekt of filteredObjekts) {
       // initialize day per for the given artist contract
-      if (!calendar?.[day]?.[objekt.collection.contract]) {
+      if (!calendar?.[day]?.[objekt.contract]) {
         calendar[day] = {
           ...calendar[day],
-          [objekt.collection.contract]: {
+          [objekt.contract]: {
             count: 0,
             carried: 0,
           },
@@ -46,8 +46,7 @@ export function buildCalendar(objekts: ObjektWithCollection[]) {
       }
 
       // increment count
-      calendar[day][objekt.collection.contract].count +=
-        objekt.collection.comoAmount;
+      calendar[day][objekt.contract].count += objekt.amount;
 
       // carry over 30th/31st drops
       if (!currentDays.includes(day)) {
@@ -55,7 +54,7 @@ export function buildCalendar(objekts: ObjektWithCollection[]) {
         const finalDay = currentDays.at(-1)!;
         if (!calendar[finalDay]) {
           calendar[finalDay] = {
-            [objekt.collection.contract]: {
+            [objekt.contract]: {
               count: 0,
               carried: 0,
             },
@@ -63,18 +62,16 @@ export function buildCalendar(objekts: ObjektWithCollection[]) {
         }
 
         // initialize the contract specific count if it doesn't exist
-        if (!calendar[finalDay][objekt.collection.contract]) {
-          calendar[finalDay][objekt.collection.contract] = {
+        if (!calendar[finalDay][objekt.contract]) {
+          calendar[finalDay][objekt.contract] = {
             count: 0,
             carried: 0,
           };
         }
 
         // increment counts
-        calendar[finalDay][objekt.collection.contract].carried +=
-          objekt.collection.comoAmount;
-        calendar[finalDay][objekt.collection.contract].count +=
-          objekt.collection.comoAmount;
+        calendar[finalDay][objekt.contract].carried += objekt.amount;
+        calendar[finalDay][objekt.contract].count += objekt.amount;
       }
     }
   }
