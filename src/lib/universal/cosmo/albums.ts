@@ -8,3 +8,8 @@ export type CosmoAlbum = {
   albumImageThumbnailUrl: string;
   omaImageThumbnailUrl: string;
 };
+
+export type CosmoAlbumClaimError = {
+  statusCode: number;
+  message: string;
+};

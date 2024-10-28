@@ -16,3 +16,21 @@ export async function fetchAlbums(token: string, artistName: ValidArtist) {
     },
   });
 }
+
+/**
+ * Claim an album via its QR code.
+ */
+export async function claimAlbum(token: string, code: string) {
+  return await cosmo<CosmoAlbum[]>(
+    `/bff/v3/objekt-music-album-qr-codes/album`,
+    {
+      method: "POST",
+      query: {
+        n: code,
+      },
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+}

@@ -1,89 +1,93 @@
+/* eslint-disable react-compiler/react-compiler */
 "use client";
 
+import { createStore, useStore } from "zustand";
+import { createContext, useContext, useRef } from "react";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { ObjektList } from "@/lib/universal/objekts";
-import { ReactNode, useCallback, useState } from "react";
-import {
-  createContext,
-  useContextSelector,
-  ContextSelector,
-} from "@fluentui/react-context-selector";
 import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
 
-type ContextProps = {
+interface ProfileProps {
   currentProfile: PublicProfile | undefined;
   targetProfile: PublicProfile | undefined;
   objektLists: ObjektList[];
   lockedObjekts: number[];
-  toggleLock: (tokenId: number) => void;
   pins: OwnedObjekt[];
+}
+
+type ProfileProviderProps = React.PropsWithChildren<Partial<ProfileProps>>;
+
+interface ProfileState extends ProfileProps {
+  toggleLock: (tokenId: number) => void;
   addPin: (objekt: OwnedObjekt) => void;
   removePin: (tokenId: number) => void;
+}
+
+type ProfileStore = ReturnType<typeof createProfileStore>;
+
+const createProfileStore = (initProps?: Partial<ProfileProps>) => {
+  const DEFAULT_PROPS: ProfileProps = {
+    currentProfile: undefined,
+    targetProfile: undefined,
+    objektLists: [],
+    lockedObjekts: [],
+    pins: [],
+  };
+
+  return createStore<ProfileState>()((set) => ({
+    ...DEFAULT_PROPS,
+    ...initProps,
+
+    /**
+     * Toggle the lock state of a token
+     */
+    toggleLock: (tokenId: number) =>
+      set((state) => ({
+        ...state,
+        lockedObjekts: state.lockedObjekts.includes(tokenId)
+          ? state.lockedObjekts.filter((id) => id !== tokenId)
+          : [...state.lockedObjekts, tokenId],
+      })),
+
+    /**
+     * Pin the given objekt
+     */
+    addPin: (objekt: OwnedObjekt) =>
+      set((state) => ({
+        ...state,
+        pins: [objekt, ...state.pins],
+      })),
+
+    /**
+     * Remove a pinned objekt
+     */
+    removePin: (tokenId: number) =>
+      set((state) => ({
+        ...state,
+        pins: state.pins.filter((p) => p.tokenId !== tokenId.toString()),
+      })),
+  }));
 };
 
-const ProfileContext = createContext<ContextProps>({
-  currentProfile: undefined,
-  targetProfile: undefined,
-  objektLists: [],
-  lockedObjekts: [],
-  toggleLock: () => {},
-  pins: [],
-  addPin: () => {},
-  removePin: () => {},
-});
+const ProfileContext = createContext<ProfileStore | null>(null);
 
-type ProviderProps = {
-  children: ReactNode;
-  currentProfile?: PublicProfile;
-  targetProfile?: PublicProfile;
-  objektLists?: ObjektList[];
-  lockedObjekts?: number[];
-  pins?: OwnedObjekt[];
-};
-
-export function ProfileProvider({
-  children,
-  currentProfile,
-  targetProfile,
-  objektLists = [],
-  lockedObjekts = [],
-  pins = [],
-}: ProviderProps) {
-  const [lockedTokens, setLockedTokens] = useState<number[]>(lockedObjekts);
-  const toggleLock = useCallback((tokenId: number) => {
-    setLockedTokens((prev) => {
-      return prev.includes(tokenId)
-        ? prev.filter((id) => id !== tokenId)
-        : [...prev, tokenId];
-    });
-  }, []);
-
-  const [fullPins, setPins] = useState<OwnedObjekt[]>(pins);
-  function addPin(objekt: OwnedObjekt) {
-    setPins((prev) => [objekt, ...prev]);
+export function ProfileProvider({ children, ...props }: ProfileProviderProps) {
+  const storeRef = useRef<ProfileStore>(null);
+  if (!storeRef.current) {
+    storeRef.current = createProfileStore(props);
   }
-  function removePin(tokenId: number | string) {
-    setPins((prev) => prev.filter((p) => p.tokenId !== tokenId.toString()));
-  }
-
   return (
-    <ProfileContext.Provider
-      value={{
-        currentProfile,
-        targetProfile,
-        objektLists,
-        lockedObjekts: lockedTokens,
-        toggleLock,
-        pins: fullPins,
-        addPin,
-        removePin,
-      }}
-    >
+    <ProfileContext.Provider value={storeRef.current}>
       {children}
     </ProfileContext.Provider>
   );
 }
 
-export const useProfileContext = <T,>(
-  selector: ContextSelector<ContextProps, T>
-) => useContextSelector(ProfileContext, selector);
+export function useProfileContext<T>(selector: (state: ProfileState) => T): T {
+  const store = useContext(ProfileContext);
+  if (!store) {
+    throw new Error("useProfileContext must be used within a ProfileProvider");
+  }
+
+  return useStore(store, selector);
+}
