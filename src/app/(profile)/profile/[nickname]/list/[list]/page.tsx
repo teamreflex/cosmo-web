@@ -16,6 +16,7 @@ import {
 } from "@/lib/server/objekts/prefetching/objekt-list";
 import { fetchObjektList } from "@/lib/server/objekts/lists";
 import { getQueryClient } from "@/lib/query-client";
+import { ProfileProvider } from "@/hooks/use-profile";
 
 type Props = {
   searchParams: Promise<Record<string, string>>;
@@ -81,15 +82,17 @@ export default async function ObjektListPage(props: Props) {
     currentUser !== undefined && currentUser.address === profile.address;
 
   return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
-      <ListRenderer
-        artists={artists}
-        list={objektList}
-        authenticated={authenticated}
-        user={profile}
-        gridColumns={currentUser?.gridColumns}
-      />
-    </HydrationBoundary>
+    <ProfileProvider>
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <ListRenderer
+          artists={artists}
+          list={objektList}
+          authenticated={authenticated}
+          user={profile}
+          gridColumns={currentUser?.gridColumns}
+        />
+      </HydrationBoundary>
+    </ProfileProvider>
   );
 }
 
