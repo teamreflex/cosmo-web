@@ -8,30 +8,25 @@ import {
 import { ordinal } from "@/lib/utils";
 import useEmblaCarousel from "embla-carousel-react";
 import Image from "next/image";
-import { PropsWithChildren } from "react";
 
-type Props = PropsWithChildren<{
+type Props = {
   poll: CosmoPollFinalized;
-}>;
+};
 
-export default function GravityRankingCarousel({ children, poll }: Props) {
+export default function GravityRankingCarousel({ poll }: Props) {
   const [carousel] = useEmblaCarousel();
 
   return (
-    <div className="flex flex-col gap-2 w-full">
-      <div className="p-3 pb-0">{children}</div>
-
-      <div
-        className="flex flex-col gap-2 w-full overflow-x-hidden"
-        ref={carousel}
-      >
-        <div className="embla__container flex w-full h-full py-3 px-0">
-          {poll.type === "single-poll" ? (
-            <SinglePollResult result={poll.result.voteResults} />
-          ) : poll.type === "combination-poll" ? (
-            <CombinationPollResult result={poll.result.voteResults} />
-          ) : null}
-        </div>
+    <div
+      className="flex flex-col gap-2 w-full overflow-x-hidden"
+      ref={carousel}
+    >
+      <div className="embla__container flex w-full h-full py-3 px-0">
+        {poll.type === "single-poll" ? (
+          <SinglePollResult result={poll.result.voteResults} />
+        ) : poll.type === "combination-poll" ? (
+          <CombinationPollResult result={poll.result.voteResults} />
+        ) : null}
       </div>
     </div>
   );
@@ -73,5 +68,39 @@ function CombinationPollResult({
 }: {
   result: CosmoCombinationPollVoteResult[];
 }) {
-  return null;
+  return (
+    <>
+      {result.map((vote) => (
+        <div
+          className="embla__slide mx-2 p-2 flex flex-col aspect-auto max-w-60 justify-between gap-2 bg-black rounded-lg"
+          key={vote.rank}
+        >
+          <span className="bg-cosmo text-white text-xs px-2 py-px rounded w-fit">
+            {ordinal(vote.rank)}
+          </span>
+
+          <div className="grid grid-cols-2 gap-2 items-center">
+            {vote.votedSlots.map((slot) => (
+              <div className="flex flex-col gap-2" key={slot.slotChoiceName}>
+                <div className="aspect-square rounded overflow-hidden relative">
+                  <Image
+                    className="object-cover"
+                    src={slot.slotChoiceCardImageUrl}
+                    alt={slot.slotChoiceName}
+                    fill={true}
+                  />
+                </div>
+
+                <div className="flex flex-col text-xs font-bold">
+                  <p>{slot.slotName}</p>
+                  <p className="text-cosmo-text">{slot.slotChoiceName}</p>
+                  <p>{slot.comoUsed.toLocaleString()} COMO</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </>
+  );
 }

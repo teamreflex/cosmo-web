@@ -69,7 +69,8 @@ type CosmoPollCommon<PollType extends CosmoPollType> = {
   revealDate: string;
 };
 
-interface CosmoSinglePollFinalized extends CosmoPollCommon<"single-poll"> {
+export interface CosmoSinglePollFinalized
+  extends CosmoPollCommon<"single-poll"> {
   finalized: true;
   result: {
     totalComoUsed: number;
@@ -93,7 +94,7 @@ export type CosmoCombinationPollVoteResult = {
   votedSlots: CosmoCombinationPollVoteSlot[];
 };
 
-interface CosmoCombinationPollFinalized
+export interface CosmoCombinationPollFinalized
   extends CosmoPollCommon<"combination-poll"> {
   finalized: true;
   result: {

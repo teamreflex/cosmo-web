@@ -21,6 +21,7 @@ import { Error } from "../error-boundary";
 import { Separator } from "../ui/separator";
 import Skeleton from "../skeleton/skeleton";
 import GravityPoll from "./gravity-poll";
+import GravityRanking from "./gravity-ranking";
 
 type Props = {
   artist: CosmoArtist;
@@ -94,20 +95,8 @@ function PastDetails({ gravity }: { gravity: CosmoPastGravity }) {
           </div>
 
           {/* ranking */}
-          <div className="flex flex-col gap-2 items-center mx-auto bg-accent rounded-xl w-full sm:w-2/3">
-            <div className="flex flex-col w-full divide-y-2 divide-white/80">
-              {gravity.polls.map((poll) => (
-                <div className="flex flex-col gap-2" key={poll.id}>
-                  <GravityRankingCarousel poll={poll}>
-                    {gravity.polls.length > 1 ? (
-                      <p className="font-bold">Result of {poll.title}</p>
-                    ) : (
-                      <p className="font-bold">Ranking of this Gravity</p>
-                    )}
-                  </GravityRankingCarousel>
-                </div>
-              ))}
-            </div>
+          <div className="flex mx-auto w-full sm:w-2/3">
+            <GravityRanking gravity={gravity} />
           </div>
 
           {/* leaderboard */}

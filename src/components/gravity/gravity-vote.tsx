@@ -44,6 +44,9 @@ export default function VoteDialog({ artist, poll }: VoteDialogProps) {
   const [amount, setAmount] = useState<number | undefined>();
   const { send, status, hash } = useGravityVote();
 
+  // TODO: implement combination polls
+  if (poll.type === "combination-poll") return null;
+
   function onCancel() {
     startTransition(() => {
       setOpen(false);

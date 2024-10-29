@@ -12,8 +12,7 @@
 
 ### Gravity
 
-- Implement combination poll display
-- Clean up poll result display for multi-poll gravities
+- Implement combination poll voting
 
 ### Trades / PolygonScan replacement
 

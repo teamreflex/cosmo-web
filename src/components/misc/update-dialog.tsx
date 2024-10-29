@@ -90,8 +90,4 @@ const updates = [
       "Option can be found in your Lists dropdown button.",
     ],
   },
-  {
-    date: "2024-09-29",
-    changes: ["Trades showing duplicate and missing transfers has been fixed."],
-  },
 ];
