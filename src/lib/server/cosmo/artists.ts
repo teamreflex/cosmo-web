@@ -12,7 +12,7 @@ import { randomUUID } from "crypto";
  * Fetch a single artist with its members.
  * Cached for 12 hours.
  */
-async function fetchArtist(artist: ValidArtist) {
+export async function fetchArtist(artist: ValidArtist) {
   return await cosmo<{ artist: CosmoArtistWithMembers }>(
     `/artist/v1/${artist}`,
     {

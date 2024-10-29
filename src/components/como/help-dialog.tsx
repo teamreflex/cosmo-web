@@ -47,8 +47,8 @@ export default function HelpDialog() {
             </span>
 
             <p>
-              For example, COMO scheduled to drop on June 31st, will drop in
-              July on the 30th.
+              For example, COMO scheduled to drop on May 31st, will drop in June
+              on the 30th.
             </p>
           </div>
         </div>

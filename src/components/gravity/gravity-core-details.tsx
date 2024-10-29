@@ -8,22 +8,31 @@ import { isFuture, isPast } from "date-fns";
 import GravityEventType from "./gravity-event-type";
 import GravityTimestamp from "./gravity-timestamp";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Crown, Loader2 } from "lucide-react";
+import { Crown } from "lucide-react";
 import Image from "next/image";
 import GravityRankingCarousel from "./gravity-ranking-carousel";
-import { cn } from "@/lib/utils";
+import { cn, getPollStatus } from "@/lib/utils";
 import { Suspense } from "react";
 import GravityMyRecord from "./gravity-my-record";
 import GravityOngoingCountdown from "./gravity-ongoing-countdown";
-import GravityVote from "./gravity-vote";
-import AvailableComo from "./available-como";
+import { CosmoArtist } from "@/lib/universal/cosmo/artists";
+import { ErrorBoundary } from "react-error-boundary";
+import { Error } from "../error-boundary";
+import { Separator } from "../ui/separator";
+import Skeleton from "../skeleton/skeleton";
+import GravityPoll from "./gravity-poll";
 
 type Props = {
+  artist: CosmoArtist;
   gravity: CosmoGravity;
   authenticated: boolean;
 };
 
-export default function GravityCoreDetails({ gravity, authenticated }: Props) {
+export default function GravityCoreDetails({
+  artist,
+  gravity,
+  authenticated,
+}: Props) {
   if (isPast(new Date(gravity.entireEndDate))) {
     return <PastDetails gravity={gravity as CosmoPastGravity} />;
   }
@@ -34,6 +43,7 @@ export default function GravityCoreDetails({ gravity, authenticated }: Props) {
 
   return (
     <OngoingDetails
+      artist={artist}
       gravity={gravity as CosmoOngoingGravity}
       authenticated={authenticated}
     />
@@ -156,40 +166,69 @@ function UpcomingDetails({ gravity }: { gravity: CosmoUpcomingGravity }) {
 }
 
 type OngoingDetailsProps = {
+  artist: CosmoArtist;
   gravity: CosmoOngoingGravity;
   authenticated: boolean;
 };
 
-function OngoingDetails({ gravity, authenticated }: OngoingDetailsProps) {
-  const currentPoll = gravity.polls.find((poll) => {
-    return (
-      new Date(poll.startDate) <= new Date() &&
-      new Date(poll.endDate) >= new Date()
-    );
-  });
+function OngoingDetails({
+  artist,
+  gravity,
+  authenticated,
+}: OngoingDetailsProps) {
+  const currentPoll = gravity.polls.find(
+    (poll) => getPollStatus(poll) === "ongoing"
+  );
+  const currentIndex = gravity.polls.findIndex(
+    (poll) => poll.id === currentPoll?.id
+  );
 
   return (
     <div className="flex flex-col gap-2 w-full">
       <Header gravity={gravity} />
 
-      <div className="flex flex-col gap-4 justify-center w-full py-12">
+      <div className="flex flex-col gap-4 justify-center w-full">
         <GravityOngoingCountdown
           className="rounded-lg"
           pollEndDate={currentPoll?.endDate}
           gravityEndDate={gravity.entireEndDate}
         />
 
-        {authenticated && currentPoll && (
-          <GravityVote
-            gravity={gravity}
-            availableComo={
-              <Suspense
-                fallback={<Loader2 className="animate-spin h-12 w-12" />}
-              >
-                <AvailableComo artist={gravity.artist} />
+        {authenticated === false ? (
+          <div className="flex flex-col items-center gap-2 py-12">
+            <p className="text-sm font-semibold">
+              Sign in to view polls and vote!
+            </p>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2">
+            <ErrorBoundary
+              fallback={<Error message="Something went wrong fetching polls" />}
+            >
+              <Suspense fallback={<Skeleton className="h-12 w-full" />}>
+                {currentPoll && (
+                  <GravityPoll
+                    title="Current Poll"
+                    artist={artist}
+                    gravityId={gravity.id}
+                    pollId={currentPoll.id}
+                  />
+                )}
+
+                {gravity.polls.map((poll, i) =>
+                  i !== currentIndex ? (
+                    <GravityPoll
+                      key={poll.id}
+                      title={`Poll #${i + 1}`}
+                      artist={artist}
+                      gravityId={gravity.id}
+                      pollId={poll.id}
+                    />
+                  ) : null
+                )}
               </Suspense>
-            }
-          />
+            </ErrorBoundary>
+          </div>
         )}
       </div>
     </div>
@@ -199,7 +238,7 @@ function OngoingDetails({ gravity, authenticated }: OngoingDetailsProps) {
 // common to all types
 function Header({ gravity }: { gravity: CosmoGravity }) {
   return (
-    <>
+    <div className="flex flex-col gap-2">
       <h2 className="text-xl font-bold">{gravity.title}</h2>
       <div className="flex gap-2 items-center">
         <GravityEventType type={gravity.type} />
@@ -209,6 +248,6 @@ function Header({ gravity }: { gravity: CosmoGravity }) {
           end={gravity.entireEndDate}
         />
       </div>
-    </>
+    </div>
   );
 }

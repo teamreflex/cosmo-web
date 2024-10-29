@@ -136,8 +136,9 @@ export function useSendObjekt() {
 
 type GravityVote = {
   artist: ValidArtist;
-  contract: string;
-  pollId: string;
+  governorContract: string;
+  comoContract: string;
+  pollId: number;
   comoAmount: number;
   choiceId: string;
 };
@@ -148,21 +149,22 @@ export function useGravityVote() {
   const { mutate, data, status } = useMutation({
     mutationFn: async (params: GravityVote) => {
       // fabricate vote in cosmo
-      const vote = await ofetch<CosmoGravityVoteCalldata>(
-        `/api/gravity/v3/${params.artist}/fabricate-vote`,
-        {
-          method: "POST",
-          body: {
-            pollId: params.pollId,
-            comoAmount: params.comoAmount,
-            choiceId: params.choiceId,
-          },
-        }
-      );
+      const { callData: fabricatedVote } =
+        await ofetch<CosmoGravityVoteCalldata>(
+          `/api/gravity/v3/${params.artist}/fabricate-vote`,
+          {
+            method: "POST",
+            body: {
+              pollId: params.pollId,
+              comoAmount: params.comoAmount,
+              choiceId: params.choiceId,
+            },
+          }
+        );
 
       // encode calldata
       const calldata = encodeComoTransfer({
-        contract: params.contract,
+        contract: params.governorContract,
         value: params.comoAmount,
         data: encodeAbiParameters(
           [
@@ -170,15 +172,19 @@ export function useGravityVote() {
             { type: "bytes32", name: "hash" },
             { type: "bytes", name: "signature" },
           ],
-          [BigInt(vote.pollIdOnChain), vote.hash as Hex, vote.signature as Hex]
+          [
+            BigInt(fabricatedVote.pollIdOnChain),
+            fabricatedVote.hash as Hex,
+            fabricatedVote.signature as Hex,
+          ]
         ),
       });
 
       // send transaction
       return await mutateAsync({
-        to: params.contract,
+        to: params.comoContract,
         calldata,
-        value: parseEther(params.comoAmount.toString()),
+        value: 0n,
       });
     },
   });

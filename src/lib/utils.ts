@@ -3,6 +3,7 @@ import { memo } from "react";
 import { twMerge } from "tailwind-merge";
 import { PublicProfile } from "./universal/cosmo/auth";
 import { env } from "@/env.mjs";
+import { CosmoPollChoices, CosmoPollUpcoming } from "./universal/cosmo/gravity";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -79,4 +80,21 @@ export function baseUrl() {
   const scheme =
     env.NEXT_PUBLIC_VERCEL_ENV === "development" ? "http" : "https";
   return `${scheme}://${env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL}`;
+}
+
+/**
+ * Determines the status of a gravity poll.
+ */
+export function getPollStatus(poll: CosmoPollChoices | CosmoPollUpcoming) {
+  const now = new Date();
+
+  if (new Date(poll.endDate) <= now) {
+    return poll.finalized ? "finalized" : "counting";
+  }
+
+  if (new Date(poll.startDate) >= now) {
+    return "upcoming";
+  }
+
+  return "ongoing";
 }

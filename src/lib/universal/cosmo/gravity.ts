@@ -193,17 +193,19 @@ type PollDefaultContentImage = {
 
 export type PollViewDefaultContent = PollDefaultContentImage;
 
-type PollSelectedContentImage = {
-  choiceId: string;
-  content: {
-    type: "image";
-    imageUrl: string;
-    title: string;
-    description: string;
-  };
+export type PollSelectedContentImageContent = {
+  type: "image";
+  imageUrl: string;
+  title: string;
+  description: string;
 };
 
-type PollViewSelectedContent = PollSelectedContentImage;
+export type PollSelectedContentImage = {
+  choiceId: string;
+  content: PollSelectedContentImageContent;
+};
+
+export type PollViewSelectedContent = PollSelectedContentImage;
 
 export type PollChoice = {
   id: string;
@@ -271,11 +273,13 @@ export const fabricateVotePayloadSchema = z.object({
 export type FabricateVotePayload = z.infer<typeof fabricateVotePayloadSchema>;
 
 export type CosmoGravityVoteCalldata = {
-  artist: ValidArtist;
-  pollId: number;
-  pollIdOnChain: number;
-  candidateId: number;
-  hash: string;
-  salt: string;
-  signature: string;
+  callData: {
+    artist: ValidArtist;
+    pollId: number;
+    pollIdOnChain: number;
+    candidateId: number;
+    hash: string;
+    salt: string;
+    signature: string;
+  };
 };

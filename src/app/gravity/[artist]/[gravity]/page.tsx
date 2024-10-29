@@ -7,6 +7,7 @@ import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { decodeUser } from "@/app/data-fetching";
 import { getQueryClient } from "@/lib/query-client";
+import { fetchArtist } from "@/lib/server/cosmo/artists";
 
 type Params = {
   artist: ValidArtist;
@@ -14,14 +15,17 @@ type Params = {
 };
 
 const fetchData = cache(async ({ artist, gravity }: Params) => {
-  return await fetchGravity(artist, gravity);
+  return await Promise.all([
+    fetchArtist(artist),
+    fetchGravity(artist, gravity),
+  ]);
 });
 
 export async function generateMetadata(props: {
   params: Promise<Params>;
 }): Promise<Metadata> {
   const params = await props.params;
-  const gravity = await fetchData(params);
+  const [, gravity] = await fetchData(params);
   return {
     title: gravity.title,
   };
@@ -29,7 +33,7 @@ export async function generateMetadata(props: {
 
 export default async function GravityPage(props: { params: Promise<Params> }) {
   const params = await props.params;
-  const gravity = await fetchData(params);
+  const [artist, gravity] = await fetchData(params);
 
   const token = await decodeUser();
 
@@ -69,6 +73,7 @@ export default async function GravityPage(props: { params: Promise<Params> }) {
         <div className="col-span-1 sm:col-span-2">
           <HydrationBoundary state={dehydrate(queryClient)}>
             <GravityCoreDetails
+              artist={artist}
               gravity={gravity}
               authenticated={token !== undefined}
             />

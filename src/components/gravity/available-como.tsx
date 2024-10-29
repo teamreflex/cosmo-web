@@ -21,17 +21,9 @@ export default async function AvailableComo({
     )
   );
 
-  if (!balance) {
-    return (
-      <h3 className="text-lg font-bold">
-        You have 0 COMO to support this Gravity
-      </h3>
-    );
-  }
-
   return (
     <h3 className="text-lg font-bold">
-      You have {balance.amount} COMO to support this Gravity
+      You have {balance?.amount ?? 0} COMO to support this Gravity
     </h3>
   );
 }
