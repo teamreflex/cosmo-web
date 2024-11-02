@@ -39,7 +39,7 @@ export function FiltersContainer({
       className="flex flex-col gap-2 group lg:data-[show=false]:pb-2 data-[show=false]:pb-0"
       data-show={show}
     >
-      <div className="flex flex-row items-center justify-center gap-2 sm:hidden">
+      <div className="flex flex-row items-center justify-center gap-2 lg:hidden">
         {!isPortaled && <div id="filters-button" />}
         <Portal to="#filters-button">
           <Toggle
