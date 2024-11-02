@@ -79,6 +79,7 @@ const updates = [
     changes: [
       "Fixed: Reward claim dialog now scrolls instead of overflowing off screen.",
       "Fixed: Select boxes not working on mobile.",
+      "Fixed: Filters button being hidden on tablets-sized screens.",
     ],
   },
   {
