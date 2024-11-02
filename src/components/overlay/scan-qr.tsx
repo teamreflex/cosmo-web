@@ -24,6 +24,7 @@ import { FlippableObjekt } from "../objekt/objekt";
 import ObjektSidebar from "../objekt/objekt-sidebar";
 import { useCamera } from "@/hooks/use-camera";
 import { useUserState } from "@/hooks/use-user-state";
+import { extractObjektCode } from "@/lib/universal/cosmo/albums";
 
 type State = "scan" | "claim" | "success";
 type ScanResult = {
@@ -137,16 +138,23 @@ function QRScanner({ onResult, onClose }: QRScannerProps) {
   });
 
   function onScan(result: IDetectedBarcode[]) {
-    const value = result.find((r) =>
-      r.rawValue.includes("cosmo.fans")
-    )?.rawValue;
+    try {
+      const value = result[0].rawValue;
+      const matched = extractObjektCode(value);
 
-    if (!value) return;
+      if (matched.type === "oma") {
+        toast({
+          description: "OMAs are not supported yet",
+        });
+        return;
+      }
 
-    const match = value.match(/[?&]n=([^&]+)/);
-    if (match && match.length) {
-      const serial = match[1];
-      mutate(serial);
+      mutate(matched.value);
+    } catch (error) {
+      toast({
+        description: "QR code not recognized",
+        variant: "destructive",
+      });
     }
   }
 

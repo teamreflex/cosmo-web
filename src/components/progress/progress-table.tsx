@@ -131,15 +131,7 @@ function FilterSelect({
       <SelectTrigger className="w-32">
         <SelectValue placeholder="Sort" />
       </SelectTrigger>
-      <SelectContent
-        ref={(ref) => {
-          // fixes mobile touch-through bug in radix
-          if (!ref) return;
-          ref.ontouchstart = (e) => {
-            e.preventDefault();
-          };
-        }}
-      >
+      <SelectContent>
         <SelectItem value="combined">Combined</SelectItem>
         <SelectItem value="offline">Physical</SelectItem>
         <SelectItem value="online">Digital</SelectItem>

@@ -70,15 +70,7 @@ export default function TopRanking({ selectedArtist, artists }: Props) {
               <SelectTrigger className="w-36">
                 <SelectValue placeholder="Member" />
               </SelectTrigger>
-              <SelectContent
-                ref={(ref) => {
-                  // fixes mobile touch-through bug in radix
-                  if (!ref) return;
-                  ref.ontouchstart = (e) => {
-                    e.preventDefault();
-                  };
-                }}
-              >
+              <SelectContent>
                 <SelectItem value="0">
                   <div className="flex flex-row items-center gap-2">
                     <Image

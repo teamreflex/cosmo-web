@@ -144,15 +144,7 @@ function SelectList({ lists, value, onSelect }: SelectListProps) {
       <SelectTrigger className="w-full">
         <SelectValue placeholder="Objekt List" />
       </SelectTrigger>
-      <SelectContent
-        ref={(ref) => {
-          // fixes mobile touch-through bug in radix
-          if (!ref) return;
-          ref.ontouchstart = (e) => {
-            e.preventDefault();
-          };
-        }}
-      >
+      <SelectContent>
         {lists.map((list) => (
           <SelectItem key={list.id} value={list.slug}>
             {list.name}

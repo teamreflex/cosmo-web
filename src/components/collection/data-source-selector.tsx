@@ -123,15 +123,7 @@ export default memo(function DataSourceSelector({
         <SelectTrigger className="w-36">
           <SelectValue placeholder="Data Source" />
         </SelectTrigger>
-        <SelectContent
-          ref={(ref) => {
-            // fixes mobile touch-through bug in radix
-            if (!ref) return;
-            ref.ontouchstart = (e) => {
-              e.preventDefault();
-            };
-          }}
-        >
+        <SelectContent>
           <SelectItem value="cosmo">
             <div className="flex flex-row items-center gap-2">
               <Image

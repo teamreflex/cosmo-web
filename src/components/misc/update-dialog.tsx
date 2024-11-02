@@ -75,9 +75,10 @@ export default function UpdateDialog() {
 
 const updates = [
   {
-    date: "2024-11-01",
+    date: "2024-11-02",
     changes: [
       "Fixed: Reward claim dialog now scrolls instead of overflowing off screen.",
+      "Fixed: Select boxes not working on mobile.",
     ],
   },
   {

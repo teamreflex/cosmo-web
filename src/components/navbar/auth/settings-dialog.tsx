@@ -76,16 +76,7 @@ export default function SettingsDialog({
               <SelectTrigger className="w-36">
                 <SelectValue placeholder="Theme" />
               </SelectTrigger>
-              <SelectContent
-                align="end"
-                ref={(ref) => {
-                  // fixes mobile touch-through bug in radix
-                  if (!ref) return;
-                  ref.ontouchstart = (e) => {
-                    e.preventDefault();
-                  };
-                }}
-              >
+              <SelectContent align="end">
                 <SelectItem value="dark">Dark</SelectItem>
                 <SelectItem value="light">Light</SelectItem>
               </SelectContent>
@@ -108,15 +99,7 @@ export default function SettingsDialog({
               <SelectTrigger className="w-40">
                 <SelectValue placeholder="Columns" />
               </SelectTrigger>
-              <SelectContent
-                ref={(ref) => {
-                  // fixes mobile touch-through bug in radix
-                  if (!ref) return;
-                  ref.ontouchstart = (e) => {
-                    e.preventDefault();
-                  };
-                }}
-              >
+              <SelectContent>
                 <SelectItem value="4">4 Columns</SelectItem>
                 <SelectItem value="5">5 Columns</SelectItem>
                 <SelectItem value="6">6 Columns</SelectItem>

@@ -124,16 +124,7 @@ function FilterSelect({
       <SelectTrigger>
         <SelectValue placeholder="Sort" />
       </SelectTrigger>
-      <SelectContent
-        className="outline-none"
-        ref={(ref) => {
-          // fixes mobile touch-through bug in radix
-          if (!ref) return;
-          ref.ontouchstart = (e) => {
-            e.preventDefault();
-          };
-        }}
-      >
+      <SelectContent className="outline-none">
         <SelectItem value="combined">Combined</SelectItem>
         <SelectItem value="offline">Physical</SelectItem>
         <SelectItem value="online">Digital</SelectItem>
@@ -158,15 +149,7 @@ function SeasonSelect({
       <SelectTrigger>
         <SelectValue placeholder="Sort" />
       </SelectTrigger>
-      <SelectContent
-        ref={(ref) => {
-          // fixes mobile touch-through bug in radix
-          if (!ref) return;
-          ref.ontouchstart = (e) => {
-            e.preventDefault();
-          };
-        }}
-      >
+      <SelectContent>
         <SelectItem value="all">All</SelectItem>
         {validSeasons.map((season) => (
           <SelectItem key={season} value={season}>
