@@ -1,16 +1,18 @@
 import "server-only";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { cosmo } from "../http";
-import { CosmoAlbum, CosmoAlbumWithTracks } from "@/lib/universal/cosmo/albums";
+import {
+  CosmoAlbum,
+  CosmoAlbumTrackDownload,
+  CosmoAlbumWithTracks,
+} from "@/lib/universal/cosmo/albums";
 
 /**
  * Fetch a list of albums.
  */
-export async function fetchAlbums(token: string, artistName: ValidArtist) {
+export async function fetchAlbums(token: string, artistName?: ValidArtist) {
   return await cosmo<CosmoAlbum[]>(`/bff/v3/albums`, {
-    query: {
-      artistName,
-    },
+    query: artistName ? { artistName } : undefined,
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -70,7 +72,7 @@ export async function claimAlbum(token: string, code: string) {
  * Get an album's download URLs.
  */
 export async function fetchAlbumDownload(token: string, albumHid: string) {
-  return await cosmo<CosmoAlbumWithTracks>(
+  return await cosmo<CosmoAlbumTrackDownload[]>(
     `/bff/v3/albums/${albumHid}/track/download-authorize`,
     {
       headers: {

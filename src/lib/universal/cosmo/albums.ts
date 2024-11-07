@@ -15,12 +15,6 @@ export type CosmoAlbumClaimError = {
 };
 
 export interface CosmoAlbumWithTracks extends CosmoAlbum {
-  artist: CosmoArtist;
-  title: string;
-  albumImageThumbnailUrl: string;
-  omaImageThumbnailUrl: string;
-  hid: string;
-  releasedAt: string;
   albumTracks: CosmoAlbumTrack[];
 }
 

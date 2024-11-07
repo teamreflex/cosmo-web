@@ -52,6 +52,7 @@
     "embla-carousel-react": "8.3.0",
     "firebase": "^10.14.1",
     "hls.js": "^1.5.17",
+    "idb": "^8.0.0",
     "jose": "^5.9.6",
     "lucide-react": "^0.453.0",
     "next": "15.0.2",
