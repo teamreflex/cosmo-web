@@ -22,6 +22,7 @@ export const validSeasons = [
   "Binary01",
   "Cream01",
   "Divine01",
+  "Ever01",
 ] as const;
 export type ValidSeason = (typeof validSeasons)[number];
 
