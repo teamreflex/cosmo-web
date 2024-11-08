@@ -12,6 +12,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   CosmoActivityRankingKind,
   CosmoActivityRankingNearResult,
+  CosmoActivityRankingResult,
   CosmoActivityRankingTopEntry,
 } from "@/lib/universal/cosmo/activity/ranking";
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
@@ -36,6 +37,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { HelpCircle } from "lucide-react";
 import { ErrorBoundary } from "react-error-boundary";
+import CalculatingError from "./calculating-error";
 
 type Props = {
   selectedArtist: ValidArtist;
@@ -196,7 +198,9 @@ function MyRank({ artist, kind, memberId }: MyRankProps) {
         `/api/bff/v1/activity/artist-rank/near-people`,
         baseUrl()
       );
-      return await ofetch<CosmoActivityRankingNearResult>(url.toString(), {
+      return await ofetch<
+        CosmoActivityRankingResult<CosmoActivityRankingNearResult>
+      >(url.toString(), {
         query: {
           artistName: artist,
           kind,
@@ -208,19 +212,27 @@ function MyRank({ artist, kind, memberId }: MyRankProps) {
     },
   });
 
+  if (data.success === false) {
+    return <CalculatingError error={data.error} />;
+  }
+
   const type =
     kind === "hold_objekts_per_season" ? "Objekts owned" : "Grids completed";
 
   if (data !== undefined) {
-    const current = data.nearPeoples.find(
+    const current = data.data.nearPeoples.find(
       (p) => p.relativePosition === "current"
     );
-    const above = data.nearPeoples.find((p) => p.relativePosition === "above");
-    const below = data.nearPeoples.find((p) => p.relativePosition === "below");
+    const above = data.data.nearPeoples.find(
+      (p) => p.relativePosition === "above"
+    );
+    const below = data.data.nearPeoples.find(
+      (p) => p.relativePosition === "below"
+    );
 
     const percentage =
       current !== undefined
-        ? ((current.rankNumber / data.artistRank.maxRank) * 100).toFixed(2)
+        ? ((current.rankNumber / data.data.artistRank.maxRank) * 100).toFixed(2)
         : 0;
 
     return (
@@ -276,7 +288,7 @@ function MyRank({ artist, kind, memberId }: MyRankProps) {
         </div>
 
         <Portal to="#ranking-season">
-          <p className="text-sm font-semibold">{data.season}</p>
+          <p className="text-sm font-semibold">{data.data.season}</p>
         </Portal>
       </div>
     );
@@ -334,26 +346,25 @@ function RankingList({ artist, kind, memberId }: RankingListProps) {
   const { data } = useSuspenseQuery({
     queryKey: ["ranking-detail", artist, kind, memberId],
     queryFn: async () => {
-      return await ofetch<CosmoActivityRankingTopEntry[]>(
-        `/api/bff/v1/activity/artist-rank/top`,
-        {
-          query: {
-            artistName: artist,
-            kind,
-            size: 10,
-            memberId,
-          },
-        }
-      );
+      return await ofetch<
+        CosmoActivityRankingResult<CosmoActivityRankingTopEntry[]>
+      >(`/api/bff/v1/activity/artist-rank/top`, {
+        query: {
+          artistName: artist,
+          kind,
+          size: 10,
+          memberId,
+        },
+      });
     },
   });
 
-  if (data !== undefined) {
+  if (data.success) {
     return (
       <div className="flex flex-col gap-2">
         <h3 className="text-xl font-semibold">TOP 10</h3>
         <div className="flex flex-col gap-2">
-          {data.map((item) => (
+          {data.data.map((item) => (
             <RankingRow key={item.user.user.id} artist={artist} item={item} />
           ))}
         </div>

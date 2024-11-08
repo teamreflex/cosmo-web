@@ -15,6 +15,7 @@ import {
   BFFActivityRankingNearParams,
   BFFActivityRankingTopParams,
   CosmoActivityRankingNearResult,
+  CosmoActivityRankingResult,
   CosmoActivityRankingTopEntry,
 } from "@/lib/universal/cosmo/activity/ranking";
 import { randomUUID } from "crypto";
@@ -135,18 +136,25 @@ export async function fetchActivityRankingNear(
   token: string,
   options: BFFActivityRankingNearParams
 ) {
-  return await cosmo<CosmoActivityRankingNearResult>(
-    `/bff/v1/activity/artist-rank/near-people`,
-    {
-      query: {
-        ...options,
-        tid: randomUUID(),
-      },
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
+  return await cosmo<
+    CosmoActivityRankingResult<CosmoActivityRankingNearResult>
+  >(`/bff/v1/activity/artist-rank/near-people`, {
+    query: {
+      ...options,
+      tid: randomUUID(),
+    },
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+    .then((res) => ({
+      success: true,
+      data: res,
+    }))
+    .catch(() => ({
+      success: false,
+      error: "Rankings are being calculated.",
+    }));
 }
 
 /**
@@ -156,16 +164,23 @@ export async function fetchActivityRankingTop(
   token: string,
   options: BFFActivityRankingTopParams
 ) {
-  return await cosmo<CosmoActivityRankingTopEntry[]>(
-    `/bff/v1/activity/artist-rank/top`,
-    {
-      query: {
-        ...options,
-        tid: randomUUID(),
-      },
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
+  return await cosmo<
+    CosmoActivityRankingResult<CosmoActivityRankingTopEntry[]>
+  >(`/bff/v1/activity/artist-rank/top`, {
+    query: {
+      ...options,
+      tid: randomUUID(),
+    },
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+    .then((res) => ({
+      success: true,
+      data: res,
+    }))
+    .catch(() => ({
+      success: false,
+      error: "Rankings are being calculated.",
+    }));
 }

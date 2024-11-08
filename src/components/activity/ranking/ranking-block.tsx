@@ -6,24 +6,19 @@ import {
   CosmoActivityRankingKind,
   CosmoActivityRankingNearResult,
   CosmoActivityRankingNearUser,
+  CosmoActivityRankingResult,
 } from "@/lib/universal/cosmo/activity/ranking";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { baseUrl, cn, ordinal } from "@/lib/utils";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import {
-  ChevronDown,
-  ChevronRight,
-  ChevronUp,
-  HeartCrack,
-  Minus,
-} from "lucide-react";
+import { ChevronDown, ChevronRight, ChevronUp, Minus } from "lucide-react";
 import { ofetch } from "ofetch";
 import { useState } from "react";
 import ProfileImage from "@/assets/profile.webp";
-import Skeleton from "@/components/skeleton/skeleton";
 import { format } from "date-fns";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import CalculatingError from "./calculating-error";
 
 type Props = {
   artist: ValidArtist;
@@ -93,7 +88,9 @@ function RankingList({ artist, kind }: RankingListProps) {
         `/api/bff/v1/activity/artist-rank/near-people`,
         baseUrl()
       );
-      return await ofetch<CosmoActivityRankingNearResult>(url.toString(), {
+      return await ofetch<
+        CosmoActivityRankingResult<CosmoActivityRankingNearResult>
+      >(url.toString(), {
         query: {
           artistName: artist,
           kind,
@@ -104,7 +101,13 @@ function RankingList({ artist, kind }: RankingListProps) {
     },
   });
 
-  const sorted = data.nearPeoples.toSorted((i) => sortMap[i.relativePosition]);
+  if (data.success === false) {
+    return <CalculatingError error={data.error} />;
+  }
+
+  const sorted = data.data.nearPeoples.toSorted(
+    (i) => sortMap[i.relativePosition]
+  );
 
   return (
     <div className="flex flex-col">

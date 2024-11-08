@@ -122,3 +122,13 @@ export type CosmoActivityRankingTopEntry = {
     rankNumber: number;
   };
 };
+
+export type CosmoActivityRankingResult<T> =
+  | {
+      success: false;
+      error: string;
+    }
+  | {
+      success: true;
+      data: T;
+    };
