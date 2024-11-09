@@ -44,6 +44,12 @@ export default memo(function AddToList({
         <DropdownMenuLabel>{collectionId}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
+          {lists.length === 0 && (
+            <DropdownMenuItem className="text-sm truncate group">
+              0 lists available
+            </DropdownMenuItem>
+          )}
+
           {lists.map((list) => (
             <ListItem
               key={list.id}
