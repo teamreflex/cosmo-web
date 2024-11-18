@@ -75,6 +75,13 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2024-11-18",
+    changes: [
+      "Added: Gravity voting.",
+      'Currently only "single" polls are supported. "Combination" polls (LOVElution/EVOLution gravity) will come at a later date.',
+    ],
+  },
+  {
     date: "2024-11-02",
     changes: [
       "Fixed: Reward claim dialog now scrolls instead of overflowing off screen.",
@@ -89,13 +96,6 @@ const updates = [
       "Added: Objekt scanning. You can view the objekt and serial before claiming.",
       "Added: Premier class is now factored into COMO calendars.",
       "Changed: New logo",
-    ],
-  },
-  {
-    date: "2024-10-08",
-    changes: [
-      "Added: Discord Format option for objekt lists. Select a have list and a want list, and it will format them for usage in #objekt-trade channels.",
-      "Option can be found in your Lists dropdown button.",
     ],
   },
 ];

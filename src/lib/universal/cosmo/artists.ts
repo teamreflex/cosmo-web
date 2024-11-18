@@ -1,7 +1,7 @@
 import { ValidArtist } from "./common";
 
 export type CosmoArtist = {
-  name: string;
+  name: ValidArtist;
   title: string;
   fandomName: string;
   logoImageUrl: string;

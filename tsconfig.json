@@ -27,7 +27,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "migrate.mts"
+    "migrate.mts",
+    "scripts/metadata-import/import.mts"
   ],
   "exclude": ["node_modules", "scripts"]
 }

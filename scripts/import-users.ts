@@ -1,6 +1,5 @@
 // @ts-ignore
 import users from "./users.json";
-import * as dotenv from "dotenv";
 import { drizzle } from "drizzle-orm/planetscale-serverless";
 import { connect } from "@planetscale/database";
 import * as schema from "./planetscale-migrate/schema";
@@ -8,10 +7,6 @@ import * as schema from "./planetscale-migrate/schema";
 /**
  * Import users from a JSON file, which comes from the objekts.jinsoul.tv Redis database.
  */
-
-dotenv.config({
-  path: ".env.local",
-});
 
 // create the connection
 const connection = connect({

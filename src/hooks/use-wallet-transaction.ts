@@ -10,6 +10,7 @@ import { toast } from "@/components/ui/use-toast";
 import { ofetch } from "ofetch";
 import { CosmoGravityVoteCalldata } from "@/lib/universal/cosmo/gravity";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
+import { track } from "@/lib/utils";
 
 export const WALLET_MISSING =
   "You may need to re-sign in to connect your wallet.";
@@ -181,11 +182,18 @@ export function useGravityVote() {
       });
 
       // send transaction
-      return await mutateAsync({
-        to: params.comoContract,
-        calldata,
-        value: 0n,
-      });
+      return await mutateAsync(
+        {
+          to: params.comoContract,
+          calldata,
+          value: 0n,
+        },
+        {
+          onSuccess: () => {
+            track("gravity-vote");
+          },
+        }
+      );
     },
   });
 

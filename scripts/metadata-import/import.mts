@@ -1,5 +1,5 @@
-import { db } from "@/lib/server/db";
-import * as neonSchema from "@/lib/server/db/schema";
+import { db } from "../../src/lib/server/db";
+import { objektMetadata } from "../../src/lib/server/db/schema";
 import { eq } from "drizzle-orm";
 import { readFile } from "fs/promises";
 
@@ -41,7 +41,7 @@ console.log(`Importing ${entries.length} entries`);
 
 const queries = entries.map(({ collectionId, description }) => {
   return db
-    .insert(neonSchema.objektMetadata)
+    .insert(objektMetadata)
     .values({
       collectionId,
       description,
@@ -52,8 +52,8 @@ const queries = entries.map(({ collectionId, description }) => {
         description,
         contributor: USER,
       },
-      target: neonSchema.objektMetadata.collectionId,
-      where: eq(neonSchema.objektMetadata.collectionId, collectionId),
+      target: objektMetadata.collectionId,
+      where: eq(objektMetadata.collectionId, collectionId),
     });
 });
 

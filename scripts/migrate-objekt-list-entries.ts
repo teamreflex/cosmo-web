@@ -1,4 +1,3 @@
-import * as dotenv from "dotenv";
 import { drizzle as psDrizzle } from "drizzle-orm/planetscale-serverless";
 import { connect } from "@planetscale/database";
 import * as psSchema from "./planetscale-migrate/schema";
@@ -6,10 +5,6 @@ import postgres from "postgres";
 import { drizzle as pgDrizzle } from "drizzle-orm/postgres-js";
 import * as pgSchema from "../src/lib/server/db/indexer/schema";
 import { eq, inArray } from "drizzle-orm";
-
-dotenv.config({
-  path: ".env.local",
-});
 
 /**
  * Migrate the list entries from using UUIDs for collectionIds, to using slugs.

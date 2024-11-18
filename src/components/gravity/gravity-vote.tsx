@@ -27,6 +27,7 @@ import { CheckCircle, Satellite, TriangleAlert } from "lucide-react";
 import { CosmoArtist } from "@/lib/universal/cosmo/artists";
 import { Hex } from "viem";
 import { cn } from "@/lib/utils";
+import { useComo } from "@/hooks/use-como";
 
 type State = "select" | "confirm" | "send";
 
@@ -43,6 +44,7 @@ export default function VoteDialog({ artist, poll }: VoteDialogProps) {
   >();
   const [amount, setAmount] = useState<number | undefined>();
   const { send, status, hash } = useGravityVote();
+  const { como } = useComo();
 
   // TODO: implement combination polls
   if (poll.type === "combination-poll") return null;
@@ -57,16 +59,6 @@ export default function VoteDialog({ artist, poll }: VoteDialogProps) {
   }
 
   function onSelection() {
-    // TODO: remove when confirmed safe
-    const gate = localStorage.getItem("gravity");
-    if (gate === null) {
-      toast({
-        variant: "destructive",
-        description: "Gravity voting is coming soon!",
-      });
-      return;
-    }
-
     setState("confirm");
   }
 
@@ -83,6 +75,14 @@ export default function VoteDialog({ artist, poll }: VoteDialogProps) {
       toast({
         variant: "destructive",
         description: "Please enter a valid amount",
+      });
+      return;
+    }
+
+    if (amount > como) {
+      toast({
+        variant: "destructive",
+        description: `You only have ${como} COMO`,
       });
       return;
     }
@@ -121,6 +121,7 @@ export default function VoteDialog({ artist, poll }: VoteDialogProps) {
             setAmount={setAmount}
             onCancel={onCancel}
             onSelection={onSelection}
+            maxComo={como}
           />
         ) : state === "confirm" ? (
           <ChoiceConfirmation
@@ -154,6 +155,7 @@ type ChoiceSelectionProps = {
   setAmount: (amount: number) => void;
   onCancel: () => void;
   onSelection: () => void;
+  maxComo: number;
 };
 
 function ChoiceSelection({
@@ -165,9 +167,13 @@ function ChoiceSelection({
   setAmount,
   onCancel,
   onSelection,
+  maxComo,
 }: ChoiceSelectionProps) {
   const isDisabled =
-    selected === undefined || amount === undefined || amount === 0;
+    selected === undefined ||
+    amount === undefined ||
+    amount === 0 ||
+    amount > maxComo;
 
   return (
     <div className="flex flex-col gap-2">
@@ -250,7 +256,7 @@ function ChoiceConfirmation({
 
       <p className="text-sm text-center">
         Are you sure you want to use {amount} COMO to vote for{" "}
-        {selected.content.description}?
+        {selected.content.title}?
       </p>
 
       <DrawerFooter className="flex flex-row justify-center items-center gap-2">

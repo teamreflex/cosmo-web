@@ -43,8 +43,11 @@ export function ContentImage({
       </div>
 
       <div className="text-center font-semibold">
+        <p>{title}</p>
         {description.split("\n").map((s, i) => (
-          <p key={i}>{s}</p>
+          <p className="text-sm" key={i}>
+            {s}
+          </p>
         ))}
       </div>
     </div>
