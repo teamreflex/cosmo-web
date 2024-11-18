@@ -303,7 +303,7 @@ function ChoiceSend({
               <>
                 <CheckCircle className="h-10 w-10" />
                 <p className="text-sm font-semibold">
-                  {amount} COMO sent for {selected.content.description}!
+                  {amount} COMO sent for {selected.content.title}!
                 </p>
                 <a
                   className="text-sm"
