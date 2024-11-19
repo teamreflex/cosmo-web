@@ -1,37 +1,24 @@
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 export function useCamera() {
-  const [isAvailable, setIsAvailable] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const checkCameraAvailability = async () => {
-      try {
-        setIsLoading(true);
-
-        if (
-          !navigator.mediaDevices ||
-          !navigator.mediaDevices.enumerateDevices
-        ) {
-          setIsLoading(false);
-          return;
-        }
-
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        const hasCamera = devices.some(
-          (device) => device.kind === "videoinput"
-        );
-
-        setIsAvailable(hasCamera);
-      } catch (err) {
-        setIsAvailable(false);
-      } finally {
-        setIsLoading(false);
+  const { data, status } = useQuery({
+    queryKey: ["camera-availability"],
+    queryFn: async () => {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+        return false;
       }
-    };
 
-    checkCameraAvailability();
-  }, []);
+      return await navigator.mediaDevices
+        .enumerateDevices()
+        .then((devices) =>
+          devices.some((device) => device.kind === "videoinput")
+        );
+    },
+    staleTime: Infinity,
+  });
 
-  return { isAvailable, isLoading };
+  return {
+    isAvailable: data ?? false,
+    isLoading: status === "pending",
+  };
 }
