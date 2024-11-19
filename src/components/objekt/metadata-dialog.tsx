@@ -13,7 +13,17 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "../ui/dialog";
+} from "@/components/ui/dialog";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 import { ObjektMetadata, ValidObjekt } from "@/lib/universal/objekts";
 import { FlippableObjekt } from "./objekt";
 import {
@@ -43,6 +53,7 @@ import { useCopyToClipboard } from "usehooks-ts";
 import { env } from "@/env.mjs";
 import { toast } from "../ui/use-toast";
 import VisuallyHidden from "../ui/visually-hidden";
+import { useMediaQuery } from "@/hooks/use-media-query";
 
 type CommonProps<TObjektType extends ValidObjekt> = {
   objekt: TObjektType;
@@ -61,6 +72,7 @@ export default function MetadataDialog({
   isActive,
   onClose,
 }: MetadataDialogProps) {
+  const isDesktop = useMediaQuery();
   const [open, setOpen] = useState(isActive);
 
   function onOpenChange(state: boolean) {
@@ -73,29 +85,41 @@ export default function MetadataDialog({
   return (
     <Fragment>
       {children?.(() => setOpen(true))}
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-3xl grid-cols-auto grid-flow-row md:grid-flow-col p-0 gap-0 sm:rounded-2xl">
-          <QueryErrorResetBoundary>
-            {({ reset }) => (
-              <ErrorBoundary
-                FallbackComponent={MetadataDialogError}
-                onReset={reset}
-              >
-                <Suspense
-                  fallback={
-                    <div className="w-full h-[28rem] flex justify-center items-center">
-                      <Loader2 className="animate-spin h-12 w-12" />
-                    </div>
-                  }
-                >
-                  <MetadataDialogContent slug={slug} />
-                </Suspense>
-              </ErrorBoundary>
-            )}
-          </QueryErrorResetBoundary>
-        </DialogContent>
-      </Dialog>
+
+      {isDesktop ? (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+          <DialogContent className="max-w-3xl grid-cols-auto grid-flow-col p-0 gap-0 rounded-2xl">
+            <ResponsiveContent slug={slug} />
+          </DialogContent>
+        </Dialog>
+      ) : (
+        <Drawer open={open} onOpenChange={onOpenChange}>
+          <DrawerContent className="max-w-3xl grid-cols-auto grid-flow-row p-0 gap-0">
+            <ResponsiveContent slug={slug} />
+          </DrawerContent>
+        </Drawer>
+      )}
     </Fragment>
+  );
+}
+
+function ResponsiveContent(props: { slug: string }) {
+  return (
+    <QueryErrorResetBoundary>
+      {({ reset }) => (
+        <ErrorBoundary FallbackComponent={MetadataDialogError} onReset={reset}>
+          <Suspense
+            fallback={
+              <div className="w-full h-[28rem] flex justify-center items-center">
+                <Loader2 className="animate-spin h-12 w-12" />
+              </div>
+            }
+          >
+            <MetadataContent slug={props.slug} />
+          </Suspense>
+        </ErrorBoundary>
+      )}
+    </QueryErrorResetBoundary>
   );
 }
 
@@ -130,7 +154,7 @@ export const fetchObjektQuery = (slug: string) => ({
   retry: 1,
 });
 
-function MetadataDialogContent({ slug, onClose }: MetadataDialogContentProps) {
+function MetadataContent({ slug, onClose }: MetadataDialogContentProps) {
   const { data } = useSuspenseQuery(fetchObjektQuery(slug));
 
   return (

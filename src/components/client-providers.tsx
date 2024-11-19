@@ -8,6 +8,7 @@ import WarningDialog from "./warning-dialog";
 import { preconnect, prefetchDNS } from "react-dom";
 import { getQueryClient } from "@/lib/query-client";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
+import { MediaQueryProvider } from "@/hooks/use-media-query";
 
 type Props = PropsWithChildren;
 
@@ -24,7 +25,9 @@ export default function ClientProviders({ children }: Props) {
   return (
     <NuqsAdapter>
       <QueryClientProvider client={queryClient}>
-        <ReactQueryStreamedHydration>{children}</ReactQueryStreamedHydration>
+        <ReactQueryStreamedHydration>
+          <MediaQueryProvider>{children}</MediaQueryProvider>
+        </ReactQueryStreamedHydration>
 
         <WarningDialog />
         <ReactQueryDevtools buttonPosition="top-right" />
