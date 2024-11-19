@@ -66,6 +66,7 @@ export default async function ObjektsIndexPage(props: Params) {
             objektLists={objektLists}
             nickname={user?.nickname}
             gridColumns={profile?.gridColumns}
+            activeSlug={searchParams.id}
           />
         </HydrationBoundary>
       </ProfileProvider>

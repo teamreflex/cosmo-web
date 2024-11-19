@@ -71,7 +71,7 @@ export default function MetadataDialog({
   const [open, setOpen] = useState(isActive);
 
   function onOpenChange(state: boolean) {
-    setOpen((prev) => !prev);
+    setOpen(state);
     if (state === false && onClose !== undefined) {
       onClose();
     }

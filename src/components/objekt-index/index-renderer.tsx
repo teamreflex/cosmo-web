@@ -33,6 +33,7 @@ type Props = {
   objektLists?: ObjektList[];
   nickname?: string;
   gridColumns?: number;
+  activeSlug?: string;
 };
 
 export default function IndexRenderer({
@@ -41,6 +42,7 @@ export default function IndexRenderer({
   objektLists,
   nickname,
   gridColumns = GRID_COLUMNS,
+  activeSlug,
 }: Props) {
   const [
     searchParams,
@@ -50,7 +52,7 @@ export default function IndexRenderer({
     setCosmoFilters,
     updateCosmoFilters,
   ] = useCosmoFilters();
-  const [activeObjekt, setActiveObjekt] = useQueryState("id", parseAsString);
+  const [, setActiveObjekt] = useQueryState("id", parseAsString);
 
   const authenticated = objektLists !== undefined && nickname !== undefined;
 
@@ -104,11 +106,15 @@ export default function IndexRenderer({
         )}
       </FilteredObjektDisplay>
 
-      {/* if there's a slug in the url, open an expandable objekt dialog */}
+      {/**
+       * if there's a slug in the url, open an expandable objekt dialog.
+       * activeSlug is populated on first load from the server
+       * using activeObjekt here results in two dialogs being open at once
+       */}
       <Hydrated>
-        {activeObjekt !== null && (
+        {activeSlug !== undefined && (
           <RoutedExpandableObjekt
-            slug={activeObjekt}
+            slug={activeSlug}
             setActive={setActiveObjekt}
           />
         )}
