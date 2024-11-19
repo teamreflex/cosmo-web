@@ -10,14 +10,14 @@ export default function GuestThemeSwitch() {
   return (
     <Toggle
       variant="ghost"
-      size="sm"
+      size="icon"
       pressed={theme === "dark"}
       onPressedChange={(v) => setTheme(v ? "dark" : "light")}
     >
       {theme === "dark" ? (
-        <Moon className="size-4" />
+        <Moon className="size-8" />
       ) : (
-        <Sun className="size-4" />
+        <Sun className="size-8" />
       )}
     </Toggle>
   );
