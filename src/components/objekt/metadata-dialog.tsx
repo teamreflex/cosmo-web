@@ -11,18 +11,13 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
   Drawer,
-  DrawerClose,
   DrawerContent,
   DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
   DrawerTitle,
-  DrawerTrigger,
 } from "@/components/ui/drawer";
 import { ObjektMetadata, ValidObjekt } from "@/lib/universal/objekts";
 import { FlippableObjekt } from "./objekt";
@@ -52,8 +47,8 @@ import { ErrorBoundary } from "react-error-boundary";
 import { useCopyToClipboard } from "usehooks-ts";
 import { env } from "@/env.mjs";
 import { toast } from "../ui/use-toast";
-import VisuallyHidden from "../ui/visually-hidden";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import VisuallyHidden from "../ui/visually-hidden";
 
 type CommonProps<TObjektType extends ValidObjekt> = {
   objekt: TObjektType;
@@ -88,13 +83,21 @@ export default function MetadataDialog({
 
       {isDesktop ? (
         <Dialog open={open} onOpenChange={onOpenChange}>
-          <DialogContent className="max-w-3xl grid-cols-auto grid-flow-col p-0 gap-0 rounded-2xl">
+          <DialogContent className="max-w-3xl grid-cols-auto grid-flow-col p-0 gap-0 md:rounded-2xl outline-none">
+            <VisuallyHidden>
+              <DialogTitle>{slug}</DialogTitle>
+              <DialogDescription>{slug}</DialogDescription>
+            </VisuallyHidden>
             <ResponsiveContent slug={slug} />
           </DialogContent>
         </Dialog>
       ) : (
         <Drawer open={open} onOpenChange={onOpenChange}>
-          <DrawerContent className="max-w-3xl grid-cols-auto grid-flow-row p-0 gap-0">
+          <DrawerContent className="grid-cols-auto grid-flow-row p-0 gap-0 outline-none">
+            <VisuallyHidden>
+              <DrawerTitle>{slug}</DrawerTitle>
+              <DrawerDescription>{slug}</DrawerDescription>
+            </VisuallyHidden>
             <ResponsiveContent slug={slug} />
           </DrawerContent>
         </Drawer>
@@ -159,14 +162,7 @@ function MetadataContent({ slug, onClose }: MetadataDialogContentProps) {
 
   return (
     <Fragment>
-      <VisuallyHidden>
-        <DialogHeader>
-          <DialogTitle>{data.collectionId}</DialogTitle>
-          <DialogDescription>{data.collectionId}</DialogDescription>
-        </DialogHeader>
-      </VisuallyHidden>
-
-      <div className="flex h-[28rem] aspect-photocard mx-auto shrink pt-4 md:pt-0">
+      <div className="flex h-[28rem] aspect-photocard mx-auto shrink mt-4 sm:mt-0">
         <FlippableObjekt objekt={data} id={getObjektId(data)}>
           <ObjektSidebar collection={data.collectionNo} />
         </FlippableObjekt>
@@ -188,7 +184,7 @@ function AttributePanel<TObjektType extends ValidObjekt>({
   const onOffline = getObjektType(objekt);
 
   return (
-    <div className="flex flex-wrap items-center gap-2 justify-center p-4">
+    <div className="flex flex-wrap items-center gap-2 justify-center m-4">
       <Pill label="Artist" value={artist} />
       <Pill label="Member" value={objekt.member} />
       <Pill label="Season" value={objekt.season} />
@@ -425,7 +421,7 @@ export function RarityPill({ rarity }: { rarity: Rarity }) {
   return (
     <div
       style={{ backgroundColor: color }}
-      className="flex items-center gap-1 rounded-full px-2 py-1 text-sm w-fit"
+      className="flex items-center gap-1 rounded-full px-2 py-1 text-sm text-white w-fit"
     >
       <span className="font-semibold">{label}</span>
     </div>
