@@ -2,8 +2,8 @@
 
 import { CosmoBFFNewsFeedResult } from "@/lib/universal/cosmo/news";
 import { ChevronDown, HeartCrack, Loader2 } from "lucide-react";
-import { Fragment, ReactNode, useEffect } from "react";
-import { useInView } from "react-intersection-observer";
+import { Fragment, ReactNode } from "react";
+import { InView } from "react-intersection-observer";
 import {
   QueryFunction,
   QueryKey,
@@ -27,8 +27,6 @@ export default function BFFNewsInfiniteLoader<TPostType>({
   queryKey,
   artist,
 }: Props<TPostType>) {
-  const { ref, inView } = useInView();
-
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
     useInfiniteQuery({
       queryKey: [queryKey, { artist }],
@@ -39,15 +37,9 @@ export default function BFFNewsInfiniteLoader<TPostType>({
       refetchOnWindowFocus: false,
     });
 
-  /**
-   * infinite scroll loader
-   * removing the effect results in multiple fetches
-   */
-  useEffect(() => {
-    if (inView) {
-      fetchNextPage();
-    }
-  }, [inView, fetchNextPage]);
+  function onInView(inView: boolean) {
+    if (inView) fetchNextPage();
+  }
 
   return (
     <div className="flex flex-col gap-8 justify-center w-full md:w-1/2">
@@ -76,8 +68,9 @@ export default function BFFNewsInfiniteLoader<TPostType>({
 
       {status !== "error" && (
         <div className="flex justify-center py-6">
-          <button
-            ref={ref}
+          <InView
+            as="button"
+            onChange={onInView}
             onClick={() => fetchNextPage()}
             disabled={!hasNextPage || isFetchingNextPage}
           >
@@ -88,7 +81,7 @@ export default function BFFNewsInfiniteLoader<TPostType>({
             ) : (
               <></>
             )}
-          </button>
+          </InView>
         </div>
       )}
     </div>
