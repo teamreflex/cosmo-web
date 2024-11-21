@@ -7,11 +7,12 @@ import {
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { CheckCircle, Loader2 } from "lucide-react";
 import { ofetch } from "ofetch";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import QRCode from "react-qr-code";
 import { COSMO_ENDPOINT } from "@/lib/universal/cosmo/common";
 import { useRouter } from "next/navigation";
 import { toast } from "@/components/ui/use-toast";
+import { useInterval } from "usehooks-ts";
 
 export default function SignInWithQR() {
   // get recaptcha token and exchange it for a ticket on mount
@@ -71,7 +72,7 @@ function RenderTicket({ ticket, retry }: RenderQRProps) {
 
   // component mount and when the QR code hasn't been scanned
   if (data === undefined || data.status === "wait_for_user_action") {
-    return <RenderQRCode ticket={ticket} retry={retry} />;
+    return <RenderQRCode key={ticket.expireAt} ticket={ticket} retry={retry} />;
   }
 
   // waiting for user to input their otp
@@ -107,8 +108,8 @@ function RenderQRCode({ ticket, retry }: RenderQRProps) {
 
   const qr = generateQrCode(ticket.ticket);
 
-  useEffect(() => {
-    const updateCountdown = () => {
+  useInterval(
+    () => {
       const now = new Date().getTime();
       const expireTime = new Date(ticket.expireAt).getTime();
       const difference = expireTime - now;
@@ -117,15 +118,10 @@ function RenderQRCode({ ticket, retry }: RenderQRProps) {
         setTimeLeft(Math.floor(difference / 1000));
       } else {
         setIsExpired(true);
-        clearInterval(interval);
       }
-    };
-
-    updateCountdown();
-    const interval = setInterval(updateCountdown, 1000);
-
-    return () => clearInterval(interval);
-  }, [ticket.expireAt]);
+    },
+    isExpired ? null : 1000
+  );
 
   return (
     <div className="flex flex-col gap-2 items-center justify-center">

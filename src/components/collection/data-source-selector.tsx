@@ -1,6 +1,6 @@
 "use client";
 
-import { Dispatch, Fragment, SetStateAction, memo } from "react";
+import { Dispatch, Fragment, SetStateAction, memo, useState } from "react";
 import { CollectionDataSource } from "@/hooks/use-filters";
 import {
   Select,
@@ -22,7 +22,6 @@ import {
   AlertDialogTitle,
 } from "../ui/alert-dialog";
 import { env } from "@/env.mjs";
-import { useCooldown } from "@/hooks/use-countdown";
 import { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
 
 type Props = {
@@ -38,7 +37,7 @@ export default memo(function DataSourceSelector({
   dataSource,
   setDataSource,
 }: Props) {
-  const { open, setOpen, count } = useCooldown();
+  const [open, setOpen] = useState(false);
   const warned = useSettingsStore((state) => state.warnings["data-source"]);
   const toggle = useSettingsStore((state) => state.toggleWarning);
 
@@ -112,9 +111,7 @@ export default memo(function DataSourceSelector({
             </ul>
           </div>
           <AlertDialogFooter>
-            <AlertDialogAction onClick={close} disabled={count > 0}>
-              {count > 0 ? `Continue (${count})` : "Continue"}
-            </AlertDialogAction>
+            <AlertDialogAction onClick={close}>Continue</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

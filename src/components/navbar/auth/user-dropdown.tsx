@@ -6,14 +6,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Disc3, LogOut, Shield, Wrench } from "lucide-react";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useState } from "react";
 import SwitchArtistDialog from "./switch-artist-dialog";
 import { CosmoArtist } from "@/lib/universal/cosmo/artists";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import PrivacyDialog from "./privacy-dialog";
 import SettingsDialog from "./settings-dialog";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
-import { usePathname } from "next/navigation";
 import Discord from "@/components/icons/discord";
 
 type UserDropdownProps = {
@@ -36,12 +35,6 @@ export default function UserDropdown({
   const [openArtistSwitch, setOpenArtistSwitch] = useState(false);
   const [openPrivacy, setOpenPrivacy] = useState(false);
   const [openSettings, setOpenSettings] = useState(false);
-  const [openDropdown, setOpenDropdown] = useState(false);
-  const pathname = usePathname();
-
-  useEffect(() => {
-    setOpenDropdown(false);
-  }, [pathname]);
 
   return (
     <>
@@ -64,7 +57,7 @@ export default function UserDropdown({
         profile={profile}
       />
 
-      <DropdownMenu open={openDropdown} onOpenChange={setOpenDropdown}>
+      <DropdownMenu>
         <DropdownMenuTrigger className="group outline-none">
           {cosmoAvatar}
         </DropdownMenuTrigger>

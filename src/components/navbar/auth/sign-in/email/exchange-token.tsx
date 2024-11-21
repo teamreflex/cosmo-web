@@ -1,4 +1,4 @@
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { EmailSignInPayload } from "./common";
 import { exchangeRamperToken } from "./actions";
 import { track } from "@/lib/utils";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { AlertDialogCancel } from "@/components/ui/alert-dialog";
 import { Loader2 } from "lucide-react";
 import { UserState } from "@/hooks/use-wallet";
+import { useInterval } from "usehooks-ts";
 
 type Props = {
   payload: EmailSignInPayload;
@@ -23,17 +24,12 @@ export default function ExchangeTokenForm({
   const [error, setError] = useState<string>();
   const [count, setCount] = useState(10);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (count === 0) {
-        clearInterval(interval);
-      } else {
-        setCount((c) => c - 1);
-      }
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, []);
+  useInterval(
+    () => {
+      setCount((c) => c - 1);
+    },
+    count > 0 ? 1000 : null
+  );
 
   async function submit(form: FormData) {
     startTransition(async () => {
@@ -52,7 +48,7 @@ export default function ExchangeTokenForm({
   }
 
   const emailDomain = payload.email.split("@")[1];
-  const enableSubmission = count < 0;
+  const enableSubmission = count <= 0;
   const realCount = count < 0 ? 0 : count;
 
   return (

@@ -2,8 +2,9 @@
 
 import { PropsWithClassName, cn } from "@/lib/utils";
 import { intervalToDuration } from "date-fns";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Hydrated from "../hydrated";
+import { useInterval } from "usehooks-ts";
 
 type Props = PropsWithClassName<{
   pollEndDate?: string;
@@ -19,13 +20,9 @@ export default function GravityOngoingCountdown({
     return calculateTimeLeft(pollEndDate ?? gravityEndDate);
   });
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTimeLeft(calculateTimeLeft(pollEndDate ?? gravityEndDate));
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [pollEndDate, gravityEndDate]);
+  useInterval(() => {
+    setTimeLeft(calculateTimeLeft(pollEndDate ?? gravityEndDate));
+  }, 1000);
 
   return (
     <div

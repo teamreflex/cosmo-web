@@ -12,6 +12,7 @@ import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import GuestThemeSwitch from "./guest-theme-switch";
 import Hydrated from "@/components/hydrated";
 import { useWallet } from "@/hooks/use-wallet";
+import { usePathname } from "next/navigation";
 // import GuestArtistSwitch from "./guest-artist-switch";
 
 type Props = {
@@ -31,6 +32,7 @@ export default function AuthOptions({
   comoBalances,
   cosmoAvatar,
 }: Props) {
+  const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
   const { disconnect } = useWallet();
 
@@ -52,6 +54,7 @@ export default function AuthOptions({
           </div>
 
           <UserDropdown
+            key={pathname}
             profile={profile}
             artists={artists}
             selectedArtist={selectedArtist}
