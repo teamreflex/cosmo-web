@@ -15,11 +15,11 @@ import OnlineFilter from "./filter-online";
 import ClassFilter from "./filter-class";
 import SortFilter from "./filter-sort";
 import CollectionFilter from "../objekt-index/collection-filter";
-import { Toggle } from "../ui/toggle";
 import { SlidersHorizontal } from "lucide-react";
 import Portal from "../portal";
 import DataSourceSelector from "./data-source-selector";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
+import { Button } from "../ui/button";
 
 type FiltersContainerProps = PropsWithChildren<{
   isPortaled?: boolean;
@@ -39,16 +39,15 @@ export function FiltersContainer({
       <div className="flex flex-row items-center justify-center gap-2 lg:hidden">
         {!isPortaled && <div id="filters-button" />}
         <Portal to="#filters-button">
-          <Toggle
+          <Button
             className="rounded-full"
             variant="secondary"
             size="sm"
-            pressed={show}
-            onPressedChange={setShow}
+            onClick={() => setShow((prev) => !prev)}
           >
             <SlidersHorizontal className="mr-2" />
             <span>Filters</span>
-          </Toggle>
+          </Button>
         </Portal>
       </div>
 
