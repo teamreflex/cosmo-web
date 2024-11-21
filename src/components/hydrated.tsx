@@ -1,18 +1,19 @@
 "use client";
 
-import { PropsWithChildren, ReactNode, useEffect, useState } from "react";
+import { PropsWithChildren, ReactNode, useSyncExternalStore } from "react";
 
 type Props = PropsWithChildren<{
   fallback?: ReactNode;
 }>;
 
+const subscriber = () => () => {};
+
 export default function Hydrated({ children, fallback }: Props) {
-  const [mounted, setMounted] = useState(false);
+  const isServer = useSyncExternalStore(
+    subscriber,
+    () => false,
+    () => true
+  );
 
-  useEffect(() => {
-    setMounted(true);
-    return () => setMounted(false);
-  }, []);
-
-  return mounted ? children : fallback;
+  return isServer ? fallback : children;
 }

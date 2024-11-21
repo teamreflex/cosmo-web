@@ -7,6 +7,9 @@ type Props = PropsWithChildren<{
   to: string;
 }>;
 
+/**
+ * using useSyncExternalStore results in missing DOM element errors
+ */
 export default function Portal({ children, to }: Props) {
   const [mounted, setMounted] = useState(false);
 
