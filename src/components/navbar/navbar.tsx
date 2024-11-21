@@ -1,7 +1,6 @@
 import AuthOptions from "./auth/auth-options";
 import Logo from "../logo";
 import { Suspense } from "react";
-import Links from "./links";
 import {
   decodeUser,
   getArtistsWithMembers,
@@ -14,6 +13,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import SystemStatus from "../misc/system-status";
 import CosmoAvatar from "./auth/cosmo-avatar";
 import AuthFallback from "./auth-fallback";
+import Links from "./links.server";
 
 export default async function Navbar() {
   return (
