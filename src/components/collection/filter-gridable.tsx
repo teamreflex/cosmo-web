@@ -11,7 +11,11 @@ export default memo(function GridableFilter({ filters, setFilters }: Props) {
     <Toggle
       variant="cosmo"
       pressed={filters ?? false}
-      onPressedChange={(v) => setFilters("gridable", v ? true : null)}
+      onPressedChange={(v) =>
+        setFilters({
+          gridable: v ? true : null,
+        })
+      }
       aria-label="Toggle gridable"
     >
       Gridable

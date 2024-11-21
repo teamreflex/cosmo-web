@@ -10,7 +10,7 @@ type SendLoginEmail = {
   email: string;
 };
 
-export type RamperResponse<T> = {
+type RamperResponse<T> = {
   success: true;
   data: T;
 };

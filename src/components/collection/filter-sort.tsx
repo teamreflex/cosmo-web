@@ -30,7 +30,9 @@ export default memo(function SortFilter({
   serials,
 }: Props) {
   function update(value: string) {
-    setFilters("sort", value === "newest" ? null : (value as ValidSort));
+    setFilters({
+      sort: value === "newest" ? null : (value as ValidSort),
+    });
   }
 
   const availableSorts = validSorts.filter((s) =>

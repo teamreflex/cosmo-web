@@ -8,7 +8,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { CosmoGridRewardClaimResult } from "@/lib/universal/cosmo/grid";
-import { useEffect, useState } from "react";
 import GridObjekt from "./grid-objekt";
 import { Button } from "../ui/button";
 
@@ -18,22 +17,8 @@ type Props = {
 };
 
 export default function RewardDialog({ reward, onComplete }: Props) {
-  const [open, setOpen] = useState(false);
-
-  // pop the dialog upon reward coming in
-  useEffect(() => {
-    if (reward?.objekt) {
-      setOpen(true);
-    }
-  }, [reward]);
-
-  function complete() {
-    onComplete();
-    setOpen(false);
-  }
-
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={reward !== undefined}>
       {reward?.objekt && (
         <DialogContent>
           <DialogHeader>
@@ -53,7 +38,7 @@ export default function RewardDialog({ reward, onComplete }: Props) {
               selected={false}
             />
 
-            <Button variant="cosmo" onClick={complete}>
+            <Button variant="cosmo" onClick={onComplete}>
               Check
             </Button>
           </div>

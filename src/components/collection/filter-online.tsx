@@ -24,6 +24,8 @@ const map: Record<ValidOnlineType, string> = {
 };
 
 export default memo(function OnlineFilter({ filters, setFilters }: Props) {
+  // eslint-disable-next-line react-compiler/react-compiler
+  "use no memo";
   const [open, setOpen] = useState(false);
 
   function updateFilter(property: ValidOnlineType, checked: boolean) {
@@ -39,7 +41,9 @@ export default memo(function OnlineFilter({ filters, setFilters }: Props) {
       }
     }
 
-    setFilters("on_offline", newFilters.length > 0 ? newFilters : null);
+    setFilters({
+      on_offline: newFilters.length > 0 ? newFilters : null,
+    });
   }
 
   return (

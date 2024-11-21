@@ -83,13 +83,13 @@ export default function GridRenderer({ edition, grids }: Props) {
                   <GridEightSlot
                     slug={selectedGrid.id}
                     grid={data}
-                    onComplete={() => refetch()}
+                    onRefresh={() => refetch()}
                   />
                 ) : (
                   <GridFourSlot
                     slug={selectedGrid.id}
                     grid={data}
-                    onComplete={() => refetch()}
+                    onRefresh={() => refetch()}
                   />
                 )}
               </div>

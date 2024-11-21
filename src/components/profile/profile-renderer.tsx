@@ -3,7 +3,7 @@
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
 import { COSMO_ENDPOINT, ValidSort } from "@/lib/universal/cosmo/common";
 import { OwnedObjektsResult } from "@/lib/universal/cosmo/objekts";
-import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
+import { useFilters } from "@/hooks/use-filters";
 import { ReactNode, useCallback } from "react";
 import {
   CollectionFilters,
@@ -31,16 +31,8 @@ export default function ProfileRenderer({
   user,
   previousIds,
 }: Props) {
-  const [
-    searchParams,
-    showLocked,
-    setShowLocked,
-    cosmoFilters,
-    setCosmoFilters,
-    updateCosmoFilters,
-    dataSource,
-    setDataSource,
-  ] = useCosmoFilters();
+  const { searchParams, showLocked, setShowLocked, dataSource, setDataSource } =
+    useFilters();
 
   const queryFunction = useCallback(
     async ({ pageParam = 0 }: { pageParam?: number }) => {
@@ -86,8 +78,6 @@ export default function ProfileRenderer({
         <CollectionFilters
           showLocked={showLocked}
           setShowLocked={setShowLocked}
-          cosmoFilters={cosmoFilters}
-          updateCosmoFilters={updateCosmoFilters}
           allowSerials={dataSource === "blockchain"}
           dataSource={dataSource}
           setDataSource={setDataSource}
@@ -99,8 +89,6 @@ export default function ProfileRenderer({
         address={profile.address}
         showLocked={showLocked}
         artists={artists}
-        filters={cosmoFilters}
-        setFilters={setCosmoFilters}
         queryFunction={queryFunction}
         gridColumns={profile?.gridColumns ?? user?.gridColumns}
         dataSource={dataSource}

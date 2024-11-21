@@ -13,7 +13,7 @@ import DeleteList from "./delete-list";
 import UpdateList from "./update-list";
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
-import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
+import { useFilters } from "@/hooks/use-filters";
 import { Fragment, memo, useCallback } from "react";
 import {
   FiltersContainer,
@@ -40,14 +40,7 @@ export default function ListRenderer({
   user,
   gridColumns = GRID_COLUMNS,
 }: Props) {
-  const [
-    searchParams,
-    showLocked,
-    setShowLocked,
-    cosmoFilters,
-    setCosmoFilters,
-    updateCosmoFilters,
-  ] = useCosmoFilters();
+  const { searchParams } = useFilters();
 
   const queryFunction = useCallback(
     async ({ pageParam = 0 }: { pageParam?: number }) => {
@@ -71,17 +64,11 @@ export default function ListRenderer({
       <Title authenticated={authenticated} objektList={list} />
 
       <FiltersContainer isPortaled>
-        <IndexFilters
-          cosmoFilters={cosmoFilters}
-          updateCosmoFilters={updateCosmoFilters}
-          collections={[]}
-        />
+        <IndexFilters collections={[]} />
       </FiltersContainer>
 
       <FilteredObjektDisplay
         artists={artists}
-        filters={cosmoFilters}
-        setFilters={setCosmoFilters}
         queryFunction={queryFunction}
         queryKey={["objekt-list", list.slug]}
         getObjektId={getObjektId}

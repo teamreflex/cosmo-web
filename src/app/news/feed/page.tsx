@@ -1,6 +1,6 @@
+import { getSelectedArtist } from "@/app/data-fetching";
 import NewsFeedInfiniteLoader from "@/components/news/news-feed-infinite-loader";
 import { Metadata } from "next";
-import { getSelectedArtist } from "@/lib/server/profiles";
 
 export const metadata: Metadata = {
   title: "Feed",

@@ -6,19 +6,16 @@ import {
   decodeUser,
   getArtistsWithMembers,
   getProfile,
+  getSelectedArtist,
 } from "@/app/data-fetching";
 import UpdateDialog from "../misc/update-dialog";
 import ComoBalanceRenderer from "./como-balances";
-import { TokenPayload } from "@/lib/universal/auth";
-import { getSelectedArtist } from "@/lib/server/profiles";
 import { ErrorBoundary } from "react-error-boundary";
 import SystemStatus from "../misc/system-status";
 import CosmoAvatar from "./auth/cosmo-avatar";
 import AuthFallback from "./auth-fallback";
 
 export default async function Navbar() {
-  const user = await decodeUser();
-
   return (
     <nav className="sticky left-0 right-0 top-0 h-14 z-30">
       <div className="glass">
@@ -32,7 +29,9 @@ export default async function Navbar() {
               </div>
             </div>
 
-            <Links user={user} />
+            <Suspense>
+              <Links />
+            </Suspense>
 
             <div className="flex grow-0 items-center justify-end gap-2">
               <ErrorBoundary fallback={<AuthFallback />}>
@@ -41,7 +40,7 @@ export default async function Navbar() {
                     <div className="h-10 w-10 rounded-full bg-accent animate-pulse" />
                   }
                 >
-                  <Auth token={user} />
+                  <Auth />
                 </Suspense>
               </ErrorBoundary>
             </div>
@@ -53,25 +52,26 @@ export default async function Navbar() {
   );
 }
 
-async function Auth({ token }: { token?: TokenPayload }) {
+async function Auth() {
+  const user = await decodeUser();
   const selectedArtist = await getSelectedArtist();
   const [artists, profile] = await Promise.all([
     getArtistsWithMembers(),
-    token ? getProfile(token.profileId) : undefined,
+    user ? getProfile(user.profileId) : undefined,
   ]);
 
   return (
     <AuthOptions
-      token={token}
+      token={user}
       profile={profile}
       artists={artists}
       selectedArtist={selectedArtist}
       comoBalances={
-        token ? <ComoBalanceRenderer address={token.address} /> : null
+        user ? <ComoBalanceRenderer address={user.address} /> : null
       }
       cosmoAvatar={
         <ErrorBoundary fallback={<AuthFallback />}>
-          <CosmoAvatar token={token} artist={selectedArtist} />
+          <CosmoAvatar token={user} artist={selectedArtist} />
         </ErrorBoundary>
       }
     />

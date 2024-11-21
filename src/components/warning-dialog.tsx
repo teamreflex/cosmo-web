@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useSettingsStore } from "@/store";
 import {
   AlertDialog,
@@ -16,13 +15,8 @@ export default function WarningDialog() {
   const warned = useSettingsStore((state) => state.warnings["first-visit"]);
   const toggle = useSettingsStore((state) => state.toggleWarning);
 
-  const [open, setOpen] = useState(false);
-  useEffect(() => {
-    setOpen(warned === false);
-  }, [warned]);
-
   return (
-    <AlertDialog open={open}>
+    <AlertDialog open={warned === false}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{env.NEXT_PUBLIC_APP_NAME}</AlertDialogTitle>

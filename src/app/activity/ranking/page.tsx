@@ -1,11 +1,14 @@
-import { decodeUser, getArtistsWithMembers } from "@/app/data-fetching";
+import {
+  decodeUser,
+  getArtistsWithMembers,
+  getSelectedArtist,
+} from "@/app/data-fetching";
 import TopRanking from "@/components/activity/ranking/top-ranking";
 import { getQueryClient } from "@/lib/query-client";
 import {
   fetchActivityRankingNear,
   fetchActivityRankingTop,
 } from "@/lib/server/cosmo/activity";
-import { getSelectedArtist } from "@/lib/server/profiles";
 import { CosmoActivityRankingKind } from "@/lib/universal/cosmo/activity/ranking";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { Metadata } from "next";

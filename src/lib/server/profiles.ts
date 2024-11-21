@@ -1,7 +1,5 @@
 import { SQL } from "drizzle-orm";
 import { db } from "./db";
-import { getCookie } from "./cookies";
-import { ValidArtist } from "../universal/cosmo/common";
 
 /**
  * Fetch all known addresses from the database.
@@ -25,11 +23,4 @@ export async function fetchKnownAddresses(addresses: string[], privacy: SQL[]) {
       (p) => p.userAddress === profile.userAddress && p.id > profile.id
     );
   });
-}
-
-/**
- * Gets the current selected artist via cookies.
- */
-export async function getSelectedArtist() {
-  return (await getCookie<ValidArtist>("artist")) ?? "artms";
 }

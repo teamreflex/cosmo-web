@@ -5,8 +5,6 @@ import { MutationStatus } from "@tanstack/react-query";
 import { CheckCircle, HeartCrack, Loader2 } from "lucide-react";
 import Link from "next/link";
 
-export type DecryptState = "pending" | "error" | "success";
-
 type Props = {
   user: UserState;
   status: MutationStatus;

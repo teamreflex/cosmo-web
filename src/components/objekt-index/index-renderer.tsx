@@ -12,7 +12,7 @@ import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
 import ObjektSidebar from "../objekt/objekt-sidebar";
 import { TopOverlay } from "./index-overlay";
 import HelpDialog from "./help-dialog";
-import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
+import { useFilters } from "@/hooks/use-filters";
 import { Fragment, memo, useCallback } from "react";
 import {
   FiltersContainer,
@@ -22,7 +22,6 @@ import { ExpandableObjekt, RoutedExpandableObjekt } from "../objekt/objekt";
 import { ofetch } from "ofetch";
 import { baseUrl, GRID_COLUMNS } from "@/lib/utils";
 import { parseAsString, useQueryState } from "nuqs";
-import Hydrated from "../hydrated";
 
 const queryKey = ["objekt-index"];
 const getObjektId = (objekt: IndexedObjekt) => objekt.id;
@@ -44,14 +43,7 @@ export default function IndexRenderer({
   gridColumns = GRID_COLUMNS,
   activeSlug,
 }: Props) {
-  const [
-    searchParams,
-    showLocked,
-    setShowLocked,
-    cosmoFilters,
-    setCosmoFilters,
-    updateCosmoFilters,
-  ] = useCosmoFilters();
+  const { searchParams } = useFilters();
   const [, setActiveObjekt] = useQueryState("id", parseAsString);
 
   const authenticated = objektLists !== undefined && nickname !== undefined;
@@ -74,17 +66,11 @@ export default function IndexRenderer({
       <Title nickname={nickname} objektLists={objektLists} />
 
       <FiltersContainer>
-        <IndexFilters
-          cosmoFilters={cosmoFilters}
-          updateCosmoFilters={updateCosmoFilters}
-          collections={collections}
-        />
+        <IndexFilters collections={collections} />
       </FiltersContainer>
 
       <FilteredObjektDisplay
         artists={artists}
-        filters={cosmoFilters}
-        setFilters={setCosmoFilters}
         queryFunction={queryFunction}
         queryKey={queryKey}
         getObjektId={getObjektId}
@@ -111,14 +97,9 @@ export default function IndexRenderer({
        * activeSlug is populated on first load from the server
        * using activeObjekt here results in two dialogs being open at once
        */}
-      <Hydrated>
-        {activeSlug !== undefined && (
-          <RoutedExpandableObjekt
-            slug={activeSlug}
-            setActive={setActiveObjekt}
-          />
-        )}
-      </Hydrated>
+      {activeSlug !== undefined && (
+        <RoutedExpandableObjekt slug={activeSlug} setActive={setActiveObjekt} />
+      )}
     </div>
   );
 }

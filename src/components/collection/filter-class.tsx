@@ -16,6 +16,8 @@ import { PropsWithFilters } from "@/hooks/use-cosmo-filters";
 type Props = PropsWithFilters<"class">;
 
 export default memo(function ClassFilter({ filters, setFilters }: Props) {
+  // eslint-disable-next-line react-compiler/react-compiler
+  "use no memo";
   const [open, setOpen] = useState(false);
 
   function updateFilter(property: ValidClass, checked: boolean) {
@@ -31,7 +33,9 @@ export default memo(function ClassFilter({ filters, setFilters }: Props) {
       }
     }
 
-    setFilters("class", newFilters.length > 0 ? newFilters : null);
+    setFilters({
+      class: newFilters.length > 0 ? newFilters : null,
+    });
   }
 
   return (

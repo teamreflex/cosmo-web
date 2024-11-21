@@ -1,8 +1,7 @@
 "use server";
 
-import { decodeUser } from "@/app/data-fetching";
+import { decodeUser, getSelectedArtist } from "@/app/data-fetching";
 import { claimEventRewards } from "@/lib/server/cosmo/rewards";
-import { getSelectedArtist } from "@/lib/server/profiles";
 import {
   ActionResultError,
   ActionResultSuccess,

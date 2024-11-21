@@ -1,7 +1,6 @@
 import { Metadata } from "next";
-import { decodeUser } from "../data-fetching";
+import { decodeUser, getSelectedArtist } from "../data-fetching";
 import UserDialog from "@/components/activity/user-dialog";
-import { getSelectedArtist } from "@/lib/server/profiles";
 import { Suspense } from "react";
 import ArtistBlock from "@/components/activity/artist-block";
 import {

@@ -38,7 +38,9 @@ export default memo(function CollectionFilter({
       }
     }
 
-    setFilters("collectionNo", newFilters.length > 0 ? newFilters : null);
+    setFilters({
+      collectionNo: newFilters.length > 0 ? newFilters : null,
+    });
   }
 
   function onInput(e: React.FormEvent<HTMLInputElement>) {
@@ -71,7 +73,7 @@ export default memo(function CollectionFilter({
           />
           <button
             className="outline-none"
-            onClick={() => setFilters("collectionNo", [])}
+            onClick={() => setFilters({ collectionNo: [] })}
           >
             <X className="mr-1 h-4 w-4 opacity-50 hover:opacity-100 transition-colors" />
           </button>

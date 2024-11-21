@@ -18,7 +18,7 @@ import { polygon } from "viem/chains";
 import { env } from "@/env.mjs";
 
 const STORAGE_KEY = "wallet";
-const QUERY_KEY = ["wallet"];
+const QUERY_KEY = [STORAGE_KEY];
 
 export type UserState = {
   nickname: string;

@@ -52,7 +52,6 @@ export default function AuthOptions({
           </div>
 
           <UserDropdown
-            token={token}
             profile={profile}
             artists={artists}
             selectedArtist={selectedArtist}

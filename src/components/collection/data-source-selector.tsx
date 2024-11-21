@@ -1,11 +1,7 @@
 "use client";
 
 import { Dispatch, Fragment, SetStateAction, memo } from "react";
-import {
-  CollectionDataSource,
-  CosmoFilters,
-  UpdateCosmoFilters,
-} from "@/hooks/use-cosmo-filters";
+import { CollectionDataSource } from "@/hooks/use-filters";
 import {
   Select,
   SelectContent,
@@ -26,12 +22,12 @@ import {
   AlertDialogTitle,
 } from "../ui/alert-dialog";
 import { env } from "@/env.mjs";
-import { ValidSort } from "@/lib/universal/cosmo/common";
 import { useCooldown } from "@/hooks/use-countdown";
+import { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
 
 type Props = {
   filters: CosmoFilters;
-  setFilters: UpdateCosmoFilters;
+  setFilters: SetCosmoFilters;
   dataSource: CollectionDataSource;
   setDataSource: Dispatch<SetStateAction<CollectionDataSource>>;
 };
@@ -65,14 +61,18 @@ export default memo(function DataSourceSelector({
       case "cosmo":
         // reset serial sort
         if (filters.sort === "serialAsc" || filters.sort === "serialDesc") {
-          setFilters("sort", null);
+          setFilters({
+            sort: null,
+          });
         }
         break;
 
       case "blockchain":
         // reset gridable
         if (filters.gridable) {
-          setFilters("gridable", null);
+          setFilters({
+            gridable: null,
+          });
         }
         break;
     }

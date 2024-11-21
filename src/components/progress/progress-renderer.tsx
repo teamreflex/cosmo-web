@@ -1,9 +1,7 @@
 "use client";
 
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
-import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { Suspense, useCallback } from "react";
-import Hydrated from "../hydrated";
 import MemberFilter from "../collection/member-filter";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import ProgressTable from "./progress-table";
@@ -12,6 +10,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import { Button } from "../ui/button";
 import { RefreshCcw } from "lucide-react";
 import Skeleton from "../skeleton/skeleton";
+import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 
 type Props = {
   artists: CosmoArtistWithMembers[];
@@ -19,35 +18,26 @@ type Props = {
 };
 
 export default function ProgressRenderer({ artists, address }: Props) {
-  const [
-    searchParams,
-    showLocked,
-    setShowLocked,
-    cosmoFilters,
-    setCosmoFilters,
-    updateCosmoFilters,
-  ] = useCosmoFilters();
+  const [filters, setFilters] = useCosmoFilters();
 
   const setActiveMember = useCallback(
     (member: string) => {
-      setCosmoFilters((prev) => ({
-        ...prev,
+      setFilters((prev) => ({
         artist: null,
         member: prev.member === member ? null : member,
       }));
     },
-    [setCosmoFilters]
+    [setFilters]
   );
 
   const setActiveArtist = useCallback(
     (artist: string) => {
-      setCosmoFilters((prev) => ({
-        ...prev,
+      setFilters((prev) => ({
         member: null,
         artist: prev.artist === artist ? null : (artist as ValidArtist),
       }));
     },
-    [setCosmoFilters]
+    [setFilters]
   );
 
   return (
@@ -55,7 +45,7 @@ export default function ProgressRenderer({ artists, address }: Props) {
       <MemberFilter
         showArtists={false}
         artists={artists}
-        active={cosmoFilters.artist ?? cosmoFilters.member}
+        active={filters.artist ?? filters.member}
         updateArtist={setActiveArtist}
         updateMember={setActiveMember}
       />
@@ -76,15 +66,10 @@ export default function ProgressRenderer({ artists, address }: Props) {
               </div>
             )}
           >
-            {cosmoFilters.member !== null ? (
-              <Hydrated>
-                <Suspense fallback={<ProgressTableSkeleton />}>
-                  <ProgressTable
-                    address={address}
-                    member={cosmoFilters.member}
-                  />
-                </Suspense>
-              </Hydrated>
+            {filters.member !== null ? (
+              <Suspense fallback={<ProgressTableSkeleton />}>
+                <ProgressTable address={address} member={filters.member} />
+              </Suspense>
             ) : (
               <p className="flex flex-col items-center py-6 text-sm font-semibold">
                 Select a member to view collection progress

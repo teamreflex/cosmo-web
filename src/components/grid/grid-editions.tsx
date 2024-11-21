@@ -70,7 +70,12 @@ function GridEdition({ edition }: { edition: CosmoGridEdition }) {
             New
           </span>
         )}
-        <Image src={edition.image} alt={edition.title} fill={true} />
+        <Image
+          src={edition.image}
+          alt={edition.title}
+          fill={true}
+          loading="eager"
+        />
       </div>
 
       <div className="flex items-center justify-between w-full">

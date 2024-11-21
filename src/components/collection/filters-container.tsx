@@ -1,8 +1,4 @@
-import {
-  CollectionDataSource,
-  CosmoFilters,
-  UpdateCosmoFilters,
-} from "@/hooks/use-cosmo-filters";
+import { CollectionDataSource } from "@/hooks/use-filters";
 import {
   Dispatch,
   Fragment,
@@ -23,6 +19,7 @@ import { Toggle } from "../ui/toggle";
 import { SlidersHorizontal } from "lucide-react";
 import Portal from "../portal";
 import DataSourceSelector from "./data-source-selector";
+import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 
 type FiltersContainerProps = PropsWithChildren<{
   isPortaled?: boolean;
@@ -70,60 +67,46 @@ export function FiltersContainer({
 type CollectionFiltersProps = {
   showLocked: boolean;
   setShowLocked: (showLocked: boolean | null) => void;
-  cosmoFilters: CosmoFilters;
-  updateCosmoFilters: UpdateCosmoFilters;
   allowSerials?: boolean;
   dataSource: CollectionDataSource;
   setDataSource: Dispatch<SetStateAction<CollectionDataSource>>;
 };
-export const CollectionFilters = memo(function CollectionFilters({
+export function CollectionFilters({
   showLocked,
   setShowLocked,
-  cosmoFilters,
-  updateCosmoFilters,
   allowSerials = false,
   dataSource,
   setDataSource,
 }: CollectionFiltersProps) {
+  const [filters, setFilters] = useCosmoFilters();
+
   return (
     <Fragment>
       <LockedFilter showLocked={showLocked} setShowLocked={setShowLocked} />
       {dataSource === "cosmo" && (
-        <GridableFilter
-          filters={cosmoFilters.gridable}
-          setFilters={updateCosmoFilters}
-        />
+        <GridableFilter filters={filters.gridable} setFilters={setFilters} />
       )}
       <TransferableFilter
-        filters={cosmoFilters.transferable}
-        setFilters={updateCosmoFilters}
+        filters={filters.transferable}
+        setFilters={setFilters}
       />
-      <SeasonFilter
-        filters={cosmoFilters.season}
-        setFilters={updateCosmoFilters}
-      />
-      <OnlineFilter
-        filters={cosmoFilters.on_offline}
-        setFilters={updateCosmoFilters}
-      />
-      <ClassFilter
-        filters={cosmoFilters.class}
-        setFilters={updateCosmoFilters}
-      />
+      <SeasonFilter filters={filters.season} setFilters={setFilters} />
+      <OnlineFilter filters={filters.on_offline} setFilters={setFilters} />
+      <ClassFilter filters={filters.class} setFilters={setFilters} />
       <SortFilter
-        filters={cosmoFilters.sort}
-        setFilters={updateCosmoFilters}
+        filters={filters.sort}
+        setFilters={setFilters}
         serials={allowSerials}
       />
       <DataSourceSelector
-        filters={cosmoFilters}
-        setFilters={updateCosmoFilters}
+        filters={filters}
+        setFilters={setFilters}
         dataSource={dataSource}
         setDataSource={setDataSource}
       />
     </Fragment>
   );
-});
+}
 
 /**
  * used on:
@@ -131,39 +114,28 @@ export const CollectionFilters = memo(function CollectionFilters({
  * - /objekts
  */
 type IndexFiltersProps = {
-  cosmoFilters: CosmoFilters;
-  updateCosmoFilters: UpdateCosmoFilters;
   collections: string[];
 };
 export const IndexFilters = memo(function IndexFilters({
-  cosmoFilters,
-  updateCosmoFilters,
   collections,
 }: IndexFiltersProps) {
+  const [filters, setFilters] = useCosmoFilters();
+
   return (
     <Fragment>
-      <SeasonFilter
-        filters={cosmoFilters.season}
-        setFilters={updateCosmoFilters}
-      />
+      <SeasonFilter filters={filters.season} setFilters={setFilters} />
       {collections.length > 0 && (
         <CollectionFilter
-          filters={cosmoFilters.collectionNo}
-          setFilters={updateCosmoFilters}
+          filters={filters.collectionNo}
+          setFilters={setFilters}
           collections={collections}
         />
       )}
-      <OnlineFilter
-        filters={cosmoFilters.on_offline}
-        setFilters={updateCosmoFilters}
-      />
-      <ClassFilter
-        filters={cosmoFilters.class}
-        setFilters={updateCosmoFilters}
-      />
+      <OnlineFilter filters={filters.on_offline} setFilters={setFilters} />
+      <ClassFilter filters={filters.class} setFilters={setFilters} />
       <SortFilter
-        filters={cosmoFilters.sort}
-        setFilters={updateCosmoFilters}
+        filters={filters.sort}
+        setFilters={setFilters}
         serials={false}
       />
     </Fragment>

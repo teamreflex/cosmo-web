@@ -20,11 +20,7 @@ import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
 import MemberFilter from "../collection/member-filter";
 import Portal from "../portal";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
-import {
-  CollectionDataSource,
-  CosmoFilters,
-  SetCosmoFilters,
-} from "@/hooks/use-cosmo-filters";
+import { CollectionDataSource } from "@/hooks/use-filters";
 import { InfiniteQueryNext } from "../infinite-query-pending";
 import { ValidObjekt } from "@/lib/universal/objekts";
 import { GRID_COLUMNS, cn, typedMemo } from "@/lib/utils";
@@ -33,6 +29,7 @@ import { useObjektRewards } from "@/hooks/use-objekt-rewards";
 import Skeleton from "../skeleton/skeleton";
 import { ErrorBoundary } from "react-error-boundary";
 import { useProfileContext } from "@/hooks/use-profile";
+import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 
 export type ObjektResponse<TObjektType extends ValidObjekt> = {
   hasNext: boolean;
@@ -48,8 +45,6 @@ type Props<TObjektType extends ValidObjekt> = {
     isPin: boolean
   ) => ReactElement;
   artists: CosmoArtistWithMembers[];
-  filters: CosmoFilters;
-  setFilters: SetCosmoFilters;
   queryKey: QueryKey;
   queryFunction: QueryFunction<
     ObjektResponse<TObjektType>,
@@ -68,8 +63,6 @@ export default typedMemo(function FilteredObjektDisplay<
 >({
   children,
   artists,
-  filters,
-  setFilters,
   queryKey,
   queryFunction,
   getObjektId,
@@ -78,23 +71,27 @@ export default typedMemo(function FilteredObjektDisplay<
   dataSource = "blockchain",
   hidePins = true,
 }: Props<TObjektType>) {
-  const setActiveMember = useCallback((member: string) => {
-    setFilters((prev) => ({
-      ...prev,
-      artist: null,
-      member: prev.member === member ? null : member,
-    }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const [filters, setFilters] = useCosmoFilters();
 
-  const setActiveArtist = useCallback((artist: string) => {
-    setFilters((prev) => ({
-      ...prev,
-      member: null,
-      artist: prev.artist === artist ? null : (artist as ValidArtist),
-    }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const setActiveMember = useCallback(
+    (member: string) => {
+      setFilters((prev) => ({
+        artist: null,
+        member: prev.member === member ? null : member,
+      }));
+    },
+    [setFilters]
+  );
+
+  const setActiveArtist = useCallback(
+    (artist: string) => {
+      setFilters((prev) => ({
+        member: null,
+        artist: prev.artist === artist ? null : (artist as ValidArtist),
+      }));
+    },
+    [setFilters]
+  );
 
   return (
     <div className="flex flex-col">
@@ -143,7 +140,6 @@ export default typedMemo(function FilteredObjektDisplay<
                   }
                 >
                   <ObjektGrid
-                    filters={filters}
                     queryFunction={queryFunction}
                     queryKey={queryKey}
                     getObjektId={getObjektId}
@@ -175,7 +171,6 @@ const ObjektGrid = typedMemo(function ObjektGrid<
   TObjektType extends ValidObjekt
 >({
   children,
-  filters,
   queryKey,
   queryFunction,
   getObjektId,
@@ -184,6 +179,7 @@ const ObjektGrid = typedMemo(function ObjektGrid<
   dataSource = "blockchain",
   hidePins,
 }: ObjektGridProps<TObjektType>) {
+  const [filters] = useCosmoFilters();
   const pins = useProfileContext((ctx) => ctx.pins);
   const { rewardsDialog } = useObjektRewards();
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =

@@ -3,6 +3,7 @@
 import { PropsWithClassName, cn } from "@/lib/utils";
 import { intervalToDuration } from "date-fns";
 import { useEffect, useState } from "react";
+import Hydrated from "../hydrated";
 
 type Props = PropsWithClassName<{
   pollEndDate?: string;
@@ -14,25 +15,17 @@ export default function GravityOngoingCountdown({
   pollEndDate,
   gravityEndDate,
 }: Props) {
-  const [timeLeft, setTimeLeft] = useState("00H: 00M: 00S");
-
-  const duration = intervalToDuration({
-    start: new Date(),
-    end: new Date(pollEndDate ?? gravityEndDate),
+  const [timeLeft, setTimeLeft] = useState(() => {
+    return calculateTimeLeft(pollEndDate ?? gravityEndDate);
   });
 
   useEffect(() => {
     const interval = setInterval(() => {
-      const hoursNum = (duration.hours ?? 0) + (duration.days ?? 0) * 24;
-      const hours = hoursNum.toString().padStart(2, "0");
-      const minutes = duration.minutes?.toString().padStart(2, "0") ?? "00";
-      const seconds = duration.seconds?.toString().padStart(2, "0") ?? "00";
-
-      setTimeLeft(`${hours}H: ${minutes}M: ${seconds}S`);
+      setTimeLeft(calculateTimeLeft(pollEndDate ?? gravityEndDate));
     }, 1000);
 
     return () => clearInterval(interval);
-  });
+  }, [pollEndDate, gravityEndDate]);
 
   return (
     <div
@@ -43,10 +36,30 @@ export default function GravityOngoingCountdown({
       )}
     >
       {pollEndDate ? (
-        <p className="font-cosmo tabular-nums">{timeLeft}</p>
+        <Hydrated
+          fallback={
+            <p className="font-cosmo tabular-nums blur-sm">00H: 00M: 00S</p>
+          }
+        >
+          <p className="font-cosmo tabular-nums">{timeLeft}</p>
+        </Hydrated>
       ) : (
         <p>Counting Polls</p>
       )}
     </div>
   );
+}
+
+function calculateTimeLeft(endDate: string) {
+  const duration = intervalToDuration({
+    start: new Date(),
+    end: new Date(endDate),
+  });
+
+  const hoursNum = (duration.hours ?? 0) + (duration.days ?? 0) * 24;
+  const hours = hoursNum.toString().padStart(2, "0");
+  const minutes = duration.minutes?.toString().padStart(2, "0") ?? "00";
+  const seconds = duration.seconds?.toString().padStart(2, "0") ?? "00";
+
+  return `${hours}H: ${minutes}M: ${seconds}S`;
 }

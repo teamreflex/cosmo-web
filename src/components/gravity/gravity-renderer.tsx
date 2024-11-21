@@ -2,7 +2,7 @@ import { fetchGravities } from "@/lib/server/cosmo/gravity";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import GravityItem from "./gravity-item";
 import { CosmoGravity } from "@/lib/universal/cosmo/gravity";
-import { getSelectedArtist } from "@/lib/server/profiles";
+import { getSelectedArtist } from "@/app/data-fetching";
 
 export default async function GravityRenderer() {
   const artist = await getSelectedArtist();

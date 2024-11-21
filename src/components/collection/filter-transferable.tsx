@@ -14,7 +14,11 @@ export default memo(function TransferableFilter({
     <Toggle
       variant="cosmo"
       pressed={filters ?? false}
-      onPressedChange={(v) => setFilters("transferable", v ? true : null)}
+      onPressedChange={(v) =>
+        setFilters({
+          transferable: v ? true : null,
+        })
+      }
       aria-label="Toggle transferable"
     >
       Transferable

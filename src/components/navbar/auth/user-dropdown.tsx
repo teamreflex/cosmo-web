@@ -5,7 +5,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { TokenPayload } from "@/lib/universal/auth";
 import { Disc3, LogOut, Shield, Wrench } from "lucide-react";
 import { ReactNode, useEffect, useState } from "react";
 import SwitchArtistDialog from "./switch-artist-dialog";
@@ -18,7 +17,6 @@ import { usePathname } from "next/navigation";
 import Discord from "@/components/icons/discord";
 
 type UserDropdownProps = {
-  token: TokenPayload;
   profile: PublicProfile;
   artists: CosmoArtist[];
   selectedArtist: ValidArtist;
@@ -28,7 +26,6 @@ type UserDropdownProps = {
 };
 
 export default function UserDropdown({
-  token,
   cosmoAvatar,
   profile,
   artists,

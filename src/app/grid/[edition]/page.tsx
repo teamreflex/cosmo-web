@@ -3,9 +3,8 @@ import { cache } from "react";
 import { fetchEdition } from "@/lib/server/cosmo/grid";
 import { redirect } from "next/navigation";
 import GridRenderer from "@/components/grid/grid-renderer";
-import { decodeUser, getProfile } from "../../data-fetching";
+import { decodeUser, getProfile, getSelectedArtist } from "../../data-fetching";
 import { ProfileProvider } from "@/hooks/use-profile";
-import { getSelectedArtist } from "@/lib/server/profiles";
 
 type Props = {
   params: Promise<{ edition: string }>;

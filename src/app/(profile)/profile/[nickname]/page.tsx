@@ -3,6 +3,7 @@ import {
   decodeUser,
   getProfile,
   getUserByIdentifier,
+  getSelectedArtist,
 } from "@/app/data-fetching";
 import ProfileRenderer from "@/components/profile/profile-renderer";
 import { fetchArtistsWithMembers } from "@/lib/server/cosmo/artists";
@@ -14,8 +15,8 @@ import { ProfileProvider } from "@/hooks/use-profile";
 import RewardsRenderer from "@/components/rewards/rewards-renderer";
 import { ObjektRewardProvider } from "@/hooks/use-objekt-rewards";
 import { ErrorBoundary } from "react-error-boundary";
-import { getSelectedArtist } from "@/lib/server/profiles";
 import { fetchPins } from "@/lib/server/objekts/pins";
+import { UserStateProvider } from "@/hooks/use-user-state";
 
 type Props = {
   params: Promise<{
@@ -72,24 +73,26 @@ export default async function UserCollectionPage(props: Props) {
         }
       >
         <section className="flex flex-col">
-          <ProfileRenderer
-            artists={artists}
-            profile={targetUser.profile}
-            user={currentUser}
-            previousIds={
-              targetUser.profile.privacy.nickname && !isOwnProfile ? null : (
-                <Suspense
-                  fallback={
-                    <div className="flex justify-center">
-                      <Loader2 className="w-6 h-6 animate-spin" />
-                    </div>
-                  }
-                >
-                  <PreviousIds address={targetUser.profile.address} />
-                </Suspense>
-              )
-            }
-          />
+          <UserStateProvider artist={selectedArtist} token={user}>
+            <ProfileRenderer
+              artists={artists}
+              profile={targetUser.profile}
+              user={currentUser}
+              previousIds={
+                targetUser.profile.privacy.nickname && !isOwnProfile ? null : (
+                  <Suspense
+                    fallback={
+                      <div className="flex justify-center">
+                        <Loader2 className="w-6 h-6 animate-spin" />
+                      </div>
+                    }
+                  >
+                    <PreviousIds address={targetUser.profile.address} />
+                  </Suspense>
+                )
+              }
+            />
+          </UserStateProvider>
         </section>
       </ObjektRewardProvider>
     </ProfileProvider>

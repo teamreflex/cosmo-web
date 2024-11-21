@@ -1,7 +1,6 @@
 import { search } from "@/lib/server/cosmo/auth";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import ProfileImage from "@/assets/profile.webp";
-import { getSelectedArtist } from "@/lib/server/profiles";
 import {
   Tooltip,
   TooltipContent,
@@ -9,6 +8,7 @@ import {
   TooltipTrigger,
 } from "../ui/tooltip";
 import { cn, PropsWithClassName } from "@/lib/utils";
+import { getSelectedArtist } from "@/app/data-fetching";
 
 type Props = {
   className?: string;

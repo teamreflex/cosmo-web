@@ -1,5 +1,5 @@
+import { getSelectedArtist } from "@/app/data-fetching";
 import MyRekords from "@/components/rekord/my-rekords";
-import { getSelectedArtist } from "@/lib/server/profiles";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {

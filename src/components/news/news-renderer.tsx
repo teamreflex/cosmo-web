@@ -7,10 +7,9 @@ import {
 import NewsSectionFeed from "./news-section-feed";
 import NewsSectionExclusive from "./news-section-exclusive";
 import NewsSectionBanner from "./news-section-banner";
-import { decodeUser } from "@/app/data-fetching";
+import { decodeUser, getSelectedArtist } from "@/app/data-fetching";
 import { fetchHomeNews } from "@/lib/server/cosmo/news";
 import NewsSectionRekord from "./news-section-rekord";
-import { getSelectedArtist } from "@/lib/server/profiles";
 
 export default async function NewsRenderer() {
   const user = await decodeUser();

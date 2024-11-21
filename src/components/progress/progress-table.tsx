@@ -13,6 +13,7 @@ import {
 } from "../ui/select";
 import ProgressSeason from "./progress-season";
 import ProgressLeaderboard from "./progress-leaderboard";
+import { baseUrl } from "@/lib/utils";
 
 type Props = {
   address: string;
@@ -25,17 +26,19 @@ export default function ProgressTable({ address, member }: Props) {
     parseAsStringEnum(["combined", "online", "offline"])
   );
 
-  // used to invalidate the selected/expanded class
-  const key = `${member}:${onlineType ?? "combined"}`;
-
   const { data } = useSuspenseQuery({
     queryKey: ["progress", address, member],
     queryFn: async () => {
-      return await ofetch<FinalProgress[]>(
-        `/api/progress/breakdown/${member}/${address}`
+      const url = new URL(
+        `/api/progress/breakdown/${member}/${address}`,
+        baseUrl()
       );
+      return await ofetch<FinalProgress[]>(url.toString());
     },
   });
+
+  // used to invalidate the selected/expanded class
+  const key = `${member}:${onlineType ?? "combined"}`;
 
   /**
    * filter out any season-class combos that have no totals and group by season.
@@ -103,10 +106,9 @@ export default function ProgressTable({ address, member }: Props) {
         <div className="flex flex-col gap-6">
           {seasons.map(([season, classes]) => (
             <ProgressSeason
-              key={season}
+              key={`${key}:${season}`}
               season={season}
               classes={classes}
-              filter={key}
             />
           ))}
         </div>

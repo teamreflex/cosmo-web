@@ -9,13 +9,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { PropsWithFilters } from "@/hooks/use-cosmo-filters";
 import { ValidSeason, validSeasons } from "@/lib/universal/cosmo/common";
-import { memo, useState } from "react";
+import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Props = PropsWithFilters<"season">;
 
-export default memo(function SeasonFilter({ filters, setFilters }: Props) {
+export default function SeasonFilter({ filters, setFilters }: Props) {
+  // eslint-disable-next-line react-compiler/react-compiler
+  "use no memo";
   const [open, setOpen] = useState(false);
 
   function updateFilter(property: ValidSeason, checked: boolean) {
@@ -31,7 +33,9 @@ export default memo(function SeasonFilter({ filters, setFilters }: Props) {
       }
     }
 
-    setFilters("season", newFilters.length > 0 ? newFilters : null);
+    setFilters({
+      season: newFilters.length > 0 ? newFilters : null,
+    });
   }
 
   return (
@@ -61,4 +65,4 @@ export default memo(function SeasonFilter({ filters, setFilters }: Props) {
       </DropdownMenuContent>
     </DropdownMenu>
   );
-});
+}

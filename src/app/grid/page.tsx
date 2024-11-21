@@ -4,9 +4,8 @@ import GridStatus, { GridStatusSkeleton } from "@/components/grid/grid-status";
 import GridEditions, {
   GridEditionsSkeleton,
 } from "@/components/grid/grid-editions";
-import { decodeUser } from "../data-fetching";
+import { decodeUser, getSelectedArtist } from "../data-fetching";
 import ApolloErrorBoundary from "@/components/error-boundary";
-import { getSelectedArtist } from "@/lib/server/profiles";
 
 export const metadata: Metadata = {
   title: "Grid",

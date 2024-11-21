@@ -1,21 +1,15 @@
 import { FinalProgress } from "@/lib/universal/progress";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import ProgressItem from "./progress-item";
 import ProgressObjektGrid from "./progress-objekt-grid";
 
 type Props = {
   season: string;
   classes: FinalProgress[];
-  filter: string;
 };
 
-export default function ProgressSeason({ season, classes, filter }: Props) {
+export default function ProgressSeason({ season, classes }: Props) {
   const [selectedClass, setSelectedClass] = useState<FinalProgress>();
-
-  // reset selected class when filter changes
-  useEffect(() => {
-    setSelectedClass(undefined);
-  }, [filter]);
 
   const total = classes.reduce((acc, progress) => acc + progress.total, 0);
   const progress = classes.reduce(

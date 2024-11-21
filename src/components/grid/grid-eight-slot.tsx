@@ -10,11 +10,11 @@ import GridConfirmDialog from "./grid-confirm-dialog";
 export default function GridEightSlot({
   slug,
   grid,
-  onComplete,
+  onRefresh,
 }: {
   slug: string;
   grid: CosmoOngoingGrid;
-  onComplete: () => void;
+  onRefresh: () => void;
 }) {
   const {
     objekts,
@@ -23,7 +23,13 @@ export default function GridEightSlot({
     completeGrid,
     isPending,
     gridReward,
+    reset,
   } = useGrid(slug, grid.ongoing.slotStatuses);
+
+  function onComplete() {
+    reset();
+    onRefresh();
+  }
 
   return (
     <div className="flex flex-col gap-4 items-center w-full">

@@ -7,7 +7,7 @@ import {
   CosmoOngoingGridSlot,
 } from "@/lib/universal/cosmo/grid";
 import { track } from "@/lib/utils";
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 
 type EmptySlot = {
   populated: false;
@@ -56,7 +56,9 @@ function normalize(slots: CosmoOngoingGridSlot[]) {
 
 export function useGrid(slug: string, slots: CosmoOngoingGridSlot[]) {
   const [isPending, startTransition] = useTransition();
-  const [objekts, setObjekts] = useState<MinimalGridSlot[]>(normalize(slots));
+  const [objekts, setObjekts] = useState<MinimalGridSlot[]>(() =>
+    normalize(slots)
+  );
   const [gridReward, setGridReward] = useState<CosmoGridRewardClaimResult>();
 
   const slotsForCompletion: CosmoGridSlotCompletion[] = objekts
@@ -97,6 +99,10 @@ export function useGrid(slug: string, slots: CosmoOngoingGridSlot[]) {
     });
   }
 
+  function reset() {
+    setGridReward(undefined);
+  }
+
   return {
     objekts,
     populateSlot,
@@ -106,5 +112,6 @@ export function useGrid(slug: string, slots: CosmoOngoingGridSlot[]) {
     completeGrid,
     isPending,
     gridReward,
+    reset,
   };
 }

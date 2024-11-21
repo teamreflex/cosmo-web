@@ -1,8 +1,7 @@
-import { decodeUser } from "@/app/data-fetching";
+import { decodeUser, getSelectedArtist } from "@/app/data-fetching";
 import ArchiveRekords from "@/components/rekord/archive-rekords";
 import RekordArchiveStatus from "@/components/rekord/archive-status";
 import Skeleton from "@/components/skeleton/skeleton";
-import { getSelectedArtist } from "@/lib/server/profiles";
 import { Metadata } from "next";
 import { Suspense } from "react";
 

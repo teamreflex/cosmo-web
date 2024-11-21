@@ -6,7 +6,7 @@ import { Flag } from "lucide-react";
 import AllRekords from "@/components/rekord/all-rekords";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { getSelectedArtist } from "@/lib/server/profiles";
+import { getSelectedArtist } from "../data-fetching";
 
 export const metadata: Metadata = {
   title: "Rekord",

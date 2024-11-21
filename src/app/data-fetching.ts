@@ -4,6 +4,8 @@ import { fetchProfile, fetchUserByIdentifier } from "@/lib/server/auth";
 import { notFound } from "next/navigation";
 import { fetchArtistsWithMembers } from "@/lib/server/cosmo/artists";
 import { user } from "@/lib/server/cosmo/auth";
+import { getCookie } from "@/lib/server/cookies";
+import { ValidArtist } from "@/lib/universal/cosmo/common";
 
 /**
  * Decode the current token.
@@ -45,4 +47,11 @@ export const getArtistsWithMembers = cache(async () => {
  */
 export const getCosmoUser = cache(async (accessToken: string) => {
   return await user(accessToken);
+});
+
+/**
+ * Get the selected artist from cookies.
+ */
+export const getSelectedArtist = cache(async () => {
+  return (await getCookie<ValidArtist>("artist")) ?? "artms";
 });

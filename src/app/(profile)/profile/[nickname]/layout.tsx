@@ -24,9 +24,6 @@ type Props = PropsWithChildren<{
 
 export default async function ProfileLayout(props: Props) {
   const params = await props.params;
-
-  const { children } = props;
-
   const [currentUser, targetUser] = await Promise.all([
     decodeUser(),
     getUserByIdentifier(params.nickname),
@@ -76,7 +73,7 @@ export default async function ProfileLayout(props: Props) {
         className="button-container"
       />
 
-      {children}
+      {props.children}
     </main>
   );
 }

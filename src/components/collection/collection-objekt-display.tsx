@@ -8,15 +8,11 @@ import ActionOverlay from "../objekt/action-overlay";
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
 import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
 import { QueryFunction, QueryKey } from "@tanstack/react-query";
-import {
-  CollectionDataSource,
-  CosmoFilters,
-  filtersAreDirty,
-  SetCosmoFilters,
-} from "@/hooks/use-cosmo-filters";
+import { CollectionDataSource, filtersAreDirty } from "@/hooks/use-filters";
 import { ExpandableObjekt } from "../objekt/objekt";
 import { GRID_COLUMNS } from "@/lib/utils";
 import { useProfileContext } from "@/hooks/use-profile";
+import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 
 const getObjektId = (objekt: OwnedObjekt) => objekt.tokenId;
 
@@ -25,8 +21,6 @@ type Props = {
   address: string;
   showLocked: boolean;
   artists: CosmoArtistWithMembers[];
-  filters: CosmoFilters;
-  setFilters: SetCosmoFilters;
   queryFunction: QueryFunction<
     ObjektResponse<OwnedObjekt>,
     QueryKey,
@@ -41,12 +35,11 @@ export default memo(function CollectionObjektDisplay({
   address,
   showLocked,
   artists,
-  filters,
-  setFilters,
   queryFunction,
   gridColumns = GRID_COLUMNS,
   dataSource,
 }: Props) {
+  const [filters] = useCosmoFilters();
   const hidePins = useMemo(() => filtersAreDirty(filters), [filters]);
   const lockedObjekts = useProfileContext((ctx) => ctx.lockedObjekts);
   const pins = useProfileContext((ctx) => ctx.pins);
@@ -71,8 +64,6 @@ export default memo(function CollectionObjektDisplay({
   return (
     <FilteredObjektDisplay
       artists={artists}
-      filters={filters}
-      setFilters={setFilters}
       queryFunction={queryFunction}
       queryKey={["collection", address]}
       getObjektId={getObjektId}

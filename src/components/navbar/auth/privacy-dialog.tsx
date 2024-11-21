@@ -9,7 +9,7 @@ import { updatePrivacy } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
-import { useActionState, useEffect, useTransition } from "react";
+import { useTransition } from "react";
 import { toast } from "@/components/ui/use-toast";
 
 type PrivacyDialogProps = {
