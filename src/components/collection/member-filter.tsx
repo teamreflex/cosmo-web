@@ -26,8 +26,8 @@ export default memo(function MemberFilter({
 }: Props) {
   return (
     <div className="relative flex flex-col h-fit w-full">
-      <div className="absolute pointer-events-none z-20 top-0 left-0 h-full w-2 bg-gradient-to-r from-background to-transparent" />
-      <div className="absolute pointer-events-none z-20 top-0 right-0 h-full w-2 bg-gradient-to-l from-background to-transparent" />
+      <div className="absolute pointer-events-none z-20 top-0 left-0 h-full w-2 bg-linear-to-r from-background to-transparent" />
+      <div className="absolute pointer-events-none z-20 top-0 right-0 h-full w-2 bg-linear-to-l from-background to-transparent" />
 
       {artists.map((artist) => (
         <div
@@ -87,8 +87,8 @@ export const MemberFilterButton = memo(function MemberFilterButton({
             <button
               onClick={() => setActive(name)}
               className={cn(
-                "rounded-full drop-shadow",
-                isActive && "ring ring-cosmo"
+                "rounded-full drop-shadow-sm",
+                isActive && "ring-3 ring-cosmo"
               )}
             >
               <MemberImage name={displayName} image={image} />

@@ -1,11 +1,11 @@
 import { useGrid } from "@/hooks/use-grid";
 import { CosmoOngoingGrid } from "@/lib/universal/cosmo/grid";
 import SlotSelector from "./slot-selector";
-import { cn } from "@/lib/utils";
 import GridObjekt from "./grid-objekt";
 import { Button } from "../ui/button";
 import RewardDialog from "./reward-dialog";
 import GridConfirmDialog from "./grid-confirm-dialog";
+import { useMemo } from "react";
 
 export default function GridEightSlot({
   slug,
@@ -26,6 +26,11 @@ export default function GridEightSlot({
     reset,
   } = useGrid(slug, grid.ongoing.slotStatuses);
 
+  // insert empty slot in the 4th position to simulate cosmo's view
+  const slots = useMemo(() => {
+    return [...objekts.slice(0, 4), null, ...objekts.slice(4)];
+  }, [objekts]);
+
   function onComplete() {
     reset();
     onRefresh();
@@ -34,8 +39,16 @@ export default function GridEightSlot({
   return (
     <div className="flex flex-col gap-4 items-center w-full">
       <div className="grid grid-cols-3 md:grid-cols-4 gap-4 w-full md:w-2/3">
-        <div className="aspect-photocard w-full flex justify-center items-center order-5 md:hidden" />
-        {objekts.map((slot, idx) => {
+        {slots.map((slot, idx) => {
+          if (slot === null) {
+            return (
+              <div
+                key={idx}
+                className="aspect-photocard w-full flex justify-center items-center md:hidden"
+              />
+            );
+          }
+
           if (slot.populated) {
             return (
               <SlotSelector
@@ -44,12 +57,7 @@ export default function GridEightSlot({
                 populateSlot={populateSlot}
                 key={slot.collectionNo}
               >
-                <div
-                  className={cn(
-                    "relative aspect-photocard w-full flex justify-center items-center hover:cursor-pointer",
-                    idx === 4 ? "order-6" : `order-${idx + 1}`
-                  )}
-                >
+                <div className="relative aspect-photocard w-full flex justify-center items-center hover:cursor-pointer">
                   <GridObjekt
                     image={slot.image}
                     collectionNo={slot.collectionNo}
@@ -60,21 +68,18 @@ export default function GridEightSlot({
                 </div>
               </SlotSelector>
             );
-          } else {
-            return (
-              <div
-                className={cn(
-                  "relative aspect-photocard rounded-lg bg-accent w-full flex justify-center items-center",
-                  idx === 4 ? "order-6" : `order-${idx + 1}`
-                )}
-                key={slot.collectionNo}
-              >
-                <p className="dark:text-foreground/20 text-3xl select-none">
-                  {slot.collectionNo}
-                </p>
-              </div>
-            );
           }
+
+          return (
+            <div
+              className="relative aspect-photocard rounded-lg bg-accent w-full flex justify-center items-center"
+              key={slot.collectionNo}
+            >
+              <p className="dark:text-foreground/20 text-3xl select-none">
+                {slot.collectionNo}
+              </p>
+            </div>
+          );
         })}
       </div>
 

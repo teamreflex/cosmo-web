@@ -36,7 +36,7 @@ export default function MyRekords({ artist }: Props) {
     <RekordGrid queryKey={["my-rekords", artist]} queryFunction={queryFunction}>
       {({ item }) => (
         <RekordPost item={item} className="max-w-64 border border-accent">
-          <div className="absolute w-full h-12 bg-gradient-to-t from-transparent to-black/30" />
+          <div className="absolute w-full h-12 bg-linear-to-t from-transparent to-black/30" />
           <Likes count={item.post.totalLikeCount} />
           <Timestamp createdAt={item.post.createdAt} />
         </RekordPost>

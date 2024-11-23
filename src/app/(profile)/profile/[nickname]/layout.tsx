@@ -8,7 +8,7 @@ import { Shield } from "lucide-react";
 import { validArtists } from "@/lib/universal/cosmo/common";
 import ArtistIcon from "@/components/artist-icon";
 import ProgressButton from "@/components/profile/progress-button";
-import { isAddressEqual, cn, PropsWithClassName } from "@/lib/utils";
+import { isAddressEqual } from "@/lib/utils";
 import ComoBalanceRenderer from "@/components/navbar/como-balances";
 import UserAvatar from "@/components/profile/user-avatar";
 import Skeleton from "@/components/skeleton/skeleton";
@@ -70,7 +70,6 @@ export default async function ProfileLayout(props: Props) {
         profile={profile}
         objektLists={objektLists}
         currentUserAddress={currentUser?.address}
-        className="button-container"
       />
 
       {props.children}
@@ -78,27 +77,17 @@ export default async function ProfileLayout(props: Props) {
   );
 }
 
-type ButtonsProps = PropsWithClassName<{
+type ButtonsProps = {
   profile: PublicProfile;
   objektLists: ObjektList[];
   currentUserAddress: string | undefined;
-}>;
+};
 
-function Buttons({
-  className,
-  profile,
-  objektLists,
-  currentUserAddress,
-}: ButtonsProps) {
+function Buttons({ profile, objektLists, currentUserAddress }: ButtonsProps) {
   const url = `/@${profile.isAddress ? profile.address : profile.nickname}`;
 
   return (
-    <div
-      className={cn(
-        "flex flex-wrap gap-2 justify-center lg:justify-normal",
-        className
-      )}
-    >
+    <div className="flex flex-wrap gap-2 justify-center lg:justify-normal sm:absolute sm:top-2 sm:right-4">
       <BackButton url={url} />
       <CopyAddressButton address={profile.address} />
       <TradesButton
@@ -134,7 +123,7 @@ function ComoBlock({ hide, address }: { hide: boolean; address: string }) {
         {validArtists.map((artist) => (
           <div
             key={artist}
-            className="flex justify-between items-center rounded cursor-default bg-accent border border-black/30 dark:border-white/30 h-[26px] min-w-16 w-fit px-1 shadow"
+            className="flex justify-between items-center rounded cursor-default bg-accent border border-black/30 dark:border-white/30 h-[26px] min-w-16 w-fit px-1 shadow-sm"
           >
             <ArtistIcon artist={artist} />
             <Shield className="w-5 h-5"></Shield>

@@ -43,13 +43,7 @@ export default function SendEmailForm({ payload, onComplete }: Props) {
       {error && <p className="text-sm text-red-500">{error}</p>}
 
       <input type="hidden" name="transactionId" value={payload.transactionId} />
-      <Input
-        type="email"
-        name="email"
-        placeholder="example@example.com"
-        // fixes iOS zoom when focusing input
-        className="touch-manipulation text-base sm:text-sm"
-      />
+      <Input type="email" name="email" placeholder="example@example.com" />
 
       <Portal to="#sign-in-footer">
         <AlertDialogCancel className="mt-0">Cancel</AlertDialogCancel>

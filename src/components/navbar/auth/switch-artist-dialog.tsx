@@ -82,7 +82,7 @@ function SelectArtistButton({
   return (
     <button
       onClick={select}
-      className="flex w-full justify-between items-center px-4 py-2 border border-accent rounded-lg hover:bg-accent/25 transition focus:outline-none"
+      className="flex w-full justify-between items-center px-4 py-2 border border-accent rounded-lg hover:bg-accent/25 transition focus:outline-hidden"
     >
       <div className="flex gap-4 items-center">
         <Image

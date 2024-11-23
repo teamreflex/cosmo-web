@@ -1,4 +1,4 @@
-import "./globals.css";
+import "../styles/tailwind.css";
 import Navbar from "@/components/navbar/navbar";
 import ClientProviders from "@/components/client-providers";
 import { Metadata } from "next";
@@ -55,7 +55,9 @@ export default async function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${cosmo.variable} font-sans`}>
+      <body
+        className={`${inter.variable} ${cosmo.variable} font-inter antialiased bg-background text-foreground overflow-y-scroll **:border-border`}
+      >
         <ThemeProvider attribute="class" defaultTheme="dark">
           <ClientProviders>
             <div className="relative flex min-h-dvh flex-col">

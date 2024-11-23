@@ -100,8 +100,8 @@ function GravityUpcomingOrOngoing({
           fill={true}
         />
 
-        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-transparent to-cosmo/10 opacity-0 group-hover:opacity-100 transition-all" />
-        <div className="absolute bottom-0 left-0 w-full h-full bg-gradient-to-t from-black to-transparent flex flex-col justify-end p-3 gap-3">
+        <div className="absolute top-0 left-0 w-full h-full bg-linear-to-t from-transparent to-cosmo/10 opacity-0 group-hover:opacity-100 transition-all" />
+        <div className="absolute bottom-0 left-0 w-full h-full bg-linear-to-t from-black to-transparent flex flex-col justify-end p-3 gap-3">
           <h2 className="text-2xl sm:text-4xl font-semibold">
             {gravity.title}
           </h2>

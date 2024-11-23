@@ -1,5 +1,4 @@
 import { type ClassValue, clsx } from "clsx";
-import { memo } from "react";
 import { twMerge } from "tailwind-merge";
 import { PublicProfile } from "./universal/cosmo/auth";
 import { env } from "@/env.mjs";
@@ -16,17 +15,6 @@ export function ordinal(n: number) {
   const v = n % 100;
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
-
-/**
- * A typed version of React.memo
- */
-export const typedMemo: <T>(
-  component: T,
-  propsAreEqual?: (
-    prevProps: React.PropsWithChildren<T>,
-    nextProps: React.PropsWithChildren<T>
-  ) => boolean
-) => T = memo;
 
 /**
  * Address compare, because those in PG are forced to lowercase.

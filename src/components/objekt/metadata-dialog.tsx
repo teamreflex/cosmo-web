@@ -83,7 +83,7 @@ export default function MetadataDialog({
 
       {isDesktop ? (
         <Dialog open={open} onOpenChange={onOpenChange}>
-          <DialogContent className="max-w-3xl grid-cols-auto grid-flow-col p-0 gap-0 md:rounded-2xl outline-none">
+          <DialogContent className="max-w-3xl grid-cols-auto grid-flow-col p-0 gap-0 md:rounded-2xl outline-hidden">
             <VisuallyHidden>
               <DialogTitle>{slug}</DialogTitle>
               <DialogDescription>{slug}</DialogDescription>
@@ -93,7 +93,7 @@ export default function MetadataDialog({
         </Dialog>
       ) : (
         <Drawer open={open} onOpenChange={onOpenChange}>
-          <DrawerContent className="grid-cols-auto grid-flow-row p-0 gap-0 outline-none">
+          <DrawerContent className="grid-cols-auto grid-flow-row p-0 gap-0 outline-hidden">
             <VisuallyHidden>
               <DrawerTitle>{slug}</DrawerTitle>
               <DrawerDescription>{slug}</DrawerDescription>

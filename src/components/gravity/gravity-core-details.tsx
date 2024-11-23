@@ -78,7 +78,7 @@ function PastDetails({ gravity }: { gravity: CosmoPastGravity }) {
               <Crown />
             </div>
 
-            <div className="rounded-xl relative aspect-square w-full bg-gradient-to-t from-black to-transparent overflow-clip">
+            <div className="rounded-xl relative aspect-square w-full bg-linear-to-t from-black to-transparent text-clip">
               <Image
                 className="absolute"
                 src={gravity.result.resultImageUrl}

@@ -32,7 +32,7 @@ export default function BFFNewsPostFeed({
           <div className="relative" key={`${post.data.id}-${i}`}>
             <ScaledImage src={image.thumbnail} alt={post.data.body} />
 
-            <div className="absolute h-20 w-full bottom-0 left-0 flex items-end justify-between p-3 bg-gradient-to-b from-transparent to-black/50">
+            <div className="absolute h-20 w-full bottom-0 left-0 flex items-end justify-between p-3 bg-linear-to-b from-transparent to-black/50">
               <div className="flex items-center gap-2">
                 <Heart className="h-6 w-6" />
                 <p className="font-semibold">{post.data.totalLikeCount}</p>

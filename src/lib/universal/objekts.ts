@@ -1,5 +1,5 @@
 import type { Collection } from "@/lib/server/db/indexer/schema";
-import { ObjektMetadataEntry, Pin, Profile } from "@/lib/server/db/schema";
+import { ObjektMetadataEntry, Profile } from "@/lib/server/db/schema";
 export type {
   ObjektList,
   CreateObjektList,

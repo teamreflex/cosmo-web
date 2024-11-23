@@ -34,7 +34,7 @@ export default memo(function AddToList({
       <DropdownMenuTrigger asChild>
         <button
           onClick={() => setOpen((state) => !state)}
-          className="hover:cursor-pointer hover:scale-110 transition-all flex items-center outline-none"
+          className="hover:cursor-pointer hover:scale-110 transition-all flex items-center outline-hidden"
           aria-label={`Select list to add ${collectionId} to`}
         >
           <ListPlus className="h-3 w-3 sm:h-5 sm:w-5" />

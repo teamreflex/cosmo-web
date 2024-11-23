@@ -34,7 +34,7 @@ export default async function UserDialog({ token, artist }: Props) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <button aria-label="View user" className="outline-none">
+        <button aria-label="View user" className="outline-hidden">
           <UserImage
             user={cosmoUser}
             artist={artist}

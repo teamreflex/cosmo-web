@@ -44,7 +44,7 @@ export default function ComoCalendar({ artists, transfers }: Props) {
   }
 
   return (
-    <div className="flex flex-col rounded-lg bg-accent border border-accent overflow-clip h-fit">
+    <div className="flex flex-col rounded-lg bg-accent border border-accent text-clip h-fit overflow-clip">
       {/* days of the week */}
       <div className="grid grid-cols-7 gap-px border-b border-accent">
         {week.map((day) => (

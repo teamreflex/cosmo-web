@@ -46,7 +46,7 @@ export default function ArchiveRekords({ artist }: Props) {
           className="w-full max-w-96 border border-accent"
           showStatus={false}
         >
-          <div className="absolute w-full h-16 bg-gradient-to-t from-transparent to-black/50" />
+          <div className="absolute w-full h-16 bg-linear-to-t from-transparent to-black/50" />
 
           <Rank rank={item.archiveNo} />
           <User post={item.post} />

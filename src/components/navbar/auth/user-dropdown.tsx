@@ -58,7 +58,7 @@ export default function UserDropdown({
       />
 
       <DropdownMenu>
-        <DropdownMenuTrigger className="group outline-none">
+        <DropdownMenuTrigger className="group outline-hidden">
           {cosmoAvatar}
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">

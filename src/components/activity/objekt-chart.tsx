@@ -13,7 +13,7 @@ type Props = {
 export default function ObjektChart({ members }: Props) {
   return (
     <Hydrated>
-      <PieChart className="outline-none" height={224} width={224}>
+      <PieChart className="outline-hidden" height={224} width={224}>
         <Pie
           data={members}
           nameKey="name"
@@ -53,7 +53,7 @@ export default function ObjektChart({ members }: Props) {
             <Cell
               key={`cell-${index}`}
               fill={entry.color}
-              className="outline-none"
+              className="outline-hidden"
             />
           ))}
         </Pie>

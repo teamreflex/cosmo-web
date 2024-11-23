@@ -59,7 +59,7 @@ function BannerItem({ className, item, index, total }: BannerItemProps) {
           height={1325}
         />
 
-        <div className="absolute bottom-0 left-0 w-full flex h-20 bg-gradient-to-t from-foreground/90 dark:from-background/90 to-transparent" />
+        <div className="absolute bottom-0 left-0 w-full flex h-20 bg-linear-to-t from-foreground/90 dark:from-background/90 to-transparent" />
 
         <span className="absolute bottom-3 left-3 flex flex-col gap-2">
           <span className="bg-foreground/75 dark:bg-background/75 border border-background/50 dark:border-foreground/50 text-xs text-background dark:text-foreground p-1 rounded-lg w-fit capitalize">

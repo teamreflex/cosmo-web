@@ -1,6 +1,6 @@
 "use client";
 
-import "./globals.css";
+import "../styles/tailwind.css";
 import { Inter } from "next/font/google";
 import { env } from "@/env.mjs";
 import { Button } from "@/components/ui/button";

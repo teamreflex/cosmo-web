@@ -27,7 +27,7 @@ export default function RekordLikeButton({ post, isLiked, setIsLiked }: Props) {
   return (
     <form
       action={submit}
-      className="absolute z-30 top-1 right-0 flex flex-col items-center drop-shadow"
+      className="absolute z-30 top-1 right-0 flex flex-col items-center drop-shadow-sm"
     >
       <input type="text" name="postId" value={post.id} hidden readOnly />
       <input type="checkbox" name="isLiked" checked={isLiked} hidden readOnly />
@@ -38,14 +38,14 @@ export default function RekordLikeButton({ post, isLiked, setIsLiked }: Props) {
         ) : (
           <Heart
             className={cn(
-              "w-8 h-8 drop-shadow",
+              "w-8 h-8 drop-shadow-sm",
               isLiked ? "fill-red-500 text-red-500" : "text-foreground"
             )}
           />
         )}
       </Button>
 
-      <span className="text-sm drop-shadow">{post.totalLikeCount}</span>
+      <span className="text-sm drop-shadow-sm">{post.totalLikeCount}</span>
     </form>
   );
 }

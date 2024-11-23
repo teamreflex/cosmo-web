@@ -43,7 +43,7 @@ export default function GuestArtistSwitch({ artists, selectedArtist }: Props) {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="group outline-none">
+      <DropdownMenuTrigger className="group outline-hidden">
         <Avatar className="ring-2 ring-white/30 group-data-[state=open]:ring-cosmo transition-colors">
           <AvatarFallback>
             {currentArtist?.title.charAt(0).toUpperCase()}

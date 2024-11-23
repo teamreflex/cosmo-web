@@ -1,16 +1,17 @@
 "use client";
 
+import { cn, PropsWithClassName } from "@/lib/utils";
 import Image from "next/image";
 import { useState } from "react";
 
-type Props = {
+type Props = PropsWithClassName<{
   src: string;
   alt: string;
   priority?: boolean;
   width?: number;
   height?: number;
   unoptimized?: boolean;
-};
+}>;
 
 export default function ScaledImage({
   src,
@@ -19,6 +20,7 @@ export default function ScaledImage({
   width = 16,
   height = 9,
   unoptimized = false,
+  className,
 }: Props) {
   const [ratio, setRatio] = useState({ width, height });
 
@@ -33,7 +35,7 @@ export default function ScaledImage({
         fill={true}
         priority={priority}
         quality={100}
-        className="object-cover"
+        className={cn("object-cover", className)}
         unoptimized={unoptimized}
         onLoad={(e) =>
           setRatio({

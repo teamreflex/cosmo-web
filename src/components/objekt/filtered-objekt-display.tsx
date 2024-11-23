@@ -23,7 +23,7 @@ import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { CollectionDataSource } from "@/hooks/use-filters";
 import { InfiniteQueryNext } from "../infinite-query-pending";
 import { ValidObjekt } from "@/lib/universal/objekts";
-import { GRID_COLUMNS, cn, typedMemo } from "@/lib/utils";
+import { GRID_COLUMNS, cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { useObjektRewards } from "@/hooks/use-objekt-rewards";
 import Skeleton from "../skeleton/skeleton";
@@ -58,9 +58,7 @@ type Props<TObjektType extends ValidObjekt> = {
   hidePins?: boolean;
 };
 
-export default typedMemo(function FilteredObjektDisplay<
-  TObjektType extends ValidObjekt
->({
+export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
   children,
   artists,
   queryKey,
@@ -129,7 +127,7 @@ export default typedMemo(function FilteredObjektDisplay<
                 <Suspense
                   fallback={
                     <Fragment>
-                      <div className="z-20 absolute top-0 w-full h-full bg-gradient-to-b from-transparent to-75% to-background" />
+                      <div className="z-20 absolute top-0 w-full h-full bg-linear-to-b from-transparent to-75% to-background" />
                       {Array.from({ length: gridColumns * 3 }).map((_, i) => (
                         <Skeleton
                           key={i}
@@ -160,16 +158,14 @@ export default typedMemo(function FilteredObjektDisplay<
       </div>
     </div>
   );
-});
+}
 
 interface ObjektGridProps<TObjektType extends ValidObjekt>
   extends Omit<Props<TObjektType>, "artists" | "setFilters"> {
   hidePins: boolean;
 }
 
-const ObjektGrid = typedMemo(function ObjektGrid<
-  TObjektType extends ValidObjekt
->({
+function ObjektGrid<TObjektType extends ValidObjekt>({
   children,
   queryKey,
   queryFunction,
@@ -247,4 +243,4 @@ const ObjektGrid = typedMemo(function ObjektGrid<
       </Portal>
     </Fragment>
   );
-});
+}

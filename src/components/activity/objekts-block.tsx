@@ -65,7 +65,7 @@ function Member({ total, member, isFirst }: MemberProps) {
     <div className="flex items-center justify-between" style={css}>
       <div className="flex gap-3 items-center">
         {/* image */}
-        <div className="relative shrink-0 aspect-square h-8 w-8 rounded-full overflow-hidden ring-offset-2 ring-offset-accent ring-1 ring-[--member-color]">
+        <div className="relative shrink-0 aspect-square h-8 w-8 rounded-full overflow-hidden ring-offset-2 ring-offset-accent ring-1 ring-(--member-color)">
           <Image src={member.profileImage} alt={member.name} fill={true} />
         </div>
 
@@ -76,7 +76,7 @@ function Member({ total, member, isFirst }: MemberProps) {
         </div>
       </div>
 
-      <p className={cn("font-semibold", isFirst && "text-[--member-color]")}>
+      <p className={cn("font-semibold", isFirst && "text-(--member-color)")}>
         {member.count}
       </p>
     </div>

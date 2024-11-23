@@ -102,7 +102,7 @@ export function LinkButton({ link, active, user }: LinkButtonProps) {
         <TooltipTrigger>
           <Link
             href={{ pathname }}
-            className="drop-shadow-lg outline-none focus:outline-none"
+            className="drop-shadow-lg outline-hidden focus:outline-hidden"
             prefetch={prefetch}
             aria-label={link.name}
           >

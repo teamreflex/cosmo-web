@@ -35,7 +35,7 @@ export default function GravityOngoingCountdown({
       {pollEndDate ? (
         <Hydrated
           fallback={
-            <p className="font-cosmo tabular-nums blur-sm">00H: 00M: 00S</p>
+            <p className="font-cosmo tabular-nums blur-xs">00H: 00M: 00S</p>
           }
         >
           <p className="font-cosmo tabular-nums">{timeLeft}</p>

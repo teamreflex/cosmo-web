@@ -160,7 +160,7 @@ export default function TopRanking({ selectedArtist, artists }: Props) {
                       <Skeleton className="h-10 w-10 rounded-full" />
 
                       {/* name */}
-                      <div className="flex-grow">
+                      <div className="grow">
                         <Skeleton className="h-3 w-24 rounded-full" />
                       </div>
 
@@ -407,7 +407,7 @@ function RankingRow({ artist, item }: RankingRowProps) {
       </Avatar>
 
       {/* name */}
-      <p className="flex-grow">{item.user.user.nickname}</p>
+      <p className="grow">{item.user.user.nickname}</p>
 
       {/* ranking data */}
       <p className="font-semibold">{item.rankItem.rankData}</p>

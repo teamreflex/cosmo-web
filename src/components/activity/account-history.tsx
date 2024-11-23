@@ -183,7 +183,7 @@ function HistoryList({ historyType, artist, timestamp }: HistoryListProps) {
 export function HistoryListSkeleton() {
   return (
     <div className="relative flex flex-col gap-4">
-      <div className="z-20 absolute top-0 w-full h-full bg-gradient-to-b from-transparent to-75% to-background" />
+      <div className="z-20 absolute top-0 w-full h-full bg-linear-to-b from-transparent to-75% to-background" />
       {Array.from({ length: 3 }).map((_, i) => (
         <div
           key={`month-${i}`}

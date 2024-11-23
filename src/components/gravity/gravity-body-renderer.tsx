@@ -28,7 +28,7 @@ export default function GravityBodyRenderer({ gravity }: Props) {
           fill={true}
           quality={100}
         />
-        <h2 className="absolute w-full h-full text-2xl font-semibold top-0 left-0 bg-gradient-to-t from-black/75 to-transparent p-3 flex items-end">
+        <h2 className="absolute w-full h-full text-2xl font-semibold top-0 left-0 bg-linear-to-t from-black/75 to-transparent p-3 flex items-end">
           {gravity.title}
         </h2>
       </div>

@@ -53,18 +53,18 @@ export default function GridFourSlot({
                 </div>
               </SlotSelector>
             );
-          } else {
-            return (
-              <div
-                className="relative aspect-photocard rounded-lg bg-accent w-full flex justify-center items-center"
-                key={slot.collectionNo}
-              >
-                <p className="text-background dark:text-foreground/20 text-3xl select-none">
-                  {slot.collectionNo}
-                </p>
-              </div>
-            );
           }
+
+          return (
+            <div
+              className="relative aspect-photocard rounded-lg bg-accent w-full flex justify-center items-center"
+              key={slot.collectionNo}
+            >
+              <p className="text-background dark:text-foreground/20 text-3xl select-none">
+                {slot.collectionNo}
+              </p>
+            </div>
+          );
         })}
       </div>
 

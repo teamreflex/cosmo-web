@@ -50,7 +50,7 @@ async function SystemStatusPopover() {
       <PopoverTrigger asChild>
         <button
           className={cn(
-            "h-8 w-9 flex justify-center items-center rounded-l-lg bg-opacity-25 hover:bg-opacity-40 transition-colors",
+            "h-8 w-9 flex justify-center items-center rounded-l-lg transition-colors cursor-pointer",
             textStatus(status),
             bgStatus(status)
           )}
@@ -124,9 +124,9 @@ function textStatus(status: SystemStatusType) {
 
 function bgStatus(status: SystemStatusType) {
   return [
-    status === "normal" && "bg-green-500",
-    status === "degraded" && "bg-yellow-500",
-    status === "down" && "bg-red-600",
+    status === "normal" && "bg-green-500/25 hover:bg-green-500/40",
+    status === "degraded" && "bg-yellow-500/25 hover:bg-yellow-500/40",
+    status === "down" && "bg-red-600/25 hover:bg-red-600/40",
   ];
 }
 

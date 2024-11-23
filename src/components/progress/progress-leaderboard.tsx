@@ -72,7 +72,7 @@ export default function ProgressLeaderboard({ member }: Props) {
       </TooltipProvider>
 
       <Sheet open={open === true} onOpenChange={() => toggle()}>
-        <SheetContent className="overflow-y-scroll outline-none">
+        <SheetContent className="overflow-y-scroll outline-hidden">
           <SheetHeader>
             <SheetTitle className="font-cosmo uppercase text-xl">
               Leaderboard
@@ -124,7 +124,7 @@ function FilterSelect({
       <SelectTrigger>
         <SelectValue placeholder="Sort" />
       </SelectTrigger>
-      <SelectContent className="outline-none">
+      <SelectContent className="outline-hidden">
         <SelectItem value="combined">Combined</SelectItem>
         <SelectItem value="offline">Physical</SelectItem>
         <SelectItem value="online">Digital</SelectItem>

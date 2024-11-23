@@ -48,7 +48,7 @@ export default function RekordGrid<TPostType extends CosmoRekordItem>({
     <div className={cn("relative grid", gridClasses)}>
       {status === "pending" ? (
         <Fragment>
-          <div className="z-20 absolute top-0 w-full h-full bg-gradient-to-b from-transparent to-75% to-background" />
+          <div className="z-20 absolute top-0 w-full h-full bg-linear-to-b from-transparent to-75% to-background" />
           {[...Array(10)].map((_, i) => (
             <Skeleton key={i} className="z-10 max-w-64 aspect-photocard" />
           ))}

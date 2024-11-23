@@ -11,7 +11,7 @@ export default function AuthFallback() {
     <TooltipProvider delayDuration={0}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="relative flex justify-center items-center py-1 px-2 rounded-xl bg-red-500 bg-opacity-25 hover:bg-opacity-40 transition-colors">
+          <div className="relative flex justify-center items-center py-1 px-2 rounded-xl bg-red-500/25 hover:bg-red-500/40 transition-colors">
             <AlertTriangle className="text-red-500 w-6 h-6" />
           </div>
         </TooltipTrigger>

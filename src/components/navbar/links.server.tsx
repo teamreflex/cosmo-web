@@ -26,7 +26,7 @@ export default async function Links() {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="drop-shadow-lg outline-none" aria-label="Menu">
+            <button className="drop-shadow-lg outline-hidden" aria-label="Menu">
               <Menu className="h-8 w-8 shrink-0" />
             </button>
           </DropdownMenuTrigger>

@@ -1,0 +1,4 @@
+{
+  "tailwindCSS.experimental.configFile": "./src/styles/tailwind.css",
+  "typescript.tsdk": "node_modules/typescript/lib"
+}

@@ -48,7 +48,7 @@ export default function ScanQR() {
       shouldScaleBackground={false}
       preventScrollRestoration={true}
     >
-      <DrawerTrigger className="flex items-center justify-center p-2 rounded-full bg-cosmo size-16 aspect-square drop-shadow ring-0">
+      <DrawerTrigger className="flex items-center justify-center p-2 rounded-full bg-cosmo size-16 aspect-square drop-shadow-sm ring-0">
         <QrCode className="text-white size-10" />
       </DrawerTrigger>
 
@@ -174,7 +174,7 @@ function QRScanner({ onResult, onClose }: QRScannerProps) {
       ) : (
         <div
           className={cn(
-            "mx-auto size-60 aspect-square rounded-lg overflow-clip border-2",
+            "mx-auto size-60 aspect-square rounded-lg text-clip border-2",
             status === "idle" && "border-accent",
             status === "error" && "border-red-500",
             status === "success" && "border-green-500"

@@ -22,7 +22,7 @@ export default function HLSVideo({ videoUrl, thumbnailUrl, title }: Props) {
       <MediaProvider>
         {thumbnailUrl !== undefined && (
           <Poster
-            className="absolute inset-0 block h-full w-full rounded-xl opacity-0 transition-opacity data-[visible]:opacity-100 [&>img]:h-full [&>img]:w-full [&>img]:object-cover"
+            className="absolute inset-0 block h-full w-full rounded-xl opacity-0 transition-opacity data-visible:opacity-100 [&>img]:h-full [&>img]:w-full [&>img]:object-cover"
             src={thumbnailUrl}
             alt={title ?? "video"}
           />

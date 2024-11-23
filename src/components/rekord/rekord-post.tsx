@@ -1,13 +1,6 @@
 "use client";
 import { CosmoRekordItem, CosmoRekordPost } from "@/lib/universal/cosmo/rekord";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "../ui/dialog";
+
 import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { PropsWithClassName, cn } from "@/lib/utils";
@@ -16,6 +9,14 @@ import ScaledImage from "../scaled-image";
 import RekordLikeButton from "./rekord-like";
 import Link from "next/link";
 import { ReactNode, useState } from "react";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "../ui/drawer";
 
 type RekordPostProps<TPostType extends CosmoRekordItem> = {
   item: TPostType;
@@ -34,23 +35,23 @@ export function RekordPost<TPostType extends CosmoRekordItem>({
   const { name } = extractMember(item.post);
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
+    <Drawer>
+      <DrawerTrigger asChild>
         <button
           className={cn(
             className,
-            "relative embla__slide mx-2 flex flex-col justify-between gap-2 aspect-photocard rounded-lg"
+            "relative embla__slide mx-2 flex flex-col justify-between gap-2 aspect-photocard rounded-lg cursor-pointer"
           )}
         >
           {showStatus && item.post.isBlinded && (
-            <div className="absolute z-20 w-full h-full rounded-lg bg-opacity-50 bg-red-500 backdrop-blur flex items-center justify-center px-2">
-              <span className="font-semibold drop-shadow">Hidden</span>
+            <div className="absolute z-20 w-full h-full rounded-lg bg-red-500/50 backdrop-blur flex items-center justify-center px-2">
+              <span className="font-semibold drop-shadow-sm">Hidden</span>
             </div>
           )}
 
           {showStatus && item.post.isExpired && (
-            <div className="absolute z-20 w-full h-full rounded-lg bg-opacity-50 bg-black flex items-center justify-center px-2">
-              <span className="font-semibold drop-shadow">Expired</span>
+            <div className="absolute z-20 w-full h-full rounded-lg bg-black/50 flex items-center justify-center px-2">
+              <span className="font-semibold drop-shadow-sm">Expired</span>
             </div>
           )}
 
@@ -62,35 +63,38 @@ export function RekordPost<TPostType extends CosmoRekordItem>({
             unoptimized
           />
 
-          <div className="absolute w-full h-full rounded-lg bg-gradient-to-b from-transparent to-black/50" />
+          <div className="absolute w-full h-full rounded-lg bg-linear-to-b from-transparent to-black/50" />
 
           {children}
         </button>
-      </DialogTrigger>
+      </DrawerTrigger>
 
-      <DialogContent className="p-0 max-h-[80dvh]">
-        <DialogHeader className="text-left px-6 pt-4">
-          <DialogTitle>{name}</DialogTitle>
-          <DialogDescription>
+      <DrawerContent className="p-0 md:max-w-sm md:mx-auto">
+        <DrawerHeader className="text-left px-6 pt-4">
+          <DrawerTitle>{name}</DrawerTitle>
+          <DrawerDescription>
             by{" "}
             <Link href={`/@${item.post.owner.nickname}`} className="underline">
               {item.post.owner.nickname}
             </Link>
-          </DialogDescription>
-        </DialogHeader>
+          </DrawerDescription>
+        </DrawerHeader>
 
-        <div className="relative w-full h-full">
-          <div className="absolute z-20 w-full h-24 bg-gradient-to-t from-transparent to-black/50" />
+        <div className="relative w-full max-h-[80dvh]">
+          <div className="absolute z-20 w-full h-24 bg-linear-to-t from-transparent to-black/50" />
 
           <div className="absolute w-full py-6 flex justify-center">
             <Loader2 className="h-12 w-12 animate-spin" />
           </div>
 
-          <ScaledImage
-            src={item.post.image.large}
-            alt={item.post.artist.title}
-            unoptimized={true}
-          />
+          <div className="relative h-full aspect-auto">
+            <ScaledImage
+              className="object-contain"
+              src={item.post.image.large}
+              alt={item.post.artist.title}
+              unoptimized={true}
+            />
+          </div>
 
           <RekordLikeButton
             post={item.post}
@@ -102,8 +106,8 @@ export function RekordPost<TPostType extends CosmoRekordItem>({
             className="z-30 absolute top-2 left-3"
           />
         </div>
-      </DialogContent>
-    </Dialog>
+      </DrawerContent>
+    </Drawer>
   );
 }
 

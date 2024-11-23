@@ -66,13 +66,13 @@ export default memo(function CollectionFilter({
         <div className="flex justify-between w-full border-b border-accent">
           <input
             type="text"
-            className="w-full p-2 bg-transparent outline-none text-sm"
+            className="w-full p-2 bg-transparent outline-hidden text-sm"
             placeholder="Search..."
             value={search}
             onInput={onInput}
           />
           <button
-            className="outline-none"
+            className="outline-hidden"
             onClick={() => setFilters({ collectionNo: [] })}
           >
             <X className="mr-1 h-4 w-4 opacity-50 hover:opacity-100 transition-colors" />

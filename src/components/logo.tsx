@@ -22,7 +22,7 @@ export default function Logo({ className }: Props) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <button className={cn("h-full", className)}>
+        <button className={cn("h-full cursor-pointer", className)}>
           <LogoSVG />
         </button>
       </AlertDialogTrigger>
@@ -70,7 +70,7 @@ export function LogoSVG({ className, themed = true }: LogoSVGProps) {
       xmlns="http://www.w3.org/2000/svg"
       viewBox="125 275 750 450"
       xmlSpace="preserve"
-      className={cn("aspect-[750/450] h-full", className)}
+      className={cn("aspect-750/450 h-full", className)}
     >
       <switch>
         <g>

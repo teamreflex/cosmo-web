@@ -46,7 +46,7 @@ export default function NavbarSearch({ authenticated }: Props) {
         <Tooltip>
           <TooltipTrigger asChild>
             <button
-              className="drop-shadow-lg outline-none focus:outline-none"
+              className="drop-shadow-lg outline-hidden focus:outline-hidden cursor-pointer"
               aria-label="Search for user"
               onClick={() => setOpen(true)}
             >
