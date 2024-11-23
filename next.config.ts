@@ -1,5 +1,6 @@
+import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
-import "./src/env.mjs";
+import { env } from "./src/env.mjs";
 
 const config: NextConfig = {
   experimental: {
@@ -77,4 +78,14 @@ const config: NextConfig = {
   },
 };
 
-export default config;
+export default withSentryConfig(config, {
+  org: env.SENTRY_ORG,
+  project: env.SENTRY_PROJECT,
+  silent: !process.env.CI,
+  widenClientFileUpload: true,
+  reactComponentAnnotation: {
+    enabled: true,
+  },
+  hideSourceMaps: true,
+  disableLogger: true,
+});

@@ -5,6 +5,8 @@ import { Inter } from "next/font/google";
 import { env } from "@/env.mjs";
 import { Button } from "@/components/ui/button";
 import { RefreshCcw } from "lucide-react";
+import * as Sentry from "@sentry/nextjs";
+import { useEffect } from "react";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -18,6 +20,10 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  useEffect(() => {
+    Sentry.captureException(error);
+  }, [error]);
+
   return (
     <html>
       <head>

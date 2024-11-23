@@ -18,6 +18,9 @@ export const env = createEnv({
     // indexer db http proxy
     INDEXER_PROXY_KEY: z.string().min(1),
     INDEXER_PROXY_URL: z.string().min(1),
+    // sentry
+    SENTRY_ORG: z.string().min(1),
+    SENTRY_PROJECT: z.string().min(1),
   },
   client: {
     // info for rebranding the app
@@ -39,6 +42,8 @@ export const env = createEnv({
     // ramper firebase
     NEXT_PUBLIC_RAMPER_FIREBASE_KEY: z.string().min(1),
     NEXT_PUBLIC_RAMPER_FIREBASE_ID: z.string().min(1),
+    // sentry
+    NEXT_PUBLIC_SENTRY_DSN: z.string().min(1),
   },
   experimental__runtimeEnv: {
     NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
@@ -52,5 +57,6 @@ export const env = createEnv({
     NEXT_PUBLIC_RAMPER_FIREBASE_KEY:
       process.env.NEXT_PUBLIC_RAMPER_FIREBASE_KEY,
     NEXT_PUBLIC_RAMPER_FIREBASE_ID: process.env.NEXT_PUBLIC_RAMPER_FIREBASE_ID,
+    NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
   },
 });
