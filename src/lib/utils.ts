@@ -86,3 +86,15 @@ export function getPollStatus(poll: CosmoPollChoices | CosmoPollUpcoming) {
 
   return "ongoing";
 }
+
+/**
+ * Tailwind v4 doesn't support safelist, so classes need to be explicitly visible.
+ */
+export const gridColumnMap: Record<number, string> = {
+  3: "md:grid-cols-3",
+  4: "md:grid-cols-4",
+  5: "md:grid-cols-5",
+  6: "md:grid-cols-6",
+  7: "md:grid-cols-7",
+  8: "md:grid-cols-8",
+};
