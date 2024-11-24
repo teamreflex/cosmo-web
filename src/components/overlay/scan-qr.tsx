@@ -35,8 +35,9 @@ type ScanResult = {
 export default function ScanQR() {
   const { token } = useUserState();
   const [open, setOpen] = useState(false);
+  const { isSupported } = useCamera();
 
-  if (!token) {
+  if (!token || !isSupported) {
     return null;
   }
 
@@ -124,7 +125,7 @@ type QRScannerProps = {
 };
 
 function QRScanner({ open, onResult, onClose }: QRScannerProps) {
-  const { isAvailable, isLoading, request } = useCamera({
+  const { hasPermission, request, isLoading } = useCamera({
     enabled: open,
   });
   const { token } = useUserState();
@@ -185,7 +186,7 @@ function QRScanner({ open, onResult, onClose }: QRScannerProps) {
       )}
 
       {/* camera isn't ready and has no permission */}
-      {isAvailable === false && (
+      {hasPermission === false && (
         <div className="flex items-center justify-center py-2">
           <Button variant="secondary" onClick={() => request()}>
             <span>Enable Camera</span>
@@ -199,7 +200,7 @@ function QRScanner({ open, onResult, onClose }: QRScannerProps) {
       )}
 
       {/* camera is ready and has permission */}
-      {isAvailable && (
+      {hasPermission && (
         <div
           className={cn(
             "mx-auto size-60 aspect-square rounded-lg text-clip border-2 border-accent",

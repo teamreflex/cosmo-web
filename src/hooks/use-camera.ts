@@ -1,21 +1,45 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
+const keys = {
+  isSupported: ["camera-availability"],
+  hasPermission: ["camera-permission"],
+};
 
 type Options = {
   enabled: boolean;
 };
 
 export function useCamera(opts?: Options) {
-  const { data, isPending, refetch } = useQuery({
-    queryKey: ["camera-availability"],
+  const queryClient = useQueryClient();
+
+  // check for camera support
+  const isSupported = useQuery({
+    queryKey: keys.isSupported,
+    queryFn: async () => {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+        return false;
+      }
+
+      return await navigator.mediaDevices
+        .enumerateDevices()
+        .then((devices) =>
+          devices.some((device) => device.kind === "videoinput")
+        );
+    },
+    staleTime: Infinity,
+    retry: false,
+  });
+
+  // get permission
+  const hasPermission = useQuery({
+    queryKey: keys.hasPermission,
     queryFn: async () => {
       try {
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-          throw new Error("getUserMedia is not supported in this browser");
-        }
-
-        await navigator.mediaDevices.getUserMedia({ video: true });
+        await navigator.mediaDevices.getUserMedia({
+          video: true,
+        });
         return true;
-      } catch (error) {
+      } catch (err) {
         return false;
       }
     },
@@ -24,9 +48,23 @@ export function useCamera(opts?: Options) {
     enabled: opts?.enabled ?? false,
   });
 
+  // allow user to re-prompt for camera access
+  const request = useMutation({
+    mutationFn: async () => {
+      await navigator.mediaDevices.getUserMedia({
+        video: true,
+      });
+    },
+    onSuccess: () => {
+      queryClient.setQueryData(keys.hasPermission, true);
+      queryClient.setQueryData(keys.isSupported, true);
+    },
+  });
+
   return {
-    isAvailable: data ?? false,
-    isLoading: isPending,
-    request: refetch,
+    isSupported: isSupported.data ?? false,
+    hasPermission: hasPermission.data ?? false,
+    isLoading: hasPermission.isPending || request.isPending,
+    request: request.mutate,
   };
 }
