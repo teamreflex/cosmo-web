@@ -37,7 +37,7 @@ export const FlippableObjekt = memo(function FlippableObjekt<
       onClick={() => setFlipped((prev) => !prev)}
       data-flipped={flipped}
       className={cn(
-        "relative bg-accent w-full aspect-photocard cursor-pointer object-contain touch-manipulation transition-transform preserve-3d transform-gpu duration-500 data-[flipped=true]:rotate-y-180 rounded-2xl"
+        "relative bg-accent w-full aspect-photocard cursor-pointer object-contain touch-manipulation transition-transform transform-3d transform-gpu duration-500 data-[flipped=true]:rotate-y-180 rounded-2xl"
       )}
       style={css}
     >

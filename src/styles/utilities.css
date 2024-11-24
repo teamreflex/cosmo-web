@@ -11,13 +11,6 @@
 }
 
 /* 3d transforms for objekt flip */
-@utility preserve-3d {
-  transform-style: preserve-3d;
-}
-
-@utility backface-hidden {
-  backface-visibility: hidden;
-}
 @utility rotate-y-180 {
   transform: rotateY(180deg);
 }
