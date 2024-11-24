@@ -1,5 +1,4 @@
 import { FinalProgress } from "@/lib/universal/progress";
-import { cn } from "@/lib/utils";
 import { Maximize2, Minimize2 } from "lucide-react";
 
 type Props = {
@@ -17,11 +16,9 @@ export default function ProgressItem({
 
   return (
     <div
+      data-selected={isSelected}
       onClick={onExpand}
-      className={cn(
-        "flex flex-row justify-between items-center rounded-lg py-3 px-4 border border-transparent bg-accent cursor-pointer h-20",
-        percentage === 100 && "border-cosmo"
-      )}
+      className="flex flex-row justify-between items-center rounded-lg py-3 px-4 border border-transparent data-[selected=true]:border-cosmo bg-accent cursor-pointer h-20"
     >
       <div className="flex flex-col">
         <h4 className="text-lg font-semibold">{progress.class} Class</h4>
