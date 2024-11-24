@@ -2,6 +2,7 @@
 
 import { BaseObjektProps } from "../objekt/objekt";
 import {
+  CSSProperties,
   Fragment,
   ReactElement,
   Suspense,
@@ -23,7 +24,7 @@ import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { CollectionDataSource } from "@/hooks/use-filters";
 import { InfiniteQueryNext } from "../infinite-query-pending";
 import { ValidObjekt } from "@/lib/universal/objekts";
-import { GRID_COLUMNS, cn, gridColumnMap } from "@/lib/utils";
+import { GRID_COLUMNS } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { useObjektRewards } from "@/hooks/use-objekt-rewards";
 import Skeleton from "../skeleton/skeleton";
@@ -91,6 +92,10 @@ export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
     [setFilters]
   );
 
+  const css = {
+    "--grid-columns": gridColumns,
+  } as CSSProperties;
+
   return (
     <div className="flex flex-col">
       <MemberFilter
@@ -104,10 +109,8 @@ export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
         <QueryErrorResetBoundary>
           {({ reset }) => (
             <div
-              className={cn(
-                "relative grid grid-cols-3 gap-4 py-2 w-full",
-                gridColumnMap[gridColumns] ?? `md:grid-cols-5`
-              )}
+              style={css}
+              className="relative grid grid-cols-3 gap-4 py-2 w-full md:grid-cols-[repeat(var(--grid-columns),_minmax(0,_1fr))]"
             >
               <ErrorBoundary
                 fallback={
