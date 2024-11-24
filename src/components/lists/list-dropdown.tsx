@@ -38,7 +38,7 @@ export default function ListDropdown({ lists, nickname, allowCreate }: Props) {
       />
 
       <DropdownMenuTrigger asChild>
-        <Button variant="secondary" size="profile">
+        <Button variant="secondary" size="profile" data-profile>
           <List className="h-5 w-5" />
           <span className="hidden sm:block">Lists</span>
         </Button>

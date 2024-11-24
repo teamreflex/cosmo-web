@@ -15,7 +15,7 @@ export default function BackButton({ url }: Props) {
   if (pathname === url) return null;
 
   return (
-    <Button variant="secondary" size="profile" asChild>
+    <Button variant="secondary" size="profile" data-profile asChild>
       <Link href={url}>
         <Undo2 className="h-5 w-5" />
         <span>Back</span>

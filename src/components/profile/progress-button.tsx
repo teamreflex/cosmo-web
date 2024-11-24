@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export default function ProgressButton({ nickname }: { nickname: string }) {
   return (
-    <Button variant="secondary" size="profile" asChild>
+    <Button variant="secondary" size="profile" data-profile asChild>
       <Link href={`/@${nickname}/progress`}>
         <PieChart className="h-5 w-5" />
         <span>Progress</span>

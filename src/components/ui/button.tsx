@@ -28,7 +28,7 @@ const buttonVariants = cva(
         lg: "h-11 rounded-md px-8",
         icon: "h-10 w-10 *:h-5 *:w-5",
         profile:
-          "text-xs font-semibold rounded-full flex gap-1 items-center h-10 w-10 lg:h-8 lg:w-fit [&>svg]:h-5 [&>svg]:w-5 lg:has-[span]:px-2 aspect-square lg:has-[span]:aspect-auto [&>span]:hidden lg:[&>span]:block",
+          "text-xs font-semibold rounded-full flex gap-1 items-center h-10 w-10 lg:h-8 lg:w-fit [&>svg]:h-5 [&>svg]:w-5 [&>svg]:shrink-0 lg:data-[profile=true]:px-2 aspect-square lg:data-[profile=true]:aspect-auto [&>span]:hidden lg:[&>span]:block",
       },
     },
     defaultVariants: {

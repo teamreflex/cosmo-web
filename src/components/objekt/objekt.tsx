@@ -109,7 +109,7 @@ export const ExpandableObjekt = memo(function ExpandableObjekt<
       {(openDialog) => (
         <div
           className={cn(
-            "isolate relative overflow-hidden rounded-lg md:rounded-xl lg:rounded-2xl touch-manipulation bg-accent transition-colors ring-2 ring-transparent",
+            "relative overflow-hidden rounded-lg md:rounded-xl lg:rounded-2xl touch-manipulation bg-accent transition-colors ring-2 ring-transparent aspect-photocard",
             isSelected && "ring-foreground"
           )}
           style={css}
@@ -126,7 +126,7 @@ export const ExpandableObjekt = memo(function ExpandableObjekt<
               openDialog();
             }}
             className={cn(
-              "cursor-pointer transition-opacity",
+              "cursor-pointer transition-opacity w-full",
               isLoaded === false && "opacity-0"
             )}
             src={front.display}
