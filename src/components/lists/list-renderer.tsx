@@ -14,7 +14,7 @@ import UpdateList from "./update-list";
 import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { useFilters } from "@/hooks/use-filters";
-import { Fragment, memo, useCallback } from "react";
+import { memo, useCallback } from "react";
 import {
   FiltersContainer,
   IndexFilters,
@@ -115,15 +115,11 @@ type OverlayProps = {
   objektList: ObjektList;
 };
 
-const Overlay = memo(function Overlay({
-  objekt,
-  authenticated,
-  objektList,
-}: OverlayProps) {
+function Overlay({ objekt, authenticated, objektList }: OverlayProps) {
   return (
-    <Fragment>
+    <div className="contents">
       <ObjektSidebar collection={objekt.collectionNo} />
       {authenticated && <ListOverlay objekt={objekt} objektList={objektList} />}
-    </Fragment>
+    </div>
   );
-});
+}

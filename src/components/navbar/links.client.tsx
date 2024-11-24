@@ -2,7 +2,6 @@
 
 import { TokenPayload } from "@/lib/universal/auth";
 import { usePathname } from "next/navigation";
-import { Fragment } from "react";
 import NavbarSearch from "./navbar-search";
 import {
   Tooltip,
@@ -33,7 +32,7 @@ export function DesktopLinks({ user }: LinksProps) {
   const path = usePathname();
 
   return (
-    <Fragment>
+    <div className="contents">
       {links.map((link, i) => {
         const href = link.href(user);
         return (
@@ -47,7 +46,7 @@ export function DesktopLinks({ user }: LinksProps) {
       })}
 
       <NavbarSearch authenticated={user !== undefined} />
-    </Fragment>
+    </div>
   );
 }
 
@@ -56,7 +55,7 @@ export function MobileLinks({ user }: LinksProps) {
   const authenticated = user !== undefined;
 
   return (
-    <Fragment>
+    <div className="contents">
       {links.map((link) => {
         const href = link.href(user);
         const active = href === "/" ? path === "/" : path === href;
@@ -80,7 +79,7 @@ export function MobileLinks({ user }: LinksProps) {
           </DropdownMenuItem>
         );
       })}
-    </Fragment>
+    </div>
   );
 }
 

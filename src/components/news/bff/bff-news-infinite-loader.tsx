@@ -2,7 +2,7 @@
 
 import { CosmoBFFNewsFeedResult } from "@/lib/universal/cosmo/news";
 import { ChevronDown, HeartCrack, Loader2 } from "lucide-react";
-import { Fragment, ReactNode } from "react";
+import { ReactNode } from "react";
 import { InView } from "react-intersection-observer";
 import {
   QueryFunction,
@@ -50,20 +50,18 @@ export default function BFFNewsInfiniteLoader<TPostType>({
       ) : status === "error" ? (
         <Error />
       ) : (
-        <>
-          {data !== undefined &&
-            data.pages.map((group, i) => (
-              <Fragment key={i}>
-                {group.sets.map((post) => component(post))}
-                {group.sets.length === 0 && (
-                  <div className="col-span-full flex flex-col gap-2 items-center py-12">
-                    <HeartCrack className="h-12 w-12" />
-                    <p>No posts found</p>
-                  </div>
-                )}
-              </Fragment>
-            ))}
-        </>
+        data !== undefined &&
+        data.pages.map((group, i) => (
+          <div className="contents" key={i}>
+            {group.sets.map((post) => component(post))}
+            {group.sets.length === 0 && (
+              <div className="col-span-full flex flex-col gap-2 items-center py-12">
+                <HeartCrack className="h-12 w-12" />
+                <p>No posts found</p>
+              </div>
+            )}
+          </div>
+        ))
       )}
 
       {status !== "error" && (

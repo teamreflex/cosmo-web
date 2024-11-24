@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import GravityEventType from "./gravity-event-type";
 import HLSVideo from "../misc/hls-video";
+import { match } from "ts-pattern";
 
 type Props = {
   gravity: CosmoGravity;
@@ -39,22 +40,23 @@ export default function GravityBodyRenderer({ gravity }: Props) {
       </div>
 
       {/* dynamic fragments */}
-      {gravity.body.map((item, i) => {
-        switch (item.type) {
-          case "heading":
-            return <HeadingElement key={i} item={item} />;
-          case "image":
-            return <ImageElement key={i} item={item} />;
-          case "spacing":
-            return <SpacingElement key={i} item={item} />;
-          case "text":
-            return <TextElement key={i} item={item} />;
-          case "video":
-            return <VideoElement key={i} item={item} />;
-          default:
-            return null;
-        }
-      })}
+      {gravity.body.map((item, i) =>
+        match(item)
+          .with({ type: "heading" }, (item) => (
+            <HeadingElement key={i} item={item} />
+          ))
+          .with({ type: "image" }, (item) => (
+            <ImageElement key={i} item={item} />
+          ))
+          .with({ type: "spacing" }, (item) => (
+            <SpacingElement key={i} item={item} />
+          ))
+          .with({ type: "text" }, (item) => <TextElement key={i} item={item} />)
+          .with({ type: "video" }, (item) => (
+            <VideoElement key={i} item={item} />
+          ))
+          .exhaustive()
+      )}
     </div>
   );
 }

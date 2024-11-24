@@ -15,6 +15,7 @@ import {
 import { addObjektToList } from "./actions";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "../ui/use-toast";
+import { DropdownMenuContentProps } from "@radix-ui/react-dropdown-menu";
 
 type AddToListProps = {
   collectionId: string;
@@ -40,7 +41,7 @@ export default memo(function AddToList({
           <ListPlus className="h-3 w-3 sm:h-5 sm:w-5" />
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="max-h-48">
+      <DropdownMenuContent className="max-h-48" align="start">
         <DropdownMenuLabel>{collectionId}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>

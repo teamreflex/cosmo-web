@@ -74,12 +74,7 @@ export default memo(function CollectionObjektDisplay({
     >
       {({ objekt, id }, priority, isPin) => (
         <ExpandableObjekt objekt={objekt} id={id} priority={priority}>
-          <ObjektSidebar
-            collection={objekt.collectionNo}
-            serial={objekt.objektNo}
-          />
-          <InformationOverlay objekt={objekt} />
-          <ActionOverlay
+          <Overlay
             objekt={objekt}
             authenticated={authenticated}
             isLocked={lockedObjekts.includes(parseInt(id))}
@@ -91,3 +86,36 @@ export default memo(function CollectionObjektDisplay({
     </FilteredObjektDisplay>
   );
 });
+
+type OverlayProps = {
+  objekt: OwnedObjekt;
+  authenticated: boolean;
+  isLocked: boolean;
+  isPinned: boolean;
+  isPin: boolean;
+};
+
+function Overlay({
+  objekt,
+  authenticated,
+  isLocked,
+  isPinned,
+  isPin,
+}: OverlayProps) {
+  return (
+    <div className="contents">
+      <ObjektSidebar
+        collection={objekt.collectionNo}
+        serial={objekt.objektNo}
+      />
+      <InformationOverlay objekt={objekt} />
+      <ActionOverlay
+        objekt={objekt}
+        authenticated={authenticated}
+        isLocked={isLocked}
+        isPinned={isPinned}
+        isPin={isPin}
+      />
+    </div>
+  );
+}

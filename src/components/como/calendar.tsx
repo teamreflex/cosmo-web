@@ -9,7 +9,6 @@ import { CosmoArtist } from "@/lib/universal/cosmo/artists";
 import { cn } from "@/lib/utils";
 import ArtistIcon from "../artist-icon";
 import { Sparkles } from "lucide-react";
-import { Fragment } from "react";
 import {
   Tooltip,
   TooltipContent,
@@ -77,7 +76,7 @@ export default function ComoCalendar({ artists, transfers }: Props) {
             {artists
               .filter((a) => calendar[day]?.[a.contracts.Objekt.toLowerCase()])
               .map((a) => (
-                <Fragment key={a.name}>
+                <div className="contents" key={a.name}>
                   <div className="absolute top-1 right-1">
                     {calendar[day]?.[a.contracts.Objekt.toLowerCase()].carried >
                       0 && (
@@ -112,7 +111,7 @@ export default function ComoCalendar({ artists, transfers }: Props) {
                         .count ?? 0}
                     </span>
                   </div>
-                </Fragment>
+                </div>
               ))}
           </div>
         ))}

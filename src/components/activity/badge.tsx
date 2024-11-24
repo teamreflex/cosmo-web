@@ -23,7 +23,10 @@ export default function Badge({ badge }: Props) {
         <div className="flex gap-4 items-center">
           <p className="font-bold">{badge.title}</p>
           {badge.claim !== undefined && (
-            <Timestamp className="text-sm" timestamp={badge.claim.grantedAt} />
+            <Timestamp
+              className="text-sm shrink-0"
+              timestamp={badge.claim.grantedAt}
+            />
           )}
         </div>
         <p className="text-center text-sm">{badge.description}</p>

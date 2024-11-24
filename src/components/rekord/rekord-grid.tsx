@@ -1,19 +1,16 @@
 "use client";
 
-import {
-  CosmoRekordItem,
-  CosmoRekordPost,
-  RekordResponse,
-} from "@/lib/universal/cosmo/rekord";
+import { CosmoRekordItem, RekordResponse } from "@/lib/universal/cosmo/rekord";
 import {
   QueryFunction,
   QueryKey,
   useInfiniteQuery,
 } from "@tanstack/react-query";
 import { InfiniteQueryNext } from "../infinite-query-pending";
-import { Fragment, ReactNode } from "react";
+import { cloneElement, ReactElement } from "react";
 import Skeleton from "../skeleton/skeleton";
 import { cn } from "@/lib/utils";
+import { match } from "ts-pattern";
 
 type Props<TPostType extends CosmoRekordItem> = {
   gridClasses?: string;
@@ -23,7 +20,7 @@ type Props<TPostType extends CosmoRekordItem> = {
     QueryKey,
     number | undefined
   >;
-  children: (props: { item: TPostType }) => ReactNode;
+  children: (props: { item: TPostType }) => ReactElement;
 };
 
 export default function RekordGrid<TPostType extends CosmoRekordItem>({
@@ -46,35 +43,39 @@ export default function RekordGrid<TPostType extends CosmoRekordItem>({
 
   return (
     <div className={cn("relative grid", gridClasses)}>
-      {status === "pending" ? (
-        <Fragment>
-          <div className="z-20 absolute top-0 w-full h-full bg-linear-to-b from-transparent to-75% to-background" />
-          {[...Array(10)].map((_, i) => (
-            <Skeleton key={i} className="z-10 max-w-64 aspect-photocard" />
-          ))}
-        </Fragment>
-      ) : status === "error" ? (
-        <div className="col-span-full font-semibold text-sm text-center">
-          Could not load rekords
-        </div>
-      ) : (
-        <Fragment>
-          {rekords.map((item) => (
-            <Fragment key={item.post.id}>{children({ item })}</Fragment>
-          ))}
+      {match(status)
+        .with("pending", () => (
+          <div className="contents">
+            <div className="z-20 absolute top-0 w-full h-full bg-linear-to-b from-transparent to-75% to-background" />
+            {[...Array(10)].map((_, i) => (
+              <Skeleton key={i} className="z-10 max-w-64 aspect-photocard" />
+            ))}
+          </div>
+        ))
+        .with("error", () => (
+          <div className="col-span-full font-semibold text-sm text-center">
+            Could not load rekords
+          </div>
+        ))
+        .with("success", () => (
+          <div className="contents">
+            {rekords.map((item) =>
+              cloneElement(children({ item }), { key: item.post.id })
+            )}
 
-          {hasNextPage && (
-            <div className="flex col-span-full justify-center">
-              <InfiniteQueryNext
-                fetchNextPage={fetchNextPage}
-                isFetchingNextPage={isFetchingNextPage}
-                hasNextPage={hasNextPage}
-                status={status}
-              />
-            </div>
-          )}
-        </Fragment>
-      )}
+            {hasNextPage && (
+              <div className="flex col-span-full justify-center">
+                <InfiniteQueryNext
+                  fetchNextPage={fetchNextPage}
+                  isFetchingNextPage={isFetchingNextPage}
+                  hasNextPage={hasNextPage}
+                  status={status}
+                />
+              </div>
+            )}
+          </div>
+        ))
+        .exhaustive()}
     </div>
   );
 }

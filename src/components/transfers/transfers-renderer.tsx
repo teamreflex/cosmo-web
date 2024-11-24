@@ -2,7 +2,6 @@
 
 import { TransferResult } from "@/lib/universal/transfers";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { Fragment } from "react";
 import { HeartCrack, Loader2 } from "lucide-react";
 import TransferRow from "./transfer-row";
 import { cn } from "@/lib/utils";

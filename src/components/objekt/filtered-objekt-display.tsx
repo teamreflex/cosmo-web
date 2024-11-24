@@ -3,7 +3,6 @@
 import { BaseObjektProps } from "../objekt/objekt";
 import {
   CSSProperties,
-  Fragment,
   ReactElement,
   Suspense,
   cloneElement,
@@ -129,7 +128,7 @@ export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
               >
                 <Suspense
                   fallback={
-                    <Fragment>
+                    <div className="contents">
                       <div className="z-20 absolute top-0 w-full h-full bg-linear-to-b from-transparent to-75% to-background" />
                       {Array.from({ length: gridColumns * 3 }).map((_, i) => (
                         <Skeleton
@@ -137,7 +136,7 @@ export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
                           className="z-10 w-full aspect-photocard rounded-lg md:rounded-xl lg:rounded-2xl"
                         />
                       ))}
-                    </Fragment>
+                    </div>
                   }
                 >
                   <ObjektGrid
@@ -199,7 +198,7 @@ function ObjektGrid<TObjektType extends ValidObjekt>({
   }, [data, getObjektDisplay]);
 
   return (
-    <Fragment>
+    <div className="contents">
       <Portal to="#objekt-total">
         <p className="font-semibold">{total.toLocaleString()} total</p>
       </Portal>
@@ -244,6 +243,6 @@ function ObjektGrid<TObjektType extends ValidObjekt>({
           fetchNextPage={fetchNextPage}
         />
       </Portal>
-    </Fragment>
+    </div>
   );
 }

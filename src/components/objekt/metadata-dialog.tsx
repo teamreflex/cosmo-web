@@ -29,7 +29,7 @@ import {
 import { ofetch } from "ofetch";
 import ObjektSidebar from "./objekt-sidebar";
 import Link from "next/link";
-import { Fragment, ReactNode, Suspense, useState, useTransition } from "react";
+import { ReactNode, Suspense, useState, useTransition } from "react";
 import { Separator } from "../ui/separator";
 import Skeleton from "../skeleton/skeleton";
 import { useProfileContext } from "@/hooks/use-profile";
@@ -161,7 +161,7 @@ function MetadataContent({ slug, onClose }: MetadataDialogContentProps) {
   const { data } = useSuspenseQuery(fetchObjektQuery(slug));
 
   return (
-    <Fragment>
+    <div className="contents">
       <div className="flex h-[28rem] aspect-photocard mx-auto shrink mt-4 sm:mt-0">
         <FlippableObjekt objekt={data} id={getObjektId(data)}>
           <ObjektSidebar collection={data.collectionNo} />
@@ -173,7 +173,7 @@ function MetadataContent({ slug, onClose }: MetadataDialogContentProps) {
         <Separator orientation="horizontal" />
         <MetadataPanel objekt={data} />
       </div>
-    </Fragment>
+    </div>
   );
 }
 

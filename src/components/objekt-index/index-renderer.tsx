@@ -83,10 +83,11 @@ export default function IndexRenderer({
             setActive={setActiveObjekt}
             priority={priority}
           >
-            <ObjektSidebar collection={objekt.collectionNo} />
-            {authenticated && (
-              <TopOverlay objekt={objekt} objektLists={objektLists} />
-            )}
+            <Overlay
+              objekt={objekt}
+              authenticated={authenticated}
+              objektLists={objektLists}
+            />
           </ExpandableObjekt>
         )}
       </FilteredObjektDisplay>
@@ -144,3 +145,20 @@ const Options = memo(function Options({
     </div>
   );
 });
+
+type OverlayProps = {
+  objekt: IndexedObjekt;
+  authenticated: boolean;
+  objektLists?: ObjektList[];
+};
+
+function Overlay({ objekt, authenticated, objektLists = [] }: OverlayProps) {
+  return (
+    <div className="contents">
+      <ObjektSidebar collection={objekt.collectionNo} />
+      {authenticated && (
+        <TopOverlay objekt={objekt} objektLists={objektLists} />
+      )}
+    </div>
+  );
+}

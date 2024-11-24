@@ -10,7 +10,7 @@ import {
   Pin,
   Smartphone,
 } from "lucide-react";
-import { Fragment, memo } from "react";
+import { memo } from "react";
 import LockObjekt from "./lock-button";
 import OverlayStatus from "./overlay-status";
 import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
@@ -104,7 +104,7 @@ export default memo(function ActionOverlay({
         {/* statuses */}
 
         {!isPin && (
-          <Fragment>
+          <div className="contents">
             {/* generic non-transferable */}
             {objekt.nonTransferableReason === "not-transferable" && (
               <MailX
@@ -152,7 +152,7 @@ export default memo(function ActionOverlay({
                 className="h-3 w-3 sm:h-5 sm:w-5 shrink-0"
               />
             )}
-          </Fragment>
+          </div>
         )}
       </div>
 
@@ -161,7 +161,7 @@ export default memo(function ActionOverlay({
         {isPin ? (
           <OverlayStatus>Pinned</OverlayStatus>
         ) : (
-          <Fragment>
+          <div className="contents">
             {hoverState === "send" && authenticated && (
               <OverlayStatus>Send</OverlayStatus>
             )}
@@ -195,7 +195,7 @@ export default memo(function ActionOverlay({
             {hoverState === undefined && !objekt.nonTransferableReason && (
               <OverlayStatus>{isLocked ? "Locked" : "Unlocked"}</OverlayStatus>
             )}
-          </Fragment>
+          </div>
         )}
       </div>
     </div>

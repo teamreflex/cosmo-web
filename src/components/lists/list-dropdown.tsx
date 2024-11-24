@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Fragment, useState } from "react";
+import { useState } from "react";
 import { ChevronRight, LetterText, List, PlusCircle } from "lucide-react";
 import { ObjektList } from "@/lib/universal/objekts";
 import Link from "next/link";
@@ -29,7 +29,7 @@ export default function ListDropdown({ lists, nickname, allowCreate }: Props) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   return (
-    <Fragment>
+    <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
       <CreateListDialog open={createOpen} onOpenChange={setCreateOpen} />
       <DiscordFormatDialog
         open={compareOpen}
@@ -37,59 +37,57 @@ export default function ListDropdown({ lists, nickname, allowCreate }: Props) {
         lists={lists}
       />
 
-      <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
-        <DropdownMenuTrigger asChild>
-          <Button variant="secondary" size="profile">
-            <List className="h-5 w-5" />
-            <span className="hidden sm:block">Lists</span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuLabel>Objekt Lists</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuGroup>
-            {lists.map((list) => (
-              <DropdownMenuItem
-                key={list.id}
-                className="text-sm"
-                onClick={() => setDropdownOpen(false)}
+      <DropdownMenuTrigger asChild>
+        <Button variant="secondary" size="profile">
+          <List className="h-5 w-5" />
+          <span className="hidden sm:block">Lists</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuLabel>Objekt Lists</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          {lists.map((list) => (
+            <DropdownMenuItem
+              key={list.id}
+              className="text-sm"
+              onClick={() => setDropdownOpen(false)}
+            >
+              <Link
+                href={`/@${nickname}/list/${list.slug}`}
+                className="w-full flex items-center justify-between"
               >
-                <Link
-                  href={`/@${nickname}/list/${list.slug}`}
-                  className="w-full flex items-center justify-between"
-                >
-                  {list.name}
-                  <ChevronRight className="h-4 w-4" />
-                </Link>
+                {list.name}
+                <ChevronRight className="h-4 w-4" />
+              </Link>
+            </DropdownMenuItem>
+          ))}
+          {lists.length === 0 && (
+            <DropdownMenuItem className="text-sm">0 lists</DropdownMenuItem>
+          )}
+
+          {allowCreate && (
+            <div className="contents">
+              <DropdownMenuSeparator />
+
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={() => setCreateOpen(true)}
+              >
+                <PlusCircle className="mr-2 h-4 w-4" />
+                <span className="font-semibold">Create New</span>
               </DropdownMenuItem>
-            ))}
-            {lists.length === 0 && (
-              <DropdownMenuItem className="text-sm">0 lists</DropdownMenuItem>
-            )}
-
-            {allowCreate && (
-              <Fragment>
-                <DropdownMenuSeparator />
-
-                <DropdownMenuItem
-                  className="cursor-pointer"
-                  onClick={() => setCreateOpen(true)}
-                >
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  <span className="font-semibold">Create New</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="cursor-pointer"
-                  onClick={() => setCompareOpen(true)}
-                >
-                  <LetterText className="mr-2 h-4 w-4" />
-                  <span className="font-semibold">Discord Format</span>
-                </DropdownMenuItem>
-              </Fragment>
-            )}
-          </DropdownMenuGroup>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </Fragment>
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={() => setCompareOpen(true)}
+              >
+                <LetterText className="mr-2 h-4 w-4" />
+                <span className="font-semibold">Discord Format</span>
+              </DropdownMenuItem>
+            </div>
+          )}
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
