@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/sheet";
 import { parseAsNullableBoolean } from "@/hooks/use-cosmo-filters";
 import { parseAsStringEnum, useQueryState } from "nuqs";
-import { Fragment, Suspense } from "react";
+import { Suspense } from "react";
 import ProgressLeaderboardContent, {
   LeaderboardSkeleton,
 } from "./progress-leaderboard-content";
@@ -54,7 +54,7 @@ export default function ProgressLeaderboard({ member }: Props) {
   }
 
   return (
-    <Fragment>
+    <Sheet open={open === true} onOpenChange={() => toggle()}>
       <TooltipProvider delayDuration={0}>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -71,40 +71,38 @@ export default function ProgressLeaderboard({ member }: Props) {
         </Tooltip>
       </TooltipProvider>
 
-      <Sheet open={open === true} onOpenChange={() => toggle()}>
-        <SheetContent className="overflow-y-scroll outline-hidden">
-          <SheetHeader>
-            <SheetTitle className="font-cosmo uppercase text-xl">
-              Leaderboard
-            </SheetTitle>
-            <SheetDescription className="font-cosmo uppercase text-lg">
-              {member}
-            </SheetDescription>
-          </SheetHeader>
+      <SheetContent className="overflow-y-scroll outline-hidden">
+        <SheetHeader>
+          <SheetTitle className="font-cosmo uppercase text-xl">
+            Leaderboard
+          </SheetTitle>
+          <SheetDescription className="font-cosmo uppercase text-lg">
+            {member}
+          </SheetDescription>
+        </SheetHeader>
 
-          <div className="flex flex-col">
-            {/* filters */}
-            <div className="flex items-center justify-center gap-2 pb-4 pt-2">
-              <FilterSelect
-                value={onlineType ?? "combined"}
-                update={setOnlineType}
-              />
-              <SeasonSelect value={season ?? "all"} update={setSeason} />
-            </div>
-
-            <Separator orientation="horizontal" />
-
-            <Suspense fallback={<LeaderboardSkeleton />}>
-              <ProgressLeaderboardContent
-                member={member}
-                onlineType={onlineType}
-                season={season}
-              />
-            </Suspense>
+        <div className="flex flex-col">
+          {/* filters */}
+          <div className="flex items-center justify-center gap-2 pb-4 pt-2">
+            <FilterSelect
+              value={onlineType ?? "combined"}
+              update={setOnlineType}
+            />
+            <SeasonSelect value={season ?? "all"} update={setSeason} />
           </div>
-        </SheetContent>
-      </Sheet>
-    </Fragment>
+
+          <Separator orientation="horizontal" />
+
+          <Suspense fallback={<LeaderboardSkeleton />}>
+            <ProgressLeaderboardContent
+              member={member}
+              onlineType={onlineType}
+              season={season}
+            />
+          </Suspense>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }
 

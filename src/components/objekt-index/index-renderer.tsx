@@ -13,7 +13,7 @@ import ObjektSidebar from "../objekt/objekt-sidebar";
 import { TopOverlay } from "./index-overlay";
 import HelpDialog from "./help-dialog";
 import { useFilters } from "@/hooks/use-filters";
-import { Fragment, memo, useCallback } from "react";
+import { memo, useCallback } from "react";
 import {
   FiltersContainer,
   IndexFilters,
@@ -83,11 +83,10 @@ export default function IndexRenderer({
             setActive={setActiveObjekt}
             priority={priority}
           >
-            <Overlay
-              objekt={objekt}
-              authenticated={authenticated}
-              objektLists={objektLists}
-            />
+            <ObjektSidebar collection={objekt.collectionNo} />
+            {authenticated && (
+              <TopOverlay objekt={objekt} objektLists={objektLists} />
+            )}
           </ExpandableObjekt>
         )}
       </FilteredObjektDisplay>
@@ -143,26 +142,5 @@ const Options = memo(function Options({
         allowCreate={true}
       />
     </div>
-  );
-});
-
-type OverlayProps = {
-  objekt: IndexedObjekt;
-  authenticated: boolean;
-  objektLists?: ObjektList[];
-};
-
-const Overlay = memo(function Overlay({
-  objekt,
-  authenticated,
-  objektLists = [],
-}: OverlayProps) {
-  return (
-    <Fragment>
-      <ObjektSidebar collection={objekt.collectionNo} />
-      {authenticated && (
-        <TopOverlay objekt={objekt} objektLists={objektLists} />
-      )}
-    </Fragment>
   );
 });

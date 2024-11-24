@@ -1,6 +1,6 @@
 "use client";
 
-import { Dispatch, Fragment, SetStateAction, memo, useState } from "react";
+import { Dispatch, SetStateAction, memo, useState } from "react";
 import { CollectionDataSource } from "@/hooks/use-filters";
 import {
   Select,
@@ -80,42 +80,7 @@ export default memo(function DataSourceSelector({
   }
 
   return (
-    <Fragment>
-      <AlertDialog open={open} onOpenChange={setOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Objekt Data Source</AlertDialogTitle>
-          </AlertDialogHeader>
-
-          <div className="flex flex-col gap-2 text-sm text-muted-foreground">
-            <p>
-              By default, {env.NEXT_PUBLIC_APP_NAME} will use COSMO to display
-              your collection.
-            </p>
-            <p>This option allows you to use the Polygon blockchain instead.</p>
-            <p>This does have its pros & cons:</p>
-            <ul className="list-disc list-inside">
-              <li>
-                Sorting by serial is available, while sorting by gridable is
-                unavailable.
-              </li>
-              <li>
-                Any unsendable objekts will only be shown as non-transferable,
-                rather than their real status like event reward, used for grid
-                etc.
-              </li>
-              <li>
-                Only minted objekts will be displayed, whereas the COSMO option
-                will show any objekts that are pending mint.
-              </li>
-            </ul>
-          </div>
-          <AlertDialogFooter>
-            <AlertDialogAction onClick={close}>Continue</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
+    <AlertDialog open={open} onOpenChange={setOpen}>
       <Select value={dataSource} onValueChange={update} onOpenChange={warn}>
         <SelectTrigger className="w-36">
           <SelectValue placeholder="Data Source" />
@@ -148,6 +113,39 @@ export default memo(function DataSourceSelector({
           </SelectItem>
         </SelectContent>
       </Select>
-    </Fragment>
+
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Objekt Data Source</AlertDialogTitle>
+        </AlertDialogHeader>
+
+        <div className="flex flex-col gap-2 text-sm text-muted-foreground">
+          <p>
+            By default, {env.NEXT_PUBLIC_APP_NAME} will use COSMO to display
+            your collection.
+          </p>
+          <p>This option allows you to use the Polygon blockchain instead.</p>
+          <p>This does have its pros & cons:</p>
+          <ul className="list-disc list-inside">
+            <li>
+              Sorting by serial is available, while sorting by gridable is
+              unavailable.
+            </li>
+            <li>
+              Any unsendable objekts will only be shown as non-transferable,
+              rather than their real status like event reward, used for grid
+              etc.
+            </li>
+            <li>
+              Only minted objekts will be displayed, whereas the COSMO option
+              will show any objekts that are pending mint.
+            </li>
+          </ul>
+        </div>
+        <AlertDialogFooter>
+          <AlertDialogAction onClick={close}>Continue</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 });

@@ -78,7 +78,7 @@ export default function MetadataDialog({
   }
 
   return (
-    <Fragment>
+    <div>
       {children?.(() => setOpen(true))}
 
       {isDesktop ? (
@@ -102,7 +102,7 @@ export default function MetadataDialog({
           </DrawerContent>
         </Drawer>
       )}
-    </Fragment>
+    </div>
   );
 }
 

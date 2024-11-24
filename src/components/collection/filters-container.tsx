@@ -1,7 +1,6 @@
 import { CollectionDataSource } from "@/hooks/use-filters";
 import {
   Dispatch,
-  Fragment,
   PropsWithChildren,
   SetStateAction,
   memo,
@@ -51,9 +50,7 @@ export function FiltersContainer({
         </Portal>
       </div>
 
-      <div className="flex gap-2 items-center flex-wrap justify-center lg:group-data-[show=false]:flex group-data-[show=false]:hidden">
-        {children}
-      </div>
+      {children}
     </div>
   );
 }
@@ -80,7 +77,7 @@ export function CollectionFilters({
   const [filters, setFilters] = useCosmoFilters();
 
   return (
-    <Fragment>
+    <div className="flex gap-2 items-center flex-wrap justify-center lg:group-data-[show=false]:flex group-data-[show=false]:hidden">
       <LockedFilter showLocked={showLocked} setShowLocked={setShowLocked} />
       {dataSource === "cosmo" && (
         <GridableFilter filters={filters.gridable} setFilters={setFilters} />
@@ -103,7 +100,7 @@ export function CollectionFilters({
         dataSource={dataSource}
         setDataSource={setDataSource}
       />
-    </Fragment>
+    </div>
   );
 }
 
@@ -121,7 +118,7 @@ export const IndexFilters = memo(function IndexFilters({
   const [filters, setFilters] = useCosmoFilters();
 
   return (
-    <Fragment>
+    <div className="flex gap-2 items-center flex-wrap justify-center lg:group-data-[show=false]:flex group-data-[show=false]:hidden">
       <SeasonFilter filters={filters.season} setFilters={setFilters} />
       {collections.length > 0 && (
         <CollectionFilter
@@ -137,6 +134,6 @@ export const IndexFilters = memo(function IndexFilters({
         setFilters={setFilters}
         serials={false}
       />
-    </Fragment>
+    </div>
   );
 });

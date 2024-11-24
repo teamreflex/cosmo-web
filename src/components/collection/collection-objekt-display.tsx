@@ -1,4 +1,4 @@
-import { Fragment, memo, useCallback, useMemo } from "react";
+import { memo, useCallback, useMemo } from "react";
 import FilteredObjektDisplay, {
   ObjektResponse,
 } from "../objekt/filtered-objekt-display";
@@ -74,7 +74,12 @@ export default memo(function CollectionObjektDisplay({
     >
       {({ objekt, id }, priority, isPin) => (
         <ExpandableObjekt objekt={objekt} id={id} priority={priority}>
-          <Overlay
+          <ObjektSidebar
+            collection={objekt.collectionNo}
+            serial={objekt.objektNo}
+          />
+          <InformationOverlay objekt={objekt} />
+          <ActionOverlay
             objekt={objekt}
             authenticated={authenticated}
             isLocked={lockedObjekts.includes(parseInt(id))}
@@ -84,38 +89,5 @@ export default memo(function CollectionObjektDisplay({
         </ExpandableObjekt>
       )}
     </FilteredObjektDisplay>
-  );
-});
-
-type OverlayProps = {
-  objekt: OwnedObjekt;
-  authenticated: boolean;
-  isLocked: boolean;
-  isPinned: boolean;
-  isPin: boolean;
-};
-
-const Overlay = memo(function Overlay({
-  objekt,
-  authenticated,
-  isLocked,
-  isPinned,
-  isPin,
-}: OverlayProps) {
-  return (
-    <Fragment>
-      <ObjektSidebar
-        collection={objekt.collectionNo}
-        serial={objekt.objektNo}
-      />
-      <InformationOverlay objekt={objekt} />
-      <ActionOverlay
-        objekt={objekt}
-        authenticated={authenticated}
-        isLocked={isLocked}
-        isPinned={isPinned}
-        isPin={isPin}
-      />
-    </Fragment>
   );
 });
