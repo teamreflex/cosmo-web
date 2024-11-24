@@ -10,7 +10,7 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { Button } from "../ui/button";
-import { CheckCircle, Loader2, QrCode } from "lucide-react";
+import { CheckCircle, Loader2, QrCode, Scan } from "lucide-react";
 import { useState } from "react";
 import VisuallyHidden from "../ui/visually-hidden";
 import { IDetectedBarcode, Scanner } from "@yudiel/react-qr-scanner";
@@ -35,9 +35,8 @@ type ScanResult = {
 export default function ScanQR() {
   const { token } = useUserState();
   const [open, setOpen] = useState(false);
-  const { isAvailable, isLoading } = useCamera();
 
-  if (!token || isLoading || (isLoading === false && isAvailable === false)) {
+  if (!token) {
     return null;
   }
 
@@ -52,12 +51,13 @@ export default function ScanQR() {
         <QrCode className="text-white size-10" />
       </DrawerTrigger>
 
-      <ScanObjekt onClose={() => setOpen(false)} />
+      <ScanObjekt open={open} onClose={() => setOpen(false)} />
     </Drawer>
   );
 }
 
 type ScanObjektProps = {
+  open: boolean;
   onClose: () => void;
 };
 
@@ -93,7 +93,13 @@ function ScanObjekt(props: ScanObjektProps) {
 
   switch (state) {
     case "scan":
-      return <QRScanner onResult={onScanResult} onClose={onClose} />;
+      return (
+        <QRScanner
+          open={props.open}
+          onResult={onScanResult}
+          onClose={onClose}
+        />
+      );
     case "claim":
       if (result) {
         return (
@@ -112,11 +118,15 @@ function ScanObjekt(props: ScanObjektProps) {
 }
 
 type QRScannerProps = {
+  open: boolean;
   onResult: (result: ScanResult) => void;
   onClose: () => void;
 };
 
-function QRScanner({ onResult, onClose }: QRScannerProps) {
+function QRScanner({ open, onResult, onClose }: QRScannerProps) {
+  const { isAvailable, isLoading, request } = useCamera({
+    enabled: open,
+  });
   const { token } = useUserState();
   const { mutate, status } = useMutation({
     mutationFn: async (serial: string) => {
@@ -167,15 +177,32 @@ function QRScanner({ onResult, onClose }: QRScannerProps) {
         </VisuallyHidden>
       </DrawerHeader>
 
-      {status === "pending" ? (
+      {/* qr has been submitted */}
+      {status === "pending" && (
         <div className="flex items-center justify-center py-2">
           <Loader2 className="size-24 animate-spin" />
         </div>
-      ) : (
+      )}
+
+      {/* camera isn't ready and has no permission */}
+      {isAvailable === false && (
+        <div className="flex items-center justify-center py-2">
+          <Button variant="secondary" onClick={() => request()}>
+            <span>Enable Camera</span>
+            {isLoading ? (
+              <Loader2 className="size-4 ml-2 animate-spin" />
+            ) : (
+              <Scan className="ml-2 size-4" />
+            )}
+          </Button>
+        </div>
+      )}
+
+      {/* camera is ready and has permission */}
+      {isAvailable && (
         <div
           className={cn(
-            "mx-auto size-60 aspect-square rounded-lg text-clip border-2",
-            status === "idle" && "border-accent",
+            "mx-auto size-60 aspect-square rounded-lg text-clip border-2 border-accent",
             status === "error" && "border-red-500",
             status === "success" && "border-green-500"
           )}

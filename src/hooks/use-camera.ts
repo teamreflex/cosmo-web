@@ -1,24 +1,32 @@
 import { useQuery } from "@tanstack/react-query";
 
-export function useCamera() {
-  const { data, status } = useQuery({
+type Options = {
+  enabled: boolean;
+};
+
+export function useCamera(opts?: Options) {
+  const { data, isPending, refetch } = useQuery({
     queryKey: ["camera-availability"],
     queryFn: async () => {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+      try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          throw new Error("getUserMedia is not supported in this browser");
+        }
+
+        await navigator.mediaDevices.getUserMedia({ video: true });
+        return true;
+      } catch (error) {
         return false;
       }
-
-      return await navigator.mediaDevices
-        .enumerateDevices()
-        .then((devices) =>
-          devices.some((device) => device.kind === "videoinput")
-        );
     },
     staleTime: Infinity,
+    retry: false,
+    enabled: opts?.enabled ?? false,
   });
 
   return {
     isAvailable: data ?? false,
-    isLoading: status === "pending",
+    isLoading: isPending,
+    request: refetch,
   };
 }
