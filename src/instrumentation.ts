@@ -1,6 +1,11 @@
 import * as Sentry from "@sentry/nextjs";
+import { env } from "./env.mjs";
 
 export async function register() {
+  if (env.NEXT_PUBLIC_VERCEL_ENV !== "production") {
+    return;
+  }
+
   if (process.env.NEXT_RUNTIME === "nodejs") {
     await import("../sentry.server.config");
   }

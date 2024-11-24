@@ -2,13 +2,12 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getUser } from "./app/api/common";
 import {
+  COOKIE_NAME,
   generateCookiePayload,
   signToken,
   validateExpiry,
 } from "./lib/server/jwt";
 import { refresh } from "./lib/server/cosmo/auth";
-
-const COOKIE_NAME = "token";
 
 export const config = {
   matcher: [
@@ -20,8 +19,6 @@ export const config = {
      * - favicon.ico (favicon file)
      */
     "/((?!api|_next/static|_next/image|favicon.ico|robots.txt).*)",
-    // run middlware on cosmo bff api proxy routes
-    "/api/bff/:path*",
   ],
 };
 

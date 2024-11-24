@@ -1,20 +1,17 @@
-import { getUser } from "@/app/api/common";
+import { withCosmoApi } from "@/lib/server/cosmo/withCosmoApi";
 import { fetchArtistGridStatus } from "@/lib/server/cosmo/grid";
+
+type Params = {
+  grid: string;
+};
 
 /**
  * API route that services the /grid/:grid page.
  * Takes a grid slug and returns the user's status/progress for that grid.
  */
-export async function GET(
-  _: Request,
-  props: { params: Promise<{ grid: string }> }
-) {
-  const params = await props.params;
-  const auth = await getUser();
-  if (!auth.success) {
-    return new Response(auth.error, { status: auth.status });
-  }
+export const GET = withCosmoApi<Params>(async ({ ctx, user }) => {
+  const { grid } = await ctx.params;
+  const result = await fetchArtistGridStatus(user.accessToken, grid);
 
-  const grid = await fetchArtistGridStatus(auth.user.accessToken, params.grid);
-  return Response.json(grid);
-}
+  return Response.json(result);
+});
