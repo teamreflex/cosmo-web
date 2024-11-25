@@ -75,9 +75,7 @@ export default function NewsInfiniteLoader<TPostType>({
               <Loading />
             ) : hasNextPage ? (
               <LoadMore />
-            ) : (
-              <></>
-            )}
+            ) : null}
           </InView>
         </div>
       )}

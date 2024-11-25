@@ -92,7 +92,7 @@ export function UserSearch({
   }
 
   return (
-    <>
+    <div className="contents">
       {children}
 
       <CommandDialog
@@ -211,7 +211,7 @@ export function UserSearch({
           )}
         </CommandList>
       </CommandDialog>
-    </>
+    </div>
   );
 }
 

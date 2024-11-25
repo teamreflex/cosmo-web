@@ -241,10 +241,10 @@ function DateRangePicker({
             <CalendarIcon className="mr-2 h-4 w-4" />
             {value?.from ? (
               value.to ? (
-                <>
+                <div className="contents">
                   {format(value.from, "LLL dd, y")} -{" "}
                   {format(value.to, "LLL dd, y")}
-                </>
+                </div>
               ) : (
                 format(value.from, "LLL dd, y")
               )

@@ -32,7 +32,7 @@ export default function TransfersRenderer({ address }: Props) {
   const rows = data?.pages.flatMap((p) => p.results) ?? [];
 
   return (
-    <>
+    <div className="contents">
       <div className="flex flex-col rounded-lg border border-accent text-sm">
         <div
           className={cn(
@@ -67,7 +67,7 @@ export default function TransfersRenderer({ address }: Props) {
         isFetchingNextPage={isFetchingNextPage}
         fetchNextPage={fetchNextPage}
       />
-    </>
+    </div>
   );
 }
 

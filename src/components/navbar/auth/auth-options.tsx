@@ -45,38 +45,36 @@ export default function AuthOptions({
     });
   }
 
+  if (isAuthenticated) {
+    return (
+      <div className="flex gap-2 items-center justify-center">
+        <div className="md:flex gap-2 items-center hidden">{comoBalances}</div>
+
+        <UserDropdown
+          key={pathname}
+          profile={profile}
+          artists={artists}
+          selectedArtist={selectedArtist}
+          comoBalances={comoBalances}
+          onSignOut={executeSignOut}
+          cosmoAvatar={cosmoAvatar}
+        />
+      </div>
+    );
+  }
+
   return (
-    <>
-      {isAuthenticated ? (
-        <div className="flex gap-2 items-center justify-center">
-          <div className="md:flex gap-2 items-center hidden">
-            {comoBalances}
-          </div>
+    <div className="flex items-center gap-2">
+      {isPending ? <Loader2 className="animate-spin" /> : <SignInDialog />}
 
-          <UserDropdown
-            key={pathname}
-            profile={profile}
-            artists={artists}
-            selectedArtist={selectedArtist}
-            comoBalances={comoBalances}
-            onSignOut={executeSignOut}
-            cosmoAvatar={cosmoAvatar}
-          />
-        </div>
-      ) : (
-        <div className="flex items-center gap-2">
-          {isPending ? <Loader2 className="animate-spin" /> : <SignInDialog />}
+      <Hydrated>
+        <GuestThemeSwitch />
+      </Hydrated>
 
-          <Hydrated>
-            <GuestThemeSwitch />
-          </Hydrated>
-
-          {/* <GuestArtistSwitch
-            artists={artists}
-            selectedArtist={selectedArtist}
-          /> */}
-        </div>
-      )}
-    </>
+      {/* <GuestArtistSwitch
+      artists={artists}
+      selectedArtist={selectedArtist}
+    /> */}
+    </div>
   );
 }

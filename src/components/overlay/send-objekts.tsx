@@ -52,7 +52,7 @@ export default function SendObjekts() {
       >
         <DrawerTrigger
           className={cn(
-            "h-10 w-fit rounded-full bg-cosmo hover:scale-105 text-white border border-cosmo-text/25 font-semibold flex items-center gap-2 px-3 py-1 drop-shadow-lg transition-all opacity-0",
+            "h-10 w-fit rounded-full bg-cosmo hover:scale-105 text-white font-semibold flex items-center gap-2 px-3 py-1 drop-shadow-lg transition-all opacity-0",
             selected.length > 0 && "opacity-100 pointer-events-auto"
           )}
         >
@@ -66,7 +66,7 @@ export default function SendObjekts() {
         <button
           onClick={reset}
           className={cn(
-            "h-10 w-fit aspect-square rounded-full bg-cosmo hover:scale-105 text-white border border-cosmo-text/25 flex justify-center items-center drop-shadow-lg transition-all opacity-0 mr-8",
+            "h-10 w-fit aspect-square rounded-full bg-cosmo hover:scale-105 text-white flex justify-center items-center drop-shadow-lg transition-all opacity-0 mr-8",
             selected.length > 0 && "opacity-100 pointer-events-auto"
           )}
         >
@@ -131,7 +131,7 @@ function SelectRecipients({ selected, onComplete }: SelectRecipientsProps) {
   }
 
   return (
-    <>
+    <div className="contents">
       <DrawerHeader>
         <DrawerTitle>Send {selected.length} Objekts</DrawerTitle>
         <VisuallyHidden>
@@ -174,7 +174,7 @@ function SelectRecipients({ selected, onComplete }: SelectRecipientsProps) {
           Confirm
         </Button>
       </DrawerFooter>
-    </>
+    </div>
   );
 }
 
@@ -283,7 +283,7 @@ function Sending({ selected, onBack, onClose }: SendingProps) {
 
   if (isSending) {
     return (
-      <>
+      <div className="contents">
         <ScrollArea className="w-full min-h-28 max-h-96 overflow-y-auto">
           <div className="flex flex-col divide-y divide-accent">
             {selected.map((selection) => (
@@ -300,12 +300,12 @@ function Sending({ selected, onBack, onClose }: SendingProps) {
             <Button onClick={onClose}>Close</Button>
           </DrawerFooter>
         )}
-      </>
+      </div>
     );
   }
 
   return (
-    <>
+    <div className="contents">
       <DrawerHeader>
         <DrawerTitle>Confirm</DrawerTitle>
         <DrawerDescription>
@@ -319,7 +319,7 @@ function Sending({ selected, onBack, onClose }: SendingProps) {
         </Button>
         <Button onClick={onSend}>Send</Button>
       </DrawerFooter>
-    </>
+    </div>
   );
 }
 

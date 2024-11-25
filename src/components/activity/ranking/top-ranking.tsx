@@ -242,7 +242,7 @@ function MyRank({ artist, kind, memberId }: MyRankProps) {
           <div className="col-span-2 flex flex-col border-b border-foreground/25 p-4">
             {/* current */}
             {current !== undefined && (
-              <>
+              <div className="contents">
                 <p className="font-semibold text-lg">
                   {current.representUser.user.nickname}
                 </p>
@@ -252,14 +252,14 @@ function MyRank({ artist, kind, memberId }: MyRankProps) {
                 <p className="text-sm">
                   Number of {type}: {current.rankData}
                 </p>
-              </>
+              </div>
             )}
           </div>
 
           {/* above */}
           <div className="flex flex-col justify-center gap-1 text-sm p-4 border-r border-foreground/25">
             {above !== undefined && (
-              <>
+              <div className="contents">
                 <p className="font-semibold">Rank just above</p>
                 <p className="font-semibold text-red-500">
                   {ordinal(above.rankNumber)} place
@@ -267,14 +267,14 @@ function MyRank({ artist, kind, memberId }: MyRankProps) {
                 <p>
                   {above.rankData} {type}
                 </p>
-              </>
+              </div>
             )}
           </div>
 
           {/* below */}
           <div className="flex flex-col justify-center gap-1 text-sm p-4">
             {below !== undefined && (
-              <>
+              <div className="contents">
                 <p className="font-semibold">Rank just below</p>
                 <p className="font-semibold text-blue-500">
                   {ordinal(below.rankNumber)} place
@@ -282,7 +282,7 @@ function MyRank({ artist, kind, memberId }: MyRankProps) {
                 <p>
                   {below.rankData} {type}
                 </p>
-              </>
+              </div>
             )}
           </div>
         </div>

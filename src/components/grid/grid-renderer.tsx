@@ -64,38 +64,35 @@ export default function GridRenderer({ edition, grids }: Props) {
           </p>
         </div>
       ) : (
-        <>
-          {data !== undefined && selectedGrid !== undefined && (
-            <div className="flex flex-col items-center w-full gap-6">
-              {/* special objekt count */}
-              <div className="inline-flex justify-center text-sm font-bold gap-1">
-                <span>You have</span>
-                <span className="text-cosmo">
-                  {data.ownedRewardObjektCount}
-                </span>
-                <span className="text-cosmo">{selectedGrid.member}</span>
-                <span>Special Objekts</span>
-              </div>
-
-              {/* slots */}
-              <div className="w-full" key={selectedGrid.id}>
-                {data.ongoing.slotStatuses.length === 8 ? (
-                  <GridEightSlot
-                    slug={selectedGrid.id}
-                    grid={data}
-                    onRefresh={() => refetch()}
-                  />
-                ) : (
-                  <GridFourSlot
-                    slug={selectedGrid.id}
-                    grid={data}
-                    onRefresh={() => refetch()}
-                  />
-                )}
-              </div>
+        data !== undefined &&
+        selectedGrid !== undefined && (
+          <div className="flex flex-col items-center w-full gap-6">
+            {/* special objekt count */}
+            <div className="inline-flex justify-center text-sm font-bold gap-1">
+              <span>You have</span>
+              <span className="text-cosmo">{data.ownedRewardObjektCount}</span>
+              <span className="text-cosmo">{selectedGrid.member}</span>
+              <span>Special Objekts</span>
             </div>
-          )}
-        </>
+
+            {/* slots */}
+            <div className="w-full" key={selectedGrid.id}>
+              {data.ongoing.slotStatuses.length === 8 ? (
+                <GridEightSlot
+                  slug={selectedGrid.id}
+                  grid={data}
+                  onRefresh={() => refetch()}
+                />
+              ) : (
+                <GridFourSlot
+                  slug={selectedGrid.id}
+                  grid={data}
+                  onRefresh={() => refetch()}
+                />
+              )}
+            </div>
+          </div>
+        )
       )}
     </div>
   );

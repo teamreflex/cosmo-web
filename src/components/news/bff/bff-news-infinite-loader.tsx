@@ -76,9 +76,7 @@ export default function BFFNewsInfiniteLoader<TPostType>({
               <Loading />
             ) : hasNextPage ? (
               <LoadMore />
-            ) : (
-              <></>
-            )}
+            ) : null}
           </InView>
         </div>
       )}

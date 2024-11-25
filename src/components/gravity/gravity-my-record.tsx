@@ -18,7 +18,7 @@ export default async function GravityMyRecord({ gravity }: Props) {
   );
 
   return (
-    <>
+    <div className="contents">
       {/* my contribution */}
       <div className="flex flex-col gap-2 w-full sm:w-1/2 mx-auto">
         <h3 className="font-bold">My Contribution</h3>
@@ -80,6 +80,6 @@ export default async function GravityMyRecord({ gravity }: Props) {
           ))
         )}
       </div>
-    </>
+    </div>
   );
 }

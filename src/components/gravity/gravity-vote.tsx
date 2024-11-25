@@ -28,6 +28,7 @@ import { CosmoArtist } from "@/lib/universal/cosmo/artists";
 import { Hex } from "viem";
 import { cn } from "@/lib/utils";
 import { useComo } from "@/hooks/use-como";
+import { match } from "ts-pattern";
 
 type State = "select" | "confirm" | "send";
 
@@ -287,45 +288,37 @@ function ChoiceSend({
 }: ChoiceSendProps) {
   return (
     <div className="flex flex-col items-center gap-2">
-      {(() => {
-        switch (status) {
-          case "idle":
-            return <p className="text-sm font-semibold">Waiting...</p>;
-          case "pending":
-            return (
-              <>
-                <Satellite className="h-10 w-10 animate-pulse" />
-                <p className="text-sm font-semibold">Sending transaction...</p>
-              </>
-            );
-          case "success":
-            return (
-              <>
-                <CheckCircle className="h-10 w-10" />
-                <p className="text-sm font-semibold">
-                  {amount} COMO sent for {selected.content.title}!
-                </p>
-                <a
-                  className="text-sm"
-                  href={`https://polygonscan.com/tx/${hash}`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  View on PolygonScan
-                </a>
-              </>
-            );
-          case "error":
-            return (
-              <>
-                <TriangleAlert className="h-10 w-10" />
-                <p className="text-sm font-semibold">
-                  Error sending transaction
-                </p>
-              </>
-            );
-        }
-      })()}
+      {match(status)
+        .with("idle", () => <p className="text-sm font-semibold">Waiting...</p>)
+        .with("pending", () => (
+          <div className="contents">
+            <Satellite className="h-10 w-10 animate-pulse" />
+            <p className="text-sm font-semibold">Sending transaction...</p>
+          </div>
+        ))
+        .with("error", () => (
+          <div className="contents">
+            <TriangleAlert className="h-10 w-10" />
+            <p className="text-sm font-semibold">Error sending transaction</p>
+          </div>
+        ))
+        .with("success", () => (
+          <div className="contents">
+            <CheckCircle className="h-10 w-10" />
+            <p className="text-sm font-semibold">
+              {amount} COMO sent for {selected.content.title}!
+            </p>
+            <a
+              className="text-sm"
+              href={`https://polygonscan.com/tx/${hash}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              View on PolygonScan
+            </a>
+          </div>
+        ))
+        .exhaustive()}
 
       <DrawerFooter className="flex flex-row justify-center items-center gap-2">
         <Button onClick={onClose} variant="secondary">
