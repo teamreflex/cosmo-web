@@ -75,6 +75,13 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2024-11-25",
+    changes: [
+      "Tech update: Minimum supported browsers are now: Chrome 85+ (2020), Edge 85+ (2020), Firefox 115+ (2023), Safari 16.4+ (2023), iOS 16.4+ (2023)",
+      "If things are broken, please update your browser or device.",
+    ],
+  },
+  {
     date: "2024-11-18",
     changes: [
       "Added: Gravity voting.",
@@ -87,15 +94,6 @@ const updates = [
       "Fixed: Reward claim dialog now scrolls instead of overflowing off screen.",
       "Fixed: Select boxes not working on mobile.",
       "Fixed: Filters button being hidden on tablets-sized screens.",
-    ],
-  },
-  {
-    date: "2024-10-23",
-    changes: [
-      "Objekt sending is back: Signing out and back in again is required to load your wallet. Option to send multiple at a time is coming soon.",
-      "Added: Objekt scanning. You can view the objekt and serial before claiming.",
-      "Added: Premier class is now factored into COMO calendars.",
-      "Changed: New logo",
     ],
   },
 ];
