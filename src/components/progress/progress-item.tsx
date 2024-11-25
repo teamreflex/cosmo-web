@@ -16,9 +16,9 @@ export default function ProgressItem({
 
   return (
     <div
-      data-selected={isSelected}
+      data-complete={percentage === 100}
       onClick={onExpand}
-      className="flex flex-row justify-between items-center rounded-lg py-3 px-4 border border-transparent data-[selected=true]:border-cosmo bg-accent cursor-pointer h-20"
+      className="flex flex-row justify-between items-center rounded-lg py-3 px-4 border border-transparent data-[complete=true]:border-cosmo bg-accent cursor-pointer h-20"
     >
       <div className="flex flex-col">
         <h4 className="text-lg font-semibold">{progress.class} Class</h4>

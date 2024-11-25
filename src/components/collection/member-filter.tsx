@@ -87,7 +87,7 @@ export const MemberFilterButton = memo(function MemberFilterButton({
             <button
               onClick={() => setActive(name)}
               className={cn(
-                "rounded-full drop-shadow-sm",
+                "rounded-full drop-shadow-sm cursor-pointer",
                 isActive && "ring-3 ring-cosmo"
               )}
             >
