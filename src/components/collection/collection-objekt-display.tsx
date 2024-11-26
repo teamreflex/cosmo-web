@@ -40,19 +40,23 @@ export default memo(function CollectionObjektDisplay({
   dataSource,
 }: Props) {
   const [filters] = useCosmoFilters();
-  const hidePins = useMemo(() => filtersAreDirty(filters), [filters]);
+  const usingFilters = useMemo(() => filtersAreDirty(filters), [filters]);
   const pins = useProfileContext((ctx) => ctx.pins);
 
   const collectionFilter = useCallback(
     (objekt: OwnedObjekt) => {
-      // hide objekt from list when it's pinned
-      const pinFilter =
-        hidePins === false &&
-        pins.findIndex((pin) => pin.tokenId === objekt.tokenId) === -1;
+      const isPinned =
+        pins.findIndex((pin) => pin.tokenId === objekt.tokenId) !== -1;
 
-      return hidePins ? pinFilter : true;
+      // when a filter is selected, show everything
+      if (usingFilters) {
+        return true;
+      }
+
+      // when not using a filter, show the objekt if its not pinned
+      return isPinned ? false : true;
     },
-    [hidePins, pins]
+    [usingFilters, pins]
   );
 
   return (
@@ -64,7 +68,7 @@ export default memo(function CollectionObjektDisplay({
       getObjektDisplay={collectionFilter}
       gridColumns={gridColumns}
       dataSource={dataSource}
-      hidePins={hidePins}
+      hidePins={usingFilters}
     >
       {({ objekt, id }, priority, isPin) => (
         <ExpandableObjekt objekt={objekt} id={id} priority={priority}>

@@ -75,6 +75,10 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2024-11-27",
+    changes: ["Fixed filters not working."],
+  },
+  {
     date: "2024-11-25",
     changes: [
       "Tech update: Minimum supported browsers are now: Chrome 85+ (2020), Edge 85+ (2020), Firefox 115+ (2023), Safari 16.4+ (2023), iOS 16.4+ (2023)",
