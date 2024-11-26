@@ -10,7 +10,13 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { Button } from "../ui/button";
-import { CheckCircle, Loader2, QrCode, Scan } from "lucide-react";
+import {
+  CheckCircle,
+  Loader2,
+  QrCode,
+  Scan,
+  TriangleAlert,
+} from "lucide-react";
 import { useState } from "react";
 import VisuallyHidden from "../ui/visually-hidden";
 import { IDetectedBarcode, Scanner } from "@yudiel/react-qr-scanner";
@@ -25,6 +31,7 @@ import ObjektSidebar from "../objekt/objekt-sidebar";
 import { useCamera } from "@/hooks/use-camera";
 import { useUserState } from "@/hooks/use-user-state";
 import { extractObjektCode } from "@/lib/universal/cosmo/albums";
+import { ErrorBoundary } from "react-error-boundary";
 
 type State = "scan" | "claim" | "success";
 type ScanResult = {
@@ -201,31 +208,33 @@ function QRScanner({ open, onResult, onClose }: QRScannerProps) {
 
       {/* camera is ready and has permission */}
       {hasPermission && (
-        <div
-          className={cn(
-            "mx-auto size-60 aspect-square rounded-lg text-clip border-2 border-accent",
-            status === "error" && "border-red-500",
-            status === "success" && "border-green-500"
-          )}
-        >
-          <Scanner
-            onScan={onScan}
-            paused={status !== "idle"}
-            formats={["qr_code"]}
-            allowMultiple={false}
-            components={{
-              audio: false,
-              finder: false,
-            }}
-            styles={{
-              video: {
-                height: "100%",
-                width: "100%",
-              },
-              finderBorder: 0,
-            }}
-          />
-        </div>
+        <ErrorBoundary FallbackComponent={ScannerError}>
+          <div
+            className={cn(
+              "mx-auto size-60 aspect-square rounded-lg text-clip border-2 border-accent",
+              status === "error" && "border-red-500",
+              status === "success" && "border-green-500"
+            )}
+          >
+            <Scanner
+              onScan={onScan}
+              paused={status !== "idle"}
+              formats={["qr_code"]}
+              allowMultiple={false}
+              components={{
+                audio: false,
+                finder: false,
+              }}
+              styles={{
+                video: {
+                  height: "100%",
+                  width: "100%",
+                },
+                finderBorder: 0,
+              }}
+            />
+          </div>
+        </ErrorBoundary>
       )}
 
       <DrawerFooter>
@@ -234,6 +243,22 @@ function QRScanner({ open, onResult, onClose }: QRScannerProps) {
         </Button>
       </DrawerFooter>
     </DrawerContent>
+  );
+}
+
+function ScannerError({
+  resetErrorBoundary,
+}: {
+  resetErrorBoundary: () => void;
+}) {
+  return (
+    <div className="flex items-center justify-center mx-auto py-2">
+      <TriangleAlert className="size-12 text-red-500" />
+      <p className="text-sm font-semibold">Error with QR scanner</p>
+      <Button variant="secondary" size="sm" onClick={resetErrorBoundary}>
+        Retry
+      </Button>
+    </div>
   );
 }
 

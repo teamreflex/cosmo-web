@@ -11,7 +11,7 @@ import { QueryFunction, QueryKey } from "@tanstack/react-query";
 import { CollectionDataSource, filtersAreDirty } from "@/hooks/use-filters";
 import { ExpandableObjekt } from "../objekt/objekt";
 import { GRID_COLUMNS } from "@/lib/utils";
-import { useProfileContext } from "@/hooks/use-profile";
+import { useLockedObjekt, useProfileContext } from "@/hooks/use-profile";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 
 const getObjektId = (objekt: OwnedObjekt) => objekt.tokenId;
@@ -41,7 +41,6 @@ export default memo(function CollectionObjektDisplay({
 }: Props) {
   const [filters] = useCosmoFilters();
   const hidePins = useMemo(() => filtersAreDirty(filters), [filters]);
-  const lockedObjekts = useProfileContext((ctx) => ctx.lockedObjekts);
   const pins = useProfileContext((ctx) => ctx.pins);
 
   const collectionFilter = useCallback(
@@ -51,14 +50,9 @@ export default memo(function CollectionObjektDisplay({
         hidePins === false &&
         pins.findIndex((pin) => pin.tokenId === objekt.tokenId) === -1;
 
-      // hide locked objekts when the filter is toggled
-      const lockFilter = showLocked
-        ? true
-        : lockedObjekts.includes(parseInt(objekt.tokenId)) === false;
-
-      return hidePins ? lockFilter : lockFilter && pinFilter;
+      return hidePins ? pinFilter : true;
     },
-    [showLocked, lockedObjekts, hidePins, pins]
+    [hidePins, pins]
   );
 
   return (
@@ -77,7 +71,6 @@ export default memo(function CollectionObjektDisplay({
           <Overlay
             objekt={objekt}
             authenticated={authenticated}
-            isLocked={lockedObjekts.includes(parseInt(id))}
             isPinned={pins.findIndex((p) => p.tokenId === id) !== -1}
             isPin={isPin}
           />
@@ -90,18 +83,13 @@ export default memo(function CollectionObjektDisplay({
 type OverlayProps = {
   objekt: OwnedObjekt;
   authenticated: boolean;
-  isLocked: boolean;
   isPinned: boolean;
   isPin: boolean;
 };
 
-function Overlay({
-  objekt,
-  authenticated,
-  isLocked,
-  isPinned,
-  isPin,
-}: OverlayProps) {
+function Overlay({ objekt, authenticated, isPinned, isPin }: OverlayProps) {
+  const isLocked = useLockedObjekt(parseInt(objekt.tokenId));
+
   return (
     <div className="contents">
       <ObjektSidebar

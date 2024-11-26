@@ -6,6 +6,7 @@ import { createContext, useContext, useRef } from "react";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { ObjektList } from "@/lib/universal/objekts";
 import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
+import { useShallow } from "zustand/react/shallow";
 
 interface ProfileProps {
   currentProfile: PublicProfile | undefined;
@@ -90,4 +91,19 @@ export function useProfileContext<T>(selector: (state: ProfileState) => T): T {
   }
 
   return useStore(store, selector);
+}
+
+/**
+ * Optimized hook for checking if a token is locked.
+ */
+export function useLockedObjekt(tokenId: number) {
+  const store = useContext(ProfileContext);
+  if (!store) {
+    throw new Error("useLockedObjekt must be used within a ProfileProvider");
+  }
+
+  return useStore(
+    store,
+    useShallow((state) => state.lockedObjekts.includes(tokenId))
+  );
 }
