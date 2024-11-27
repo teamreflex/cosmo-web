@@ -42,21 +42,24 @@ export default memo(function CollectionObjektDisplay({
   const [filters] = useCosmoFilters();
   const usingFilters = useMemo(() => filtersAreDirty(filters), [filters]);
   const pins = useProfileContext((ctx) => ctx.pins);
+  const lockedObjekts = useProfileContext((ctx) => ctx.lockedObjekts);
 
-  const collectionFilter = useCallback(
+  const shouldDisplayObjekt = useCallback(
     (objekt: OwnedObjekt) => {
-      const isPinned =
-        pins.findIndex((pin) => pin.tokenId === objekt.tokenId) !== -1;
+      const isLocked = lockedObjekts.includes(parseInt(objekt.tokenId));
+      const isPinned = pins.some((pin) => pin.tokenId === objekt.tokenId);
 
-      // when a filter is selected, show everything
-      if (usingFilters) {
-        return true;
-      }
+      // hide objekt from list when it's pinned
+      const shouldDisplayPinned = !usingFilters && !isPinned;
 
-      // when not using a filter, show the objekt if its not pinned
-      return isPinned ? false : true;
+      // hide locked objekts when the filter is toggled
+      const shouldDisplayLocked = showLocked ? true : !isLocked;
+
+      return usingFilters
+        ? shouldDisplayLocked
+        : shouldDisplayLocked && shouldDisplayPinned;
     },
-    [usingFilters, pins]
+    [showLocked, lockedObjekts, usingFilters, pins]
   );
 
   return (
@@ -65,7 +68,7 @@ export default memo(function CollectionObjektDisplay({
       queryFunction={queryFunction}
       queryKey={["collection", address]}
       getObjektId={getObjektId}
-      getObjektDisplay={collectionFilter}
+      getObjektDisplay={shouldDisplayObjekt}
       gridColumns={gridColumns}
       dataSource={dataSource}
       hidePins={usingFilters}
