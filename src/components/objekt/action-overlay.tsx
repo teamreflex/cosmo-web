@@ -45,6 +45,7 @@ export default memo(function ActionOverlay({
     !objekt.transferable ||
     objekt.usedForGrid ||
     isLocked ||
+    isPinned ||
     (objekt.transferable && authenticated);
 
   return (

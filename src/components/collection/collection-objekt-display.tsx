@@ -47,7 +47,8 @@ export default memo(function CollectionObjektDisplay({
   const shouldDisplayObjekt = useCallback(
     (objekt: OwnedObjekt) => {
       const isLocked = lockedObjekts.includes(parseInt(objekt.tokenId));
-      const isPinned = pins.some((pin) => pin.tokenId === objekt.tokenId);
+      const isPinned =
+        pins.findIndex((pin) => pin.tokenId === objekt.tokenId) !== -1;
 
       // hide objekt from list when it's pinned
       const shouldDisplayPinned = !usingFilters && !isPinned;
