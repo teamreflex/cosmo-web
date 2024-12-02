@@ -3,8 +3,8 @@ import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import { collections, objekts } from "@/lib/server/db/indexer/schema";
 import { objektMetadata } from "@/lib/server/db/schema";
-import { count, eq } from "drizzle-orm";
-import { unstable_cache } from "next/cache";
+import { ObjektMetadata } from "@/lib/universal/objekts";
+import { eq, sql } from "drizzle-orm";
 
 export const runtime = "nodejs";
 
@@ -20,12 +20,12 @@ type Params = {
  */
 export async function GET(_: Request, props: Params) {
   const params = await props.params;
-  const [copies, metadata] = await Promise.all([
+  const [collection, metadata] = await Promise.all([
     fetchCollection(params.collectionSlug),
     fetchCollectionMetadata(params.collectionSlug),
   ]);
 
-  const timestamp = copies.createdAt.getTime();
+  const timestamp = collection.createdAt.getTime();
   const now = new Date().getTime();
   const hourInMs = 1000 * 60 * 60;
 
@@ -50,9 +50,11 @@ export async function GET(_: Request, props: Params) {
 
   return Response.json(
     {
-      copies: copies.count,
       metadata,
-    },
+      total: collection.total,
+      transferable: collection.transferable,
+      percentage: collection.percentage,
+    } satisfies ObjektMetadata,
     {
       headers: cacheHeaders(cacheTime),
     }
@@ -62,30 +64,37 @@ export async function GET(_: Request, props: Params) {
 /**
  * Fetch the number of copies of a collection.
  */
-async function fetchCollection(collectionSlug: string) {
-  const subquery = indexer
+async function fetchCollection(slug: string) {
+  const result = await indexer
     .select({
-      objektCollectionId: objekts.collectionId,
-      collectionSlug: collections.slug,
       createdAt: collections.createdAt,
+      total: sql<number>`COUNT(*)`,
+      transferable: sql<number>`COUNT(CASE WHEN transferable = true THEN 1 END)`,
+      percentage: sql<number>`
+        ROUND(
+          100.0 * COUNT(CASE WHEN transferable = true THEN 1 END) / COUNT(*), 
+          2
+        )
+      `,
     })
-    .from(objekts)
-    .leftJoin(collections, eq(objekts.collectionId, collections.id))
-    .where(eq(collections.slug, collectionSlug))
-    .as("subquery");
+    .from(collections)
+    .leftJoin(objekts, eq(collections.id, objekts.collectionId))
+    .where(eq(collections.slug, slug))
+    .groupBy(collections.id, collections.createdAt);
 
-  const rows = await indexer
-    .select({
-      count: count().as("count"),
-      createdAt: subquery.createdAt,
-    })
-    .from(subquery)
-    .groupBy(subquery.createdAt);
+  const collection = result[0];
+  if (!collection) {
+    return {
+      createdAt: new Date(),
+      total: 0,
+      transferable: 0,
+      percentage: 0,
+    };
+  }
 
-  const result = rows[0];
   return {
-    count: result?.count ?? 0,
-    createdAt: result?.createdAt ? new Date(result.createdAt) : new Date(),
+    ...collection,
+    createdAt: new Date(collection.createdAt),
   };
 }
 

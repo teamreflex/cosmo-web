@@ -23,7 +23,7 @@ export default memo(function InformationOverlay({ objekt }: Props) {
     <div
       data-open={open}
       className={cn(
-        "absolute bottom-0 left-0 p-1 sm:p-2 rounded-tr-lg sm:rounded-tr-xl flex gap-2 group h-5 sm:h-9 w-5 sm:w-9 transition-all overflow-hidden",
+        "absolute isolate bottom-0 left-0 p-1 sm:p-2 rounded-tr-lg sm:rounded-tr-xl flex gap-2 group h-5 sm:h-9 w-5 sm:w-9 transition-all overflow-hidden",
         "text-[var(--objekt-text-color)] bg-[var(--objekt-background-color)]",
         "data-[open=true]:w-20 sm:data-[open=true]:w-32 data-[open=true]:h-32 sm:data-[open=true]:h-32"
       )}

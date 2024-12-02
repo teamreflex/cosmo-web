@@ -76,8 +76,8 @@ importers:
         specifier: 2.36.1
         version: 2.36.1
       '@sentry/nextjs':
-        specifier: ^8.40.0
-        version: 8.40.0(@opentelemetry/core@1.28.0(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.54.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.28.0(@opentelemetry/api@1.9.0))(next@15.0.3(@babel/core@7.25.9)(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@19.0.0-beta-0dec889-20241115)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))(react@19.0.0-rc.1)(webpack@5.96.1(esbuild@0.19.12))
+        specifier: ^8.41.0
+        version: 8.41.0(@opentelemetry/core@1.28.0(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.54.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.28.0(@opentelemetry/api@1.9.0))(next@15.0.3(@babel/core@7.25.9)(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@19.0.0-beta-0dec889-20241115)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))(react@19.0.0-rc.1)(webpack@5.96.1(esbuild@0.19.12))
       '@t3-oss/env-nextjs':
         specifier: ^0.11.1
         version: 0.11.1(typescript@5.7.2)(zod@3.23.8)
@@ -203,8 +203,8 @@ importers:
         specifier: ^1.19.0
         version: 1.19.0
       '@tailwindcss/postcss':
-        specifier: 4.0.0-beta.1
-        version: 4.0.0-beta.1
+        specifier: 4.0.0-beta.3
+        version: 4.0.0-beta.3
       '@tanstack/react-query-devtools':
         specifier: ^5.61.4
         version: 5.61.4(@tanstack/react-query@5.61.4(react@19.0.0-rc.1))(react@19.0.0-rc.1)
@@ -263,11 +263,11 @@ importers:
         specifier: ^3.4.4
         version: 3.4.4
       tailwindcss:
-        specifier: 4.0.0-beta.2
-        version: 4.0.0-beta.2
+        specifier: 4.0.0-beta.3
+        version: 4.0.0-beta.3
       tailwindcss-animate:
         specifier: ^1.0.7
-        version: 1.0.7(tailwindcss@4.0.0-beta.2)
+        version: 1.0.7(tailwindcss@4.0.0-beta.3)
       tsx:
         specifier: ^4.19.1
         version: 4.19.1
@@ -2354,28 +2354,28 @@ packages:
   '@scure/bip39@1.4.0':
     resolution: {integrity: sha512-BEEm6p8IueV/ZTfQLp/0vhw4NPnT9oWf5+28nvmeUICjP99f4vr2d+qc7AVGDDtwRep6ifR43Yed9ERVmiITzw==}
 
-  '@sentry-internal/browser-utils@8.40.0':
-    resolution: {integrity: sha512-tx7gb/PWMbTEyil/XPETVeRUeS3nKHIvQY2omyebw30TbhyLnibPZsUmXJiaIysL5PcY3k9maub3W/o0Y37T7Q==}
+  '@sentry-internal/browser-utils@8.41.0':
+    resolution: {integrity: sha512-nU7Bn3jEUmf1QXRUT3j2ewUBlFJpe9vnAnjqpeVPDWTsVI52BwVNcJHuE37PrGs66OZ1ZkGMfKnQk43oCAa+oQ==}
     engines: {node: '>=14.18'}
 
-  '@sentry-internal/feedback@8.40.0':
-    resolution: {integrity: sha512-1O9F3z80HNE0VfepKS+v+dixdatNqWlrlwgvvWl4BGzzoA+XhqvZo+HWxiOt7yx7+k1TuZNrB6Gy3u/QvpozXA==}
+  '@sentry-internal/feedback@8.41.0':
+    resolution: {integrity: sha512-bw+BrSNw8abOnu/IpD8YSbYubXkkT8jyNS7TM4e4UPZMuXcbtia7/r5d7kAiUfKv/sV5PNMlZLOk+EYJeLTANg==}
     engines: {node: '>=14.18'}
 
-  '@sentry-internal/replay-canvas@8.40.0':
-    resolution: {integrity: sha512-Zr+m/le0SH4RowZB7rBCM0aRnvH3wZTaOFhwUk03/oGf2BRcgKuDCUMjnXKC9MyOpmey7UYXkzb8ro+81R6Q8w==}
+  '@sentry-internal/replay-canvas@8.41.0':
+    resolution: {integrity: sha512-lpgOBHWr1ZNxidD72A2pfoUMjIpwonOPYoQZWAHr86Oa3eIVQOyfklZlHW+gKPFl2/IEl9Lbtcke0JiDp3dkIQ==}
     engines: {node: '>=14.18'}
 
-  '@sentry-internal/replay@8.40.0':
-    resolution: {integrity: sha512-0SaDsBCSWxNVgNmPKu23frrHEXzN/MKl0hIkfuO55vL5TgjLTwpgkf0Ne4rNvaZQ5omIKk9Qd63HuQP3PHAMaw==}
+  '@sentry-internal/replay@8.41.0':
+    resolution: {integrity: sha512-ByXEY7JI95y4Qr9fS3d28l9uuVU5Qa0HgL+xDmYElNx7CXz3Q9hFN6ibgUeC3h8BO5pDULxWNgAppl7FRY8N5w==}
     engines: {node: '>=14.18'}
 
   '@sentry/babel-plugin-component-annotate@2.22.6':
     resolution: {integrity: sha512-V2g1Y1I5eSe7dtUVMBvAJr8BaLRr4CLrgNgtPaZyMT4Rnps82SrZ5zqmEkLXPumlXhLUWR6qzoMNN2u+RXVXfQ==}
     engines: {node: '>= 14'}
 
-  '@sentry/browser@8.40.0':
-    resolution: {integrity: sha512-m/Yor6IDBeDHtQochu8n6z4HXrXkrPhu6+o5Ouve0Zi3ptthSoK1FOGvJxVBat3nRq0ydQyuuPuTB6WfdWbwHQ==}
+  '@sentry/browser@8.41.0':
+    resolution: {integrity: sha512-FfAU55eYwW2lG4M3dEw2472RvHrD5YWSfHCZvuRf/4skX38kFvKghZQ+epL+CVHTzvIRHOrbj8qQK6YLTGl9ew==}
     engines: {node: '>=14.18'}
 
   '@sentry/bundler-plugin-core@2.22.6':
@@ -2428,22 +2428,22 @@ packages:
     engines: {node: '>= 10'}
     hasBin: true
 
-  '@sentry/core@8.40.0':
-    resolution: {integrity: sha512-u/U2CJpG/+SmTR2bPM4ZZoPYTJAOUuxzj/0IURnvI0v9+rNu939J/fzrO9huA5IJVxS5TiYykhQm7o6I3Zuo3Q==}
+  '@sentry/core@8.41.0':
+    resolution: {integrity: sha512-3v7u3t4LozCA5SpZY4yqUN2U3jSrkXNoLgz6L2SUUiydyCuSwXZIFEwpLJfgQyidpNDifeQbBI5E1O910XkPsA==}
     engines: {node: '>=14.18'}
 
-  '@sentry/nextjs@8.40.0':
-    resolution: {integrity: sha512-q7koXESplb8BUttGJ04rRWbO2b9Xaao+VsTZS/luH7k9EIrWpgGFwtqaNYtv4Fttgxzn7cxpwIN3msty9lwbCw==}
+  '@sentry/nextjs@8.41.0':
+    resolution: {integrity: sha512-UeB7WJ4bAEGtEYKhMWf1tOHBZaY4sws0nHMs0NctOJ9/5MlgcYlzdO4XSIuSyykJ3QMM/ENXj/1mPdm4dWhB8g==}
     engines: {node: '>=14.18'}
     peerDependencies:
       next: ^13.2.0 || ^14.0 || ^15.0.0-rc.0
 
-  '@sentry/node@8.40.0':
-    resolution: {integrity: sha512-UO1jWuO+z4DnK2NYCvQQfpNbfFYgeV//cNS83QIPkj9hPIEOpUR2DAfPmI9bj2Yjdh7WE8IN9Can9xDcfJquMQ==}
+  '@sentry/node@8.41.0':
+    resolution: {integrity: sha512-eYD5S8Lti9efBHFSIhZ/0C5uI1DQtGqjuNWQ62CKC47G2qgJddBtb2HgqRFAnMajYL9FXEtiDT6uqQhKQnmLcQ==}
     engines: {node: '>=14.18'}
 
-  '@sentry/opentelemetry@8.40.0':
-    resolution: {integrity: sha512-kW9EBRESjNnBdj2zCqNMv8x0VIsmiALIOMpi25Dpm38IKtRg/ckQ7YOWx1lnT3iOFebO2GXUvOu+gPmuzIY2WQ==}
+  '@sentry/opentelemetry@8.41.0':
+    resolution: {integrity: sha512-Ld6KdBQsmSk2IfFSoZ7CMpmuQbfb3viV6nTDCz6+11wL9S+1b+hadCN+38yBW4CmI4/hEpYfwwWQPseQQTvBCg==}
     engines: {node: '>=14.18'}
     peerDependencies:
       '@opentelemetry/api': ^1.9.0
@@ -2452,18 +2452,18 @@ packages:
       '@opentelemetry/sdk-trace-base': ^1.26.0
       '@opentelemetry/semantic-conventions': ^1.27.0
 
-  '@sentry/react@8.40.0':
-    resolution: {integrity: sha512-Ohq/po83r9sh/DCO6VAxx4xU+1ztvFzmXTl3fUnAEc+2bFJK1MsRt6BWfG37XxjQN//mfmyS9KEBgsOpOyd4LQ==}
+  '@sentry/react@8.41.0':
+    resolution: {integrity: sha512-/7LEWDNdICYO5s4ie8ztgpmD/GRJ1+1nHlSKvcwjf83COzT1eGvVeuYTiXFAPmXA29sY+lV1RajziwgySadjIQ==}
     engines: {node: '>=14.18'}
     peerDependencies:
       react: ^16.14.0 || 17.x || 18.x || 19.x
 
-  '@sentry/types@8.40.0':
-    resolution: {integrity: sha512-nuCf3U3deolPM9BjNnwCc33UtFl9ec15/r74ngAkNccn+A2JXdIAsDkGJMO/9mgSFykLe1QyeJ0pQFRisCGOiA==}
+  '@sentry/types@8.41.0':
+    resolution: {integrity: sha512-eqdnGr9k9H++b9CjVUoTNUVahPVWeNnMy0YGkqS5+cjWWC+x43p56202oidGFmWo6702ub/xwUNH6M5PC4kq6A==}
     engines: {node: '>=14.18'}
 
-  '@sentry/vercel-edge@8.40.0':
-    resolution: {integrity: sha512-Qbr5s6LNn8MPA2sXTNjZ7uyypkzggXGxvNesXCLOeAV07ictCOFIVBnDL0Vwcg1I8v03FaHXYfA3pUGJsuZiTQ==}
+  '@sentry/vercel-edge@8.41.0':
+    resolution: {integrity: sha512-r8ZiOuT9SfSeasjz+BSyzz/8yqyYsBFBo7imp3gTid7sTmCYvGuS174mnQi9uciRJYC4g1JrBWJCb5oQMtWw3Q==}
     engines: {node: '>=14.18'}
 
   '@sentry/webpack-plugin@2.22.6':
@@ -2785,81 +2785,81 @@ packages:
       typescript:
         optional: true
 
-  '@tailwindcss/node@4.0.0-beta.1':
-    resolution: {integrity: sha512-AC06Y7qvJgmWujCkhbiqw6jjJuv7YLsiJPme1Ojt34/E0mEeSfqoYWy+vSHMerWsYUH0abB5WbFl0Go1hGIjhg==}
+  '@tailwindcss/node@4.0.0-beta.3':
+    resolution: {integrity: sha512-TPS/a/fsLwPU/p3VeSSKXfuhzKjvmMTJDIp8zVrcBmSk+GNbIrcjkc2p/KcvTSh7Zfw6xF/Z8cjA/JnTgMVjQA==}
 
-  '@tailwindcss/oxide-android-arm64@4.0.0-beta.1':
-    resolution: {integrity: sha512-Wbmk4zLAHRupYip1Y8bL4pM4ra5W9lGmUjRNwxQI99Y5sV5Alg4WA0d3EjStFHc0J5aHNr0GhIQGrVMUbwbiow==}
+  '@tailwindcss/oxide-android-arm64@4.0.0-beta.3':
+    resolution: {integrity: sha512-YXXoYFvzELo3YRzFIgJrcJCdw1p31xY2ONO1akZwajNjP+Ac8QdvjZejFJc4sLtnL5EXmYSOFv5w3Pa2gRzcAA==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [android]
 
-  '@tailwindcss/oxide-darwin-arm64@4.0.0-beta.1':
-    resolution: {integrity: sha512-vCFYA7zIX55pJ4WTQx8p2g5rNtQzExObP6cQ6UCqAARhFJOS7oSUQM9lqieyBwtnQhnNaNbK4Ijak9JJ6RtjmA==}
+  '@tailwindcss/oxide-darwin-arm64@4.0.0-beta.3':
+    resolution: {integrity: sha512-ERDVLTEbjFOEnWEYQx8FWgAVl0gPhtoUJ8jXXhTcY4lIGQ/UNWg7amRwFF8jV2qOXUhMh1XppfsxemFMNl/XtQ==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [darwin]
 
-  '@tailwindcss/oxide-darwin-x64@4.0.0-beta.1':
-    resolution: {integrity: sha512-bhCxV2bI2H2bddodbCSqsmUmqcH27gm1sStBXhikj31l0+dhj5JpFn5Ac05vrc2ZOviYaMGKl4o8P1QcaZrc8g==}
+  '@tailwindcss/oxide-darwin-x64@4.0.0-beta.3':
+    resolution: {integrity: sha512-FE5rWGNDNS6q0eSZiuD6M9VmBZgyEep+h4Oq7K6Ei+62sRTD0CRyLNhuot/w/C/IrkZqi2t/spHJa4mM3YKNiQ==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [darwin]
 
-  '@tailwindcss/oxide-freebsd-x64@4.0.0-beta.1':
-    resolution: {integrity: sha512-dZoqFXOuDuBWIklCNbEG5ZOe7ISU0UgI1e0Vj4MoreGi+TzNYmQ30AFoS48GnbSPXSlFvRGUAqDYeynkz03j+g==}
+  '@tailwindcss/oxide-freebsd-x64@4.0.0-beta.3':
+    resolution: {integrity: sha512-CLmGpKpmtZpD/+9kvGmtDeY55OiwuePGsOpCrAZQ3PD40uNK2ghwWt+T/BmQJTI5RzsOPbMjzfzKmQthdtWZrg==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [freebsd]
 
-  '@tailwindcss/oxide-linux-arm-gnueabihf@4.0.0-beta.1':
-    resolution: {integrity: sha512-wZ581r0bihhcNTEe46jWc/BrFQbiIk8VcYLiLc5Lkp7f1oRP8cAu5zioLA0SmNI6GPs0T4bW3arU+HfkZQbcpQ==}
+  '@tailwindcss/oxide-linux-arm-gnueabihf@4.0.0-beta.3':
+    resolution: {integrity: sha512-szLw3+50bgAubvoFrynnt6ELbiLd9A/rYpchfA5AnWUakz29IxP7ZYruCkOnYnW9+KRTNv4kFSsRlPJAEJY5sw==}
     engines: {node: '>= 10'}
     cpu: [arm]
     os: [linux]
 
-  '@tailwindcss/oxide-linux-arm64-gnu@4.0.0-beta.1':
-    resolution: {integrity: sha512-yIiLaUaNxmcjzcKsyl3NiBrkhXQQ8JZPOpgHz69bx7R5AUf2n6k6nhaBOnnkUeyagFE1KW9CbwiXU/O6LV7w3w==}
+  '@tailwindcss/oxide-linux-arm64-gnu@4.0.0-beta.3':
+    resolution: {integrity: sha512-BpsBhwgW1V152GQ7FepJR1zqq17oyl3pVe2UyTCIPv92xCwJQ+eDm2vTvaNF9L6dznBVpppMPPfDfxk4KGvgTg==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
 
-  '@tailwindcss/oxide-linux-arm64-musl@4.0.0-beta.1':
-    resolution: {integrity: sha512-yOSYdz2SAcOZuuE+7Q3hdfOG+choEBFVAq1/D8ARjD784Yx0iV+rRvVq62tZEa1hKIHQWmXebZ/fOMmMsoAbKw==}
+  '@tailwindcss/oxide-linux-arm64-musl@4.0.0-beta.3':
+    resolution: {integrity: sha512-S4+PO+C10cG58sNb9qcjPN0A7q9UUxUFdGjetrNVN/t1JseFNOy1OhPp7oQCiXwCYye7vZzKNAUJK9nIGLAMEg==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
 
-  '@tailwindcss/oxide-linux-x64-gnu@4.0.0-beta.1':
-    resolution: {integrity: sha512-3vW9ykpppPEctih/jc5VEigGGW0zJPW1pgEHPd9l7s5u5JRqAbHcFMoVebQtTiUiqLprhCyrcIfjxlllxPTkyQ==}
+  '@tailwindcss/oxide-linux-x64-gnu@4.0.0-beta.3':
+    resolution: {integrity: sha512-iAGIPAE26xNAbHSaTpu8N2+eG0csOpJ+ukOoKvoQWKArjIfquRw/7XNX1A6pTMvVteFvKPt4e305U7kdf3KtfA==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
 
-  '@tailwindcss/oxide-linux-x64-musl@4.0.0-beta.1':
-    resolution: {integrity: sha512-GRwyuahNxY/EcgrrH/37P1sjFjA1NIH9q8pChfQEPiD0P3LKEAw6jgf2JPE9/4mNpOX32DAl4uD0ByrumhPtlQ==}
+  '@tailwindcss/oxide-linux-x64-musl@4.0.0-beta.3':
+    resolution: {integrity: sha512-dKeqjuK94YG+INIYpcfrynq9B5YkrBXEBsX26p1g0K6ai42nzO3Eg/fEadePSqGUBjL1CjtR4pChqaEUPNq1Xw==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
 
-  '@tailwindcss/oxide-win32-arm64-msvc@4.0.0-beta.1':
-    resolution: {integrity: sha512-OdcL9PqV2vkk+QWnERL/8IIy+3IbNqYOCFnZhNMeYSO361L+nfDOjR/E7RS0UaZVWrRjWXohBG1oCH9upg5lBg==}
+  '@tailwindcss/oxide-win32-arm64-msvc@4.0.0-beta.3':
+    resolution: {integrity: sha512-AEHX9depJFa3GCxmV9s+abklPPo0OmL2uNpPBCumk6N4GLUpmXNpkDlEYeSgggHPRwoSyfvbs957Ahvf5E4v4w==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [win32]
 
-  '@tailwindcss/oxide-win32-x64-msvc@4.0.0-beta.1':
-    resolution: {integrity: sha512-fbqZjbw9CtfhK8ADoZf66lHbRQvOMRX+EcURQUtpMtpYQsv+NKx41zOaYi0ivTTJhr3jmX8xyx3KDVOBMI6fBw==}
+  '@tailwindcss/oxide-win32-x64-msvc@4.0.0-beta.3':
+    resolution: {integrity: sha512-hb24QffsW/9dM+6DgLv5VbTJKGLgfXMjIF47KLCqkhuZRvkQoSPHT6kXJSerEkO3rY3ptCxkPIhyfudACeHMSQ==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [win32]
 
-  '@tailwindcss/oxide@4.0.0-beta.1':
-    resolution: {integrity: sha512-MnnV7WKj5rd+AcPybDkLngtZJUvXrC8368NKkzMpqnTR1DgM3NJ+Kz/mtW8hEtr2ScpQ8WDUTPdtMcEg+iKuBA==}
+  '@tailwindcss/oxide@4.0.0-beta.3':
+    resolution: {integrity: sha512-uN9ZlT8w4LlktqzS3aH2SztfxixzTYGZqEaRQgVuBPkFfTahInX1+GEGNZwmZ/hadR2jkCuCqxg8z1IuhWsSbw==}
     engines: {node: '>= 10'}
 
-  '@tailwindcss/postcss@4.0.0-beta.1':
-    resolution: {integrity: sha512-1ZdgGDt9s2vogYc0oSQGekx3SNcXlHg/JLFYQcRTlpEiISqSMNWxfvMWgp9oau9dcXV+7JL16jb6Q4sAdT3Mmw==}
+  '@tailwindcss/postcss@4.0.0-beta.3':
+    resolution: {integrity: sha512-VpEJYVHtLtJ3MalzxBqO+7eFzned2TcTzMM7ogu0vwcYgIQkaQ9xe+Uo5GDqTjx+MECqYOdiS+X6/EJu+WnOKQ==}
 
   '@tanstack/query-core@5.61.4':
     resolution: {integrity: sha512-rsnemyhPvEG4ViZe0R2UQDM8NgQS/BNC5/Gf9RTs0TKN5thUhPUwnL2anWG4jxAGKFyDfvG7PXbx6MRq3hxi1w==}
@@ -5106,11 +5106,8 @@ packages:
     peerDependencies:
       tailwindcss: '>=3.0.0 || insiders'
 
-  tailwindcss@4.0.0-beta.1:
-    resolution: {integrity: sha512-Pnj2oLtAiNgnd+eHfW4RFuG8EIklYF1FModYFtr6bXrgLoZndePW5jX17Zwyo7Oeq+0dXTekjjMr5IRnQHgCXg==}
-
-  tailwindcss@4.0.0-beta.2:
-    resolution: {integrity: sha512-uZ+vgVsy6i18Glc3XYMkTq7dl4GsU4m8X8qRTVlU4+g8Uit7g+wttwfDCl3p+ZOq5KCB09th9XgVDx1zFLCeHA==}
+  tailwindcss@4.0.0-beta.3:
+    resolution: {integrity: sha512-Cem7SF6OYcijYA1ZOGmuZHxk704iOxsRboFCXIpSJSR0XFft/NNz93Yoo0kHZIGNlqZmnQItI7JUSdR++Y9hZQ==}
 
   tapable@2.2.1:
     resolution: {integrity: sha512-GNzQvQTOIP6RyTfE2Qxb8ZVlNmw0n88vp1szwWRimP02mnTsx3Wtn5qRdqY9w2XduFNUgvOwhNnQsjwCp+kqaQ==}
@@ -8124,38 +8121,38 @@ snapshots:
       '@noble/hashes': 1.5.0
       '@scure/base': 1.1.9
 
-  '@sentry-internal/browser-utils@8.40.0':
+  '@sentry-internal/browser-utils@8.41.0':
     dependencies:
-      '@sentry/core': 8.40.0
-      '@sentry/types': 8.40.0
+      '@sentry/core': 8.41.0
+      '@sentry/types': 8.41.0
 
-  '@sentry-internal/feedback@8.40.0':
+  '@sentry-internal/feedback@8.41.0':
     dependencies:
-      '@sentry/core': 8.40.0
-      '@sentry/types': 8.40.0
+      '@sentry/core': 8.41.0
+      '@sentry/types': 8.41.0
 
-  '@sentry-internal/replay-canvas@8.40.0':
+  '@sentry-internal/replay-canvas@8.41.0':
     dependencies:
-      '@sentry-internal/replay': 8.40.0
-      '@sentry/core': 8.40.0
-      '@sentry/types': 8.40.0
+      '@sentry-internal/replay': 8.41.0
+      '@sentry/core': 8.41.0
+      '@sentry/types': 8.41.0
 
-  '@sentry-internal/replay@8.40.0':
+  '@sentry-internal/replay@8.41.0':
     dependencies:
-      '@sentry-internal/browser-utils': 8.40.0
-      '@sentry/core': 8.40.0
-      '@sentry/types': 8.40.0
+      '@sentry-internal/browser-utils': 8.41.0
+      '@sentry/core': 8.41.0
+      '@sentry/types': 8.41.0
 
   '@sentry/babel-plugin-component-annotate@2.22.6': {}
 
-  '@sentry/browser@8.40.0':
+  '@sentry/browser@8.41.0':
     dependencies:
-      '@sentry-internal/browser-utils': 8.40.0
-      '@sentry-internal/feedback': 8.40.0
-      '@sentry-internal/replay': 8.40.0
-      '@sentry-internal/replay-canvas': 8.40.0
-      '@sentry/core': 8.40.0
-      '@sentry/types': 8.40.0
+      '@sentry-internal/browser-utils': 8.41.0
+      '@sentry-internal/feedback': 8.41.0
+      '@sentry-internal/replay': 8.41.0
+      '@sentry-internal/replay-canvas': 8.41.0
+      '@sentry/core': 8.41.0
+      '@sentry/types': 8.41.0
 
   '@sentry/bundler-plugin-core@2.22.6':
     dependencies:
@@ -8211,23 +8208,23 @@ snapshots:
       - encoding
       - supports-color
 
-  '@sentry/core@8.40.0':
+  '@sentry/core@8.41.0':
     dependencies:
-      '@sentry/types': 8.40.0
+      '@sentry/types': 8.41.0
 
-  '@sentry/nextjs@8.40.0(@opentelemetry/core@1.28.0(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.54.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.28.0(@opentelemetry/api@1.9.0))(next@15.0.3(@babel/core@7.25.9)(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@19.0.0-beta-0dec889-20241115)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))(react@19.0.0-rc.1)(webpack@5.96.1(esbuild@0.19.12))':
+  '@sentry/nextjs@8.41.0(@opentelemetry/core@1.28.0(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.54.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.28.0(@opentelemetry/api@1.9.0))(next@15.0.3(@babel/core@7.25.9)(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@19.0.0-beta-0dec889-20241115)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1))(react@19.0.0-rc.1)(webpack@5.96.1(esbuild@0.19.12))':
     dependencies:
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/instrumentation-http': 0.53.0(@opentelemetry/api@1.9.0)
       '@opentelemetry/semantic-conventions': 1.28.0
       '@rollup/plugin-commonjs': 28.0.1(rollup@3.29.5)
-      '@sentry-internal/browser-utils': 8.40.0
-      '@sentry/core': 8.40.0
-      '@sentry/node': 8.40.0
-      '@sentry/opentelemetry': 8.40.0(@opentelemetry/api@1.9.0)(@opentelemetry/core@1.28.0(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.54.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.28.0(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.28.0)
-      '@sentry/react': 8.40.0(react@19.0.0-rc.1)
-      '@sentry/types': 8.40.0
-      '@sentry/vercel-edge': 8.40.0
+      '@sentry-internal/browser-utils': 8.41.0
+      '@sentry/core': 8.41.0
+      '@sentry/node': 8.41.0
+      '@sentry/opentelemetry': 8.41.0(@opentelemetry/api@1.9.0)(@opentelemetry/core@1.28.0(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.54.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.28.0(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.28.0)
+      '@sentry/react': 8.41.0(react@19.0.0-rc.1)
+      '@sentry/types': 8.41.0
+      '@sentry/vercel-edge': 8.41.0
       '@sentry/webpack-plugin': 2.22.6(webpack@5.96.1(esbuild@0.19.12))
       chalk: 3.0.0
       next: 15.0.3(@babel/core@7.25.9)(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@19.0.0-beta-0dec889-20241115)(react-dom@19.0.0-rc.1(react@19.0.0-rc.1))(react@19.0.0-rc.1)
@@ -8243,7 +8240,7 @@ snapshots:
       - supports-color
       - webpack
 
-  '@sentry/node@8.40.0':
+  '@sentry/node@8.41.0':
     dependencies:
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/context-async-hooks': 1.28.0(@opentelemetry/api@1.9.0)
@@ -8277,38 +8274,38 @@ snapshots:
       '@opentelemetry/sdk-trace-base': 1.28.0(@opentelemetry/api@1.9.0)
       '@opentelemetry/semantic-conventions': 1.28.0
       '@prisma/instrumentation': 5.19.1
-      '@sentry/core': 8.40.0
-      '@sentry/opentelemetry': 8.40.0(@opentelemetry/api@1.9.0)(@opentelemetry/core@1.28.0(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.54.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.28.0(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.28.0)
-      '@sentry/types': 8.40.0
+      '@sentry/core': 8.41.0
+      '@sentry/opentelemetry': 8.41.0(@opentelemetry/api@1.9.0)(@opentelemetry/core@1.28.0(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.54.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.28.0(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.28.0)
+      '@sentry/types': 8.41.0
       import-in-the-middle: 1.11.2
     transitivePeerDependencies:
       - supports-color
 
-  '@sentry/opentelemetry@8.40.0(@opentelemetry/api@1.9.0)(@opentelemetry/core@1.28.0(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.54.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.28.0(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.28.0)':
+  '@sentry/opentelemetry@8.41.0(@opentelemetry/api@1.9.0)(@opentelemetry/core@1.28.0(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.54.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.28.0(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.28.0)':
     dependencies:
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/core': 1.28.0(@opentelemetry/api@1.9.0)
       '@opentelemetry/instrumentation': 0.54.2(@opentelemetry/api@1.9.0)
       '@opentelemetry/sdk-trace-base': 1.28.0(@opentelemetry/api@1.9.0)
       '@opentelemetry/semantic-conventions': 1.28.0
-      '@sentry/core': 8.40.0
-      '@sentry/types': 8.40.0
+      '@sentry/core': 8.41.0
+      '@sentry/types': 8.41.0
 
-  '@sentry/react@8.40.0(react@19.0.0-rc.1)':
+  '@sentry/react@8.41.0(react@19.0.0-rc.1)':
     dependencies:
-      '@sentry/browser': 8.40.0
-      '@sentry/core': 8.40.0
-      '@sentry/types': 8.40.0
+      '@sentry/browser': 8.41.0
+      '@sentry/core': 8.41.0
+      '@sentry/types': 8.41.0
       hoist-non-react-statics: 3.3.2
       react: 19.0.0-rc.1
 
-  '@sentry/types@8.40.0': {}
+  '@sentry/types@8.41.0': {}
 
-  '@sentry/vercel-edge@8.40.0':
+  '@sentry/vercel-edge@8.41.0':
     dependencies:
       '@opentelemetry/api': 1.9.0
-      '@sentry/core': 8.40.0
-      '@sentry/types': 8.40.0
+      '@sentry/core': 8.41.0
+      '@sentry/types': 8.41.0
 
   '@sentry/webpack-plugin@2.22.6(webpack@5.96.1(esbuild@0.19.12))':
     dependencies:
@@ -8833,67 +8830,67 @@ snapshots:
     optionalDependencies:
       typescript: 5.7.2
 
-  '@tailwindcss/node@4.0.0-beta.1':
+  '@tailwindcss/node@4.0.0-beta.3':
     dependencies:
       enhanced-resolve: 5.17.1
       jiti: 2.4.0
-      tailwindcss: 4.0.0-beta.1
+      tailwindcss: 4.0.0-beta.3
 
-  '@tailwindcss/oxide-android-arm64@4.0.0-beta.1':
+  '@tailwindcss/oxide-android-arm64@4.0.0-beta.3':
     optional: true
 
-  '@tailwindcss/oxide-darwin-arm64@4.0.0-beta.1':
+  '@tailwindcss/oxide-darwin-arm64@4.0.0-beta.3':
     optional: true
 
-  '@tailwindcss/oxide-darwin-x64@4.0.0-beta.1':
+  '@tailwindcss/oxide-darwin-x64@4.0.0-beta.3':
     optional: true
 
-  '@tailwindcss/oxide-freebsd-x64@4.0.0-beta.1':
+  '@tailwindcss/oxide-freebsd-x64@4.0.0-beta.3':
     optional: true
 
-  '@tailwindcss/oxide-linux-arm-gnueabihf@4.0.0-beta.1':
+  '@tailwindcss/oxide-linux-arm-gnueabihf@4.0.0-beta.3':
     optional: true
 
-  '@tailwindcss/oxide-linux-arm64-gnu@4.0.0-beta.1':
+  '@tailwindcss/oxide-linux-arm64-gnu@4.0.0-beta.3':
     optional: true
 
-  '@tailwindcss/oxide-linux-arm64-musl@4.0.0-beta.1':
+  '@tailwindcss/oxide-linux-arm64-musl@4.0.0-beta.3':
     optional: true
 
-  '@tailwindcss/oxide-linux-x64-gnu@4.0.0-beta.1':
+  '@tailwindcss/oxide-linux-x64-gnu@4.0.0-beta.3':
     optional: true
 
-  '@tailwindcss/oxide-linux-x64-musl@4.0.0-beta.1':
+  '@tailwindcss/oxide-linux-x64-musl@4.0.0-beta.3':
     optional: true
 
-  '@tailwindcss/oxide-win32-arm64-msvc@4.0.0-beta.1':
+  '@tailwindcss/oxide-win32-arm64-msvc@4.0.0-beta.3':
     optional: true
 
-  '@tailwindcss/oxide-win32-x64-msvc@4.0.0-beta.1':
+  '@tailwindcss/oxide-win32-x64-msvc@4.0.0-beta.3':
     optional: true
 
-  '@tailwindcss/oxide@4.0.0-beta.1':
+  '@tailwindcss/oxide@4.0.0-beta.3':
     optionalDependencies:
-      '@tailwindcss/oxide-android-arm64': 4.0.0-beta.1
-      '@tailwindcss/oxide-darwin-arm64': 4.0.0-beta.1
-      '@tailwindcss/oxide-darwin-x64': 4.0.0-beta.1
-      '@tailwindcss/oxide-freebsd-x64': 4.0.0-beta.1
-      '@tailwindcss/oxide-linux-arm-gnueabihf': 4.0.0-beta.1
-      '@tailwindcss/oxide-linux-arm64-gnu': 4.0.0-beta.1
-      '@tailwindcss/oxide-linux-arm64-musl': 4.0.0-beta.1
-      '@tailwindcss/oxide-linux-x64-gnu': 4.0.0-beta.1
-      '@tailwindcss/oxide-linux-x64-musl': 4.0.0-beta.1
-      '@tailwindcss/oxide-win32-arm64-msvc': 4.0.0-beta.1
-      '@tailwindcss/oxide-win32-x64-msvc': 4.0.0-beta.1
+      '@tailwindcss/oxide-android-arm64': 4.0.0-beta.3
+      '@tailwindcss/oxide-darwin-arm64': 4.0.0-beta.3
+      '@tailwindcss/oxide-darwin-x64': 4.0.0-beta.3
+      '@tailwindcss/oxide-freebsd-x64': 4.0.0-beta.3
+      '@tailwindcss/oxide-linux-arm-gnueabihf': 4.0.0-beta.3
+      '@tailwindcss/oxide-linux-arm64-gnu': 4.0.0-beta.3
+      '@tailwindcss/oxide-linux-arm64-musl': 4.0.0-beta.3
+      '@tailwindcss/oxide-linux-x64-gnu': 4.0.0-beta.3
+      '@tailwindcss/oxide-linux-x64-musl': 4.0.0-beta.3
+      '@tailwindcss/oxide-win32-arm64-msvc': 4.0.0-beta.3
+      '@tailwindcss/oxide-win32-x64-msvc': 4.0.0-beta.3
 
-  '@tailwindcss/postcss@4.0.0-beta.1':
+  '@tailwindcss/postcss@4.0.0-beta.3':
     dependencies:
       '@alloc/quick-lru': 5.2.0
-      '@tailwindcss/node': 4.0.0-beta.1
-      '@tailwindcss/oxide': 4.0.0-beta.1
+      '@tailwindcss/node': 4.0.0-beta.3
+      '@tailwindcss/oxide': 4.0.0-beta.3
       lightningcss: 1.28.1
       postcss: 8.4.47
-      tailwindcss: 4.0.0-beta.1
+      tailwindcss: 4.0.0-beta.3
 
   '@tanstack/query-core@5.61.4': {}
 
@@ -11350,13 +11347,11 @@ snapshots:
 
   tailwind-merge@2.5.4: {}
 
-  tailwindcss-animate@1.0.7(tailwindcss@4.0.0-beta.2):
+  tailwindcss-animate@1.0.7(tailwindcss@4.0.0-beta.3):
     dependencies:
-      tailwindcss: 4.0.0-beta.2
+      tailwindcss: 4.0.0-beta.3
 
-  tailwindcss@4.0.0-beta.1: {}
-
-  tailwindcss@4.0.0-beta.2: {}
+  tailwindcss@4.0.0-beta.3: {}
 
   tapable@2.2.1: {}
 

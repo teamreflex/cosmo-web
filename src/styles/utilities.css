@@ -9,8 +9,3 @@
   flex: 0 0 100%;
   min-width: 0;
 }
-
-/* 3d transforms for objekt flip */
-@utility rotate-y-180 {
-  transform: rotateY(180deg);
-}

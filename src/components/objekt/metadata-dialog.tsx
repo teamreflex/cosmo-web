@@ -259,9 +259,12 @@ function Metadata<TObjektType extends ValidObjekt>({
       <div className="flex flex-wrap items-center gap-2 justify-center">
         <Pill
           label={onOffline === "online" ? "Copies" : "Scanned Copies"}
-          value={data.copies.toLocaleString()}
+          value={data.total.toLocaleString()}
         />
-        <RarityPill rarity={getRarity(data.copies)} />
+        {objekt.class === "First" && (
+          <Pill label="Tradable" value={`${data.percentage}%`} />
+        )}
+        <RarityPill rarity={getRarity(data.total)} />
       </div>
 
       {showForm ? (

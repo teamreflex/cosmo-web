@@ -19,7 +19,9 @@ interface ObjektInformation extends ObjektMetadataEntry {
   profile?: Profile;
 }
 export type ObjektMetadata = {
-  copies: number;
+  total: number;
+  transferable: number;
+  percentage: number;
   metadata: ObjektInformation | undefined;
 };
 
