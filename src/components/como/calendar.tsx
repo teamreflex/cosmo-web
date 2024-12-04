@@ -24,23 +24,18 @@ type Props = {
 const week = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 export default function ComoCalendar({ artists, transfers }: Props) {
-  const calendar = buildCalendar(transfers);
-
-  // run these in client
-  const days = getDays();
+  // run date functions in client
   const now = new Date();
+  const days = getDays(now);
   const startOffset =
-    new Date(now.getFullYear(), now.getMonth(), 1).getDay() - 1;
+    (new Date(now.getFullYear(), now.getMonth(), 1).getDay() + 6) % 7;
   const offset = Array.from({ length: startOffset }, (_, i) => i + 1);
   const remainder = Array.from(
-    { length: startOffset === 6 ? 6 : 5 - startOffset },
+    { length: (7 - ((days.length + startOffset) % 7)) % 7 },
     (_, i) => i + 1
   );
 
-  // handles february edge case, i think
-  if (days.length + offset.length + remainder.length !== 35) {
-    remainder.push(remainder.length + 1);
-  }
+  const calendar = buildCalendar(now, transfers);
 
   return (
     <div className="flex flex-col rounded-lg bg-accent border border-accent text-clip h-fit overflow-clip">
