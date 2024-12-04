@@ -1,6 +1,10 @@
 /* general global layout related styles */
 
 @layer base {
+  * {
+    @apply border-border;
+  }
+
   ::-webkit-scrollbar {
     @apply w-2 h-2;
   }

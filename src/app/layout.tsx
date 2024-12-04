@@ -56,7 +56,7 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${inter.variable} ${cosmo.variable} font-inter antialiased bg-background text-foreground overflow-y-scroll **:border-border`}
+        className={`${inter.variable} ${cosmo.variable} font-inter antialiased bg-background text-foreground overflow-y-scroll`}
       >
         <ThemeProvider attribute="class" defaultTheme="dark">
           <ClientProviders>
