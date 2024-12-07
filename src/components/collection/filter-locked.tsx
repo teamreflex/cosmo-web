@@ -12,6 +12,8 @@ export default memo(function LockedFilter({
   showLocked,
   setShowLocked,
 }: Props) {
+  const state = showLocked ? "Showing" : "Hiding";
+
   return (
     <Toggle
       className="w-36"
@@ -20,7 +22,7 @@ export default memo(function LockedFilter({
       onPressedChange={(v) => setShowLocked(v ? null : false)}
       aria-label="Toggle locked"
     >
-      {showLocked ? "Showing" : "Hiding"} Locked
+      {state} Locked
     </Toggle>
   );
 });

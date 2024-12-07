@@ -300,14 +300,15 @@ function ClaimObjekt({ serial, result, onClaim, onClose }: ClaimObjektProps) {
   const title = `${objekt.collectionId} #${objekt.objektNo
     .toString()
     .padStart(5, "0")}`;
+  const description = `Objekt is ${
+    isClaimed ? " already claimed" : "claimable"
+  }`;
 
   return (
     <DrawerContent>
       <DrawerHeader>
         <DrawerTitle>{title}</DrawerTitle>
-        <DrawerDescription>
-          Objekt is {isClaimed ? " already claimed" : "claimable"}
-        </DrawerDescription>
+        <DrawerDescription>{description}</DrawerDescription>
       </DrawerHeader>
 
       <div className="relative mx-auto h-72 aspect-photocard">

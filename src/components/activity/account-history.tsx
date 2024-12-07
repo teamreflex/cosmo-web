@@ -165,10 +165,17 @@ function HistoryList({ historyType, artist, timestamp }: HistoryListProps) {
                       {item.title}
                     </p>
                     <p className="text-base">{item.body}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {item.caption !== undefined ? `${item.caption} | ` : null}
-                      {format(item.timestamp, "h:mmaa")}
-                    </p>
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-muted-foreground">
+                        {item.caption !== undefined
+                          ? `${item.caption} | `
+                          : null}
+                      </span>
+
+                      <span className="text-xs text-muted-foreground">
+                        {format(item.timestamp, "h:mmaa")}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>

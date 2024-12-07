@@ -75,6 +75,10 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2024-12-07",
+    changes: ["Hopefully fixed instances of Google Translate breaking pages."],
+  },
+  {
     date: "2024-11-27",
     changes: ["Fixed filters not working."],
   },
@@ -90,14 +94,6 @@ const updates = [
     changes: [
       "Added: Gravity voting.",
       'Currently only "single" polls are supported. "Combination" polls (LOVElution/EVOLution gravity) will come at a later date.',
-    ],
-  },
-  {
-    date: "2024-11-02",
-    changes: [
-      "Fixed: Reward claim dialog now scrolls instead of overflowing off screen.",
-      "Fixed: Select boxes not working on mobile.",
-      "Fixed: Filters button being hidden on tablets-sized screens.",
     ],
   },
 ];

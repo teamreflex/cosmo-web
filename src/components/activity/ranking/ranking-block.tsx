@@ -136,6 +136,11 @@ function RankingItem({ artist, kind, item }: RankingItemProps) {
     (p) => p.artistName === artist
   )?.profileImageUrl;
 
+  const countString =
+    item.nearPeopleCount > 1 ? `and ${item.nearPeopleCount - 1} more` : null;
+  const kindString =
+    kind === "hold_objekts_per_season" ? "Objekts owned" : "Grids completed";
+
   return (
     <div
       className={cn(
@@ -178,14 +183,10 @@ function RankingItem({ artist, kind, item }: RankingItemProps) {
           {ordinal(item.rankNumber)} place
         </p>
         <p className="text-sm">
-          {user.nickname}{" "}
-          {item.nearPeopleCount > 1 && `and ${item.nearPeopleCount - 1} more`}
+          {user.nickname} {countString}
         </p>
         <p className="text-sm">
-          {item.rankData}{" "}
-          {kind === "hold_objekts_per_season"
-            ? "Objekts owned"
-            : "Grids completed"}
+          {item.rankData} {kindString}
         </p>
       </div>
     </div>

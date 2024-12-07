@@ -97,6 +97,7 @@
     "eslint-config-next": "15.0.4",
     "eslint-plugin-drizzle": "^0.2.3",
     "eslint-plugin-react-compiler": "19.0.0-beta-df7b47d-20241124",
+    "eslint-plugin-react-google-translate": "^0.0.114",
     "hono": "^4.6.5",
     "knip": "^5.37.1",
     "pg": "^8.13.0",

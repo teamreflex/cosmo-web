@@ -1,7 +1,11 @@
 {
   "extends": ["next/core-web-vitals", "plugin:drizzle/all"],
   "parser": "@typescript-eslint/parser",
-  "plugins": ["drizzle", "eslint-plugin-react-compiler"],
+  "plugins": [
+    "drizzle",
+    "eslint-plugin-react-compiler",
+    "react-google-translate"
+  ],
   "rules": {
     "drizzle/enforce-delete-with-where": [
       "error",
@@ -11,6 +15,8 @@
       "error",
       { "drizzleObjectName": ["db", "indexer"] }
     ],
-    "react-compiler/react-compiler": "error"
+    "react-compiler/react-compiler": "error",
+    "react-google-translate/no-conditional-text-nodes-with-siblings": "error",
+    "react-google-translate/no-return-text-nodes": "error"
   }
 }

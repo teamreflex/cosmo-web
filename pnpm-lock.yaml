@@ -243,6 +243,9 @@ importers:
       eslint-plugin-react-compiler:
         specifier: 19.0.0-beta-df7b47d-20241124
         version: 19.0.0-beta-df7b47d-20241124(eslint@8.54.0)
+      eslint-plugin-react-google-translate:
+        specifier: ^0.0.114
+        version: 0.0.114(eslint@8.54.0)
       hono:
         specifier: ^4.6.5
         version: 4.6.12
@@ -3535,6 +3538,12 @@ packages:
     peerDependencies:
       eslint: '>=7'
 
+  eslint-plugin-react-google-translate@0.0.114:
+    resolution: {integrity: sha512-ixV5l+ejPj3OdvlqSii4hnj42jAXy7EiMS65DvNQ40T5TkqD8RuSsYiIODTYDyoD3L3knLzF2LdTOQiqawMTGQ==}
+    engines: {node: ^14.17.0 || ^16.0.0 || >= 18.0.0}
+    peerDependencies:
+      eslint: '>=7'
+
   eslint-plugin-react-hooks@5.1.0:
     resolution: {integrity: sha512-mpJRtPgHN2tNAvZ35AMfqeB3Xqeo273QxrHJsbBEPWODRM4r0yB6jfoROqKEYrOn27UtRPpcpHc2UqyBSuUNTw==}
     engines: {node: '>=10'}
@@ -4656,6 +4665,10 @@ packages:
   require-in-the-middle@7.4.0:
     resolution: {integrity: sha512-X34iHADNbNDfr6OTStIAHWSAvvKQRYgLO6duASaVf7J2VA3lvmNYboAHOuLC2huav1IwgZJtyEcJCKVzFxOSMQ==}
     engines: {node: '>=8.6.0'}
+
+  requireindex@1.2.0:
+    resolution: {integrity: sha512-L9jEkOi3ASd9PYit2cwRfyppc9NoABujTP8/5gFcbERmo5jUoAKovIC3fsF17pkTnGsrByysqX+Kxd2OTNI1ww==}
+    engines: {node: '>=0.10.5'}
 
   resolve-from@4.0.0:
     resolution: {integrity: sha512-pb/MYmXstAkysRFx8piNI1tGFNQIFA3vkE3Gq4EuA1dF6gHp/+vgZqsCGJapvy8N3Q+4o7FwvquPJcnZ7RYy4g==}
@@ -9149,6 +9162,11 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  eslint-plugin-react-google-translate@0.0.114(eslint@8.54.0):
+    dependencies:
+      eslint: 8.54.0
+      requireindex: 1.2.0
+
   eslint-plugin-react-hooks@5.1.0(eslint@8.54.0):
     dependencies:
       eslint: 8.54.0
@@ -10304,6 +10322,8 @@ snapshots:
       resolve: 1.22.8
     transitivePeerDependencies:
       - supports-color
+
+  requireindex@1.2.0: {}
 
   resolve-from@4.0.0: {}
 

@@ -70,7 +70,7 @@ export default function CreateListDialog({ open, onOpenChange }: Props) {
           </div>
 
           <Button type="submit" disabled={isPending}>
-            {isPending ? "Creating..." : "Create"}
+            <span>Create</span>
             {isPending && <Loader2 className="ml-2 animate-spin" />}
           </Button>
         </form>

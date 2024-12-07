@@ -90,7 +90,7 @@ export default function ExchangeTokenForm({
           form="token-submit"
         >
           {isPending && <Loader2 className="size-4 mr-2 animate-spin" />}
-          {enableSubmission ? "Sign In" : `Sign In (${realCount})`}
+          <span>{enableSubmission ? "Sign In" : `Sign In (${realCount})`}</span>
         </Button>
       </Portal>
     </form>
