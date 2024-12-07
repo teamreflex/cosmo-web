@@ -4,6 +4,7 @@ import { env } from "./src/env.mjs";
 
 const config: NextConfig = {
   experimental: {
+    after: true,
     reactCompiler: true,
     staleTimes: {
       dynamic: 60,

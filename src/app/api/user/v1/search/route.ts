@@ -1,11 +1,11 @@
 import { getUser } from "@/app/api/common";
-import { search } from "@/lib/server/cosmo/auth";
+import { search, user } from "@/lib/server/cosmo/auth";
 import { db } from "@/lib/server/db";
 import { profiles } from "@/lib/server/db/schema";
 import { validateExpiry } from "@/lib/server/jwt";
 import { CosmoSearchResult } from "@/lib/universal/cosmo/auth";
 import { like } from "drizzle-orm";
-import { NextRequest } from "next/server";
+import { NextRequest, unstable_after as after } from "next/server";
 
 /**
  * API route for user search.
@@ -27,7 +27,31 @@ export async function GET(request: NextRequest) {
   }
 
   // otherwise, use cosmo
-  return Response.json(await search(auth.user.accessToken, query));
+  const results = await search(auth.user.accessToken, query);
+
+  // take the results and insert any new profiles after the response is sent
+  after(async () => {
+    const newProfiles = results.results.map((r) => ({
+      nickname: r.nickname,
+      userAddress: r.address,
+      cosmoId: 0,
+      artist: "artms" as const,
+    }));
+
+    try {
+      await db
+        .insert(profiles)
+        .values(newProfiles)
+        .onConflictDoNothing({
+          target: [profiles.nickname, profiles.userAddress],
+        });
+    } catch (err) {
+      console.error("Bulk profile caching failed:", err);
+    }
+  });
+
+  // return results
+  return Response.json(results);
 }
 
 /**

@@ -36,6 +36,13 @@
       "when": 1723198461292,
       "tag": "0004_bouncy_ghost_rider",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1733613051193,
+      "tag": "0005_fair_scream",
+      "breakpoints": true
     }
   ]
 }

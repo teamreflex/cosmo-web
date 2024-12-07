@@ -1,5 +1,5 @@
 {
-  "version": "6",
+  "version": "7",
   "dialect": "postgresql",
   "tables": {
     "public.list_entries": {
@@ -27,16 +27,27 @@
       },
       "indexes": {
         "list_entries_list_idx": {
-          "name": "list_entries_list_idx",
           "columns": [
-            "list_id"
+            {
+              "expression": "list_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "list_entries_list_idx",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         }
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false,
+      "checkConstraints": {}
     },
     "public.lists": {
       "name": "lists",
@@ -69,23 +80,42 @@
       },
       "indexes": {
         "lists_address_idx": {
-          "name": "lists_address_idx",
           "columns": [
-            "user_address"
+            {
+              "expression": "user_address",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "lists_address_idx",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         },
         "lists_slug_idx": {
-          "name": "lists_slug_idx",
           "columns": [
-            "slug"
+            {
+              "expression": "slug",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "lists_slug_idx",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         }
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false,
+      "checkConstraints": {}
     },
     "public.locked_objekts": {
       "name": "locked_objekts",
@@ -118,17 +148,33 @@
       },
       "indexes": {
         "address_token_idx": {
-          "name": "address_token_idx",
           "columns": [
-            "user_address",
-            "tokenId"
+            {
+              "expression": "user_address",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "tokenId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "address_token_idx",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         }
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false,
+      "checkConstraints": {}
     },
     "public.objekt_metadata": {
       "name": "objekt_metadata",
@@ -161,23 +207,42 @@
       },
       "indexes": {
         "objekt_metadata_collection_idx": {
-          "name": "objekt_metadata_collection_idx",
           "columns": [
-            "collection_id"
+            {
+              "expression": "collection_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "objekt_metadata_collection_idx",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         },
         "objekt_metadata_contributor_idx": {
-          "name": "objekt_metadata_contributor_idx",
           "columns": [
-            "user_address"
+            {
+              "expression": "user_address",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "objekt_metadata_contributor_idx",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         }
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false,
+      "checkConstraints": {}
     },
     "public.profiles": {
       "name": "profiles",
@@ -258,58 +323,117 @@
       },
       "indexes": {
         "profiles_address_idx": {
-          "name": "profiles_address_idx",
           "columns": [
-            "user_address"
+            {
+              "expression": "user_address",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "profiles_address_idx",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         },
         "profiles_cosmo_id_idx": {
-          "name": "profiles_cosmo_id_idx",
           "columns": [
-            "cosmo_id"
+            {
+              "expression": "cosmo_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "profiles_cosmo_id_idx",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         },
         "profiles_nickname_idx": {
-          "name": "profiles_nickname_idx",
           "columns": [
-            "nickname"
+            {
+              "expression": "nickname",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "profiles_nickname_idx",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         },
         "profiles_priv_nickname_idx": {
-          "name": "profiles_priv_nickname_idx",
           "columns": [
-            "privacy_nickname"
+            {
+              "expression": "privacy_nickname",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "profiles_priv_nickname_idx",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         },
         "profiles_priv_objekts_idx": {
-          "name": "profiles_priv_objekts_idx",
           "columns": [
-            "privacy_objekts"
+            {
+              "expression": "privacy_objekts",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "profiles_priv_objekts_idx",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         },
         "profiles_priv_como_idx": {
-          "name": "profiles_priv_como_idx",
           "columns": [
-            "privacy_como"
+            {
+              "expression": "privacy_como",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "profiles_priv_como_idx",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         },
         "profiles_priv_trades_idx": {
-          "name": "profiles_priv_trades_idx",
           "columns": [
-            "privacy_trades"
+            {
+              "expression": "privacy_trades",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
           ],
-          "isUnique": false
+          "with": {},
+          "name": "profiles_priv_trades_idx",
+          "isUnique": false,
+          "method": "btree",
+          "concurrently": false
         }
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false,
+      "checkConstraints": {}
     }
   },
   "enums": {},
@@ -320,5 +444,9 @@
     "columns": {}
   },
   "id": "ed74b896-157d-42d6-8f9e-a18d184f2889",
-  "prevId": "f4767a6f-9b99-4b24-b21d-f0a3e481e355"
+  "prevId": "f4767a6f-9b99-4b24-b21d-f0a3e481e355",
+  "sequences": {},
+  "policies": {},
+  "views": {},
+  "roles": {}
 }

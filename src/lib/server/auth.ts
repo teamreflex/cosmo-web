@@ -26,7 +26,13 @@ async function createProfile(payload: FindOrCreateProfile) {
     nickname: payload.nickname,
     artist: "artms",
   };
-  const rows = await db.insert(profiles).values(newProfile).returning();
+  const rows = await db
+    .insert(profiles)
+    .values(newProfile)
+    .onConflictDoNothing({
+      target: [profiles.nickname, profiles.userAddress],
+    })
+    .returning();
 
   if (rows.length === 0) {
     throw new Error("Failed to create profile");
@@ -191,7 +197,8 @@ async function fetchProfileByIdentifier(identifier: string) {
   return db.query.profiles.findFirst({
     where: (profiles, { or, eq }) =>
       or(
-        eq(profiles.nickname, identifier),
+        // need to decode this due to an instance of a user having | in their nickname
+        eq(profiles.nickname, decodeURIComponent(identifier)),
         eq(profiles.userAddress, identifier)
       ),
     orderBy: (profiles, { desc }) => desc(profiles.id),

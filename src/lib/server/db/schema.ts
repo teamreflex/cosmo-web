@@ -6,6 +6,7 @@ import {
   integer,
   pgTable,
   serial,
+  uniqueIndex,
   varchar,
 } from "drizzle-orm/pg-core";
 import { citext } from "./columns";
@@ -26,19 +27,16 @@ export const profiles = pgTable(
     gridColumns: integer("grid_columns").notNull().default(5),
     objektEditor: boolean("objekt_editor").notNull().default(false),
   },
-  (table) => ({
-    addressIdx: index("profiles_address_idx").on(table.userAddress),
-    cosmoIdIdx: index("profiles_cosmo_id_idx").on(table.cosmoId),
-    nicknameIdx: index("profiles_nickname_idx").on(table.nickname),
-    privacyNicknameIdx: index("profiles_priv_nickname_idx").on(
-      table.privacyNickname
-    ),
-    privacyObjektsIdx: index("profiles_priv_objekts_idx").on(
-      table.privacyObjekts
-    ),
-    privacyComoIdx: index("profiles_priv_como_idx").on(table.privacyComo),
-    privacyTradesIdx: index("profiles_priv_trades_idx").on(table.privacyTrades),
-  })
+  (t) => [
+    index("profiles_address_idx").on(t.userAddress),
+    index("profiles_cosmo_id_idx").on(t.cosmoId),
+    index("profiles_nickname_idx").on(t.nickname),
+    index("profiles_priv_nickname_idx").on(t.privacyNickname),
+    index("profiles_priv_objekts_idx").on(t.privacyObjekts),
+    index("profiles_priv_como_idx").on(t.privacyComo),
+    index("profiles_priv_trades_idx").on(t.privacyTrades),
+    uniqueIndex("profiles_nickname_address_idx").on(t.nickname, t.userAddress),
+  ]
 );
 
 export const profileRelations = relations(profiles, ({ many }) => ({
@@ -56,18 +54,12 @@ export const lockedObjekts = pgTable(
     tokenId: integer("tokenId").notNull(),
     locked: boolean("locked").notNull(),
   },
-  (table) => ({
-    addressIdx: index("locked_objekts_user_address_idx").on(table.userAddress),
-    lockedIdx: index("locked_objekts_locked_idx").on(table.locked),
-    addressLockedIdx: index("address_locked_idx").on(
-      table.userAddress,
-      table.locked
-    ),
-    addressTokenIdx: index("address_token_idx").on(
-      table.userAddress,
-      table.tokenId
-    ),
-  })
+  (t) => [
+    index("locked_objekts_user_address_idx").on(t.userAddress),
+    index("locked_objekts_locked_idx").on(t.locked),
+    index("address_locked_idx").on(t.userAddress, t.locked),
+    index("address_token_idx").on(t.userAddress, t.tokenId),
+  ]
 );
 
 export const lockedObjektsRelations = relations(lockedObjekts, ({ one }) => ({
@@ -85,10 +77,10 @@ export const lists = pgTable(
     name: varchar("name", { length: 24 }).notNull(),
     slug: citext("slug", { length: 24 }).notNull(),
   },
-  (table) => ({
-    addressIdx: index("lists_address_idx").on(table.userAddress),
-    slugIdx: index("lists_slug_idx").on(table.slug),
-  })
+  (t) => [
+    index("lists_address_idx").on(t.userAddress),
+    index("lists_slug_idx").on(t.slug),
+  ]
 );
 
 export const listRelations = relations(lists, ({ many, one }) => ({
@@ -106,9 +98,7 @@ export const listEntries = pgTable(
     listId: integer("list_id").notNull(),
     collectionId: varchar("collection_id", { length: 36 }).notNull(), // slug: atom01-jinsoul-101z
   },
-  (table) => ({
-    listIdx: index("list_entries_list_idx").on(table.listId),
-  })
+  (t) => [index("list_entries_list_idx").on(t.listId)]
 );
 
 export const listEntryRelations = relations(listEntries, ({ one }) => ({
@@ -126,14 +116,10 @@ export const objektMetadata = pgTable(
     description: varchar("description", { length: 255 }).notNull(),
     contributor: citext("user_address", { length: 42 }).notNull(),
   },
-  (table) => ({
-    collectionIdx: index("objekt_metadata_collection_idx").on(
-      table.collectionId
-    ),
-    contributorIdx: index("objekt_metadata_contributor_idx").on(
-      table.contributor
-    ),
-  })
+  (t) => [
+    index("objekt_metadata_collection_idx").on(t.collectionId),
+    index("objekt_metadata_contributor_idx").on(t.contributor),
+  ]
 );
 
 export const objektMetadataRelations = relations(objektMetadata, ({ one }) => ({
@@ -150,10 +136,10 @@ export const pins = pgTable(
     userAddress: citext("user_address", { length: 42 }).notNull(),
     tokenId: integer("token_id").notNull(),
   },
-  (table) => ({
-    userAddressIdx: index("pins_userAddress_idx").on(table.userAddress),
-    tokenIdIdx: index("pins_token_id_idx").on(table.tokenId),
-  })
+  (t) => [
+    index("pins_userAddress_idx").on(t.userAddress),
+    index("pins_token_id_idx").on(t.tokenId),
+  ]
 );
 
 export const pinRelations = relations(pins, ({ one }) => ({

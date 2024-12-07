@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX IF NOT EXISTS "profiles_nickname_address_idx" ON "profiles" USING btree ("nickname","user_address");
