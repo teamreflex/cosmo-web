@@ -30,25 +30,27 @@ export async function GET(request: NextRequest) {
   const results = await search(auth.user.accessToken, query);
 
   // take the results and insert any new profiles after the response is sent
-  after(async () => {
-    const newProfiles = results.results.map((r) => ({
-      nickname: r.nickname,
-      userAddress: r.address,
-      cosmoId: 0,
-      artist: "artms" as const,
-    }));
+  if (results.results.length > 0) {
+    after(async () => {
+      const newProfiles = results.results.map((r) => ({
+        nickname: r.nickname,
+        userAddress: r.address,
+        cosmoId: 0,
+        artist: "artms" as const,
+      }));
 
-    try {
-      await db
-        .insert(profiles)
-        .values(newProfiles)
-        .onConflictDoNothing({
-          target: [profiles.nickname, profiles.userAddress],
-        });
-    } catch (err) {
-      console.error("Bulk profile caching failed:", err);
-    }
-  });
+      try {
+        await db
+          .insert(profiles)
+          .values(newProfiles)
+          .onConflictDoNothing({
+            target: [profiles.nickname, profiles.userAddress],
+          });
+      } catch (err) {
+        console.error("Bulk profile caching failed:", err);
+      }
+    });
+  }
 
   // return results
   return Response.json(results);
