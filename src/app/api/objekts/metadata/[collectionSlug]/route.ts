@@ -35,17 +35,17 @@ export async function GET(_: Request, props: Params) {
    * cache for:
    * - within 12 hours: 5 minutes
    * - within 24 hours: 1 hour
-   * - within 48 hours: 8 hours
-   * - older than 48 hours: 24 hours
+   * - within 48 hours: 4 hours
+   * - older than 48 hours: 12 hours
    */
   if (now - timestamp <= 12 * hourInMs) {
     cacheTime = 5 * 60;
   } else if (now - timestamp <= 24 * hourInMs) {
     cacheTime = 60 * 60;
   } else if (now - timestamp <= 48 * hourInMs) {
-    cacheTime = 8 * 60 * 60;
+    cacheTime = 4 * 60 * 60;
   } else {
-    cacheTime = 24 * 60 * 60;
+    cacheTime = 12 * 60 * 60;
   }
 
   return Response.json(
