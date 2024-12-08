@@ -72,7 +72,7 @@ export const objektIndex = cosmoSchema
   .omit({ transferable: true, gridable: true })
   .extend({
     page: z.coerce.number().optional().default(0),
-    collectionNo: z.array(z.string()).optional().default([]),
+    collectionNo: castToArray(z.string()).optional().default([]),
   });
 
 /**

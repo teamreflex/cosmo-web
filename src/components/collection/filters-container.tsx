@@ -1,11 +1,5 @@
 import { CollectionDataSource } from "@/hooks/use-filters";
-import {
-  Dispatch,
-  PropsWithChildren,
-  SetStateAction,
-  memo,
-  useState,
-} from "react";
+import { Dispatch, PropsWithChildren, SetStateAction, useState } from "react";
 import LockedFilter from "./filter-locked";
 import GridableFilter from "./filter-gridable";
 import TransferableFilter from "./filter-transferable";
@@ -112,21 +106,19 @@ export function CollectionFilters({
 type IndexFiltersProps = {
   collections: string[];
 };
-export const IndexFilters = memo(function IndexFilters({
-  collections,
-}: IndexFiltersProps) {
+export function IndexFilters({ collections }: IndexFiltersProps) {
+  // eslint-disable-next-line react-compiler/react-compiler
+  "use no memo";
   const [filters, setFilters] = useCosmoFilters();
 
   return (
     <div className="flex gap-2 items-center flex-wrap justify-center lg:group-data-[show=false]:flex group-data-[show=false]:hidden">
       <SeasonFilter filters={filters.season} setFilters={setFilters} />
-      {collections.length > 0 && (
-        <CollectionFilter
-          filters={filters.collectionNo}
-          setFilters={setFilters}
-          collections={collections}
-        />
-      )}
+      <CollectionFilter
+        filters={filters.collectionNo}
+        setFilters={setFilters}
+        collections={collections}
+      />
       <OnlineFilter filters={filters.on_offline} setFilters={setFilters} />
       <ClassFilter filters={filters.class} setFilters={setFilters} />
       <SortFilter
@@ -136,4 +128,4 @@ export const IndexFilters = memo(function IndexFilters({
       />
     </div>
   );
-});
+}
