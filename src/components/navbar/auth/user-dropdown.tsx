@@ -5,7 +5,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Disc3, LogOut, Shield, Wrench } from "lucide-react";
+import { Disc3, LogOut, Shield, ShieldAlert, Wrench } from "lucide-react";
 import { ReactNode, useState } from "react";
 import SwitchArtistDialog from "./switch-artist-dialog";
 import { CosmoArtist } from "@/lib/universal/cosmo/artists";
@@ -14,6 +14,7 @@ import PrivacyDialog from "./privacy-dialog";
 import SettingsDialog from "./settings-dialog";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import Discord from "@/components/icons/discord";
+import Link from "next/link";
 
 type UserDropdownProps = {
   profile: PublicProfile;
@@ -96,6 +97,18 @@ export default function UserDropdown({
             <span>Discord</span>
           </a>
         </DropdownMenuItem>
+
+        {profile.isObjektEditor && (
+          <div className="contents">
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="cursor-pointer" asChild>
+              <Link href="/admin">
+                <ShieldAlert className="mr-2 h-4 w-4" />
+                <span>Admin</span>
+              </Link>
+            </DropdownMenuItem>
+          </div>
+        )}
 
         <DropdownMenuSeparator />
         <DropdownMenuItem

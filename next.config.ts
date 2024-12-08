@@ -24,6 +24,11 @@ const config: NextConfig = {
         destination: "/activity",
         permanent: true,
       },
+      {
+        source: "/admin",
+        destination: "/admin/metadata",
+        permanent: true,
+      },
     ];
   },
 

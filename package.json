@@ -45,7 +45,7 @@
     "@vidstack/react": "^1.12.12",
     "@yudiel/react-qr-scanner": "^2.0.8",
     "babel-plugin-react-compiler": "19.0.0-beta-0dec889-20241115",
-    "class-variance-authority": "^0.7.0",
+    "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^0.2.1",
     "date-fns": "^4.1.0",
