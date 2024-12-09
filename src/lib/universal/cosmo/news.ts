@@ -16,7 +16,7 @@ export type CosmoNewsSectionBanner = {
 };
 export type CosmoNewsSectionBannerContent = {
   id: number;
-  url: string;
+  url: string | null;
   createdAt: string;
   label: "release" | "event" | "notice";
   order: number;

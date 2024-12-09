@@ -49,7 +49,7 @@ type BannerItemProps = PropsWithClassName<{
 
 function BannerItem({ className, item, index, total }: BannerItemProps) {
   return (
-    <Link href={item.url} target="_blank" className={className}>
+    <Link href={item.url ?? "/"} target="_blank" className={className}>
       <div className="relative w-full rounded-xl border border-accent overflow-hidden">
         <ScaledImage
           src={item.imageUrl}
