@@ -5,7 +5,7 @@ import { profiles } from "@/lib/server/db/schema";
 import { validateExpiry } from "@/lib/server/jwt";
 import { CosmoSearchResult } from "@/lib/universal/cosmo/auth";
 import { like } from "drizzle-orm";
-import { NextRequest, unstable_after as after } from "next/server";
+import { NextRequest, after } from "next/server";
 
 /**
  * API route for user search.
