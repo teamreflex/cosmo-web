@@ -40,7 +40,11 @@ export default async function ProfileLayout(props: Props) {
       {/* user block */}
       <div className="flex flex-col">
         <div className="flex flex-row gap-4 items-center">
-          <Suspense fallback={<Skeleton className="h-20 w-20 rounded-full" />}>
+          <Suspense
+            fallback={
+              <Skeleton className="h-20 w-20 rounded-full aspect-square shrink-0" />
+            }
+          >
             <UserAvatar
               className="w-20 h-20"
               token={currentUser?.accessToken}
