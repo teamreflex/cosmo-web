@@ -63,34 +63,38 @@ function PastDetails({ gravity }: { gravity: CosmoPastGravity }) {
           value="result"
           className="flex flex-col gap-2 w-full items-center"
         >
-          {/* total como used */}
-          <div className="flex flex-col items-center justify-center bg-accent rounded-xl py-4 w-full sm:w-1/2">
-            <p className="font-bold text-sm">Total COMO collected</p>
-            <p className="text-2xl font-bold text-cosmo-text">
-              {gravity.result.totalComoUsed.toLocaleString()}
-            </p>
-          </div>
+          {gravity.result !== undefined && (
+            <div className="contents">
+              {/* total como used */}
+              <div className="flex flex-col items-center justify-center bg-accent rounded-xl py-4 w-full sm:w-1/2">
+                <p className="font-bold text-sm">Total COMO collected</p>
+                <p className="text-2xl font-bold text-cosmo-text">
+                  {gravity.result.totalComoUsed.toLocaleString()}
+                </p>
+              </div>
 
-          {/* final choice */}
-          <div className="flex flex-col mx-auto bg-accent rounded-xl w-full sm:w-2/3">
-            <div className="flex gap-2 font-bold p-3">
-              <p>Our Final Choice</p>
-              <Crown />
+              {/* final choice */}
+              <div className="flex flex-col mx-auto bg-accent rounded-xl w-full sm:w-2/3">
+                <div className="flex gap-2 font-bold p-3">
+                  <p>Our Final Choice</p>
+                  <Crown />
+                </div>
+
+                <div className="rounded-xl relative aspect-square w-full bg-linear-to-t from-black to-transparent text-clip">
+                  <Image
+                    className="absolute"
+                    src={gravity.result.resultImageUrl}
+                    fill={true}
+                    alt={gravity.result.resultTitle}
+                  />
+
+                  <p className="absolute bottom-4 left-4 font-bold text-xl">
+                    {gravity.result.resultTitle}
+                  </p>
+                </div>
+              </div>
             </div>
-
-            <div className="rounded-xl relative aspect-square w-full bg-linear-to-t from-black to-transparent text-clip">
-              <Image
-                className="absolute"
-                src={gravity.result.resultImageUrl}
-                fill={true}
-                alt={gravity.result.resultTitle}
-              />
-
-              <p className="absolute bottom-4 left-4 font-bold text-xl">
-                {gravity.result.resultTitle}
-              </p>
-            </div>
-          </div>
+          )}
 
           {/* ranking */}
           <div className="flex mx-auto w-full sm:w-2/3">

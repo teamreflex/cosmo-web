@@ -1,7 +1,10 @@
 import CurrentMonth from "@/components/como/current-month";
 
 export default async function UserComoLoading() {
-  const cells = Array.from({ length: 35 }, (_, i) => i + 1);
+  const cells = Array.from(
+    { length: getCellCount(new Date()) },
+    (_, i) => i + 1
+  );
 
   return (
     <main className="flex flex-col gap-2 py-2">
@@ -45,4 +48,16 @@ export default async function UserComoLoading() {
       </div>
     </main>
   );
+}
+
+/**
+ * Get the number of cells needed for the current month.
+ */
+function getCellCount(now: Date) {
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const firstDay = new Date(year, month, 1).getDay();
+  const firstDayIndex = firstDay === 0 ? 6 : firstDay - 1;
+  const lastDate = new Date(year, month + 1, 0).getDate();
+  return Math.ceil((firstDayIndex + lastDate) / 7) * 7;
 }

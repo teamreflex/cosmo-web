@@ -85,7 +85,7 @@ function ImageElement({ item }: { item: CosmoBodyImage }) {
       className="relative rounded-lg overflow-hidden"
       style={{ height: `${item.height}px` }}
     >
-      <Image src={item.imageUrl} fill={true} alt={item.id} />
+      <Image src={item.imageUrl} fill={true} alt="gravity image" />
     </div>
   );
 }

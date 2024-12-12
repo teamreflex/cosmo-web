@@ -43,9 +43,15 @@ function GravityPast({ gravity }: { gravity: CosmoPastGravity }) {
       <div className="flex items-center justify-between w-full">
         <div className="flex flex-col gap-1">
           <p className="text-xs opacity-75">{gravity.title}</p>
-          <p className="font-semibold">
-            {gravity.result.totalComoUsed.toLocaleString()} COMO
-          </p>
+
+          {gravity.result !== undefined ? (
+            <p className="font-semibold">
+              {gravity.result.totalComoUsed.toLocaleString()} COMO
+            </p>
+          ) : (
+            <p className="font-semibold">Results coming soon</p>
+          )}
+
           <GravityEventType type={gravity.type} />
         </div>
 
