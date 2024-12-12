@@ -23,7 +23,12 @@ import { Input } from "../ui/input";
 import { toast } from "../ui/use-toast";
 import { ChoiceRenderer, DefaultContent } from "./gravity-choices";
 import { useGravityVote } from "@/hooks/use-wallet-transaction";
-import { CheckCircle, Satellite, TriangleAlert } from "lucide-react";
+import {
+  CheckCircle,
+  ExternalLink,
+  Satellite,
+  TriangleAlert,
+} from "lucide-react";
 import { CosmoArtist } from "@/lib/universal/cosmo/artists";
 import { Hex } from "viem";
 import { cn } from "@/lib/utils";
@@ -309,21 +314,24 @@ function ChoiceSend({
               {amount} COMO sent for {selected.content.title}!
             </p>
             <a
-              className="text-sm"
+              className="text-sm underline flex items-center gap-1"
               href={`https://polygonscan.com/tx/${hash}`}
               target="_blank"
               rel="noreferrer"
             >
-              View on PolygonScan
+              <span>View on PolygonScan</span>
+              <ExternalLink className="w-4 h-4" />
             </a>
           </div>
         ))
         .exhaustive()}
 
       <DrawerFooter className="flex flex-row justify-center items-center gap-2">
-        <Button onClick={onClose} variant="secondary">
-          Close
-        </Button>
+        {status !== "pending" && (
+          <Button onClick={onClose} variant="secondary">
+            Close
+          </Button>
+        )}
       </DrawerFooter>
     </div>
   );
