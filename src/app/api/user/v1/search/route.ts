@@ -4,7 +4,7 @@ import { db } from "@/lib/server/db";
 import { profiles } from "@/lib/server/db/schema";
 import { validateExpiry } from "@/lib/server/jwt";
 import { CosmoSearchResult } from "@/lib/universal/cosmo/auth";
-import { like } from "drizzle-orm";
+import { like, sql } from "drizzle-orm";
 import { NextRequest, after } from "next/server";
 
 /**
@@ -43,8 +43,11 @@ export async function GET(request: NextRequest) {
         await db
           .insert(profiles)
           .values(newProfiles)
-          .onConflictDoNothing({
-            target: [profiles.nickname, profiles.userAddress],
+          .onConflictDoUpdate({
+            target: profiles.userAddress,
+            set: {
+              nickname: sql.raw(`excluded.${profiles.nickname.name}`),
+            },
           });
       } catch (err) {
         console.error("Bulk profile caching failed:", err);

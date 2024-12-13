@@ -1,6 +1,6 @@
 import { cache } from "react";
 import { getUser } from "./api/common";
-import { fetchProfile, fetchUserByIdentifier } from "@/lib/server/auth";
+import { fetchPublicProfile, fetchUserByIdentifier } from "@/lib/server/auth";
 import { notFound } from "next/navigation";
 import { fetchArtistsWithMembers } from "@/lib/server/cosmo/artists";
 import { user } from "@/lib/server/cosmo/auth";
@@ -19,10 +19,7 @@ export const decodeUser = cache(async () => {
  * Fetch the user profile.
  */
 export const getProfile = cache(async (profileId: number) => {
-  const profile = await fetchProfile({
-    column: "id",
-    identifier: profileId,
-  });
+  const profile = await fetchPublicProfile(profileId);
   if (!profile) notFound();
   return profile;
 });

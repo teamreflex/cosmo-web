@@ -1,11 +1,15 @@
+import { collections } from "@/lib/server/db/indexer/schema";
+import { objekts } from "@/lib/server/db/indexer/schema";
+import { indexer } from "@/lib/server/db/indexer";
+import { transfers } from "@/lib/server/db/indexer/schema";
 import { profiles } from "@/lib/server/db/schema";
 import { fetchKnownAddresses } from "@/lib/server/profiles";
-import { fetchTransfers } from "@/lib/server/transfers";
+import { TransferResult } from "@/lib/universal/transfers";
 import { NULL_ADDRESS } from "@/lib/utils";
-import { eq } from "drizzle-orm";
+import { eq, desc, or, sql } from "drizzle-orm";
 import { NextRequest } from "next/server";
 
-export const runtime = "nodejs";
+const PER_PAGE = 30;
 
 /**
  * API route that services the /@:nickname/trades page.
@@ -29,14 +33,14 @@ export async function GET(
   const page = parseInt(request.nextUrl.searchParams.get("page") ?? "0");
 
   const aggregate = await fetchTransfers(params.address, page);
+  const addresses = aggregate.results
+    .flatMap((r) => [r.transfer.from, r.transfer.to])
+    // can't send to yourself, so filter out the current address
+    .filter((a) => a !== params.address.toLowerCase());
 
-  const knownAddresses = await fetchKnownAddresses(
-    aggregate.results
-      .flatMap((r) => [r.transfer.from, r.transfer.to])
-      // can't send to yourself, so filter out the current address
-      .filter((a) => a !== params.address.toLowerCase()),
-    [eq(profiles.privacyTrades, false)]
-  );
+  const knownAddresses = await fetchKnownAddresses(addresses, [
+    eq(profiles.privacyTrades, false),
+  ]);
 
   return Response.json({
     ...aggregate,
@@ -51,4 +55,42 @@ export async function GET(
       )?.nickname,
     })),
   });
+}
+
+/**
+ * Fetch transfers from the indexer by address.
+ */
+async function fetchTransfers(
+  address: string,
+  page: number
+): Promise<TransferResult> {
+  const results = await indexer
+    .select({
+      count: sql<number>`count(*) OVER() AS count`,
+      transfer: transfers,
+      serial: objekts.serial,
+      collection: collections,
+    })
+    .from(transfers)
+    .where(
+      or(
+        eq(transfers.from, address.toLowerCase()),
+        eq(transfers.to, address.toLowerCase())
+      )
+    )
+    .leftJoin(objekts, eq(transfers.objektId, objekts.id))
+    .leftJoin(collections, eq(transfers.collectionId, collections.id))
+    .orderBy(desc(transfers.timestamp))
+    .limit(PER_PAGE)
+    .offset(page * PER_PAGE);
+
+  const count = results.length > 0 ? results[0].count : 0;
+  const hasNext = count > (page + 1) * PER_PAGE;
+
+  return {
+    results,
+    count,
+    hasNext,
+    nextStartAfter: hasNext ? page + 1 : undefined,
+  };
 }

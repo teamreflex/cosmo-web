@@ -19,14 +19,9 @@ import {
   Smartphone,
 } from "lucide-react";
 import { Button } from "../ui/button";
-import { ReactNode } from "react";
 import VisuallyHidden from "../ui/visually-hidden";
 
-type Props = {
-  previousIds: ReactNode;
-};
-
-export default function HelpDialog({ previousIds }: Props) {
+export default function HelpDialog() {
   const str = env.NEXT_PUBLIC_APP_NAME.toLowerCase().match(/^[aeiou]/i)
     ? "an"
     : "a";
@@ -143,8 +138,6 @@ export default function HelpDialog({ previousIds }: Props) {
               </div>
             </div>
           </div>
-
-          {previousIds}
         </div>
 
         <AlertDialogFooter>

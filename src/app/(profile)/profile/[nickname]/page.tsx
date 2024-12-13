@@ -7,10 +7,9 @@ import {
 } from "@/app/data-fetching";
 import ProfileRenderer from "@/components/profile/profile-renderer";
 import { fetchArtistsWithMembers } from "@/lib/server/cosmo/artists";
-import { Loader2, Shield } from "lucide-react";
+import { Shield } from "lucide-react";
 import { isAddressEqual } from "@/lib/utils";
 import { Suspense } from "react";
-import PreviousIds from "@/components/profile/previous-ids";
 import { ProfileProvider } from "@/hooks/use-profile";
 import RewardsRenderer from "@/components/rewards/rewards-renderer";
 import { ObjektRewardProvider } from "@/hooks/use-objekt-rewards";
@@ -78,19 +77,6 @@ export default async function UserCollectionPage(props: Props) {
               artists={artists}
               profile={targetUser.profile}
               user={currentUser}
-              previousIds={
-                targetUser.profile.privacy.nickname && !isOwnProfile ? null : (
-                  <Suspense
-                    fallback={
-                      <div className="flex justify-center">
-                        <Loader2 className="w-6 h-6 animate-spin" />
-                      </div>
-                    }
-                  >
-                    <PreviousIds address={targetUser.profile.address} />
-                  </Suspense>
-                )
-              }
             />
           </UserStateProvider>
         </section>

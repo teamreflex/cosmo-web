@@ -6,11 +6,9 @@ import { redirect } from "next/navigation";
 import { authenticatedAction } from "@/lib/server/typed-action";
 import { getUser } from "@/app/api/common";
 import { validArtists } from "@/lib/universal/cosmo/common";
-import { setSelectedArtist } from "@/lib/server/auth";
 import { db } from "@/lib/server/db";
 import { profiles } from "@/lib/server/db/schema";
 import { eq } from "drizzle-orm";
-import { TypedActionResult } from "@/lib/server/typed-action/types";
 import { deleteCookie, setCookie } from "@/lib/server/cookies";
 
 /**
@@ -36,9 +34,12 @@ export const updateSelectedArtist = async (artist: string) =>
       artist: z.enum(validArtists),
     }),
     onValidate: async ({ data, user }) => {
-      const result = await setSelectedArtist(user.profileId, data.artist);
+      await db
+        .update(profiles)
+        .set({ artist: data.artist })
+        .where(eq(profiles.id, user.profileId));
+
       await setCookie({ key: "artist", value: data.artist });
-      return result;
     },
   });
 

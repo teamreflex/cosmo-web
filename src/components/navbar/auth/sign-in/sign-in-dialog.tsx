@@ -27,7 +27,8 @@ export default function SignInDialog() {
           <AlertDialogTitle>Sign In</AlertDialogTitle>
 
           <AlertDialogDescription>
-            Signing in allows you to grid objekts, build wishlists and more.
+            Signing in allows you to send, scan & grid objekts, participate in
+            Gravity events, build wishlists and more.
           </AlertDialogDescription>
         </AlertDialogHeader>
 

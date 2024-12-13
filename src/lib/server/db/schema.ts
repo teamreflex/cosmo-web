@@ -28,7 +28,7 @@ export const profiles = pgTable(
     objektEditor: boolean("objekt_editor").notNull().default(false),
   },
   (t) => [
-    index("profiles_address_idx").on(t.userAddress),
+    uniqueIndex("profiles_address_idx").on(t.userAddress),
     index("profiles_cosmo_id_idx").on(t.cosmoId),
     index("profiles_nickname_idx").on(t.nickname),
     index("profiles_priv_nickname_idx").on(t.privacyNickname),

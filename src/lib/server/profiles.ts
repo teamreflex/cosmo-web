@@ -12,15 +12,8 @@ export async function fetchKnownAddresses(addresses: string[], privacy: SQL[]) {
   }
 
   // fetch known profiles
-  const results = await db.query.profiles.findMany({
+  return await db.query.profiles.findMany({
     where: (profiles, { and, inArray }) =>
       and(...privacy, inArray(profiles.userAddress, addresses)),
-  });
-
-  // uses the latest profile for each address instead of the first
-  return results.filter((profile, _, arr) => {
-    return !arr.some(
-      (p) => p.userAddress === profile.userAddress && p.id > profile.id
-    );
   });
 }

@@ -1,99 +1,11 @@
-import { eq } from "drizzle-orm";
 import { db } from "./db";
 import { Profile, profiles } from "./db/schema";
 import { FetchProfile } from "@/lib/universal/auth";
 import { IdentifiedUser, PublicProfile } from "@/lib/universal/cosmo/auth";
-import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { fetchByNickname } from "./cosmo/auth";
 import { isAddress } from "viem";
 import { notFound, redirect } from "next/navigation";
 import { defaultProfile } from "@/lib/utils";
-
-type InsertProfile = typeof profiles.$inferInsert;
-type FindOrCreateProfile = {
-  userAddress: string;
-  nickname: string;
-  cosmoId: number;
-};
-
-/**
- * Create a new profile.
- */
-async function createProfile(payload: FindOrCreateProfile) {
-  const newProfile: InsertProfile = {
-    userAddress: payload.userAddress,
-    cosmoId: payload.cosmoId,
-    nickname: payload.nickname,
-    artist: "artms",
-  };
-  const rows = await db
-    .insert(profiles)
-    .values(newProfile)
-    .onConflictDoNothing({
-      target: [profiles.nickname, profiles.userAddress],
-    })
-    .returning();
-
-  if (rows.length === 0) {
-    throw new Error("Failed to create profile");
-  }
-
-  return rows[0];
-}
-
-/**
- * Update a profile.
- */
-export async function updateProfile(id: number, payload: FindOrCreateProfile) {
-  const result = await db
-    .update(profiles)
-    .set({
-      cosmoId: payload.cosmoId,
-    })
-    .where(eq(profiles.id, id))
-    .returning();
-
-  return result.length === 1;
-}
-
-/**
- * Find or create a profile for the user.
- */
-export async function findOrCreateProfile(payload: FindOrCreateProfile) {
-  // check the db for an existing profile
-  const result = await db.query.profiles.findFirst({
-    where: (profiles, { or, eq }) =>
-      or(
-        eq(profiles.userAddress, payload.userAddress),
-        eq(profiles.nickname, payload.nickname)
-      ),
-    orderBy: (profiles, { desc }) => desc(profiles.id),
-  });
-
-  // insert if it doesn't exist
-  if (result === undefined) {
-    return await createProfile(payload);
-  }
-
-  // return if it does
-  return result;
-}
-
-/**
- * Update the selected artist for a profile.
- */
-export async function setSelectedArtist(
-  profileId: number,
-  artist: ValidArtist
-) {
-  const result = await db
-    .update(profiles)
-    .set({ artist })
-    .where(eq(profiles.id, profileId))
-    .returning();
-
-  return result.length === 1;
-}
 
 /**
  * Fetch a profile by various identifiers.
@@ -105,7 +17,10 @@ export async function fetchUserByIdentifier(
   const identifierIsAddress = isAddress(identifier);
 
   // check db for a profile
-  const profile = await fetchProfileByIdentifier(identifier);
+  const profile = await fetchProfileByIdentifier(
+    identifier,
+    identifierIsAddress ? "userAddress" : "nickname"
+  );
 
   const shouldHide = profile?.privacyNickname === true && identifierIsAddress;
 
@@ -149,12 +64,22 @@ export async function fetchUserByIdentifier(
     notFound();
   }
 
-  // insert a new profile for caching
-  await createProfile({
-    userAddress: user.address,
-    nickname: user.nickname,
-    cosmoId: 0,
-  });
+  // upsert profile
+  await db
+    .insert(profiles)
+    .values({
+      userAddress: user.address,
+      nickname: user.nickname,
+      cosmoId: 0,
+      artist: "artms",
+    })
+    .onConflictDoUpdate({
+      target: profiles.userAddress,
+      set: {
+        nickname: user.nickname,
+      },
+    })
+    .returning();
 
   return {
     profile: {
@@ -170,21 +95,11 @@ export async function fetchUserByIdentifier(
 }
 
 /**
- * Fetch a profile by a nickname, address or ID.
+ * Fetch a profile by ID and parse it.
  */
-export async function fetchProfile(payload: FetchProfile) {
+export async function fetchPublicProfile(id: number) {
   const result = await db.query.profiles.findFirst({
-    where: (profiles, { eq }) => {
-      return payload.column === "id"
-        ? eq(profiles.id, payload.identifier)
-        : eq(
-            payload.column === "nickname"
-              ? profiles.nickname
-              : profiles.userAddress,
-            payload.identifier
-          );
-    },
-    orderBy: (profiles, { desc }) => desc(profiles.id),
+    where: (profiles, { eq }) => eq(profiles.id, id),
   });
 
   return result !== undefined ? parseProfile(result) : undefined;
@@ -193,15 +108,16 @@ export async function fetchProfile(payload: FetchProfile) {
 /**
  * Fetch a profile by a nickname or address.
  */
-async function fetchProfileByIdentifier(identifier: string) {
+async function fetchProfileByIdentifier(
+  identifier: string,
+  column: "nickname" | "userAddress"
+) {
   return db.query.profiles.findFirst({
-    where: (profiles, { or, eq }) =>
-      or(
-        // need to decode this due to an instance of a user having | in their nickname
-        eq(profiles.nickname, decodeURIComponent(identifier)),
-        eq(profiles.userAddress, identifier)
+    where: (t, { eq }) =>
+      eq(
+        column === "nickname" ? t.nickname : t.userAddress,
+        decodeURIComponent(identifier)
       ),
-    orderBy: (profiles, { desc }) => desc(profiles.id),
     with: {
       lists: true,
       lockedObjekts: {
@@ -214,15 +130,6 @@ async function fetchProfileByIdentifier(identifier: string) {
         orderBy: (pins, { desc }) => desc(pins.id),
       },
     },
-  });
-}
-
-/**
- * Fetch all known profiles for the given address.
- */
-export async function fetchProfilesForAddress(address: string) {
-  return await db.query.profiles.findMany({
-    where: (profiles, { eq }) => eq(profiles.userAddress, address),
   });
 }
 

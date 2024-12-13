@@ -1,8 +1,9 @@
 "use server";
 
-import { findOrCreateProfile, updateProfile } from "@/lib/server/auth";
 import { setCookie } from "@/lib/server/cookies";
 import { login } from "@/lib/server/cosmo/auth";
+import { db } from "@/lib/server/db";
+import { profiles } from "@/lib/server/db/schema";
 import { signToken } from "@/lib/server/jwt";
 import {
   exchangeToken,
@@ -106,18 +107,24 @@ export const exchangeRamperToken = async (form: FormData) =>
         });
       }
 
-      // find or create a profile for the user
-      const payload = {
-        userAddress: user.address,
-        nickname: user.nickname,
-        cosmoId: user.id,
-      };
-      const profile = await findOrCreateProfile(payload);
-
-      // update the pre-existing profile record
-      if (profile.cosmoId === 0) {
-        await updateProfile(profile.id, payload);
-      }
+      // fetch and upsert user profile
+      const rows = await db
+        .insert(profiles)
+        .values({
+          userAddress: user.address,
+          nickname: user.nickname,
+          cosmoId: user.id,
+          artist: "artms" as const,
+        })
+        .onConflictDoUpdate({
+          target: profiles.userAddress,
+          set: {
+            cosmoId: user.id,
+            nickname: user.nickname,
+          },
+        })
+        .returning();
+      const profile = rows[0];
 
       await setCookie({
         key: "artist",

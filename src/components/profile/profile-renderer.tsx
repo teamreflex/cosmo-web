@@ -4,7 +4,7 @@ import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
 import { COSMO_ENDPOINT, ValidSort } from "@/lib/universal/cosmo/common";
 import { OwnedObjektsResult } from "@/lib/universal/cosmo/objekts";
 import { useFilters } from "@/hooks/use-filters";
-import { ReactNode, useCallback } from "react";
+import { useCallback } from "react";
 import {
   CollectionFilters,
   FiltersContainer,
@@ -22,15 +22,9 @@ type Props = {
   artists: CosmoArtistWithMembers[];
   profile: PublicProfile;
   user?: PublicProfile;
-  previousIds: ReactNode;
 };
 
-export default function ProfileRenderer({
-  artists,
-  profile,
-  user,
-  previousIds,
-}: Props) {
+export default function ProfileRenderer({ artists, profile, user }: Props) {
   const { searchParams, showLocked, setShowLocked, dataSource, setDataSource } =
     useFilters();
 
@@ -71,7 +65,7 @@ export default function ProfileRenderer({
   return (
     <div className="relative flex flex-col">
       <Portal to="#help">
-        <HelpDialog previousIds={previousIds} />
+        <HelpDialog />
       </Portal>
 
       <FiltersContainer isPortaled>

@@ -1,6 +1,6 @@
 "use server";
 
-import { fetchProfile } from "@/lib/server/auth";
+import { fetchPublicProfile } from "@/lib/server/auth";
 import { db } from "@/lib/server/db";
 import { objektMetadata } from "@/lib/server/db/schema";
 import { authenticatedAction } from "@/lib/server/typed-action";
@@ -24,11 +24,7 @@ export const updateObjektMetadata = async (
     form,
     schema,
     onAuthenticate: async ({ user }) => {
-      const profile = await fetchProfile({
-        column: "id",
-        identifier: user.profileId,
-      });
-
+      const profile = await fetchPublicProfile(user.profileId);
       if (!profile || !profile.isObjektEditor) {
         throw new ActionError({
           status: "error",

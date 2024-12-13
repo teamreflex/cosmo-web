@@ -69,7 +69,7 @@ function SelectArtistButton({
   function select() {
     startTransition(async () => {
       const result = await updateSelectedArtist(artist.name);
-      if (result.status === "success" && result.data) {
+      if (result.status === "success") {
         toast({
           description: `Switched to ${artist.title}`,
         });
