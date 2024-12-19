@@ -82,7 +82,7 @@
   },
   "devDependencies": {
     "@planetscale/database": "^1.19.0",
-    "@tailwindcss/postcss": "4.0.0-beta.5",
+    "@tailwindcss/postcss": "4.0.0-beta.8",
     "@tanstack/react-query-devtools": "^5.62.7",
     "@types/node": "20.17.0",
     "@types/pg": "^8.11.10",
@@ -103,7 +103,7 @@
     "pg": "^8.13.0",
     "postcss": "8.4.47",
     "postgres": "^3.4.4",
-    "tailwindcss": "4.0.0-beta.5",
+    "tailwindcss": "4.0.0-beta.8",
     "tailwindcss-animate": "^1.0.7",
     "tsx": "^4.19.1",
     "typescript": "5.7.2"
