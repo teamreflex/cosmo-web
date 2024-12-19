@@ -1,6 +1,5 @@
 import { db } from "./db";
 import { Profile, profiles } from "./db/schema";
-import { FetchProfile } from "@/lib/universal/auth";
 import { IdentifiedUser, PublicProfile } from "@/lib/universal/cosmo/auth";
 import { fetchByNickname } from "./cosmo/auth";
 import { isAddress } from "viem";

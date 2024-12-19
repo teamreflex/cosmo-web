@@ -6,13 +6,3 @@ export type TokenPayload = {
   accessToken: string;
   refreshToken: string;
 };
-
-export type FetchProfile =
-  | {
-      identifier: string;
-      column: "nickname" | "address";
-    }
-  | {
-      identifier: number;
-      column: "id";
-    };
