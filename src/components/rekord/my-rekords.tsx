@@ -8,7 +8,7 @@ import {
   RekordResponse,
 } from "@/lib/universal/cosmo/rekord";
 import { RekordPost } from "./rekord-post";
-import { Heart } from "lucide-react";
+import { LuHeart } from "react-icons/lu";
 import { format } from "date-fns";
 
 type Props = {
@@ -48,7 +48,7 @@ export default function MyRekords({ artist }: Props) {
 function Likes({ count }: { count: number }) {
   return (
     <div className="absolute top-2 left-2 flex gap-2 items-center">
-      <Heart className="h-4 w-4 fill-foreground" />
+      <LuHeart className="h-4 w-4 fill-foreground" />
       <span className="text-sm font-semibold">{count}</span>
     </div>
   );

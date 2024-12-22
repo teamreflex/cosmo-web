@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ValidClass, validClasses } from "@/lib/universal/cosmo/common";
 import { memo, useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { LuChevronDown } from "react-icons/lu";
 import { cn } from "@/lib/utils";
 import { PropsWithFilters } from "@/hooks/use-cosmo-filters";
 
@@ -49,7 +49,7 @@ export default memo(function ClassFilter({ filters, setFilters }: Props) {
           )}
         >
           <span>Class</span>
-          <ChevronDown className="h-4 w-4 opacity-50" />
+          <LuChevronDown className="h-4 w-4 opacity-50" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-36">

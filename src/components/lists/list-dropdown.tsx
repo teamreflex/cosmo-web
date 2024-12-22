@@ -11,7 +11,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { ChevronRight, LetterText, List, PlusCircle } from "lucide-react";
+import {
+  LuChevronRight,
+  LuList,
+  LuCirclePlus,
+  LuListTodo,
+} from "react-icons/lu";
 import { ObjektList } from "@/lib/universal/objekts";
 import Link from "next/link";
 import CreateListDialog from "./create-list-dialog";
@@ -39,7 +44,7 @@ export default function ListDropdown({ lists, nickname, allowCreate }: Props) {
 
       <DropdownMenuTrigger asChild>
         <Button variant="secondary" size="profile" data-profile>
-          <List className="h-5 w-5" />
+          <LuList className="h-5 w-5" />
           <span className="hidden sm:block">Lists</span>
         </Button>
       </DropdownMenuTrigger>
@@ -58,7 +63,7 @@ export default function ListDropdown({ lists, nickname, allowCreate }: Props) {
                 className="w-full flex items-center justify-between"
               >
                 {list.name}
-                <ChevronRight className="h-4 w-4" />
+                <LuChevronRight className="h-4 w-4" />
               </Link>
             </DropdownMenuItem>
           ))}
@@ -74,14 +79,14 @@ export default function ListDropdown({ lists, nickname, allowCreate }: Props) {
                 className="cursor-pointer"
                 onClick={() => setCreateOpen(true)}
               >
-                <PlusCircle className="mr-2 h-4 w-4" />
+                <LuCirclePlus className="mr-2 h-4 w-4" />
                 <span className="font-semibold">Create New</span>
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="cursor-pointer"
                 onClick={() => setCompareOpen(true)}
               >
-                <LetterText className="mr-2 h-4 w-4" />
+                <LuListTodo className="mr-2 h-4 w-4" />
                 <span className="font-semibold">Discord Format</span>
               </DropdownMenuItem>
             </div>

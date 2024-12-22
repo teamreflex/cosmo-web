@@ -1,6 +1,6 @@
 "use client";
 
-import { Send } from "lucide-react";
+import { LuSend } from "react-icons/lu";
 import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
 import { useObjektSelection } from "@/hooks/use-objekt-selection";
 
@@ -25,7 +25,7 @@ export default function SendObjekt({ objekt }: Props) {
       }
       className="hover:cursor-pointer hover:scale-110 transition-all flex items-center"
     >
-      <Send className="h-3 w-3 sm:h-5 sm:w-5" />
+      <LuSend className="h-3 w-3 sm:h-5 sm:w-5" />
     </button>
   );
 }

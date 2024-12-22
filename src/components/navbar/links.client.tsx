@@ -14,15 +14,15 @@ import { cn } from "@/lib/utils";
 import { NavbarLink } from "./links";
 import { DropdownMenuItem } from "../ui/dropdown-menu";
 import {
-  Home,
-  LayoutGrid,
-  PackageOpen,
-  Vote,
-  LibraryBig,
-  CalendarRange,
-  Disc3,
-  CircleUserRound,
-} from "lucide-react";
+  LuLayoutGrid,
+  LuPackageOpen,
+  LuVote,
+  LuCalendarRange,
+  LuDisc3,
+  LuCircleUserRound,
+  LuHouse,
+} from "react-icons/lu";
+import { TbCards } from "react-icons/tb";
 
 type LinksProps = {
   user?: TokenPayload;
@@ -60,11 +60,10 @@ export function MobileLinks({ user }: LinksProps) {
         const href = link.href(user);
         const active = href === "/" ? path === "/" : path === href;
         const disabled = link.requireAuth && !authenticated;
-        const prefetch = disabled === false && link.prefetch === true;
 
         return (
           <DropdownMenuItem key={href} disabled={disabled} asChild>
-            <Link href={href} prefetch={prefetch} aria-label={link.name}>
+            <Link href={href} aria-label={link.name}>
               <link.icon
                 className={cn(
                   "h-4 w-4 mr-2 shrink-0 transition-all fill-transparent",
@@ -93,7 +92,6 @@ export function LinkButton({ link, active, user }: LinkButtonProps) {
   const authenticated = user !== undefined;
   const pathname = link.href(user);
   const disabled = link.requireAuth && !authenticated;
-  const prefetch = disabled === false && link.prefetch === true;
 
   return (
     <TooltipProvider>
@@ -102,7 +100,6 @@ export function LinkButton({ link, active, user }: LinkButtonProps) {
           <Link
             href={{ pathname }}
             className="drop-shadow-lg outline-hidden focus:outline-hidden"
-            prefetch={prefetch}
             aria-label={link.name}
           >
             <link.icon
@@ -129,58 +126,50 @@ export function LinkButton({ link, active, user }: LinkButtonProps) {
 const links: NavbarLink[] = [
   {
     name: "Home",
-    icon: Home,
+    icon: LuHouse,
     href: () => "/",
     requireAuth: true,
-    prefetch: undefined,
   },
   {
     name: "Rekord",
-    icon: Disc3,
+    icon: LuDisc3,
     href: () => "/rekord",
     requireAuth: true,
-    prefetch: undefined,
   },
   {
     name: "Gravity",
-    icon: Vote,
+    icon: LuVote,
     href: () => "/gravity",
     requireAuth: true,
-    prefetch: undefined,
   },
   {
     name: "Objekts",
-    icon: LibraryBig,
+    icon: TbCards,
     href: () => "/objekts",
     requireAuth: false,
-    prefetch: true,
   },
   {
     name: "Collection",
-    icon: PackageOpen,
+    icon: LuPackageOpen,
     href: (user) => (user ? `/@${user.nickname}` : "/"),
     requireAuth: true,
-    prefetch: true,
   },
   {
     name: "COMO",
-    icon: CalendarRange,
+    icon: LuCalendarRange,
     href: (user) => (user ? `/@${user.nickname}/como` : "/"),
     requireAuth: true,
-    prefetch: undefined,
   },
   {
     name: "Grid",
-    icon: LayoutGrid,
+    icon: LuLayoutGrid,
     href: () => "/grid",
     requireAuth: true,
-    prefetch: undefined,
   },
   {
     name: "Activity",
-    icon: CircleUserRound,
+    icon: LuCircleUserRound,
     href: () => "/activity",
     requireAuth: true,
-    prefetch: undefined,
   },
 ];

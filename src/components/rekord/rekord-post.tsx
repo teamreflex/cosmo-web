@@ -4,7 +4,7 @@ import { CosmoRekordItem, CosmoRekordPost } from "@/lib/universal/cosmo/rekord";
 import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { PropsWithClassName, cn } from "@/lib/utils";
-import { Loader2 } from "lucide-react";
+import { TbLoader2 } from "react-icons/tb";
 import ScaledImage from "../scaled-image";
 import RekordLikeButton from "./rekord-like";
 import Link from "next/link";
@@ -84,7 +84,7 @@ export function RekordPost<TPostType extends CosmoRekordItem>({
           <div className="absolute z-20 w-full h-24 bg-linear-to-t from-transparent to-black/50" />
 
           <div className="absolute w-full py-6 flex justify-center">
-            <Loader2 className="h-12 w-12 animate-spin" />
+            <TbLoader2 className="h-12 w-12 animate-spin" />
           </div>
 
           <div className="relative h-full aspect-auto">

@@ -6,7 +6,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import Image from "next/image";
-import { Check, Loader2 } from "lucide-react";
+import { LuCheck } from "react-icons/lu";
+import { TbLoader2 } from "react-icons/tb";
 import { useTransition } from "react";
 import { updateSelectedArtist } from "./actions";
 import { CosmoArtist } from "@/lib/universal/cosmo/artists";
@@ -95,11 +96,11 @@ function SelectArtistButton({
         <span className="font-bold">{artist.title}</span>
       </div>
 
-      {isPending && <Loader2 className="animate-spin h-5 w-5" />}
+      {isPending && <TbLoader2 className="animate-spin h-5 w-5" />}
 
       {isSelected && !isPending && (
         <div className="bg-cosmo rounded-full text-white p-1">
-          <Check className="h-4 w-4" />
+          <LuCheck className="h-4 w-4" />
         </div>
       )}
     </button>

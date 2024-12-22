@@ -2,7 +2,8 @@
 
 import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
 import { pinObjekt, unpinObjekt } from "../collection/actions";
-import { Loader2, Pin, PinOff } from "lucide-react";
+import { LuPin, LuPinOff } from "react-icons/lu";
+import { TbLoader2 } from "react-icons/tb";
 import { memo, useTransition } from "react";
 import { track } from "@/lib/utils";
 import { useProfileContext } from "@/hooks/use-profile";
@@ -54,11 +55,11 @@ export default memo(function PinObjekt({ objekt, isPinned }: Props) {
       onClick={toggle}
     >
       {isPending ? (
-        <Loader2 className="h-3 w-3 sm:h-5 sm:w-5 animate-spin" />
+        <TbLoader2 className="h-3 w-3 sm:h-5 sm:w-5 animate-spin" />
       ) : isPinned ? (
-        <PinOff className="h-3 w-3 sm:h-5 sm:w-5" />
+        <LuPinOff className="h-3 w-3 sm:h-5 sm:w-5" />
       ) : (
-        <Pin className="h-3 w-3 sm:h-5 sm:w-5" />
+        <LuPin className="h-3 w-3 sm:h-5 sm:w-5" />
       )}
     </button>
   );

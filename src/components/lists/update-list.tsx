@@ -1,6 +1,7 @@
 import { ObjektList } from "@/lib/universal/objekts";
 import { Button } from "../ui/button";
-import { Edit, Loader2 } from "lucide-react";
+import { LuPencil } from "react-icons/lu";
+import { TbLoader2 } from "react-icons/tb";
 import { update } from "./actions";
 import {
   Dialog,
@@ -28,7 +29,7 @@ export default function UpdateList({ objektList }: Props) {
       <Dialog>
         <DialogTrigger asChild>
           <Button variant="secondary" size="icon" className="rounded-full">
-            <Edit />
+            <LuPencil />
           </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
@@ -60,7 +61,7 @@ export default function UpdateList({ objektList }: Props) {
 
             <Button type="submit" disabled={isPending}>
               <span>Save</span>
-              {isPending && <Loader2 className="ml-2 animate-spin" />}
+              {isPending && <TbLoader2 className="ml-2 animate-spin" />}
             </Button>
           </form>
         </DialogContent>

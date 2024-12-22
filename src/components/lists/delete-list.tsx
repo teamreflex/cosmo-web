@@ -11,7 +11,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "../ui/button";
-import { Loader2, Trash } from "lucide-react";
+import { LuTrash } from "react-icons/lu";
+import { TbLoader2 } from "react-icons/tb";
 import { MouseEvent, useTransition } from "react";
 import { destroy } from "./actions";
 
@@ -34,7 +35,7 @@ export default function DeleteList({ objektList }: Props) {
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <Button variant="destructive" size="icon" className="rounded-full">
-          <Trash />
+          <LuTrash />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
@@ -48,7 +49,7 @@ export default function DeleteList({ objektList }: Props) {
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction onClick={submit} disabled={isPending}>
             <span>Delete</span>
-            {isPending && <Loader2 className="ml-2 animate-spin" />}
+            {isPending && <TbLoader2 className="ml-2 animate-spin" />}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

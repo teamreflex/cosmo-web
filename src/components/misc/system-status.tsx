@@ -7,7 +7,7 @@ import { fetchGasPrice } from "@/lib/server/alchemy/gas";
 import { fetchProcessorStatus } from "@/lib/server/system";
 import { SystemStatus as SystemStatusType } from "@/lib/universal/system";
 import { cn } from "@/lib/utils";
-import { Activity, Fuel, HardDriveDownload, X } from "lucide-react";
+import { LuActivity, LuFuel, LuHardDriveDownload, LuX } from "react-icons/lu";
 import { Separator } from "../ui/separator";
 import { ErrorBoundary } from "react-error-boundary";
 import {
@@ -42,8 +42,8 @@ async function SystemStatusPopover() {
   const status = statuses.includes("degraded")
     ? "degraded"
     : statuses.includes("down")
-    ? "down"
-    : "normal";
+      ? "down"
+      : "normal";
 
   return (
     <Popover>
@@ -55,7 +55,7 @@ async function SystemStatusPopover() {
             bgStatus(status)
           )}
         >
-          <Activity className="w-5 h-5" />
+          <LuActivity className="w-5 h-5" />
         </button>
       </PopoverTrigger>
       <PopoverContent align="start" className="p-2">
@@ -67,7 +67,7 @@ async function SystemStatusPopover() {
               className={cn("flex gap-1 items-center", textStatus(gas.status))}
             >
               <span className="font-semibold">{gas.price}</span>
-              <Fuel className="size-4" />
+              <LuFuel className="size-4" />
             </div>
           </div>
           <p className="text-xs">{gasText[gas.status]}</p>
@@ -88,7 +88,7 @@ async function SystemStatusPopover() {
               <span className="font-semibold">
                 {processor.height.processor}
               </span>
-              <HardDriveDownload className="size-4" />
+              <LuHardDriveDownload className="size-4" />
             </div>
           </div>
           <p className="text-xs">{processorText[processor.status]}</p>
@@ -104,8 +104,8 @@ function ErrorFallback() {
       <Tooltip delayDuration={0}>
         <TooltipTrigger asChild>
           <div className="flex gap-1 items-center text-cosmo-text">
-            <Activity className="w-5 h-5" />
-            <X className="w-4 h-4" />
+            <LuActivity className="w-5 h-5" />
+            <LuX className="w-4 h-4" />
           </div>
         </TooltipTrigger>
         <TooltipContent>Could not fetch system status</TooltipContent>

@@ -2,7 +2,7 @@
 
 import { ReactNode, useTransition } from "react";
 import { logout } from "./actions";
-import { Loader2 } from "lucide-react";
+import { TbLoader2 } from "react-icons/tb";
 import { TokenPayload } from "@/lib/universal/auth";
 import UserDropdown from "./user-dropdown";
 import SignInDialog from "./sign-in/sign-in-dialog";
@@ -65,7 +65,7 @@ export default function AuthOptions({
 
   return (
     <div className="flex items-center gap-2">
-      {isPending ? <Loader2 className="animate-spin" /> : <SignInDialog />}
+      {isPending ? <TbLoader2 className="animate-spin" /> : <SignInDialog />}
 
       <Hydrated>
         <GuestThemeSwitch />

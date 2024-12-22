@@ -10,7 +10,8 @@ import {
 } from "@/components/ui/dialog";
 import { PopulatedSlot } from "@/hooks/use-grid";
 import { OwnedObjekt, OwnedObjektsResult } from "@/lib/universal/cosmo/objekts";
-import { HeartCrack, Loader2 } from "lucide-react";
+import { LuHeartCrack } from "react-icons/lu";
+import { TbLoader2 } from "react-icons/tb";
 import { PropsWithChildren, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import GridObjekt from "./grid-objekt";
@@ -78,11 +79,11 @@ export default function SlotSelector({
 
           {status === "pending" ? (
             <div className="flex items-center justify-center w-full">
-              <Loader2 className="w-12 h-12 animate-spin" />
+              <TbLoader2 className="w-12 h-12 animate-spin" />
             </div>
           ) : status === "error" ? (
             <div className="flex flex-col gap-2 items-center justify-center w-full">
-              <HeartCrack className="w-12 h-12" />
+              <LuHeartCrack className="w-12 h-12" />
               <p className="text-sm">Error loading available objekts</p>
             </div>
           ) : data !== undefined ? (

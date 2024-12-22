@@ -1,4 +1,4 @@
-import { HardDriveUpload, Home } from "lucide-react";
+import { LuHardDriveUpload } from "react-icons/lu";
 
 import {
   Sidebar,
@@ -11,17 +11,18 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { env } from "@/env.mjs";
+import { TbHome } from "react-icons/tb";
 
 export const items = [
   {
     title: "Home",
     url: "/admin",
-    icon: Home,
+    icon: TbHome,
   },
   {
     title: "Objekt Metadata",
     url: "/admin/metadata",
-    icon: HardDriveUpload,
+    icon: LuHardDriveUpload,
   },
 ];
 

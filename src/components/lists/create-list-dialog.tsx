@@ -1,4 +1,4 @@
-import { Loader2 } from "lucide-react";
+import { TbLoader2 } from "react-icons/tb";
 import { FieldError } from "../form/error";
 import { Button } from "../ui/button";
 import {
@@ -71,7 +71,7 @@ export default function CreateListDialog({ open, onOpenChange }: Props) {
 
           <Button type="submit" disabled={isPending}>
             <span>Create</span>
-            {isPending && <Loader2 className="ml-2 animate-spin" />}
+            {isPending && <TbLoader2 className="ml-2 animate-spin" />}
           </Button>
         </form>
       </DialogContent>

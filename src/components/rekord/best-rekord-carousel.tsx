@@ -4,7 +4,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 import { CosmoRekordTopItem } from "@/lib/universal/cosmo/rekord";
 import { RekordMemberImage, RekordPost } from "./rekord-post";
-import { Heart } from "lucide-react";
+import { LuHeart } from "react-icons/lu";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -46,7 +46,7 @@ function RekordTopPost({ item }: RekordPostProps) {
 function RekordLikes({ count }: { count: number }) {
   return (
     <div className="absolute z-50 bottom-3 left-2 flex flex-row gap-2 items-center">
-      <Heart className="fill-foreground h-4 w-4" />
+      <LuHeart className="fill-foreground h-4 w-4" />
       <span className="font-semibold text-sm">{count.toLocaleString()}</span>
     </div>
   );

@@ -10,7 +10,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { HelpCircle, Sparkles } from "lucide-react";
+import { LuCircleHelp, LuSparkles } from "react-icons/lu";
 import { Button } from "../ui/button";
 import VisuallyHidden from "../ui/visually-hidden";
 
@@ -19,7 +19,7 @@ export default function HelpDialog() {
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <Button variant="secondary" size="profile">
-          <HelpCircle className="h-5 w-5" />
+          <LuCircleHelp className="h-5 w-5" />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
@@ -40,7 +40,7 @@ export default function HelpDialog() {
             </p>
 
             <span>
-              A <Sparkles className="inline-block text-yellow-600 h-5 w-5" />{" "}
+              A <LuSparkles className="inline-block text-yellow-600 h-5 w-5" />{" "}
               icon denotes that a drop is scheduled to happen on a day that does
               not exist in the current month, and will instead be carried over
               to the next month.

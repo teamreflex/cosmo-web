@@ -4,7 +4,7 @@ import { CosmoNewsSectionExclusiveContent } from "@/lib/universal/cosmo/news";
 import Image from "next/image";
 import Link from "next/link";
 import Timestamp from "../ui/timestamp";
-import { Copy } from "lucide-react";
+import { LuClipboardCopy } from "react-icons/lu";
 import { useCopyToClipboard } from "usehooks-ts";
 import { toast } from "../ui/use-toast";
 import HLSVideo from "../misc/hls-video";
@@ -89,7 +89,7 @@ function CopyVideoLink({ link }: { link: string }) {
 
   return (
     <button className="flex items-center" onClick={() => copyLink()}>
-      <Copy className="w-6 h-6" />
+      <LuClipboardCopy className="w-6 h-6" />
     </button>
   );
 }

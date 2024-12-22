@@ -10,10 +10,10 @@ import {
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ofetch } from "ofetch";
 import Skeleton from "../skeleton/skeleton";
-import { HeartCrack } from "lucide-react";
+import { LuHeartCrack } from "react-icons/lu";
 import { format } from "date-fns";
 import Image from "next/image";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { LuCalendar as CalendarIcon } from "react-icons/lu";
 import { DateRange } from "react-day-picker";
 import { baseUrl, cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -84,7 +84,7 @@ export default function AccountHistory({ artist }: Props) {
         <ErrorBoundary
           fallback={
             <div className="w-full flex flex-col items-center mx-auto">
-              <HeartCrack className="w-12 h-12" />
+              <LuHeartCrack className="w-12 h-12" />
               <span className="text-sm font-semibold">
                 Could not load history
               </span>
@@ -126,15 +126,18 @@ function HistoryList({ historyType, artist, timestamp }: HistoryListProps) {
     },
   });
 
-  const groupedResults = (data ?? []).reduce((acc, item) => {
-    const date = new Date(item.timestamp);
-    const formatted = format(date, "MMMM do yyyy");
-    if (!acc[formatted]) {
-      acc[formatted] = [];
-    }
-    acc[formatted].push(item);
-    return acc;
-  }, {} as Record<string, CosmoActivityHistoryItem[]>);
+  const groupedResults = (data ?? []).reduce(
+    (acc, item) => {
+      const date = new Date(item.timestamp);
+      const formatted = format(date, "MMMM do yyyy");
+      if (!acc[formatted]) {
+        acc[formatted] = [];
+      }
+      acc[formatted].push(item);
+      return acc;
+    },
+    {} as Record<string, CosmoActivityHistoryItem[]>
+  );
 
   return (
     <div className="flex flex-col gap-4">

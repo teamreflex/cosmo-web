@@ -4,7 +4,7 @@ import "../styles/tailwind.css";
 import { Inter } from "next/font/google";
 import { env } from "@/env.mjs";
 import { Button } from "@/components/ui/button";
-import { RefreshCcw } from "lucide-react";
+import { LuRefreshCcw } from "react-icons/lu";
 import * as Sentry from "@sentry/nextjs";
 import { useEffect } from "react";
 
@@ -40,7 +40,7 @@ export default function GlobalError({
             or a bug in {env.NEXT_PUBLIC_APP_NAME} needs to be fixed.
           </p>
           <Button variant="outline" onClick={() => window.location.reload()}>
-            <RefreshCcw className="mr-2" />
+            <LuRefreshCcw className="mr-2" />
             <span>Reload</span>
           </Button>
         </div>

@@ -1,7 +1,8 @@
 import { CosmoRekordPost } from "@/lib/universal/cosmo/rekord";
 import { toggleLike } from "./actions";
 import { Button } from "../ui/button";
-import { Heart, Loader2 } from "lucide-react";
+import { LuHeart } from "react-icons/lu";
+import { TbLoader2 } from "react-icons/tb";
 import { cn, track } from "@/lib/utils";
 import { Dispatch, SetStateAction, useTransition } from "react";
 
@@ -34,9 +35,9 @@ export default function RekordLikeButton({ post, isLiked, setIsLiked }: Props) {
 
       <Button type="submit" disabled={isPending} variant="icon">
         {isPending ? (
-          <Loader2 className="w-8 h-8 animate-spin" />
+          <TbLoader2 className="w-8 h-8 animate-spin" />
         ) : (
-          <Heart
+          <LuHeart
             className={cn(
               "w-8 h-8 drop-shadow-sm",
               isLiked ? "fill-red-500 text-red-500" : "text-foreground"

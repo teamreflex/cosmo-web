@@ -1,5 +1,5 @@
 import { fetchEditions } from "@/lib/server/cosmo/grid";
-import { ChevronRight } from "lucide-react";
+import { LuChevronRight } from "react-icons/lu";
 import Image from "next/image";
 import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -94,7 +94,7 @@ function GridEdition({ edition }: { edition: CosmoGridEdition }) {
           </p>
         </div>
 
-        <ChevronRight className="w-8 h-8 text-white/30 justify-self-end" />
+        <LuChevronRight className="w-8 h-8 text-white/30 justify-self-end" />
       </div>
     </Link>
   );

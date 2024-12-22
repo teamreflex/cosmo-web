@@ -1,7 +1,8 @@
 "use client";
 
 import { IndexedObjekt, ObjektList } from "@/lib/universal/objekts";
-import { ListX, Loader2 } from "lucide-react";
+import { LuListX } from "react-icons/lu";
+import { TbLoader2 } from "react-icons/tb";
 import { useTransition } from "react";
 import { removeObjektFromList } from "./actions";
 import { useQueryClient } from "@tanstack/react-query";
@@ -42,9 +43,9 @@ export default function RemoveFromList({ collection, objektList }: Props) {
       aria-label={`Remove ${collection.collectionId} from ${objektList.name}`}
     >
       {isPending ? (
-        <Loader2 className="h-3 w-3 sm:h-5 sm:w-5 animate-spin" />
+        <TbLoader2 className="h-3 w-3 sm:h-5 sm:w-5 animate-spin" />
       ) : (
-        <ListX className="h-3 w-3 sm:h-5 sm:w-5" />
+        <LuListX className="h-3 w-3 sm:h-5 sm:w-5" />
       )}
     </button>
   );

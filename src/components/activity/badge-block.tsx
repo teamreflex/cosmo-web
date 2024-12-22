@@ -1,7 +1,7 @@
 import { fetchActivityBadges } from "@/lib/server/cosmo/activity";
 import { TokenPayload } from "@/lib/universal/auth";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
-import { ChevronRight } from "lucide-react";
+import { LuChevronRight } from "react-icons/lu";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -26,7 +26,7 @@ export default async function BadgeBlock({ user, artist }: Props) {
     >
       <div className="flex items-center justify-between p-4">
         <p className="text-xl lg:text-3xl font-semibold">Badges</p>
-        <ChevronRight className="w-8 h-8" />
+        <LuChevronRight className="w-8 h-8" />
       </div>
 
       {badge !== undefined && (

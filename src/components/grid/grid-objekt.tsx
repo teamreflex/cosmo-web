@@ -1,6 +1,6 @@
 import { useElementSize } from "@/hooks/use-element-size";
 import { PropsWithClassName, cn } from "@/lib/utils";
-import { Check } from "lucide-react";
+import { LuCheck } from "react-icons/lu";
 import Image from "next/image";
 import { CSSProperties, useState } from "react";
 import { replaceUrlSize } from "../objekt/objekt-util";
@@ -57,7 +57,7 @@ export default function GridObjekt({
           selected && "opacity-100"
         )}
       >
-        <Check className="w-4 h-4" />
+        <LuCheck className="w-4 h-4" />
       </div>
     </div>
   );

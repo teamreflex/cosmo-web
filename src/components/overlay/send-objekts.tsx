@@ -1,12 +1,6 @@
 import { Selection, useObjektSelection } from "@/hooks/use-objekt-selection";
-import {
-  CheckCircle,
-  Loader2,
-  LoaderIcon,
-  Send,
-  TriangleAlert,
-  X,
-} from "lucide-react";
+import { LuCircleCheck, LuSend, LuTriangleAlert, LuX } from "react-icons/lu";
+import { TbLoader2 } from "react-icons/tb";
 import { Separator } from "../ui/separator";
 import { cn, track } from "@/lib/utils";
 import {
@@ -56,7 +50,7 @@ export default function SendObjekts() {
             selected.length > 0 && "opacity-100 pointer-events-auto"
           )}
         >
-          <Send />
+          <LuSend />
           <Separator orientation="vertical" className="bg-cosmo saturate-50" />
           <span className="tabular-nums">
             {selected.length} {text} selected
@@ -70,7 +64,7 @@ export default function SendObjekts() {
             selected.length > 0 && "opacity-100 pointer-events-auto"
           )}
         >
-          <X />
+          <LuX />
         </button>
       </div>
 
@@ -346,28 +340,28 @@ function SendingRow({ selection }: RowProps) {
         {/* status */}
         {selection.status === "idle" && (
           <div className="flex flex-row gap-2 items-center">
-            <LoaderIcon className="h-4 w-4" />
+            <TbLoader2 className="h-4 w-4" />
             <span className="text-sm">Waiting</span>
           </div>
         )}
 
         {selection.status === "pending" && (
           <div className="flex flex-row gap-2 items-center">
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <TbLoader2 className="h-4 w-4 animate-spin" />
             <span className="text-sm">Sending</span>
           </div>
         )}
 
         {selection.status === "success" && (
           <div className="flex flex-row gap-2 items-center">
-            <CheckCircle className="h-4 w-4" />
+            <LuCircleCheck className="h-4 w-4" />
             <span className="text-sm">Success</span>
           </div>
         )}
 
         {selection.status === "error" && (
           <div className="flex flex-row gap-2 items-center">
-            <TriangleAlert className="h-4 w-4" />
+            <LuTriangleAlert className="h-4 w-4" />
             <span className="text-sm">Error</span>
           </div>
         )}

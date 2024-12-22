@@ -9,7 +9,8 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { useQuery } from "@tanstack/react-query";
-import { HeartCrack, HelpCircle, Loader2 } from "lucide-react";
+import { LuHeartCrack, LuCircleHelp } from "react-icons/lu";
+import { TbLoader2 } from "react-icons/tb";
 import { isAddress } from "viem";
 import { CosmoPublicUser, CosmoSearchResult } from "@/lib/universal/cosmo/auth";
 import { ofetch } from "ofetch";
@@ -114,7 +115,7 @@ export function UserSearch({
               <Popover>
                 <PopoverTrigger asChild>
                   <button>
-                    <HelpCircle className="h-4 w-4" />
+                    <LuCircleHelp className="h-4 w-4" />
                   </button>
                 </PopoverTrigger>
                 <PopoverContent
@@ -153,13 +154,13 @@ export function UserSearch({
         <CommandList>
           {status === "pending" && enableQuery && (
             <div className="flex items-center justify-center py-2">
-              <Loader2 className="h-8 w-8 animate-spin" />
+              <TbLoader2 className="h-8 w-8 animate-spin" />
             </div>
           )}
 
           {status === "error" && (
             <div className="flex items-center justify-center gap-2 py-2">
-              <HeartCrack className="h-8 w-8" />
+              <LuHeartCrack className="h-8 w-8" />
               <p className="text-semibold">Error searching for users</p>
             </div>
           )}

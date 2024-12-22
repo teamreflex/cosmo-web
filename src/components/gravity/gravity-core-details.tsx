@@ -8,7 +8,7 @@ import { isFuture, isPast } from "date-fns";
 import GravityEventType from "./gravity-event-type";
 import GravityTimestamp from "./gravity-timestamp";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Crown } from "lucide-react";
+import { LuCrown } from "react-icons/lu";
 import Image from "next/image";
 import { cn, getPollStatus } from "@/lib/utils";
 import { Suspense } from "react";
@@ -77,7 +77,7 @@ function PastDetails({ gravity }: { gravity: CosmoPastGravity }) {
               <div className="flex flex-col mx-auto bg-accent rounded-xl w-full sm:w-2/3">
                 <div className="flex gap-2 font-bold p-3">
                   <p>Our Final Choice</p>
-                  <Crown />
+                  <LuCrown />
                 </div>
 
                 <div className="rounded-xl relative aspect-square w-full bg-linear-to-t from-black to-transparent text-clip">

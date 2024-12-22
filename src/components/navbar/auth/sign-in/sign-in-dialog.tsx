@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 // import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogIn } from "lucide-react";
+import { LuLogIn } from "react-icons/lu";
 import SignInWithEmail from "./sign-in-with-email";
 // import SignInWithQR from "./sign-in-with-qr";
 
@@ -19,7 +19,7 @@ export default function SignInDialog() {
       <AlertDialogTrigger asChild>
         <Button variant="link" className="px-0 md:px-4">
           <span className="hidden md:block">Sign In</span>
-          <LogIn className="md:hidden h-8 w-8 shrink-0" />
+          <LuLogIn className="md:hidden h-8 w-8 shrink-0" />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent className="sm:max-w-xl">

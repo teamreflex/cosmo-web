@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { ExternalLink, Maximize2 } from "lucide-react";
+import { LuExternalLink, LuMaximize2 } from "react-icons/lu";
 import Link from "next/link";
 import { memo, useState } from "react";
 import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
@@ -32,7 +32,7 @@ export default memo(function InformationOverlay({ objekt }: Props) {
         className="z-50 hover:cursor-pointer hover:scale-110 transition-all flex items-center place-self-end"
         onClick={() => setOpen((prev) => !prev)}
       >
-        <Maximize2 className="h-3 w-3 sm:h-5 sm:w-5" />
+        <LuMaximize2 className="h-3 w-3 sm:h-5 sm:w-5" />
       </button>
 
       <div className="z-40 absolute flex flex-col gap-1 group-data-[open=false]:opacity-0 group-data-[open=true]:opacity-100 transition-all">
@@ -46,7 +46,7 @@ export default memo(function InformationOverlay({ objekt }: Props) {
             href={opensea}
           >
             <span>OpenSea</span>
-            <ExternalLink className="h-3 w-3" />
+            <LuExternalLink className="h-3 w-3" />
           </Link>
         </div>
 

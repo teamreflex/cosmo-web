@@ -8,7 +8,7 @@ import ProgressTable from "./progress-table";
 import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import { ErrorBoundary } from "react-error-boundary";
 import { Button } from "../ui/button";
-import { RefreshCcw } from "lucide-react";
+import { LuRefreshCcw } from "react-icons/lu";
 import Skeleton from "../skeleton/skeleton";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 
@@ -61,7 +61,7 @@ export default function ProgressRenderer({ artists, address }: Props) {
                 </p>
 
                 <Button variant="outline" onClick={resetErrorBoundary}>
-                  <RefreshCcw className="mr-2" /> Try Again
+                  <LuRefreshCcw className="mr-2" /> Try Again
                 </Button>
               </div>
             )}

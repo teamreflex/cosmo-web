@@ -1,7 +1,7 @@
 import { fetchArchivedStatus } from "@/lib/server/cosmo/rekord";
 import { TokenPayload } from "@/lib/universal/auth";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
-import { Disc3, Heart, Users } from "lucide-react";
+import { LuDisc3, LuHeart, LuUsers } from "react-icons/lu";
 import { ReactNode } from "react";
 
 type Props = {
@@ -23,12 +23,16 @@ export default async function RekordArchiveStatus({ user, artist }: Props) {
       </p>
 
       <div className="flex flex-row gap-8 justify-center">
-        <IconBlock count={archive.postCount} label="Archive" icon={<Disc3 />} />
-        <IconBlock count={archive.likeCount} label="Like" icon={<Heart />} />
+        <IconBlock
+          count={archive.postCount}
+          label="Archive"
+          icon={<LuDisc3 />}
+        />
+        <IconBlock count={archive.likeCount} label="Like" icon={<LuHeart />} />
         <IconBlock
           count={archive.followerCount}
           label={archive.fandomName}
-          icon={<Users />}
+          icon={<LuUsers />}
         />
       </div>
     </div>

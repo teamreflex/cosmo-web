@@ -2,14 +2,14 @@
 
 import { cn } from "@/lib/utils";
 import {
-  DownloadCloud,
-  Grid2X2,
-  Lock,
-  MailX,
-  PartyPopper,
-  Pin,
-  Smartphone,
-} from "lucide-react";
+  LuCloudDownload,
+  LuGrid2X2,
+  LuLock,
+  LuMailX,
+  LuPartyPopper,
+  LuPin,
+  LuSmartphone,
+} from "react-icons/lu";
 import { memo } from "react";
 import LockObjekt from "./lock-button";
 import OverlayStatus from "./overlay-status";
@@ -63,12 +63,12 @@ export default memo(function ActionOverlay({
 
         {/* pinned (viewing other user) */}
         {isPin && isPinned && !authenticated && (
-          <Pin className="h-3 w-3 sm:h-5 sm:w-5 shrink-0" />
+          <LuPin className="h-3 w-3 sm:h-5 sm:w-5 shrink-0" />
         )}
 
         {/* locked (viewing other user) */}
         {!objekt.usedForGrid && !isPin && isLocked && !authenticated && (
-          <Lock className="h-3 w-3 sm:h-5 sm:w-5 shrink-0" />
+          <LuLock className="h-3 w-3 sm:h-5 sm:w-5 shrink-0" />
         )}
 
         {authenticated && (
@@ -108,7 +108,7 @@ export default memo(function ActionOverlay({
           <div className="contents">
             {/* generic non-transferable */}
             {objekt.nonTransferableReason === "not-transferable" && (
-              <MailX
+              <LuMailX
                 {...createHoverProps("not-transferable")}
                 className="h-3 w-3 sm:h-5 sm:w-5 shrink-0"
               />
@@ -116,7 +116,7 @@ export default memo(function ActionOverlay({
 
             {/* mint pending */}
             {objekt.nonTransferableReason === "mint-pending" && (
-              <DownloadCloud
+              <LuCloudDownload
                 {...createHoverProps("mint-pending")}
                 className="h-3 w-3 sm:h-5 sm:w-5 shrink-0"
               />
@@ -124,7 +124,7 @@ export default memo(function ActionOverlay({
 
             {/* event reward */}
             {objekt.nonTransferableReason === "challenge-reward" && (
-              <PartyPopper
+              <LuPartyPopper
                 {...createHoverProps("challenge-reward")}
                 className="h-3 w-3 sm:h-5 sm:w-5 shrink-0"
               />
@@ -132,7 +132,7 @@ export default memo(function ActionOverlay({
 
             {/* welcome reward */}
             {objekt.nonTransferableReason === "welcome-objekt" && (
-              <MailX
+              <LuMailX
                 {...createHoverProps("welcome-objekt")}
                 className="h-3 w-3 sm:h-5 sm:w-5 shrink-0"
               />
@@ -140,7 +140,7 @@ export default memo(function ActionOverlay({
 
             {/* used for grid */}
             {objekt.nonTransferableReason === "used-for-grid" && (
-              <Grid2X2
+              <LuGrid2X2
                 {...createHoverProps("used-for-grid")}
                 className="h-3 w-3 sm:h-5 sm:w-5 shrink-0"
               />
@@ -148,7 +148,7 @@ export default memo(function ActionOverlay({
 
             {/* used in lenticular, for some reason the nonTransferableReason isn't used here */}
             {objekt.lenticularPairTokenId !== null && (
-              <Smartphone
+              <LuSmartphone
                 {...createHoverProps("lenticular-objekt")}
                 className="h-3 w-3 sm:h-5 sm:w-5 shrink-0"
               />

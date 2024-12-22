@@ -14,7 +14,7 @@ import ProgressLeaderboardContent, {
   LeaderboardSkeleton,
 } from "./progress-leaderboard-content";
 import { Button } from "../ui/button";
-import { Trophy } from "lucide-react";
+import { LuTrophy } from "react-icons/lu";
 import {
   Tooltip,
   TooltipContent,
@@ -64,7 +64,7 @@ export default function ProgressLeaderboard({ member }: Props) {
               size="icon"
               onClick={() => toggle()}
             >
-              <Trophy className="h-5 w-5" />
+              <LuTrophy className="h-5 w-5" />
             </Button>
           </TooltipTrigger>
           <TooltipContent side="left">Leaderboard</TooltipContent>

@@ -11,12 +11,11 @@ import {
 } from "@/components/ui/drawer";
 import { Button } from "../ui/button";
 import {
-  CheckCircle,
-  Loader2,
-  QrCode,
-  Scan,
-  TriangleAlert,
-} from "lucide-react";
+  LuCircleCheckBig,
+  LuQrCode,
+  LuScan,
+  LuTriangleAlert,
+} from "react-icons/lu";
 import { useState } from "react";
 import VisuallyHidden from "../ui/visually-hidden";
 import { IDetectedBarcode, Scanner } from "@yudiel/react-qr-scanner";
@@ -32,6 +31,7 @@ import { useCamera } from "@/hooks/use-camera";
 import { useUserState } from "@/hooks/use-user-state";
 import { extractObjektCode } from "@/lib/universal/cosmo/albums";
 import { ErrorBoundary } from "react-error-boundary";
+import { TbLoader2 } from "react-icons/tb";
 
 type State = "scan" | "claim" | "success";
 type ScanResult = {
@@ -56,7 +56,7 @@ export default function ScanQR() {
       preventScrollRestoration={true}
     >
       <DrawerTrigger className="flex items-center justify-center p-2 rounded-full bg-cosmo size-16 aspect-square drop-shadow-sm ring-0">
-        <QrCode className="text-white size-10" />
+        <LuQrCode className="text-white size-10" />
       </DrawerTrigger>
 
       <ScanObjekt open={open} onClose={() => setOpen(false)} />
@@ -188,7 +188,7 @@ function QRScanner({ open, onResult, onClose }: QRScannerProps) {
       {/* qr has been submitted */}
       {status === "pending" && (
         <div className="flex items-center justify-center py-2">
-          <Loader2 className="size-24 animate-spin" />
+          <TbLoader2 className="size-24 animate-spin" />
         </div>
       )}
 
@@ -198,9 +198,9 @@ function QRScanner({ open, onResult, onClose }: QRScannerProps) {
           <Button variant="secondary" onClick={() => request()}>
             <span>Enable Camera</span>
             {isLoading ? (
-              <Loader2 className="size-4 ml-2 animate-spin" />
+              <TbLoader2 className="size-4 ml-2 animate-spin" />
             ) : (
-              <Scan className="ml-2 size-4" />
+              <LuScan className="ml-2 size-4" />
             )}
           </Button>
         </div>
@@ -253,7 +253,7 @@ function ScannerError({
 }) {
   return (
     <div className="flex items-center justify-center mx-auto py-2">
-      <TriangleAlert className="size-12 text-red-500" />
+      <LuTriangleAlert className="size-12 text-red-500" />
       <p className="text-sm font-semibold">Error with QR scanner</p>
       <Button variant="secondary" size="sm" onClick={resetErrorBoundary}>
         Retry
@@ -332,7 +332,7 @@ function ClaimObjekt({ serial, result, onClaim, onClose }: ClaimObjektProps) {
           <Button disabled={status === "pending"} onClick={() => mutate()}>
             <span>Claim</span>
             {status === "pending" && (
-              <Loader2 className="h-4 w-4 ml-2 animate-spin" />
+              <TbLoader2 className="h-4 w-4 ml-2 animate-spin" />
             )}
           </Button>
         )}
@@ -356,7 +356,7 @@ function ClaimSuccess({ reset, onClose }: ClaimSuccessProps) {
         </VisuallyHidden>
       </DrawerHeader>
 
-      <CheckCircle className="size-24 mx-auto" />
+      <LuCircleCheckBig className="size-24 mx-auto" />
 
       <DrawerFooter>
         <Button variant="secondary" onClick={onClose}>

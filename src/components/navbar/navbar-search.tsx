@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { UserSearch } from "../user-search";
-import { Search } from "lucide-react";
+import { LuSearch } from "react-icons/lu";
 import { useSearchStore } from "@/store";
 import { Route } from "next";
 import { CosmoPublicUser } from "@/lib/universal/cosmo/auth";
@@ -50,7 +50,7 @@ export default function NavbarSearch({ authenticated }: Props) {
               aria-label="Search for user"
               onClick={() => setOpen(true)}
             >
-              <Search className="h-8 w-8 shrink-0 transition-all fill-transparent" />
+              <LuSearch className="h-8 w-8 shrink-0 transition-all fill-transparent" />
             </button>
           </TooltipTrigger>
           <TooltipContent>

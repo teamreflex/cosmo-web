@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "../ui/button";
-import { Undo2 } from "lucide-react";
+import { LuUndo2 } from "react-icons/lu";
 import { usePathname } from "next/navigation";
 
 type Props = {
@@ -17,7 +17,7 @@ export default function BackButton({ url }: Props) {
   return (
     <Button variant="secondary" size="profile" data-profile asChild>
       <Link href={url}>
-        <Undo2 className="h-5 w-5" />
+        <LuUndo2 className="h-5 w-5" />
         <span>Back</span>
       </Link>
     </Button>
