@@ -60,10 +60,11 @@ export function MobileLinks({ user }: LinksProps) {
         const href = link.href(user);
         const active = href === "/" ? path === "/" : path === href;
         const disabled = link.requireAuth && !authenticated;
+        const prefetch = disabled === false && link.prefetch === true;
 
         return (
           <DropdownMenuItem key={href} disabled={disabled} asChild>
-            <Link href={href} aria-label={link.name}>
+            <Link href={href} aria-label={link.name} prefetch={prefetch}>
               <link.icon
                 className={cn(
                   "h-4 w-4 mr-2 shrink-0 transition-all fill-transparent",
@@ -92,6 +93,7 @@ export function LinkButton({ link, active, user }: LinkButtonProps) {
   const authenticated = user !== undefined;
   const pathname = link.href(user);
   const disabled = link.requireAuth && !authenticated;
+  const prefetch = disabled === false && link.prefetch === true;
 
   return (
     <TooltipProvider>
@@ -101,6 +103,7 @@ export function LinkButton({ link, active, user }: LinkButtonProps) {
             href={{ pathname }}
             className="drop-shadow-lg outline-hidden focus:outline-hidden"
             aria-label={link.name}
+            prefetch={prefetch}
           >
             <link.icon
               className={cn(
@@ -129,47 +132,55 @@ const links: NavbarLink[] = [
     icon: LuHouse,
     href: () => "/",
     requireAuth: true,
+    prefetch: null,
   },
   {
     name: "Rekord",
     icon: LuDisc3,
     href: () => "/rekord",
     requireAuth: true,
+    prefetch: null,
   },
   {
     name: "Gravity",
     icon: LuVote,
     href: () => "/gravity",
     requireAuth: true,
+    prefetch: null,
   },
   {
     name: "Objekts",
     icon: TbCards,
     href: () => "/objekts",
     requireAuth: false,
+    prefetch: true,
   },
   {
     name: "Collection",
     icon: LuPackageOpen,
     href: (user) => (user ? `/@${user.nickname}` : "/"),
     requireAuth: true,
+    prefetch: true,
   },
   {
     name: "COMO",
     icon: LuCalendarRange,
     href: (user) => (user ? `/@${user.nickname}/como` : "/"),
     requireAuth: true,
+    prefetch: null,
   },
   {
     name: "Grid",
     icon: LuLayoutGrid,
     href: () => "/grid",
     requireAuth: true,
+    prefetch: null,
   },
   {
     name: "Activity",
     icon: LuCircleUserRound,
     href: () => "/activity",
     requireAuth: true,
+    prefetch: null,
   },
 ];

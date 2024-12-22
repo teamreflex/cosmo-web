@@ -6,4 +6,5 @@ export type NavbarLink = {
   icon: IconType;
   href: (user?: TokenPayload) => string;
   requireAuth: boolean;
+  prefetch: boolean | null;
 };

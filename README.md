@@ -42,11 +42,10 @@ This project experiments with new tooling such as [Next.js App Router streaming]
 ### Notes
 
 - **There's no app version or user agent spoofing. It's entirely possible for MODHAUS to detect usage of this. Use at your own risk.**
-- Anything in `/scripts` are mostly just one-offs to migrate production data.
 
 ## Requirements
 
-- [Node.js](https://nodejs.org/en/) 18.17+
+- [Node.js](https://nodejs.org/en/) 20.17
 - [Alchemy](https://www.alchemy.com/) API key
 - [Neon](https://neon.tech/) instance
   - Or swap this out for another Postgres compatible database with minimal code changes
