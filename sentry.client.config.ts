@@ -9,7 +9,7 @@ const stackPatterns = [
 Sentry.init({
   dsn: env.NEXT_PUBLIC_SENTRY_DSN,
   debug: false,
-  tracesSampleRate: 0.25,
+  tracesSampleRate: 0.15,
   // ignore any errors based on message
   ignoreErrors: [
     // Maximize-Video seems to be the main culprit, stacktrace doesn't work here
