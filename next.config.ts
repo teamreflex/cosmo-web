@@ -83,7 +83,11 @@ const config: NextConfig = {
   },
 };
 
-export default withSentryConfig(config, {
+const withBundleAnalyzer = require("@next/bundle-analyzer")({
+  enabled: process.env.ANALYZE === "true",
+});
+
+export default withSentryConfig(withBundleAnalyzer(config), {
   org: env.SENTRY_ORG,
   project: env.SENTRY_PROJECT,
   silent: !process.env.CI,

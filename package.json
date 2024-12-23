@@ -14,12 +14,14 @@
     "db:upgrade": "drizzle-kit up",
     "db:migrate": "tsx ./migrate.mts",
     "knip": "knip",
-    "metadata:import": "tsx --env-file=.env.local ./scripts/metadata-import/import.mts"
+    "metadata:import": "tsx --env-file=.env.local ./scripts/metadata-import/import.mts",
+    "analyze": "ANALYZE=true next build"
   },
   "dependencies": {
     "@aws-sdk/client-kms": "^3.670.0",
     "@aws-sdk/credential-providers": "^3.670.0",
     "@neondatabase/serverless": "^0.10.4",
+    "@next/bundle-analyzer": "^15.1.2",
     "@radix-ui/react-accordion": "^1.2.2",
     "@radix-ui/react-alert-dialog": "^1.1.4",
     "@radix-ui/react-avatar": "^1.1.2",

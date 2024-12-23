@@ -7,7 +7,10 @@ import Timestamp from "../ui/timestamp";
 import { LuClipboardCopy } from "react-icons/lu";
 import { useCopyToClipboard } from "usehooks-ts";
 import { toast } from "../ui/use-toast";
-import HLSVideo from "../misc/hls-video";
+import { lazy, Suspense } from "react";
+import Skeleton from "../skeleton/skeleton";
+
+const HLSVideo = lazy(() => import("../misc/hls-video"));
 
 export default function NewsPostExclusive({
   post,
@@ -68,11 +71,13 @@ function ExclusiveVideoPost({
 
   return (
     <div className="cursor-pointer relative aspect-video rounded-xl border border-accent overflow-hidden">
-      <HLSVideo
-        videoUrl={post.nativeVideoUrl}
-        thumbnailUrl={post.thumbnailImageUrl}
-        title={post.title}
-      />
+      <Suspense fallback={<Skeleton className="h-full w-full" />}>
+        <HLSVideo
+          videoUrl={post.nativeVideoUrl}
+          thumbnailUrl={post.thumbnailImageUrl}
+          title={post.title}
+        />
+      </Suspense>
     </div>
   );
 }

@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  decryptMnemonic,
-  DecryptRamperWallet,
-  EncryptedWallet,
-  exchangeKMS,
-} from "@/lib/client/wallet/decryption";
+import { decryptMnemonic } from "@/lib/client/wallet/decryption";
 import {
   MutationOptions,
   useMutation,
@@ -16,6 +11,8 @@ import { createWalletClient, Hex, http, publicActions } from "viem";
 import { mnemonicToAccount } from "viem/accounts";
 import { polygon } from "viem/chains";
 import { env } from "@/env.mjs";
+import type { DecryptRamperWallet } from "@/lib/client/wallet/exchange";
+import { EncryptedWallet } from "@/lib/client/wallet/util";
 
 const STORAGE_KEY = "wallet";
 const QUERY_KEY = [STORAGE_KEY];
@@ -54,7 +51,13 @@ export function useWallet() {
   const mutation = useMutation({
     mutationFn: async (
       credentials: DecryptRamperWallet
-    ): Promise<EncryptedWallet> => exchangeKMS(credentials),
+    ): Promise<EncryptedWallet> => {
+      // lazy load all the firebase and KMS stuff
+      const exchangeKMS = await import("@/lib/client/wallet/exchange").then(
+        (mod) => mod.exchangeKMS
+      );
+      return exchangeKMS(credentials);
+    },
     onSuccess: async (encrypted) => {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(encrypted));
       const wallet = await decrypt(encrypted);

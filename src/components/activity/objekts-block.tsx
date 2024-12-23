@@ -3,9 +3,11 @@ import { TokenPayload } from "@/lib/universal/auth";
 import { CosmoActivityMyObjektMember } from "@/lib/universal/cosmo/activity/my-objekt";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import Image from "next/image";
-import { CSSProperties } from "react";
-import ObjektChart from "./objekt-chart";
+import { CSSProperties, Suspense } from "react";
 import { cn } from "@/lib/utils";
+import { lazy } from "react";
+import Skeleton from "../skeleton/skeleton";
+const ObjektChart = lazy(() => import("./objekt-chart"));
 
 type Props = {
   artist: ValidArtist;
@@ -42,7 +44,13 @@ export default async function ObjektsBlock({ user, artist }: Props) {
 
       {/* chart */}
       <div className="flex justify-center md:justify-end">
-        <ObjektChart members={countByMember} />
+        <Suspense
+          fallback={
+            <Skeleton className="h-full w-full aspect-video rounded-xl" />
+          }
+        >
+          <ObjektChart members={countByMember} />
+        </Suspense>
       </div>
     </div>
   );

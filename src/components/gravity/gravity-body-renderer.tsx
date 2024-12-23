@@ -11,8 +11,11 @@ import {
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import GravityEventType from "./gravity-event-type";
-import HLSVideo from "../misc/hls-video";
 import { match } from "ts-pattern";
+import { lazy, Suspense } from "react";
+import Skeleton from "../skeleton/skeleton";
+
+const HLSVideo = lazy(() => import("../misc/hls-video"));
 
 type Props = {
   gravity: CosmoGravity;
@@ -108,11 +111,13 @@ function TextElement({ item }: { item: CosmoBodyText }) {
 
 function VideoElement({ item }: { item: CosmoBodyVideo }) {
   return (
-    <div className="cursor-pointer relative aspect-video">
-      <HLSVideo
-        videoUrl={item.videoUrl}
-        thumbnailUrl={item.thumbnailImageUrl}
-      />
+    <div className="cursor-pointer relative aspect-video rounded-xl border border-accent overflow-hidden">
+      <Suspense fallback={<Skeleton className="h-full w-full" />}>
+        <HLSVideo
+          videoUrl={item.videoUrl}
+          thumbnailUrl={item.thumbnailImageUrl}
+        />
+      </Suspense>
     </div>
   );
 }

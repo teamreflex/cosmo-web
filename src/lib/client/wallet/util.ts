@@ -2,6 +2,13 @@ import objektAbi from "@/abi/objekt.json";
 import comoAbi from "@/abi/como.json";
 import { encodeFunctionData, parseEther } from "viem";
 
+export type EncryptedWallet = {
+  decryptedDek: string;
+  encryptedKey: string;
+  version: number;
+  address: string;
+};
+
 type EncodeObjektTransfer = {
   from: string;
   to: string;

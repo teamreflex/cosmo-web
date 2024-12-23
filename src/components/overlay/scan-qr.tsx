@@ -18,7 +18,7 @@ import {
 } from "react-icons/lu";
 import { useState } from "react";
 import VisuallyHidden from "../ui/visually-hidden";
-import { IDetectedBarcode, Scanner } from "@yudiel/react-qr-scanner";
+import { IDetectedBarcode } from "@yudiel/react-qr-scanner";
 import { cn, track } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ofetch } from "ofetch";
@@ -32,6 +32,12 @@ import { useUserState } from "@/hooks/use-user-state";
 import { extractObjektCode } from "@/lib/universal/cosmo/albums";
 import { ErrorBoundary } from "react-error-boundary";
 import { TbLoader2 } from "react-icons/tb";
+import { lazy, Suspense } from "react";
+import Skeleton from "../skeleton/skeleton";
+
+const Scanner = lazy(() =>
+  import("@yudiel/react-qr-scanner").then((mod) => ({ default: mod.Scanner }))
+);
 
 type State = "scan" | "claim" | "success";
 type ScanResult = {
@@ -216,23 +222,25 @@ function QRScanner({ open, onResult, onClose }: QRScannerProps) {
               status === "success" && "border-green-500"
             )}
           >
-            <Scanner
-              onScan={onScan}
-              paused={status !== "idle"}
-              formats={["qr_code"]}
-              allowMultiple={false}
-              components={{
-                audio: false,
-                finder: false,
-              }}
-              styles={{
-                video: {
-                  height: "100%",
-                  width: "100%",
-                },
-                finderBorder: 0,
-              }}
-            />
+            <Suspense fallback={<Skeleton className="h-full w-full" />}>
+              <Scanner
+                onScan={onScan}
+                paused={status !== "idle"}
+                formats={["qr_code"]}
+                allowMultiple={false}
+                components={{
+                  audio: false,
+                  finder: false,
+                }}
+                styles={{
+                  video: {
+                    height: "100%",
+                    width: "100%",
+                  },
+                  finderBorder: 0,
+                }}
+              />
+            </Suspense>
           </div>
         </ErrorBoundary>
       )}
