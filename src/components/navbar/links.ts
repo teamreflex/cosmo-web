@@ -1,9 +1,10 @@
 import { TokenPayload } from "@/lib/universal/auth";
-import { LucideIcon } from "lucide-react";
+import type { TablerIcon } from "@tabler/icons-react";
+import type { LucideIcon } from "lucide-react";
 
 export type NavbarLink = {
   name: string;
-  icon: LucideIcon;
+  icon: LucideIcon | TablerIcon;
   href: (user?: TokenPayload) => string;
   requireAuth: boolean;
   prefetch: boolean | null;

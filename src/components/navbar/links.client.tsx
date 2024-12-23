@@ -18,11 +18,11 @@ import {
   LayoutGrid,
   PackageOpen,
   Vote,
-  LibraryBig,
   CalendarRange,
   Disc3,
   CircleUserRound,
 } from "lucide-react";
+import { IconCards } from "@tabler/icons-react";
 
 type LinksProps = {
   user?: TokenPayload;
@@ -150,7 +150,7 @@ const links: NavbarLink[] = [
   },
   {
     name: "Objekts",
-    icon: LibraryBig,
+    icon: IconCards,
     href: () => "/objekts",
     requireAuth: false,
     prefetch: true,

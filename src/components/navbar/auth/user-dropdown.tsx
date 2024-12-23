@@ -13,8 +13,8 @@ import { ValidArtist } from "@/lib/universal/cosmo/common";
 import PrivacyDialog from "./privacy-dialog";
 import SettingsDialog from "./settings-dialog";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
-import Discord from "@/components/icons/discord";
 import Link from "next/link";
+import { IconBrandDiscord } from "@tabler/icons-react";
 
 type UserDropdownProps = {
   profile: PublicProfile;
@@ -93,7 +93,7 @@ export default function UserDropdown({
 
         <DropdownMenuItem className="cursor-pointer" asChild>
           <a href="https://discord.gg/A72VRX8FgK" target="_blank">
-            <Discord className="mr-2 h-4 w-4" />
+            <IconBrandDiscord className="mr-2 h-4 w-4" />
             <span>Discord</span>
           </a>
         </DropdownMenuItem>

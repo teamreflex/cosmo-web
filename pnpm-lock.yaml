@@ -84,6 +84,9 @@ importers:
       '@t3-oss/env-nextjs':
         specifier: ^0.11.1
         version: 0.11.1(typescript@5.7.2)(zod@3.24.1)
+      '@tabler/icons-react':
+        specifier: ^3.26.0
+        version: 3.26.0(react@19.0.0)
       '@tanstack/react-query':
         specifier: ^5.62.7
         version: 5.62.7(react@19.0.0)
@@ -2506,6 +2509,14 @@ packages:
     peerDependenciesMeta:
       typescript:
         optional: true
+
+  '@tabler/icons-react@3.26.0':
+    resolution: {integrity: sha512-t18Zmu1ROktB7M8hWQ6vJw+mNpI/LPk5PPxLuE+kNB+4Zzf38GfETL8VF98inhzcfHohsggdROzMzwSAfjcAxw==}
+    peerDependencies:
+      react: '>= 16'
+
+  '@tabler/icons@3.26.0':
+    resolution: {integrity: sha512-oO3D4ss+DxzxqU1aDy0f1HmToyrO0gcQWIMpzHAfV1quPUx0BZYvNm5xz1DQb4DxNm/+xNvbBGLJy4pzTLYWag==}
 
   '@tailwindcss/node@4.0.0-beta.8':
     resolution: {integrity: sha512-ZbicJgFxo83IIH5eBm7CU3K1olsfud7/zg3+yG7P6+fZiufhh8FllM5QOJVxUEJ5zeB1V94Y+hTq5UOfu8ZloA==}
@@ -8018,6 +8029,13 @@ snapshots:
       zod: 3.24.1
     optionalDependencies:
       typescript: 5.7.2
+
+  '@tabler/icons-react@3.26.0(react@19.0.0)':
+    dependencies:
+      '@tabler/icons': 3.26.0
+      react: 19.0.0
+
+  '@tabler/icons@3.26.0': {}
 
   '@tailwindcss/node@4.0.0-beta.8':
     dependencies:
