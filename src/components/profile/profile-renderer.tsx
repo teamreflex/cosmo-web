@@ -1,6 +1,6 @@
 "use client";
 
-import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
+import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import { COSMO_ENDPOINT, ValidSort } from "@/lib/universal/cosmo/common";
 import { OwnedObjektsResult } from "@/lib/universal/cosmo/objekts";
 import { useFilters } from "@/hooks/use-filters";
@@ -19,7 +19,7 @@ import { baseUrl } from "@/lib/utils";
 import SendObjekts from "../overlay/send-objekts";
 
 type Props = {
-  artists: CosmoArtistWithMembers[];
+  artists: CosmoArtistWithMembersBFF[];
   profile: PublicProfile;
   user?: PublicProfile;
 };

@@ -2,10 +2,11 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { updateSettings } from "./actions";
+import { updateProfile, updateSettings } from "./actions";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -19,6 +20,7 @@ import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { toast } from "@/components/ui/use-toast";
+import { Loader2 } from "lucide-react";
 
 type SettingsDialogProps = {
   open: boolean;
@@ -35,7 +37,7 @@ export default function SettingsDialog({
   const router = useRouter();
   const { theme, setTheme } = useTheme();
 
-  function update(form: FormData) {
+  function save(form: FormData) {
     startTransition(async () => {
       const result = await updateSettings(form);
       if (result.status === "success") {
@@ -45,6 +47,18 @@ export default function SettingsDialog({
         router.refresh();
         onOpenChange(false);
       }
+    });
+  }
+
+  function update() {
+    startTransition(async () => {
+      await updateProfile();
+
+      toast({
+        description: "COSMO profile refreshed.",
+      });
+      router.refresh();
+      onOpenChange(false);
     });
   }
 
@@ -58,7 +72,7 @@ export default function SettingsDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form className="flex flex-col gap-2" action={update}>
+        <form className="flex flex-col gap-2" action={save} id="settings-form">
           {/* theme */}
           <div className="flex gap-2 items-center justify-between">
             <div className="flex flex-col">
@@ -108,11 +122,19 @@ export default function SettingsDialog({
               </SelectContent>
             </Select>
           </div>
-
-          <Button type="submit" disabled={isPending}>
-            {isPending ? "Saving..." : "Save"}
-          </Button>
         </form>
+
+        <DialogFooter className="flex-row justify-between sm:justify-between gap-2">
+          <Button type="button" disabled={isPending} onClick={update}>
+            <span>Refresh COSMO Profile</span>
+            {isPending && <Loader2 className="ml-2 w-4 h-4 animate-spin" />}
+          </Button>
+
+          <Button form="settings-form" type="submit" disabled={isPending}>
+            <span>Save</span>
+            {isPending && <Loader2 className="ml-2 w-4 h-4 animate-spin" />}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

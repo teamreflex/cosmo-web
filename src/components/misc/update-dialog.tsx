@@ -75,6 +75,16 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2024-12-23",
+    changes: [
+      "Adjusted a couple icons to better represent the button's purpose.",
+      "Reduced reliance on COSMO: Profile images update every 24 hours.",
+      "Using new COSMO data: Member filters now show their representative color when selected.",
+      "Profiles should more reliably update when COSMO IDs change.",
+      "COSMO profile details can now be refreshed from settings. This will update your ID from COSMO based on your currently signed in account, refresh your profile images, and pull your selected artist from COSMO.",
+    ],
+  },
+  {
     date: "2024-12-07",
     changes: ["Hopefully fixed instances of Google Translate breaking pages."],
   },
@@ -87,13 +97,6 @@ const updates = [
     changes: [
       "Tech update: Minimum supported browsers are now: Chrome 85+ (2020), Edge 85+ (2020), Firefox 115+ (2023), Safari 16.4+ (2023), iOS 16.4+ (2023)",
       "If things are broken, please update your browser or device.",
-    ],
-  },
-  {
-    date: "2024-11-18",
-    changes: [
-      "Added: Gravity voting.",
-      'Currently only "single" polls are supported. "Combination" polls (LOVElution/EVOLution gravity) will come at a later date.',
     ],
   },
 ];

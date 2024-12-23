@@ -11,7 +11,7 @@ import ObjektSidebar from "../objekt/objekt-sidebar";
 import ListOverlay from "./list-overlay";
 import DeleteList from "./delete-list";
 import UpdateList from "./update-list";
-import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
+import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { useFilters } from "@/hooks/use-filters";
 import { memo, useCallback } from "react";
@@ -27,7 +27,7 @@ const getObjektId = (objekt: IndexedObjekt) => objekt.id;
 
 type Props = {
   list: ObjektList;
-  artists: CosmoArtistWithMembers[];
+  artists: CosmoArtistWithMembersBFF[];
   authenticated: boolean;
   user: PublicProfile;
   gridColumns?: number;

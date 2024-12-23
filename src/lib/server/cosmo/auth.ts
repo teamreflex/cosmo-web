@@ -103,3 +103,23 @@ export async function fetchByNickname(
     .then((res) => res.profile)
     .catch(() => undefined);
 }
+
+/**
+ * Sets the last viewed artist for the user.
+ */
+export async function setLastViewedArtist(
+  token: string,
+  artistId: ValidArtist
+) {
+  const res = await cosmo("/bff/v3/users/last-viewed-artist", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: {
+      artistId,
+    },
+  });
+
+  return res.status === 201;
+}

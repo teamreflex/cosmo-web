@@ -9,7 +9,7 @@ import Image from "next/image";
 import { Check, Loader2 } from "lucide-react";
 import { useTransition } from "react";
 import { updateSelectedArtist } from "./actions";
-import { CosmoArtist } from "@/lib/universal/cosmo/artists";
+import { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { useRouter } from "next/navigation";
 import { toast } from "@/components/ui/use-toast";
@@ -17,7 +17,7 @@ import { toast } from "@/components/ui/use-toast";
 type SwitchArtistDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  artists: CosmoArtist[];
+  artists: CosmoArtistBFF[];
   selectedArtist: ValidArtist | undefined;
 };
 
@@ -53,7 +53,7 @@ export default function SwitchArtistDialog({
 }
 
 type SelectArtistButtonProps = {
-  artist: CosmoArtist;
+  artist: CosmoArtistBFF;
   isSelected: boolean;
   onOpenChange: (open: boolean) => void;
 };
@@ -68,13 +68,19 @@ function SelectArtistButton({
 
   function select() {
     startTransition(async () => {
-      const result = await updateSelectedArtist(artist.name);
+      const result = await updateSelectedArtist(artist.id);
       if (result.status === "success") {
         toast({
           description: `Switched to ${artist.title}`,
         });
         router.refresh();
         onOpenChange(false);
+      }
+      if (result.status === "error") {
+        toast({
+          variant: "destructive",
+          description: result.error,
+        });
       }
     });
   }

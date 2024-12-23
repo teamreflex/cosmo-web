@@ -15,7 +15,7 @@ import {
   CosmoActivityRankingResult,
   CosmoActivityRankingTopEntry,
 } from "@/lib/universal/cosmo/activity/ranking";
-import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
+import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import Image from "next/image";
@@ -41,7 +41,7 @@ import CalculatingError from "./calculating-error";
 
 type Props = {
   selectedArtist: ValidArtist;
-  artists: CosmoArtistWithMembers[];
+  artists: CosmoArtistWithMembersBFF[];
 };
 
 export default function TopRanking({ selectedArtist, artists }: Props) {
@@ -86,7 +86,7 @@ export default function TopRanking({ selectedArtist, artists }: Props) {
                   </div>
                 </SelectItem>
 
-                {artist.members.map((member) => (
+                {artist.artistMembers.map((member) => (
                   <SelectItem key={member.name} value={member.id.toString()}>
                     <div className="flex flex-row items-center gap-2">
                       <Image

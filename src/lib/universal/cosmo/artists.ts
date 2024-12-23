@@ -32,6 +32,7 @@ export interface CosmoArtistWithMembers extends CosmoArtist {
 
 export type CosmoArtistBFF = {
   name: string;
+  id: ValidArtist;
   title: string;
   fandomName: string;
   logoImageUrl: string;
@@ -44,9 +45,34 @@ export type CosmoArtistBFF = {
     CommunityPool: string;
     ComoMinter: string;
   };
-  createdAt: string;
-  createdBy: string;
-  updatedAt: string;
-  activeAt: string;
+};
+
+export interface CosmoArtistWithMembersBFF extends CosmoArtistBFF {
+  artistMembers: CosmoMemberBFF[];
+  snsLink: {
+    discord: CosmoArtistBFFSNSLink;
+    instagram: CosmoArtistBFFSNSLink;
+    twitter: CosmoArtistBFFSNSLink;
+    youtube: CosmoArtistBFFSNSLink;
+    tiktok: CosmoArtistBFFSNSLink;
+  };
+}
+
+export type CosmoMemberBFF = {
+  id: number;
+  name: string;
+  units: string;
+  alias: string;
+  profileImageUrl: string;
   order: number;
+  createdAt: string;
+  updatedAt: string;
+  mainObjektImageUrl: string;
+  artistId: string;
+  primaryColorHex: string;
+};
+
+export type CosmoArtistBFFSNSLink = {
+  name: string;
+  address: string;
 };

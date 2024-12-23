@@ -1,4 +1,3 @@
-import { search } from "@/lib/server/cosmo/auth";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import ProfileImage from "@/assets/profile.webp";
 import {
@@ -8,7 +7,7 @@ import {
   TooltipTrigger,
 } from "../ui/tooltip";
 import { cn, PropsWithClassName } from "@/lib/utils";
-import { getSelectedArtist } from "@/app/data-fetching";
+import { getUserAvatar, getSelectedArtist } from "@/app/data-fetching";
 
 type Props = {
   className?: string;
@@ -39,14 +38,11 @@ export default async function UserAvatar({
   }
 
   try {
-    var { results } = await search(token, nickname);
+    var user = await getUserAvatar(token, nickname);
   } catch (err) {
     return <Fallback className={className} nickname={nickname} />;
   }
 
-  const user = results.find(
-    (u) => u.nickname.toLowerCase() === nickname.toLowerCase()
-  );
   const profile = user?.profile.find(
     (p) => p.artistName.toLowerCase() === artist.toLowerCase()
   );

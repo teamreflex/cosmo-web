@@ -5,7 +5,7 @@ import {
   buildCalendar,
   getDays,
 } from "@/lib/universal/como";
-import { CosmoArtist } from "@/lib/universal/cosmo/artists";
+import { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
 import { cn } from "@/lib/utils";
 import ArtistIcon from "../artist-icon";
 import { Sparkles } from "lucide-react";
@@ -17,7 +17,7 @@ import {
 } from "../ui/tooltip";
 
 type Props = {
-  artists: CosmoArtist[];
+  artists: CosmoArtistBFF[];
   transfers: ObjektWithCollection[];
 };
 

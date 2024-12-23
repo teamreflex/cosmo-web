@@ -16,7 +16,7 @@ import {
   QueryKey,
   useSuspenseInfiniteQuery,
 } from "@tanstack/react-query";
-import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
+import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import MemberFilter from "../collection/member-filter";
 import Portal from "../portal";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
@@ -44,7 +44,7 @@ type Props<TObjektType extends ValidObjekt> = {
     priority: boolean,
     isPin: boolean
   ) => ReactElement;
-  artists: CosmoArtistWithMembers[];
+  artists: CosmoArtistWithMembersBFF[];
   queryKey: QueryKey;
   queryFunction: QueryFunction<
     ObjektResponse<TObjektType>,

@@ -1,6 +1,6 @@
 "use client";
 
-import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
+import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import ListDropdown from "../lists/list-dropdown";
 import {
   IndexedCosmoResponse,
@@ -27,7 +27,7 @@ const queryKey = ["objekt-index"];
 const getObjektId = (objekt: IndexedObjekt) => objekt.id;
 
 type Props = {
-  artists: CosmoArtistWithMembers[];
+  artists: CosmoArtistWithMembersBFF[];
   collections: string[];
   objektLists?: ObjektList[];
   nickname?: string;

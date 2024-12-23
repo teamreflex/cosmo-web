@@ -4,9 +4,9 @@ import {
   getProfile,
   getUserByIdentifier,
   getSelectedArtist,
+  getArtistsWithMembers,
 } from "@/app/data-fetching";
 import ProfileRenderer from "@/components/profile/profile-renderer";
-import { fetchArtistsWithMembers } from "@/lib/server/cosmo/artists";
 import { Shield } from "lucide-react";
 import { isAddressEqual } from "@/lib/utils";
 import { Suspense } from "react";
@@ -41,7 +41,7 @@ export default async function UserCollectionPage(props: Props) {
     user !== undefined && isAddressEqual(user.nickname, params.nickname);
 
   const [artists, currentUser, targetUser] = await Promise.all([
-    fetchArtistsWithMembers(),
+    getArtistsWithMembers(),
     user ? getProfile(user.profileId) : undefined,
     getUserByIdentifier(params.nickname),
   ]);

@@ -29,7 +29,7 @@ import {
   Satellite,
   TriangleAlert,
 } from "lucide-react";
-import { CosmoArtist } from "@/lib/universal/cosmo/artists";
+import { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
 import { Hex } from "viem";
 import { cn } from "@/lib/utils";
 import { useComo } from "@/hooks/use-como";
@@ -38,7 +38,7 @@ import { match } from "ts-pattern";
 type State = "select" | "confirm" | "send";
 
 type VoteDialogProps = {
-  artist: CosmoArtist;
+  artist: CosmoArtistBFF;
   poll: CosmoPollChoices;
 };
 

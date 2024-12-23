@@ -3,6 +3,7 @@ import { twMerge } from "tailwind-merge";
 import { PublicProfile } from "./universal/cosmo/auth";
 import { env } from "@/env.mjs";
 import { CosmoPollChoices, CosmoPollUpcoming } from "./universal/cosmo/gravity";
+import { ValidArtist } from "./universal/cosmo/common";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -86,3 +87,12 @@ export function getPollStatus(poll: CosmoPollChoices | CosmoPollUpcoming) {
 
   return "ongoing";
 }
+
+/**
+ * Objekt border colors for each artist, based on 1st gen fanclub colors.
+ * Used for member filter buttons.
+ */
+export const artistColors: Record<ValidArtist, string> = {
+  tripleS: "#8ebdd1",
+  artms: "#D5B7E2",
+};

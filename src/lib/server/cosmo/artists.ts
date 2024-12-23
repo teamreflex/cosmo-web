@@ -1,16 +1,17 @@
 import "server-only";
 import {
   CosmoArtistBFF,
+  CosmoArtistWithMembersBFF,
   CosmoArtistWithMembers,
 } from "@/lib/universal/cosmo/artists";
 import { ValidArtist, validArtists } from "@/lib/universal/cosmo/common";
 import { cosmo } from "../http";
 import { unstable_cache } from "next/cache";
-import { randomUUID } from "crypto";
 
 /**
  * Fetch a single artist with its members.
  * Cached for 12 hours.
+ * @deprecated
  */
 export async function fetchArtist(artist: ValidArtist) {
   return await cosmo<{ artist: CosmoArtistWithMembers }>(
@@ -24,26 +25,28 @@ export async function fetchArtist(artist: ValidArtist) {
 }
 
 /**
- * Fetch all artists with their members.
+ * Fetch all artists.
  * Cached for 12 hours.
  */
-export const fetchArtistsWithMembers = unstable_cache(
-  async () => Promise.all(validArtists.map((artist) => fetchArtist(artist))),
-  ["artists-with-members"],
-  { revalidate: 60 * 60 * 12 }
-);
+export async function fetchArtistsBff() {
+  return await cosmo<CosmoArtistBFF[]>(`/bff/v3/artists`, {
+    next: {
+      revalidate: 60 * 60 * 12,
+    },
+  });
+}
 
 /**
  * Fetch an artist.
+ * Cached for 12 hours.
  */
-export async function fetchArtistBff(token: string, artistName: ValidArtist) {
-  return await cosmo<CosmoArtistBFF>(`/bff/v1/artist`, {
-    query: {
-      artistName,
-      tid: randomUUID(),
-    },
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+export async function fetchArtistBff(artistName: ValidArtist) {
+  return await cosmo<CosmoArtistWithMembersBFF>(
+    `/bff/v3/artists/${artistName}`,
+    {
+      next: {
+        revalidate: 60 * 60 * 12,
+      },
+    }
+  );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
+import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import { Suspense, useCallback } from "react";
 import MemberFilter from "../collection/member-filter";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
@@ -13,7 +13,7 @@ import Skeleton from "../skeleton/skeleton";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 
 type Props = {
-  artists: CosmoArtistWithMembers[];
+  artists: CosmoArtistWithMembersBFF[];
   address: string;
 };
 

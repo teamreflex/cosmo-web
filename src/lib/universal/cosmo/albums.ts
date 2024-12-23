@@ -1,7 +1,7 @@
-import { CosmoArtist } from "./artists";
+import { CosmoArtistBFF } from "./artists";
 
 export type CosmoAlbum = {
-  artist: CosmoArtist;
+  artist: CosmoArtistBFF;
   title: string;
   albumImageThumbnailUrl: string;
   omaImageThumbnailUrl: string;
@@ -15,7 +15,7 @@ export type CosmoAlbumClaimError = {
 };
 
 export interface CosmoAlbumWithTracks extends CosmoAlbum {
-  artist: CosmoArtist;
+  artist: CosmoArtistBFF;
   title: string;
   albumImageThumbnailUrl: string;
   omaImageThumbnailUrl: string;

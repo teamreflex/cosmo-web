@@ -1,6 +1,6 @@
 "use client";
 
-import { CosmoArtist } from "@/lib/universal/cosmo/artists";
+import { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
 import { CosmoPollChoices } from "@/lib/universal/cosmo/gravity";
 import { baseUrl, getPollStatus } from "@/lib/utils";
 import { useSuspenseQuery } from "@tanstack/react-query";
@@ -10,7 +10,7 @@ import VoteDialog from "./gravity-vote";
 
 type GravityPollProps = {
   title: string;
-  artist: CosmoArtist;
+  artist: CosmoArtistBFF;
   gravityId: number;
   pollId: number;
 };

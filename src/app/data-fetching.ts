@@ -2,10 +2,11 @@ import { cache } from "react";
 import { getUser } from "./api/common";
 import { fetchPublicProfile, fetchUserByIdentifier } from "@/lib/server/auth";
 import { notFound } from "next/navigation";
-import { fetchArtistsWithMembers } from "@/lib/server/cosmo/artists";
-import { user } from "@/lib/server/cosmo/auth";
+import { search, user } from "@/lib/server/cosmo/auth";
 import { getCookie } from "@/lib/server/cookies";
-import { ValidArtist } from "@/lib/universal/cosmo/common";
+import { ValidArtist, validArtists } from "@/lib/universal/cosmo/common";
+import { fetchArtistBff } from "@/lib/server/cosmo/artists";
+import { unstable_cache } from "next/cache";
 
 /**
  * Decode the current token.
@@ -36,7 +37,9 @@ export const getUserByIdentifier = cache(async (identifier: string) => {
  * Fetch artists with all members from Cosmo.
  */
 export const getArtistsWithMembers = cache(async () => {
-  return await fetchArtistsWithMembers();
+  return await Promise.all(
+    validArtists.map((artist) => fetchArtistBff(artist))
+  );
 });
 
 /**
@@ -51,4 +54,20 @@ export const getCosmoUser = cache(async (accessToken: string) => {
  */
 export const getSelectedArtist = cache(async () => {
   return (await getCookie<ValidArtist>("artist")) ?? "artms";
+});
+
+/**
+ * Find a user's avatars via COSMO search and cache for 24 hours.
+ */
+export const getUserAvatar = cache(async (token: string, nickname: string) => {
+  return await unstable_cache(
+    async (nickname: string) => {
+      const { results } = await search(token, nickname);
+      return results.find(
+        (u) => u.nickname.toLowerCase() === nickname.toLowerCase()
+      );
+    },
+    ["user-avatar"],
+    { revalidate: 60 * 60 * 24 }
+  )(nickname);
 });

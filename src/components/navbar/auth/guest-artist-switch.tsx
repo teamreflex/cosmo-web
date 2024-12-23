@@ -1,6 +1,6 @@
 "use client";
 
-import { CosmoArtist } from "@/lib/universal/cosmo/artists";
+import { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
@@ -17,7 +17,7 @@ import { Loader2 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 
 type Props = {
-  artists: CosmoArtist[];
+  artists: CosmoArtistBFF[];
   selectedArtist: ValidArtist;
 };
 
@@ -29,9 +29,9 @@ export default function GuestArtistSwitch({ artists, selectedArtist }: Props) {
     (a) => a.name.toLowerCase() === selectedArtist.toLowerCase()
   );
 
-  function select(artist: CosmoArtist) {
+  function select(artist: CosmoArtistBFF) {
     startTransition(async () => {
-      const result = await setArtistCookie(artist.name);
+      const result = await setArtistCookie(artist.id);
       if (result) {
         toast({
           description: `Switched to ${artist.title}`,

@@ -14,7 +14,7 @@ import { cn, getPollStatus } from "@/lib/utils";
 import { Suspense } from "react";
 import GravityMyRecord from "./gravity-my-record";
 import GravityOngoingCountdown from "./gravity-ongoing-countdown";
-import { CosmoArtist } from "@/lib/universal/cosmo/artists";
+import { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
 import { ErrorBoundary } from "react-error-boundary";
 import { Error } from "../error-boundary";
 import Skeleton from "../skeleton/skeleton";
@@ -22,7 +22,7 @@ import GravityPoll from "./gravity-poll";
 import GravityRanking from "./gravity-ranking";
 
 type Props = {
-  artist: CosmoArtist;
+  artist: CosmoArtistBFF;
   gravity: CosmoGravity;
   authenticated: boolean;
 };
@@ -157,7 +157,7 @@ function UpcomingDetails({ gravity }: { gravity: CosmoUpcomingGravity }) {
 }
 
 type OngoingDetailsProps = {
-  artist: CosmoArtist;
+  artist: CosmoArtistBFF;
   gravity: CosmoOngoingGravity;
   authenticated: boolean;
 };

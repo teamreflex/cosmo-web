@@ -16,7 +16,7 @@ const errorMap: Record<string, string> = {
 
 export default async function ArtistBlock({ user, artist }: Props) {
   const [cosmoArtist, welcome] = await Promise.all([
-    fetchArtistBff(user.accessToken, artist),
+    fetchArtistBff(artist),
     fetchActivityWelcome(user.accessToken, artist),
   ]);
 

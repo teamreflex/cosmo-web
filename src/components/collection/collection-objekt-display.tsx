@@ -5,7 +5,7 @@ import FilteredObjektDisplay, {
 import ObjektSidebar from "../objekt/objekt-sidebar";
 import InformationOverlay from "../objekt/information-overlay";
 import ActionOverlay from "../objekt/action-overlay";
-import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
+import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
 import { QueryFunction, QueryKey } from "@tanstack/react-query";
 import { CollectionDataSource, filtersAreDirty } from "@/hooks/use-filters";
@@ -20,7 +20,7 @@ type Props = {
   authenticated: boolean;
   address: string;
   showLocked: boolean;
-  artists: CosmoArtistWithMembers[];
+  artists: CosmoArtistWithMembersBFF[];
   queryFunction: QueryFunction<
     ObjektResponse<OwnedObjekt>,
     QueryKey,

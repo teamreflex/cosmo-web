@@ -1,12 +1,12 @@
 "use client";
 
 import { ComoBalance } from "@/lib/server/db/indexer/schema";
-import { CosmoArtist } from "@/lib/universal/cosmo/artists";
+import { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
 import { isAddressEqual } from "@/lib/utils";
 import { ReactNode, createContext, useContext, useMemo } from "react";
 
 type ContextProps = {
-  artist: CosmoArtist;
+  artist: CosmoArtistBFF;
   balances: ComoBalance[];
 };
 
@@ -14,7 +14,7 @@ const ComoContext = createContext<ContextProps | undefined>(undefined);
 
 type ProviderProps = {
   children: ReactNode;
-  artist: CosmoArtist;
+  artist: CosmoArtistBFF;
   balances: ComoBalance[];
 };
 

@@ -50,6 +50,7 @@ export type CosmoUserResult = {
 
 export type CosmoUser = {
   id: number;
+  guid: string;
   email: string;
   nickname: string;
   address: string;
@@ -66,6 +67,10 @@ export type CosmoUser = {
     contracts: {
       Como: string;
       Objekt: string;
+      ObjektMinter: string;
+      Governor: string;
+      CommunityPool: string;
+      ComoMinter: string;
     };
     assetBalance: {
       totalComo: number;
@@ -75,6 +80,9 @@ export type CosmoUser = {
     marketingConsentDate: string;
     createdAt: string;
   }[];
+  lastViewedArtist: ValidArtist;
+  marketingConsentDate: string;
+  createdAt: string;
   profile: CosmoProfile[];
 };
 

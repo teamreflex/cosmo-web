@@ -4,6 +4,7 @@ import { env } from "./src/env.mjs";
 
 const config: NextConfig = {
   experimental: {
+    serverComponentsHmrCache: true,
     reactCompiler: true,
     staleTimes: {
       dynamic: 60,
@@ -18,11 +19,6 @@ const config: NextConfig = {
 
   async redirects() {
     return [
-      {
-        source: "/my",
-        destination: "/activity",
-        permanent: true,
-      },
       {
         source: "/admin",
         destination: "/admin/metadata",

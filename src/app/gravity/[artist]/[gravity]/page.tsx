@@ -7,7 +7,7 @@ import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { decodeUser } from "@/app/data-fetching";
 import { getQueryClient } from "@/lib/query-client";
-import { fetchArtist } from "@/lib/server/cosmo/artists";
+import { fetchArtistBff } from "@/lib/server/cosmo/artists";
 import { fetchTokenBalances } from "@/lib/server/como";
 import { ComoProvider } from "@/hooks/use-como";
 
@@ -20,7 +20,7 @@ const fetchData = cache(async ({ artist, gravity }: Params) => {
   const token = await decodeUser();
   return await Promise.all([
     token,
-    fetchArtist(artist),
+    fetchArtistBff(artist),
     fetchGravity(artist, gravity),
     token ? fetchTokenBalances(token.address) : undefined,
   ]);

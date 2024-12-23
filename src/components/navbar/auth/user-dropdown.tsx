@@ -8,7 +8,7 @@ import {
 import { Disc3, LogOut, Shield, ShieldAlert, Wrench } from "lucide-react";
 import { ReactNode, useState } from "react";
 import SwitchArtistDialog from "./switch-artist-dialog";
-import { CosmoArtist } from "@/lib/universal/cosmo/artists";
+import { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import PrivacyDialog from "./privacy-dialog";
 import SettingsDialog from "./settings-dialog";
@@ -18,7 +18,7 @@ import { IconBrandDiscord } from "@tabler/icons-react";
 
 type UserDropdownProps = {
   profile: PublicProfile;
-  artists: CosmoArtist[];
+  artists: CosmoArtistBFF[];
   selectedArtist: ValidArtist;
   comoBalances: ReactNode;
   onSignOut: () => void;

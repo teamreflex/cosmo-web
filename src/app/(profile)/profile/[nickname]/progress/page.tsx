@@ -1,8 +1,11 @@
-import { decodeUser, getUserByIdentifier } from "@/app/data-fetching";
+import {
+  decodeUser,
+  getArtistsWithMembers,
+  getUserByIdentifier,
+} from "@/app/data-fetching";
 import Portal from "@/components/portal";
 import HelpDialog from "@/components/progress/help-dialog";
 import ProgressRenderer from "@/components/progress/progress-renderer";
-import { fetchArtistsWithMembers } from "@/lib/server/cosmo/artists";
 import { isAddressEqual } from "@/lib/utils";
 import { Shield } from "lucide-react";
 import { Metadata } from "next";
@@ -24,7 +27,7 @@ export default async function ProgressPage(props: Props) {
   const [currentUser, targetUser, artists] = await Promise.all([
     decodeUser(),
     getUserByIdentifier(params.nickname),
-    fetchArtistsWithMembers(),
+    getArtistsWithMembers(),
   ]);
 
   const { profile } = targetUser;

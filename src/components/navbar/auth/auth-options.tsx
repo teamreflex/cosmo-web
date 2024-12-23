@@ -6,7 +6,7 @@ import { Loader2 } from "lucide-react";
 import { TokenPayload } from "@/lib/universal/auth";
 import UserDropdown from "./user-dropdown";
 import SignInDialog from "./sign-in/sign-in-dialog";
-import { CosmoArtist } from "@/lib/universal/cosmo/artists";
+import { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import GuestThemeSwitch from "./guest-theme-switch";
@@ -18,7 +18,7 @@ import { usePathname } from "next/navigation";
 type Props = {
   token: TokenPayload | undefined;
   profile: PublicProfile | undefined;
-  artists: CosmoArtist[];
+  artists: CosmoArtistBFF[];
   selectedArtist: ValidArtist;
   comoBalances: ReactNode;
   cosmoAvatar: ReactNode;

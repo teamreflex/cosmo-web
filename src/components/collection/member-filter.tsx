@@ -1,17 +1,18 @@
-import { cn } from "@/lib/utils";
+import { artistColors, cn } from "@/lib/utils";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
-import { CosmoArtistWithMembers } from "@/lib/universal/cosmo/artists";
-import { memo } from "react";
+import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
+import { CSSProperties, memo } from "react";
 import Image from "next/image";
+import { ValidArtist } from "@/lib/universal/cosmo/common";
 
 type Props = {
   showArtists?: boolean;
-  artists: CosmoArtistWithMembers[];
+  artists: CosmoArtistWithMembersBFF[];
   active: string | null;
   updateArtist: (artist: string) => void;
   updateMember: (member: string) => void;
@@ -34,7 +35,8 @@ export default memo(function MemberFilter({
           key={artist.name}
           className={cn(
             "flex flex-row z-10 gap-2 p-1 xl:justify-center justify-items-start",
-            artist.members.length > 5 && "overflow-x-scroll xl:no-scrollbar"
+            artist.artistMembers.length > 5 &&
+              "overflow-x-scroll xl:no-scrollbar"
           )}
         >
           {showArtists && (
@@ -44,10 +46,11 @@ export default memo(function MemberFilter({
               image={artist.logoImageUrl}
               isActive={active === artist.name}
               setActive={updateArtist}
+              color={artistColors[artist.name as ValidArtist]}
             />
           )}
 
-          {artist.members
+          {artist.artistMembers
             .sort((a, b) => a.order - b.order)
             .map((member) => (
               <MemberFilterButton
@@ -57,6 +60,7 @@ export default memo(function MemberFilter({
                 image={member.profileImageUrl}
                 isActive={active === member.name}
                 setActive={updateMember}
+                color={member.primaryColorHex}
               />
             ))}
         </div>
@@ -71,6 +75,7 @@ type MemberFilterButtonProps = {
   image: string;
   isActive: boolean;
   setActive: (name: string) => void;
+  color?: string;
 };
 export const MemberFilterButton = memo(function MemberFilterButton({
   displayName,
@@ -78,17 +83,23 @@ export const MemberFilterButton = memo(function MemberFilterButton({
   image,
   isActive,
   setActive,
+  color = "var(--color-cosmo)",
 }: MemberFilterButtonProps) {
+  const style = {
+    "--member-color": color,
+  } as CSSProperties;
+
   return (
     <div className="flex flex-col justify-center items-center">
       <TooltipProvider delayDuration={0}>
         <Tooltip>
           <TooltipTrigger asChild>
             <button
+              style={style}
               onClick={() => setActive(name)}
               className={cn(
                 "rounded-full drop-shadow-sm cursor-pointer",
-                isActive && "ring-3 ring-cosmo"
+                isActive && "ring-3 ring-(--member-color)"
               )}
             >
               <MemberImage name={displayName} image={image} />
