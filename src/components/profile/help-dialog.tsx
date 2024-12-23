@@ -10,14 +10,14 @@ import {
 } from "@/components/ui/alert-dialog";
 import { env } from "@/env.mjs";
 import {
-  LuCircleHelp,
-  LuCloudDownload,
-  LuGrid2X2,
-  LuLock,
-  LuMailX,
-  LuPartyPopper,
-  LuSmartphone,
-} from "react-icons/lu";
+  DownloadCloud,
+  Grid2X2,
+  HelpCircle,
+  Lock,
+  MailX,
+  PartyPopper,
+  Smartphone,
+} from "lucide-react";
 import { Button } from "../ui/button";
 import VisuallyHidden from "../ui/visually-hidden";
 
@@ -30,7 +30,7 @@ export default function HelpDialog() {
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <Button variant="secondary" size="profile">
-          <LuCircleHelp className="h-5 w-5" />
+          <HelpCircle className="h-5 w-5" />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
@@ -82,7 +82,7 @@ export default function HelpDialog() {
               {/* locked */}
               <div className="flex gap-2 items-center">
                 <div className="bg-[#FFDD00] text-black rounded-lg p-1 flex items-center justify-center w-fit">
-                  <LuLock className="h-5 w-5" />
+                  <Lock className="h-5 w-5" />
                 </div>
                 <p className="font-semibold text-sm">Objekt has been locked</p>
               </div>
@@ -90,7 +90,7 @@ export default function HelpDialog() {
               {/* mint pending */}
               <div className="flex gap-2 items-center">
                 <div className="bg-[#75FB4C] text-black rounded-lg p-1 flex items-center justify-center w-fit">
-                  <LuCloudDownload className="h-5 w-5" />
+                  <DownloadCloud className="h-5 w-5" />
                 </div>
                 <p className="font-semibold text-sm">
                   Objekt has not been minted yet
@@ -100,7 +100,7 @@ export default function HelpDialog() {
               {/* grid */}
               <div className="flex gap-2 items-center">
                 <div className="bg-[#FF7477] text-black rounded-lg p-1 flex items-center justify-center w-fit">
-                  <LuGrid2X2 className="h-5 w-5" />
+                  <Grid2X2 className="h-5 w-5" />
                 </div>
                 <p className="font-semibold text-sm">
                   Objekt has been used in a grid (not transferable)
@@ -110,7 +110,7 @@ export default function HelpDialog() {
               {/* welcome */}
               <div className="flex gap-2 items-center">
                 <div className="bg-[#FFFFFF] text-black rounded-lg p-1 flex items-center justify-center w-fit">
-                  <LuMailX className="h-5 w-5" />
+                  <MailX className="h-5 w-5" />
                 </div>
                 <p className="font-semibold text-sm">
                   Objekt is a welcome reward (not transferable)
@@ -120,7 +120,7 @@ export default function HelpDialog() {
               {/* event reward */}
               <div className="flex gap-2 items-center">
                 <div className="bg-[#8A8C8E] text-white rounded-lg p-1 flex items-center justify-center w-fit">
-                  <LuPartyPopper className="h-5 w-5" />
+                  <PartyPopper className="h-5 w-5" />
                 </div>
                 <p className="font-semibold text-sm">
                   Objekt is an event reward (not transferable)
@@ -130,7 +130,7 @@ export default function HelpDialog() {
               {/* lenticular */}
               <div className="flex gap-2 items-center">
                 <div className="bg-[#294a80] text-white rounded-lg p-1 flex items-center justify-center w-fit">
-                  <LuSmartphone className="h-5 w-5" />
+                  <Smartphone className="h-5 w-5" />
                 </div>
                 <p className="font-semibold text-sm">
                   Objekt is in a lenticular pair (not transferable)

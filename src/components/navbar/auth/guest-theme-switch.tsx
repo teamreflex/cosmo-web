@@ -1,7 +1,7 @@
 "use client";
 
 import { Toggle } from "@/components/ui/toggle";
-import { LuMoon, LuSun } from "react-icons/lu";
+import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 
 export default function GuestThemeSwitch() {
@@ -15,9 +15,9 @@ export default function GuestThemeSwitch() {
       onPressedChange={(v) => setTheme(v ? "dark" : "light")}
     >
       {theme === "dark" ? (
-        <LuMoon className="size-8" />
+        <Moon className="size-8" />
       ) : (
-        <LuSun className="size-8" />
+        <Sun className="size-8" />
       )}
     </Toggle>
   );

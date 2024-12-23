@@ -10,7 +10,7 @@ import {
 } from "@/app/data-fetching";
 import Portal from "@/components/portal";
 import HelpDialog from "@/components/como/help-dialog";
-import { LuShield } from "react-icons/lu";
+import { Shield } from "lucide-react";
 import { isAddressEqual } from "@/lib/utils";
 
 type Props = {
@@ -78,7 +78,7 @@ export default async function UserComoPage(props: Props) {
 function Private({ nickname }: { nickname: string }) {
   return (
     <div className="flex flex-col items-center gap-2 py-6">
-      <LuShield className="w-12 h-12" />
+      <Shield className="w-12 h-12" />
       <p className="text-sm font-semibold">{nickname}&apos;s COMO is private</p>
     </div>
   );

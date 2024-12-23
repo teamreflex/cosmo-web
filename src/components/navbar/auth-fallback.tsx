@@ -1,4 +1,4 @@
-import { LuTriangleAlert } from "react-icons/lu";
+import { AlertTriangle } from "lucide-react";
 import {
   Tooltip,
   TooltipProvider,
@@ -12,7 +12,7 @@ export default function AuthFallback() {
       <Tooltip>
         <TooltipTrigger asChild>
           <div className="relative flex justify-center items-center py-1 px-2 rounded-xl bg-red-500/25 hover:bg-red-500/40 transition-colors">
-            <LuTriangleAlert className="text-red-500 w-6 h-6" />
+            <AlertTriangle className="text-red-500 w-6 h-6" />
           </div>
         </TooltipTrigger>
         <TooltipContent side="bottom" align="end">

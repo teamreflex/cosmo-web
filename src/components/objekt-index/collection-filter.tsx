@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { LuCheck, LuChevronDown } from "react-icons/lu";
+import { Check, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PropsWithFilters } from "@/hooks/use-cosmo-filters";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
@@ -55,7 +55,7 @@ export default function CollectionFilter({
           )}
         >
           <span>Collections</span>
-          <LuChevronDown className="h-4 w-4 opacity-50" />
+          <ChevronDown className="h-4 w-4 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-36 p-0">
@@ -72,7 +72,7 @@ export default function CollectionFilter({
                   onSelect={(v) => updateFilter(collection)}
                 >
                   {collection}
-                  <LuCheck
+                  <Check
                     className={cn(
                       "ml-auto",
                       filters?.includes(collection)

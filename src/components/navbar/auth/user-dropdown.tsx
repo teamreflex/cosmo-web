@@ -5,13 +5,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  LuDisc3,
-  LuLogOut,
-  LuShield,
-  LuShieldAlert,
-  LuWrench,
-} from "react-icons/lu";
+import { Disc3, LogOut, Shield, ShieldAlert, Wrench } from "lucide-react";
 import { ReactNode, useState } from "react";
 import SwitchArtistDialog from "./switch-artist-dialog";
 import { CosmoArtist } from "@/lib/universal/cosmo/artists";
@@ -19,8 +13,8 @@ import { ValidArtist } from "@/lib/universal/cosmo/common";
 import PrivacyDialog from "./privacy-dialog";
 import SettingsDialog from "./settings-dialog";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
+import Discord from "@/components/icons/discord";
 import Link from "next/link";
-import { TbBrandDiscord } from "react-icons/tb";
 
 type UserDropdownProps = {
   profile: PublicProfile;
@@ -77,7 +71,7 @@ export default function UserDropdown({
           onClick={() => setOpenArtistSwitch(true)}
           className="cursor-pointer"
         >
-          <LuDisc3 className="mr-2 h-4 w-4" />
+          <Disc3 className="mr-2 h-4 w-4" />
           <span>Switch Artist</span>
         </DropdownMenuItem>
 
@@ -85,7 +79,7 @@ export default function UserDropdown({
           onClick={() => setOpenPrivacy(true)}
           className="cursor-pointer"
         >
-          <LuShield className="mr-2 h-4 w-4" />
+          <Shield className="mr-2 h-4 w-4" />
           <span>Privacy</span>
         </DropdownMenuItem>
 
@@ -93,13 +87,13 @@ export default function UserDropdown({
           onClick={() => setOpenSettings(true)}
           className="cursor-pointer"
         >
-          <LuWrench className="mr-2 h-4 w-4" />
+          <Wrench className="mr-2 h-4 w-4" />
           <span>Settings</span>
         </DropdownMenuItem>
 
         <DropdownMenuItem className="cursor-pointer" asChild>
           <a href="https://discord.gg/A72VRX8FgK" target="_blank">
-            <TbBrandDiscord className="mr-2 h-4 w-4" />
+            <Discord className="mr-2 h-4 w-4" />
             <span>Discord</span>
           </a>
         </DropdownMenuItem>
@@ -109,7 +103,7 @@ export default function UserDropdown({
             <DropdownMenuSeparator />
             <DropdownMenuItem className="cursor-pointer" asChild>
               <Link href="/admin">
-                <LuShieldAlert className="mr-2 h-4 w-4" />
+                <ShieldAlert className="mr-2 h-4 w-4" />
                 <span>Admin</span>
               </Link>
             </DropdownMenuItem>
@@ -121,7 +115,7 @@ export default function UserDropdown({
           onClick={() => onSignOut()}
           className="cursor-pointer"
         >
-          <LuLogOut className="mr-2 h-4 w-4" />
+          <LogOut className="mr-2 h-4 w-4" />
           <span>Sign Out</span>
         </DropdownMenuItem>
       </DropdownMenuContent>

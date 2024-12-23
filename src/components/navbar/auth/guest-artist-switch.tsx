@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { TbLoader2 } from "react-icons/tb";
+import { Loader2 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 
 type Props = {
@@ -63,7 +63,7 @@ export default function GuestArtistSwitch({ artists, selectedArtist }: Props) {
             className="gap-2 cursor-pointer"
           >
             {isPending ? (
-              <TbLoader2 className="h-5 w-5 animate-spin" />
+              <Loader2 className="h-5 w-5 animate-spin" />
             ) : (
               <Avatar className="h-5 w-5">
                 <AvatarFallback>

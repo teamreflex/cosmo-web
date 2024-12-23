@@ -9,7 +9,7 @@ import {
 import { ofetch } from "ofetch";
 import RekordGrid from "./rekord-grid";
 import { RekordMemberImage, RekordPost } from "./rekord-post";
-import { LuDisc3, LuHeart } from "react-icons/lu";
+import { Disc3, Heart } from "lucide-react";
 import { ordinal } from "@/lib/utils";
 import { format } from "date-fns";
 
@@ -60,7 +60,7 @@ export default function ArchiveRekords({ artist }: Props) {
 function Rank({ rank }: { rank: number }) {
   return (
     <span className="absolute top-2 left-2 flex gap-2 items-center text-sm font-semibold">
-      <LuDisc3 />
+      <Disc3 />
       <p>{ordinal(rank)} Archive</p>
     </span>
   );
@@ -69,7 +69,7 @@ function Rank({ rank }: { rank: number }) {
 function Likes({ count }: { count: number }) {
   return (
     <div className="absolute bottom-2 right-2 flex gap-2 items-center">
-      <LuHeart className="h-4 w-4 fill-foreground" />
+      <Heart className="h-4 w-4 fill-foreground" />
       <span className="text-sm font-semibold">{count}</span>
     </div>
   );

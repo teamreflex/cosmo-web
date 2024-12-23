@@ -4,7 +4,7 @@ import CopyAddressButton from "@/components/profile/copy-address-button";
 import TradesButton from "@/components/profile/trades-button";
 import BackButton from "@/components/profile/back-button";
 import ComoButton from "@/components/profile/como-button";
-import { LuShield } from "react-icons/lu";
+import { Shield } from "lucide-react";
 import { validArtists } from "@/lib/universal/cosmo/common";
 import ArtistIcon from "@/components/artist-icon";
 import ProgressButton from "@/components/profile/progress-button";
@@ -130,7 +130,7 @@ function ComoBlock({ hide, address }: { hide: boolean; address: string }) {
             className="flex justify-between items-center rounded cursor-default bg-accent border border-black/30 dark:border-white/30 h-[26px] min-w-16 w-fit px-1 shadow-sm"
           >
             <ArtistIcon artist={artist} />
-            <LuShield className="w-5 h-5"></LuShield>
+            <Shield className="w-5 h-5"></Shield>
           </div>
         ))}
       </div>

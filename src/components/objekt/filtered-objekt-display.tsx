@@ -9,7 +9,7 @@ import {
   useCallback,
   useMemo,
 } from "react";
-import { LuHeartCrack, LuRefreshCcw } from "react-icons/lu";
+import { HeartCrack, RefreshCcw } from "lucide-react";
 import {
   QueryErrorResetBoundary,
   QueryFunction,
@@ -115,13 +115,13 @@ export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
                 fallback={
                   <div className="col-span-full flex flex-col gap-2 items-center py-12">
                     <div className="flex items-center gap-2">
-                      <LuHeartCrack className="h-6 w-6" />
+                      <HeartCrack className="h-6 w-6" />
                       <p className="text-sm font-semibold">
                         Error loading objekts
                       </p>
                     </div>
                     <Button variant="outline" onClick={reset}>
-                      <LuRefreshCcw className="mr-2" /> Retry
+                      <RefreshCcw className="mr-2" /> Retry
                     </Button>
                   </div>
                 }

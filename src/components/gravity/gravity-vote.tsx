@@ -24,11 +24,11 @@ import { toast } from "../ui/use-toast";
 import { ChoiceRenderer, DefaultContent } from "./gravity-choices";
 import { useGravityVote } from "@/hooks/use-wallet-transaction";
 import {
-  LuCircleCheck,
-  LuExternalLink,
-  LuSatellite,
-  LuTriangleAlert,
-} from "react-icons/lu";
+  CheckCircle,
+  ExternalLink,
+  Satellite,
+  TriangleAlert,
+} from "lucide-react";
 import { CosmoArtist } from "@/lib/universal/cosmo/artists";
 import { Hex } from "viem";
 import { cn } from "@/lib/utils";
@@ -297,19 +297,19 @@ function ChoiceSend({
         .with("idle", () => <p className="text-sm font-semibold">Waiting...</p>)
         .with("pending", () => (
           <div className="contents">
-            <LuSatellite className="h-10 w-10 animate-pulse" />
+            <Satellite className="h-10 w-10 animate-pulse" />
             <p className="text-sm font-semibold">Sending transaction...</p>
           </div>
         ))
         .with("error", () => (
           <div className="contents">
-            <LuTriangleAlert className="h-10 w-10" />
+            <TriangleAlert className="h-10 w-10" />
             <p className="text-sm font-semibold">Error sending transaction</p>
           </div>
         ))
         .with("success", () => (
           <div className="contents">
-            <LuCircleCheck className="h-10 w-10" />
+            <CheckCircle className="h-10 w-10" />
             <p className="text-sm font-semibold">
               {amount} COMO sent for {selected.content.title}!
             </p>
@@ -320,7 +320,7 @@ function ChoiceSend({
               rel="noreferrer"
             >
               <span>View on PolygonScan</span>
-              <LuExternalLink className="w-4 h-4" />
+              <ExternalLink className="w-4 h-4" />
             </a>
           </div>
         ))

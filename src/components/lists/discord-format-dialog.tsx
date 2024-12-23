@@ -1,5 +1,4 @@
-import { LuCloudDownload, LuClipboardCopy } from "react-icons/lu";
-import { TbLoader2 } from "react-icons/tb";
+import { CloudDownload, Copy, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -106,16 +105,16 @@ export default function DiscordFormatDialog({
             <Button onClick={generate} disabled={disabled || isPending}>
               <span>Generate</span>
               {isPending ? (
-                <TbLoader2 className="ml-2 h-4 w-4 animate-spin" />
+                <Loader2 className="ml-2 h-4 w-4 animate-spin" />
               ) : (
-                <LuCloudDownload className="ml-2 h-4 w-4" />
+                <CloudDownload className="ml-2 h-4 w-4" />
               )}
             </Button>
 
             {result && (
               <Button onClick={copy}>
                 <span>Copy</span>
-                <LuClipboardCopy className="ml-2 h-4 w-4" />
+                <Copy className="ml-2 h-4 w-4" />
               </Button>
             )}
           </div>

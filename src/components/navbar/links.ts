@@ -1,9 +1,9 @@
 import { TokenPayload } from "@/lib/universal/auth";
-import { IconType } from "react-icons/lib";
+import { LucideIcon } from "lucide-react";
 
 export type NavbarLink = {
   name: string;
-  icon: IconType;
+  icon: LucideIcon;
   href: (user?: TokenPayload) => string;
   requireAuth: boolean;
   prefetch: boolean | null;

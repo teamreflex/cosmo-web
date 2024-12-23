@@ -1,5 +1,5 @@
 import { FinalProgress } from "@/lib/universal/progress";
-import { LuMaximize2, LuMinimize2 } from "react-icons/lu";
+import { Maximize2, Minimize2 } from "lucide-react";
 
 type Props = {
   progress: FinalProgress;
@@ -28,7 +28,7 @@ export default function ProgressItem({
         </p>
       </div>
 
-      {isSelected ? <LuMinimize2 /> : <LuMaximize2 />}
+      {isSelected ? <Minimize2 /> : <Maximize2 />}
     </div>
   );
 }

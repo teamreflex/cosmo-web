@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import BestRekord from "@/components/rekord/best-rekord";
 import { Suspense } from "react";
 import Skeleton from "@/components/skeleton/skeleton";
-import { LuFlag } from "react-icons/lu";
+import { Flag } from "lucide-react";
 import AllRekords from "@/components/rekord/all-rekords";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -36,7 +36,7 @@ export default async function RekordPage() {
           {/* header */}
           <div className="flex flex-row justify-between items-center">
             <div className="flex flex-row gap-2 items-center">
-              <LuFlag className="w-6 h-6 fill-foreground" />
+              <Flag className="w-6 h-6 fill-foreground" />
               <h2 className="font-semibold text-xl">Best Rekord</h2>
             </div>
           </div>

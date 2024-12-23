@@ -10,7 +10,7 @@ import {
 import { PropsWithFilters } from "@/hooks/use-cosmo-filters";
 import { ValidSeason, validSeasons } from "@/lib/universal/cosmo/common";
 import { useState } from "react";
-import { LuChevronDown } from "react-icons/lu";
+import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Props = PropsWithFilters<"season">;
@@ -49,7 +49,7 @@ export default function SeasonFilter({ filters, setFilters }: Props) {
           )}
         >
           <span>Season</span>
-          <LuChevronDown className="h-4 w-4 opacity-50" />
+          <ChevronDown className="h-4 w-4 opacity-50" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-36">

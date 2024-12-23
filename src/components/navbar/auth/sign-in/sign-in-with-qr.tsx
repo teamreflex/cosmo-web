@@ -5,8 +5,7 @@ import {
   QueryTicket,
 } from "@/lib/universal/cosmo/qr-auth";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { LuCircleCheckBig } from "react-icons/lu";
-import { TbLoader2 } from "react-icons/tb";
+import { CheckCircle, Loader2 } from "lucide-react";
 import { ofetch } from "ofetch";
 import { useState } from "react";
 import QRCode from "react-qr-code";
@@ -25,7 +24,7 @@ export default function SignInWithQR() {
 
   return (
     <div className="flex flex-col justify-center items-center">
-      {status === "pending" && <TbLoader2 className="h-8 w-8 animate-spin" />}
+      {status === "pending" && <Loader2 className="h-8 w-8 animate-spin" />}
 
       {status === "error" && (
         <div className="flex flex-col">
@@ -85,7 +84,7 @@ function RenderTicket({ ticket, retry }: RenderQRProps) {
   if (data.status === "certified") {
     return (
       <div className="flex items-center justify-center">
-        <LuCircleCheckBig className="h-8 w-8" />
+        <CheckCircle className="h-8 w-8" />
       </div>
     );
   }

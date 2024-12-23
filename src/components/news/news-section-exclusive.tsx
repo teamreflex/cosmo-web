@@ -1,6 +1,6 @@
 import { CosmoNewsSectionExclusive } from "@/lib/universal/cosmo/news";
 import NewsPostExclusive from "./news-post-exclusive";
-import { LuChevronRight } from "react-icons/lu";
+import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 
 type Props = {
@@ -15,7 +15,7 @@ export default function NewsSectionExclusive({ section }: Props) {
         className="font-bold text-xl flex items-center justify-between"
       >
         {section.title}
-        <LuChevronRight className="w-6 h-6 text-foreground/50" />
+        <ChevronRight className="w-6 h-6 text-foreground/50" />
       </Link>
       {section.contents.map((post) => (
         <NewsPostExclusive key={post.id} post={post} />

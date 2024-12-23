@@ -1,6 +1,5 @@
 import { QueryStatus } from "@tanstack/react-query";
-import { LuChevronDown, LuPawPrint } from "react-icons/lu";
-import { TbLoader2 } from "react-icons/tb";
+import { ChevronDown, Loader2, PawPrint } from "lucide-react";
 import { InView } from "react-intersection-observer";
 
 type Props = {
@@ -30,17 +29,15 @@ export function InfiniteQueryNext({
           onClick={fetchNextPage}
           disabled={!hasNextPage || isFetchingNextPage}
         >
-          <LuChevronDown className="animate-bounce h-12 w-12" />
+          <ChevronDown className="animate-bounce h-12 w-12" />
         </InView>
       )}
 
       {/* fetching next page */}
-      {isFetchingNextPage && <TbLoader2 className="animate-spin h-12 w-12" />}
+      {isFetchingNextPage && <Loader2 className="animate-spin h-12 w-12" />}
 
       {/* no more pages */}
-      {status === "success" && !hasNextPage && (
-        <LuPawPrint className="h-6 w-6" />
-      )}
+      {status === "success" && !hasNextPage && <PawPrint className="h-6 w-6" />}
     </div>
   );
 }

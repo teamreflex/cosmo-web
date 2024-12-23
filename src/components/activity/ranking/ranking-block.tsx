@@ -11,12 +11,7 @@ import {
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { baseUrl, cn, ordinal } from "@/lib/utils";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import {
-  LuChevronDown,
-  LuChevronRight,
-  LuChevronUp,
-  LuMinus,
-} from "react-icons/lu";
+import { ChevronDown, ChevronRight, ChevronUp, Minus } from "lucide-react";
 import { ofetch } from "ofetch";
 import { useState } from "react";
 import ProfileImage from "@/assets/profile.webp";
@@ -49,7 +44,7 @@ export default function RankingBlock({ artist }: Props) {
         <Button variant="link" asChild>
           <Link href="/activity/ranking" className="flex items-center gap-2">
             <span>Details</span>
-            <LuChevronRight className="w-5 h-5" />
+            <ChevronRight className="w-5 h-5" />
           </Link>
         </Button>
       </div>
@@ -155,12 +150,10 @@ function RankingItem({ artist, kind, item }: RankingItemProps) {
     >
       {/* ranking position */}
       <div className="flex items-center justify-center">
-        {item.relativePosition === "above" && (
-          <LuChevronUp className="h-4 w-4" />
-        )}
-        {item.relativePosition === "current" && <LuMinus className="h-4 w-4" />}
+        {item.relativePosition === "above" && <ChevronUp className="h-4 w-4" />}
+        {item.relativePosition === "current" && <Minus className="h-4 w-4" />}
         {item.relativePosition === "below" && (
-          <LuChevronDown className="h-4 w-4" />
+          <ChevronDown className="h-4 w-4" />
         )}
       </div>
 

@@ -1,7 +1,7 @@
 import { fetchActivityHistory } from "@/lib/server/cosmo/activity";
 import { TokenPayload } from "@/lib/universal/auth";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
-import { LuChevronRight, LuHistory } from "react-icons/lu";
+import { ChevronRight, History } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -27,7 +27,7 @@ export default async function HistoryBlock({ user, artist }: Props) {
         className="w-full flex gap-2 justify-between items-center h-16 bg-accent rounded-xl p-4 transition-colors border border-transparent hover:border-cosmo"
       >
         <div className="flex gap-4 items-center">
-          <LuHistory className="size-5 text-muted-foreground" />
+          <History className="size-5 text-muted-foreground" />
 
           <div className="flex flex-col text-sm font-semibold">
             <p className="text-muted-foreground">History</p>
@@ -35,7 +35,7 @@ export default async function HistoryBlock({ user, artist }: Props) {
           </div>
         </div>
 
-        <LuChevronRight className="size-5" />
+        <ChevronRight className="size-5" />
       </Link>
     );
   }
@@ -58,7 +58,7 @@ export default async function HistoryBlock({ user, artist }: Props) {
         </div>
       </div>
 
-      <LuChevronRight className="size-5" />
+      <ChevronRight className="size-5" />
     </Link>
   );
 }

@@ -12,7 +12,7 @@ import {
 } from "./loading";
 import ObjektsBlock from "@/components/activity/objekts-block";
 import { ErrorBoundary } from "react-error-boundary";
-import { LuHeartCrack } from "react-icons/lu";
+import { HeartCrack } from "lucide-react";
 import HistoryBlock from "@/components/activity/history-block";
 import BadgeBlock from "@/components/activity/badge-block";
 import { redirect } from "next/navigation";
@@ -116,7 +116,7 @@ export default async function ActivityPage() {
 function Error({ error }: { error: string }) {
   return (
     <div className="w-full flex flex-col items-center mx-auto">
-      <LuHeartCrack className="w-12 h-12" />
+      <HeartCrack className="w-12 h-12" />
       <span className="text-sm font-semibold">{error}</span>
     </div>
   );

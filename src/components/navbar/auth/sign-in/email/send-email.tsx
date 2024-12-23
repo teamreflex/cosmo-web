@@ -8,7 +8,7 @@ import {
 import { Input } from "@/components/ui/input";
 import Portal from "@/components/portal";
 import { Button } from "@/components/ui/button";
-import { TbLoader2 } from "react-icons/tb";
+import { Loader2 } from "lucide-react";
 
 type Props = {
   payload: EmailSignInPayload;
@@ -49,7 +49,7 @@ export default function SendEmailForm({ payload, onComplete }: Props) {
         <AlertDialogCancel className="mt-0">Cancel</AlertDialogCancel>
 
         <Button type="submit" disabled={isPending} form="email-submit">
-          {isPending && <TbLoader2 className="size-4 mr-2 animate-spin" />}
+          {isPending && <Loader2 className="size-4 mr-2 animate-spin" />}
           <span>Send Email</span>
         </Button>
       </Portal>

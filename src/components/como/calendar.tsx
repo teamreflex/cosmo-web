@@ -8,7 +8,7 @@ import {
 import { CosmoArtist } from "@/lib/universal/cosmo/artists";
 import { cn } from "@/lib/utils";
 import ArtistIcon from "../artist-icon";
-import { LuSparkles } from "react-icons/lu";
+import { Sparkles } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -78,7 +78,7 @@ export default function ComoCalendar({ artists, transfers }: Props) {
                       <TooltipProvider delayDuration={0}>
                         <Tooltip>
                           <TooltipTrigger>
-                            <LuSparkles className="text-yellow-600 h-5 w-5" />
+                            <Sparkles className="text-yellow-600 h-5 w-5" />
                           </TooltipTrigger>
                           <TooltipContent asChild>
                             <div className="flex flex-col gap-1">

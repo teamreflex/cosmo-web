@@ -35,7 +35,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { LuCircleHelp } from "react-icons/lu";
+import { HelpCircle } from "lucide-react";
 import { ErrorBoundary } from "react-error-boundary";
 import CalculatingError from "./calculating-error";
 
@@ -302,7 +302,7 @@ function MyRankHelpDialog() {
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <Button variant="secondary" size="profile">
-          <LuCircleHelp className="h-5 w-5" />
+          <HelpCircle className="h-5 w-5" />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>

@@ -8,7 +8,7 @@ import {
 } from "../ui/tooltip";
 import { CosmoArtist } from "@/lib/universal/cosmo/artists";
 import { Suspense } from "react";
-import { LuX } from "react-icons/lu";
+import { X } from "lucide-react";
 import { ErrorBoundary } from "react-error-boundary";
 import { getArtistsWithMembers } from "@/app/data-fetching";
 import { isAddressEqual } from "@/lib/utils";
@@ -41,7 +41,7 @@ function ComoBalanceErrorFallback() {
       <Tooltip>
         <TooltipTrigger asChild>
           <div className="flex justify-between items-center rounded cursor-default bg-accent border border-black/30 dark:border-white/30 h-[26px] min-w-16 w-fit px-1 shadow-sm">
-            <LuX className="p-px w-4 h-4 text-cosmo-text" />
+            <X className="p-px w-4 h-4 text-cosmo-text" />
             <span className="pl-2 text-sm">COMO</span>
           </div>
         </TooltipTrigger>

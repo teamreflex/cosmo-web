@@ -2,8 +2,7 @@
 
 import { TransferResult } from "@/lib/universal/transfers";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { LuHeartCrack } from "react-icons/lu";
-import { TbLoader2 } from "react-icons/tb";
+import { HeartCrack, Loader2 } from "lucide-react";
 import TransferRow from "./transfer-row";
 import { cn } from "@/lib/utils";
 import { InfiniteQueryNext } from "../infinite-query-pending";
@@ -50,7 +49,7 @@ export default function TransfersRenderer({ address }: Props) {
         <div className="flex flex-col">
           {status === "pending" ? (
             <div className="flex col-span-full justify-center py-4">
-              <TbLoader2 className="animate-spin h-12 w-12" />
+              <Loader2 className="animate-spin h-12 w-12" />
             </div>
           ) : status === "error" ? (
             <Error />
@@ -75,7 +74,7 @@ export default function TransfersRenderer({ address }: Props) {
 function Error() {
   return (
     <div className="col-span-full flex flex-col gap-2 justify-center items-center py-12">
-      <LuHeartCrack className="h-12 w-12" />
+      <HeartCrack className="h-12 w-12" />
       <p>There was an error loading transfers</p>
     </div>
   );

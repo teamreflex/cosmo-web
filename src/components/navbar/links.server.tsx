@@ -8,7 +8,7 @@ import {
 } from "../ui/dropdown-menu";
 import { decodeUser } from "@/app/data-fetching";
 import { DesktopLinks, MobileLinks } from "./links.client";
-import { LuMenu } from "react-icons/lu";
+import { Menu } from "lucide-react";
 
 export default async function Links() {
   const user = await decodeUser();
@@ -27,7 +27,7 @@ export default async function Links() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="drop-shadow-lg outline-hidden" aria-label="Menu">
-              <LuMenu className="h-8 w-8 shrink-0" />
+              <Menu className="h-8 w-8 shrink-0" />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>

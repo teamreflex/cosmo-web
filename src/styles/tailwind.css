@@ -49,7 +49,7 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
 
-  --aspect-photocard: 5.5 / 8.5;
+  --aspect-ratio-photocard: 5.5 / 8.5;
 
   --text-2xs: 0.625rem;
   --text-2xs--line-height: 0.875rem;

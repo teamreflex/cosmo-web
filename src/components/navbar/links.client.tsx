@@ -14,15 +14,15 @@ import { cn } from "@/lib/utils";
 import { NavbarLink } from "./links";
 import { DropdownMenuItem } from "../ui/dropdown-menu";
 import {
-  LuLayoutGrid,
-  LuPackageOpen,
-  LuVote,
-  LuCalendarRange,
-  LuDisc3,
-  LuCircleUserRound,
-  LuHouse,
-} from "react-icons/lu";
-import { TbCards } from "react-icons/tb";
+  Home,
+  LayoutGrid,
+  PackageOpen,
+  Vote,
+  LibraryBig,
+  CalendarRange,
+  Disc3,
+  CircleUserRound,
+} from "lucide-react";
 
 type LinksProps = {
   user?: TokenPayload;
@@ -129,56 +129,56 @@ export function LinkButton({ link, active, user }: LinkButtonProps) {
 const links: NavbarLink[] = [
   {
     name: "Home",
-    icon: LuHouse,
+    icon: Home,
     href: () => "/",
     requireAuth: true,
     prefetch: null,
   },
   {
     name: "Rekord",
-    icon: LuDisc3,
+    icon: Disc3,
     href: () => "/rekord",
     requireAuth: true,
     prefetch: null,
   },
   {
     name: "Gravity",
-    icon: LuVote,
+    icon: Vote,
     href: () => "/gravity",
     requireAuth: true,
     prefetch: null,
   },
   {
     name: "Objekts",
-    icon: TbCards,
+    icon: LibraryBig,
     href: () => "/objekts",
     requireAuth: false,
     prefetch: true,
   },
   {
     name: "Collection",
-    icon: LuPackageOpen,
+    icon: PackageOpen,
     href: (user) => (user ? `/@${user.nickname}` : "/"),
     requireAuth: true,
     prefetch: true,
   },
   {
     name: "COMO",
-    icon: LuCalendarRange,
+    icon: CalendarRange,
     href: (user) => (user ? `/@${user.nickname}/como` : "/"),
     requireAuth: true,
     prefetch: null,
   },
   {
     name: "Grid",
-    icon: LuLayoutGrid,
+    icon: LayoutGrid,
     href: () => "/grid",
     requireAuth: true,
     prefetch: null,
   },
   {
     name: "Activity",
-    icon: LuCircleUserRound,
+    icon: CircleUserRound,
     href: () => "/activity",
     requireAuth: true,
     prefetch: null,

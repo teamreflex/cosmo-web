@@ -11,8 +11,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { env } from "@/env.mjs";
 import Link from "next/link";
+import { Check, Github } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { LuCheck, LuGithub } from "react-icons/lu";
 
 type Props = {
   className?: string;
@@ -45,11 +45,11 @@ export default function Logo({ className }: Props) {
               href="https://github.com/teamreflex/cosmo-web"
               target="_blank"
             >
-              <LuGithub />
+              <Github />
             </Link>
           </AlertDialogCancel>
           <AlertDialogAction>
-            <LuCheck />
+            <Check />
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

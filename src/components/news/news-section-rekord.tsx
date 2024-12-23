@@ -5,7 +5,7 @@ import Link from "next/link";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 import { Button } from "../ui/button";
-import { LuDisc3 } from "react-icons/lu";
+import { Disc3 } from "lucide-react";
 import { RekordMemberImage, RekordPost } from "../rekord/rekord-post";
 
 type Props = {
@@ -24,7 +24,7 @@ export default function NewsSectionRekord({ section }: Props) {
       {/* header */}
       <div className="flex flex-row justify-between items-center">
         <div className="flex flex-row gap-2 items-center">
-          <LuDisc3 className="w-6 h-6" />
+          <Disc3 className="w-6 h-6" />
           <h2 className="font-bold text-xl">Today&apos;s Rekord</h2>
         </div>
 

@@ -5,7 +5,7 @@ import {
   CosmoUpcomingGravity,
 } from "@/lib/universal/cosmo/gravity";
 import { isFuture, isPast } from "date-fns";
-import { LuChevronRight } from "react-icons/lu";
+import { ChevronRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import GravityEventType from "./gravity-event-type";
@@ -55,7 +55,7 @@ function GravityPast({ gravity }: { gravity: CosmoPastGravity }) {
           <GravityEventType type={gravity.type} />
         </div>
 
-        <LuChevronRight className="w-8 h-8 text-white/30 justify-self-end" />
+        <ChevronRight className="w-8 h-8 text-white/30 justify-self-end" />
       </div>
     </Link>
   );

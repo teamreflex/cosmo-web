@@ -5,7 +5,7 @@ import { track } from "@/lib/utils";
 import Portal from "@/components/portal";
 import { Button } from "@/components/ui/button";
 import { AlertDialogCancel } from "@/components/ui/alert-dialog";
-import { TbLoader2 } from "react-icons/tb";
+import { Loader2 } from "lucide-react";
 import { UserState } from "@/hooks/use-wallet";
 import { useInterval } from "usehooks-ts";
 
@@ -89,7 +89,7 @@ export default function ExchangeTokenForm({
           disabled={isPending || !enableSubmission}
           form="token-submit"
         >
-          {isPending && <TbLoader2 className="size-4 mr-2 animate-spin" />}
+          {isPending && <Loader2 className="size-4 mr-2 animate-spin" />}
           <span>{enableSubmission ? "Sign In" : `Sign In (${realCount})`}</span>
         </Button>
       </Portal>

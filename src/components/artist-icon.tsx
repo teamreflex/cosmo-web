@@ -1,5 +1,5 @@
 import { ValidArtist } from "@/lib/universal/cosmo/common";
-import { LuSparkle } from "react-icons/lu";
+import { Sparkle } from "lucide-react";
 import { ReactNode } from "react";
 
 const map: Record<ValidArtist, ReactNode> = {
@@ -22,7 +22,7 @@ const map: Record<ValidArtist, ReactNode> = {
     </div>
   ),
   tripleS: (
-    <LuSparkle className="ring-1 p-px w-4 h-4 rounded-full text-purple-300 fill-purple-300 ring-purple-300" />
+    <Sparkle className="ring-1 p-px w-4 h-4 rounded-full text-purple-300 fill-purple-300 ring-purple-300" />
   ),
 };
 

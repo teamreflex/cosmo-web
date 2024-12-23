@@ -4,7 +4,7 @@ import HelpDialog from "@/components/progress/help-dialog";
 import ProgressRenderer from "@/components/progress/progress-renderer";
 import { fetchArtistsWithMembers } from "@/lib/server/cosmo/artists";
 import { isAddressEqual } from "@/lib/utils";
-import { LuShield } from "react-icons/lu";
+import { Shield } from "lucide-react";
 import { Metadata } from "next";
 
 type Props = {
@@ -50,7 +50,7 @@ export default async function ProgressPage(props: Props) {
 function Private({ nickname }: { nickname: string }) {
   return (
     <div className="flex flex-col items-center gap-2 py-6">
-      <LuShield className="w-12 h-12" />
+      <Shield className="w-12 h-12" />
       <p className="text-sm font-semibold">
         {nickname}&apos;s progress is private
       </p>

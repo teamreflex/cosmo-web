@@ -1,6 +1,6 @@
 "use client";
 
-import { LuClipboardCopy } from "react-icons/lu";
+import { Copy } from "lucide-react";
 import { useCopyToClipboard } from "usehooks-ts";
 import { toast } from "../ui/use-toast";
 
@@ -20,7 +20,7 @@ export default function CopyWallet({ address }: Props) {
 
   return (
     <button className="flex gap-1 items-center" onClick={() => copyAddress()}>
-      <LuClipboardCopy className="w-4 h-4" />
+      <Copy className="w-4 h-4" />
       <span className="underline">Copy your wallet address</span>
     </button>
   );

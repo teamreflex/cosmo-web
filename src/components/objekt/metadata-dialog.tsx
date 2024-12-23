@@ -1,11 +1,12 @@
 "use client";
 
 import {
-  LuHeartCrack,
-  LuImageDown,
-  LuLink,
-  LuRefreshCcw,
-} from "react-icons/lu";
+  HeartCrack,
+  ImageDown,
+  LinkIcon,
+  Loader2,
+  RefreshCcw,
+} from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -48,7 +49,6 @@ import { env } from "@/env.mjs";
 import { toast } from "../ui/use-toast";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import VisuallyHidden from "../ui/visually-hidden";
-import { TbLoader2 } from "react-icons/tb";
 
 type CommonProps<TObjektType extends ValidObjekt> = {
   objekt: TObjektType;
@@ -114,7 +114,7 @@ function ResponsiveContent(props: { slug: string }) {
           <Suspense
             fallback={
               <div className="w-full h-[28rem] flex justify-center items-center">
-                <TbLoader2 className="animate-spin h-12 w-12" />
+                <Loader2 className="animate-spin h-12 w-12" />
               </div>
             }
           >
@@ -134,11 +134,11 @@ function MetadataDialogError({
   return (
     <div className="p-4 flex flex-col gap-2 justify-center items-center">
       <div className="flex gap-2 items-center">
-        <LuHeartCrack className="w-6 h-6" />
+        <HeartCrack className="w-6 h-6" />
         <span className="text-sm font-semibold">Error loading objekt</span>
       </div>
       <Button size="sm" variant="outline" onClick={resetErrorBoundary}>
-        <LuRefreshCcw className="mr-2" /> Retry
+        <RefreshCcw className="mr-2" /> Retry
       </Button>
     </div>
   );
@@ -280,13 +280,13 @@ function Metadata<TObjektType extends ValidObjekt>({
       <div className="flex flex-row-reverse gap-2 items-center self-end mt-auto w-full">
         {/* copy url */}
         <Button variant="secondary" size="sm" onClick={copyUrl}>
-          <LuLink />
+          <LinkIcon />
         </Button>
 
         {/* download image */}
         <Button variant="secondary" size="sm" asChild>
           <Link href={front.download} target="_blank">
-            <LuImageDown />
+            <ImageDown />
           </Link>
         </Button>
 

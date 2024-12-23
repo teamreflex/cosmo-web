@@ -1,4 +1,4 @@
-import { LuHeartCrack } from "react-icons/lu";
+import { HeartCrack } from "lucide-react";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 export default function AuthPage() {
   return (
     <div className="flex flex-col gap-2 items-center container py-12">
-      <LuHeartCrack className="w-24 h-24" />
+      <HeartCrack className="w-24 h-24" />
       <p className="font-semibold text-sm text-center">
         You must sign in to view this page
       </p>

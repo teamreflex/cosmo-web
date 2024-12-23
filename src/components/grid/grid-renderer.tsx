@@ -3,12 +3,11 @@
 import { CosmoGrid, CosmoOngoingGrid } from "@/lib/universal/cosmo/grid";
 import { MemberFilterButton } from "../collection/member-filter";
 import { useQuery } from "@tanstack/react-query";
-import { LuHeartCrack } from "react-icons/lu";
+import { HeartCrack, Loader2 } from "lucide-react";
 import GridEightSlot from "./grid-eight-slot";
 import GridFourSlot from "./grid-four-slot";
 import { ofetch } from "ofetch";
 import { parseAsString, useQueryState } from "nuqs";
-import { TbLoader2 } from "react-icons/tb";
 
 type Props = {
   edition: string;
@@ -55,11 +54,11 @@ export default function GridRenderer({ edition, grids }: Props) {
 
       {(status === "pending" || isRefetching) && selectedGrid !== undefined ? (
         <div className="flex justify-center w-full">
-          <TbLoader2 className="animate-spin w-12 h-12" />
+          <Loader2 className="animate-spin w-12 h-12" />
         </div>
       ) : status === "error" ? (
         <div className="flex flex-col items-center w-full">
-          <LuHeartCrack className="w-12 h-12" />
+          <HeartCrack className="w-12 h-12" />
           <p className="text-sm">
             Error fetching grid for {selectedGrid?.member}
           </p>

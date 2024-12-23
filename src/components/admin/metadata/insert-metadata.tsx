@@ -2,17 +2,11 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  LuClipboard,
-  LuHardDriveUpload,
-  LuPlus,
-  LuTrash,
-} from "react-icons/lu";
+import { Clipboard, HardDriveUpload, Loader2, Plus, Trash } from "lucide-react";
 import { useState, useTransition } from "react";
 import { metadataInputSchema, MetadataRow } from "@/lib/universal/metadata";
 import { toast } from "@/components/ui/use-toast";
 import { saveMetadata } from "./actions";
-import { TbLoader2 } from "react-icons/tb";
 
 export default function InsertMetadata() {
   const [isPending, startTransition] = useTransition();
@@ -90,10 +84,10 @@ export default function InsertMetadata() {
       <div className="flex items-center gap-2">
         <h1 className="text-lg font-semibold">Insert Metadata</h1>
         <Button size="xs" onClick={addRow}>
-          <LuPlus className="size-4 mr-1" /> <span>Add Row</span>
+          <Plus className="size-4 mr-1" /> <span>Add Row</span>
         </Button>
         <Button size="xs" onClick={onPaste}>
-          <LuClipboard className="size-4 mr-1" /> <span>Fill</span>
+          <Clipboard className="size-4 mr-1" /> <span>Fill</span>
         </Button>
         <Button
           variant="cosmo"
@@ -102,9 +96,9 @@ export default function InsertMetadata() {
           disabled={isPending || !hasRows}
         >
           {isPending ? (
-            <TbLoader2 className="size-4 mr-1 animate-spin" />
+            <Loader2 className="size-4 mr-1 animate-spin" />
           ) : (
-            <LuHardDriveUpload className="size-4 mr-1" />
+            <HardDriveUpload className="size-4 mr-1" />
           )}{" "}
           <span>Save</span>
         </Button>
@@ -133,7 +127,7 @@ export default function InsertMetadata() {
             />
 
             <Button variant="destructive" onClick={() => removeRow(index)}>
-              <LuTrash className="size-4 mr-1" />
+              <Trash />
             </Button>
           </div>
         ))}

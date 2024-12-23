@@ -8,7 +8,7 @@ import OnlineFilter from "./filter-online";
 import ClassFilter from "./filter-class";
 import SortFilter from "./filter-sort";
 import CollectionFilter from "../objekt-index/collection-filter";
-import { LuSlidersHorizontal } from "react-icons/lu";
+import { SlidersHorizontal } from "lucide-react";
 import Portal from "../portal";
 import DataSourceSelector from "./data-source-selector";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
@@ -38,7 +38,7 @@ export function FiltersContainer({
             size="sm"
             onClick={() => setShow((prev) => !prev)}
           >
-            <LuSlidersHorizontal className="mr-2" />
+            <SlidersHorizontal className="mr-2" />
             <span>Filters</span>
           </Button>
         </Portal>

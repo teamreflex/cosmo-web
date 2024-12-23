@@ -7,7 +7,7 @@ import {
   useInfiniteQuery,
 } from "@tanstack/react-query";
 import { ofetch } from "ofetch";
-import { LuHeartCrack, LuRefreshCcw } from "react-icons/lu";
+import { HeartCrack, RefreshCcw } from "lucide-react";
 import Skeleton from "../skeleton/skeleton";
 import { Button } from "../ui/button";
 import { InfiniteQueryNext } from "../infinite-query-pending";
@@ -77,11 +77,11 @@ function Badges({ artist }: HistoryListProps) {
             .with("error", () => (
               <div className="col-span-full flex flex-col gap-2 items-center py-12">
                 <div className="flex items-center gap-2">
-                  <LuHeartCrack className="h-6 w-6" />
+                  <HeartCrack className="h-6 w-6" />
                   <p className="text-sm font-semibold">Error loading badges</p>
                 </div>
                 <Button variant="outline" onClick={reset}>
-                  <LuRefreshCcw className="mr-2" /> Retry
+                  <RefreshCcw className="mr-2" /> Retry
                 </Button>
               </div>
             ))

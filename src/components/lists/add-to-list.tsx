@@ -1,8 +1,7 @@
 "use client";
 
 import { IndexedObjekt, ObjektList } from "@/lib/universal/objekts";
-import { LuListPlus, LuPlus } from "react-icons/lu";
-import { TbLoader2 } from "react-icons/tb";
+import { ListPlus, Loader2, Plus } from "lucide-react";
 import { memo, MouseEvent, useState, useTransition } from "react";
 import {
   DropdownMenu,
@@ -39,7 +38,7 @@ export default memo(function AddToList({
           className="hover:cursor-pointer hover:scale-110 transition-all flex items-center outline-hidden"
           aria-label={`Select list to add ${collectionId} to`}
         >
-          <LuListPlus className="h-3 w-3 sm:h-5 sm:w-5" />
+          <ListPlus className="h-3 w-3 sm:h-5 sm:w-5" />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="max-h-48" align="start">
@@ -112,9 +111,9 @@ function ListItem({
       >
         {list.name}
         {isPending ? (
-          <TbLoader2 className="h-4 w-4 animate-spin" />
+          <Loader2 className="h-4 w-4 animate-spin" />
         ) : (
-          <LuPlus className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all" />
+          <Plus className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all" />
         )}
       </button>
     </DropdownMenuItem>

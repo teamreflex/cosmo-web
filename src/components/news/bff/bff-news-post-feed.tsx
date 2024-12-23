@@ -2,7 +2,7 @@ import ScaledImage from "@/components/scaled-image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Timestamp from "@/components/ui/timestamp";
 import { CosmoBFFNewsFeedItem } from "@/lib/universal/cosmo/news";
-import { LuCloudDownload, LuHeart } from "react-icons/lu";
+import { DownloadCloud, Heart } from "lucide-react";
 
 export default function BFFNewsPostFeed({
   post,
@@ -34,11 +34,11 @@ export default function BFFNewsPostFeed({
 
             <div className="absolute h-20 w-full bottom-0 left-0 flex items-end justify-between p-3 bg-linear-to-b from-transparent to-black/50">
               <div className="flex items-center gap-2">
-                <LuHeart className="h-6 w-6" />
+                <Heart className="h-6 w-6" />
                 <p className="font-semibold">{post.data.totalLikeCount}</p>
               </div>
               <a href={image.original ?? image.thumbnail} target="_blank">
-                <LuCloudDownload className="h-6 w-6" />
+                <DownloadCloud className="h-6 w-6" />
               </a>
             </div>
           </div>

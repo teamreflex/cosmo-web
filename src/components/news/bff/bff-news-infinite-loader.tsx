@@ -1,8 +1,7 @@
 "use client";
 
 import { CosmoBFFNewsFeedResult } from "@/lib/universal/cosmo/news";
-import { LuChevronDown, LuHeartCrack } from "react-icons/lu";
-import { TbLoader2 } from "react-icons/tb";
+import { ChevronDown, HeartCrack, Loader2 } from "lucide-react";
 import { ReactNode } from "react";
 import { InView } from "react-intersection-observer";
 import {
@@ -46,7 +45,7 @@ export default function BFFNewsInfiniteLoader<TPostType>({
     <div className="flex flex-col gap-8 justify-center w-full md:w-1/2">
       {status === "pending" ? (
         <div className="flex justify-center py-12">
-          <TbLoader2 className="animate-spin h-24 w-24" />
+          <Loader2 className="animate-spin h-24 w-24" />
         </div>
       ) : status === "error" ? (
         <Error />
@@ -57,7 +56,7 @@ export default function BFFNewsInfiniteLoader<TPostType>({
             {group.sets.map((post) => component(post))}
             {group.sets.length === 0 && (
               <div className="col-span-full flex flex-col gap-2 items-center py-12">
-                <LuHeartCrack className="h-12 w-12" />
+                <HeartCrack className="h-12 w-12" />
                 <p>No posts found</p>
               </div>
             )}
@@ -86,17 +85,17 @@ export default function BFFNewsInfiniteLoader<TPostType>({
 }
 
 function LoadMore() {
-  return <LuChevronDown className="animate-bounce h-12 w-12" />;
+  return <ChevronDown className="animate-bounce h-12 w-12" />;
 }
 
 function Loading() {
-  return <TbLoader2 className="animate-spin h-12 w-12" />;
+  return <Loader2 className="animate-spin h-12 w-12" />;
 }
 
 function Error() {
   return (
     <div className="col-span-full flex flex-col gap-2 items-center py-12">
-      <LuHeartCrack className="h-12 w-12" />
+      <HeartCrack className="h-12 w-12" />
       <p>There was an error loading more posts</p>
     </div>
   );
