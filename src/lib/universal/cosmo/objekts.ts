@@ -149,6 +149,13 @@ export type BFFCollectionGroupCollection = {
   collectionNo: string;
   class: string;
   member: string;
+  artistMember: {
+    id: number;
+    name: string;
+    alias: string;
+    profileImageUrl: string;
+    order: number;
+  };
   artistName: string;
   thumbnailImage: string;
   frontImage: string;

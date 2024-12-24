@@ -7,6 +7,9 @@ export type {
 } from "@/lib/server/db/schema";
 import { ObjektBaseFields, OwnedObjekt } from "@/lib/universal/cosmo/objekts";
 
+export type ValidObjekt = ObjektBaseFields | OwnedObjekt | IndexedObjekt;
+
+// results from indexer
 export type IndexedObjekt = Collection;
 export type IndexedCosmoResponse = {
   hasNext: boolean;
@@ -14,7 +17,8 @@ export type IndexedCosmoResponse = {
   nextStartAfter?: number;
   objekts: IndexedObjekt[];
 };
-export type ValidObjekt = ObjektBaseFields | OwnedObjekt | IndexedObjekt;
+
+// metadata
 interface ObjektInformation extends ObjektMetadataEntry {
   profile?: Profile;
 }
@@ -43,7 +47,7 @@ export function parsePage<T>(data: any) {
 export const inferObjekt = <
   Season extends string,
   Member extends string,
-  Collection extends string
+  Collection extends string,
 >(
   collectionId: `${Season} ${Member} ${Collection}`
 ) => {
