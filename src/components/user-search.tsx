@@ -28,6 +28,7 @@ import { RecentUser } from "@/store";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import VisuallyHidden from "./ui/visually-hidden";
 import { useUserState } from "@/hooks/use-user-state";
+import { cn } from "@/lib/utils";
 
 type Props = PropsWithChildren<{
   placeholder?: string;
@@ -53,15 +54,19 @@ export function UserSearch({
   const queryIsAddress = isAddress(debouncedQuery);
   const enableQuery = debouncedQuery.length > 3 && queryIsAddress === false;
 
-  const { status, data } = useQuery({
+  const { status, data, error } = useQuery({
     queryKey: ["user-search", debouncedQuery],
     queryFn: async () => {
       return await ofetch<CosmoSearchResult>(`/api/user/v1/search`, {
         query: { query: debouncedQuery },
+        retry: 1,
       }).then((res) => res.results);
     },
     enabled: enableQuery,
+    retry: false,
   });
+
+  const showClose = status !== "error" && authenticated;
 
   // filter out recent users who exist in the search results
   const recentUsers = data
@@ -98,7 +103,7 @@ export function UserSearch({
       <CommandDialog
         open={open}
         onOpenChange={onOpenChange}
-        showClose={authenticated}
+        showClose={showClose}
       >
         <VisuallyHidden>
           <DialogHeader>
@@ -106,40 +111,11 @@ export function UserSearch({
             <DialogDescription>Search for a user...</DialogDescription>
           </DialogHeader>
         </VisuallyHidden>
-        {authenticated === false && (
-          <div className="flex items-center justify-between px-4 py-2 text-xs font-semibold bg-cosmo">
-            <div className="flex gap-2 items-center">
-              <p>Sign in to fully search COSMO</p>
 
-              <Popover>
-                <PopoverTrigger asChild>
-                  <button>
-                    <HelpCircle className="h-4 w-4" />
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent
-                  side="top"
-                  className="w-auto max-w-[22rem]"
-                  asChild
-                >
-                  <div className="flex flex-col gap-1 text-sm">
-                    <p className="font-semibold">
-                      COSMO requires signing in to search for users.
-                    </p>
-                    <p>
-                      Any search queries while not signed in will be made
-                      against accounts that have been saved into the{" "}
-                      {env.NEXT_PUBLIC_APP_NAME} system, which does not include
-                      all accounts.
-                    </p>
-                  </div>
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            <DialogClose />
-          </div>
-        )}
+        <NoticeGuest enabled={authenticated === false} />
+        <Notice className="bg-red-600" enabled={status === "error"}>
+          <p>COSMO error, try again soon</p>
+        </Notice>
 
         <CommandInput
           autoFocus={true}
@@ -154,13 +130,6 @@ export function UserSearch({
           {status === "pending" && enableQuery && (
             <div className="flex items-center justify-center py-2">
               <Loader2 className="h-8 w-8 animate-spin" />
-            </div>
-          )}
-
-          {status === "error" && (
-            <div className="flex items-center justify-center gap-2 py-2">
-              <HeartCrack className="h-8 w-8" />
-              <p className="text-semibold">Error searching for users</p>
             </div>
           )}
 
@@ -239,5 +208,56 @@ function UserAvatar({ artist, user }: UserResultProps) {
         />
       )}
     </Avatar>
+  );
+}
+
+type NoticeProps = PropsWithChildren<{
+  enabled: boolean;
+  className?: string;
+}>;
+
+function Notice({ children, className, enabled }: NoticeProps) {
+  return (
+    <div
+      data-enabled={enabled}
+      className={cn(
+        "items-center justify-between px-4 text-xs font-semibold h-8 hidden data-[enabled=true]:flex",
+        className
+      )}
+    >
+      {children}
+      <DialogClose />
+    </div>
+  );
+}
+
+function NoticeGuest({ enabled }: { enabled: boolean }) {
+  return (
+    <Notice className="bg-cosmo" enabled={enabled}>
+      <div className="flex gap-2 items-center">
+        <p>Sign in to fully search COSMO</p>
+
+        <Popover>
+          <PopoverTrigger asChild>
+            <button>
+              <HelpCircle className="h-4 w-4" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent side="top" className="w-auto max-w-[22rem]" asChild>
+            <div className="flex flex-col gap-1 text-sm">
+              <p className="font-semibold">
+                COSMO requires signing in to search for users.
+              </p>
+              <p>
+                Any search queries while not signed in will be made against
+                accounts that have been saved into the{" "}
+                {env.NEXT_PUBLIC_APP_NAME} system, which does not include all
+                accounts.
+              </p>
+            </div>
+          </PopoverContent>
+        </Popover>
+      </div>
+    </Notice>
   );
 }
