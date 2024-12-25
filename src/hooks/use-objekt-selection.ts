@@ -1,6 +1,6 @@
 import { toast } from "@/components/ui/use-toast";
 import { CosmoPublicUser } from "@/lib/universal/cosmo/auth";
-import { MutationStatus } from "@tanstack/react-query";
+import type { Hex } from "viem";
 import { create } from "zustand";
 
 type SelectedObjekt = {
@@ -12,11 +12,55 @@ type SelectedObjekt = {
   thumbnailImage: string;
 };
 
-export type Selection = {
+export type SelectionIdle = {
+  status: "idle";
   objekt: SelectedObjekt;
-  status: MutationStatus;
-  recipient: CosmoPublicUser | null;
+  hash: null;
+  recipient: CosmoPublicUser;
 };
+
+type SelectionRecipientPending = {
+  status: "idle";
+  objekt: SelectedObjekt;
+  hash: null;
+  recipient: null;
+};
+
+export type SelectionSuccess = {
+  status: "success";
+  objekt: SelectedObjekt;
+  hash: string;
+  recipient: CosmoPublicUser;
+};
+
+export type SelectionError = {
+  status: "error";
+  objekt: SelectedObjekt;
+  hash: null;
+  recipient: CosmoPublicUser;
+};
+
+type SelectionPending = {
+  status: "pending";
+  objekt: SelectedObjekt;
+  hash: null;
+  recipient: CosmoPublicUser;
+};
+
+export type SelectionCanceled = {
+  status: "canceled";
+  objekt: SelectedObjekt;
+  hash: null;
+  recipient: CosmoPublicUser;
+};
+
+export type Selection =
+  | SelectionIdle
+  | SelectionRecipientPending
+  | SelectionSuccess
+  | SelectionError
+  | SelectionPending
+  | SelectionCanceled;
 
 type ObjektSelectionState = {
   // drawer state
@@ -53,10 +97,10 @@ export const useObjektSelection = create<ObjektSelectionState>()(
           (p) => p.objekt.tokenId === objekt.tokenId
         );
 
-        // TODO: solve transaction nonce issue
-        if (!existing && state.selected.length >= 1) {
+        // TODO: add scroll area to the drawer to support more
+        if (!existing && state.selected.length >= 5) {
           toast({
-            description: "Currently only one objekt can be selected",
+            description: "Currently only 5 objekts can be selected",
           });
           return state;
         }
@@ -76,9 +120,10 @@ export const useObjektSelection = create<ObjektSelectionState>()(
             ...state.selected,
             {
               objekt,
-              status: "pending",
+              status: "idle",
               recipient: null,
-            },
+              hash: null,
+            } satisfies SelectionRecipientPending,
           ],
         };
       }),

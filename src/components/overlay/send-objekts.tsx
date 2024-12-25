@@ -1,6 +1,16 @@
-import { Selection, useObjektSelection } from "@/hooks/use-objekt-selection";
 import {
+  Selection,
+  SelectionCanceled,
+  SelectionError,
+  SelectionIdle,
+  SelectionSuccess,
+  useObjektSelection,
+} from "@/hooks/use-objekt-selection";
+import {
+  Ban,
   CheckCircle,
+  CircleDashed,
+  ExternalLink,
   Loader2,
   LoaderIcon,
   Send,
@@ -30,6 +40,7 @@ import { UserSearch } from "../user-search";
 import { useQueryClient } from "@tanstack/react-query";
 import { useWallet } from "@/hooks/use-wallet";
 import { toast } from "../ui/use-toast";
+import { match } from "ts-pattern";
 
 export default function SendObjekts() {
   const open = useObjektSelection((ctx) => ctx.open);
@@ -164,7 +175,10 @@ function SelectRecipients({ selected, onComplete }: SelectRecipientsProps) {
       <ScrollArea className="w-full min-h-28 max-h-96 overflow-y-auto">
         <div className="flex flex-col divide-y divide-accent">
           {selected.map((selection) => (
-            <Row selection={selection} key={selection.objekt.tokenId} />
+            <SelectRecipientRow
+              selection={selection}
+              key={selection.objekt.tokenId}
+            />
           ))}
         </div>
       </ScrollArea>
@@ -185,7 +199,7 @@ type RowProps = {
   selection: Selection;
 };
 
-function Row({ selection }: RowProps) {
+function SelectRecipientRow({ selection }: RowProps) {
   const remove = useObjektSelection((ctx) => ctx.remove);
 
   return (
@@ -264,32 +278,53 @@ function Sending({ selected, onBack, onClose }: SendingProps) {
       address: wallet.account.address,
     });
 
-    const promises = selected.map(async (selection, index) => {
-      return send({
-        to: selection.recipient!.address,
-        tokenId: selection.objekt.tokenId,
-        contract: selection.objekt.contract,
-        nonce: nonce + index,
-        opts: {
-          mutationKey: ["send-objekt", selection.objekt.tokenId],
-        },
-      })
-        .then(() => {
-          update({
-            ...selection,
-            status: "success",
-          });
-          track("send-objekt");
-        })
-        .catch(() => {
-          update({
-            ...selection,
-            status: "error",
-          });
-        });
-    });
+    // loop over each selection and send it
+    for (let i = 0; i < selected.length; i++) {
+      const selection = selected[i] as SelectionIdle;
 
-    await Promise.all(promises);
+      try {
+        const hash = await send({
+          to: selection.recipient!.address,
+          tokenId: selection.objekt.tokenId,
+          contract: selection.objekt.contract,
+          nonce: nonce + i,
+          opts: {
+            mutationKey: ["send-objekt", selection.objekt.tokenId],
+          },
+        });
+
+        // update the selection to success
+        update({
+          ...selection,
+          status: "success",
+          hash: hash ?? "",
+        } satisfies SelectionSuccess);
+        track("send-objekt");
+      } catch (error) {
+        // update the selection to error
+        update({
+          ...selection,
+          status: "error",
+        } satisfies SelectionError);
+
+        // update everything else to canceled
+        for (let j = i + 1; j < selected.length; j++) {
+          const toCancel = selected[j] as SelectionIdle;
+          update({
+            ...toCancel,
+            status: "canceled",
+          } satisfies SelectionCanceled);
+        }
+
+        /**
+         * break out of the loop on the first error
+         * this is to prevent any nonces from being missed
+         */
+        break;
+      }
+    }
+
+    // invalidate the collection query to refresh the UI
     setTimeout(() => {
       queryClient.invalidateQueries({
         queryKey: ["collection"],
@@ -340,9 +375,6 @@ function Sending({ selected, onBack, onClose }: SendingProps) {
 }
 
 function SendingRow({ selection }: RowProps) {
-  const remove = useObjektSelection((ctx) => ctx.remove);
-  const canRemove = selection.status === "idle";
-
   return (
     <div className="flex flex-row gap-4 py-2 px-4">
       <div className="relative aspect-photocard h-24">
@@ -361,48 +393,53 @@ function SendingRow({ selection }: RowProps) {
             <span className="text-sm">
               #{selection.objekt.serial.toString().padStart(5, "0")}
             </span>
-            {canRemove && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6"
-                onClick={() => remove(selection.objekt.tokenId)}
-              >
-                <X className="h-4 w-4" />
-                <VisuallyHidden>Remove selection</VisuallyHidden>
-              </Button>
-            )}
           </div>
         </div>
 
         {/* status */}
-        {selection.status === "idle" && (
-          <div className="flex flex-row gap-2 items-center">
-            <LoaderIcon className="h-4 w-4" />
-            <span className="text-sm">Waiting</span>
-          </div>
-        )}
-
-        {selection.status === "pending" && (
-          <div className="flex flex-row gap-2 items-center">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            <span className="text-sm">Sending</span>
-          </div>
-        )}
-
-        {selection.status === "success" && (
-          <div className="flex flex-row gap-2 items-center">
-            <CheckCircle className="h-4 w-4" />
-            <span className="text-sm">Success</span>
-          </div>
-        )}
-
-        {selection.status === "error" && (
-          <div className="flex flex-row gap-2 items-center">
-            <TriangleAlert className="h-4 w-4" />
-            <span className="text-sm">Error</span>
-          </div>
-        )}
+        {match(selection)
+          .with({ status: "idle" }, () => (
+            <div className="flex flex-row gap-2 items-center">
+              <CircleDashed className="h-4 w-4" />
+              <span className="text-sm">Pending</span>
+            </div>
+          ))
+          .with({ status: "pending" }, () => (
+            <div className="flex flex-row gap-2 items-center">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span className="text-sm">Sending</span>
+            </div>
+          ))
+          .with({ status: "success" }, (selection) => (
+            <div className="flex flex-col">
+              <div className="flex flex-row gap-2 items-center">
+                <CheckCircle className="h-4 w-4" />
+                <span className="text-sm">Success</span>
+              </div>
+              <a
+                className="text-sm underline flex items-center gap-1"
+                href={`https://polygonscan.com/tx/${selection.hash}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <span>View on PolygonScan</span>
+                <ExternalLink className="w-4 h-4" />
+              </a>
+            </div>
+          ))
+          .with({ status: "error" }, () => (
+            <div className="flex flex-row gap-2 items-center">
+              <TriangleAlert className="h-4 w-4" />
+              <span className="text-sm">Error</span>
+            </div>
+          ))
+          .with({ status: "canceled" }, () => (
+            <div className="flex flex-row gap-2 items-center">
+              <Ban className="h-4 w-4" />
+              <span className="text-sm">Canceled</span>
+            </div>
+          ))
+          .exhaustive()}
       </div>
     </div>
   );
