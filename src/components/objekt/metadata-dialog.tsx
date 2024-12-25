@@ -19,7 +19,7 @@ import {
   DrawerDescription,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { ObjektMetadata, ValidObjekt } from "@/lib/universal/objekts";
+import { ObjektMetadata, LegacyObjekt } from "@/lib/universal/objekts";
 import { FlippableObjekt } from "./objekt";
 import {
   QueryErrorResetBoundary,
@@ -50,7 +50,7 @@ import { toast } from "../ui/use-toast";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import VisuallyHidden from "../ui/visually-hidden";
 
-type CommonProps<TObjektType extends ValidObjekt> = {
+type CommonProps<TObjektType extends LegacyObjekt> = {
   objekt: TObjektType;
 };
 
@@ -152,7 +152,7 @@ type MetadataDialogContentProps = {
 export const fetchObjektQuery = (slug: string) => ({
   queryKey: ["collection-metadata", "objekt", slug],
   queryFn: async () => {
-    return await ofetch<ValidObjekt>(`/api/objekts/by-slug/${slug}`);
+    return await ofetch<LegacyObjekt>(`/api/objekts/by-slug/${slug}`);
   },
   retry: 1,
 });
@@ -177,7 +177,7 @@ function MetadataContent({ slug, onClose }: MetadataDialogContentProps) {
   );
 }
 
-function AttributePanel<TObjektType extends ValidObjekt>({
+function AttributePanel<TObjektType extends LegacyObjekt>({
   objekt,
 }: CommonProps<TObjektType>) {
   const artist = getObjektArtist(objekt);
@@ -200,7 +200,7 @@ function AttributePanel<TObjektType extends ValidObjekt>({
   );
 }
 
-function MetadataPanel<TObjektType extends ValidObjekt>({
+function MetadataPanel<TObjektType extends LegacyObjekt>({
   objekt,
 }: CommonProps<TObjektType>) {
   return (
@@ -222,7 +222,7 @@ function MetadataPanel<TObjektType extends ValidObjekt>({
   );
 }
 
-function Metadata<TObjektType extends ValidObjekt>({
+function Metadata<TObjektType extends LegacyObjekt>({
   objekt,
 }: {
   objekt: TObjektType;

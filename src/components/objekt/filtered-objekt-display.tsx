@@ -1,28 +1,17 @@
-"use client";
-
-import { BaseObjektProps } from "../objekt/objekt";
 import {
   CSSProperties,
   ReactElement,
   Suspense,
   cloneElement,
   useCallback,
-  useMemo,
 } from "react";
 import { HeartCrack, RefreshCcw } from "lucide-react";
-import {
-  QueryErrorResetBoundary,
-  QueryFunction,
-  QueryKey,
-  useSuspenseInfiniteQuery,
-} from "@tanstack/react-query";
+import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import MemberFilter from "../collection/member-filter";
 import Portal from "../portal";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
-import { CollectionDataSource } from "@/hooks/use-filters";
 import { InfiniteQueryNext } from "../infinite-query-pending";
-import { ValidObjekt } from "@/lib/universal/objekts";
 import { GRID_COLUMNS } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { useObjektRewards } from "@/hooks/use-objekt-rewards";
@@ -30,45 +19,38 @@ import Skeleton from "../skeleton/skeleton";
 import { ErrorBoundary } from "react-error-boundary";
 import { useProfileContext } from "@/hooks/use-profile";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
+import {
+  ObjektResponseOptions,
+  useObjektResponse,
+} from "@/hooks/use-objekt-response";
+import { ExpandableObjekt } from "./objekt";
+import { LegacyOverlay } from "../collection/data-sources/legacy-common";
 
-export type ObjektResponse<TObjektType extends ValidObjekt> = {
-  hasNext: boolean;
-  total: number;
-  objekts: TObjektType[];
-  nextStartAfter?: number | undefined;
+type RenderProps<T> = {
+  id: string | number;
+  objekt: T;
+  isPin: boolean;
 };
 
-type Props<TObjektType extends ValidObjekt> = {
-  children: (
-    props: BaseObjektProps<TObjektType>,
-    priority: boolean,
-    isPin: boolean
-  ) => ReactElement;
+type Props<Response, Item> = {
+  children: (props: RenderProps<Item>) => ReactElement | null;
   artists: CosmoArtistWithMembersBFF[];
-  queryKey: QueryKey;
-  queryFunction: QueryFunction<
-    ObjektResponse<TObjektType>,
-    QueryKey,
-    number | undefined
-  >;
-  getObjektId: (objekt: TObjektType) => string;
-  getObjektDisplay?: (objekt: TObjektType) => boolean;
+  options: ObjektResponseOptions<Response, Item>;
+  getObjektId: (objekt: Item) => string;
   gridColumns?: number;
-  dataSource?: CollectionDataSource;
   hidePins?: boolean;
+  authenticated: boolean;
 };
 
-export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
+export default function FilteredObjektDisplay<Response, Item>({
   children,
   artists,
-  queryKey,
-  queryFunction,
+  options,
   getObjektId,
-  getObjektDisplay = () => true,
   gridColumns = GRID_COLUMNS,
-  dataSource = "blockchain",
   hidePins = true,
-}: Props<TObjektType>) {
+  authenticated,
+}: Props<Response, Item>) {
   const [filters, setFilters] = useCosmoFilters();
 
   const setActiveMember = useCallback(
@@ -140,13 +122,10 @@ export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
                   }
                 >
                   <ObjektGrid
-                    queryFunction={queryFunction}
-                    queryKey={queryKey}
+                    options={options}
                     getObjektId={getObjektId}
-                    getObjektDisplay={getObjektDisplay}
-                    gridColumns={gridColumns}
-                    dataSource={dataSource}
                     hidePins={hidePins}
+                    authenticated={authenticated}
                   >
                     {children}
                   </ObjektGrid>
@@ -162,85 +141,68 @@ export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
   );
 }
 
-interface ObjektGridProps<TObjektType extends ValidObjekt>
-  extends Omit<Props<TObjektType>, "artists" | "setFilters"> {
+interface ObjektGridProps<Response, Item>
+  extends Omit<Props<Response, Item>, "artists" | "gridColumns"> {
   hidePins: boolean;
 }
 
-function ObjektGrid<TObjektType extends ValidObjekt>({
+function ObjektGrid<Response, Item>({
   children,
-  queryKey,
-  queryFunction,
+  options,
   getObjektId,
-  getObjektDisplay = () => true,
-  gridColumns = GRID_COLUMNS,
-  dataSource = "blockchain",
   hidePins,
-}: ObjektGridProps<TObjektType>) {
-  const [filters] = useCosmoFilters();
+  authenticated,
+}: ObjektGridProps<Response, Item>) {
   const pins = useProfileContext((ctx) => ctx.pins);
   const { rewardsDialog } = useObjektRewards();
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useSuspenseInfiniteQuery({
-      queryKey: [...queryKey, dataSource, filters],
-      queryFn: queryFunction,
-      initialPageParam: 0,
-      getNextPageParam: (lastPage) => lastPage.nextStartAfter,
-      refetchOnWindowFocus: false,
-      staleTime: 1000 * 60 * 5, // 5 minutes
-    });
-
-  const total = Number(data?.pages[0].total ?? 0);
-  const objekts = useMemo(() => {
-    return (data?.pages.flatMap((page) => page.objekts) ?? []).filter(
-      getObjektDisplay
-    );
-  }, [data, getObjektDisplay]);
+  const { query, total, items } = useObjektResponse(options);
 
   return (
     <div className="contents">
-      <Portal to="#objekt-total">
-        <p className="font-semibold">{total.toLocaleString()} total</p>
-      </Portal>
+      <Portal to="#objekt-total">{total}</Portal>
 
       {rewardsDialog}
 
+      {/* render any pins */}
       {hidePins === false &&
-        pins.map((objekt, i) =>
-          cloneElement(
-            children(
-              {
-                objekt: objekt as TObjektType,
-                id: getObjektId(objekt as TObjektType),
-              },
-              i < gridColumns * 3,
-              true
-            ),
-            {
-              key: getObjektId(objekt as TObjektType),
-            }
-          )
-        )}
+        pins.map((pin) => (
+          <ExpandableObjekt
+            key={getObjektId(pin as Item)}
+            objekt={pin}
+            id={getObjektId(pin as Item)}
+          >
+            <LegacyOverlay
+              objekt={pin}
+              authenticated={authenticated}
+              isPinned={
+                pins.findIndex(
+                  (p) => p.tokenId === getObjektId(pin as Item)
+                ) !== -1
+              }
+              isPin={true}
+            />
+          </ExpandableObjekt>
+        ))}
 
-      {objekts.map((objekt, i) =>
-        cloneElement(
-          children(
-            { objekt, id: getObjektId(objekt) },
-            i < gridColumns * 3,
-            false
-          ),
-          {
-            key: getObjektId(objekt),
-          }
-        )
-      )}
+      {/* render the objekts */}
+      {items.map((item) => {
+        const element = children({
+          objekt: item,
+          id: getObjektId(item),
+          isPin: false,
+        });
+
+        return element
+          ? cloneElement(element, { key: getObjektId(item) })
+          : null;
+      })}
 
       <Portal to="#pagination">
         <InfiniteQueryNext
           status="success"
-          hasNextPage={hasNextPage}
-          isFetchingNextPage={isFetchingNextPage}
-          fetchNextPage={fetchNextPage}
+          hasNextPage={query.hasNextPage}
+          isFetchingNextPage={query.isFetchingNextPage}
+          fetchNextPage={query.fetchNextPage}
         />
       </Portal>
     </div>

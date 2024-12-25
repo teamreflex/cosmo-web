@@ -7,8 +7,7 @@ export const indexer = drizzle(
   async (sql, params, method) => {
     try {
       const rows = await ofetch(`${env.INDEXER_PROXY_URL}/query`, {
-        retry: 1,
-        retryDelay: 500, // retry after 500ms
+        retry: false,
         method: "POST",
         headers: {
           "proxy-key": env.INDEXER_PROXY_KEY,

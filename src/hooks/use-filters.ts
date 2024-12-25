@@ -2,7 +2,7 @@ import { parseAsBoolean, useQueryState } from "nuqs";
 import { useMemo, useState } from "react";
 import { CosmoFilters, useCosmoFilters } from "./use-cosmo-filters";
 
-export type CollectionDataSource = "cosmo" | "blockchain";
+export type CollectionDataSource = "cosmo" | "cosmo-legacy" | "blockchain";
 
 export function useFilters() {
   // setup cosmo filters
@@ -15,7 +15,7 @@ export function useFilters() {
     return cosmoFilters.sort === "serialAsc" ||
       cosmoFilters.sort === "serialDesc"
       ? "blockchain"
-      : "cosmo";
+      : "cosmo-legacy";
   });
 
   const searchParams = useMemo(() => {

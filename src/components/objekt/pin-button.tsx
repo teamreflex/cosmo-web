@@ -1,6 +1,6 @@
 "use client";
 
-import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
+import { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
 import { pinObjekt, unpinObjekt } from "../collection/actions";
 import { Loader2, Pin, PinOff } from "lucide-react";
 import { memo, useTransition } from "react";
@@ -9,7 +9,7 @@ import { useProfileContext } from "@/hooks/use-profile";
 import { toast } from "../ui/use-toast";
 
 type Props = {
-  objekt: OwnedObjekt;
+  objekt: CosmoObjekt;
   isPinned: boolean;
 };
 

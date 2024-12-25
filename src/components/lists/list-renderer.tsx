@@ -1,8 +1,8 @@
 "use client";
 
 import {
-  IndexedCosmoResponse,
   IndexedObjekt,
+  LegacyObjektResponse,
   ObjektList,
   parsePage,
 } from "@/lib/universal/objekts";
@@ -14,7 +14,7 @@ import UpdateList from "./update-list";
 import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { useFilters } from "@/hooks/use-filters";
-import { memo, useCallback } from "react";
+import { memo } from "react";
 import {
   FiltersContainer,
   IndexFilters,
@@ -22,6 +22,7 @@ import {
 import { ExpandableObjekt } from "../objekt/objekt";
 import { ofetch } from "ofetch";
 import { baseUrl, GRID_COLUMNS } from "@/lib/utils";
+import { ObjektResponseOptions } from "@/hooks/use-objekt-response";
 
 const getObjektId = (objekt: IndexedObjekt) => objekt.id;
 
@@ -42,8 +43,12 @@ export default function ListRenderer({
 }: Props) {
   const { searchParams } = useFilters();
 
-  const queryFunction = useCallback(
-    async ({ pageParam = 0 }: { pageParam?: number }) => {
+  /**
+   * Query options
+   */
+  const options = {
+    queryKey: ["objekt-list", list.slug, user.address],
+    queryFunction: async ({ pageParam = 0 }: { pageParam?: number }) => {
       const url = new URL(
         `/api/objekt-list/entries/${list.slug}/${user.address}`,
         baseUrl()
@@ -54,10 +59,18 @@ export default function ListRenderer({
           ...Object.fromEntries(searchParams.entries()),
           page: pageParam.toString(),
         },
-      }).then((res) => parsePage<IndexedCosmoResponse>(res));
+      }).then((res) => parsePage<LegacyObjektResponse<IndexedObjekt>>(res));
     },
-    [searchParams, list.slug, user.address]
-  );
+    getNextPageParam: (lastPage) => lastPage.nextStartAfter,
+    calculateTotal: (data) => {
+      const total = data.pages[0].total ?? 0;
+      return total.toLocaleString();
+    },
+    getItems: (data) => data.pages.flatMap((page) => page.objekts),
+  } satisfies ObjektResponseOptions<
+    LegacyObjektResponse<IndexedObjekt>,
+    IndexedObjekt
+  >;
 
   return (
     <section className="flex flex-col">
@@ -69,13 +82,13 @@ export default function ListRenderer({
 
       <FilteredObjektDisplay
         artists={artists}
-        queryFunction={queryFunction}
-        queryKey={["objekt-list", list.slug]}
+        options={options}
         getObjektId={getObjektId}
         gridColumns={gridColumns}
+        authenticated={authenticated}
       >
-        {({ objekt, id }, priority) => (
-          <ExpandableObjekt objekt={objekt} id={id} priority={priority}>
+        {({ objekt, id }) => (
+          <ExpandableObjekt objekt={objekt} id={id}>
             <Overlay
               objekt={objekt}
               authenticated={authenticated}

@@ -13,7 +13,7 @@ import {
 import { memo } from "react";
 import LockObjekt from "./lock-button";
 import OverlayStatus from "./overlay-status";
-import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
+import { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
 import { useProfileContext } from "@/hooks/use-profile";
 import AddToList from "../lists/add-to-list";
 import { getObjektSlug } from "./objekt-util";
@@ -22,7 +22,7 @@ import PinObjekt from "./pin-button";
 import SendObjekt from "./send-button";
 
 type Props = {
-  objekt: OwnedObjekt;
+  objekt: CosmoObjekt;
   authenticated: boolean;
   isLocked: boolean;
   isPinned: boolean;

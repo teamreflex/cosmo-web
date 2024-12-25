@@ -17,7 +17,7 @@ import {
 import { ValidArtist, ValidSort } from "@/lib/universal/cosmo/common";
 import {
   NonTransferableReason,
-  OwnedObjekt,
+  CosmoObjekt,
 } from "@/lib/universal/cosmo/objekts";
 import { parseUserCollection } from "@/lib/universal/parsers";
 import { and, asc, desc, eq, sql } from "drizzle-orm";
@@ -106,7 +106,7 @@ function withSort<T extends PgSelect>(qb: T, sort: ValidSort) {
 /**
  * Map indexed objekt/collection into an entity compatible with existing type.
  */
-function mapResult(objekt: Objekt, collection: Collection): OwnedObjekt {
+function mapResult(objekt: Objekt, collection: Collection): CosmoObjekt {
   return {
     ...collection,
     thumbnailImage: collection.frontImage,

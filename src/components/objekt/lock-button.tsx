@@ -1,6 +1,6 @@
 "use client";
 
-import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
+import { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
 import { toggleObjektLock } from "../collection/actions";
 import { Loader2, Lock, Unlock } from "lucide-react";
 import { memo, useTransition } from "react";
@@ -8,7 +8,7 @@ import { track } from "@/lib/utils";
 import { useProfileContext } from "@/hooks/use-profile";
 
 type Props = {
-  objekt: OwnedObjekt;
+  objekt: CosmoObjekt;
   isLocked: boolean;
 };
 

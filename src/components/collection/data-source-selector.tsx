@@ -57,7 +57,7 @@ export default memo(function DataSourceSelector({
 
     // reset any source-specific filters
     switch (source) {
-      case "cosmo":
+      case "cosmo-legacy":
         // reset serial sort
         if (filters.sort === "serialAsc" || filters.sort === "serialDesc") {
           setFilters({
@@ -86,7 +86,7 @@ export default memo(function DataSourceSelector({
           <SelectValue placeholder="Data Source" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="cosmo">
+          <SelectItem value="cosmo-legacy">
             <div className="flex flex-row items-center gap-2">
               <Image
                 src={CosmoImage.src}

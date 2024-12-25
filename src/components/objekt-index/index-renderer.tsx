@@ -3,8 +3,8 @@
 import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import ListDropdown from "../lists/list-dropdown";
 import {
-  IndexedCosmoResponse,
   IndexedObjekt,
+  LegacyObjektResponse,
   ObjektList,
   parsePage,
 } from "@/lib/universal/objekts";
@@ -13,7 +13,7 @@ import ObjektSidebar from "../objekt/objekt-sidebar";
 import { TopOverlay } from "./index-overlay";
 import HelpDialog from "./help-dialog";
 import { useFilters } from "@/hooks/use-filters";
-import { memo, useCallback } from "react";
+import { memo } from "react";
 import {
   FiltersContainer,
   IndexFilters,
@@ -22,8 +22,8 @@ import { ExpandableObjekt, RoutedExpandableObjekt } from "../objekt/objekt";
 import { ofetch } from "ofetch";
 import { baseUrl, GRID_COLUMNS } from "@/lib/utils";
 import { parseAsString, useQueryState } from "nuqs";
+import { ObjektResponseOptions } from "@/hooks/use-objekt-response";
 
-const queryKey = ["objekt-index"];
 const getObjektId = (objekt: IndexedObjekt) => objekt.id;
 
 type Props = {
@@ -48,18 +48,30 @@ export default function IndexRenderer({
 
   const authenticated = objektLists !== undefined && nickname !== undefined;
 
-  const queryFunction = useCallback(
-    async ({ pageParam = 0 }: { pageParam?: number }) => {
+  /**
+   * Query options
+   */
+  const options = {
+    queryKey: ["objekt-index"],
+    queryFunction: async ({ pageParam = 0 }: { pageParam?: number }) => {
       const url = new URL("/api/objekts", baseUrl());
       return await ofetch(url.toString(), {
         query: {
           ...Object.fromEntries(searchParams.entries()),
           page: pageParam.toString(),
         },
-      }).then((res) => parsePage<IndexedCosmoResponse>(res));
+      }).then((res) => parsePage<LegacyObjektResponse<IndexedObjekt>>(res));
     },
-    [searchParams]
-  );
+    getNextPageParam: (lastPage) => lastPage.nextStartAfter,
+    calculateTotal: (data) => {
+      const str = (data.pages[0].total ?? 0).toLocaleString("en");
+      return `${str} total`;
+    },
+    getItems: (data) => data.pages.flatMap((page) => page.objekts),
+  } satisfies ObjektResponseOptions<
+    LegacyObjektResponse<IndexedObjekt>,
+    IndexedObjekt
+  >;
 
   return (
     <div className="flex flex-col">
@@ -71,18 +83,13 @@ export default function IndexRenderer({
 
       <FilteredObjektDisplay
         artists={artists}
-        queryFunction={queryFunction}
-        queryKey={queryKey}
+        options={options}
         getObjektId={getObjektId}
         gridColumns={gridColumns}
+        authenticated={authenticated}
       >
-        {({ objekt, id }, priority) => (
-          <ExpandableObjekt
-            objekt={objekt}
-            id={id}
-            setActive={setActiveObjekt}
-            priority={priority}
-          >
+        {({ objekt, id }) => (
+          <ExpandableObjekt objekt={objekt} id={id} setActive={setActiveObjekt}>
             <Overlay
               objekt={objekt}
               authenticated={authenticated}

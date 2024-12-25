@@ -1,22 +1,19 @@
 "use client";
 
 import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
-import { COSMO_ENDPOINT, ValidSort } from "@/lib/universal/cosmo/common";
-import { OwnedObjektsResult } from "@/lib/universal/cosmo/objekts";
 import { useFilters } from "@/hooks/use-filters";
-import { useCallback } from "react";
 import {
   CollectionFilters,
   FiltersContainer,
 } from "../collection/filters-container";
-import CollectionObjektDisplay from "../collection/collection-objekt-display";
-import { parsePage } from "@/lib/universal/objekts";
-import { ofetch } from "ofetch";
 import Portal from "../portal";
 import HelpDialog from "./help-dialog";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
-import { baseUrl } from "@/lib/utils";
 import SendObjekts from "../overlay/send-objekts";
+import { match } from "ts-pattern";
+import Blockchain from "../collection/data-sources/blockchain";
+import CosmoCollectionGroups from "../collection/data-sources/cosmo-groups";
+import CosmoLegacy from "../collection/data-sources/cosmo-legacy";
 
 type Props = {
   artists: CosmoArtistWithMembersBFF[];
@@ -28,39 +25,7 @@ export default function ProfileRenderer({ artists, profile, user }: Props) {
   const { searchParams, showLocked, setShowLocked, dataSource, setDataSource } =
     useFilters();
 
-  const queryFunction = useCallback(
-    async ({ pageParam = 0 }: { pageParam?: number }) => {
-      const endpoint =
-        dataSource === "cosmo"
-          ? `${COSMO_ENDPOINT}/objekt/v1/owned-by/${profile.address}`
-          : new URL(
-              `/api/objekts/by-address/${profile.address}`,
-              baseUrl()
-            ).toString();
-
-      const pagination =
-        dataSource === "cosmo"
-          ? { start_after: pageParam.toString() }
-          : { page: pageParam.toString() };
-
-      // ensure we don't send serial sorting to cosmo or else it 400's
-      const sort = searchParams.get("sort") as ValidSort;
-      const sortReset =
-        dataSource === "cosmo" &&
-        (sort === "serialAsc" || sort === "serialDesc")
-          ? { sort: "newest" }
-          : {};
-
-      return await ofetch(endpoint, {
-        query: {
-          ...Object.fromEntries(searchParams.entries()),
-          ...pagination,
-          ...sortReset,
-        },
-      }).then((res) => parsePage<OwnedObjektsResult>(res));
-    },
-    [profile.address, searchParams, dataSource]
-  );
+  const authenticated = user?.address === profile.address;
 
   return (
     <div className="relative flex flex-col">
@@ -78,15 +43,34 @@ export default function ProfileRenderer({ artists, profile, user }: Props) {
         />
       </FiltersContainer>
 
-      <CollectionObjektDisplay
-        authenticated={profile.address === user?.address}
-        address={profile.address}
-        showLocked={showLocked}
-        artists={artists}
-        queryFunction={queryFunction}
-        gridColumns={profile?.gridColumns ?? user?.gridColumns}
-        dataSource={dataSource}
-      />
+      {/* display */}
+      {match(dataSource)
+        .with("blockchain", () => (
+          <Blockchain
+            artists={artists}
+            authenticated={authenticated}
+            profile={profile}
+            user={user}
+            searchParams={searchParams}
+            showLocked={showLocked}
+          />
+        ))
+        .with("cosmo", () => (
+          <CosmoCollectionGroups
+            profile={profile}
+            searchParams={searchParams}
+          />
+        ))
+        .with("cosmo-legacy", () => (
+          <CosmoLegacy
+            artists={artists}
+            authenticated={authenticated}
+            profile={profile}
+            searchParams={searchParams}
+            showLocked={showLocked}
+          />
+        ))
+        .exhaustive()}
 
       <SendObjekts />
     </div>

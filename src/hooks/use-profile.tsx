@@ -5,7 +5,7 @@ import { createStore, useStore } from "zustand";
 import { createContext, useContext, useRef } from "react";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { ObjektList } from "@/lib/universal/objekts";
-import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
+import { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
 import { useShallow } from "zustand/react/shallow";
 
 interface ProfileProps {
@@ -13,14 +13,14 @@ interface ProfileProps {
   targetProfile: PublicProfile | undefined;
   objektLists: ObjektList[];
   lockedObjekts: number[];
-  pins: OwnedObjekt[];
+  pins: CosmoObjekt[];
 }
 
 type ProfileProviderProps = React.PropsWithChildren<Partial<ProfileProps>>;
 
 interface ProfileState extends ProfileProps {
   toggleLock: (tokenId: number) => void;
-  addPin: (objekt: OwnedObjekt) => void;
+  addPin: (objekt: CosmoObjekt) => void;
   removePin: (tokenId: number) => void;
 }
 
@@ -53,7 +53,7 @@ const createProfileStore = (initProps?: Partial<ProfileProps>) => {
     /**
      * Pin the given objekt
      */
-    addPin: (objekt: OwnedObjekt) =>
+    addPin: (objekt: CosmoObjekt) =>
       set((state) => ({
         ...state,
         pins: [objekt, ...state.pins],

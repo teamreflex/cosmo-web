@@ -1,11 +1,11 @@
 "use client";
 
 import { Send } from "lucide-react";
-import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
+import { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
 import { useObjektSelection } from "@/hooks/use-objekt-selection";
 
 type Props = {
-  objekt: OwnedObjekt;
+  objekt: CosmoObjekt;
 };
 
 export default function SendObjekt({ objekt }: Props) {

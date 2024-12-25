@@ -1,5 +1,5 @@
 import { NonTransferableReason } from "@/lib/universal/cosmo/objekts";
-import { ValidObjekt } from "@/lib/universal/objekts";
+import { LegacyObjekt } from "@/lib/universal/objekts";
 
 export type Hoverable =
   | "send"
@@ -13,7 +13,7 @@ export type Hoverable =
 /**
  * Parse a valid key from an ambiguous objekt.
  */
-export function getObjektId(objekt: ValidObjekt) {
+export function getObjektId(objekt: LegacyObjekt) {
   if ("objektNo" in objekt) {
     return objekt.objektNo.toString();
   }
@@ -32,7 +32,7 @@ const map: Record<string, string> = {
 /**
  * Parse a valid artist from an ambiguous objekt.
  */
-export function getObjektArtist(objekt: ValidObjekt) {
+export function getObjektArtist(objekt: LegacyObjekt) {
   if ("objektNo" in objekt) {
     return map[objekt.artists[0]!.toLowerCase()];
   }
@@ -46,7 +46,7 @@ export function getObjektArtist(objekt: ValidObjekt) {
 /**
  * Parse a valid offline type from an ambiguous objekt.
  */
-export function getObjektType(objekt: ValidObjekt) {
+export function getObjektType(objekt: LegacyObjekt) {
   if ("objektNo" in objekt) {
     return objekt.collectionNo.at(-1) === "Z" ? "online" : "offline";
   }
@@ -60,7 +60,7 @@ export function getObjektType(objekt: ValidObjekt) {
 /**
  * Parse a valid slug from an ambiguous objekt.
  */
-export function getObjektSlug(objekt: ValidObjekt) {
+export function getObjektSlug(objekt: LegacyObjekt) {
   const member = objekt.member.toLowerCase().replace(/[+()]+/g, "");
   return `${objekt.season}-${member}-${objekt.collectionNo}`.toLowerCase();
 }
@@ -75,7 +75,7 @@ export function replaceUrlSize(url: string, size: "2x" | "thumbnail" = "2x") {
 /**
  * Replaces the 4x suffix from both image URLs.
  */
-export function getObjektImageUrls(objekt: ValidObjekt) {
+export function getObjektImageUrls(objekt: LegacyObjekt) {
   const front = replaceUrlSize(objekt.frontImage);
   const back = replaceUrlSize(objekt.backImage);
 

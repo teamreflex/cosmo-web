@@ -5,10 +5,10 @@ import { format } from "date-fns";
 import { ExternalLink, Maximize2 } from "lucide-react";
 import Link from "next/link";
 import { memo, useState } from "react";
-import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
+import { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
 
 type Props = {
-  objekt: OwnedObjekt;
+  objekt: CosmoObjekt;
 };
 
 export default memo(function InformationOverlay({ objekt }: Props) {

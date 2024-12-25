@@ -1,6 +1,6 @@
 "use client";
 
-import { ValidObjekt } from "@/lib/universal/objekts";
+import { LegacyObjekt } from "@/lib/universal/objekts";
 import { default as NextImage } from "next/image";
 import { CSSProperties, PropsWithChildren, memo, useState } from "react";
 import MetadataDialog, { fetchObjektQuery } from "./metadata-dialog";
@@ -10,20 +10,20 @@ import { cn } from "@/lib/utils";
 import { useObjektSelection } from "@/hooks/use-objekt-selection";
 import { useShallow } from "zustand/react/shallow";
 
-export type BaseObjektProps<TObjektType extends ValidObjekt> =
+export type BaseObjektProps<TObjektType extends LegacyObjekt> =
   PropsWithChildren<{
-    id: string;
+    id: string | number;
     objekt: TObjektType;
     serial?: number;
   }>;
 
 const MemoizedImage = memo(NextImage);
 
-interface FlippableObjektProps<TObjektType extends ValidObjekt>
+interface FlippableObjektProps<TObjektType extends LegacyObjekt>
   extends BaseObjektProps<TObjektType> {}
 
 export const FlippableObjekt = memo(function FlippableObjekt<
-  TObjektType extends ValidObjekt
+  TObjektType extends LegacyObjekt,
 >({ children, objekt }: FlippableObjektProps<TObjektType>) {
   const [flipped, setFlipped] = useState(false);
 
@@ -66,25 +66,18 @@ export const FlippableObjekt = memo(function FlippableObjekt<
   );
 });
 
-interface ExpandableObjektProps<TObjektType extends ValidObjekt>
+interface ExpandableObjektProps<TObjektType extends LegacyObjekt>
   extends BaseObjektProps<TObjektType> {
   setActive?: (slug: string | null) => void;
-  priority: boolean;
 }
 
 export const ExpandableObjekt = memo(function ExpandableObjekt<
-  TObjektType extends ValidObjekt
->({
-  children,
-  id,
-  objekt,
-  setActive,
-  priority,
-}: ExpandableObjektProps<TObjektType>) {
+  TObjektType extends LegacyObjekt,
+>({ children, id, objekt, setActive }: ExpandableObjektProps<TObjektType>) {
   const [isLoaded, setIsLoaded] = useState(false);
   const queryClient = useQueryClient();
   const isSelected = useObjektSelection(
-    useShallow((state) => state.isSelected(parseInt(id)))
+    useShallow((state) => state.isSelected(Number(id)))
   );
 
   const css = {
@@ -134,7 +127,6 @@ export const ExpandableObjekt = memo(function ExpandableObjekt<
             height={450}
             alt={objekt.collectionId}
             quality={100}
-            priority={priority}
             unoptimized
           />
 
