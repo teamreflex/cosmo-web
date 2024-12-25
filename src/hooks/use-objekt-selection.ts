@@ -19,16 +19,26 @@ export type Selection = {
 };
 
 type ObjektSelectionState = {
+  // drawer state
+  open: boolean;
+  setOpen: (open: boolean) => void;
+
+  // selected objekts
   selected: Selection[];
   select: (objekt: SelectedObjekt) => void;
   update: (selection: Selection) => void;
   selectUser: (user: CosmoPublicUser) => void;
   isSelected: (tokenId: number) => boolean;
   reset: () => void;
+  remove: (tokenId: number) => void;
 };
 
 export const useObjektSelection = create<ObjektSelectionState>()(
   (set, get) => ({
+    // drawer state
+    open: false,
+    setOpen: (open) => set({ open }),
+
     /**
      * Currently selected objekts
      */
@@ -119,6 +129,22 @@ export const useObjektSelection = create<ObjektSelectionState>()(
             ...sel,
             recipient: user,
           })),
+        };
+      }),
+
+    /**
+     * Remove a selected objekt, close the drawer if no objekts are left
+     */
+    remove: (tokenId) =>
+      set((state) => {
+        const selected = state.selected.filter(
+          (p) => p.objekt.tokenId !== tokenId
+        );
+
+        return {
+          ...state,
+          open: selected.length > 0,
+          selected,
         };
       }),
   })

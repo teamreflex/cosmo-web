@@ -32,7 +32,8 @@ import { useWallet } from "@/hooks/use-wallet";
 import { toast } from "../ui/use-toast";
 
 export default function SendObjekts() {
-  const [open, setOpen] = useState(false);
+  const open = useObjektSelection((ctx) => ctx.open);
+  const setOpen = useObjektSelection((ctx) => ctx.setOpen);
   const selected = useObjektSelection((ctx) => ctx.selected);
   const reset = useObjektSelection((ctx) => ctx.reset);
 
@@ -123,7 +124,9 @@ type SelectRecipientsProps = {
 function SelectRecipients({ selected, onComplete }: SelectRecipientsProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const selectUser = useObjektSelection((ctx) => ctx.selectUser);
-  const isDisabled = selected.some((selection) => selection.recipient === null);
+  const isDisabled =
+    selected.length === 0 ||
+    selected.some((selection) => selection.recipient === null);
 
   function onSelect(user: CosmoPublicUser) {
     setSearchOpen(false);
@@ -183,6 +186,8 @@ type RowProps = {
 };
 
 function Row({ selection }: RowProps) {
+  const remove = useObjektSelection((ctx) => ctx.remove);
+
   return (
     <div className="flex flex-row gap-4 py-2 px-4">
       <div className="relative aspect-photocard h-24">
@@ -197,9 +202,20 @@ function Row({ selection }: RowProps) {
         {/* objekt info */}
         <div className="flex flex-row justify-between items-center gap-4">
           <span className="font-semibold">{selection.objekt.collectionId}</span>
-          <span className="text-sm">
-            #{selection.objekt.serial.toString().padStart(5, "0")}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-sm">
+              #{selection.objekt.serial.toString().padStart(5, "0")}
+            </span>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6"
+              onClick={() => remove(selection.objekt.tokenId)}
+              aria-label="Remove selection"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
         {/* user selection */}
@@ -324,6 +340,9 @@ function Sending({ selected, onBack, onClose }: SendingProps) {
 }
 
 function SendingRow({ selection }: RowProps) {
+  const remove = useObjektSelection((ctx) => ctx.remove);
+  const canRemove = selection.status === "idle";
+
   return (
     <div className="flex flex-row gap-4 py-2 px-4">
       <div className="relative aspect-photocard h-24">
@@ -338,9 +357,22 @@ function SendingRow({ selection }: RowProps) {
         {/* objekt info */}
         <div className="flex flex-row justify-between items-center gap-4">
           <span className="font-semibold">{selection.objekt.collectionId}</span>
-          <span className="text-sm">
-            #{selection.objekt.serial.toString().padStart(5, "0")}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-sm">
+              #{selection.objekt.serial.toString().padStart(5, "0")}
+            </span>
+            {canRemove && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                onClick={() => remove(selection.objekt.tokenId)}
+              >
+                <X className="h-4 w-4" />
+                <VisuallyHidden>Remove selection</VisuallyHidden>
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* status */}
