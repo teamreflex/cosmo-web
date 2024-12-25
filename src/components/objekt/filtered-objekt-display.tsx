@@ -199,7 +199,7 @@ function ObjektGrid<Response, Item>({
 
       <Portal to="#pagination">
         <InfiniteQueryNext
-          status="success"
+          status={query.status}
           hasNextPage={query.hasNextPage}
           isFetchingNextPage={query.isFetchingNextPage}
           fetchNextPage={query.fetchNextPage}
