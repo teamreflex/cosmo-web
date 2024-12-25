@@ -68,7 +68,7 @@ export async function fetchObjektsIndex(filters: z.infer<typeof objektIndex>) {
   const nextStartAfter = hasNext ? filters.page + 1 : undefined;
 
   return {
-    total: result[0]?.count ?? 0,
+    total: Number(result[0]?.count ?? 0),
     hasNext,
     nextStartAfter,
     objekts: collectionList,

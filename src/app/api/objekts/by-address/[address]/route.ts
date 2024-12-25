@@ -74,7 +74,7 @@ export async function GET(request: NextRequest, props: Params) {
   const nextStartAfter = hasNext ? filters.page + 1 : undefined;
 
   return Response.json({
-    total: result[0]?.count ?? 0,
+    total: Number(result[0]?.count ?? 0),
     hasNext,
     nextStartAfter,
     objekts: result

@@ -57,14 +57,16 @@ export default function ListRenderer({
       return await ofetch(url.toString(), {
         query: {
           ...Object.fromEntries(searchParams.entries()),
-          page: pageParam.toString(),
+          page: pageParam,
         },
       }).then((res) => parsePage<LegacyObjektResponse<IndexedObjekt>>(res));
     },
     getNextPageParam: (lastPage) => lastPage.nextStartAfter,
     calculateTotal: (data) => {
       const total = data.pages[0].total ?? 0;
-      return total.toLocaleString();
+      return (
+        <p className="font-semibold">{total.toLocaleString("en")} total</p>
+      );
     },
     getItems: (data) => data.pages.flatMap((page) => page.objekts),
   } satisfies ObjektResponseOptions<

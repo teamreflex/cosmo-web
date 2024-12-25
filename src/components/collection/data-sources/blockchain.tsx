@@ -61,7 +61,7 @@ export default function Blockchain(props: Props) {
       return await ofetch(endpoint, {
         query: {
           ...Object.fromEntries(props.searchParams.entries()),
-          page: pageParam.toString(),
+          page: pageParam,
         },
       }).then((res) => parsePage<OwnedObjektsResult>(res));
     },

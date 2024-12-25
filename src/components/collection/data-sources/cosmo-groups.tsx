@@ -47,7 +47,9 @@ export default function CosmoCollectionGroups(props: Props) {
     },
     calculateTotal: (data) => {
       const total = data.pages[0].collectionCount ?? 0;
-      return total.toLocaleString();
+      return (
+        <p className="font-semibold">{total.toLocaleString("en")} total</p>
+      );
     },
     getItems: (data) => data.pages.flatMap((page) => page.collections),
   } satisfies ObjektResponseOptions<
