@@ -11,11 +11,12 @@ import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import FlippableObjekt from "./objekt-flippable";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import { X } from "lucide-react";
+import { ScrollArea } from "../ui/scroll-area";
 
 /**
  * TODO:
  * - Migrate ActionOverlay over to this component
- * - Implement scrolling
+ * - Add metadata dialog somewhere (separate overlay on root objekt?)
  */
 
 interface Props {
@@ -47,26 +48,24 @@ export default function GroupedObjekt({ group, gridColumns }: Props) {
           </VisuallyHidden.Root>
 
           {/* content */}
-          <div className="fixed left-[50%] top-12 z-50 grid w-full max-w-[78rem] translate-x-[-50%] px-2">
-            <div className="flex flex-col gap-4">
-              {/* title */}
-              <div className="grid grid-cols-[1fr_auto] grid-rows-2 grid-flow-col">
-                <h2 className="text-2xl font-bold">
-                  {group.collection.collectionId}
-                </h2>
-                <p className="text-sm font-semibold text-muted-foreground">
-                  {group.count} objekts
-                </p>
+          <div className="fixed left-[50%] translate-x-[-50%] top-12 bottom-0 z-50 flex flex-col w-full max-w-[78rem] px-2">
+            {/* title */}
+            <div className="grid grid-cols-[1fr_auto] grid-rows-2 grid-flow-col">
+              <h2 className="text-2xl font-bold">
+                {group.collection.collectionId}
+              </h2>
+              <p className="text-sm font-semibold text-muted-foreground">
+                {group.count} objekts
+              </p>
 
-                <DialogPrimitive.Close className="place-self-end opacity-70 transition-opacity hover:opacity-100 cursor-pointer disabled:pointer-events-none outline-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
-                  <X className="size-8" />
-                  <span className="sr-only">Close</span>
-                </DialogPrimitive.Close>
-              </div>
-
-              {/* objekts */}
-              <ObjektList group={group} gridColumns={gridColumns} />
+              <DialogPrimitive.Close className="place-self-end opacity-70 transition-opacity hover:opacity-100 cursor-pointer disabled:pointer-events-none outline-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+                <X className="size-8" />
+                <span className="sr-only">Close</span>
+              </DialogPrimitive.Close>
             </div>
+
+            {/* objekts */}
+            <ObjektList group={group} gridColumns={gridColumns} />
           </div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
@@ -119,24 +118,26 @@ function ObjektList({ group, gridColumns }: Props) {
   } as CSSProperties;
 
   return (
-    <div
-      style={style}
-      className="grid grid-cols-3 md:grid-cols-[repeat(var(--grid-columns),_minmax(0,_1fr))] gap-2"
-    >
-      {group.objekts.map((objekt) => {
-        const common = Objekt.fromCollectionGroup({
-          collection: group.collection,
-          objekt: objekt,
-        });
-        return (
-          <FlippableObjekt key={objekt.metadata.tokenId} objekt={common}>
-            <ObjektSidebar
-              collection={group.collection.collectionNo}
-              serial={objekt.metadata.objektNo}
-            />
-          </FlippableObjekt>
-        );
-      })}
-    </div>
+    <ScrollArea className="h-full px-2">
+      <div
+        style={style}
+        className="grid grid-cols-3 md:grid-cols-[repeat(var(--grid-columns),_minmax(0,_1fr))] gap-2"
+      >
+        {group.objekts.map((objekt) => {
+          const common = Objekt.fromCollectionGroup({
+            collection: group.collection,
+            objekt: objekt,
+          });
+          return (
+            <FlippableObjekt key={objekt.metadata.tokenId} objekt={common}>
+              <ObjektSidebar
+                collection={group.collection.collectionNo}
+                serial={objekt.metadata.objektNo}
+              />
+            </FlippableObjekt>
+          );
+        })}
+      </div>
+    </ScrollArea>
   );
 }
