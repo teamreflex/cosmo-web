@@ -73,7 +73,7 @@ export function CollectionFilters({
   return (
     <div className="flex gap-2 items-center flex-wrap justify-center lg:group-data-[show=false]:flex group-data-[show=false]:hidden">
       <LockedFilter showLocked={showLocked} setShowLocked={setShowLocked} />
-      {dataSource === "cosmo" && (
+      {dataSource !== "blockchain" && (
         <GridableFilter filters={filters.gridable} setFilters={setFilters} />
       )}
       <TransferableFilter
