@@ -22,10 +22,12 @@ type Props = {
 };
 
 export default function ProfileRenderer({ artists, profile, user }: Props) {
-  const { searchParams, showLocked, setShowLocked, dataSource, setDataSource } =
-    useFilters();
-
   const authenticated = user?.address === profile.address;
+
+  const { searchParams, showLocked, setShowLocked, dataSource, setDataSource } =
+    useFilters({
+      dataSource: authenticated ? "cosmo" : "cosmo-legacy",
+    });
 
   return (
     <div className="relative flex flex-col">
@@ -35,6 +37,7 @@ export default function ProfileRenderer({ artists, profile, user }: Props) {
 
       <FiltersContainer isPortaled>
         <CollectionFilters
+          allowCosmoGroups={authenticated}
           showLocked={showLocked}
           setShowLocked={setShowLocked}
           allowSerials={dataSource === "blockchain"}

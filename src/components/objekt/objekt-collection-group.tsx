@@ -15,7 +15,6 @@ import { X } from "lucide-react";
 /**
  * TODO:
  * - Migrate ActionOverlay over to this component
- * - Restrict "new" Cosmo to just current user
  * - Implement scrolling
  */
 

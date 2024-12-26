@@ -29,6 +29,7 @@ type Props = {
   setFilters: SetCosmoFilters;
   dataSource: CollectionDataSource;
   setDataSource: Dispatch<SetStateAction<CollectionDataSource>>;
+  allowCosmoGroups?: boolean;
 };
 
 export default memo(function DataSourceSelector({
@@ -36,6 +37,7 @@ export default memo(function DataSourceSelector({
   setFilters,
   dataSource,
   setDataSource,
+  allowCosmoGroups = false,
 }: Props) {
   const [open, setOpen] = useState(false);
   const warned = useSettingsStore((state) => state.warnings["data-source"]);
@@ -57,6 +59,7 @@ export default memo(function DataSourceSelector({
 
     // reset any source-specific filters
     switch (source) {
+      case "cosmo":
       case "cosmo-legacy":
         // reset serial sort
         if (filters.sort === "serialAsc" || filters.sort === "serialDesc") {
@@ -86,18 +89,20 @@ export default memo(function DataSourceSelector({
           <SelectValue placeholder="Data Source" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="cosmo">
-            <div className="flex flex-row items-center gap-2">
-              <Image
-                src={CosmoImage.src}
-                alt="Cosmo"
-                width={24}
-                height={24}
-                className="rounded-full"
-              />
-              <span>Cosmo</span>
-            </div>
-          </SelectItem>
+          {allowCosmoGroups && (
+            <SelectItem value="cosmo">
+              <div className="flex flex-row items-center gap-2">
+                <Image
+                  src={CosmoImage.src}
+                  alt="Cosmo"
+                  width={24}
+                  height={24}
+                  className="rounded-full"
+                />
+                <span>Cosmo</span>
+              </div>
+            </SelectItem>
+          )}
           <SelectItem value="cosmo-legacy">
             <div className="flex flex-row items-center gap-2">
               <Image
