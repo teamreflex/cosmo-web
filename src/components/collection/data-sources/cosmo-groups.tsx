@@ -12,8 +12,7 @@ import {
 } from "@/lib/universal/cosmo/objekts";
 import { ofetch } from "ofetch";
 import { useMemo } from "react";
-import { GroupsOverlay } from "./common-groups";
-import FlippableObjekt from "@/components/objekt/objekt-flippable";
+import GroupedObjekt from "@/components/objekt/objekt-collection-group";
 
 const INITIAL_PAGE = 1;
 const PAGE_SIZE = 30;
@@ -91,23 +90,18 @@ export default function CosmoCollectionGroups(props: Props) {
     BFFCollectionGroup
   >;
 
+  const gridColumns = props.profile?.gridColumns ?? props.user?.gridColumns;
+
   return (
     <FilteredObjektDisplay
       artists={props.artists}
       options={options}
       getObjektId={(item) => item.collection.collectionId}
-      gridColumns={props.profile?.gridColumns ?? props.user?.gridColumns}
+      gridColumns={gridColumns}
       hidePins={usingFilters}
       authenticated={props.authenticated}
     >
-      {({ item, id }) => {
-        return (
-          // @ts-expect-error
-          <FlippableObjekt objekt={item.collection} id={id}>
-            <GroupsOverlay collection={item} />
-          </FlippableObjekt>
-        );
-      }}
+      {({ item }) => <GroupedObjekt group={item} gridColumns={gridColumns} />}
     </FilteredObjektDisplay>
   );
 }
