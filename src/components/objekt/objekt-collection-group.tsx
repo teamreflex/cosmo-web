@@ -47,7 +47,7 @@ export default function GroupedObjekt({ group, gridColumns }: Props) {
           </VisuallyHidden.Root>
 
           {/* content */}
-          <div className="fixed left-[50%] top-[30%] z-50 grid w-full max-w-[78rem] translate-x-[-50%] translate-y-[-50%] px-2">
+          <div className="fixed left-[50%] top-12 z-50 grid w-full max-w-[78rem] translate-x-[-50%] px-2">
             <div className="flex flex-col gap-4">
               {/* title */}
               <div className="grid grid-cols-[1fr_auto] grid-rows-2 grid-flow-col">
