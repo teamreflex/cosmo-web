@@ -23,12 +23,13 @@ import {
   ObjektResponseOptions,
   useObjektResponse,
 } from "@/hooks/use-objekt-response";
-import { ExpandableObjekt } from "./objekt";
-import { LegacyOverlay } from "../collection/data-sources/legacy-common";
+import ExpandableObjekt from "./objekt-expandable";
+import { LegacyOverlay } from "../collection/data-sources/common-legacy";
+import { Objekt } from "../../lib/universal/objekt-conversion";
 
 type RenderProps<T> = {
   id: string | number;
-  objekt: T;
+  item: T;
   isPin: boolean;
 };
 
@@ -165,29 +166,31 @@ function ObjektGrid<Response, Item>({
 
       {/* render any pins */}
       {hidePins === false &&
-        pins.map((pin) => (
-          <ExpandableObjekt
-            key={getObjektId(pin as Item)}
-            objekt={pin}
-            id={getObjektId(pin as Item)}
-          >
-            <LegacyOverlay
-              objekt={pin}
-              authenticated={authenticated}
-              isPinned={
-                pins.findIndex(
-                  (p) => p.tokenId === getObjektId(pin as Item)
-                ) !== -1
-              }
-              isPin={true}
-            />
-          </ExpandableObjekt>
-        ))}
+        pins.map((pin) => {
+          const objekt = Objekt.fromLegacy(pin);
+          return (
+            <ExpandableObjekt
+              key={pin.tokenId}
+              objekt={objekt}
+              id={pin.tokenId}
+            >
+              <LegacyOverlay
+                objekt={pin}
+                slug={objekt.slug}
+                authenticated={authenticated}
+                isPinned={
+                  pins.findIndex((p) => p.tokenId === pin.tokenId) !== -1
+                }
+                isPin={true}
+              />
+            </ExpandableObjekt>
+          );
+        })}
 
       {/* render the objekts */}
       {items.map((item) => {
         const element = children({
-          objekt: item,
+          item: item,
           id: getObjektId(item),
           isPin: false,
         });

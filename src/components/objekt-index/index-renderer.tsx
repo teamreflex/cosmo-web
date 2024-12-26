@@ -9,7 +9,6 @@ import {
   parsePage,
 } from "@/lib/universal/objekts";
 import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
-import ObjektSidebar from "../objekt/objekt-sidebar";
 import { TopOverlay } from "./index-overlay";
 import HelpDialog from "./help-dialog";
 import { useFilters } from "@/hooks/use-filters";
@@ -18,11 +17,14 @@ import {
   FiltersContainer,
   IndexFilters,
 } from "../collection/filters-container";
-import { ExpandableObjekt, RoutedExpandableObjekt } from "../objekt/objekt";
 import { ofetch } from "ofetch";
 import { baseUrl, GRID_COLUMNS } from "@/lib/utils";
 import { parseAsString, useQueryState } from "nuqs";
 import { ObjektResponseOptions } from "@/hooks/use-objekt-response";
+import { ObjektSidebar } from "../objekt/common";
+import RoutedExpandableObjekt from "../objekt/objekt-routed";
+import ExpandableObjekt from "../objekt/objekt-expandable";
+import { Objekt } from "../../lib/universal/objekt-conversion";
 
 const getObjektId = (objekt: IndexedObjekt) => objekt.id;
 
@@ -90,15 +92,22 @@ export default function IndexRenderer({
         gridColumns={gridColumns}
         authenticated={authenticated}
       >
-        {({ objekt, id }) => (
-          <ExpandableObjekt objekt={objekt} id={id} setActive={setActiveObjekt}>
-            <Overlay
+        {({ item, id }) => {
+          const objekt = Objekt.fromIndexer(item);
+          return (
+            <ExpandableObjekt
               objekt={objekt}
-              authenticated={authenticated}
-              objektLists={objektLists}
-            />
-          </ExpandableObjekt>
-        )}
+              id={id}
+              setActive={setActiveObjekt}
+            >
+              <Overlay
+                objekt={item}
+                authenticated={authenticated}
+                objektLists={objektLists}
+              />
+            </ExpandableObjekt>
+          );
+        }}
       </FilteredObjektDisplay>
 
       {/**

@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { IndexedObjekt, ObjektList } from "@/lib/universal/objekts";
-import OverlayStatus from "../objekt/overlay-status";
+import OverlayStatus from "../objekt/overlay/overlay-status";
 import RemoveFromList from "./remove-from-list";
 
 type Props = {

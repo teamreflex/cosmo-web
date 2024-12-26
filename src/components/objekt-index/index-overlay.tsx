@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import { IndexedObjekt, ObjektList } from "@/lib/universal/objekts";
 import AddToList from "../lists/add-to-list";
-import OverlayStatus from "../objekt/overlay-status";
+import OverlayStatus from "../objekt/overlay/overlay-status";
 
 type TopOverlayProps = {
   objekt: IndexedObjekt;

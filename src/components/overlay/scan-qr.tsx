@@ -26,14 +26,15 @@ import { ofetch } from "ofetch";
 import { COSMO_ENDPOINT } from "@/lib/universal/cosmo/common";
 import { ScannedObjekt } from "@/lib/universal/cosmo/objekts";
 import { toast } from "../ui/use-toast";
-import { FlippableObjekt } from "../objekt/objekt";
-import ObjektSidebar from "../objekt/objekt-sidebar";
 import { useCamera } from "@/hooks/use-camera";
 import { useUserState } from "@/hooks/use-user-state";
 import { extractObjektCode } from "@/lib/universal/cosmo/albums";
 import { ErrorBoundary } from "react-error-boundary";
 import { lazy, Suspense } from "react";
 import Skeleton from "../skeleton/skeleton";
+import { ObjektSidebar } from "../objekt/common";
+import FlippableObjekt from "../objekt/objekt-flippable";
+import { Objekt } from "../../lib/universal/objekt-conversion";
 
 const Scanner = lazy(() =>
   import("@yudiel/react-qr-scanner").then((mod) => ({ default: mod.Scanner }))
@@ -303,11 +304,10 @@ function ClaimObjekt({ serial, result, onClaim, onClose }: ClaimObjektProps) {
     },
   });
 
-  const { objekt, isClaimed } = result;
+  const objekt = Objekt.fromScanned(result);
+  const isClaimed = result.isClaimed;
 
-  const title = `${objekt.collectionId} #${objekt.objektNo
-    .toString()
-    .padStart(5, "0")}`;
+  const title = `${objekt.collectionId} #${serial.padStart(5, "0")}`;
   const description = `Objekt is ${
     isClaimed ? " already claimed" : "claimable"
   }`;
@@ -320,10 +320,10 @@ function ClaimObjekt({ serial, result, onClaim, onClose }: ClaimObjektProps) {
       </DrawerHeader>
 
       <div className="relative mx-auto h-72 aspect-photocard">
-        <FlippableObjekt id={title} objekt={objekt} serial={objekt.objektNo}>
+        <FlippableObjekt objekt={objekt}>
           <ObjektSidebar
             collection={objekt.collectionNo}
-            serial={objekt.objektNo}
+            serial={Number(serial)}
           />
         </FlippableObjekt>
       </div>

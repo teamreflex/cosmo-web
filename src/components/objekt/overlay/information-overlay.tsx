@@ -4,14 +4,14 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { ExternalLink, Maximize2 } from "lucide-react";
 import Link from "next/link";
-import { memo, useState } from "react";
+import { useState } from "react";
 import { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
 
 type Props = {
   objekt: CosmoObjekt;
 };
 
-export default memo(function InformationOverlay({ objekt }: Props) {
+export default function InformationOverlay({ objekt }: Props) {
   const [open, setOpen] = useState(false);
 
   const formatted = format(Date.parse(objekt.receivedAt), "dd/MM/yy h:mmaa");
@@ -62,4 +62,4 @@ export default memo(function InformationOverlay({ objekt }: Props) {
       </div>
     </div>
   );
-});
+}

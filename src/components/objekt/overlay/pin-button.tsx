@@ -1,12 +1,12 @@
 "use client";
 
 import { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
-import { pinObjekt, unpinObjekt } from "../collection/actions";
+import { pinObjekt, unpinObjekt } from "@/components/collection/actions";
 import { Loader2, Pin, PinOff } from "lucide-react";
 import { memo, useTransition } from "react";
 import { track } from "@/lib/utils";
 import { useProfileContext } from "@/hooks/use-profile";
-import { toast } from "../ui/use-toast";
+import { toast } from "@/components/ui/use-toast";
 
 type Props = {
   objekt: CosmoObjekt;

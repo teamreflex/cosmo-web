@@ -20,14 +20,12 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { ObjektMetadata, LegacyObjekt } from "@/lib/universal/objekts";
-import { FlippableObjekt } from "./objekt";
 import {
   QueryErrorResetBoundary,
   useQueryClient,
   useSuspenseQuery,
 } from "@tanstack/react-query";
 import { ofetch } from "ofetch";
-import ObjektSidebar from "./objekt-sidebar";
 import Link from "next/link";
 import { ReactNode, Suspense, useState, useTransition } from "react";
 import { Separator } from "../ui/separator";
@@ -38,25 +36,30 @@ import { updateObjektMetadata } from "./actions";
 import { Textarea } from "../ui/textarea";
 import {
   getObjektArtist,
-  getObjektId,
   getObjektImageUrls,
-  getObjektSlug,
   getObjektType,
-} from "./objekt-util";
+  ObjektSidebar,
+} from "./common";
 import { ErrorBoundary } from "react-error-boundary";
 import { useCopyToClipboard } from "usehooks-ts";
 import { env } from "@/env.mjs";
 import { toast } from "../ui/use-toast";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import VisuallyHidden from "../ui/visually-hidden";
+import FlippableObjekt from "./objekt-flippable";
+import { Objekt } from "../../lib/universal/objekt-conversion";
 
-type CommonProps<TObjektType extends LegacyObjekt> = {
-  objekt: TObjektType;
+type CommonProps = {
+  objekt: Objekt.Common;
+};
+
+type RenderProps = {
+  open: () => void;
 };
 
 type MetadataDialogProps = {
   slug: string;
-  children?: (openDialog: () => void) => ReactNode;
+  children?: (props: RenderProps) => ReactNode;
   isActive: boolean;
   onClose?: () => void;
 };
@@ -79,7 +82,7 @@ export default function MetadataDialog({
 
   return (
     <div>
-      {children?.(() => setOpen(true))}
+      {children?.({ open: () => setOpen(true) })}
 
       {isDesktop ? (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -152,7 +155,7 @@ type MetadataDialogContentProps = {
 export const fetchObjektQuery = (slug: string) => ({
   queryKey: ["collection-metadata", "objekt", slug],
   queryFn: async () => {
-    return await ofetch<LegacyObjekt>(`/api/objekts/by-slug/${slug}`);
+    return await ofetch<Objekt.Common>(`/api/objekts/by-slug/${slug}`);
   },
   retry: 1,
 });
@@ -163,7 +166,7 @@ function MetadataContent({ slug, onClose }: MetadataDialogContentProps) {
   return (
     <div className="contents">
       <div className="flex h-[28rem] aspect-photocard mx-auto shrink mt-4 sm:mt-0">
-        <FlippableObjekt objekt={data} id={getObjektId(data)}>
+        <FlippableObjekt objekt={data}>
           <ObjektSidebar collection={data.collectionNo} />
         </FlippableObjekt>
       </div>
@@ -177,15 +180,10 @@ function MetadataContent({ slug, onClose }: MetadataDialogContentProps) {
   );
 }
 
-function AttributePanel<TObjektType extends LegacyObjekt>({
-  objekt,
-}: CommonProps<TObjektType>) {
-  const artist = getObjektArtist(objekt);
-  const onOffline = getObjektType(objekt);
-
+function AttributePanel({ objekt }: CommonProps) {
   return (
     <div className="flex flex-wrap items-center gap-2 justify-center m-4">
-      <Pill label="Artist" value={artist} />
+      <Pill label="Artist" value={objekt.artistName} />
       <Pill label="Member" value={objekt.member} />
       <Pill label="Season" value={objekt.season} />
       <Pill label="Class" value={objekt.class} />
@@ -194,15 +192,13 @@ function AttributePanel<TObjektType extends LegacyObjekt>({
       )}
       <Pill
         label="Type"
-        value={onOffline === "online" ? "Digital" : "Physical"}
+        value={objekt.onOffline === "online" ? "Digital" : "Physical"}
       />
     </div>
   );
 }
 
-function MetadataPanel<TObjektType extends LegacyObjekt>({
-  objekt,
-}: CommonProps<TObjektType>) {
+function MetadataPanel({ objekt }: CommonProps) {
   return (
     <QueryErrorResetBoundary>
       {({ reset }) => (
@@ -222,23 +218,19 @@ function MetadataPanel<TObjektType extends LegacyObjekt>({
   );
 }
 
-function Metadata<TObjektType extends LegacyObjekt>({
-  objekt,
-}: {
-  objekt: TObjektType;
-}) {
+function Metadata({ objekt }: { objekt: Objekt.Common }) {
   const [_, copy] = useCopyToClipboard();
   const [showForm, setShowForm] = useState(false);
   const profile = useProfileContext((ctx) => ctx.currentProfile);
 
-  const slug = getObjektSlug(objekt);
   const { front } = getObjektImageUrls(objekt);
-  const onOffline = getObjektType(objekt);
 
   const { data } = useSuspenseQuery({
-    queryKey: ["collection-metadata", "metadata", slug],
+    queryKey: ["collection-metadata", "metadata", objekt.slug],
     queryFn: async () => {
-      return await ofetch<ObjektMetadata>(`/api/objekts/metadata/${slug}`);
+      return await ofetch<ObjektMetadata>(
+        `/api/objekts/metadata/${objekt.slug}`
+      );
     },
     retry: 1,
   });
@@ -247,7 +239,7 @@ function Metadata<TObjektType extends LegacyObjekt>({
     const scheme =
       env.NEXT_PUBLIC_VERCEL_ENV === "development" ? "http" : "https";
     copy(
-      `${scheme}://${env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL}/objekts?id=${slug}`
+      `${scheme}://${env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL}/objekts?id=${objekt.slug}`
     );
     toast({
       description: "Objekt URL copied to clipboard",
@@ -258,8 +250,8 @@ function Metadata<TObjektType extends LegacyObjekt>({
     <div className="flex grow flex-col justify-between gap-2 p-4">
       <div className="flex flex-wrap items-center gap-2 justify-center">
         <Pill
-          label={onOffline === "online" ? "Copies" : "Scanned Copies"}
-          value={data.total.toLocaleString()}
+          label={objekt.onOffline === "online" ? "Copies" : "Scanned Copies"}
+          value={Number(data.total).toLocaleString()}
         />
         {objekt.class === "First" && (
           <Pill label="Tradable" value={`${data.percentage}%`} />
@@ -269,7 +261,7 @@ function Metadata<TObjektType extends LegacyObjekt>({
 
       {showForm ? (
         <EditMetadata
-          slug={slug}
+          slug={objekt.slug}
           metadata={data}
           close={() => setShowForm(false)}
         />

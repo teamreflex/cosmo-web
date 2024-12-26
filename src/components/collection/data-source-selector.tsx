@@ -86,7 +86,7 @@ export default memo(function DataSourceSelector({
           <SelectValue placeholder="Data Source" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="cosmo-legacy">
+          <SelectItem value="cosmo">
             <div className="flex flex-row items-center gap-2">
               <Image
                 src={CosmoImage.src}
@@ -96,6 +96,18 @@ export default memo(function DataSourceSelector({
                 className="rounded-full"
               />
               <span>Cosmo</span>
+            </div>
+          </SelectItem>
+          <SelectItem value="cosmo-legacy">
+            <div className="flex flex-row items-center gap-2">
+              <Image
+                src={CosmoImage.src}
+                alt="Cosmo"
+                width={24}
+                height={24}
+                className="rounded-full"
+              />
+              <span>Legacy</span>
             </div>
           </SelectItem>
           <SelectItem value="blockchain">

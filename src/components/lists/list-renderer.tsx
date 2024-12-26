@@ -7,7 +7,6 @@ import {
   parsePage,
 } from "@/lib/universal/objekts";
 import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
-import ObjektSidebar from "../objekt/objekt-sidebar";
 import ListOverlay from "./list-overlay";
 import DeleteList from "./delete-list";
 import UpdateList from "./update-list";
@@ -19,10 +18,12 @@ import {
   FiltersContainer,
   IndexFilters,
 } from "../collection/filters-container";
-import { ExpandableObjekt } from "../objekt/objekt";
 import { ofetch } from "ofetch";
 import { baseUrl, GRID_COLUMNS } from "@/lib/utils";
 import { ObjektResponseOptions } from "@/hooks/use-objekt-response";
+import { ObjektSidebar } from "../objekt/common";
+import ExpandableObjekt from "../objekt/objekt-expandable";
+import { Objekt } from "../../lib/universal/objekt-conversion";
 
 const getObjektId = (objekt: IndexedObjekt) => objekt.id;
 
@@ -89,15 +90,18 @@ export default function ListRenderer({
         gridColumns={gridColumns}
         authenticated={authenticated}
       >
-        {({ objekt, id }) => (
-          <ExpandableObjekt objekt={objekt} id={id}>
-            <Overlay
-              objekt={objekt}
-              authenticated={authenticated}
-              objektList={list}
-            />
-          </ExpandableObjekt>
-        )}
+        {({ item, id }) => {
+          const objekt = Objekt.fromIndexer(item);
+          return (
+            <ExpandableObjekt objekt={objekt} id={id}>
+              <Overlay
+                objekt={item}
+                authenticated={authenticated}
+                objektList={list}
+              />
+            </ExpandableObjekt>
+          );
+        }}
       </FilteredObjektDisplay>
     </section>
   );

@@ -1,9 +1,9 @@
 import { ObjektProgression } from "@/lib/universal/progress";
 import Image from "next/image";
-import ObjektSidebar from "../objekt/objekt-sidebar";
 import { cn } from "@/lib/utils";
 import { CSSProperties, useState } from "react";
-import { replaceUrlSize } from "../objekt/objekt-util";
+import { replaceUrlSize } from "../objekt/common";
+import { ObjektSidebar } from "../objekt/common";
 
 type Props = {
   objekt: ObjektProgression;

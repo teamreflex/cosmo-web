@@ -1,7 +1,7 @@
 "use client";
 
 import { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
-import { toggleObjektLock } from "../collection/actions";
+import { toggleObjektLock } from "@/components/collection/actions";
 import { Loader2, Lock, Unlock } from "lucide-react";
 import { memo, useTransition } from "react";
 import { track } from "@/lib/utils";

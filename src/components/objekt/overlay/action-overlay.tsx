@@ -10,27 +10,27 @@ import {
   Pin,
   Smartphone,
 } from "lucide-react";
-import { memo } from "react";
 import LockObjekt from "./lock-button";
 import OverlayStatus from "./overlay-status";
 import { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
 import { useProfileContext } from "@/hooks/use-profile";
-import AddToList from "../lists/add-to-list";
-import { getObjektSlug } from "./objekt-util";
+import AddToList from "@/components/lists/add-to-list";
 import useOverlayHover from "@/hooks/use-overlay-hover";
-import PinObjekt from "./pin-button";
+import PinObjekt from "@/components/objekt/overlay/pin-button";
 import SendObjekt from "./send-button";
 
 type Props = {
   objekt: CosmoObjekt;
+  slug: string;
   authenticated: boolean;
   isLocked: boolean;
   isPinned: boolean;
   isPin: boolean;
 };
 
-export default memo(function ActionOverlay({
+export default function ActionOverlay({
   objekt,
+  slug,
   authenticated,
   isLocked,
   isPinned,
@@ -38,8 +38,6 @@ export default memo(function ActionOverlay({
 }: Props) {
   const objektLists = useProfileContext((ctx) => ctx.objektLists);
   const [hoverState, createHoverProps] = useOverlayHover();
-
-  const slug = getObjektSlug(objekt);
 
   const showActions =
     !objekt.transferable ||
@@ -201,4 +199,4 @@ export default memo(function ActionOverlay({
       </div>
     </div>
   );
-});
+}

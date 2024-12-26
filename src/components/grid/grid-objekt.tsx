@@ -3,7 +3,7 @@ import { PropsWithClassName, cn } from "@/lib/utils";
 import { Check } from "lucide-react";
 import Image from "next/image";
 import { CSSProperties, useState } from "react";
-import { replaceUrlSize } from "../objekt/objekt-util";
+import { replaceUrlSize } from "../objekt/common";
 
 type Props = PropsWithClassName<{
   image: string;

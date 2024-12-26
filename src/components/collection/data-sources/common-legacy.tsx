@@ -1,11 +1,12 @@
-import ActionOverlay from "@/components/objekt/action-overlay";
-import InformationOverlay from "@/components/objekt/information-overlay";
-import ObjektSidebar from "@/components/objekt/objekt-sidebar";
+import ActionOverlay from "@/components/objekt/overlay/action-overlay";
+import InformationOverlay from "@/components/objekt/overlay/information-overlay";
 import { useLockedObjekt } from "@/hooks/use-profile";
 import { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
+import { ObjektSidebar } from "@/components/objekt/common";
 
 type LegacyOverlayProps = {
   objekt: CosmoObjekt;
+  slug: string;
   authenticated: boolean;
   isPinned: boolean;
   isPin: boolean;
@@ -13,6 +14,7 @@ type LegacyOverlayProps = {
 
 export function LegacyOverlay({
   objekt,
+  slug,
   authenticated,
   isPinned,
   isPin,
@@ -28,6 +30,7 @@ export function LegacyOverlay({
       <InformationOverlay objekt={objekt} />
       <ActionOverlay
         objekt={objekt}
+        slug={slug}
         authenticated={authenticated}
         isLocked={isLocked}
         isPinned={isPinned}

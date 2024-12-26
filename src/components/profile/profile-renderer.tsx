@@ -57,7 +57,10 @@ export default function ProfileRenderer({ artists, profile, user }: Props) {
         ))
         .with("cosmo", () => (
           <CosmoCollectionGroups
+            artists={artists}
+            authenticated={authenticated}
             profile={profile}
+            user={user}
             searchParams={searchParams}
           />
         ))

@@ -9,10 +9,11 @@ import FilteredObjektDisplay from "@/components/objekt/filtered-objekt-display";
 import { useMemo } from "react";
 import { filtersAreDirty } from "@/hooks/use-filters";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
-import { ExpandableObjekt } from "@/components/objekt/objekt";
 import { ValidSort } from "@/lib/universal/cosmo/common";
 import { COSMO_ENDPOINT } from "@/lib/universal/cosmo/common";
-import { LegacyOverlay } from "./legacy-common";
+import { LegacyOverlay } from "./common-legacy";
+import ExpandableObjekt from "@/components/objekt/objekt-expandable";
+import { Objekt } from "@/lib/universal/objekt-conversion";
 
 type Props = {
   artists: CosmoArtistWithMembersBFF[];
@@ -89,12 +90,15 @@ export default function CosmoLegacy(props: Props) {
       hidePins={usingFilters}
       authenticated={props.authenticated}
     >
-      {({ objekt, id, isPin }) => {
-        if (!shouldRender(objekt)) return null;
+      {({ item, id, isPin }) => {
+        if (!shouldRender(item)) return null;
+
+        const objekt = Objekt.fromLegacy(item);
         return (
           <ExpandableObjekt objekt={objekt} id={id}>
             <LegacyOverlay
-              objekt={objekt}
+              objekt={item}
+              slug={objekt.slug}
               authenticated={props.authenticated}
               isPinned={pins.findIndex((p) => p.tokenId === id) !== -1}
               isPin={isPin}

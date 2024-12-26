@@ -1,0 +1,87 @@
+import { useShallow } from "zustand/react/shallow";
+import { useState, type CSSProperties } from "react";
+import { CommonObjektProps, getObjektImageUrls } from "./common";
+import { useQueryClient } from "@tanstack/react-query";
+import { useObjektSelection } from "@/hooks/use-objekt-selection";
+import { fetchObjektQuery } from "./metadata-dialog";
+import MetadataDialog from "./metadata-dialog";
+import { cn } from "@/lib/utils";
+import { default as NextImage } from "next/image";
+
+interface Props extends CommonObjektProps {
+  setActive?: (slug: string | null) => void;
+}
+
+/**
+ * Displays the front of an objekt and opens a MetadataDialog on click.
+ */
+export default function ExpandableObjekt({
+  children,
+  id,
+  objekt,
+  setActive,
+}: Props) {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const queryClient = useQueryClient();
+  const isSelected = useObjektSelection(
+    useShallow((state) => state.isSelected(Number(id)))
+  );
+
+  const css = {
+    "--objekt-background-color": objekt.backgroundColor,
+    "--objekt-text-color": objekt.textColor,
+  } as CSSProperties;
+
+  const { front } = getObjektImageUrls(objekt);
+
+  function prefetch() {
+    const img = new Image();
+    img.src = front.download;
+  }
+
+  return (
+    <MetadataDialog
+      slug={objekt.slug}
+      isActive={false}
+      onClose={() => setActive?.(null)}
+    >
+      {({ open }) => (
+        <div
+          className={cn(
+            "relative overflow-hidden rounded-lg md:rounded-xl lg:rounded-2xl touch-manipulation bg-accent transition-colors ring-2 ring-transparent aspect-photocard",
+            isSelected && "ring-foreground"
+          )}
+          style={css}
+        >
+          <NextImage
+            onMouseOver={prefetch}
+            onLoad={() => setIsLoaded(true)}
+            onClick={() => {
+              // populate the query cache so it doesn't re-fetch
+              queryClient.setQueryData(
+                fetchObjektQuery(objekt.slug).queryKey,
+                objekt
+              );
+              // update the url
+              setActive?.(objekt.slug);
+              // open the dialog
+              open();
+            }}
+            className={cn(
+              "cursor-pointer transition-opacity w-full",
+              isLoaded === false && "opacity-0"
+            )}
+            src={front.display}
+            width={291}
+            height={450}
+            alt={objekt.collectionId}
+            quality={100}
+            unoptimized
+          />
+
+          {children}
+        </div>
+      )}
+    </MetadataDialog>
+  );
+}

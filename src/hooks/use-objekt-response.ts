@@ -11,6 +11,7 @@ import { ReactNode } from "react";
 export type ObjektResponseOptions<Response, Item> = {
   queryKey: QueryKey;
   queryFunction: QueryFunction<Response, QueryKey, number | undefined>;
+  initialPageParam?: number;
   getNextPageParam: GetNextPageParamFunction<number | undefined, Response>;
   calculateTotal: (data: InfiniteData<Response>) => ReactNode;
   getItems: (data: InfiniteData<Response>) => Item[];
@@ -23,7 +24,7 @@ export function useObjektResponse<Response, Item>(
   const query = useSuspenseInfiniteQuery({
     queryKey: [...opts.queryKey, filters],
     queryFn: opts.queryFunction,
-    initialPageParam: 0,
+    initialPageParam: opts.initialPageParam ?? 0,
     getNextPageParam: opts.getNextPageParam,
     refetchOnWindowFocus: false,
     staleTime: 1000 * 60 * 5, // 5 minutes
