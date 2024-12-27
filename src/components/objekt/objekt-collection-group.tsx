@@ -17,7 +17,6 @@ import { ScrollArea } from "../ui/scroll-area";
  * TODO:
  * - Migrate ActionOverlay over to this component
  * - Add metadata dialog somewhere (separate overlay on root objekt?)
- * - Reimplement the reward dialog
  */
 
 interface Props {

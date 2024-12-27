@@ -14,7 +14,6 @@ import {
 // alias the indexer type
 export type IndexedObjekt = Collection;
 
-export type ObjektType = LegacyObjekt | BFFCollectionGroup;
 export type LegacyObjekt = ObjektBaseFields | CosmoObjekt | IndexedObjekt;
 export type LegacyObjektResponse<T extends LegacyObjekt> = {
   hasNext: boolean;

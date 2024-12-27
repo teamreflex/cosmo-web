@@ -62,8 +62,8 @@ export default function ScanQR() {
       shouldScaleBackground={false}
       preventScrollRestoration={true}
     >
-      <DrawerTrigger className="flex items-center justify-center p-2 rounded-full bg-cosmo size-16 aspect-square drop-shadow-sm ring-0">
-        <QrCode className="text-white size-10" />
+      <DrawerTrigger className="flex items-center justify-center p-1 rounded-full bg-cosmo size-12 aspect-square drop-shadow-sm ring-0">
+        <QrCode className="text-white size-8" />
       </DrawerTrigger>
 
       <ScanObjekt open={open} onClose={() => setOpen(false)} />

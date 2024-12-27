@@ -1,7 +1,6 @@
 /* eslint-disable react-compiler/react-compiler */
 import { useProfileContext } from "@/hooks/use-profile";
 import { Props } from "./filtered-objekt-display";
-import { useObjektRewards } from "@/hooks/use-objekt-rewards";
 import { useObjektResponse } from "@/hooks/use-objekt-response";
 import { useElementSize } from "@/hooks/use-element-size";
 import { cloneElement, CSSProperties, useMemo } from "react";
@@ -44,7 +43,6 @@ export default function VirtualizedGrid<Response, Item>({
 }: ObjektGridProps<Response, Item>) {
   // data
   const pins = useProfileContext((ctx) => ctx.pins);
-  const { rewardsDialog } = useObjektRewards();
   const { query, total, items } = useObjektResponse(options);
 
   // merge pins and items

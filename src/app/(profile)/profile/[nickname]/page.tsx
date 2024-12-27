@@ -7,15 +7,13 @@ import {
   getArtistsWithMembers,
 } from "@/app/data-fetching";
 import ProfileRenderer from "@/components/profile/profile-renderer";
-import { Shield } from "lucide-react";
+import { CircleHelp, Shield } from "lucide-react";
 import { isAddressEqual } from "@/lib/utils";
-import { Suspense } from "react";
 import { ProfileProvider } from "@/hooks/use-profile";
-import RewardsRenderer from "@/components/rewards/rewards-renderer";
-import { ObjektRewardProvider } from "@/hooks/use-objekt-rewards";
-import { ErrorBoundary } from "react-error-boundary";
 import { fetchPins } from "@/lib/server/objekts/pins";
 import { UserStateProvider } from "@/hooks/use-user-state";
+import Portal from "@/components/portal";
+import RewardsAvailable from "@/components/rewards/rewards-available";
 
 type Props = {
   params: Promise<{
@@ -54,6 +52,8 @@ export default async function UserCollectionPage(props: Props) {
 
   const pins = await fetchPins(targetUser.pins);
 
+  // <RewardsRenderer user={user} artist={selectedArtist} />
+
   return (
     <ProfileProvider
       currentProfile={currentUser}
@@ -62,27 +62,22 @@ export default async function UserCollectionPage(props: Props) {
       lockedObjekts={targetUser.lockedObjekts}
       pins={pins}
     >
-      <ObjektRewardProvider
-        rewardsDialog={
-          isOwnProfile && (
-            <ErrorBoundary fallback={null}>
-              <Suspense>
-                <RewardsRenderer user={user} artist={selectedArtist} />
-              </Suspense>
-            </ErrorBoundary>
-          )
-        }
-      >
-        <section className="flex flex-col">
-          <UserStateProvider artist={selectedArtist} token={user}>
-            <ProfileRenderer
-              artists={artists}
-              profile={targetUser.profile}
-              user={currentUser}
-            />
-          </UserStateProvider>
-        </section>
-      </ObjektRewardProvider>
+      <section className="flex flex-col">
+        <UserStateProvider artist={selectedArtist} token={user}>
+          <ProfileRenderer
+            artists={artists}
+            profile={targetUser.profile}
+            user={currentUser}
+          />
+
+          {/* needs token access */}
+          {isOwnProfile === true && (
+            <Portal to="#overlay">
+              <RewardsAvailable />
+            </Portal>
+          )}
+        </UserStateProvider>
+      </section>
     </ProfileProvider>
   );
 }

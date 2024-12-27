@@ -10,7 +10,6 @@ import { Toaster } from "@/components/ui/toaster";
 import TailwindIndicator from "@/components/tailwind-indicator";
 import Script from "next/script";
 import Overlay from "@/components/overlay/overlay";
-import { Suspense } from "react";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -68,9 +67,7 @@ export default async function RootLayout({
                 {children}
               </div>
 
-              <Suspense>
-                <Overlay />
-              </Suspense>
+              <Overlay />
             </div>
           </ClientProviders>
 
