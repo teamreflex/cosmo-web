@@ -126,7 +126,6 @@ function ScanObjekt(props: ScanObjektProps) {
           />
         );
       }
-      return <div>todo</div>;
     case "success":
       return <ClaimSuccess reset={onReset} onClose={onClose} />;
   }
