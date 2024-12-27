@@ -87,6 +87,7 @@ export default function ListRenderer({
         artists={artists}
         options={options}
         getObjektId={getObjektId}
+        shouldRender={() => true}
         gridColumns={gridColumns}
         authenticated={authenticated}
       >

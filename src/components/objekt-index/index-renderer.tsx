@@ -89,6 +89,7 @@ export default function IndexRenderer({
         artists={artists}
         options={options}
         getObjektId={getObjektId}
+        shouldRender={() => true}
         gridColumns={gridColumns}
         authenticated={authenticated}
       >
