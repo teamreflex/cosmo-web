@@ -33,18 +33,20 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 }
 
 export default async function UserCollectionPage(props: Props) {
-  const params = await props.params;
-  const user = await decodeUser();
-  const selectedArtist = await getSelectedArtist();
-
-  const isOwnProfile =
-    user !== undefined && isAddressEqual(user.nickname, params.nickname);
+  const [params, user, selectedArtist] = await Promise.all([
+    props.params,
+    decodeUser(),
+    getSelectedArtist(),
+  ]);
 
   const [artists, currentUser, targetUser] = await Promise.all([
     getArtistsWithMembers(),
     user ? getProfile(user.profileId) : undefined,
     getUserByIdentifier(params.nickname),
   ]);
+
+  const isOwnProfile =
+    user !== undefined && isAddressEqual(user.nickname, params.nickname);
 
   if (targetUser.profile.privacy.objekts && !isOwnProfile) {
     return <Private nickname={targetUser.profile.nickname} />;

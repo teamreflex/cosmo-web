@@ -114,6 +114,7 @@ export default function CosmoCollectionGroups(props: Props) {
       artists={props.artists}
       options={options}
       getObjektId={(item) => item.collection.collectionId}
+      shouldRender={() => true}
       gridColumns={gridColumns}
       hidePins={usingFilters}
       authenticated={props.authenticated}

@@ -7,7 +7,7 @@ import { useProfileContext } from "@/hooks/use-profile";
 import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import { ObjektResponseOptions } from "@/hooks/use-objekt-response";
 import FilteredObjektDisplay from "@/components/objekt/filtered-objekt-display";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { filtersAreDirty } from "@/hooks/use-filters";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { LegacyOverlay } from "./common-legacy";
@@ -32,21 +32,24 @@ export default function Blockchain(props: Props) {
   /**
    * Determine if the objekt should be rendered
    */
-  const shouldRender = (objekt: CosmoObjekt) => {
-    const isLocked = lockedObjekts.includes(parseInt(objekt.tokenId));
-    const isPinned =
-      pins.findIndex((pin) => pin.tokenId === objekt.tokenId) !== -1;
+  const shouldRender = useCallback(
+    (objekt: CosmoObjekt) => {
+      const isLocked = lockedObjekts.includes(parseInt(objekt.tokenId));
+      const isPinned =
+        pins.findIndex((pin) => pin.tokenId === objekt.tokenId) !== -1;
 
-    // hide objekt from list when it's pinned
-    const shouldDisplayPinned = !usingFilters && !isPinned;
+      // hide objekt from list when it's pinned
+      const shouldDisplayPinned = !usingFilters && !isPinned;
 
-    // hide locked objekts when the filter is toggled
-    const shouldDisplayLocked = props.showLocked ? true : !isLocked;
+      // hide locked objekts when the filter is toggled
+      const shouldDisplayLocked = props.showLocked ? true : !isLocked;
 
-    return usingFilters
-      ? shouldDisplayLocked
-      : shouldDisplayLocked && shouldDisplayPinned;
-  };
+      return usingFilters
+        ? shouldDisplayLocked
+        : shouldDisplayLocked && shouldDisplayPinned;
+    },
+    [lockedObjekts, pins, usingFilters, props.showLocked]
+  );
 
   /**
    * Query options
@@ -84,13 +87,12 @@ export default function Blockchain(props: Props) {
       artists={props.artists}
       options={options}
       getObjektId={(item) => item.tokenId}
+      shouldRender={shouldRender}
       gridColumns={props.profile?.gridColumns ?? props.user?.gridColumns}
       hidePins={usingFilters}
       authenticated={props.authenticated}
     >
       {({ item, id, isPin }) => {
-        if (!shouldRender(item)) return null;
-
         const objekt = Objekt.fromLegacy(item);
         return (
           <ExpandableObjekt objekt={objekt} id={id}>

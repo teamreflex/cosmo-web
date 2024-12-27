@@ -11,7 +11,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { ObjektResponseOptions } from "@/hooks/use-objekt-response";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import ObjektGrid from "./objekt-grid";
+import VirtualizedGrid from "./virtualized-grid";
 
 type RenderProps<T> = {
   id: string | number;
@@ -24,6 +24,7 @@ export type Props<Response, Item> = {
   artists: CosmoArtistWithMembersBFF[];
   options: ObjektResponseOptions<Response, Item>;
   getObjektId: (objekt: Item) => string;
+  shouldRender: (objekt: Item) => boolean;
   gridColumns?: number;
   hidePins?: boolean;
   authenticated: boolean;
@@ -34,6 +35,7 @@ export default function FilteredObjektDisplay<Response, Item>({
   artists,
   options,
   getObjektId,
+  shouldRender,
   gridColumns = GRID_COLUMNS,
   hidePins = true,
   authenticated,
@@ -109,15 +111,16 @@ export default function FilteredObjektDisplay<Response, Item>({
                   </div>
                 }
               >
-                <ObjektGrid
+                <VirtualizedGrid
                   options={options}
                   getObjektId={getObjektId}
+                  shouldRender={shouldRender}
                   authenticated={authenticated}
                   hidePins={hidePins}
                   rowSize={rowSize}
                 >
                   {children}
-                </ObjektGrid>
+                </VirtualizedGrid>
               </Suspense>
             </ErrorBoundary>
           )}

@@ -14,6 +14,16 @@ import ExpandableObjekt from "./objekt-expandable";
 import { LegacyOverlay } from "../collection/data-sources/common-legacy";
 import { InfiniteQueryNext } from "../infinite-query-pending";
 
+type ListItem<T> =
+  | {
+      type: "pin";
+      item: CosmoObjekt;
+    }
+  | {
+      type: "item";
+      item: T;
+    };
+
 interface ObjektGridProps<Response, Item>
   extends Omit<Props<Response, Item>, "artists" | "gridColumns"> {
   hidePins: boolean;
@@ -23,10 +33,11 @@ interface ObjektGridProps<Response, Item>
 const GAP = 16;
 const ASPECT_RATIO = 8.5 / 5.5;
 
-export default function ObjektGrid<Response, Item>({
+export default function VirtualizedGrid<Response, Item>({
   children,
   options,
   getObjektId,
+  shouldRender,
   authenticated,
   hidePins,
   rowSize,
@@ -36,10 +47,32 @@ export default function ObjektGrid<Response, Item>({
   const { rewardsDialog } = useObjektRewards();
   const { query, total, items } = useObjektResponse(options);
 
+  // merge pins and items
+  const rows = useMemo(() => {
+    const initialItems = [
+      ...(hidePins
+        ? []
+        : pins.map((pin) => ({
+            type: "pin" as const,
+            item: pin,
+          }))),
+      ...items.filter(shouldRender).map((item) => ({
+        type: "item" as const,
+        item,
+      })),
+    ];
+
+    const result: ListItem<Item>[][] = [];
+    for (let i = 0; i < initialItems.length; i += rowSize) {
+      result.push(initialItems.slice(i, i + rowSize));
+    }
+    return result;
+  }, [items, pins, shouldRender, rowSize, hidePins]);
+
   // virtualization
   const [containerRef, { width }] = useElementSize();
   const virtualizer = useWindowVirtualizer({
-    count: items.length / rowSize,
+    count: rows.length,
     overscan: 2,
     estimateSize: () => {
       const itemWidth = (width - GAP * (rowSize - 1)) / rowSize;
@@ -51,37 +84,6 @@ export default function ObjektGrid<Response, Item>({
   // fixes react compiler issue: https://github.com/TanStack/virtual/issues/743
   const virtualizerRef = useRef(virtualizer);
   const virtualList = virtualizerRef.current.getVirtualItems();
-
-  type ListItem =
-    | {
-        type: "pin";
-        item: CosmoObjekt;
-      }
-    | {
-        type: "item";
-        item: Item;
-      };
-
-  const rows = useMemo(() => {
-    const initialItems = [
-      ...(hidePins
-        ? []
-        : pins.map((pin) => ({
-            type: "pin" as const,
-            item: pin,
-          }))),
-      ...items.map((item) => ({
-        type: "item" as const,
-        item,
-      })),
-    ];
-
-    const result: ListItem[][] = [];
-    for (let i = 0; i < initialItems.length; i += rowSize) {
-      result.push(initialItems.slice(i, i + rowSize));
-    }
-    return result;
-  }, [items, pins, rowSize]);
 
   const style = {
     "--grid-columns": rowSize,
@@ -137,7 +139,7 @@ export default function ObjektGrid<Response, Item>({
                   );
                 }
 
-                // render item
+                // render non-pin items
                 if (objekt.type === "item") {
                   const element = children({
                     item: objekt.item,
