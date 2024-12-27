@@ -54,8 +54,8 @@ export default async function Navbar() {
 
 async function Auth() {
   const user = await decodeUser();
-  const selectedArtist = await getSelectedArtist();
-  const [artists, profile] = await Promise.all([
+  const [selectedArtist, artists, profile] = await Promise.all([
+    getSelectedArtist(),
     getArtistsWithMembers(),
     user ? getProfile(user.profileId) : undefined,
   ]);
@@ -71,7 +71,11 @@ async function Auth() {
       }
       cosmoAvatar={
         <ErrorBoundary fallback={<AuthFallback />}>
-          <CosmoAvatar token={user} artist={selectedArtist} />
+          <CosmoAvatar
+            token={user}
+            artist={selectedArtist}
+            nickname={profile?.nickname}
+          />
         </ErrorBoundary>
       }
     />
