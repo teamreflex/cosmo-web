@@ -6,6 +6,7 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
@@ -126,9 +127,13 @@ export default memo(function DataSourceSelector({
               <span>Polygon</span>
             </div>
           </SelectItem>
+
+          <SelectSeparator />
+
           <Button
-            className="rounded-md"
+            className="rounded"
             variant="cosmo"
+            size="sm"
             onClick={() => setOpen(true)}
           >
             <div className="flex flex-row items-center gap-2">
