@@ -1,31 +1,17 @@
-import {
-  CSSProperties,
-  ReactElement,
-  Suspense,
-  cloneElement,
-  useCallback,
-} from "react";
+import { CSSProperties, ReactElement, Suspense, useCallback } from "react";
 import { HeartCrack, RefreshCcw } from "lucide-react";
 import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import MemberFilter from "../collection/member-filter";
-import Portal from "../portal";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
-import { InfiniteQueryNext } from "../infinite-query-pending";
 import { GRID_COLUMNS } from "@/lib/utils";
 import { Button } from "../ui/button";
-import { useObjektRewards } from "@/hooks/use-objekt-rewards";
 import Skeleton from "../skeleton/skeleton";
 import { ErrorBoundary } from "react-error-boundary";
-import { useProfileContext } from "@/hooks/use-profile";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
-import {
-  ObjektResponseOptions,
-  useObjektResponse,
-} from "@/hooks/use-objekt-response";
-import ExpandableObjekt from "./objekt-expandable";
-import { LegacyOverlay } from "../collection/data-sources/common-legacy";
-import { Objekt } from "../../lib/universal/objekt-conversion";
+import { ObjektResponseOptions } from "@/hooks/use-objekt-response";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import ObjektGrid from "./objekt-grid";
 
 type RenderProps<T> = {
   id: string | number;
@@ -33,7 +19,7 @@ type RenderProps<T> = {
   isPin: boolean;
 };
 
-type Props<Response, Item> = {
+export type Props<Response, Item> = {
   children: (props: RenderProps<Item>) => ReactElement | null;
   artists: CosmoArtistWithMembersBFF[];
   options: ObjektResponseOptions<Response, Item>;
@@ -53,6 +39,12 @@ export default function FilteredObjektDisplay<Response, Item>({
   authenticated,
 }: Props<Response, Item>) {
   const [filters, setFilters] = useCosmoFilters();
+  const isDesktop = useMediaQuery();
+
+  const rowSize = isDesktop ? gridColumns : 3;
+  const style = {
+    "--grid-columns": rowSize,
+  } as CSSProperties;
 
   const setActiveMember = useCallback(
     (member: string) => {
@@ -74,10 +66,6 @@ export default function FilteredObjektDisplay<Response, Item>({
     [setFilters]
   );
 
-  const css = {
-    "--grid-columns": gridColumns,
-  } as CSSProperties;
-
   return (
     <div className="flex flex-col">
       <MemberFilter
@@ -87,127 +75,56 @@ export default function FilteredObjektDisplay<Response, Item>({
         updateMember={setActiveMember}
       />
 
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col items-center w-full">
         <QueryErrorResetBoundary>
           {({ reset }) => (
-            <div
-              style={css}
-              className="relative grid grid-cols-3 gap-4 py-2 w-full md:grid-cols-[repeat(var(--grid-columns),_minmax(0,_1fr))]"
+            <ErrorBoundary
+              fallback={
+                <div className="flex flex-col gap-2 items-center w-full py-12">
+                  <div className="flex items-center gap-2">
+                    <HeartCrack className="h-6 w-6" />
+                    <p className="text-sm font-semibold">
+                      Error loading objekts
+                    </p>
+                  </div>
+                  <Button variant="outline" onClick={reset}>
+                    <RefreshCcw className="mr-2" /> Retry
+                  </Button>
+                </div>
+              }
             >
-              <ErrorBoundary
+              <Suspense
                 fallback={
-                  <div className="col-span-full flex flex-col gap-2 items-center py-12">
-                    <div className="flex items-center gap-2">
-                      <HeartCrack className="h-6 w-6" />
-                      <p className="text-sm font-semibold">
-                        Error loading objekts
-                      </p>
-                    </div>
-                    <Button variant="outline" onClick={reset}>
-                      <RefreshCcw className="mr-2" /> Retry
-                    </Button>
+                  <div
+                    style={style}
+                    className="relative py-2 grid gap-4 w-full grid-cols-3 md:grid-cols-[repeat(var(--grid-columns),_minmax(0,_1fr))]"
+                  >
+                    <div className="z-20 absolute top-0 w-full h-full bg-linear-to-b from-transparent to-75% to-background" />
+                    {Array.from({ length: rowSize * 3 }).map((_, i) => (
+                      <Skeleton
+                        key={i}
+                        className="z-10 w-full aspect-photocard rounded-lg md:rounded-xl lg:rounded-2xl"
+                      />
+                    ))}
                   </div>
                 }
               >
-                <Suspense
-                  fallback={
-                    <div className="contents">
-                      <div className="z-20 absolute top-0 w-full h-full bg-linear-to-b from-transparent to-75% to-background" />
-                      {Array.from({ length: gridColumns * 3 }).map((_, i) => (
-                        <Skeleton
-                          key={i}
-                          className="z-10 w-full aspect-photocard rounded-lg md:rounded-xl lg:rounded-2xl"
-                        />
-                      ))}
-                    </div>
-                  }
+                <ObjektGrid
+                  options={options}
+                  getObjektId={getObjektId}
+                  authenticated={authenticated}
+                  hidePins={hidePins}
+                  rowSize={rowSize}
                 >
-                  <ObjektGrid
-                    options={options}
-                    getObjektId={getObjektId}
-                    hidePins={hidePins}
-                    authenticated={authenticated}
-                  >
-                    {children}
-                  </ObjektGrid>
-                </Suspense>
-              </ErrorBoundary>
-            </div>
+                  {children}
+                </ObjektGrid>
+              </Suspense>
+            </ErrorBoundary>
           )}
         </QueryErrorResetBoundary>
 
         <div id="pagination" />
       </div>
-    </div>
-  );
-}
-
-interface ObjektGridProps<Response, Item>
-  extends Omit<Props<Response, Item>, "artists" | "gridColumns"> {
-  hidePins: boolean;
-}
-
-function ObjektGrid<Response, Item>({
-  children,
-  options,
-  getObjektId,
-  hidePins,
-  authenticated,
-}: ObjektGridProps<Response, Item>) {
-  const pins = useProfileContext((ctx) => ctx.pins);
-  const { rewardsDialog } = useObjektRewards();
-  const { query, total, items } = useObjektResponse(options);
-
-  return (
-    <div className="contents">
-      <Portal to="#objekt-total">{total}</Portal>
-
-      {rewardsDialog}
-
-      {/* render any pins */}
-      {hidePins === false &&
-        pins.map((pin) => {
-          const objekt = Objekt.fromLegacy(pin);
-          return (
-            <ExpandableObjekt
-              key={pin.tokenId}
-              objekt={objekt}
-              id={pin.tokenId}
-            >
-              <LegacyOverlay
-                objekt={pin}
-                slug={objekt.slug}
-                authenticated={authenticated}
-                isPinned={
-                  pins.findIndex((p) => p.tokenId === pin.tokenId) !== -1
-                }
-                isPin={true}
-              />
-            </ExpandableObjekt>
-          );
-        })}
-
-      {/* render the objekts */}
-      {items.map((item) => {
-        const element = children({
-          item: item,
-          id: getObjektId(item),
-          isPin: false,
-        });
-
-        return element
-          ? cloneElement(element, { key: getObjektId(item) })
-          : null;
-      })}
-
-      <Portal to="#pagination">
-        <InfiniteQueryNext
-          status={query.status}
-          hasNextPage={query.hasNextPage}
-          isFetchingNextPage={query.isFetchingNextPage}
-          fetchNextPage={query.fetchNextPage}
-        />
-      </Portal>
     </div>
   );
 }

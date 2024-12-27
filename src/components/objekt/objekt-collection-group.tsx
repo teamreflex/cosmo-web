@@ -17,6 +17,7 @@ import { ScrollArea } from "../ui/scroll-area";
  * TODO:
  * - Migrate ActionOverlay over to this component
  * - Add metadata dialog somewhere (separate overlay on root objekt?)
+ * - Reimplement the reward dialog
  */
 
 interface Props {
@@ -91,7 +92,7 @@ const RootObjekt = forwardRef<HTMLButtonElement, RootObjektProps>(
         style={style}
         {...props}
         className={cn(
-          "relative bg-accent w-full aspect-photocard cursor-pointer object-contain rounded-lg md:rounded-xl lg:rounded-2xl outline-none"
+          "relative bg-accent w-full h-full aspect-photocard cursor-pointer object-contain rounded-lg md:rounded-xl lg:rounded-2xl outline-none"
         )}
       >
         <Image

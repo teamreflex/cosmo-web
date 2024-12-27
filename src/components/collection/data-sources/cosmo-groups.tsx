@@ -11,8 +11,9 @@ import {
   BFFCollectionGroupResponse,
 } from "@/lib/universal/cosmo/objekts";
 import { ofetch } from "ofetch";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import GroupedObjekt from "@/components/objekt/objekt-collection-group";
+import { useCosmoMembers } from "@/hooks/use-cosmo-members";
 
 const INITIAL_PAGE = 1;
 const PAGE_SIZE = 30;
@@ -28,8 +29,10 @@ type Props = {
 export default function CosmoCollectionGroups(props: Props) {
   const { artist, token } = useUserState();
   const [filters] = useCosmoFilters();
+  const { getMember } = useCosmoMembers(props.artists);
   const usingFilters = useMemo(() => filtersAreDirty(filters), [filters]);
 
+  // handle missing token, should never happen here
   if (!token) {
     return (
       <div className="flex flex-col items-center justify-center py-6">
@@ -40,29 +43,43 @@ export default function CosmoCollectionGroups(props: Props) {
     );
   }
 
+  // allow for artist filter, but default to selected artist
+  const artistName = filters.artist ?? artist;
+
   /**
    * Query options
    */
   const options = {
-    queryKey: ["collection", "cosmo", props.profile.address, artist],
+    queryKey: ["collection", "cosmo", props.profile.address, artistName],
     queryFunction: async ({ pageParam = 1 }: { pageParam?: number }) => {
       const endpoint = new URL(
         "/bff/v1/objekt/collection-group",
         COSMO_ENDPOINT
       ).toString();
 
-      // remap sort param to order
       const searchParams = new URLSearchParams(props.searchParams);
-      if (searchParams.has("sort")) {
-        searchParams.set("order", searchParams.get("sort") ?? "newest");
-        searchParams.delete("sort");
-      }
 
       // add required params
       searchParams.set("tid", crypto.randomUUID());
       searchParams.set("page", pageParam.toString());
       searchParams.set("size", PAGE_SIZE.toString());
-      searchParams.set("artistName", artist);
+      searchParams.set("artistName", artistName);
+
+      // remap sort param to order
+      if (searchParams.has("sort")) {
+        searchParams.set("order", searchParams.get("sort") ?? "newest");
+        searchParams.delete("sort");
+      }
+
+      // remap member name to id
+      if (filters.member) {
+        const member = getMember(filters.member);
+        if (member) {
+          searchParams.set("artistName", member.artistId);
+          searchParams.set("memberIds", member.id.toString());
+        }
+        searchParams.delete("member");
+      }
 
       return await ofetch<BFFCollectionGroupResponse>(endpoint, {
         query: Object.fromEntries(searchParams.entries()),
