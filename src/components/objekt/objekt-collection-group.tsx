@@ -48,7 +48,7 @@ export default function GroupedObjekt({ group, gridColumns }: Props) {
           </VisuallyHidden.Root>
 
           {/* content */}
-          <div className="fixed left-[50%] translate-x-[-50%] top-12 bottom-0 z-50 flex flex-col w-full max-w-[78rem] px-2">
+          <div className="fixed left-[50%] translate-x-[-50%] top-12 z-50 flex flex-col w-full max-w-[78rem] max-h-[calc(100dvh-3rem)] overflow-y-auto px-2">
             {/* title */}
             <div className="grid grid-cols-[1fr_auto] grid-rows-2 grid-flow-col">
               <h2 className="text-2xl font-bold">
@@ -118,26 +118,24 @@ function ObjektList({ group, gridColumns }: Props) {
   } as CSSProperties;
 
   return (
-    <ScrollArea className="h-full px-2">
-      <div
-        style={style}
-        className="grid grid-cols-3 md:grid-cols-[repeat(var(--grid-columns),_minmax(0,_1fr))] gap-2"
-      >
-        {group.objekts.map((objekt) => {
-          const common = Objekt.fromCollectionGroup({
-            collection: group.collection,
-            objekt: objekt,
-          });
-          return (
-            <FlippableObjekt key={objekt.metadata.tokenId} objekt={common}>
-              <ObjektSidebar
-                collection={group.collection.collectionNo}
-                serial={objekt.metadata.objektNo}
-              />
-            </FlippableObjekt>
-          );
-        })}
-      </div>
-    </ScrollArea>
+    <div
+      style={style}
+      className="grid grid-cols-3 md:grid-cols-[repeat(var(--grid-columns),_minmax(0,_1fr))] gap-4 pb-2"
+    >
+      {group.objekts.map((objekt) => {
+        const common = Objekt.fromCollectionGroup({
+          collection: group.collection,
+          objekt: objekt,
+        });
+        return (
+          <FlippableObjekt key={objekt.metadata.tokenId} objekt={common}>
+            <ObjektSidebar
+              collection={group.collection.collectionNo}
+              serial={objekt.metadata.objektNo}
+            />
+          </FlippableObjekt>
+        );
+      })}
+    </div>
   );
 }
