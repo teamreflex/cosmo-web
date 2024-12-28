@@ -12,7 +12,7 @@ import { Info, X } from "lucide-react";
 import { useState } from "react";
 import MetadataDialog, { fetchObjektQuery } from "./metadata-dialog";
 import { useQueryClient } from "@tanstack/react-query";
-import { useProfileContext } from "@/hooks/use-profile";
+import { useLockedObjekt, useProfileContext } from "@/hooks/use-profile";
 import StaticObjekt from "./objekt-static";
 import { useObjektSelection } from "@/hooks/use-objekt-selection";
 import { useShallow } from "zustand/react/shallow";
@@ -20,12 +20,17 @@ import { useShallow } from "zustand/react/shallow";
 interface Props {
   group: BFFCollectionGroup;
   gridColumns: number;
+  showLocked: boolean;
 }
 
 /**
  * Shows all objekts in the collection group on click.
  */
-export default function GroupedObjekt({ group, gridColumns }: Props) {
+export default function GroupedObjekt({
+  group,
+  gridColumns,
+  showLocked,
+}: Props) {
   const [open, setOpen] = useState(false);
   const hasSelected = useObjektSelection(
     useShallow((state) =>
@@ -81,6 +86,7 @@ export default function GroupedObjekt({ group, gridColumns }: Props) {
               collection={collection}
               objekts={group.objekts}
               gridColumns={gridColumns}
+              showLocked={showLocked}
             />
           </div>
         </DialogPrimitive.Content>
@@ -195,17 +201,28 @@ type ObjektListProps = {
   collection: Objekt.Collection;
   objekts: BFFCollectionGroupObjekt[];
   gridColumns: number;
+  showLocked: boolean;
 };
 
-function ObjektList({ collection, objekts, gridColumns }: ObjektListProps) {
+function ObjektList({
+  collection,
+  objekts,
+  gridColumns,
+  showLocked,
+}: ObjektListProps) {
   const pins = useProfileContext((ctx) => ctx.pins);
+  const lockedObjekts = useProfileContext((ctx) => ctx.lockedObjekts);
+
+  const toRender = objekts.filter((objekt) => {
+    return lockedObjekts.includes(objekt.metadata.tokenId) ? showLocked : true;
+  });
 
   return (
     <div
       style={{ "--grid-columns": gridColumns }}
       className="grid grid-cols-3 md:grid-cols-[repeat(var(--grid-columns),_minmax(0,_1fr))] gap-4 pb-2"
     >
-      {objekts.map((o) => {
+      {toRender.map((o) => {
         const objekt = Objekt.fromCollectionGroup({ objekt: o });
         return (
           <StaticObjekt

@@ -65,6 +65,7 @@ export default function ProfileRenderer({ artists, profile, user }: Props) {
             profile={profile}
             user={user}
             searchParams={searchParams}
+            showLocked={showLocked}
           />
         ))
         .with("cosmo-legacy", () => (

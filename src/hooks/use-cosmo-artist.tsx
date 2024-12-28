@@ -26,6 +26,10 @@ export function CosmoArtistProvider({ children, artists }: ProviderProps) {
   );
 }
 
+/**
+ * Provides a way to pull an artist and its contracts deep in the tree.
+ * Necessary due to /bff/v1/collection-group not including the tokenAddress property.
+ */
 export function useCosmoArtist() {
   const ctx = useContext(CosmoArtistContext);
   if (ctx === null) {

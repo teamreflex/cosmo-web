@@ -14,6 +14,7 @@ import { ofetch } from "ofetch";
 import { useCallback, useMemo } from "react";
 import GroupedObjekt from "@/components/objekt/objekt-collection-group";
 import { useCosmoMembers } from "@/hooks/use-cosmo-members";
+import { useProfileContext } from "@/hooks/use-profile";
 
 const INITIAL_PAGE = 1;
 const PAGE_SIZE = 30;
@@ -24,13 +25,31 @@ type Props = {
   profile: PublicProfile;
   user?: PublicProfile;
   searchParams: URLSearchParams;
+  showLocked: boolean;
 };
 
 export default function CosmoCollectionGroups(props: Props) {
-  const { artist, token } = useUserState();
   const [filters] = useCosmoFilters();
-  const { getMember } = useCosmoMembers(props.artists);
   const usingFilters = useMemo(() => filtersAreDirty(filters), [filters]);
+  const lockedObjekts = useProfileContext((ctx) => ctx.lockedObjekts);
+  const { artist, token } = useUserState();
+  const { getMember } = useCosmoMembers(props.artists);
+
+  /**
+   * Determine if the group should be rendered
+   */
+  const shouldRender = useCallback(
+    (group: BFFCollectionGroup) => {
+      const tokenIds = group.objekts.map((objekt) => objekt.metadata.tokenId);
+      const allLocked = tokenIds.every((tokenId) =>
+        lockedObjekts.includes(tokenId)
+      );
+
+      // hide collection when all objekts are locked
+      return props.showLocked ? true : !allLocked;
+    },
+    [lockedObjekts, props.showLocked]
+  );
 
   // handle missing token, should never happen here
   if (!token) {
@@ -114,12 +133,18 @@ export default function CosmoCollectionGroups(props: Props) {
       artists={props.artists}
       options={options}
       getObjektId={(item) => item.collection.collectionId}
-      shouldRender={() => true}
+      shouldRender={shouldRender}
       gridColumns={gridColumns}
       hidePins={usingFilters}
       authenticated={props.authenticated}
     >
-      {({ item }) => <GroupedObjekt group={item} gridColumns={gridColumns} />}
+      {({ item }) => (
+        <GroupedObjekt
+          group={item}
+          gridColumns={gridColumns}
+          showLocked={props.showLocked}
+        />
+      )}
     </FilteredObjektDisplay>
   );
 }
