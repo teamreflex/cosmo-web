@@ -7,7 +7,8 @@ const config: NextConfig = {
     serverComponentsHmrCache: true,
     reactCompiler: true,
     staleTimes: {
-      dynamic: 60,
+      dynamic: 60 * 5, // 5 minutes
+      static: 60 * 5, // 5 minutes
     },
   },
 
