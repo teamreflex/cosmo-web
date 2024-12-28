@@ -16,7 +16,7 @@ type ProviderProps = {
 
 export function CosmoArtistProvider({ children, artists }: ProviderProps) {
   const artistMap = new Map(
-    artists.map((artist) => [artist.id.toString(), artist])
+    artists.map((artist) => [artist.id.toLowerCase(), artist])
   );
 
   return (
