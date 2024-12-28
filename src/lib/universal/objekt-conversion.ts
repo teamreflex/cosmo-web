@@ -188,7 +188,7 @@ export namespace Objekt {
 /**
  * Derives the slug from the season, member, and collectionNo.
  */
-export function slug(
+function slug(
   params: Pick<Objekt.Collection, "season" | "member" | "collectionNo">
 ): string {
   let { season, member, collectionNo } = params;

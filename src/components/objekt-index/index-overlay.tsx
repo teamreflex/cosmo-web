@@ -15,7 +15,7 @@ export function TopOverlay({ objekt, objektLists }: TopOverlayProps) {
     <div
       className={cn(
         "absolute left-0 p-1 sm:p-2 items-center group h-5 sm:h-9 transition-all overflow-hidden",
-        "text-[var(--objekt-text-color)] bg-[var(--objekt-background-color)]",
+        "text-(--objekt-text-color) bg-(--objekt-background-color)",
         "grid grid-flow-col grid-cols-[1fr_min-content]",
         "top-0 rounded-br-lg sm:rounded-br-xl"
       )}

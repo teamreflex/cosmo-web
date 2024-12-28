@@ -55,7 +55,7 @@ export default function ActionOverlay({
       data-hovering={hoverState !== undefined}
       className={cn(
         "absolute top-0 left-0 p-1 sm:p-2 rounded-br-lg sm:rounded-br-xl items-center group h-5 sm:h-9 transition-all overflow-hidden",
-        "text-[var(--objekt-text-color)] bg-[var(--objekt-background-color)]",
+        "text-(--objekt-text-color) bg-(--objekt-background-color)",
         "grid grid-flow-col grid-cols-[1fr_min-content]",
         showActions === false && "hidden"
       )}
