@@ -94,11 +94,10 @@ export default function IndexRenderer({
         authenticated={authenticated}
       >
         {({ item, id }) => {
-          const objekt = Objekt.fromIndexer(item);
+          const collection = Objekt.fromIndexer(item);
           return (
             <ExpandableObjekt
-              objekt={objekt}
-              id={id}
+              collection={collection}
               setActive={setActiveObjekt}
             >
               <Overlay

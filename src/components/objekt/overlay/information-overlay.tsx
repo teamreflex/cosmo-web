@@ -5,18 +5,20 @@ import { format } from "date-fns";
 import { ExternalLink, Maximize2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
+import { Objekt } from "@/lib/universal/objekt-conversion";
 
 type Props = {
-  objekt: CosmoObjekt;
+  collection: Objekt.Collection;
+  token: Objekt.Token;
 };
 
-export default function InformationOverlay({ objekt }: Props) {
+export default function InformationOverlay({ collection, token }: Props) {
   const [open, setOpen] = useState(false);
 
-  const formatted = format(Date.parse(objekt.receivedAt), "dd/MM/yy h:mmaa");
+  const formatted = format(Date.parse(token.acquiredAt), "dd/MM/yy h:mmaa");
   const opensea = new URL(
-    `https://opensea.io/assets/matic/${objekt.tokenAddress}/${objekt.tokenId}`
+    "https://opensea.io"
+    // `https://opensea.io/assets/matic/${collection.tokenAddress}/${token.tokenId}`
   );
 
   return (
@@ -52,7 +54,7 @@ export default function InformationOverlay({ objekt }: Props) {
 
         <div className="flex flex-col text-xs">
           <span className="font-semibold">Token ID</span>
-          <span>{objekt.tokenId}</span>
+          <span>{token.tokenId}</span>
         </div>
 
         <div className="flex flex-col text-xs">

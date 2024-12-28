@@ -95,10 +95,10 @@ export default function Blockchain(props: Props) {
       {({ item, id, isPin }) => {
         const objekt = Objekt.fromLegacy(item);
         return (
-          <ExpandableObjekt objekt={objekt} id={id}>
+          <ExpandableObjekt collection={objekt.collection} tokenId={id}>
             <LegacyOverlay
-              objekt={item}
-              slug={objekt.slug}
+              collection={objekt.collection}
+              token={objekt.objekt}
               authenticated={props.authenticated}
               isPinned={pins.findIndex((p) => p.tokenId === id) !== -1}
               isPin={isPin}

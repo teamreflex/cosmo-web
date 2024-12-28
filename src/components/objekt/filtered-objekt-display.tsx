@@ -1,4 +1,4 @@
-import { CSSProperties, ReactElement, Suspense, useCallback } from "react";
+import { ReactElement, Suspense, useCallback } from "react";
 import { HeartCrack, RefreshCcw } from "lucide-react";
 import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
@@ -44,9 +44,6 @@ export default function FilteredObjektDisplay<Response, Item>({
   const isDesktop = useMediaQuery();
 
   const rowSize = isDesktop ? gridColumns : 3;
-  const style = {
-    "--grid-columns": rowSize,
-  } as CSSProperties;
 
   const setActiveMember = useCallback(
     (member: string) => {
@@ -98,7 +95,7 @@ export default function FilteredObjektDisplay<Response, Item>({
               <Suspense
                 fallback={
                   <div
-                    style={style}
+                    style={{ "--grid-columns": rowSize }}
                     className="relative py-2 grid gap-4 w-full grid-cols-3 md:grid-cols-[repeat(var(--grid-columns),_minmax(0,_1fr))]"
                   >
                     <div className="z-20 absolute top-0 w-full h-full bg-linear-to-b from-transparent to-75% to-background" />

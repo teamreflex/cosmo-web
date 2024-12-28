@@ -1,38 +1,36 @@
 import { useShallow } from "zustand/react/shallow";
-import { useState, type CSSProperties } from "react";
-import { CommonObjektProps, getObjektImageUrls } from "./common";
+import { PropsWithChildren, useState } from "react";
+import { getObjektImageUrls } from "./common";
 import { useQueryClient } from "@tanstack/react-query";
 import { useObjektSelection } from "@/hooks/use-objekt-selection";
 import { fetchObjektQuery } from "./metadata-dialog";
 import MetadataDialog from "./metadata-dialog";
 import { cn } from "@/lib/utils";
 import { default as NextImage } from "next/image";
+import { Objekt } from "@/lib/universal/objekt-conversion";
 
-interface Props extends CommonObjektProps {
+type Props = PropsWithChildren<{
+  collection: Objekt.Collection;
+  tokenId?: number | string;
   setActive?: (slug: string | null) => void;
-}
+}>;
 
 /**
  * Displays the front of an objekt and opens a MetadataDialog on click.
  */
 export default function ExpandableObjekt({
   children,
-  id,
-  objekt,
+  tokenId = 0,
+  collection,
   setActive,
 }: Props) {
   const [isLoaded, setIsLoaded] = useState(false);
   const queryClient = useQueryClient();
   const isSelected = useObjektSelection(
-    useShallow((state) => state.isSelected(Number(id)))
+    useShallow((state) => state.isSelected(Number(tokenId)))
   );
 
-  const css = {
-    "--objekt-background-color": objekt.backgroundColor,
-    "--objekt-text-color": objekt.textColor,
-  } as CSSProperties;
-
-  const { front } = getObjektImageUrls(objekt);
+  const { front } = getObjektImageUrls(collection);
 
   function prefetch() {
     const img = new Image();
@@ -41,17 +39,20 @@ export default function ExpandableObjekt({
 
   return (
     <MetadataDialog
-      slug={objekt.slug}
+      slug={collection.slug}
       isActive={false}
       onClose={() => setActive?.(null)}
     >
       {({ open }) => (
         <div
+          style={{
+            "--objekt-background-color": collection.backgroundColor,
+            "--objekt-text-color": collection.textColor,
+          }}
           className={cn(
             "relative overflow-hidden rounded-lg md:rounded-xl lg:rounded-2xl touch-manipulation bg-accent transition-colors ring-2 ring-transparent aspect-photocard",
             isSelected && "ring-foreground"
           )}
-          style={css}
         >
           <NextImage
             onMouseOver={prefetch}
@@ -59,11 +60,11 @@ export default function ExpandableObjekt({
             onClick={() => {
               // populate the query cache so it doesn't re-fetch
               queryClient.setQueryData(
-                fetchObjektQuery(objekt.slug).queryKey,
-                objekt
+                fetchObjektQuery(collection.slug).queryKey,
+                collection
               );
               // update the url
-              setActive?.(objekt.slug);
+              setActive?.(collection.slug);
               // open the dialog
               open();
             }}
@@ -74,7 +75,7 @@ export default function ExpandableObjekt({
             src={front.display}
             width={291}
             height={450}
-            alt={objekt.collectionId}
+            alt={collection.collectionId}
             quality={100}
             unoptimized
           />

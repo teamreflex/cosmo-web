@@ -6,7 +6,7 @@ import {
   TooltipTrigger,
 } from "../ui/tooltip";
 import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
-import { CSSProperties, memo } from "react";
+import { memo } from "react";
 import Image from "next/image";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 
@@ -85,17 +85,17 @@ export const MemberFilterButton = memo(function MemberFilterButton({
   setActive,
   color = "var(--color-cosmo)",
 }: MemberFilterButtonProps) {
-  const style = {
-    "--member-color": color,
-  } as CSSProperties;
-
   return (
-    <div className="flex flex-col justify-center items-center">
+    <div
+      style={{
+        "--member-color": color,
+      }}
+      className="flex flex-col justify-center items-center"
+    >
       <TooltipProvider delayDuration={0}>
         <Tooltip>
           <TooltipTrigger asChild>
             <button
-              style={style}
               onClick={() => setActive(name)}
               className={cn(
                 "rounded-full drop-shadow-sm cursor-pointer",

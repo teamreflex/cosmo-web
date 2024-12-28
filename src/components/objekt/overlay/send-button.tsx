@@ -1,28 +1,43 @@
 "use client";
 
 import { Send } from "lucide-react";
-import { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
 import { useObjektSelection } from "@/hooks/use-objekt-selection";
+import { Objekt } from "@/lib/universal/objekt-conversion";
+import { useCosmoArtist } from "@/hooks/use-cosmo-artist";
+import { toast } from "@/components/ui/use-toast";
 
 type Props = {
-  objekt: CosmoObjekt;
+  collection: Objekt.Collection;
+  token: Objekt.Token;
 };
 
-export default function SendObjekt({ objekt }: Props) {
+export default function SendObjekt({ collection, token }: Props) {
   const select = useObjektSelection((ctx) => ctx.select);
+  const { getArtist } = useCosmoArtist();
+
+  function handleClick() {
+    const artist = getArtist(collection.artist);
+    if (!artist) {
+      toast({
+        description: "Artist not found",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    select({
+      tokenId: token.tokenId,
+      contract: artist.contracts.Objekt,
+      collectionId: collection.collectionId,
+      collectionNo: collection.collectionNo,
+      serial: token.serial,
+      thumbnailImage: collection.frontImage,
+    });
+  }
 
   return (
     <button
-      onClick={() =>
-        select({
-          tokenId: Number(objekt.tokenId),
-          contract: objekt.tokenAddress,
-          collectionId: objekt.collectionId,
-          collectionNo: objekt.collectionNo,
-          serial: objekt.objektNo,
-          thumbnailImage: objekt.thumbnailImage,
-        })
-      }
+      onClick={handleClick}
       className="hover:cursor-pointer hover:scale-110 transition-all flex items-center"
     >
       <Send className="h-3 w-3 sm:h-5 sm:w-5" />

@@ -303,10 +303,10 @@ function ClaimObjekt({ serial, result, onClaim, onClose }: ClaimObjektProps) {
     },
   });
 
-  const objekt = Objekt.fromScanned(result);
+  const collection = Objekt.fromScanned(result);
   const isClaimed = result.isClaimed;
 
-  const title = `${objekt.collectionId} #${serial.padStart(5, "0")}`;
+  const title = `${collection.collectionId} #${serial.padStart(5, "0")}`;
   const description = `Objekt is ${
     isClaimed ? " already claimed" : "claimable"
   }`;
@@ -319,10 +319,10 @@ function ClaimObjekt({ serial, result, onClaim, onClose }: ClaimObjektProps) {
       </DrawerHeader>
 
       <div className="relative mx-auto h-72 aspect-photocard">
-        <FlippableObjekt objekt={objekt}>
+        <FlippableObjekt collection={collection}>
           <ObjektSidebar
-            collection={objekt.collectionNo}
-            serial={Number(serial)}
+            collection={collection.collectionNo}
+            serial={parseInt(serial)}
           />
         </FlippableObjekt>
       </div>

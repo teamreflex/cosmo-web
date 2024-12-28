@@ -1,28 +1,25 @@
-import ActionOverlay from "@/components/objekt/overlay/action-overlay";
-import InformationOverlay from "@/components/objekt/overlay/information-overlay";
-import { useLockedObjekt } from "@/hooks/use-profile";
-import { ObjektSidebar } from "@/components/objekt/common";
-import { Objekt } from "@/lib/universal/objekt-conversion";
+import ActionOverlay from "./overlay/action-overlay";
 
-type LegacyOverlayProps = {
+import { useLockedObjekt } from "@/hooks/use-profile";
+import { Objekt } from "@/lib/universal/objekt-conversion";
+import ExpandableObjekt from "./objekt-expandable";
+import { ObjektSidebar } from "./common";
+import InformationOverlay from "./overlay/information-overlay";
+
+type Props = {
   collection: Objekt.Collection;
   token: Objekt.Token;
-  authenticated: boolean;
   isPinned: boolean;
-  isPin: boolean;
 };
 
-export function LegacyOverlay({
-  collection,
-  token,
-  authenticated,
-  isPinned,
-  isPin,
-}: LegacyOverlayProps) {
+/**
+ * Used within a collection group list.
+ */
+export default function StaticObjekt({ collection, token, isPinned }: Props) {
   const isLocked = useLockedObjekt(token.tokenId);
 
   return (
-    <div className="contents">
+    <ExpandableObjekt tokenId={token.tokenId} collection={collection}>
       <ObjektSidebar
         collection={collection.collectionNo}
         serial={token.serial}
@@ -31,11 +28,11 @@ export function LegacyOverlay({
       <ActionOverlay
         collection={collection}
         token={token}
-        authenticated={authenticated}
+        authenticated={true}
         isLocked={isLocked}
         isPinned={isPinned}
-        isPin={isPin}
+        isPin={false}
       />
-    </div>
+    </ExpandableObjekt>
   );
 }

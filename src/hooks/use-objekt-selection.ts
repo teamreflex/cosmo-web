@@ -73,6 +73,7 @@ type ObjektSelectionState = {
   update: (selection: Selection) => void;
   selectUser: (user: CosmoPublicUser) => void;
   isSelected: (tokenId: number) => boolean;
+  hasSelected: (tokenIds: number[]) => boolean;
   reset: () => void;
   remove: (tokenId: number) => void;
 };
@@ -131,8 +132,20 @@ export const useObjektSelection = create<ObjektSelectionState>()(
     /**
      * Determine whether the specific token has been selected.
      */
-    isSelected: (tokenId) =>
-      get().selected.findIndex((p) => p.objekt.tokenId === tokenId) !== -1,
+    isSelected: (tokenId) => {
+      return (
+        get().selected.findIndex((p) => p.objekt.tokenId === tokenId) !== -1
+      );
+    },
+
+    /**
+     * Determine whether any of the given tokens have been selected.
+     */
+    hasSelected: (tokenIds) => {
+      return get().selected.some((sel) =>
+        tokenIds.includes(sel.objekt.tokenId)
+      );
+    },
 
     /**
      * Reset any selected objekts

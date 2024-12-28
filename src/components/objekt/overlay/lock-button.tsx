@@ -1,6 +1,5 @@
 "use client";
 
-import { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
 import { toggleObjektLock } from "@/components/collection/actions";
 import { Loader2, Lock, Unlock } from "lucide-react";
 import { memo, useTransition } from "react";
@@ -8,15 +7,13 @@ import { track } from "@/lib/utils";
 import { useProfileContext } from "@/hooks/use-profile";
 
 type Props = {
-  objekt: CosmoObjekt;
+  tokenId: number;
   isLocked: boolean;
 };
 
-export default memo(function LockObjekt({ objekt, isLocked }: Props) {
+export default memo(function LockObjekt({ tokenId, isLocked }: Props) {
   const toggleLock = useProfileContext((ctx) => ctx.toggleLock);
   const [isPending, startTransition] = useTransition();
-
-  const tokenId = parseInt(objekt.tokenId);
 
   function toggle() {
     startTransition(async () => {

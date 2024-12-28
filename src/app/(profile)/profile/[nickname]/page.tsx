@@ -14,6 +14,7 @@ import { fetchPins } from "@/lib/server/objekts/pins";
 import { UserStateProvider } from "@/hooks/use-user-state";
 import Portal from "@/components/portal";
 import RewardsAvailable from "@/components/rewards/rewards-available";
+import { CosmoArtistProvider } from "@/hooks/use-cosmo-artist";
 
 type Props = {
   params: Promise<{
@@ -52,33 +53,33 @@ export default async function UserCollectionPage(props: Props) {
 
   const pins = await fetchPins(targetUser.pins);
 
-  // <RewardsRenderer user={user} artist={selectedArtist} />
-
   return (
-    <ProfileProvider
-      currentProfile={currentUser}
-      targetProfile={targetUser.profile}
-      objektLists={targetUser.objektLists}
-      lockedObjekts={targetUser.lockedObjekts}
-      pins={pins}
-    >
-      <section className="flex flex-col">
-        <UserStateProvider artist={selectedArtist} token={user}>
-          <ProfileRenderer
-            artists={artists}
-            profile={targetUser.profile}
-            user={currentUser}
-          />
+    <CosmoArtistProvider artists={artists}>
+      <ProfileProvider
+        currentProfile={currentUser}
+        targetProfile={targetUser.profile}
+        objektLists={targetUser.objektLists}
+        lockedObjekts={targetUser.lockedObjekts}
+        pins={pins}
+      >
+        <section className="flex flex-col">
+          <UserStateProvider artist={selectedArtist} token={user}>
+            <ProfileRenderer
+              artists={artists}
+              profile={targetUser.profile}
+              user={currentUser}
+            />
 
-          {/* needs token access */}
-          {isOwnProfile === true && (
-            <Portal to="#overlay">
-              <RewardsAvailable />
-            </Portal>
-          )}
-        </UserStateProvider>
-      </section>
-    </ProfileProvider>
+            {/* needs token access */}
+            {isOwnProfile === true && (
+              <Portal to="#overlay">
+                <RewardsAvailable />
+              </Portal>
+            )}
+          </UserStateProvider>
+        </section>
+      </ProfileProvider>
+    </CosmoArtistProvider>
   );
 }
 

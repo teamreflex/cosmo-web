@@ -34,12 +34,7 @@ import { useProfileContext } from "@/hooks/use-profile";
 import { Button } from "../ui/button";
 import { updateObjektMetadata } from "./actions";
 import { Textarea } from "../ui/textarea";
-import {
-  getObjektArtist,
-  getObjektImageUrls,
-  getObjektType,
-  ObjektSidebar,
-} from "./common";
+import { getObjektImageUrls, ObjektSidebar } from "./common";
 import { ErrorBoundary } from "react-error-boundary";
 import { useCopyToClipboard } from "usehooks-ts";
 import { env } from "@/env.mjs";
@@ -50,7 +45,7 @@ import FlippableObjekt from "./objekt-flippable";
 import { Objekt } from "../../lib/universal/objekt-conversion";
 
 type CommonProps = {
-  objekt: Objekt.Common;
+  objekt: Objekt.Collection;
 };
 
 type RenderProps = {
@@ -60,14 +55,14 @@ type RenderProps = {
 type MetadataDialogProps = {
   slug: string;
   children?: (props: RenderProps) => ReactNode;
-  isActive: boolean;
+  isActive?: boolean;
   onClose?: () => void;
 };
 
 export default function MetadataDialog({
   slug,
   children,
-  isActive,
+  isActive = false,
   onClose,
 }: MetadataDialogProps) {
   const isDesktop = useMediaQuery();
@@ -155,7 +150,7 @@ type MetadataDialogContentProps = {
 export const fetchObjektQuery = (slug: string) => ({
   queryKey: ["collection-metadata", "objekt", slug],
   queryFn: async () => {
-    return await ofetch<Objekt.Common>(`/api/objekts/by-slug/${slug}`);
+    return await ofetch<Objekt.Collection>(`/api/objekts/by-slug/${slug}`);
   },
   retry: 1,
 });
@@ -166,7 +161,7 @@ function MetadataContent({ slug, onClose }: MetadataDialogContentProps) {
   return (
     <div className="contents">
       <div className="flex h-[28rem] aspect-photocard mx-auto shrink mt-4 sm:mt-0">
-        <FlippableObjekt objekt={data}>
+        <FlippableObjekt collection={data}>
           <ObjektSidebar collection={data.collectionNo} />
         </FlippableObjekt>
       </div>
@@ -218,7 +213,7 @@ function MetadataPanel({ objekt }: CommonProps) {
   );
 }
 
-function Metadata({ objekt }: { objekt: Objekt.Common }) {
+function Metadata({ objekt }: { objekt: Objekt.Collection }) {
   const [_, copy] = useCopyToClipboard();
   const [showForm, setShowForm] = useState(false);
   const profile = useProfileContext((ctx) => ctx.currentProfile);

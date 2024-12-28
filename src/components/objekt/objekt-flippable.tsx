@@ -1,9 +1,11 @@
-import { useState, type CSSProperties } from "react";
-import { CommonObjektProps } from "./common";
+import { PropsWithChildren, useState } from "react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import { Objekt } from "@/lib/universal/objekt-conversion";
 
-interface Props extends Omit<CommonObjektProps, "id" | "serial"> {}
+type Props = PropsWithChildren<{
+  collection: Objekt.Collection;
+}>;
 
 /**
  * Flips on click.
@@ -12,17 +14,15 @@ interface Props extends Omit<CommonObjektProps, "id" | "serial"> {}
  * - Upon grid reward
  * - When scanning an objekt
  */
-export default function FlippableObjekt({ children, objekt }: Props) {
+export default function FlippableObjekt({ children, collection }: Props) {
   const [flipped, setFlipped] = useState(false);
-
-  const css = {
-    "--objekt-background-color": objekt.backgroundColor,
-    "--objekt-text-color": objekt.textColor,
-  } as CSSProperties;
 
   return (
     <div
-      style={css}
+      style={{
+        "--objekt-background-color": collection.backgroundColor,
+        "--objekt-text-color": collection.textColor,
+      }}
       data-flipped={flipped}
       onClick={() => setFlipped((prev) => !prev)}
       className={cn(
@@ -31,13 +31,21 @@ export default function FlippableObjekt({ children, objekt }: Props) {
     >
       {/* front */}
       <div className="absolute inset-0 backface-hidden">
-        <Image src={objekt.frontImage} fill={true} alt={objekt.collectionId} />
+        <Image
+          src={collection.frontImage}
+          fill={true}
+          alt={collection.collectionId}
+        />
         {children}
       </div>
 
       {/* back */}
       <div className="absolute inset-0 backface-hidden rotate-y-180">
-        <Image src={objekt.backImage} fill={true} alt={objekt.collectionId} />
+        <Image
+          src={collection.backImage}
+          fill={true}
+          alt={collection.collectionId}
+        />
       </div>
     </div>
   );

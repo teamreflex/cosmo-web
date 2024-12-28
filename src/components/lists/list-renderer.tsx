@@ -91,12 +91,12 @@ export default function ListRenderer({
         gridColumns={gridColumns}
         authenticated={authenticated}
       >
-        {({ item, id }) => {
-          const objekt = Objekt.fromIndexer(item);
+        {({ item }) => {
+          const collection = Objekt.fromIndexer(item);
           return (
-            <ExpandableObjekt objekt={objekt} id={id}>
+            <ExpandableObjekt collection={collection}>
               <Overlay
-                objekt={item}
+                collection={collection}
                 authenticated={authenticated}
                 objektList={list}
               />
@@ -130,16 +130,18 @@ const Title = memo(function Title({
 });
 
 type OverlayProps = {
-  objekt: IndexedObjekt;
+  collection: Objekt.Collection;
   authenticated: boolean;
   objektList: ObjektList;
 };
 
-function Overlay({ objekt, authenticated, objektList }: OverlayProps) {
+function Overlay({ collection, authenticated, objektList }: OverlayProps) {
   return (
     <div className="contents">
-      <ObjektSidebar collection={objekt.collectionNo} />
-      {authenticated && <ListOverlay objekt={objekt} objektList={objektList} />}
+      <ObjektSidebar collection={collection.collectionNo} />
+      {authenticated && (
+        <ListOverlay collection={collection} objektList={objektList} />
+      )}
     </div>
   );
 }

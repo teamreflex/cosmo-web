@@ -1,23 +1,21 @@
-import { type CSSProperties, forwardRef } from "react";
 import { cn } from "@/lib/utils";
-import Image from "next/image";
+import { default as NextImage } from "next/image";
 import {
   BFFCollectionGroup,
-  BFFCollectionGroupCollection,
+  BFFCollectionGroupObjekt,
 } from "@/lib/universal/cosmo/objekts";
-import { ObjektSidebar } from "./common";
+import { getObjektImageUrls, ObjektSidebar } from "./common";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
-import FlippableObjekt from "./objekt-flippable";
 import { Objekt } from "@/lib/universal/objekt-conversion";
-import { X } from "lucide-react";
-import { ScrollArea } from "../ui/scroll-area";
-
-/**
- * TODO:
- * - Migrate ActionOverlay over to this component
- * - Add metadata dialog somewhere (separate overlay on root objekt?)
- */
+import { Info, X } from "lucide-react";
+import { useState } from "react";
+import MetadataDialog, { fetchObjektQuery } from "./metadata-dialog";
+import { useQueryClient } from "@tanstack/react-query";
+import { useProfileContext } from "@/hooks/use-profile";
+import StaticObjekt from "./objekt-static";
+import { useObjektSelection } from "@/hooks/use-objekt-selection";
+import { useShallow } from "zustand/react/shallow";
 
 interface Props {
   group: BFFCollectionGroup;
@@ -28,11 +26,25 @@ interface Props {
  * Shows all objekts in the collection group on click.
  */
 export default function GroupedObjekt({ group, gridColumns }: Props) {
+  const [open, setOpen] = useState(false);
+  const hasSelected = useObjektSelection(
+    useShallow((state) =>
+      state.hasSelected(group.objekts.map((o) => o.metadata.tokenId))
+    )
+  );
+
+  const collection = Objekt.fromCollectionGroup({
+    collection: group.collection,
+  });
+
   return (
-    <DialogPrimitive.Root>
-      <DialogPrimitive.Trigger asChild>
-        <RootObjekt collection={group.collection} count={group.count} />
-      </DialogPrimitive.Trigger>
+    <DialogPrimitive.Root open={open} onOpenChange={setOpen}>
+      <RootObjekt
+        collection={collection}
+        count={group.count}
+        hasSelected={hasSelected}
+        onClick={() => setOpen(true)}
+      />
 
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
@@ -65,7 +77,11 @@ export default function GroupedObjekt({ group, gridColumns }: Props) {
             </div>
 
             {/* objekts */}
-            <ObjektList group={group} gridColumns={gridColumns} />
+            <ObjektList
+              collection={collection}
+              objekts={group.objekts}
+              gridColumns={gridColumns}
+            />
           </div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
@@ -74,66 +90,133 @@ export default function GroupedObjekt({ group, gridColumns }: Props) {
 }
 
 type RootObjektProps = {
-  collection: BFFCollectionGroupCollection;
+  collection: Objekt.Collection;
   count: number;
+  hasSelected: boolean;
+  onClick: () => void;
 };
 
-const RootObjekt = forwardRef<HTMLButtonElement, RootObjektProps>(
-  ({ collection, count, ...props }, ref) => {
-    const style = {
-      "--objekt-background-color": collection.backgroundColor,
-      "--objekt-text-color": collection.textColor,
-    } as CSSProperties;
+function RootObjekt({
+  collection,
+  count,
+  hasSelected,
+  onClick,
+}: RootObjektProps) {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const queryClient = useQueryClient();
 
-    return (
-      <button
-        ref={ref}
-        style={style}
-        {...props}
+  const { front } = getObjektImageUrls(collection);
+
+  function prefetch() {
+    const img = new Image();
+    img.src = front.download;
+  }
+
+  return (
+    <MetadataDialog slug={collection.slug}>
+      {({ open }) => (
+        <div
+          style={{
+            "--objekt-background-color": collection.backgroundColor,
+            "--objekt-text-color": collection.textColor,
+          }}
+          className={cn(
+            "relative overflow-hidden rounded-lg md:rounded-xl lg:rounded-2xl touch-manipulation bg-accent transition-colors ring-2 ring-transparent aspect-photocard",
+            hasSelected && "ring-foreground"
+          )}
+        >
+          <NextImage
+            onMouseOver={prefetch}
+            onLoad={() => setIsLoaded(true)}
+            onClick={onClick}
+            className={cn(
+              "cursor-pointer transition-opacity w-full",
+              isLoaded === false && "opacity-0"
+            )}
+            src={front.display}
+            width={291}
+            height={450}
+            alt={collection.collectionId}
+            quality={100}
+          />
+
+          <ObjektSidebar collection={collection.collectionNo} />
+          <RootObjektOverlay
+            count={count}
+            onClick={() => {
+              // populate the query cache so it doesn't re-fetch
+              queryClient.setQueryData(
+                fetchObjektQuery(collection.slug).queryKey,
+                collection
+              );
+
+              // open the dialog
+              open();
+            }}
+          />
+        </div>
+      )}
+    </MetadataDialog>
+  );
+}
+
+type RootObjektOverlayProps = {
+  count: number;
+  onClick: () => void;
+};
+
+function RootObjektOverlay({ count, onClick }: RootObjektOverlayProps) {
+  return (
+    <div className="contents">
+      <div
         className={cn(
-          "relative bg-accent w-full h-full aspect-photocard cursor-pointer object-contain rounded-lg md:rounded-xl lg:rounded-2xl outline-none"
+          "absolute bottom-0 left-0 isolate p-1 sm:p-2 rounded-tr-lg sm:rounded-tr-xl flex gap-2 group h-5 sm:h-9 w-5 sm:w-9 transition-all",
+          "text-(--objekt-text-color) bg-(--objekt-background-color)"
         )}
       >
-        <Image
-          src={collection.frontImage}
-          fill={true}
-          alt={collection.collectionId}
-        />
+        <button
+          className="z-50 hover:cursor-pointer hover:scale-110 transition-all flex items-center place-self-end"
+          onClick={onClick}
+        >
+          <Info className="h-3 w-3 sm:h-5 sm:w-5" />
+        </button>
+      </div>
 
-        <ObjektSidebar collection={collection.collectionNo} />
-        {count > 1 && (
-          <span className="absolute bottom-3 left-3 px-2 py-px bg-black text-white rounded-full text-sm font-semibold">
-            {count}
-          </span>
-        )}
-      </button>
-    );
-  }
-);
-RootObjekt.displayName = "RootObjekt";
+      {count > 1 && (
+        <span className="absolute top-2 left-2 px-2 py-px bg-black text-white rounded-full text-sm font-semibold">
+          {count}
+        </span>
+      )}
+    </div>
+  );
+}
 
-function ObjektList({ group, gridColumns }: Props) {
-  const style = {
-    "--grid-columns": gridColumns,
-  } as CSSProperties;
+type ObjektListProps = {
+  collection: Objekt.Collection;
+  objekts: BFFCollectionGroupObjekt[];
+  gridColumns: number;
+};
+
+function ObjektList({ collection, objekts, gridColumns }: ObjektListProps) {
+  const pins = useProfileContext((ctx) => ctx.pins);
 
   return (
     <div
-      style={style}
+      style={{ "--grid-columns": gridColumns }}
       className="grid grid-cols-3 md:grid-cols-[repeat(var(--grid-columns),_minmax(0,_1fr))] gap-4 pb-2"
     >
-      {group.objekts.map((objekt) => {
-        const common = Objekt.fromCollectionGroup({
-          collection: group.collection,
-          objekt: objekt,
-        });
+      {objekts.map((o) => {
+        const objekt = Objekt.fromCollectionGroup({ objekt: o });
         return (
-          <FlippableObjekt key={objekt.metadata.tokenId} objekt={common}>
-            <ObjektSidebar
-              collection={group.collection.collectionNo}
-              serial={objekt.metadata.objektNo}
-            />
-          </FlippableObjekt>
+          <StaticObjekt
+            key={objekt.tokenId}
+            collection={collection}
+            token={objekt}
+            isPinned={
+              pins.findIndex((p) => parseInt(p.tokenId) === objekt.tokenId) !==
+              -1
+            }
+          />
         );
       })}
     </div>

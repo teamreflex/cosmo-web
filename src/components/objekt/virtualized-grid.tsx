@@ -3,7 +3,7 @@ import { useProfileContext } from "@/hooks/use-profile";
 import { Props } from "./filtered-objekt-display";
 import { useObjektResponse } from "@/hooks/use-objekt-response";
 import { useElementSize } from "@/hooks/use-element-size";
-import { cloneElement, CSSProperties, useMemo } from "react";
+import { cloneElement, useMemo } from "react";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { useRef } from "react";
 import { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
@@ -71,7 +71,7 @@ export default function VirtualizedGrid<Response, Item>({
   const [containerRef, { width }] = useElementSize();
   const virtualizer = useWindowVirtualizer({
     count: rows.length,
-    overscan: 2,
+    overscan: 3,
     estimateSize: () => {
       const itemWidth = (width - GAP * (rowSize - 1)) / rowSize;
       return itemWidth * ASPECT_RATIO;
@@ -82,10 +82,6 @@ export default function VirtualizedGrid<Response, Item>({
   // fixes react compiler issue: https://github.com/TanStack/virtual/issues/743
   const virtualizerRef = useRef(virtualizer);
   const virtualList = virtualizerRef.current.getVirtualItems();
-
-  const style = {
-    "--grid-columns": rowSize,
-  } as CSSProperties;
 
   return (
     <div className="w-full py-2" ref={containerRef}>
@@ -103,14 +99,15 @@ export default function VirtualizedGrid<Response, Item>({
             <div
               key={rowItem.key}
               style={{
-                ...style,
-                width: "100%",
-                transform: `translateY(${rowItem.start - virtualizerRef.current.options.scrollMargin}px)`,
+                "--grid-columns": rowSize,
+                transform: `translateY(${
+                  rowItem.start - virtualizerRef.current.options.scrollMargin
+                }px)`,
                 paddingTop: rowItem.index === 0 ? 0 : `${GAP}px`,
               }}
               data-index={rowItem.index}
               ref={virtualizerRef.current.measureElement}
-              className="absolute top-0 left-0 grid gap-4 grid-cols-3 md:grid-cols-[repeat(var(--grid-columns),_minmax(0,_1fr))]"
+              className="absolute top-0 left-0 w-full px-0.5 grid gap-4 grid-cols-3 md:grid-cols-[repeat(var(--grid-columns),_minmax(0,_1fr))]"
             >
               {row.map((objekt) => {
                 // render pin
@@ -119,12 +116,12 @@ export default function VirtualizedGrid<Response, Item>({
                   return (
                     <ExpandableObjekt
                       key={objekt.item.tokenId}
-                      objekt={legacyObjekt}
-                      id={objekt.item.tokenId}
+                      collection={legacyObjekt.collection}
+                      tokenId={parseInt(objekt.item.tokenId)}
                     >
                       <LegacyOverlay
-                        objekt={objekt.item}
-                        slug={legacyObjekt.slug}
+                        collection={legacyObjekt.collection}
+                        token={legacyObjekt.objekt}
                         authenticated={authenticated}
                         isPinned={
                           pins.findIndex(
