@@ -38,6 +38,7 @@ export default function GroupedObjekt({
     )
   );
 
+  const subtitle = group.count === 1 ? "objekt" : "objekts";
   const collection = Objekt.fromCollectionGroup({
     collection: group.collection,
   });
@@ -72,7 +73,7 @@ export default function GroupedObjekt({
                 {group.collection.collectionId}
               </h2>
               <p className="text-sm font-semibold text-muted-foreground">
-                {group.count} objekts
+                {group.count} {subtitle}
               </p>
 
               <DialogPrimitive.Close className="place-self-end opacity-70 transition-opacity hover:opacity-100 cursor-pointer disabled:pointer-events-none outline-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
@@ -122,6 +123,7 @@ function RootObjekt({
     <MetadataDialog slug={collection.slug}>
       {({ open }) => (
         <div
+          role="button"
           style={{
             "--objekt-background-color": collection.backgroundColor,
             "--objekt-text-color": collection.textColor,

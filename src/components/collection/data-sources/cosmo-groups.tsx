@@ -13,8 +13,8 @@ import {
 import { ofetch } from "ofetch";
 import { useCallback, useMemo } from "react";
 import GroupedObjekt from "@/components/objekt/objekt-collection-group";
-import { useCosmoMembers } from "@/hooks/use-cosmo-members";
 import { useProfileContext } from "@/hooks/use-profile";
+import { useCosmoArtists } from "@/hooks/use-cosmo-artist";
 
 const INITIAL_PAGE = 1;
 const PAGE_SIZE = 30;
@@ -33,7 +33,7 @@ export default function CosmoCollectionGroups(props: Props) {
   const usingFilters = useMemo(() => filtersAreDirty(filters), [filters]);
   const lockedObjekts = useProfileContext((ctx) => ctx.lockedObjekts);
   const { artist, token } = useUserState();
-  const { getMember } = useCosmoMembers(props.artists);
+  const { getMember } = useCosmoArtists();
 
   /**
    * Determine if the group should be rendered

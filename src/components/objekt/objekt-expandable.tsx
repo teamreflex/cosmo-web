@@ -55,6 +55,7 @@ export default function ExpandableObjekt({
           )}
         >
           <NextImage
+            role="button"
             onMouseOver={prefetch}
             onLoad={() => setIsLoaded(true)}
             onClick={() => {

@@ -6,7 +6,7 @@ import { ExternalLink, Maximize2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Objekt } from "@/lib/universal/objekt-conversion";
-import { useCosmoArtist } from "@/hooks/use-cosmo-artist";
+import { useCosmoArtists } from "@/hooks/use-cosmo-artist";
 
 type Props = {
   collection: Objekt.Collection;
@@ -15,7 +15,7 @@ type Props = {
 
 export default function InformationOverlay({ collection, token }: Props) {
   const [open, setOpen] = useState(false);
-  const { getArtist } = useCosmoArtist();
+  const { getArtist } = useCosmoArtists();
 
   const contract = getArtist(collection.artist)?.contracts.Objekt;
   const formatted = format(Date.parse(token.acquiredAt), "dd/MM/yy h:mmaa");
