@@ -72,6 +72,7 @@ type ObjektSelectionState = {
   select: (objekt: SelectedObjekt) => void;
   update: (selection: Selection) => void;
   selectUser: (user: CosmoPublicUser) => void;
+  selectUserForToken: (tokenId: number, user: CosmoPublicUser) => void;
   isSelected: (tokenId: number) => boolean;
   hasSelected: (tokenIds: number[]) => boolean;
   reset: () => void;
@@ -187,6 +188,19 @@ export const useObjektSelection = create<ObjektSelectionState>()(
             ...sel,
             recipient: user,
           })),
+        };
+      }),
+
+    /**
+     * Select a user to send a specific objekt to
+     */
+    selectUserForToken: (tokenId, user) =>
+      set((state) => {
+        return {
+          ...state,
+          selected: state.selected.map((sel) =>
+            sel.objekt.tokenId === tokenId ? { ...sel, recipient: user } : sel
+          ),
         };
       }),
 
