@@ -26,7 +26,6 @@ export async function fetchPins(pins: Pin[]): Promise<CosmoObjekt[]> {
       },
     });
   } catch (err) {
-    console.error("Error fetching pins:", err);
     return [];
   }
 
