@@ -40,7 +40,7 @@ export type SelectionError = {
   recipient: CosmoPublicUser;
 };
 
-type SelectionPending = {
+export type SelectionPending = {
   status: "pending";
   objekt: SelectedObjekt;
   hash: null;

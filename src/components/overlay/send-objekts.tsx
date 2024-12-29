@@ -3,6 +3,7 @@ import {
   SelectionCanceled,
   SelectionError,
   SelectionIdle,
+  SelectionPending,
   SelectionSuccess,
   useObjektSelection,
 } from "@/hooks/use-objekt-selection";
@@ -12,7 +13,6 @@ import {
   CircleDashed,
   ExternalLink,
   Loader2,
-  LoaderIcon,
   Send,
   TriangleAlert,
   X,
@@ -283,6 +283,13 @@ function Sending({ selected, onBack, onClose }: SendingProps) {
       const selection = selected[i] as SelectionIdle;
 
       try {
+        // update the selection to pending
+        update({
+          ...selection,
+          status: "pending",
+        } satisfies SelectionPending);
+
+        // send the objekt
         const hash = await send({
           to: selection.recipient!.address,
           tokenId: selection.objekt.tokenId,
