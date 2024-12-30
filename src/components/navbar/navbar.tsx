@@ -1,11 +1,10 @@
-import AuthOptions from "./auth/auth-options";
 import Logo from "../logo";
 import { Suspense } from "react";
 import {
   decodeUser,
   getArtistsWithMembers,
-  getProfile,
   getSelectedArtist,
+  getUserByIdentifier,
 } from "@/app/data-fetching";
 import UpdateDialog from "../misc/update-dialog";
 import ComoBalanceRenderer from "./como-balances";
@@ -14,6 +13,8 @@ import SystemStatus from "../misc/system-status";
 import CosmoAvatar from "./auth/cosmo-avatar";
 import AuthFallback from "./auth-fallback";
 import Links from "./links.server";
+import { StateAuthenticated } from "./auth/state-authenticated";
+import { StateGuest } from "./auth/state-guest";
 
 export default async function Navbar() {
   return (
@@ -34,7 +35,9 @@ export default async function Navbar() {
             </Suspense>
 
             <div className="flex grow-0 items-center justify-end gap-2">
-              <ErrorBoundary fallback={<AuthFallback />}>
+              <ErrorBoundary
+                fallback={<AuthFallback message="Error loading user" />}
+              >
                 <Suspense
                   fallback={
                     <div className="h-10 w-10 rounded-full bg-accent animate-pulse" />
@@ -54,26 +57,41 @@ export default async function Navbar() {
 
 async function Auth() {
   const user = await decodeUser();
-  const selectedArtist = await getSelectedArtist();
-  const [artists, profile] = await Promise.all([
+  const [selectedArtist, artists, data] = await Promise.all([
+    getSelectedArtist(),
     getArtistsWithMembers(),
-    user ? getProfile(user.profileId) : undefined,
+    user ? getUserByIdentifier(user.address) : undefined,
   ]);
 
-  return (
-    <AuthOptions
-      token={user}
-      profile={profile}
-      artists={artists}
-      selectedArtist={selectedArtist}
-      comoBalances={
-        user ? <ComoBalanceRenderer address={user.address} /> : null
-      }
-      cosmoAvatar={
-        <ErrorBoundary fallback={<AuthFallback />}>
-          <CosmoAvatar token={user} artist={selectedArtist} />
-        </ErrorBoundary>
-      }
-    />
-  );
+  // profile is missing
+  if (user !== undefined && data === undefined) {
+    throw new Error("Profile is missing, this should not be possible");
+  }
+
+  const isAuthenticated = user !== undefined && data !== undefined;
+  if (isAuthenticated) {
+    return (
+      <StateAuthenticated
+        profile={data.profile}
+        artists={artists}
+        selectedArtist={selectedArtist}
+        comoBalances={
+          user ? <ComoBalanceRenderer address={user.address} /> : null
+        }
+        cosmoAvatar={
+          <ErrorBoundary
+            fallback={<AuthFallback message="Error loading profile image" />}
+          >
+            <CosmoAvatar
+              token={user}
+              artist={selectedArtist}
+              nickname={data.profile.nickname}
+            />
+          </ErrorBoundary>
+        }
+      />
+    );
+  }
+
+  return <StateGuest />;
 }

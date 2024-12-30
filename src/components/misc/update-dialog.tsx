@@ -75,6 +75,15 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2024-12-31",
+    changes: [
+      "Up to 5 objekts can now be sent at once. These will send in order of selection one at a time and will cancel the rest of the batch if one fails.",
+      "Profile pages now display grouped by collection like COSMO does.",
+      "Grouped mode only applies while viewing your own profile when signed in. Viewing other profiles will use the old COSMO mode, which MODHAUS may remove in the future.",
+      "Objekt rewards are now claimed from a button in the bottom right of the screen while on your own profile. The card no longer shows up at the top of your collection.",
+    ],
+  },
+  {
     date: "2024-12-23",
     changes: [
       "Adjusted a couple icons to better represent the button's purpose.",
@@ -87,16 +96,5 @@ const updates = [
   {
     date: "2024-12-07",
     changes: ["Hopefully fixed instances of Google Translate breaking pages."],
-  },
-  {
-    date: "2024-11-27",
-    changes: ["Fixed filters not working."],
-  },
-  {
-    date: "2024-11-25",
-    changes: [
-      "Tech update: Minimum supported browsers are now: Chrome 85+ (2020), Edge 85+ (2020), Firefox 115+ (2023), Safari 16.4+ (2023), iOS 16.4+ (2023)",
-      "If things are broken, please update your browser or device.",
-    ],
   },
 ];

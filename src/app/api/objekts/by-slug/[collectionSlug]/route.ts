@@ -1,7 +1,6 @@
 import { cacheHeaders } from "@/app/api/common";
 import { indexer } from "@/lib/server/db/indexer";
-import { collections } from "@/lib/server/db/indexer/schema";
-import { eq } from "drizzle-orm";
+import { Objekt } from "@/lib/universal/objekt-conversion";
 
 export const runtime = "nodejs";
 
@@ -18,17 +17,16 @@ type Params = {
  */
 export async function GET(request: Request, props: Params) {
   const params = await props.params;
-  const rows = await indexer
-    .select()
-    .from(collections)
-    .where(eq(collections.slug, params.collectionSlug))
-    .limit(1);
+  const collection = await indexer.query.collections.findFirst({
+    where: (table, { eq }) => eq(table.slug, params.collectionSlug),
+  });
 
-  if (rows.length === 0) {
+  if (!collection) {
     return Response.json({ message: `Collection not found` }, { status: 404 });
   }
 
-  return Response.json(rows[0], {
+  const common = Objekt.fromIndexer(collection);
+  return Response.json(common, {
     headers: cacheHeaders(60 * 60),
   });
 }

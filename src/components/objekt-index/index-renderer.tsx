@@ -3,27 +3,29 @@
 import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import ListDropdown from "../lists/list-dropdown";
 import {
-  IndexedCosmoResponse,
   IndexedObjekt,
+  LegacyObjektResponse,
   ObjektList,
   parsePage,
 } from "@/lib/universal/objekts";
 import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
-import ObjektSidebar from "../objekt/objekt-sidebar";
 import { TopOverlay } from "./index-overlay";
 import HelpDialog from "./help-dialog";
 import { useFilters } from "@/hooks/use-filters";
-import { memo, useCallback } from "react";
+import { memo } from "react";
 import {
   FiltersContainer,
   IndexFilters,
 } from "../collection/filters-container";
-import { ExpandableObjekt, RoutedExpandableObjekt } from "../objekt/objekt";
 import { ofetch } from "ofetch";
 import { baseUrl, GRID_COLUMNS } from "@/lib/utils";
 import { parseAsString, useQueryState } from "nuqs";
+import { ObjektResponseOptions } from "@/hooks/use-objekt-response";
+import { ObjektSidebar } from "../objekt/common";
+import RoutedExpandableObjekt from "../objekt/objekt-routed";
+import ExpandableObjekt from "../objekt/objekt-expandable";
+import { Objekt } from "../../lib/universal/objekt-conversion";
 
-const queryKey = ["objekt-index"];
 const getObjektId = (objekt: IndexedObjekt) => objekt.id;
 
 type Props = {
@@ -48,18 +50,32 @@ export default function IndexRenderer({
 
   const authenticated = objektLists !== undefined && nickname !== undefined;
 
-  const queryFunction = useCallback(
-    async ({ pageParam = 0 }: { pageParam?: number }) => {
+  /**
+   * Query options
+   */
+  const options = {
+    queryKey: ["objekt-index", "blockchain"],
+    queryFunction: async ({ pageParam = 0 }: { pageParam?: number }) => {
       const url = new URL("/api/objekts", baseUrl());
       return await ofetch(url.toString(), {
         query: {
           ...Object.fromEntries(searchParams.entries()),
-          page: pageParam.toString(),
+          page: pageParam,
         },
-      }).then((res) => parsePage<IndexedCosmoResponse>(res));
+      }).then((res) => parsePage<LegacyObjektResponse<IndexedObjekt>>(res));
     },
-    [searchParams]
-  );
+    getNextPageParam: (lastPage) => lastPage.nextStartAfter,
+    calculateTotal: (data) => {
+      const total = data.pages[0].total ?? 0;
+      return (
+        <p className="font-semibold">{total.toLocaleString("en")} total</p>
+      );
+    },
+    getItems: (data) => data.pages.flatMap((page) => page.objekts),
+  } satisfies ObjektResponseOptions<
+    LegacyObjektResponse<IndexedObjekt>,
+    IndexedObjekt
+  >;
 
   return (
     <div className="flex flex-col">
@@ -71,25 +87,27 @@ export default function IndexRenderer({
 
       <FilteredObjektDisplay
         artists={artists}
-        queryFunction={queryFunction}
-        queryKey={queryKey}
+        options={options}
         getObjektId={getObjektId}
+        shouldRender={() => true}
         gridColumns={gridColumns}
+        authenticated={authenticated}
       >
-        {({ objekt, id }, priority) => (
-          <ExpandableObjekt
-            objekt={objekt}
-            id={id}
-            setActive={setActiveObjekt}
-            priority={priority}
-          >
-            <Overlay
-              objekt={objekt}
-              authenticated={authenticated}
-              objektLists={objektLists}
-            />
-          </ExpandableObjekt>
-        )}
+        {({ item, id }) => {
+          const collection = Objekt.fromIndexer(item);
+          return (
+            <ExpandableObjekt
+              collection={collection}
+              setActive={setActiveObjekt}
+            >
+              <Overlay
+                objekt={item}
+                authenticated={authenticated}
+                objektLists={objektLists}
+              />
+            </ExpandableObjekt>
+          );
+        }}
       </FilteredObjektDisplay>
 
       {/**

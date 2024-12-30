@@ -5,16 +5,24 @@ export type {
   CreateObjektList,
   UpdateObjektList,
 } from "@/lib/server/db/schema";
-import { ObjektBaseFields, OwnedObjekt } from "@/lib/universal/cosmo/objekts";
+import {
+  BFFCollectionGroup,
+  CosmoObjekt,
+  ObjektBaseFields,
+} from "@/lib/universal/cosmo/objekts";
 
+// alias the indexer type
 export type IndexedObjekt = Collection;
-export type IndexedCosmoResponse = {
+
+export type LegacyObjekt = ObjektBaseFields | CosmoObjekt | IndexedObjekt;
+export type LegacyObjektResponse<T extends LegacyObjekt> = {
   hasNext: boolean;
   total: number;
-  nextStartAfter?: number;
-  objekts: IndexedObjekt[];
+  objekts: T[];
+  nextStartAfter?: number | undefined;
 };
-export type ValidObjekt = ObjektBaseFields | OwnedObjekt | IndexedObjekt;
+
+// metadata
 interface ObjektInformation extends ObjektMetadataEntry {
   profile?: Profile;
 }
@@ -36,21 +44,3 @@ export function parsePage<T>(data: any) {
       : undefined,
   } as T;
 }
-
-/**
- * Infer parts of a collection ID.
- */
-export const inferObjekt = <
-  Season extends string,
-  Member extends string,
-  Collection extends string
->(
-  collectionId: `${Season} ${Member} ${Collection}`
-) => {
-  const [season, member, collection] = collectionId.split(" ");
-  return {
-    season: season as Season,
-    member: member as Member,
-    collectionNo: collection as Collection,
-  };
-};

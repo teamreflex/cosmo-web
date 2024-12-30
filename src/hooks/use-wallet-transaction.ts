@@ -85,7 +85,7 @@ function useWalletTransaction() {
   return mutation;
 }
 
-export type SendObjekt = {
+type SendObjekt = {
   to: string;
   tokenId: number;
   contract: string;

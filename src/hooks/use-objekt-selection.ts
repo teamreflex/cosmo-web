@@ -1,6 +1,6 @@
 import { toast } from "@/components/ui/use-toast";
 import { CosmoPublicUser } from "@/lib/universal/cosmo/auth";
-import { MutationStatus } from "@tanstack/react-query";
+import type { Hex } from "viem";
 import { create } from "zustand";
 
 type SelectedObjekt = {
@@ -12,23 +12,79 @@ type SelectedObjekt = {
   thumbnailImage: string;
 };
 
-export type Selection = {
+export type SelectionIdle = {
+  status: "idle";
   objekt: SelectedObjekt;
-  status: MutationStatus;
-  recipient: CosmoPublicUser | null;
+  hash: null;
+  recipient: CosmoPublicUser;
 };
 
+type SelectionRecipientPending = {
+  status: "idle";
+  objekt: SelectedObjekt;
+  hash: null;
+  recipient: null;
+};
+
+export type SelectionSuccess = {
+  status: "success";
+  objekt: SelectedObjekt;
+  hash: string;
+  recipient: CosmoPublicUser;
+};
+
+export type SelectionError = {
+  status: "error";
+  objekt: SelectedObjekt;
+  hash: null;
+  recipient: CosmoPublicUser;
+};
+
+export type SelectionPending = {
+  status: "pending";
+  objekt: SelectedObjekt;
+  hash: null;
+  recipient: CosmoPublicUser;
+};
+
+export type SelectionCanceled = {
+  status: "canceled";
+  objekt: SelectedObjekt;
+  hash: null;
+  recipient: CosmoPublicUser;
+};
+
+export type Selection =
+  | SelectionIdle
+  | SelectionRecipientPending
+  | SelectionSuccess
+  | SelectionError
+  | SelectionPending
+  | SelectionCanceled;
+
 type ObjektSelectionState = {
+  // drawer state
+  open: boolean;
+  setOpen: (open: boolean) => void;
+
+  // selected objekts
   selected: Selection[];
   select: (objekt: SelectedObjekt) => void;
   update: (selection: Selection) => void;
   selectUser: (user: CosmoPublicUser) => void;
+  selectUserForToken: (tokenId: number, user: CosmoPublicUser) => void;
   isSelected: (tokenId: number) => boolean;
+  hasSelected: (tokenIds: number[]) => boolean;
   reset: () => void;
+  remove: (tokenId: number) => void;
 };
 
 export const useObjektSelection = create<ObjektSelectionState>()(
   (set, get) => ({
+    // drawer state
+    open: false,
+    setOpen: (open) => set({ open }),
+
     /**
      * Currently selected objekts
      */
@@ -43,10 +99,10 @@ export const useObjektSelection = create<ObjektSelectionState>()(
           (p) => p.objekt.tokenId === objekt.tokenId
         );
 
-        // TODO: solve transaction nonce issue
-        if (!existing && state.selected.length >= 1) {
+        // TODO: add scroll area to the drawer to support more
+        if (!existing && state.selected.length >= 5) {
           toast({
-            description: "Currently only one objekt can be selected",
+            description: "Currently only 5 objekts can be selected",
           });
           return state;
         }
@@ -66,9 +122,10 @@ export const useObjektSelection = create<ObjektSelectionState>()(
             ...state.selected,
             {
               objekt,
-              status: "pending",
+              status: "idle",
               recipient: null,
-            },
+              hash: null,
+            } satisfies SelectionRecipientPending,
           ],
         };
       }),
@@ -76,8 +133,20 @@ export const useObjektSelection = create<ObjektSelectionState>()(
     /**
      * Determine whether the specific token has been selected.
      */
-    isSelected: (tokenId) =>
-      get().selected.findIndex((p) => p.objekt.tokenId === tokenId) !== -1,
+    isSelected: (tokenId) => {
+      return (
+        get().selected.findIndex((p) => p.objekt.tokenId === tokenId) !== -1
+      );
+    },
+
+    /**
+     * Determine whether any of the given tokens have been selected.
+     */
+    hasSelected: (tokenIds) => {
+      return get().selected.some((sel) =>
+        tokenIds.includes(sel.objekt.tokenId)
+      );
+    },
 
     /**
      * Reset any selected objekts
@@ -119,6 +188,35 @@ export const useObjektSelection = create<ObjektSelectionState>()(
             ...sel,
             recipient: user,
           })),
+        };
+      }),
+
+    /**
+     * Select a user to send a specific objekt to
+     */
+    selectUserForToken: (tokenId, user) =>
+      set((state) => {
+        return {
+          ...state,
+          selected: state.selected.map((sel) =>
+            sel.objekt.tokenId === tokenId ? { ...sel, recipient: user } : sel
+          ),
+        };
+      }),
+
+    /**
+     * Remove a selected objekt, close the drawer if no objekts are left
+     */
+    remove: (tokenId) =>
+      set((state) => {
+        const selected = state.selected.filter(
+          (p) => p.objekt.tokenId !== tokenId
+        );
+
+        return {
+          ...state,
+          open: selected.length > 0,
+          selected,
         };
       }),
   })

@@ -3,6 +3,10 @@ import TransfersRenderer from "@/components/transfers/transfers-renderer";
 import { decodeUser, getUserByIdentifier } from "@/app/data-fetching";
 import { Shield } from "lucide-react";
 import { isAddressEqual } from "@/lib/utils";
+import { getQueryClient } from "@/lib/query-client";
+import { transfersQuery } from "@/components/transfers/queries";
+import { fetchTransfers } from "@/lib/server/transfers";
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 
 type Props = {
   params: Promise<{ nickname: string }>;
@@ -27,9 +31,22 @@ export default async function UserTransfersPage(props: Props) {
     return <Private nickname={profile.nickname} />;
   }
 
+  // prefetch transfers
+  const queryClient = getQueryClient();
+  queryClient.prefetchInfiniteQuery({
+    ...transfersQuery(profile.address),
+    queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
+      return fetchTransfers(profile.address, pageParam);
+    },
+  });
+
   return (
     <section className="flex flex-col py-2">
-      <TransfersRenderer address={profile.address} />
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <TransfersRenderer profile={profile} />
+      </HydrationBoundary>
+
+      <div id="pagination" />
     </section>
   );
 }

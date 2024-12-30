@@ -55,6 +55,7 @@ export function FiltersContainer({
  * - /collection
  */
 type CollectionFiltersProps = {
+  allowCosmoGroups?: boolean;
   showLocked: boolean;
   setShowLocked: (showLocked: boolean | null) => void;
   allowSerials?: boolean;
@@ -62,6 +63,7 @@ type CollectionFiltersProps = {
   setDataSource: Dispatch<SetStateAction<CollectionDataSource>>;
 };
 export function CollectionFilters({
+  allowCosmoGroups = false,
   showLocked,
   setShowLocked,
   allowSerials = false,
@@ -73,7 +75,7 @@ export function CollectionFilters({
   return (
     <div className="flex gap-2 items-center flex-wrap justify-center lg:group-data-[show=false]:flex group-data-[show=false]:hidden">
       <LockedFilter showLocked={showLocked} setShowLocked={setShowLocked} />
-      {dataSource === "cosmo" && (
+      {dataSource !== "blockchain" && (
         <GridableFilter filters={filters.gridable} setFilters={setFilters} />
       )}
       <TransferableFilter
@@ -93,6 +95,7 @@ export function CollectionFilters({
         setFilters={setFilters}
         dataSource={dataSource}
         setDataSource={setDataSource}
+        allowCosmoGroups={allowCosmoGroups}
       />
     </div>
   );

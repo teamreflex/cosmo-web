@@ -58,7 +58,7 @@ export default async function ObjektsIndexPage(props: Params) {
 
   return (
     <main className="container flex flex-col py-2">
-      <ProfileProvider currentProfile={profile}>
+      <ProfileProvider currentProfile={profile} objektLists={objektLists}>
         <HydrationBoundary state={dehydrate(queryClient)}>
           <IndexRenderer
             artists={artists}

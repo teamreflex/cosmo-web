@@ -1,8 +1,18 @@
-import { Selection, useObjektSelection } from "@/hooks/use-objekt-selection";
 import {
+  Selection,
+  SelectionCanceled,
+  SelectionError,
+  SelectionIdle,
+  SelectionPending,
+  SelectionSuccess,
+  useObjektSelection,
+} from "@/hooks/use-objekt-selection";
+import {
+  Ban,
   CheckCircle,
+  CircleDashed,
+  ExternalLink,
   Loader2,
-  LoaderIcon,
   Send,
   TriangleAlert,
   X,
@@ -30,18 +40,37 @@ import { UserSearch } from "../user-search";
 import { useQueryClient } from "@tanstack/react-query";
 import { useWallet } from "@/hooks/use-wallet";
 import { toast } from "../ui/use-toast";
+import { match } from "ts-pattern";
+
+type SendState = "select" | "send";
 
 export default function SendObjekts() {
-  const [open, setOpen] = useState(false);
+  const open = useObjektSelection((ctx) => ctx.open);
+  const setOpen = useObjektSelection((ctx) => ctx.setOpen);
   const selected = useObjektSelection((ctx) => ctx.selected);
   const reset = useObjektSelection((ctx) => ctx.reset);
+  const [state, setState] = useState<SendState>("select");
 
   const text = selected.length === 1 ? "objekt" : "objekts";
+
+  // prevent closing if there are pending transactions
+  function onOpenChange(open: boolean) {
+    const hasPending = selected.some(
+      (selection) => selection.status === "pending"
+    );
+
+    if (hasPending) {
+      return;
+    }
+
+    setOpen(open);
+    setState("select");
+  }
 
   return (
     <Drawer
       open={open}
-      onOpenChange={setOpen}
+      onOpenChange={onOpenChange}
       shouldScaleBackground={false}
       preventScrollRestoration={true}
     >
@@ -74,18 +103,24 @@ export default function SendObjekts() {
         </button>
       </div>
 
-      <Content selected={selected} onClose={() => setOpen(false)} />
+      <Content
+        state={state}
+        selected={selected}
+        setState={setState}
+        onClose={() => setOpen(false)}
+      />
     </Drawer>
   );
 }
 
 type ContentProps = {
   selected: Selection[];
+  state: SendState;
+  setState: (state: SendState) => void;
   onClose: () => void;
 };
 
-function Content({ selected, onClose }: ContentProps) {
-  const [state, setState] = useState<"select" | "send">("select");
+function Content({ selected, state, setState, onClose }: ContentProps) {
   const reset = useObjektSelection((ctx) => ctx.reset);
 
   function onSelectComplete() {
@@ -123,7 +158,11 @@ type SelectRecipientsProps = {
 function SelectRecipients({ selected, onComplete }: SelectRecipientsProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const selectUser = useObjektSelection((ctx) => ctx.selectUser);
-  const isDisabled = selected.some((selection) => selection.recipient === null);
+  const isDisabled =
+    selected.length === 0 ||
+    selected.some((selection) => selection.recipient === null);
+
+  const text = selected.length === 1 ? "Objekt" : "Objekts";
 
   function onSelect(user: CosmoPublicUser) {
     setSearchOpen(false);
@@ -132,36 +171,43 @@ function SelectRecipients({ selected, onComplete }: SelectRecipientsProps) {
 
   return (
     <div className="contents">
-      <DrawerHeader>
-        <DrawerTitle>Send {selected.length} Objekts</DrawerTitle>
+      <DrawerHeader className="pb-2">
+        <DrawerTitle>
+          Send {selected.length} {text}
+        </DrawerTitle>
         <VisuallyHidden>
           <DrawerDescription>Select users and confirm</DrawerDescription>
         </VisuallyHidden>
       </DrawerHeader>
 
-      <div className="flex flex-col gap-2 px-4 py-2">
-        <UserSearch
-          open={searchOpen}
-          onOpenChange={setSearchOpen}
-          onSelect={onSelect}
-          authenticated={true}
-        >
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => setSearchOpen(true)}
+      {selected.length > 1 && (
+        <div className="flex flex-col gap-2 px-4 py-2">
+          <UserSearch
+            open={searchOpen}
+            onOpenChange={setSearchOpen}
+            onSelect={onSelect}
+            authenticated={true}
           >
-            Select Recipient
-          </Button>
-        </UserSearch>
-      </div>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setSearchOpen(true)}
+            >
+              Select Recipient For All
+            </Button>
+          </UserSearch>
+        </div>
+      )}
 
       <Separator orientation="horizontal" className="my-2" />
 
       <ScrollArea className="w-full min-h-28 max-h-96 overflow-y-auto">
         <div className="flex flex-col divide-y divide-accent">
           {selected.map((selection) => (
-            <Row selection={selection} key={selection.objekt.tokenId} />
+            <SelectRecipientRow
+              selection={selection}
+              key={selection.objekt.tokenId}
+            />
           ))}
         </div>
       </ScrollArea>
@@ -182,7 +228,18 @@ type RowProps = {
   selection: Selection;
 };
 
-function Row({ selection }: RowProps) {
+function SelectRecipientRow({ selection }: RowProps) {
+  const [searchOpen, setSearchOpen] = useState(false);
+  const remove = useObjektSelection((ctx) => ctx.remove);
+  const selectUserForToken = useObjektSelection(
+    (ctx) => ctx.selectUserForToken
+  );
+
+  function onUserSelect(user: CosmoPublicUser) {
+    setSearchOpen(false);
+    selectUserForToken(selection.objekt.tokenId, user);
+  }
+
   return (
     <div className="flex flex-row gap-4 py-2 px-4">
       <div className="relative aspect-photocard h-24">
@@ -197,18 +254,44 @@ function Row({ selection }: RowProps) {
         {/* objekt info */}
         <div className="flex flex-row justify-between items-center gap-4">
           <span className="font-semibold">{selection.objekt.collectionId}</span>
-          <span className="text-sm">
-            #{selection.objekt.serial.toString().padStart(5, "0")}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-sm">
+              #{selection.objekt.serial.toString().padStart(5, "0")}
+            </span>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6"
+              onClick={() => remove(selection.objekt.tokenId)}
+              aria-label="Remove selection"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
         {/* user selection */}
         {selection.recipient !== null && (
-          <div className="flex flex-col">
-            <span className="font-semibold">Sending To</span>
+          <div className="flex items-center gap-2">
+            <Send className="size-5" />
             <span className="text-sm">{selection.recipient.nickname}</span>
           </div>
         )}
+
+        <UserSearch
+          open={searchOpen}
+          onOpenChange={setSearchOpen}
+          onSelect={onUserSelect}
+          authenticated={true}
+        >
+          <Button
+            variant="secondary"
+            size="xs"
+            onClick={() => setSearchOpen(true)}
+          >
+            Select Recipient
+          </Button>
+        </UserSearch>
       </div>
     </div>
   );
@@ -248,32 +331,60 @@ function Sending({ selected, onBack, onClose }: SendingProps) {
       address: wallet.account.address,
     });
 
-    const promises = selected.map(async (selection, index) => {
-      return send({
-        to: selection.recipient!.address,
-        tokenId: selection.objekt.tokenId,
-        contract: selection.objekt.contract,
-        nonce: nonce + index,
-        opts: {
-          mutationKey: ["send-objekt", selection.objekt.tokenId],
-        },
-      })
-        .then(() => {
-          update({
-            ...selection,
-            status: "success",
-          });
-          track("send-objekt");
-        })
-        .catch(() => {
-          update({
-            ...selection,
-            status: "error",
-          });
-        });
-    });
+    // loop over each selection and send it
+    for (let i = 0; i < selected.length; i++) {
+      const selection = selected[i] as SelectionIdle;
 
-    await Promise.all(promises);
+      try {
+        // update the selection to pending
+        update({
+          ...selection,
+          status: "pending",
+        } satisfies SelectionPending);
+
+        // send the objekt
+        const hash = await send({
+          to: selection.recipient!.address,
+          tokenId: selection.objekt.tokenId,
+          contract: selection.objekt.contract,
+          nonce: nonce + i,
+          opts: {
+            mutationKey: ["send-objekt", selection.objekt.tokenId],
+          },
+        });
+
+        // update the selection to success
+        update({
+          ...selection,
+          status: "success",
+          hash: hash ?? "",
+        } satisfies SelectionSuccess);
+        track("send-objekt");
+      } catch (error) {
+        // update the selection to error
+        update({
+          ...selection,
+          status: "error",
+        } satisfies SelectionError);
+
+        // update everything else to canceled
+        for (let j = i + 1; j < selected.length; j++) {
+          const toCancel = selected[j] as SelectionIdle;
+          update({
+            ...toCancel,
+            status: "canceled",
+          } satisfies SelectionCanceled);
+        }
+
+        /**
+         * break out of the loop on the first error
+         * this is to prevent any nonces from being missed
+         */
+        break;
+      }
+    }
+
+    // invalidate the collection query to refresh the UI
     setTimeout(() => {
       queryClient.invalidateQueries({
         queryKey: ["collection"],
@@ -338,39 +449,57 @@ function SendingRow({ selection }: RowProps) {
         {/* objekt info */}
         <div className="flex flex-row justify-between items-center gap-4">
           <span className="font-semibold">{selection.objekt.collectionId}</span>
-          <span className="text-sm">
-            #{selection.objekt.serial.toString().padStart(5, "0")}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-sm">
+              #{selection.objekt.serial.toString().padStart(5, "0")}
+            </span>
+          </div>
         </div>
 
         {/* status */}
-        {selection.status === "idle" && (
-          <div className="flex flex-row gap-2 items-center">
-            <LoaderIcon className="h-4 w-4" />
-            <span className="text-sm">Waiting</span>
-          </div>
-        )}
-
-        {selection.status === "pending" && (
-          <div className="flex flex-row gap-2 items-center">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            <span className="text-sm">Sending</span>
-          </div>
-        )}
-
-        {selection.status === "success" && (
-          <div className="flex flex-row gap-2 items-center">
-            <CheckCircle className="h-4 w-4" />
-            <span className="text-sm">Success</span>
-          </div>
-        )}
-
-        {selection.status === "error" && (
-          <div className="flex flex-row gap-2 items-center">
-            <TriangleAlert className="h-4 w-4" />
-            <span className="text-sm">Error</span>
-          </div>
-        )}
+        {match(selection)
+          .with({ status: "idle" }, () => (
+            <div className="flex flex-row gap-2 items-center">
+              <CircleDashed className="h-4 w-4" />
+              <span className="text-sm">Pending</span>
+            </div>
+          ))
+          .with({ status: "pending" }, () => (
+            <div className="flex flex-row gap-2 items-center">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span className="text-sm">Sending</span>
+            </div>
+          ))
+          .with({ status: "success" }, (selection) => (
+            <div className="flex flex-col">
+              <div className="flex flex-row gap-2 items-center">
+                <CheckCircle className="h-4 w-4" />
+                <span className="text-sm">Success</span>
+              </div>
+              <a
+                className="text-sm underline flex items-center gap-1"
+                href={`https://polygonscan.com/tx/${selection.hash}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <span>View on PolygonScan</span>
+                <ExternalLink className="w-4 h-4" />
+              </a>
+            </div>
+          ))
+          .with({ status: "error" }, () => (
+            <div className="flex flex-row gap-2 items-center">
+              <TriangleAlert className="h-4 w-4" />
+              <span className="text-sm">Error</span>
+            </div>
+          ))
+          .with({ status: "canceled" }, () => (
+            <div className="flex flex-row gap-2 items-center">
+              <Ban className="h-4 w-4" />
+              <span className="text-sm">Canceled</span>
+            </div>
+          ))
+          .exhaustive()}
       </div>
     </div>
   );

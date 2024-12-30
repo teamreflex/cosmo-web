@@ -6,7 +6,11 @@ import {
   TooltipContent,
 } from "../ui/tooltip";
 
-export default function AuthFallback() {
+type Props = {
+  message?: string;
+};
+
+export default function AuthFallback({ message }: Props) {
   return (
     <TooltipProvider delayDuration={0}>
       <Tooltip>
@@ -16,7 +20,7 @@ export default function AuthFallback() {
           </div>
         </TooltipTrigger>
         <TooltipContent side="bottom" align="end">
-          Error loading user from COSMO
+          {message ?? "Error loading user from COSMO"}
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

@@ -3,7 +3,7 @@ import { TokenPayload } from "@/lib/universal/auth";
 import { CosmoActivityMyObjektMember } from "@/lib/universal/cosmo/activity/my-objekt";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import Image from "next/image";
-import { CSSProperties, Suspense } from "react";
+import { Suspense } from "react";
 import { cn } from "@/lib/utils";
 import { lazy } from "react";
 import Skeleton from "../skeleton/skeleton";
@@ -63,14 +63,13 @@ type MemberProps = {
 };
 
 function Member({ total, member, isFirst }: MemberProps) {
-  const css = {
-    "--member-color": member.color,
-  } as CSSProperties;
-
   const percentage = Math.floor((member.count / total) * 100);
 
   return (
-    <div className="flex items-center justify-between" style={css}>
+    <div
+      style={{ "--member-color": member.color }}
+      className="flex items-center justify-between"
+    >
       <div className="flex gap-3 items-center">
         {/* image */}
         <div className="relative shrink-0 aspect-square h-8 w-8 rounded-full overflow-hidden ring-offset-2 ring-offset-accent ring-1 ring-(--member-color)">

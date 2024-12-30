@@ -1,5 +1,5 @@
 import { getUser } from "@/app/api/common";
-import { search, user } from "@/lib/server/cosmo/auth";
+import { search } from "@/lib/server/cosmo/auth";
 import { db } from "@/lib/server/db";
 import { profiles } from "@/lib/server/db/schema";
 import { validateExpiry } from "@/lib/server/jwt";
@@ -27,7 +27,16 @@ export async function GET(request: NextRequest) {
   }
 
   // otherwise, use cosmo
-  const results = await search(auth.user.accessToken, query);
+  try {
+    var results = await search(auth.user.accessToken, query);
+  } catch (err) {
+    return Response.json(
+      {
+        error: "COSMO is currently experiencing issues.",
+      },
+      { status: 503 }
+    );
+  }
 
   // take the results and insert any new profiles after the response is sent
   if (results.results.length > 0) {

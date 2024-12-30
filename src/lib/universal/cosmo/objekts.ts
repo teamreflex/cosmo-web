@@ -12,7 +12,7 @@ export type OwnedObjektsResult = {
   hasNext: boolean;
   nextStartAfter?: number;
   total: number;
-  objekts: OwnedObjekt[];
+  objekts: CosmoObjekt[];
 };
 
 export type ObjektBaseFields = {
@@ -63,7 +63,7 @@ interface OwnedObjektPending extends OwnedObjektCommonFields {
   nonTransferableReason?: "mint-pending";
 }
 
-export type OwnedObjekt = OwnedObjektMinted | OwnedObjektPending;
+export type CosmoObjekt = OwnedObjektMinted | OwnedObjektPending;
 
 export type ScannedObjekt = {
   objekt: ObjektBaseFields;
@@ -92,12 +92,12 @@ const bffCollectionGroupSchema = z.object({
   artistName: z.enum(validArtists),
   size: z.coerce.number().optional().default(20),
   page: z.coerce.number().optional().default(1),
-  order: z.enum(validSorts),
+  order: z.enum(validSorts).optional().default("newest"),
   collectionIds: z.string().array().optional(),
   memberIds: z.coerce.number().array().optional(),
   class: z.enum(validClasses).array().optional(),
   season: z.enum(validSeasons).array().optional(),
-  on_offline: z.enum(validOnlineTypes).optional(),
+  on_offline: z.enum(validOnlineTypes).optional().nullable(),
   transferable: z.coerce.boolean().optional(),
   gridable: z.coerce.boolean().optional(),
 });
@@ -112,9 +112,9 @@ export function parseBffCollectionGroupParams(params: URLSearchParams) {
     bffCollectionGroupSchema,
     {
       artistName: params.get("artistName"),
-      size: params.get("size"),
-      page: params.get("page"),
-      order: params.get("order"),
+      size: params.get("size") ?? undefined,
+      page: params.get("page") ?? undefined,
+      order: params.get("order") ?? undefined,
       collectionIds: params.getAll("collectionIds"),
       memberIds: params.getAll("memberIds"),
       class: params.getAll("class"),
@@ -149,6 +149,13 @@ export type BFFCollectionGroupCollection = {
   collectionNo: string;
   class: string;
   member: string;
+  artistMember: {
+    id: number;
+    name: string;
+    alias: string;
+    profileImageUrl: string;
+    order: number;
+  };
   artistName: string;
   thumbnailImage: string;
   frontImage: string;

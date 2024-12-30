@@ -8,7 +8,6 @@ import {
 } from "@/lib/universal/cosmo/news";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { cosmo } from "../http";
-import { randomUUID } from "crypto";
 
 type CosmoNewsResult = {
   sections: CosmoNewsSection[];
@@ -64,7 +63,7 @@ export async function fetchFeedBff(
         artistName,
         page: page.toString(),
         size: "10",
-        tid: randomUUID(),
+        tid: crypto.randomUUID(),
       },
       headers: {
         Authorization: `Bearer ${token}`,

@@ -4,7 +4,6 @@ import { PropsWithChildren } from "react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ReactQueryStreamedHydration } from "@tanstack/react-query-next-experimental";
-import WarningDialog from "./warning-dialog";
 import { preconnect, prefetchDNS } from "react-dom";
 import { getQueryClient } from "@/lib/query-client";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
@@ -29,7 +28,6 @@ export default function ClientProviders({ children }: Props) {
           <MediaQueryProvider>{children}</MediaQueryProvider>
         </ReactQueryStreamedHydration>
 
-        <WarningDialog />
         <ReactQueryDevtools buttonPosition="top-right" />
       </QueryClientProvider>
     </NuqsAdapter>

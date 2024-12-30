@@ -8,9 +8,9 @@ export default function ProfileLayoutLoading() {
         <div className="flex flex-row gap-4 items-center">
           <Skeleton className="h-20 w-20 rounded-full aspect-square" />
 
-          <div className="flex flex-col gap-1 justify-between w-full">
+          <div className="flex flex-col justify-between w-full">
             <div className="flex gap-2 items-center justify-between">
-              <Skeleton className="rounded-full w-20 h-8" />
+              <Skeleton className="rounded-full w-24 h-8" />
             </div>
 
             <div className="flex items-center justify-between gap-2">
@@ -18,14 +18,16 @@ export default function ProfileLayoutLoading() {
                 <Skeleton className="h-[26px] w-16 rounded" />
                 <Skeleton className="h-[26px] w-16 rounded" />
               </div>
-              <div id="objekt-total" className="h-10" />
+              <span className="h-10 flex items-center last:ml-auto">
+                <div id="objekt-total" />
+              </span>
             </div>
           </div>
         </div>
       </div>
 
       {/* mobile buttons */}
-      <div className="button-container flex flex-wrap gap-2 justify-center lg:justify-normal">
+      <div className="flex flex-wrap gap-2 justify-center lg:justify-normal sm:absolute sm:top-2 sm:right-4">
         {/* copy address */}
         <Skeleton className="rounded-full w-10 h-10 lg:w-[122px] lg:h-8" />
         {/* trades */}
