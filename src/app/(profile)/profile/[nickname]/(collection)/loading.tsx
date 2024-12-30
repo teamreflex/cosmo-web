@@ -3,7 +3,7 @@ import Skeleton from "@/components/skeleton/skeleton";
 
 export default function UserCollectionLoading() {
   return (
-    <div className="flex flex-col py-1">
+    <div className="flex flex-col">
       {/* FiltersContainer */}
       <div className="flex flex-col gap-2 sm:pb-2 pb-1">
         <div className="sm:flex gap-2 items-center flex-wrap justify-center hidden">

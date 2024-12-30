@@ -20,7 +20,7 @@ type RamperDataError = {
   error: string;
 };
 
-export type RamperError = {
+type RamperError = {
   success: false;
   data: RamperDataError;
 };

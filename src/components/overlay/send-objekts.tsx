@@ -3,6 +3,7 @@ import {
   SelectionCanceled,
   SelectionError,
   SelectionIdle,
+  SelectionPending,
   SelectionSuccess,
   useObjektSelection,
 } from "@/hooks/use-objekt-selection";
@@ -12,7 +13,6 @@ import {
   CircleDashed,
   ExternalLink,
   Loader2,
-  LoaderIcon,
   Send,
   TriangleAlert,
   X,
@@ -42,18 +42,35 @@ import { useWallet } from "@/hooks/use-wallet";
 import { toast } from "../ui/use-toast";
 import { match } from "ts-pattern";
 
+type SendState = "select" | "send";
+
 export default function SendObjekts() {
   const open = useObjektSelection((ctx) => ctx.open);
   const setOpen = useObjektSelection((ctx) => ctx.setOpen);
   const selected = useObjektSelection((ctx) => ctx.selected);
   const reset = useObjektSelection((ctx) => ctx.reset);
+  const [state, setState] = useState<SendState>("select");
 
   const text = selected.length === 1 ? "objekt" : "objekts";
+
+  // prevent closing if there are pending transactions
+  function onOpenChange(open: boolean) {
+    const hasPending = selected.some(
+      (selection) => selection.status === "pending"
+    );
+
+    if (hasPending) {
+      return;
+    }
+
+    setOpen(open);
+    setState("select");
+  }
 
   return (
     <Drawer
       open={open}
-      onOpenChange={setOpen}
+      onOpenChange={onOpenChange}
       shouldScaleBackground={false}
       preventScrollRestoration={true}
     >
@@ -86,18 +103,24 @@ export default function SendObjekts() {
         </button>
       </div>
 
-      <Content selected={selected} onClose={() => setOpen(false)} />
+      <Content
+        state={state}
+        selected={selected}
+        setState={setState}
+        onClose={() => setOpen(false)}
+      />
     </Drawer>
   );
 }
 
 type ContentProps = {
   selected: Selection[];
+  state: SendState;
+  setState: (state: SendState) => void;
   onClose: () => void;
 };
 
-function Content({ selected, onClose }: ContentProps) {
-  const [state, setState] = useState<"select" | "send">("select");
+function Content({ selected, state, setState, onClose }: ContentProps) {
   const reset = useObjektSelection((ctx) => ctx.reset);
 
   function onSelectComplete() {
@@ -139,6 +162,8 @@ function SelectRecipients({ selected, onComplete }: SelectRecipientsProps) {
     selected.length === 0 ||
     selected.some((selection) => selection.recipient === null);
 
+  const text = selected.length === 1 ? "Objekt" : "Objekts";
+
   function onSelect(user: CosmoPublicUser) {
     setSearchOpen(false);
     selectUser(user);
@@ -146,29 +171,33 @@ function SelectRecipients({ selected, onComplete }: SelectRecipientsProps) {
 
   return (
     <div className="contents">
-      <DrawerHeader>
-        <DrawerTitle>Send {selected.length} Objekts</DrawerTitle>
+      <DrawerHeader className="pb-2">
+        <DrawerTitle>
+          Send {selected.length} {text}
+        </DrawerTitle>
         <VisuallyHidden>
           <DrawerDescription>Select users and confirm</DrawerDescription>
         </VisuallyHidden>
       </DrawerHeader>
 
-      <div className="flex flex-col gap-2 px-4 py-2">
-        <UserSearch
-          open={searchOpen}
-          onOpenChange={setSearchOpen}
-          onSelect={onSelect}
-          authenticated={true}
-        >
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => setSearchOpen(true)}
+      {selected.length > 1 && (
+        <div className="flex flex-col gap-2 px-4 py-2">
+          <UserSearch
+            open={searchOpen}
+            onOpenChange={setSearchOpen}
+            onSelect={onSelect}
+            authenticated={true}
           >
-            Select Recipient
-          </Button>
-        </UserSearch>
-      </div>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setSearchOpen(true)}
+            >
+              Select Recipient For All
+            </Button>
+          </UserSearch>
+        </div>
+      )}
 
       <Separator orientation="horizontal" className="my-2" />
 
@@ -200,7 +229,16 @@ type RowProps = {
 };
 
 function SelectRecipientRow({ selection }: RowProps) {
+  const [searchOpen, setSearchOpen] = useState(false);
   const remove = useObjektSelection((ctx) => ctx.remove);
+  const selectUserForToken = useObjektSelection(
+    (ctx) => ctx.selectUserForToken
+  );
+
+  function onUserSelect(user: CosmoPublicUser) {
+    setSearchOpen(false);
+    selectUserForToken(selection.objekt.tokenId, user);
+  }
 
   return (
     <div className="flex flex-row gap-4 py-2 px-4">
@@ -234,11 +272,26 @@ function SelectRecipientRow({ selection }: RowProps) {
 
         {/* user selection */}
         {selection.recipient !== null && (
-          <div className="flex flex-col">
-            <span className="font-semibold">Sending To</span>
+          <div className="flex items-center gap-2">
+            <Send className="size-5" />
             <span className="text-sm">{selection.recipient.nickname}</span>
           </div>
         )}
+
+        <UserSearch
+          open={searchOpen}
+          onOpenChange={setSearchOpen}
+          onSelect={onUserSelect}
+          authenticated={true}
+        >
+          <Button
+            variant="secondary"
+            size="xs"
+            onClick={() => setSearchOpen(true)}
+          >
+            Select Recipient
+          </Button>
+        </UserSearch>
       </div>
     </div>
   );
@@ -283,6 +336,13 @@ function Sending({ selected, onBack, onClose }: SendingProps) {
       const selection = selected[i] as SelectionIdle;
 
       try {
+        // update the selection to pending
+        update({
+          ...selection,
+          status: "pending",
+        } satisfies SelectionPending);
+
+        // send the objekt
         const hash = await send({
           to: selection.recipient!.address,
           tokenId: selection.objekt.tokenId,

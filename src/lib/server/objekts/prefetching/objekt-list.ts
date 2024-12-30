@@ -117,7 +117,7 @@ export async function fetchObjektList({
   return {
     objektList,
     results: {
-      total: result[0]?.count ?? 0,
+      total: Number(result[0]?.count ?? 0),
       hasNext,
       nextStartAfter,
       objekts: collectionList,

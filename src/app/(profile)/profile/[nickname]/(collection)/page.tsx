@@ -7,15 +7,14 @@ import {
   getArtistsWithMembers,
 } from "@/app/data-fetching";
 import ProfileRenderer from "@/components/profile/profile-renderer";
-import { Shield } from "lucide-react";
+import { CircleHelp, Shield } from "lucide-react";
 import { isAddressEqual } from "@/lib/utils";
-import { Suspense } from "react";
 import { ProfileProvider } from "@/hooks/use-profile";
-import RewardsRenderer from "@/components/rewards/rewards-renderer";
-import { ObjektRewardProvider } from "@/hooks/use-objekt-rewards";
-import { ErrorBoundary } from "react-error-boundary";
 import { fetchPins } from "@/lib/server/objekts/pins";
 import { UserStateProvider } from "@/hooks/use-user-state";
+import Portal from "@/components/portal";
+import RewardsAvailable from "@/components/rewards/rewards-available";
+import { CosmoArtistProvider } from "@/hooks/use-cosmo-artist";
 
 type Props = {
   params: Promise<{
@@ -33,18 +32,20 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 }
 
 export default async function UserCollectionPage(props: Props) {
-  const params = await props.params;
-  const user = await decodeUser();
-  const selectedArtist = await getSelectedArtist();
-
-  const isOwnProfile =
-    user !== undefined && isAddressEqual(user.nickname, params.nickname);
+  const [params, user, selectedArtist] = await Promise.all([
+    props.params,
+    decodeUser(),
+    getSelectedArtist(),
+  ]);
 
   const [artists, currentUser, targetUser] = await Promise.all([
     getArtistsWithMembers(),
     user ? getProfile(user.profileId) : undefined,
     getUserByIdentifier(params.nickname),
   ]);
+
+  const isOwnProfile =
+    user !== undefined && isAddressEqual(user.nickname, params.nickname);
 
   if (targetUser.profile.privacy.objekts && !isOwnProfile) {
     return <Private nickname={targetUser.profile.nickname} />;
@@ -53,23 +54,13 @@ export default async function UserCollectionPage(props: Props) {
   const pins = await fetchPins(targetUser.pins);
 
   return (
-    <ProfileProvider
-      currentProfile={currentUser}
-      targetProfile={targetUser.profile}
-      objektLists={targetUser.objektLists}
-      lockedObjekts={targetUser.lockedObjekts}
-      pins={pins}
-    >
-      <ObjektRewardProvider
-        rewardsDialog={
-          isOwnProfile && (
-            <ErrorBoundary fallback={null}>
-              <Suspense>
-                <RewardsRenderer user={user} artist={selectedArtist} />
-              </Suspense>
-            </ErrorBoundary>
-          )
-        }
+    <CosmoArtistProvider artists={artists}>
+      <ProfileProvider
+        currentProfile={currentUser}
+        targetProfile={targetUser.profile}
+        objektLists={targetUser.objektLists}
+        lockedObjekts={targetUser.lockedObjekts}
+        pins={pins}
       >
         <section className="flex flex-col">
           <UserStateProvider artist={selectedArtist} token={user}>
@@ -78,10 +69,17 @@ export default async function UserCollectionPage(props: Props) {
               profile={targetUser.profile}
               user={currentUser}
             />
+
+            {/* needs token access */}
+            {isOwnProfile === true && (
+              <Portal to="#overlay">
+                <RewardsAvailable />
+              </Portal>
+            )}
           </UserStateProvider>
         </section>
-      </ObjektRewardProvider>
-    </ProfileProvider>
+      </ProfileProvider>
+    </CosmoArtistProvider>
   );
 }
 

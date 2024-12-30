@@ -1,14 +1,15 @@
 "use client";
 
-import { IndexedObjekt, ObjektList } from "@/lib/universal/objekts";
+import { ObjektList } from "@/lib/universal/objekts";
 import { ListX, Loader2 } from "lucide-react";
 import { useTransition } from "react";
 import { removeObjektFromList } from "./actions";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "../ui/use-toast";
+import { Objekt } from "@/lib/universal/objekt-conversion";
 
 type Props = {
-  collection: IndexedObjekt;
+  collection: Objekt.Collection;
   objektList: ObjektList;
 };
 

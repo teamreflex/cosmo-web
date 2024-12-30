@@ -1,4 +1,4 @@
-import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
+import { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
 import { indexer } from "../db/indexer";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { Collection, Objekt } from "../db/indexer/schema";
@@ -11,7 +11,7 @@ interface ObjektWithCollection extends Objekt {
 /**
  * Fetch all pins for the given token ids.
  */
-export async function fetchPins(pins: Pin[]): Promise<OwnedObjekt[]> {
+export async function fetchPins(pins: Pin[]): Promise<CosmoObjekt[]> {
   if (pins.length === 0) return [];
 
   try {
@@ -26,7 +26,6 @@ export async function fetchPins(pins: Pin[]): Promise<OwnedObjekt[]> {
       },
     });
   } catch (err) {
-    console.error("Error fetching pins:", err);
     return [];
   }
 
@@ -43,7 +42,7 @@ export async function fetchPins(pins: Pin[]): Promise<OwnedObjekt[]> {
 /**
  * Normalize an objekt with collection into an owned objekt.
  */
-export function normalizePin(objekt: ObjektWithCollection): OwnedObjekt {
+export function normalizePin(objekt: ObjektWithCollection): CosmoObjekt {
   return {
     ...objekt.collection,
     status: "minted",

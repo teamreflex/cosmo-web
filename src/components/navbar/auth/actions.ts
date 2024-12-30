@@ -24,7 +24,7 @@ export const logout = async () => {
   }
 
   await deleteCookie("token");
-  redirect("/");
+  redirect("/objekts");
 };
 
 /**
@@ -53,22 +53,6 @@ export const updateSelectedArtist = async (artist: string) =>
       await setCookie({ key: "artist", value: data.artist });
     },
   });
-
-/**
- * Sets the selected artist for a guest user.
- */
-export const setArtistCookie = async (artist: string) => {
-  const schema = z.object({
-    artist: z.enum(validArtists),
-  });
-
-  const result = schema.safeParse({ artist });
-  if (result.success) {
-    await setCookie({ key: "artist", value: artist });
-  }
-
-  return result.success;
-};
 
 /**
  * Updates privacy settings.

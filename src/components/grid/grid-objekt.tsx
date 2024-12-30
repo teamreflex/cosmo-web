@@ -2,8 +2,8 @@ import { useElementSize } from "@/hooks/use-element-size";
 import { PropsWithClassName, cn } from "@/lib/utils";
 import { Check } from "lucide-react";
 import Image from "next/image";
-import { CSSProperties, useState } from "react";
-import { replaceUrlSize } from "../objekt/objekt-util";
+import { useState } from "react";
+import { replaceUrlSize } from "../objekt/common";
 
 type Props = PropsWithClassName<{
   image: string;
@@ -23,22 +23,18 @@ export default function GridObjekt({
 }: Props) {
   const [isLoaded, setIsLoaded] = useState(false);
 
-  const css = {
-    "--objekt-text-color": textColor,
-  } as CSSProperties;
-
   const scaledImage = replaceUrlSize(image, "2x");
 
   return (
     <div
+      style={{ "--objekt-text-color": textColor }}
       className={cn(
         "relative aspect-photocard w-full flex justify-center items-center bg-accent border-4 border-background rounded-2xl transition-colors",
-        `text-[var(--objekt-text-color)]`,
+        `text-(--objekt-text-color)`,
         selected && "border-cosmo",
         !isLoaded && "animate-pulse",
         className
       )}
-      style={css}
     >
       <Image
         onLoad={() => setIsLoaded(true)}
@@ -75,7 +71,7 @@ function GridObjektNumber({
   return (
     <div
       ref={ref}
-      className="absolute h-full items-center w-[11%] flex gap-2 justify-center top-0 right-0 [writing-mode:vertical-lr] font-semibold text-[var(--objekt-text-color)]"
+      className="absolute h-full items-center w-[11%] flex gap-2 justify-center top-0 right-0 [writing-mode:vertical-lr] font-semibold text-(--objekt-text-color)"
       style={{ lineHeight: `${width}px`, fontSize: `${width * 0.55}px` }}
     >
       <span>{collectionNo}</span>

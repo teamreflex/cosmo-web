@@ -1,24 +1,26 @@
 "use client";
 
-import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
-import { pinObjekt, unpinObjekt } from "../collection/actions";
+import { pinObjekt, unpinObjekt } from "@/components/collection/actions";
 import { Loader2, Pin, PinOff } from "lucide-react";
 import { memo, useTransition } from "react";
 import { track } from "@/lib/utils";
 import { useProfileContext } from "@/hooks/use-profile";
-import { toast } from "../ui/use-toast";
+import { toast } from "@/components/ui/use-toast";
 
 type Props = {
-  objekt: OwnedObjekt;
+  collectionId: string;
+  tokenId: number;
   isPinned: boolean;
 };
 
-export default memo(function PinObjekt({ objekt, isPinned }: Props) {
+export default memo(function PinObjekt({
+  collectionId,
+  tokenId,
+  isPinned,
+}: Props) {
   const addPin = useProfileContext((ctx) => ctx.addPin);
   const removePin = useProfileContext((ctx) => ctx.removePin);
   const [isPending, startTransition] = useTransition();
-
-  const tokenId = parseInt(objekt.tokenId);
 
   function toggle() {
     startTransition(async () => {
@@ -29,7 +31,7 @@ export default memo(function PinObjekt({ objekt, isPinned }: Props) {
           track("unpin-objekt");
           removePin(tokenId);
           toast({
-            description: `Unpinned ${objekt.collectionId}`,
+            description: `Unpinned ${collectionId}`,
           });
         }
       } else {
@@ -39,7 +41,7 @@ export default memo(function PinObjekt({ objekt, isPinned }: Props) {
           track("pin-objekt");
           addPin(result.data);
           toast({
-            description: `Pinned ${objekt.collectionId}`,
+            description: `Pinned ${collectionId}`,
           });
         }
       }
@@ -50,7 +52,7 @@ export default memo(function PinObjekt({ objekt, isPinned }: Props) {
     <button
       className="hover:cursor-pointer hover:scale-110 transition-all flex items-center"
       disabled={isPending}
-      aria-label={`${isPinned ? "unpin" : "pin"} ${objekt.collectionId}`}
+      aria-label={`${isPinned ? "unpin" : "pin"} ${collectionId}`}
       onClick={toggle}
     >
       {isPending ? (

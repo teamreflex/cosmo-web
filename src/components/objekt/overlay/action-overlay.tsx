@@ -10,27 +10,27 @@ import {
   Pin,
   Smartphone,
 } from "lucide-react";
-import { memo } from "react";
 import LockObjekt from "./lock-button";
 import OverlayStatus from "./overlay-status";
-import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
 import { useProfileContext } from "@/hooks/use-profile";
-import AddToList from "../lists/add-to-list";
-import { getObjektSlug } from "./objekt-util";
+import AddToList from "@/components/lists/add-to-list";
 import useOverlayHover from "@/hooks/use-overlay-hover";
-import PinObjekt from "./pin-button";
+import PinObjekt from "@/components/objekt/overlay/pin-button";
 import SendObjekt from "./send-button";
+import { Objekt } from "@/lib/universal/objekt-conversion";
 
 type Props = {
-  objekt: OwnedObjekt;
+  collection: Objekt.Collection;
+  token: Objekt.Token;
   authenticated: boolean;
   isLocked: boolean;
   isPinned: boolean;
   isPin: boolean;
 };
 
-export default memo(function ActionOverlay({
-  objekt,
+export default function ActionOverlay({
+  collection,
+  token,
   authenticated,
   isLocked,
   isPinned,
@@ -39,21 +39,23 @@ export default memo(function ActionOverlay({
   const objektLists = useProfileContext((ctx) => ctx.objektLists);
   const [hoverState, createHoverProps] = useOverlayHover();
 
-  const slug = getObjektSlug(objekt);
+  // grouping uses nonTransferableReason = "challenge-reward" for gridded objekts
+  const usedForGrid =
+    token.usedForGrid || token.nonTransferableReason === "used-for-grid";
 
   const showActions =
-    !objekt.transferable ||
-    objekt.usedForGrid ||
+    !token.transferable ||
+    usedForGrid ||
     isLocked ||
     isPinned ||
-    (objekt.transferable && authenticated);
+    (token.transferable && authenticated);
 
   return (
     <div
       data-hovering={hoverState !== undefined}
       className={cn(
         "absolute top-0 left-0 p-1 sm:p-2 rounded-br-lg sm:rounded-br-xl items-center group h-5 sm:h-9 transition-all overflow-hidden",
-        "text-[var(--objekt-text-color)] bg-[var(--objekt-background-color)]",
+        "text-(--objekt-text-color) bg-(--objekt-background-color)",
         "grid grid-flow-col grid-cols-[1fr_min-content]",
         showActions === false && "hidden"
       )}
@@ -67,13 +69,17 @@ export default memo(function ActionOverlay({
         )}
 
         {/* locked (viewing other user) */}
-        {!objekt.usedForGrid && !isPin && isLocked && !authenticated && (
+        {!usedForGrid && !isPin && isLocked && !authenticated && (
           <Lock className="h-3 w-3 sm:h-5 sm:w-5 shrink-0" />
         )}
 
         {authenticated && (
           <div {...createHoverProps("pin")}>
-            <PinObjekt objekt={objekt} isPinned={isPinned} />
+            <PinObjekt
+              collectionId={collection.collectionId}
+              tokenId={token.tokenId}
+              isPinned={isPinned}
+            />
           </div>
         )}
 
@@ -81,24 +87,24 @@ export default memo(function ActionOverlay({
         {authenticated && !isPin && (
           <div {...createHoverProps("list")}>
             <AddToList
-              collectionId={objekt.collectionId}
-              collectionSlug={slug}
+              collectionId={collection.collectionId}
+              collectionSlug={collection.slug}
               lists={objektLists}
             />
           </div>
         )}
 
         {/* lock/unlock (authenticated) */}
-        {objekt.transferable && authenticated && !isPin && (
+        {token.transferable && authenticated && !isPin && (
           <div {...createHoverProps("lock")}>
-            <LockObjekt objekt={objekt} isLocked={isLocked} />
+            <LockObjekt tokenId={token.tokenId} isLocked={isLocked} />
           </div>
         )}
 
         {/* send (authenticated) */}
-        {objekt.transferable && authenticated && !isPin && !isLocked && (
+        {token.transferable && authenticated && !isPin && !isLocked && (
           <div {...createHoverProps("send")}>
-            <SendObjekt objekt={objekt} />
+            <SendObjekt collection={collection} token={token} />
           </div>
         )}
 
@@ -107,7 +113,7 @@ export default memo(function ActionOverlay({
         {!isPin && (
           <div className="contents">
             {/* generic non-transferable */}
-            {objekt.nonTransferableReason === "not-transferable" && (
+            {token.nonTransferableReason === "not-transferable" && (
               <MailX
                 {...createHoverProps("not-transferable")}
                 className="h-3 w-3 sm:h-5 sm:w-5 shrink-0"
@@ -115,7 +121,7 @@ export default memo(function ActionOverlay({
             )}
 
             {/* mint pending */}
-            {objekt.nonTransferableReason === "mint-pending" && (
+            {token.nonTransferableReason === "mint-pending" && (
               <DownloadCloud
                 {...createHoverProps("mint-pending")}
                 className="h-3 w-3 sm:h-5 sm:w-5 shrink-0"
@@ -123,15 +129,16 @@ export default memo(function ActionOverlay({
             )}
 
             {/* event reward */}
-            {objekt.nonTransferableReason === "challenge-reward" && (
-              <PartyPopper
-                {...createHoverProps("challenge-reward")}
-                className="h-3 w-3 sm:h-5 sm:w-5 shrink-0"
-              />
-            )}
+            {!usedForGrid &&
+              token.nonTransferableReason === "challenge-reward" && (
+                <PartyPopper
+                  {...createHoverProps("challenge-reward")}
+                  className="h-3 w-3 sm:h-5 sm:w-5 shrink-0"
+                />
+              )}
 
             {/* welcome reward */}
-            {objekt.nonTransferableReason === "welcome-objekt" && (
+            {token.nonTransferableReason === "welcome-objekt" && (
               <MailX
                 {...createHoverProps("welcome-objekt")}
                 className="h-3 w-3 sm:h-5 sm:w-5 shrink-0"
@@ -139,7 +146,7 @@ export default memo(function ActionOverlay({
             )}
 
             {/* used for grid */}
-            {objekt.nonTransferableReason === "used-for-grid" && (
+            {usedForGrid && (
               <Grid2X2
                 {...createHoverProps("used-for-grid")}
                 className="h-3 w-3 sm:h-5 sm:w-5 shrink-0"
@@ -147,7 +154,7 @@ export default memo(function ActionOverlay({
             )}
 
             {/* used in lenticular, for some reason the nonTransferableReason isn't used here */}
-            {objekt.lenticularPairTokenId !== null && (
+            {token.lenticularPairTokenId !== 0 && (
               <Smartphone
                 {...createHoverProps("lenticular-objekt")}
                 className="h-3 w-3 sm:h-5 sm:w-5 shrink-0"
@@ -175,25 +182,24 @@ export default memo(function ActionOverlay({
             {hoverState === "pin" && (
               <OverlayStatus>{isPinned ? "Unpin" : "Pin"}</OverlayStatus>
             )}
-            {objekt.nonTransferableReason === "not-transferable" && (
+            {token.nonTransferableReason === "not-transferable" && (
               <OverlayStatus>Not transferable</OverlayStatus>
             )}
-            {objekt.nonTransferableReason === "mint-pending" && (
+            {token.nonTransferableReason === "mint-pending" && (
               <OverlayStatus>Mint pending</OverlayStatus>
             )}
-            {objekt.nonTransferableReason === "challenge-reward" && (
-              <OverlayStatus>Event reward</OverlayStatus>
-            )}
-            {objekt.nonTransferableReason === "welcome-objekt" && (
+            {!usedForGrid &&
+              token.nonTransferableReason === "challenge-reward" && (
+                <OverlayStatus>Event reward</OverlayStatus>
+              )}
+            {token.nonTransferableReason === "welcome-objekt" && (
               <OverlayStatus>Welcome reward</OverlayStatus>
             )}
-            {objekt.nonTransferableReason === "used-for-grid" && (
-              <OverlayStatus>Used for grid</OverlayStatus>
-            )}
-            {objekt.lenticularPairTokenId !== null && (
+            {usedForGrid && <OverlayStatus>Used for grid</OverlayStatus>}
+            {token.lenticularPairTokenId !== 0 && (
               <OverlayStatus>Lenticular pair</OverlayStatus>
             )}
-            {hoverState === undefined && !objekt.nonTransferableReason && (
+            {hoverState === undefined && !token.nonTransferableReason && (
               <OverlayStatus>{isLocked ? "Locked" : "Unlocked"}</OverlayStatus>
             )}
           </div>
@@ -201,4 +207,4 @@ export default memo(function ActionOverlay({
       </div>
     </div>
   );
-});
+}

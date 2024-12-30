@@ -1,9 +1,9 @@
 import { ObjektProgression } from "@/lib/universal/progress";
 import Image from "next/image";
-import ObjektSidebar from "../objekt/objekt-sidebar";
 import { cn } from "@/lib/utils";
-import { CSSProperties, useState } from "react";
-import { replaceUrlSize } from "../objekt/objekt-util";
+import { useState } from "react";
+import { replaceUrlSize } from "../objekt/common";
+import { ObjektSidebar } from "../objekt/common";
 
 type Props = {
   objekt: ObjektProgression;
@@ -12,15 +12,11 @@ type Props = {
 export default function ProgressObjekt({ objekt }: Props) {
   const [isLoaded, setIsLoaded] = useState(false);
 
-  const css = {
-    "--objekt-text-color": objekt.textColor,
-  } as CSSProperties;
-
   const image = replaceUrlSize(objekt.frontImage, "thumbnail");
 
   return (
     <div
-      style={css}
+      style={{ "--objekt-text-color": objekt.textColor }}
       className={cn(
         "relative touch-manipulation",
         objekt.obtained === false && "opacity-50"

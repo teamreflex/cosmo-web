@@ -4,7 +4,7 @@ import {
   ReactNode,
   createContext,
   useContext,
-  useEffect,
+  useLayoutEffect,
   useState,
 } from "react";
 
@@ -23,7 +23,7 @@ const MOBILE_BREAKPOINT = 768;
 export function MediaQueryProvider({ children }: ProviderProps) {
   const [isMobile, setIsMobile] = useState<boolean>();
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
     const onChange = () => {
       setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);

@@ -1,75 +1,49 @@
-"use client";
-
-import { BaseObjektProps } from "../objekt/objekt";
-import {
-  CSSProperties,
-  ReactElement,
-  Suspense,
-  cloneElement,
-  useCallback,
-  useMemo,
-} from "react";
+import { ReactElement, Suspense, useCallback } from "react";
 import { HeartCrack, RefreshCcw } from "lucide-react";
-import {
-  QueryErrorResetBoundary,
-  QueryFunction,
-  QueryKey,
-  useSuspenseInfiniteQuery,
-} from "@tanstack/react-query";
+import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import MemberFilter from "../collection/member-filter";
-import Portal from "../portal";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
-import { CollectionDataSource } from "@/hooks/use-filters";
-import { InfiniteQueryNext } from "../infinite-query-pending";
-import { ValidObjekt } from "@/lib/universal/objekts";
 import { GRID_COLUMNS } from "@/lib/utils";
 import { Button } from "../ui/button";
-import { useObjektRewards } from "@/hooks/use-objekt-rewards";
 import Skeleton from "../skeleton/skeleton";
 import { ErrorBoundary } from "react-error-boundary";
-import { useProfileContext } from "@/hooks/use-profile";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
+import { ObjektResponseOptions } from "@/hooks/use-objekt-response";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import VirtualizedGrid from "./virtualized-grid";
 
-export type ObjektResponse<TObjektType extends ValidObjekt> = {
-  hasNext: boolean;
-  total: number;
-  objekts: TObjektType[];
-  nextStartAfter?: number | undefined;
+type RenderProps<T> = {
+  id: string | number;
+  item: T;
+  isPin: boolean;
 };
 
-type Props<TObjektType extends ValidObjekt> = {
-  children: (
-    props: BaseObjektProps<TObjektType>,
-    priority: boolean,
-    isPin: boolean
-  ) => ReactElement;
+export type Props<Response, Item> = {
+  children: (props: RenderProps<Item>) => ReactElement | null;
   artists: CosmoArtistWithMembersBFF[];
-  queryKey: QueryKey;
-  queryFunction: QueryFunction<
-    ObjektResponse<TObjektType>,
-    QueryKey,
-    number | undefined
-  >;
-  getObjektId: (objekt: TObjektType) => string;
-  getObjektDisplay?: (objekt: TObjektType) => boolean;
+  options: ObjektResponseOptions<Response, Item>;
+  getObjektId: (objekt: Item) => string;
+  shouldRender: (objekt: Item) => boolean;
   gridColumns?: number;
-  dataSource?: CollectionDataSource;
   hidePins?: boolean;
+  authenticated: boolean;
 };
 
-export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
+export default function FilteredObjektDisplay<Response, Item>({
   children,
   artists,
-  queryKey,
-  queryFunction,
+  options,
   getObjektId,
-  getObjektDisplay = () => true,
+  shouldRender,
   gridColumns = GRID_COLUMNS,
-  dataSource = "blockchain",
   hidePins = true,
-}: Props<TObjektType>) {
+  authenticated,
+}: Props<Response, Item>) {
   const [filters, setFilters] = useCosmoFilters();
+  const isDesktop = useMediaQuery();
+
+  const rowSize = isDesktop ? gridColumns : 3;
 
   const setActiveMember = useCallback(
     (member: string) => {
@@ -91,10 +65,6 @@ export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
     [setFilters]
   );
 
-  const css = {
-    "--grid-columns": gridColumns,
-  } as CSSProperties;
-
   return (
     <div className="flex flex-col">
       <MemberFilter
@@ -104,145 +74,58 @@ export default function FilteredObjektDisplay<TObjektType extends ValidObjekt>({
         updateMember={setActiveMember}
       />
 
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col items-center w-full">
         <QueryErrorResetBoundary>
           {({ reset }) => (
-            <div
-              style={css}
-              className="relative grid grid-cols-3 gap-4 py-2 w-full md:grid-cols-[repeat(var(--grid-columns),_minmax(0,_1fr))]"
+            <ErrorBoundary
+              onReset={reset}
+              fallbackRender={({ resetErrorBoundary }) => (
+                <div className="flex flex-col gap-2 items-center w-full py-12">
+                  <div className="flex items-center gap-2">
+                    <HeartCrack className="h-6 w-6" />
+                    <p className="text-sm font-semibold">
+                      Error loading objekts
+                    </p>
+                  </div>
+                  <Button variant="outline" onClick={resetErrorBoundary}>
+                    <RefreshCcw className="mr-2" /> Retry
+                  </Button>
+                </div>
+              )}
             >
-              <ErrorBoundary
+              <Suspense
                 fallback={
-                  <div className="col-span-full flex flex-col gap-2 items-center py-12">
-                    <div className="flex items-center gap-2">
-                      <HeartCrack className="h-6 w-6" />
-                      <p className="text-sm font-semibold">
-                        Error loading objekts
-                      </p>
-                    </div>
-                    <Button variant="outline" onClick={reset}>
-                      <RefreshCcw className="mr-2" /> Retry
-                    </Button>
+                  <div
+                    style={{ "--grid-columns": rowSize }}
+                    className="relative py-2 grid gap-4 w-full grid-cols-3 md:grid-cols-[repeat(var(--grid-columns),_minmax(0,_1fr))]"
+                  >
+                    <div className="z-20 absolute top-0 w-full h-full bg-linear-to-b from-transparent to-75% to-background" />
+                    {Array.from({ length: rowSize * 3 }).map((_, i) => (
+                      <Skeleton
+                        key={i}
+                        className="z-10 w-full aspect-photocard rounded-lg md:rounded-xl lg:rounded-2xl"
+                      />
+                    ))}
                   </div>
                 }
               >
-                <Suspense
-                  fallback={
-                    <div className="contents">
-                      <div className="z-20 absolute top-0 w-full h-full bg-linear-to-b from-transparent to-75% to-background" />
-                      {Array.from({ length: gridColumns * 3 }).map((_, i) => (
-                        <Skeleton
-                          key={i}
-                          className="z-10 w-full aspect-photocard rounded-lg md:rounded-xl lg:rounded-2xl"
-                        />
-                      ))}
-                    </div>
-                  }
+                <VirtualizedGrid
+                  options={options}
+                  getObjektId={getObjektId}
+                  shouldRender={shouldRender}
+                  authenticated={authenticated}
+                  hidePins={hidePins}
+                  rowSize={rowSize}
                 >
-                  <ObjektGrid
-                    queryFunction={queryFunction}
-                    queryKey={queryKey}
-                    getObjektId={getObjektId}
-                    getObjektDisplay={getObjektDisplay}
-                    gridColumns={gridColumns}
-                    dataSource={dataSource}
-                    hidePins={hidePins}
-                  >
-                    {children}
-                  </ObjektGrid>
-                </Suspense>
-              </ErrorBoundary>
-            </div>
+                  {children}
+                </VirtualizedGrid>
+              </Suspense>
+            </ErrorBoundary>
           )}
         </QueryErrorResetBoundary>
 
         <div id="pagination" />
       </div>
-    </div>
-  );
-}
-
-interface ObjektGridProps<TObjektType extends ValidObjekt>
-  extends Omit<Props<TObjektType>, "artists" | "setFilters"> {
-  hidePins: boolean;
-}
-
-function ObjektGrid<TObjektType extends ValidObjekt>({
-  children,
-  queryKey,
-  queryFunction,
-  getObjektId,
-  getObjektDisplay = () => true,
-  gridColumns = GRID_COLUMNS,
-  dataSource = "blockchain",
-  hidePins,
-}: ObjektGridProps<TObjektType>) {
-  const [filters] = useCosmoFilters();
-  const pins = useProfileContext((ctx) => ctx.pins);
-  const { rewardsDialog } = useObjektRewards();
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useSuspenseInfiniteQuery({
-      queryKey: [...queryKey, dataSource, filters],
-      queryFn: queryFunction,
-      initialPageParam: 0,
-      getNextPageParam: (lastPage) => lastPage.nextStartAfter,
-      refetchOnWindowFocus: false,
-      staleTime: 1000 * 60 * 5, // 5 minutes
-    });
-
-  const total = Number(data?.pages[0].total ?? 0);
-  const objekts = useMemo(() => {
-    return (data?.pages.flatMap((page) => page.objekts) ?? []).filter(
-      getObjektDisplay
-    );
-  }, [data, getObjektDisplay]);
-
-  return (
-    <div className="contents">
-      <Portal to="#objekt-total">
-        <p className="font-semibold">{total.toLocaleString()} total</p>
-      </Portal>
-
-      {rewardsDialog}
-
-      {hidePins === false &&
-        pins.map((objekt, i) =>
-          cloneElement(
-            children(
-              {
-                objekt: objekt as TObjektType,
-                id: getObjektId(objekt as TObjektType),
-              },
-              i < gridColumns * 3,
-              true
-            ),
-            {
-              key: getObjektId(objekt as TObjektType),
-            }
-          )
-        )}
-
-      {objekts.map((objekt, i) =>
-        cloneElement(
-          children(
-            { objekt, id: getObjektId(objekt) },
-            i < gridColumns * 3,
-            false
-          ),
-          {
-            key: getObjektId(objekt),
-          }
-        )
-      )}
-
-      <Portal to="#pagination">
-        <InfiniteQueryNext
-          status="success"
-          hasNextPage={hasNextPage}
-          isFetchingNextPage={isFetchingNextPage}
-          fetchNextPage={fetchNextPage}
-        />
-      </Portal>
     </div>
   );
 }

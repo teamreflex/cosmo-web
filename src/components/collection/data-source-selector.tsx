@@ -6,29 +6,39 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
 import CosmoImage from "@/assets/cosmo.webp";
 import PolygonImage from "@/assets/polygon.svg";
 import Image from "next/image";
-import { useSettingsStore } from "@/store";
 import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogContent,
+  AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
 } from "../ui/alert-dialog";
 import { env } from "@/env.mjs";
 import { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "../ui/accordion";
+import { CircleHelp } from "lucide-react";
+import { Button } from "../ui/button";
 
 type Props = {
   filters: CosmoFilters;
   setFilters: SetCosmoFilters;
   dataSource: CollectionDataSource;
   setDataSource: Dispatch<SetStateAction<CollectionDataSource>>;
+  allowCosmoGroups?: boolean;
 };
 
 export default memo(function DataSourceSelector({
@@ -36,19 +46,11 @@ export default memo(function DataSourceSelector({
   setFilters,
   dataSource,
   setDataSource,
+  allowCosmoGroups = false,
 }: Props) {
   const [open, setOpen] = useState(false);
-  const warned = useSettingsStore((state) => state.warnings["data-source"]);
-  const toggle = useSettingsStore((state) => state.toggleWarning);
 
-  function warn() {
-    if (warned === false) {
-      setOpen(true);
-    }
-  }
-
-  function close() {
-    toggle("data-source");
+  function onClose() {
     setOpen(false);
   }
 
@@ -58,6 +60,7 @@ export default memo(function DataSourceSelector({
     // reset any source-specific filters
     switch (source) {
       case "cosmo":
+      case "cosmo-legacy":
         // reset serial sort
         if (filters.sort === "serialAsc" || filters.sort === "serialDesc") {
           setFilters({
@@ -65,7 +68,6 @@ export default memo(function DataSourceSelector({
           });
         }
         break;
-
       case "blockchain":
         // reset gridable
         if (filters.gridable) {
@@ -81,21 +83,35 @@ export default memo(function DataSourceSelector({
 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
-      <Select value={dataSource} onValueChange={update} onOpenChange={warn}>
+      <Select value={dataSource} onValueChange={update}>
         <SelectTrigger className="w-36">
           <SelectValue placeholder="Data Source" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="cosmo">
+          {allowCosmoGroups && (
+            <SelectItem value="cosmo">
+              <div className="flex flex-row items-center gap-2">
+                <Image
+                  src={CosmoImage.src}
+                  alt="COSMO"
+                  width={24}
+                  height={24}
+                  className="rounded-full"
+                />
+                <span>Cosmo</span>
+              </div>
+            </SelectItem>
+          )}
+          <SelectItem value="cosmo-legacy">
             <div className="flex flex-row items-center gap-2">
               <Image
                 src={CosmoImage.src}
-                alt="Cosmo"
+                alt="COSMO"
                 width={24}
                 height={24}
                 className="rounded-full"
               />
-              <span>Cosmo</span>
+              <span>{allowCosmoGroups ? "Legacy" : "Cosmo"}</span>
             </div>
           </SelectItem>
           <SelectItem value="blockchain">
@@ -111,41 +127,101 @@ export default memo(function DataSourceSelector({
               <span>Polygon</span>
             </div>
           </SelectItem>
+
+          <SelectSeparator />
+
+          <Button
+            className="rounded"
+            variant="cosmo"
+            size="sm"
+            onClick={() => setOpen(true)}
+          >
+            <div className="flex flex-row items-center gap-2">
+              <CircleHelp className="size-6" />
+              <span>What is this?</span>
+            </div>
+          </Button>
         </SelectContent>
       </Select>
 
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Objekt Data Source</AlertDialogTitle>
-        </AlertDialogHeader>
-
-        <div className="flex flex-col gap-2 text-sm text-muted-foreground">
-          <p>
-            By default, {env.NEXT_PUBLIC_APP_NAME} will use COSMO to display
-            your collection.
-          </p>
-          <p>This option allows you to use the Polygon blockchain instead.</p>
-          <p>This does have its pros & cons:</p>
-          <ul className="list-disc list-inside">
-            <li>
-              Sorting by serial is available, while sorting by gridable is
-              unavailable.
-            </li>
-            <li>
-              Any unsendable objekts will only be shown as non-transferable,
-              rather than their real status like event reward, used for grid
-              etc.
-            </li>
-            <li>
-              Only minted objekts will be displayed, whereas the COSMO option
-              will show any objekts that are pending mint.
-            </li>
-          </ul>
-        </div>
-        <AlertDialogFooter>
-          <AlertDialogAction onClick={close}>Continue</AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
+      <Content onClose={onClose} />
     </AlertDialog>
   );
 });
+
+function Content(props: { onClose: () => void }) {
+  return (
+    <AlertDialogContent>
+      <AlertDialogHeader>
+        <AlertDialogTitle>Objekt Data Source</AlertDialogTitle>
+        <AlertDialogDescription>
+          {env.NEXT_PUBLIC_APP_NAME} can display collections in three different
+          ways.
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+
+      <Accordion className="flex flex-col text-sm" type="single" collapsible>
+        {sources.map((source, i) => (
+          <AccordionItem key={i} value={source.value}>
+            <AccordionTrigger className="py-2">{source.title}</AccordionTrigger>
+            <AccordionContent className="flex flex-col gap-2">
+              <p className="font-semibold">{source.description}</p>
+              <ul className="list-disc list-inside">
+                {source.notes.map((text, i) => (
+                  <li key={i}>{text}</li>
+                ))}
+              </ul>
+            </AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
+
+      <AlertDialogFooter>
+        <AlertDialogAction onClick={props.onClose}>Continue</AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  );
+}
+
+const sources = [
+  {
+    title: "COSMO - Collection Groups",
+    label: "COSMO",
+    value: "cosmo",
+    description: "Same as the collection tab in COSMO.",
+    notes: [
+      "Only available when signed in and viewing your own profile.",
+      "Supports all the same filters and sorting methods as COSMO.",
+      "Supports viewing different objekt statuses: event/welcome reward, gridded, mint pending, etc.",
+    ],
+  },
+  {
+    title: "COSMO - Legacy",
+    label: "Legacy",
+    value: "cosmo-legacy",
+    description:
+      "Displays all objekts, including duplicates. This was the original COSMO functionality prior to August 2024.",
+    notes: [
+      "Always available on any profile and when not signed in.",
+      "Currently the default when viewing other user's profiles or when not signed in.",
+      "Supports all the same filters and sorting methods as COSMO.",
+      "Supports viewing different objekt statuses: event/welcome reward, gridded, mint pending, etc.",
+      "Does not display the total number of owned objekts.",
+      "MODHAUS may remove this in the future.",
+    ],
+  },
+  {
+    title: "Polygon - Blockchain",
+    label: "Polygon",
+    value: "blockchain",
+    description:
+      "Displays all objekts, including duplicates, with filter limitations.",
+    notes: [
+      "Always available on any profile and when not signed in.",
+      "Supports sorting by serial number.",
+      "Does not support filtering by gridable.",
+      "Objekt statuses such as event/welcome reward, gridded, mint pending, etc. are not supported.",
+      "Transferable status is not reliable, as this information has stopped being published to the blockchain.",
+    ],
+  },
+];

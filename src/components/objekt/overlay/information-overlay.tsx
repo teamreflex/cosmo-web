@@ -4,19 +4,23 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { ExternalLink, Maximize2 } from "lucide-react";
 import Link from "next/link";
-import { memo, useState } from "react";
-import { OwnedObjekt } from "@/lib/universal/cosmo/objekts";
+import { useState } from "react";
+import { Objekt } from "@/lib/universal/objekt-conversion";
+import { useCosmoArtists } from "@/hooks/use-cosmo-artist";
 
 type Props = {
-  objekt: OwnedObjekt;
+  collection: Objekt.Collection;
+  token: Objekt.Token;
 };
 
-export default memo(function InformationOverlay({ objekt }: Props) {
+export default function InformationOverlay({ collection, token }: Props) {
   const [open, setOpen] = useState(false);
+  const { getArtist } = useCosmoArtists();
 
-  const formatted = format(Date.parse(objekt.receivedAt), "dd/MM/yy h:mmaa");
+  const contract = getArtist(collection.artist)?.contracts.Objekt;
+  const formatted = format(Date.parse(token.acquiredAt), "dd/MM/yy h:mmaa");
   const opensea = new URL(
-    `https://opensea.io/assets/matic/${objekt.tokenAddress}/${objekt.tokenId}`
+    `https://opensea.io/assets/matic/${contract}/${token.tokenId}`
   );
 
   return (
@@ -24,7 +28,7 @@ export default memo(function InformationOverlay({ objekt }: Props) {
       data-open={open}
       className={cn(
         "absolute isolate bottom-0 left-0 p-1 sm:p-2 rounded-tr-lg sm:rounded-tr-xl flex gap-2 group h-5 sm:h-9 w-5 sm:w-9 transition-all overflow-hidden",
-        "text-[var(--objekt-text-color)] bg-[var(--objekt-background-color)]",
+        "text-(--objekt-text-color) bg-(--objekt-background-color)",
         "data-[open=true]:w-20 sm:data-[open=true]:w-32 data-[open=true]:h-32 sm:data-[open=true]:h-32"
       )}
     >
@@ -52,7 +56,7 @@ export default memo(function InformationOverlay({ objekt }: Props) {
 
         <div className="flex flex-col text-xs">
           <span className="font-semibold">Token ID</span>
-          <span>{objekt.tokenId}</span>
+          <span>{token.tokenId}</span>
         </div>
 
         <div className="flex flex-col text-xs">
@@ -62,4 +66,4 @@ export default memo(function InformationOverlay({ objekt }: Props) {
       </div>
     </div>
   );
-});
+}

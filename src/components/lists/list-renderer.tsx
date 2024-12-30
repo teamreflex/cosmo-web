@@ -1,27 +1,29 @@
 "use client";
 
 import {
-  IndexedCosmoResponse,
   IndexedObjekt,
+  LegacyObjektResponse,
   ObjektList,
   parsePage,
 } from "@/lib/universal/objekts";
 import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
-import ObjektSidebar from "../objekt/objekt-sidebar";
 import ListOverlay from "./list-overlay";
 import DeleteList from "./delete-list";
 import UpdateList from "./update-list";
 import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { useFilters } from "@/hooks/use-filters";
-import { memo, useCallback } from "react";
+import { memo } from "react";
 import {
   FiltersContainer,
   IndexFilters,
 } from "../collection/filters-container";
-import { ExpandableObjekt } from "../objekt/objekt";
 import { ofetch } from "ofetch";
 import { baseUrl, GRID_COLUMNS } from "@/lib/utils";
+import { ObjektResponseOptions } from "@/hooks/use-objekt-response";
+import { ObjektSidebar } from "../objekt/common";
+import ExpandableObjekt from "../objekt/objekt-expandable";
+import { Objekt } from "../../lib/universal/objekt-conversion";
 
 const getObjektId = (objekt: IndexedObjekt) => objekt.id;
 
@@ -42,8 +44,12 @@ export default function ListRenderer({
 }: Props) {
   const { searchParams } = useFilters();
 
-  const queryFunction = useCallback(
-    async ({ pageParam = 0 }: { pageParam?: number }) => {
+  /**
+   * Query options
+   */
+  const options = {
+    queryKey: ["objekt-list", list.slug, user.address],
+    queryFunction: async ({ pageParam = 0 }: { pageParam?: number }) => {
       const url = new URL(
         `/api/objekt-list/entries/${list.slug}/${user.address}`,
         baseUrl()
@@ -52,12 +58,22 @@ export default function ListRenderer({
       return await ofetch(url.toString(), {
         query: {
           ...Object.fromEntries(searchParams.entries()),
-          page: pageParam.toString(),
+          page: pageParam,
         },
-      }).then((res) => parsePage<IndexedCosmoResponse>(res));
+      }).then((res) => parsePage<LegacyObjektResponse<IndexedObjekt>>(res));
     },
-    [searchParams, list.slug, user.address]
-  );
+    getNextPageParam: (lastPage) => lastPage.nextStartAfter,
+    calculateTotal: (data) => {
+      const total = data.pages[0].total ?? 0;
+      return (
+        <p className="font-semibold">{total.toLocaleString("en")} total</p>
+      );
+    },
+    getItems: (data) => data.pages.flatMap((page) => page.objekts),
+  } satisfies ObjektResponseOptions<
+    LegacyObjektResponse<IndexedObjekt>,
+    IndexedObjekt
+  >;
 
   return (
     <section className="flex flex-col">
@@ -69,20 +85,24 @@ export default function ListRenderer({
 
       <FilteredObjektDisplay
         artists={artists}
-        queryFunction={queryFunction}
-        queryKey={["objekt-list", list.slug]}
+        options={options}
         getObjektId={getObjektId}
+        shouldRender={() => true}
         gridColumns={gridColumns}
+        authenticated={authenticated}
       >
-        {({ objekt, id }, priority) => (
-          <ExpandableObjekt objekt={objekt} id={id} priority={priority}>
-            <Overlay
-              objekt={objekt}
-              authenticated={authenticated}
-              objektList={list}
-            />
-          </ExpandableObjekt>
-        )}
+        {({ item }) => {
+          const collection = Objekt.fromIndexer(item);
+          return (
+            <ExpandableObjekt collection={collection}>
+              <Overlay
+                collection={collection}
+                authenticated={authenticated}
+                objektList={list}
+              />
+            </ExpandableObjekt>
+          );
+        }}
       </FilteredObjektDisplay>
     </section>
   );
@@ -110,16 +130,18 @@ const Title = memo(function Title({
 });
 
 type OverlayProps = {
-  objekt: IndexedObjekt;
+  collection: Objekt.Collection;
   authenticated: boolean;
   objektList: ObjektList;
 };
 
-function Overlay({ objekt, authenticated, objektList }: OverlayProps) {
+function Overlay({ collection, authenticated, objektList }: OverlayProps) {
   return (
     <div className="contents">
-      <ObjektSidebar collection={objekt.collectionNo} />
-      {authenticated && <ListOverlay objekt={objekt} objektList={objektList} />}
+      <ObjektSidebar collection={collection.collectionNo} />
+      {authenticated && (
+        <ListOverlay collection={collection} objektList={objektList} />
+      )}
     </div>
   );
 }

@@ -40,7 +40,7 @@ export type SelectionError = {
   recipient: CosmoPublicUser;
 };
 
-type SelectionPending = {
+export type SelectionPending = {
   status: "pending";
   objekt: SelectedObjekt;
   hash: null;
@@ -72,7 +72,9 @@ type ObjektSelectionState = {
   select: (objekt: SelectedObjekt) => void;
   update: (selection: Selection) => void;
   selectUser: (user: CosmoPublicUser) => void;
+  selectUserForToken: (tokenId: number, user: CosmoPublicUser) => void;
   isSelected: (tokenId: number) => boolean;
+  hasSelected: (tokenIds: number[]) => boolean;
   reset: () => void;
   remove: (tokenId: number) => void;
 };
@@ -131,8 +133,20 @@ export const useObjektSelection = create<ObjektSelectionState>()(
     /**
      * Determine whether the specific token has been selected.
      */
-    isSelected: (tokenId) =>
-      get().selected.findIndex((p) => p.objekt.tokenId === tokenId) !== -1,
+    isSelected: (tokenId) => {
+      return (
+        get().selected.findIndex((p) => p.objekt.tokenId === tokenId) !== -1
+      );
+    },
+
+    /**
+     * Determine whether any of the given tokens have been selected.
+     */
+    hasSelected: (tokenIds) => {
+      return get().selected.some((sel) =>
+        tokenIds.includes(sel.objekt.tokenId)
+      );
+    },
 
     /**
      * Reset any selected objekts
@@ -174,6 +188,19 @@ export const useObjektSelection = create<ObjektSelectionState>()(
             ...sel,
             recipient: user,
           })),
+        };
+      }),
+
+    /**
+     * Select a user to send a specific objekt to
+     */
+    selectUserForToken: (tokenId, user) =>
+      set((state) => {
+        return {
+          ...state,
+          selected: state.selected.map((sel) =>
+            sel.objekt.tokenId === tokenId ? { ...sel, recipient: user } : sel
+          ),
         };
       }),
 

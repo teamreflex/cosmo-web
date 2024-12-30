@@ -89,7 +89,7 @@ type LinkButtonProps = {
   user?: TokenPayload;
 };
 
-export function LinkButton({ link, active, user }: LinkButtonProps) {
+function LinkButton({ link, active, user }: LinkButtonProps) {
   const authenticated = user !== undefined;
   const pathname = link.href(user);
   const disabled = link.requireAuth && !authenticated;

@@ -3,8 +3,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { fetchGasPrice } from "@/lib/server/alchemy/gas";
-import { fetchProcessorStatus } from "@/lib/server/system";
+import { getSystemStatus } from "@/lib/server/system";
 import { SystemStatus as SystemStatusType } from "@/lib/universal/system";
 import { cn } from "@/lib/utils";
 import { Activity, Fuel, HardDriveDownload, X } from "lucide-react";
@@ -33,17 +32,14 @@ export default async function SystemStatus() {
 }
 
 async function SystemStatusPopover() {
-  const [gas, processor] = await Promise.all([
-    fetchGasPrice(),
-    fetchProcessorStatus(),
-  ]);
+  const { gas, processor } = await getSystemStatus();
 
   const statuses = [gas.status, processor.status];
   const status = statuses.includes("degraded")
     ? "degraded"
     : statuses.includes("down")
-    ? "down"
-    : "normal";
+      ? "down"
+      : "normal";
 
   return (
     <Popover>

@@ -2,9 +2,13 @@ import { parseAsBoolean, useQueryState } from "nuqs";
 import { useMemo, useState } from "react";
 import { CosmoFilters, useCosmoFilters } from "./use-cosmo-filters";
 
-export type CollectionDataSource = "cosmo" | "blockchain";
+export type CollectionDataSource = "cosmo" | "cosmo-legacy" | "blockchain";
 
-export function useFilters() {
+type DefaultOptions = {
+  dataSource?: CollectionDataSource;
+};
+
+export function useFilters(opts?: DefaultOptions) {
   // setup cosmo filters
   const [cosmoFilters] = useCosmoFilters();
 
@@ -12,10 +16,14 @@ export function useFilters() {
   const [showLocked, setShowLocked] = useQueryState("locked", parseAsBoolean);
   const [dataSource, setDataSource] = useState<CollectionDataSource>(() => {
     // upon first render, adjust data source based on source-specific filters
-    return cosmoFilters.sort === "serialAsc" ||
-      cosmoFilters.sort === "serialDesc"
-      ? "blockchain"
-      : "cosmo";
+    const useBlockchain =
+      cosmoFilters.sort === "serialAsc" || cosmoFilters.sort === "serialDesc";
+    if (useBlockchain) {
+      return "blockchain";
+    }
+
+    // otherwise, use the default data source
+    return opts?.dataSource ?? "cosmo-legacy";
   });
 
   const searchParams = useMemo(() => {
