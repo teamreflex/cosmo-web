@@ -4,8 +4,8 @@ import { Suspense } from "react";
 import {
   decodeUser,
   getArtistsWithMembers,
-  getProfile,
   getSelectedArtist,
+  getUserByIdentifier,
 } from "@/app/data-fetching";
 import UpdateDialog from "../misc/update-dialog";
 import ComoBalanceRenderer from "./como-balances";
@@ -54,16 +54,21 @@ export default async function Navbar() {
 
 async function Auth() {
   const user = await decodeUser();
-  const [selectedArtist, artists, profile] = await Promise.all([
+  const [selectedArtist, artists, data] = await Promise.all([
     getSelectedArtist(),
     getArtistsWithMembers(),
-    user ? getProfile(user.profileId) : undefined,
+    user ? getUserByIdentifier(user.address) : undefined,
   ]);
+
+  // profile is missing
+  if (user !== undefined && data === undefined) {
+    throw new Error("Profile is missing, this should not be possible");
+  }
 
   return (
     <AuthOptions
       token={user}
-      profile={profile}
+      profile={data!.profile}
       artists={artists}
       selectedArtist={selectedArtist}
       comoBalances={
@@ -74,7 +79,7 @@ async function Auth() {
           <CosmoAvatar
             token={user}
             artist={selectedArtist}
-            nickname={profile?.nickname}
+            nickname={data!.profile.nickname}
           />
         </ErrorBoundary>
       }

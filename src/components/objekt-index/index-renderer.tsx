@@ -54,7 +54,7 @@ export default function IndexRenderer({
    * Query options
    */
   const options = {
-    queryKey: ["objekt-index"],
+    queryKey: ["objekt-index", "blockchain"],
     queryFunction: async ({ pageParam = 0 }: { pageParam?: number }) => {
       const url = new URL("/api/objekts", baseUrl());
       return await ofetch(url.toString(), {
