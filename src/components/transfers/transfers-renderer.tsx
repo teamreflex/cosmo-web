@@ -1,81 +1,94 @@
 "use client";
 
-import { TransferResult } from "@/lib/universal/transfers";
-import { useInfiniteQuery } from "@tanstack/react-query";
-import { HeartCrack, Loader2 } from "lucide-react";
+import {
+  QueryErrorResetBoundary,
+  useSuspenseInfiniteQuery,
+} from "@tanstack/react-query";
 import TransferRow from "./transfer-row";
-import { cn } from "@/lib/utils";
 import { InfiniteQueryNext } from "../infinite-query-pending";
-import { ofetch } from "ofetch";
+import Portal from "../portal";
+import { ErrorBoundary } from "react-error-boundary";
+import { HeartCrack, RefreshCcw } from "lucide-react";
+import { Button } from "../ui/button";
+import { Suspense } from "react";
+import Skeleton from "../skeleton/skeleton";
+import { PublicProfile } from "@/lib/universal/cosmo/auth";
+import { transfersQuery } from "./queries";
 
 type Props = {
-  address: string;
+  profile: PublicProfile;
 };
 
-export default function TransfersRenderer({ address }: Props) {
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
-    useInfiniteQuery({
-      queryKey: ["transfers", address],
-      queryFn: async ({ pageParam = 0 }: { pageParam?: string | number }) => {
-        return await ofetch<TransferResult>(`/api/transfers/${address}`, {
-          query: {
-            page: pageParam.toString(),
-          },
-        });
-      },
-      initialPageParam: 0,
-      getNextPageParam: (lastPage) => lastPage.nextStartAfter,
-      refetchOnWindowFocus: false,
-      staleTime: 1000 * 60,
-    });
-
-  const rows = data?.pages.flatMap((p) => p.results) ?? [];
-
+export default function TransfersRenderer({ profile }: Props) {
   return (
-    <div className="contents">
-      <div className="flex flex-col rounded-lg border border-accent text-sm">
-        <div
-          className={cn(
-            "items-center grid grid-cols-[3fr_2fr_2fr_2fr] gap-2 h-12 px-4 text-left align-middle font-medium text-muted-foreground",
-            status === "pending" && "border-b border-accent"
+    <QueryErrorResetBoundary>
+      {({ reset }) => (
+        <ErrorBoundary
+          onReset={reset}
+          fallbackRender={({ resetErrorBoundary }) => (
+            <div className="flex flex-col gap-2 items-center w-full">
+              <div className="flex flex-col gap-2 justify-center items-center py-12">
+                <HeartCrack className="h-12 w-12" />
+                <p>There was an error loading transfers</p>
+              </div>
+              <Button variant="outline" onClick={resetErrorBoundary}>
+                <RefreshCcw className="mr-2" /> Retry
+              </Button>
+            </div>
           )}
         >
-          <span>Objekt</span>
-          <span>Action</span>
-          <span>User</span>
-          <span className="text-right">Date</span>
-        </div>
+          <Suspense fallback={<TransfersSkeleton />}>
+            <Transfers address={profile.address} />
+          </Suspense>
+        </ErrorBoundary>
+      )}
+    </QueryErrorResetBoundary>
+  );
+}
 
-        <div className="flex flex-col">
-          {status === "pending" ? (
-            <div className="flex col-span-full justify-center py-4">
-              <Loader2 className="animate-spin h-12 w-12" />
-            </div>
-          ) : status === "error" ? (
-            <Error />
-          ) : (
-            rows.map((row) => (
-              <TransferRow key={row.transfer.id} row={row} address={address} />
-            ))
-          )}
-        </div>
+function Transfers({ address }: { address: string }) {
+  const query = useSuspenseInfiniteQuery(transfersQuery(address));
+
+  const rows = query.data.pages.flatMap((p) => p.results);
+
+  return (
+    <div className="flex flex-col rounded-lg border border-accent text-sm">
+      <div className="items-center grid grid-cols-[3fr_2fr_2fr_2fr] gap-2 h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+        <span>Objekt</span>
+        <span>Action</span>
+        <span>User</span>
+        <span className="text-right">Date</span>
       </div>
 
-      <InfiniteQueryNext
-        status={status}
-        hasNextPage={hasNextPage}
-        isFetchingNextPage={isFetchingNextPage}
-        fetchNextPage={fetchNextPage}
-      />
+      <div className="flex flex-col">
+        {rows.map((row) => (
+          <TransferRow key={row.transfer.id} row={row} address={address} />
+        ))}
+      </div>
+
+      <Portal to="#pagination">
+        <InfiniteQueryNext
+          status={query.status}
+          hasNextPage={query.hasNextPage}
+          isFetchingNextPage={query.isFetchingNextPage}
+          fetchNextPage={query.fetchNextPage}
+        />
+      </Portal>
     </div>
   );
 }
 
-function Error() {
+function TransfersSkeleton() {
   return (
-    <div className="col-span-full flex flex-col gap-2 justify-center items-center py-12">
-      <HeartCrack className="h-12 w-12" />
-      <p>There was an error loading transfers</p>
+    <div className="flex flex-col rounded-lg border border-accent text-sm">
+      <div className="items-center grid grid-cols-[3fr_2fr_2fr_2fr] gap-2 h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+        <span>Objekt</span>
+        <span>Action</span>
+        <span>User</span>
+        <span className="text-right">Date</span>
+      </div>
+
+      <Skeleton className="w-full rounded-t-none h-16 sm:h-12 border-t border-accent" />
     </div>
   );
 }
