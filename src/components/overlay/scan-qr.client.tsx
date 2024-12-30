@@ -42,7 +42,7 @@ const Scanner = lazy(() =>
 
 type State = "scan" | "claim" | "success";
 type ScanResult = {
-  serial: string;
+  qrCode: string;
   objekt: ScannedObjekt;
 };
 
@@ -119,7 +119,7 @@ function ScanObjekt(props: ScanObjektProps) {
       if (result) {
         return (
           <ClaimObjekt
-            serial={result.serial}
+            qrCode={result.qrCode}
             result={result.objekt}
             onClaim={onClaim}
             onClose={onClose}
@@ -143,9 +143,9 @@ function QRScanner({ open, onResult, onClose }: QRScannerProps) {
   });
   const { token } = useUserState();
   const { mutate, status } = useMutation({
-    mutationFn: async (serial: string) => {
+    mutationFn: async (qrCode: string) => {
       return await ofetch<ScannedObjekt>(
-        `${COSMO_ENDPOINT}/objekt/v1/by-serial/${serial}`,
+        `${COSMO_ENDPOINT}/objekt/v1/by-serial/${qrCode}`,
         {
           headers: {
             Authorization: `Bearer ${token!.accessToken}`,
@@ -153,9 +153,9 @@ function QRScanner({ open, onResult, onClose }: QRScannerProps) {
         }
       );
     },
-    onSuccess: (result, serial) => {
+    onSuccess: (result, qrCode) => {
       onResult({
-        serial: serial,
+        qrCode: qrCode,
         objekt: result,
       });
     },
@@ -271,18 +271,18 @@ function ScannerError({
 }
 
 type ClaimObjektProps = {
-  serial: string;
+  qrCode: string;
   result: ScannedObjekt;
   onClaim: () => void;
   onClose: () => void;
 };
 
-function ClaimObjekt({ serial, result, onClaim, onClose }: ClaimObjektProps) {
+function ClaimObjekt({ qrCode, result, onClaim, onClose }: ClaimObjektProps) {
   const { token } = useUserState();
   const { mutate, status } = useMutation({
     mutationFn: async () => {
       return await ofetch(
-        `${COSMO_ENDPOINT}/objekt/v1/by-serial/${serial}/claim`,
+        `${COSMO_ENDPOINT}/objekt/v1/by-serial/${qrCode}/claim`,
         {
           method: "POST",
           headers: {
@@ -305,8 +305,11 @@ function ClaimObjekt({ serial, result, onClaim, onClose }: ClaimObjektProps) {
 
   const collection = Objekt.fromScanned(result);
   const isClaimed = result.isClaimed;
+  const serial = result.objekt.objektNo;
 
-  const title = `${collection.collectionId} #${serial.padStart(5, "0")}`;
+  const title = `${collection.collectionId} #${serial
+    .toString()
+    .padStart(5, "0")}`;
   const description = `Objekt is ${
     isClaimed ? " already claimed" : "claimable"
   }`;
@@ -320,10 +323,7 @@ function ClaimObjekt({ serial, result, onClaim, onClose }: ClaimObjektProps) {
 
       <div className="relative mx-auto h-72 aspect-photocard">
         <FlippableObjekt collection={collection}>
-          <ObjektSidebar
-            collection={collection.collectionNo}
-            serial={parseInt(serial)}
-          />
+          <ObjektSidebar collection={collection.collectionNo} serial={serial} />
         </FlippableObjekt>
       </div>
 
