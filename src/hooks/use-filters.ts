@@ -1,8 +1,7 @@
 import { parseAsBoolean, useQueryState } from "nuqs";
 import { useMemo, useState } from "react";
 import { CosmoFilters, useCosmoFilters } from "./use-cosmo-filters";
-
-export type CollectionDataSource = "cosmo" | "cosmo-legacy" | "blockchain";
+import { CollectionDataSource } from "@/lib/utils";
 
 type DefaultOptions = {
   dataSource?: CollectionDataSource;

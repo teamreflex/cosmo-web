@@ -10,6 +10,7 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 import { citext } from "./columns";
+import { CollectionDataSource } from "@/lib/utils";
 
 export const profiles = pgTable(
   "profiles",
@@ -26,6 +27,9 @@ export const profiles = pgTable(
     privacyTrades: boolean("privacy_trades").notNull().default(false),
     gridColumns: integer("grid_columns").notNull().default(5),
     objektEditor: boolean("objekt_editor").notNull().default(false),
+    dataSource: varchar("data_source", {
+      length: 12,
+    }).$type<CollectionDataSource>(),
   },
   (t) => [
     uniqueIndex("profiles_address_idx").on(t.userAddress),

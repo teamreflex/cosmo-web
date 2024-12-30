@@ -79,7 +79,7 @@ const updates = [
     changes: [
       "Up to 5 objekts can now be sent at once. These will send in order of selection one at a time and will cancel the rest of the batch if one fails.",
       "Profile pages now display grouped by collection like COSMO does.",
-      "Grouped mode only applies while viewing your own profile when signed in. Viewing other profiles will use the old COSMO mode, which MODHAUS may remove in the future.",
+      "Grouped mode only applies while viewing your own profile when signed in. Viewing other profiles will use the old COSMO mode, which MODHAUS may remove in the future. You can select an option to default to in your settings.",
       "Objekt rewards are now claimed from a button in the bottom right of the screen while on your own profile. The card no longer shows up at the top of your collection.",
     ],
   },

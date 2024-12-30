@@ -30,6 +30,16 @@ export function isAddressEqual(a?: string, b?: string) {
 export const GRID_COLUMNS = 5;
 
 /**
+ * Collection data source.
+ */
+export const collectionDataSources = [
+  "cosmo",
+  "cosmo-legacy",
+  "blockchain",
+] as const;
+export type CollectionDataSource = (typeof collectionDataSources)[number];
+
+/**
  * Default {@link PublicProfile} properties.
  */
 export const defaultProfile: PublicProfile = {
@@ -46,6 +56,7 @@ export const defaultProfile: PublicProfile = {
   },
   gridColumns: GRID_COLUMNS,
   isObjektEditor: false,
+  dataSource: "cosmo",
 };
 
 export const NULL_ADDRESS = "0x0000000000000000000000000000000000000000";

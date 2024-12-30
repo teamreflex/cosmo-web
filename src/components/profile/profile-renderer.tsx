@@ -17,16 +17,20 @@ import CosmoLegacy from "../collection/data-sources/cosmo-legacy";
 
 type Props = {
   artists: CosmoArtistWithMembersBFF[];
-  profile: PublicProfile;
-  user?: PublicProfile;
+  targetUser: PublicProfile;
+  currentUser?: PublicProfile;
 };
 
-export default function ProfileRenderer({ artists, profile, user }: Props) {
-  const authenticated = user?.address === profile.address;
+export default function ProfileRenderer({
+  artists,
+  targetUser,
+  currentUser,
+}: Props) {
+  const authenticated = currentUser?.address === targetUser.address;
 
   const { searchParams, showLocked, setShowLocked, dataSource, setDataSource } =
     useFilters({
-      dataSource: authenticated ? "cosmo" : "cosmo-legacy",
+      dataSource: authenticated ? currentUser.dataSource : "cosmo-legacy",
     });
 
   return (
@@ -52,8 +56,8 @@ export default function ProfileRenderer({ artists, profile, user }: Props) {
           <Blockchain
             artists={artists}
             authenticated={authenticated}
-            profile={profile}
-            user={user}
+            profile={targetUser}
+            user={currentUser}
             searchParams={searchParams}
             showLocked={showLocked}
           />
@@ -62,8 +66,8 @@ export default function ProfileRenderer({ artists, profile, user }: Props) {
           <CosmoCollectionGroups
             artists={artists}
             authenticated={authenticated}
-            profile={profile}
-            user={user}
+            profile={targetUser}
+            user={currentUser}
             searchParams={searchParams}
             showLocked={showLocked}
           />
@@ -72,7 +76,7 @@ export default function ProfileRenderer({ artists, profile, user }: Props) {
           <CosmoLegacy
             artists={artists}
             authenticated={authenticated}
-            profile={profile}
+            profile={targetUser}
             searchParams={searchParams}
             showLocked={showLocked}
           />

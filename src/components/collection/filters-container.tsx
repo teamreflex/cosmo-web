@@ -1,4 +1,3 @@
-import { CollectionDataSource } from "@/hooks/use-filters";
 import { Dispatch, PropsWithChildren, SetStateAction, useState } from "react";
 import LockedFilter from "./filter-locked";
 import GridableFilter from "./filter-gridable";
@@ -13,6 +12,7 @@ import Portal from "../portal";
 import DataSourceSelector from "./data-source-selector";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { Button } from "../ui/button";
+import { CollectionDataSource } from "@/lib/utils";
 
 type FiltersContainerProps = PropsWithChildren<{
   isPortaled?: boolean;

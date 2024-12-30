@@ -1,6 +1,7 @@
 import { Pin } from "@/lib/server/db/schema";
 import { ObjektList } from "../objekts";
 import { ValidArtist } from "./common";
+import { CollectionDataSource } from "@/lib/utils";
 
 export type LoginChannel = "email";
 
@@ -26,6 +27,7 @@ export type PublicProfile = {
   };
   gridColumns: number;
   isObjektEditor: boolean;
+  dataSource: CollectionDataSource;
 };
 
 export type IdentifiedUser = {

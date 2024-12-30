@@ -13,6 +13,7 @@ import { deleteCookie, setCookie } from "@/lib/server/cookies";
 import { user } from "@/lib/server/cosmo/auth";
 import { revalidatePath } from "next/cache";
 import { signToken } from "@/lib/server/jwt";
+import { collectionDataSources } from "@/lib/utils";
 
 /**
  * Signs the user out
@@ -82,8 +83,10 @@ export const updateSettings = async (form: FormData) =>
     form,
     schema: z.object({
       gridColumns: z.coerce.number().min(3).max(8),
+      dataSource: z.enum(collectionDataSources),
     }),
     onValidate: async ({ data, user }) => {
+      console.log(data);
       await db
         .update(profiles)
         .set(data)

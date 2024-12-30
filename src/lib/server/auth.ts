@@ -150,5 +150,6 @@ function parseProfile(profile: Profile): PublicProfile {
     },
     gridColumns: profile.gridColumns,
     isObjektEditor: profile.objektEditor,
+    dataSource: profile.dataSource ?? "cosmo",
   };
 }

@@ -66,8 +66,8 @@ export default async function UserCollectionPage(props: Props) {
           <UserStateProvider artist={selectedArtist} token={user}>
             <ProfileRenderer
               artists={artists}
-              profile={targetUser.profile}
-              user={currentUser}
+              targetUser={targetUser.profile}
+              currentUser={currentUser}
             />
 
             {/* needs token access */}

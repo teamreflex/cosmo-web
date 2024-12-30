@@ -21,6 +21,9 @@ import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { toast } from "@/components/ui/use-toast";
 import { Loader2 } from "lucide-react";
+import Image from "next/image";
+import CosmoImage from "@/assets/cosmo.webp";
+import PolygonImage from "@/assets/polygon.svg";
 
 type SettingsDialogProps = {
   open: boolean;
@@ -72,7 +75,7 @@ export default function SettingsDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form className="flex flex-col gap-2" action={save} id="settings-form">
+        <form className="flex flex-col gap-4" action={save} id="settings-form">
           {/* theme */}
           <div className="flex gap-2 items-center justify-between">
             <div className="flex flex-col">
@@ -119,6 +122,61 @@ export default function SettingsDialog({
                 <SelectItem value="6">6 Columns</SelectItem>
                 <SelectItem value="7">7 Columns</SelectItem>
                 <SelectItem value="8">8 Columns</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* collection mode */}
+          <div className="flex gap-2 items-center justify-between">
+            <div className="flex flex-col">
+              <h2 className="col-span-3 font-semibold">Collection Mode</h2>
+              <p className="col-span-3 col-start-1 row-start-2 row-span-3 text-sm opacity-80">
+                Mode to use when displaying your own collection.
+              </p>
+            </div>
+
+            <Select name="dataSource" defaultValue={profile.dataSource}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Data Source" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="cosmo">
+                  <div className="flex flex-row items-center gap-2">
+                    <Image
+                      src={CosmoImage.src}
+                      alt="COSMO"
+                      width={24}
+                      height={24}
+                      className="rounded-full"
+                    />
+                    <span>Cosmo</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="cosmo-legacy">
+                  <div className="flex flex-row items-center gap-2">
+                    <Image
+                      src={CosmoImage.src}
+                      alt="COSMO"
+                      width={24}
+                      height={24}
+                      className="rounded-full"
+                    />
+                    <span>Legacy</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="blockchain">
+                  <div className="flex flex-row items-center gap-2">
+                    <div className="relative bg-polygon h-6 w-6 rounded-full">
+                      <Image
+                        src={PolygonImage.src}
+                        alt="Polygon"
+                        fill={true}
+                        className="p-1"
+                      />
+                    </div>
+                    <span>Polygon</span>
+                  </div>
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>

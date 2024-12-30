@@ -1,7 +1,6 @@
 "use client";
 
 import { Dispatch, SetStateAction, memo, useState } from "react";
-import { CollectionDataSource } from "@/hooks/use-filters";
 import {
   Select,
   SelectContent,
@@ -32,6 +31,7 @@ import {
 } from "../ui/accordion";
 import { CircleHelp } from "lucide-react";
 import { Button } from "../ui/button";
+import { CollectionDataSource } from "@/lib/utils";
 
 type Props = {
   filters: CosmoFilters;
