@@ -1,7 +1,7 @@
 import FilteredObjektDisplay from "@/components/objekt/filtered-objekt-display";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { filtersAreDirty } from "@/hooks/use-filters";
-import { ObjektResponseOptions } from "@/hooks/use-objekt-response";
+import { objektOptions } from "@/hooks/use-objekt-response";
 import { useUserState } from "@/hooks/use-user-state";
 import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
@@ -68,7 +68,7 @@ export default function CosmoCollectionGroups(props: Props) {
   /**
    * Query options
    */
-  const options = {
+  const options = objektOptions({
     queryKey: ["collection", "cosmo", props.profile.address, artistName],
     queryFunction: async ({ pageParam = 1 }: { pageParam?: number }) => {
       const endpoint = new URL(
@@ -121,10 +121,7 @@ export default function CosmoCollectionGroups(props: Props) {
       );
     },
     getItems: (data) => data.pages.flatMap((page) => page.collections),
-  } satisfies ObjektResponseOptions<
-    BFFCollectionGroupResponse,
-    BFFCollectionGroup
-  >;
+  });
 
   const gridColumns = props.profile?.gridColumns ?? props.user?.gridColumns;
 

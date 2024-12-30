@@ -17,6 +17,15 @@ export type ObjektResponseOptions<Response, Item> = {
   getItems: (data: InfiniteData<Response>) => Item[];
 };
 
+/**
+ * Create a new typed options object for the useObjektResponse hook.
+ */
+export function objektOptions<Response, Item>(
+  opts: ObjektResponseOptions<Response, Item>
+) {
+  return opts;
+}
+
 export function useObjektResponse<Response, Item>(
   opts: ObjektResponseOptions<Response, Item>
 ) {

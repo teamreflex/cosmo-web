@@ -78,7 +78,8 @@ export default function FilteredObjektDisplay<Response, Item>({
         <QueryErrorResetBoundary>
           {({ reset }) => (
             <ErrorBoundary
-              fallback={
+              onReset={reset}
+              fallbackRender={({ resetErrorBoundary }) => (
                 <div className="flex flex-col gap-2 items-center w-full py-12">
                   <div className="flex items-center gap-2">
                     <HeartCrack className="h-6 w-6" />
@@ -86,11 +87,11 @@ export default function FilteredObjektDisplay<Response, Item>({
                       Error loading objekts
                     </p>
                   </div>
-                  <Button variant="outline" onClick={reset}>
+                  <Button variant="outline" onClick={resetErrorBoundary}>
                     <RefreshCcw className="mr-2" /> Retry
                   </Button>
                 </div>
-              }
+              )}
             >
               <Suspense
                 fallback={

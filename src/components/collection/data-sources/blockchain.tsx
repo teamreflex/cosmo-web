@@ -1,11 +1,11 @@
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { ofetch } from "ofetch";
 import { LegacyObjektResponse, parsePage } from "@/lib/universal/objekts";
-import { CosmoObjekt, OwnedObjektsResult } from "@/lib/universal/cosmo/objekts";
+import { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
 import { baseUrl } from "@/lib/utils";
 import { useProfileContext } from "@/hooks/use-profile";
 import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
-import { ObjektResponseOptions } from "@/hooks/use-objekt-response";
+import { objektOptions } from "@/hooks/use-objekt-response";
 import FilteredObjektDisplay from "@/components/objekt/filtered-objekt-display";
 import { useCallback, useMemo } from "react";
 import { filtersAreDirty } from "@/hooks/use-filters";
@@ -54,7 +54,7 @@ export default function Blockchain(props: Props) {
   /**
    * Query options
    */
-  const options = {
+  const options = objektOptions({
     queryKey: ["collection", "blockchain", props.profile.address],
     queryFunction: async ({ pageParam = 0 }: { pageParam?: number }) => {
       const endpoint = new URL(
@@ -67,7 +67,7 @@ export default function Blockchain(props: Props) {
           ...Object.fromEntries(props.searchParams.entries()),
           page: pageParam,
         },
-      }).then((res) => parsePage<OwnedObjektsResult>(res));
+      }).then((res) => parsePage<LegacyObjektResponse<CosmoObjekt>>(res));
     },
     getNextPageParam: (lastPage) => lastPage.nextStartAfter,
     calculateTotal: (data) => {
@@ -77,10 +77,7 @@ export default function Blockchain(props: Props) {
       );
     },
     getItems: (data) => data.pages.flatMap((page) => page.objekts),
-  } satisfies ObjektResponseOptions<
-    LegacyObjektResponse<CosmoObjekt>,
-    CosmoObjekt
-  >;
+  });
 
   return (
     <FilteredObjektDisplay

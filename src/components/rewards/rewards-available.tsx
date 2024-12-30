@@ -1,20 +1,13 @@
 "use client";
 
 import { useUserState } from "@/hooks/use-user-state";
-import { cosmo } from "@/lib/server/http";
-import { COSMO_ENDPOINT, ValidArtist } from "@/lib/universal/cosmo/common";
-import { CosmoRewardAvailable } from "@/lib/universal/cosmo/rewards";
+import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { IconHeartExclamation } from "@tabler/icons-react";
 import {
   QueryErrorResetBoundary,
   useSuspenseQuery,
 } from "@tanstack/react-query";
-import {
-  ButtonHTMLAttributes,
-  forwardRef,
-  PropsWithChildren,
-  Suspense,
-} from "react";
+import { ButtonHTMLAttributes, forwardRef, Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import {
   Tooltip,
@@ -25,6 +18,7 @@ import {
 import { RefreshCcw } from "lucide-react";
 import RewardsDialog from "./rewards-dialog";
 import { cn } from "@/lib/utils";
+import { getRewardsClaimable } from "./queries";
 
 export default function RewardsAvailable() {
   const { artist, token } = useUserState();
@@ -83,21 +77,7 @@ type CheckRewardsProps = {
 };
 
 function CheckRewards({ artist, token }: CheckRewardsProps) {
-  const { data } = useSuspenseQuery({
-    queryKey: ["rewards-claimable", artist],
-    queryFn: async () => {
-      const endpoint = new URL("/bff/v1/check-event-rewards", COSMO_ENDPOINT);
-      return await cosmo<CosmoRewardAvailable>(endpoint.toString(), {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        query: {
-          tid: crypto.randomUUID(),
-          artistName: artist,
-        },
-      });
-    },
-  });
+  const { data } = useSuspenseQuery(getRewardsClaimable(artist, token));
 
   if (data.isClaimable) {
     return (

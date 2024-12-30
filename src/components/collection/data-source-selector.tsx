@@ -93,7 +93,7 @@ export default memo(function DataSourceSelector({
               <div className="flex flex-row items-center gap-2">
                 <Image
                   src={CosmoImage.src}
-                  alt="Cosmo"
+                  alt="COSMO"
                   width={24}
                   height={24}
                   className="rounded-full"
@@ -106,12 +106,12 @@ export default memo(function DataSourceSelector({
             <div className="flex flex-row items-center gap-2">
               <Image
                 src={CosmoImage.src}
-                alt="Cosmo"
+                alt="COSMO"
                 width={24}
                 height={24}
                 className="rounded-full"
               />
-              <span>Legacy</span>
+              <span>{allowCosmoGroups ? "Legacy" : "Cosmo"}</span>
             </div>
           </SelectItem>
           <SelectItem value="blockchain">
@@ -221,7 +221,7 @@ const sources = [
       "Supports sorting by serial number.",
       "Does not support filtering by gridable.",
       "Objekt statuses such as event/welcome reward, gridded, mint pending, etc. are not supported.",
-      "Transferable status is not reliable, as MODHAUS has stopped publishing this data to the blockchain.",
+      "Transferable status is not reliable, as this information has stopped being published to the blockchain.",
     ],
   },
 ];

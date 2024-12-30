@@ -4,7 +4,7 @@ import { LegacyObjektResponse, parsePage } from "@/lib/universal/objekts";
 import { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
 import { useProfileContext } from "@/hooks/use-profile";
 import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
-import { ObjektResponseOptions } from "@/hooks/use-objekt-response";
+import { objektOptions } from "@/hooks/use-objekt-response";
 import FilteredObjektDisplay from "@/components/objekt/filtered-objekt-display";
 import { useCallback, useMemo } from "react";
 import { filtersAreDirty } from "@/hooks/use-filters";
@@ -55,7 +55,7 @@ export default function CosmoLegacy(props: Props) {
   /**
    * Query options
    */
-  const options = {
+  const options = objektOptions({
     queryKey: ["collection", "cosmo-legacy", props.profile.address],
     queryFunction: async ({ pageParam = 0 }: { pageParam?: number }) => {
       const endpoint = new URL(
@@ -79,10 +79,7 @@ export default function CosmoLegacy(props: Props) {
     getNextPageParam: (lastPage) => lastPage.nextStartAfter,
     calculateTotal: () => null,
     getItems: (data) => data.pages.flatMap((page) => page.objekts),
-  } satisfies ObjektResponseOptions<
-    LegacyObjektResponse<CosmoObjekt>,
-    CosmoObjekt
-  >;
+  });
 
   return (
     <FilteredObjektDisplay

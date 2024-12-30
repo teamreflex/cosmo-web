@@ -11,18 +11,20 @@ import {
 } from "@/components/ui/dialog";
 import { PropsWithChildren, useState } from "react";
 import { Button } from "../ui/button";
-import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQueryClient,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
 import { COSMO_ENDPOINT, ValidArtist } from "@/lib/universal/cosmo/common";
 import { cosmo } from "@/lib/server/http";
-import {
-  CosmoRewardItem,
-  CosmoRewardList,
-} from "@/lib/universal/cosmo/rewards";
+import { CosmoRewardItem } from "@/lib/universal/cosmo/rewards";
 import Image from "next/image";
 import { ScrollArea } from "../ui/scroll-area";
 import { Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "../ui/use-toast";
+import { getAvailableRewards, getRewardsClaimable } from "./queries";
 
 type Props = PropsWithChildren<{
   artist: ValidArtist;
@@ -31,21 +33,7 @@ type Props = PropsWithChildren<{
 
 export default function RewardsDialog({ children, artist, token }: Props) {
   const [open, setOpen] = useState(false);
-  const { data } = useSuspenseQuery({
-    queryKey: ["rewards-available", artist],
-    queryFn: async () => {
-      const endpoint = new URL("/bff/v1/event-rewards", COSMO_ENDPOINT);
-      return await cosmo<CosmoRewardList>(endpoint.toString(), {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        query: {
-          tid: crypto.randomUUID(),
-          artistName: artist,
-        },
-      });
-    },
-  });
+  const { data } = useSuspenseQuery(getAvailableRewards(artist, token));
 
   // const { count, items, claimCount } = {
   //   count: 5,
@@ -114,6 +102,7 @@ function ClaimRewards({
   claimCount,
   onComplete,
 }: ClaimRewardsProps) {
+  const queryClient = useQueryClient();
   const { mutate, isPending } = useMutation({
     mutationFn: async () => {
       const endpoint = new URL(`/bff/v1/event-rewards`, COSMO_ENDPOINT);
@@ -132,6 +121,17 @@ function ClaimRewards({
       toast({
         description: "Rewards claimed successfully",
       });
+
+      // mark all rewards as claimed
+      queryClient.invalidateQueries({
+        queryKey: getAvailableRewards(artist, token).queryKey,
+      });
+
+      // mark current artist as not claimable
+      queryClient.setQueryData(getRewardsClaimable(artist, token).queryKey, {
+        isClaimable: false,
+      });
+
       onComplete();
     },
     onError: () => {
