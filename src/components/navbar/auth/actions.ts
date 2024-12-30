@@ -86,7 +86,6 @@ export const updateSettings = async (form: FormData) =>
       dataSource: z.enum(collectionDataSources),
     }),
     onValidate: async ({ data, user }) => {
-      console.log(data);
       await db
         .update(profiles)
         .set(data)
