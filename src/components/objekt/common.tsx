@@ -9,6 +9,9 @@ type ObjektSidebarProps = {
 export function ObjektSidebar({ collection, serial }: ObjektSidebarProps) {
   const [ref, { width }] = useElementSize();
 
+  const paddedSerial =
+    serial === 0 ? "00000" : serial?.toString().padStart(5, "0");
+
   /**
    * sometimes the first element in the grid is a couple pixels smaller on the width, resulting in an offset number, not sure why.
    * using line-height works around it, as the background container is transparent so there's no resulting overflow.
@@ -24,7 +27,7 @@ export function ObjektSidebar({ collection, serial }: ObjektSidebarProps) {
       }}
     >
       <span>{collection}</span>
-      {serial && <span>#{serial.toString().padStart(5, "0")}</span>}
+      {paddedSerial && <span>#{paddedSerial}</span>}
     </div>
   );
 }
