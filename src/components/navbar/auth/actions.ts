@@ -10,9 +10,6 @@ import { db } from "@/lib/server/db";
 import { profiles } from "@/lib/server/db/schema";
 import { eq } from "drizzle-orm";
 import { deleteCookie, setCookie } from "@/lib/server/cookies";
-import { user } from "@/lib/server/cosmo/auth";
-import { revalidatePath } from "next/cache";
-import { signToken } from "@/lib/server/jwt";
 import { collectionDataSources } from "@/lib/utils";
 
 /**
@@ -92,41 +89,3 @@ export const updateSettings = async (form: FormData) =>
         .where(eq(profiles.id, user.profileId));
     },
   });
-
-/**
- * Updates profile data and invalidates avatar cache.
- */
-export const updateProfile = async () => {
-  const auth = await getUser();
-  if (auth.success === false) {
-    return { success: false, error: "Invalid user" };
-  }
-
-  // fetch user from cosmo
-  const cosmoUser = await user(auth.user.accessToken);
-
-  // update profile
-  await db
-    .update(profiles)
-    .set({ nickname: cosmoUser.nickname })
-    .where(eq(profiles.id, auth.user.profileId));
-
-  // update selected artist
-  await setCookie({ key: "artist", value: cosmoUser.lastViewedArtist });
-
-  // invalidate avatar cache
-  revalidatePath(`/@${cosmoUser.nickname}`);
-
-  // update token & redirect to profile if nickname changed
-  if (cosmoUser.nickname !== auth.user.nickname) {
-    await setCookie({
-      key: "token",
-      value: await signToken({
-        ...auth.user,
-        nickname: cosmoUser.nickname,
-      }),
-    });
-
-    redirect(`/@${cosmoUser.nickname}`);
-  }
-};

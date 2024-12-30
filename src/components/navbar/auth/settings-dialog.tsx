@@ -6,7 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { updateProfile, updateSettings } from "./actions";
+import { updateSettings } from "./actions";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -50,18 +50,6 @@ export default function SettingsDialog({
         router.refresh();
         onOpenChange(false);
       }
-    });
-  }
-
-  function update() {
-    startTransition(async () => {
-      await updateProfile();
-
-      toast({
-        description: "COSMO profile refreshed.",
-      });
-      router.refresh();
-      onOpenChange(false);
     });
   }
 
@@ -182,12 +170,7 @@ export default function SettingsDialog({
           </div>
         </form>
 
-        <DialogFooter className="flex-row justify-between sm:justify-between gap-2">
-          <Button type="button" disabled={isPending} onClick={update}>
-            <span>Refresh COSMO Profile</span>
-            {isPending && <Loader2 className="ml-2 w-4 h-4 animate-spin" />}
-          </Button>
-
+        <DialogFooter className="flex-row justify-end gap-2">
           <Button form="settings-form" type="submit" disabled={isPending}>
             <span>Save</span>
             {isPending && <Loader2 className="ml-2 w-4 h-4 animate-spin" />}

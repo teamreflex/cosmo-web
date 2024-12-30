@@ -15,6 +15,7 @@ import Skeleton from "@/components/skeleton/skeleton";
 import ListDropdown from "@/components/lists/list-dropdown";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { ObjektList } from "@/lib/universal/objekts";
+import RefreshButton from "@/components/profile/refresh-button";
 
 type Props = PropsWithChildren<{
   params: Promise<{
@@ -89,11 +90,13 @@ type ButtonsProps = {
 
 function Buttons({ profile, objektLists, currentUserAddress }: ButtonsProps) {
   const url = `/@${profile.isAddress ? profile.address : profile.nickname}`;
+  const isAuthenticated = currentUserAddress === profile.address;
 
   return (
-    <div className="flex flex-wrap gap-2 justify-center lg:justify-normal sm:absolute sm:top-2 sm:right-4">
+    <div className="flex flex-wrap gap-2 justify-center lg:justify-normal md:absolute md:top-2 md:right-4">
       <BackButton url={url} />
       <CopyAddressButton address={profile.address} />
+      {isAuthenticated && <RefreshButton />}
       <TradesButton
         nickname={profile.isAddress ? profile.address : profile.nickname}
       />
