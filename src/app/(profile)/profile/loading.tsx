@@ -30,6 +30,8 @@ export default function ProfileLayoutLoading() {
       <div className="flex flex-wrap gap-2 justify-center lg:justify-normal sm:absolute sm:top-2 sm:right-4">
         {/* copy address */}
         <Skeleton className="rounded-full w-10 h-10 lg:w-[122px] lg:h-8" />
+        {/* refresh */}
+        <Skeleton className="rounded-full w-10 h-10 lg:w-[79px] lg:h-8" />
         {/* trades */}
         <Skeleton className="rounded-full w-10 h-10 lg:w-[79px] lg:h-8" />
         {/* como */}
