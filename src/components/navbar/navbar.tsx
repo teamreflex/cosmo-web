@@ -1,4 +1,3 @@
-import AuthOptions from "./auth/auth-options";
 import Logo from "../logo";
 import { Suspense } from "react";
 import {
@@ -14,6 +13,8 @@ import SystemStatus from "../misc/system-status";
 import CosmoAvatar from "./auth/cosmo-avatar";
 import AuthFallback from "./auth-fallback";
 import Links from "./links.server";
+import { StateAuthenticated } from "./auth/state-authenticated";
+import { StateGuest } from "./auth/state-guest";
 
 export default async function Navbar() {
   return (
@@ -34,7 +35,9 @@ export default async function Navbar() {
             </Suspense>
 
             <div className="flex grow-0 items-center justify-end gap-2">
-              <ErrorBoundary fallback={<AuthFallback />}>
+              <ErrorBoundary
+                fallback={<AuthFallback message="Error loading user" />}
+              >
                 <Suspense
                   fallback={
                     <div className="h-10 w-10 rounded-full bg-accent animate-pulse" />
@@ -65,24 +68,30 @@ async function Auth() {
     throw new Error("Profile is missing, this should not be possible");
   }
 
-  return (
-    <AuthOptions
-      token={user}
-      profile={data!.profile}
-      artists={artists}
-      selectedArtist={selectedArtist}
-      comoBalances={
-        user ? <ComoBalanceRenderer address={user.address} /> : null
-      }
-      cosmoAvatar={
-        <ErrorBoundary fallback={<AuthFallback />}>
-          <CosmoAvatar
-            token={user}
-            artist={selectedArtist}
-            nickname={data!.profile.nickname}
-          />
-        </ErrorBoundary>
-      }
-    />
-  );
+  const isAuthenticated = user !== undefined && data !== undefined;
+  if (isAuthenticated) {
+    return (
+      <StateAuthenticated
+        profile={data.profile}
+        artists={artists}
+        selectedArtist={selectedArtist}
+        comoBalances={
+          user ? <ComoBalanceRenderer address={user.address} /> : null
+        }
+        cosmoAvatar={
+          <ErrorBoundary
+            fallback={<AuthFallback message="Error loading profile image" />}
+          >
+            <CosmoAvatar
+              token={user}
+              artist={selectedArtist}
+              nickname={data.profile.nickname}
+            />
+          </ErrorBoundary>
+        }
+      />
+    );
+  }
+
+  return <StateGuest />;
 }

@@ -24,7 +24,7 @@ export const logout = async () => {
   }
 
   await deleteCookie("token");
-  redirect("/");
+  redirect("/objekts");
 };
 
 /**
