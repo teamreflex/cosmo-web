@@ -78,9 +78,9 @@ function Transfers({ address }: { address: string }) {
   );
 }
 
-function TransfersSkeleton() {
+export function TransfersSkeleton() {
   return (
-    <div className="flex flex-col rounded-lg border border-accent text-sm">
+    <div className="w-full flex flex-col rounded-lg border border-accent text-sm">
       <div className="items-center grid grid-cols-[3fr_2fr_2fr_2fr] gap-2 h-12 px-4 text-left align-middle font-medium text-muted-foreground">
         <span>Objekt</span>
         <span>Action</span>
