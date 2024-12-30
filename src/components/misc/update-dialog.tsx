@@ -75,7 +75,7 @@ export default function UpdateDialog() {
 
 const updates = [
   {
-    date: "2024-12-30",
+    date: "2024-12-31",
     changes: [
       "Up to 5 objekts can now be sent at once. These will send in order of selection one at a time and will cancel the rest of the batch if one fails.",
       "Profile pages now display grouped by collection like COSMO does.",
