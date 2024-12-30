@@ -1,35 +1,15 @@
-import { withCosmoApi } from "@/lib/server/cosmo/withCosmoApi";
-import { indexer } from "@/lib/server/db/indexer";
-import { collections, objekts } from "@/lib/server/db/indexer/schema";
 import {
   BFFCollectionGroupParams,
   BFFCollectionGroupResponse,
-  parseBffCollectionGroupParams,
 } from "@/lib/universal/cosmo/objekts";
-import {
-  aliasedTable,
-  and,
-  count,
-  countDistinct,
-  desc,
-  eq,
-  max,
-  sql,
-} from "drizzle-orm";
+import { indexer } from "../../db/indexer";
+import { aliasedTable, and, eq, sql } from "drizzle-orm";
+import { collections, objekts } from "../../db/indexer/schema";
 
 /**
- * API route that services the /news/feed page.
+ * Replicates /bff/v1/objekt/collection-group endpoint but from blockchain data.
  */
-export const GET = withCosmoApi(async ({ req, user }) => {
-  const params = parseBffCollectionGroupParams(req.nextUrl.searchParams);
-
-  const results: BFFCollectionGroupResponse =
-    await fetchIndexerCollectionGroups(user.address, params);
-
-  return Response.json(results);
-});
-
-async function fetchIndexerCollectionGroups(
+export async function fetchCollectionGroups(
   address: string,
   params: BFFCollectionGroupParams
 ) {
@@ -41,8 +21,7 @@ async function fetchIndexerCollectionGroups(
 
   const where = and(
     eq(objektsAlias.owner, address),
-    eq(collectionsAlias.artist, params.artistName),
-    eq(collectionsAlias.class, "First")
+    eq(collectionsAlias.artist, params.artistName)
   );
 
   const query = sql<BFFCollectionGroupResponse>`
