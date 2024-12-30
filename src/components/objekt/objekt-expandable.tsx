@@ -13,6 +13,7 @@ type Props = PropsWithChildren<{
   collection: Objekt.Collection;
   tokenId?: number | string;
   setActive?: (slug: string | null) => void;
+  priority?: boolean;
 }>;
 
 /**
@@ -23,6 +24,7 @@ export default function ExpandableObjekt({
   tokenId = 0,
   collection,
   setActive,
+  priority = false,
 }: Props) {
   const [isLoaded, setIsLoaded] = useState(false);
   const queryClient = useQueryClient();
@@ -77,8 +79,7 @@ export default function ExpandableObjekt({
             width={291}
             height={450}
             alt={collection.collectionId}
-            quality={100}
-            unoptimized
+            priority={priority}
           />
 
           {children}

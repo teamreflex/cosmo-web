@@ -17,8 +17,9 @@ import { Objekt } from "@/lib/universal/objekt-conversion";
 type Props = {
   artists: CosmoArtistWithMembersBFF[];
   authenticated: boolean;
-  profile: PublicProfile;
-  user?: PublicProfile;
+  gridColumns: number;
+  targetUser: PublicProfile;
+  currentUser?: PublicProfile;
   searchParams: URLSearchParams;
   showLocked: boolean;
 };
@@ -55,10 +56,10 @@ export default function Blockchain(props: Props) {
    * Query options
    */
   const options = objektOptions({
-    queryKey: ["collection", "blockchain", props.profile.address],
+    queryKey: ["collection", "blockchain", props.targetUser.address],
     queryFunction: async ({ pageParam = 0 }: { pageParam?: number }) => {
       const endpoint = new URL(
-        `/api/objekts/by-address/${props.profile.address}`,
+        `/api/objekts/by-address/${props.targetUser.address}`,
         baseUrl()
       ).toString();
 
@@ -85,14 +86,18 @@ export default function Blockchain(props: Props) {
       options={options}
       getObjektId={(item) => item.tokenId}
       shouldRender={shouldRender}
-      gridColumns={props.profile?.gridColumns ?? props.user?.gridColumns}
+      gridColumns={props.gridColumns}
       hidePins={usingFilters}
       authenticated={props.authenticated}
     >
-      {({ item, id, isPin }) => {
+      {({ item, id, isPin, priority }) => {
         const objekt = Objekt.fromLegacy(item);
         return (
-          <ExpandableObjekt collection={objekt.collection} tokenId={id}>
+          <ExpandableObjekt
+            collection={objekt.collection}
+            tokenId={id}
+            priority={priority}
+          >
             <LegacyOverlay
               collection={objekt.collection}
               token={objekt.objekt}

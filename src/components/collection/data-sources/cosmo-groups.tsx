@@ -22,8 +22,9 @@ const PAGE_SIZE = 30;
 type Props = {
   artists: CosmoArtistWithMembersBFF[];
   authenticated: boolean;
-  profile: PublicProfile;
-  user?: PublicProfile;
+  gridColumns: number;
+  targetUser: PublicProfile;
+  currentUser?: PublicProfile;
   searchParams: URLSearchParams;
   showLocked: boolean;
 };
@@ -69,7 +70,7 @@ export default function CosmoCollectionGroups(props: Props) {
    * Query options
    */
   const options = objektOptions({
-    queryKey: ["collection", "cosmo", props.profile.address, artistName],
+    queryKey: ["collection", "cosmo", props.targetUser.address, artistName],
     queryFunction: async ({ pageParam = 1 }: { pageParam?: number }) => {
       const endpoint = new URL(
         "/bff/v1/objekt/collection-group",
@@ -123,23 +124,22 @@ export default function CosmoCollectionGroups(props: Props) {
     getItems: (data) => data.pages.flatMap((page) => page.collections),
   });
 
-  const gridColumns = props.profile?.gridColumns ?? props.user?.gridColumns;
-
   return (
     <FilteredObjektDisplay
       artists={props.artists}
       options={options}
       getObjektId={(item) => item.collection.collectionId}
       shouldRender={shouldRender}
-      gridColumns={gridColumns}
+      gridColumns={props.gridColumns}
       hidePins={usingFilters}
       authenticated={props.authenticated}
     >
-      {({ item }) => (
+      {({ item, priority }) => (
         <GroupedObjekt
           group={item}
-          gridColumns={gridColumns}
+          gridColumns={props.gridColumns}
           showLocked={props.showLocked}
+          priority={priority}
         />
       )}
     </FilteredObjektDisplay>

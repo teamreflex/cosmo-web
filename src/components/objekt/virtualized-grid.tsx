@@ -24,9 +24,8 @@ type ListItem<T> =
     };
 
 interface ObjektGridProps<Response, Item>
-  extends Omit<Props<Response, Item>, "artists" | "gridColumns"> {
+  extends Omit<Props<Response, Item>, "artists"> {
   hidePins: boolean;
-  rowSize: number;
 }
 
 const GAP = 16;
@@ -39,7 +38,7 @@ export default function VirtualizedGrid<Response, Item>({
   shouldRender,
   authenticated,
   hidePins,
-  rowSize,
+  gridColumns,
 }: ObjektGridProps<Response, Item>) {
   // data
   const pins = useProfileContext((ctx) => ctx.pins);
@@ -61,11 +60,11 @@ export default function VirtualizedGrid<Response, Item>({
     ];
 
     const result: ListItem<Item>[][] = [];
-    for (let i = 0; i < initialItems.length; i += rowSize) {
-      result.push(initialItems.slice(i, i + rowSize));
+    for (let i = 0; i < initialItems.length; i += gridColumns) {
+      result.push(initialItems.slice(i, i + gridColumns));
     }
     return result;
-  }, [items, pins, shouldRender, rowSize, hidePins]);
+  }, [items, pins, shouldRender, gridColumns, hidePins]);
 
   // virtualization
   const [containerRef, { width }] = useElementSize();
@@ -73,7 +72,7 @@ export default function VirtualizedGrid<Response, Item>({
     count: rows.length,
     overscan: 3,
     estimateSize: () => {
-      const itemWidth = (width - GAP * (rowSize - 1)) / rowSize;
+      const itemWidth = (width - GAP * (gridColumns - 1)) / gridColumns;
       return itemWidth * ASPECT_RATIO;
     },
     scrollMargin: containerRef.current?.offsetTop ?? 0,
@@ -99,7 +98,7 @@ export default function VirtualizedGrid<Response, Item>({
             <div
               key={rowItem.key}
               style={{
-                "--grid-columns": rowSize,
+                "--grid-columns": gridColumns,
                 transform: `translateY(${
                   rowItem.start - virtualizerRef.current.options.scrollMargin
                 }px)`,
@@ -109,7 +108,7 @@ export default function VirtualizedGrid<Response, Item>({
               ref={virtualizerRef.current.measureElement}
               className="absolute top-0 left-0 w-full px-0.5 grid gap-4 grid-cols-3 md:grid-cols-[repeat(var(--grid-columns),_minmax(0,_1fr))]"
             >
-              {row.map((objekt) => {
+              {row.map((objekt, index) => {
                 // render pin
                 if (objekt.type === "pin" && hidePins === false) {
                   const legacyObjekt = Objekt.fromLegacy(objekt.item);
@@ -118,6 +117,7 @@ export default function VirtualizedGrid<Response, Item>({
                       key={objekt.item.tokenId}
                       collection={legacyObjekt.collection}
                       tokenId={parseInt(objekt.item.tokenId)}
+                      priority={true}
                     >
                       <LegacyOverlay
                         collection={legacyObjekt.collection}
@@ -140,6 +140,8 @@ export default function VirtualizedGrid<Response, Item>({
                     item: objekt.item,
                     id: getObjektId(objekt.item),
                     isPin: false,
+                    // preload items in the first 4 rows
+                    priority: index <= gridColumns * 4,
                   });
 
                   return element

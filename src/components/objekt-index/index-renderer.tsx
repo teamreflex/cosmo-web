@@ -93,12 +93,13 @@ export default function IndexRenderer({
         gridColumns={gridColumns}
         authenticated={authenticated}
       >
-        {({ item, id }) => {
+        {({ item, priority }) => {
           const collection = Objekt.fromIndexer(item);
           return (
             <ExpandableObjekt
               collection={collection}
               setActive={setActiveObjekt}
+              priority={priority}
             >
               <Overlay
                 objekt={item}

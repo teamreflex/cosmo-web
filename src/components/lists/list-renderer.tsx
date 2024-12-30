@@ -91,10 +91,10 @@ export default function ListRenderer({
         gridColumns={gridColumns}
         authenticated={authenticated}
       >
-        {({ item }) => {
+        {({ item, priority }) => {
           const collection = Objekt.fromIndexer(item);
           return (
-            <ExpandableObjekt collection={collection}>
+            <ExpandableObjekt collection={collection} priority={priority}>
               <Overlay
                 collection={collection}
                 authenticated={authenticated}

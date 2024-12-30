@@ -26,6 +26,7 @@ export default function ProfileRenderer({
   targetUser,
   currentUser,
 }: Props) {
+  const gridColumns = targetUser.gridColumns ?? currentUser?.gridColumns;
   const authenticated = currentUser?.address === targetUser.address;
 
   const { searchParams, showLocked, setShowLocked, dataSource, setDataSource } =
@@ -56,8 +57,9 @@ export default function ProfileRenderer({
           <Blockchain
             artists={artists}
             authenticated={authenticated}
-            profile={targetUser}
-            user={currentUser}
+            gridColumns={gridColumns}
+            targetUser={targetUser}
+            currentUser={currentUser}
             searchParams={searchParams}
             showLocked={showLocked}
           />
@@ -66,8 +68,9 @@ export default function ProfileRenderer({
           <CosmoCollectionGroups
             artists={artists}
             authenticated={authenticated}
-            profile={targetUser}
-            user={currentUser}
+            gridColumns={gridColumns}
+            targetUser={targetUser}
+            currentUser={currentUser}
             searchParams={searchParams}
             showLocked={showLocked}
           />
@@ -76,7 +79,9 @@ export default function ProfileRenderer({
           <CosmoLegacy
             artists={artists}
             authenticated={authenticated}
-            profile={targetUser}
+            gridColumns={gridColumns}
+            targetUser={targetUser}
+            currentUser={currentUser}
             searchParams={searchParams}
             showLocked={showLocked}
           />

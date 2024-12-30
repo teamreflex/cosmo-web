@@ -4,7 +4,6 @@ import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import MemberFilter from "../collection/member-filter";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
-import { GRID_COLUMNS } from "@/lib/utils";
 import { Button } from "../ui/button";
 import Skeleton from "../skeleton/skeleton";
 import { ErrorBoundary } from "react-error-boundary";
@@ -17,6 +16,7 @@ type RenderProps<T> = {
   id: string | number;
   item: T;
   isPin: boolean;
+  priority: boolean;
 };
 
 export type Props<Response, Item> = {
@@ -25,7 +25,7 @@ export type Props<Response, Item> = {
   options: ObjektResponseOptions<Response, Item>;
   getObjektId: (objekt: Item) => string;
   shouldRender: (objekt: Item) => boolean;
-  gridColumns?: number;
+  gridColumns: number;
   hidePins?: boolean;
   authenticated: boolean;
 };
@@ -36,14 +36,12 @@ export default function FilteredObjektDisplay<Response, Item>({
   options,
   getObjektId,
   shouldRender,
-  gridColumns = GRID_COLUMNS,
+  gridColumns,
   hidePins = true,
   authenticated,
 }: Props<Response, Item>) {
   const [filters, setFilters] = useCosmoFilters();
   const isDesktop = useMediaQuery();
-
-  const rowSize = isDesktop ? gridColumns : 3;
 
   const setActiveMember = useCallback(
     (member: string) => {
@@ -96,11 +94,11 @@ export default function FilteredObjektDisplay<Response, Item>({
               <Suspense
                 fallback={
                   <div
-                    style={{ "--grid-columns": rowSize }}
+                    style={{ "--grid-columns": gridColumns }}
                     className="relative py-2 grid gap-4 w-full grid-cols-3 md:grid-cols-[repeat(var(--grid-columns),_minmax(0,_1fr))]"
                   >
                     <div className="z-20 absolute top-0 w-full h-full bg-linear-to-b from-transparent to-75% to-background" />
-                    {Array.from({ length: rowSize * 3 }).map((_, i) => (
+                    {Array.from({ length: gridColumns * 3 }).map((_, i) => (
                       <Skeleton
                         key={i}
                         className="z-10 w-full aspect-photocard rounded-lg md:rounded-xl lg:rounded-2xl"
@@ -115,7 +113,7 @@ export default function FilteredObjektDisplay<Response, Item>({
                   shouldRender={shouldRender}
                   authenticated={authenticated}
                   hidePins={hidePins}
-                  rowSize={rowSize}
+                  gridColumns={isDesktop ? gridColumns : 3}
                 >
                   {children}
                 </VirtualizedGrid>

@@ -21,6 +21,7 @@ interface Props {
   group: BFFCollectionGroup;
   gridColumns: number;
   showLocked: boolean;
+  priority?: boolean;
 }
 
 /**
@@ -30,6 +31,7 @@ export default function GroupedObjekt({
   group,
   gridColumns,
   showLocked,
+  priority = false,
 }: Props) {
   const [open, setOpen] = useState(false);
   const hasSelected = useObjektSelection(
@@ -50,6 +52,7 @@ export default function GroupedObjekt({
         count={group.count}
         hasSelected={hasSelected}
         onClick={() => setOpen(true)}
+        priority={priority}
       />
 
       <DialogPrimitive.Portal>
@@ -101,6 +104,7 @@ type RootObjektProps = {
   count: number;
   hasSelected: boolean;
   onClick: () => void;
+  priority?: boolean;
 };
 
 function RootObjekt({
@@ -108,6 +112,7 @@ function RootObjekt({
   count,
   hasSelected,
   onClick,
+  priority = false,
 }: RootObjektProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const queryClient = useQueryClient();
@@ -145,7 +150,7 @@ function RootObjekt({
             width={291}
             height={450}
             alt={collection.collectionId}
-            quality={100}
+            priority={priority}
           />
 
           <ObjektSidebar collection={collection.collectionNo} />

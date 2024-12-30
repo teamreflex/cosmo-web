@@ -1,5 +1,4 @@
 import ActionOverlay from "./overlay/action-overlay";
-
 import { useLockedObjekt } from "@/hooks/use-profile";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import ExpandableObjekt from "./objekt-expandable";
