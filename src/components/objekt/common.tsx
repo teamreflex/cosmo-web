@@ -42,10 +42,10 @@ export type Hoverable =
   | NonTransferableReason;
 
 /**
- * Replaces the 4x suffix from an image URL.
+ * Replaces the 4x or original suffix from an image URL.
  */
 export function replaceUrlSize(url: string, size: "2x" | "thumbnail" = "2x") {
-  return url.replace(/4x$/i, size);
+  return url.replace(/4x|original$/i, size);
 }
 
 /**
