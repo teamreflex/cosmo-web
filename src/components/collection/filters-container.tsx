@@ -73,7 +73,7 @@ export function CollectionFilters({
   const [filters, setFilters] = useCosmoFilters();
 
   return (
-    <div className="flex gap-2 items-center flex-wrap justify-center lg:group-data-[show=false]:flex group-data-[show=false]:hidden">
+    <div className="flex gap-2 items-center flex-wrap justify-center lg:group-data-[show=false]:flex group-data-[show=false]:hidden group-data-[show=true]:pb-2">
       <LockedFilter showLocked={showLocked} setShowLocked={setShowLocked} />
       {dataSource !== "blockchain" && (
         <GridableFilter filters={filters.gridable} setFilters={setFilters} />

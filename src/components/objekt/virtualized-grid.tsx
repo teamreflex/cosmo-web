@@ -102,7 +102,11 @@ export default function VirtualizedGrid<Response, Item>({
                 transform: `translateY(${
                   rowItem.start - virtualizerRef.current.options.scrollMargin
                 }px)`,
-                paddingTop: rowItem.index === 0 ? 0 : `${GAP}px`,
+                // need to add padding to the top and bottom of the grid to prevent border clipping
+                // add padding to the gap in between rows, and 2px to the first row
+                paddingTop: rowItem.index === 0 ? 2 : GAP,
+                // add padding to the last row
+                paddingBottom: rowItem.index === rows.length - 1 ? 2 : 0,
               }}
               data-index={rowItem.index}
               ref={virtualizerRef.current.measureElement}
