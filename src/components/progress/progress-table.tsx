@@ -66,19 +66,15 @@ export default function ProgressTable({ address, member }: Props) {
   );
 
   // calculate total progress
-  const { progress, total } = Object.values(items).reduce(
-    (acc, progresses) => {
-      for (const progress of progresses) {
-        acc.progress += progress.progress;
-        acc.total += progress.total;
-      }
-      return acc;
-    },
-    {
-      progress: 0,
-      total: 0,
-    }
-  );
+  const { progress, total } = Object.values(items)
+    .flat()
+    .reduce(
+      (acc, progress) => ({
+        progress: acc.progress + progress.progress,
+        total: acc.total + progress.total,
+      }),
+      { progress: 0, total: 0 }
+    );
   const percentage = Math.floor((progress / total) * 100);
 
   return (

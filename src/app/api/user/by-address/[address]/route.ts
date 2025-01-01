@@ -1,3 +1,4 @@
+import { env } from "@/env.mjs";
 import { db } from "@/lib/server/db";
 
 type Props = {
@@ -9,7 +10,12 @@ type Props = {
 /**
  * Endpoint for pulling a nickname from an address.
  */
-export async function GET(_: Request, props: Props) {
+export async function GET(req: Request, props: Props) {
+  const authKey = req.headers.get("Authorization");
+  if (authKey !== env.AUTH_KEY) {
+    return Response.json({ error: "invalid authorization" }, { status: 401 });
+  }
+
   const { address } = await props.params;
 
   const result = await db.query.profiles.findFirst({

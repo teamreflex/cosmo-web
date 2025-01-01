@@ -52,35 +52,20 @@ function toSearchParams(input: CosmoFilters, join = false): URLSearchParams {
   const query = new URLSearchParams();
 
   for (const [key, value] of Object.entries(input)) {
-    // filter out empty values
-    if (
-      value === null ||
-      value === "" ||
-      (Array.isArray(value) && value.length === 0)
-    ) {
-      continue;
-    }
+    if (!value || (Array.isArray(value) && !value.length)) continue;
 
-    switch (typeof value) {
-      case "string":
-        query.set(key, value);
-        break;
-      case "boolean":
-        if (value) {
-          query.set(key, "true");
+    if (typeof value === "string") {
+      query.set(key, value);
+    } else if (typeof value === "boolean" && value) {
+      query.set(key, "true");
+    } else if (Array.isArray(value)) {
+      if (join) {
+        query.set(key, value.join(","));
+      } else {
+        for (const item of value) {
+          query.append(key, item);
         }
-        break;
-      case "object":
-        if (Array.isArray(value)) {
-          if (join) {
-            query.set(key, value.join(","));
-          } else {
-            for (const item of value) {
-              query.append(key, item);
-            }
-          }
-        }
-        break;
+      }
     }
   }
 

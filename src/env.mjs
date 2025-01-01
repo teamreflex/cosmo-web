@@ -21,6 +21,8 @@ export const env = createEnv({
     // sentry
     SENTRY_ORG: z.string().min(1),
     SENTRY_PROJECT: z.string().min(1),
+    // auth key
+    AUTH_KEY: z.string().min(1),
   },
   client: {
     // info for rebranding the app
