@@ -1,7 +1,8 @@
 import { toast } from "@/components/ui/use-toast";
 import { CosmoPublicUser } from "@/lib/universal/cosmo/auth";
-import type { Hex } from "viem";
 import { create } from "zustand";
+
+const MAX_SELECTIONS = 10;
 
 type SelectedObjekt = {
   tokenId: number;
@@ -38,6 +39,7 @@ export type SelectionError = {
   objekt: SelectedObjekt;
   hash: null;
   recipient: CosmoPublicUser;
+  error?: string;
 };
 
 export type SelectionPending = {
@@ -99,10 +101,9 @@ export const useObjektSelection = create<ObjektSelectionState>()(
           (p) => p.objekt.tokenId === objekt.tokenId
         );
 
-        // TODO: add scroll area to the drawer to support more
-        if (!existing && state.selected.length >= 5) {
+        if (!existing && state.selected.length >= MAX_SELECTIONS) {
           toast({
-            description: "Currently only 5 objekts can be selected",
+            description: `Only ${MAX_SELECTIONS} objekts can be selected`,
           });
           return state;
         }

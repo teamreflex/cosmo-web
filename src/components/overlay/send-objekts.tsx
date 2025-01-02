@@ -41,6 +41,18 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useWallet } from "@/hooks/use-wallet";
 import { toast } from "../ui/use-toast";
 import { match } from "ts-pattern";
+import { getErrorMessage } from "@/lib/error";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 type SendState = "select" | "send";
 
@@ -201,7 +213,7 @@ function SelectRecipients({ selected, onComplete }: SelectRecipientsProps) {
 
       <Separator orientation="horizontal" className="my-2" />
 
-      <ScrollArea className="w-full min-h-28 max-h-96 overflow-y-auto">
+      <ScrollArea className="w-full min-h-28 max-h-[calc(100dvh-20rem)] overflow-y-auto">
         <div className="flex flex-col divide-y divide-accent">
           {selected.map((selection) => (
             <SelectRecipientRow
@@ -310,10 +322,10 @@ function Sending({ selected, onBack, onClose }: SendingProps) {
   const update = useObjektSelection((ctx) => ctx.update);
   const queryClient = useQueryClient();
 
-  const isComplete = selected.every(
-    (selection) =>
-      selection.status === "success" || selection.status === "error"
+  const isSuccess = selected.every(
+    (selection) => selection.status === "success"
   );
+  const hasError = selected.some((selection) => selection.status === "error");
 
   async function onSend() {
     if (!wallet) {
@@ -336,6 +348,14 @@ function Sending({ selected, onBack, onClose }: SendingProps) {
       const selection = selected[i] as SelectionIdle;
 
       try {
+        // scroll row into view
+        const row = document.getElementById(
+          `sending-${selection.objekt.tokenId}`
+        );
+        if (row) {
+          row.scrollIntoView({ behavior: "smooth" });
+        }
+
         // update the selection to pending
         update({
           ...selection,
@@ -365,6 +385,7 @@ function Sending({ selected, onBack, onClose }: SendingProps) {
         update({
           ...selection,
           status: "error",
+          error: getErrorMessage(error),
         } satisfies SelectionError);
 
         // update everything else to canceled
@@ -395,7 +416,7 @@ function Sending({ selected, onBack, onClose }: SendingProps) {
   if (isSending) {
     return (
       <div className="contents">
-        <ScrollArea className="w-full min-h-28 max-h-96 overflow-y-auto">
+        <ScrollArea className="w-full min-h-28 max-h-[calc(100dvh-20rem)] overflow-y-auto">
           <div className="flex flex-col divide-y divide-accent">
             {selected.map((selection) => (
               <SendingRow
@@ -406,7 +427,7 @@ function Sending({ selected, onBack, onClose }: SendingProps) {
           </div>
         </ScrollArea>
 
-        {isComplete && (
+        {(isSuccess || hasError) && (
           <DrawerFooter className="flex flex-row justify-center items-center gap-2">
             <Button onClick={onClose}>Close</Button>
           </DrawerFooter>
@@ -435,8 +456,9 @@ function Sending({ selected, onBack, onClose }: SendingProps) {
 }
 
 function SendingRow({ selection }: RowProps) {
+  const id = `sending-${selection.objekt.tokenId}`;
   return (
-    <div className="flex flex-row gap-4 py-2 px-4">
+    <div id={id} className="flex flex-row gap-4 py-2 px-4">
       <div className="relative aspect-photocard h-24">
         <Image
           className="object-cover"
@@ -487,10 +509,31 @@ function SendingRow({ selection }: RowProps) {
               </a>
             </div>
           ))
-          .with({ status: "error" }, () => (
-            <div className="flex flex-row gap-2 items-center">
-              <TriangleAlert className="h-4 w-4" />
-              <span className="text-sm">Error</span>
+          .with({ status: "error" }, ({ error }) => (
+            <div className="flex flex-col justify-between h-full">
+              <div className="flex flex-row gap-2 items-center">
+                <TriangleAlert className="h-4 w-4" />
+                <span className="text-sm">Error</span>
+              </div>
+
+              {/* {error !== undefined && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" size="xs" className="w-fit">
+                      View Error
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Transaction Error</AlertDialogTitle>
+                      <AlertDialogDescription>{error}</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogAction>Continue</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )} */}
             </div>
           ))
           .with({ status: "canceled" }, () => (
