@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { HelpCircle } from "lucide-react";
 import { Button } from "../ui/button";
-import { RarityPill } from "../objekt/metadata-dialog";
 import VisuallyHidden from "../ui/visually-hidden";
 
 export default function HelpDialog() {
@@ -57,46 +56,8 @@ export default function HelpDialog() {
             <h3 className="text-foreground text-lg font-semibold">Source</h3>
             <p>
               Click an objekt to view detailed information such as edition,
-              number of copies, rarity and source of the objekt.
+              number of copies and source of the objekt.
             </p>
-            <p>The rarity scale is based on the number of copies minted:</p>
-            <div className="flex flex-col gap-1 *:grid *:grid-cols-3 *:items-center *:gap-2">
-              {/* impossible */}
-              <div>
-                <RarityPill rarity="impossible" />
-                <span className="col-span-2">less than 10 copies</span>
-              </div>
-
-              {/* extremely-rare */}
-              <div>
-                <RarityPill rarity="extremely-rare" />
-                <span className="col-span-2">less than 25 copies</span>
-              </div>
-
-              {/* very-rare */}
-              <div>
-                <RarityPill rarity="very-rare" />
-                <span className="col-span-2">less than 50 copies</span>
-              </div>
-
-              {/* rare */}
-              <div>
-                <RarityPill rarity="rare" />
-                <span className="col-span-2">less than 100 copies</span>
-              </div>
-
-              {/* uncommon */}
-              <div>
-                <RarityPill rarity="uncommon" />
-                <span className="col-span-2">less than 350 copies</span>
-              </div>
-
-              {/* common */}
-              <div>
-                <RarityPill rarity="common" />
-                <span className="col-span-2">more than 350 copies</span>
-              </div>
-            </div>
           </div>
         </div>
         <AlertDialogFooter>

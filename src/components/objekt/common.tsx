@@ -69,3 +69,21 @@ export function getObjektImageUrls(opts: {
     },
   };
 }
+
+/**
+ * Returns the edition of the collection based on the collection number.
+ */
+export function getEdition(collectionNo: string): string {
+  const collection = parseInt(collectionNo);
+
+  if (collection >= 101 && collection <= 108) {
+    return "1st";
+  }
+  if (collection >= 109 && collection <= 116) {
+    return "2nd";
+  }
+  if (collection >= 117 && collection <= 120) {
+    return "3rd";
+  }
+  return "Unknown";
+}

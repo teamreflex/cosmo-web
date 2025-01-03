@@ -19,7 +19,7 @@ import {
   DrawerDescription,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { ObjektMetadata, LegacyObjekt } from "@/lib/universal/objekts";
+import { ObjektMetadata } from "@/lib/universal/objekts";
 import {
   QueryErrorResetBoundary,
   useQueryClient,
@@ -34,7 +34,7 @@ import { useProfileContext } from "@/hooks/use-profile";
 import { Button } from "../ui/button";
 import { updateObjektMetadata } from "./actions";
 import { Textarea } from "../ui/textarea";
-import { getObjektImageUrls, ObjektSidebar } from "./common";
+import { getEdition, getObjektImageUrls, ObjektSidebar } from "./common";
 import { ErrorBoundary } from "react-error-boundary";
 import { useCopyToClipboard } from "usehooks-ts";
 import { env } from "@/env.mjs";
@@ -42,7 +42,7 @@ import { toast } from "../ui/use-toast";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import VisuallyHidden from "../ui/visually-hidden";
 import FlippableObjekt from "./objekt-flippable";
-import { Objekt } from "../../lib/universal/objekt-conversion";
+import { Objekt } from "@/lib/universal/objekt-conversion";
 
 type CommonProps = {
   objekt: Objekt.Collection;
@@ -176,15 +176,15 @@ function MetadataContent({ slug, onClose }: MetadataDialogContentProps) {
 }
 
 function AttributePanel({ objekt }: CommonProps) {
+  const edition = getEdition(objekt.collectionNo);
+
   return (
     <div className="flex flex-wrap items-center gap-2 justify-center m-4">
       <Pill label="Artist" value={objekt.artistName} />
       <Pill label="Member" value={objekt.member} />
       <Pill label="Season" value={objekt.season} />
       <Pill label="Class" value={objekt.class} />
-      {objekt.class === "First" && (
-        <Pill label="Edition" value={getEdition(objekt.collectionNo)} />
-      )}
+      {objekt.class === "First" && <Pill label="Edition" value={edition} />}
       <Pill
         label="Type"
         value={objekt.onOffline === "online" ? "Digital" : "Physical"}
@@ -218,8 +218,6 @@ function Metadata({ objekt }: { objekt: Objekt.Collection }) {
   const [showForm, setShowForm] = useState(false);
   const profile = useProfileContext((ctx) => ctx.currentProfile);
 
-  const { front } = getObjektImageUrls(objekt);
-
   const { data } = useSuspenseQuery({
     queryKey: ["collection-metadata", "metadata", objekt.slug],
     queryFn: async () => {
@@ -241,6 +239,8 @@ function Metadata({ objekt }: { objekt: Objekt.Collection }) {
     });
   }
 
+  const { front } = getObjektImageUrls(objekt);
+
   return (
     <div className="flex grow flex-col justify-between gap-2 p-4">
       <div className="flex flex-wrap items-center gap-2 justify-center">
@@ -251,7 +251,6 @@ function Metadata({ objekt }: { objekt: Objekt.Collection }) {
         {objekt.class === "First" && (
           <Pill label="Tradable" value={`${data.percentage}%`} />
         )}
-        <RarityPill rarity={getRarity(data.total)} />
       </div>
 
       {showForm ? (
@@ -364,91 +363,4 @@ function Pill({ label, value }: PillProps) {
       <span>{value}</span>
     </div>
   );
-}
-
-const rarityMap = {
-  // grey - consumer
-  common: {
-    label: "Common",
-    color: "#afafaf",
-  },
-  // light blue - industrial
-  // uncommon: {
-  //   label: "Uncommon",
-  //   color: "#6496e1",
-  // },
-  // blue - milspec
-  uncommon: {
-    label: "Uncommon",
-    color: "#4b69cd",
-  },
-  // purple - restricted
-  rare: {
-    label: "Rare",
-    color: "#8847ff",
-  },
-  // pink - classified
-  "very-rare": {
-    label: "Very Rare",
-    color: "#d32ce6",
-  },
-  // red - covert
-  "extremely-rare": {
-    label: "Extremely Rare",
-    color: "#eb4b4b",
-  },
-  // gold - contraband
-  impossible: {
-    label: "Impossible",
-    color: "#e3c427",
-  },
-};
-type Rarity = keyof typeof rarityMap;
-
-export function RarityPill({ rarity }: { rarity: Rarity }) {
-  const { label, color } = rarityMap[rarity];
-
-  return (
-    <div
-      style={{ backgroundColor: color }}
-      className="flex items-center gap-1 rounded-full px-2 py-1 text-sm text-white w-fit"
-    >
-      <span className="font-semibold">{label}</span>
-    </div>
-  );
-}
-
-// counter-strike style rarity system
-function getRarity(copies: number): Rarity {
-  if (copies <= 10) {
-    return "impossible";
-  }
-  if (copies <= 25) {
-    return "extremely-rare";
-  }
-  if (copies <= 50) {
-    return "very-rare";
-  }
-  if (copies <= 100) {
-    return "rare";
-  }
-  if (copies <= 350) {
-    return "uncommon";
-  }
-  return "common";
-}
-
-function getEdition(collectionNo: string): string {
-  const collection = parseInt(collectionNo);
-
-  if (collection >= 101 && collection <= 108) {
-    return "1st";
-  }
-  if (collection >= 109 && collection <= 116) {
-    return "2nd";
-  }
-  if (collection >= 117 && collection <= 120) {
-    return "3rd";
-  }
-  return "Unknown";
 }
