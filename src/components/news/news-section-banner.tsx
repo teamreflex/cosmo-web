@@ -24,12 +24,12 @@ export default function NewsSectionBanner({ section }: Props) {
       className="flex flex-col w-full md:w-1/2 py-4 overflow-x-hidden"
       ref={carousel}
     >
-      <div className="embla__container flex w-full h-full">
+      <div className="embla__container transform-gpu will-change-transform w-full h-full -ml-4">
         {section.contents
           .sort((a, b) => a.order - b.order)
           .map((item, i, arr) => (
             <BannerItem
-              className="embla__slide mx-4"
+              className="embla__slide pl-4"
               key={item.id}
               item={item}
               index={i + 1}
