@@ -16,6 +16,7 @@ import { useLockedObjekt, useProfileContext } from "@/hooks/use-profile";
 import StaticObjekt from "./objekt-static";
 import { useObjektSelection } from "@/hooks/use-objekt-selection";
 import { useShallow } from "zustand/react/shallow";
+import { useObjektOverlay } from "@/store";
 
 interface Props {
   group: BFFCollectionGroup;
@@ -179,12 +180,15 @@ type RootObjektOverlayProps = {
 };
 
 function RootObjektOverlay({ count, onClick }: RootObjektOverlayProps) {
+  const isHidden = useObjektOverlay((state) => state.isHidden);
+
   return (
     <div className="contents">
       <div
         className={cn(
           "absolute bottom-0 left-0 isolate p-1 sm:p-2 rounded-tr-lg sm:rounded-tr-xl flex gap-2 group h-5 sm:h-9 w-5 sm:w-9 transition-all",
-          "text-(--objekt-text-color) bg-(--objekt-background-color)"
+          "text-(--objekt-text-color) bg-(--objekt-background-color)",
+          isHidden && "hidden"
         )}
       >
         <button

@@ -18,6 +18,7 @@ import useOverlayHover from "@/hooks/use-overlay-hover";
 import PinObjekt from "@/components/objekt/overlay/pin-button";
 import SendObjekt from "./send-button";
 import { Objekt } from "@/lib/universal/objekt-conversion";
+import { useObjektOverlay } from "@/store";
 
 type Props = {
   collection: Objekt.Collection;
@@ -38,6 +39,7 @@ export default function ActionOverlay({
 }: Props) {
   const objektLists = useProfileContext((ctx) => ctx.objektLists);
   const [hoverState, createHoverProps] = useOverlayHover();
+  const isHidden = useObjektOverlay((state) => state.isHidden);
 
   // grouping uses nonTransferableReason = "challenge-reward" for gridded objekts
   const usedForGrid =
@@ -57,7 +59,7 @@ export default function ActionOverlay({
         "absolute top-0 left-0 p-1 sm:p-2 rounded-br-lg sm:rounded-br-xl items-center group h-5 sm:h-9 transition-all overflow-hidden",
         "text-(--objekt-text-color) bg-(--objekt-background-color)",
         "grid grid-flow-col grid-cols-[1fr_min-content]",
-        showActions === false && "hidden"
+        (showActions === false || isHidden) && "hidden"
       )}
     >
       <div className="flex items-center gap-2">

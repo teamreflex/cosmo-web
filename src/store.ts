@@ -39,3 +39,16 @@ export const useSearchStore = create<SearchState>()(
     }
   )
 );
+
+/**
+ * store objekt overlay state
+ */
+interface ObjektOverlayState {
+  isHidden: boolean;
+  toggle: () => void;
+}
+
+export const useObjektOverlay = create<ObjektOverlayState>()((set) => ({
+  isHidden: false,
+  toggle: () => set((state) => ({ isHidden: !state.isHidden })),
+}));
