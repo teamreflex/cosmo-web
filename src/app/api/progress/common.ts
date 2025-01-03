@@ -20,6 +20,7 @@ export async function fetchTotal({
   const result = await indexer
     .select({
       id: collections.id,
+      slug: collections.slug,
       collectionNo: collections.collectionNo,
       frontImage: collections.frontImage,
       textColor: collections.textColor,

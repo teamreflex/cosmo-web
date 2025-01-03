@@ -15,6 +15,7 @@ import {
 } from "@/lib/universal/cosmo/common";
 import { cacheHeaders } from "@/app/api/common";
 import { z } from "zod";
+import { unobtainables } from "@/lib/universal/objekts";
 
 export const runtime = "nodejs";
 const LEADERBOARD_COUNT = 25;
@@ -86,7 +87,7 @@ export async function GET(request: NextRequest, props: Params) {
 
   return Response.json(
     {
-      total: totals.length,
+      total: totals.filter((c) => !unobtainables.includes(c.slug)).length,
       leaderboard: results,
     },
     {
@@ -119,7 +120,11 @@ async function fetchLeaderboard({
     .where(
       and(
         eq(collections.member, member),
+        // exclude welcome & zero class
         not(inArray(collections.class, ["Welcome", "Zero"])),
+        // exclude unobtainable collections
+        not(inArray(collections.slug, unobtainables)),
+        // apply filters
         ...(onlineType !== null ? [eq(collections.onOffline, onlineType)] : []),
         ...(season !== null ? [eq(collections.season, season)] : [])
       )

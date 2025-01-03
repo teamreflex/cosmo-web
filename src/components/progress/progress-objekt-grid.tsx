@@ -8,9 +8,9 @@ type Props = {
 };
 
 export default memo(function ProgressObjektGrid({ title, collections }: Props) {
-  const sorted = collections.toSorted(
-    (a, b) => parseInt(a.collectionNo) - parseInt(b.collectionNo)
-  );
+  const sorted = collections
+    .toSorted((a, b) => parseInt(a.collectionNo) - parseInt(b.collectionNo))
+    .filter((c) => !(c.unobtainable && !c.obtained));
 
   return (
     <div className="flex flex-col gap-2">

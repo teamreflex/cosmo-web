@@ -1,6 +1,6 @@
 "use client";
 
-import { FinalProgress } from "@/lib/universal/progress";
+import { SeasonProgress } from "@/lib/universal/progress";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { parseAsStringEnum, useQueryState } from "nuqs";
 import { ofetch } from "ofetch";
@@ -33,7 +33,7 @@ export default function ProgressTable({ address, member }: Props) {
         `/api/progress/breakdown/${member}/${address}`,
         baseUrl()
       );
-      return await ofetch<FinalProgress[]>(url.toString());
+      return await ofetch<SeasonProgress[]>(url.toString());
     },
   });
 
@@ -58,7 +58,7 @@ export default function ProgressTable({ address, member }: Props) {
       }
 
       return acc;
-    }, {} as Record<string, FinalProgress[]>);
+    }, {} as Record<string, SeasonProgress[]>);
 
   // filter out any seasons that have no class/online type combinations
   const seasons = Object.entries(items).filter(
@@ -66,15 +66,22 @@ export default function ProgressTable({ address, member }: Props) {
   );
 
   // calculate total progress
-  const { progress, total } = Object.values(items)
+  let { progress, total, unobtainable } = Object.values(items)
     .flat()
     .reduce(
       (acc, progress) => ({
         progress: acc.progress + progress.progress,
         total: acc.total + progress.total,
+        unobtainable: acc.unobtainable + progress.unobtainable,
       }),
-      { progress: 0, total: 0 }
+      { progress: 0, total: 0, unobtainable: 0 }
     );
+
+  // if the user has 100%, add their unobtainables in
+  if (total === progress) {
+    progress += unobtainable;
+  }
+
   const percentage = Math.floor((progress / total) * 100);
 
   return (

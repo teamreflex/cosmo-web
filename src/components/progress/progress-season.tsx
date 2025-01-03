@@ -1,24 +1,31 @@
-import { FinalProgress } from "@/lib/universal/progress";
+import { SeasonProgress } from "@/lib/universal/progress";
 import { useState } from "react";
 import ProgressItem from "./progress-item";
 import ProgressObjektGrid from "./progress-objekt-grid";
 
 type Props = {
   season: string;
-  classes: FinalProgress[];
+  classes: SeasonProgress[];
 };
 
 export default function ProgressSeason({ season, classes }: Props) {
-  const [selectedClass, setSelectedClass] = useState<FinalProgress>();
+  const [selectedClass, setSelectedClass] = useState<SeasonProgress>();
 
   const total = classes.reduce((acc, progress) => acc + progress.total, 0);
-  const progress = classes.reduce(
-    (acc, progress) => acc + progress.progress,
+  let progress = classes.reduce((acc, progress) => acc + progress.progress, 0);
+  const unobtainable = classes.reduce(
+    (acc, progress) => acc + progress.unobtainable,
     0
   );
+
+  // if the user has 100%, add their unobtainables in
+  if (total === progress) {
+    progress += unobtainable;
+  }
+
   const percentage = Math.floor((progress / total) * 100);
 
-  function toggleSelected(item: FinalProgress) {
+  function toggleSelected(item: SeasonProgress) {
     setSelectedClass((prev) => {
       return prev?.key === item.key ? undefined : item;
     });

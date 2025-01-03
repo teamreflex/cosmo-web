@@ -1,8 +1,8 @@
-import { FinalProgress } from "@/lib/universal/progress";
+import { SeasonProgress } from "@/lib/universal/progress";
 import { Maximize2, Minimize2 } from "lucide-react";
 
 type Props = {
-  progress: FinalProgress;
+  progress: SeasonProgress;
   isSelected: boolean;
   onExpand: () => void;
 };
@@ -12,11 +12,16 @@ export default function ProgressItem({
   isSelected,
   onExpand,
 }: Props) {
-  const percentage = Math.floor((progress.progress / progress.total) * 100);
+  let owned = progress.progress;
+  if (progress.total === progress.progress) {
+    owned += progress.unobtainable;
+  }
+
+  const percentage = Math.floor((owned / progress.total) * 100);
 
   return (
     <div
-      data-complete={percentage === 100}
+      data-complete={percentage >= 100}
       onClick={onExpand}
       className="flex flex-row justify-between items-center rounded-lg py-3 px-4 border border-transparent data-[complete=true]:border-cosmo bg-accent cursor-pointer h-20"
     >
@@ -24,7 +29,7 @@ export default function ProgressItem({
         <h4 className="text-lg font-semibold">{progress.class} Class</h4>
 
         <p>
-          Progress: {progress.progress}/{progress.total} ({percentage}%)
+          Progress: {owned}/{progress.total} ({percentage}%)
         </p>
       </div>
 

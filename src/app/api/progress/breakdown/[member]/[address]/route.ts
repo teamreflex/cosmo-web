@@ -5,10 +5,11 @@ import {
   validOnlineTypes,
   validSeasons,
 } from "@/lib/universal/cosmo/common";
-import { FinalProgress, SeasonMatrix } from "@/lib/universal/progress";
+import { SeasonProgress, SeasonMatrix } from "@/lib/universal/progress";
 import { and, eq } from "drizzle-orm";
 import { PartialCollection, fetchTotal } from "../../../common";
 import { cacheHeaders } from "@/app/api/common";
+import { unobtainables } from "@/lib/universal/objekts";
 
 export const runtime = "nodejs";
 
@@ -22,9 +23,9 @@ type Params = {
 /**
  * API route that services the /@:nickname/progress page.
  * Takes an address and a member name, and returns the collection progress breakdown of that member.
- * Cached for 5 minutes.
+ * Cached for 1 hour.
  */
-export async function GET(request: Request, props: Params) {
+export async function GET(_: Request, props: Params) {
   const params = await props.params;
   const matrix = buildMatrix();
   const [totals, progress] = await Promise.all([
@@ -33,7 +34,7 @@ export async function GET(request: Request, props: Params) {
   ]);
 
   return Response.json(zipResults(matrix, totals, progress), {
-    headers: cacheHeaders(60 * 5),
+    headers: cacheHeaders(60 * 60),
   });
 }
 
@@ -63,6 +64,7 @@ async function fetchProgress(address: string, member: string) {
   return await indexer
     // ensure we only count each collection once
     .selectDistinctOn([objekts.collectionId], {
+      slug: collections.slug,
       owner: objekts.owner,
       collectionId: objekts.collectionId,
       member: collections.member,
@@ -92,7 +94,7 @@ function zipResults(
   matrix: SeasonMatrix[],
   total: PartialCollection,
   progress: PartialObjekt
-): FinalProgress[] {
+): SeasonProgress[] {
   return matrix.map((m) => {
     const type = m.type === "combined" ? undefined : m.type;
 
@@ -101,13 +103,31 @@ function zipResults(
     );
     const ownedInScope = progress.filter(filterMatrix(m.class, m.season, type));
 
+    // exclude unobtainable collections from total count
+    const totalCollections = collectionsInScope.filter(
+      (c) => !unobtainables.includes(c.slug)
+    ).length;
+
+    // get unobtainable collections separately to be added in later
+    const { progressTotal, unobtainableTotal } = ownedInScope.reduce(
+      (acc, c) => {
+        const isUnobtainable = unobtainables.includes(c.slug);
+        acc.progressTotal += isUnobtainable ? 0 : 1;
+        acc.unobtainableTotal += isUnobtainable ? 1 : 0;
+        return acc;
+      },
+      { progressTotal: 0, unobtainableTotal: 0 }
+    );
+
     return {
       ...m,
-      total: collectionsInScope.length,
-      progress: ownedInScope.length,
+      total: totalCollections,
+      progress: progressTotal,
+      unobtainable: unobtainableTotal,
       collections: collectionsInScope.map((c) => ({
         ...c,
         obtained: ownedInScope.some((p) => p.collectionId === c.id),
+        unobtainable: unobtainables.includes(c.slug),
       })),
     };
   });

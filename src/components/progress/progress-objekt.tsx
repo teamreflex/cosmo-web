@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { replaceUrlSize } from "../objekt/common";
 import { ObjektSidebar } from "../objekt/common";
+import { Star } from "lucide-react";
 
 type Props = {
   objekt: ObjektProgression;
@@ -32,6 +33,12 @@ export default function ProgressObjekt({ objekt }: Props) {
         quality={100}
         unoptimized
       />
+
+      {objekt.unobtainable && (
+        <div className="absolute top-1 left-1 sm:top-2 sm:left-2 bg-black rounded-full p-1">
+          <Star className="size-4 fill-white text-white" />
+        </div>
+      )}
 
       {isLoaded && <ObjektSidebar collection={objekt.collectionNo} />}
     </div>

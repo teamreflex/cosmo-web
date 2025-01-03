@@ -75,6 +75,16 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2025-01-03",
+    changes: [
+      "Updated maximum objekts that can be sent at once to 10.",
+      "Removed rarity from objekt information as the number of copies no longer correlates with rarity.",
+      "Added an 'unobtainable' label to objekts that are no longer obtainable though normal means, such as limited time events.",
+      "Progress and leaderboard now exclude unobtainable objekts. If you have 100% for a season/class and own an unobtainable, it will be shown and your percentage will go over 100%.",
+      "Unobtainables include: Mayu B101A-B108A, tripleS D312Z, JinSoul A109A, ARTMS A346Z, ARTMS A351Z",
+    ],
+  },
+  {
     date: "2024-12-31",
     changes: [
       "Up to 5 objekts can now be sent at once. These will send in order of selection one at a time and will cancel the rest of the batch if one fails.",
@@ -92,9 +102,5 @@ const updates = [
       "Profiles should more reliably update when COSMO IDs change.",
       "COSMO profile details can now be refreshed from settings. This will update your ID from COSMO based on your currently signed in account, refresh your profile images, and pull your selected artist from COSMO.",
     ],
-  },
-  {
-    date: "2024-12-07",
-    changes: ["Hopefully fixed instances of Google Translate breaking pages."],
   },
 ];

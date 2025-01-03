@@ -19,11 +19,13 @@ export interface ObjektProgression
     | "onOffline"
   > {
   obtained: boolean;
+  unobtainable: boolean;
 }
 
-export interface FinalProgress extends SeasonMatrix {
+export interface SeasonProgress extends SeasonMatrix {
   total: number;
   progress: number;
+  unobtainable: number;
   collections: ObjektProgression[];
 }
 
