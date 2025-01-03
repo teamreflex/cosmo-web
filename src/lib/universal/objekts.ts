@@ -61,6 +61,12 @@ export const unobtainables = [
   "atom01-kimlip-351z",
   "atom01-jinsoul-351z",
   "atom01-choerry-351z",
+  // virtual angel events
+  "binary01-heejin-310z",
+  "binary01-haseul-310z",
+  "binary01-kimlip-310z",
+  "binary01-jinsoul-310z",
+  "binary01-choerry-310z",
   // zero class
   "atom01-triples-000z",
   "atom01-aaa-000z",

@@ -81,7 +81,7 @@ const updates = [
       "Removed rarity from objekt information as the number of copies no longer correlates with rarity.",
       "Added an 'unobtainable' label to objekts that are no longer obtainable though normal means, such as limited time events.",
       "Progress and leaderboard now exclude unobtainable objekts. If you have 100% for a season/class and own an unobtainable, it will be shown and your percentage will go over 100%.",
-      "Unobtainables include: Mayu B101A-B108A, tripleS D312Z, JinSoul A109A, ARTMS A346Z, ARTMS A351Z",
+      "Unobtainables include: Mayu B101A-B108A, tripleS D312Z, JinSoul A109A, ARTMS A346Z, ARTMS A351Z, ARTMS B310Z.",
     ],
   },
   {
