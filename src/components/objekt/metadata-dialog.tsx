@@ -19,7 +19,7 @@ import {
   DrawerDescription,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { ObjektMetadata } from "@/lib/universal/objekts";
+import { ObjektMetadata, unobtainables } from "@/lib/universal/objekts";
 import {
   QueryErrorResetBoundary,
   useQueryClient,
@@ -201,7 +201,7 @@ function MetadataPanel({ objekt }: CommonProps) {
           <Suspense
             fallback={
               <div className="p-4">
-                <Skeleton className="w-1/2 h-7 mx-auto" />
+                <Skeleton className="w-24 h-7 rounded-full mx-auto" />
               </div>
             }
           >
@@ -240,16 +240,23 @@ function Metadata({ objekt }: { objekt: Objekt.Collection }) {
   }
 
   const { front } = getObjektImageUrls(objekt);
+  const isUnobtainable = unobtainables.includes(objekt.slug);
+  const total = Number(data.total).toLocaleString();
 
   return (
     <div className="flex grow flex-col justify-between gap-2 p-4">
       <div className="flex flex-wrap items-center gap-2 justify-center">
         <Pill
           label={objekt.onOffline === "online" ? "Copies" : "Scanned Copies"}
-          value={Number(data.total).toLocaleString()}
+          value={total}
         />
         {objekt.class === "First" && (
           <Pill label="Tradable" value={`${data.percentage}%`} />
+        )}
+        {isUnobtainable && (
+          <div className="flex items-center gap-1 rounded-full px-2 py-1 text-sm bg-red-500">
+            <span className="font-semibold text-white">Unobtainable</span>
+          </div>
         )}
       </div>
 

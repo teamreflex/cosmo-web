@@ -106,7 +106,11 @@ async function fetchCollectionMetadata(slug: string) {
   return await db.query.objektMetadata.findFirst({
     where: eq(objektMetadata.collectionId, slug),
     with: {
-      profile: true,
+      profile: {
+        columns: {
+          nickname: true,
+        },
+      },
     },
   });
 }
