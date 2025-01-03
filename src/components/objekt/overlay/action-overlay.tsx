@@ -47,7 +47,7 @@ export default function ActionOverlay({
     !token.transferable ||
     usedForGrid ||
     isLocked ||
-    isPinned ||
+    (isPinned && isPin) ||
     (token.transferable && authenticated);
 
   return (
