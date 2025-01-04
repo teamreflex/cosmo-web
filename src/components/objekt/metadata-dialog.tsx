@@ -43,6 +43,8 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import VisuallyHidden from "../ui/visually-hidden";
 import FlippableObjekt from "./objekt-flippable";
 import { Objekt } from "@/lib/universal/objekt-conversion";
+import { cn } from "@/lib/utils";
+import Portal from "../portal";
 
 type CommonProps = {
   objekt: Objekt.Collection;
@@ -81,7 +83,7 @@ export default function MetadataDialog({
 
       {isDesktop ? (
         <Dialog open={open} onOpenChange={onOpenChange}>
-          <DialogContent className="max-w-3xl grid-cols-auto grid-flow-col p-0 gap-0 md:rounded-2xl outline-hidden">
+          <DialogContent className="max-w-[55rem] grid-cols-auto grid-flow-col p-0 gap-0 md:rounded-2xl outline-hidden">
             <VisuallyHidden>
               <DialogTitle>{slug}</DialogTitle>
               <DialogDescription>{slug}</DialogDescription>
@@ -91,7 +93,7 @@ export default function MetadataDialog({
         </Dialog>
       ) : (
         <Drawer open={open} onOpenChange={onOpenChange}>
-          <DrawerContent className="grid-cols-auto grid-flow-row p-0 gap-0 outline-hidden">
+          <DrawerContent className="grid-cols-auto grid-flow-row p-0 gap-2 sm:gap-0 outline-hidden">
             <VisuallyHidden>
               <DrawerTitle>{slug}</DrawerTitle>
               <DrawerDescription>{slug}</DrawerDescription>
@@ -160,13 +162,22 @@ function MetadataContent({ slug, onClose }: MetadataDialogContentProps) {
 
   return (
     <div className="contents">
-      <div className="flex h-[28rem] aspect-photocard mx-auto shrink mt-4 sm:mt-0">
+      <div
+        className={cn(
+          // common
+          "flex aspect-photocard",
+          // mobile
+          "mt-2 mx-auto w-2/3",
+          // desktop
+          "sm:mt-0 sm:h-[28rem] sm:mx-0 sm:w-auto"
+        )}
+      >
         <FlippableObjekt collection={data}>
           <ObjektSidebar collection={data.collectionNo} />
         </FlippableObjekt>
       </div>
 
-      <div className="flex flex-col">
+      <div className="flex flex-col gap-2 mb-2 sm:my-4">
         <AttributePanel objekt={data} />
         <Separator orientation="horizontal" />
         <MetadataPanel objekt={data} />
@@ -179,7 +190,10 @@ function AttributePanel({ objekt }: CommonProps) {
   const edition = getEdition(objekt.collectionNo);
 
   return (
-    <div className="flex flex-wrap items-center gap-2 justify-center m-4">
+    <div
+      id="attribute-panel"
+      className="flex flex-wrap items-center gap-2 justify-center mx-4"
+    >
       <Pill label="Artist" value={objekt.artistName} />
       <Pill label="Member" value={objekt.member} />
       <Pill label="Season" value={objekt.season} />
@@ -200,8 +214,16 @@ function MetadataPanel({ objekt }: CommonProps) {
         <ErrorBoundary FallbackComponent={MetadataDialogError} onReset={reset}>
           <Suspense
             fallback={
-              <div className="p-4">
-                <Skeleton className="w-24 h-7 rounded-full mx-auto" />
+              <div className="flex flex-col justify-between h-full gap-2 mx-4">
+                <div className="flex flex-col gap-2">
+                  <Skeleton className="w-full h-4 sm:h-5 rounded-full" />
+                  <Skeleton className="w-2/3 h-4 sm:h-5 rounded-full" />
+                </div>
+
+                <div className="flex flex-row-reverse gap-2 self-end mt-auto w-full">
+                  <Skeleton className="w-12 h-9 rounded-md" />
+                  <Skeleton className="w-12 h-9 rounded-md" />
+                </div>
               </div>
             }
           >
@@ -244,8 +266,8 @@ function Metadata({ objekt }: { objekt: Objekt.Collection }) {
   const total = Number(data.total).toLocaleString();
 
   return (
-    <div className="flex grow flex-col justify-between gap-2 p-4">
-      <div className="flex flex-wrap items-center gap-2 justify-center">
+    <div className="flex grow flex-col justify-between gap-2 px-4">
+      <Portal to="#attribute-panel">
         <Pill
           label={objekt.onOffline === "online" ? "Copies" : "Scanned Copies"}
           value={total}
@@ -254,11 +276,11 @@ function Metadata({ objekt }: { objekt: Objekt.Collection }) {
           <Pill label="Tradable" value={`${data.percentage}%`} />
         )}
         {isUnobtainable && (
-          <div className="flex items-center gap-1 rounded-full px-2 py-1 text-sm bg-red-500">
+          <div className="flex items-center gap-1 rounded-full px-2 py-1 text-xs sm:text-sm bg-red-500">
             <span className="font-semibold text-white">Unobtainable</span>
           </div>
         )}
-      </div>
+      </Portal>
 
       {showForm ? (
         <EditMetadata
@@ -267,7 +289,9 @@ function Metadata({ objekt }: { objekt: Objekt.Collection }) {
           close={() => setShowForm(false)}
         />
       ) : (
-        data.metadata !== undefined && <p>{data.metadata.description}</p>
+        data.metadata !== undefined && (
+          <p className="text-sm sm:text-base">{data.metadata.description}</p>
+        )
       )}
 
       <div className="flex flex-row-reverse gap-2 items-center self-end mt-auto w-full">
@@ -365,7 +389,7 @@ type PillProps = {
 
 function Pill({ label, value }: PillProps) {
   return (
-    <div className="flex items-center gap-1 rounded-full bg-accent px-2 py-1 text-sm">
+    <div className="flex items-center gap-1 rounded-full bg-accent px-2 py-1 text-xs sm:text-sm">
       <span className="font-semibold">{label}</span>
       <span>{value}</span>
     </div>

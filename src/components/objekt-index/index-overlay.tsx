@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { IndexedObjekt, ObjektList } from "@/lib/universal/objekts";
 import AddToList from "../lists/add-to-list";
 import OverlayStatus from "../objekt/overlay/overlay-status";
+import { useObjektOverlay } from "@/store";
 
 type TopOverlayProps = {
   objekt: IndexedObjekt;
@@ -11,13 +12,16 @@ type TopOverlayProps = {
 };
 
 export function TopOverlay({ objekt, objektLists }: TopOverlayProps) {
+  const isHidden = useObjektOverlay((state) => state.isHidden);
+
   return (
     <div
       className={cn(
         "absolute left-0 p-1 sm:p-2 items-center group h-5 sm:h-9 transition-all overflow-hidden",
         "text-(--objekt-text-color) bg-(--objekt-background-color)",
         "grid grid-flow-col grid-cols-[1fr_min-content]",
-        "top-0 rounded-br-lg sm:rounded-br-xl"
+        "top-0 rounded-br-lg sm:rounded-br-xl",
+        isHidden && "hidden"
       )}
     >
       {/* buttons */}
