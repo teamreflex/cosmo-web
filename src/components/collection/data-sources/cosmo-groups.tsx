@@ -101,6 +101,11 @@ export default function CosmoCollectionGroups(props: Props) {
         searchParams.delete("member");
       }
 
+      // remap on_offline to online,offline as cosmo rejects offline,online
+      if (filters.on_offline?.length === 2) {
+        searchParams.set("on_offline", "online,offline");
+      }
+
       return await ofetch<BFFCollectionGroupResponse>(endpoint, {
         query: Object.fromEntries(searchParams.entries()),
         headers: {
