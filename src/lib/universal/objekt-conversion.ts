@@ -192,7 +192,11 @@ function slug(
   params: Pick<Objekt.Collection, "season" | "member" | "collectionNo">
 ): string {
   let { season, member, collectionNo } = params;
-  member = member.toLowerCase().replace(/[+()]+/g, "");
+  member = member
+    .toLowerCase()
+    .replace(/[+()]+/g, "")
+    .replace(" ", "-")
+    .replace("ö", "o");
   return `${season}-${member}-${collectionNo}`.toLowerCase();
 }
 
