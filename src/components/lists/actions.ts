@@ -11,7 +11,6 @@ import {
   removeObjekt,
   updateObjektList,
 } from "@/lib/server/objekts/lists";
-import slugify from "slugify";
 import { TypedActionResult } from "@/lib/server/typed-action/types";
 import { ActionError } from "@/lib/server/typed-action/errors";
 import { db } from "@/lib/server/db";
@@ -20,7 +19,7 @@ import { Collection } from "@/lib/server/db/indexer/schema";
 import { ObjektListEntry } from "@/lib/server/db/schema";
 
 function createSlug(name: string) {
-  return slugify(name, { lower: true });
+  return name.trim().toLowerCase().replace(/ /g, "-");
 }
 
 /**
