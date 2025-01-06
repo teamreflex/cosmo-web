@@ -116,7 +116,7 @@ const Title = memo(function Title({
   objektList: ObjektList;
 }) {
   return (
-    <div className="flex flex-wrap items-center justify-between pb-2 gap-2">
+    <div className="flex flex-wrap items-center justify-between gap-2">
       <h3 className="text-xl font-cosmo">{objektList.name}</h3>
 
       {authenticated && (

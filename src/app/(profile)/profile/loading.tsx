@@ -29,21 +29,21 @@ export default function ProfileLayoutLoading() {
       {/* mobile buttons */}
       <div className="flex flex-wrap gap-2 justify-center lg:justify-normal sm:absolute sm:top-2 sm:right-4">
         {/* copy address */}
-        <Skeleton className="rounded-full w-10 h-10 lg:w-[122px] lg:h-8" />
+        <Skeleton className="rounded-full w-10 h-10 lg:w-[122px] lg:h-8 shrink-0" />
         {/* refresh */}
-        <Skeleton className="rounded-full w-10 h-10 lg:w-[79px] lg:h-8" />
+        <Skeleton className="rounded-full w-10 h-10 lg:w-[79px] lg:h-8 shrink-0" />
         {/* trades */}
-        <Skeleton className="rounded-full w-10 h-10 lg:w-[79px] lg:h-8" />
+        <Skeleton className="rounded-full w-10 h-10 lg:w-[79px] lg:h-8 shrink-0" />
         {/* como */}
-        <Skeleton className="rounded-full w-10 h-10 lg:w-[78px] lg:h-8" />
+        <Skeleton className="rounded-full w-10 h-10 lg:w-[78px] lg:h-8 shrink-0" />
         {/* progress */}
-        <Skeleton className="rounded-full w-10 h-10 lg:w-[91px] lg:h-8" />
+        <Skeleton className="rounded-full w-10 h-10 lg:w-[91px] lg:h-8 shrink-0" />
         {/* lists */}
-        <Skeleton className="rounded-full w-10 h-10 lg:w-[67px] lg:h-8" />
+        <Skeleton className="rounded-full w-10 h-10 lg:w-[67px] lg:h-8 shrink-0" />
         {/* help */}
-        <Skeleton className="rounded-full aspect-square h-10 lg:h-8" />
+        <Skeleton className="rounded-full aspect-square h-10 lg:h-8 shrink-0" />
         {/* filters */}
-        <Skeleton className="rounded-full flex w-10 h-10 lg:hidden lg:w-[89px] lg:h-8" />
+        <Skeleton className="rounded-full flex w-10 h-10 lg:hidden lg:w-[89px] lg:h-8 shrink-0" />
       </div>
     </main>
   );

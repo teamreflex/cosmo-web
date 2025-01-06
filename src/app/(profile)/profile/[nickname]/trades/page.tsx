@@ -41,7 +41,7 @@ export default async function UserTransfersPage(props: Props) {
   });
 
   return (
-    <section className="flex flex-col py-2">
+    <section className="flex flex-col">
       <HydrationBoundary state={dehydrate(queryClient)}>
         <TransfersRenderer profile={profile} />
       </HydrationBoundary>

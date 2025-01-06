@@ -1,11 +1,15 @@
 import Skeleton from "./skeleton";
 
-export default function MemberFilterSkeleton() {
+type Props = {
+  artists?: boolean;
+};
+
+export default function MemberFilterSkeleton({ artists = true }: Props) {
   return (
     <div className="flex flex-col gap-2 p-1 w-full">
       {/* artms */}
       <div className="flex flex-row gap-2 h-fit sm:justify-center justify-items-start overflow-x-scroll no-scrollbar">
-        {Array.from({ length: 6 }).map((_, i) => (
+        {Array.from({ length: 5 + (artists ? 1 : 0) }).map((_, i) => (
           <div
             key={i}
             className="flex flex-col gap-1 justify-center items-center"
@@ -18,7 +22,7 @@ export default function MemberFilterSkeleton() {
 
       {/* triples */}
       <div className="flex flex-row gap-2 h-fit sm:justify-center justify-items-start overflow-x-scroll no-scrollbar">
-        {Array.from({ length: 25 }).map((_, i) => (
+        {Array.from({ length: 24 + (artists ? 1 : 0) }).map((_, i) => (
           <div
             key={i}
             className="flex flex-col gap-1 justify-center items-center"

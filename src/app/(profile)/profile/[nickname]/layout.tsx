@@ -37,7 +37,7 @@ export default async function ProfileLayout(props: Props) {
     isAddressEqual(currentUser?.address, profile.address);
 
   return (
-    <main className="relative container flex flex-col gap-2 py-2 lg:gap-0">
+    <main className="relative container flex flex-col gap-2 py-2">
       {/* user block */}
       <div className="flex flex-col">
         <div className="flex flex-row gap-4 items-center">

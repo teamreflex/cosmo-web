@@ -5,9 +5,9 @@ export default function ObjektListLoading() {
   return (
     <div className="flex flex-col">
       <div className="flex flex-col group" data-show={false}>
-        <div className="flex sm:hidden justify-center items-center gap-2 pb-2">
-          <Skeleton className="w-8 h-8" />
-          <Skeleton className="w-8 h-8" />
+        {/* title */}
+        <div className="flex items-center h-10">
+          <Skeleton className="rounded-full w-32 h-6" />
         </div>
 
         {/* filters */}

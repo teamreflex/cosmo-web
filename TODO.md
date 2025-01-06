@@ -1,3 +1,1 @@
-- clean up filter-related padding and loading skeletons
 - add a cosmo-legacy mode that pulls a full account in and filters on the client
-- adjust member filter skeleton to have a artists prop

@@ -41,7 +41,7 @@ export default async function ProgressPage(props: Props) {
   }
 
   return (
-    <section className="flex flex-col py-2">
+    <section className="flex flex-col">
       <ProgressRenderer artists={artists} address={profile.address} />
       <Portal to="#help">
         <HelpDialog />
