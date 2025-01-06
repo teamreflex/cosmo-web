@@ -44,6 +44,10 @@ export const getAvailableRewards = (artist: ValidArtist, token: string) =>
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        query: {
+          tid: crypto.randomUUID(),
+          artistName: artist,
+        },
       });
     },
     staleTime: Infinity,
