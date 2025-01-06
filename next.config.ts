@@ -89,6 +89,9 @@ export default withSentryConfig(withBundleAnalyzer(config), {
   project: env.SENTRY_PROJECT,
   silent: !process.env.CI,
   widenClientFileUpload: true,
+  sourcemaps: {
+    deleteSourcemapsAfterUpload: true,
+  },
   reactComponentAnnotation: {
     enabled: true,
   },

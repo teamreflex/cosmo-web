@@ -7,7 +7,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { createWalletClient, Hex, http, publicActions } from "viem";
+import { createWalletClient, Hex, http } from "viem";
 import { mnemonicToAccount } from "viem/accounts";
 import { polygon } from "viem/chains";
 import { env } from "@/env.mjs";
@@ -137,7 +137,7 @@ async function decrypt(encrypted: EncryptedWallet) {
         },
       },
     }),
-  }).extend(publicActions);
+  });
 }
 
 class WalletError extends Error {}

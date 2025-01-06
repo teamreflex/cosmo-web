@@ -1,4 +1,10 @@
 import { Address, encodeAbiParameters, Hex, parseEther } from "viem";
+import {
+  estimateFeesPerGas,
+  getTransactionCount,
+  estimateGas,
+  waitForTransactionReceipt,
+} from "viem/actions";
 import { useWallet } from "./use-wallet";
 import { MutationOptions, useMutation } from "@tanstack/react-query";
 import {
@@ -34,17 +40,18 @@ function useWalletTransaction() {
 
       // get nonce if none was provided
       if (!nonce) {
-        nonce = await wallet.getTransactionCount({
+        nonce = await getTransactionCount(wallet, {
           address: wallet.account.address,
         });
       }
 
       // estimate fees per gas
-      const { maxFeePerGas, maxPriorityFeePerGas } =
-        await wallet.estimateFeesPerGas();
+      const { maxFeePerGas, maxPriorityFeePerGas } = await estimateFeesPerGas(
+        wallet
+      );
 
       // estimate gas
-      const gas = await wallet.estimateGas({
+      const gas = await estimateGas(wallet, {
         to: params.to as Address,
         data: params.calldata as Hex,
         maxFeePerGas,
@@ -74,7 +81,7 @@ function useWalletTransaction() {
       });
 
       // wait for receipt
-      const receipt = await wallet.waitForTransactionReceipt({
+      const receipt = await waitForTransactionReceipt(wallet, {
         hash: transaction,
       });
 

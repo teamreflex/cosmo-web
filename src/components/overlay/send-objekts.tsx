@@ -42,17 +42,7 @@ import { useWallet } from "@/hooks/use-wallet";
 import { toast } from "../ui/use-toast";
 import { match } from "ts-pattern";
 import { getErrorMessage } from "@/lib/error";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { getTransactionCount } from "viem/actions";
 
 type SendState = "select" | "send";
 
@@ -339,7 +329,7 @@ function Sending({ selected, onBack, onClose }: SendingProps) {
     setIsSending(true);
 
     // get first nonce
-    const nonce = await wallet.getTransactionCount({
+    const nonce = await getTransactionCount(wallet, {
       address: wallet.account.address,
     });
 
