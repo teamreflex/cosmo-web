@@ -7,7 +7,11 @@ import { getSelectedArtist } from "@/app/data-fetching";
 export default async function GravityRenderer() {
   const artist = await getSelectedArtist();
   const gravities = await fetchGravities(artist);
-  const ongoing = [...gravities.upcoming, ...gravities.ongoing];
+  const ongoing = [...gravities.ongoing, ...gravities.upcoming].sort(
+    (a, b) =>
+      new Date(a.entireStartDate).getTime() -
+      new Date(b.entireStartDate).getTime()
+  );
 
   return (
     <div className="flex justify-center w-full">
