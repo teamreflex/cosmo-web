@@ -188,7 +188,7 @@ export namespace Objekt {
 /**
  * Derives the slug from the season, member, and collectionNo.
  */
-function slug(
+function slugify(
   params: Pick<Objekt.Collection, "season" | "member" | "collectionNo">
 ): string {
   let { season, member, collectionNo } = params;
@@ -205,19 +205,27 @@ function slug(
   );
 }
 
+type DerivedExtras = Pick<
+  Objekt.Collection,
+  "slug" | "artistName" | "onOffline"
+> &
+  ColorFixes;
+
 /**
  * Derives extra fields from the objekt.
  */
 function deriveExtras(
   objekt: Omit<Objekt.Collection, "slug" | "artistName" | "onOffline">
-): Pick<Objekt.Collection, "slug" | "artistName" | "onOffline"> {
+): DerivedExtras {
+  const slug = slugify({
+    season: objekt.season,
+    member: objekt.member,
+    collectionNo: objekt.collectionNo,
+  });
+
   return {
     get slug() {
-      return slug({
-        season: objekt.season,
-        member: objekt.member,
-        collectionNo: objekt.collectionNo,
-      });
+      return slug;
     },
     get artistName() {
       return artistMap[objekt.artist.toLowerCase()];
@@ -229,6 +237,7 @@ function deriveExtras(
       }
       return onOfflineMap[suffix];
     },
+    ...colorFixes[slug],
   };
 }
 
@@ -240,4 +249,48 @@ const artistMap: Record<string, string> = {
 const onOfflineMap: Record<string, "online" | "offline"> = {
   Z: "online",
   A: "offline",
+};
+
+type ColorFixes = Partial<
+  Pick<Objekt.Collection, "backgroundColor" | "textColor">
+>;
+
+/**
+ * COSMO doesn't use the objekt background color,
+ * so sometimes they're incorrect and need manually fixing.
+ */
+const colorFixes: Record<string, ColorFixes> = {
+  // Heejin <K> MMT POBs: fix text color
+  "atom01-heejin-322z": {
+    textColor: "#FFFFFF",
+  },
+  "atom01-heejin-323z": {
+    textColor: "#FFFFFF",
+  },
+  "atom01-heejin-324z": {
+    textColor: "#FFFFFF",
+  },
+  "atom01-heejin-325z": {
+    textColor: "#FFFFFF",
+  },
+  // Choerry Binary01 grids: fix background color
+  "binary01-choerry-201z": {
+    backgroundColor: "#FFFF",
+  },
+  "binary01-choerry-202z": {
+    backgroundColor: "#FFFF",
+  },
+  // Seoyeon Divine01 3rd edition: fix background color
+  "divine01-seoyeon-117z": {
+    backgroundColor: "#B400FF",
+  },
+  "divine01-seoyeon-118z": {
+    backgroundColor: "#B400FF",
+  },
+  "divine01-seoyeon-119z": {
+    backgroundColor: "#B400FF",
+  },
+  "divine01-seoyeon-120z": {
+    backgroundColor: "#B400FF",
+  },
 };
