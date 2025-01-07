@@ -18,7 +18,7 @@ type ProviderProps = {
   children: ReactNode;
 };
 
-const MOBILE_BREAKPOINT = 768;
+const MOBILE_BREAKPOINT = 640; // tailwind's xs breakpoint
 
 export function MediaQueryProvider({ children }: ProviderProps) {
   const [isMobile, setIsMobile] = useState<boolean>();

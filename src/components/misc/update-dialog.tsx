@@ -75,6 +75,16 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2025-01-07",
+    changes: [
+      "Fixed reward claiming.",
+      "Fixed objekts with incorrect colors: Seoyeon Divine FCOs, Heejin <K> MMT DCOs, Choerry Binary SCOs",
+      "Fixed upcoming gravities being displayed above ongoing gravities.",
+      "Fixed objekt information popups being too tall for smaller phone screens.",
+      "Added toggle to hide objekt buttons",
+    ],
+  },
+  {
     date: "2025-01-03",
     changes: [
       "Updated maximum objekts that can be sent at once to 10.",

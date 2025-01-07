@@ -275,10 +275,10 @@ const colorFixes: Record<string, ColorFixes> = {
   },
   // Choerry Binary01 grids: fix background color
   "binary01-choerry-201z": {
-    backgroundColor: "#FFFF",
+    backgroundColor: "#FFFFFF",
   },
   "binary01-choerry-202z": {
-    backgroundColor: "#FFFF",
+    backgroundColor: "#FFFFFF",
   },
   // Seoyeon Divine01 3rd edition: fix background color
   "divine01-seoyeon-117z": {
