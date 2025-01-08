@@ -75,6 +75,12 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2025-01-08",
+    changes: [
+      "Modhaus has unfortunately removed the ability to view other user's collections via COSMO, so now the only option is via blockchain data.",
+    ],
+  },
+  {
     date: "2025-01-07",
     changes: [
       "Fixed reward claiming.",

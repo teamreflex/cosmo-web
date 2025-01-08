@@ -140,7 +140,7 @@ export default function SettingsDialog({
                     <span>Cosmo</span>
                   </div>
                 </SelectItem>
-                <SelectItem value="cosmo-legacy">
+                {/* <SelectItem value="cosmo-legacy">
                   <div className="flex flex-row items-center gap-2">
                     <Image
                       src={CosmoImage.src}
@@ -151,7 +151,7 @@ export default function SettingsDialog({
                     />
                     <span>Legacy</span>
                   </div>
-                </SelectItem>
+                </SelectItem> */}
                 <SelectItem value="blockchain">
                   <div className="flex flex-row items-center gap-2">
                     <div className="relative bg-polygon h-6 w-6 rounded-full">

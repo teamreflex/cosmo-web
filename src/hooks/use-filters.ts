@@ -22,7 +22,9 @@ export function useFilters(opts?: DefaultOptions) {
     }
 
     // otherwise, use the default data source
-    return opts?.dataSource ?? "cosmo-legacy";
+    return opts?.dataSource === "cosmo-legacy"
+      ? "blockchain"
+      : opts?.dataSource ?? "blockchain";
   });
 
   const searchParams = useMemo(() => {

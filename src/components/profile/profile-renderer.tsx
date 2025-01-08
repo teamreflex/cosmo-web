@@ -31,7 +31,7 @@ export default function ProfileRenderer({
 
   const { searchParams, showLocked, setShowLocked, dataSource, setDataSource } =
     useFilters({
-      dataSource: authenticated ? currentUser.dataSource : "cosmo-legacy",
+      dataSource: authenticated ? currentUser.dataSource : "blockchain",
     });
 
   return (
