@@ -280,6 +280,13 @@ const colorFixes: Record<string, ColorFixes> = {
   "binary01-choerry-202z": {
     backgroundColor: "#FFFFFF",
   },
+  // Dahyun Cream grids: fix background color
+  "cream01-dahyun-203z": {
+    backgroundColor: "#FFFFFF",
+  },
+  "cream01-dahyun-204z": {
+    backgroundColor: "#FFFFFF",
+  },
   // Seoyeon Divine01 3rd edition: fix background color
   "divine01-seoyeon-117z": {
     backgroundColor: "#B400FF",
@@ -292,5 +299,9 @@ const colorFixes: Record<string, ColorFixes> = {
   },
   "divine01-seoyeon-120z": {
     backgroundColor: "#B400FF",
+  },
+  // Seoyeon Everline A24 POB: fix background color
+  "divine01-seoyeon-317z": {
+    backgroundColor: "#df2e37",
   },
 };
