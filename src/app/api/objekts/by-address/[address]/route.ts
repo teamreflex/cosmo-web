@@ -25,7 +25,7 @@ import { PgSelect } from "drizzle-orm/pg-core";
 import { NextRequest } from "next/server";
 
 export const runtime = "nodejs";
-const PER_PAGE = 30;
+const PER_PAGE = 60;
 
 type Params = {
   params: Promise<{

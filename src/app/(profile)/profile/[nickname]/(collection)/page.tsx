@@ -7,7 +7,7 @@ import {
   getArtistsWithMembers,
 } from "@/app/data-fetching";
 import ProfileRenderer from "@/components/profile/profile-renderer";
-import { CircleHelp, Shield } from "lucide-react";
+import { Shield } from "lucide-react";
 import { isAddressEqual } from "@/lib/utils";
 import { ProfileProvider } from "@/hooks/use-profile";
 import { fetchPins } from "@/lib/server/objekts/pins";
