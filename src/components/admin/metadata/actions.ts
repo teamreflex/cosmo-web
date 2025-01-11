@@ -7,6 +7,7 @@ import { authenticatedAction } from "@/lib/server/typed-action";
 import { ActionError } from "@/lib/server/typed-action/errors";
 import { metadataObjectSchema, MetadataRow } from "@/lib/universal/metadata";
 import { sql } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 /**
@@ -43,5 +44,10 @@ export const saveMetadata = async (rows: MetadataRow[]) =>
             contributor: user.address,
           },
         });
+
+      // revalidate the metadata path for each row
+      for (const row of rows) {
+        revalidatePath(`/api/objekts/metadata/${row.collectionId}`);
+      }
     },
   });
