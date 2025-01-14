@@ -16,6 +16,7 @@ import { addObjektToList } from "./actions";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "../ui/use-toast";
 import { DropdownMenuContentProps } from "@radix-ui/react-dropdown-menu";
+import { ScrollArea } from "../ui/scroll-area";
 
 type AddToListProps = {
   collectionId: string;
@@ -41,7 +42,7 @@ export default memo(function AddToList({
           <ListPlus className="h-3 w-3 sm:h-5 sm:w-5" />
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="max-h-48" align="start">
+      <DropdownMenuContent align="start">
         <DropdownMenuLabel>{collectionId}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
@@ -51,15 +52,17 @@ export default memo(function AddToList({
             </DropdownMenuItem>
           )}
 
-          {lists.map((list) => (
-            <ListItem
-              key={list.id}
-              collectionId={collectionId}
-              collectionSlug={collectionSlug}
-              list={list}
-              onDone={() => setOpen(false)}
-            />
-          ))}
+          <ScrollArea className="max-h-44 overflow-y-auto">
+            {lists.map((list) => (
+              <ListItem
+                key={list.id}
+                collectionId={collectionId}
+                collectionSlug={collectionSlug}
+                list={list}
+                onDone={() => setOpen(false)}
+              />
+            ))}
+          </ScrollArea>
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
