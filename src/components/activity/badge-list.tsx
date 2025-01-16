@@ -46,15 +46,13 @@ function Badges({ artist }: HistoryListProps) {
     useInfiniteQuery({
       queryKey: ["activity-badges", artist],
       queryFn: async ({ pageParam = 1 }) => {
-        return await ofetch<CosmoActivityBadgeResult>(
-          "/api/bff/v1/activity/badge",
-          {
-            query: {
-              artistName: artist,
-              page: pageParam.toString(),
-            },
-          }
-        );
+        return await ofetch<CosmoActivityBadgeResult>("/api/bff/v3/badges", {
+          query: {
+            artistName: artist,
+            page: pageParam.toString(),
+            lang: "en",
+          },
+        });
       },
       initialPageParam: 1,
       getNextPageParam: (lastPage, allPages, lastPageParam) =>
@@ -86,9 +84,9 @@ function Badges({ artist }: HistoryListProps) {
               </div>
             ))
             .with("success", () => (
-              <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col gap-4">
                 {badges.length === 0 && (
-                  <p className="col-span-full text-sm font-semibold mx-auto">
+                  <p className="text-sm font-semibold mx-auto">
                     No badges found
                   </p>
                 )}

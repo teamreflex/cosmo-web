@@ -2,7 +2,6 @@
 
 import { CosmoActivityBadge } from "@/lib/universal/cosmo/activity/badges";
 import Image from "next/image";
-import Timestamp from "../ui/timestamp";
 
 type Props = {
   badge: CosmoActivityBadge;
@@ -10,8 +9,8 @@ type Props = {
 
 export default function Badge({ badge }: Props) {
   return (
-    <div className="flex flex-col items-center justify-center gap-2">
-      <div className="relative w-2/3 aspect-square">
+    <div className="flex gap-4 items-center h-24">
+      <div className="relative h-full aspect-square">
         <Image
           src={badge["2DImage"].originalImage}
           fill={true}
@@ -19,17 +18,9 @@ export default function Badge({ badge }: Props) {
         />
       </div>
 
-      <div className="flex flex-col items-center">
-        <div className="flex gap-4 items-center">
-          <p className="font-bold">{badge.title}</p>
-          {badge.claim !== undefined && (
-            <Timestamp
-              className="text-sm shrink-0"
-              timestamp={badge.claim.grantedAt}
-            />
-          )}
-        </div>
-        <p className="text-center text-sm">{badge.description}</p>
+      <div className="flex flex-col">
+        <h3 className="text-lg lg:text-xl font-bold">{badge.title}</h3>
+        <p className="text-sm">{badge.description}</p>
       </div>
     </div>
   );

@@ -2,11 +2,7 @@ import { decodeUser, getSelectedArtist } from "@/app/data-fetching";
 import BadgeList from "@/components/activity/badge-list";
 import { getQueryClient } from "@/lib/query-client";
 import { fetchActivityBadges } from "@/lib/server/cosmo/activity";
-import {
-  dehydrate,
-  HydrationBoundary,
-  QueryClient,
-} from "@tanstack/react-query";
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -25,7 +21,8 @@ export default async function ActivityBadgesPage() {
       return fetchActivityBadges(user!.accessToken, {
         artistName: artist,
         page: 1,
-        pageSize: 30,
+        size: 30,
+        lang: "en",
       });
     },
     initialPageParam: 1,

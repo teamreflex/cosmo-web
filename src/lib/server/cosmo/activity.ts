@@ -117,13 +117,14 @@ export async function fetchActivityBadges(
   token: string,
   options: BFFActivityBadgeParams
 ) {
-  return await cosmo<CosmoActivityBadgeResult>(`/bff/v1/activity/badge`, {
+  return await cosmo<CosmoActivityBadgeResult>(`/bff/v3/badges`, {
     query: {
       ...options,
       tid: crypto.randomUUID(),
     },
     headers: {
       Authorization: `Bearer ${token}`,
+      "Accept-Language": options.lang,
     },
   });
 }

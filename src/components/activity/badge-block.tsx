@@ -11,13 +11,14 @@ type Props = {
 };
 
 export default async function BadgeBlock({ user, artist }: Props) {
-  const badges = await fetchActivityBadges(user.accessToken, {
+  const { count, items } = await fetchActivityBadges(user.accessToken, {
+    lang: "en",
     artistName: artist,
     page: 1,
-    pageSize: 30,
+    size: 30,
   });
 
-  const badge = badges.count > 0 ? badges.items[0] : undefined;
+  const badge = count > 0 ? items[0] : undefined;
 
   return (
     <Link
@@ -30,7 +31,7 @@ export default async function BadgeBlock({ user, artist }: Props) {
       </div>
 
       {badge !== undefined && (
-        <div className="relative w-1/2 aspect-square flex items-center justify-center my-4 mx-auto">
+        <div className="relative w-1/2 aspect-square flex items-center justify-center mt-0 sm:mt-4 my-4 mx-auto">
           <Image
             src={badge["2DImage"].originalImage}
             fill={true}
