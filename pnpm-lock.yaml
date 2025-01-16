@@ -212,8 +212,8 @@ importers:
         specifier: ^5.64.1
         version: 5.64.1(@tanstack/react-query@5.64.1(react@19.0.0))(react@19.0.0)
       '@types/node':
-        specifier: 20.17.0
-        version: 20.17.0
+        specifier: 22.10.7
+        version: 22.10.7
       '@types/pg':
         specifier: ^8.11.10
         version: 8.11.10
@@ -258,7 +258,7 @@ importers:
         version: 4.6.16
       knip:
         specifier: ^5.42.1
-        version: 5.42.1(@types/node@20.17.0)(typescript@5.7.3)
+        version: 5.42.1(@types/node@22.10.7)(typescript@5.7.3)
       pg:
         specifier: ^8.13.1
         version: 8.13.1
@@ -2742,6 +2742,9 @@ packages:
   '@types/node@20.17.0':
     resolution: {integrity: sha512-a7zRo0f0eLo9K5X9Wp5cAqTUNGzuFLDG2R7C4HY2BhcMAsxgSPuRvAC1ZB6QkuUQXf0YZAgfOX2ZyrBa2n4nHQ==}
 
+  '@types/node@22.10.7':
+    resolution: {integrity: sha512-V09KvXxFiutGp6B7XkpaDXlNadZxrzajcY50EuoLIpQ6WWYCSvf19lVIazzfIzQvhUN2HjX12spLojTnhuKlGg==}
+
   '@types/pg-pool@2.0.6':
     resolution: {integrity: sha512-TaAUE5rq2VQYxab5Ts7WZhKNmuN78Q6PiFonTDdpbx8a1H0M1vhy3rhiMjl+e2iHmogyMw7jZF4FrE6eJUy5HQ==}
 
@@ -5082,6 +5085,9 @@ packages:
   undici-types@6.19.8:
     resolution: {integrity: sha512-ve2KP6f/JnbPBFyobGHuerC9g1FYGn/F8n1LWTwNxCEzd6IfqTwUQcNXgEtmmQ6DlRrC1hrSrBnCZPokRrDHjw==}
 
+  undici-types@6.20.0:
+    resolution: {integrity: sha512-Ny6QZ2Nju20vw1SRHe3d9jVu6gJ+4e3+MMpqu7pqE5HT6WsTSlce++GQmK5UXS8mzV8DSYHrQH+Xrf2jVcuKNg==}
+
   unplugin@1.0.1:
     resolution: {integrity: sha512-aqrHaVBWW1JVKBHmGo33T5TxeL0qWzfvjWokObHA9bYmN7eNDkwOxmLjhioHl9878qDFMAaT51XNroRyuz7WxA==}
 
@@ -6526,7 +6532,7 @@ snapshots:
   '@grpc/grpc-js@1.9.15':
     dependencies:
       '@grpc/proto-loader': 0.7.13
-      '@types/node': 20.17.0
+      '@types/node': 22.10.7
 
   '@grpc/proto-loader@0.7.13':
     dependencies:
@@ -8181,7 +8187,7 @@ snapshots:
 
   '@types/connect@3.4.36':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 22.10.7
 
   '@types/d3-array@3.2.1': {}
 
@@ -8229,11 +8235,15 @@ snapshots:
 
   '@types/mysql@2.15.26':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 22.10.7
 
   '@types/node@20.17.0':
     dependencies:
       undici-types: 6.19.8
+
+  '@types/node@22.10.7':
+    dependencies:
+      undici-types: 6.20.0
 
   '@types/pg-pool@2.0.6':
     dependencies:
@@ -8241,19 +8251,19 @@ snapshots:
 
   '@types/pg@8.11.10':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 22.10.7
       pg-protocol: 1.7.0
       pg-types: 4.0.2
 
   '@types/pg@8.11.6':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 22.10.7
       pg-protocol: 1.7.0
       pg-types: 4.0.2
 
   '@types/pg@8.6.1':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 22.10.7
       pg-protocol: 1.7.0
       pg-types: 2.2.0
 
@@ -8269,7 +8279,7 @@ snapshots:
 
   '@types/tedious@4.0.14':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 22.10.7
 
   '@types/umami@2.10.0': {}
 
@@ -9834,11 +9844,11 @@ snapshots:
     dependencies:
       json-buffer: 3.0.1
 
-  knip@5.42.1(@types/node@20.17.0)(typescript@5.7.3):
+  knip@5.42.1(@types/node@22.10.7)(typescript@5.7.3):
     dependencies:
       '@nodelib/fs.walk': 3.0.1
       '@snyk/github-codeowners': 1.1.0
-      '@types/node': 20.17.0
+      '@types/node': 22.10.7
       easy-table: 1.2.0
       enhanced-resolve: 5.18.0
       fast-glob: 3.3.3
@@ -10290,7 +10300,7 @@ snapshots:
       '@protobufjs/path': 1.1.2
       '@protobufjs/pool': 1.1.0
       '@protobufjs/utf8': 1.1.0
-      '@types/node': 20.17.0
+      '@types/node': 22.10.7
       long: 5.2.3
 
   proxy-from-env@1.1.0: {}
@@ -10842,6 +10852,8 @@ snapshots:
       which-boxed-primitive: 1.1.1
 
   undici-types@6.19.8: {}
+
+  undici-types@6.20.0: {}
 
   unplugin@1.0.1:
     dependencies:

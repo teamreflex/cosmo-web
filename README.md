@@ -45,7 +45,7 @@ This project experiments with new tooling such as [Next.js App Router streaming]
 
 ## Requirements
 
-- [Node.js](https://nodejs.org/en/) 20.17
+- [Node.js](https://nodejs.org/en/) 22.x
 - [Alchemy](https://www.alchemy.com/) API key
 - [Neon](https://neon.tech/) instance
   - Or swap this out for another Postgres compatible database with minimal code changes
