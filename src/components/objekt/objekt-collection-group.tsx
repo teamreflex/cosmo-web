@@ -4,7 +4,11 @@ import {
   BFFCollectionGroup,
   BFFCollectionGroupObjekt,
 } from "@/lib/universal/cosmo/objekts";
-import { getObjektImageUrls, ObjektSidebar } from "./common";
+import {
+  getObjektImageUrls,
+  ObjektNewIndicator,
+  ObjektSidebar,
+} from "./common";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import { Objekt } from "@/lib/universal/objekt-conversion";
@@ -45,6 +49,10 @@ export default function GroupedObjekt({
   const collection = Objekt.fromCollectionGroup({
     collection: group.collection,
   });
+  const hasNew = group.objekts.some((o) => {
+    const acquiredAt = new Date(o.inventory.acquiredAt);
+    return Date.now() - acquiredAt.getTime() < 24 * 60 * 60 * 1000;
+  });
 
   return (
     <DialogPrimitive.Root open={open} onOpenChange={setOpen}>
@@ -52,6 +60,7 @@ export default function GroupedObjekt({
         collection={collection}
         count={group.count}
         hasSelected={hasSelected}
+        hasNew={hasNew}
         onClick={() => setOpen(true)}
         priority={priority}
       />
@@ -104,6 +113,7 @@ type RootObjektProps = {
   collection: Objekt.Collection;
   count: number;
   hasSelected: boolean;
+  hasNew: boolean;
   onClick: () => void;
   priority?: boolean;
 };
@@ -112,6 +122,7 @@ function RootObjekt({
   collection,
   count,
   hasSelected,
+  hasNew,
   onClick,
   priority = false,
 }: RootObjektProps) {
@@ -157,6 +168,7 @@ function RootObjekt({
           <ObjektSidebar collection={collection.collectionNo} />
           <RootObjektOverlay
             count={count}
+            hasNew={hasNew}
             onClick={() => {
               // populate the query cache so it doesn't re-fetch
               queryClient.setQueryData(
@@ -176,10 +188,11 @@ function RootObjekt({
 
 type RootObjektOverlayProps = {
   count: number;
+  hasNew: boolean;
   onClick: () => void;
 };
 
-function RootObjektOverlay({ count, onClick }: RootObjektOverlayProps) {
+function RootObjektOverlay({ count, hasNew, onClick }: RootObjektOverlayProps) {
   const isHidden = useObjektOverlay((state) => state.isHidden);
 
   return (
@@ -199,11 +212,15 @@ function RootObjektOverlay({ count, onClick }: RootObjektOverlayProps) {
         </button>
       </div>
 
-      {count > 1 && (
-        <span className="absolute top-2 left-2 px-2 py-px bg-black text-white rounded-full text-sm font-semibold">
-          {count}
-        </span>
-      )}
+      <div className="absolute top-1 left-1 sm:top-2 sm:left-2 flex flex-row items-center gap-1">
+        {count > 1 && (
+          <span className="px-2 py-px bg-black text-white rounded-full text-sm font-semibold">
+            {count}
+          </span>
+        )}
+
+        {hasNew && <ObjektNewIndicator />}
+      </div>
     </div>
   );
 }

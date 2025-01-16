@@ -192,7 +192,7 @@ function AttributePanel({ objekt }: CommonProps) {
   return (
     <div
       id="attribute-panel"
-      className="flex flex-wrap items-center gap-2 justify-center mx-4"
+      className="flex flex-wrap items-center gap-2 justify-center mx-4 sm:mr-6"
     >
       <Pill label="Artist" value={objekt.artistName} />
       <Pill label="Member" value={objekt.member} />

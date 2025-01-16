@@ -2,7 +2,6 @@
 
 import { useUserState } from "@/hooks/use-user-state";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
-import { IconHeartExclamation } from "@tabler/icons-react";
 import {
   QueryErrorResetBoundary,
   useSuspenseQuery,
@@ -15,7 +14,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
-import { RefreshCcw } from "lucide-react";
+import { Gift, RefreshCcw } from "lucide-react";
 import RewardsDialog from "./rewards-dialog";
 import { cn } from "@/lib/utils";
 import { getRewardsClaimable } from "./queries";
@@ -83,7 +82,7 @@ function CheckRewards({ artist, token }: CheckRewardsProps) {
     return (
       <RewardsDialog artist={artist} token={token}>
         <RewardButton>
-          <IconHeartExclamation className="text-white size-8" />
+          <Gift className="text-white size-8" />
         </RewardButton>
       </RewardsDialog>
     );

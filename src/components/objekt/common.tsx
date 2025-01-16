@@ -1,5 +1,6 @@
 import { NonTransferableReason } from "@/lib/universal/cosmo/objekts";
 import { useElementSize } from "@/hooks/use-element-size";
+import { cn, PropsWithClassName } from "@/lib/utils";
 
 type ObjektSidebarProps = {
   collection: string;
@@ -29,6 +30,19 @@ export function ObjektSidebar({ collection, serial }: ObjektSidebarProps) {
       <span>{collection}</span>
       {paddedSerial && <span>#{paddedSerial}</span>}
     </div>
+  );
+}
+
+export function ObjektNewIndicator(props: PropsWithClassName<{}>) {
+  return (
+    <span
+      className={cn(
+        "px-2 py-[3px] h-fit w-fit bg-cosmo/80 text-white rounded-full text-xs font-semibold",
+        props.className
+      )}
+    >
+      New
+    </span>
   );
 }
 
