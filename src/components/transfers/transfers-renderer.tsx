@@ -116,7 +116,7 @@ function Transfers({ address, filters, type }: TransfersProps) {
       const query = new URLSearchParams(searchParams);
       query.set("page", pageParam.toString());
       query.set("type", type);
-      console.log(Object.fromEntries(query.entries()));
+      query.delete("sort");
 
       return await ofetch<TransferResult>(endpoint.toString(), {
         retry: false,
@@ -130,13 +130,17 @@ function Transfers({ address, filters, type }: TransfersProps) {
     retry: false,
   });
 
-  const rows = query.data.pages.flatMap((p) => p.results);
+  const rows = query.data.pages
+    .flatMap((p) => p.results)
+    .filter(
+      (row, index, self) =>
+        index === self.findIndex((r) => r.transfer.id === row.transfer.id)
+    );
 
   return (
     <div className="flex flex-col rounded-lg border border-accent text-sm">
-      <div className="items-center grid grid-cols-[3fr_2fr_2fr_2fr] gap-2 h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+      <div className="items-center grid grid-cols-[3fr_2fr_2fr] gap-2 h-12 px-4 text-left align-middle font-medium text-muted-foreground">
         <span>Objekt</span>
-        <span>Action</span>
         <span>User</span>
         <span className="text-right">Date</span>
       </div>
@@ -165,9 +169,8 @@ export function TransfersSkeleton() {
       <div className="z-20 absolute top-0 w-full h-full bg-linear-to-b from-transparent to-75% to-background" />
 
       <div className="realtive w-full flex flex-col rounded-lg border border-accent text-sm">
-        <div className="items-center grid grid-cols-[3fr_2fr_2fr_2fr] gap-2 h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+        <div className="items-center grid grid-cols-[3fr_2fr_2fr] gap-2 h-12 px-4 text-left align-middle font-medium text-muted-foreground">
           <span>Objekt</span>
-          <span>Action</span>
           <span>User</span>
           <span className="text-right">Date</span>
         </div>
@@ -175,7 +178,7 @@ export function TransfersSkeleton() {
         {Array.from({ length: 10 }).map((_, i) => (
           <Skeleton
             key={i}
-            className="w-full rounded-t-none h-16 sm:h-12 border-t border-accent"
+            className="w-full rounded-t-none h-14 border-t border-accent"
           />
         ))}
       </div>
