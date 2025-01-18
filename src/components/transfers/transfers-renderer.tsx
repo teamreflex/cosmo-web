@@ -10,44 +10,125 @@ import Portal from "../portal";
 import { ErrorBoundary } from "react-error-boundary";
 import { HeartCrack, RefreshCcw } from "lucide-react";
 import { Button } from "../ui/button";
-import { Suspense } from "react";
+import { Suspense, useCallback, useState } from "react";
 import Skeleton from "../skeleton/skeleton";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
-import { transfersQuery } from "./queries";
+import { baseUrl } from "@/lib/utils";
+import { ofetch } from "ofetch";
+import { TransferParams, TransferResult } from "@/lib/universal/transfers";
+import { CosmoFilters, useCosmoFilters } from "@/hooks/use-cosmo-filters";
+import {
+  FiltersContainer,
+  TransfersFilters,
+} from "../collection/filters-container";
+import { ValidArtist } from "@/lib/universal/cosmo/common";
+import MemberFilter from "../collection/member-filter";
+import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
+import { useFilters } from "@/hooks/use-filters";
 
 type Props = {
   profile: PublicProfile;
+  artists: CosmoArtistWithMembersBFF[];
 };
 
-export default function TransfersRenderer({ profile }: Props) {
+export default function TransfersRenderer({ profile, artists }: Props) {
+  const [filters, setFilters] = useCosmoFilters();
+  const [type, setType] = useState<TransferParams["type"]>("all");
+
+  const setActiveMember = useCallback(
+    (member: string) => {
+      setFilters((prev) => ({
+        artist: null,
+        member: prev.member === member ? null : member,
+      }));
+    },
+    [setFilters]
+  );
+
+  const setActiveArtist = useCallback(
+    (artist: string) => {
+      setFilters((prev) => ({
+        member: null,
+        artist: prev.artist === artist ? null : (artist as ValidArtist),
+      }));
+    },
+    [setFilters]
+  );
+
   return (
-    <QueryErrorResetBoundary>
-      {({ reset }) => (
-        <ErrorBoundary
-          onReset={reset}
-          fallbackRender={({ resetErrorBoundary }) => (
-            <div className="flex flex-col gap-2 items-center w-full">
-              <div className="flex flex-col gap-2 justify-center items-center py-12">
-                <HeartCrack className="h-12 w-12" />
-                <p>There was an error loading transfers</p>
-              </div>
-              <Button variant="outline" onClick={resetErrorBoundary}>
-                <RefreshCcw className="mr-2" /> Retry
-              </Button>
-            </div>
+    <div className="flex flex-col">
+      <FiltersContainer isPortaled>
+        <TransfersFilters type={type} setType={setType} />
+      </FiltersContainer>
+
+      <MemberFilter
+        artists={artists}
+        active={filters.artist ?? filters.member}
+        updateArtist={setActiveArtist}
+        updateMember={setActiveMember}
+      />
+
+      <div className="pt-2">
+        <QueryErrorResetBoundary>
+          {({ reset }) => (
+            <ErrorBoundary
+              onReset={reset}
+              fallbackRender={({ resetErrorBoundary }) => (
+                <div className="flex flex-col gap-2 items-center w-full">
+                  <div className="flex flex-col gap-2 justify-center items-center py-12">
+                    <HeartCrack className="h-12 w-12" />
+                    <p>There was an error loading transfers</p>
+                  </div>
+                  <Button variant="outline" onClick={resetErrorBoundary}>
+                    <RefreshCcw className="mr-2" /> Retry
+                  </Button>
+                </div>
+              )}
+            >
+              <Suspense fallback={<TransfersSkeleton />}>
+                <Transfers
+                  address={profile.address}
+                  filters={filters}
+                  type={type}
+                />
+              </Suspense>
+            </ErrorBoundary>
           )}
-        >
-          <Suspense fallback={<TransfersSkeleton />}>
-            <Transfers address={profile.address} />
-          </Suspense>
-        </ErrorBoundary>
-      )}
-    </QueryErrorResetBoundary>
+        </QueryErrorResetBoundary>
+      </div>
+    </div>
   );
 }
 
-function Transfers({ address }: { address: string }) {
-  const query = useSuspenseInfiniteQuery(transfersQuery(address));
+type TransfersProps = {
+  address: string;
+  filters: CosmoFilters;
+  type: TransferParams["type"];
+};
+
+function Transfers({ address, filters, type }: TransfersProps) {
+  const { searchParams } = useFilters();
+  const query = useSuspenseInfiniteQuery({
+    queryKey: ["transfers", address, type, filters],
+    queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
+      const endpoint = new URL(`/api/transfers/${address}`, baseUrl());
+
+      const query = new URLSearchParams(searchParams);
+      query.set("page", pageParam.toString());
+      query.set("type", type);
+      console.log(Object.fromEntries(query.entries()));
+
+      return await ofetch<TransferResult>(endpoint.toString(), {
+        retry: false,
+        query: Object.fromEntries(query.entries()),
+      });
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => lastPage.nextStartAfter,
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60,
+    retry: false,
+  });
 
   const rows = query.data.pages.flatMap((p) => p.results);
 
@@ -80,15 +161,24 @@ function Transfers({ address }: { address: string }) {
 
 export function TransfersSkeleton() {
   return (
-    <div className="w-full flex flex-col rounded-lg border border-accent text-sm">
-      <div className="items-center grid grid-cols-[3fr_2fr_2fr_2fr] gap-2 h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-        <span>Objekt</span>
-        <span>Action</span>
-        <span>User</span>
-        <span className="text-right">Date</span>
-      </div>
+    <div className="relative">
+      <div className="z-20 absolute top-0 w-full h-full bg-linear-to-b from-transparent to-75% to-background" />
 
-      <Skeleton className="w-full rounded-t-none h-16 sm:h-12 border-t border-accent" />
+      <div className="realtive w-full flex flex-col rounded-lg border border-accent text-sm">
+        <div className="items-center grid grid-cols-[3fr_2fr_2fr_2fr] gap-2 h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+          <span>Objekt</span>
+          <span>Action</span>
+          <span>User</span>
+          <span className="text-right">Date</span>
+        </div>
+
+        {Array.from({ length: 10 }).map((_, i) => (
+          <Skeleton
+            key={i}
+            className="w-full rounded-t-none h-16 sm:h-12 border-t border-accent"
+          />
+        ))}
+      </div>
     </div>
   );
 }

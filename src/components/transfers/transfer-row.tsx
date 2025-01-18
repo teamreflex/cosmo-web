@@ -13,7 +13,7 @@ type Props = {
   address: string;
 };
 
-export default memo(function TransferRow({ row, address }: Props) {
+export default function TransferRow({ row, address }: Props) {
   const isReceiver = row.transfer.to.toLowerCase() === address.toLowerCase();
 
   const serial = row.serial?.toString().padStart(5, "0");
@@ -46,7 +46,7 @@ export default memo(function TransferRow({ row, address }: Props) {
       <span className="text-right">{timestamp}</span>
     </div>
   );
-});
+}
 
 function SenderCosmo() {
   return (

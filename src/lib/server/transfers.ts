@@ -1,10 +1,17 @@
-import { desc, eq, or, sql } from "drizzle-orm";
-import { TransferResult } from "../universal/transfers";
+import { and, desc, eq, not, or, sql } from "drizzle-orm";
+import { TransferParams, TransferResult } from "../universal/transfers";
 import { indexer } from "./db/indexer";
 import { collections, objekts, transfers } from "./db/indexer/schema";
 import { fetchKnownAddresses } from "./profiles";
 import { profiles } from "./db/schema";
 import { NULL_ADDRESS } from "../utils";
+import {
+  withArtist,
+  withClass,
+  withMember,
+  withOnlineType,
+  withSeason,
+} from "./objekts/filters";
 
 const PER_PAGE = 30;
 
@@ -13,7 +20,7 @@ const PER_PAGE = 30;
  */
 export async function fetchTransfers(
   address: string,
-  page: number
+  params: TransferParams
 ): Promise<TransferResult> {
   // too much data, bail
   if (address.toLowerCase() === NULL_ADDRESS) {
@@ -25,7 +32,7 @@ export async function fetchTransfers(
     };
   }
 
-  const aggregate = await fetchTransferRows(address, page);
+  const aggregate = await fetchTransferRows(address, params);
   const addresses = aggregate.results
     .flatMap((r) => [r.transfer.from, r.transfer.to])
     // can't send to yourself, so filter out the current address
@@ -55,7 +62,7 @@ export async function fetchTransfers(
  */
 async function fetchTransferRows(
   address: string,
-  page: number
+  params: TransferParams
 ): Promise<TransferResult> {
   const results = await indexer
     .select({
@@ -65,25 +72,59 @@ async function fetchTransferRows(
       collection: collections,
     })
     .from(transfers)
-    .where(
-      or(
-        eq(transfers.from, address.toLowerCase()),
-        eq(transfers.to, address.toLowerCase())
-      )
-    )
     .leftJoin(objekts, eq(transfers.objektId, objekts.id))
     .leftJoin(collections, eq(transfers.collectionId, collections.id))
+    .where(
+      and(
+        // base requirements
+        withType(address.toLowerCase(), params.type),
+        // additional filters
+        ...[
+          ...withArtist(params.artist),
+          ...withClass(params.class),
+          ...withSeason(params.season),
+          ...withOnlineType(params.on_offline),
+          ...withMember(params.member),
+        ]
+      )
+    )
     .orderBy(desc(transfers.timestamp))
     .limit(PER_PAGE)
-    .offset(page * PER_PAGE);
+    .offset(params.page * PER_PAGE);
 
   const count = results.length > 0 ? results[0].count : 0;
-  const hasNext = count > (page + 1) * PER_PAGE;
+  const hasNext = count > (params.page + 1) * PER_PAGE;
 
   return {
     results,
     count,
     hasNext,
-    nextStartAfter: hasNext ? page + 1 : undefined,
+    nextStartAfter: hasNext ? params.page + 1 : undefined,
   };
+}
+
+/**
+ * Filter transfers by type.
+ */
+function withType(address: string, type: TransferParams["type"]) {
+  switch (type) {
+    // address must be either a sender or receiver
+    case "all":
+      return or(eq(transfers.from, address), eq(transfers.to, address));
+    // address must be a receiver while the sender is the burn address/cosmo
+    case "mint":
+      return and(eq(transfers.from, NULL_ADDRESS), eq(transfers.to, address));
+    // address must be a receiver from non-burn address
+    case "received":
+      return and(
+        not(eq(transfers.from, NULL_ADDRESS)),
+        eq(transfers.to, address)
+      );
+    // address must be a sender to non-burn address
+    case "sent":
+      return and(
+        not(eq(transfers.to, NULL_ADDRESS)),
+        eq(transfers.from, address)
+      );
+  }
 }

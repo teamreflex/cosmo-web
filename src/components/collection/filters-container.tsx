@@ -13,6 +13,8 @@ import DataSourceSelector from "./data-source-selector";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { Button } from "../ui/button";
 import { CollectionDataSource } from "@/lib/utils";
+import { TransferParams } from "@/lib/universal/transfers";
+import TransferTypeFilter from "./filter-transfer-type";
 
 type FiltersContainerProps = PropsWithChildren<{
   isPortaled?: boolean;
@@ -129,6 +131,30 @@ export function IndexFilters({ collections }: IndexFiltersProps) {
         setFilters={setFilters}
         serials={false}
       />
+    </div>
+  );
+}
+
+type TransfersFiltersProps = {
+  type: TransferParams["type"];
+  setType: (type: TransferParams["type"]) => void;
+};
+
+/**
+ * used on:
+ * - @/nickname/trades
+ */
+export function TransfersFilters({ type, setType }: TransfersFiltersProps) {
+  // eslint-disable-next-line react-compiler/react-compiler
+  "use no memo";
+  const [filters, setFilters] = useCosmoFilters();
+
+  return (
+    <div className="flex gap-2 items-center flex-wrap justify-center lg:group-data-[show=false]:flex group-data-[show=false]:hidden">
+      <SeasonFilter filters={filters.season} setFilters={setFilters} />
+      <OnlineFilter filters={filters.on_offline} setFilters={setFilters} />
+      <ClassFilter filters={filters.class} setFilters={setFilters} />
+      <TransferTypeFilter type={type} setType={setType} />
     </div>
   );
 }

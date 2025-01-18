@@ -15,7 +15,7 @@ import { env } from "@/env.mjs";
  * - `?season=Atom01&season=Binary01`
  * Provides a helper function to cast the value to an array before running it through validation.
  */
-function castToArray<TSchema extends z.Schema>(schema: TSchema) {
+export function castToArray<TSchema extends z.Schema>(schema: TSchema) {
   return z.preprocess((val) => {
     const str = String(val);
     if (str === "") return [];

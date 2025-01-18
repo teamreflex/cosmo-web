@@ -1,16 +1,17 @@
 import { Metadata } from "next";
 import TransfersRenderer from "@/components/transfers/transfers-renderer";
-import { decodeUser, getUserByIdentifier } from "@/app/data-fetching";
+import {
+  decodeUser,
+  getArtistsWithMembers,
+  getUserByIdentifier,
+} from "@/app/data-fetching";
 import { Shield } from "lucide-react";
 import { isAddressEqual } from "@/lib/utils";
-import { getQueryClient } from "@/lib/query-client";
-import { transfersQuery } from "@/components/transfers/queries";
-import { fetchTransfers } from "@/lib/server/transfers";
-import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 
 type Props = {
   params: Promise<{ nickname: string }>;
 };
+
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params;
   const { profile } = await getUserByIdentifier(params.nickname);
@@ -23,7 +24,10 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 export default async function UserTransfersPage(props: Props) {
   const params = await props.params;
   const user = await decodeUser();
-  const { profile } = await getUserByIdentifier(params.nickname);
+  const [{ profile }, artists] = await Promise.all([
+    getUserByIdentifier(params.nickname),
+    getArtistsWithMembers(),
+  ]);
   if (
     profile.privacy.trades &&
     !isAddressEqual(user?.address, profile.address)
@@ -31,20 +35,9 @@ export default async function UserTransfersPage(props: Props) {
     return <Private nickname={profile.nickname} />;
   }
 
-  // prefetch transfers
-  const queryClient = getQueryClient();
-  queryClient.prefetchInfiniteQuery({
-    ...transfersQuery(profile.address),
-    queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
-      return fetchTransfers(profile.address, pageParam);
-    },
-  });
-
   return (
     <section className="flex flex-col">
-      <HydrationBoundary state={dehydrate(queryClient)}>
-        <TransfersRenderer profile={profile} />
-      </HydrationBoundary>
+      <TransfersRenderer profile={profile} artists={artists} />
 
       <div id="pagination" />
     </section>
