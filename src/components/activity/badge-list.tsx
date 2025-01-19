@@ -30,7 +30,7 @@ export default function BadgeList({ artist }: Props) {
       </div>
 
       {/* content */}
-      <div className="w-full sm:w-2/3 md:w-1/2 mx-auto">
+      <div className="flex w-full sm:w-2/3 md:w-1/2 mx-auto">
         <Badges artist={artist} />
       </div>
     </main>
@@ -69,7 +69,7 @@ function Badges({ artist }: HistoryListProps) {
           return match(status)
             .with("pending", () => <BadgeSkeleton />)
             .with("error", () => (
-              <div className="col-span-full flex flex-col gap-2 items-center py-12">
+              <div className="w-full flex flex-col gap-2 items-center py-12">
                 <div className="flex items-center gap-2">
                   <HeartCrack className="h-6 w-6" />
                   <p className="text-sm font-semibold">Error loading badges</p>
