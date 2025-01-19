@@ -43,6 +43,17 @@ import { toast } from "../ui/use-toast";
 import { match } from "ts-pattern";
 import { getErrorMessage } from "@/lib/error";
 import { getTransactionCount } from "viem/actions";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "../ui/alert-dialog";
+import { IconZoomExclamation } from "@tabler/icons-react";
 
 type SendState = "select" | "send";
 
@@ -369,7 +380,7 @@ function Sending({ selected, onBack, onClose }: SendingProps) {
           status: "success",
           hash: hash ?? "",
         } satisfies SelectionSuccess);
-        track("send-objekt");
+        // track("send-objekt");
       } catch (error) {
         // update the selection to error
         update({
@@ -506,11 +517,11 @@ function SendingRow({ selection }: RowProps) {
                 <span className="text-sm">Error</span>
               </div>
 
-              {/* {error !== undefined && (
+              {error !== undefined && (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button variant="destructive" size="xs" className="w-fit">
-                      View Error
+                      <IconZoomExclamation className="size-5" />
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
@@ -523,7 +534,7 @@ function SendingRow({ selection }: RowProps) {
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
-              )} */}
+              )}
             </div>
           ))
           .with({ status: "canceled" }, () => (

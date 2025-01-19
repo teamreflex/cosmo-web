@@ -75,6 +75,12 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2025-01-19",
+    changes: [
+      "Trades page now supports filtering by season, class, member, artist and mint/received/sent.",
+    ],
+  },
+  {
     date: "2025-01-08",
     changes: [
       "Modhaus has unfortunately removed the ability to view other user's collections via COSMO, so now the only option is via blockchain data.",
@@ -98,25 +104,6 @@ const updates = [
       "Added an 'unobtainable' label to objekts that are no longer obtainable though normal means, such as limited time events.",
       "Progress and leaderboard now exclude unobtainable objekts. If you have 100% for a season/class and own an unobtainable, it will be shown and your percentage will go over 100%.",
       "Unobtainables include: Mayu B101A-B108A, tripleS D312Z, JinSoul A109A, ARTMS A346Z, ARTMS A351Z, ARTMS B310Z.",
-    ],
-  },
-  {
-    date: "2024-12-31",
-    changes: [
-      "Up to 5 objekts can now be sent at once. These will send in order of selection one at a time and will cancel the rest of the batch if one fails.",
-      "Profile pages now display grouped by collection like COSMO does.",
-      "Grouped mode only applies while viewing your own profile when signed in. Viewing other profiles will use the old COSMO mode, which MODHAUS may remove in the future. You can select an option to default to in your settings.",
-      "Objekt rewards are now claimed from a button in the bottom right of the screen while on your own profile. The card no longer shows up at the top of your collection.",
-    ],
-  },
-  {
-    date: "2024-12-23",
-    changes: [
-      "Adjusted a couple icons to better represent the button's purpose.",
-      "Reduced reliance on COSMO: Profile images update every 24 hours.",
-      "Using new COSMO data: Member filters now show their representative color when selected.",
-      "Profiles should more reliably update when COSMO IDs change.",
-      "COSMO profile details can now be refreshed from settings. This will update your ID from COSMO based on your currently signed in account, refresh your profile images, and pull your selected artist from COSMO.",
     ],
   },
 ];
