@@ -25,6 +25,7 @@ import { ValidArtist } from "@/lib/universal/cosmo/common";
 import MemberFilter from "../collection/member-filter";
 import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import { useFilters } from "@/hooks/use-filters";
+import SkeletonGradient from "../skeleton/skeleton-overlay";
 
 type Props = {
   profile: PublicProfile;
@@ -166,9 +167,9 @@ function Transfers({ address, filters, type }: TransfersProps) {
 export function TransfersSkeleton() {
   return (
     <div className="relative">
-      <div className="z-20 absolute top-0 w-full h-full bg-linear-to-b from-transparent to-75% to-background" />
+      <SkeletonGradient />
 
-      <div className="realtive w-full flex flex-col rounded-lg border border-accent text-sm">
+      <div className="realtive w-full flex flex-col rounded-lg border border-accent text-sm overflow-hidden">
         <div className="items-center grid grid-cols-[3fr_2fr_2fr] gap-2 h-12 px-4 text-left align-middle font-medium text-muted-foreground">
           <span>Objekt</span>
           <span>User</span>
@@ -178,7 +179,7 @@ export function TransfersSkeleton() {
         {Array.from({ length: 10 }).map((_, i) => (
           <Skeleton
             key={i}
-            className="w-full rounded-t-none h-14 border-t border-accent"
+            className="w-full rounded-none h-14 border-t border-accent"
           />
         ))}
       </div>

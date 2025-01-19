@@ -1,4 +1,5 @@
 import Skeleton from "@/components/skeleton/skeleton";
+import SkeletonGradient from "@/components/skeleton/skeleton-overlay";
 
 export default async function ActivityRankingLoading() {
   return (
@@ -18,7 +19,7 @@ export default async function ActivityRankingLoading() {
       {/* content */}
       <div className="w-full sm:w-2/3 md:w-1/2 flex flex-col mx-auto">
         <div className="relative flex flex-col gap-4">
-          <div className="z-20 absolute top-0 w-full h-full bg-linear-to-b from-transparent to-75% to-background" />
+          <SkeletonGradient />
 
           {/* my rank */}
           <div className="flex flex-col gap-2">

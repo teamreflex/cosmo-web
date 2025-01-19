@@ -24,6 +24,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ErrorBoundary } from "react-error-boundary";
+import SkeletonGradient from "../skeleton/skeleton-overlay";
 
 type Props = {
   artist: ValidArtist;
@@ -190,7 +191,8 @@ function HistoryList({ historyType, artist, timestamp }: HistoryListProps) {
 export function HistoryListSkeleton() {
   return (
     <div className="relative flex flex-col gap-4">
-      <div className="z-20 absolute top-0 w-full h-full bg-linear-to-b from-transparent to-75% to-background" />
+      <SkeletonGradient />
+
       {Array.from({ length: 3 }).map((_, i) => (
         <div
           key={`month-${i}`}

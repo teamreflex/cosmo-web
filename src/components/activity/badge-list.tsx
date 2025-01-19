@@ -13,6 +13,7 @@ import { Button } from "../ui/button";
 import { InfiniteQueryNext } from "../infinite-query-pending";
 import Badge from "./badge";
 import { match } from "ts-pattern";
+import SkeletonGradient from "../skeleton/skeleton-overlay";
 
 type Props = {
   artist: ValidArtist;
@@ -66,12 +67,7 @@ function Badges({ artist }: HistoryListProps) {
       <QueryErrorResetBoundary>
         {({ reset }) => {
           return match(status)
-            .with("pending", () => (
-              <div className="grid grid-cols-2 gap-4">
-                <Skeleton className="w-full aspect-square" />
-                <Skeleton className="w-full aspect-square" />
-              </div>
-            ))
+            .with("pending", () => <BadgeSkeleton />)
             .with("error", () => (
               <div className="col-span-full flex flex-col gap-2 items-center py-12">
                 <div className="flex items-center gap-2">
@@ -106,6 +102,25 @@ function Badges({ artist }: HistoryListProps) {
         isFetchingNextPage={isFetchingNextPage}
         fetchNextPage={fetchNextPage}
       />
+    </div>
+  );
+}
+
+export function BadgeSkeleton() {
+  return (
+    <div className="relative w-full flex flex-col gap-4">
+      <SkeletonGradient />
+
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div key={i} className="flex gap-4 items-center h-24 w-full">
+          <Skeleton className="h-full aspect-square" />
+
+          <div className="flex flex-col w-full gap-3 sm:gap-1">
+            <Skeleton className="h-5 lg:h-5 w-48 rounded-full" />
+            <Skeleton className="h-4 w-full rounded-full" />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

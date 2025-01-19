@@ -11,6 +11,7 @@ import { cloneElement, ReactElement } from "react";
 import Skeleton from "../skeleton/skeleton";
 import { cn } from "@/lib/utils";
 import { match } from "ts-pattern";
+import SkeletonGradient from "../skeleton/skeleton-overlay";
 
 type Props<TPostType extends CosmoRekordItem> = {
   gridClasses?: string;
@@ -46,7 +47,7 @@ export default function RekordGrid<TPostType extends CosmoRekordItem>({
       {match(status)
         .with("pending", () => (
           <div className="contents">
-            <div className="z-20 absolute top-0 w-full h-full bg-linear-to-b from-transparent to-75% to-background" />
+            <SkeletonGradient />
             {[...Array(10)].map((_, i) => (
               <Skeleton key={i} className="z-10 max-w-64 aspect-photocard" />
             ))}

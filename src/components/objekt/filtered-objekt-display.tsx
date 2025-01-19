@@ -11,6 +11,7 @@ import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { ObjektResponseOptions } from "@/hooks/use-objekt-response";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import VirtualizedGrid from "./virtualized-grid";
+import SkeletonGradient from "../skeleton/skeleton-overlay";
 
 type RenderProps<T> = {
   id: string | number;
@@ -97,7 +98,7 @@ export default function FilteredObjektDisplay<Response, Item>({
                     style={{ "--grid-columns": gridColumns }}
                     className="relative py-2 grid gap-4 w-full grid-cols-3 md:grid-cols-[repeat(var(--grid-columns),_minmax(0,_1fr))]"
                   >
-                    <div className="z-20 absolute top-0 w-full h-full bg-linear-to-b from-transparent to-75% to-background" />
+                    <SkeletonGradient />
                     {Array.from({ length: gridColumns * 3 }).map((_, i) => (
                       <Skeleton
                         key={i}

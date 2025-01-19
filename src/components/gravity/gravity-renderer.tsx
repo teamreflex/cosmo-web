@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import GravityItem from "./gravity-item";
 import { CosmoGravity } from "@/lib/universal/cosmo/gravity";
 import { getSelectedArtist } from "@/app/data-fetching";
+import SkeletonGradient from "../skeleton/skeleton-overlay";
 
 export default async function GravityRenderer() {
   const artist = await getSelectedArtist();
@@ -62,7 +63,7 @@ export function GravitySkeleton() {
   return (
     <div className="relative flex flex-col gap-4 items-center w-full animate-pulse">
       <div className="flex w-full sm:w-1/2 bg-accent rounded-lg h-10" />
-      <div className="z-20 absolute top-0 w-full h-full bg-linear-to-b from-transparent to-75% to-background" />
+      <SkeletonGradient />
       {Array.from({ length: 4 }).map((_, i) => (
         <div
           key={i}

@@ -1,4 +1,4 @@
-import Skeleton from "@/components/skeleton/skeleton";
+import { BadgeSkeleton } from "@/components/activity/badge-list";
 
 export default async function ActivityBadgesLoading() {
   return (
@@ -11,11 +11,8 @@ export default async function ActivityBadgesLoading() {
       </div>
 
       {/* content */}
-      <div className="w-full sm:w-2/3 md:w-1/2 flex flex-col gap-4 mx-auto">
-        <div className="grid grid-cols-2 gap-4">
-          <Skeleton className="w-full rounded-xl aspect-square" />
-          <Skeleton className="w-full rounded-xl aspect-square" />
-        </div>
+      <div className="w-full sm:w-2/3 md:w-1/2 mx-auto">
+        <BadgeSkeleton />
       </div>
     </main>
   );
