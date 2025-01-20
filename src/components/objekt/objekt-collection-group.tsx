@@ -16,7 +16,7 @@ import { Info, X } from "lucide-react";
 import { useState } from "react";
 import MetadataDialog, { fetchObjektQuery } from "./metadata-dialog";
 import { useQueryClient } from "@tanstack/react-query";
-import { useLockedObjekt, useProfileContext } from "@/hooks/use-profile";
+import { useProfileContext } from "@/hooks/use-profile";
 import StaticObjekt from "./objekt-static";
 import { useObjektSelection } from "@/hooks/use-objekt-selection";
 import { useShallow } from "zustand/react/shallow";

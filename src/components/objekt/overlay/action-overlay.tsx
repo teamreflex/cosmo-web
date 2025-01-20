@@ -104,11 +104,15 @@ export default function ActionOverlay({
         )}
 
         {/* send (authenticated) */}
-        {token.transferable && authenticated && !isPin && !isLocked && (
-          <div {...createHoverProps("send")}>
-            <SendObjekt collection={collection} token={token} />
-          </div>
-        )}
+        {token.transferable &&
+          authenticated &&
+          !isPin &&
+          !isLocked &&
+          token.nonTransferableReason === undefined && (
+            <div {...createHoverProps("send")}>
+              <SendObjekt collection={collection} token={token} />
+            </div>
+          )}
 
         {/* statuses */}
 
