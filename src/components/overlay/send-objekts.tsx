@@ -527,7 +527,9 @@ function SendingRow({ selection }: RowProps) {
                   <AlertDialogContent>
                     <AlertDialogHeader>
                       <AlertDialogTitle>Transaction Error</AlertDialogTitle>
-                      <AlertDialogDescription>{error}</AlertDialogDescription>
+                      <AlertDialogDescription className="break-words">
+                        {error}
+                      </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogAction>Continue</AlertDialogAction>
