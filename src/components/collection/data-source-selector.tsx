@@ -155,7 +155,7 @@ function Content(props: { onClose: () => void }) {
       <AlertDialogHeader>
         <AlertDialogTitle>Objekt Data Source</AlertDialogTitle>
         <AlertDialogDescription>
-          {env.NEXT_PUBLIC_APP_NAME} can display collections in three different
+          {env.NEXT_PUBLIC_APP_NAME} can display collections in two different
           ways.
         </AlertDialogDescription>
       </AlertDialogHeader>
@@ -185,7 +185,7 @@ function Content(props: { onClose: () => void }) {
 
 const sources = [
   {
-    title: "COSMO - Collection Groups",
+    title: "COSMO",
     label: "COSMO",
     value: "cosmo",
     description: "Same as the collection tab in COSMO.",
@@ -196,28 +196,13 @@ const sources = [
     ],
   },
   {
-    title: "COSMO - Legacy",
-    label: "Legacy",
-    value: "cosmo-legacy",
-    description:
-      "Displays all objekts, including duplicates. This was the original COSMO functionality prior to August 2024.",
-    notes: [
-      "Always available on any profile and when not signed in.",
-      "Currently the default when viewing other user's profiles or when not signed in.",
-      "Supports all the same filters and sorting methods as COSMO.",
-      "Supports viewing different objekt statuses: event/welcome reward, gridded, mint pending, etc.",
-      "Does not display the total number of owned objekts.",
-      "MODHAUS may remove this in the future.",
-    ],
-  },
-  {
-    title: "Polygon - Blockchain",
+    title: "Polygon Blockchain",
     label: "Polygon",
     value: "blockchain",
     description:
       "Displays all objekts, including duplicates, with filter limitations.",
     notes: [
-      "Always available on any profile and when not signed in.",
+      "Always available on any profile and is the only option available when not signed in, or viewing other profiles.",
       "Supports sorting by serial number.",
       "Does not support filtering by gridable.",
       "Objekt statuses such as event/welcome reward, gridded, mint pending, etc. are not supported.",

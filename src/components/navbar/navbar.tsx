@@ -60,7 +60,7 @@ async function Auth() {
   const [selectedArtist, artists, data] = await Promise.all([
     getSelectedArtist(),
     getArtistsWithMembers(),
-    user ? getUserByIdentifier(user.address) : undefined,
+    user ? getUserByIdentifier(user.nickname) : undefined,
   ]);
 
   // profile is missing
