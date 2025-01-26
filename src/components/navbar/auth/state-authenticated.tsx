@@ -18,7 +18,7 @@ type Props = {
   cosmoAvatar: ReactNode;
 };
 
-export function StateAuthenticated({
+export default function StateAuthenticated({
   profile,
   artists,
   selectedArtist,

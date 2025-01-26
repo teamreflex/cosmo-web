@@ -75,6 +75,13 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2025-01-27",
+    changes: [
+      "Users will now be prompted to refresh their profile when it is out of sync with COSMO.",
+      "This should resolve issues where ID changes result in an error and being unable to sign out.",
+    ],
+  },
+  {
     date: "2025-01-19",
     changes: [
       "Trades page now supports filtering by season, class, member, artist and mint/received/sent.",
@@ -84,26 +91,6 @@ const updates = [
     date: "2025-01-08",
     changes: [
       "Modhaus has unfortunately removed the ability to view other user's collections via COSMO, so now the only option is via blockchain data.",
-    ],
-  },
-  {
-    date: "2025-01-07",
-    changes: [
-      "Fixed reward claiming.",
-      "Fixed objekts with incorrect colors: Seoyeon Divine FCOs, Heejin <K> MMT DCOs, Choerry Binary SCOs",
-      "Fixed upcoming gravities being displayed above ongoing gravities.",
-      "Fixed objekt information popups being too tall for smaller phone screens.",
-      "Added toggle to hide objekt buttons",
-    ],
-  },
-  {
-    date: "2025-01-03",
-    changes: [
-      "Updated maximum objekts that can be sent at once to 10.",
-      "Removed rarity from objekt information as the number of copies no longer correlates with rarity.",
-      "Added an 'unobtainable' label to objekts that are no longer obtainable though normal means, such as limited time events.",
-      "Progress and leaderboard now exclude unobtainable objekts. If you have 100% for a season/class and own an unobtainable, it will be shown and your percentage will go over 100%.",
-      "Unobtainables include: Mayu B101A-B108A, tripleS D312Z, JinSoul A109A, ARTMS A346Z, ARTMS A351Z, ARTMS B310Z.",
     ],
   },
 ];

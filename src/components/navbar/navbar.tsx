@@ -13,8 +13,9 @@ import SystemStatus from "../misc/system-status";
 import CosmoAvatar from "./auth/cosmo-avatar";
 import AuthFallback from "./auth-fallback";
 import Links from "./links.server";
-import { StateAuthenticated } from "./auth/state-authenticated";
-import { StateGuest } from "./auth/state-guest";
+import StateAuthenticated from "./auth/state-authenticated";
+import StateGuest from "./auth/state-guest";
+import StateMissingProfile from "./auth/state-missing-profile";
 
 export default async function Navbar() {
   return (
@@ -60,16 +61,16 @@ async function Auth() {
   const [selectedArtist, artists, data] = await Promise.all([
     getSelectedArtist(),
     getArtistsWithMembers(),
-    user ? getUserByIdentifier(user.nickname) : undefined,
+    user ? getUserByIdentifier(user.nickname).catch(() => null) : undefined,
   ]);
 
   // profile is missing
-  if (user !== undefined && data === undefined) {
-    throw new Error("Profile is missing, this should not be possible");
+  if (data === null) {
+    return <StateMissingProfile />;
   }
 
-  const isAuthenticated = user !== undefined && data !== undefined;
-  if (isAuthenticated) {
+  // signed in and profile exists
+  if (user !== undefined && data !== undefined) {
     return (
       <StateAuthenticated
         profile={data.profile}
@@ -85,7 +86,7 @@ async function Auth() {
             <CosmoAvatar
               token={user}
               artist={selectedArtist}
-              nickname={data.profile.nickname}
+              nickname={user.nickname}
             />
           </ErrorBoundary>
         }
@@ -93,5 +94,6 @@ async function Auth() {
     );
   }
 
+  // not signed in
   return <StateGuest />;
 }

@@ -3,7 +3,7 @@ import { Moon } from "lucide-react";
 import SignInDialog from "./sign-in/sign-in-dialog";
 import GuestThemeSwitch from "./guest-theme-switch";
 
-export function StateGuest() {
+export default function StateGuest() {
   return (
     <div className="flex items-center gap-2">
       <SignInDialog />
