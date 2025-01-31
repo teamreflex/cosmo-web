@@ -1,23 +1,12 @@
 "use client";
 
 import { ValidArtist } from "@/lib/universal/cosmo/common";
-import {
-  CosmoActivityBadgeFiltersResult,
-  CosmoActivityBadgeResult,
-  CosmoActivityBadge,
-} from "@/lib/universal/cosmo/activity/badges";
-import {
-  QueryErrorResetBoundary,
-  useSuspenseInfiniteQuery,
-} from "@tanstack/react-query";
-import { ofetch } from "ofetch";
+import { CosmoActivityBadgeFiltersResult } from "@/lib/universal/cosmo/activity/badges";
+import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import { HeartCrack, RefreshCcw } from "lucide-react";
 import Skeleton from "../skeleton/skeleton";
 import { Button } from "../ui/button";
-import { InfiniteQueryNext } from "../infinite-query-pending";
-import Badge from "./badge";
 import SkeletonGradient from "../skeleton/skeleton-overlay";
-import { baseUrl } from "@/lib/utils";
 import { ErrorBoundary } from "react-error-boundary";
 import { Suspense, useState } from "react";
 import {
@@ -28,6 +17,7 @@ import {
   SelectValue,
 } from "../ui/select";
 import SubcategorySelector from "./badges/subcategory-selector";
+import BadgeGrid from "./badges/badge-grid";
 
 type Props = {
   artist: ValidArtist;
@@ -96,7 +86,7 @@ export default function BadgeList({ artist, filters }: Props) {
                 )}
               >
                 <Suspense fallback={<BadgeSkeleton />}>
-                  <Badges
+                  <BadgeGrid
                     artist={artist}
                     filters={filters}
                     categoryKey={categoryKey}
@@ -109,93 +99,6 @@ export default function BadgeList({ artist, filters }: Props) {
         </div>
       </div>
     </main>
-  );
-}
-
-type BadgesProps = {
-  filters: CosmoActivityBadgeFiltersResult;
-  artist: ValidArtist;
-  categoryKey: string;
-  subcategoryKey: string | undefined;
-};
-
-function Badges({ artist, filters, categoryKey, subcategoryKey }: BadgesProps) {
-  const query = useSuspenseInfiniteQuery({
-    queryKey: ["badges", artist, categoryKey, subcategoryKey],
-    queryFn: async ({ pageParam = 0 }) => {
-      const url = new URL("/api/bff/v4/badges", baseUrl());
-      return await ofetch<CosmoActivityBadgeResult>(url.toString(), {
-        query: {
-          artistId: artist,
-          skip: pageParam,
-          lang: "en",
-          badgeCategory: categoryKey === "all" ? undefined : categoryKey,
-          badgeSubcategory: subcategoryKey,
-        },
-      });
-    },
-    initialPageParam: 0,
-    getNextPageParam: (lastPage, allPages, lastPageParam) =>
-      lastPage.filteredCount === 20 ? lastPageParam + 20 : null,
-    staleTime: Infinity,
-    refetchOnWindowFocus: false,
-  });
-
-  const badges = query.data?.pages.flatMap((page) => page.items) ?? [];
-
-  // Initialize groups with all badge types from filters
-  const groupedBadges = filters.type.reduce<
-    Record<string, CosmoActivityBadge[]>
-  >((acc, type) => ({ ...acc, [type]: [] }), {});
-
-  // Fill in badges into their respective groups
-  badges.forEach((badge) => {
-    if (groupedBadges[badge.badgeType]) {
-      groupedBadges[badge.badgeType].push(badge);
-    }
-  });
-
-  return (
-    <div className="contents">
-      <div className="flex flex-col gap-4">
-        {filters.type.map((type) => (
-          <BadgeGroup key={type} type={type} badges={groupedBadges[type]} />
-        ))}
-      </div>
-
-      <InfiniteQueryNext
-        status={query.status}
-        hasNextPage={query.hasNextPage}
-        isFetchingNextPage={query.isFetchingNextPage}
-        fetchNextPage={query.fetchNextPage}
-      />
-    </div>
-  );
-}
-
-type BadgeGroupProps = {
-  type: string;
-  badges: CosmoActivityBadge[];
-};
-
-function BadgeGroup({ type, badges }: BadgeGroupProps) {
-  return (
-    <div key={type} className="flex flex-col gap-4">
-      {/* header */}
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold">{type}</h2>
-        {badges.length === 0 && (
-          <p className="text-sm font-semibold">No badges received</p>
-        )}
-      </div>
-
-      {/* badges */}
-      <div className="grid grid-cols-3 sm:grid-cols-5 gap-4">
-        {badges.map((badge) => (
-          <Badge key={badge.id} badge={badge} />
-        ))}
-      </div>
-    </div>
   );
 }
 
