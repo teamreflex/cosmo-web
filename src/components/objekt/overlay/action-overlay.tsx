@@ -45,6 +45,15 @@ export default function ActionOverlay({
   const usedForGrid =
     token.usedForGrid || token.nonTransferableReason === "used-for-grid";
 
+  // some welcome objekts are sendable
+  const isSendableWelcome =
+    token.transferable && token.nonTransferableReason === "welcome-objekt";
+
+  // all other objekts, check if they are sendable
+  const isSendable =
+    isSendableWelcome ||
+    (token.transferable && token.nonTransferableReason === undefined);
+
   const showActions =
     !token.transferable ||
     usedForGrid ||
@@ -97,22 +106,18 @@ export default function ActionOverlay({
         )}
 
         {/* lock/unlock (authenticated) */}
-        {token.transferable && authenticated && !isPin && (
+        {isSendable && authenticated && !isPin && (
           <div {...createHoverProps("lock")}>
             <LockObjekt tokenId={token.tokenId} isLocked={isLocked} />
           </div>
         )}
 
         {/* send (authenticated) */}
-        {token.transferable &&
-          authenticated &&
-          !isPin &&
-          !isLocked &&
-          token.nonTransferableReason === undefined && (
-            <div {...createHoverProps("send")}>
-              <SendObjekt collection={collection} token={token} />
-            </div>
-          )}
+        {isSendable && authenticated && !isPin && !isLocked && (
+          <div {...createHoverProps("send")}>
+            <SendObjekt collection={collection} token={token} />
+          </div>
+        )}
 
         {/* statuses */}
 
@@ -144,12 +149,13 @@ export default function ActionOverlay({
               )}
 
             {/* welcome reward */}
-            {token.nonTransferableReason === "welcome-objekt" && (
-              <MailX
-                {...createHoverProps("welcome-objekt")}
-                className="h-3 w-3 sm:h-5 sm:w-5 shrink-0"
-              />
-            )}
+            {!isSendable &&
+              token.nonTransferableReason === "welcome-objekt" && (
+                <MailX
+                  {...createHoverProps("welcome-objekt")}
+                  className="h-3 w-3 sm:h-5 sm:w-5 shrink-0"
+                />
+              )}
 
             {/* used for grid */}
             {usedForGrid && (
@@ -198,9 +204,10 @@ export default function ActionOverlay({
               token.nonTransferableReason === "challenge-reward" && (
                 <OverlayStatus>Event reward</OverlayStatus>
               )}
-            {token.nonTransferableReason === "welcome-objekt" && (
-              <OverlayStatus>Welcome reward</OverlayStatus>
-            )}
+            {!isSendable &&
+              token.nonTransferableReason === "welcome-objekt" && (
+                <OverlayStatus>Welcome reward</OverlayStatus>
+              )}
             {usedForGrid && <OverlayStatus>Used for grid</OverlayStatus>}
             {token.lenticularPairTokenId !== 0 && (
               <OverlayStatus>Lenticular pair</OverlayStatus>
