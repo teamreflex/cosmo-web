@@ -137,6 +137,8 @@ function Badges({ artist, filters, categoryKey, subcategoryKey }: BadgesProps) {
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages, lastPageParam) =>
       lastPage.filteredCount === 20 ? lastPageParam + 20 : null,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
   });
 
   const badges = query.data?.pages.flatMap((page) => page.items) ?? [];

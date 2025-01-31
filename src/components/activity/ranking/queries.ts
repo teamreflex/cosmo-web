@@ -38,6 +38,8 @@ export function nearPeopleQuery(
         },
       });
     },
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -58,6 +60,8 @@ export function lastRankQuery(artist: ValidArtist, memberId: string) {
         },
       });
     },
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -88,5 +92,7 @@ export function topRankQuery(
         },
       });
     },
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
   });
 }
