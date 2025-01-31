@@ -25,6 +25,7 @@ import { Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "../ui/use-toast";
 import { getAvailableRewards, getRewardsClaimable } from "./queries";
+import { track } from "@/lib/utils";
 
 type Props = PropsWithChildren<{
   artist: ValidArtist;
@@ -118,6 +119,8 @@ function ClaimRewards({
       });
     },
     onSuccess: () => {
+      track("reward-claim");
+
       toast({
         description: "Rewards claimed successfully",
       });
