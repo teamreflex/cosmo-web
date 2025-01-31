@@ -21,7 +21,7 @@ import Skeleton from "@/components/skeleton/skeleton";
 import AuthFallback from "@/components/navbar/auth-fallback";
 import { getQueryClient } from "@/lib/query-client";
 import { CosmoActivityRankingKind } from "@/lib/universal/cosmo/activity/ranking";
-import { fetchActivityRankingNear } from "@/lib/server/cosmo/activity";
+import { fetchActivityRankingNear } from "@/lib/server/cosmo/ranking";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 
 export const metadata: Metadata = {

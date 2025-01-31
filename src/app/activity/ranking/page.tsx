@@ -9,7 +9,7 @@ import {
   fetchActivityRankingLast,
   fetchActivityRankingNear,
   fetchActivityRankingTop,
-} from "@/lib/server/cosmo/activity";
+} from "@/lib/server/cosmo/ranking";
 import { CosmoActivityRankingKind } from "@/lib/universal/cosmo/activity/ranking";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { Metadata } from "next";
@@ -21,8 +21,7 @@ export const metadata: Metadata = {
 const kind: CosmoActivityRankingKind = "hold_objekts_per_season";
 
 export default async function ActivityRankingPage() {
-  const user = await decodeUser();
-  const artist = await getSelectedArtist();
+  const [user, artist] = await Promise.all([decodeUser(), getSelectedArtist()]);
 
   const queryClient = getQueryClient();
 

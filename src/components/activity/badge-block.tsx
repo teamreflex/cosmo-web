@@ -1,4 +1,4 @@
-import { fetchActivityLatestBadge } from "@/lib/server/cosmo/activity";
+import { fetchActivityLatestBadge } from "@/lib/server/cosmo/badges";
 import { TokenPayload } from "@/lib/universal/auth";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { ChevronRight } from "lucide-react";

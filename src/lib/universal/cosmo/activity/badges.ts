@@ -4,9 +4,10 @@ import { parse } from "../../parsers";
 
 const bffActivityBadgeSchema = z.object({
   lang: z.enum(["en", "ko"]).optional().default("en"),
-  artistName: z.enum(validArtists),
-  page: z.coerce.number().optional().default(1),
-  size: z.coerce.number().optional().default(30),
+  artistId: z.enum(validArtists),
+  skip: z.coerce.number().optional().default(0),
+  badgeCategory: z.string().optional(),
+  badgeSubcategory: z.string().optional(),
 });
 export type BFFActivityBadgeParams = z.infer<typeof bffActivityBadgeSchema>;
 
@@ -18,40 +19,55 @@ export function parseBffActivityBadgeParams(params: URLSearchParams) {
     bffActivityBadgeSchema,
     {
       lang: params.get("lang"),
-      artistName: params.get("artistName"),
-      page: params.get("page"),
-      size: params.get("size"),
+      artistId: params.get("artistId"),
+      skip: params.get("skip"),
+      badgeCategory: params.get("badgeCategory") ?? undefined,
+      badgeSubcategory: params.get("badgeSubcategory") ?? undefined,
     },
     {
       lang: "en",
-      artistName: "artms",
-      page: 1,
-      size: 30,
+      artistId: "artms",
+      skip: 0,
     }
   );
 }
 
-export type CosmoActivityBadge = {
-  id: number;
-  hid: string;
-  artistId: ValidArtist;
-  createdAt: string;
-  updatedAt: string;
-  "2DImage": {
-    originalImage: string;
-    thumbnailImage: string;
-  };
-  "3DFileUrl": string | null;
-  artistName: ValidArtist;
-  title: string;
-  description: string;
+export type CosmoActivityBadgeResult = {
+  totalCount: number;
+  filteredCount: number;
+  items: CosmoActivityBadge[];
 };
 
-export type CosmoActivityBadgeResult = {
-  items: CosmoActivityBadge[];
-  count: number;
+export type CosmoActivityBadge = {
+  id: number;
+  badgeCategory: string;
+  badgeType: string;
+  season: string | null;
+  artistId: ValidArtist;
+  image: string;
+  title: string;
+  grantedAt: string;
 };
 
 export type CosmoActivityLatestBadge = {
   image: string;
+};
+
+export interface CosmoActivityBadgeDetail extends CosmoActivityBadge {
+  acquiredUserCount: number;
+}
+
+export type CosmoActivityBadgeFilterSubcategory = {
+  key: string;
+  value: string;
+};
+
+export type CosmoActivityBadgeFilterCategory = {
+  name: string;
+  subCategory: CosmoActivityBadgeFilterSubcategory[];
+};
+
+export type CosmoActivityBadgeFiltersResult = {
+  category: CosmoActivityBadgeFilterCategory[];
+  type: string[];
 };
