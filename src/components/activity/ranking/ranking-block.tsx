@@ -4,21 +4,20 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   CosmoActivityRankingKind,
-  CosmoActivityRankingNearResult,
   CosmoActivityRankingNearUser,
-  CosmoActivityRankingResult,
 } from "@/lib/universal/cosmo/activity/ranking";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
-import { baseUrl, cn, ordinal } from "@/lib/utils";
+import { cn, ordinal } from "@/lib/utils";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ChevronDown, ChevronRight, ChevronUp, Minus } from "lucide-react";
-import { ofetch } from "ofetch";
 import { useState } from "react";
 import ProfileImage from "@/assets/profile.webp";
 import { format } from "date-fns";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import CalculatingError from "./calculating-error";
+import { nearPeopleQuery } from "./queries";
+import { kindMap } from "./common";
 
 type Props = {
   artist: ValidArtist;
@@ -57,6 +56,7 @@ export default function RankingBlock({ artist }: Props) {
         <TabsList className="flex justify-self-center w-fit mx-auto">
           <TabsTrigger value="hold_objekts_per_season">Objekt</TabsTrigger>
           <TabsTrigger value="grid_per_season">Grid</TabsTrigger>
+          <TabsTrigger value="gravity_per_como_in_season">Gravity</TabsTrigger>
         </TabsList>
       </Tabs>
 
@@ -81,31 +81,13 @@ function RankingList({ artist, kind }: RankingListProps) {
    * useSuspenseQuery pre-renders and fetches on the server,
    * resulting in the user token not being available, and 401 errors.
    */
-  const { data } = useSuspenseQuery({
-    queryKey: ["activity-ranking", artist, kind, "0"],
-    queryFn: async () => {
-      const url = new URL(
-        `/api/bff/v1/activity/artist-rank/near-people`,
-        baseUrl()
-      );
-      return await ofetch<
-        CosmoActivityRankingResult<CosmoActivityRankingNearResult>
-      >(url.toString(), {
-        query: {
-          artistName: artist,
-          kind,
-          marginAbove: 1,
-          marginBelow: 1,
-        },
-      });
-    },
-  });
+  const { data } = useSuspenseQuery(nearPeopleQuery(artist, kind, "0"));
 
   if (data.success === false) {
     return <CalculatingError error={data.error} />;
   }
 
-  const sorted = data.data.nearPeoples.toSorted(
+  const sorted = data.data.nearPeople.toSorted(
     (i) => sortMap[i.relativePosition]
   );
 
@@ -131,15 +113,14 @@ type RankingItemProps = {
 };
 
 function RankingItem({ artist, kind, item }: RankingItemProps) {
-  const user = item.representUser.user;
-  const image = item.representUser.profiles.find(
-    (p) => p.artistName === artist
-  )?.profileImageUrl;
+  const nickname = item.representUser.nickname;
+  const image = item.representUser.userProfile.find(
+    (p) => p.artistId === artist
+  )?.profileImageThumbnail;
 
   const countString =
     item.nearPeopleCount > 1 ? `and ${item.nearPeopleCount - 1} more` : null;
-  const kindString =
-    kind === "hold_objekts_per_season" ? "Objekts owned" : "Grids completed";
+  const type = kindMap[kind];
 
   return (
     <div
@@ -159,15 +140,15 @@ function RankingItem({ artist, kind, item }: RankingItemProps) {
 
       {/* profile image */}
       <Avatar className="h-10 w-10">
-        <AvatarFallback>{user.nickname.charAt(0).toUpperCase()}</AvatarFallback>
+        <AvatarFallback>{nickname.charAt(0).toUpperCase()}</AvatarFallback>
 
         {image !== undefined ? (
-          <AvatarImage src={image} alt={user.nickname} />
+          <AvatarImage src={image} alt={nickname} />
         ) : (
           <AvatarImage
             className="bg-cosmo-profile p-3"
             src={ProfileImage.src}
-            alt={user.nickname}
+            alt={nickname}
           />
         )}
       </Avatar>
@@ -183,10 +164,10 @@ function RankingItem({ artist, kind, item }: RankingItemProps) {
           {ordinal(item.rankNumber)} place
         </p>
         <p className="text-sm">
-          {user.nickname} {countString}
+          {nickname} {countString}
         </p>
         <p className="text-sm">
-          {item.rankData} {kindString}
+          {item.rankData} {type}
         </p>
       </div>
     </div>

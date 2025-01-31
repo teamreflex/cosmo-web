@@ -6,6 +6,7 @@ import {
 import TopRanking from "@/components/activity/ranking/top-ranking";
 import { getQueryClient } from "@/lib/query-client";
 import {
+  fetchActivityRankingLast,
   fetchActivityRankingNear,
   fetchActivityRankingTop,
 } from "@/lib/server/cosmo/activity";
@@ -25,12 +26,22 @@ export default async function ActivityRankingPage() {
 
   const queryClient = getQueryClient();
 
+  // prefetch last
+  queryClient.prefetchQuery({
+    queryKey: ["ranking", "last", artist, "0"],
+    queryFn: async () => {
+      return fetchActivityRankingLast(user!.accessToken, {
+        artistId: artist,
+      });
+    },
+  });
+
   // prefetch my rank
   queryClient.prefetchQuery({
-    queryKey: ["activity-ranking", artist, kind, "0"],
+    queryKey: ["ranking", "near", artist, kind, "0"],
     queryFn: async () => {
       return fetchActivityRankingNear(user!.accessToken, {
-        artistName: artist,
+        artistId: artist,
         kind,
         marginAbove: 1,
         marginBefore: 1,
@@ -40,10 +51,10 @@ export default async function ActivityRankingPage() {
 
   // prefetch top 10
   queryClient.prefetchQuery({
-    queryKey: ["ranking-detail", artist, kind, "0"],
+    queryKey: ["ranking", "top", artist, kind, "0"],
     queryFn: async () => {
       return fetchActivityRankingTop(user!.accessToken, {
-        artistName: artist,
+        artistId: artist,
         kind,
         size: 10,
       });

@@ -11,19 +11,16 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   CosmoActivityRankingKind,
-  CosmoActivityRankingNearResult,
-  CosmoActivityRankingResult,
   CosmoActivityRankingTopEntry,
 } from "@/lib/universal/cosmo/activity/ranking";
 import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQueries, useSuspenseQuery } from "@tanstack/react-query";
 import Image from "next/image";
-import { ofetch } from "ofetch";
 import { Suspense, useState } from "react";
 import ProfileImage from "@/assets/profile.webp";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { baseUrl, ordinal } from "@/lib/utils";
+import { ordinal } from "@/lib/utils";
 import Portal from "@/components/portal";
 import {
   AlertDialog,
@@ -38,6 +35,8 @@ import { Button } from "@/components/ui/button";
 import { HelpCircle } from "lucide-react";
 import { ErrorBoundary } from "react-error-boundary";
 import CalculatingError from "./calculating-error";
+import { lastRankQuery, nearPeopleQuery, topRankQuery } from "./queries";
+import { kindMap } from "./common";
 
 type Props = {
   selectedArtist: ValidArtist;
@@ -68,40 +67,42 @@ export default function TopRanking({ selectedArtist, artists }: Props) {
           </div>
 
           <div className="flex items-center justify-center md:justify-normal gap-2">
-            <Select value={memberId} onValueChange={setMemberId}>
-              <SelectTrigger className="w-36">
-                <SelectValue placeholder="Member" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="0">
-                  <div className="flex flex-row items-center gap-2">
-                    <Image
-                      src={artist.logoImageUrl}
-                      alt={artist.title}
-                      width={24}
-                      height={24}
-                      className="rounded-full"
-                    />
-                    <span>{artist.title}</span>
-                  </div>
-                </SelectItem>
-
-                {artist.artistMembers.map((member) => (
-                  <SelectItem key={member.name} value={member.id.toString()}>
+            {tab !== "gravity_per_como_in_season" && (
+              <Select value={memberId} onValueChange={setMemberId}>
+                <SelectTrigger className="w-36">
+                  <SelectValue placeholder="Member" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="0">
                     <div className="flex flex-row items-center gap-2">
                       <Image
-                        src={member.profileImageUrl}
-                        alt={member.name}
+                        src={artist.logoImageUrl}
+                        alt={artist.title}
                         width={24}
                         height={24}
                         className="rounded-full"
                       />
-                      <span>{member.name}</span>
+                      <span>{artist.title}</span>
                     </div>
                   </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+
+                  {artist.artistMembers.map((member) => (
+                    <SelectItem key={member.name} value={member.id.toString()}>
+                      <div className="flex flex-row items-center gap-2">
+                        <Image
+                          src={member.profileImageUrl}
+                          alt={member.name}
+                          width={24}
+                          height={24}
+                          className="rounded-full"
+                        />
+                        <span>{member.name}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
 
             <Tabs
               value={tab}
@@ -112,6 +113,9 @@ export default function TopRanking({ selectedArtist, artists }: Props) {
                   Objekt
                 </TabsTrigger>
                 <TabsTrigger value="grid_per_season">Grid</TabsTrigger>
+                <TabsTrigger value="gravity_per_como_in_season">
+                  Gravity
+                </TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
@@ -191,48 +195,42 @@ type MyRankProps = {
 };
 
 function MyRank({ artist, kind, memberId }: MyRankProps) {
-  const { data } = useSuspenseQuery({
-    queryKey: ["activity-ranking", artist, kind, memberId],
-    queryFn: async () => {
-      const url = new URL(
-        `/api/bff/v1/activity/artist-rank/near-people`,
-        baseUrl()
-      );
-      return await ofetch<
-        CosmoActivityRankingResult<CosmoActivityRankingNearResult>
-      >(url.toString(), {
-        query: {
-          artistName: artist,
-          kind,
-          memberId,
-          marginAbove: 1,
-          marginBelow: 1,
-        },
-      });
-    },
+  const [nearRank, lastRank] = useSuspenseQueries({
+    queries: [
+      nearPeopleQuery(artist, kind, memberId),
+      lastRankQuery(artist, memberId),
+    ],
   });
 
-  if (data.success === false) {
-    return <CalculatingError error={data.error} />;
+  if (nearRank.data.success === false || lastRank.data.success === false) {
+    return <CalculatingError error="Rankings are being calculated" />;
   }
 
-  const type =
-    kind === "hold_objekts_per_season" ? "Objekts owned" : "Grids completed";
+  const { data: nearRankData } = nearRank;
+  const { data: lastRankData } = lastRank;
+  const rankInfo = lastRankData.data
+    .filter(Boolean)
+    .find((lr) => lr.kind === kind);
+  if (!rankInfo) {
+    return null;
+  }
 
-  if (data !== undefined) {
-    const current = data.data.nearPeoples.find(
+  const type = kindMap[kind];
+
+  if (nearRankData !== undefined) {
+    const current = nearRankData.data.nearPeople.find(
       (p) => p.relativePosition === "current"
     );
-    const above = data.data.nearPeoples.find(
+    const above = nearRankData.data.nearPeople.find(
       (p) => p.relativePosition === "above"
     );
-    const below = data.data.nearPeoples.find(
+    const below = nearRankData.data.nearPeople.find(
       (p) => p.relativePosition === "below"
     );
 
     const percentage =
       current !== undefined
-        ? ((current.rankNumber / data.data.artistRank.maxRank) * 100).toFixed(2)
+        ? ((current.rankNumber / rankInfo.maxRank) * 100).toFixed(2)
         : 0;
 
     return (
@@ -244,7 +242,7 @@ function MyRank({ artist, kind, memberId }: MyRankProps) {
             {current !== undefined && (
               <div className="contents">
                 <p className="font-semibold text-lg">
-                  {current.representUser.user.nickname}
+                  {current.representUser.nickname}
                 </p>
                 <p className="font-semibold text-xl">
                   {ordinal(current.rankNumber)} (Top {percentage}%)
@@ -288,7 +286,7 @@ function MyRank({ artist, kind, memberId }: MyRankProps) {
         </div>
 
         <Portal to="#ranking-season">
-          <p className="text-sm font-semibold">{data.data.season}</p>
+          <p className="text-sm font-semibold">{nearRankData.data.season}</p>
         </Portal>
       </div>
     );
@@ -343,29 +341,15 @@ type RankingListProps = {
 };
 
 function RankingList({ artist, kind, memberId }: RankingListProps) {
-  const { data } = useSuspenseQuery({
-    queryKey: ["ranking-detail", artist, kind, memberId],
-    queryFn: async () => {
-      return await ofetch<
-        CosmoActivityRankingResult<CosmoActivityRankingTopEntry[]>
-      >(`/api/bff/v1/activity/artist-rank/top`, {
-        query: {
-          artistName: artist,
-          kind,
-          size: 10,
-          memberId,
-        },
-      });
-    },
-  });
+  const { data } = useSuspenseQuery(topRankQuery(artist, kind, memberId));
 
   if (data.success) {
     return (
       <div className="flex flex-col gap-2">
         <h3 className="text-xl font-semibold">TOP 10</h3>
         <div className="flex flex-col gap-2">
-          {data.data.map((item) => (
-            <RankingRow key={item.user.user.id} artist={artist} item={item} />
+          {data.data.rankItems.map((item) => (
+            <RankingRow key={item.user.nickname} artist={artist} item={item} />
           ))}
         </div>
       </div>
@@ -381,36 +365,36 @@ type RankingRowProps = {
 };
 
 function RankingRow({ artist, item }: RankingRowProps) {
-  const { user, profiles } = item.user;
-  const image = profiles.find((p) => p.artistName === artist)?.profileImageUrl;
+  const { nickname, userProfile } = item.user;
+  const image = userProfile.find(
+    (p) => p.artistId === artist
+  )?.profileImageThumbnail;
 
   return (
     <div className="flex gap-4 items-center">
       {/* ranking position */}
-      <p className="font-semibold text-center w-5">
-        {item.rankItem.rankNumber}
-      </p>
+      <p className="font-semibold text-center w-5">{item.rankNumber}</p>
 
       {/* profile image */}
       <Avatar className="h-10 w-10">
-        <AvatarFallback>{user.nickname.charAt(0).toUpperCase()}</AvatarFallback>
+        <AvatarFallback>{nickname.charAt(0).toUpperCase()}</AvatarFallback>
 
         {image !== undefined ? (
-          <AvatarImage src={image} alt={user.nickname} />
+          <AvatarImage src={image} alt={nickname} />
         ) : (
           <AvatarImage
             className="bg-cosmo-profile p-2"
             src={ProfileImage.src}
-            alt={user.nickname}
+            alt={nickname}
           />
         )}
       </Avatar>
 
       {/* name */}
-      <p className="grow">{item.user.user.nickname}</p>
+      <p className="grow">{nickname}</p>
 
       {/* ranking data */}
-      <p className="font-semibold">{item.rankItem.rankData}</p>
+      <p className="font-semibold">{item.rankData}</p>
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { FetchError } from "ofetch";
 import {
   BFFActivityBadgeParams,
   CosmoActivityBadgeResult,
+  CosmoActivityLatestBadge,
 } from "@/lib/universal/cosmo/activity/badges";
 import {
   BFFActivityHistoryParams,
@@ -12,11 +13,13 @@ import {
 import { CosmoActivityMyObjektResult } from "@/lib/universal/cosmo/activity/my-objekt";
 import { CosmoActivityWelcomeResult } from "@/lib/universal/cosmo/activity/welcome";
 import {
+  BFFActivityRankingLastParams,
   BFFActivityRankingNearParams,
   BFFActivityRankingTopParams,
+  CosmoActivityRankingLast,
   CosmoActivityRankingNearResult,
   CosmoActivityRankingResult,
-  CosmoActivityRankingTopEntry,
+  CosmoActivityRankingTopResult,
 } from "@/lib/universal/cosmo/activity/ranking";
 
 type FetchActivityWelcomeResultSuccess = {
@@ -129,6 +132,21 @@ export async function fetchActivityBadges(
   });
 }
 
+export async function fetchActivityLatestBadge(
+  token: string,
+  artistId: ValidArtist
+) {
+  return await cosmo<CosmoActivityLatestBadge>(`/bff/v4/latest-badge`, {
+    query: {
+      artistId,
+      tid: crypto.randomUUID(),
+    },
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+
 /**
  * Fetch a user's ranking with users near them.
  */
@@ -138,10 +156,9 @@ export async function fetchActivityRankingNear(
 ) {
   return await cosmo<
     CosmoActivityRankingResult<CosmoActivityRankingNearResult>
-  >(`/bff/v1/activity/artist-rank/near-people`, {
+  >(`/bff/v3/rank/near-people`, {
     query: {
       ...options,
-      tid: crypto.randomUUID(),
     },
     headers: {
       Authorization: `Bearer ${token}`,
@@ -164,17 +181,43 @@ export async function fetchActivityRankingTop(
   token: string,
   options: BFFActivityRankingTopParams
 ) {
-  return await cosmo<
-    CosmoActivityRankingResult<CosmoActivityRankingTopEntry[]>
-  >(`/bff/v1/activity/artist-rank/top`, {
-    query: {
-      ...options,
-      tid: crypto.randomUUID(),
-    },
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
+  return await cosmo<CosmoActivityRankingResult<CosmoActivityRankingTopResult>>(
+    `/bff/v3/rank/top`,
+    {
+      query: {
+        ...options,
+      },
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  )
+    .then((res) => ({
+      success: true,
+      data: res,
+    }))
+    .catch(() => ({
+      success: false,
+      error: "Rankings are being calculated.",
+    }));
+}
+
+/**
+ * Fetch the ranking for a given artist/member.
+ */
+export async function fetchActivityRankingLast(
+  token: string,
+  options: BFFActivityRankingLastParams
+) {
+  return await cosmo<CosmoActivityRankingResult<CosmoActivityRankingLast[]>>(
+    `/bff/v3/rank/last`,
+    {
+      query: options,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  )
     .then((res) => ({
       success: true,
       data: res,

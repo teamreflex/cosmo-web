@@ -51,3 +51,7 @@ export type CosmoActivityBadgeResult = {
   items: CosmoActivityBadge[];
   count: number;
 };
+
+export type CosmoActivityLatestBadge = {
+  image: string;
+};

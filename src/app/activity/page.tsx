@@ -41,10 +41,10 @@ export default async function ActivityPage() {
 
   // prefetch my rank
   queryClient.prefetchQuery({
-    queryKey: ["activity-ranking", artist, kind, "0"],
+    queryKey: ["ranking", "near", artist, kind, "0"],
     queryFn: async () => {
       return fetchActivityRankingNear(token!.accessToken, {
-        artistName: artist,
+        artistId: artist,
         kind,
         marginAbove: 1,
         marginBefore: 1,

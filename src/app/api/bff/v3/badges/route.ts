@@ -7,7 +7,6 @@ import { parseBffActivityBadgeParams } from "@/lib/universal/cosmo/activity/badg
  */
 export const GET = withCosmoApi(async ({ req, user }) => {
   const options = parseBffActivityBadgeParams(req.nextUrl.searchParams);
-  console.log(options);
   const results = await fetchActivityBadges(user.accessToken, options);
 
   return Response.json(results);

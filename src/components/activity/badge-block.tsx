@@ -1,4 +1,4 @@
-import { fetchActivityBadges } from "@/lib/server/cosmo/activity";
+import { fetchActivityLatestBadge } from "@/lib/server/cosmo/activity";
 import { TokenPayload } from "@/lib/universal/auth";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { ChevronRight } from "lucide-react";
@@ -11,14 +11,7 @@ type Props = {
 };
 
 export default async function BadgeBlock({ user, artist }: Props) {
-  const { count, items } = await fetchActivityBadges(user.accessToken, {
-    lang: "en",
-    artistName: artist,
-    page: 1,
-    size: 30,
-  });
-
-  const badge = count > 0 ? items[0] : undefined;
+  const badge = await fetchActivityLatestBadge(user.accessToken, artist);
 
   return (
     <Link
@@ -32,11 +25,7 @@ export default async function BadgeBlock({ user, artist }: Props) {
 
       {badge !== undefined && (
         <div className="relative w-1/2 aspect-square flex items-center justify-center mt-0 sm:mt-4 my-4 mx-auto">
-          <Image
-            src={badge["2DImage"].originalImage}
-            fill={true}
-            alt={badge.title}
-          />
+          <Image src={badge.image} fill={true} alt="Latest badge" />
         </div>
       )}
     </Link>

@@ -2,9 +2,36 @@ import { z } from "zod";
 import { ValidArtist, validArtists } from "../common";
 import { parse } from "../../parsers";
 
+// #region Common
+export const rankingKinds = [
+  "hold_objekts_per_season",
+  "grid_per_season",
+  "gravity_per_como_in_season",
+] as const;
+
+export type CosmoActivityRankingKind = (typeof rankingKinds)[number];
+
+export type CosmoActivityRankingProfileImage = {
+  artistId: ValidArtist;
+  profileImageOriginal: string;
+  profileImageThumbnail: string;
+};
+
+export type CosmoActivityRankingResult<T> =
+  | {
+      success: false;
+      error: string;
+    }
+  | {
+      success: true;
+      data: T;
+    };
+// #endregion
+
+// #region Near
 const bffActivityRankingNearSchema = z.object({
-  artistName: z.enum(validArtists),
-  kind: z.enum(["hold_objekts_per_season", "grid_per_season"]),
+  artistId: z.enum(validArtists),
+  kind: z.enum(rankingKinds),
   memberId: z.coerce.number().optional(),
   marginAbove: z.coerce.number().optional().default(1),
   marginBefore: z.coerce.number().optional().default(1),
@@ -21,14 +48,14 @@ export function parseBffActivityRankingNearParams(params: URLSearchParams) {
   return parse(
     bffActivityRankingNearSchema,
     {
-      artistName: params.get("artistName"),
+      artistId: params.get("artistId"),
       kind: params.get("kind"),
       memberId: params.get("memberId"),
       marginAbove: params.get("marginAbove"),
       marginBefore: params.get("marginBefore"),
     },
     {
-      artistName: "artms",
+      artistId: "artms",
       kind: "hold_objekts_per_season",
       marginAbove: 1,
       marginBefore: 1,
@@ -36,9 +63,29 @@ export function parseBffActivityRankingNearParams(params: URLSearchParams) {
   );
 }
 
+export type CosmoActivityRankingNearResult = {
+  season: string;
+  nearPeople: CosmoActivityRankingNearUser[];
+};
+
+export type CosmoActivityRankingNearUser = {
+  // number of objekts or grids completed
+  rankData: number;
+  // actual ranking number
+  rankNumber: number;
+  nearPeopleCount: number;
+  relativePosition: "above" | "below" | "current";
+  representUser: {
+    nickname: string;
+    userProfile: CosmoActivityRankingProfileImage[];
+  };
+};
+// #endregion
+
+// #region Top
 const bffActivityRankingTopSchema = z.object({
-  artistName: z.enum(validArtists),
-  kind: z.enum(["hold_objekts_per_season", "grid_per_season"]),
+  artistId: z.enum(validArtists),
+  kind: z.enum(rankingKinds),
   memberId: z.coerce.number().optional(),
   size: z.coerce.number().optional().default(10),
 });
@@ -54,81 +101,70 @@ export function parseBffActivityRankingTopParams(params: URLSearchParams) {
   return parse(
     bffActivityRankingTopSchema,
     {
-      artistName: params.get("artistName"),
+      artistId: params.get("artistId"),
       kind: params.get("kind"),
       size: params.get("size"),
       memberId: params.get("memberId"),
     },
     {
-      artistName: "artms",
+      artistId: "artms",
       kind: "hold_objekts_per_season",
       size: 10,
     }
   );
 }
 
-export type CosmoActivityRankingNearResult = {
+export type CosmoActivityRankingTopResult = {
   season: string;
-  artistRank: CosmoActivityRankingArtistRank;
-  nearPeoples: CosmoActivityRankingNearUser[];
+  rankItems: CosmoActivityRankingTopEntry[];
 };
 
-export type CosmoActivityRankingKind =
-  | "hold_objekts_per_season"
-  | "grid_per_season";
+export type CosmoActivityRankingTopEntry = {
+  rankNumber: number;
+  rankData: number;
+  user: {
+    nickname: string;
+    userProfile: CosmoActivityRankingProfileImage[];
+  };
+};
+// #endregion
 
-export type CosmoActivityRankingArtistRank = {
+// #region Last
+const bffActivityRankingLastSchema = z.object({
+  artistId: z.enum(validArtists),
+  memberId: z.coerce.number().optional(),
+});
+
+export type BFFActivityRankingLastParams = z.infer<
+  typeof bffActivityRankingLastSchema
+>;
+
+/**
+ * Parse BFF activity last ranking params with default fallback.
+ */
+export function parseBffActivityRankingLastParams(params: URLSearchParams) {
+  return parse(
+    bffActivityRankingLastSchema,
+    {
+      artistId: params.get("artistId"),
+      memberId: params.get("memberId"),
+    },
+    {
+      artistId: "artms",
+    }
+  );
+}
+
+export type CosmoActivityRankingLast = {
+  createdAt: string;
+  updatedAt: string;
   activeAt: string;
   hid: string;
-  artistName: ValidArtist;
+  artistId: ValidArtist;
   kind: CosmoActivityRankingKind;
-  memberId: number;
+  memberId: number | null;
   rangeFrom: string;
   rangeTo: string;
   maxRank: number;
 };
-
-export type CosmoActivityRankingUser = {
-  id: number;
-  nickname: string;
-};
-
-export type CosmoActivityRankingProfileImage = {
-  artistName: ValidArtist;
-  profileImageUrl: string;
-};
-
-export type CosmoActivityRankingNearUser = {
-  // number of objekts or grids completed
-  rankData: number;
-  // actual ranking number
-  rankNumber: number;
-  nearPeopleCount: number;
-  relativePosition: "above" | "below" | "current";
-  representUser: {
-    user: CosmoActivityRankingUser;
-    profiles: CosmoActivityRankingProfileImage[];
-  };
-};
-
-export type CosmoActivityRankingTopEntry = {
-  season: string;
-  user: {
-    user: CosmoActivityRankingUser;
-    profiles: CosmoActivityRankingProfileImage[];
-  };
-  rankItem: {
-    rankData: number;
-    rankNumber: number;
-  };
-};
-
-export type CosmoActivityRankingResult<T> =
-  | {
-      success: false;
-      error: string;
-    }
-  | {
-      success: true;
-      data: T;
-    };
+// #endregion

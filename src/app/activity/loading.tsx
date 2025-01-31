@@ -43,5 +43,5 @@ export function HistoryBlockSkeleton() {
 }
 
 export function RankingBlockSkeleton() {
-  return <Skeleton className="w-full h-60" />;
+  return <Skeleton className="w-full h-86" />;
 }
