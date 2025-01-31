@@ -75,6 +75,13 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2025-02-01",
+    changes: [
+      "Fixed sendable welcome objekts having the send button disabled.",
+      "Updated rankings and badge pages to be in line with the new COSMO UI.",
+    ],
+  },
+  {
     date: "2025-01-27",
     changes: [
       "Users will now be prompted to refresh their profile when it is out of sync with COSMO.",
@@ -85,12 +92,6 @@ const updates = [
     date: "2025-01-19",
     changes: [
       "Trades page now supports filtering by season, class, member, artist and mint/received/sent.",
-    ],
-  },
-  {
-    date: "2025-01-08",
-    changes: [
-      "Modhaus has unfortunately removed the ability to view other user's collections via COSMO, so now the only option is via blockchain data.",
     ],
   },
 ];
