@@ -28,6 +28,7 @@ import SkeletonGradient from "../skeleton/skeleton-overlay";
 
 type Props = {
   artist: ValidArtist;
+  defaultTimestamp: DateRange | undefined;
 };
 
 type RootHistoryType = "all" | "objekt_all" | "grid_complete" | "gravity_vote";
@@ -37,15 +38,11 @@ type ObjektHistoryType =
   | "objekt_receive"
   | "objekt_send";
 
-export default function AccountHistory({ artist }: Props) {
-  const today = new Date();
+export default function AccountHistory({ artist, defaultTimestamp }: Props) {
   const [tab, setTab] = useState<RootHistoryType>("all");
   const [historyType, setHistoryType] =
     useState<CosmoActivityHistoryType>("all");
-  const [timestamp, setTimestamp] = useState<DateRange | undefined>({
-    from: new Date(today.getFullYear(), today.getMonth(), 1),
-    to: new Date(),
-  });
+  const [timestamp, setTimestamp] = useState(defaultTimestamp);
 
   function onTabChange(value: string) {
     setTab(value as RootHistoryType);
