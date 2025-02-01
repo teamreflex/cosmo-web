@@ -85,6 +85,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4.0.2",
     "@tanstack/react-query-devtools": "^5.66.0",
+    "@types/bun": "^1.2.2",
     "@types/node": "22.10.10",
     "@types/pg": "^8.11.11",
     "@types/react": "19.0.8",
@@ -99,7 +100,6 @@
     "eslint-plugin-drizzle": "^0.2.3",
     "eslint-plugin-react-compiler": "19.0.0-beta-e552027-20250112",
     "eslint-plugin-react-google-translate": "^0.0.114",
-    "hono": "^4.6.20",
     "knip": "^5.43.6",
     "pg": "^8.13.1",
     "postcss": "8.5.1",

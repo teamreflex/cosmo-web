@@ -1,8 +1,10 @@
-# https://github.com/neondatabase/serverless/issues/33
-
 # hadolint global ignore=DL3008
 
-FROM rust:bookworm as rust-builder
+ARG NEON_RELEASE_TAG=release-7261
+
+FROM rust:bookworm AS rust-builder
+ARG NEON_RELEASE_TAG
+
 ARG DEBIAN_FRONTEND=noninteractive
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -17,12 +19,13 @@ RUN \
   && apt-get clean -qq && rm -rf /var/lib/apt/lists/*
 
 # get and build the proxy
-RUN git clone --recursive https://github.com/neondatabase/neon.git
+RUN git clone --depth=1 --branch $NEON_RELEASE_TAG https://github.com/neondatabase/neon.git
 WORKDIR /neon
 RUN cargo build --bin proxy --features "testing"
 
 
 FROM debian:bookworm-slim
+
 ARG DEBIAN_FRONTEND=noninteractive
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -62,8 +65,8 @@ RUN openssl req -new -x509 \
 # copy the proxy binary
 COPY --from=rust-builder /neon/target/debug/proxy ./neon-proxy
 
-COPY $PWD/docker/Caddyfile Caddyfile
-COPY $PWD/docker/start.sh start.sh
+COPY ./Caddyfile Caddyfile
+COPY ./start.sh start.sh
 
 RUN chmod +x start.sh
 

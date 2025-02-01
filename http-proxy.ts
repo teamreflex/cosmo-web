@@ -1,7 +1,5 @@
+import { serve } from "bun";
 import { Client } from "pg";
-import { Hono } from "hono";
-
-const app = new Hono();
 
 const client = new Client({
   host: process.env.PROXY_HOST,
@@ -10,19 +8,33 @@ const client = new Client({
   password: process.env.PROXY_PASS,
   port: Number(process.env.PROXY_PORT),
 });
-
-// @ts-ignore - using bun
 await client.connect();
 
-app.post("/query", async (c) => {
-  const key = c.req.header("proxy-key");
-  if (key !== process.env.PROXY_KEY) {
-    return c.json({ error: "Invalid key" }, 401);
-  }
+const port = Number(process.env.PROXY_HTTP_PORT);
+console.log(`Proxy listening on port ${port}`);
 
-  const { sql, params, method } = await c.req.json();
+serve({
+  port,
+  async fetch(req) {
+    const url = new URL(req.url);
+    const path = url.pathname;
 
-  // prevent multiple queries
+    switch (path) {
+      case "/query":
+        return query(req);
+      case "/status":
+        return status();
+      default:
+        return new Response("Not found", { status: 404 });
+    }
+  },
+});
+
+/**
+ * Executes SQL query on indexer database
+ */
+async function query(req: Request) {
+  const { sql, params, method } = await req.json();
   const sqlBody = sql.replace(/;/g, "");
 
   try {
@@ -32,7 +44,7 @@ app.post("/query", async (c) => {
         values: params,
         rowMode: "array",
       });
-      return c.json(result.rows);
+      return Response.json(result.rows);
     }
 
     if (method === "execute") {
@@ -40,19 +52,34 @@ app.post("/query", async (c) => {
         text: sqlBody,
         values: params,
       });
-      return c.json(result.rows);
+      return Response.json(result.rows);
     }
 
-    return c.json({ error: "Unknown method value" }, 500);
+    return Response.json({ error: "Unknown method value" }, { status: 500 });
   } catch (e) {
     console.error(e);
-    return c.json({ error: "error" }, 500);
+    return Response.json({ error: "error" }, { status: 500 });
   }
-});
+}
 
-console.log(`Proxy listening on port ${process.env.PROXY_HTTP_PORT}`);
+/**
+ * Returns status of indexer processor
+ */
+async function status() {
+  const result = await client.query("select * from squid_processor.status");
 
-export default {
-  port: process.env.PROXY_HTTP_PORT,
-  fetch: app.fetch,
-};
+  if (result.rows.length > 0) {
+    const row = result.rows[0];
+    return Response.json(
+      { height: row.height },
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": `public, max-age=${process.env.PROXY_CACHE_MAX_AGE}, stale-while-revalidate=30`,
+        },
+      }
+    );
+  }
+
+  return Response.json({ height: 0 }, { status: 200 });
+}
