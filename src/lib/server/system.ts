@@ -1,6 +1,6 @@
 import "server-only";
 
-import { env } from "@/env.mjs";
+import { env } from "@/env";
 import { ofetch } from "ofetch";
 import { alchemy } from "./http";
 import { RPCResponse } from "./alchemy/common";

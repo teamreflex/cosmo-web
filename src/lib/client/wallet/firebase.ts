@@ -6,7 +6,7 @@ import {
   inMemoryPersistence,
   signInWithCustomToken,
 } from "firebase/auth";
-import { env } from "@/env.mjs";
+import { env } from "@/env";
 
 const config = {
   apiKey: env.NEXT_PUBLIC_RAMPER_FIREBASE_KEY,

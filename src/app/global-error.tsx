@@ -2,7 +2,7 @@
 
 import "../styles/tailwind.css";
 import { Inter } from "next/font/google";
-import { env } from "@/env.mjs";
+import { env } from "@/env";
 import { Button } from "@/components/ui/button";
 import { RefreshCcw } from "lucide-react";
 import * as Sentry from "@sentry/nextjs";

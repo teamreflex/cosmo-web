@@ -1,6 +1,6 @@
 import { drizzle } from "drizzle-orm/pg-proxy";
 import * as schema from "./schema";
-import { env } from "@/env.mjs";
+import { env } from "@/env";
 import { ofetch } from "ofetch";
 
 export const indexer = drizzle(

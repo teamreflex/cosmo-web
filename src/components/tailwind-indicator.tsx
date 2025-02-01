@@ -1,4 +1,4 @@
-import { env } from "@/env.mjs";
+import { env } from "@/env";
 
 export default function TailwindIndicator() {
   if (env.NEXT_PUBLIC_VERCEL_ENV === "production") return null;

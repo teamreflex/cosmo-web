@@ -10,7 +10,7 @@ import {
 import { createWalletClient, Hex, http } from "viem";
 import { mnemonicToAccount } from "viem/accounts";
 import { polygon } from "viem/chains";
-import { env } from "@/env.mjs";
+import { env } from "@/env";
 import type { DecryptRamperWallet } from "@/lib/client/wallet/exchange";
 import { EncryptedWallet } from "@/lib/client/wallet/util";
 

@@ -14,7 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { env } from "@/env.mjs";
+import { env } from "@/env";
 import { refreshCosmoProfile } from "./actions";
 
 export default function RefreshButton() {

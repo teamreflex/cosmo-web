@@ -16,7 +16,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { addDays, format, isWithinInterval, subDays } from "date-fns";
-import { env } from "@/env.mjs";
+import { env } from "@/env";
 import VisuallyHidden from "../ui/visually-hidden";
 
 export default function UpdateDialog() {

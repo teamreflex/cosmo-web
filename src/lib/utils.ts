@@ -1,7 +1,7 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { PublicProfile } from "./universal/cosmo/auth";
-import { env } from "@/env.mjs";
+import { env } from "@/env";
 import { CosmoPollChoices, CosmoPollUpcoming } from "./universal/cosmo/gravity";
 import { ValidArtist } from "./universal/cosmo/common";
 

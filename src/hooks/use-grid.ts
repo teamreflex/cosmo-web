@@ -1,6 +1,6 @@
 import { submitGrid } from "@/components/grid/actions";
 import { toast } from "@/components/ui/use-toast";
-import { env } from "@/env.mjs";
+import { env } from "@/env";
 import {
   CosmoGridRewardClaimResult,
   CosmoGridSlotCompletion,

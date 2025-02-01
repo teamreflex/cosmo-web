@@ -37,7 +37,7 @@ import { Textarea } from "../ui/textarea";
 import { getEdition, getObjektImageUrls, ObjektSidebar } from "./common";
 import { ErrorBoundary } from "react-error-boundary";
 import { useCopyToClipboard } from "usehooks-ts";
-import { env } from "@/env.mjs";
+import { env } from "@/env";
 import { toast } from "../ui/use-toast";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import VisuallyHidden from "../ui/visually-hidden";

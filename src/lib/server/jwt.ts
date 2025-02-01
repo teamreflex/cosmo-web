@@ -1,6 +1,6 @@
 import "server-only";
 import { SignJWT, decodeJwt, jwtVerify } from "jose";
-import { env } from "@/env.mjs";
+import { env } from "@/env";
 import { TokenPayload } from "@/lib/universal/auth";
 
 export const COOKIE_NAME = "token";

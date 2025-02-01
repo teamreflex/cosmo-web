@@ -6,7 +6,7 @@ import {
   validSeasons,
   validSorts,
 } from "./cosmo/common";
-import { env } from "@/env.mjs";
+import { env } from "@/env";
 
 /**
  * COSMO expects comma-separated values for array filters like:

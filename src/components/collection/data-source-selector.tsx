@@ -21,7 +21,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "../ui/alert-dialog";
-import { env } from "@/env.mjs";
+import { env } from "@/env";
 import { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
 import {
   Accordion,

@@ -13,7 +13,7 @@ import { HelpCircle, Loader2 } from "lucide-react";
 import { isAddress } from "viem";
 import { CosmoPublicUser, CosmoSearchResult } from "@/lib/universal/cosmo/auth";
 import { ofetch } from "ofetch";
-import { env } from "@/env.mjs";
+import { env } from "@/env";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import {
   DialogClose,

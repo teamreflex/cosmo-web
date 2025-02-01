@@ -11,7 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { env } from "@/env.mjs";
+import { env } from "@/env";
 import { refreshCosmoProfile } from "@/components/profile/actions";
 import { Button } from "@/components/ui/button";
 import {

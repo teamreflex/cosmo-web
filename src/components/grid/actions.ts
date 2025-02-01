@@ -4,7 +4,7 @@ import "server-only";
 import { z } from "zod";
 import { authenticatedAction } from "@/lib/server/typed-action";
 import { claimGridReward, completeGrid } from "@/lib/server/cosmo/grid";
-import { env } from "@/env.mjs";
+import { env } from "@/env";
 import {
   CosmoGridRewardClaimResult,
   CosmoGridSlotCompletion,

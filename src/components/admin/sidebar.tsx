@@ -10,7 +10,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { env } from "@/env.mjs";
+import { env } from "@/env";
 
 export const items = [
   {

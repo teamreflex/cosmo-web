@@ -2,7 +2,7 @@ import "../styles/tailwind.css";
 import Navbar from "@/components/navbar/navbar";
 import ClientProviders from "@/components/client-providers";
 import { Metadata } from "next";
-import { env } from "@/env.mjs";
+import { env } from "@/env";
 import { Inter } from "next/font/google";
 import localFont from "next/font/local";
 import { ThemeProvider } from "next-themes";

@@ -8,7 +8,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { env } from "@/env.mjs";
+import { env } from "@/env";
 import {
   DownloadCloud,
   Grid2X2,

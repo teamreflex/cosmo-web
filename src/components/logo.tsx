@@ -9,7 +9,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { env } from "@/env.mjs";
+import { env } from "@/env";
 import Link from "next/link";
 import { Check, Github } from "lucide-react";
 import { cn } from "@/lib/utils";
