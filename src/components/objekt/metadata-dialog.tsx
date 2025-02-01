@@ -169,7 +169,7 @@ function MetadataContent({ slug, onClose }: MetadataDialogContentProps) {
           // mobile
           "mt-2 mx-auto w-2/3",
           // desktop
-          "sm:mt-0 sm:h-[28rem] sm:mx-0 sm:w-auto"
+          "md:mt-0 md:h-[28rem] md:mx-0 md:w-auto"
         )}
       >
         <FlippableObjekt collection={data}>
