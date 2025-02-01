@@ -28,7 +28,7 @@ export default function Badge({ badge }: Props) {
     <div className="flex flex-col gap-2 items-center justify-center w-full">
       <AlertDialog>
         <AlertDialogTrigger asChild>
-          <button className="relative w-full aspect-square">
+          <button className="relative w-full aspect-square cursor-pointer">
             <Image src={badge.image} fill={true} alt={badge.title} />
           </button>
         </AlertDialogTrigger>
