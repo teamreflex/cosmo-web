@@ -69,6 +69,7 @@ export const unobtainables = [
   "binary01-choerry-310z",
   // lunar theory events
   "cream01-haseul-330z",
+  "cream01-heejin-330z",
   // zero class
   "atom01-triples-000z",
   "atom01-aaa-000z",
