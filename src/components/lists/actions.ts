@@ -259,8 +259,10 @@ function format(collections: CollectionSubset[], entries: ObjektListEntry[]) {
   // format each member's entry
   return sortedMembers.map((member) => {
     const memberCollections = groupedCollections[member];
-    const formattedCollections = memberCollections
-      .map((c) => `${c.season.at(0)}${c.collectionNo}`)
+    const formattedCollections = [...new Set(
+        memberCollections
+          .map((c) => `${c.season.at(0)}${c.collectionNo}`)
+      )]
       .sort()
       .join(", ");
     return `${member} ${formattedCollections}`;
