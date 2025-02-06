@@ -40,7 +40,7 @@ export default function BadgeGrid({
     },
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages, lastPageParam) =>
-      lastPage.filteredCount === 20 ? lastPageParam + 20 : null,
+      lastPage.items.length === 30 ? lastPageParam + 30 : null,
     staleTime: Infinity,
     refetchOnWindowFocus: false,
   });
