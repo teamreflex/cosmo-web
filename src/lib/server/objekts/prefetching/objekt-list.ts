@@ -72,7 +72,10 @@ export async function fetchObjektList({
   }
 
   // fetch applicable collections
-  const entries = objektList.entries.map((e) => e.collectionId);
+  const entries = objektList.entries.map((e) => ({
+    slug: e.collectionId,
+    id: e.id,
+  }));
 
   // handle empty list
   if (entries.length === 0) {
@@ -95,7 +98,7 @@ export async function fetchObjektList({
     .where(
       and(
         ...[
-          ...withObjektListEntries(entries),
+          ...withObjektListEntries(entries.map((e) => e.slug)),
           ...withArtist(filters.artist),
           ...withClass(filters.class),
           ...withSeason(filters.season),
@@ -110,7 +113,18 @@ export async function fetchObjektList({
 
   const result = await query;
 
-  const collectionList = result.map((c) => c.collections);
+  const flatCollections = result.map((c) => c.collections);
+  const collectionList = entries
+    .map((entry) => {
+      const collection = flatCollections.find((c) => c.slug === entry.slug);
+      if (!collection) return undefined;
+      return {
+        ...collection,
+        // map the entryId into the collection for uniqueness
+        id: entry.id.toString(),
+      };
+    })
+    .filter(Boolean);
   const hasNext = collectionList.length === LIMIT;
   const nextStartAfter = hasNext ? filters.page + 1 : undefined;
 

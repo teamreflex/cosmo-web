@@ -3,20 +3,14 @@
 import "server-only";
 import { z } from "zod";
 import { authenticatedAction } from "@/lib/server/typed-action";
-import {
-  addObjekt,
-  createObjektList,
-  deleteObjektList,
-  fetchObjektList,
-  removeObjekt,
-  updateObjektList,
-} from "@/lib/server/objekts/lists";
+import { fetchObjektList } from "@/lib/server/objekts/lists";
 import { TypedActionResult } from "@/lib/server/typed-action/types";
 import { ActionError } from "@/lib/server/typed-action/errors";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import { Collection } from "@/lib/server/db/indexer/schema";
-import { ObjektListEntry } from "@/lib/server/db/schema";
+import { listEntries, lists, ObjektListEntry } from "@/lib/server/db/schema";
+import { and, eq } from "drizzle-orm";
 
 function createSlug(name: string) {
   return name.trim().toLowerCase().replace(/ /g, "-");
@@ -52,11 +46,14 @@ export const create = async (form: FormData) =>
         });
       }
 
-      return await createObjektList({
+      // create the list
+      const result = await db.insert(lists).values({
         name,
         slug,
         userAddress: user.address,
       });
+
+      return result.rowCount === 1;
     },
   });
 
@@ -99,11 +96,12 @@ export const update = async (prev: TypedActionResult<string>, form: FormData) =>
         });
       }
 
-      await updateObjektList(id, {
-        name,
-        slug,
-        userAddress: user.address,
-      });
+      // update list
+      await db
+        .update(lists)
+        .set({ name, slug })
+        .where(and(eq(lists.id, id), eq(lists.userAddress, user.address)))
+        .returning();
 
       return `/@${user.nickname}/list/${slug}`;
     },
@@ -120,7 +118,11 @@ export const destroy = async (id: number) =>
       id: z.number(),
     }),
     onValidate: async ({ data: { id }, user }) => {
-      return await deleteObjektList(id, user.address);
+      const result = await db
+        .delete(lists)
+        .where(and(eq(lists.id, id), eq(lists.userAddress, user.address)));
+
+      return result.rowCount === 1;
     },
     redirectTo: () => "/objekts",
   });
@@ -138,8 +140,15 @@ export const addObjektToList = async (form: {
       listId: z.number(),
       collectionSlug: z.string(),
     }),
-    onValidate: async ({ data }) => {
-      return await addObjekt(data.listId, data.collectionSlug);
+    onValidate: async ({ data, user }) => {
+      await assertUserOwnsList(data.listId, user.address);
+
+      const result = await db.insert(listEntries).values({
+        listId: data.listId,
+        collectionId: data.collectionSlug,
+      });
+
+      return result.rowCount === 1;
     },
   });
 
@@ -148,16 +157,27 @@ export const addObjektToList = async (form: {
  */
 export const removeObjektFromList = async (form: {
   listId: number;
-  collectionSlug: string;
+  entryId: number;
 }) =>
   authenticatedAction({
     form,
     schema: z.object({
       listId: z.number(),
-      collectionSlug: z.string(),
+      entryId: z.number(),
     }),
-    onValidate: async ({ data }) => {
-      return await removeObjekt(data.listId, data.collectionSlug);
+    onValidate: async ({ data, user }) => {
+      await assertUserOwnsList(data.listId, user.address);
+
+      const result = await db
+        .delete(listEntries)
+        .where(
+          and(
+            eq(listEntries.listId, data.listId),
+            eq(listEntries.id, data.entryId)
+          )
+        );
+
+      return result.rowCount === 1;
     },
   });
 
@@ -239,6 +259,9 @@ type CollectionSubset = Pick<
   "slug" | "member" | "season" | "collectionNo"
 >;
 
+/**
+ * Format a list of collections and entries into a string.
+ */
 function format(collections: CollectionSubset[], entries: ObjektListEntry[]) {
   const mappedEntries = entries
     .map((e) => collections.find((c) => c.slug === e.collectionId))
@@ -259,12 +282,30 @@ function format(collections: CollectionSubset[], entries: ObjektListEntry[]) {
   // format each member's entry
   return sortedMembers.map((member) => {
     const memberCollections = groupedCollections[member];
-    const formattedCollections = [...new Set(
-        memberCollections
-          .map((c) => `${c.season.at(0)}${c.collectionNo}`)
-      )]
+    const formattedCollections = [
+      ...new Set(
+        memberCollections.map((c) => `${c.season.at(0)}${c.collectionNo}`)
+      ),
+    ]
       .sort()
       .join(", ");
     return `${member} ${formattedCollections}`;
   });
+}
+
+/**
+ * Assert the user owns the list.
+ */
+async function assertUserOwnsList(listId: number, userAddress: string) {
+  const list = await db.query.lists.findFirst({
+    where: (table, { and, eq }) =>
+      and(eq(table.id, listId), eq(table.userAddress, userAddress)),
+  });
+
+  if (!list) {
+    throw new ActionError({
+      status: "error",
+      error: "You do not have access to this list",
+    });
+  }
 }

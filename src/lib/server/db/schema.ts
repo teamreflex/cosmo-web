@@ -99,7 +99,11 @@ export const listEntries = pgTable(
   "list_entries",
   {
     id: serial("id").primaryKey(),
-    listId: integer("list_id").notNull(),
+    listId: integer("list_id")
+      .notNull()
+      .references(() => lists.id, {
+        onDelete: "cascade",
+      }),
     collectionId: varchar("collection_id", { length: 36 }).notNull(), // slug: atom01-jinsoul-101z
   },
   (t) => [index("list_entries_list_idx").on(t.listId)]

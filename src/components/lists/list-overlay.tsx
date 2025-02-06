@@ -7,11 +7,12 @@ import RemoveFromList from "./remove-from-list";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 
 type Props = {
+  id: string;
   collection: Objekt.Collection;
   objektList: ObjektList;
 };
 
-export default function ListOverlay({ collection, objektList }: Props) {
+export default function ListOverlay({ id, collection, objektList }: Props) {
   return (
     <div
       className={cn(
@@ -23,7 +24,11 @@ export default function ListOverlay({ collection, objektList }: Props) {
       {/* buttons */}
       <div className="flex items-center gap-2">
         {/* remove from list */}
-        <RemoveFromList collection={collection} objektList={objektList} />
+        <RemoveFromList
+          id={id}
+          collection={collection}
+          objektList={objektList}
+        />
       </div>
 
       {/* status text */}

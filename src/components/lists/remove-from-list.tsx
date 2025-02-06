@@ -9,11 +9,12 @@ import { toast } from "../ui/use-toast";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 
 type Props = {
+  id: string;
   collection: Objekt.Collection;
   objektList: ObjektList;
 };
 
-export default function RemoveFromList({ collection, objektList }: Props) {
+export default function RemoveFromList({ id, collection, objektList }: Props) {
   const [isPending, startTransition] = useTransition();
 
   const queryClient = useQueryClient();
@@ -22,7 +23,7 @@ export default function RemoveFromList({ collection, objektList }: Props) {
     startTransition(async () => {
       const result = await removeObjektFromList({
         listId: objektList.id,
-        collectionSlug: collection.slug,
+        entryId: Number(id),
       });
       if (result.status === "success" && result.data) {
         toast({

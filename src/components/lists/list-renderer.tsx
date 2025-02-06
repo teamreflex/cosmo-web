@@ -96,6 +96,7 @@ export default function ListRenderer({
           return (
             <ExpandableObjekt collection={collection} priority={priority}>
               <Overlay
+                id={item.id}
                 collection={collection}
                 authenticated={authenticated}
                 objektList={list}
@@ -130,17 +131,18 @@ const Title = memo(function Title({
 });
 
 type OverlayProps = {
+  id: string;
   collection: Objekt.Collection;
   authenticated: boolean;
   objektList: ObjektList;
 };
 
-function Overlay({ collection, authenticated, objektList }: OverlayProps) {
+function Overlay({ id, collection, authenticated, objektList }: OverlayProps) {
   return (
     <div className="contents">
       <ObjektSidebar collection={collection.collectionNo} />
       {authenticated && (
-        <ListOverlay collection={collection} objektList={objektList} />
+        <ListOverlay id={id} collection={collection} objektList={objektList} />
       )}
     </div>
   );
