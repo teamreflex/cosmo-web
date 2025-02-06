@@ -2,8 +2,9 @@ import { env } from "@/env";
 import * as Sentry from "@sentry/nextjs";
 
 const stackPatterns = [
-  // can't get around release caching
-  /ChunkLoadError/,
+  // problematic extensions
+  "app:///instant-web",
+  "app:///Maximize-Video",
 ];
 
 Sentry.init({
@@ -12,16 +13,28 @@ Sentry.init({
   tracesSampleRate: 0.15,
   // ignore any errors based on message
   ignoreErrors: [
-    // Maximize-Video seems to be the main culprit, stacktrace doesn't work here
-    "(intermediate value)() is not a function",
-    // can't do much about connection issues
+    // client connection issues
     "Connection closed.",
+    // release caching
+    "ChunkLoadError",
+    // benign
+    "ResizeObserver loop limit exceeded",
+    // ???
+    "Method not found",
+    // android camera issue?
+    "Could not start video source",
   ],
   // ignore any errors based on stacktrace
-  beforeSend(event, hint) {
-    const stack = hint.syntheticException?.stack;
-    if (stack && stackPatterns.some((pattern) => pattern.test(stack))) {
-      return null;
+  beforeSend(event) {
+    const stacktrace = event.exception?.values?.[0]?.stacktrace;
+    if (stacktrace?.frames) {
+      const shouldFilter = stacktrace.frames.some((frame) =>
+        stackPatterns.some((pattern) => frame.filename?.includes(pattern))
+      );
+
+      if (shouldFilter) {
+        return null;
+      }
     }
 
     return event;
