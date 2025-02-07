@@ -1,10 +1,4 @@
 /* carousel styles */
-@utility embla {
-  overflow: hidden;
-}
-@utility embla__container {
-  display: flex;
-}
 @utility embla__slide {
   flex: 0 0 100%;
   min-width: 0;

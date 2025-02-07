@@ -35,7 +35,7 @@ export default function NewsSectionRekord({ section }: Props) {
 
       {/* post carousel */}
       <div className="flex flex-col w-full" ref={carousel}>
-        <div className="embla__container flex w-full h-full">
+        <div className="flex w-full h-full">
           {section.contents
             .sort((a, b) => a.id - b.id)
             .map((item) => (

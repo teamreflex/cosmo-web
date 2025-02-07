@@ -17,8 +17,8 @@
     "analyze": "ANALYZE=true next build"
   },
   "dependencies": {
-    "@aws-sdk/client-kms": "^3.741.0",
-    "@aws-sdk/credential-providers": "^3.742.0",
+    "@aws-sdk/client-kms": "^3.743.0",
+    "@aws-sdk/credential-providers": "^3.743.0",
     "@neondatabase/serverless": "^0.10.4",
     "@next/bundle-analyzer": "^15.1.6",
     "@radix-ui/react-accordion": "^1.2.3",
@@ -55,7 +55,7 @@
     "drizzle-orm": "^0.39.2",
     "embla-carousel-autoplay": "8.5.2",
     "embla-carousel-react": "8.5.2",
-    "firebase": "^11.2.0",
+    "firebase": "^11.3.0",
     "hls.js": "^1.5.20",
     "import-in-the-middle": "^1.12.0",
     "jose": "^5.9.6",
@@ -83,7 +83,7 @@
     "zustand": "^5.0.3"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.0.3",
+    "@tailwindcss/postcss": "^4.0.4",
     "@tanstack/react-query-devtools": "^5.66.0",
     "@types/bun": "^1.2.2",
     "@types/node": "22.13.1",
@@ -103,9 +103,8 @@
     "knip": "^5.43.6",
     "pg": "^8.13.1",
     "postcss": "8.5.1",
-    "tailwindcss": "^4.0.3",
+    "tailwindcss": "^4.0.4",
     "tailwindcss-animate": "^1.0.7",
-    "tsx": "^4.19.2",
     "typescript": "5.7.3"
   },
   "pnpm": {

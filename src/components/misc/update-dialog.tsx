@@ -75,6 +75,10 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2025-02-07",
+    changes: ["Objekt lists now display any duplicates that have been added."],
+  },
+  {
     date: "2025-02-01",
     changes: [
       "Fixed sendable welcome objekts having the send button disabled.",

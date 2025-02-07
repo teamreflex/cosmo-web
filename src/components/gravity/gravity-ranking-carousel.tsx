@@ -21,7 +21,7 @@ export default function GravityRankingCarousel({ poll }: Props) {
       className="flex flex-col gap-2 w-full overflow-x-hidden"
       ref={carousel}
     >
-      <div className="embla__container w-full h-full py-3 px-0">
+      <div className="flex w-full h-full py-3 px-0">
         {poll.type === "single-poll" ? (
           <SinglePollResult result={poll.result.voteResults} />
         ) : poll.type === "combination-poll" ? (

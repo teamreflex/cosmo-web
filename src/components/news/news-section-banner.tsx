@@ -21,10 +21,10 @@ export default function NewsSectionBanner({ section }: Props) {
 
   return (
     <div
-      className="flex flex-col w-full md:w-1/2 py-4 overflow-x-hidden"
+      className="flex w-full md:w-1/2 py-4 ml-4 overflow-x-hidden"
       ref={carousel}
     >
-      <div className="embla__container transform-gpu will-change-transform w-full h-full -ml-4">
+      <div className="flex w-full h-full -ml-4">
         {section.contents
           .sort((a, b) => a.order - b.order)
           .map((item, i, arr) => (

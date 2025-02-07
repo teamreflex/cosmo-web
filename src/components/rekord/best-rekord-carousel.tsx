@@ -18,7 +18,7 @@ export default function BestRekordCarousel({ posts }: Props) {
 
   return (
     <div className="flex flex-col w-full pb-6" ref={carousel}>
-      <div className="embla__container flex w-full h-full">
+      <div className="flex w-full h-full">
         {posts
           .sort((a, b) => a.rank - b.rank)
           .map((item) => (

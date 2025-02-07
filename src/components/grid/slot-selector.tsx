@@ -87,7 +87,7 @@ export default function SlotSelector({
             </div>
           ) : data !== undefined ? (
             <div className="flex flex-col gap-2 mx-auto w-1/2" ref={carousel}>
-              <div className="embla__container flex w-full h-full">
+              <div className="flex w-full h-full">
                 {data.map((objekt) => (
                   <button
                     className="embla__slide mx-3 flex w-full h-full"
