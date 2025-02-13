@@ -304,4 +304,8 @@ const colorFixes: Record<string, ColorFixes> = {
   "divine01-seoyeon-317z": {
     backgroundColor: "#df2e37",
   },
+  // Seoyeon Assemble 2nd anniversary: fix text color
+  "ever01-seoyeon-338z": {
+    textColor: "#07328D",
+  },
 };
