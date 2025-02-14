@@ -75,6 +75,10 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2025-02-15",
+    changes: ["Objekt selection when completing a grid is fixed."],
+  },
+  {
     date: "2025-02-07",
     changes: ["Objekt lists now display any duplicates that have been added."],
   },
@@ -83,19 +87,6 @@ const updates = [
     changes: [
       "Fixed sendable welcome objekts having the send button disabled.",
       "Updated rankings and badge pages to be in line with the new COSMO UI.",
-    ],
-  },
-  {
-    date: "2025-01-27",
-    changes: [
-      "Users will now be prompted to refresh their profile when it is out of sync with COSMO.",
-      "This should resolve issues where ID changes result in an error and being unable to sign out.",
-    ],
-  },
-  {
-    date: "2025-01-19",
-    changes: [
-      "Trades page now supports filtering by season, class, member, artist and mint/received/sent.",
     ],
   },
 ];

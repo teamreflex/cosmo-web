@@ -18,7 +18,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import { Button } from "../ui/button";
 import { COSMO_ENDPOINT } from "@/lib/universal/cosmo/common";
 import { ofetch } from "ofetch";
-import { useProfileContext } from "@/hooks/use-profile";
+import { useUserState } from "@/hooks/use-user-state";
 
 type Props = PropsWithChildren<{
   collectionId: string;
@@ -35,18 +35,22 @@ export default function SlotSelector({
   const [carousel] = useEmblaCarousel();
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<PopulatedSlot>(currentSlot);
-  const profile = useProfileContext((ctx) => ctx.currentProfile);
+  const { token } = useUserState();
 
   const { data, status } = useQuery({
     queryKey: ["grid-selection", collectionId],
     queryFn: async () => {
-      const url = `${COSMO_ENDPOINT}/objekt/v1/owned-by/${profile!.address}`;
+      const url = `${COSMO_ENDPOINT}/objekt/v1/owned-by/me`;
       return await ofetch<OwnedObjektsResult>(url, {
+        headers: {
+          Authorization: `Bearer ${token!.accessToken}`,
+        },
         query: {
-          sort: "newest",
+          sort: "noDescending",
           collection: collectionId,
           member: currentSlot.member,
           used_for_grid: "false",
+          limit: 500,
         },
       }).then((res) => res.objekts);
     },
