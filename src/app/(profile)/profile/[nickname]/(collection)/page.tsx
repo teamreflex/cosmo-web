@@ -15,11 +15,19 @@ import { UserStateProvider } from "@/hooks/use-user-state";
 import Portal from "@/components/portal";
 import RewardsAvailable from "@/components/rewards/rewards-available";
 import { CosmoArtistProvider } from "@/hooks/use-cosmo-artist";
+import { parseUserCollection } from "@/lib/universal/parsers";
+import { getQueryClient } from "@/lib/query-client";
+import {
+  fetchObjektsPolygon,
+  parseUserCollectionFilters,
+} from "@/lib/server/objekts/prefetching/objekt-polygon";
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 
 type Props = {
   params: Promise<{
     nickname: string;
   }>;
+  searchParams: Promise<Record<string, string>>;
 };
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
@@ -32,7 +40,8 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 }
 
 export default async function UserCollectionPage(props: Props) {
-  const [params, user, selectedArtist] = await Promise.all([
+  const [searchParams, params, user, selectedArtist] = await Promise.all([
+    props.searchParams,
     props.params,
     decodeUser(),
     getSelectedArtist(),
@@ -51,6 +60,36 @@ export default async function UserCollectionPage(props: Props) {
     return <Private nickname={targetUser.profile.nickname} />;
   }
 
+  // prefetch collection when using blockchain data source
+  const queryClient = getQueryClient();
+  if (
+    (isOwnProfile && currentUser?.dataSource === "blockchain") ||
+    !isOwnProfile
+  ) {
+    const filters = parseUserCollection(
+      new URLSearchParams({
+        ...searchParams,
+        sort: searchParams.sort ?? "newest",
+      })
+    );
+
+    queryClient.prefetchInfiniteQuery({
+      queryKey: [
+        "collection",
+        "blockchain",
+        targetUser.profile.address,
+        parseUserCollectionFilters(filters),
+      ],
+      queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
+        return fetchObjektsPolygon(targetUser.profile.address, {
+          ...filters,
+          page: pageParam,
+        });
+      },
+      initialPageParam: 0,
+    });
+  }
+
   const pins = await fetchPins(targetUser.pins);
 
   return (
@@ -64,11 +103,13 @@ export default async function UserCollectionPage(props: Props) {
       >
         <section className="flex flex-col">
           <UserStateProvider artist={selectedArtist} token={user}>
-            <ProfileRenderer
-              artists={artists}
-              targetUser={targetUser.profile}
-              currentUser={currentUser}
-            />
+            <HydrationBoundary state={dehydrate(queryClient)}>
+              <ProfileRenderer
+                artists={artists}
+                targetUser={targetUser.profile}
+                currentUser={currentUser}
+              />
+            </HydrationBoundary>
 
             {/* needs token access */}
             {isOwnProfile === true && (

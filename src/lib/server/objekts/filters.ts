@@ -26,6 +26,10 @@ export function withSort<T extends PgSelect>(qb: T, sort: ValidSort) {
       return qb.orderBy(asc(collections.collectionNo));
     case "noDescending":
       return qb.orderBy(desc(collections.collectionNo));
+    case "serialAsc":
+      return qb.orderBy(asc(objekts.serial));
+    case "serialDesc":
+      return qb.orderBy(desc(objekts.serial));
   }
 }
 

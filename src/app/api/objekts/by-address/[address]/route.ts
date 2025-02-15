@@ -1,31 +1,6 @@
-import { indexer } from "@/lib/server/db/indexer";
-import {
-  objekts,
-  collections,
-  Objekt,
-  Collection,
-} from "@/lib/server/db/indexer/schema";
-import {
-  withArtist,
-  withClass,
-  withCollections,
-  withMember,
-  withOnlineType,
-  withSeason,
-  withTransferable,
-} from "@/lib/server/objekts/filters";
-import { ValidArtist, ValidSort } from "@/lib/universal/cosmo/common";
-import {
-  NonTransferableReason,
-  CosmoObjekt,
-} from "@/lib/universal/cosmo/objekts";
+import { fetchObjektsPolygon } from "@/lib/server/objekts/prefetching/objekt-polygon";
 import { parseUserCollection } from "@/lib/universal/parsers";
-import { and, asc, desc, eq, sql } from "drizzle-orm";
-import { PgSelect } from "drizzle-orm/pg-core";
 import { NextRequest } from "next/server";
-
-export const runtime = "nodejs";
-const PER_PAGE = 60;
 
 type Params = {
   params: Promise<{
@@ -39,105 +14,7 @@ type Params = {
  */
 export async function GET(request: NextRequest, props: Params) {
   const params = await props.params;
-  // parse query params
   const filters = parseUserCollection(request.nextUrl.searchParams);
-
-  let query = indexer
-    .select({
-      count: sql<number>`count(*) OVER() AS count`,
-      objekts,
-      collections,
-    })
-    .from(objekts)
-    .leftJoin(collections, eq(collections.id, objekts.collectionId))
-    .where(
-      and(
-        eq(objekts.owner, params.address.toLowerCase()),
-        ...[
-          ...withArtist(filters.artist),
-          ...withClass(filters.class),
-          ...withSeason(filters.season),
-          ...withOnlineType(filters.on_offline),
-          ...withMember(filters.member),
-          ...withCollections(filters.collectionNo),
-          ...withTransferable(filters.transferable),
-        ]
-      )
-    )
-    .$dynamic();
-  query = withSort(query, filters.sort);
-  query = query.limit(PER_PAGE).offset(filters.page * PER_PAGE);
-
-  const result = await query;
-
-  const hasNext = result.length === PER_PAGE;
-  const nextStartAfter = hasNext ? filters.page + 1 : undefined;
-
-  return Response.json({
-    total: Number(result[0]?.count ?? 0),
-    hasNext,
-    nextStartAfter,
-    objekts: result
-      .filter((r) => r.collections !== null) // should never happen but just in case
-      .map((row) => mapResult(row.objekts, row.collections!)),
-  });
-}
-
-/**
- * Custom withSort filter that handles the serial sort.
- */
-function withSort<T extends PgSelect>(qb: T, sort: ValidSort) {
-  switch (sort) {
-    case "newest":
-      return qb.orderBy(desc(objekts.receivedAt));
-    case "oldest":
-      return qb.orderBy(asc(objekts.receivedAt));
-    case "noAscending":
-      return qb.orderBy(asc(collections.collectionNo));
-    case "noDescending":
-      return qb.orderBy(desc(collections.collectionNo));
-    case "serialAsc":
-      return qb.orderBy(asc(objekts.serial));
-    case "serialDesc":
-      return qb.orderBy(desc(objekts.serial));
-  }
-}
-
-/**
- * Map indexed objekt/collection into an entity compatible with existing type.
- */
-function mapResult(objekt: Objekt, collection: Collection): CosmoObjekt {
-  return {
-    ...collection,
-    thumbnailImage: collection.frontImage,
-    accentColor: collection.textColor,
-    artists: [collection.artist as ValidArtist],
-    tokenId: String(objekt.id),
-    tokenAddress: collection.contract,
-    objektNo: objekt.serial,
-    mintedAt: objekt.mintedAt,
-    receivedAt: objekt.receivedAt,
-    status: "minted",
-    transferable: objekt.transferable,
-    usedForGrid: false,
-    nonTransferableReason: nonTransferableReason(objekt, collection),
-    // cannot currently be determined
-    lenticularPairTokenId: null,
-    // seemingly unused
-    transferablebyDefault: true,
-  };
-}
-
-/**
- * Derive the non transferable reason from the objekt/collection.
- */
-function nonTransferableReason(
-  objekt: Objekt,
-  collection: Collection
-): NonTransferableReason | undefined {
-  if (collection.class === "Welcome") {
-    return "welcome-objekt";
-  }
-
-  return objekt.transferable === false ? "not-transferable" : undefined;
+  const result = await fetchObjektsPolygon(params.address, filters);
+  return Response.json(result);
 }
