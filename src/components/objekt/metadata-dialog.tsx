@@ -25,7 +25,7 @@ import {
   useQueryClient,
   useSuspenseQuery,
 } from "@tanstack/react-query";
-import { ofetch } from "ofetch";
+import { FetchError, ofetch } from "ofetch";
 import Link from "next/link";
 import { ReactNode, Suspense, useState, useTransition } from "react";
 import { Separator } from "../ui/separator";
@@ -34,7 +34,12 @@ import { useProfileContext } from "@/hooks/use-profile";
 import { Button } from "../ui/button";
 import { updateObjektMetadata } from "./actions";
 import { Textarea } from "../ui/textarea";
-import { getEdition, getObjektImageUrls, ObjektSidebar } from "./common";
+import {
+  getEdition,
+  getObjektImageUrls,
+  ObjektNotFoundError,
+  ObjektSidebar,
+} from "./common";
 import { ErrorBoundary } from "react-error-boundary";
 import { useCopyToClipboard } from "usehooks-ts";
 import { env } from "@/env";
@@ -127,15 +132,22 @@ function ResponsiveContent(props: { slug: string }) {
 }
 
 function MetadataDialogError({
+  error,
   resetErrorBoundary,
 }: {
+  error: Error;
   resetErrorBoundary: () => void;
 }) {
+  const message =
+    error instanceof ObjektNotFoundError
+      ? "Objekt not found"
+      : "Error loading objekt";
+
   return (
     <div className="p-4 flex flex-col gap-2 justify-center items-center">
       <div className="flex gap-2 items-center">
         <HeartCrack className="w-6 h-6" />
-        <span className="text-sm font-semibold">Error loading objekt</span>
+        <span className="text-sm font-semibold">{message}</span>
       </div>
       <Button size="sm" variant="outline" onClick={resetErrorBoundary}>
         <RefreshCcw className="mr-2" /> Retry
@@ -152,7 +164,14 @@ type MetadataDialogContentProps = {
 export const fetchObjektQuery = (slug: string) => ({
   queryKey: ["collection-metadata", "objekt", slug],
   queryFn: async () => {
-    return await ofetch<Objekt.Collection>(`/api/objekts/by-slug/${slug}`);
+    return await ofetch<Objekt.Collection>(
+      `/api/objekts/by-slug/${slug}`
+    ).catch((error: FetchError) => {
+      if (error.status === 404) {
+        throw new ObjektNotFoundError("Objekt not found");
+      }
+      throw error;
+    });
   },
   retry: 1,
 });
