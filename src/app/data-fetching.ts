@@ -53,7 +53,7 @@ export const getCosmoUser = cache(async (accessToken: string) => {
  * Get the selected artist from cookies.
  */
 export const getSelectedArtist = cache(async () => {
-  return (await getCookie<ValidArtist>("artist")) ?? "artms";
+  return (await getCookie<ValidArtist>("artist")) || "artms";
 });
 
 /**
