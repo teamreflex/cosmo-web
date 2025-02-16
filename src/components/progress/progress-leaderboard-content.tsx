@@ -93,7 +93,7 @@ function LeaderboardRow({ member, total, item, rank }: LeaderboardRowProps) {
 export function LeaderboardSkeleton() {
   return (
     <div className="flex flex-col gap-4 py-2">
-      {Array.from({ length: 10 }).map((_, i) => (
+      {Array.from({ length: 25 }).map((_, i) => (
         <div className="flex flex-col" key={i}>
           <div className="flex flex-row justify-between items-center h-6">
             <Skeleton className="h-4 w-8" />
