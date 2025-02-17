@@ -110,35 +110,52 @@ async function fetchLeaderboard({
   onlineType,
   season,
 }: FetchLeaderboard) {
-  const subquery = indexer
-    .selectDistinctOn([objekts.owner, objekts.collectionId], {
-      owner: objekts.owner,
-      collectionId: objekts.collectionId,
-    })
-    .from(objekts)
-    .leftJoin(collections, eq(objekts.collectionId, collections.id))
-    .where(
-      and(
-        eq(collections.member, member),
-        // exclude welcome & zero class
-        not(inArray(collections.class, ["Welcome", "Zero"])),
-        // exclude unobtainable collections
-        not(inArray(collections.slug, unobtainables)),
-        // apply filters
-        ...(onlineType !== null ? [eq(collections.onOffline, onlineType)] : []),
-        ...(season !== null ? [eq(collections.season, season)] : [])
+  // cte 1: filter collections to apply filters
+  const filteredCollections = indexer.$with("filtered_collections").as(
+    indexer
+      .select({
+        id: collections.id,
+      })
+      .from(collections)
+      .where(
+        and(
+          eq(collections.member, member),
+          // exclude welcome & zero class
+          not(inArray(collections.class, ["Welcome", "Zero"])),
+          // exclude unobtainable collections
+          not(inArray(collections.slug, unobtainables)),
+          // apply filters
+          ...(onlineType !== null
+            ? [eq(collections.onOffline, onlineType)]
+            : []),
+          ...(season !== null ? [eq(collections.season, season)] : [])
+        )
       )
-    )
-    .groupBy(objekts.owner, objekts.collectionId)
-    .as("subquery");
+  );
 
+  // cte 2: filter distinct owners
+  const distinctOwners = indexer.$with("distinct_owners").as(
+    indexer
+      .selectDistinct({
+        owner: objekts.owner,
+        collectionId: objekts.collectionId,
+      })
+      .from(objekts)
+      .innerJoin(
+        filteredCollections,
+        eq(objekts.collectionId, filteredCollections.id)
+      )
+  );
+
+  // final query: count distinct owners
   return await indexer
+    .with(filteredCollections, distinctOwners)
     .select({
-      owner: subquery.owner,
-      count: count(subquery.collectionId).as("count"),
+      owner: distinctOwners.owner,
+      count: count(distinctOwners.collectionId).as("count"),
     })
-    .from(subquery)
-    .groupBy(subquery.owner)
+    .from(distinctOwners)
+    .groupBy(distinctOwners.owner)
     .orderBy(sql`count desc`)
     .limit(LEADERBOARD_COUNT);
 }

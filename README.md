@@ -4,8 +4,6 @@ This project aims to build a web based version of [MODHAUS](https://www.mod-haus
 
 **Apollo is not affiliated with, endorsed by or supported by MODHAUS or its artists.**
 
-This project experiments with new tooling such as [Next.js App Router streaming](https://nextjs.org/docs/app/building-your-application/routing/loading-ui-and-streaming#streaming-with-suspense), [React Server Components](https://nextjs.org/docs/app/building-your-application/rendering/server-components), [React Server Actions](https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations) and [Tailwind v4](https://tailwindcss.com/docs/v4-beta).
-
 <details>
   <summary><b>Replicated Features</b></summary>
 
@@ -38,10 +36,6 @@ This project experiments with new tooling such as [Next.js App Router streaming]
 - Indicator for Polygon network disruptions
 
 </details>
-
-### Notes
-
-- **There's no app version or user agent spoofing. It's entirely possible for MODHAUS to detect usage of this. Use at your own risk.**
 
 ## Requirements
 
@@ -84,11 +78,19 @@ pnpm db:migrate
 pnpm dev
 ```
 
+## Contributing
+
+Contributions are appreciated, but unless it has been previously discussed or is small enough that it can't pose a risk, it likely **won't be accepted** and will be rewritten manually.
+
+The project is considered _source available_ rather than _open source_, meaning that codebase is available for scrutiny and for outside sources to verify nothing malicious is happening. Every month there is thousands of new sign-ins and even more active sessions refreshing. All it takes is one malicious line of code to slip through for thousands of accounts to be compromised.
+
+If you've found a bug, please make an issue on GitHub or a thread in the Discord server.
+
+As for feature requests, they will be considered on a case-by-case basis due to technical limitations or potential line-crossing.
+
 ## Tooling
 
 - [Next 15](https://nextjs.org/)
-  - [Server Components](https://nextjs.org/docs/app/building-your-application/rendering/server-components)
-  - [Server Actions](https://nextjs.org/docs/app/building-your-application/data-fetching/forms-and-mutations)
 - [shadcn/ui](https://ui.shadcn.com/docs)
 - [Tailwind v4](https://tailwindcss.com/)
 - [Neon](https://neon.tech/)
