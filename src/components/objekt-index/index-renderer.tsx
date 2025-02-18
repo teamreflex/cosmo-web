@@ -25,6 +25,9 @@ import { ObjektSidebar } from "../objekt/common";
 import RoutedExpandableObjekt from "../objekt/objekt-routed";
 import ExpandableObjekt from "../objekt/objekt-expandable";
 import { Objekt } from "../../lib/universal/objekt-conversion";
+import { Button } from "../ui/button";
+import Link from "next/link";
+import { ChartColumnBig } from "lucide-react";
 
 const getObjektId = (objekt: IndexedObjekt) => objekt.id;
 
@@ -135,6 +138,12 @@ const Title = memo(function Title({
       <h1 className="text-3xl font-cosmo uppercase drop-shadow-lg">Objekts</h1>
 
       <HelpDialog />
+      <Button variant="secondary" size="profile" data-profile asChild>
+        <Link href="/objekts/stats">
+          <ChartColumnBig className="h-5 w-5" />
+          <span>Stats</span>
+        </Link>
+      </Button>
 
       <div className="flex gap-2 items-center last:ml-auto">
         <div className="min-w-24 text-right" id="objekt-total" />
