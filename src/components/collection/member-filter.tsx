@@ -113,25 +113,19 @@ export const MemberFilterButton = memo(function MemberFilterButton({
   );
 });
 
-const MemberImage = memo(function MemberImage({
-  name,
-  image,
-}: {
-  name: string;
-  image: string;
-}) {
+function MemberImage({ name, image }: { name: string; image: string }) {
   return (
     <div className="flex justify-center items-center relative h-10 w-10 bg-muted rounded-full overflow-hidden">
       <span>{name.charAt(0)}</span>
       <Image
+        className="absolute rounded-full"
         src={image}
         alt={name}
         width={40}
         height={40}
         priority={true}
         quality={100}
-        className="absolute rounded-full"
       />
     </div>
   );
-});
+}

@@ -163,6 +163,7 @@ function RootObjekt({
             height={450}
             alt={collection.collectionId}
             priority={priority}
+            unoptimized
           />
 
           <ObjektSidebar collection={collection.collectionNo} />

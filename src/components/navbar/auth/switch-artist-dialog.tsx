@@ -97,6 +97,7 @@ function SelectArtistButton({
           alt={artist.title}
           width={48}
           height={48}
+          quality={100}
         />
         <span className="font-bold">{artist.title}</span>
       </div>

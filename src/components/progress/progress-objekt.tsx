@@ -31,7 +31,6 @@ export default function ProgressObjekt({ objekt }: Props) {
         height={450}
         alt={objekt.collectionNo}
         quality={100}
-        unoptimized
       />
 
       {objekt.unobtainable && (

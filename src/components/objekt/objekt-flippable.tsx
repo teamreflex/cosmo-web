@@ -36,6 +36,7 @@ export default function FlippableObjekt({ children, collection }: Props) {
           src={collection.frontImage}
           fill={true}
           alt={collection.collectionId}
+          unoptimized
         />
         {children}
       </div>
@@ -46,6 +47,7 @@ export default function FlippableObjekt({ children, collection }: Props) {
           src={collection.backImage}
           fill={true}
           alt={collection.collectionId}
+          unoptimized
         />
       </div>
     </div>

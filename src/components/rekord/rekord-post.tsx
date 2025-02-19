@@ -92,7 +92,7 @@ export function RekordPost<TPostType extends CosmoRekordItem>({
               className="object-contain"
               src={item.post.image.large}
               alt={item.post.artist.title}
-              unoptimized={true}
+              unoptimized
             />
           </div>
 

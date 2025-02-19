@@ -10,7 +10,6 @@ import {
 } from "@/lib/universal/objekts";
 import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
 import { TopOverlay } from "./index-overlay";
-import HelpDialog from "./help-dialog";
 import { useFilters } from "@/hooks/use-filters";
 import { memo } from "react";
 import {
@@ -137,7 +136,6 @@ const Title = memo(function Title({
     <div className="flex gap-2 items-center w-full pb-1">
       <h1 className="text-3xl font-cosmo uppercase drop-shadow-lg">Objekts</h1>
 
-      <HelpDialog />
       <Button variant="secondary" size="profile" data-profile asChild>
         <Link href="/objekts/stats">
           <ChartColumnBig className="h-5 w-5" />

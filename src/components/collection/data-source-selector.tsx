@@ -97,6 +97,7 @@ export default memo(function DataSourceSelector({
                   width={24}
                   height={24}
                   className="rounded-full"
+                  quality={100}
                 />
                 <span>Cosmo</span>
               </div>
@@ -122,6 +123,7 @@ export default memo(function DataSourceSelector({
                   alt="Polygon"
                   fill={true}
                   className="p-1"
+                  quality={100}
                 />
               </div>
               <span>Polygon</span>
