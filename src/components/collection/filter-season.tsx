@@ -16,22 +16,12 @@ import { cn } from "@/lib/utils";
 type Props = PropsWithFilters<"season">;
 
 export default function SeasonFilter({ filters, setFilters }: Props) {
-  // eslint-disable-next-line react-compiler/react-compiler
-  "use no memo";
   const [open, setOpen] = useState(false);
 
-  function updateFilter(property: ValidSeason, checked: boolean) {
-    let newFilters = filters ?? [];
-
-    if (checked) {
-      if (!newFilters.includes(property)) {
-        newFilters.push(property);
-      }
-    } else {
-      if (newFilters.includes(property)) {
-        newFilters = newFilters.filter((f) => f !== property);
-      }
-    }
+  function onChange(property: ValidSeason, checked: boolean) {
+    const newFilters = checked
+      ? [...(filters ?? []), property]
+      : (filters ?? []).filter((f) => f !== property);
 
     setFilters({
       season: newFilters.length > 0 ? newFilters : null,
@@ -57,7 +47,7 @@ export default function SeasonFilter({ filters, setFilters }: Props) {
           <DropdownMenuCheckboxItem
             key={property}
             checked={filters?.includes(property)}
-            onCheckedChange={(checked) => updateFilter(property, checked)}
+            onCheckedChange={(checked) => onChange(property, checked)}
           >
             {property}
           </DropdownMenuCheckboxItem>

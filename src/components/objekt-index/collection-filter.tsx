@@ -24,18 +24,12 @@ export default function CollectionFilter({
   setFilters,
   collections,
 }: Props) {
-  // eslint-disable-next-line react-compiler/react-compiler
-  "use no memo";
   const [open, setOpen] = useState(false);
 
-  function updateFilter(collection: string) {
-    let newFilters = filters ?? [];
-
-    if (newFilters.includes(collection)) {
-      newFilters = newFilters.filter((f) => f !== collection);
-    } else {
-      newFilters.push(collection);
-    }
+  function onChange(collection: string) {
+    const newFilters = filters?.includes(collection)
+      ? (filters ?? []).filter((f) => f !== collection)
+      : [...(filters ?? []), collection];
 
     setFilters({
       collectionNo: newFilters.length > 0 ? newFilters : null,
@@ -69,7 +63,7 @@ export default function CollectionFilter({
                   key={collection}
                   value={collection}
                   className="[content-visibility:auto]"
-                  onSelect={(v) => updateFilter(collection)}
+                  onSelect={(v) => onChange(collection)}
                 >
                   {collection}
                   <Check

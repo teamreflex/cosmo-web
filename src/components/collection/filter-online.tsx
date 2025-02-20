@@ -12,7 +12,7 @@ import {
   ValidOnlineType,
   validOnlineTypes,
 } from "@/lib/universal/cosmo/common";
-import { memo, useState } from "react";
+import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -23,23 +23,13 @@ const map: Record<ValidOnlineType, string> = {
   offline: "Physical",
 };
 
-export default memo(function OnlineFilter({ filters, setFilters }: Props) {
-  // eslint-disable-next-line react-compiler/react-compiler
-  "use no memo";
+export default function OnlineFilter({ filters, setFilters }: Props) {
   const [open, setOpen] = useState(false);
 
-  function updateFilter(property: ValidOnlineType, checked: boolean) {
-    let newFilters = filters ?? [];
-
-    if (checked) {
-      if (!newFilters.includes(property)) {
-        newFilters.push(property);
-      }
-    } else {
-      if (newFilters.includes(property)) {
-        newFilters = newFilters.filter((f) => f !== property);
-      }
-    }
+  function onChange(property: ValidOnlineType, checked: boolean) {
+    const newFilters = checked
+      ? [...(filters ?? []), property]
+      : (filters ?? []).filter((f) => f !== property);
 
     setFilters({
       on_offline: newFilters.length > 0 ? newFilters : null,
@@ -65,7 +55,7 @@ export default memo(function OnlineFilter({ filters, setFilters }: Props) {
           <DropdownMenuCheckboxItem
             key={onlineType}
             checked={filters?.includes(onlineType)}
-            onCheckedChange={(checked) => updateFilter(onlineType, checked)}
+            onCheckedChange={(checked) => onChange(onlineType, checked)}
           >
             {map[onlineType]}
           </DropdownMenuCheckboxItem>
@@ -73,4 +63,4 @@ export default memo(function OnlineFilter({ filters, setFilters }: Props) {
       </DropdownMenuContent>
     </DropdownMenu>
   );
-});
+}

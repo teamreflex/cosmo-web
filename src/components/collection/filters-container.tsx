@@ -112,8 +112,6 @@ type IndexFiltersProps = {
   collections: string[];
 };
 export function IndexFilters({ collections }: IndexFiltersProps) {
-  // eslint-disable-next-line react-compiler/react-compiler
-  "use no memo";
   const [filters, setFilters] = useCosmoFilters();
 
   return (
@@ -145,8 +143,6 @@ type TransfersFiltersProps = {
  * - @/nickname/trades
  */
 export function TransfersFilters({ type, setType }: TransfersFiltersProps) {
-  // eslint-disable-next-line react-compiler/react-compiler
-  "use no memo";
   const [filters, setFilters] = useCosmoFilters();
 
   return (

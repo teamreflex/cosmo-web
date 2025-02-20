@@ -24,7 +24,7 @@ const map: Record<ValidSort, string> = {
 };
 
 export default function SortFilter({ filters, setFilters, serials }: Props) {
-  function update(value: string) {
+  function onChange(value: string) {
     setFilters({
       sort: value === "newest" ? null : (value as ValidSort),
     });
@@ -35,7 +35,7 @@ export default function SortFilter({ filters, setFilters, serials }: Props) {
   );
 
   return (
-    <Select value={filters ?? "newest"} onValueChange={update}>
+    <Select value={filters ?? "newest"} onValueChange={onChange}>
       <SelectTrigger className="w-32">
         <SelectValue placeholder="Sort" />
       </SelectTrigger>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Dispatch, SetStateAction, memo, useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import {
   Select,
   SelectContent,
@@ -41,7 +41,7 @@ type Props = {
   allowCosmoGroups?: boolean;
 };
 
-export default memo(function DataSourceSelector({
+export default function DataSourceSelector({
   filters,
   setFilters,
   dataSource,
@@ -54,7 +54,7 @@ export default memo(function DataSourceSelector({
     setOpen(false);
   }
 
-  function update(val: string) {
+  function onChange(val: string) {
     const source = val as CollectionDataSource;
 
     // reset any source-specific filters
@@ -83,7 +83,7 @@ export default memo(function DataSourceSelector({
 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
-      <Select value={dataSource} onValueChange={update}>
+      <Select value={dataSource} onValueChange={onChange}>
         <SelectTrigger className="w-36">
           <SelectValue placeholder="Data Source" />
         </SelectTrigger>
@@ -149,7 +149,7 @@ export default memo(function DataSourceSelector({
       <Content onClose={onClose} />
     </AlertDialog>
   );
-});
+}
 
 function Content(props: { onClose: () => void }) {
   return (

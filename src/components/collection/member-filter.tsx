@@ -6,7 +6,6 @@ import {
   TooltipTrigger,
 } from "../ui/tooltip";
 import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
-import { memo } from "react";
 import Image from "next/image";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 
@@ -18,7 +17,7 @@ type Props = {
   updateMember: (member: string) => void;
 };
 
-export default memo(function MemberFilter({
+export default function MemberFilter({
   showArtists = true,
   artists,
   active,
@@ -67,7 +66,7 @@ export default memo(function MemberFilter({
       ))}
     </div>
   );
-});
+}
 
 type MemberFilterButtonProps = {
   displayName: string;
@@ -77,7 +76,8 @@ type MemberFilterButtonProps = {
   setActive: (name: string) => void;
   color?: string;
 };
-export const MemberFilterButton = memo(function MemberFilterButton({
+
+export function MemberFilterButton({
   displayName,
   name,
   image,
@@ -111,7 +111,7 @@ export const MemberFilterButton = memo(function MemberFilterButton({
       <p className="md:hidden text-xs text-foreground">{displayName}</p>
     </div>
   );
-});
+}
 
 function MemberImage({ name, image }: { name: string; image: string }) {
   return (

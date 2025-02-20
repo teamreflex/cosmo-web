@@ -1,17 +1,13 @@
 "use client";
 
 import { Toggle } from "@/components/ui/toggle";
-import { memo } from "react";
 
 type Props = {
   showLocked: boolean;
   setShowLocked: (showLocked: boolean | null) => void;
 };
 
-export default memo(function LockedFilter({
-  showLocked,
-  setShowLocked,
-}: Props) {
+export default function LockedFilter({ showLocked, setShowLocked }: Props) {
   const state = showLocked ? "Showing" : "Hiding";
 
   return (
@@ -25,4 +21,4 @@ export default memo(function LockedFilter({
       {state} Locked
     </Toggle>
   );
-});
+}

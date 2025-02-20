@@ -8,30 +8,20 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ValidClass, validClasses } from "@/lib/universal/cosmo/common";
-import { memo, useState } from "react";
+import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PropsWithFilters } from "@/hooks/use-cosmo-filters";
 
 type Props = PropsWithFilters<"class">;
 
-export default memo(function ClassFilter({ filters, setFilters }: Props) {
-  // eslint-disable-next-line react-compiler/react-compiler
-  "use no memo";
+export default function ClassFilter({ filters, setFilters }: Props) {
   const [open, setOpen] = useState(false);
 
-  function updateFilter(property: ValidClass, checked: boolean) {
-    let newFilters = filters ?? [];
-
-    if (checked) {
-      if (!newFilters.includes(property)) {
-        newFilters.push(property);
-      }
-    } else {
-      if (newFilters.includes(property)) {
-        newFilters = newFilters.filter((f) => f !== property);
-      }
-    }
+  function onChange(property: ValidClass, checked: boolean) {
+    const newFilters = checked
+      ? [...(filters ?? []), property]
+      : (filters ?? []).filter((f) => f !== property);
 
     setFilters({
       class: newFilters.length > 0 ? newFilters : null,
@@ -57,7 +47,7 @@ export default memo(function ClassFilter({ filters, setFilters }: Props) {
           <DropdownMenuCheckboxItem
             key={classType}
             checked={filters?.includes(classType)}
-            onCheckedChange={(checked) => updateFilter(classType, checked)}
+            onCheckedChange={(checked) => onChange(classType, checked)}
           >
             {classType}
           </DropdownMenuCheckboxItem>
@@ -65,4 +55,4 @@ export default memo(function ClassFilter({ filters, setFilters }: Props) {
       </DropdownMenuContent>
     </DropdownMenu>
   );
-});
+}

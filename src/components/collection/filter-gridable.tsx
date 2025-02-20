@@ -2,11 +2,10 @@
 
 import { Toggle } from "@/components/ui/toggle";
 import { PropsWithFilters } from "@/hooks/use-cosmo-filters";
-import { memo } from "react";
 
 type Props = PropsWithFilters<"gridable">;
 
-export default memo(function GridableFilter({ filters, setFilters }: Props) {
+export default function GridableFilter({ filters, setFilters }: Props) {
   return (
     <Toggle
       variant="cosmo"
@@ -21,4 +20,4 @@ export default memo(function GridableFilter({ filters, setFilters }: Props) {
       Gridable
     </Toggle>
   );
-});
+}
