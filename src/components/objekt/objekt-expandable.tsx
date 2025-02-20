@@ -80,6 +80,7 @@ export default function ExpandableObjekt({
             height={450}
             alt={collection.collectionId}
             priority={priority}
+            decoding="async"
             unoptimized
           />
 
