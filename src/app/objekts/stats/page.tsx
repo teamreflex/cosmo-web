@@ -3,14 +3,16 @@ import { getObjektStats } from "@/lib/server/objekts/stats";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import MemberChart from "@/components/objekt-stats/member-chart";
 import ArtistChart from "@/components/objekt-stats/artist-chart";
-import { getArtistsWithMembers } from "@/app/data-fetching";
+import { getArtistsWithMembers, getSelectedArtist } from "@/app/data-fetching";
+import MemberBreakdown from "@/components/objekt-stats/member-breakdown";
 
 export const metadata: Metadata = {
   title: "Objekt Stats",
 };
 
 export default async function ObjektStatsPage() {
-  const [artists, stats] = await Promise.all([
+  const [selectedArtist, artists, stats] = await Promise.all([
+    getSelectedArtist(),
     getArtistsWithMembers(),
     getObjektStats(),
   ]);
@@ -76,7 +78,10 @@ export default async function ObjektStatsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* artist breakdown chart */}
           <div className="flex flex-col gap-2">
-            <h2 className="text-xl font-semibold">Artist Breakdown</h2>
+            <div className="flex flex-row gap-2 items-end h-10">
+              <h2 className="text-xl font-semibold">Artist Breakdown</h2>
+            </div>
+
             <Card>
               <CardContent className="pl-0 pt-6">
                 <ArtistChart artists={artists} data={stats.artistBreakdown} />
@@ -85,14 +90,11 @@ export default async function ObjektStatsPage() {
           </div>
 
           {/* member breakdown chart */}
-          <div className="flex flex-col gap-2">
-            <h2 className="text-xl font-semibold">Member Breakdown</h2>
-            <Card>
-              <CardContent className="pl-0 pt-6">
-                <MemberChart artists={artists} data={stats.memberBreakdown} />
-              </CardContent>
-            </Card>
-          </div>
+          <MemberBreakdown
+            selectedArtist={selectedArtist}
+            artists={artists}
+            data={stats.memberBreakdown}
+          />
         </div>
       </div>
     </main>

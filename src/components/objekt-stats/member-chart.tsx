@@ -15,10 +15,13 @@ import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 type Props = {
   artists: CosmoArtistWithMembersBFF[];
   data: Record<string, HourlyBreakdown[]>;
+  selectedMembers: string[];
 };
 
-export default function MemberChart({ artists, data }: Props) {
-  const members = artists.flatMap((artist) => artist.artistMembers);
+export default function MemberChart({ artists, data, selectedMembers }: Props) {
+  const members = artists
+    .flatMap((artist) => artist.artistMembers)
+    .filter((m) => selectedMembers.includes(m.name));
   const config = members.reduce(
     (acc, member) => ({
       ...acc,
@@ -80,7 +83,8 @@ export default function MemberChart({ artists, data }: Props) {
           <Area
             key={member.id}
             dataKey={member.name.toLowerCase()}
-            type="natural"
+            type="monotone"
+            baseValue={0}
             fill={`var(--color-${member.name.toLowerCase()})`}
             fillOpacity={0.4}
             stroke={`var(--color-${member.name.toLowerCase()})`}

@@ -80,7 +80,8 @@ export default function ArtistChart({ artists, data }: Props) {
           <Area
             key={artist.id}
             dataKey={artist.id.toLowerCase()}
-            type="natural"
+            type="monotone"
+            baseValue={0}
             fill={`var(--color-${artist.id.toLowerCase()})`}
             fillOpacity={0.4}
             stroke={`var(--color-${artist.id.toLowerCase()})`}
