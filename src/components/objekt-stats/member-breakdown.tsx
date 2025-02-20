@@ -19,6 +19,7 @@ export default function MemberBreakdown({
   selectedArtist,
   data,
 }: Props) {
+  // initialize checked members with the members of the selected artist
   const [checked, setChecked] = useState(() => {
     const artist = artists.find(
       (a) => a.id.toLowerCase() === selectedArtist.toLowerCase()

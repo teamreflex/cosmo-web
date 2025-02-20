@@ -5,12 +5,16 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import { ScrollArea } from "../ui/scroll-area";
+import { artistColors } from "@/lib/utils";
+import Image from "next/image";
 
 type Props = {
   artists: CosmoArtistWithMembersBFF[];
@@ -29,6 +33,10 @@ export default function MemberSelect({ artists, value = [], onChange }: Props) {
     }
   }
 
+  function selectArtist(artist: CosmoArtistWithMembersBFF) {
+    onChange(artist.artistMembers.map((m) => m.name));
+  }
+
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
@@ -38,7 +46,35 @@ export default function MemberSelect({ artists, value = [], onChange }: Props) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-36" align="end">
-        <ScrollArea className="h-52">
+        <ScrollArea className="h-62">
+          {artists.map((artist) => (
+            <DropdownMenuItem
+              key={artist.name}
+              className="gap-2"
+              onSelect={(e) => {
+                e.preventDefault();
+                selectArtist(artist);
+              }}
+            >
+              <Image
+                src={artist.logoImageUrl}
+                alt={artist.title}
+                width={20}
+                height={20}
+                className="rounded-full size-4 shrink-0"
+              />
+              <span
+                style={{
+                  "--artist-color": artistColors[artist.id],
+                }}
+                className="h-2 w-2 shrink-0 rounded-[2px] bg-(--artist-color)"
+              />
+              {artist.title}
+            </DropdownMenuItem>
+          ))}
+
+          <DropdownMenuSeparator />
+
           {artists
             .flatMap((a) => a.artistMembers)
             .map((member) => (
