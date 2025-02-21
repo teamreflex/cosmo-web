@@ -89,6 +89,5 @@ export default withSentryConfig(withBundleAnalyzer(config), {
   reactComponentAnnotation: {
     enabled: true,
   },
-  hideSourceMaps: true,
   disableLogger: true,
 });
