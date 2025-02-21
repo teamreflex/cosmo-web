@@ -21,7 +21,7 @@ export default function ObjektChart({ members }: Props) {
           innerRadius={60}
           outerRadius={100}
           labelLine={false}
-          stroke="hsl(var(--accent))"
+          stroke="var(--accent)"
           strokeWidth={2}
           label={({
             cx,
