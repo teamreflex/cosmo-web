@@ -1,5 +1,5 @@
 import { fetchPosts } from "@/lib/server/cosmo/rekord";
-import { withCosmoApi } from "@/lib/server/cosmo/withCosmoApi";
+import { withCosmoApi } from "@/lib/server/handlers/withCosmoApi";
 import { parseRekordFilters } from "@/lib/universal/cosmo/rekord";
 
 /**

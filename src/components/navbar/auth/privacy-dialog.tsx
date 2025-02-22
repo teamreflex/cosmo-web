@@ -106,6 +106,20 @@ export default function PrivacyDialog({
             </div>
           </div>
 
+          {/* gravity votes */}
+          <div className="grid grid-cols-4 grid-rows-3">
+            <h2 className="col-span-3 font-semibold">Gravity Votes</h2>
+            <p className="col-span-3 col-start-1 row-start-2 row-span-3 text-sm opacity-80">
+              Hides your gravity voting history.
+            </p>
+            <div className="row-span-3 col-start-4 row-start-1 flex items-center justify-end">
+              <Switch
+                name="privacyVotes"
+                defaultChecked={profile.privacy.votes}
+              />
+            </div>
+          </div>
+
           <Button type="submit" disabled={isPending}>
             {isPending ? "Saving..." : "Save"}
           </Button>

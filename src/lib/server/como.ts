@@ -35,7 +35,7 @@ export async function fetchObjektsWithComo(
     );
 }
 
-const POLYGON_DECIMALS = 18;
+export const POLYGON_DECIMALS = 18;
 
 /**
  * Fetch ERC20 token balances from the indexer.

@@ -63,6 +63,7 @@ export const updatePrivacy = async (form: FormData) =>
       privacyObjekts: z.coerce.boolean(),
       privacyTrades: z.coerce.boolean(),
       privacyComo: z.coerce.boolean(),
+      privacyVotes: z.coerce.boolean(),
     }),
     onValidate: async ({ data, user }) => {
       await db

@@ -1,5 +1,5 @@
 import { fetchPoll } from "@/lib/server/cosmo/gravity";
-import { withCosmoApi } from "@/lib/server/cosmo/withCosmoApi";
+import { withCosmoApi } from "@/lib/server/handlers/withCosmoApi";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 
 type Params = {

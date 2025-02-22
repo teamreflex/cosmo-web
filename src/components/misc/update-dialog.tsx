@@ -75,18 +75,20 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2025-02-23",
+    changes: [
+      "Added an objekt stats page that displays various statistics from the last 24 hours, updating every hour.",
+      "Added a gravity voting history page to profiles.",
+      "Voting history is private by default, you can make it public in your privacy settings.",
+      "To compensate for the extra profile button, the back button has been removed. Nicknames will now link back to the collection page.",
+    ],
+  },
+  {
     date: "2025-02-15",
     changes: ["Objekt selection when completing a grid is fixed."],
   },
   {
     date: "2025-02-07",
     changes: ["Objekt lists now display any duplicates that have been added."],
-  },
-  {
-    date: "2025-02-01",
-    changes: [
-      "Fixed sendable welcome objekts having the send button disabled.",
-      "Updated rankings and badge pages to be in line with the new COSMO UI.",
-    ],
   },
 ];

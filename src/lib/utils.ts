@@ -53,6 +53,7 @@ export const defaultProfile: PublicProfile = {
     objekts: false,
     como: false,
     trades: false,
+    votes: true,
   },
   gridColumns: GRID_COLUMNS,
   isObjektEditor: false,
@@ -107,3 +108,17 @@ export const artistColors: Record<ValidArtist, string> = {
   tripleS: "#8ebdd1",
   artms: "#D5B7E2",
 };
+
+/**
+ * Chunk an array into chunks of a given size.
+ */
+export async function chunk<T>(
+  arr: T[],
+  chunkSize: number,
+  callback: (chunk: T[]) => Promise<void>
+) {
+  for (let i = 0; i < arr.length; i += chunkSize) {
+    const chunk = arr.slice(i, i + chunkSize);
+    await callback(chunk);
+  }
+}

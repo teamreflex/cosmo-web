@@ -23,6 +23,8 @@ export const env = createEnv({
     SENTRY_PROJECT: z.string().min(1),
     // auth key
     AUTH_KEY: z.string().min(1),
+    // cron secret
+    CRON_SECRET: z.string().min(1),
   },
   client: {
     // info for rebranding the app

@@ -147,6 +147,7 @@ function parseProfile(profile: Profile): PublicProfile {
       objekts: profile.privacyObjekts,
       como: profile.privacyComo,
       trades: profile.privacyTrades,
+      votes: profile.privacyVotes,
     },
     gridColumns: profile.gridColumns,
     isObjektEditor: profile.objektEditor,

@@ -1,5 +1,5 @@
 import { fetchActivityRankingLast } from "@/lib/server/cosmo/ranking";
-import { withCosmoApi } from "@/lib/server/cosmo/withCosmoApi";
+import { withCosmoApi } from "@/lib/server/handlers/withCosmoApi";
 import { parseBffActivityRankingLastParams } from "@/lib/universal/cosmo/activity/ranking";
 
 /**

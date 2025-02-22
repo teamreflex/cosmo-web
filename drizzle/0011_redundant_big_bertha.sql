@@ -1,0 +1,1 @@
+ALTER TABLE "profiles" ADD COLUMN "privacy_votes" boolean DEFAULT true NOT NULL;

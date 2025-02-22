@@ -5,30 +5,21 @@ import {
   signToken,
   validateExpiry,
 } from "../jwt";
-import { refresh } from "./auth";
+import { refresh } from "../cosmo/auth";
 import { cookies } from "next/headers";
 import { NextRequest } from "next/server";
 import { TokenPayload } from "@/lib/universal/auth";
+import { RouteContext, RouteHandler, RouteParams } from "./common";
 
-// route params should be a record of strings
-type RouteParams<T extends Record<string, string> = {}> = T;
-
-// route props contains params, searchParams etc
-type RouteContext<TParams extends RouteParams> = {
-  params: Promise<TParams>;
-};
-
-type RouteHandler<TParams extends RouteParams> = (props: {
-  req: NextRequest;
-  ctx: RouteContext<TParams>;
+type Payload = {
   user: TokenPayload;
-}) => Promise<Response>;
+};
 
 /**
  * HOF for route handlers that handles COSMO access token refreshing.
  */
 export function withCosmoApi<TParams extends RouteParams>(
-  handler: RouteHandler<TParams>
+  handler: RouteHandler<TParams, Payload>
 ) {
   return async function (req: NextRequest, ctx: RouteContext<TParams>) {
     const store = await cookies();
@@ -47,15 +38,25 @@ export function withCosmoApi<TParams extends RouteParams>(
           // if valid, refresh the token
           const newTokens = await refresh(auth.user.refreshToken);
 
+          // build new payload
+          const newPayload = {
+            ...auth.user,
+            ...newTokens,
+          };
+
           // set the new cookie
           store.set(
             COOKIE_NAME,
-            await signToken({
-              ...auth.user,
-              ...newTokens,
-            }),
+            await signToken(newPayload),
             generateCookiePayload()
           );
+
+          // execute handler with new payload
+          return await handler({
+            req,
+            ctx,
+            user: newPayload,
+          });
         } else {
           // if invalid, delete the cookie since we can't refresh it
           store.delete(COOKIE_NAME);
@@ -68,6 +69,7 @@ export function withCosmoApi<TParams extends RouteParams>(
       return new Response("unauthorized", { status: 401 });
     }
 
+    // token is valid, execute handler
     return await handler({
       req,
       ctx,

@@ -1,5 +1,5 @@
 import { fetchActivityBadges } from "@/lib/server/cosmo/badges";
-import { withCosmoApi } from "@/lib/server/cosmo/withCosmoApi";
+import { withCosmoApi } from "@/lib/server/handlers/withCosmoApi";
 import { parseBffActivityBadgeParams } from "@/lib/universal/cosmo/activity/badges";
 
 /**

@@ -1,5 +1,5 @@
 import { fetchActivityRankingNear } from "@/lib/server/cosmo/ranking";
-import { withCosmoApi } from "@/lib/server/cosmo/withCosmoApi";
+import { withCosmoApi } from "@/lib/server/handlers/withCosmoApi";
 import { parseBffActivityRankingNearParams } from "@/lib/universal/cosmo/activity/ranking";
 
 /**

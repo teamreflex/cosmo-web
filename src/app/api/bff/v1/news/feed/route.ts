@@ -1,5 +1,5 @@
 import { fetchFeedBff } from "@/lib/server/cosmo/news";
-import { withCosmoApi } from "@/lib/server/cosmo/withCosmoApi";
+import { withCosmoApi } from "@/lib/server/handlers/withCosmoApi";
 import { parseBffNewsParams } from "@/lib/universal/cosmo/news";
 
 /**

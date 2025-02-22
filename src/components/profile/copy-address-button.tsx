@@ -23,7 +23,7 @@ export default function CopyAddressButton({ address }: { address: string }) {
       data-profile
     >
       <Copy className="h-5 w-5" />
-      <span>Copy Address</span>
+      <span>Address</span>
     </Button>
   );
 }

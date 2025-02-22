@@ -1,4 +1,4 @@
-import { withCosmoApi } from "@/lib/server/cosmo/withCosmoApi";
+import { withCosmoApi } from "@/lib/server/handlers/withCosmoApi";
 import { fetchArtistGridStatus } from "@/lib/server/cosmo/grid";
 
 type Params = {

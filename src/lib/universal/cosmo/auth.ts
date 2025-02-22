@@ -24,6 +24,7 @@ export type PublicProfile = {
     objekts: boolean;
     como: boolean;
     trades: boolean;
+    votes: boolean;
   };
   gridColumns: number;
   isObjektEditor: boolean;

@@ -1,5 +1,5 @@
 import { fabricateVote } from "@/lib/server/cosmo/gravity";
-import { withCosmoApi } from "@/lib/server/cosmo/withCosmoApi";
+import { withCosmoApi } from "@/lib/server/handlers/withCosmoApi";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { fabricateVotePayloadSchema } from "@/lib/universal/cosmo/gravity";
 

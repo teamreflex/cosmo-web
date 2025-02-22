@@ -2,7 +2,7 @@ import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { z } from "zod";
 
 export type CosmoGravityType = "event-gravity" | "grand-gravity";
-type CosmoPollType = "single-poll" | "combination-poll";
+export type CosmoPollType = "single-poll" | "combination-poll";
 
 export type CosmoBodySpacing = {
   type: "spacing";
@@ -208,11 +208,17 @@ export type PollSelectedContentImage = {
 
 export type PollViewSelectedContent = PollSelectedContentImage;
 
-export type PollChoice = {
+export type SinglePollChoice = {
   id: string;
   title: string;
   description: string;
   txImageUrl: string;
+};
+
+export type CombinationPollChoice = {
+  id: string;
+  txImageUrl: string;
+  txImagePairUrls: string[];
 };
 
 type CosmoSinglePollChoices = {
@@ -235,7 +241,7 @@ type CosmoSinglePollChoices = {
     selectedContent: PollViewSelectedContent[];
     choiceViewType: "vertical" | "horizontal";
   };
-  choices: PollChoice[];
+  choices: SinglePollChoice[];
 };
 
 type CosmoCombinationPollChoices = {
@@ -258,7 +264,7 @@ type CosmoCombinationPollChoices = {
     selectedContent: PollViewSelectedContent[];
     choiceViewType: "vertical" | "horizontal";
   };
-  choices: PollChoice[];
+  choices: CombinationPollChoice[];
 };
 
 export type CosmoPollChoices =

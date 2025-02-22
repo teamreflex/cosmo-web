@@ -2,7 +2,6 @@ import { decodeUser, getUserByIdentifier } from "@/app/data-fetching";
 import { PropsWithChildren, Suspense } from "react";
 import CopyAddressButton from "@/components/profile/copy-address-button";
 import TradesButton from "@/components/profile/trades-button";
-import BackButton from "@/components/profile/back-button";
 import ComoButton from "@/components/profile/como-button";
 import { Shield } from "lucide-react";
 import { validArtists } from "@/lib/universal/cosmo/common";
@@ -16,6 +15,8 @@ import ListDropdown from "@/components/lists/list-dropdown";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { ObjektList } from "@/lib/universal/objekts";
 import RefreshButton from "@/components/profile/refresh-button";
+import VotesButton from "@/components/profile/votes-button";
+import Link from "next/link";
 
 type Props = PropsWithChildren<{
   params: Promise<{
@@ -32,6 +33,7 @@ export default async function ProfileLayout(props: Props) {
 
   const { profile, objektLists } = targetUser;
 
+  const href = `/@${profile.isAddress ? profile.address : profile.nickname}`;
   const showComo =
     profile.privacy.como === false ||
     isAddressEqual(currentUser?.address, profile.address);
@@ -55,9 +57,12 @@ export default async function ProfileLayout(props: Props) {
 
           <div className="flex flex-col justify-between w-full">
             <div className="flex gap-2 items-center justify-between">
-              <span className="w-fit text-2xl lg:text-3xl font-cosmo font-bold uppercase">
+              <Link
+                href={href}
+                className="w-fit text-2xl lg:text-3xl font-cosmo font-bold uppercase underline underline-offset-4 decoration-transparent hover:decoration-cosmo transition-colors"
+              >
                 {profile.nickname}
-              </span>
+              </Link>
             </div>
 
             <div className="flex items-center justify-between gap-2">
@@ -89,15 +94,16 @@ type ButtonsProps = {
 };
 
 function Buttons({ profile, objektLists, currentUserAddress }: ButtonsProps) {
-  const url = `/@${profile.isAddress ? profile.address : profile.nickname}`;
   const isAuthenticated = currentUserAddress === profile.address;
 
   return (
     <div className="flex flex-wrap gap-2 justify-center lg:justify-normal md:absolute md:top-2 md:right-4">
-      <BackButton url={url} />
       <CopyAddressButton address={profile.address} />
       {isAuthenticated && <RefreshButton />}
       <TradesButton
+        nickname={profile.isAddress ? profile.address : profile.nickname}
+      />
+      <VotesButton
         nickname={profile.isAddress ? profile.address : profile.nickname}
       />
       <ComoButton
