@@ -9,7 +9,24 @@ import { asc, between, desc, eq, inArray } from "drizzle-orm";
 import { PgSelect } from "drizzle-orm/pg-core";
 import { collections, objekts } from "../db/indexer/schema";
 
-export function withSort<T extends PgSelect>(qb: T, sort: ValidSort) {
+export function withObjektSort<T extends PgSelect>(qb: T, sort: ValidSort) {
+  switch (sort) {
+    case "newest":
+      return qb.orderBy(desc(objekts.receivedAt));
+    case "oldest":
+      return qb.orderBy(asc(objekts.receivedAt));
+    case "noAscending":
+      return qb.orderBy(asc(collections.collectionNo));
+    case "noDescending":
+      return qb.orderBy(desc(collections.collectionNo));
+    case "serialAsc":
+      return qb.orderBy(asc(objekts.serial));
+    case "serialDesc":
+      return qb.orderBy(desc(objekts.serial));
+  }
+}
+
+export function withCollectionSort<T extends PgSelect>(qb: T, sort: ValidSort) {
   switch (sort) {
     case "newest":
     default:
@@ -26,10 +43,6 @@ export function withSort<T extends PgSelect>(qb: T, sort: ValidSort) {
       return qb.orderBy(asc(collections.collectionNo));
     case "noDescending":
       return qb.orderBy(desc(collections.collectionNo));
-    case "serialAsc":
-      return qb.orderBy(asc(objekts.serial));
-    case "serialDesc":
-      return qb.orderBy(desc(objekts.serial));
   }
 }
 

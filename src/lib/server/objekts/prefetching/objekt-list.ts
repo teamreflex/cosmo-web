@@ -6,7 +6,7 @@ import {
   withObjektListEntries,
   withOnlineType,
   withSeason,
-  withSort,
+  withCollectionSort,
 } from "../filters";
 import { z } from "zod";
 import { objektList } from "@/lib/universal/parsers";
@@ -108,7 +108,7 @@ export async function fetchObjektList({
       )
     )
     .$dynamic();
-  query = withSort(query, filters.sort);
+  query = withCollectionSort(query, filters.sort);
   query = query.limit(LIMIT).offset(filters.page * LIMIT);
 
   const result = await query;
