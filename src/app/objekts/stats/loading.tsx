@@ -63,13 +63,18 @@ export default async function ObjektStatsLoading() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* artist breakdown chart */}
           <div className="flex flex-col gap-2">
-            <h2 className="text-xl font-semibold">Artist Breakdown</h2>
+            <div className="flex flex-row gap-2 items-end h-10">
+              <h2 className="text-xl font-semibold">Artist Breakdown</h2>
+            </div>
             <Skeleton className="h-108.5" />
           </div>
 
           {/* member breakdown chart */}
           <div className="flex flex-col gap-2">
-            <h2 className="text-xl font-semibold">Member Breakdown</h2>
+            <div className="flex flex-row gap-2 items-end justify-between">
+              <h2 className="text-xl font-semibold">Member Breakdown</h2>
+              <Skeleton className="h-10 w-30" />
+            </div>
             <Skeleton className="h-108.5" />
           </div>
         </div>
