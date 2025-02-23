@@ -58,6 +58,7 @@ const config: NextConfig = {
   },
 
   images: {
+    unoptimized: true,
     remotePatterns: [
       // objekt images
       {
