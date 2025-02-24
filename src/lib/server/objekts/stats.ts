@@ -173,12 +173,12 @@ async function fetchObjektStats(): Promise<ObjektStats> {
 
 /**
  * Get the stats for the fixed 24-hour window.
- * Cached for 1 hour.
+ * Cached for 2 hours, but a cron job flushes the cache every hour.
  */
 export const getObjektStats = unstable_cache(
   fetchObjektStats,
   ["objekt-stats"],
   {
-    revalidate: 60 * 60, // 1 hour
+    revalidate: 60 * 60 * 2, // 2 hours
   }
 );
