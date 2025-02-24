@@ -38,7 +38,9 @@ export default async function ObjektStatsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.totalCount}</div>
+              <div className="text-2xl font-bold">
+                {stats.totalCount.toLocaleString()}
+              </div>
               <p className="text-xs text-muted-foreground">
                 Total objekts minted in last 24 hours
               </p>
@@ -52,7 +54,9 @@ export default async function ObjektStatsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.scannedCount}</div>
+              <div className="text-2xl font-bold">
+                {stats.scannedCount.toLocaleString()}
+              </div>
               <p className="text-xs text-muted-foreground">
                 Objekts scanned in last 24 hours
               </p>
@@ -66,7 +70,9 @@ export default async function ObjektStatsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.premierCount}</div>
+              <div className="text-2xl font-bold">
+                {stats.premierCount.toLocaleString()}
+              </div>
               <p className="text-xs text-muted-foreground">
                 Premier class objekts minted in last 24 hours (digital)
               </p>
