@@ -1,19 +1,21 @@
 /* eslint-disable react-compiler/react-compiler */
-import { useProfileContext } from "@/hooks/use-profile";
-import { Props } from "./filtered-objekt-display";
-import { useObjektResponse } from "@/hooks/use-objekt-response";
 import { useElementSize } from "@/hooks/use-element-size";
-import { cloneElement, useMemo } from "react";
+import { cloneElement, ReactElement, useMemo } from "react";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { useRef } from "react";
-import { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
-import Portal from "../portal";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import ExpandableObjekt from "./objekt-expandable";
 import { LegacyOverlay } from "../collection/data-sources/common-legacy";
-import { InfiniteQueryNext } from "../infinite-query-pending";
+import { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
 
-type ListItem<T> =
+type RenderProps<T> = {
+  id: string | number;
+  item: T;
+  isPin: boolean;
+  priority: boolean;
+};
+
+export type ObjektRowItem<T> =
   | {
       type: "pin";
       item: CosmoObjekt;
@@ -23,49 +25,28 @@ type ListItem<T> =
       item: T;
     };
 
-interface ObjektGridProps<Response, Item>
-  extends Omit<Props<Response, Item>, "artists"> {
-  hidePins: boolean;
-}
+type Props<Item> = {
+  children: (props: RenderProps<Item>) => ReactElement | null;
+  rows: ObjektRowItem<Item>[][];
+  pins?: CosmoObjekt[];
+  getObjektId: (objekt: Item) => string;
+  gridColumns: number;
+  hidePins?: boolean;
+  authenticated: boolean;
+};
 
 const GAP = 16;
 const ASPECT_RATIO = 8.5 / 5.5;
 
-export default function VirtualizedGrid<Response, Item>({
+export default function VirtualizedGrid<Item>({
   children,
-  options,
+  rows,
+  pins = [],
   getObjektId,
-  shouldRender,
   authenticated,
-  hidePins,
+  hidePins = true,
   gridColumns,
-}: ObjektGridProps<Response, Item>) {
-  // data
-  const pins = useProfileContext((ctx) => ctx.pins);
-  const { query, total, items } = useObjektResponse(options);
-
-  // merge pins and items
-  const rows = useMemo(() => {
-    const initialItems = [
-      ...(hidePins
-        ? []
-        : pins.map((pin) => ({
-            type: "pin" as const,
-            item: pin,
-          }))),
-      ...items.filter(shouldRender).map((item) => ({
-        type: "item" as const,
-        item,
-      })),
-    ];
-
-    const result: ListItem<Item>[][] = [];
-    for (let i = 0; i < initialItems.length; i += gridColumns) {
-      result.push(initialItems.slice(i, i + gridColumns));
-    }
-    return result;
-  }, [items, pins, shouldRender, gridColumns, hidePins]);
-
+}: Props<Item>) {
   // virtualization
   const [containerRef, { width }] = useElementSize();
   const virtualizer = useWindowVirtualizer({
@@ -84,8 +65,6 @@ export default function VirtualizedGrid<Response, Item>({
 
   return (
     <div className="w-full py-2" ref={containerRef}>
-      <Portal to="#objekt-total">{total}</Portal>
-
       <div
         className="relative flex flex-col contain-paint will-change-transform"
         style={{
@@ -157,15 +136,6 @@ export default function VirtualizedGrid<Response, Item>({
           );
         })}
       </div>
-
-      <Portal to="#pagination">
-        <InfiniteQueryNext
-          status={query.status}
-          hasNextPage={query.hasNextPage}
-          isFetchingNextPage={query.isFetchingNextPage}
-          fetchNextPage={query.fetchNextPage}
-        />
-      </Portal>
     </div>
   );
 }

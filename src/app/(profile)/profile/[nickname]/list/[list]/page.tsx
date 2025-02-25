@@ -17,6 +17,7 @@ import {
 import { fetchObjektList } from "@/lib/server/objekts/lists";
 import { getQueryClient } from "@/lib/query-client";
 import { ProfileProvider } from "@/hooks/use-profile";
+import { GRID_COLUMNS } from "@/lib/utils";
 
 type Props = {
   searchParams: Promise<Record<string, string>>;
@@ -89,7 +90,7 @@ export default async function ObjektListPage(props: Props) {
           list={objektList}
           authenticated={authenticated}
           user={profile}
-          gridColumns={currentUser?.gridColumns}
+          gridColumns={currentUser?.gridColumns ?? GRID_COLUMNS}
         />
       </HydrationBoundary>
     </ProfileProvider>

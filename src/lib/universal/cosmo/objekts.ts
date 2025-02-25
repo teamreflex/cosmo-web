@@ -1,13 +1,3 @@
-import { z } from "zod";
-import {
-  validArtists,
-  validClasses,
-  validOnlineTypes,
-  validSeasons,
-  validSorts,
-} from "./common";
-import { parse } from "../parsers";
-
 export type OwnedObjektsResult = {
   hasNext: boolean;
   nextStartAfter?: number;
@@ -87,50 +77,6 @@ export type GasStationResult = {
   blockTime: number;
   blockNumber: number;
 };
-
-const bffCollectionGroupSchema = z.object({
-  artistName: z.enum(validArtists),
-  size: z.coerce.number().optional().default(20),
-  page: z.coerce.number().optional().default(1),
-  order: z.enum(validSorts).optional().default("newest"),
-  collectionIds: z.string().array().optional(),
-  memberIds: z.coerce.number().array().optional(),
-  class: z.enum(validClasses).array().optional(),
-  season: z.enum(validSeasons).array().optional(),
-  on_offline: z.enum(validOnlineTypes).optional().nullable(),
-  transferable: z.coerce.boolean().optional(),
-  gridable: z.coerce.boolean().optional(),
-});
-
-export type BFFCollectionGroupParams = z.infer<typeof bffCollectionGroupSchema>;
-
-/**
- * Parse collection group params.
- */
-export function parseBffCollectionGroupParams(params: URLSearchParams) {
-  return parse(
-    bffCollectionGroupSchema,
-    {
-      artistName: params.get("artistName"),
-      size: params.get("size") ?? undefined,
-      page: params.get("page") ?? undefined,
-      order: params.get("order") ?? undefined,
-      collectionIds: params.getAll("collectionIds"),
-      memberIds: params.getAll("memberIds"),
-      class: params.getAll("class"),
-      season: params.getAll("season"),
-      on_offline: params.get("on_offline"),
-      transferable: params.get("transferable"),
-      gridable: params.get("gridable"),
-    },
-    {
-      artistName: "artms",
-      size: 20,
-      page: 1,
-      order: "newest",
-    }
-  );
-}
 
 export type BFFCollectionGroupResponse = {
   collectionCount: number;

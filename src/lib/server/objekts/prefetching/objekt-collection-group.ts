@@ -1,17 +1,18 @@
-import {
-  BFFCollectionGroupParams,
-  BFFCollectionGroupResponse,
-} from "@/lib/universal/cosmo/objekts";
+import { BFFCollectionGroupResponse } from "@/lib/universal/cosmo/objekts";
 import { indexer } from "../../db/indexer";
 import { aliasedTable, and, eq, sql } from "drizzle-orm";
 import { collections, objekts } from "../../db/indexer/schema";
+import { z } from "zod";
+import { userCollectionGroups } from "@/lib/universal/parsers";
+
+const PER_PAGE = 30;
 
 /**
  * Replicates /bff/v1/objekt/collection-group endpoint but from blockchain data.
  */
 export async function fetchCollectionGroups(
   address: string,
-  params: BFFCollectionGroupParams
+  params: z.infer<typeof userCollectionGroups>
 ) {
   // indexer addresses are lowercase
   address = address.toLowerCase();
@@ -63,9 +64,9 @@ export async function fetchCollectionGroups(
 		ORDER BY
 			MAX(o.received_at) DESC
 		LIMIT
-			${params.size}
+			${PER_PAGE}
 		OFFSET
-			${(params.page - 1) * params.size}
+			${(params.page - 1) * PER_PAGE}
 	)
 SELECT
 	(

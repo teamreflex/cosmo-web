@@ -1,4 +1,4 @@
-import { ReactElement, Suspense, useCallback } from "react";
+import { ReactNode, Suspense, useCallback } from "react";
 import { HeartCrack, RefreshCcw } from "lucide-react";
 import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
@@ -8,41 +8,20 @@ import { Button } from "../ui/button";
 import Skeleton from "../skeleton/skeleton";
 import { ErrorBoundary } from "react-error-boundary";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
-import { ObjektResponseOptions } from "@/hooks/use-objekt-response";
-import { useMediaQuery } from "@/hooks/use-media-query";
-import VirtualizedGrid from "./virtualized-grid";
 import SkeletonGradient from "../skeleton/skeleton-overlay";
 
-type RenderProps<T> = {
-  id: string | number;
-  item: T;
-  isPin: boolean;
-  priority: boolean;
-};
-
-export type Props<Response, Item> = {
-  children: (props: RenderProps<Item>) => ReactElement | null;
+type Props = {
+  children: ReactNode;
   artists: CosmoArtistWithMembersBFF[];
-  options: ObjektResponseOptions<Response, Item>;
-  getObjektId: (objekt: Item) => string;
-  shouldRender: (objekt: Item) => boolean;
   gridColumns: number;
-  hidePins?: boolean;
-  authenticated: boolean;
 };
 
-export default function FilteredObjektDisplay<Response, Item>({
+export default function FilteredObjektDisplay({
   children,
   artists,
-  options,
-  getObjektId,
-  shouldRender,
   gridColumns,
-  hidePins = true,
-  authenticated,
-}: Props<Response, Item>) {
+}: Props) {
   const [filters, setFilters] = useCosmoFilters();
-  const isDesktop = useMediaQuery();
 
   const setActiveMember = useCallback(
     (member: string) => {
@@ -108,16 +87,7 @@ export default function FilteredObjektDisplay<Response, Item>({
                   </div>
                 }
               >
-                <VirtualizedGrid
-                  options={options}
-                  getObjektId={getObjektId}
-                  shouldRender={shouldRender}
-                  authenticated={authenticated}
-                  hidePins={hidePins}
-                  gridColumns={isDesktop ? gridColumns : 3}
-                >
-                  {children}
-                </VirtualizedGrid>
+                {children}
               </Suspense>
             </ErrorBoundary>
           )}

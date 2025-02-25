@@ -7,8 +7,10 @@ import {
 } from "@tanstack/react-query";
 import { useCosmoFilters } from "./use-cosmo-filters";
 import { ReactNode } from "react";
+import { FilterType } from "@/lib/utils";
 
 export type ObjektResponseOptions<Response, Item> = {
+  filtering: FilterType;
   queryKey: QueryKey;
   queryFunction: QueryFunction<Response, QueryKey, number | undefined>;
   initialPageParam?: number;
@@ -26,12 +28,18 @@ export function objektOptions<Response, Item>(
   return opts;
 }
 
+/**
+ * Suspense-powered hook to fetch objekts.
+ */
 export function useObjektResponse<Response, Item>(
   opts: ObjektResponseOptions<Response, Item>
 ) {
   const [filters] = useCosmoFilters();
   const query = useSuspenseInfiniteQuery({
-    queryKey: [...opts.queryKey, filters],
+    queryKey: [
+      ...opts.queryKey,
+      ...(opts.filtering === "remote" ? [filters] : []),
+    ],
     queryFn: opts.queryFunction,
     initialPageParam: opts.initialPageParam ?? 0,
     getNextPageParam: opts.getNextPageParam,
@@ -39,8 +47,8 @@ export function useObjektResponse<Response, Item>(
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  const total = opts.calculateTotal(query.data);
   const items = opts.getItems(query.data);
+  const total = opts.calculateTotal(query.data);
 
   return {
     query,

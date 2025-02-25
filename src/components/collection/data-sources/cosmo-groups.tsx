@@ -15,6 +15,9 @@ import { useCallback, useMemo } from "react";
 import GroupedObjekt from "@/components/objekt/objekt-collection-group";
 import { useProfileContext } from "@/hooks/use-profile";
 import { useCosmoArtists } from "@/hooks/use-cosmo-artist";
+import VirtualizedGrid from "@/components/objekt/virtualized-grid";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import LoaderRemote from "@/components/objekt/loader-remote";
 
 const INITIAL_PAGE = 1;
 const PAGE_SIZE = 30;
@@ -35,6 +38,9 @@ export default function CosmoCollectionGroups(props: Props) {
   const lockedObjekts = useProfileContext((ctx) => ctx.lockedObjekts);
   const { artist, token } = useUserState();
   const { getMember } = useCosmoArtists();
+  const isDesktop = useMediaQuery();
+
+  const gridColumns = isDesktop ? props.gridColumns : 3;
 
   /**
    * Determine if the group should be rendered
@@ -70,6 +76,7 @@ export default function CosmoCollectionGroups(props: Props) {
    * Query options
    */
   const options = objektOptions({
+    filtering: "remote",
     queryKey: ["collection", "cosmo", props.targetUser.address, artistName],
     queryFunction: async ({ pageParam = 1 }: { pageParam?: number }) => {
       const endpoint = new URL(
@@ -130,23 +137,32 @@ export default function CosmoCollectionGroups(props: Props) {
   });
 
   return (
-    <FilteredObjektDisplay
-      artists={props.artists}
-      options={options}
-      getObjektId={(item) => item.collection.collectionId}
-      shouldRender={shouldRender}
-      gridColumns={props.gridColumns}
-      hidePins={usingFilters}
-      authenticated={props.authenticated}
-    >
-      {({ item, priority }) => (
-        <GroupedObjekt
-          group={item}
-          gridColumns={props.gridColumns}
-          showLocked={props.showLocked}
-          priority={priority}
-        />
-      )}
+    <FilteredObjektDisplay artists={props.artists} gridColumns={gridColumns}>
+      <LoaderRemote
+        options={options}
+        hidePins={usingFilters}
+        shouldRender={shouldRender}
+        gridColumns={gridColumns}
+      >
+        {({ rows, hidePins }) => (
+          <VirtualizedGrid
+            rows={rows}
+            getObjektId={(item) => item.collection.collectionId}
+            authenticated={props.authenticated}
+            gridColumns={gridColumns}
+            hidePins={hidePins}
+          >
+            {({ item, priority }) => (
+              <GroupedObjekt
+                group={item}
+                gridColumns={props.gridColumns}
+                showLocked={props.showLocked}
+                priority={priority}
+              />
+            )}
+          </VirtualizedGrid>
+        )}
+      </LoaderRemote>
     </FilteredObjektDisplay>
   );
 }

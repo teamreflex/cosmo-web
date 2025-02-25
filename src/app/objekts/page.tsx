@@ -14,6 +14,7 @@ import {
 import { parseObjektIndex } from "@/lib/universal/parsers";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import { getQueryClient } from "@/lib/query-client";
+import { GRID_COLUMNS } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Objekts",
@@ -65,7 +66,7 @@ export default async function ObjektsIndexPage(props: Params) {
             collections={collections}
             objektLists={objektLists}
             nickname={user?.nickname}
-            gridColumns={profile?.gridColumns}
+            gridColumns={profile?.gridColumns ?? GRID_COLUMNS}
             activeSlug={searchParams.id}
           />
         </HydrationBoundary>

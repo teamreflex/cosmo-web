@@ -17,7 +17,7 @@ import {
   IndexFilters,
 } from "../collection/filters-container";
 import { ofetch } from "ofetch";
-import { baseUrl, GRID_COLUMNS } from "@/lib/utils";
+import { baseUrl } from "@/lib/utils";
 import { parseAsString, useQueryState } from "nuqs";
 import { ObjektResponseOptions } from "@/hooks/use-objekt-response";
 import { ObjektSidebar } from "../objekt/common";
@@ -27,35 +27,33 @@ import { Objekt } from "../../lib/universal/objekt-conversion";
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { ChartColumnBig } from "lucide-react";
-
-const getObjektId = (objekt: IndexedObjekt) => objekt.id;
+import VirtualizedGrid from "../objekt/virtualized-grid";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import LoaderRemote from "../objekt/loader-remote";
 
 type Props = {
   artists: CosmoArtistWithMembersBFF[];
   collections: string[];
   objektLists?: ObjektList[];
   nickname?: string;
-  gridColumns?: number;
+  gridColumns: number;
   activeSlug?: string;
 };
 
-export default function IndexRenderer({
-  artists,
-  collections,
-  objektLists,
-  nickname,
-  gridColumns = GRID_COLUMNS,
-  activeSlug,
-}: Props) {
+export default function IndexRenderer(props: Props) {
   const { searchParams } = useFilters();
   const [, setActiveObjekt] = useQueryState("id", parseAsString);
+  const isDesktop = useMediaQuery();
 
-  const authenticated = objektLists !== undefined && nickname !== undefined;
+  const authenticated =
+    props.objektLists !== undefined && props.nickname !== undefined;
+  const gridColumns = isDesktop ? props.gridColumns : 3;
 
   /**
    * Query options
    */
   const options = {
+    filtering: "remote",
     queryKey: ["objekt-index", "blockchain"],
     queryFunction: async ({ pageParam = 0 }: { pageParam?: number }) => {
       const url = new URL("/api/objekts", baseUrl());
@@ -81,36 +79,45 @@ export default function IndexRenderer({
 
   return (
     <div className="flex flex-col">
-      <Title nickname={nickname} objektLists={objektLists} />
+      <Title nickname={props.nickname} objektLists={props.objektLists} />
 
       <FiltersContainer>
-        <IndexFilters collections={collections} />
+        <IndexFilters collections={props.collections} />
       </FiltersContainer>
 
-      <FilteredObjektDisplay
-        artists={artists}
-        options={options}
-        getObjektId={getObjektId}
-        shouldRender={() => true}
-        gridColumns={gridColumns}
-        authenticated={authenticated}
-      >
-        {({ item, priority }) => {
-          const collection = Objekt.fromIndexer(item);
-          return (
-            <ExpandableObjekt
-              collection={collection}
-              setActive={setActiveObjekt}
-              priority={priority}
+      <FilteredObjektDisplay artists={props.artists} gridColumns={gridColumns}>
+        <LoaderRemote
+          options={options}
+          shouldRender={() => true}
+          gridColumns={gridColumns}
+        >
+          {({ rows, hidePins }) => (
+            <VirtualizedGrid
+              rows={rows}
+              getObjektId={(objekt) => objekt.id}
+              authenticated={authenticated}
+              gridColumns={gridColumns}
+              hidePins={hidePins}
             >
-              <Overlay
-                objekt={item}
-                authenticated={authenticated}
-                objektLists={objektLists}
-              />
-            </ExpandableObjekt>
-          );
-        }}
+              {({ item, priority }) => {
+                const collection = Objekt.fromIndexer(item);
+                return (
+                  <ExpandableObjekt
+                    collection={collection}
+                    setActive={setActiveObjekt}
+                    priority={priority}
+                  >
+                    <Overlay
+                      objekt={item}
+                      authenticated={authenticated}
+                      objektLists={props.objektLists}
+                    />
+                  </ExpandableObjekt>
+                );
+              }}
+            </VirtualizedGrid>
+          )}
+        </LoaderRemote>
       </FilteredObjektDisplay>
 
       {/**
@@ -118,8 +125,11 @@ export default function IndexRenderer({
        * activeSlug is populated on first load from the server
        * using activeObjekt here results in two dialogs being open at once
        */}
-      {activeSlug !== undefined && (
-        <RoutedExpandableObjekt slug={activeSlug} setActive={setActiveObjekt} />
+      {props.activeSlug !== undefined && (
+        <RoutedExpandableObjekt
+          slug={props.activeSlug}
+          setActive={setActiveObjekt}
+        />
       )}
     </div>
   );

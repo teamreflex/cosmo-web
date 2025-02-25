@@ -60,14 +60,7 @@ export default function DataSourceSelector({
     // reset any source-specific filters
     switch (source) {
       case "cosmo":
-      // case "cosmo-legacy":
-      //   // reset serial sort
-      //   if (filters.sort === "serialAsc" || filters.sort === "serialDesc") {
-      //     setFilters({
-      //       sort: null,
-      //     });
-      //   }
-      //   break;
+        break;
       case "blockchain":
         // reset gridable
         if (filters.gridable) {
@@ -103,18 +96,6 @@ export default function DataSourceSelector({
               </div>
             </SelectItem>
           )}
-          {/* <SelectItem value="cosmo-legacy">
-            <div className="flex flex-row items-center gap-2">
-              <Image
-                src={CosmoImage.src}
-                alt="COSMO"
-                width={24}
-                height={24}
-                className="rounded-full"
-              />
-              <span>{allowCosmoGroups ? "Legacy" : "Cosmo"}</span>
-            </div>
-          </SelectItem> */}
           <SelectItem value="blockchain">
             <div className="flex flex-row items-center gap-2">
               <div className="relative bg-polygon h-6 w-6 rounded-full">

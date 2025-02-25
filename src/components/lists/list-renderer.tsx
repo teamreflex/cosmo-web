@@ -19,39 +19,38 @@ import {
   IndexFilters,
 } from "../collection/filters-container";
 import { ofetch } from "ofetch";
-import { baseUrl, GRID_COLUMNS } from "@/lib/utils";
+import { baseUrl } from "@/lib/utils";
 import { ObjektResponseOptions } from "@/hooks/use-objekt-response";
 import { ObjektSidebar } from "../objekt/common";
 import ExpandableObjekt from "../objekt/objekt-expandable";
 import { Objekt } from "../../lib/universal/objekt-conversion";
-
-const getObjektId = (objekt: IndexedObjekt) => objekt.id;
+import { useMediaQuery } from "@/hooks/use-media-query";
+import VirtualizedGrid from "../objekt/virtualized-grid";
+import LoaderRemote from "../objekt/loader-remote";
 
 type Props = {
   list: ObjektList;
   artists: CosmoArtistWithMembersBFF[];
   authenticated: boolean;
   user: PublicProfile;
-  gridColumns?: number;
+  gridColumns: number;
 };
 
-export default function ListRenderer({
-  list,
-  artists,
-  authenticated,
-  user,
-  gridColumns = GRID_COLUMNS,
-}: Props) {
+export default function ListRenderer(props: Props) {
   const { searchParams } = useFilters();
+  const isDesktop = useMediaQuery();
+
+  const gridColumns = isDesktop ? props.gridColumns : 3;
 
   /**
    * Query options
    */
   const options = {
-    queryKey: ["objekt-list", list.slug, user.address],
+    filtering: "remote",
+    queryKey: ["objekt-list", props.list.slug, props.user.address],
     queryFunction: async ({ pageParam = 0 }: { pageParam?: number }) => {
       const url = new URL(
-        `/api/objekt-list/entries/${list.slug}/${user.address}`,
+        `/api/objekt-list/entries/${props.list.slug}/${props.user.address}`,
         baseUrl()
       );
 
@@ -77,33 +76,42 @@ export default function ListRenderer({
 
   return (
     <section className="flex flex-col">
-      <Title authenticated={authenticated} objektList={list} />
+      <Title authenticated={props.authenticated} objektList={props.list} />
 
       <FiltersContainer isPortaled>
         <IndexFilters collections={[]} />
       </FiltersContainer>
 
-      <FilteredObjektDisplay
-        artists={artists}
-        options={options}
-        getObjektId={getObjektId}
-        shouldRender={() => true}
-        gridColumns={gridColumns}
-        authenticated={authenticated}
-      >
-        {({ item, priority }) => {
-          const collection = Objekt.fromIndexer(item);
-          return (
-            <ExpandableObjekt collection={collection} priority={priority}>
-              <Overlay
-                id={item.id}
-                collection={collection}
-                authenticated={authenticated}
-                objektList={list}
-              />
-            </ExpandableObjekt>
-          );
-        }}
+      <FilteredObjektDisplay artists={props.artists} gridColumns={gridColumns}>
+        <LoaderRemote
+          options={options}
+          shouldRender={() => true}
+          gridColumns={gridColumns}
+        >
+          {({ rows, hidePins }) => (
+            <VirtualizedGrid
+              rows={rows}
+              getObjektId={(objekt) => objekt.id}
+              authenticated={props.authenticated}
+              gridColumns={gridColumns}
+              hidePins={hidePins}
+            >
+              {({ item, priority }) => {
+                const collection = Objekt.fromIndexer(item);
+                return (
+                  <ExpandableObjekt collection={collection} priority={priority}>
+                    <Overlay
+                      id={item.id}
+                      collection={collection}
+                      authenticated={props.authenticated}
+                      objektList={props.list}
+                    />
+                  </ExpandableObjekt>
+                );
+              }}
+            </VirtualizedGrid>
+          )}
+        </LoaderRemote>
       </FilteredObjektDisplay>
     </section>
   );

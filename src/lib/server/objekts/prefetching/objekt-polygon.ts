@@ -2,12 +2,7 @@ import { userCollection } from "@/lib/universal/parsers";
 import { z } from "zod";
 import { indexer } from "../../db/indexer";
 import { and, eq, sql } from "drizzle-orm";
-import {
-  Collection,
-  collections,
-  Objekt,
-  objekts,
-} from "../../db/indexer/schema";
+import { collections, objekts } from "../../db/indexer/schema";
 import {
   withArtist,
   withClass,
@@ -18,11 +13,7 @@ import {
   withSeason,
   withTransferable,
 } from "../filters";
-import {
-  CosmoObjekt,
-  NonTransferableReason,
-} from "@/lib/universal/cosmo/objekts";
-import { ValidArtist } from "@/lib/universal/cosmo/common";
+import { mapLegacyObjekt } from "./common";
 
 export const PER_PAGE = 60;
 
@@ -92,45 +83,6 @@ export async function fetchObjektsPolygon(
     nextStartAfter,
     objekts: results
       .filter((r) => r.collections !== null) // should never happen but just in case
-      .map((row) => mapResult(row.objekts, row.collections!)),
+      .map((row) => mapLegacyObjekt(row.objekts, row.collections!)),
   };
-}
-
-/**
- * Map indexed objekt/collection into an entity compatible with existing type.
- */
-function mapResult(objekt: Objekt, collection: Collection): CosmoObjekt {
-  return {
-    ...collection,
-    thumbnailImage: collection.frontImage,
-    accentColor: collection.textColor,
-    artists: [collection.artist as ValidArtist],
-    tokenId: String(objekt.id),
-    tokenAddress: collection.contract,
-    objektNo: objekt.serial,
-    mintedAt: objekt.mintedAt,
-    receivedAt: objekt.receivedAt,
-    status: "minted",
-    transferable: objekt.transferable,
-    usedForGrid: false,
-    nonTransferableReason: nonTransferableReason(objekt, collection),
-    // cannot currently be determined
-    lenticularPairTokenId: null,
-    // seemingly unused
-    transferablebyDefault: true,
-  };
-}
-
-/**
- * Derive the non transferable reason from the objekt/collection.
- */
-function nonTransferableReason(
-  objekt: Objekt,
-  collection: Collection
-): NonTransferableReason | undefined {
-  if (collection.class === "Welcome") {
-    return "welcome-objekt";
-  }
-
-  return objekt.transferable === false ? "not-transferable" : undefined;
 }

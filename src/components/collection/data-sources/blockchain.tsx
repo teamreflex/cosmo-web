@@ -13,6 +13,9 @@ import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { LegacyOverlay } from "./common-legacy";
 import ExpandableObjekt from "@/components/objekt/objekt-expandable";
 import { Objekt } from "@/lib/universal/objekt-conversion";
+import VirtualizedGrid from "@/components/objekt/virtualized-grid";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import LoaderRemote from "@/components/objekt/loader-remote";
 
 type Props = {
   artists: CosmoArtistWithMembersBFF[];
@@ -29,6 +32,9 @@ export default function Blockchain(props: Props) {
   const usingFilters = useMemo(() => filtersAreDirty(filters), [filters]);
   const pins = useProfileContext((ctx) => ctx.pins);
   const lockedObjekts = useProfileContext((ctx) => ctx.lockedObjekts);
+  const isDesktop = useMediaQuery();
+
+  const gridColumns = isDesktop ? props.gridColumns : 3;
 
   /**
    * Determine if the objekt should be rendered
@@ -56,6 +62,7 @@ export default function Blockchain(props: Props) {
    * Query options
    */
   const options = objektOptions({
+    filtering: "remote",
     queryKey: ["collection", "blockchain", props.targetUser.address],
     queryFunction: async ({ pageParam = 0 }: { pageParam?: number }) => {
       const endpoint = new URL(
@@ -81,33 +88,43 @@ export default function Blockchain(props: Props) {
   });
 
   return (
-    <FilteredObjektDisplay
-      artists={props.artists}
-      options={options}
-      getObjektId={(item) => item.tokenId}
-      shouldRender={shouldRender}
-      gridColumns={props.gridColumns}
-      hidePins={usingFilters}
-      authenticated={props.authenticated}
-    >
-      {({ item, id, isPin, priority }) => {
-        const objekt = Objekt.fromLegacy(item);
-        return (
-          <ExpandableObjekt
-            collection={objekt.collection}
-            tokenId={id}
-            priority={priority}
+    <FilteredObjektDisplay artists={props.artists} gridColumns={gridColumns}>
+      <LoaderRemote
+        options={options}
+        hidePins={usingFilters}
+        shouldRender={shouldRender}
+        gridColumns={gridColumns}
+      >
+        {({ rows, hidePins }) => (
+          <VirtualizedGrid
+            rows={rows}
+            pins={pins}
+            getObjektId={(item) => item.tokenId}
+            authenticated={props.authenticated}
+            gridColumns={gridColumns}
+            hidePins={hidePins}
           >
-            <LegacyOverlay
-              collection={objekt.collection}
-              token={objekt.objekt}
-              authenticated={props.authenticated}
-              isPinned={pins.findIndex((p) => p.tokenId === id) !== -1}
-              isPin={isPin}
-            />
-          </ExpandableObjekt>
-        );
-      }}
+            {({ item, id, isPin, priority }) => {
+              const objekt = Objekt.fromLegacy(item);
+              return (
+                <ExpandableObjekt
+                  collection={objekt.collection}
+                  tokenId={id}
+                  priority={priority}
+                >
+                  <LegacyOverlay
+                    collection={objekt.collection}
+                    token={objekt.objekt}
+                    authenticated={props.authenticated}
+                    isPinned={pins.findIndex((p) => p.tokenId === id) !== -1}
+                    isPin={isPin}
+                  />
+                </ExpandableObjekt>
+              );
+            }}
+          </VirtualizedGrid>
+        )}
+      </LoaderRemote>
     </FilteredObjektDisplay>
   );
 }

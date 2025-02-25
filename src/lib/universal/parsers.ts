@@ -178,6 +178,49 @@ export function parseUserCollection(params: URLSearchParams) {
 }
 
 /**
+ * User collection schema for collection groups.
+ */
+export const userCollectionGroups = cosmoSchema
+  .extend({
+    artistName: z.enum(validArtists),
+    order: z.enum(validSorts).optional().default("newest"),
+    page: z.coerce.number().optional().default(1),
+  })
+  .omit({
+    artist: true,
+    sort: true,
+    gridable: true,
+  });
+
+/**
+ * Parse user collection groups params with default fallback.
+ */
+export function parseUserCollectionGroups(params: URLSearchParams) {
+  return parse(
+    userCollectionGroups,
+    {
+      page: params.get("page"),
+      order: params.get("order"),
+      season: params.getAll("season"),
+      class: params.getAll("class"),
+      on_offline: params.getAll("on_offline"),
+      member: params.get("member"),
+      artistName: params.get("artistName"),
+      transferable: params.get("transferable"),
+    },
+    {
+      page: 1,
+      order: "newest",
+      season: [],
+      class: [],
+      on_offline: [],
+      member: undefined,
+      artistName: "artms",
+    }
+  );
+}
+
+/**
  * Parse URLSearchParams with Zod and provide defaults as an optional fallback.
  */
 export function parse<TSchema extends z.AnyZodObject>(
