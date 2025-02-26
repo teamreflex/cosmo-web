@@ -6,6 +6,7 @@ import {
 import Portal from "@/components/portal";
 import HelpDialog from "@/components/progress/help-dialog";
 import ProgressRenderer from "@/components/progress/progress-renderer";
+import { ProfileProvider } from "@/hooks/use-profile";
 import { isAddressEqual } from "@/lib/utils";
 import { Shield } from "lucide-react";
 import { Metadata } from "next";
@@ -42,10 +43,12 @@ export default async function ProgressPage(props: Props) {
 
   return (
     <section className="flex flex-col">
-      <ProgressRenderer artists={artists} address={profile.address} />
-      <Portal to="#help">
-        <HelpDialog />
-      </Portal>
+      <ProfileProvider targetProfile={profile}>
+        <ProgressRenderer artists={artists} address={profile.address} />
+        <Portal to="#help">
+          <HelpDialog />
+        </Portal>
+      </ProfileProvider>
     </section>
   );
 }

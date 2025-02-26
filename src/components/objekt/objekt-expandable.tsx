@@ -14,6 +14,7 @@ type Props = PropsWithChildren<{
   tokenId?: number | string;
   setActive?: (slug: string | null) => void;
   priority?: boolean;
+  className?: string;
 }>;
 
 /**
@@ -25,6 +26,7 @@ export default function ExpandableObjekt({
   collection,
   setActive,
   priority = false,
+  className,
 }: Props) {
   const [isLoaded, setIsLoaded] = useState(false);
   const queryClient = useQueryClient();
@@ -53,7 +55,8 @@ export default function ExpandableObjekt({
           }}
           className={cn(
             "relative overflow-hidden rounded-lg md:rounded-xl lg:rounded-2xl touch-manipulation bg-accent transition-colors ring-2 ring-transparent aspect-photocard",
-            isSelected && "ring-foreground"
+            isSelected && "ring-foreground",
+            className
           )}
         >
           <NextImage

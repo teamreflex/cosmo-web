@@ -8,19 +8,11 @@ export type SeasonMatrix = {
   key: string;
 };
 
-export interface ObjektProgression
-  extends Pick<
-    Collection,
-    | "collectionNo"
-    | "frontImage"
-    | "textColor"
-    | "class"
-    | "season"
-    | "onOffline"
-  > {
+export type ObjektProgression = {
+  collection: Collection;
   obtained: boolean;
   unobtainable: boolean;
-}
+};
 
 export interface SeasonProgress extends SeasonMatrix {
   total: number;

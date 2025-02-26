@@ -1,5 +1,5 @@
 import { indexer } from "@/lib/server/db/indexer";
-import { collections } from "@/lib/server/db/indexer/schema";
+import { Collection, collections } from "@/lib/server/db/indexer/schema";
 import { ValidOnlineType, ValidSeason } from "@/lib/universal/cosmo/common";
 import { and, eq, inArray, not } from "drizzle-orm";
 
@@ -16,19 +16,9 @@ export async function fetchTotal({
   member,
   onlineType = null,
   season = null,
-}: FetchTotal) {
+}: FetchTotal): Promise<Collection[]> {
   const result = await indexer
-    .select({
-      id: collections.id,
-      slug: collections.slug,
-      collectionNo: collections.collectionNo,
-      frontImage: collections.frontImage,
-      textColor: collections.textColor,
-      member: collections.member,
-      season: collections.season,
-      class: collections.class,
-      onOffline: collections.onOffline,
-    })
+    .select()
     .from(collections)
     .where(
       and(
@@ -41,5 +31,3 @@ export async function fetchTotal({
 
   return result;
 }
-
-export type PartialCollection = Awaited<ReturnType<typeof fetchTotal>>;

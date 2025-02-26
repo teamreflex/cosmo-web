@@ -1,5 +1,9 @@
 import { indexer } from "@/lib/server/db/indexer";
-import { collections, objekts } from "@/lib/server/db/indexer/schema";
+import {
+  Collection,
+  collections,
+  objekts,
+} from "@/lib/server/db/indexer/schema";
 import {
   validClasses,
   validOnlineTypes,
@@ -7,7 +11,7 @@ import {
 } from "@/lib/universal/cosmo/common";
 import { SeasonProgress, SeasonMatrix } from "@/lib/universal/progress";
 import { and, eq } from "drizzle-orm";
-import { PartialCollection, fetchTotal } from "../../../common";
+import { fetchTotal } from "../../../common";
 import { cacheHeaders } from "@/app/api/common";
 import { unobtainables } from "@/lib/universal/objekts";
 
@@ -92,7 +96,7 @@ type PartialObjekt = Awaited<ReturnType<typeof fetchProgress>>;
  */
 function zipResults(
   matrix: SeasonMatrix[],
-  total: PartialCollection,
+  total: Collection[],
   progress: PartialObjekt
 ): SeasonProgress[] {
   return matrix.map((m) => {
@@ -125,7 +129,7 @@ function zipResults(
       progress: progressTotal,
       unobtainable: unobtainableTotal,
       collections: collectionsInScope.map((c) => ({
-        ...c,
+        collection: c,
         obtained: ownedInScope.some((p) => p.collectionId === c.id),
         unobtainable: unobtainables.includes(c.slug),
       })),

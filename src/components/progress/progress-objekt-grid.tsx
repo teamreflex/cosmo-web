@@ -1,15 +1,18 @@
 import { ObjektProgression } from "@/lib/universal/progress";
 import ProgressObjekt from "./progress-objekt";
-import { memo } from "react";
 
 type Props = {
   title: string;
   collections: ObjektProgression[];
 };
 
-export default memo(function ProgressObjektGrid({ title, collections }: Props) {
+export default function ProgressObjektGrid({ title, collections }: Props) {
   const sorted = collections
-    .toSorted((a, b) => parseInt(a.collectionNo) - parseInt(b.collectionNo))
+    .toSorted(
+      (a, b) =>
+        parseInt(a.collection.collectionNo) -
+        parseInt(b.collection.collectionNo)
+    )
     .filter((c) => !(c.unobtainable && !c.obtained));
 
   return (
@@ -17,9 +20,12 @@ export default memo(function ProgressObjektGrid({ title, collections }: Props) {
       <h3 className="text-xl font-bold font-cosmo uppercase">{title} Class</h3>
       <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
         {sorted.map((collection) => (
-          <ProgressObjekt key={collection.collectionNo} objekt={collection} />
+          <ProgressObjekt
+            key={collection.collection.collectionNo}
+            objekt={collection}
+          />
         ))}
       </div>
     </div>
   );
-});
+}
