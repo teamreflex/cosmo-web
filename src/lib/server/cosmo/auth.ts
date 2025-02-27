@@ -5,7 +5,6 @@ import {
   CosmoUser,
   CosmoUserResult,
   LoginChannel,
-  LoginResult,
 } from "@/lib/universal/cosmo/auth";
 import { cosmo } from "../http";
 import { ValidArtist } from "@/lib/universal/cosmo/common";

@@ -170,7 +170,6 @@ const bffNewsSchema = z.object({
   artistName: z.enum(validArtists),
   page: z.coerce.number().optional().default(1),
 });
-type BFFNewsParams = z.infer<typeof bffNewsSchema>;
 
 /**
  * Parse BFF news params with default fallback.

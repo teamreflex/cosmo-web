@@ -66,6 +66,7 @@ export default function ProgressTable({ address, member }: Props) {
   );
 
   // calculate total progress
+  // eslint-disable-next-line prefer-const
   let { progress, total, unobtainable } = Object.values(items)
     .flat()
     .reduce(

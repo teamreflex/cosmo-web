@@ -1,7 +1,6 @@
 import {
   CosmoCombinationPollFinalized,
   CosmoPastGravity,
-  CosmoPollFinalized,
   CosmoSinglePollFinalized,
 } from "@/lib/universal/cosmo/gravity";
 import GravityRankingCarousel from "./gravity-ranking-carousel";

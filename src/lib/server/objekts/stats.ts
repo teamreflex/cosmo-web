@@ -30,7 +30,7 @@ function get24HourWindow() {
  * Generate an array of hour timestamps for the 24-hour window.
  */
 function timestamps(): string[] {
-  const { start, end } = get24HourWindow();
+  const { start } = get24HourWindow();
   return Array.from({ length: 24 }, (_, i) => {
     const d = new Date(start);
     d.setHours(d.getHours() + i);

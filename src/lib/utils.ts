@@ -65,7 +65,7 @@ export const NULL_ADDRESS = "0x0000000000000000000000000000000000000000";
  */
 export function track(event: string) {
   try {
-    umami.track(event);
+    window.umami.track(event);
   } catch (err) {
     // ignore
   }

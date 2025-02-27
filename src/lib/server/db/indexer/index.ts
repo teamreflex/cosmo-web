@@ -20,8 +20,8 @@ export const indexer = drizzle(
       });
 
       return { rows };
-    } catch (e: any) {
-      console.error("Error from Drizzle HTTP proxy: ", e);
+    } catch (err) {
+      console.error("Error from Drizzle HTTP proxy: ", err);
       return { rows: [] };
     }
   },

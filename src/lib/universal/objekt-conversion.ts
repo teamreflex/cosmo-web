@@ -191,7 +191,7 @@ export namespace Objekt {
 function slugify(
   params: Pick<Objekt.Collection, "season" | "member" | "collectionNo">
 ): string {
-  let { season, member, collectionNo } = params;
+  const { season, member, collectionNo } = params;
   return (
     `${season}-${member}-${collectionNo}`
       .toLowerCase()

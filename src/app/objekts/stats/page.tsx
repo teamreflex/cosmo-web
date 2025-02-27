@@ -1,7 +1,6 @@
 import { Metadata } from "next";
 import { getObjektStats } from "@/lib/server/objekts/stats";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import MemberChart from "@/components/objekt-stats/member-chart";
 import ArtistChart from "@/components/objekt-stats/artist-chart";
 import { getArtistsWithMembers, getSelectedArtist } from "@/app/data-fetching";
 import MemberBreakdown from "@/components/objekt-stats/member-breakdown";

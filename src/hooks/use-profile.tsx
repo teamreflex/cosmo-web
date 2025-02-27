@@ -2,7 +2,7 @@
 "use client";
 
 import { createStore, useStore } from "zustand";
-import { createContext, useContext, useRef } from "react";
+import { createContext, PropsWithChildren, useContext, useRef } from "react";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { ObjektList } from "@/lib/universal/objekts";
 import { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
@@ -16,7 +16,7 @@ interface ProfileProps {
   pins: CosmoObjekt[];
 }
 
-type ProfileProviderProps = React.PropsWithChildren<Partial<ProfileProps>>;
+type ProfileProviderProps = PropsWithChildren<Partial<ProfileProps>>;
 
 interface ProfileState extends ProfileProps {
   toggleLock: (tokenId: number) => void;

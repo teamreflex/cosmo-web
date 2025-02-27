@@ -32,7 +32,7 @@ export type ObjektMetadata = {
 /**
  * Parse a Cosmo-compatible objekts response.
  */
-export function parsePage<T>(data: any) {
+export function parsePage<T>(data: { nextStartAfter?: string }): T {
   return {
     ...data,
     nextStartAfter: data.nextStartAfter

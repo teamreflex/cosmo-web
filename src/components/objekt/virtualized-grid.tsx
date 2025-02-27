@@ -1,6 +1,6 @@
 /* eslint-disable react-compiler/react-compiler */
 import { useElementSize } from "@/hooks/use-element-size";
-import { cloneElement, ReactElement, useMemo } from "react";
+import { cloneElement, ReactElement } from "react";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { useRef } from "react";
 import { Objekt } from "@/lib/universal/objekt-conversion";

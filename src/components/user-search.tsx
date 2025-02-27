@@ -54,7 +54,7 @@ export function UserSearch({
   const queryIsAddress = isAddress(debouncedQuery);
   const enableQuery = debouncedQuery.length > 3 && queryIsAddress === false;
 
-  const { status, data, error } = useQuery({
+  const { status, data } = useQuery({
     queryKey: ["user-search", debouncedQuery],
     queryFn: async () => {
       return await ofetch<CosmoSearchResult>(`/api/user/v1/search`, {

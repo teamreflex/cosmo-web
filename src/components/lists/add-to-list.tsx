@@ -1,6 +1,6 @@
 "use client";
 
-import { IndexedObjekt, ObjektList } from "@/lib/universal/objekts";
+import { ObjektList } from "@/lib/universal/objekts";
 import { ListPlus, Loader2, Plus } from "lucide-react";
 import { memo, MouseEvent, useState, useTransition } from "react";
 import {
@@ -15,7 +15,6 @@ import {
 import { addObjektToList } from "./actions";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "../ui/use-toast";
-import { DropdownMenuContentProps } from "@radix-ui/react-dropdown-menu";
 import { ScrollArea } from "../ui/scroll-area";
 
 type AddToListProps = {

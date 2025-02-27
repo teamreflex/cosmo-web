@@ -380,7 +380,8 @@ function Sending({ selected, onBack, onClose }: SendingProps) {
           status: "success",
           hash: hash ?? "",
         } satisfies SelectionSuccess);
-        // track("send-objekt");
+
+        track("send-objekt");
       } catch (error) {
         // update the selection to error
         update({

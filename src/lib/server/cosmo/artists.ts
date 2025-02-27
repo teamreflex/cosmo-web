@@ -4,9 +4,8 @@ import {
   CosmoArtistWithMembersBFF,
   CosmoArtistWithMembers,
 } from "@/lib/universal/cosmo/artists";
-import { ValidArtist, validArtists } from "@/lib/universal/cosmo/common";
+import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { cosmo } from "../http";
-import { unstable_cache } from "next/cache";
 
 /**
  * Fetch a single artist with its members.

@@ -126,6 +126,7 @@ function ScanObjekt(props: ScanObjektProps) {
           />
         );
       }
+      break;
     case "success":
       return <ClaimSuccess reset={onReset} onClose={onClose} />;
   }
@@ -174,7 +175,7 @@ function QRScanner({ open, onResult, onClose }: QRScannerProps) {
       }
 
       mutate(matched.value);
-    } catch (error) {
+    } catch (err) {
       toast({
         description: "QR code not recognized",
         variant: "destructive",

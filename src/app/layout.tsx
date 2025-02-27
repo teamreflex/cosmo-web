@@ -10,6 +10,7 @@ import { Toaster } from "@/components/ui/toaster";
 import TailwindIndicator from "@/components/tailwind-indicator";
 import Script from "next/script";
 import Overlay from "@/components/overlay/overlay";
+import { ReactNode } from "react";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -50,7 +51,7 @@ export const metadata: Metadata = {
 export default async function RootLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
