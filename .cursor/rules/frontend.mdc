@@ -1,0 +1,102 @@
+---
+description: Rules for working with Nextjs, React and Tanstack Query
+globs: src/**/*.{ts,tsx}
+alwaysApply: false
+---
+**Project tooling:**
+- Next 15
+- React Server Components (App Router)
+- React 19
+- Tailwind v4
+- Tanstack Query
+
+**Project structure:**
+- `app/`: App Router pages
+  - `app/api/`: API route handlers
+- `components/`: Stores reusable UI components
+- `styles/`: Tailwind and general CSS styling
+- `public/`: Static assets like images, fonts, and favicons
+- `hooks/`: Custom React hooks
+- `types/`: TypeScript global types
+- `lib/`: Most logic related code resides here
+  - `lib/client/`: Functions and utilities that should only run on the client
+  - `lib/server/`: Data fetching, database interaction, API calls that only run on the server
+  - `lib/universal/`: Zod validators and shared TypeScript types
+  - `lib/utils.ts`: Generic utilities that can be used anywhere
+
+**Next.js:**
+- Implement proper error boundaries
+- Use Suspense for async operations
+- Implement URL state management with `nuqs`
+- Always use async versions of runtime APIs:
+```ts
+type Props = {
+  params: Promise<{ slug: string }>;
+}
+export default function Page(props: Props) {
+  const cookieStore = await cookies();
+  const headersList = await headers();
+  const { slug } = await props.params;
+}
+```
+
+**Icons:**
+- Use `lucide-react` or `@tabler/icons-react` for icons
+```tsx
+import { House } from "lucide-react";
+import { HouseIcon } from "@tabler/icons-react";
+```
+
+**Tanstack Query:**
+- Use Suspense enabled hooks like `useSuspenseQuery` and `useSuspenseInfiniteQuery`
+- Wrap any query-enabled components in `<QueryErrorResetBoundary>`, `<Suspense>` and `<ErrorBoundary>`
+- Prefetch and stream data where possible:
+```tsx
+// app/route/page.tsx
+import { getQueryClient } from "@/lib/query-client";
+import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
+export default function Page() {
+  const queryClient = getQueryClient();
+  queryClient.prefetchQuery({
+    queryKey: ["key"],
+    queryFn: async () => {
+      return await fetchData();
+    },
+  });
+
+  return (
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <ClientConsumer />
+    </HydrationBoundary>
+  );
+}
+
+// components/route/client-consumer.tsx
+'use client';
+import { QueryErrorResetBoundary } from "@tanstack/react-query";
+import { ErrorBoundary } from "react-error-boundary";
+import { Suspense } from "react";
+export default function ClientConsumer() {
+  return (
+    <QueryErrorResetBoundary>
+      {({ reset }) => (
+        <ErrorBoundary
+          onReset={reset}
+          fallbackRender={({ resetErrorBoundary }) => (
+            <div>
+              <p>Error loading data</p>
+              <button onClick={resetErrorBoundary}>
+                Retry
+              </button>
+            </div>
+          )}
+        >
+          <Suspense fallback={<div>Loading...</div>}>
+            <QueryHookConsumer />
+          </Suspense>
+        </ErrorBoundary>
+      )}
+    </QueryErrorResetBoundary>
+  );
+}
+```

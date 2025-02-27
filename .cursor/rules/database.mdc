@@ -1,0 +1,33 @@
+---
+description: Database rules for working with Drizzle ORM
+globs: src/**/*.ts
+alwaysApply: false
+---
+The project contains three Postgres database connections:
+- `import { db } from "@/lib/server/db"`
+  - general Neon Postgres HTTP connection for entities: profiles, lockedObjekts, lists, listEntries, objektMetadata, pins, cosmoTokens, gravities, gravityPolls, gravityPollCandidates
+- `import { dbi } from "@/lib/server/db/interactive"`
+  - same Neon Postgres connection but over websockets. only use this when needing to use transactions.
+- `import { indexer } from "@/lib/server/db/indexer"`
+  - Postgres connection for querying the blockchain indexer for objekt data.
+  - entities are: collections, objekts, transfers, comoBalances, votes
+
+When fetching from the database, if the query is simple, use the relational API:
+```ts
+const profile = await db.query.profiles.findFirst({
+  where: (profiles, { eq }) => eq(profiles.nickname, 'nickname'),
+  with: {
+    lists: true,
+  },
+});
+```
+
+Otherwise, use the query builder:
+```ts
+const profile = await db.select()
+                        .from(profiles)
+                        .leftJoin(lists, eq(profiles.userAddress, lists.userAddress))
+                        .where(eq(profiles.nickname, 'nickname'));
+```
+
+Always do your best to use the query builder utilities instead of writing raw SQL.
