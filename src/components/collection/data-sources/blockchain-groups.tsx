@@ -79,7 +79,6 @@ export default function BlockchainGroups(props: Props) {
       const searchParams = new URLSearchParams(props.searchParams);
 
       // add required params
-      searchParams.set("tid", crypto.randomUUID());
       searchParams.set("page", pageParam.toString());
       searchParams.set("size", PAGE_SIZE.toString());
       searchParams.set("artistName", artistName);

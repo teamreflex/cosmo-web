@@ -75,6 +75,15 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2025-03-02",
+    changes: [
+      "Objekts on progress pages now bring up information dialogs when clicked.",
+      "Added a 'Spin' filter to the transfer page to filter for transfers to COSMO spin.",
+      "Transfers sent to COSMO spin are now displayed as such, instead of showing the @cosmo-spin user.",
+      "Added a Polygon blockchain collection grouping option to profile pages.",
+    ],
+  },
+  {
     date: "2025-02-23",
     changes: [
       "Added an objekt stats page that displays various statistics from the last 24 hours, updating every hour.",
@@ -86,9 +95,5 @@ const updates = [
   {
     date: "2025-02-15",
     changes: ["Objekt selection when completing a grid is fixed."],
-  },
-  {
-    date: "2025-02-07",
-    changes: ["Objekt lists now display any duplicates that have been added."],
   },
 ];
