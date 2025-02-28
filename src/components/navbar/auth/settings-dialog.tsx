@@ -21,9 +21,6 @@ import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { toast } from "@/components/ui/use-toast";
 import { Loader2 } from "lucide-react";
-import Image from "next/image";
-import CosmoImage from "@/assets/cosmo.webp";
-import PolygonImage from "@/assets/polygon.svg";
 import { DataSourceSelector } from "@/components/collection/data-source-selector";
 
 type SettingsDialogProps = {

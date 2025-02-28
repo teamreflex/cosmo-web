@@ -141,7 +141,7 @@ export async function GET(request: NextRequest, props: Props) {
         });
 
         return {
-          // @ts-ignore - can't pull artistMember from the indexer
+          // @ts-expect-error - can't pull artistMember from the indexer
           collection: item.collection,
           count: objekts.length,
           objekts,
