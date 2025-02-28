@@ -31,7 +31,7 @@ export const profiles = pgTable(
     gridColumns: integer("grid_columns").notNull().default(5),
     objektEditor: boolean("objekt_editor").notNull().default(false),
     dataSource: varchar("data_source", {
-      length: 12,
+      length: 24,
     }).$type<CollectionDataSource>(),
   },
   (t) => [

@@ -1,6 +1,6 @@
 "use client";
 
-import { Dispatch, SetStateAction, useState } from "react";
+import { ReactNode, useState } from "react";
 import {
   Select,
   SelectContent,
@@ -22,7 +22,6 @@ import {
   AlertDialogTitle,
 } from "../ui/alert-dialog";
 import { env } from "@/env";
-import { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
 import {
   Accordion,
   AccordionContent,
@@ -34,100 +33,72 @@ import { Button } from "../ui/button";
 import { CollectionDataSource } from "@/lib/utils";
 
 type Props = {
-  filters: CosmoFilters;
-  setFilters: SetCosmoFilters;
-  dataSource: CollectionDataSource;
-  setDataSource: Dispatch<SetStateAction<CollectionDataSource>>;
-  allowCosmoGroups?: boolean;
+  name: string;
+  value?: CollectionDataSource;
+  defaultValue?: CollectionDataSource;
+  onValueChange?: (value: CollectionDataSource) => void;
+  allowCosmo: boolean;
 };
 
-export default function DataSourceSelector({
-  filters,
-  setFilters,
-  dataSource,
-  setDataSource,
-  allowCosmoGroups = false,
-}: Props) {
-  const [open, setOpen] = useState(false);
+export function DataSourceSelector(props: Props) {
+  const [helpOpen, setHelpOpen] = useState(false);
 
-  function onClose() {
-    setOpen(false);
-  }
-
-  function onChange(val: string) {
-    const source = val as CollectionDataSource;
-
-    // reset any source-specific filters
-    switch (source) {
-      case "cosmo":
-        break;
-      case "blockchain":
-        // reset gridable
-        if (filters.gridable) {
-          setFilters({
-            gridable: null,
-          });
-        }
-        break;
-    }
-
-    setDataSource(source);
+  function onHelpClose() {
+    setHelpOpen(false);
   }
 
   return (
-    <AlertDialog open={open} onOpenChange={setOpen}>
-      <Select value={dataSource} onValueChange={onChange}>
-        <SelectTrigger className="w-36">
+    <AlertDialog open={helpOpen} onOpenChange={setHelpOpen}>
+      <Select
+        name={props.name}
+        value={props.value}
+        defaultValue={props.defaultValue}
+        onValueChange={props.onValueChange}
+      >
+        <SelectTrigger className="w-36 **:data-desc:hidden **:data-label:hidden **:data-icon:size-5">
           <SelectValue placeholder="Data Source" />
         </SelectTrigger>
-        <SelectContent>
-          {allowCosmoGroups && (
-            <SelectItem value="cosmo">
-              <div className="flex flex-row items-center gap-2">
-                <Image
-                  src={CosmoImage.src}
-                  alt="COSMO"
-                  width={24}
-                  height={24}
-                  className="rounded-full"
-                  quality={100}
-                />
-                <span>Cosmo</span>
-              </div>
-            </SelectItem>
-          )}
-          <SelectItem value="blockchain">
-            <div className="flex flex-row items-center gap-2">
-              <div className="relative bg-polygon h-6 w-6 rounded-full">
-                <Image
-                  src={PolygonImage.src}
-                  alt="Polygon"
-                  fill={true}
-                  className="p-1"
-                  quality={100}
-                />
-              </div>
-              <span>Polygon</span>
-            </div>
-          </SelectItem>
+        <SelectContent
+          align="end"
+          className="[&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8 [&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2"
+        >
+          {sources
+            .filter((source) => !(source.requiresAuth && !props.allowCosmo))
+            .map((source) => (
+              <SelectItem
+                key={source.value}
+                value={source.value}
+                className="**:data-short-label:hidden **:data-icon:size-8"
+              >
+                <div className="flex flex-row items-center gap-2">
+                  {source.icon}
+                  <div className="flex flex-col">
+                    <span data-label>{source.label}</span>
+                    <span data-short-label>{source.shortLabel}</span>
+                    <span
+                      className="text-muted-foreground mt-1 block text-xs"
+                      data-desc
+                    >
+                      {source.subtitle}
+                    </span>
+                  </div>
+                </div>
+              </SelectItem>
+            ))}
 
           <SelectSeparator />
 
-          <Button
-            className="rounded"
-            variant="cosmo"
-            size="sm"
-            onClick={() => setOpen(true)}
-          >
-            <div className="flex flex-row items-center gap-2">
-              <CircleHelp className="size-6" />
-              <span>What is this?</span>
-            </div>
-          </Button>
+          <div className="flex w-full justify-center">
+            <Button variant="link" size="xs" onClick={() => setHelpOpen(true)}>
+              <div className="flex flex-row items-center gap-2 text-xs">
+                <CircleHelp className="size-4" />
+                <span>What is this?</span>
+              </div>
+            </Button>
+          </div>
         </SelectContent>
       </Select>
-
-      <Content onClose={onClose} />
+      <Content onClose={onHelpClose} />
     </AlertDialog>
   );
 }
@@ -138,8 +109,7 @@ function Content(props: { onClose: () => void }) {
       <AlertDialogHeader>
         <AlertDialogTitle>Objekt Data Source</AlertDialogTitle>
         <AlertDialogDescription>
-          {env.NEXT_PUBLIC_APP_NAME} can display collections in two different
-          ways.
+          {env.NEXT_PUBLIC_APP_NAME} can display collections in different ways.
         </AlertDialogDescription>
       </AlertDialogHeader>
 
@@ -166,10 +136,25 @@ function Content(props: { onClose: () => void }) {
   );
 }
 
-const sources = [
+type Source = {
+  title: string;
+  subtitle: string;
+  label: string;
+  shortLabel: string;
+  icon: ReactNode;
+  value: CollectionDataSource;
+  description: string;
+  notes: string[];
+  requiresAuth: boolean;
+};
+
+const sources: Source[] = [
   {
-    title: "COSMO",
-    label: "COSMO",
+    title: "COSMO - Collection Groups",
+    subtitle: "Collection groups from COSMO",
+    label: "COSMO - Collection Groups",
+    shortLabel: "COSMO",
+    icon: <CosmoIcon />,
     value: "cosmo",
     description: "Same as the collection tab in COSMO.",
     notes: [
@@ -177,19 +162,67 @@ const sources = [
       "Supports all the same filters and sorting methods as COSMO.",
       "Supports viewing different objekt statuses: event/welcome reward, gridded, mint pending, etc.",
     ],
+    requiresAuth: true,
   },
   {
-    title: "Polygon Blockchain",
-    label: "Polygon",
+    title: "Polygon Blockchain - Collection Groups",
+    subtitle: "Collection groups with extra filters",
+    label: "Polygon - Collection Groups",
+    shortLabel: "Groups",
+    icon: <PolygonIcon />,
+    value: "blockchain-groups",
+    description:
+      "Replicates COSMO collection groups but doesn't require signing in.",
+    notes: [
+      "Always available on any profile.",
+      "Supports sorting by serial number.",
+      "Does not support filtering by gridable.",
+      "Objekt statuses such as event/welcome reward, gridded, mint pending, etc. are not supported.",
+      "Transferable status may not be reliable.",
+    ],
+    requiresAuth: false,
+  },
+  {
+    title: "Polygon Blockchain - All Objekts",
+    subtitle: "View all individual objekts",
+    label: "Polygon - All Objekts",
+    shortLabel: "Polygon",
+    icon: <PolygonIcon />,
     value: "blockchain",
     description:
       "Displays all objekts, including duplicates, with filter limitations.",
     notes: [
-      "Always available on any profile and is the only option available when not signed in, or viewing other profiles.",
-      "Supports sorting by serial number.",
-      "Does not support filtering by gridable.",
-      "Objekt statuses such as event/welcome reward, gridded, mint pending, etc. are not supported.",
-      "Transferable status is not reliable, as this information has stopped being published to the blockchain.",
+      "The same viewing format as COSMO prior to its collection groups update.",
+      "Has the same filter features & limitations as the Polygon - All Objekts source.",
     ],
+    requiresAuth: false,
   },
 ];
+
+function CosmoIcon() {
+  return (
+    <Image
+      src={CosmoImage.src}
+      alt="COSMO"
+      width={32}
+      height={32}
+      className="rounded-full"
+      quality={100}
+      data-icon
+    />
+  );
+}
+
+function PolygonIcon() {
+  return (
+    <div className="relative bg-polygon size-6 rounded-full" data-icon>
+      <Image
+        src={PolygonImage.src}
+        alt="Polygon"
+        fill={true}
+        className="p-1"
+        quality={100}
+      />
+    </div>
+  );
+}

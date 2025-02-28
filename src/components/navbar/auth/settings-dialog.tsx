@@ -24,6 +24,7 @@ import { Loader2 } from "lucide-react";
 import Image from "next/image";
 import CosmoImage from "@/assets/cosmo.webp";
 import PolygonImage from "@/assets/polygon.svg";
+import { DataSourceSelector } from "@/components/collection/data-source-selector";
 
 type SettingsDialogProps = {
   open: boolean;
@@ -49,6 +50,11 @@ export default function SettingsDialog({
         });
         router.refresh();
         onOpenChange(false);
+      } else {
+        toast({
+          description: "Error updating settings.",
+          variant: "destructive",
+        });
       }
     });
   }
@@ -123,38 +129,11 @@ export default function SettingsDialog({
               </p>
             </div>
 
-            <Select name="dataSource" defaultValue={profile.dataSource}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Data Source" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="cosmo">
-                  <div className="flex flex-row items-center gap-2">
-                    <Image
-                      src={CosmoImage.src}
-                      alt="COSMO"
-                      width={24}
-                      height={24}
-                      className="rounded-full"
-                    />
-                    <span>Cosmo</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="blockchain">
-                  <div className="flex flex-row items-center gap-2">
-                    <div className="relative bg-polygon h-6 w-6 rounded-full">
-                      <Image
-                        src={PolygonImage.src}
-                        alt="Polygon"
-                        fill={true}
-                        className="p-1"
-                      />
-                    </div>
-                    <span>Polygon</span>
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
+            <DataSourceSelector
+              name="dataSource"
+              defaultValue={profile.dataSource}
+              allowCosmo={true}
+            />
           </div>
         </form>
 

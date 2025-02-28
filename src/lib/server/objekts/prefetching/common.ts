@@ -25,7 +25,10 @@ export function mapLegacyObjekt(
     status: "minted",
     transferable: objekt.transferable,
     usedForGrid: false,
-    nonTransferableReason: nonTransferableReason(objekt, collection),
+    nonTransferableReason: nonTransferableReason(
+      collection.class,
+      objekt.transferable
+    ),
     // cannot currently be determined
     lenticularPairTokenId: null,
     // seemingly unused
@@ -37,12 +40,12 @@ export function mapLegacyObjekt(
  * Derive the non transferable reason from the objekt/collection.
  */
 export function nonTransferableReason(
-  objekt: Objekt,
-  collection: Collection
+  className: string,
+  transferable: boolean
 ): NonTransferableReason | undefined {
-  if (collection.class === "Welcome") {
+  if (className === "Welcome") {
     return "welcome-objekt";
   }
 
-  return objekt.transferable === false ? "not-transferable" : undefined;
+  return transferable === false ? "not-transferable" : undefined;
 }

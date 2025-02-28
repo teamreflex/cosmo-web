@@ -13,6 +13,7 @@ import SendObjekts from "../overlay/send-objekts";
 import { match } from "ts-pattern";
 import Blockchain from "../collection/data-sources/blockchain";
 import CosmoCollectionGroups from "../collection/data-sources/cosmo-groups";
+import BlockchainGroups from "../collection/data-sources/blockchain-groups";
 
 type Props = {
   artists: CosmoArtistWithMembersBFF[];
@@ -41,12 +42,12 @@ export default function ProfileRenderer({
 
       <FiltersContainer isPortaled>
         <CollectionFilters
-          allowCosmoGroups={authenticated}
-          showLocked={showLocked}
-          setShowLocked={setShowLocked}
-          allowSerials={dataSource === "blockchain"}
           dataSource={dataSource}
           setDataSource={setDataSource}
+          showLocked={showLocked}
+          setShowLocked={setShowLocked}
+          allowCosmo={authenticated}
+          allowSerials={dataSource !== "cosmo"}
         />
       </FiltersContainer>
 
@@ -65,6 +66,17 @@ export default function ProfileRenderer({
         ))
         .with("blockchain", () => (
           <Blockchain
+            artists={artists}
+            authenticated={authenticated}
+            gridColumns={gridColumns}
+            targetUser={targetUser}
+            currentUser={currentUser}
+            searchParams={searchParams}
+            showLocked={showLocked}
+          />
+        ))
+        .with("blockchain-groups", () => (
+          <BlockchainGroups
             artists={artists}
             authenticated={authenticated}
             gridColumns={gridColumns}

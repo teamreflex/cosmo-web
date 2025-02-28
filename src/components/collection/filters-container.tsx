@@ -9,12 +9,12 @@ import SortFilter from "./filter-sort";
 import CollectionFilter from "../objekt-index/collection-filter";
 import { SlidersHorizontal } from "lucide-react";
 import Portal from "../portal";
-import DataSourceSelector from "./data-source-selector";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { Button } from "../ui/button";
 import { CollectionDataSource } from "@/lib/utils";
 import { TransferParams } from "@/lib/universal/transfers";
 import TransferTypeFilter from "./filter-transfer-type";
+import FilterDataSource from "./filter-data-source";
 
 type FiltersContainerProps = PropsWithChildren<{
   isPortaled?: boolean;
@@ -57,7 +57,7 @@ export function FiltersContainer({
  * - /collection
  */
 type CollectionFiltersProps = {
-  allowCosmoGroups?: boolean;
+  allowCosmo?: boolean;
   showLocked: boolean;
   setShowLocked: (showLocked: boolean | null) => void;
   allowSerials?: boolean;
@@ -65,7 +65,7 @@ type CollectionFiltersProps = {
   setDataSource: Dispatch<SetStateAction<CollectionDataSource>>;
 };
 export function CollectionFilters({
-  allowCosmoGroups = false,
+  allowCosmo = false,
   showLocked,
   setShowLocked,
   allowSerials = false,
@@ -77,7 +77,7 @@ export function CollectionFilters({
   return (
     <div className="flex gap-2 items-center flex-wrap justify-center lg:group-data-[show=false]:flex group-data-[show=false]:hidden group-data-[show=true]:pb-2">
       <LockedFilter showLocked={showLocked} setShowLocked={setShowLocked} />
-      {dataSource !== "blockchain" && (
+      {dataSource === "cosmo" && (
         <GridableFilter filters={filters.gridable} setFilters={setFilters} />
       )}
       <TransferableFilter
@@ -92,12 +92,12 @@ export function CollectionFilters({
         setFilters={setFilters}
         serials={allowSerials}
       />
-      <DataSourceSelector
+      <FilterDataSource
         filters={filters}
         setFilters={setFilters}
         dataSource={dataSource}
         setDataSource={setDataSource}
-        allowCosmoGroups={allowCosmoGroups}
+        allowCosmo={allowCosmo}
       />
     </div>
   );
