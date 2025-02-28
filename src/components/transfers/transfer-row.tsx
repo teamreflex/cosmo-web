@@ -3,8 +3,8 @@ import Image from "next/image";
 import CosmoImage from "@/assets/cosmo.webp";
 import ProfileImage from "@/assets/profile.webp";
 import Link from "next/link";
-
-const nullAddress = "0x0000000000000000000000000000000000000000";
+import { IconRotate360 } from "@tabler/icons-react";
+import { Addresses } from "@/lib/utils";
 
 type Props = {
   row: AggregatedTransfer;
@@ -42,8 +42,21 @@ type UserProps = {
 };
 
 function User({ row, isReceiver }: UserProps) {
+  // sent to cosmo spin
+  if (row.transfer.to === Addresses.SPIN) {
+    return (
+      <div className="flex gap-2 items-center">
+        <IconRotate360 className="size-8" />
+        <div className="flex flex-col">
+          <TransferAction isReceiver={false} />
+          <span>COSMO Spin</span>
+        </div>
+      </div>
+    );
+  }
+
   // received from cosmo
-  if (isReceiver && row.transfer.from === nullAddress) {
+  if (isReceiver && row.transfer.from === Addresses.NULL) {
     return (
       <div className="flex gap-2 items-center">
         <Image

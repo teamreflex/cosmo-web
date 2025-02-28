@@ -23,6 +23,7 @@ export default function TransferTypeFilter({ type, setType }: Props) {
         <SelectItem value="mint">Mints</SelectItem>
         <SelectItem value="received">Received</SelectItem>
         <SelectItem value="sent">Sent</SelectItem>
+        <SelectItem value="spin">Spin</SelectItem>
       </SelectContent>
     </Select>
   );

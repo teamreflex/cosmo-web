@@ -4,7 +4,6 @@ import { indexer } from "./db/indexer";
 import { collections, objekts, transfers } from "./db/indexer/schema";
 import { fetchKnownAddresses } from "./profiles";
 import { profiles } from "./db/schema";
-import { NULL_ADDRESS } from "../utils";
 import {
   withArtist,
   withClass,
@@ -12,6 +11,7 @@ import {
   withOnlineType,
   withSeason,
 } from "./objekts/filters";
+import { Addresses } from "../utils";
 
 const PER_PAGE = 30;
 
@@ -23,7 +23,7 @@ export async function fetchTransfers(
   params: TransferParams
 ): Promise<TransferResult> {
   // too much data, bail
-  if (address.toLowerCase() === NULL_ADDRESS) {
+  if (address.toLowerCase() === Addresses.NULL) {
     return {
       results: [],
       count: 0,
@@ -113,18 +113,21 @@ function withType(address: string, type: TransferParams["type"]) {
       return or(eq(transfers.from, address), eq(transfers.to, address));
     // address must be a receiver while the sender is the burn address/cosmo
     case "mint":
-      return and(eq(transfers.from, NULL_ADDRESS), eq(transfers.to, address));
+      return and(eq(transfers.from, Addresses.NULL), eq(transfers.to, address));
     // address must be a receiver from non-burn address
     case "received":
       return and(
-        not(eq(transfers.from, NULL_ADDRESS)),
+        not(eq(transfers.from, Addresses.NULL)),
         eq(transfers.to, address)
       );
     // address must be a sender to non-burn address
     case "sent":
       return and(
-        not(eq(transfers.to, NULL_ADDRESS)),
+        not(eq(transfers.to, Addresses.NULL)),
         eq(transfers.from, address)
       );
+    // address must be a sender to the spin address
+    case "spin":
+      return and(eq(transfers.to, Addresses.SPIN), eq(transfers.from, address));
   }
 }

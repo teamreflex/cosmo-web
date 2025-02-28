@@ -24,7 +24,7 @@ export type TransferResult = {
 
 export const transfersSchema = z.object({
   page: z.coerce.number().default(0),
-  type: z.enum(["all", "mint", "received", "sent"]).default("all"),
+  type: z.enum(["all", "mint", "received", "sent", "spin"]).default("all"),
   member: z.string().optional().nullable(),
   artist: z.enum(validArtists).optional().nullable(),
   season: castToArray(z.enum(validSeasons)),

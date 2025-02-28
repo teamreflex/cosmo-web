@@ -61,7 +61,10 @@ export const defaultProfile: PublicProfile = {
   dataSource: "cosmo",
 };
 
-export const NULL_ADDRESS = "0x0000000000000000000000000000000000000000";
+export const Addresses = {
+  NULL: "0x0000000000000000000000000000000000000000",
+  SPIN: "0xd3d5f29881ad87bb10c1100e2c709c9596de345f",
+};
 
 /**
  * Track an event with Umami.
