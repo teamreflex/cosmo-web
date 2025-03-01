@@ -4,7 +4,7 @@ import { and, count, eq, inArray, not, sql } from "drizzle-orm";
 import { NextRequest } from "next/server";
 import { fetchTotal } from "../../common";
 import { fetchKnownAddresses } from "@/lib/server/profiles";
-import { isAddressEqual } from "@/lib/utils";
+import { Addresses, isAddressEqual } from "@/lib/utils";
 import { LeaderboardItem } from "@/lib/universal/progress";
 import { profiles } from "@/lib/server/db/schema";
 import {
@@ -145,6 +145,8 @@ async function fetchLeaderboard({
         filteredCollections,
         eq(objekts.collectionId, filteredCollections.id)
       )
+      // exclude @cosmo-spin
+      .where(not(eq(objekts.owner, Addresses.SPIN)))
   );
 
   // final query: count distinct owners
