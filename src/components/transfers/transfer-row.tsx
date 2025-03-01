@@ -42,19 +42,6 @@ type UserProps = {
 };
 
 function User({ row, isReceiver }: UserProps) {
-  // sent to cosmo spin
-  if (row.transfer.to === Addresses.SPIN) {
-    return (
-      <div className="flex gap-2 items-center">
-        <IconRotate360 className="size-8" />
-        <div className="flex flex-col">
-          <TransferAction isReceiver={false} />
-          <span>COSMO Spin</span>
-        </div>
-      </div>
-    );
-  }
-
   // received from cosmo
   if (isReceiver && row.transfer.from === Addresses.NULL) {
     return (
@@ -69,6 +56,19 @@ function User({ row, isReceiver }: UserProps) {
         <div className="flex flex-col">
           <TransferAction isReceiver={true} />
           <span>COSMO</span>
+        </div>
+      </div>
+    );
+  }
+
+  // sent to cosmo spin
+  if (row.transfer.to === Addresses.SPIN && !isReceiver) {
+    return (
+      <div className="flex gap-2 items-center">
+        <IconRotate360 className="size-8" />
+        <div className="flex flex-col">
+          <TransferAction isReceiver={false} />
+          <span>COSMO Spin</span>
         </div>
       </div>
     );
