@@ -59,8 +59,12 @@ export const defaultProfile: PublicProfile = {
   gridColumns: GRID_COLUMNS,
   isObjektEditor: false,
   dataSource: "cosmo",
+  isModhaus: false,
 };
 
+/**
+ * Addresses that may need special handling.
+ */
 export const Addresses = {
   NULL: "0x0000000000000000000000000000000000000000",
   SPIN: "0xd3d5f29881ad87bb10c1100e2c709c9596de345f",

@@ -29,6 +29,7 @@ export type PublicProfile = {
   gridColumns: number;
   isObjektEditor: boolean;
   dataSource: CollectionDataSource;
+  isModhaus: boolean;
 };
 
 export type IdentifiedUser = {

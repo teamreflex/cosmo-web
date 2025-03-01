@@ -17,6 +17,14 @@ import { ObjektList } from "@/lib/universal/objekts";
 import RefreshButton from "@/components/profile/refresh-button";
 import VotesButton from "@/components/profile/votes-button";
 import Link from "next/link";
+import ModhausLogo from "@/assets/modhaus.png";
+import Image from "next/image";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 type Props = PropsWithChildren<{
   params: Promise<{
@@ -56,13 +64,32 @@ export default async function ProfileLayout(props: Props) {
           </Suspense>
 
           <div className="flex flex-col justify-between w-full">
-            <div className="flex gap-2 items-center justify-between">
+            <div className="flex gap-2 items-center">
               <Link
                 href={href}
                 className="w-fit text-2xl lg:text-3xl font-cosmo font-bold uppercase underline underline-offset-4 decoration-transparent hover:decoration-cosmo transition-colors"
               >
                 {profile.nickname}
               </Link>
+
+              {profile.isModhaus && (
+                <TooltipProvider delayDuration={0}>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <Image
+                        className="invert dark:invert-0"
+                        src={ModhausLogo.src}
+                        alt="Modhaus"
+                        width={28}
+                        height={27}
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <span>Official Modhaus account</span>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
             </div>
 
             <div className="flex items-center justify-between gap-2">

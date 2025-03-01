@@ -81,6 +81,7 @@ const updates = [
       "Added a 'Spin' filter to the transfer page to filter for transfers to COSMO spin.",
       "Transfers sent to COSMO spin are now displayed as such, instead of showing the @cosmo-spin user.",
       "Added a Polygon blockchain collection grouping option to profile pages.",
+      "Added an icon to the profiles of official Modhaus accounts.",
     ],
   },
   {
