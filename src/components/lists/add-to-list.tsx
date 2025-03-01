@@ -2,7 +2,7 @@
 
 import { ObjektList } from "@/lib/universal/objekts";
 import { ListPlus, Loader2, Plus } from "lucide-react";
-import { memo, MouseEvent, useState, useTransition } from "react";
+import { MouseEvent, useState, useTransition } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,7 +23,7 @@ type AddToListProps = {
   lists: ObjektList[];
 };
 
-export default memo(function AddToList({
+export default function AddToList({
   collectionId,
   collectionSlug,
   lists,
@@ -66,7 +66,7 @@ export default memo(function AddToList({
       </DropdownMenuContent>
     </DropdownMenu>
   );
-});
+}
 
 type ListItemProps = {
   collectionId: string;

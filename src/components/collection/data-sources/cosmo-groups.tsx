@@ -11,7 +11,7 @@ import {
   BFFCollectionGroupResponse,
 } from "@/lib/universal/cosmo/objekts";
 import { ofetch } from "ofetch";
-import { useCallback, useMemo } from "react";
+import { useCallback } from "react";
 import GroupedObjekt from "@/components/objekt/objekt-collection-group";
 import { useProfileContext } from "@/hooks/use-profile";
 import { useCosmoArtists } from "@/hooks/use-cosmo-artist";
@@ -34,12 +34,12 @@ type Props = {
 
 export default function CosmoCollectionGroups(props: Props) {
   const [filters] = useCosmoFilters();
-  const usingFilters = useMemo(() => filtersAreDirty(filters), [filters]);
   const lockedObjekts = useProfileContext((ctx) => ctx.lockedObjekts);
   const { artist, token } = useUserState();
   const { getMember } = useCosmoArtists();
   const isDesktop = useMediaQuery();
 
+  const usingFilters = filtersAreDirty(filters);
   const gridColumns = isDesktop ? props.gridColumns : 3;
 
   /**

@@ -10,7 +10,7 @@ import {
   BFFCollectionGroupResponse,
 } from "@/lib/universal/cosmo/objekts";
 import { ofetch } from "ofetch";
-import { useCallback, useMemo } from "react";
+import { useCallback } from "react";
 import GroupedObjekt from "@/components/objekt/objekt-collection-group";
 import { useProfileContext } from "@/hooks/use-profile";
 import VirtualizedGrid from "@/components/objekt/virtualized-grid";
@@ -33,11 +33,11 @@ type Props = {
 
 export default function BlockchainGroups(props: Props) {
   const [filters] = useCosmoFilters();
-  const usingFilters = useMemo(() => filtersAreDirty(filters), [filters]);
   const lockedObjekts = useProfileContext((ctx) => ctx.lockedObjekts);
   const { artist } = useUserState();
   const isDesktop = useMediaQuery();
 
+  const usingFilters = filtersAreDirty(filters);
   const gridColumns = isDesktop ? props.gridColumns : 3;
 
   /**

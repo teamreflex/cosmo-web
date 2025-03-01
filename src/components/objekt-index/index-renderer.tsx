@@ -11,7 +11,6 @@ import {
 import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
 import { TopOverlay } from "./index-overlay";
 import { useFilters } from "@/hooks/use-filters";
-import { memo } from "react";
 import {
   FiltersContainer,
   IndexFilters,
@@ -135,7 +134,7 @@ export default function IndexRenderer(props: Props) {
   );
 }
 
-const Title = memo(function Title({
+function Title({
   nickname,
   objektLists,
 }: {
@@ -162,9 +161,9 @@ const Title = memo(function Title({
       </div>
     </div>
   );
-});
+}
 
-const Options = memo(function Options({
+function Options({
   nickname,
   objektLists,
 }: {
@@ -180,7 +179,7 @@ const Options = memo(function Options({
       />
     </div>
   );
-});
+}
 
 type OverlayProps = {
   objekt: IndexedObjekt;

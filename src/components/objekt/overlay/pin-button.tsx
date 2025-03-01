@@ -2,7 +2,7 @@
 
 import { pinObjekt, unpinObjekt } from "@/components/collection/actions";
 import { Loader2, Pin, PinOff } from "lucide-react";
-import { memo, useTransition } from "react";
+import { useTransition } from "react";
 import { track } from "@/lib/utils";
 import { useProfileContext } from "@/hooks/use-profile";
 import { toast } from "@/components/ui/use-toast";
@@ -13,11 +13,7 @@ type Props = {
   isPinned: boolean;
 };
 
-export default memo(function PinObjekt({
-  collectionId,
-  tokenId,
-  isPinned,
-}: Props) {
+export default function PinObjekt({ collectionId, tokenId, isPinned }: Props) {
   const addPin = useProfileContext((ctx) => ctx.addPin);
   const removePin = useProfileContext((ctx) => ctx.removePin);
   const [isPending, startTransition] = useTransition();
@@ -64,4 +60,4 @@ export default memo(function PinObjekt({
       )}
     </button>
   );
-});
+}

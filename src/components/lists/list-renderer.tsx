@@ -13,7 +13,6 @@ import UpdateList from "./update-list";
 import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { useFilters } from "@/hooks/use-filters";
-import { memo } from "react";
 import {
   FiltersContainer,
   IndexFilters,
@@ -117,7 +116,7 @@ export default function ListRenderer(props: Props) {
   );
 }
 
-const Title = memo(function Title({
+function Title({
   authenticated,
   objektList,
 }: {
@@ -136,7 +135,7 @@ const Title = memo(function Title({
       )}
     </div>
   );
-});
+}
 
 type OverlayProps = {
   id: string;

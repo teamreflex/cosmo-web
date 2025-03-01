@@ -6,7 +6,7 @@ import { useProfileContext } from "@/hooks/use-profile";
 import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import { objektOptions } from "@/hooks/use-objekt-response";
 import FilteredObjektDisplay from "@/components/objekt/filtered-objekt-display";
-import { useCallback, useMemo } from "react";
+import { useCallback } from "react";
 import { filtersAreDirty } from "@/hooks/use-filters";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { ValidSort } from "@/lib/universal/cosmo/common";
@@ -33,11 +33,11 @@ type Props = {
  */
 export default function CosmoLegacy(props: Props) {
   const [filters] = useCosmoFilters();
-  const usingFilters = useMemo(() => filtersAreDirty(filters), [filters]);
   const pins = useProfileContext((ctx) => ctx.pins);
   const lockedObjekts = useProfileContext((ctx) => ctx.lockedObjekts);
   const isDesktop = useMediaQuery();
 
+  const usingFilters = filtersAreDirty(filters);
   const gridColumns = isDesktop ? props.gridColumns : 3;
 
   /**
