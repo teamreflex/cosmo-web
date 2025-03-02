@@ -46,7 +46,7 @@ type SelectionProps = {
   selected: boolean;
 };
 
-function MissedObjekt({ selected }: SelectionProps) {
+export function MissedObjekt({ selected }: SelectionProps) {
   return (
     <div
       className={cn(
@@ -71,7 +71,7 @@ type OptionProps = SelectionProps & {
   objekt: NonNullable<CosmoSpinOption>;
 };
 
-function OptionObjekt({ selected, objekt }: OptionProps) {
+export function OptionObjekt({ selected, objekt }: OptionProps) {
   return (
     <div
       style={{

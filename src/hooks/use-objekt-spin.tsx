@@ -12,13 +12,13 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ofetch } from "ofetch";
 import { useState } from "react";
 import { useSendObjekt } from "./use-wallet-transaction";
-import { Addresses, track } from "@/lib/utils";
+import { Addresses } from "@/lib/utils";
 import { getErrorMessage } from "@/lib/error";
 import { useCosmoArtists } from "./use-cosmo-artist";
 import { match } from "ts-pattern";
 import { Hex } from "viem";
 
-const SIMULATE: boolean = false;
+export const SIMULATE: boolean = false;
 
 type SelectedObjekt = {
   collection: Objekt.Collection;
@@ -480,7 +480,6 @@ export function useSpinSubmit() {
  */
 export function useSpinComplete() {
   const { token } = useUserState();
-  const completeSpin = useObjektSpin((state) => state.completeSpin);
   return useMutation({
     mutationFn: async (
       params: CosmoSpinCompleteRequest
@@ -498,10 +497,6 @@ export function useSpinComplete() {
         },
         body: params,
       });
-    },
-    onSuccess: (options, { index }) => {
-      completeSpin(index, options);
-      track("spin-objekt");
     },
   });
 }

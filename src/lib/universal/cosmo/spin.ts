@@ -1,5 +1,6 @@
 export type CosmoSpinGetTickets = {
   availableTicketsCount: number;
+  inProgressSpinId?: number;
   nextReceiveAt: string | null;
 };
 

@@ -1,13 +1,14 @@
 import { Button } from "@/components/ui/button";
 import {
   SpinStateConfirmReceipt,
+  useObjektSpin,
   useSpinComplete,
 } from "@/hooks/use-objekt-spin";
 import { Check, Dices } from "lucide-react";
 import { useState } from "react";
 import SpinCard from "@/assets/spin-card.png";
 import Image from "next/image";
-import { cn } from "@/lib/utils";
+import { cn, track } from "@/lib/utils";
 
 type Props = {
   state: SpinStateConfirmReceipt;
@@ -18,6 +19,7 @@ type Props = {
  */
 export default function StateConfirmed({ state }: Props) {
   const { mutate, status } = useSpinComplete();
+  const completeSpin = useObjektSpin((state) => state.completeSpin);
   const [index, setIndex] = useState<number>();
 
   function handleSelection(selection?: number) {
@@ -26,10 +28,18 @@ export default function StateConfirmed({ state }: Props) {
 
   function handleConfirm() {
     if (!index) return;
-    mutate({
-      spinId: state.spinId,
-      index,
-    });
+    mutate(
+      {
+        spinId: state.spinId,
+        index,
+      },
+      {
+        onSuccess: (options, { index }) => {
+          completeSpin(index, options);
+          track("spin-objekt");
+        },
+      }
+    );
   }
 
   return (

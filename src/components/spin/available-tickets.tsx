@@ -14,6 +14,7 @@ import Portal from "../portal";
 import { cn } from "@/lib/utils";
 import Skeleton from "../skeleton/skeleton";
 import { ticketsQuery } from "./queries";
+import SpinInProgress from "./spin-in-progress";
 
 export default function AvailableTickets() {
   return (
@@ -45,6 +46,10 @@ function Tickets() {
           <TicketIcon key={i} isActive={i + 1 <= data.availableTicketsCount} />
         ))}
       </div>
+
+      {data.inProgressSpinId && (
+        <SpinInProgress inProgressSpinId={data.inProgressSpinId} />
+      )}
 
       <Portal to="#spin-countdown">
         {data.nextReceiveAt !== null ? (
