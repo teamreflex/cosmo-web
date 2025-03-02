@@ -13,7 +13,7 @@ import {
  * steps:
  * 1. pre-sign with tokenId, save spinId
  * 2. send objekt to spin address
- * 3. submit spin with spinId
+ * 3. submit spin with spinId upon transaction receipt
  * 4. complete spin with spinId and index of selection, response contains all options
  */
 

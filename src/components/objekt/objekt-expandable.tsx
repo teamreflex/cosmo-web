@@ -2,7 +2,7 @@ import { useShallow } from "zustand/react/shallow";
 import { PropsWithChildren, useState } from "react";
 import { getObjektImageUrls } from "./common";
 import { useQueryClient } from "@tanstack/react-query";
-import { useObjektSelection } from "@/hooks/use-objekt-selection";
+import { useObjektTransfer } from "@/hooks/use-objekt-transfer";
 import { fetchObjektQuery } from "./metadata-dialog";
 import MetadataDialog from "./metadata-dialog";
 import { cn } from "@/lib/utils";
@@ -30,7 +30,7 @@ export default function ExpandableObjekt({
 }: Props) {
   const [isLoaded, setIsLoaded] = useState(false);
   const queryClient = useQueryClient();
-  const isSelected = useObjektSelection(
+  const isSelected = useObjektTransfer(
     useShallow((state) => state.isSelected(Number(tokenId)))
   );
 

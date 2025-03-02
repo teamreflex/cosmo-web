@@ -6,7 +6,7 @@ export type CosmoSpinGetTickets = {
 };
 
 export type CosmoSpinStatistic = {
-  type: string;
+  type: string; // class name
   count: number;
 };
 

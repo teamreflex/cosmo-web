@@ -13,10 +13,7 @@ import UpdateList from "./update-list";
 import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { useFilters } from "@/hooks/use-filters";
-import {
-  FiltersContainer,
-  IndexFilters,
-} from "../collection/filters-container";
+import FiltersContainer from "../collection/filters-container";
 import { ofetch } from "ofetch";
 import { baseUrl } from "@/lib/utils";
 import { ObjektResponseOptions } from "@/hooks/use-objekt-response";
@@ -26,6 +23,7 @@ import { Objekt } from "../../lib/universal/objekt-conversion";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import VirtualizedGrid from "../objekt/virtualized-grid";
 import LoaderRemote from "../objekt/loader-remote";
+import ObjektIndexFilters from "../collection/filter-contexts/objekt-index-filters";
 
 type Props = {
   list: ObjektList;
@@ -78,7 +76,7 @@ export default function ListRenderer(props: Props) {
       <Title authenticated={props.authenticated} objektList={props.list} />
 
       <FiltersContainer isPortaled>
-        <IndexFilters collections={[]} />
+        <ObjektIndexFilters collections={[]} />
       </FiltersContainer>
 
       <FilteredObjektDisplay artists={props.artists} gridColumns={gridColumns}>

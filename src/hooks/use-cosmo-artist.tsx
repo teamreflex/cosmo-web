@@ -7,8 +7,9 @@ import {
 import { ReactNode, createContext, useCallback, useContext } from "react";
 
 type ContextProps = {
-  artists: Map<string, CosmoArtistWithMembersBFF>;
-  members: Map<string, CosmoMemberBFF>;
+  artists: CosmoArtistWithMembersBFF[];
+  artistMap: Map<string, CosmoArtistWithMembersBFF>;
+  memberMap: Map<string, CosmoMemberBFF>;
 };
 
 const CosmoArtistContext = createContext<ContextProps | null>(null);
@@ -30,9 +31,7 @@ export function CosmoArtistProvider({ children, artists }: ProviderProps) {
   );
 
   return (
-    <CosmoArtistContext.Provider
-      value={{ artists: artistMap, members: memberMap }}
-    >
+    <CosmoArtistContext.Provider value={{ artists, artistMap, memberMap }}>
       {children}
     </CosmoArtistContext.Provider>
   );
@@ -54,17 +53,17 @@ export function useCosmoArtists() {
    * Get an artist by name
    */
   const getArtist = useCallback(
-    (artistName: string) => ctx.artists.get(artistName.toLowerCase()),
-    [ctx.artists]
+    (artistName: string) => ctx.artistMap.get(artistName.toLowerCase()),
+    [ctx.artistMap]
   );
 
   /**
    * Get a member by name
    */
   const getMember = useCallback(
-    (memberName: string) => ctx.members.get(memberName.toLowerCase()),
-    [ctx.members]
+    (memberName: string) => ctx.memberMap.get(memberName.toLowerCase()),
+    [ctx.memberMap]
   );
 
-  return { getArtist, getMember };
+  return { artists: ctx.artists, getArtist, getMember };
 }

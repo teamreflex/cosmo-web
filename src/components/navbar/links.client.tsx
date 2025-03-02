@@ -22,7 +22,7 @@ import {
   Disc3,
   CircleUserRound,
 } from "lucide-react";
-import { IconCards } from "@tabler/icons-react";
+import { IconCards, IconRotate360 } from "@tabler/icons-react";
 
 type LinksProps = {
   user?: TokenPayload;
@@ -173,6 +173,13 @@ const links: NavbarLink[] = [
     name: "Grid",
     icon: LayoutGrid,
     href: () => "/grid",
+    requireAuth: true,
+    prefetch: null,
+  },
+  {
+    name: "Spin",
+    icon: IconRotate360,
+    href: () => "/spin",
     requireAuth: true,
     prefetch: null,
   },

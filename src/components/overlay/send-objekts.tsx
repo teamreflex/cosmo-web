@@ -5,8 +5,8 @@ import {
   SelectionIdle,
   SelectionPending,
   SelectionSuccess,
-  useObjektSelection,
-} from "@/hooks/use-objekt-selection";
+  useObjektTransfer,
+} from "@/hooks/use-objekt-transfer";
 import {
   Ban,
   CheckCircle,
@@ -58,10 +58,10 @@ import { IconZoomExclamation } from "@tabler/icons-react";
 type SendState = "select" | "send";
 
 export default function SendObjekts() {
-  const open = useObjektSelection((ctx) => ctx.open);
-  const setOpen = useObjektSelection((ctx) => ctx.setOpen);
-  const selected = useObjektSelection((ctx) => ctx.selected);
-  const reset = useObjektSelection((ctx) => ctx.reset);
+  const open = useObjektTransfer((ctx) => ctx.open);
+  const setOpen = useObjektTransfer((ctx) => ctx.setOpen);
+  const selected = useObjektTransfer((ctx) => ctx.selected);
+  const reset = useObjektTransfer((ctx) => ctx.reset);
   const [state, setState] = useState<SendState>("select");
 
   const text = selected.length === 1 ? "objekt" : "objekts";
@@ -134,7 +134,7 @@ type ContentProps = {
 };
 
 function Content({ selected, state, setState, onClose }: ContentProps) {
-  const reset = useObjektSelection((ctx) => ctx.reset);
+  const reset = useObjektTransfer((ctx) => ctx.reset);
 
   function onSelectComplete() {
     setState("send");
@@ -170,7 +170,7 @@ type SelectRecipientsProps = {
 
 function SelectRecipients({ selected, onComplete }: SelectRecipientsProps) {
   const [searchOpen, setSearchOpen] = useState(false);
-  const selectUser = useObjektSelection((ctx) => ctx.selectUser);
+  const selectUser = useObjektTransfer((ctx) => ctx.selectUser);
   const isDisabled =
     selected.length === 0 ||
     selected.some((selection) => selection.recipient === null);
@@ -243,10 +243,8 @@ type RowProps = {
 
 function SelectRecipientRow({ selection }: RowProps) {
   const [searchOpen, setSearchOpen] = useState(false);
-  const remove = useObjektSelection((ctx) => ctx.remove);
-  const selectUserForToken = useObjektSelection(
-    (ctx) => ctx.selectUserForToken
-  );
+  const remove = useObjektTransfer((ctx) => ctx.remove);
+  const selectUserForToken = useObjektTransfer((ctx) => ctx.selectUserForToken);
 
   function onUserSelect(user: CosmoPublicUser) {
     setSearchOpen(false);
@@ -320,7 +318,7 @@ function Sending({ selected, onBack, onClose }: SendingProps) {
   const [isSending, setIsSending] = useState(false);
   const { wallet } = useWallet();
   const { send } = useSendObjekt();
-  const update = useObjektSelection((ctx) => ctx.update);
+  const update = useObjektTransfer((ctx) => ctx.update);
   const queryClient = useQueryClient();
 
   const isSuccess = selected.every(

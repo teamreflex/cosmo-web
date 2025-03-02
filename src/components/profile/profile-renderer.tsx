@@ -2,10 +2,7 @@
 
 import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import { useFilters } from "@/hooks/use-filters";
-import {
-  CollectionFilters,
-  FiltersContainer,
-} from "../collection/filters-container";
+import FiltersContainer from "../collection/filters-container";
 import Portal from "../portal";
 import HelpDialog from "./help-dialog";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
@@ -14,6 +11,7 @@ import { match } from "ts-pattern";
 import Blockchain from "../collection/data-sources/blockchain";
 import CosmoCollectionGroups from "../collection/data-sources/cosmo-groups";
 import BlockchainGroups from "../collection/data-sources/blockchain-groups";
+import CollectionFilters from "../collection/filter-contexts/collection-filters";
 
 type Props = {
   artists: CosmoArtistWithMembersBFF[];

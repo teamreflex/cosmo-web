@@ -4,23 +4,15 @@ import {
   BFFCollectionGroup,
   BFFCollectionGroupObjekt,
 } from "@/lib/universal/cosmo/objekts";
-import {
-  getObjektImageUrls,
-  ObjektNewIndicator,
-  ObjektSidebar,
-} from "./common";
+import { getObjektImageUrls, ObjektSidebar } from "./common";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import { Objekt } from "@/lib/universal/objekt-conversion";
-import { Info, X } from "lucide-react";
+import { Lock, X } from "lucide-react";
 import { useState } from "react";
-import MetadataDialog, { fetchObjektQuery } from "./metadata-dialog";
-import { useQueryClient } from "@tanstack/react-query";
-import { useProfileContext } from "@/hooks/use-profile";
-import StaticObjekt from "./objekt-static";
-import { useObjektTransfer } from "@/hooks/use-objekt-transfer";
+import { useLockedObjekt, useProfileContext } from "@/hooks/use-profile";
 import { useShallow } from "zustand/react/shallow";
-import { useObjektOverlay } from "@/store";
+import { useObjektSpin } from "@/hooks/use-objekt-spin";
 
 interface Props {
   group: BFFCollectionGroup;
@@ -32,14 +24,21 @@ interface Props {
 /**
  * Shows all objekts in the collection group on click.
  */
-export default function GroupedObjekt({
+export default function SpinGroupedObjekt({
   group,
   gridColumns,
   showLocked,
   priority = false,
 }: Props) {
-  const [open, setOpen] = useState(false);
-  const hasSelected = useObjektTransfer(
+  const isOpen = useObjektSpin(
+    useShallow(
+      (state) =>
+        state.openCollection?.collection.collectionId ===
+        group.collection.collectionId
+    )
+  );
+  const setOpen = useObjektSpin((state) => state.setOpenCollection);
+  const hasSelected = useObjektSpin(
     useShallow((state) =>
       state.hasSelected(group.objekts.map((o) => o.metadata.tokenId))
     )
@@ -54,14 +53,22 @@ export default function GroupedObjekt({
     return Date.now() - acquiredAt.getTime() < 24 * 60 * 60 * 1000;
   });
 
+  function handleOpenChange(open: boolean) {
+    if (open) {
+      setOpen(group);
+    } else {
+      setOpen(null);
+    }
+  }
+
   return (
-    <DialogPrimitive.Root open={open} onOpenChange={setOpen}>
+    <DialogPrimitive.Root open={isOpen} onOpenChange={handleOpenChange}>
       <RootObjekt
         collection={collection}
         count={group.count}
         hasSelected={hasSelected}
         hasNew={hasNew}
-        onClick={() => setOpen(true)}
+        onClick={() => setOpen(group)}
         priority={priority}
       />
 
@@ -127,101 +134,43 @@ function RootObjekt({
   priority = false,
 }: RootObjektProps) {
   const [isLoaded, setIsLoaded] = useState(false);
-  const queryClient = useQueryClient();
-
   const { front } = getObjektImageUrls(collection);
 
-  function prefetch() {
-    const img = new Image();
-    img.src = front.download;
-  }
-
   return (
-    <MetadataDialog slug={collection.slug}>
-      {({ open }) => (
-        <div
-          role="button"
-          style={{
-            "--objekt-background-color": collection.backgroundColor,
-            "--objekt-text-color": collection.textColor,
-          }}
-          className={cn(
-            "relative overflow-hidden rounded-lg md:rounded-xl lg:rounded-2xl touch-manipulation bg-accent transition-colors ring-2 ring-transparent aspect-photocard",
-            hasSelected && "ring-foreground"
-          )}
-        >
-          <NextImage
-            onMouseOver={prefetch}
-            onLoad={() => setIsLoaded(true)}
-            onClick={onClick}
-            className={cn(
-              "cursor-pointer transition-opacity w-full",
-              isLoaded === false && "opacity-0"
-            )}
-            src={front.display}
-            width={291}
-            height={450}
-            alt={collection.collectionId}
-            priority={priority}
-            decoding="async"
-            unoptimized
-          />
-
-          <ObjektSidebar collection={collection.collectionNo} />
-          <RootObjektOverlay
-            count={count}
-            hasNew={hasNew}
-            onClick={() => {
-              // populate the query cache so it doesn't re-fetch
-              queryClient.setQueryData(
-                fetchObjektQuery(collection.slug).queryKey,
-                collection
-              );
-
-              // open the dialog
-              open();
-            }}
-          />
-        </div>
+    <div
+      role="button"
+      style={{
+        "--objekt-background-color": collection.backgroundColor,
+        "--objekt-text-color": collection.textColor,
+      }}
+      className={cn(
+        "relative overflow-hidden rounded-lg md:rounded-xl lg:rounded-2xl touch-manipulation bg-accent transition-colors ring-2 ring-transparent aspect-photocard",
+        hasSelected && "ring-foreground"
       )}
-    </MetadataDialog>
-  );
-}
-
-type RootObjektOverlayProps = {
-  count: number;
-  hasNew: boolean;
-  onClick: () => void;
-};
-
-function RootObjektOverlay({ count, hasNew, onClick }: RootObjektOverlayProps) {
-  const isHidden = useObjektOverlay((state) => state.isHidden);
-
-  return (
-    <div className="contents">
-      <div
+    >
+      <NextImage
+        onLoad={() => setIsLoaded(true)}
+        onClick={onClick}
         className={cn(
-          "absolute bottom-0 left-0 isolate p-1 sm:p-2 rounded-tr-lg sm:rounded-tr-xl flex gap-2 group h-5 sm:h-9 w-5 sm:w-9 transition-all",
-          "text-(--objekt-text-color) bg-(--objekt-background-color)",
-          isHidden && "hidden"
+          "cursor-pointer transition-opacity w-full",
+          isLoaded === false && "opacity-0"
         )}
-      >
-        <button
-          className="z-50 hover:cursor-pointer hover:scale-110 transition-all flex items-center place-self-end"
-          onClick={onClick}
-        >
-          <Info className="h-3 w-3 sm:h-5 sm:w-5" />
-        </button>
-      </div>
+        src={front.display}
+        width={291}
+        height={450}
+        alt={collection.collectionId}
+        priority={priority}
+        decoding="async"
+        unoptimized
+      />
 
+      <ObjektSidebar collection={collection.collectionNo} />
       <div className="absolute top-1 left-1 sm:top-2 sm:left-2 flex flex-row items-center gap-1">
         {count > 1 && (
           <span className="px-2 py-px bg-black text-white rounded-full text-sm font-semibold">
             {count}
           </span>
         )}
-
-        {hasNew && <ObjektNewIndicator />}
       </div>
     </div>
   );
@@ -240,7 +189,6 @@ function ObjektList({
   gridColumns,
   showLocked,
 }: ObjektListProps) {
-  const pins = useProfileContext((ctx) => ctx.pins);
   const lockedObjekts = useProfileContext((ctx) => ctx.lockedObjekts);
 
   const toRender = objekts.filter((objekt) => {
@@ -255,17 +203,82 @@ function ObjektList({
       {toRender.map((o) => {
         const objekt = Objekt.fromCollectionGroup({ objekt: o });
         return (
-          <StaticObjekt
+          <SpinnableObjekt
             key={objekt.tokenId}
             collection={collection}
             token={objekt}
-            isPinned={
-              pins.findIndex((p) => parseInt(p.tokenId) === objekt.tokenId) !==
-              -1
-            }
           />
         );
       })}
+    </div>
+  );
+}
+
+type SpinnableObjektProps = {
+  collection: Objekt.Collection;
+  token: Objekt.Token;
+};
+
+/**
+ * Used within a collection group list.
+ */
+function SpinnableObjekt({ collection, token }: SpinnableObjektProps) {
+  const isLocked = useLockedObjekt(token.tokenId);
+  const select = useObjektSpin((state) => state.select);
+  const isSelected = useObjektSpin(
+    useShallow((state) => state.isSelected(token.tokenId))
+  );
+
+  const { front } = getObjektImageUrls(collection);
+
+  function handleClick() {
+    if (!isLocked) {
+      select({ collection, token });
+    }
+  }
+
+  return (
+    <div
+      style={{
+        "--objekt-background-color": collection.backgroundColor,
+        "--objekt-text-color": collection.textColor,
+      }}
+      className={cn(
+        "relative overflow-hidden rounded-lg md:rounded-xl lg:rounded-2xl touch-manipulation bg-accent transition-colors aspect-photocard ring-2 ring-transparent cursor-pointer",
+        isSelected && "ring-foreground",
+        isLocked && "cursor-not-allowed"
+      )}
+    >
+      <NextImage
+        role="button"
+        onClick={handleClick}
+        className="w-full"
+        src={front.display}
+        width={291}
+        height={450}
+        alt={collection.collectionId}
+        decoding="async"
+        unoptimized
+      />
+
+      {isLocked && (
+        <div
+          className={cn(
+            "absolute top-0 left-0 p-1 sm:p-2 rounded-br-lg sm:rounded-br-xl items-center group h-5 sm:h-9 transition-all overflow-hidden",
+            "text-(--objekt-text-color) bg-(--objekt-background-color)",
+            "grid grid-flow-col grid-cols-[1fr_min-content]"
+          )}
+        >
+          <div className="flex items-center gap-2">
+            <Lock className="h-3 w-3 sm:h-5 sm:w-5 shrink-0" />
+          </div>
+        </div>
+      )}
+
+      <ObjektSidebar
+        collection={collection.collectionNo}
+        serial={token.serial}
+      />
     </div>
   );
 }
