@@ -1,9 +1,5 @@
 import { and, desc, eq, not, or, sql } from "drizzle-orm";
-import {
-  AggregatedTransfer,
-  TransferParams,
-  TransferResult,
-} from "../universal/transfers";
+import { TransferParams, TransferResult } from "../universal/transfers";
 import { indexer } from "./db/indexer";
 import { collections, objekts, transfers } from "./db/indexer/schema";
 import { fetchKnownAddresses } from "./profiles";
