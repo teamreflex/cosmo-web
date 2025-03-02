@@ -12,7 +12,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ofetch } from "ofetch";
 import { useState } from "react";
 import { useSendObjekt } from "./use-wallet-transaction";
-import { Addresses } from "@/lib/utils";
+import { Addresses, track } from "@/lib/utils";
 import { getErrorMessage } from "@/lib/error";
 import { useCosmoArtists } from "./use-cosmo-artist";
 import { match } from "ts-pattern";
@@ -501,6 +501,7 @@ export function useSpinComplete() {
     },
     onSuccess: (options, { index }) => {
       completeSpin(index, options);
+      track("spin-objekt");
     },
   });
 }
