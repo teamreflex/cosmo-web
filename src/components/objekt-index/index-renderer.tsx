@@ -87,6 +87,7 @@ export default function IndexRenderer(props: Props) {
           options={options}
           shouldRender={() => true}
           gridColumns={gridColumns}
+          showTotal
         >
           {({ rows, hidePins }) => (
             <VirtualizedGrid

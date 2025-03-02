@@ -56,7 +56,7 @@ export default function LoaderRemote<Response, Item>(
         hidePins,
       })}
 
-      {props.showTotal && <Portal to="#objekt-total">{total}</Portal>}
+      {props.showTotal === true && <Portal to="#objekt-total">{total}</Portal>}
       <Portal to="#pagination">
         <InfiniteQueryNext
           status={query.status}

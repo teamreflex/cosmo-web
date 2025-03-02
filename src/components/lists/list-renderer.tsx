@@ -84,6 +84,7 @@ export default function ListRenderer(props: Props) {
           options={options}
           shouldRender={() => true}
           gridColumns={gridColumns}
+          showTotal
         >
           {({ rows, hidePins }) => (
             <VirtualizedGrid
