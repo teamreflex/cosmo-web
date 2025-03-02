@@ -38,4 +38,23 @@ export type CosmoSpinCompleteRequest = {
   spinId: number;
 };
 
-export type CosmoSpinCompleteResponse = (ObjektBaseFields | null)[];
+export type CosmoSpinOption = {
+  season: string;
+  member: string;
+  collectionNo: string;
+  class: string;
+  thumbnailImage: string;
+  frontImage: string;
+  backImage: string;
+  accentColor: string;
+  backgroundColor: string;
+  comoAmount: number;
+  transferableByDefault: boolean;
+  createdAt: string;
+  updatedAt: string;
+  textColor: string;
+  gridableByDefault: boolean;
+  objektNo?: number;
+  artists: string[];
+  collectionId: string;
+} | null;

@@ -2,7 +2,7 @@ import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { cosmo } from "../http";
 import {
   CosmoSpinCompleteRequest,
-  CosmoSpinCompleteResponse,
+  CosmoSpinOption,
   CosmoSpinGetTickets,
   CosmoSpinPresignResponse,
   CosmoSpinSeasonRate,
@@ -90,7 +90,7 @@ export async function completeSpin(
   token: string,
   params: CosmoSpinCompleteRequest
 ) {
-  return await cosmo<CosmoSpinCompleteResponse>(`/bff/v3/spin/complete`, {
+  return await cosmo<CosmoSpinOption[]>(`/bff/v3/spin/complete`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,

@@ -5,7 +5,7 @@ import { useUserState } from "@/hooks/use-user-state";
 import { COSMO_ENDPOINT } from "@/lib/universal/cosmo/common";
 import {
   CosmoSpinCompleteRequest,
-  CosmoSpinCompleteResponse,
+  CosmoSpinOption,
   CosmoSpinPresignResponse,
 } from "@/lib/universal/cosmo/spin";
 import { useMutation } from "@tanstack/react-query";
@@ -16,6 +16,9 @@ import { Addresses } from "@/lib/utils";
 import { getErrorMessage } from "@/lib/error";
 import { useCosmoArtists } from "./use-cosmo-artist";
 import { match } from "ts-pattern";
+import { Hex } from "viem";
+
+const SIMULATE: boolean = true;
 
 type SelectedObjekt = {
   collection: Objekt.Collection;
@@ -81,7 +84,7 @@ export type SpinStateComplete = {
   spinId: number;
   hash: string;
   index: number;
-  options: CosmoSpinCompleteResponse;
+  options: CosmoSpinOption[];
 };
 
 export type SpinState =
@@ -120,7 +123,7 @@ type ObjektSpinState = {
   confirmSent: (hash: string) => void;
   setError: (error: string) => void;
   confirmReceipt: () => void;
-  completeSpin: (index: number, options: CosmoSpinCompleteResponse) => void;
+  completeSpin: (index: number, options: CosmoSpinOption[]) => void;
 };
 
 /**
@@ -312,7 +315,7 @@ export const useObjektSpin = create<ObjektSpinState>()((set, get) => ({
   /**
    * Set the selection of the index to submit for spin.
    */
-  completeSpin: (index: number, options: CosmoSpinCompleteResponse) => {
+  completeSpin: (index: number, options: CosmoSpinOption[]) => {
     const spinState = get().state;
     if (spinState.status !== "confirmed") {
       throw new Error("Objekt has not been confirmed sent.");
@@ -338,7 +341,12 @@ export function useSpinPresign() {
   const { token } = useUserState();
   const createSpin = useObjektSpin((state) => state.createSpin);
   return useMutation({
-    mutationFn: async (tokenId: number) => {
+    mutationFn: async (tokenId: number): Promise<CosmoSpinPresignResponse> => {
+      // DEBUG
+      if (SIMULATE) {
+        return { spinId: 123 };
+      }
+
       const endpoint = new URL("/bff/v3/spin/pre-sign", COSMO_ENDPOINT);
       return await ofetch<CosmoSpinPresignResponse>(endpoint.toString(), {
         method: "POST",
@@ -365,7 +373,12 @@ export function useSpinSubmit() {
   const [isPending, setIsPending] = useState(false);
   const { send } = useSendObjekt();
   const submit = useMutation({
-    mutationFn: async (spinId: number) => {
+    mutationFn: async (spinId: number): Promise<boolean> => {
+      // DEBUG
+      if (SIMULATE) {
+        return true;
+      }
+
       const endpoint = new URL("/bff/v3/spin", COSMO_ENDPOINT);
       return await ofetch<void>(endpoint.toString(), {
         method: "POST",
@@ -400,14 +413,17 @@ export function useSpinSubmit() {
       startSending();
 
       // send the objekt to the spin account
-      const hash = await send({
-        to: Addresses.SPIN,
-        tokenId: selection.objekt.token.tokenId,
-        contract,
-        opts: {
-          mutationKey: ["spin-objekt", selection.objekt.token.tokenId],
-        },
-      });
+      let hash: Hex | undefined = "0x123";
+      if (SIMULATE === false) {
+        hash = await send({
+          to: Addresses.SPIN,
+          tokenId: selection.objekt.token.tokenId,
+          contract,
+          opts: {
+            mutationKey: ["spin-objekt", selection.objekt.token.tokenId],
+          },
+        });
+      }
 
       // update the selection to success
       confirmSent(hash ?? "");
@@ -442,9 +458,16 @@ export function useSpinComplete() {
   const { token } = useUserState();
   const completeSpin = useObjektSpin((state) => state.completeSpin);
   return useMutation({
-    mutationFn: async (params: CosmoSpinCompleteRequest) => {
+    mutationFn: async (
+      params: CosmoSpinCompleteRequest
+    ): Promise<CosmoSpinOption[]> => {
+      // DEBUG
+      if (SIMULATE) {
+        return simulatedOptions;
+      }
+
       const endpoint = new URL("/bff/v3/spin/complete", COSMO_ENDPOINT);
-      return await ofetch<CosmoSpinCompleteResponse>(endpoint.toString(), {
+      return await ofetch<CosmoSpinOption[]>(endpoint.toString(), {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token?.accessToken}`,
@@ -457,3 +480,338 @@ export function useSpinComplete() {
     },
   });
 }
+
+const simulatedOptions: CosmoSpinOption[] = [
+  {
+    season: "Cream01",
+    member: "JinSoul",
+    collectionNo: "108Z",
+    class: "First",
+    thumbnailImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/c0a40dd8-d701-4bd5-730f-e77370c8fb00/thumbnail",
+    frontImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/c0a40dd8-d701-4bd5-730f-e77370c8fb00/4x",
+    backImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/d9842cb5-a1a4-4629-2489-b1c43e831b00/4x",
+    accentColor: "#FF7477",
+    backgroundColor: "#FF7477",
+    comoAmount: 1,
+    transferableByDefault: false,
+    createdAt: "2024-10-21T07:28:00.919Z",
+    updatedAt: "2025-02-28T02:14:16.098Z",
+    textColor: "#000000",
+    gridableByDefault: false,
+    artists: ["artms"],
+    collectionId: "Cream01 JinSoul 108Z",
+  },
+  {
+    season: "Cream01",
+    member: "Choerry",
+    collectionNo: "201Z",
+    class: "Special",
+    thumbnailImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/bd8e37fd-eba9-45d3-d7d5-268fd635f700/thumbnail",
+    frontImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/bd8e37fd-eba9-45d3-d7d5-268fd635f700/4x",
+    backImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/8aec6f81-5f7b-460e-7bf3-fc8911ed4f00/4x",
+    accentColor: "#F7F7F7",
+    backgroundColor: "#F7F7F7",
+    comoAmount: 1,
+    transferableByDefault: false,
+    createdAt: "2024-11-25T06:05:31.534Z",
+    updatedAt: "2025-02-28T02:14:16.098Z",
+    textColor: "#000000",
+    gridableByDefault: false,
+    artists: ["artms"],
+    collectionId: "Cream01 Choerry 201Z",
+  },
+  {
+    season: "Cream01",
+    member: "HeeJin",
+    collectionNo: "108Z",
+    class: "First",
+    thumbnailImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/3ac1c5b4-ff6d-4057-499f-40997aa81300/thumbnail",
+    frontImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/3ac1c5b4-ff6d-4057-499f-40997aa81300/4x",
+    backImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/af103474-f5bc-4ee9-549f-c0808d80ef00/4x",
+    accentColor: "#FF7477",
+    backgroundColor: "#FF7477",
+    comoAmount: 1,
+    transferableByDefault: false,
+    createdAt: "2024-10-21T07:19:53.862Z",
+    updatedAt: "2025-02-28T02:14:16.098Z",
+    textColor: "#000000",
+    gridableByDefault: false,
+    artists: ["artms"],
+    collectionId: "Cream01 HeeJin 108Z",
+  },
+  {
+    season: "Cream01",
+    member: "HaSeul",
+    collectionNo: "106Z",
+    class: "First",
+    thumbnailImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/d5cb3256-a4fa-4f7c-3e92-17016f743800/thumbnail",
+    frontImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/d5cb3256-a4fa-4f7c-3e92-17016f743800/4x",
+    backImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/0153acef-4a47-4bfd-29a5-41f189968900/4x",
+    accentColor: "#FF7477",
+    backgroundColor: "#FF7477",
+    comoAmount: 1,
+    transferableByDefault: false,
+    createdAt: "2024-10-21T07:49:39.030Z",
+    updatedAt: "2025-02-28T02:14:16.098Z",
+    textColor: "#000000",
+    gridableByDefault: false,
+    artists: ["artms"],
+    collectionId: "Cream01 HaSeul 106Z",
+  },
+  {
+    season: "Cream01",
+    member: "JinSoul",
+    collectionNo: "107Z",
+    class: "First",
+    thumbnailImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/3c93212e-74f8-4179-7c77-0c902552da00/thumbnail",
+    frontImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/3c93212e-74f8-4179-7c77-0c902552da00/4x",
+    backImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/d9842cb5-a1a4-4629-2489-b1c43e831b00/4x",
+    accentColor: "#FF7477",
+    backgroundColor: "#FF7477",
+    comoAmount: 1,
+    transferableByDefault: false,
+    createdAt: "2024-10-21T07:28:00.918Z",
+    updatedAt: "2025-02-28T02:14:16.098Z",
+    textColor: "#000000",
+    gridableByDefault: false,
+    artists: ["artms"],
+    collectionId: "Cream01 JinSoul 107Z",
+  },
+  {
+    season: "Cream01",
+    member: "HaSeul",
+    collectionNo: "107Z",
+    class: "First",
+    thumbnailImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/a5e9abf3-f482-4624-a9fe-c80003881400/thumbnail",
+    frontImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/a5e9abf3-f482-4624-a9fe-c80003881400/4x",
+    backImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/0153acef-4a47-4bfd-29a5-41f189968900/4x",
+    accentColor: "#FF7477",
+    backgroundColor: "#FF7477",
+    comoAmount: 1,
+    transferableByDefault: false,
+    createdAt: "2024-10-21T07:49:39.025Z",
+    updatedAt: "2025-02-28T02:14:16.098Z",
+    textColor: "#000000",
+    gridableByDefault: false,
+    artists: ["artms"],
+    collectionId: "Cream01 HaSeul 107Z",
+  },
+  {
+    season: "Cream01",
+    member: "KimLip",
+    collectionNo: "106Z",
+    class: "First",
+    thumbnailImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/5aed247f-0dfa-4790-01f0-988439b10900/thumbnail",
+    frontImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/5aed247f-0dfa-4790-01f0-988439b10900/4x",
+    backImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/e4fb62c3-db12-4851-2a18-41a66b22dd00/4x",
+    accentColor: "#FF7477",
+    backgroundColor: "#FF7477",
+    comoAmount: 1,
+    transferableByDefault: false,
+    createdAt: "2024-10-21T07:23:30.468Z",
+    updatedAt: "2025-02-28T02:14:16.098Z",
+    textColor: "#000000",
+    gridableByDefault: false,
+    artists: ["artms"],
+    collectionId: "Cream01 KimLip 106Z",
+  },
+  {
+    season: "Cream01",
+    member: "Choerry",
+    collectionNo: "104Z",
+    class: "First",
+    thumbnailImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/ff69f2a8-d4d0-4b51-e5cb-bd4e9915af00/thumbnail",
+    frontImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/ff69f2a8-d4d0-4b51-e5cb-bd4e9915af00/4x",
+    backImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/59e5c95d-4d4a-4b24-753f-8a86ae61c200/4x",
+    accentColor: "#FF7477",
+    backgroundColor: "#FF7477",
+    comoAmount: 1,
+    transferableByDefault: false,
+    createdAt: "2024-10-21T07:41:13.267Z",
+    updatedAt: "2025-02-28T02:14:16.098Z",
+    textColor: "#000000",
+    gridableByDefault: false,
+    artists: ["artms"],
+    collectionId: "Cream01 Choerry 104Z",
+  },
+  {
+    season: "Cream01",
+    member: "HeeJin",
+    collectionNo: "108Z",
+    class: "First",
+    thumbnailImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/3ac1c5b4-ff6d-4057-499f-40997aa81300/thumbnail",
+    frontImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/3ac1c5b4-ff6d-4057-499f-40997aa81300/4x",
+    backImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/af103474-f5bc-4ee9-549f-c0808d80ef00/4x",
+    accentColor: "#FF7477",
+    backgroundColor: "#FF7477",
+    comoAmount: 1,
+    transferableByDefault: false,
+    createdAt: "2024-10-21T07:19:53.862Z",
+    updatedAt: "2025-02-28T02:14:16.098Z",
+    textColor: "#000000",
+    gridableByDefault: false,
+    artists: ["artms"],
+    collectionId: "Cream01 HeeJin 108Z",
+  },
+  {
+    season: "Cream01",
+    member: "Choerry",
+    collectionNo: "101Z",
+    class: "First",
+    thumbnailImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/90a83617-1494-4570-6107-7348b1f89600/thumbnail",
+    frontImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/90a83617-1494-4570-6107-7348b1f89600/4x",
+    backImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/59e5c95d-4d4a-4b24-753f-8a86ae61c200/4x",
+    accentColor: "#FF7477",
+    backgroundColor: "#FF7477",
+    comoAmount: 1,
+    transferableByDefault: false,
+    createdAt: "2024-10-21T07:41:13.269Z",
+    updatedAt: "2025-02-28T02:14:16.098Z",
+    textColor: "#000000",
+    gridableByDefault: false,
+    objektNo: 2286,
+    artists: ["artms"],
+    collectionId: "Cream01 Choerry 101Z",
+  },
+  {
+    season: "Cream01",
+    member: "Choerry",
+    collectionNo: "101Z",
+    class: "First",
+    thumbnailImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/90a83617-1494-4570-6107-7348b1f89600/thumbnail",
+    frontImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/90a83617-1494-4570-6107-7348b1f89600/4x",
+    backImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/59e5c95d-4d4a-4b24-753f-8a86ae61c200/4x",
+    accentColor: "#FF7477",
+    backgroundColor: "#FF7477",
+    comoAmount: 1,
+    transferableByDefault: false,
+    createdAt: "2024-10-21T07:41:13.269Z",
+    updatedAt: "2025-02-28T02:14:16.098Z",
+    textColor: "#000000",
+    gridableByDefault: false,
+    artists: ["artms"],
+    collectionId: "Cream01 Choerry 101Z",
+  },
+  {
+    season: "Cream01",
+    member: "Choerry",
+    collectionNo: "106Z",
+    class: "First",
+    thumbnailImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/63a165b9-fb9d-4210-b34d-2f05a4934400/thumbnail",
+    frontImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/63a165b9-fb9d-4210-b34d-2f05a4934400/4x",
+    backImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/59e5c95d-4d4a-4b24-753f-8a86ae61c200/4x",
+    accentColor: "#FF7477",
+    backgroundColor: "#FF7477",
+    comoAmount: 1,
+    transferableByDefault: false,
+    createdAt: "2024-10-21T07:41:13.267Z",
+    updatedAt: "2025-02-28T02:14:16.098Z",
+    textColor: "#000000",
+    gridableByDefault: false,
+    artists: ["artms"],
+    collectionId: "Cream01 Choerry 106Z",
+  },
+  null,
+  {
+    season: "Cream01",
+    member: "JinSoul",
+    collectionNo: "105Z",
+    class: "First",
+    thumbnailImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/17419d8e-a1d7-4437-548e-78bfc2b1cd00/thumbnail",
+    frontImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/17419d8e-a1d7-4437-548e-78bfc2b1cd00/4x",
+    backImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/d9842cb5-a1a4-4629-2489-b1c43e831b00/4x",
+    accentColor: "#FF7477",
+    backgroundColor: "#FF7477",
+    comoAmount: 1,
+    transferableByDefault: false,
+    createdAt: "2024-10-21T07:28:00.924Z",
+    updatedAt: "2025-02-28T02:14:16.098Z",
+    textColor: "#000000",
+    gridableByDefault: false,
+    artists: ["artms"],
+    collectionId: "Cream01 JinSoul 105Z",
+  },
+  {
+    season: "Cream01",
+    member: "HaSeul",
+    collectionNo: "104Z",
+    class: "First",
+    thumbnailImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/595108eb-8c27-4c52-5cb8-79446c337100/thumbnail",
+    frontImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/595108eb-8c27-4c52-5cb8-79446c337100/4x",
+    backImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/0153acef-4a47-4bfd-29a5-41f189968900/4x",
+    accentColor: "#FF7477",
+    backgroundColor: "#FF7477",
+    comoAmount: 1,
+    transferableByDefault: false,
+    createdAt: "2024-10-21T07:49:39.032Z",
+    updatedAt: "2025-02-28T02:14:16.098Z",
+    textColor: "#000000",
+    gridableByDefault: false,
+    artists: ["artms"],
+    collectionId: "Cream01 HaSeul 104Z",
+  },
+  {
+    season: "Cream01",
+    member: "Choerry",
+    collectionNo: "101Z",
+    class: "First",
+    thumbnailImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/90a83617-1494-4570-6107-7348b1f89600/thumbnail",
+    frontImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/90a83617-1494-4570-6107-7348b1f89600/4x",
+    backImage:
+      "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/59e5c95d-4d4a-4b24-753f-8a86ae61c200/4x",
+    accentColor: "#FF7477",
+    backgroundColor: "#FF7477",
+    comoAmount: 1,
+    transferableByDefault: false,
+    createdAt: "2024-10-21T07:41:13.269Z",
+    updatedAt: "2025-02-28T02:14:16.098Z",
+    textColor: "#000000",
+    gridableByDefault: false,
+    artists: ["artms"],
+    collectionId: "Cream01 Choerry 101Z",
+  },
+];
