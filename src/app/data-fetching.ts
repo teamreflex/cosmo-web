@@ -7,6 +7,7 @@ import { getCookie } from "@/lib/server/cookies";
 import { ValidArtist, validArtists } from "@/lib/universal/cosmo/common";
 import { fetchArtistBff } from "@/lib/server/cosmo/artists";
 import { unstable_cache } from "next/cache";
+import { fetchSeasons } from "@/lib/server/cosmo/season";
 
 /**
  * Decode the current token.
@@ -70,4 +71,15 @@ export const getUserAvatar = cache(async (token: string, nickname: string) => {
     ["user-avatar"],
     { revalidate: 60 * 60 * 24 }
   )(nickname);
+});
+
+/**
+ * Fetch the seasons for the given artist and cache for 24 hours.
+ */
+export const getSeasons = cache(async (token: string, artist: ValidArtist) => {
+  return await unstable_cache(
+    async (artist: ValidArtist) => fetchSeasons(token, artist),
+    ["cosmo-seasons"],
+    { revalidate: 60 * 60 * 24 }
+  )(artist);
 });

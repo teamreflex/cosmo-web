@@ -51,11 +51,11 @@ export default function TicketCountdown(props: Props) {
   }, [props.nextReceiveAt]);
 
   return (
-    <div className="flex flex-row gap-1">
-      <span>Ticket available in</span>
-      <span className="tabular-nums" suppressHydrationWarning>
-        {timeRemaining}
-      </span>
-    </div>
+    <span
+      className="tabular-nums text-cosmo-text font-semibold"
+      suppressHydrationWarning
+    >
+      {timeRemaining}
+    </span>
   );
 }

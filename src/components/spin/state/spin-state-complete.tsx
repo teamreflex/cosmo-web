@@ -1,9 +1,12 @@
 import { ObjektSidebar } from "@/components/objekt/common";
 import { SpinStateComplete, useObjektSpin } from "@/hooks/use-objekt-spin";
-import { ObjektBaseFields } from "@/lib/universal/cosmo/objekts";
+import { CosmoSpinOption } from "@/lib/universal/cosmo/spin";
 import { cn } from "@/lib/utils";
-import { X } from "lucide-react";
+import { Check } from "lucide-react";
 import Image from "next/image";
+import SpinFail from "@/assets/spin-fail.png";
+import { Button } from "@/components/ui/button";
+import { IconRotate360 } from "@tabler/icons-react";
 
 type Props = {
   state: SpinStateComplete;
@@ -17,51 +20,58 @@ export default function StateComplete({ state }: Props) {
 
   return (
     <div className="flex flex-col gap-2 items-center">
-      <div>spin confirmed! here are the options you failed to pick:</div>
+      <Button onClick={resetState}>
+        <IconRotate360 className="w-4 h-4 mr-2" />
+        <span>Spin Again</span>
+      </Button>
 
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-4 gap-4 w-full lg:grid-cols-8">
         {state.options.map((option, index) =>
           option === null ? (
-            <MissedObjekt key={index} index={index} selection={state.index} />
+            <MissedObjekt key={index} selected={index === state.index} />
           ) : (
             <OptionObjekt
               key={index}
-              index={index}
-              selection={state.index}
+              selected={index === state.index}
               objekt={option}
             />
           )
         )}
       </div>
-
-      <button onClick={resetState}>spin again</button>
     </div>
   );
 }
 
 type SelectionProps = {
-  index: number;
-  selection: number;
+  selected: boolean;
 };
 
-function MissedObjekt({ index, selection }: SelectionProps) {
+function MissedObjekt({ selected }: SelectionProps) {
   return (
     <div
       className={cn(
-        "flex items-center justify-center bg-accent w-full aspect-photocard touch-manipulation border-2 border-foreground/20 rounded-2xl",
-        index === selection && "border-cosmo"
+        "relative aspect-photocard w-full rounded-lg overflow-hidden border-2 border-transparent",
+        selected && "border-foreground"
       )}
     >
-      <X className="size-8" />
+      <Image
+        src={SpinFail.src}
+        alt="Spin Fail"
+        width={100}
+        height={100}
+        className="w-full h-full object-cover"
+      />
+
+      {selected && <SuccessBadge />}
     </div>
   );
 }
 
 type OptionProps = SelectionProps & {
-  objekt: ObjektBaseFields;
+  objekt: NonNullable<CosmoSpinOption>;
 };
 
-function OptionObjekt({ index, selection, objekt }: OptionProps) {
+function OptionObjekt({ selected, objekt }: OptionProps) {
   return (
     <div
       style={{
@@ -69,8 +79,8 @@ function OptionObjekt({ index, selection, objekt }: OptionProps) {
         "--objekt-text-color": objekt.textColor,
       }}
       className={cn(
-        "relative bg-accent w-full aspect-photocard object-contain touch-manipulation rounded-2xl",
-        index === selection && "border-cosmo"
+        "relative bg-accent w-full aspect-photocard overflow-hidden touch-manipulation rounded-lg border-2 border-transparent",
+        selected && "border-cosmo"
       )}
     >
       <Image
@@ -81,6 +91,18 @@ function OptionObjekt({ index, selection, objekt }: OptionProps) {
       />
 
       <ObjektSidebar collection={objekt.collectionNo} />
+
+      {selected && <SuccessBadge />}
+    </div>
+  );
+}
+
+function SuccessBadge() {
+  return (
+    <div className="absolute top-1 md:top-2 left-1 md:left-2">
+      <div className="flex text-xs font-semibold aspect-square rounded-full size-6 bg-cosmo text-white">
+        <Check className="size-4 m-auto" />
+      </div>
     </div>
   );
 }

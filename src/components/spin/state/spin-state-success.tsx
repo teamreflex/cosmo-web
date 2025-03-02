@@ -1,4 +1,5 @@
 import { SpinStateSent } from "@/hooks/use-objekt-spin";
+import { Satellite } from "lucide-react";
 
 type Props = {
   state: SpinStateSent;
@@ -8,5 +9,10 @@ type Props = {
  * Transaction has been confirmed, show the hash.
  */
 export default function StateSuccess({ state }: Props) {
-  return <div>objekt sent, confirming with cosmo...</div>;
+  return (
+    <div className="flex flex-col items-center">
+      <Satellite className="h-24 w-24 animate-pulse" />
+      <p className="text-sm font-semibold">Confirming with COSMO...</p>
+    </div>
+  );
 }

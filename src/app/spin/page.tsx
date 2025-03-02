@@ -2,29 +2,41 @@ import { Metadata } from "next";
 import {
   decodeUser,
   getArtistsWithMembers,
+  getSeasons,
   getSelectedArtist,
   getUserByIdentifier,
 } from "../data-fetching";
 import { redirect } from "next/navigation";
 import { UserStateProvider } from "@/hooks/use-user-state";
-import { Suspense } from "react";
 import AvailableTickets from "@/components/spin/available-tickets";
 import { CosmoArtistProvider } from "@/hooks/use-cosmo-artist";
 import { ProfileProvider } from "@/hooks/use-profile";
 import SpinContainer from "@/components/spin/spin-container";
+import SpinTicket from "@/assets/spin-ticket.png";
+import Image from "next/image";
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
+import { getQueryClient } from "@/lib/query-client";
+import { fetchSpinTickets } from "@/lib/server/cosmo/spin";
 
 export const metadata: Metadata = {
   title: "Objekt Spin",
 };
 
 export default async function SpinPage() {
+  const selectedArtist = await getSelectedArtist();
   const user = await decodeUser();
   if (!user) redirect("/");
 
-  const [selectedArtist, artists, currentUser] = await Promise.all([
-    getSelectedArtist(),
+  const queryClient = getQueryClient();
+  const [artists, currentUser, seasons] = await Promise.all([
     getArtistsWithMembers(),
     getUserByIdentifier(user.address),
+    getSeasons(user.accessToken, selectedArtist),
+    // ensure tickets are available asap
+    queryClient.prefetchQuery({
+      queryKey: ["spin-tickets", selectedArtist],
+      queryFn: () => fetchSpinTickets(user.accessToken, selectedArtist),
+    }),
   ]);
 
   // we only want to show the selected artist
@@ -39,24 +51,35 @@ export default async function SpinPage() {
           currentProfile={currentUser.profile}
           lockedObjekts={currentUser.lockedObjekts}
         >
-          <main className="container flex flex-col py-2">
-            {/* header */}
-            <div className="flex gap-2 items-center w-full pb-1 justify-between">
-              <h1 className="text-3xl font-cosmo uppercase drop-shadow-lg">
-                Spin
-              </h1>
+          <HydrationBoundary state={dehydrate(queryClient)}>
+            <main className="container flex flex-col py-2">
+              {/* header */}
+              <div className="flex gap-2 items-center w-full pb-1 justify-between">
+                <div className="flex flex-col">
+                  <h1 className="text-3xl font-cosmo uppercase drop-shadow-lg">
+                    Spin
+                  </h1>
+                  <span className="h-5 flex items-center gap-2 text-xs">
+                    <Image
+                      src={SpinTicket.src}
+                      alt="Spin Ticket"
+                      width={20}
+                      height={20}
+                    />
+                    <div id="spin-countdown" />
+                  </span>
+                </div>
 
-              <Suspense fallback={<div>Loading...</div>}>
-                <AvailableTickets
-                  token={user.accessToken}
-                  artist={selectedArtist}
-                />
-              </Suspense>
-            </div>
+                <AvailableTickets />
+              </div>
 
-            {/* content */}
-            <SpinContainer currentUser={currentUser.profile} />
-          </main>
+              {/* content */}
+              <SpinContainer
+                seasons={seasons}
+                currentUser={currentUser.profile}
+              />
+            </main>
+          </HydrationBoundary>
         </ProfileProvider>
       </CosmoArtistProvider>
     </UserStateProvider>

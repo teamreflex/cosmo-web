@@ -16,7 +16,7 @@ export default async function Links() {
   return (
     <div className="flex grow justify-end lg:justify-center">
       {/* desktop */}
-      <div className="lg:flex flex-row items-center gap-8 hidden">
+      <div className="lg:flex flex-row items-center gap-6 hidden">
         <DesktopLinks user={user} />
       </div>
 

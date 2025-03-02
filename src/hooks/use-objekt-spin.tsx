@@ -8,7 +8,7 @@ import {
   CosmoSpinOption,
   CosmoSpinPresignResponse,
 } from "@/lib/universal/cosmo/spin";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ofetch } from "ofetch";
 import { useState } from "react";
 import { useSendObjekt } from "./use-wallet-transaction";
@@ -18,7 +18,7 @@ import { useCosmoArtists } from "./use-cosmo-artist";
 import { match } from "ts-pattern";
 import { Hex } from "viem";
 
-const SIMULATE: boolean = true;
+const SIMULATE: boolean = false;
 
 type SelectedObjekt = {
   collection: Objekt.Collection;
@@ -114,6 +114,7 @@ type ObjektSpinState = {
   hasSelected: (tokenIds: number[]) => boolean;
   resetSelection: () => void;
   resetState: () => void;
+  cancelSending: () => void;
 
   // actions
   startSelecting: () => void;
@@ -175,8 +176,8 @@ export const useObjektSpin = create<ObjektSpinState>()((set, get) => ({
     set(() => ({
       currentStep: 1,
       state: {
-        status: "idle",
-      } satisfies SpinStateIdle,
+        status: "selecting",
+      } satisfies SpinStateSelecting,
       openCollection: null,
     })),
 
@@ -192,6 +193,25 @@ export const useObjektSpin = create<ObjektSpinState>()((set, get) => ({
         status: "idle",
       } satisfies SpinStateIdle,
     })),
+
+  /**
+   * Cancel the sending of the objekt.
+   */
+  cancelSending: () => {
+    const spinState = get().state;
+    if (spinState.status !== "created") {
+      throw new Error("Cannot cancel when a spin has not been created.");
+    }
+
+    return set((state) => ({
+      ...state,
+      currentStep: 2,
+      state: {
+        status: "selected",
+        objekt: spinState.objekt,
+      } satisfies SpinStateSelected,
+    }));
+  },
 
   /**
    * Start selecting an objekt.
@@ -372,6 +392,7 @@ export function useSpinSubmit() {
   const { artists } = useCosmoArtists();
   const [isPending, setIsPending] = useState(false);
   const { send } = useSendObjekt();
+  const queryClient = useQueryClient();
   const submit = useMutation({
     mutationFn: async (spinId: number): Promise<boolean> => {
       // DEBUG
@@ -433,6 +454,9 @@ export function useSpinSubmit() {
 
       // confirm the receipt of the objekt
       confirmReceipt();
+
+      // invalidate the spin tickets query
+      queryClient.invalidateQueries({ queryKey: ["spin-tickets"] });
 
       return result;
     } catch (error) {

@@ -13,12 +13,14 @@ import StateSuccess from "./state/spin-state-success";
 import StateError from "./state/spin-state-error";
 import StateConfirmed from "./state/spin-state-confirmed";
 import StateComplete from "./state/spin-state-complete";
+import { CosmoSeason } from "@/lib/universal/cosmo/season";
 
 type Props = {
+  seasons: CosmoSeason[];
   currentUser: PublicProfile;
 };
 
-export default function SpinContainer({ currentUser }: Props) {
+export default function SpinContainer({ seasons, currentUser }: Props) {
   const state = useObjektSpin((state) => state.state);
 
   return (
@@ -31,7 +33,7 @@ export default function SpinContainer({ currentUser }: Props) {
           <StateSelecting currentUser={currentUser} />
         ))
         .with({ status: "selected" }, (state) => (
-          <StateSelected state={state} />
+          <StateSelected seasons={seasons} state={state} />
         ))
         .with({ status: "created" }, (state) => <StateCreated state={state} />)
         .with({ status: "sending" }, (state) => <StatePending state={state} />)

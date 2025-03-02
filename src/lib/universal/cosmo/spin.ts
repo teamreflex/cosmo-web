@@ -1,5 +1,3 @@
-import { ObjektBaseFields } from "./objekts";
-
 export type CosmoSpinGetTickets = {
   availableTicketsCount: number;
   nextReceiveAt: string | null;
