@@ -37,7 +37,9 @@ export default function AvailableTickets() {
 
 function Tickets() {
   const { token, artist } = useUserState();
-  const { data } = useSuspenseQuery(ticketsQuery(token!.accessToken, artist));
+  const { data, refetch, isRefetching } = useSuspenseQuery(
+    ticketsQuery(token!.accessToken, artist)
+  );
 
   return (
     <div className="flex gap-2 items-center">
@@ -53,7 +55,11 @@ function Tickets() {
 
       <Portal to="#spin-countdown">
         {data.nextReceiveAt !== null ? (
-          <TicketCountdown nextReceiveAt={data.nextReceiveAt} />
+          <TicketCountdown
+            nextReceiveAt={data.nextReceiveAt}
+            triggerRefetch={refetch}
+            isRefetching={isRefetching}
+          />
         ) : (
           <span className="text-cosmo-text font-semibold">Max</span>
         )}

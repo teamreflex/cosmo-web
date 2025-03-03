@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 
 type Props = {
   nextReceiveAt: string;
+  triggerRefetch: () => void;
+  isRefetching: boolean;
 };
 
 export default function TicketCountdown(props: Props) {
@@ -16,8 +18,9 @@ export default function TicketCountdown(props: Props) {
       let diff = targetTime.getTime() - now.getTime();
 
       // if time has passed, show 00:00:00
-      if (diff <= 0) {
-        setTimeRemaining("00:00:00");
+      if (diff <= 0 && !props.isRefetching) {
+        setTimeRemaining("00h 00m 00s");
+        props.triggerRefetch();
         return;
       }
 
