@@ -27,16 +27,17 @@ export default async function SpinPage() {
   const user = await decodeUser();
   if (!user) redirect("/");
 
+  // prefetch available tickets
   const queryClient = getQueryClient();
+  queryClient.prefetchQuery({
+    queryKey: ["spin-tickets", selectedArtist],
+    queryFn: () => fetchSpinTickets(user.accessToken, selectedArtist),
+  });
+
   const [artists, currentUser, seasons] = await Promise.all([
     getArtistsWithMembers(),
     getUserByIdentifier(user.address),
     getSeasons(user.accessToken, selectedArtist),
-    // ensure tickets are available asap
-    queryClient.prefetchQuery({
-      queryKey: ["spin-tickets", selectedArtist],
-      queryFn: () => fetchSpinTickets(user.accessToken, selectedArtist),
-    }),
   ]);
 
   // we only want to show the selected artist

@@ -14,8 +14,9 @@ import StateError from "./state/spin-state-error";
 import StateConfirmed from "./state/spin-state-confirmed";
 import StateComplete from "./state/spin-state-complete";
 import { CosmoSeason } from "@/lib/universal/cosmo/season";
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import Skeleton from "../skeleton/skeleton";
+import { useUserState } from "@/hooks/use-user-state";
 
 type Props = {
   seasons: CosmoSeason[];
@@ -23,7 +24,14 @@ type Props = {
 };
 
 export default function SpinContainer({ seasons, currentUser }: Props) {
+  const { artist } = useUserState();
   const state = useObjektSpin((state) => state.state);
+  const resetState = useObjektSpin((state) => state.resetState);
+
+  // reset the state when the artist changes
+  useEffect(() => {
+    resetState();
+  }, [artist]);
 
   return (
     <div className="flex flex-col gap-4">
