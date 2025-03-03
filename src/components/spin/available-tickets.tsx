@@ -42,9 +42,7 @@ function Tickets() {
         ))}
       </div>
 
-      {data.inProgressSpinId && (
-        <SpinInProgress inProgressSpinId={data.inProgressSpinId} />
-      )}
+      <SpinInProgress inProgressSpinId={data.inProgressSpinId} />
 
       <Portal to="#spin-countdown">
         {data.nextReceiveAt !== null ? (

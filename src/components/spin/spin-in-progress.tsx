@@ -17,12 +17,11 @@ import { Button } from "../ui/button";
 import { useQueryClient } from "@tanstack/react-query";
 
 type Props = {
-  inProgressSpinId: number;
+  inProgressSpinId?: number;
 };
 
 /**
  * Resume an in-progress objekt spin.
- * TODO: test which step `inProgressSpinId` is resumable from.
  */
 export default function SpinInProgress(props: Props) {
   const queryClient = useQueryClient();
@@ -34,6 +33,8 @@ export default function SpinInProgress(props: Props) {
   const [index] = useState(() => Math.floor(Math.random() * 16));
 
   function completeSpin() {
+    if (props.inProgressSpinId === undefined) return;
+
     mutation.mutate(
       {
         spinId: props.inProgressSpinId,
