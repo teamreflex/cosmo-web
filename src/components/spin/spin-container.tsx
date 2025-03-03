@@ -14,6 +14,8 @@ import StateError from "./state/spin-state-error";
 import StateConfirmed from "./state/spin-state-confirmed";
 import StateComplete from "./state/spin-state-complete";
 import { CosmoSeason } from "@/lib/universal/cosmo/season";
+import { Suspense } from "react";
+import Skeleton from "../skeleton/skeleton";
 
 type Props = {
   seasons: CosmoSeason[];
@@ -27,25 +29,41 @@ export default function SpinContainer({ seasons, currentUser }: Props) {
     <div className="flex flex-col gap-4">
       <SpinStepper />
 
-      {match(state)
-        .with({ status: "idle" }, () => <StateIdle />)
-        .with({ status: "selecting" }, () => (
-          <StateSelecting currentUser={currentUser} />
-        ))
-        .with({ status: "selected" }, (state) => (
-          <StateSelected seasons={seasons} state={state} />
-        ))
-        .with({ status: "created" }, (state) => <StateCreated state={state} />)
-        .with({ status: "sending" }, (state) => <StatePending state={state} />)
-        .with({ status: "success" }, (state) => <StateSuccess state={state} />)
-        .with({ status: "error" }, (state) => <StateError state={state} />)
-        .with({ status: "confirmed" }, (state) => (
-          <StateConfirmed state={state} />
-        ))
-        .with({ status: "complete" }, (state) => (
-          <StateComplete state={state} />
-        ))
-        .exhaustive()}
+      <Suspense
+        fallback={
+          <div className="flex flex-col">
+            <div className="flex flex-col gap-4 items-center justify-center mx-auto w-full">
+              <Skeleton className="flex items-center justify-center rounded-2xl md:rounded-lg aspect-photocard w-2/3 md:w-48" />
+            </div>
+          </div>
+        }
+      >
+        {match(state)
+          .with({ status: "idle" }, () => <StateIdle />)
+          .with({ status: "selecting" }, () => (
+            <StateSelecting currentUser={currentUser} />
+          ))
+          .with({ status: "selected" }, (state) => (
+            <StateSelected seasons={seasons} state={state} />
+          ))
+          .with({ status: "created" }, (state) => (
+            <StateCreated state={state} />
+          ))
+          .with({ status: "sending" }, (state) => (
+            <StatePending state={state} />
+          ))
+          .with({ status: "success" }, (state) => (
+            <StateSuccess state={state} />
+          ))
+          .with({ status: "error" }, (state) => <StateError state={state} />)
+          .with({ status: "confirmed" }, (state) => (
+            <StateConfirmed state={state} />
+          ))
+          .with({ status: "complete" }, (state) => (
+            <StateComplete state={state} />
+          ))
+          .exhaustive()}
+      </Suspense>
     </div>
   );
 }

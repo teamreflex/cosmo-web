@@ -1,22 +1,10 @@
 import { Plus } from "lucide-react";
-import { useObjektSpin } from "@/hooks/use-objekt-spin";
-import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
-import { useUserState } from "@/hooks/use-user-state";
-import { ticketsQuery } from "../queries";
-import { Suspense } from "react";
-import Skeleton from "@/components/skeleton/skeleton";
-import { CosmoSpinGetTickets } from "@/lib/universal/cosmo/spin";
+import { useObjektSpin, useSpinTickets } from "@/hooks/use-objekt-spin";
 import { cn } from "@/lib/utils";
 
 export default function StateIdle() {
-  const { token, artist } = useUserState();
+  const { data } = useSpinTickets();
   const startSelecting = useObjektSpin((state) => state.startSelecting);
-  const queryClient = useQueryClient();
-
-  // should already be prefetched at this point
-  const ticketsAvailable = queryClient.getQueryData<CosmoSpinGetTickets>(
-    ticketsQuery(token!.accessToken, artist).queryKey
-  );
 
   return (
     <div className="flex flex-col">
@@ -56,7 +44,7 @@ export default function StateIdle() {
       {/* get started */}
       <div className="flex flex-col gap-4 items-center justify-center mx-auto w-full">
         <button
-          disabled={ticketsAvailable?.availableTicketsCount === 0}
+          disabled={data.availableTicketsCount === 0}
           onClick={startSelecting}
           className={cn(
             "group flex items-center justify-center rounded-2xl md:rounded-lg aspect-photocard w-2/3 md:w-48 cursor-pointer",
@@ -71,21 +59,12 @@ export default function StateIdle() {
           </div>
         </button>
 
-        <Suspense fallback={<Skeleton className="h-7 w-56 rounded-full" />}>
-          <Title />
-        </Suspense>
+        {data.availableTicketsCount > 0 ? (
+          <h3 className="text-lg font-bold">Select an objekt to spin</h3>
+        ) : (
+          <h3 className="text-lg font-bold">You have no spin tickets left</h3>
+        )}
       </div>
     </div>
   );
-}
-
-function Title() {
-  const { token, artist } = useUserState();
-  const { data } = useSuspenseQuery(ticketsQuery(token!.accessToken, artist));
-
-  if (data.availableTicketsCount > 0) {
-    return <h3 className="text-lg font-bold">Select an objekt to spin</h3>;
-  }
-
-  return <h3 className="text-lg font-bold">You have no spin tickets left</h3>;
 }

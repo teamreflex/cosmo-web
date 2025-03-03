@@ -5,10 +5,15 @@ import { useUserState } from "@/hooks/use-user-state";
 import { COSMO_ENDPOINT } from "@/lib/universal/cosmo/common";
 import {
   CosmoSpinCompleteRequest,
+  CosmoSpinGetTickets,
   CosmoSpinOption,
   CosmoSpinPresignResponse,
 } from "@/lib/universal/cosmo/spin";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQueryClient,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
 import { ofetch } from "ofetch";
 import { useState } from "react";
 import { useSendObjekt } from "./use-wallet-transaction";
@@ -353,6 +358,36 @@ export const useObjektSpin = create<ObjektSpinState>()((set, get) => ({
     }));
   },
 }));
+
+/**
+ * Get the tickets for the current artist.
+ */
+export function useSpinTickets() {
+  const { token, artist } = useUserState();
+  return useSuspenseQuery({
+    queryKey: ["spin-tickets", artist],
+    queryFn: () => {
+      if (SIMULATE) {
+        return {
+          availableTicketsCount: 3,
+          inProgressSpinId: 123,
+          nextReceiveAt: null,
+        };
+      }
+
+      const endpoint = new URL(
+        `/bff/v3/spin/tickets/${artist}`,
+        COSMO_ENDPOINT
+      );
+      return ofetch<CosmoSpinGetTickets>(endpoint.toString(), {
+        retry: 1,
+        headers: {
+          Authorization: `Bearer ${token?.accessToken}`,
+        },
+      });
+    },
+  });
+}
 
 /**
  * Start a new objekt spin.

@@ -1,11 +1,7 @@
 "use client";
 
 import TicketCountdown from "./ticket-countdown";
-import { useUserState } from "@/hooks/use-user-state";
-import {
-  QueryErrorResetBoundary,
-  useSuspenseQuery,
-} from "@tanstack/react-query";
+import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import { ErrorBoundary } from "react-error-boundary";
 import { Suspense } from "react";
 import SpinTicket from "@/assets/spin-ticket.png";
@@ -13,8 +9,8 @@ import Image from "next/image";
 import Portal from "../portal";
 import { cn } from "@/lib/utils";
 import Skeleton from "../skeleton/skeleton";
-import { ticketsQuery } from "./queries";
 import SpinInProgress from "./spin-in-progress";
+import { useSpinTickets } from "@/hooks/use-objekt-spin";
 
 export default function AvailableTickets() {
   return (
@@ -36,10 +32,7 @@ export default function AvailableTickets() {
 }
 
 function Tickets() {
-  const { token, artist } = useUserState();
-  const { data, refetch, isRefetching } = useSuspenseQuery(
-    ticketsQuery(token!.accessToken, artist)
-  );
+  const { data, refetch, isRefetching } = useSpinTickets();
 
   return (
     <div className="flex gap-2 items-center">
