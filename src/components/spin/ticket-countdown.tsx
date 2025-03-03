@@ -8,19 +8,23 @@ type Props = {
   isRefetching: boolean;
 };
 
-export default function TicketCountdown(props: Props) {
+export default function TicketCountdown({
+  nextReceiveAt,
+  triggerRefetch,
+  isRefetching,
+}: Props) {
   const [timeRemaining, setTimeRemaining] = useState<string>("00h 00m 00s");
 
   useEffect(() => {
     const calculateTimeRemaining = () => {
       const now = new Date();
-      const targetTime = new Date(props.nextReceiveAt);
+      const targetTime = new Date(nextReceiveAt);
       let diff = targetTime.getTime() - now.getTime();
 
       // if time has passed, show 00:00:00
-      if (diff <= 0 && !props.isRefetching) {
+      if (diff <= 0 && !isRefetching) {
         setTimeRemaining("00h 00m 00s");
-        props.triggerRefetch();
+        triggerRefetch();
         return;
       }
 
@@ -51,7 +55,7 @@ export default function TicketCountdown(props: Props) {
 
     // cleanup interval when component unmounts
     return () => clearInterval(interval);
-  }, [props.nextReceiveAt]);
+  }, [nextReceiveAt, triggerRefetch, isRefetching]);
 
   return (
     <span

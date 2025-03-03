@@ -9,14 +9,14 @@ const compat = new FlatCompat({
 
 export default tseslint.config(
   {
-    plugins: {
-      "@typescript-eslint": tseslint.plugin,
-    },
     files: ["**/*.ts", "**/*.tsx"],
     extends: [
       eslint.configs.recommended,
-      tseslint.configs.recommended,
-      compat.extends("plugin:drizzle/all", "next"),
+      compat.extends(
+        "plugin:drizzle/all",
+        "next/core-web-vitals",
+        "next/typescript"
+      ),
     ],
     languageOptions: {
       parser: tseslint.parser,

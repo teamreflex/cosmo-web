@@ -31,7 +31,7 @@ export default function SpinContainer({ seasons, currentUser }: Props) {
   // reset the state when the artist changes
   useEffect(() => {
     resetState();
-  }, [artist]);
+  }, [resetState, artist]);
 
   return (
     <div className="flex flex-col gap-4">
