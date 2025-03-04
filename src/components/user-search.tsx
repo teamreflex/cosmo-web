@@ -37,6 +37,7 @@ type Props = PropsWithChildren<{
   onOpenChange: (open: boolean) => void;
   onSelect: (user: CosmoPublicUser) => void;
   authenticated?: boolean;
+  includeSpin?: boolean;
 }>;
 
 export function UserSearch({
@@ -47,6 +48,7 @@ export function UserSearch({
   onOpenChange,
   onSelect,
   authenticated = false,
+  includeSpin = false,
 }: Props) {
   const { artist } = useUserState();
   const [query, setQuery] = useState<string>("");
@@ -58,7 +60,10 @@ export function UserSearch({
     queryKey: ["user-search", debouncedQuery],
     queryFn: async () => {
       return await ofetch<CosmoSearchResult>(`/api/user/v1/search`, {
-        query: { query: debouncedQuery },
+        query: {
+          query: debouncedQuery,
+          spin: includeSpin,
+        },
         retry: 1,
       }).then((res) => res.results);
     },

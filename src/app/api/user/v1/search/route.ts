@@ -13,6 +13,7 @@ import { NextRequest, after } from "next/server";
  */
 export async function GET(request: NextRequest) {
   const query = request.nextUrl.searchParams.get("query") ?? "";
+  const includeSpin = request.nextUrl.searchParams.get("spin") === "true";
   const auth = await getUser();
 
   /**
@@ -65,8 +66,8 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  // insert @cosmo-spin
-  if (query.toLowerCase().includes("cosmo-")) {
+  // insert @cosmo-spin when doing a global search
+  if (includeSpin && query.toLowerCase().includes("cosmo-")) {
     results.results.push({
       nickname: "cosmo-spin",
       address: Addresses.SPIN,

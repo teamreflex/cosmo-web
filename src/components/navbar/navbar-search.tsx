@@ -41,6 +41,7 @@ export default function NavbarSearch({ authenticated }: Props) {
       onSelect={onSelect}
       recent={recent}
       authenticated={authenticated}
+      includeSpin={true}
     >
       <TooltipProvider delayDuration={0}>
         <Tooltip>
