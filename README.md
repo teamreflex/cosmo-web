@@ -16,6 +16,7 @@ This project aims to build a web based version of [MODHAUS](https://www.mod-haus
 - View and vote in Gravity events
 - View and like Rekord posts
 - View activity history, rankings, badges
+- Objekt Spin & in-progress recovery
 
 </details>
 

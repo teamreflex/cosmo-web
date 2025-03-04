@@ -11,7 +11,7 @@ import {
   withOnlineType,
   withSeason,
 } from "./objekts/filters";
-import { Addresses } from "../utils";
+import { Addresses, isAddressEqual } from "../utils";
 
 const PER_PAGE = 30;
 
@@ -23,7 +23,7 @@ export async function fetchTransfers(
   params: TransferParams
 ): Promise<TransferResult> {
   // too much data, bail
-  if (address.toLowerCase() === Addresses.NULL) {
+  if (isAddressEqual(address, Addresses.NULL)) {
     return {
       results: [],
       count: 0,
@@ -44,7 +44,7 @@ export async function fetchTransfers(
 
   return {
     ...aggregate,
-    // map the nickname onto the results
+    // map the nickname onto the results and apply spin flags
     results: aggregate.results.map((row) => ({
       ...row,
       nickname: knownAddresses.find((a) =>
@@ -70,6 +70,7 @@ async function fetchTransferRows(
       transfer: transfers,
       serial: objekts.serial,
       collection: collections,
+      isSpin: sql<boolean>`${transfers.to} = ${Addresses.SPIN}`,
     })
     .from(transfers)
     .leftJoin(objekts, eq(transfers.objektId, objekts.id))

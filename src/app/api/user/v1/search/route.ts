@@ -4,6 +4,7 @@ import { db } from "@/lib/server/db";
 import { profiles } from "@/lib/server/db/schema";
 import { validateExpiry } from "@/lib/server/jwt";
 import { CosmoSearchResult } from "@/lib/universal/cosmo/auth";
+import { Addresses } from "@/lib/utils";
 import { like, sql } from "drizzle-orm";
 import { NextRequest, after } from "next/server";
 
@@ -12,6 +13,7 @@ import { NextRequest, after } from "next/server";
  */
 export async function GET(request: NextRequest) {
   const query = request.nextUrl.searchParams.get("query") ?? "";
+  const includeSpin = request.nextUrl.searchParams.get("spin") === "true";
   const auth = await getUser();
 
   /**
@@ -61,6 +63,16 @@ export async function GET(request: NextRequest) {
       } catch (err) {
         console.error("Bulk profile caching failed:", err);
       }
+    });
+  }
+
+  // insert @cosmo-spin when doing a global search
+  if (includeSpin && query.toLowerCase().includes("cosmo-")) {
+    results.results.push({
+      nickname: "cosmo-spin",
+      address: Addresses.SPIN,
+      profileImageUrl: "",
+      profile: [],
     });
   }
 

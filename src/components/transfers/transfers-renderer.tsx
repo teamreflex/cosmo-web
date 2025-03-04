@@ -17,15 +17,13 @@ import { baseUrl } from "@/lib/utils";
 import { ofetch } from "ofetch";
 import { TransferParams, TransferResult } from "@/lib/universal/transfers";
 import { CosmoFilters, useCosmoFilters } from "@/hooks/use-cosmo-filters";
-import {
-  FiltersContainer,
-  TransfersFilters,
-} from "../collection/filters-container";
+import FiltersContainer from "../collection/filters-container";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import MemberFilter from "../collection/member-filter";
 import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import { useFilters } from "@/hooks/use-filters";
 import SkeletonGradient from "../skeleton/skeleton-overlay";
+import { TransfersFilters } from "../collection/filter-contexts/transfers-filters";
 
 type Props = {
   profile: PublicProfile;

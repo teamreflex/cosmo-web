@@ -13,6 +13,7 @@ export type AggregatedTransfer = {
   serial: number | null;
   collection: Collection | null;
   nickname?: string;
+  isSpin: boolean;
 };
 
 export type TransferResult = {

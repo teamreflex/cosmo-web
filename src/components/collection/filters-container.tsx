@@ -1,29 +1,13 @@
-import { Dispatch, PropsWithChildren, SetStateAction, useState } from "react";
-import LockedFilter from "./filter-locked";
-import GridableFilter from "./filter-gridable";
-import TransferableFilter from "./filter-transferable";
-import SeasonFilter from "./filter-season";
-import OnlineFilter from "./filter-online";
-import ClassFilter from "./filter-class";
-import SortFilter from "./filter-sort";
-import CollectionFilter from "../objekt-index/collection-filter";
+import { PropsWithChildren, useState } from "react";
 import { SlidersHorizontal } from "lucide-react";
 import Portal from "../portal";
-import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { Button } from "../ui/button";
-import { CollectionDataSource } from "@/lib/utils";
-import { TransferParams } from "@/lib/universal/transfers";
-import TransferTypeFilter from "./filter-transfer-type";
-import FilterDataSource from "./filter-data-source";
 
-type FiltersContainerProps = PropsWithChildren<{
+type Props = PropsWithChildren<{
   isPortaled?: boolean;
 }>;
 
-export function FiltersContainer({
-  children,
-  isPortaled,
-}: FiltersContainerProps) {
+export default function FiltersContainer({ children, isPortaled }: Props) {
   const [show, setShow] = useState(false);
 
   return (
@@ -47,110 +31,6 @@ export function FiltersContainer({
       </div>
 
       {children}
-    </div>
-  );
-}
-
-/**
- * used on:
- * - @/nickname
- * - /collection
- */
-type CollectionFiltersProps = {
-  allowCosmo?: boolean;
-  showLocked: boolean;
-  setShowLocked: (showLocked: boolean | null) => void;
-  allowSerials?: boolean;
-  dataSource: CollectionDataSource;
-  setDataSource: Dispatch<SetStateAction<CollectionDataSource>>;
-};
-export function CollectionFilters({
-  allowCosmo = false,
-  showLocked,
-  setShowLocked,
-  allowSerials = false,
-  dataSource,
-  setDataSource,
-}: CollectionFiltersProps) {
-  const [filters, setFilters] = useCosmoFilters();
-
-  return (
-    <div className="flex gap-2 items-center flex-wrap justify-center lg:group-data-[show=false]:flex group-data-[show=false]:hidden group-data-[show=true]:pb-2">
-      <LockedFilter showLocked={showLocked} setShowLocked={setShowLocked} />
-      {dataSource === "cosmo" && (
-        <GridableFilter filters={filters.gridable} setFilters={setFilters} />
-      )}
-      <TransferableFilter
-        filters={filters.transferable}
-        setFilters={setFilters}
-      />
-      <SeasonFilter filters={filters.season} setFilters={setFilters} />
-      <OnlineFilter filters={filters.on_offline} setFilters={setFilters} />
-      <ClassFilter filters={filters.class} setFilters={setFilters} />
-      <SortFilter
-        filters={filters.sort}
-        setFilters={setFilters}
-        serials={allowSerials}
-      />
-      <FilterDataSource
-        filters={filters}
-        setFilters={setFilters}
-        dataSource={dataSource}
-        setDataSource={setDataSource}
-        allowCosmo={allowCosmo}
-      />
-    </div>
-  );
-}
-
-/**
- * used on:
- * - @/nickname/list/list-name
- * - /objekts
- */
-type IndexFiltersProps = {
-  collections: string[];
-};
-export function IndexFilters({ collections }: IndexFiltersProps) {
-  const [filters, setFilters] = useCosmoFilters();
-
-  return (
-    <div className="flex gap-2 items-center flex-wrap justify-center lg:group-data-[show=false]:flex group-data-[show=false]:hidden">
-      <SeasonFilter filters={filters.season} setFilters={setFilters} />
-      <CollectionFilter
-        filters={filters.collectionNo}
-        setFilters={setFilters}
-        collections={collections}
-      />
-      <OnlineFilter filters={filters.on_offline} setFilters={setFilters} />
-      <ClassFilter filters={filters.class} setFilters={setFilters} />
-      <SortFilter
-        filters={filters.sort}
-        setFilters={setFilters}
-        serials={false}
-      />
-    </div>
-  );
-}
-
-type TransfersFiltersProps = {
-  type: TransferParams["type"];
-  setType: (type: TransferParams["type"]) => void;
-};
-
-/**
- * used on:
- * - @/nickname/trades
- */
-export function TransfersFilters({ type, setType }: TransfersFiltersProps) {
-  const [filters, setFilters] = useCosmoFilters();
-
-  return (
-    <div className="flex gap-2 items-center flex-wrap justify-center lg:group-data-[show=false]:flex group-data-[show=false]:hidden">
-      <SeasonFilter filters={filters.season} setFilters={setFilters} />
-      <OnlineFilter filters={filters.on_offline} setFilters={setFilters} />
-      <ClassFilter filters={filters.class} setFilters={setFilters} />
-      <TransferTypeFilter type={type} setType={setType} />
     </div>
   );
 }

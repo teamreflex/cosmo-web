@@ -75,13 +75,15 @@ export default function UpdateDialog() {
 
 const updates = [
   {
-    date: "2025-03-02",
+    date: "2025-03-04",
     changes: [
-      "Objekts on progress pages now bring up information dialogs when clicked.",
-      "Added a 'Spin' filter to the transfer page to filter for transfers to COSMO spin.",
+      "Implemented objekt spinning.",
       "Transfers sent to COSMO spin are now displayed as such, instead of showing the @cosmo-spin user.",
-      "Added a Polygon blockchain collection grouping option to profile pages.",
+      "Added a 'Spin' filter to the transfer page to filter for transfers to COSMO spin.",
       "Added an icon to the profiles of official Modhaus accounts.",
+      "Added a Polygon blockchain collection grouping option to profile pages.",
+      "Objekts on progress pages now bring up information dialogs when clicked.",
+      "@cosmo-spin has been excluded from leaderboards.",
     ],
   },
   {

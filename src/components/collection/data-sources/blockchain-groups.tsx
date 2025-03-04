@@ -116,6 +116,7 @@ export default function BlockchainGroups(props: Props) {
         hidePins={usingFilters}
         shouldRender={shouldRender}
         gridColumns={gridColumns}
+        showTotal
       >
         {({ rows, hidePins }) => (
           <VirtualizedGrid

@@ -11,10 +11,7 @@ import {
 import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
 import { TopOverlay } from "./index-overlay";
 import { useFilters } from "@/hooks/use-filters";
-import {
-  FiltersContainer,
-  IndexFilters,
-} from "../collection/filters-container";
+import FiltersContainer from "../collection/filters-container";
 import { ofetch } from "ofetch";
 import { baseUrl } from "@/lib/utils";
 import { parseAsString, useQueryState } from "nuqs";
@@ -29,6 +26,7 @@ import { ChartColumnBig } from "lucide-react";
 import VirtualizedGrid from "../objekt/virtualized-grid";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import LoaderRemote from "../objekt/loader-remote";
+import ObjektIndexFilters from "../collection/filter-contexts/objekt-index-filters";
 
 type Props = {
   artists: CosmoArtistWithMembersBFF[];
@@ -81,7 +79,7 @@ export default function IndexRenderer(props: Props) {
       <Title nickname={props.nickname} objektLists={props.objektLists} />
 
       <FiltersContainer>
-        <IndexFilters collections={props.collections} />
+        <ObjektIndexFilters collections={props.collections} />
       </FiltersContainer>
 
       <FilteredObjektDisplay artists={props.artists} gridColumns={gridColumns}>
@@ -89,6 +87,7 @@ export default function IndexRenderer(props: Props) {
           options={options}
           shouldRender={() => true}
           gridColumns={gridColumns}
+          showTotal
         >
           {({ rows, hidePins }) => (
             <VirtualizedGrid

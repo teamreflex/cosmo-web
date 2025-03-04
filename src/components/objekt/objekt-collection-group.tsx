@@ -18,7 +18,7 @@ import MetadataDialog, { fetchObjektQuery } from "./metadata-dialog";
 import { useQueryClient } from "@tanstack/react-query";
 import { useProfileContext } from "@/hooks/use-profile";
 import StaticObjekt from "./objekt-static";
-import { useObjektSelection } from "@/hooks/use-objekt-selection";
+import { useObjektTransfer } from "@/hooks/use-objekt-transfer";
 import { useShallow } from "zustand/react/shallow";
 import { useObjektOverlay } from "@/store";
 
@@ -39,7 +39,7 @@ export default function GroupedObjekt({
   priority = false,
 }: Props) {
   const [open, setOpen] = useState(false);
-  const hasSelected = useObjektSelection(
+  const hasSelected = useObjektTransfer(
     useShallow((state) =>
       state.hasSelected(group.objekts.map((o) => o.metadata.tokenId))
     )

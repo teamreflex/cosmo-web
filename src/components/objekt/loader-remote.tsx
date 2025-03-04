@@ -16,6 +16,7 @@ type Props<Response, Item> = {
   hidePins?: boolean;
   shouldRender: (objekt: Item) => boolean;
   gridColumns: number;
+  showTotal?: boolean;
 };
 
 export default function LoaderRemote<Response, Item>(
@@ -55,7 +56,7 @@ export default function LoaderRemote<Response, Item>(
         hidePins,
       })}
 
-      <Portal to="#objekt-total">{total}</Portal>
+      {props.showTotal === true && <Portal to="#objekt-total">{total}</Portal>}
       <Portal to="#pagination">
         <InfiniteQueryNext
           status={query.status}

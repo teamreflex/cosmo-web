@@ -9,7 +9,7 @@ type DefaultOptions = {
 
 export function useFilters(opts?: DefaultOptions) {
   // setup cosmo filters
-  const [cosmoFilters] = useCosmoFilters();
+  const [cosmoFilters, setCosmoFilters] = useCosmoFilters();
 
   // use separate state for apollo features so a refetch doesn't occur
   const [showLocked, setShowLocked] = useQueryState("locked", parseAsBoolean);
@@ -35,6 +35,23 @@ export function useFilters(opts?: DefaultOptions) {
     );
   }, [cosmoFilters]);
 
+  function reset() {
+    setShowLocked(null);
+    setCosmoFilters({
+      member: null,
+      artist: null,
+      sort: null,
+      class: null,
+      season: null,
+      on_offline: null,
+      transferable: null,
+      gridable: null,
+      used_for_grid: null,
+      collectionNo: null,
+      collection: null,
+    });
+  }
+
   return {
     // masks the fact that null means show locked
     showLocked: showLocked ?? true,
@@ -42,6 +59,7 @@ export function useFilters(opts?: DefaultOptions) {
     dataSource,
     setDataSource,
     searchParams,
+    reset,
   };
 }
 

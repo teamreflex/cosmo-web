@@ -162,10 +162,7 @@ export async function GET(request: NextRequest, props: Props) {
 /**
  * Custom sorting filters as collection groups have a different mechanism for sorting.
  */
-export function withObjektGroupSort<T extends PgSelect>(
-  qb: T,
-  sort: ValidSort
-) {
+function withObjektGroupSort<T extends PgSelect>(qb: T, sort: ValidSort) {
   switch (sort) {
     case "newest":
       return qb.orderBy(desc(max(objekts.receivedAt)));
