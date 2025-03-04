@@ -1,7 +1,7 @@
 "use client";
 
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
-import { match } from "ts-pattern";
+import { match, P } from "ts-pattern";
 import SpinStepper from "./spin-stepper";
 import { useObjektSpin } from "@/hooks/use-objekt-spin";
 import StateIdle from "./state/spin-state-idle";
@@ -66,7 +66,7 @@ export default function SpinContainer({ seasons, currentUser }: Props) {
         .with({ status: "confirm-error" }, (state) => (
           <StateConfirmError state={state} />
         ))
-        .with({ status: "confirmed" }, (state) => (
+        .with({ status: P.union("confirmed", "resuming") }, (state) => (
           <StateConfirmed state={state} />
         ))
         .with({ status: "complete" }, (state) => (

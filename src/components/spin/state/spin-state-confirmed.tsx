@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import {
   SpinStateConfirmReceipt,
+  SpinStateResuming,
   useObjektSpin,
   useSpinComplete,
 } from "@/hooks/use-objekt-spin";
@@ -11,7 +12,7 @@ import Image from "next/image";
 import { cn, track } from "@/lib/utils";
 
 type Props = {
-  state: SpinStateConfirmReceipt;
+  state: SpinStateConfirmReceipt | SpinStateResuming;
 };
 
 /**

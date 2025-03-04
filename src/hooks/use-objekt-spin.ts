@@ -21,7 +21,7 @@ import { Addresses } from "@/lib/utils";
 import { getErrorMessage } from "@/lib/error";
 import { useCosmoArtists } from "./use-cosmo-artist";
 import { match } from "ts-pattern";
-import { Hex } from "viem";
+import type { Hex } from "viem";
 
 export const SIMULATE: boolean = false;
 
@@ -83,6 +83,11 @@ export type SpinStateConfirmReceipt = {
   hash: string;
 };
 
+export type SpinStateResuming = {
+  status: "resuming";
+  spinId: number;
+};
+
 export type SpinStateConfirmError = {
   status: "confirm-error";
   objekt: SelectedObjekt;
@@ -93,9 +98,9 @@ export type SpinStateConfirmError = {
 
 export type SpinStateComplete = {
   status: "complete";
-  objekt: SelectedObjekt;
   spinId: number;
-  hash: string;
+  objekt?: SelectedObjekt;
+  hash?: string;
   index: number;
   options: CosmoSpinOption[];
 };
@@ -109,6 +114,7 @@ export type SpinState =
   | SpinStateSent
   | SpinStateSendError
   | SpinStateConfirmReceipt
+  | SpinStateResuming
   | SpinStateConfirmError
   | SpinStateComplete;
 
@@ -138,6 +144,7 @@ type ObjektSpinState = {
   confirmSent: (hash: string) => void;
   setError: (error: string) => void;
   confirmReceipt: () => void;
+  resumeSpin: (spinId: number) => void;
   confirmError: (error: string) => void;
   completeSpin: (index: number, options: CosmoSpinOption[]) => void;
 };
@@ -348,6 +355,20 @@ export const useObjektSpin = create<ObjektSpinState>()((set, get) => ({
   },
 
   /**
+   * Resume a spin.
+   */
+  resumeSpin: (spinId: number) => {
+    return set((state) => ({
+      ...state,
+      currentStep: 3,
+      state: {
+        status: "resuming",
+        spinId,
+      } satisfies SpinStateResuming,
+    }));
+  },
+
+  /**
    * Confirming with COSMO failed.
    */
   confirmError: (error: string) => {
@@ -372,7 +393,7 @@ export const useObjektSpin = create<ObjektSpinState>()((set, get) => ({
    */
   completeSpin: (index: number, options: CosmoSpinOption[]) => {
     const spinState = get().state;
-    if (spinState.status !== "confirmed") {
+    if (spinState.status !== "confirmed" && spinState.status !== "resuming") {
       throw new Error("Objekt has not been confirmed sent.");
     }
 
