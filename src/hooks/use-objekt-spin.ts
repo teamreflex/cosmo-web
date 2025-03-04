@@ -395,7 +395,7 @@ export const useObjektSpin = create<ObjektSpinState>()((set, get) => ({
 export function useSpinTickets() {
   const { token, artist } = useUserState();
   return useSuspenseQuery({
-    queryKey: ["spin-tickets", artist],
+    queryKey: ["spin-tickets", token?.address, artist],
     queryFn: () => {
       if (SIMULATE) {
         return {
