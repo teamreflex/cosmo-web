@@ -83,6 +83,14 @@ export type SpinStateConfirmReceipt = {
   hash: string;
 };
 
+export type SpinStateConfirmError = {
+  status: "confirm-error";
+  objekt: SelectedObjekt;
+  spinId: number;
+  hash: string;
+  error?: string;
+};
+
 export type SpinStateComplete = {
   status: "complete";
   objekt: SelectedObjekt;
@@ -101,6 +109,7 @@ export type SpinState =
   | SpinStateSent
   | SpinStateSendError
   | SpinStateConfirmReceipt
+  | SpinStateConfirmError
   | SpinStateComplete;
 
 type ObjektSpinState = {
@@ -129,6 +138,7 @@ type ObjektSpinState = {
   confirmSent: (hash: string) => void;
   setError: (error: string) => void;
   confirmReceipt: () => void;
+  confirmError: (error: string) => void;
   completeSpin: (index: number, options: CosmoSpinOption[]) => void;
 };
 
@@ -338,6 +348,26 @@ export const useObjektSpin = create<ObjektSpinState>()((set, get) => ({
   },
 
   /**
+   * Confirming with COSMO failed.
+   */
+  confirmError: (error: string) => {
+    const spinState = get().state;
+    if (spinState.status !== "success" && spinState.status !== "confirmed") {
+      throw new Error("Objekt has not been sent.");
+    }
+
+    return set((state) => ({
+      ...state,
+      currentStep: 3,
+      state: {
+        ...spinState,
+        status: "confirm-error",
+        error,
+      } satisfies SpinStateConfirmError,
+    }));
+  },
+
+  /**
    * Set the selection of the index to submit for spin.
    */
   completeSpin: (index: number, options: CosmoSpinOption[]) => {
@@ -422,36 +452,16 @@ export function useSpinPresign() {
 /**
  * Send the objekt and confirm the spin.
  */
-export function useSpinSubmit() {
-  const { token, artist } = useUserState();
+export function useSpinSendObjekt() {
+  const { artist } = useUserState();
   const { artists } = useCosmoArtists();
   const [isPending, setIsPending] = useState(false);
   const { send } = useSendObjekt();
-  const queryClient = useQueryClient();
-  const submit = useMutation({
-    mutationFn: async (spinId: number): Promise<boolean> => {
-      // DEBUG
-      if (SIMULATE) {
-        return true;
-      }
-
-      const endpoint = new URL("/bff/v3/spin", COSMO_ENDPOINT);
-      return await ofetch<void>(endpoint.toString(), {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token?.accessToken}`,
-        },
-        body: {
-          spinId,
-        },
-      }).then(() => true);
-    },
-  });
+  const confirmMutation = useSpinConfirm();
 
   const startSending = useObjektSpin((state) => state.startSending);
   const confirmSent = useObjektSpin((state) => state.confirmSent);
   const setError = useObjektSpin((state) => state.setError);
-  const confirmReceipt = useObjektSpin((state) => state.confirmReceipt);
 
   /**
    * Execute objekt send and confirm the spin upon transaction receipt.
@@ -484,16 +494,8 @@ export function useSpinSubmit() {
       // update the selection to success
       confirmSent(hash ?? "");
 
-      // submit the spin
-      const result = await submit.mutateAsync(selection.spinId);
-
-      // confirm the receipt of the objekt
-      confirmReceipt();
-
-      // invalidate the spin tickets query
-      queryClient.invalidateQueries({ queryKey: ["spin-tickets"] });
-
-      return result;
+      // confirm the spin
+      await confirmMutation.mutateAsync(selection.spinId);
     } catch (error) {
       // update the selection to error
       setError(getErrorMessage(error));
@@ -508,6 +510,46 @@ export function useSpinSubmit() {
     handleSend,
     isPending,
   };
+}
+
+/**
+ * Confirm with COSMO that the objekt has been sent.
+ */
+export function useSpinConfirm() {
+  const { token } = useUserState();
+  const confirmReceipt = useObjektSpin((state) => state.confirmReceipt);
+  const confirmError = useObjektSpin((state) => state.confirmError);
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (spinId: number): Promise<boolean> => {
+      // DEBUG
+      if (SIMULATE) {
+        return true;
+      }
+
+      const endpoint = new URL("/bff/v3/spin", COSMO_ENDPOINT);
+      return await ofetch<void>(endpoint.toString(), {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token?.accessToken}`,
+        },
+        body: {
+          spinId,
+        },
+      }).then(() => true);
+    },
+    retry: 1,
+    onSuccess: () => {
+      // confirm the receipt of the objekt
+      confirmReceipt();
+
+      // invalidate the spin tickets query
+      queryClient.invalidateQueries({ queryKey: ["spin-tickets"] });
+    },
+    onError: (error) => {
+      confirmError(getErrorMessage(error));
+    },
+  });
 }
 
 /**

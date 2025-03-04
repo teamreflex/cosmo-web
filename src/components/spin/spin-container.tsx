@@ -17,6 +17,7 @@ import { CosmoSeason } from "@/lib/universal/cosmo/season";
 import { Suspense, useEffect } from "react";
 import Skeleton from "../skeleton/skeleton";
 import { useUserState } from "@/hooks/use-user-state";
+import StateConfirmError from "./state/spin-state-confirm-error";
 
 type Props = {
   seasons: CosmoSeason[];
@@ -62,6 +63,9 @@ export default function SpinContainer({ seasons, currentUser }: Props) {
         .with({ status: "sending" }, (state) => <StatePending state={state} />)
         .with({ status: "success" }, (state) => <StateSuccess state={state} />)
         .with({ status: "error" }, (state) => <StateError state={state} />)
+        .with({ status: "confirm-error" }, (state) => (
+          <StateConfirmError state={state} />
+        ))
         .with({ status: "confirmed" }, (state) => (
           <StateConfirmed state={state} />
         ))

@@ -6,7 +6,7 @@ type Props = {
 };
 
 /**
- * Transaction has been confirmed, show the hash.
+ * Transaction has been confirmed, now confirming with COSMO.
  */
 export default function StateSuccess({ state }: Props) {
   return (

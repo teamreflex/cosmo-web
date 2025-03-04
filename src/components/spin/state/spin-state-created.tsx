@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import {
   SpinStateCreated,
   useObjektSpin,
-  useSpinSubmit,
+  useSpinSendObjekt,
 } from "@/hooks/use-objekt-spin";
 import { Loader2 } from "lucide-react";
 
@@ -16,7 +16,7 @@ type Props = {
  * Spin has been created, send the objekt.
  */
 export default function StateCreated({ state }: Props) {
-  const { handleSend, isPending } = useSpinSubmit();
+  const { handleSend, isPending } = useSpinSendObjekt();
   const cancel = useObjektSpin((state) => state.cancelSending);
 
   function handleClick() {
