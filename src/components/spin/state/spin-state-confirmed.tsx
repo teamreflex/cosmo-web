@@ -27,7 +27,8 @@ export default function StateConfirmed({ state }: Props) {
   }
 
   function handleConfirm() {
-    if (!index) return;
+    if (index === undefined) return;
+
     mutate(
       {
         spinId: state.spinId,
