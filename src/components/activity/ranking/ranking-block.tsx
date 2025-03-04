@@ -87,7 +87,7 @@ function RankingList({ artist, kind }: RankingListProps) {
     return <CalculatingError error={data.error} />;
   }
 
-  const sorted = data.data.nearPeople.toSorted(
+  const sorted = [...data.data.nearPeople].sort(
     (i) => sortMap[i.relativePosition]
   );
 

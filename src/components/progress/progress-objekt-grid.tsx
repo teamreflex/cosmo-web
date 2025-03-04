@@ -7,8 +7,8 @@ type Props = {
 };
 
 export default function ProgressObjektGrid({ title, collections }: Props) {
-  const sorted = collections
-    .toSorted(
+  const sorted = [...collections]
+    .sort(
       (a, b) =>
         parseInt(a.collection.collectionNo) -
         parseInt(b.collection.collectionNo)
