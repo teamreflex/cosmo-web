@@ -23,7 +23,7 @@ import { useCosmoArtists } from "./use-cosmo-artist";
 import { match } from "ts-pattern";
 import { Hex } from "viem";
 
-export const SIMULATE: boolean = true;
+export const SIMULATE: boolean = false;
 
 type SelectedObjekt = {
   collection: Objekt.Collection;
