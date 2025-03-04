@@ -1,48 +1,18 @@
 import { Plus } from "lucide-react";
 import { useObjektSpin, useSpinTickets } from "@/hooks/use-objekt-spin";
 import { cn } from "@/lib/utils";
+import { QueryErrorResetBoundary } from "@tanstack/react-query";
+import { ErrorBoundary } from "react-error-boundary";
+import SpinRates from "../spin-rates";
 
 export default function StateIdle() {
   const { data } = useSpinTickets();
   const startSelecting = useObjektSpin((state) => state.startSelecting);
 
   return (
-    <div className="flex flex-col">
-      {/* statistics */}
-      {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <QueryErrorResetBoundary>
-          {({ reset }) => (
-            <ErrorBoundary
-              onReset={reset}
-              fallbackRender={({ resetErrorBoundary }) => (
-                <button onClick={resetErrorBoundary}>retry</button>
-              )}
-            >
-              <Suspense fallback={<div>Loading spin statistics...</div>}>
-                <SpinStatistics />
-              </Suspense>
-            </ErrorBoundary>
-          )}
-        </QueryErrorResetBoundary>
-
-        <QueryErrorResetBoundary>
-          {({ reset }) => (
-            <ErrorBoundary
-              onReset={reset}
-              fallbackRender={({ resetErrorBoundary }) => (
-                <button onClick={resetErrorBoundary}>retry</button>
-              )}
-            >
-              <Suspense fallback={<div>Loading spin rates...</div>}>
-                <SpinRates />
-              </Suspense>
-            </ErrorBoundary>
-          )}
-        </QueryErrorResetBoundary>
-      </div> */}
-
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {/* get started */}
-      <div className="flex flex-col gap-4 items-center justify-center mx-auto w-full">
+      <div className="flex flex-col gap-4 items-center justify-center">
         <button
           disabled={data.availableTicketsCount === 0}
           onClick={startSelecting}
@@ -64,6 +34,22 @@ export default function StateIdle() {
         ) : (
           <h3 className="text-lg font-bold">You have no spin tickets left</h3>
         )}
+      </div>
+
+      {/* statistics */}
+      <div className="flex flex-col gap-4">
+        <QueryErrorResetBoundary>
+          {({ reset }) => (
+            <ErrorBoundary
+              onReset={reset}
+              fallbackRender={({ resetErrorBoundary }) => (
+                <button onClick={resetErrorBoundary}>retry</button>
+              )}
+            >
+              <SpinRates />
+            </ErrorBoundary>
+          )}
+        </QueryErrorResetBoundary>
       </div>
     </div>
   );

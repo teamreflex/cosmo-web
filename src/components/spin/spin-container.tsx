@@ -37,41 +37,38 @@ export default function SpinContainer({ seasons, currentUser }: Props) {
     <div className="flex flex-col gap-4">
       <SpinStepper />
 
-      <Suspense
-        fallback={
-          <div className="flex flex-col">
-            <div className="flex flex-col gap-4 items-center justify-center mx-auto w-full">
-              <Skeleton className="flex items-center justify-center rounded-2xl md:rounded-lg aspect-photocard w-2/3 md:w-48" />
-            </div>
-          </div>
-        }
-      >
-        {match(state)
-          .with({ status: "idle" }, () => <StateIdle />)
-          .with({ status: "selecting" }, () => (
-            <StateSelecting currentUser={currentUser} />
-          ))
-          .with({ status: "selected" }, (state) => (
-            <StateSelected seasons={seasons} state={state} />
-          ))
-          .with({ status: "created" }, (state) => (
-            <StateCreated state={state} />
-          ))
-          .with({ status: "sending" }, (state) => (
-            <StatePending state={state} />
-          ))
-          .with({ status: "success" }, (state) => (
-            <StateSuccess state={state} />
-          ))
-          .with({ status: "error" }, (state) => <StateError state={state} />)
-          .with({ status: "confirmed" }, (state) => (
-            <StateConfirmed state={state} />
-          ))
-          .with({ status: "complete" }, (state) => (
-            <StateComplete state={state} />
-          ))
-          .exhaustive()}
-      </Suspense>
+      {match(state)
+        .with({ status: "idle" }, () => (
+          <Suspense
+            fallback={
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-4 items-center justify-center">
+                  <Skeleton className="flex items-center justify-center rounded-2xl md:rounded-lg aspect-photocard w-2/3 md:w-48" />
+                </div>
+                <Skeleton className="w-full h-24" />
+              </div>
+            }
+          >
+            <StateIdle />
+          </Suspense>
+        ))
+        .with({ status: "selecting" }, () => (
+          <StateSelecting currentUser={currentUser} />
+        ))
+        .with({ status: "selected" }, (state) => (
+          <StateSelected seasons={seasons} state={state} />
+        ))
+        .with({ status: "created" }, (state) => <StateCreated state={state} />)
+        .with({ status: "sending" }, (state) => <StatePending state={state} />)
+        .with({ status: "success" }, (state) => <StateSuccess state={state} />)
+        .with({ status: "error" }, (state) => <StateError state={state} />)
+        .with({ status: "confirmed" }, (state) => (
+          <StateConfirmed state={state} />
+        ))
+        .with({ status: "complete" }, (state) => (
+          <StateComplete state={state} />
+        ))
+        .exhaustive()}
     </div>
   );
 }

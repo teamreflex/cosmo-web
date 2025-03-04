@@ -3,6 +3,12 @@ import { COSMO_ENDPOINT } from "@/lib/universal/cosmo/common";
 import { CosmoSpinSeasonRate } from "@/lib/universal/cosmo/spin";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ofetch } from "ofetch";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 export default function SpinRates() {
   const { token, artist } = useUserState();
@@ -22,19 +28,22 @@ export default function SpinRates() {
   const sortedRates = data.toSorted((a, b) => a.order - b.order);
 
   return (
-    <div className="flex flex-col">
-      {sortedRates.map((season) => (
-        <div key={season.title} className="flex flex-col">
-          <span className="font-semibold">{season.title}</span>
-          <ul className="list-disc">
-            {season.rates.map((rate) => (
-              <li key={rate.type}>
-                {rate.type} - {rate.rate}%
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
-    </div>
+    <Accordion type="single" defaultValue="rates" collapsible>
+      <AccordionItem key="rates" value="rates">
+        <AccordionTrigger className="pt-0">Drop Rates</AccordionTrigger>
+        <AccordionContent className="flex flex-col gap-2">
+          {sortedRates.map((season) => (
+            <div key={season.title} className="flex flex-col">
+              <span className="font-semibold">{season.title}</span>
+              <span className="text-sm text-muted-foreground">
+                {season.rates
+                  .map((rate) => `${rate.type}: ${rate.rate}%`)
+                  .join(" / ")}
+              </span>
+            </div>
+          ))}
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
   );
 }

@@ -50,10 +50,11 @@ export default function SpinLoading() {
         </div>
 
         {/* idle state */}
-        <div className="flex flex-col">
-          <div className="flex flex-col gap-4 items-center justify-center mx-auto w-full">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex flex-col gap-4 items-center justify-center">
             <Skeleton className="flex items-center justify-center rounded-2xl md:rounded-lg aspect-photocard w-2/3 md:w-48" />
           </div>
+          <Skeleton className="w-full h-24" />
         </div>
       </div>
     </main>
