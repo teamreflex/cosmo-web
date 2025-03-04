@@ -13,6 +13,7 @@ import { useState } from "react";
 import { useLockedObjekt, useProfileContext } from "@/hooks/use-profile";
 import { useShallow } from "zustand/react/shallow";
 import { useObjektSpin } from "@/hooks/use-objekt-spin";
+import { useFilters } from "@/hooks/use-filters";
 
 interface Props {
   group: BFFCollectionGroup;
@@ -48,10 +49,6 @@ export default function SpinGroupedObjekt({
   const collection = Objekt.fromCollectionGroup({
     collection: group.collection,
   });
-  const hasNew = group.objekts.some((o) => {
-    const acquiredAt = new Date(o.inventory.acquiredAt);
-    return Date.now() - acquiredAt.getTime() < 24 * 60 * 60 * 1000;
-  });
 
   function handleOpenChange(open: boolean) {
     if (open) {
@@ -67,7 +64,6 @@ export default function SpinGroupedObjekt({
         collection={collection}
         count={group.count}
         hasSelected={hasSelected}
-        hasNew={hasNew}
         onClick={() => setOpen(group)}
         priority={priority}
       />
@@ -120,7 +116,6 @@ type RootObjektProps = {
   collection: Objekt.Collection;
   count: number;
   hasSelected: boolean;
-  hasNew: boolean;
   onClick: () => void;
   priority?: boolean;
 };
@@ -129,7 +124,6 @@ function RootObjekt({
   collection,
   count,
   hasSelected,
-  hasNew,
   onClick,
   priority = false,
 }: RootObjektProps) {
@@ -223,6 +217,7 @@ type SpinnableObjektProps = {
  * Used within a collection group list.
  */
 function SpinnableObjekt({ collection, token }: SpinnableObjektProps) {
+  const { reset } = useFilters();
   const isLocked = useLockedObjekt(token.tokenId);
   const select = useObjektSpin((state) => state.select);
   const isSelected = useObjektSpin(
@@ -234,6 +229,7 @@ function SpinnableObjekt({ collection, token }: SpinnableObjektProps) {
   function handleClick() {
     if (!isLocked) {
       select({ collection, token });
+      reset();
     }
   }
 
