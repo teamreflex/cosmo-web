@@ -7,15 +7,130 @@ import Image from "next/image";
 import SpinFail from "@/assets/spin-fail.png";
 import { Button } from "@/components/ui/button";
 import { IconRotate360 } from "@tabler/icons-react";
+import { useState } from "react";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 
 type Props = {
   state: SpinStateComplete;
 };
 
 /**
- * Spin has been complete, show all missed options.
+ * Spin has been complete. Show result, and optionally all missed options.
  */
 export default function StateComplete({ state }: Props) {
+  const resetState = useObjektSpin((state) => state.resetState);
+  const [open, setOpen] = useState(true);
+  const [showOptions, setShowOptions] = useState(false);
+  const isDesktop = useMediaQuery();
+
+  const result = state.options[state.index];
+
+  function onShowOptions() {
+    setShowOptions(true);
+    setOpen(false);
+  }
+
+  function onClose() {
+    resetState();
+    setOpen(false);
+  }
+
+  return (
+    <div>
+      {showOptions && <SpinOptions state={state} />}
+
+      {isDesktop ? (
+        <Dialog open={open} onOpenChange={onClose}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Spin Result</DialogTitle>
+              <DialogDescription>
+                {result?.collectionId ?? "Spin failed"}
+              </DialogDescription>
+            </DialogHeader>
+
+            <SpinResult
+              result={result}
+              onShowOptions={onShowOptions}
+              onClose={onClose}
+            />
+          </DialogContent>
+        </Dialog>
+      ) : (
+        <Drawer open={open} onOpenChange={onClose}>
+          <DrawerContent>
+            <DrawerHeader>
+              <DrawerTitle>Spin Result</DrawerTitle>
+              <DrawerDescription>
+                {result?.collectionId ?? "Spin failed"}
+              </DrawerDescription>
+            </DrawerHeader>
+
+            <SpinResult
+              result={result}
+              onShowOptions={onShowOptions}
+              onClose={onClose}
+            />
+          </DrawerContent>
+        </Drawer>
+      )}
+    </div>
+  );
+}
+
+type SpinResultProps = {
+  result: CosmoSpinOption;
+  onShowOptions: () => void;
+  onClose: () => void;
+};
+
+function SpinResult({ result, onShowOptions, onClose }: SpinResultProps) {
+  const isDesktop = useMediaQuery();
+
+  return (
+    <div className="flex flex-col items-center gap-2">
+      {/* objekt result */}
+      <div className="mx-auto h-72 aspect-photocard">
+        {result === null ? (
+          <MissedObjekt selected={false} />
+        ) : (
+          <OptionObjekt selected={false} objekt={result} />
+        )}
+      </div>
+
+      {/* buttons */}
+      <div
+        data-mobile={!isDesktop}
+        className="flex items-center gap-2 data-mobile:p-4"
+      >
+        <Button variant="secondary" onClick={onShowOptions}>
+          <Check className="w-4 h-4 mr-2" />
+          <span>Show Options</span>
+        </Button>
+
+        <Button onClick={onClose}>
+          <span>Close</span>
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function SpinOptions({ state }: Props) {
   const resetState = useObjektSpin((state) => state.resetState);
 
   return (
