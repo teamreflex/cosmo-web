@@ -4,6 +4,7 @@ import {
   SpinStateResuming,
   useObjektSpin,
   useSpinComplete,
+  useSpinTickets,
 } from "@/hooks/use-objekt-spin";
 import { Check, Dices } from "lucide-react";
 import { useState } from "react";
@@ -19,6 +20,7 @@ type Props = {
  * Cosmo has confirmed the objekt transfer, show the 16 options.
  */
 export default function StateConfirmed({ state }: Props) {
+  const { refetch } = useSpinTickets();
   const { mutate, status } = useSpinComplete();
   const completeSpin = useObjektSpin((state) => state.completeSpin);
   const [index, setIndex] = useState<number>();
@@ -39,6 +41,7 @@ export default function StateConfirmed({ state }: Props) {
         onSuccess: (options, { index }) => {
           completeSpin(index, options);
           track("spin-objekt");
+          refetch();
         },
       }
     );
