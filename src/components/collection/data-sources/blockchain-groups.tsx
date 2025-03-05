@@ -34,6 +34,7 @@ type Props = {
 export default function BlockchainGroups(props: Props) {
   const [filters] = useCosmoFilters();
   const lockedObjekts = useProfileContext((ctx) => ctx.lockedObjekts);
+  const pins = useProfileContext((ctx) => ctx.pins);
   const { artist } = useUserState();
   const isDesktop = useMediaQuery();
 
@@ -125,6 +126,7 @@ export default function BlockchainGroups(props: Props) {
             authenticated={props.authenticated}
             gridColumns={gridColumns}
             hidePins={hidePins}
+            pins={pins}
           >
             {({ item, priority }) => (
               <GroupedObjekt

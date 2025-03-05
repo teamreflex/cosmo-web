@@ -35,6 +35,7 @@ type Props = {
 export default function CosmoCollectionGroups(props: Props) {
   const [filters] = useCosmoFilters();
   const lockedObjekts = useProfileContext((ctx) => ctx.lockedObjekts);
+  const pins = useProfileContext((ctx) => ctx.pins);
   const { artist, token } = useUserState();
   const { getMember } = useCosmoArtists();
   const isDesktop = useMediaQuery();
@@ -152,6 +153,7 @@ export default function CosmoCollectionGroups(props: Props) {
             authenticated={props.authenticated}
             gridColumns={gridColumns}
             hidePins={hidePins}
+            pins={pins}
           >
             {({ item, priority }) => (
               <GroupedObjekt
