@@ -135,13 +135,12 @@ export default function SpinObjektGrid(props: Props) {
         shouldRender={shouldRender}
         gridColumns={gridColumns}
       >
-        {({ rows, hidePins }) => (
+        {({ rows }) => (
           <VirtualizedGrid
             rows={rows}
             getObjektId={(item) => item.collection.collectionId}
             authenticated={true}
             gridColumns={gridColumns}
-            hidePins={hidePins}
           >
             {({ item, priority }) => (
               <SpinGroupedObjekt

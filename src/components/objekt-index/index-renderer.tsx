@@ -89,13 +89,12 @@ export default function IndexRenderer(props: Props) {
           gridColumns={gridColumns}
           showTotal
         >
-          {({ rows, hidePins }) => (
+          {({ rows }) => (
             <VirtualizedGrid
               rows={rows}
               getObjektId={(objekt) => objekt.id}
               authenticated={authenticated}
               gridColumns={gridColumns}
-              hidePins={hidePins}
             >
               {({ item, priority }) => {
                 const collection = Objekt.fromIndexer(item);

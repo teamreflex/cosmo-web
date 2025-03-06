@@ -119,13 +119,12 @@ export default function BlockchainGroups(props: Props) {
         gridColumns={gridColumns}
         showTotal
       >
-        {({ rows, hidePins }) => (
+        {({ rows }) => (
           <VirtualizedGrid
             rows={rows}
             getObjektId={(item) => item.collection.collectionId}
             authenticated={props.authenticated}
             gridColumns={gridColumns}
-            hidePins={hidePins}
             pins={pins}
           >
             {({ item, priority }) => (

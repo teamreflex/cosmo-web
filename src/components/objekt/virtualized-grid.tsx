@@ -31,7 +31,6 @@ type Props<Item> = {
   pins?: CosmoObjekt[];
   getObjektId: (objekt: Item) => string;
   gridColumns: number;
-  hidePins?: boolean;
   authenticated: boolean;
 };
 
@@ -44,7 +43,6 @@ export default function VirtualizedGrid<Item>({
   pins = [],
   getObjektId,
   authenticated,
-  hidePins = true,
   gridColumns,
 }: Props<Item>) {
   // virtualization
@@ -93,7 +91,7 @@ export default function VirtualizedGrid<Item>({
             >
               {row.map((objekt, index) => {
                 // render pin
-                if (objekt.type === "pin" && hidePins === false) {
+                if (objekt.type === "pin") {
                   const legacyObjekt = Objekt.fromLegacy(objekt.item);
                   return (
                     <ExpandableObjekt

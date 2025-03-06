@@ -53,7 +53,6 @@ export default function LoaderRemote<Response, Item>(
     <div className="contents">
       {props.children({
         rows,
-        hidePins,
       })}
 
       {props.showTotal === true && <Portal to="#objekt-total">{total}</Portal>}
@@ -71,5 +70,4 @@ export default function LoaderRemote<Response, Item>(
 
 type RenderProps<Item> = {
   rows: ObjektRowItem<Item>[][];
-  hidePins: boolean;
 };

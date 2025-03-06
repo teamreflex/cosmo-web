@@ -86,13 +86,12 @@ export default function ListRenderer(props: Props) {
           gridColumns={gridColumns}
           showTotal
         >
-          {({ rows, hidePins }) => (
+          {({ rows }) => (
             <VirtualizedGrid
               rows={rows}
               getObjektId={(objekt) => objekt.id}
               authenticated={props.authenticated}
               gridColumns={gridColumns}
-              hidePins={hidePins}
             >
               {({ item, priority }) => {
                 const collection = Objekt.fromIndexer(item);

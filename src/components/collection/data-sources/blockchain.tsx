@@ -96,14 +96,13 @@ export default function Blockchain(props: Props) {
         gridColumns={gridColumns}
         showTotal
       >
-        {({ rows, hidePins }) => (
+        {({ rows }) => (
           <VirtualizedGrid
             rows={rows}
             pins={pins}
             getObjektId={(item) => item.tokenId}
             authenticated={props.authenticated}
             gridColumns={gridColumns}
-            hidePins={hidePins}
           >
             {({ item, id, isPin, priority }) => {
               const objekt = Objekt.fromLegacy(item);
