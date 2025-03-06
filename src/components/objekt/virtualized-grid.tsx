@@ -28,7 +28,6 @@ export type ObjektRowItem<T> =
 type Props<Item> = {
   children: (props: RenderProps<Item>) => ReactElement | null;
   rows: ObjektRowItem<Item>[][];
-  pins?: CosmoObjekt[];
   getObjektId: (objekt: Item) => string;
   gridColumns: number;
   authenticated: boolean;
@@ -40,7 +39,6 @@ const ASPECT_RATIO = 8.5 / 5.5;
 export default function VirtualizedGrid<Item>({
   children,
   rows,
-  pins = [],
   getObjektId,
   authenticated,
   gridColumns,
@@ -104,11 +102,7 @@ export default function VirtualizedGrid<Item>({
                         collection={legacyObjekt.collection}
                         token={legacyObjekt.objekt}
                         authenticated={authenticated}
-                        isPinned={
-                          pins.findIndex(
-                            (p) => p.tokenId === objekt.item.tokenId
-                          ) !== -1
-                        }
+                        isPinned={true}
                         isPin={true}
                       />
                     </ExpandableObjekt>

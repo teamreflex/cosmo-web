@@ -83,12 +83,7 @@ export default function IndexRenderer(props: Props) {
       </FiltersContainer>
 
       <FilteredObjektDisplay artists={props.artists} gridColumns={gridColumns}>
-        <LoaderRemote
-          options={options}
-          shouldRender={() => true}
-          gridColumns={gridColumns}
-          showTotal
-        >
+        <LoaderRemote options={options} gridColumns={gridColumns} showTotal>
           {({ rows }) => (
             <VirtualizedGrid
               rows={rows}

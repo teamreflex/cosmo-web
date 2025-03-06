@@ -114,9 +114,10 @@ export default function BlockchainGroups(props: Props) {
     <FilteredObjektDisplay artists={props.artists} gridColumns={gridColumns}>
       <LoaderRemote
         options={options}
-        hidePins={usingFilters}
         shouldRender={shouldRender}
         gridColumns={gridColumns}
+        hidePins={usingFilters}
+        pins={pins}
         showTotal
       >
         {({ rows }) => (
@@ -125,7 +126,6 @@ export default function BlockchainGroups(props: Props) {
             getObjektId={(item) => item.collection.collectionId}
             authenticated={props.authenticated}
             gridColumns={gridColumns}
-            pins={pins}
           >
             {({ item, priority }) => (
               <GroupedObjekt

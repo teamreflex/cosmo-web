@@ -4,28 +4,31 @@ import {
   ObjektResponseOptions,
   useObjektResponse,
 } from "@/hooks/use-objekt-response";
-import { useProfileContext } from "@/hooks/use-profile";
 import { ReactElement, useMemo } from "react";
 import Portal from "../portal";
 import { InfiniteQueryNext } from "../infinite-query-pending";
 import { ObjektRowItem } from "./virtualized-grid";
+import { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
 
 type Props<Response, Item> = {
   children: (props: RenderProps<Item>) => ReactElement;
   options: ObjektResponseOptions<Response, Item>;
+  pins?: CosmoObjekt[];
   hidePins?: boolean;
-  shouldRender: (objekt: Item) => boolean;
+  shouldRender?: (objekt: Item) => boolean;
   gridColumns: number;
   showTotal?: boolean;
 };
 
-export default function LoaderRemote<Response, Item>(
-  props: Props<Response, Item>
-) {
+export default function LoaderRemote<Response, Item>({
+  pins = [],
+  hidePins = true,
+  shouldRender = () => true,
+  showTotal = false,
+  ...props
+}: Props<Response, Item>) {
   // data
   const { query, total, items } = useObjektResponse(props.options);
-  const pins = useProfileContext((ctx) => ctx.pins);
-  const hidePins = props.hidePins ?? true;
 
   // merge pins and items
   const rows = useMemo(() => {
@@ -36,7 +39,7 @@ export default function LoaderRemote<Response, Item>(
             type: "pin" as const,
             item: pin,
           }))),
-      ...items.filter(props.shouldRender).map((item) => ({
+      ...items.filter(shouldRender).map((item) => ({
         type: "item" as const,
         item,
       })),
@@ -47,7 +50,7 @@ export default function LoaderRemote<Response, Item>(
       result.push(initialItems.slice(i, i + props.gridColumns));
     }
     return result;
-  }, [items, pins, props.shouldRender, props.gridColumns, hidePins]);
+  }, [items, pins, shouldRender, props.gridColumns, hidePins]);
 
   return (
     <div className="contents">
@@ -55,7 +58,7 @@ export default function LoaderRemote<Response, Item>(
         rows,
       })}
 
-      {props.showTotal === true && <Portal to="#objekt-total">{total}</Portal>}
+      {showTotal === true && <Portal to="#objekt-total">{total}</Portal>}
       <Portal to="#pagination">
         <InfiniteQueryNext
           status={query.status}

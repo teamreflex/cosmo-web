@@ -131,9 +131,10 @@ export default function SpinObjektGrid(props: Props) {
     <FilteredObjektDisplay artists={artists} gridColumns={gridColumns}>
       <LoaderRemote
         options={options}
-        hidePins={true}
         shouldRender={shouldRender}
         gridColumns={gridColumns}
+        hidePins={true}
+        pins={[]}
       >
         {({ rows }) => (
           <VirtualizedGrid

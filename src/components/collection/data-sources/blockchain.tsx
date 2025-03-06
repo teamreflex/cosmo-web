@@ -91,15 +91,15 @@ export default function Blockchain(props: Props) {
     <FilteredObjektDisplay artists={props.artists} gridColumns={gridColumns}>
       <LoaderRemote
         options={options}
-        hidePins={usingFilters}
         shouldRender={shouldRender}
         gridColumns={gridColumns}
+        hidePins={usingFilters}
+        pins={pins}
         showTotal
       >
         {({ rows }) => (
           <VirtualizedGrid
             rows={rows}
-            pins={pins}
             getObjektId={(item) => item.tokenId}
             authenticated={props.authenticated}
             gridColumns={gridColumns}
