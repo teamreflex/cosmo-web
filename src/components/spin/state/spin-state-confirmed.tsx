@@ -11,6 +11,8 @@ import { useState } from "react";
 import SpinCard from "@/assets/spin-card.png";
 import Image from "next/image";
 import { cn, track } from "@/lib/utils";
+import { useQueryClient } from "@tanstack/react-query";
+import { useProfileContext } from "@/hooks/use-profile";
 
 type Props = {
   state: SpinStateConfirmReceipt | SpinStateResuming;
@@ -20,9 +22,11 @@ type Props = {
  * Cosmo has confirmed the objekt transfer, show the 16 options.
  */
 export default function StateConfirmed({ state }: Props) {
+  const queryClient = useQueryClient();
   const { refetch } = useSpinTickets();
   const { mutate, status } = useSpinComplete();
   const completeSpin = useObjektSpin((state) => state.completeSpin);
+  const profile = useProfileContext((ctx) => ctx.currentProfile);
   const [index, setIndex] = useState<number>();
 
   function handleSelection(selection?: number) {
@@ -39,9 +43,20 @@ export default function StateConfirmed({ state }: Props) {
       },
       {
         onSuccess: (options, { index }) => {
-          completeSpin(index, options);
           track("spin-objekt");
+          // update spin state to completed
+          completeSpin(index, options);
+          // refetch spin tickets
           refetch();
+          // clear collection cache
+          queryClient.invalidateQueries({
+            predicate: (query) => {
+              return (
+                query.queryKey[0] === "collection" &&
+                query.queryKey.includes(profile!.address)
+              );
+            },
+          });
         },
       }
     );

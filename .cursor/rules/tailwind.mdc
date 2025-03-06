@@ -1,0 +1,17 @@
+---
+description: Rules for working with Tailwind v4
+globs: src/**/*.{ts,tsx}
+alwaysApply: false
+---
+**Tailwind v4:**
+- When dealing with CSS variables, use the `-(--var)` syntax instead of `-[var(--var)]`:
+
+```tsx
+export default function Component() {
+  return (
+    <div style={{ "--comp-color": "#ff0000" }} className="text-(--comp-color) bg-(--comp-color)/20">
+      <Component2 />
+    </div>
+  );
+}
+```
