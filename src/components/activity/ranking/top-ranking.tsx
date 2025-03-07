@@ -53,6 +53,15 @@ export default function TopRanking({ selectedArtist, artists }: Props) {
     (a) => a.name.toLowerCase() === selectedArtist.toLowerCase()
   )!;
 
+  function onTabChange(tab: string) {
+    const kind = tab as CosmoActivityRankingKind;
+    setTab(kind);
+    // gravity is not per-member so we must reset the memberId
+    if (kind === "gravity_per_como_in_season") {
+      setMemberId("0");
+    }
+  }
+
   return (
     <main className="container flex flex-col gap-2 py-2">
       {/* header */}
@@ -104,10 +113,7 @@ export default function TopRanking({ selectedArtist, artists }: Props) {
               </Select>
             )}
 
-            <Tabs
-              value={tab}
-              onValueChange={(v) => setTab(v as CosmoActivityRankingKind)}
-            >
+            <Tabs value={tab} onValueChange={onTabChange}>
               <TabsList className="flex justify-self-center w-fit mx-auto">
                 <TabsTrigger value="hold_objekts_per_season">
                   Objekt
