@@ -14,7 +14,6 @@ type Props = {
   allowCosmo?: boolean;
   showLocked: boolean;
   setShowLocked: (showLocked: boolean | null) => void;
-  allowSerials?: boolean;
   dataSource: CollectionDataSource;
   setDataSource: Dispatch<SetStateAction<CollectionDataSource>>;
 };
@@ -28,7 +27,6 @@ export default function CollectionFilters({
   allowCosmo = false,
   showLocked,
   setShowLocked,
-  allowSerials = false,
   dataSource,
   setDataSource,
 }: Props) {
@@ -50,7 +48,9 @@ export default function CollectionFilters({
       <SortFilter
         filters={filters.sort}
         setFilters={setFilters}
-        serials={allowSerials}
+        dataSource={dataSource}
+        setDataSource={setDataSource}
+        serials
       />
       <FilterDataSource
         filters={filters}

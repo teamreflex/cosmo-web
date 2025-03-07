@@ -45,7 +45,6 @@ export default function ProfileRenderer({
           showLocked={showLocked}
           setShowLocked={setShowLocked}
           allowCosmo={authenticated}
-          allowSerials={dataSource !== "cosmo"}
         />
       </FiltersContainer>
 
