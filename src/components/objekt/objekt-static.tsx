@@ -4,6 +4,7 @@ import { Objekt } from "@/lib/universal/objekt-conversion";
 import ExpandableObjekt from "./objekt-expandable";
 import { ObjektSidebar } from "./common";
 import InformationOverlay from "./overlay/information-overlay";
+import { useAuthenticated } from "@/hooks/use-authenticated";
 
 type Props = {
   collection: Objekt.Collection;
@@ -15,6 +16,7 @@ type Props = {
  * Used within a collection group list.
  */
 export default function StaticObjekt({ collection, token, isPinned }: Props) {
+  const authenticated = useAuthenticated();
   const isLocked = useLockedObjekt(token.tokenId);
 
   return (
@@ -27,7 +29,7 @@ export default function StaticObjekt({ collection, token, isPinned }: Props) {
       <ActionOverlay
         collection={collection}
         token={token}
-        authenticated={true}
+        authenticated={authenticated}
         isLocked={isLocked}
         isPinned={isPinned}
         isPin={false}

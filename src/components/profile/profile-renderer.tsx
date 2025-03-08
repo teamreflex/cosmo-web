@@ -12,6 +12,7 @@ import Blockchain from "../collection/data-sources/blockchain";
 import CosmoCollectionGroups from "../collection/data-sources/cosmo-groups";
 import BlockchainGroups from "../collection/data-sources/blockchain-groups";
 import CollectionFilters from "../collection/filter-contexts/collection-filters";
+import { AuthenticatedContext } from "@/hooks/use-authenticated";
 
 type Props = {
   artists: CosmoArtistWithMembersBFF[];
@@ -49,41 +50,40 @@ export default function ProfileRenderer({
       </FiltersContainer>
 
       {/* display */}
-      {match(dataSource)
-        .with("cosmo", () => (
-          <CosmoCollectionGroups
-            artists={artists}
-            authenticated={authenticated}
-            gridColumns={gridColumns}
-            targetUser={targetUser}
-            currentUser={currentUser}
-            searchParams={searchParams}
-            showLocked={showLocked}
-          />
-        ))
-        .with("blockchain", () => (
-          <Blockchain
-            artists={artists}
-            authenticated={authenticated}
-            gridColumns={gridColumns}
-            targetUser={targetUser}
-            currentUser={currentUser}
-            searchParams={searchParams}
-            showLocked={showLocked}
-          />
-        ))
-        .with("blockchain-groups", () => (
-          <BlockchainGroups
-            artists={artists}
-            authenticated={authenticated}
-            gridColumns={gridColumns}
-            targetUser={targetUser}
-            currentUser={currentUser}
-            searchParams={searchParams}
-            showLocked={showLocked}
-          />
-        ))
-        .exhaustive()}
+      <AuthenticatedContext.Provider value={authenticated}>
+        {match(dataSource)
+          .with("cosmo", () => (
+            <CosmoCollectionGroups
+              artists={artists}
+              gridColumns={gridColumns}
+              targetUser={targetUser}
+              currentUser={currentUser}
+              searchParams={searchParams}
+              showLocked={showLocked}
+            />
+          ))
+          .with("blockchain", () => (
+            <Blockchain
+              artists={artists}
+              gridColumns={gridColumns}
+              targetUser={targetUser}
+              currentUser={currentUser}
+              searchParams={searchParams}
+              showLocked={showLocked}
+            />
+          ))
+          .with("blockchain-groups", () => (
+            <BlockchainGroups
+              artists={artists}
+              gridColumns={gridColumns}
+              targetUser={targetUser}
+              currentUser={currentUser}
+              searchParams={searchParams}
+              showLocked={showLocked}
+            />
+          ))
+          .exhaustive()}
+      </AuthenticatedContext.Provider>
 
       <SendObjekts />
     </div>

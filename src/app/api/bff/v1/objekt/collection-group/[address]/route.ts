@@ -66,8 +66,8 @@ export async function GET(request: NextRequest, props: Props) {
           jsonb_build_object(
             'metadata', jsonb_build_object(
               'collectionId', ${collections.collectionId},
-              'objektNo', ${objekts.serial},
-              'tokenId', ${objekts.id},
+              'objektNo', ${objekts.serial}::int,
+              'tokenId', ${objekts.id}::int,
               'transferable', ${objekts.transferable}
             ),
             'inventory', jsonb_build_object(

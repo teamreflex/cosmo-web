@@ -16,10 +16,10 @@ import { Objekt } from "@/lib/universal/objekt-conversion";
 import VirtualizedGrid from "@/components/objekt/virtualized-grid";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import LoaderRemote from "@/components/objekt/loader-remote";
+import { useAuthenticated } from "@/hooks/use-authenticated";
 
 type Props = {
   artists: CosmoArtistWithMembersBFF[];
-  authenticated: boolean;
   gridColumns: number;
   targetUser: PublicProfile;
   currentUser?: PublicProfile;
@@ -28,6 +28,7 @@ type Props = {
 };
 
 export default function Blockchain(props: Props) {
+  const authenticated = useAuthenticated();
   const [filters] = useCosmoFilters();
   const pins = useProfileContext((ctx) => ctx.pins);
   const lockedObjekts = useProfileContext((ctx) => ctx.lockedObjekts);
@@ -101,7 +102,7 @@ export default function Blockchain(props: Props) {
           <VirtualizedGrid
             rows={rows}
             getObjektId={(item) => item.tokenId}
-            authenticated={props.authenticated}
+            authenticated={authenticated}
             gridColumns={gridColumns}
           >
             {({ item, id, isPin, priority }) => {
@@ -115,7 +116,7 @@ export default function Blockchain(props: Props) {
                   <LegacyOverlay
                     collection={objekt.collection}
                     token={objekt.objekt}
-                    authenticated={props.authenticated}
+                    authenticated={authenticated}
                     isPinned={pins.findIndex((p) => p.tokenId === id) !== -1}
                     isPin={isPin}
                   />

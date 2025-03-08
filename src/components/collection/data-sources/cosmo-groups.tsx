@@ -18,13 +18,13 @@ import { useCosmoArtists } from "@/hooks/use-cosmo-artist";
 import VirtualizedGrid from "@/components/objekt/virtualized-grid";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import LoaderRemote from "@/components/objekt/loader-remote";
+import { useAuthenticated } from "@/hooks/use-authenticated";
 
 const INITIAL_PAGE = 1;
 const PAGE_SIZE = 30;
 
 type Props = {
   artists: CosmoArtistWithMembersBFF[];
-  authenticated: boolean;
   gridColumns: number;
   targetUser: PublicProfile;
   currentUser?: PublicProfile;
@@ -33,6 +33,7 @@ type Props = {
 };
 
 export default function CosmoCollectionGroups(props: Props) {
+  const authenticated = useAuthenticated();
   const [filters] = useCosmoFilters();
   const lockedObjekts = useProfileContext((ctx) => ctx.lockedObjekts);
   const pins = useProfileContext((ctx) => ctx.pins);
@@ -151,7 +152,7 @@ export default function CosmoCollectionGroups(props: Props) {
           <VirtualizedGrid
             rows={rows}
             getObjektId={(item) => item.collection.collectionId}
-            authenticated={props.authenticated}
+            authenticated={authenticated}
             gridColumns={gridColumns}
           >
             {({ item, priority }) => (
