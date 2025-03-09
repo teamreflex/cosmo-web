@@ -91,6 +91,42 @@ export default function SettingsDialog({
             </Select>
           </div>
 
+          {/* gravity votes */}
+          <div className="flex gap-2 items-center justify-between">
+            <div className="flex flex-col">
+              <h2 className="col-span-3 font-semibold">Gravity Votes</h2>
+              <p className="col-span-3 col-start-1 row-start-2 row-span-3 text-sm opacity-80">
+                Make your gravity voting history public or private.
+              </p>
+            </div>
+
+            <Select
+              name="privacyVotes"
+              defaultValue={profile.privacy.votes ? "private" : "public"}
+            >
+              <SelectTrigger className="w-36">
+                <SelectValue placeholder="Privacy" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="private">Private</SelectItem>
+                <SelectItem value="public">Public</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* <div className="grid grid-cols-4 grid-rows-3">
+            <h2 className="col-span-3 font-semibold">Gravity Votes</h2>
+            <p className="col-span-3 col-start-1 row-start-2 row-span-3 text-sm opacity-80">
+              Hides your gravity voting history.
+            </p>
+            <div className="row-span-3 col-start-4 row-start-1 flex items-center justify-end">
+              <Switch
+                name="privacyVotes"
+                defaultChecked={profile.privacy.votes}
+              />
+            </div>
+          </div> */}
+
           {/* grid column size */}
           <div className="flex gap-2 items-center justify-between">
             <div className="flex flex-col">
@@ -104,7 +140,7 @@ export default function SettingsDialog({
               name="gridColumns"
               defaultValue={profile.gridColumns.toString()}
             >
-              <SelectTrigger className="w-40">
+              <SelectTrigger className="w-36">
                 <SelectValue placeholder="Columns" />
               </SelectTrigger>
               <SelectContent>

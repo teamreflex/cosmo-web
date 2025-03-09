@@ -23,10 +23,6 @@ export const profiles = pgTable(
     nickname: citext("nickname", { length: 24 }).notNull(),
     // using a string and casting output so the db doesn't have to know about the enum
     artist: varchar("artist", { length: 24 }).notNull().$type<ValidArtist>(),
-    privacyNickname: boolean("privacy_nickname").notNull().default(false),
-    privacyObjekts: boolean("privacy_objekts").notNull().default(false),
-    privacyComo: boolean("privacy_como").notNull().default(false),
-    privacyTrades: boolean("privacy_trades").notNull().default(false),
     privacyVotes: boolean("privacy_votes").notNull().default(true),
     gridColumns: integer("grid_columns").notNull().default(5),
     objektEditor: boolean("objekt_editor").notNull().default(false),
@@ -39,10 +35,6 @@ export const profiles = pgTable(
     uniqueIndex("profiles_address_idx").on(t.userAddress),
     index("profiles_cosmo_id_idx").on(t.cosmoId),
     index("profiles_nickname_idx").on(t.nickname),
-    index("profiles_priv_nickname_idx").on(t.privacyNickname),
-    index("profiles_priv_objekts_idx").on(t.privacyObjekts),
-    index("profiles_priv_como_idx").on(t.privacyComo),
-    index("profiles_priv_trades_idx").on(t.privacyTrades),
     uniqueIndex("profiles_nickname_address_idx").on(t.nickname, t.userAddress),
     index("profiles_is_modhaus_idx").on(t.isModhaus),
   ]

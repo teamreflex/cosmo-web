@@ -50,10 +50,6 @@ export const defaultProfile: PublicProfile = {
   isAddress: true,
   artist: "artms",
   privacy: {
-    nickname: false,
-    objekts: false,
-    como: false,
-    trades: false,
     votes: true,
   },
   gridColumns: GRID_COLUMNS,

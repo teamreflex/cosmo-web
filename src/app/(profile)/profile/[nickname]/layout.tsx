@@ -3,11 +3,7 @@ import { PropsWithChildren, Suspense } from "react";
 import CopyAddressButton from "@/components/profile/copy-address-button";
 import TradesButton from "@/components/profile/trades-button";
 import ComoButton from "@/components/profile/como-button";
-import { Shield } from "lucide-react";
-import { validArtists } from "@/lib/universal/cosmo/common";
-import ArtistIcon from "@/components/artist-icon";
 import ProgressButton from "@/components/profile/progress-button";
-import { isAddressEqual } from "@/lib/utils";
 import ComoBalanceRenderer from "@/components/navbar/como-balances";
 import UserAvatar from "@/components/profile/user-avatar";
 import Skeleton from "@/components/skeleton/skeleton";
@@ -42,9 +38,6 @@ export default async function ProfileLayout(props: Props) {
   const { profile, objektLists } = targetUser;
 
   const href = `/@${profile.isAddress ? profile.address : profile.nickname}`;
-  const showComo =
-    profile.privacy.como === false ||
-    isAddressEqual(currentUser?.address, profile.address);
 
   return (
     <main className="relative container flex flex-col gap-2 py-2">
@@ -93,7 +86,7 @@ export default async function ProfileLayout(props: Props) {
             </div>
 
             <div className="flex items-center justify-between gap-2">
-              <ComoBlock hide={showComo === false} address={profile.address} />
+              <ComoBalanceRenderer address={profile.address} />
               <span className="h-10 flex items-center last:ml-auto">
                 <div id="objekt-total" />
               </span>
@@ -154,24 +147,4 @@ function Buttons({ profile, objektLists, currentUserAddress }: ButtonsProps) {
       </span>
     </div>
   );
-}
-
-function ComoBlock({ hide, address }: { hide: boolean; address: string }) {
-  if (hide) {
-    return (
-      <div className="flex items-center gap-2">
-        {validArtists.map((artist) => (
-          <div
-            key={artist}
-            className="flex justify-between items-center rounded cursor-default bg-accent border border-black/30 dark:border-white/30 h-[26px] min-w-16 w-fit px-1 shadow-sm"
-          >
-            <ArtistIcon artist={artist} />
-            <Shield className="w-5 h-5"></Shield>
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  return <ComoBalanceRenderer address={address} />;
 }

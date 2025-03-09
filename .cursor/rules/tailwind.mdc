@@ -1,6 +1,6 @@
 ---
 description: Rules for working with Tailwind v4
-globs: src/**/*.{ts,tsx}
+globs: src/**/*.{css,tsx}
 alwaysApply: false
 ---
 # Tailwind CSS v4.0

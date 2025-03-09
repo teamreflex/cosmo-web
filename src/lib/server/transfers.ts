@@ -3,7 +3,6 @@ import { TransferParams, TransferResult } from "../universal/transfers";
 import { indexer } from "./db/indexer";
 import { collections, objekts, transfers } from "./db/indexer/schema";
 import { fetchKnownAddresses } from "./profiles";
-import { profiles } from "./db/schema";
 import {
   withArtist,
   withClass,
@@ -38,9 +37,7 @@ export async function fetchTransfers(
     // can't send to yourself, so filter out the current address
     .filter((a) => a !== address.toLowerCase());
 
-  const knownAddresses = await fetchKnownAddresses(addresses, [
-    eq(profiles.privacyTrades, false),
-  ]);
+  const knownAddresses = await fetchKnownAddresses(addresses);
 
   return {
     ...aggregate,

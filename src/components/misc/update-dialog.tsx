@@ -75,6 +75,14 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2025-03-09",
+    changes: [
+      "Privacy settings for IDs, collections, COMO and trades have been removed as they no longer serve a purpose.",
+      "Gravity voting privacy is still available and has been moved into settings.",
+      "Sorting objekts by serial will now automatically switch to Polygon.",
+    ],
+  },
+  {
     date: "2025-03-04",
     changes: [
       "Implemented objekt spinning.",
@@ -85,18 +93,5 @@ const updates = [
       "Objekts on progress pages now bring up information dialogs when clicked.",
       "@cosmo-spin has been excluded from leaderboards.",
     ],
-  },
-  {
-    date: "2025-02-23",
-    changes: [
-      "Added an objekt stats page that displays various statistics from the last 24 hours, updating every hour.",
-      "Added a gravity voting history page to profiles.",
-      "Voting history is private by default, you can make it public in your privacy settings.",
-      "To compensate for the extra profile button, the back button has been removed. Nicknames will now link back to the collection page.",
-    ],
-  },
-  {
-    date: "2025-02-15",
-    changes: ["Objekt selection when completing a grid is fixed."],
   },
 ];

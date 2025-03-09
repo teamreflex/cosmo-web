@@ -21,16 +21,12 @@ export async function fetchUserByIdentifier(
     identifierIsAddress ? "userAddress" : "nickname"
   );
 
-  const shouldHide = profile?.privacyNickname === true && identifierIsAddress;
-
   if (profile) {
     return {
       profile: {
         ...parseProfile(profile),
-        nickname: shouldHide
-          ? profile.userAddress.substring(0, 6)
-          : profile.nickname,
-        isAddress: shouldHide,
+        nickname: profile.nickname,
+        isAddress: identifierIsAddress,
       },
       objektLists: profile.lists,
       lockedObjekts: profile.lockedObjekts.map((row) => row.tokenId),
@@ -143,10 +139,6 @@ function parseProfile(profile: Profile): PublicProfile {
     isAddress: false,
     artist: profile.artist,
     privacy: {
-      nickname: profile.privacyNickname,
-      objekts: profile.privacyObjekts,
-      como: profile.privacyComo,
-      trades: profile.privacyTrades,
       votes: profile.privacyVotes,
     },
     gridColumns: profile.gridColumns,

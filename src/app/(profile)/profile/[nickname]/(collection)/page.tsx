@@ -7,7 +7,6 @@ import {
   getArtistsWithMembers,
 } from "@/app/data-fetching";
 import ProfileRenderer from "@/components/profile/profile-renderer";
-import { Shield } from "lucide-react";
 import { isAddressEqual } from "@/lib/utils";
 import { ProfileProvider } from "@/hooks/use-profile";
 import { fetchPins } from "@/lib/server/objekts/pins";
@@ -55,10 +54,6 @@ export default async function UserCollectionPage(props: Props) {
 
   const isOwnProfile =
     user !== undefined && isAddressEqual(user.nickname, params.nickname);
-
-  if (targetUser.profile.privacy.objekts && !isOwnProfile) {
-    return <Private nickname={targetUser.profile.nickname} />;
-  }
 
   // prefetch collection when using blockchain data source
   const queryClient = getQueryClient();
@@ -121,16 +116,5 @@ export default async function UserCollectionPage(props: Props) {
         </section>
       </ProfileProvider>
     </CosmoArtistProvider>
-  );
-}
-
-function Private({ nickname }: { nickname: string }) {
-  return (
-    <div className="flex flex-col items-center gap-2 py-6">
-      <Shield className="w-12 h-12" />
-      <p className="text-sm font-semibold">
-        {nickname}&apos;s collection is private
-      </p>
-    </div>
   );
 }

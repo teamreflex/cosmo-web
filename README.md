@@ -26,7 +26,6 @@ This project aims to build a web based version of [MODHAUS](https://www.mod-haus
 - "lock" objekts to prevent them from being traded (like the Superstar games)
 - View other user's collections via COSMO or Polygon blockchain
 - Pin objekts to the top of your profile
-- Extensive profile privacy options
 - View an index of every released objekt, number of copies and how it's obtained
 - Wishlist builder with sharable links
 - Calendar to see when monthly COMO drops are coming

@@ -6,7 +6,6 @@ import { fetchTotal } from "../../common";
 import { fetchKnownAddresses } from "@/lib/server/profiles";
 import { Addresses, isAddressEqual } from "@/lib/utils";
 import { LeaderboardItem } from "@/lib/universal/progress";
-import { profiles } from "@/lib/server/db/schema";
 import {
   ValidOnlineType,
   ValidSeason,
@@ -67,8 +66,7 @@ export async function GET(request: NextRequest, props: Params) {
 
   // fetch profiles for each address
   const knownAddresses = await fetchKnownAddresses(
-    leaderboard.map((a) => a.owner),
-    [eq(profiles.privacyNickname, false)]
+    leaderboard.map((a) => a.owner)
   );
 
   // map the nickname onto the results

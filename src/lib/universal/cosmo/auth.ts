@@ -20,10 +20,6 @@ export type PublicProfile = {
   isAddress: boolean;
   artist: ValidArtist;
   privacy: {
-    nickname: boolean;
-    objekts: boolean;
-    como: boolean;
-    trades: boolean;
     votes: boolean;
   };
   gridColumns: number;

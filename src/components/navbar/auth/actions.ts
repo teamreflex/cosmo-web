@@ -53,27 +53,6 @@ export const updateSelectedArtist = async (artist: string) =>
   });
 
 /**
- * Updates privacy settings.
- */
-export const updatePrivacy = async (form: FormData) =>
-  authenticatedAction({
-    form,
-    schema: z.object({
-      privacyNickname: z.coerce.boolean(),
-      privacyObjekts: z.coerce.boolean(),
-      privacyTrades: z.coerce.boolean(),
-      privacyComo: z.coerce.boolean(),
-      privacyVotes: z.coerce.boolean(),
-    }),
-    onValidate: async ({ data, user }) => {
-      await db
-        .update(profiles)
-        .set(data)
-        .where(eq(profiles.id, user.profileId));
-    },
-  });
-
-/**
  * Updates general settings.
  */
 export const updateSettings = async (form: FormData) =>
@@ -81,12 +60,16 @@ export const updateSettings = async (form: FormData) =>
     form,
     schema: z.object({
       gridColumns: z.coerce.number().min(3).max(8),
+      privacyVotes: z.enum(["private", "public"]),
       dataSource: z.enum(collectionDataSources),
     }),
     onValidate: async ({ data, user }) => {
       await db
         .update(profiles)
-        .set(data)
+        .set({
+          ...data,
+          privacyVotes: data.privacyVotes === "private",
+        })
         .where(eq(profiles.id, user.profileId));
     },
   });
