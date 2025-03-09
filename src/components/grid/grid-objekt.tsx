@@ -1,9 +1,8 @@
-import { useElementSize } from "@/hooks/use-element-size";
 import { PropsWithClassName, cn } from "@/lib/utils";
 import { Check } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
-import { replaceUrlSize } from "../objekt/common";
+import { ObjektSidebar, replaceUrlSize } from "../objekt/common";
 
 type Props = PropsWithClassName<{
   image: string;
@@ -45,7 +44,7 @@ export default function GridObjekt({
         unoptimized
       />
       {isLoaded && (
-        <GridObjektNumber collectionNo={collectionNo} objektNo={objektNo} />
+        <ObjektSidebar collection={collectionNo} serial={objektNo} />
       )}
       <div
         className={cn(
@@ -55,27 +54,6 @@ export default function GridObjekt({
       >
         <Check className="w-4 h-4" />
       </div>
-    </div>
-  );
-}
-
-function GridObjektNumber({
-  collectionNo,
-  objektNo,
-}: {
-  collectionNo: string;
-  objektNo: number;
-}) {
-  const [ref, { width }] = useElementSize();
-
-  return (
-    <div
-      ref={ref}
-      className="absolute h-full items-center w-[11%] flex gap-2 justify-center top-0 right-0 [writing-mode:vertical-lr] font-semibold text-(--objekt-text-color)"
-      style={{ lineHeight: `${width}px`, fontSize: `${width * 0.55}px` }}
-    >
-      <span>{collectionNo}</span>
-      <span>#{objektNo.toString().padStart(5, "0")}</span>
     </div>
   );
 }
