@@ -115,7 +115,7 @@ function SpinResult({ result, onShowOptions, onClose }: SpinResultProps) {
       {/* buttons */}
       <div
         data-mobile={!isDesktop}
-        className="flex items-center gap-2 data-mobile:p-4"
+        className="flex items-center gap-2 data-mobile:p-4 data-mobile:pb-6"
       >
         <Button variant="secondary" onClick={onShowOptions}>
           <Check className="w-4 h-4 mr-2" />
