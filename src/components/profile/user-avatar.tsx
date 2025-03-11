@@ -65,7 +65,7 @@ type FallbackProps = PropsWithClassName<{
 
 function Fallback({ className, nickname }: FallbackProps) {
   return (
-    <Avatar className={cn("h-24 w-24", className)}>
+    <Avatar className={cn("h-20 w-20", className)}>
       <AvatarFallback>{nickname.charAt(0).toUpperCase()}</AvatarFallback>
       <AvatarImage
         className="bg-cosmo-profile p-3"

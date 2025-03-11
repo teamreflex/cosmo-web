@@ -60,7 +60,7 @@ export default async function ProfileLayout(props: Props) {
             <div className="flex gap-2 items-center">
               <Link
                 href={href}
-                className="w-fit text-2xl lg:text-3xl font-cosmo font-bold uppercase underline underline-offset-4 decoration-transparent hover:decoration-cosmo transition-colors"
+                className="w-fit text-2xl lg:text-3xl font-cosmo uppercase underline underline-offset-4 decoration-transparent hover:decoration-cosmo transition-colors"
               >
                 {profile.nickname}
               </Link>

@@ -25,14 +25,14 @@ type Props = {
 };
 
 export default function SpinContainer({ seasons, currentUser }: Props) {
-  const { artist } = useUserState();
+  const { token, artist } = useUserState();
   const state = useObjektSpin((state) => state.state);
   const resetState = useObjektSpin((state) => state.resetState);
 
-  // reset the state when the artist changes
+  // reset the state when the artist or user changes
   useEffect(() => {
     resetState();
-  }, [resetState, artist]);
+  }, [resetState, artist, token]);
 
   return (
     <div className="flex flex-col gap-4">

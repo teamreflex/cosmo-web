@@ -79,7 +79,7 @@ export default function GroupedObjekt({
           </VisuallyHidden.Root>
 
           {/* content */}
-          <div className="fixed left-[50%] translate-x-[-50%] top-12 z-50 flex flex-col w-full max-w-[78rem] max-h-[calc(100dvh-3rem)] overflow-y-auto px-2">
+          <div className="fixed left-1/2 top-12 -translate-x-1/2 z-50 flex flex-col w-full max-w-[76rem] max-h-[calc(100dvh-3rem)] overflow-y-auto px-4.5 lg:px-2">
             {/* title */}
             <div className="grid grid-cols-[1fr_auto] grid-rows-2 grid-flow-col">
               <h2 className="text-2xl font-bold">

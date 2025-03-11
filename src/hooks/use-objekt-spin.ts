@@ -22,6 +22,7 @@ import { getErrorMessage } from "@/lib/error";
 import { useCosmoArtists } from "./use-cosmo-artist";
 import { match } from "ts-pattern";
 import type { Hex } from "viem";
+import { captureException } from "@sentry/nextjs";
 
 export const SIMULATE: boolean = false;
 
@@ -479,6 +480,7 @@ export function useSpinSendObjekt() {
   const [isPending, setIsPending] = useState(false);
   const { send } = useSendObjekt();
   const confirmMutation = useSpinConfirm();
+  const queryClient = useQueryClient();
 
   const startSending = useObjektSpin((state) => state.startSending);
   const confirmSent = useObjektSpin((state) => state.confirmSent);
@@ -515,11 +517,19 @@ export function useSpinSendObjekt() {
       // update the selection to success
       confirmSent(hash ?? "");
 
+      // invalidate the spin collection query
+      queryClient.invalidateQueries({ queryKey: ["collection-spin"] });
+
       // confirm the spin
       await confirmMutation.mutateAsync(selection.spinId);
+
+      return true;
     } catch (error) {
       // update the selection to error
       setError(getErrorMessage(error));
+
+      // log error to sentry
+      captureException(error);
 
       return false;
     } finally {
