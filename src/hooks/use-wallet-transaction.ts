@@ -33,6 +33,10 @@ function useWalletTransaction() {
   const mutation = useMutation({
     mutationFn: async (params: SendTransaction) => {
       if (!wallet || !wallet.account) {
+        toast({
+          variant: "destructive",
+          description: WALLET_MISSING,
+        });
         throw new Error(WALLET_MISSING);
       }
 
@@ -107,11 +111,7 @@ export function useSendObjekt() {
   const send = useCallback(
     async (params: SendObjekt) => {
       if (!wallet || !wallet.account) {
-        toast({
-          variant: "destructive",
-          description: WALLET_MISSING,
-        });
-        return;
+        throw new Error(WALLET_MISSING);
       }
 
       // encode transaction
