@@ -4,17 +4,33 @@ import { cn } from "@/lib/utils";
 import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import { ErrorBoundary } from "react-error-boundary";
 import SpinRates from "../spin-rates";
+import { useWallet } from "@/hooks/use-wallet";
+import { useMemo } from "react";
 
 export default function StateIdle() {
   const { data } = useSpinTickets();
   const startSelecting = useObjektSpin((state) => state.startSelecting);
+  const { hasWallet } = useWallet();
+  const text = useMemo(() => {
+    if (hasWallet === false) {
+      return "Re-sign in to spin";
+    }
+
+    if (data.availableTicketsCount === 0) {
+      return "You have no spin tickets left";
+    }
+
+    return "Select an objekt to spin";
+  }, [data.availableTicketsCount, hasWallet]);
+
+  const isDisabled = data.availableTicketsCount === 0 || hasWallet === false;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {/* get started */}
       <div className="flex flex-col gap-4 items-center justify-center">
         <button
-          disabled={data.availableTicketsCount === 0}
+          disabled={isDisabled}
           onClick={startSelecting}
           className={cn(
             "group flex items-center justify-center rounded-2xl md:rounded-lg aspect-photocard w-2/3 md:w-48 cursor-pointer",
@@ -29,11 +45,7 @@ export default function StateIdle() {
           </div>
         </button>
 
-        {data.availableTicketsCount > 0 ? (
-          <h3 className="text-lg font-bold">Select an objekt to spin</h3>
-        ) : (
-          <h3 className="text-lg font-bold">You have no spin tickets left</h3>
-        )}
+        <h3 className="text-lg font-bold">{text}</h3>
       </div>
 
       {/* statistics */}

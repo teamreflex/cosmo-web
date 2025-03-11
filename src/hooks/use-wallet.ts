@@ -86,6 +86,7 @@ export function useWallet() {
   return {
     wallet: query.data,
     walletStatus: query.status,
+    hasWallet: query.data !== null && query.data !== undefined,
     connect,
     connectStatus: mutation.status,
     disconnect,
