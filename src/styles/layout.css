@@ -41,7 +41,7 @@
   padding-inline: 1rem;
 
   @media (width >= 96rem) {
-    max-width: 78rem;
+    max-width: 86rem;
   }
 }
 
