@@ -80,6 +80,8 @@ const updates = [
       "Privacy settings for IDs, collections, COMO and trades have been removed as they've become redundant.",
       "Gravity voting privacy is still available and has been moved into settings.",
       "Sorting objekts by serial will now automatically switch to Polygon.",
+      "Slight redesign of the progress page.",
+      "Expanded width of the site for desktop users.",
     ],
   },
   {

@@ -105,7 +105,7 @@ function ProgressTableSkeleton() {
             </div>
 
             {Array.from({ length: 3 }).map((_, i) => (
-              <Skeleton key={i} className="h-20" />
+              <Skeleton key={i} className="h-26" />
             ))}
           </div>
         </div>
