@@ -35,7 +35,7 @@ export default function ProgressSeason({ season, classes }: Props) {
     <div className="flex flex-col gap-2">
       <div className="flex flex-col sm:grid sm:grid-cols-3 gap-2">
         <div className="flex items-center justify-between col-span-3">
-          <h3 className="text-xl font-bold font-cosmo uppercase">{season}</h3>
+          <h3 className="text-xl font-cosmo uppercase">{season}</h3>
           <p className="text-sm font-semibold">
             {progress}/{total} ({percentage}%)
           </p>

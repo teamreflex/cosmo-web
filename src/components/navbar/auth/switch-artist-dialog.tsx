@@ -33,7 +33,7 @@ export default function SwitchArtistDialog({
         <DialogHeader>
           <DialogTitle>Switch Artist</DialogTitle>
           <DialogDescription>
-            Switch the Home tab to the selected artist&apos;s content.
+            Switch artist to view gravities, rekord, activity and spin objekts.
           </DialogDescription>
 
           <div className="flex flex-col gap-2">

@@ -206,7 +206,7 @@ function CosmoIcon() {
       alt="COSMO"
       width={32}
       height={32}
-      className="rounded-full"
+      className="rounded-full border border-foreground dark:border-transparent"
       quality={100}
       data-icon
     />

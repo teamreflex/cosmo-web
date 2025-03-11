@@ -19,6 +19,7 @@ import { Button } from "../ui/button";
 import { COSMO_ENDPOINT } from "@/lib/universal/cosmo/common";
 import { ofetch } from "ofetch";
 import { useUserState } from "@/hooks/use-user-state";
+import { match } from "ts-pattern";
 
 type Props = PropsWithChildren<{
   collectionId: string;
@@ -37,7 +38,7 @@ export default function SlotSelector({
   const [selected, setSelected] = useState<PopulatedSlot>(currentSlot);
   const { token } = useUserState();
 
-  const { data, status } = useQuery({
+  const query = useQuery({
     queryKey: ["grid-selection", collectionId],
     queryFn: async () => {
       const url = `${COSMO_ENDPOINT}/objekt/v1/owned-by/me`;
@@ -73,47 +74,54 @@ export default function SlotSelector({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="overflow-x-clip">
+      <DialogContent className="overflow-x-hidden">
         <DialogHeader>
           <DialogTitle>Choose Objekt</DialogTitle>
           <DialogDescription>
             Select a different objekt to use in the grid.
           </DialogDescription>
 
-          {status === "pending" ? (
-            <div className="flex items-center justify-center w-full">
-              <Loader2 className="w-12 h-12 animate-spin" />
-            </div>
-          ) : status === "error" ? (
-            <div className="flex flex-col gap-2 items-center justify-center w-full">
-              <HeartCrack className="w-12 h-12" />
-              <p className="text-sm">Error loading available objekts</p>
-            </div>
-          ) : data !== undefined ? (
-            <div className="flex flex-col gap-2 mx-auto w-1/2" ref={carousel}>
-              <div className="flex w-full h-full">
-                {data.map((objekt) => (
-                  <button
-                    className="embla__slide mx-3 flex w-full h-full"
-                    key={objekt.tokenId}
-                    onClick={() => select(objekt)}
-                  >
-                    <GridObjekt
-                      image={objekt.frontImage}
-                      collectionNo={objekt.collectionNo}
-                      objektNo={objekt.objektNo}
-                      textColor={objekt.textColor}
-                      selected={objekt.tokenId === selected.tokenId}
-                    />
-                  </button>
-                ))}
+          {match(query)
+            .with({ status: "pending" }, () => (
+              <div className="flex items-center justify-center w-full">
+                <Loader2 className="w-12 h-12 animate-spin" />
               </div>
+            ))
+            .with({ status: "error" }, () => (
+              <div className="flex flex-col gap-2 items-center justify-center w-full">
+                <HeartCrack className="w-12 h-12" />
+                <p className="text-sm">Error loading available objekts</p>
+              </div>
+            ))
+            .with({ status: "success" }, ({ data }) => (
+              <div
+                className="flex flex-col gap-2 mx-auto h-full w-1/2"
+                ref={carousel}
+              >
+                <div className="flex w-full h-full -ml-2">
+                  {data.map((objekt) => (
+                    <button
+                      className="embla__slide pl-4 flex w-full h-full"
+                      key={objekt.tokenId}
+                      onClick={() => select(objekt)}
+                    >
+                      <GridObjekt
+                        image={objekt.frontImage}
+                        collectionNo={objekt.collectionNo}
+                        objektNo={objekt.objektNo}
+                        textColor={objekt.textColor}
+                        selected={objekt.tokenId === selected.tokenId}
+                      />
+                    </button>
+                  ))}
+                </div>
 
-              <Button variant="cosmo" onClick={() => saveSelection()}>
-                Select Objekt
-              </Button>
-            </div>
-          ) : null}
+                <Button variant="cosmo" onClick={() => saveSelection()}>
+                  Select Objekt
+                </Button>
+              </div>
+            ))
+            .exhaustive()}
         </DialogHeader>
       </DialogContent>
     </Dialog>

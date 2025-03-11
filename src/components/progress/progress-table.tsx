@@ -90,7 +90,7 @@ export default function ProgressTable({ address, member }: Props) {
       <div className="grid grid-flow-row sm:items-center gap-4">
         <div className="flex items-center justify-between w-full">
           <div className="flex flex-col md:flex-row md:items-center md:gap-2">
-            <h1 className="text-2xl md:text-3xl font-bold font-cosmo uppercase">
+            <h1 className="text-2xl md:text-3xl font-cosmo uppercase">
               {member}
             </h1>
             <p className="text-sm font-semibold">

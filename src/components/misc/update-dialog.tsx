@@ -75,9 +75,9 @@ export default function UpdateDialog() {
 
 const updates = [
   {
-    date: "2025-03-11",
+    date: "2025-03-12",
     changes: [
-      "Privacy settings for IDs, collections, COMO and trades have been removed as they no longer serve a purpose.",
+      "Privacy settings for IDs, collections, COMO and trades have been removed as they've become redundant.",
       "Gravity voting privacy is still available and has been moved into settings.",
       "Sorting objekts by serial will now automatically switch to Polygon.",
     ],
