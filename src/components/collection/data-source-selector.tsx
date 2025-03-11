@@ -217,7 +217,7 @@ function PolygonIcon() {
   return (
     <div className="relative bg-polygon size-6 rounded-full" data-icon>
       <Image
-        src={PolygonImage.src}
+        src={PolygonImage}
         alt="Polygon"
         fill={true}
         className="p-1"
