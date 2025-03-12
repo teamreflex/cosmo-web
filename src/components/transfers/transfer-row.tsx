@@ -43,7 +43,7 @@ type UserProps = {
 
 function User({ row, isReceiver }: UserProps) {
   // cosmo spin related transfers
-  if (row.isSpin) {
+  if (row.isSpin && isReceiver === false) {
     return (
       <div className="flex gap-2 items-center">
         <IconRotate360 className="size-8" />
