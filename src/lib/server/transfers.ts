@@ -25,8 +25,6 @@ export async function fetchTransfers(
   if (isAddressEqual(address, Addresses.NULL)) {
     return {
       results: [],
-      count: 0,
-      hasNext: false,
       nextStartAfter: undefined,
     };
   }
@@ -63,7 +61,6 @@ async function fetchTransferRows(
 ): Promise<TransferResult> {
   const results = await indexer
     .select({
-      count: sql<number>`count(*) OVER() AS count`,
       transfer: transfers,
       serial: objekts.serial,
       collection: collections,
@@ -90,14 +87,9 @@ async function fetchTransferRows(
     .limit(PER_PAGE)
     .offset(params.page * PER_PAGE);
 
-  const count = results.length > 0 ? results[0].count : 0;
-  const hasNext = count > (params.page + 1) * PER_PAGE;
-
   return {
     results,
-    count,
-    hasNext,
-    nextStartAfter: hasNext ? params.page + 1 : undefined,
+    nextStartAfter: results.length === PER_PAGE ? params.page + 1 : undefined,
   };
 }
 
