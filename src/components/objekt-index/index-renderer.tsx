@@ -61,6 +61,7 @@ export default function IndexRenderer(props: Props) {
         },
       }).then((res) => parsePage<LegacyObjektResponse<IndexedObjekt>>(res));
     },
+    initialPageParam: 0,
     getNextPageParam: (lastPage) => lastPage.nextStartAfter,
     calculateTotal: (data) => {
       const total = data.pages[0].total ?? 0;

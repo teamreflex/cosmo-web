@@ -40,9 +40,15 @@ export function withCollectionSort<T extends PgSelect>(qb: T, sort: ValidSort) {
         asc(collections.collectionId)
       );
     case "noAscending":
-      return qb.orderBy(asc(collections.collectionNo));
+      return qb.orderBy(
+        asc(collections.collectionNo),
+        desc(collections.createdAt)
+      );
     case "noDescending":
-      return qb.orderBy(desc(collections.collectionNo));
+      return qb.orderBy(
+        desc(collections.collectionNo),
+        desc(collections.createdAt)
+      );
   }
 }
 
