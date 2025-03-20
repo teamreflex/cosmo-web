@@ -10,14 +10,17 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-// import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LogIn } from "lucide-react";
 import SignInWithEmail from "./sign-in-with-email";
+import { useState } from "react";
+// import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 // import SignInWithQR from "./sign-in-with-qr";
 
-export default function SignInDialog() {
+export default function SignInAlertDialog() {
+  const [open, setOpen] = useState(false);
+
   return (
-    <AlertDialog>
+    <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
         <Button variant="link" className="px-0 md:px-4">
           <span className="hidden md:block">Sign In</span>
@@ -34,7 +37,7 @@ export default function SignInDialog() {
           </AlertDialogDescription>
         </AlertDialogHeader>
 
-        <SignInWithEmail />
+        <SignInWithEmail onComplete={() => setOpen(false)} />
 
         {/* <Tabs defaultValue="email">
           <TabsList className="flex justify-self-center w-fit mx-auto">

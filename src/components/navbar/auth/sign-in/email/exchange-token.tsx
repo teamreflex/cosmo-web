@@ -4,7 +4,6 @@ import { exchangeRamperToken } from "./actions";
 import { track } from "@/lib/utils";
 import Portal from "@/components/portal";
 import { Button } from "@/components/ui/button";
-import { AlertDialogCancel } from "@/components/ui/alert-dialog";
 import { Loader2 } from "lucide-react";
 import { UserState } from "@/hooks/use-wallet";
 import { useInterval } from "usehooks-ts";
@@ -82,15 +81,13 @@ export default function ExchangeTokenForm({
           Back
         </Button>
 
-        <AlertDialogCancel className="mt-0">Cancel</AlertDialogCancel>
-
         <Button
           type="submit"
           disabled={isPending || !enableSubmission}
           form="token-submit"
         >
-          {isPending && <Loader2 className="size-4 mr-2 animate-spin" />}
           <span>{enableSubmission ? "Sign In" : `Sign In (${realCount})`}</span>
+          {isPending && <Loader2 className="size-4 ml-2 animate-spin" />}
         </Button>
       </Portal>
     </form>

@@ -69,31 +69,34 @@ async function Auth() {
     return <StateMissingProfile />;
   }
 
-  // signed in and profile exists
-  if (user !== undefined && data !== undefined) {
-    return (
-      <StateAuthenticated
-        profile={data.profile}
-        artists={artists}
-        selectedArtist={selectedArtist}
-        comoBalances={
-          user ? <ComoBalanceRenderer address={user.address} /> : null
-        }
-        cosmoAvatar={
-          <ErrorBoundary
-            fallback={<AuthFallback message="Error loading profile image" />}
-          >
-            <CosmoAvatar
-              token={user}
-              artist={selectedArtist}
-              nickname={user.nickname}
-            />
-          </ErrorBoundary>
-        }
-      />
-    );
-  }
+  const isAuthenticated = user !== undefined && data !== undefined;
+  return (
+    <div className="contents">
+      {/* signed in and profile exists */}
+      {isAuthenticated && (
+        <StateAuthenticated
+          profile={data.profile}
+          artists={artists}
+          selectedArtist={selectedArtist}
+          comoBalances={
+            user ? <ComoBalanceRenderer address={user.address} /> : null
+          }
+          cosmoAvatar={
+            <ErrorBoundary
+              fallback={<AuthFallback message="Error loading profile image" />}
+            >
+              <CosmoAvatar
+                token={user}
+                artist={selectedArtist}
+                nickname={user.nickname}
+              />
+            </ErrorBoundary>
+          }
+        />
+      )}
 
-  // not signed in
-  return <StateGuest />;
+      {/* not signed in, allows dialog to persist after sign-in */}
+      <StateGuest hide={isAuthenticated} />
+    </div>
+  );
 }

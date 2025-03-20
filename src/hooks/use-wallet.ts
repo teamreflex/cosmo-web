@@ -1,30 +1,24 @@
 "use client";
 
 import { decryptMnemonic } from "@/lib/client/wallet/decryption";
-import {
-  MutationOptions,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createWalletClient, Hex, http } from "viem";
 import { mnemonicToAccount } from "viem/accounts";
 import { polygon } from "viem/chains";
 import { env } from "@/env";
 import type { DecryptRamperWallet } from "@/lib/client/wallet/exchange";
 import { EncryptedWallet } from "@/lib/client/wallet/util";
+import { useRouter } from "next/navigation";
 
 const STORAGE_KEY = "wallet";
 const QUERY_KEY = [STORAGE_KEY];
 
-export type UserState = {
+export interface UserState extends DecryptRamperWallet {
   nickname: string;
-  address: string;
-  customToken: string;
-  socialLoginUserId: string;
-};
+}
 
 export function useWallet() {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const query = useQuery({
     queryKey: QUERY_KEY,
@@ -49,30 +43,27 @@ export function useWallet() {
     staleTime: Infinity,
   });
   const mutation = useMutation({
-    mutationFn: async (
-      credentials: DecryptRamperWallet
-    ): Promise<EncryptedWallet> => {
+    mutationKey: ["exchange-kms"],
+    mutationFn: async (credentials: UserState): Promise<EncryptedWallet> => {
       // lazy load all the firebase and KMS stuff
       const exchangeKMS = await import("@/lib/client/wallet/exchange").then(
         (mod) => mod.exchangeKMS
       );
       return exchangeKMS(credentials);
     },
-    onSuccess: async (encrypted) => {
+    onSuccess: async (encrypted, variables) => {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(encrypted));
       const wallet = await decrypt(encrypted);
       queryClient.setQueryData(QUERY_KEY, wallet);
+      router.push(`/@${variables.nickname}`);
     },
   });
 
   /**
    * Fetch wallet and decrypt it.
    */
-  function connect(
-    credentials: DecryptRamperWallet,
-    opts?: MutationOptions<EncryptedWallet, Error, DecryptRamperWallet>
-  ) {
-    mutation.mutate(credentials, opts);
+  function connect(credentials: UserState) {
+    mutation.mutate(credentials);
   }
 
   /**

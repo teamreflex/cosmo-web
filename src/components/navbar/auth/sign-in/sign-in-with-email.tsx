@@ -2,12 +2,17 @@ import { useState } from "react";
 import SendEmailForm from "./email/send-email";
 import ExchangeTokenForm from "./email/exchange-token";
 import DecryptWallet from "./email/decrypt-wallet";
-import { useRouter } from "next/navigation";
 import { UserState, useWallet } from "@/hooks/use-wallet";
+import { match } from "ts-pattern";
+import { useRouter } from "next/navigation";
 
 type SignInState = "sending-email" | "exchanging-token" | "decrypting-wallet";
 
-export default function SignInWithEmail() {
+type Props = {
+  onComplete: () => void;
+};
+
+export default function SignInWithEmail({ onComplete }: Props) {
   const [step, setStep] = useState<SignInState>("sending-email");
   const [payload, setPayload] = useState({
     transactionId: crypto.randomUUID(),
@@ -28,26 +33,25 @@ export default function SignInWithEmail() {
     connect(userState, {
       onSuccess: () => {
         router.push(`/@${userState.nickname}`);
+        onComplete();
       },
     });
     setStep("decrypting-wallet");
   }
 
-  switch (step) {
-    case "sending-email":
-      return <SendEmailForm payload={payload} onComplete={onEmailSent} />;
-    case "exchanging-token":
-      return (
-        <ExchangeTokenForm
-          payload={payload}
-          onBack={() => setStep("sending-email")}
-          onComplete={onTokenExchanged}
-        />
-      );
-    case "decrypting-wallet":
-      if (!userState) {
-        return <div>Loading...</div>;
-      }
-      return <DecryptWallet user={userState} status={connectStatus} />;
-  }
+  return match(step)
+    .with("sending-email", () => (
+      <SendEmailForm payload={payload} onComplete={onEmailSent} />
+    ))
+    .with("exchanging-token", () => (
+      <ExchangeTokenForm
+        payload={payload}
+        onBack={() => setStep("sending-email")}
+        onComplete={onTokenExchanged}
+      />
+    ))
+    .with("decrypting-wallet", () => (
+      <DecryptWallet user={userState} status={connectStatus} />
+    ))
+    .exhaustive();
 }

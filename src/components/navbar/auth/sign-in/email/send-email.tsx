@@ -43,14 +43,19 @@ export default function SendEmailForm({ payload, onComplete }: Props) {
       {error && <p className="text-sm text-red-500">{error}</p>}
 
       <input type="hidden" name="transactionId" value={payload.transactionId} />
-      <Input type="email" name="email" placeholder="example@example.com" />
+      <Input
+        type="email"
+        name="email"
+        placeholder="example@example.com"
+        autoFocus
+      />
 
       <Portal to="#sign-in-footer">
         <AlertDialogCancel className="mt-0">Cancel</AlertDialogCancel>
 
         <Button type="submit" disabled={isPending} form="email-submit">
-          {isPending && <Loader2 className="size-4 mr-2 animate-spin" />}
           <span>Send Email</span>
+          {isPending && <Loader2 className="size-4 ml-2 animate-spin" />}
         </Button>
       </Portal>
     </form>
