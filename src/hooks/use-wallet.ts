@@ -1,14 +1,18 @@
 "use client";
 
 import { decryptMnemonic } from "@/lib/client/wallet/decryption";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  MutationOptions,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { createWalletClient, Hex, http } from "viem";
 import { mnemonicToAccount } from "viem/accounts";
 import { polygon } from "viem/chains";
 import { env } from "@/env";
 import type { DecryptRamperWallet } from "@/lib/client/wallet/exchange";
 import { EncryptedWallet } from "@/lib/client/wallet/util";
-import { useRouter } from "next/navigation";
 
 const STORAGE_KEY = "wallet";
 const QUERY_KEY = [STORAGE_KEY];
@@ -18,7 +22,6 @@ export interface UserState extends DecryptRamperWallet {
 }
 
 export function useWallet() {
-  const router = useRouter();
   const queryClient = useQueryClient();
   const query = useQuery({
     queryKey: QUERY_KEY,
@@ -55,15 +58,17 @@ export function useWallet() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(encrypted));
       const wallet = await decrypt(encrypted);
       queryClient.setQueryData(QUERY_KEY, wallet);
-      router.push(`/@${variables.nickname}`);
     },
   });
 
   /**
    * Fetch wallet and decrypt it.
    */
-  function connect(credentials: UserState) {
-    mutation.mutate(credentials);
+  function connect(
+    credentials: UserState,
+    opts?: MutationOptions<EncryptedWallet, Error, UserState>
+  ) {
+    mutation.mutate(credentials, opts);
   }
 
   /**
