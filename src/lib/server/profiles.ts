@@ -8,7 +8,11 @@ export async function fetchKnownAddresses(addresses: string[]) {
 
   // fetch known profiles
   return await db.query.profiles.findMany({
-    where: (profiles, { inArray }) => inArray(profiles.userAddress, addresses),
+    where: {
+      userAddress: {
+        in: addresses,
+      },
+    },
     columns: {
       userAddress: true,
       nickname: true,

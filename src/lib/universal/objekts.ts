@@ -20,7 +20,7 @@ export type LegacyObjektResponse<T extends LegacyObjekt> = {
 
 // metadata
 interface ObjektInformation extends ObjektMetadataEntry {
-  profile?: Pick<Profile, "nickname">;
+  profile?: Pick<Profile, "nickname"> | null;
 }
 export type ObjektMetadata = {
   total: number;

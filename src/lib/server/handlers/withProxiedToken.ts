@@ -17,7 +17,9 @@ export function withProxiedToken<TParams extends RouteParams>(
 ) {
   return async function (req: NextRequest, ctx: RouteContext<TParams>) {
     const latestToken = await db.query.cosmoTokens.findFirst({
-      orderBy: (tokens, { desc }) => desc(tokens.id),
+      orderBy: {
+        id: "desc",
+      },
     });
 
     if (!latestToken) {

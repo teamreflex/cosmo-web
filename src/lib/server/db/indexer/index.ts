@@ -1,7 +1,7 @@
 import { drizzle } from "drizzle-orm/pg-proxy";
-import * as schema from "./schema";
 import { env } from "@/env";
 import { ofetch } from "ofetch";
+import { relations } from "./relations";
 
 export const indexer = drizzle(
   async (sql, params, method) => {
@@ -25,5 +25,5 @@ export const indexer = drizzle(
       return { rows: [] };
     }
   },
-  { schema }
+  { relations }
 );

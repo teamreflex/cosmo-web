@@ -2,7 +2,9 @@ import { db } from "@/lib/server/db";
 
 export default async function LatestMetadata() {
   const metadata = await db.query.objektMetadata.findMany({
-    orderBy: (t, { desc }) => desc(t.id),
+    orderBy: {
+      id: "desc",
+    },
     limit: 10,
   });
 

@@ -2,7 +2,6 @@ import { cacheHeaders } from "@/app/api/common";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import { collections, objekts } from "@/lib/server/db/indexer/schema";
-import { objektMetadata } from "@/lib/server/db/schema";
 import { ObjektMetadata } from "@/lib/universal/objekts";
 import { eq, sql } from "drizzle-orm";
 
@@ -24,6 +23,15 @@ export async function GET(_: Request, props: Params) {
     fetchCollection(params.collectionSlug),
     fetchCollectionMetadata(params.collectionSlug),
   ]);
+
+  if (!metadata) {
+    return Response.json({
+      metadata: undefined,
+      total: collection.total,
+      transferable: collection.transferable,
+      percentage: collection.percentage,
+    } satisfies ObjektMetadata);
+  }
 
   const timestamp = collection.createdAt.getTime();
   const now = new Date().getTime();
@@ -98,7 +106,9 @@ async function fetchCollection(slug: string) {
  */
 async function fetchCollectionMetadata(slug: string) {
   return await db.query.objektMetadata.findFirst({
-    where: eq(objektMetadata.collectionId, slug),
+    where: {
+      collectionId: slug,
+    },
     with: {
       profile: {
         columns: {

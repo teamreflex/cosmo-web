@@ -1,5 +1,4 @@
 import { ValidArtist } from "@/lib/universal/cosmo/common";
-import { relations } from "drizzle-orm";
 import {
   boolean,
   index,
@@ -40,13 +39,6 @@ export const profiles = pgTable(
   ]
 );
 
-export const profileRelations = relations(profiles, ({ many }) => ({
-  lockedObjekts: many(lockedObjekts),
-  lists: many(lists),
-  objektMetadata: many(objektMetadata),
-  pins: many(pins),
-}));
-
 export const lockedObjekts = pgTable(
   "locked_objekts",
   {
@@ -63,13 +55,6 @@ export const lockedObjekts = pgTable(
   ]
 );
 
-export const lockedObjektsRelations = relations(lockedObjekts, ({ one }) => ({
-  profile: one(profiles, {
-    fields: [lockedObjekts.userAddress],
-    references: [profiles.userAddress],
-  }),
-}));
-
 export const lists = pgTable(
   "lists",
   {
@@ -83,14 +68,6 @@ export const lists = pgTable(
     index("lists_slug_idx").on(t.slug),
   ]
 );
-
-export const listRelations = relations(lists, ({ many, one }) => ({
-  entries: many(listEntries),
-  profile: one(profiles, {
-    fields: [lists.userAddress],
-    references: [profiles.userAddress],
-  }),
-}));
 
 export const listEntries = pgTable(
   "list_entries",
@@ -106,13 +83,6 @@ export const listEntries = pgTable(
   (t) => [index("list_entries_list_idx").on(t.listId)]
 );
 
-export const listEntryRelations = relations(listEntries, ({ one }) => ({
-  list: one(lists, {
-    fields: [listEntries.listId],
-    references: [lists.id],
-  }),
-}));
-
 export const objektMetadata = pgTable(
   "objekt_metadata",
   {
@@ -127,13 +97,6 @@ export const objektMetadata = pgTable(
   ]
 );
 
-export const objektMetadataRelations = relations(objektMetadata, ({ one }) => ({
-  profile: one(profiles, {
-    fields: [objektMetadata.contributor],
-    references: [profiles.userAddress],
-  }),
-}));
-
 export const pins = pgTable(
   "pins",
   {
@@ -146,13 +109,6 @@ export const pins = pgTable(
     index("pins_token_id_idx").on(t.tokenId),
   ]
 );
-
-export const pinRelations = relations(pins, ({ one }) => ({
-  profile: one(profiles, {
-    fields: [pins.userAddress],
-    references: [profiles.userAddress],
-  }),
-}));
 
 export const cosmoTokens = pgTable(
   "cosmo_tokens",
@@ -224,31 +180,6 @@ export const gravityPollCandidates = pgTable(
     index("gravity_poll_candidates_candidate_id_idx").on(t.candidateId),
     index("gravity_poll_candidates_cosmo_id_idx").on(t.cosmoId),
   ]
-);
-
-export const gravityRelations = relations(gravities, ({ many }) => ({
-  polls: many(gravityPolls),
-}));
-
-export const gravityPollRelations = relations(
-  gravityPolls,
-  ({ one, many }) => ({
-    gravity: one(gravities, {
-      fields: [gravityPolls.cosmoGravityId],
-      references: [gravities.cosmoId],
-    }),
-    candidates: many(gravityPollCandidates),
-  })
-);
-
-export const gravityPollCandidateRelations = relations(
-  gravityPollCandidates,
-  ({ one }) => ({
-    poll: one(gravityPolls, {
-      fields: [gravityPollCandidates.cosmoGravityPollId],
-      references: [gravityPolls.cosmoId],
-    }),
-  })
 );
 
 export type Profile = typeof profiles.$inferSelect;

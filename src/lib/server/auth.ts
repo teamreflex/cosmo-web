@@ -94,7 +94,7 @@ export async function fetchUserByIdentifier(
  */
 export async function fetchPublicProfile(id: number) {
   const result = await db.query.profiles.findFirst({
-    where: (profiles, { eq }) => eq(profiles.id, id),
+    where: { id },
   });
 
   return result !== undefined ? parseProfile(result) : undefined;
@@ -108,21 +108,23 @@ async function fetchProfileByIdentifier(
   column: "nickname" | "userAddress"
 ) {
   return db.query.profiles.findFirst({
-    where: (t, { eq }) =>
-      eq(
-        column === "nickname" ? t.nickname : t.userAddress,
-        decodeURIComponent(identifier)
-      ),
+    where: {
+      [column]: decodeURIComponent(identifier),
+    },
     with: {
       lists: true,
       lockedObjekts: {
-        where: (lockedObjekts, { eq }) => eq(lockedObjekts.locked, true),
+        where: {
+          locked: true,
+        },
         columns: {
           tokenId: true,
         },
       },
       pins: {
-        orderBy: (pins, { desc }) => desc(pins.id),
+        orderBy: {
+          id: "desc",
+        },
       },
     },
   });

@@ -19,7 +19,9 @@ export async function GET(req: Request, props: Props) {
   const { address } = await props.params;
 
   const result = await db.query.profiles.findFirst({
-    where: (profiles, { eq }) => eq(profiles.userAddress, address),
+    where: {
+      userAddress: address,
+    },
   });
 
   if (!result) {

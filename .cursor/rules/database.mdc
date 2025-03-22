@@ -12,10 +12,12 @@ The project contains three Postgres database connections:
   - Postgres connection for querying the blockchain indexer for objekt data.
   - entities are: collections, objekts, transfers, comoBalances, votes
 
-When fetching from the database, if the query is simple, use the relational API:
+When fetching from the database, if the query is simple, use the relational API v2:
 ```ts
 const profile = await db.query.profiles.findFirst({
-  where: (profiles, { eq }) => eq(profiles.nickname, 'nickname'),
+  where: {
+    nickname: 'nickname',
+  },
   with: {
     lists: true,
   },

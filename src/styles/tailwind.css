@@ -1,9 +1,10 @@
 @import "tailwindcss" source("../");
+@import "tw-animate-css";
+
 @import "./shadcn.css";
 @import "./layout.css";
 @import "./utilities.css";
 
-@plugin "tailwindcss-animate";
 @variant dark (&:where(.dark, .dark *));
 
 @theme inline {

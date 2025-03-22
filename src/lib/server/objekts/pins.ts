@@ -16,11 +16,11 @@ export async function fetchPins(pins: Pin[]): Promise<CosmoObjekt[]> {
 
   try {
     var results = await indexer.query.objekts.findMany({
-      where: (objekts, { inArray }) =>
-        inArray(
-          objekts.id,
-          pins.map((p) => p.tokenId)
-        ),
+      where: {
+        id: {
+          in: pins.map((p) => p.tokenId),
+        },
+      },
       with: {
         collection: true,
       },

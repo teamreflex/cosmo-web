@@ -15,11 +15,9 @@ type Params = {
 export async function GET(_: NextRequest, props: Params) {
   const params = await props.params;
   const profile = await db.query.profiles.findFirst({
-    where: (profiles, { eq, or }) =>
-      or(
-        eq(profiles.nickname, params.identifier),
-        eq(profiles.userAddress, params.identifier)
-      ),
+    where: {
+      OR: [{ nickname: params.identifier }, { userAddress: params.identifier }],
+    },
     with: {
       lists: true,
     },

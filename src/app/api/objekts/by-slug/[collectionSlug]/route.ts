@@ -15,10 +15,12 @@ type Params = {
  * Fetches a single objekt from the database.
  * Cached for 1 hour.
  */
-export async function GET(request: Request, props: Params) {
+export async function GET(_: Request, props: Params) {
   const params = await props.params;
   const collection = await indexer.query.collections.findFirst({
-    where: (table, { eq }) => eq(table.slug, params.collectionSlug),
+    where: {
+      slug: params.collectionSlug,
+    },
   });
 
   if (!collection) {

@@ -52,8 +52,10 @@ export async function fetchObjektList({
 }: FetchObjektList) {
   // fetch objekt list from database
   const objektList = await db.query.lists.findFirst({
-    where: (lists, { and, eq }) =>
-      and(eq(lists.slug, slug), eq(lists.userAddress, address)),
+    where: {
+      slug,
+      userAddress: address,
+    },
     with: {
       entries: true,
     },

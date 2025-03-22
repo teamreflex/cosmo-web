@@ -337,7 +337,7 @@ function Metadata({ objekt }: { objekt: Objekt.Collection }) {
           </Button>
         )}
 
-        {data.metadata?.profile !== undefined && (
+        {!!data.metadata?.profile && (
           <div className="flex items-center gap-1 text-xs mr-auto">
             <p>Sourced by:</p>
             <Link

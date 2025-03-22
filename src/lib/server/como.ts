@@ -44,7 +44,9 @@ export const POLYGON_DECIMALS = 18;
 export const fetchTokenBalances = unstable_cache(
   async (address: string): Promise<ComoBalance[]> => {
     const balances = await indexer.query.comoBalances.findMany({
-      where: (balances, { eq }) => eq(balances.owner, address.toLowerCase()),
+      where: {
+        owner: address.toLowerCase(),
+      },
     });
 
     return balances.map((b) => ({

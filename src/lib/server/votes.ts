@@ -8,13 +8,18 @@ import { indexer } from "./db/indexer";
  */
 export async function fetchUserVotes(address: string) {
   const votes = await indexer.query.votes.findMany({
-    where: (table, { eq }) => eq(table.from, address.toLowerCase()),
+    where: {
+      from: address.toLowerCase(),
+    },
   });
 
   const uniquePollIds = [...new Set(votes.map((v) => v.pollId))];
   const polls = await db.query.gravityPolls.findMany({
-    where: (table, { inArray }) =>
-      inArray(table.pollIdOnChain, Array.from(uniquePollIds)),
+    where: {
+      pollIdOnChain: {
+        in: Array.from(uniquePollIds),
+      },
+    },
     with: {
       gravity: true,
       candidates: true,

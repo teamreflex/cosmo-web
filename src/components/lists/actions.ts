@@ -79,12 +79,13 @@ export const update = async (prev: TypedActionResult<string>, form: FormData) =>
 
       // check if the slug is already taken
       const list = await db.query.lists.findFirst({
-        where: (lists, { and, eq, not }) =>
-          and(
-            eq(lists.slug, slug),
-            eq(lists.userAddress, user.address),
-            not(eq(lists.id, id))
-          ),
+        where: {
+          slug,
+          userAddress: user.address,
+          id: {
+            NOT: id,
+          },
+        },
       });
 
       if (list !== undefined) {
@@ -197,11 +198,12 @@ export const generateDiscordList = async (form: {
     onValidate: async ({ data, user }) => {
       // fetch lists and associated entries
       const lists = await db.query.lists.findMany({
-        where: (table, { and, inArray, eq }) =>
-          and(
-            eq(table.userAddress, user.address),
-            inArray(table.slug, [data.have, data.want])
-          ),
+        where: {
+          userAddress: user.address,
+          slug: {
+            in: [data.have, data.want],
+          },
+        },
         with: {
           entries: true,
         },
@@ -231,7 +233,11 @@ export const generateDiscordList = async (form: {
       }
 
       const collections = await indexer.query.collections.findMany({
-        where: (table, { inArray }) => inArray(table.slug, Array.from(unique)),
+        where: {
+          slug: {
+            in: Array.from(unique),
+          },
+        },
         columns: {
           slug: true,
           season: true,
@@ -298,8 +304,10 @@ function format(collections: CollectionSubset[], entries: ObjektListEntry[]) {
  */
 async function assertUserOwnsList(listId: number, userAddress: string) {
   const list = await db.query.lists.findFirst({
-    where: (table, { and, eq }) =>
-      and(eq(table.id, listId), eq(table.userAddress, userAddress)),
+    where: {
+      id: listId,
+      userAddress,
+    },
   });
 
   if (!list) {

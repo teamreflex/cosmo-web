@@ -52,7 +52,9 @@ export async function pinObjekt(tokenId: number) {
       }
 
       const objekt = await indexer.query.objekts.findFirst({
-        where: (objekts, { eq }) => eq(objekts.id, data.tokenId),
+        where: {
+          id: data.tokenId,
+        },
         with: {
           collection: true,
         },
