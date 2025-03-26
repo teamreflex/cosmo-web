@@ -52,7 +52,7 @@ export default async function UserComoPage(props: Props) {
             {totals.map((total) => (
               <div className="flex items-center gap-1" key={total.artist.name}>
                 <ArtistIcon artist={total.artist.name} />
-                <span className="font-semibold">+{total.total}</span>
+                <span className="font-semibold">+{total.total.toLocaleString()}</span>
               </div>
             ))}
           </div>
