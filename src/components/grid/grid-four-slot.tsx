@@ -2,7 +2,6 @@ import { useGrid } from "@/hooks/use-grid";
 import { CosmoOngoingGrid } from "@/lib/universal/cosmo/grid";
 import SlotSelector from "./slot-selector";
 import GridObjekt from "./grid-objekt";
-import { Button } from "../ui/button";
 import RewardDialog from "./reward-dialog";
 import GridConfirmDialog from "./grid-confirm-dialog";
 
@@ -68,11 +67,11 @@ export default function GridFourSlot({
         })}
       </div>
 
-      <GridConfirmDialog onConfirm={completeGrid}>
-        <Button variant="cosmo" disabled={!canComplete || isPending}>
-          Complete Grid
-        </Button>
-      </GridConfirmDialog>
+      <GridConfirmDialog
+        canComplete={canComplete}
+        isPending={isPending}
+        onConfirm={completeGrid}
+      />
 
       <RewardDialog reward={gridReward} onComplete={onComplete} />
     </div>

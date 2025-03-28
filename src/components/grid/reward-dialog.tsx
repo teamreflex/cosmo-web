@@ -24,7 +24,7 @@ export default function RewardDialog({ reward, onComplete }: Props) {
           <DialogHeader>
             <DialogTitle>Special Objekt is here!</DialogTitle>
             <DialogDescription>
-              You can get {reward.objekt.comoAmount} COMO every month
+              You get {reward.objekt.comoAmount} COMO every month
             </DialogDescription>
           </DialogHeader>
 
@@ -39,7 +39,7 @@ export default function RewardDialog({ reward, onComplete }: Props) {
             />
 
             <Button variant="cosmo" onClick={onComplete}>
-              Check
+              Continue
             </Button>
           </div>
         </DialogContent>
