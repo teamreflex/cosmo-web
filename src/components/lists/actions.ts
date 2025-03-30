@@ -11,6 +11,8 @@ import { indexer } from "@/lib/server/db/indexer";
 import { Collection } from "@/lib/server/db/indexer/schema";
 import { listEntries, lists, ObjektListEntry } from "@/lib/server/db/schema";
 import { and, eq } from "drizzle-orm";
+import { getArtistsWithMembers } from "@/app/data-fetching";
+import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 
 function createSlug(name: string) {
   return name.trim().toLowerCase().replace(/ /g, "-");
@@ -246,9 +248,12 @@ export const generateDiscordList = async (form: {
         },
       });
 
+      // get artists for member ordering
+      const artists = await getArtistsWithMembers();
+
       // map into discord format
-      const haveCollections = format(collections, have.entries);
-      const wantCollections = format(collections, want.entries);
+      const haveCollections = format(collections, have.entries, artists);
+      const wantCollections = format(collections, want.entries, artists);
 
       return [
         "Have:",
@@ -268,7 +273,11 @@ type CollectionSubset = Pick<
 /**
  * Format a list of collections and entries into a string.
  */
-function format(collections: CollectionSubset[], entries: ObjektListEntry[]) {
+function format(
+  collections: CollectionSubset[],
+  entries: ObjektListEntry[],
+  artists: CosmoArtistWithMembersBFF[]
+) {
   const mappedEntries = entries
     .map((e) => collections.find((c) => c.slug === e.collectionId))
     .filter((e) => e !== undefined);
@@ -282,12 +291,22 @@ function format(collections: CollectionSubset[], entries: ObjektListEntry[]) {
     return acc;
   }, {} as Record<string, CollectionSubset[]>);
 
-  // sort members alphabetically
-  const sortedMembers = Object.keys(groupedCollections).sort();
+  // sort members by group then debut order
+  const sortedMembers = artists
+    .flatMap((artist, index) =>
+      artist.artistMembers.map((member) => ({
+        name: member.name,
+        memberIndex: member.order,
+        artistIndex: index,
+      }))
+    )
+    .sort(
+      (a, b) => a.artistIndex - b.artistIndex || a.memberIndex - b.memberIndex
+    );
 
   // format each member's entry
   return sortedMembers.map((member) => {
-    const memberCollections = groupedCollections[member];
+    const memberCollections = groupedCollections[member.name];
     const formattedCollections = [
       ...new Set(
         memberCollections.map((c) => `${c.season.at(0)}${c.collectionNo}`)
