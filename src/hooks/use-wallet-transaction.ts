@@ -87,6 +87,7 @@ function useWalletTransaction() {
       // wait for receipt
       const receipt = await waitForTransactionReceipt(wallet, {
         hash: transaction,
+        retryCount: 10,
       });
 
       return receipt.transactionHash;
