@@ -8,7 +8,7 @@ import {
   withClass,
   withCollections,
   withMember,
-  withObjektSort,
+  withCollectionSort,
   withOnlineType,
   withSeason,
   withTransferable,
@@ -69,7 +69,7 @@ export async function fetchObjektsPolygon(
       )
     )
     .$dynamic();
-  query = withObjektSort(query, filters.sort);
+  query = withCollectionSort(query, filters.sort);
   query = query.limit(PER_PAGE).offset(filters.page * PER_PAGE);
 
   const results = await query;

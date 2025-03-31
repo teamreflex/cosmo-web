@@ -6,7 +6,7 @@ import {
   withMember,
   withOnlineType,
   withSeason,
-  withCollectionSort,
+  withObjektIndexSort,
 } from "../filters";
 import { z } from "zod";
 import { objektIndex } from "@/lib/universal/parsers";
@@ -58,7 +58,7 @@ export async function fetchObjektsIndex(filters: z.infer<typeof objektIndex>) {
       )
     )
     .$dynamic();
-  query = withCollectionSort(query, filters.sort);
+  query = withObjektIndexSort(query, filters.sort);
   query = query.limit(LIMIT).offset(filters.page * LIMIT);
 
   const result = await query;
