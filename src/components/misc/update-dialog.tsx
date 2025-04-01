@@ -75,13 +75,6 @@ export default function UpdateDialog() {
 
 const updates = [
   {
-    date: "2025-03-31",
-    changes: [
-      "Grid confirmation dialog now has an option to not ask for confirmation again.",
-      "Objekt list Discord formatting now sorts members by debut order.",
-    ],
-  },
-  {
     date: "2025-03-12",
     changes: [
       "Privacy settings for IDs, collections, COMO and trades have been removed as they've become redundant.",

@@ -271,51 +271,64 @@ type CollectionSubset = Pick<
 >;
 
 /**
- * Format a list of collections and entries into a string.
+ * Formats a list of collections for a single member.
+ */
+function formatMemberCollections(collections: CollectionSubset[]): string {
+  // extract unique season initial + collection number, sort, and join
+  return [
+    ...new Set(collections.map((c) => `${c.season.at(0)}${c.collectionNo}`)),
+  ]
+    .sort()
+    .join(", ");
+}
+
+/**
+ * Format a list of collections and entries into a string, grouped and sorted by member.
  */
 function format(
   collections: CollectionSubset[],
   entries: ObjektListEntry[],
   artists: CosmoArtistWithMembersBFF[]
-) {
-  const mappedEntries = entries
-    .map((e) => collections.find((c) => c.slug === e.collectionId))
-    .filter((e) => e !== undefined);
+): string[] {
+  // create a map for quick collection lookup by slug
+  const collectionsMap = new Map(collections.map((c) => [c.slug, c]));
 
-  // group entries by member
-  const groupedCollections = mappedEntries.reduce((acc, entry) => {
-    if (!acc[entry.member]) {
-      acc[entry.member] = [];
-    }
-    acc[entry.member].push(entry);
-    return acc;
-  }, {} as Record<string, CollectionSubset[]>);
-
-  // sort members by group then debut order
-  const sortedMembers = artists
-    .flatMap((artist, index) =>
-      artist.artistMembers.map((member) => ({
-        name: member.name,
-        memberIndex: member.order,
-        artistIndex: index,
-      }))
-    )
-    .sort(
-      (a, b) => a.artistIndex - b.artistIndex || a.memberIndex - b.memberIndex
-    );
-
-  // format each member's entry
-  return sortedMembers.map((member) => {
-    const memberCollections = groupedCollections[member.name];
-    const formattedCollections = [
-      ...new Set(
-        memberCollections.map((c) => `${c.season.at(0)}${c.collectionNo}`)
-      ),
-    ]
-      .sort()
-      .join(", ");
-    return `${member} ${formattedCollections}`;
+  // create member order map maintaining artist grouping for sorting
+  const memberOrderMap: Record<string, number> = {};
+  artists.forEach((artist, artistIndex) => {
+    artist.artistMembers.forEach((member) => {
+      // combine artist index and member order to ensure members of the same group stay together
+      // and are ordered correctly within their group
+      memberOrderMap[member.name] = (artistIndex + 1) * 1000 + member.order;
+    });
   });
+
+  // group collections by member
+  const groupedCollectionsByMember = new Map<string, CollectionSubset[]>();
+  for (const entry of entries) {
+    const collection = collectionsMap.get(entry.collectionId);
+    if (collection) {
+      // get existing collections for the member or initialize an empty array
+      const memberCollections =
+        groupedCollectionsByMember.get(collection.member) ?? [];
+      memberCollections.push(collection);
+      // update the map
+      groupedCollectionsByMember.set(collection.member, memberCollections);
+    }
+  }
+
+  // sort members based on the order map
+  return Array.from(groupedCollectionsByMember.entries())
+    .sort(([memberA], [memberB]) => {
+      // use max safe integer for members not found in the map (should only happen with special DCOs)
+      const orderA = memberOrderMap[memberA] ?? Number.MAX_SAFE_INTEGER;
+      const orderB = memberOrderMap[memberB] ?? Number.MAX_SAFE_INTEGER;
+      return orderA - orderB;
+    })
+    .map(([member, memberCollections]) => {
+      const formattedCollections = formatMemberCollections(memberCollections);
+      return `${member} ${formattedCollections}`;
+    });
 }
 
 /**
