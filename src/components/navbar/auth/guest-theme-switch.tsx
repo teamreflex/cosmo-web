@@ -9,7 +9,7 @@ export default function GuestThemeSwitch() {
 
   return (
     <Toggle
-      variant="ghost"
+      variant="outline"
       size="icon"
       pressed={theme === "dark"}
       onPressedChange={(v) => setTheme(v ? "dark" : "light")}

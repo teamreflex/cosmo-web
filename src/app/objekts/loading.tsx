@@ -22,7 +22,7 @@ export default function ObjektsLoading() {
 
           <div className="sm:flex gap-2 items-center flex-wrap justify-center hidden">
             {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="w-24 h-10" />
+              <Skeleton key={i} className="w-24 h-9" />
             ))}
           </div>
         </div>

@@ -1,5 +1,3 @@
-"use client";
-
 import { Toggle } from "@/components/ui/toggle";
 import { PropsWithFilters } from "@/hooks/use-cosmo-filters";
 
@@ -8,7 +6,8 @@ type Props = PropsWithFilters<"transferable">;
 export default function TransferableFilter({ filters, setFilters }: Props) {
   return (
     <Toggle
-      variant="cosmo"
+      className="data-[state=on]:border-cosmo"
+      variant="outline"
       pressed={filters ?? false}
       onPressedChange={(v) =>
         setFilters({

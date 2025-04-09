@@ -1,5 +1,3 @@
-"use client";
-
 import { Toggle } from "@/components/ui/toggle";
 
 type Props = {
@@ -12,8 +10,8 @@ export default function LockedFilter({ showLocked, setShowLocked }: Props) {
 
   return (
     <Toggle
-      className="w-36"
-      variant="cosmo"
+      variant="outline"
+      className="w-36 data-[state=on]:border-cosmo"
       pressed={showLocked}
       onPressedChange={(v) => setShowLocked(v ? null : false)}
       aria-label="Toggle locked"

@@ -10,8 +10,8 @@ export default async function ActivityRankingLoading() {
           <h1 className="text-3xl font-cosmo uppercase">Ranking</h1>
 
           <div className="flex items-center justify-center md:justify-normal gap-2">
-            <Skeleton className="w-36 h-10" />
-            <Skeleton className="w-32 h-10" />
+            <Skeleton className="w-36 h-9" />
+            <Skeleton className="w-32 h-9" />
           </div>
         </div>
       </div>

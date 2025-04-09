@@ -88,7 +88,7 @@ export default function MetadataDialog({
 
       {isDesktop ? (
         <Dialog open={open} onOpenChange={onOpenChange}>
-          <DialogContent className="max-w-[55rem] grid-cols-auto grid-flow-col p-0 gap-0 md:rounded-2xl outline-hidden">
+          <DialogContent className="min-w-[55rem] grid-cols-auto grid-flow-col p-0 gap-0 md:rounded-2xl outline-hidden">
             <VisuallyHidden>
               <DialogTitle>{slug}</DialogTitle>
               <DialogDescription>{slug}</DialogDescription>

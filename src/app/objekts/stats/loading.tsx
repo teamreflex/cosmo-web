@@ -16,7 +16,7 @@ export default async function ObjektStatsLoading() {
       <div className="flex flex-col gap-4">
         {/* totals */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <Card className="h-32">
+          <Card className="h-36">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-semibold">
                 Total Objekts
@@ -30,7 +30,7 @@ export default async function ObjektStatsLoading() {
             </CardContent>
           </Card>
 
-          <Card className="h-32">
+          <Card className="h-36">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-semibold">
                 Scanned Objekts
@@ -44,7 +44,7 @@ export default async function ObjektStatsLoading() {
             </CardContent>
           </Card>
 
-          <Card className="h-32">
+          <Card className="h-36">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-semibold">
                 Premier Objekts
@@ -73,7 +73,7 @@ export default async function ObjektStatsLoading() {
           <div className="flex flex-col gap-2">
             <div className="flex flex-row gap-2 items-end justify-between">
               <h2 className="text-xl font-semibold">Member Breakdown</h2>
-              <Skeleton className="h-10 w-30" />
+              <Skeleton className="h-9 w-30" />
             </div>
             <Skeleton className="h-108.5" />
           </div>

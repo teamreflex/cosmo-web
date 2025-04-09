@@ -30,8 +30,8 @@ export default async function ObjektStatsPage() {
       <div className="flex flex-col gap-4">
         {/* totals */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <Card className="h-32">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <Card className="min-h-36">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle className="text-sm font-semibold">
                 Total Objekts
               </CardTitle>
@@ -46,8 +46,8 @@ export default async function ObjektStatsPage() {
             </CardContent>
           </Card>
 
-          <Card className="h-32">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <Card className="min-h-36">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle className="text-sm font-semibold">
                 Scanned Objekts
               </CardTitle>
@@ -62,8 +62,8 @@ export default async function ObjektStatsPage() {
             </CardContent>
           </Card>
 
-          <Card className="h-32">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <Card className="min-h-36">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle className="text-sm font-semibold">
                 Premier Objekts
               </CardTitle>

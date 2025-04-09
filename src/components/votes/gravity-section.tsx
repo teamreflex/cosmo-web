@@ -30,7 +30,7 @@ export default function GravitySection({ gravity, index }: Props) {
           fill
         />
         <div className="absolute inset-0 backdrop-blur-md flex items-center justify-center px-4">
-          <h3 className="text-2xl font-cosmo font-bold text-white text-center text-balance drop-shadow-md group-hover:scale-105 transition-transform">
+          <h3 className="text-2xl font-cosmo font-bold text-white text-center text-balance drop-shadow-lg text-shadow-lg group-hover:scale-105 transition-transform">
             {gravity.title}
           </h3>
         </div>

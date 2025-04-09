@@ -9,7 +9,7 @@ export default async function ActivityHistoryLoading() {
         <div className="w-full flex flex-col md:flex-row gap-2 md:items-center md:justify-between">
           <h1 className="text-3xl font-cosmo uppercase">History</h1>
 
-          <Skeleton className="w-48 h-10" />
+          <Skeleton className="w-48 h-9" />
         </div>
       </div>
 

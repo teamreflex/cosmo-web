@@ -1,5 +1,3 @@
-"use client";
-
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -35,7 +33,7 @@ export default function SeasonFilter({ filters, setFilters }: Props) {
           variant="outline"
           className={cn(
             "flex gap-2 items-center",
-            filters && filters.length > 0 && "border-cosmo"
+            filters && filters.length > 0 && "dark:border-cosmo border-cosmo"
           )}
         >
           <span>Season</span>

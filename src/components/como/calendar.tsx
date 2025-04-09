@@ -80,18 +80,16 @@ export default function ComoCalendar({ artists, transfers }: Props) {
                           <TooltipTrigger>
                             <Sparkles className="text-yellow-600 h-5 w-5" />
                           </TooltipTrigger>
-                          <TooltipContent asChild>
-                            <div className="flex flex-col gap-1">
-                              <p className="font-semibold">Carried over</p>
+                          <TooltipContent className="flex flex-col gap-1">
+                            <p className="font-semibold">Carried over</p>
 
-                              <div className="flex justify-center items-center gap-2">
-                                <ArtistIcon artist={a.name} />
-                                <span>
-                                  {calendar[day]?.[
-                                    a.contracts.Objekt.toLowerCase()
-                                  ].carried ?? 0}
-                                </span>
-                              </div>
+                            <div className="flex justify-center items-center gap-2">
+                              <ArtistIcon artist={a.name} />
+                              <span>
+                                {calendar[day]?.[
+                                  a.contracts.Objekt.toLowerCase()
+                                ].carried ?? 0}
+                              </span>
                             </div>
                           </TooltipContent>
                         </Tooltip>
