@@ -5,11 +5,11 @@ import GravityBodyRenderer from "@/components/gravity/gravity-body-renderer";
 import GravityCoreDetails from "@/components/gravity/gravity-core-details";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
-import { decodeUser } from "@/app/data-fetching";
+import { decodeUser, getArtistsWithMembers } from "@/app/data-fetching";
 import { getQueryClient } from "@/lib/query-client";
-import { fetchArtistBff } from "@/lib/server/cosmo/artists";
 import { fetchTokenBalances } from "@/lib/server/como";
 import { ComoProvider } from "@/hooks/use-como";
+import { notFound } from "next/navigation";
 
 type Params = {
   artist: ValidArtist;
@@ -20,7 +20,7 @@ const fetchData = cache(async ({ artist, gravity }: Params) => {
   const token = await decodeUser();
   return await Promise.all([
     token,
-    fetchArtistBff(artist),
+    getArtistsWithMembers(),
     fetchGravity(artist, gravity),
     token ? fetchTokenBalances(token.address) : undefined,
   ]);
@@ -38,7 +38,15 @@ export async function generateMetadata(props: {
 
 export default async function GravityPage(props: { params: Promise<Params> }) {
   const params = await props.params;
-  const [token, artist, gravity, balances] = await fetchData(params);
+  const [token, artists, gravity, balances] = await fetchData(params);
+
+  // get the artist
+  const artist = artists.find(
+    (a) => a.id.toLowerCase() === params.artist.toLowerCase()
+  );
+  if (!artist) {
+    notFound();
+  }
 
   // if logged in, prefetch polls
   const queryClient = getQueryClient();

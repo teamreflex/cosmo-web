@@ -1,8 +1,9 @@
+import { getArtistsWithMembers } from "@/app/data-fetching";
 import { fetchActivityWelcome } from "@/lib/server/cosmo/activity";
-import { fetchArtistBff } from "@/lib/server/cosmo/artists";
 import { TokenPayload } from "@/lib/universal/auth";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import Image from "next/image";
+import { notFound } from "next/navigation";
 
 type Props = {
   artist: ValidArtist;
@@ -15,10 +16,18 @@ const errorMap: Record<string, string> = {
 };
 
 export default async function ArtistBlock({ user, artist }: Props) {
-  const [cosmoArtist, welcome] = await Promise.all([
-    fetchArtistBff(artist),
+  const [cosmoArtists, welcome] = await Promise.all([
+    getArtistsWithMembers(),
     fetchActivityWelcome(user.accessToken, artist),
   ]);
+
+  // get the artist
+  const cosmoArtist = cosmoArtists.find(
+    (a) => a.id.toLowerCase() === artist.toLowerCase()
+  );
+  if (!cosmoArtist) {
+    notFound();
+  }
 
   if (welcome.success === false) {
     return (

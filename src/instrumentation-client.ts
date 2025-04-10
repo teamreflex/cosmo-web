@@ -8,6 +8,7 @@ const stackPatterns = [
 ];
 
 Sentry.init({
+  enabled: env.NEXT_PUBLIC_VERCEL_ENV === "production",
   dsn: env.NEXT_PUBLIC_SENTRY_DSN,
   debug: false,
   tracesSampleRate: 0.15,

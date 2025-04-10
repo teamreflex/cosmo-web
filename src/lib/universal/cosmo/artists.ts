@@ -37,6 +37,9 @@ export type CosmoArtistBFF = {
   fandomName: string;
   logoImageUrl: string;
   primaryImageUrl: string;
+  category: string;
+  wasReleased: boolean;
+  comoTokenId: number;
   contracts: {
     Como: string;
     Objekt: string;
