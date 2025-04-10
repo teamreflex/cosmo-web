@@ -92,7 +92,7 @@ export function MemberFilterButton({
       }}
       className="flex flex-col justify-center items-center"
     >
-      <TooltipProvider delayDuration={0}>
+      <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
             <button

@@ -37,7 +37,7 @@ export default async function ComoBalanceRenderer({ address }: Props) {
 
 function ComoBalanceErrorFallback() {
   return (
-    <TooltipProvider delayDuration={0}>
+    <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <div className="flex justify-between items-center rounded-lg cursor-default bg-secondary border border-border h-[26px] min-w-16 w-fit px-1.5 shadow-sm">

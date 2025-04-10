@@ -6,7 +6,7 @@ export default async function ObjektStatsLoading() {
     <main className="container flex flex-col py-2">
       {/* header */}
       <div className="flex flex-col pb-4">
-        <h1 className="text-3xl font-cosmo uppercase drop-shadow-lg">Stats</h1>
+        <h1 className="text-3xl font-cosmo uppercase">Stats</h1>
         <p className="text-sm font-semibold text-muted-foreground -mt-2">
           Statistics update every hour
         </p>

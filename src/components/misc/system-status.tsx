@@ -38,8 +38,8 @@ async function SystemStatusPopover() {
   const status = statuses.includes("degraded")
     ? "degraded"
     : statuses.includes("down")
-      ? "down"
-      : "normal";
+    ? "down"
+    : "normal";
 
   return (
     <Popover>
@@ -97,7 +97,7 @@ async function SystemStatusPopover() {
 function ErrorFallback() {
   return (
     <TooltipProvider>
-      <Tooltip delayDuration={0}>
+      <Tooltip>
         <TooltipTrigger asChild>
           <div className="flex gap-1 items-center text-cosmo-text">
             <Activity className="w-5 h-5" />

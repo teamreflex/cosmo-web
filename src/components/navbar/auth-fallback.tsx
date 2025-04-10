@@ -12,7 +12,7 @@ type Props = {
 
 export default function AuthFallback({ message }: Props) {
   return (
-    <TooltipProvider delayDuration={0}>
+    <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <div className="relative flex justify-center items-center py-1 px-2 rounded-xl bg-red-500/25 hover:bg-red-500/40 transition-colors">

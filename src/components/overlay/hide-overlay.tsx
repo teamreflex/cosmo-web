@@ -14,7 +14,7 @@ export default function HideOverlay() {
   const toggle = useObjektOverlay((state) => state.toggle);
 
   return (
-    <TooltipProvider delayDuration={0}>
+    <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <button

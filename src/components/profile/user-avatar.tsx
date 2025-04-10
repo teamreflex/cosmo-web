@@ -24,7 +24,7 @@ export default async function UserAvatar({
 
   if (token === undefined) {
     return (
-      <TooltipProvider delayDuration={0}>
+      <TooltipProvider>
         <Tooltip>
           <TooltipTrigger>
             <Fallback nickname={nickname} />

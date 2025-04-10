@@ -25,7 +25,7 @@ export default async function Navbar() {
           <div className="container lg:grid lg:grid-cols-3 flex items-center gap-2 text-sm text-foreground lg:gap-4 lg:py-6 pointer-events-auto">
             <div className="flex gap-4 items-center">
               <Logo className="h-10" />
-              <div className="relative flex divide-x divide-border items-center">
+              <div className="relative flex items-center">
                 <SystemStatus />
                 <UpdateDialog />
               </div>
@@ -41,7 +41,7 @@ export default async function Navbar() {
               >
                 <Suspense
                   fallback={
-                    <div className="h-10 w-10 rounded-full bg-accent animate-pulse" />
+                    <div className="size-10 rounded-full bg-accent animate-pulse" />
                   }
                 >
                   <Auth />

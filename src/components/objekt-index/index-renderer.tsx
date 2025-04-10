@@ -137,7 +137,7 @@ function Title({
 }) {
   return (
     <div className="flex gap-2 items-center w-full pb-1">
-      <h1 className="text-3xl font-cosmo uppercase drop-shadow-lg">Objekts</h1>
+      <h1 className="text-3xl font-cosmo uppercase">Objekts</h1>
 
       <Button variant="secondary" size="profile" data-profile asChild>
         <Link href="/objekts/stats">

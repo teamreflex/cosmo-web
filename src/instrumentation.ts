@@ -7,11 +7,24 @@ export async function register() {
   }
 
   if (process.env.NEXT_RUNTIME === "nodejs") {
-    await import("../sentry.server.config");
+    Sentry.init({
+      dsn: env.NEXT_PUBLIC_SENTRY_DSN,
+      debug: false,
+      ignoreErrors: [
+        // it happens, can't do much about it
+        "NeonDbError",
+        // we have no control over the cosmo API
+        "TimeoutError",
+        "<no response> fetch failed",
+      ],
+    });
   }
 
   if (process.env.NEXT_RUNTIME === "edge") {
-    await import("../sentry.edge.config");
+    Sentry.init({
+      dsn: env.NEXT_PUBLIC_SENTRY_DSN,
+      debug: false,
+    });
   }
 }
 

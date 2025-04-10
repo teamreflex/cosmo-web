@@ -55,7 +55,7 @@ export default function ProgressLeaderboard({ member }: Props) {
 
   return (
     <Sheet open={open === true} onOpenChange={() => toggle()}>
-      <TooltipProvider delayDuration={0}>
+      <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
             <Button

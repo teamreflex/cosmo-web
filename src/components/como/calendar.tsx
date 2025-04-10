@@ -75,7 +75,7 @@ export default function ComoCalendar({ artists, transfers }: Props) {
                   <div className="absolute top-1 right-1">
                     {calendar[day]?.[a.contracts.Objekt.toLowerCase()].carried >
                       0 && (
-                      <TooltipProvider delayDuration={0}>
+                      <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger>
                             <Sparkles className="text-yellow-600 h-5 w-5" />

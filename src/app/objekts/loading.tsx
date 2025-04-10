@@ -8,9 +8,7 @@ export default function ObjektsLoading() {
         {/* Title */}
         <div className="flex gap-2 items-center w-full pb-1">
           <div className="flex gap-2 items-center h-9">
-            <h1 className="text-3xl font-cosmo uppercase drop-shadow-lg">
-              Objekts
-            </h1>
+            <h1 className="text-3xl font-cosmo uppercase">Objekts</h1>
           </div>
         </div>
 

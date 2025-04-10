@@ -29,7 +29,7 @@ export default function RewardsAvailable() {
         <ErrorBoundary
           onReset={reset}
           fallbackRender={({ resetErrorBoundary }) => (
-            <TooltipProvider delayDuration={0}>
+            <TooltipProvider>
               <Tooltip open={true}>
                 <TooltipTrigger asChild>
                   <RewardButton
@@ -48,7 +48,7 @@ export default function RewardsAvailable() {
         >
           <Suspense
             fallback={
-              <TooltipProvider delayDuration={0}>
+              <TooltipProvider>
                 <Tooltip open={true}>
                   <TooltipTrigger asChild>
                     <RewardButton>

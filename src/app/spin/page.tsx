@@ -57,9 +57,7 @@ export default async function SpinPage() {
               {/* header */}
               <div className="flex gap-2 items-center w-full pb-1 justify-between">
                 <div className="flex flex-col">
-                  <h1 className="text-3xl font-cosmo uppercase drop-shadow-lg">
-                    Spin
-                  </h1>
+                  <h1 className="text-3xl font-cosmo uppercase">Spin</h1>
                   <span className="h-5 flex items-center gap-2 text-xs">
                     <Image
                       src={SpinTicket.src}

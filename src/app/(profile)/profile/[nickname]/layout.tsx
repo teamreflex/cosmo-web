@@ -66,7 +66,7 @@ export default async function ProfileLayout(props: Props) {
               </Link>
 
               {profile.isModhaus && (
-                <TooltipProvider delayDuration={0}>
+                <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger>
                       <Image

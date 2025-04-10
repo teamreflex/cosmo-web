@@ -63,7 +63,7 @@ export default function UserDropdown({
           onClick={() => setOpenArtistSwitch(true)}
           className="cursor-pointer"
         >
-          <Disc3 className="mr-2 h-4 w-4" />
+          <Disc3 className="h-4 w-4" />
           <span>Switch Artist</span>
         </DropdownMenuItem>
 
@@ -71,13 +71,13 @@ export default function UserDropdown({
           onClick={() => setOpenSettings(true)}
           className="cursor-pointer"
         >
-          <Wrench className="mr-2 h-4 w-4" />
+          <Wrench className="h-4 w-4" />
           <span>Settings</span>
         </DropdownMenuItem>
 
         <DropdownMenuItem className="cursor-pointer" asChild>
           <a href="https://discord.gg/A72VRX8FgK" target="_blank">
-            <IconBrandDiscord className="mr-2 h-4 w-4" />
+            <IconBrandDiscord className="h-4 w-4" />
             <span>Discord</span>
           </a>
         </DropdownMenuItem>
@@ -87,7 +87,7 @@ export default function UserDropdown({
             <DropdownMenuSeparator />
             <DropdownMenuItem className="cursor-pointer" asChild>
               <Link href="/admin">
-                <ShieldAlert className="mr-2 h-4 w-4" />
+                <ShieldAlert className="h-4 w-4" />
                 <span>Admin</span>
               </Link>
             </DropdownMenuItem>
@@ -99,7 +99,7 @@ export default function UserDropdown({
           onClick={() => onSignOut()}
           className="cursor-pointer"
         >
-          <LogOut className="mr-2 h-4 w-4" />
+          <LogOut className="h-4 w-4" />
           <span>Sign Out</span>
         </DropdownMenuItem>
       </DropdownMenuContent>

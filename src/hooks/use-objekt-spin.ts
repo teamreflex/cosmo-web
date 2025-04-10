@@ -21,7 +21,7 @@ import { Addresses } from "@/lib/utils";
 import { getErrorMessage } from "@/lib/error";
 import { useCosmoArtists } from "./use-cosmo-artist";
 import { match } from "ts-pattern";
-import type { Hex } from "viem";
+import { EstimateGasExecutionError, type Hex } from "viem";
 import { captureException } from "@sentry/nextjs";
 
 export const SIMULATE: boolean = false;
@@ -528,8 +528,10 @@ export function useSpinSendObjekt() {
       // update the selection to error
       setError(getErrorMessage(error));
 
-      // log error to sentry
-      captureException(error);
+      // log error to sentry if not a gas error
+      if (!(error instanceof EstimateGasExecutionError)) {
+        captureException(error);
+      }
 
       return false;
     } finally {

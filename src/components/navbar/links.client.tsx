@@ -97,18 +97,18 @@ function LinkButton({ link, active, user }: LinkButtonProps) {
 
   return (
     <TooltipProvider>
-      <Tooltip delayDuration={0}>
+      <Tooltip>
         <TooltipTrigger>
           <Link
             href={{ pathname }}
-            className="drop-shadow-lg outline-hidden focus:outline-hidden"
+            className="outline-hidden focus:outline-hidden"
             aria-label={link.name}
             prefetch={prefetch}
           >
             <link.icon
               className={cn(
                 "h-8 w-8 shrink-0 transition-all fill-transparent",
-                active && "fill-white/50",
+                active && "fill-cosmo/50 dark:fill-foreground/50",
                 disabled && "text-slate-500 cursor-not-allowed"
               )}
             />

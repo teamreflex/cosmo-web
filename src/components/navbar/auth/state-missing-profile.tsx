@@ -34,7 +34,7 @@ export default function StateMissingProfile() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <TooltipProvider delayDuration={0}>
+      <TooltipProvider>
         <Tooltip>
           <DialogTrigger asChild>
             <TooltipTrigger asChild>

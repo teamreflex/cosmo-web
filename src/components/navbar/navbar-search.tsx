@@ -43,7 +43,7 @@ export default function NavbarSearch({ authenticated }: Props) {
       authenticated={authenticated}
       includeSpin={true}
     >
-      <TooltipProvider delayDuration={0}>
+      <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
             <button
