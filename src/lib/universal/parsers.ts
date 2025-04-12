@@ -182,7 +182,7 @@ export function parseUserCollection(params: URLSearchParams) {
  */
 export const userCollectionGroups = cosmoSchema
   .extend({
-    artistName: z.enum(validArtists),
+    artistName: z.enum(validArtists).optional().nullable(),
     order: z.enum(validSorts).optional().default("newest"),
     page: z.coerce.number().optional().default(1),
   })

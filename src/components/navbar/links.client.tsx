@@ -67,7 +67,7 @@ export function MobileLinks({ user }: LinksProps) {
             <Link href={href} aria-label={link.name} prefetch={prefetch}>
               <link.icon
                 className={cn(
-                  "h-4 w-4 mr-2 shrink-0 transition-all fill-transparent",
+                  "h-4 w-4 shrink-0 transition-all fill-transparent",
                   active && "fill-white/50",
                   disabled && "text-slate-500"
                 )}

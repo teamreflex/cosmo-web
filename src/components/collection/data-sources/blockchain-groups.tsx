@@ -83,7 +83,12 @@ export default function BlockchainGroups(props: Props) {
       // add required params
       searchParams.set("page", pageParam.toString());
       searchParams.set("size", PAGE_SIZE.toString());
-      searchParams.set("artistName", artistName);
+
+      // remap artist to artistName
+      if (searchParams.has("artist")) {
+        searchParams.set("artistName", searchParams.get("artist") ?? "");
+        searchParams.delete("artist");
+      }
 
       // remap sort param to order
       if (searchParams.has("sort")) {
@@ -105,7 +110,9 @@ export default function BlockchainGroups(props: Props) {
     calculateTotal: (data) => {
       const total = data.pages[0].collectionCount ?? 0;
       return (
-        <p className="font-semibold">{total.toLocaleString("en")} types</p>
+        <p className="font-semibold text-end">
+          {total.toLocaleString("en")} types
+        </p>
       );
     },
     getItems: (data) => data.pages.flatMap((page) => page.collections),
