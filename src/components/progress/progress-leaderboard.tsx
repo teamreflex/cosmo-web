@@ -71,8 +71,8 @@ export default function ProgressLeaderboard({ member }: Props) {
         </Tooltip>
       </TooltipProvider>
 
-      <SheetContent className="overflow-y-scroll outline-hidden">
-        <SheetHeader>
+      <SheetContent className="overflow-y-scroll outline-hidden gap-0">
+        <SheetHeader className="pb-0">
           <SheetTitle className="font-cosmo uppercase text-xl">
             Leaderboard
           </SheetTitle>
@@ -81,7 +81,7 @@ export default function ProgressLeaderboard({ member }: Props) {
           </SheetDescription>
         </SheetHeader>
 
-        <div className="flex flex-col">
+        <div className="flex flex-col px-3">
           {/* filters */}
           <div className="flex items-center justify-center gap-2 pb-4 pt-2">
             <FilterSelect
