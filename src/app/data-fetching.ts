@@ -9,6 +9,7 @@ import { fetchArtistBff } from "@/lib/server/cosmo/artists";
 import { unstable_cache } from "next/cache";
 import { fetchSeasons } from "@/lib/server/cosmo/season";
 import { getProxiedToken } from "@/lib/server/handlers/withProxiedToken";
+import { fetchTokenBalances } from "@/lib/server/como";
 
 /**
  * Decode the current token.
@@ -92,3 +93,10 @@ export const getSeasons = cache(async (token: string, artist: ValidArtist) => {
     { revalidate: 60 * 60 * 24 }
   )(artist);
 });
+
+/**
+ * Fetch the token balances for the given address.
+ */
+export const getTokenBalances = cache(async (address: string) =>
+  fetchTokenBalances(address)
+);

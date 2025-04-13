@@ -28,12 +28,14 @@ export const config = {
  * - /profile/:username
  * - /objekts
  * - /objekts/stats
+ * - /gravity
+ * - /gravity/:id
  * - /auth
  *
  * this is separate to the matcher as these paths still need token handling
  */
 const allowUnauthenticated = new RegExp(
-  "^(/@.*|/profile/[^/]*|/objekts|/objekts/stats|/auth)$"
+  "^(/@.*|/profile/[^/]*|/objekts|/objekts/stats|/auth|/gravity/[^/]*)$"
 );
 
 export async function middleware(request: NextRequest) {

@@ -126,3 +126,10 @@ export async function chunk<T>(
     await callback(chunk);
   }
 }
+
+/**
+ * Safe conversion of a bigint to a number.
+ */
+export function safeBigInt(value: bigint) {
+  return Number(value / BigInt(10 ** 18));
+}

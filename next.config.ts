@@ -4,7 +4,6 @@ import { env } from "./src/env";
 
 const config: NextConfig = {
   experimental: {
-    serverComponentsHmrCache: true,
     reactCompiler: true,
     staleTimes: {
       dynamic: 60 * 5, // 5 minutes

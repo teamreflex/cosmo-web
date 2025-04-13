@@ -95,6 +95,7 @@
     "usehooks-ts": "^3.1.1",
     "vaul": "^1.1.2",
     "viem": "^2.26.2",
+    "wagmi": "^2.14.16",
     "zod": "^3.24.2",
     "zustand": "^5.0.3"
   },
@@ -130,6 +131,11 @@
     "overrides": {
       "@types/react": "19.1.0",
       "@types/react-dom": "19.1.2"
-    }
+    },
+    "onlyBuiltDependencies": [
+      "bufferutil",
+      "keccak",
+      "utf-8-validate"
+    ]
   }
 }

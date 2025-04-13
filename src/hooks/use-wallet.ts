@@ -127,7 +127,10 @@ async function decrypt(encrypted: EncryptedWallet) {
     account,
     chain: polygon,
     transport: http(`https://polygon-mainnet.g.alchemy.com/v2`, {
-      batch: true,
+      name: "alchemy-apollo",
+      batch: {
+        wait: 2000,
+      },
       fetchOptions: {
         headers: {
           Authorization: `Bearer ${env.NEXT_PUBLIC_ALCHEMY_KEY}`,

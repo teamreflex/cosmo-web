@@ -20,6 +20,7 @@ import { Error } from "../error-boundary";
 import Skeleton from "../skeleton/skeleton";
 import GravityPoll from "./gravity-poll";
 import GravityRanking from "./gravity-ranking";
+import GravityTest from "./gravity-test";
 
 type Props = {
   artist: CosmoArtistBFF;
@@ -33,7 +34,9 @@ export default function GravityCoreDetails({
   authenticated,
 }: Props) {
   if (isPast(new Date(gravity.entireEndDate))) {
-    return <PastDetails gravity={gravity as CosmoPastGravity} />;
+    return (
+      <PastDetails artist={artist} gravity={gravity as CosmoPastGravity} />
+    );
   }
 
   if (isFuture(new Date(gravity.entireStartDate))) {
@@ -49,10 +52,17 @@ export default function GravityCoreDetails({
   );
 }
 
-function PastDetails({ gravity }: { gravity: CosmoPastGravity }) {
+type PastDetailsProps = {
+  artist: CosmoArtistBFF;
+  gravity: CosmoPastGravity;
+};
+
+function PastDetails({ artist, gravity }: PastDetailsProps) {
   return (
     <div className="flex flex-col gap-2 w-full">
       <Header gravity={gravity} />
+
+      <GravityTest artist={artist} gravity={gravity} />
 
       <Tabs defaultValue="result" className="flex flex-col items-center">
         <TabsList className="grid grid-cols-2 w-full sm:w-1/2">

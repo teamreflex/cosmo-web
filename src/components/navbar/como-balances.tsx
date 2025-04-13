@@ -1,4 +1,3 @@
-import { fetchTokenBalances } from "@/lib/server/como";
 import ArtistIcon from "../artist-icon";
 import {
   Tooltip,
@@ -10,7 +9,7 @@ import { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
 import { Suspense } from "react";
 import { X } from "lucide-react";
 import { ErrorBoundary } from "react-error-boundary";
-import { getArtistsWithMembers } from "@/app/data-fetching";
+import { getArtistsWithMembers, getTokenBalances } from "@/app/data-fetching";
 import { isAddressEqual } from "@/lib/utils";
 import { ComoBalance } from "@/lib/server/db/indexer/schema";
 
@@ -56,7 +55,7 @@ function ComoBalanceErrorFallback() {
 async function UserBalances({ address }: Props) {
   const [artists, balances] = await Promise.all([
     getArtistsWithMembers(),
-    fetchTokenBalances(address),
+    getTokenBalances(address),
   ]);
 
   return (
