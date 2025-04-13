@@ -1,13 +1,16 @@
 import { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
 import GravityHeader from "../gravity-header";
 import { CosmoPastGravity } from "@/lib/universal/cosmo/gravity";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Crown } from "lucide-react";
+import { TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AlertTriangle, Crown, Loader2 } from "lucide-react";
 import Image from "next/image";
 import GravityRanking from "./gravity-ranking";
 import { cn } from "@/lib/utils";
 import { Suspense } from "react";
 import MyRecord from "./my-record";
+import GravityQueryTabs from "../gravity-query-tabs";
+import GravityLiveChart from "../gravity-live-chart";
+import { ErrorBoundary } from "react-error-boundary";
 
 type PastDetailsProps = {
   artist: CosmoArtistBFF;
@@ -19,11 +22,16 @@ export default function PastDetails({ artist, gravity }: PastDetailsProps) {
     <div className="flex flex-col gap-2 w-full">
       <GravityHeader gravity={gravity} />
 
-      <Tabs defaultValue="result" className="flex flex-col items-center">
-        <TabsList className="grid grid-cols-2 w-full">
+      <GravityQueryTabs
+        defaultValue="result"
+        className="flex flex-col items-center"
+      >
+        <TabsList className="grid grid-cols-3 w-full">
           <TabsTrigger value="result">Final Result</TabsTrigger>
+          <TabsTrigger value="live">Chart</TabsTrigger>
           <TabsTrigger value="record">My Record</TabsTrigger>
         </TabsList>
+
         <TabsContent
           value="result"
           className="flex flex-col gap-2 w-full items-center"
@@ -31,7 +39,7 @@ export default function PastDetails({ artist, gravity }: PastDetailsProps) {
           {gravity.result !== undefined && (
             <div className="contents">
               {/* total como used */}
-              <div className="flex flex-col items-center justify-center bg-accent rounded-xl py-4 w-full sm:w-1/2">
+              <div className="flex flex-col items-center justify-center bg-accent rounded-xl py-4 w-full sm:w-2/3">
                 <p className="font-bold text-sm">Total COMO collected</p>
                 <p className="text-2xl font-bold text-cosmo-text">
                   {gravity.result.totalComoUsed.toLocaleString()}
@@ -93,6 +101,32 @@ export default function PastDetails({ artist, gravity }: PastDetailsProps) {
         </TabsContent>
 
         <TabsContent
+          value="live"
+          className="flex flex-col gap-4 w-full items-center"
+        >
+          <ErrorBoundary
+            fallback={
+              <div className="flex flex-col gap-2 justify-center items-center py-4">
+                <AlertTriangle className="size-12" />
+                <p className="text-sm font-semibold">
+                  Failed to load live chart. Please try again later.
+                </p>
+              </div>
+            }
+          >
+            <Suspense
+              fallback={
+                <div className="flex justify-center items-center py-4">
+                  <Loader2 className="size-12 animate-spin" />
+                </div>
+              }
+            >
+              <GravityLiveChart artist={artist} gravity={gravity} />
+            </Suspense>
+          </ErrorBoundary>
+        </TabsContent>
+
+        <TabsContent
           value="record"
           className="flex flex-col gap-4 w-full items-center"
         >
@@ -104,7 +138,7 @@ export default function PastDetails({ artist, gravity }: PastDetailsProps) {
             <MyRecord gravity={gravity} />
           </Suspense>
         </TabsContent>
-      </Tabs>
+      </GravityQueryTabs>
     </div>
   );
 }

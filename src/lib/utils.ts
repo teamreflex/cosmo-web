@@ -2,7 +2,11 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { PublicProfile } from "./universal/cosmo/auth";
 import { env } from "@/env";
-import { CosmoPollChoices, CosmoPollUpcoming } from "./universal/cosmo/gravity";
+import {
+  CosmoPollChoices,
+  CosmoPollFinalized,
+  CosmoPollUpcoming,
+} from "./universal/cosmo/gravity";
 import { ValidArtist } from "./universal/cosmo/common";
 
 export function cn(...inputs: ClassValue[]) {
@@ -87,10 +91,13 @@ export function baseUrl() {
   return `${scheme}://${env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL}`;
 }
 
+type PollStatus = "upcoming" | "ongoing" | "finalized" | "counting";
 /**
  * Determines the status of a gravity poll.
  */
-export function getPollStatus(poll: CosmoPollChoices | CosmoPollUpcoming) {
+export function getPollStatus(
+  poll: CosmoPollChoices | CosmoPollUpcoming | CosmoPollFinalized
+): PollStatus {
   const now = new Date();
 
   if (new Date(poll.endDate) <= now) {

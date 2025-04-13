@@ -81,7 +81,7 @@ export default async function GravityPage(props: { params: Promise<Params> }) {
     queryClient.prefetchQuery({
       queryKey: [
         "gravity-poll",
-        params.artist,
+        params.artist.toLowerCase(),
         Number(params.gravity),
         poll.id,
       ],

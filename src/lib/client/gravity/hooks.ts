@@ -395,7 +395,9 @@ export function useLiveData(params: GravityHookParams) {
   const revealsQuery = useRevealPolling(params);
 
   const isPending = votesQuery.isPending || revealsQuery.isPending;
-  const revealedVotes = useMemo(() => {
+
+  // get a full list of revealed votes
+  const votes = useMemo(() => {
     if (votesQuery.data === undefined) {
       return [];
     }
@@ -416,7 +418,23 @@ export function useLiveData(params: GravityHookParams) {
     }, [] as RevealedVote[]);
   }, [votesQuery.data, revealsQuery.data]);
 
-  return { revealedVotes, isPending };
+  // get the number of como used for each candidate
+  const comoByCandidate = useMemo(() => {
+    return votes.reduce((acc, vote) => {
+      const id = vote.candidateId.toString();
+      acc[id] = (acc[id] ?? 0) + vote.comoAmount;
+      return acc;
+    }, {} as Record<string, number>);
+  }, [votes]);
+
+  // get the total number of como used
+  const totalComoUsed = useMemo(() => {
+    return votes.reduce((acc, vote) => {
+      return acc + vote.comoAmount;
+    }, 0);
+  }, [votes]);
+
+  return { isPending, votes, comoByCandidate, totalComoUsed };
 }
 
 type UseSuspenseGravityPollParams = {
@@ -432,7 +450,7 @@ export function useSuspenseGravityPoll(params: UseSuspenseGravityPollParams) {
   return useSuspenseQuery({
     queryKey: [
       "gravity-poll",
-      params.artistName,
+      params.artistName.toLowerCase(),
       params.gravityId,
       params.pollId,
     ],
