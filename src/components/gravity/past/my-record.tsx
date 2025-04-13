@@ -1,15 +1,15 @@
 import { fetchMyGravityResult } from "@/lib/server/cosmo/gravity";
 import { ordinal } from "@/lib/utils";
 import Image from "next/image";
-import GravityVoteTimestamp from "./gravity-vote-timestamp";
 import { decodeUser } from "@/app/data-fetching";
 import { CosmoPastGravity } from "@/lib/universal/cosmo/gravity";
+import GravityVoteTimestamp from "../gravity-vote-timestamp";
 
 type Props = {
   gravity: CosmoPastGravity;
 };
 
-export default async function GravityMyRecord({ gravity }: Props) {
+export default async function MyRecord({ gravity }: Props) {
   const user = await decodeUser();
   const record = await fetchMyGravityResult(
     user!.accessToken,

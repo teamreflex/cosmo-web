@@ -1,14 +1,20 @@
 import { decodeFunctionData, type Hex } from "viem";
 import { useBlockNumber, useClient, useWatchContractEvent } from "wagmi";
 import governorAbi from "@/abi/governor";
-import { safeBigInt } from "@/lib/utils";
+import { baseUrl, safeBigInt } from "@/lib/utils";
 import { useEffect, useMemo, useState } from "react";
 import { getContractEvents, getTransaction } from "viem/actions";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useQueryClient,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
 import { GravityHookParams, RevealedVote, RevealLog, VoteLog } from "./types";
 import { QUERY_KEYS } from "./queries";
 import { hashFn } from "wagmi/query";
 import { chunkBlocks } from "./util";
+import { ofetch } from "ofetch";
+import { CosmoPollChoices } from "@/lib/universal/cosmo/gravity";
 
 // tripleS governor contract start block
 const START_BLOCK = BigInt(29388703);
@@ -411,4 +417,33 @@ export function useLiveData(params: GravityHookParams) {
   }, [votesQuery.data, revealsQuery.data]);
 
   return { revealedVotes, isPending };
+}
+
+type UseSuspenseGravityPollParams = {
+  artistName: string;
+  gravityId: number;
+  pollId: number;
+};
+
+/**
+ * Fetch a poll and its candidates.
+ */
+export function useSuspenseGravityPoll(params: UseSuspenseGravityPollParams) {
+  return useSuspenseQuery({
+    queryKey: [
+      "gravity-poll",
+      params.artistName,
+      params.gravityId,
+      params.pollId,
+    ],
+    queryFn: async () => {
+      const url = new URL(
+        `/api/gravity/v3/${params.artistName}/gravity/${params.gravityId}/polls/${params.pollId}`,
+        baseUrl()
+      );
+      return await ofetch<CosmoPollChoices>(url.toString());
+    },
+    refetchOnWindowFocus: false,
+    staleTime: Infinity,
+  });
 }
