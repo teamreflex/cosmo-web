@@ -12,9 +12,7 @@ export const cosmoAlchemyConfig = createConfig({
   transports: {
     [polygon.id]: http(`https://polygon-mainnet.g.alchemy.com/v2`, {
       name: "alchemy-cosmo",
-      batch: {
-        wait: 100,
-      },
+      batch: true,
       fetchOptions: {
         headers: {
           Authorization: `Bearer ${env.NEXT_PUBLIC_COSMO_ALCHEMY_KEY}`,

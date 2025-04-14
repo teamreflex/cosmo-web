@@ -152,14 +152,14 @@ function useInitialVotes(params: GravityHookParams) {
     queryFn: async () => {
       if (!startBlock || !currentBlock) return new Map<number, VoteLog>();
 
-      // fetch events in chunks of 2000 blocks
+      // chunk log fetching by 2000 blocks
       const votes = new Map<number, VoteLog>();
-      await chunkBlocks({
+      const chunks = await chunkBlocks({
         start: startBlock,
         end: endBlock,
         current: currentBlock,
         cb: async ({ fromBlock, toBlock }) => {
-          const events = await getContractEvents(client!, {
+          return getContractEvents(client!, {
             ...config,
             eventName: "Voted",
             fromBlock: BigInt(fromBlock),
@@ -169,15 +169,19 @@ function useInitialVotes(params: GravityHookParams) {
             },
             strict: true,
           });
-
-          for (const event of events) {
-            votes.set(Number(event.args.voteIndex), {
-              ...event.args,
-              blockNumber: Number(event.blockNumber),
-            });
-          }
         },
       });
+
+      // set the vote data for each chunk
+      for (const chunk of chunks) {
+        for (const event of chunk) {
+          votes.set(Number(event.args.voteIndex), {
+            ...event.args,
+            blockNumber: Number(event.blockNumber),
+          });
+        }
+      }
+
       return votes;
     },
     enabled:
@@ -199,13 +203,14 @@ function useInitialReveals(params: GravityHookParams) {
     queryFn: async () => {
       if (!startBlock || !currentBlock) return new Map<number, RevealLog>();
 
-      // fetch events in chunks of 2000 blocks
+      // chunk log fetching by 2000 blocks
       const reveals = new Map<number, RevealLog>();
-      await chunkBlocks({
+      const chunks = await chunkBlocks({
         start: startBlock,
         end: endBlock,
         current: currentBlock,
         cb: async ({ fromBlock, toBlock }) => {
+          // fetch log events
           const events = await getContractEvents(client!, {
             ...config,
             eventName: "Revealed",
@@ -221,7 +226,9 @@ function useInitialReveals(params: GravityHookParams) {
           const transactionHashes = events.map(
             (event) => event.transactionHash
           );
-          const transactions = await Promise.all(
+
+          // return transaction data
+          return await Promise.all(
             transactionHashes.map((hash) =>
               getTransaction(client!, { hash }).then((tx) => {
                 return decodeFunctionData({
@@ -231,22 +238,23 @@ function useInitialReveals(params: GravityHookParams) {
               })
             )
           );
-
-          for (const tx of transactions.filter(
-            (tx) => tx.functionName === "reveal"
-          )) {
-            const [pollId, data, offset] = tx.args;
-            for (let i = 0; i < data.length; i++) {
-              const voteIndex = Number(offset) + i;
-              reveals.set(voteIndex, {
-                pollId,
-                voteIndex: BigInt(voteIndex),
-                candidateId: data[i].votedCandidateId,
-              });
-            }
-          }
         },
       });
+
+      // set the reveal data for each chunk
+      for (const chunk of chunks) {
+        for (const tx of chunk.filter((tx) => tx.functionName === "reveal")) {
+          const [pollId, data, offset] = tx.args;
+          for (let i = 0; i < data.length; i++) {
+            const voteIndex = Number(offset) + i;
+            reveals.set(voteIndex, {
+              pollId,
+              voteIndex: BigInt(voteIndex),
+              candidateId: data[i].votedCandidateId,
+            });
+          }
+        }
+      }
 
       return reveals;
     },
@@ -286,6 +294,7 @@ function useVotePolling(params: GravityHookParams) {
     },
     strict: true,
     onLogs: (logs) => {
+      // instead of doing some data merging, just update the query data
       queryClient.setQueryData(
         QUERY_KEYS.VOTES(params),
         (prev: Map<number, VoteLog>) => {
@@ -302,6 +311,7 @@ function useVotePolling(params: GravityHookParams) {
     enabled: shouldPoll,
   });
 
+  // pass through the initial query
   return initialQuery;
 }
 
@@ -349,6 +359,7 @@ function useRevealPolling(params: GravityHookParams) {
     async function fetchRevealTransactions() {
       if (!client) return;
 
+      // batch transaction fetching
       const promises = revealHashes.map((hash) =>
         getTransaction(client, { hash }).then((tx) => {
           return decodeFunctionData({
@@ -358,10 +369,12 @@ function useRevealPolling(params: GravityHookParams) {
         })
       );
 
+      // filter for reveal transactions
       const transactions = await Promise.all(promises).then((txs) =>
         txs.filter((tx) => tx.functionName === "reveal")
       );
 
+      // set the reveal data for each transaction
       queryClient.setQueryData(
         QUERY_KEYS.REVEALS(params),
         (prev: Map<number, RevealLog>) => {
