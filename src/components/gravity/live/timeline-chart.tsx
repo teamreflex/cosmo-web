@@ -53,13 +53,9 @@ export default function TimelineChart(props: Props) {
           <CartesianGrid vertical={false} />
           <ChartTooltip
             labelFormatter={(_, payload) => {
-              const date = payload[0].payload.timeSegment;
-              return date.toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              });
+              return `Block ${payload[0].payload.startBlock} ~ ${payload[0].payload.endBlock}`;
             }}
-            content={<ChartTooltipContent indicator="dot" className="w-40" />}
+            content={<ChartTooltipContent indicator="dot" className="w-48" />}
             includeHidden
           />
           <Bar
@@ -79,104 +75,73 @@ export default function TimelineChart(props: Props) {
 }
 
 type ChartDataPoint = {
-  timeSegment: Date;
+  startBlock: number;
+  endBlock: number;
   voteCount: number;
   comoAmount: number;
 };
 
-// calculate timestamp from block number using 2.1 sec average block time
-function getTimestampFromBlock(
-  blockNumber: number,
-  referenceBlockNumber: number,
-  referenceTimestamp: string
-): Date {
-  const blockDifference = blockNumber - referenceBlockNumber;
-  const secondsDifference = blockDifference * 2.1;
-  const referenceDate = new Date(referenceTimestamp);
+// BLOCK_SEGMENT_SIZE represents ~30 minutes at 2.1 sec per block
+const BLOCK_SEGMENT_SIZE = 850;
 
-  return new Date(referenceDate.getTime() + secondsDifference * 1000);
-}
-
-// generate 30-minute chart data points between start and end times
+// generate chart data points with 850 block segments
 function generateChartData(props: Props): ChartDataPoint[] {
-  const { revealedVotes, start, end } = props;
+  const { revealedVotes } = props;
 
-  // find earliest vote
-  let earliestVote: RevealedVote | undefined;
-  if (revealedVotes.length > 0) {
-    const minBlockNumber = Math.min(
-      ...revealedVotes.map((vote) => vote.blockNumber)
-    );
-    earliestVote = revealedVotes.find(
-      (vote) => vote.blockNumber === minBlockNumber
-    );
+  // if no votes, return empty array
+  if (revealedVotes.length === 0) {
+    return [];
   }
 
-  // create array of 30-minute segments from start to end
-  const startDate = new Date(start);
-  const endDate = new Date(end);
-  const timeSegments: ChartDataPoint[] = [];
+  // find min and max block numbers in a single loop
+  let minBlock = Infinity;
+  let maxBlock = -Infinity;
 
-  // round down to the nearest 30-minute interval
-  const currentSegment = new Date(startDate);
-  currentSegment.setMinutes(
-    Math.floor(currentSegment.getMinutes() / 30) * 30,
-    0,
-    0
-  );
+  for (const vote of revealedVotes) {
+    if (vote.blockNumber < minBlock) minBlock = vote.blockNumber;
+    if (vote.blockNumber > maxBlock) maxBlock = vote.blockNumber;
+  }
 
-  while (currentSegment <= endDate) {
-    timeSegments.push({
-      timeSegment: new Date(currentSegment),
+  // calculate segments
+  const segments: ChartDataPoint[] = [];
+  const segmentMap: Record<number, ChartDataPoint> = {};
+
+  // determine start and end blocks for segments
+  let segmentStart = minBlock;
+
+  while (segmentStart <= maxBlock) {
+    const segmentEnd = segmentStart + BLOCK_SEGMENT_SIZE - 1;
+
+    const segment = {
+      startBlock: segmentStart,
+      endBlock: segmentEnd,
       voteCount: 0,
       comoAmount: 0,
-    });
+    };
 
-    // add 30 minutes
-    currentSegment.setMinutes(currentSegment.getMinutes() + 30);
+    // store in array and map for quick lookup
+    segments.push(segment);
+    segmentMap[segmentStart] = segment;
+
+    segmentStart = segmentEnd + 1;
   }
 
-  // if there are no votes, return empty segments
-  if (!earliestVote) {
-    return timeSegments;
-  }
-
-  const referenceBlockNumber = earliestVote.blockNumber;
-
-  // group votes into 30-minute segments
-  revealedVotes.forEach((vote) => {
-    const voteTimestamp = getTimestampFromBlock(
-      vote.blockNumber,
-      referenceBlockNumber,
-      start
+  // populate segments with vote data
+  for (const vote of revealedVotes) {
+    // calculate which segment this vote belongs to
+    const segmentIndex = Math.floor(
+      (vote.blockNumber - minBlock) / BLOCK_SEGMENT_SIZE
     );
-    const segment = timeSegments.find((segment) => {
-      const nextSegment = new Date(segment.timeSegment);
-      nextSegment.setMinutes(nextSegment.getMinutes() + 30);
-      return (
-        voteTimestamp >= segment.timeSegment && voteTimestamp < nextSegment
-      );
-    });
+    const segmentStart = minBlock + segmentIndex * BLOCK_SEGMENT_SIZE;
 
+    const segment = segmentMap[segmentStart];
     if (segment) {
       segment.voteCount += 1;
       segment.comoAmount += vote.comoAmount;
     }
-  });
-
-  // remove trailing empty segments
-  let lastNonEmptyIndex = timeSegments.length - 1;
-  while (
-    lastNonEmptyIndex >= 0 &&
-    timeSegments[lastNonEmptyIndex].voteCount === 0 &&
-    timeSegments[lastNonEmptyIndex].comoAmount === 0
-  ) {
-    lastNonEmptyIndex--;
   }
 
-  // return segments up to and including the last non-empty one
-  // if all segments are empty, keep at least the first segment
-  return timeSegments.slice(0, Math.max(1, lastNonEmptyIndex + 1));
+  return segments;
 }
 
 const chartConfig = {
@@ -185,10 +150,8 @@ const chartConfig = {
   },
   voteCount: {
     label: "Votes",
-    color: "hsl(var(--chart-1))",
   },
   comoAmount: {
     label: "COMO Used",
-    color: "hsl(var(--chart-2))",
   },
 } satisfies ChartConfig;
