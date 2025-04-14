@@ -19,6 +19,9 @@ import { CosmoPollChoices } from "@/lib/universal/cosmo/gravity";
 // tripleS governor contract start block
 const START_BLOCK = BigInt(29388703);
 
+// polling interval in ms
+const POLLING_INTERVAL = 5000;
+
 /**
  * Default config for interacting with the Governor contract.
  */
@@ -141,8 +144,9 @@ function usePollStatus(params: GravityHookParams) {
 
 /**
  * Fetch the initial vote data for a given poll.
+ * Voting technically ends before the Finalized event is emitted, but using the end block as a stopping point is sensible.
  */
-function useInitialVotes(params: GravityHookParams) {
+function useVoteData(params: GravityHookParams) {
   const { startBlock, endBlock, currentBlock } = usePollStatus(params);
   const config = createGovernorConfig(params.contract as Hex);
   const client = useClient();
@@ -158,7 +162,7 @@ function useInitialVotes(params: GravityHookParams) {
         start: startBlock,
         end: endBlock,
         current: currentBlock,
-        cb: async ({ fromBlock, toBlock }) => {
+        cb: ({ fromBlock, toBlock }) => {
           return getContractEvents(client!, {
             ...config,
             eventName: "Voted",
@@ -265,57 +269,6 @@ function useInitialReveals(params: GravityHookParams) {
 }
 
 /**
- * Poll for vote events.
- */
-function useVotePolling(params: GravityHookParams) {
-  const { isPending, startBlock, endBlock } = usePollStatus(params);
-  const config = createGovernorConfig(params.contract as Hex);
-  const queryClient = useQueryClient();
-  const initialQuery = useInitialVotes(params);
-
-  /**
-   * only poll for data when:
-   * - block status has been loaded
-   * - initial vote data has been loaded
-   * - gravity is active (endBlock is null)
-   */
-  const shouldPoll =
-    isPending === false &&
-    initialQuery.status === "success" &&
-    startBlock !== null &&
-    endBlock === null;
-
-  // watch for vote events
-  useWatchContractEvent({
-    ...config,
-    eventName: "Voted",
-    args: {
-      pollId: params.pollId,
-    },
-    strict: true,
-    onLogs: (logs) => {
-      // instead of doing some data merging, just update the query data
-      queryClient.setQueryData(
-        QUERY_KEYS.VOTES(params),
-        (prev: Map<number, VoteLog>) => {
-          for (const log of logs) {
-            prev.set(Number(log.args.voteIndex), {
-              ...log.args,
-              blockNumber: Number(log.blockNumber),
-            });
-          }
-          return prev;
-        }
-      );
-    },
-    enabled: shouldPoll,
-  });
-
-  // pass through the initial query
-  return initialQuery;
-}
-
-/**
  * Poll for reveal events.
  */
 function useRevealPolling(params: GravityHookParams) {
@@ -346,6 +299,7 @@ function useRevealPolling(params: GravityHookParams) {
       pollId: params.pollId,
     },
     strict: true,
+    pollingInterval: POLLING_INTERVAL,
     onLogs(logs) {
       setRevealHashes(logs.map((log) => log.transactionHash));
     },
@@ -404,13 +358,13 @@ function useRevealPolling(params: GravityHookParams) {
  * Zips together vote and reveal data.
  */
 export function useLiveData(params: GravityHookParams) {
-  const votesQuery = useVotePolling(params);
+  const votesQuery = useVoteData(params);
   const revealsQuery = useRevealPolling(params);
 
   const isPending = votesQuery.isPending || revealsQuery.isPending;
 
   // get a full list of revealed votes
-  const votes = useMemo(() => {
+  const revealedVotes = useMemo(() => {
     if (votesQuery.data === undefined) {
       return [];
     }
@@ -433,21 +387,22 @@ export function useLiveData(params: GravityHookParams) {
 
   // get the number of como used for each candidate
   const comoByCandidate = useMemo(() => {
-    return votes.reduce((acc, vote) => {
+    return revealedVotes.reduce((acc, vote) => {
       const id = vote.candidateId.toString();
       acc[id] = (acc[id] ?? 0) + vote.comoAmount;
       return acc;
     }, {} as Record<string, number>);
-  }, [votes]);
+  }, [revealedVotes]);
 
   // get the total number of como used
   const totalComoUsed = useMemo(() => {
-    return votes.reduce((acc, vote) => {
-      return acc + vote.comoAmount;
+    if (votesQuery.data === undefined) return 0;
+    return votesQuery.data.values().reduce((acc, vote) => {
+      return acc + safeBigInt(vote.comoAmount);
     }, 0);
-  }, [votes]);
+  }, [votesQuery.data]);
 
-  return { isPending, votes, comoByCandidate, totalComoUsed };
+  return { isPending, revealedVotes, comoByCandidate, totalComoUsed };
 }
 
 type UseSuspenseGravityPollParams = {

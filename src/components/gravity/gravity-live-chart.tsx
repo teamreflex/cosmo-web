@@ -16,6 +16,18 @@ import Image from "next/image";
 import { motion } from "motion/react";
 // import { useState, useEffect } from "react";
 
+/**
+ * Get the first ongoing poll with first poll as fallback.
+ */
+function findPoll(gravity: CosmoOngoingGravity | CosmoPastGravity) {
+  const polls = gravity.polls.map((poll) => ({
+    poll,
+    status: getPollStatus(poll),
+  }));
+
+  return polls.find((poll) => poll.status === "ongoing") ?? polls[0];
+}
+
 type Props = {
   artist: CosmoArtistBFF;
   gravity: CosmoOngoingGravity | CosmoPastGravity;
@@ -56,8 +68,9 @@ export default function GravityLiveChart({ artist, gravity }: Props) {
 
   if (isPending) {
     return (
-      <div className="flex justify-center items-center py-4">
+      <div className="flex flex-col gap-2 justify-center items-center py-4">
         <Loader2 className="size-12 animate-spin" />
+        <span className="text-sm font-semibold">Loading live data...</span>
       </div>
     );
   }
@@ -91,18 +104,6 @@ export default function GravityLiveChart({ artist, gravity }: Props) {
       ))}
     </div>
   );
-}
-
-/**
- * Get the first ongoing poll with first poll as fallback.
- */
-function findPoll(gravity: CosmoOngoingGravity | CosmoPastGravity) {
-  const polls = gravity.polls.map((poll) => ({
-    poll,
-    status: getPollStatus(poll),
-  }));
-
-  return polls.find((poll) => poll.status === "ongoing") ?? polls[0];
 }
 
 type CandidateRowProps = {
