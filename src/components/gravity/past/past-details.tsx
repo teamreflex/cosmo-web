@@ -109,7 +109,7 @@ export default function PastDetails({ artist, gravity }: PastDetailsProps) {
               <div className="flex flex-col gap-2 justify-center items-center py-4">
                 <AlertTriangle className="size-12" />
                 <p className="text-sm font-semibold">
-                  Failed to load live chart. Please try again later.
+                  Failed to load chart. Please try again later.
                 </p>
               </div>
             }

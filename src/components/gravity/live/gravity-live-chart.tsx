@@ -9,23 +9,11 @@ import {
   CosmoOngoingGravity,
   CosmoPastGravity,
 } from "@/lib/universal/cosmo/gravity";
-import { getPollStatus } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import CandidateBreakdown from "./candidate-breakdown";
 import TimelineChart from "./timeline-chart";
+import { findPoll } from "@/lib/client/gravity/util";
 // import { useState, useEffect } from "react";
-
-/**
- * Get the first ongoing poll with first poll as fallback.
- */
-function findPoll(gravity: CosmoOngoingGravity | CosmoPastGravity) {
-  const polls = gravity.polls.map((poll) => ({
-    poll,
-    status: getPollStatus(poll),
-  }));
-
-  return polls.find((poll) => poll.status === "ongoing") ?? polls[0];
-}
 
 type Props = {
   artist: CosmoArtistBFF;

@@ -1,6 +1,9 @@
 import { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
-import { CosmoOngoingGravity } from "@/lib/universal/cosmo/gravity";
-import { getPollStatus } from "@/lib/utils";
+import {
+  CosmoOngoingGravity,
+  CosmoPollFinalized,
+  CosmoPollUpcoming,
+} from "@/lib/universal/cosmo/gravity";
 import GravityHeader from "../gravity-header";
 import Countdown from "./countdown";
 import { ErrorBoundary } from "react-error-boundary";
@@ -8,6 +11,11 @@ import { Error } from "@/components/error-boundary";
 import { Suspense } from "react";
 import Skeleton from "@/components/skeleton/skeleton";
 import GravityPoll from "./gravity-poll";
+import { findPoll, getPollStatus } from "@/lib/client/gravity/util";
+import { AlertTriangle, Loader2 } from "lucide-react";
+import GravityLiveChart from "../live/gravity-live-chart";
+
+type AnyPoll = CosmoPollUpcoming | CosmoPollFinalized;
 
 type Props = {
   artist: CosmoArtistBFF;
@@ -20,61 +28,107 @@ export default function OngoingDetails({
   gravity,
   authenticated,
 }: Props) {
-  const currentPoll = gravity.polls.find(
-    (poll) => getPollStatus(poll) === "ongoing"
-  );
-  const currentIndex = gravity.polls.findIndex(
-    (poll) => poll.id === currentPoll?.id
-  );
+  const isCounting = findPoll(gravity).status === "counting";
+
+  const ongoingPoll =
+    gravity.polls.find((poll) => getPollStatus(poll) === "ongoing") ??
+    gravity.polls[0];
+  const index = gravity.polls.findIndex((poll) => poll.id === ongoingPoll.id);
 
   return (
     <div className="flex flex-col gap-2 w-full">
       <GravityHeader gravity={gravity} />
 
       <div className="flex flex-col gap-4 justify-center w-full">
-        <Countdown
-          className="rounded-lg"
-          pollEndDate={currentPoll?.endDate}
-          gravityEndDate={gravity.entireEndDate}
-        />
-
-        {authenticated === false ? (
-          <div className="flex flex-col items-center gap-2 py-12">
-            <p className="text-sm font-semibold">
-              Sign in to view polls and vote!
-            </p>
-          </div>
+        {isCounting ? (
+          <OngoingCounting artist={artist} gravity={gravity} />
         ) : (
-          <div className="flex flex-col gap-2">
-            <ErrorBoundary
-              fallback={<Error message="Something went wrong fetching polls" />}
-            >
-              <Suspense fallback={<Skeleton className="h-12 w-full" />}>
-                {currentPoll && (
-                  <GravityPoll
-                    title="Current Poll"
-                    artist={artist}
-                    gravityId={gravity.id}
-                    pollId={currentPoll.id}
-                  />
-                )}
+          <div className="contents">
+            <Countdown
+              className="rounded-lg"
+              pollEndDate={ongoingPoll?.endDate}
+              gravityEndDate={gravity.entireEndDate}
+            />
 
-                {gravity.polls.map((poll, i) =>
-                  i !== currentIndex ? (
-                    <GravityPoll
-                      key={poll.id}
-                      title={`Poll #${i + 1}`}
-                      artist={artist}
-                      gravityId={gravity.id}
-                      pollId={poll.id}
-                    />
-                  ) : null
-                )}
-              </Suspense>
-            </ErrorBoundary>
+            {authenticated === true && (
+              <OngoingVote
+                poll={ongoingPoll}
+                index={index}
+                artist={artist}
+                gravity={gravity}
+              />
+            )}
           </div>
         )}
       </div>
     </div>
+  );
+}
+
+type OngoingVoteProps = {
+  poll: AnyPoll;
+  index: number;
+  artist: CosmoArtistBFF;
+  gravity: CosmoOngoingGravity;
+};
+
+function OngoingVote({ poll, index, artist, gravity }: OngoingVoteProps) {
+  return (
+    <ErrorBoundary
+      fallback={<Error message="Something went wrong fetching polls" />}
+    >
+      <Suspense fallback={<Skeleton className="h-12 w-full" />}>
+        {poll && (
+          <GravityPoll
+            title="Current Poll"
+            artist={artist}
+            gravityId={gravity.id}
+            pollId={poll.id}
+          />
+        )}
+
+        {gravity.polls.map((poll, i) =>
+          i !== index ? (
+            <GravityPoll
+              key={poll.id}
+              title={`Poll #${i + 1}`}
+              artist={artist}
+              gravityId={gravity.id}
+              pollId={poll.id}
+            />
+          ) : null
+        )}
+      </Suspense>
+    </ErrorBoundary>
+  );
+}
+
+type OngoingCountingProps = {
+  artist: CosmoArtistBFF;
+  gravity: CosmoOngoingGravity;
+};
+
+function OngoingCounting({ artist, gravity }: OngoingCountingProps) {
+  return (
+    <ErrorBoundary
+      fallback={
+        <div className="flex flex-col gap-2 justify-center items-center py-4">
+          <AlertTriangle className="size-12" />
+          <p className="text-sm font-semibold">
+            Failed to load live chart. Please try again later.
+          </p>
+        </div>
+      }
+    >
+      <Suspense
+        fallback={
+          <div className="flex justify-center items-center py-4">
+            <Loader2 className="size-12 animate-spin" />
+          </div>
+        }
+      >
+        <GravityLiveChart artist={artist} gravity={gravity} />
+      </Suspense>
+    </ErrorBoundary>
   );
 }

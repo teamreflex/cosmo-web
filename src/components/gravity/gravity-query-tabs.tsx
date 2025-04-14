@@ -1,14 +1,11 @@
 "use client";
 
 import { Tabs } from "@/components/ui/tabs";
-import { parseAsStringLiteral, useQueryState } from "nuqs";
+import { parseAsString, useQueryState } from "nuqs";
 import { PropsWithChildren } from "react";
 
-const options = ["result", "live", "my"] as const;
-type Option = (typeof options)[number];
-
 type Props = PropsWithChildren<{
-  defaultValue: Option;
+  defaultValue: string;
   className?: string;
 }>;
 
@@ -19,15 +16,11 @@ export default function GravityQueryTabs({
 }: Props) {
   const [tab, setTab] = useQueryState(
     "tab",
-    parseAsStringLiteral(options).withDefault(defaultValue)
+    parseAsString.withDefault(defaultValue)
   );
 
   return (
-    <Tabs
-      className={className}
-      value={tab}
-      onValueChange={(value) => setTab(value as Option)}
-    >
+    <Tabs className={className} value={tab} onValueChange={setTab}>
       {children}
     </Tabs>
   );

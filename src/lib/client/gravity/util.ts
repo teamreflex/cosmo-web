@@ -1,3 +1,10 @@
+import {
+  CosmoGravity,
+  CosmoPollChoices,
+  CosmoPollFinalized,
+  CosmoPollUpcoming,
+} from "@/lib/universal/cosmo/gravity";
+
 // Alchemy only allows fetching 2000 blocks at a time
 const MAX_BLOCK_RANGE = 2000;
 
@@ -31,4 +38,41 @@ export async function chunkBlocks<T>({
   }
 
   return await Promise.all(list);
+}
+
+type PollStatus = "upcoming" | "ongoing" | "finalized" | "counting";
+
+/**
+ * Determines the status of a gravity poll.
+ */
+export function getPollStatus(
+  poll: CosmoPollChoices | CosmoPollUpcoming | CosmoPollFinalized
+): PollStatus {
+  const now = new Date();
+
+  if (new Date(poll.endDate) <= now) {
+    return poll.finalized ? "finalized" : "counting";
+  }
+
+  if (new Date(poll.startDate) >= now) {
+    return "upcoming";
+  }
+
+  return "ongoing";
+}
+
+/**
+ * Get the first chartable poll with first poll as fallback.
+ */
+export function findPoll(gravity: CosmoGravity) {
+  const polls = gravity.polls.map((poll, index) => ({
+    poll,
+    status: getPollStatus(poll),
+    index,
+  }));
+
+  return (
+    polls.find((poll) => ["counting", "finalized"].includes(poll.status)) ??
+    polls[0]
+  );
 }

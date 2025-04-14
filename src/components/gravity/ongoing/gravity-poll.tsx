@@ -1,10 +1,10 @@
 "use client";
 
 import { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
-import { getPollStatus } from "@/lib/utils";
 import Image from "next/image";
 import VoteDialog from "./gravity-vote";
 import { useSuspenseGravityPoll } from "@/lib/client/gravity/hooks";
+import { getPollStatus } from "@/lib/client/gravity/util";
 
 type GravityPollProps = {
   title: string;
