@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { Suspense } from "react";
 import MyRecord from "./my-record";
 import GravityQueryTabs from "../gravity-query-tabs";
-import GravityLiveChart from "../gravity-live-chart";
+import GravityLiveChart from "../live/gravity-live-chart";
 import { ErrorBoundary } from "react-error-boundary";
 
 type PastDetailsProps = {
