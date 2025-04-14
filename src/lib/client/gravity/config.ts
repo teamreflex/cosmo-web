@@ -15,7 +15,8 @@ export const cosmoAlchemyConfig = createConfig({
       batch: true,
       fetchOptions: {
         headers: {
-          Authorization: `Bearer ${env.NEXT_PUBLIC_COSMO_ALCHEMY_KEY}`,
+          Authorization: `Bearer ${env.NEXT_PUBLIC_ALCHEMY_KEY}`,
+          // Authorization: `Bearer ${env.NEXT_PUBLIC_COSMO_ALCHEMY_KEY}`,
         },
       },
     }),

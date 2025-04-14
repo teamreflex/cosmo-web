@@ -13,6 +13,8 @@ import {
 import { getPollStatus } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import Image from "next/image";
+import { motion } from "motion/react";
+// import { useState, useEffect } from "react";
 
 type Props = {
   artist: CosmoArtistBFF;
@@ -30,6 +32,27 @@ export default function GravityLiveChart({ artist, gravity }: Props) {
     contract: artist.contracts.Governor,
     pollId: BigInt(poll.pollIdOnChain),
   });
+
+  // const [test, setTest] = useState<Record<number, number>>(() => {
+  //   return Array.from(
+  //     { length: fullPoll.pollViewMetadata.selectedContent.length },
+  //     () => Math.floor(Math.random() * 1000)
+  //   );
+  // });
+  // const testTotal = Object.values(test).reduce((acc, curr) => acc + curr, 0);
+
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     setTest((prev) => {
+  //       return {
+  //         0: prev[0] + Math.floor(Math.random() * 1000),
+  //         1: prev[1] + Math.floor(Math.random() * 1000),
+  //       };
+  //     });
+  //   }, 1000);
+
+  //   return () => clearInterval(interval);
+  // }, []);
 
   if (isPending) {
     return (
@@ -49,12 +72,22 @@ export default function GravityLiveChart({ artist, gravity }: Props) {
   return (
     <div className="w-full flex flex-col gap-2">
       {candidates.map((candidate) => (
-        <CandidateRow
+        <motion.div
           key={candidate.content.choiceId}
-          content={candidate.content}
-          totalComoUsed={totalComoUsed}
-          candidateComoUsed={candidate.comoUsed}
-        />
+          layout
+          transition={{
+            duration: 0.3,
+            type: "spring",
+            stiffness: 500,
+            damping: 30,
+          }}
+        >
+          <CandidateRow
+            content={candidate.content}
+            totalComoUsed={totalComoUsed}
+            candidateComoUsed={candidate.comoUsed}
+          />
+        </motion.div>
       ))}
     </div>
   );
@@ -82,9 +115,9 @@ function CandidateRow(props: CandidateRowProps) {
   const percentage = (props.candidateComoUsed / props.totalComoUsed) * 100;
 
   return (
-    <div className="relative w-full h-20 rounded-md px-4 flex items-center gap-4 transition-all bg-accent/70 hover:bg-accent overflow-clip">
+    <div className="relative w-full h-20 rounded-lg px-4 flex items-center gap-4 transition-all bg-accent/70 hover:bg-accent overflow-clip">
       <div
-        className="absolute inset-0 bg-cosmo"
+        className="absolute inset-0 bg-cosmo transition-all"
         style={{ width: `${percentage}%` }}
       />
 
