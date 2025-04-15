@@ -96,22 +96,24 @@ export default async function GravityPage(props: { params: Promise<Params> }) {
   /**
    * kick off fetching of the voter names if results should be shown
    */
-  const countablePolls = data.gravity.polls.filter((p) => {
-    const status = getPollStatus(p);
-    return status === "counting" || status === "finalized";
-  });
-  const fetchUsersFromVotesPromise = fetchUsersFromVotes({
-    contract: data.artist.contracts.Governor,
-    pollIds: countablePolls.map((p) => p.pollIdOnChain),
-  });
-  for (const poll of countablePolls) {
-    queryClient.prefetchQuery({
-      queryKey: GRAVITY_QUERY_KEYS.VOTER_NAMES({
-        contract: data.artist.contracts.Governor,
-        pollId: BigInt(poll.pollIdOnChain),
-      }),
-      queryFn: async () => fetchUsersFromVotesPromise,
+  if (data.gravity.pollType === "single-poll") {
+    const countablePolls = data.gravity.polls.filter((p) => {
+      const status = getPollStatus(p);
+      return status === "counting" || status === "finalized";
     });
+    const fetchUsersFromVotesPromise = fetchUsersFromVotes({
+      contract: data.artist.contracts.Governor,
+      pollIds: countablePolls.map((p) => p.pollIdOnChain),
+    });
+    for (const poll of countablePolls) {
+      queryClient.prefetchQuery({
+        queryKey: GRAVITY_QUERY_KEYS.VOTER_NAMES({
+          contract: data.artist.contracts.Governor,
+          pollId: BigInt(poll.pollIdOnChain),
+        }),
+        queryFn: async () => fetchUsersFromVotesPromise,
+      });
+    }
   }
 
   return (

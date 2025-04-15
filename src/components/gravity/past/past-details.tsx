@@ -2,7 +2,7 @@ import { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
 import GravityHeader from "../gravity-header";
 import { CosmoPastGravity } from "@/lib/universal/cosmo/gravity";
 import { TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertTriangle, Crown, Loader2 } from "lucide-react";
+import { AlertCircle, AlertTriangle, Crown, Loader2 } from "lucide-react";
 import Image from "next/image";
 import GravityRanking from "./gravity-ranking";
 import { cn } from "@/lib/utils";
@@ -18,6 +18,8 @@ type PastDetailsProps = {
 };
 
 export default function PastDetails({ artist, gravity }: PastDetailsProps) {
+  const isLiveSupported = gravity.pollType === "single-poll";
+
   return (
     <div className="flex flex-col gap-2 w-full">
       <GravityHeader gravity={gravity} />
@@ -104,26 +106,35 @@ export default function PastDetails({ artist, gravity }: PastDetailsProps) {
           value="live"
           className="flex flex-col gap-4 w-full items-center"
         >
-          <ErrorBoundary
-            fallback={
-              <div className="flex flex-col gap-2 justify-center items-center py-4">
-                <AlertTriangle className="size-12" />
-                <p className="text-sm font-semibold">
-                  Failed to load chart. Please try again later.
-                </p>
-              </div>
-            }
-          >
-            <Suspense
+          {isLiveSupported ? (
+            <ErrorBoundary
               fallback={
-                <div className="flex justify-center items-center py-4">
-                  <Loader2 className="size-12 animate-spin" />
+                <div className="flex flex-col gap-2 justify-center items-center py-4">
+                  <AlertTriangle className="size-12" />
+                  <p className="text-sm font-semibold">
+                    Failed to load live data. Please try again later.
+                  </p>
                 </div>
               }
             >
-              <GravityLiveChart artist={artist} gravity={gravity} />
-            </Suspense>
-          </ErrorBoundary>
+              <Suspense
+                fallback={
+                  <div className="flex justify-center items-center py-4">
+                    <Loader2 className="size-12 animate-spin" />
+                  </div>
+                }
+              >
+                <GravityLiveChart artist={artist} gravity={gravity} />
+              </Suspense>
+            </ErrorBoundary>
+          ) : (
+            <div className="flex flex-col gap-2 justify-center items-center py-4">
+              <AlertCircle className="size-12" />
+              <p className="text-sm font-semibold">
+                Live tracking is not supported for combination polls.
+              </p>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent

@@ -12,7 +12,12 @@ import { Suspense } from "react";
 import Skeleton from "@/components/skeleton/skeleton";
 import GravityPoll from "./gravity-poll";
 import { findPoll, getPollStatus } from "@/lib/client/gravity/util";
-import { AlertTriangle, Loader2, TriangleAlert } from "lucide-react";
+import {
+  AlertCircle,
+  AlertTriangle,
+  Loader2,
+  TriangleAlert,
+} from "lucide-react";
 import GravityLiveChart from "../live/gravity-live-chart";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
@@ -29,6 +34,7 @@ export default function OngoingDetails({
   gravity,
   authenticated,
 }: Props) {
+  const isLiveSupported = gravity.pollType === "single-poll";
   const isCounting = findPoll(gravity).status === "counting";
 
   const ongoingPoll =
@@ -42,7 +48,16 @@ export default function OngoingDetails({
 
       <div className="flex flex-col gap-2 justify-center w-full">
         {isCounting ? (
-          <OngoingCounting artist={artist} gravity={gravity} />
+          isLiveSupported ? (
+            <OngoingCounting artist={artist} gravity={gravity} />
+          ) : (
+            <div className="flex flex-col gap-2 justify-center items-center py-4">
+              <AlertCircle className="size-12" />
+              <p className="text-sm font-semibold">
+                Live tracking is not supported for combination polls.
+              </p>
+            </div>
+          )
         ) : (
           <div className="contents">
             <Countdown
@@ -116,7 +131,7 @@ function OngoingCounting({ artist, gravity }: OngoingCountingProps) {
         <div className="flex flex-col gap-2 justify-center items-center py-4">
           <AlertTriangle className="size-12" />
           <p className="text-sm font-semibold">
-            Failed to load live chart. Please try again later.
+            Failed to load live data. Please try again later.
           </p>
         </div>
       }
