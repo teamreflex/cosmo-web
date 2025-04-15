@@ -21,9 +21,25 @@ export type RevealLog = {
 };
 
 export type RevealedVote = {
+  hash: string;
   pollId: number;
   voter: Hex;
   comoAmount: number;
   candidateId: number;
   blockNumber: number;
+};
+
+export type AggregatedVotes = {
+  candidates: Record<
+    number,
+    {
+      comoAmount: number;
+      id: number;
+      title: string;
+      imageUrl: string;
+    }
+  >;
+  address: string;
+  nickname: string | undefined;
+  total: number;
 };

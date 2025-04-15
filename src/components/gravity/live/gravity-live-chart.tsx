@@ -13,7 +13,7 @@ import { Loader2 } from "lucide-react";
 import CandidateBreakdown from "./candidate-breakdown";
 import TimelineChart from "./timeline-chart";
 import { findPoll } from "@/lib/client/gravity/util";
-// import { useState, useEffect } from "react";
+import VoterBreakdown from "./voter-breakdown";
 
 type Props = {
   artist: CosmoArtistBFF;
@@ -23,7 +23,8 @@ type Props = {
 export default function GravityLiveChart({ artist, gravity }: Props) {
   const { poll } = findPoll(gravity);
   const { data: fullPoll } = useSuspenseGravityPoll({
-    artistName: gravity.artist,
+    artistName: artist.id,
+    contract: artist.contracts.Governor,
     gravityId: gravity.id,
     pollId: poll.id,
   });
@@ -32,27 +33,6 @@ export default function GravityLiveChart({ artist, gravity }: Props) {
       contract: artist.contracts.Governor,
       pollId: BigInt(poll.pollIdOnChain),
     });
-
-  // const [test, setTest] = useState<Record<number, number>>(() => {
-  //   return Array.from(
-  //     { length: fullPoll.pollViewMetadata.selectedContent.length },
-  //     () => Math.floor(Math.random() * 1000)
-  //   );
-  // });
-  // const testTotal = Object.values(test).reduce((acc, curr) => acc + curr, 0);
-
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     setTest((prev) => {
-  //       return {
-  //         0: prev[0] + Math.floor(Math.random() * 1000),
-  //         1: prev[1] + Math.floor(Math.random() * 1000),
-  //       };
-  //     });
-  //   }, 1000);
-
-  //   return () => clearInterval(interval);
-  // }, []);
 
   if (isPending) {
     return (
@@ -64,7 +44,7 @@ export default function GravityLiveChart({ artist, gravity }: Props) {
   }
 
   return (
-    <div className="flex flex-col gap-2 w-full">
+    <div className="flex flex-col w-full gap-2">
       <TimelineChart
         start={fullPoll.startDate}
         end={fullPoll.endDate}
@@ -76,6 +56,13 @@ export default function GravityLiveChart({ artist, gravity }: Props) {
         content={fullPoll.pollViewMetadata.selectedContent}
         comoByCandidate={comoByCandidate}
         totalComoUsed={totalComoUsed}
+      />
+
+      <VoterBreakdown
+        candidates={fullPoll.pollViewMetadata.selectedContent}
+        contract={artist.contracts.Governor}
+        pollId={poll.pollIdOnChain}
+        revealedVotes={revealedVotes}
       />
     </div>
   );

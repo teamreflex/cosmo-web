@@ -21,6 +21,7 @@ export default function GravityPoll({
 }: GravityPollProps) {
   const { data } = useSuspenseGravityPoll({
     artistName: artist.id,
+    contract: artist.contracts.Governor,
     gravityId,
     pollId,
   });

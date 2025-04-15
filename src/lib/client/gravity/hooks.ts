@@ -10,7 +10,7 @@ import {
   useSuspenseQuery,
 } from "@tanstack/react-query";
 import { GravityHookParams, RevealedVote, RevealLog, VoteLog } from "./types";
-import { QUERY_KEYS } from "./queries";
+import { GRAVITY_QUERY_KEYS } from "./queries";
 import { hashFn } from "wagmi/query";
 import { chunkBlocks } from "./util";
 import { ofetch } from "ofetch";
@@ -39,7 +39,7 @@ function usePollStartBlock(params: GravityHookParams) {
   const config = createGovernorConfig(params.contract as Hex);
   const client = useClient();
   return useQuery({
-    queryKey: QUERY_KEYS.POLL_START_BLOCK(params),
+    queryKey: GRAVITY_QUERY_KEYS.POLL_START_BLOCK(params),
     queryKeyHashFn: hashFn,
     queryFn: async () => {
       const events = await getContractEvents(client!, {
@@ -67,7 +67,7 @@ function usePollEndBlock(params: GravityHookParams) {
   const config = createGovernorConfig(params.contract as Hex);
   const client = useClient();
   return useQuery({
-    queryKey: QUERY_KEYS.POLL_END_BLOCK(params),
+    queryKey: GRAVITY_QUERY_KEYS.POLL_END_BLOCK(params),
     queryKeyHashFn: hashFn,
     queryFn: async () => {
       const events = await getContractEvents(client!, {
@@ -109,7 +109,7 @@ function usePollStatus(params: GravityHookParams) {
       const event = logs.find((log) => log.args.pollId === params.pollId);
       if (event) {
         queryClient.setQueryData(
-          QUERY_KEYS.POLL_START_BLOCK(params),
+          GRAVITY_QUERY_KEYS.POLL_START_BLOCK(params),
           Number(event.blockNumber)
         );
       }
@@ -125,7 +125,7 @@ function usePollStatus(params: GravityHookParams) {
       const event = logs.find((log) => log.args.pollId === params.pollId);
       if (event) {
         queryClient.setQueryData(
-          QUERY_KEYS.POLL_END_BLOCK(params),
+          GRAVITY_QUERY_KEYS.POLL_END_BLOCK(params),
           Number(event.blockNumber)
         );
       }
@@ -151,7 +151,7 @@ function useVoteData(params: GravityHookParams) {
   const config = createGovernorConfig(params.contract as Hex);
   const client = useClient();
   return useQuery({
-    queryKey: QUERY_KEYS.VOTES(params),
+    queryKey: GRAVITY_QUERY_KEYS.VOTES(params),
     queryKeyHashFn: hashFn,
     queryFn: async () => {
       if (!startBlock || !currentBlock) return new Map<number, VoteLog>();
@@ -202,7 +202,7 @@ function useInitialReveals(params: GravityHookParams) {
   const config = createGovernorConfig(params.contract as Hex);
   const client = useClient();
   return useQuery({
-    queryKey: QUERY_KEYS.REVEALS(params),
+    queryKey: GRAVITY_QUERY_KEYS.REVEALS(params),
     queryKeyHashFn: hashFn,
     queryFn: async () => {
       if (!startBlock || !currentBlock) return new Map<number, RevealLog>();
@@ -330,7 +330,7 @@ function useRevealPolling(params: GravityHookParams) {
 
       // set the reveal data for each transaction
       queryClient.setQueryData(
-        QUERY_KEYS.REVEALS(params),
+        GRAVITY_QUERY_KEYS.REVEALS(params),
         (prev: Map<number, RevealLog>) => {
           for (const tx of transactions) {
             const [pollId, data, offset] = tx.args;
@@ -369,20 +369,24 @@ export function useLiveData(params: GravityHookParams) {
       return [];
     }
 
-    return votesQuery.data.entries().reduce((acc, [voteIndex, vote]) => {
-      const reveal = revealsQuery.data?.get(Number(voteIndex));
-      if (!reveal) return acc;
+    return votesQuery.data
+      .entries()
+      .reduce((acc, [voteIndex, vote]) => {
+        const reveal = revealsQuery.data?.get(Number(voteIndex));
+        if (!reveal) return acc;
 
-      acc.push({
-        pollId: Number(vote.pollId),
-        voter: vote.voter,
-        comoAmount: safeBigInt(vote.comoAmount),
-        candidateId: Number(reveal.candidateId),
-        blockNumber: vote.blockNumber,
-      });
+        acc.push({
+          hash: vote.hash,
+          pollId: Number(vote.pollId),
+          voter: vote.voter,
+          comoAmount: safeBigInt(vote.comoAmount),
+          candidateId: Number(reveal.candidateId),
+          blockNumber: vote.blockNumber,
+        });
 
-      return acc;
-    }, [] as RevealedVote[]);
+        return acc;
+      }, [] as RevealedVote[])
+      .sort((a, b) => b.comoAmount - a.comoAmount);
   }, [votesQuery.data, revealsQuery.data]);
 
   // get the number of como used for each candidate
@@ -407,6 +411,7 @@ export function useLiveData(params: GravityHookParams) {
 
 type UseSuspenseGravityPollParams = {
   artistName: string;
+  contract: string;
   gravityId: number;
   pollId: number;
 };
@@ -416,18 +421,34 @@ type UseSuspenseGravityPollParams = {
  */
 export function useSuspenseGravityPoll(params: UseSuspenseGravityPollParams) {
   return useSuspenseQuery({
-    queryKey: [
-      "gravity-poll",
-      params.artistName.toLowerCase(),
-      params.gravityId,
-      params.pollId,
-    ],
+    queryKey: GRAVITY_QUERY_KEYS.POLL_DETAILS({
+      contract: params.contract,
+      pollId: BigInt(params.pollId),
+    }),
     queryFn: async () => {
       const url = new URL(
         `/api/gravity/v3/${params.artistName}/gravity/${params.gravityId}/polls/${params.pollId}`,
         baseUrl()
       );
       return await ofetch<CosmoPollChoices>(url.toString());
+    },
+    refetchOnWindowFocus: false,
+    staleTime: Infinity,
+  });
+}
+
+/**
+ * Get voter names for a given poll.
+ */
+export function useSuspenseVoterNames(params: GravityHookParams) {
+  return useSuspenseQuery({
+    queryKey: GRAVITY_QUERY_KEYS.VOTER_NAMES({
+      contract: params.contract,
+      pollId: BigInt(params.pollId),
+    }),
+    queryFn: async () => {
+      // this should be streamed in from the server
+      return {} as Record<string, string | undefined>;
     },
     refetchOnWindowFocus: false,
     staleTime: Infinity,

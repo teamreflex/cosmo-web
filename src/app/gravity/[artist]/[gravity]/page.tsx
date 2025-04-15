@@ -15,6 +15,9 @@ import { ComoProvider } from "@/hooks/use-como";
 import { notFound, redirect } from "next/navigation";
 import { getProxiedToken } from "@/lib/server/handlers/withProxiedToken";
 import GravityWagmiProvider from "@/components/gravity/gravity-wagmi-provider";
+import { GRAVITY_QUERY_KEYS } from "@/lib/client/gravity/queries";
+import { fetchUsersFromVotes } from "@/lib/server/gravity";
+import { getPollStatus } from "@/lib/client/gravity/util";
 
 type Params = {
   artist: ValidArtist;
@@ -75,19 +78,33 @@ export default async function GravityPage(props: { params: Promise<Params> }) {
   const params = await props.params;
   const data = await fetchData(params);
 
-  // prefetch polls
   const queryClient = getQueryClient();
   for (const poll of data.gravity.polls) {
+    // kick off fetching of the poll details (candidates etc)
     queryClient.prefetchQuery({
-      queryKey: [
-        "gravity-poll",
-        params.artist.toLowerCase(),
-        Number(params.gravity),
-        poll.id,
-      ],
+      queryKey: GRAVITY_QUERY_KEYS.POLL_DETAILS({
+        contract: data.artist.contracts.Governor,
+        pollId: BigInt(poll.id),
+      }),
       queryFn: async () =>
         fetchPoll(data.accessToken, params.artist, params.gravity, poll.id),
     });
+
+    // kick off fetching of the voter names if results should be shown
+    const status = getPollStatus(poll);
+    if (status === "counting" || status === "finalized") {
+      queryClient.prefetchQuery({
+        queryKey: GRAVITY_QUERY_KEYS.VOTER_NAMES({
+          contract: data.artist.contracts.Governor,
+          pollId: BigInt(poll.pollIdOnChain),
+        }),
+        queryFn: async () =>
+          fetchUsersFromVotes({
+            contract: data.artist.contracts.Governor,
+            pollIdOnChain: poll.pollIdOnChain,
+          }),
+      });
+    }
   }
 
   return (

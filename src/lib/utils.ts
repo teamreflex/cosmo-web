@@ -110,7 +110,7 @@ export async function chunk<T>(
 }
 
 /**
- * Safe conversion of a bigint to a number.
+ * Safe conversion of a crypto-formatted bigint to a number.
  */
 export function safeBigInt(value: bigint) {
   return Number(value / BigInt(10 ** 18));
