@@ -77,10 +77,12 @@ export async function generateMetadata(props: {
 export default async function GravityPage(props: { params: Promise<Params> }) {
   const params = await props.params;
   const data = await fetchData(params);
-
   const queryClient = getQueryClient();
+
+  /**
+   * kick off fetching of the poll details (candidates etc)
+   */
   for (const poll of data.gravity.polls) {
-    // kick off fetching of the poll details (candidates etc)
     queryClient.prefetchQuery({
       queryKey: GRAVITY_QUERY_KEYS.POLL_DETAILS({
         contract: data.artist.contracts.Governor,
@@ -89,29 +91,31 @@ export default async function GravityPage(props: { params: Promise<Params> }) {
       queryFn: async () =>
         fetchPoll(data.accessToken, params.artist, params.gravity, poll.id),
     });
+  }
 
-    // kick off fetching of the voter names if results should be shown
-    const status = getPollStatus(poll);
-    if (status === "counting" || status === "finalized") {
-      queryClient.prefetchQuery({
-        queryKey: GRAVITY_QUERY_KEYS.VOTER_NAMES({
-          contract: data.artist.contracts.Governor,
-          pollId: BigInt(poll.pollIdOnChain),
-        }),
-        queryFn: async () =>
-          fetchUsersFromVotes({
-            contract: data.artist.contracts.Governor,
-            pollIdOnChain: poll.pollIdOnChain,
-          }),
-      });
-    }
+  /**
+   * kick off fetching of the voter names if results should be shown
+   */
+  const countablePolls = data.gravity.polls.filter((p) => {
+    const status = getPollStatus(p);
+    return status === "counting" || status === "finalized";
+  });
+  const fetchUsersFromVotesPromise = fetchUsersFromVotes({
+    contract: data.artist.contracts.Governor,
+    pollIds: countablePolls.map((p) => p.pollIdOnChain),
+  });
+  for (const poll of countablePolls) {
+    queryClient.prefetchQuery({
+      queryKey: GRAVITY_QUERY_KEYS.VOTER_NAMES({
+        contract: data.artist.contracts.Governor,
+        pollId: BigInt(poll.pollIdOnChain),
+      }),
+      queryFn: async () => fetchUsersFromVotesPromise,
+    });
   }
 
   return (
-    <GravityWagmiProvider
-      authenticated={data.authenticated}
-      accessToken={data.accessToken}
-    >
+    <GravityWagmiProvider>
       <ComoProvider artist={data.artist} balances={data.balances ?? []}>
         <main className="container flex flex-col py-2">
           <div className="flex items-center">

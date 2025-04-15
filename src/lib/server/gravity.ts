@@ -1,11 +1,11 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { indexer } from "./db/indexer";
 import { votes } from "./db/indexer/schema";
 import { db } from "./db";
 
 type FetchUsersFromVotesParams = {
   contract: string;
-  pollIdOnChain: number;
+  pollIds: number[];
 };
 
 /**
@@ -18,7 +18,7 @@ export async function fetchUsersFromVotes(params: FetchUsersFromVotesParams) {
     .where(
       and(
         eq(votes.contract, params.contract.toLowerCase()),
-        eq(votes.pollId, params.pollIdOnChain)
+        inArray(votes.pollId, params.pollIds)
       )
     );
 
