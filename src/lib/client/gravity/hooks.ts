@@ -276,7 +276,7 @@ function useRevealPolling(params: GravityHookParams) {
   const config = createGovernorConfig(params.contract as Hex);
   const client = useClient();
   const queryClient = useQueryClient();
-  const initialQuery = useInitialReveals(params);
+  const { status } = useInitialReveals(params);
 
   /**
    * only poll for data when:
@@ -286,7 +286,7 @@ function useRevealPolling(params: GravityHookParams) {
    */
   const shouldPoll =
     isPending === false &&
-    initialQuery.status === "success" &&
+    status === "success" &&
     startBlock !== null &&
     endBlock === null;
 
@@ -331,27 +331,26 @@ function useRevealPolling(params: GravityHookParams) {
       // set the reveal data for each transaction
       queryClient.setQueryData(
         GRAVITY_QUERY_KEYS.REVEALS(params),
-        (prev: Map<number, RevealLog>) => {
+        (prev: Map<number, RevealLog> | undefined) => {
+          const next = new Map(prev);
           for (const tx of transactions) {
             const [pollId, data, offset] = tx.args;
             for (let i = 0; i < data.length; i++) {
               const voteIndex = Number(offset) + i;
-              prev.set(voteIndex, {
+              next.set(voteIndex, {
                 pollId,
                 voteIndex: BigInt(voteIndex),
                 candidateId: data[i].votedCandidateId,
               });
             }
           }
-          return prev;
+          return next;
         }
       );
     }
 
     fetchRevealTransactions();
   }, [client, revealHashes, shouldPoll, queryClient, params]);
-
-  return initialQuery;
 }
 
 /**
@@ -359,7 +358,8 @@ function useRevealPolling(params: GravityHookParams) {
  */
 export function useLiveData(params: GravityHookParams) {
   const votesQuery = useVoteData(params);
-  const revealsQuery = useRevealPolling(params);
+  const revealsQuery = useInitialReveals(params);
+  useRevealPolling(params);
 
   const isPending = votesQuery.isPending || revealsQuery.isPending;
 

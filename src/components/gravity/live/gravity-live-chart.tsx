@@ -55,7 +55,6 @@ export default function GravityLiveChart({ artist, gravity }: Props) {
       <CandidateBreakdown
         content={fullPoll.pollViewMetadata.selectedContent}
         comoByCandidate={comoByCandidate}
-        totalComoUsed={totalComoUsed}
       />
 
       <VoterBreakdown
