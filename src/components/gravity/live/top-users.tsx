@@ -53,13 +53,13 @@ export default function TopUsers(props: Props) {
       aggregated.candidates[vote.candidateId].comoAmount += vote.comoAmount;
     }
 
-    // 2. use a min-heap approach to find top 25 users efficiently
+    // 2. use a min-heap to find top 25 users efficiently
     const topUsersHeap: AggregatedVotes[] = [];
     const heapSize = 25;
 
-    // helper to maintain min-heap property (simple sort for small K=25)
+    // maintain min-heap property (sort asc, simple for K=25)
     const maintainHeap = () => {
-      topUsersHeap.sort((a, b) => b.total - a.total);
+      topUsersHeap.sort((a, b) => a.total - b.total);
     };
 
     for (const user of voteMap.values()) {
@@ -68,12 +68,12 @@ export default function TopUsers(props: Props) {
         maintainHeap();
       } else if (user.total > topUsersHeap[0].total) {
         // compare with min element
-        topUsersHeap[0] = user; // replace min element
-        maintainHeap(); // re-sort to fix heap property
+        topUsersHeap[0] = user;
+        maintainHeap();
       }
     }
 
-    // 3. sort the final top 25 descending for display
+    // 3. sort the final top 25 desc for display
     return topUsersHeap.sort((a, b) => b.total - a.total);
   }, [props.votes, props.candidates, props.nicknames]);
 
