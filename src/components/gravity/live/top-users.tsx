@@ -22,28 +22,22 @@ export default function TopUsers(props: Props) {
       return [];
     }
 
+    // 1. aggregate votes by user
     const voteMap = new Map<string, AggregatedVotes>();
     for (const vote of props.votes) {
       const address = vote.voter.toLowerCase();
       const candidate = props.candidates[vote.candidateId].content;
       const nickname = props.nicknames[address];
 
-      const aggregated = voteMap.get(address);
+      let aggregated = voteMap.get(address);
       if (!aggregated) {
-        voteMap.set(address, {
+        aggregated = {
           address,
           nickname,
-          candidates: {
-            [vote.candidateId]: {
-              comoAmount: vote.comoAmount,
-              id: vote.candidateId,
-              title: candidate.title,
-              imageUrl: candidate.imageUrl,
-            },
-          },
-          total: vote.comoAmount,
-        });
-        continue;
+          candidates: {},
+          total: 0,
+        };
+        voteMap.set(address, aggregated);
       }
 
       if (!aggregated.candidates[vote.candidateId]) {
@@ -59,9 +53,28 @@ export default function TopUsers(props: Props) {
       aggregated.candidates[vote.candidateId].comoAmount += vote.comoAmount;
     }
 
-    return Array.from(voteMap.values())
-      .sort((a, b) => b.total - a.total)
-      .slice(0, 25);
+    // 2. use a min-heap approach to find top 25 users efficiently
+    const topUsersHeap: AggregatedVotes[] = [];
+    const heapSize = 25;
+
+    // helper to maintain min-heap property (simple sort for small K=25)
+    const maintainHeap = () => {
+      topUsersHeap.sort((a, b) => b.total - a.total);
+    };
+
+    for (const user of voteMap.values()) {
+      if (topUsersHeap.length < heapSize) {
+        topUsersHeap.push(user);
+        maintainHeap();
+      } else if (user.total > topUsersHeap[0].total) {
+        // compare with min element
+        topUsersHeap[0] = user; // replace min element
+        maintainHeap(); // re-sort to fix heap property
+      }
+    }
+
+    // 3. sort the final top 25 descending for display
+    return topUsersHeap.sort((a, b) => b.total - a.total);
   }, [props.votes, props.candidates, props.nicknames]);
 
   return (
@@ -95,7 +108,9 @@ type RowProps = {
 
 function Row({ user }: RowProps) {
   const nickname = user.nickname ?? user.address.substring(0, 8);
-  const candidates = Object.values(user.candidates);
+  const candidates = Object.values(user.candidates).sort(
+    (a, b) => b.comoAmount - a.comoAmount
+  );
 
   return (
     <div className="w-full h-12 rounded-lg px-4 flex items-center transition-all bg-accent/70 hover:bg-accent">
