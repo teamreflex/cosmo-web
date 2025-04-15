@@ -12,8 +12,9 @@ import { Suspense } from "react";
 import Skeleton from "@/components/skeleton/skeleton";
 import GravityPoll from "./gravity-poll";
 import { findPoll, getPollStatus } from "@/lib/client/gravity/util";
-import { AlertTriangle, Loader2 } from "lucide-react";
+import { AlertTriangle, Loader2, TriangleAlert } from "lucide-react";
 import GravityLiveChart from "../live/gravity-live-chart";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 type AnyPoll = CosmoPollUpcoming | CosmoPollFinalized;
 
@@ -39,7 +40,7 @@ export default function OngoingDetails({
     <div className="flex flex-col gap-2 w-full">
       <GravityHeader gravity={gravity} />
 
-      <div className="flex flex-col gap-4 justify-center w-full">
+      <div className="flex flex-col gap-2 justify-center w-full">
         {isCounting ? (
           <OngoingCounting artist={artist} gravity={gravity} />
         ) : (
@@ -127,7 +128,17 @@ function OngoingCounting({ artist, gravity }: OngoingCountingProps) {
           </div>
         }
       >
-        <GravityLiveChart artist={artist} gravity={gravity} />
+        <div className="contents">
+          <Alert>
+            <TriangleAlert className="h-4 w-4" />
+            <AlertTitle>Heads up!</AlertTitle>
+            <AlertDescription>
+              Live gravity tracking is a work in progress and may not work
+              properly.
+            </AlertDescription>
+          </Alert>
+          <GravityLiveChart artist={artist} gravity={gravity} />
+        </div>
       </Suspense>
     </ErrorBoundary>
   );
