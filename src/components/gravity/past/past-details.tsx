@@ -5,7 +5,7 @@ import { TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertCircle, AlertTriangle, Crown, Loader2 } from "lucide-react";
 import Image from "next/image";
 import GravityRanking from "./gravity-ranking";
-import { cn } from "@/lib/utils";
+import { ordinal } from "@/lib/utils";
 import { Suspense } from "react";
 import MyRecord from "./my-record";
 import GravityQueryTabs from "../gravity-query-tabs";
@@ -40,65 +40,54 @@ export default function PastDetails({ artist, gravity }: PastDetailsProps) {
         >
           {gravity.result !== undefined && (
             <div className="contents">
-              {/* total como used */}
-              <div className="flex flex-col items-center justify-center bg-accent rounded-xl py-4 w-full sm:w-2/3">
-                <p className="font-bold text-sm">Total COMO collected</p>
-                <p className="text-2xl font-bold text-cosmo-text">
-                  {gravity.result.totalComoUsed.toLocaleString()}
-                </p>
-              </div>
+              <div className="xl:h-full w-full gap-2 flex flex-col-reverse xl:flex-row">
+                {/* TODO: figure out how to make this properly fit */}
+                {/* final choice */}
+                <div className="flex shrink-0 h-fit flex-col bg-accent rounded-xl overflow-hidden">
+                  <div className="flex gap-2 font-bold p-3">
+                    <Crown />
+                    <p>Final Choice</p>
+                  </div>
 
-              {/* final choice */}
-              <div className="flex flex-col mx-auto bg-accent rounded-xl w-full sm:w-2/3">
-                <div className="flex gap-2 font-bold p-3">
-                  <p>Our Final Choice</p>
-                  <Crown />
+                  <div className="relative shrink-0 aspect-square w-full xl:w-52 bg-linear-to-t from-black to-transparent">
+                    <Image
+                      src={gravity.result.resultImageUrl}
+                      fill={true}
+                      alt={gravity.result.resultTitle}
+                      className="object-cover"
+                    />
+                  </div>
                 </div>
 
-                <div className="rounded-xl relative aspect-square w-full bg-linear-to-t from-black to-transparent text-clip">
-                  <Image
-                    className="absolute"
-                    src={gravity.result.resultImageUrl}
-                    fill={true}
-                    alt={gravity.result.resultTitle}
+                {/* ranking */}
+                <div className="flex-grow">
+                  <GravityRanking
+                    gravity={gravity}
+                    totalComoUsed={gravity.result.totalComoUsed}
                   />
-
-                  <p className="absolute bottom-4 left-4 font-bold text-xl">
-                    {gravity.result.resultTitle}
-                  </p>
                 </div>
               </div>
             </div>
           )}
 
-          {/* ranking */}
-          <div className="flex mx-auto w-full sm:w-2/3">
-            <GravityRanking gravity={gravity} />
-          </div>
-
           {/* leaderboard */}
-          <div className="flex flex-col mx-auto bg-accent rounded-xl w-full sm:w-2/3">
-            <p className="p-3 font-bold">Total Contribution Leaderboard</p>
+          <div className="flex flex-col gap-2 w-full">
+            {gravity.leaderboard.userRanking.map((user) => (
+              <div
+                key={user.rank}
+                data-rank={user.rank}
+                className="w-full h-12 rounded-lg px-4 flex items-center transition-all bg-accent/70 hover:bg-accent data-[rank=1]:text-cosmo-text"
+              >
+                <span className="text-xs w-8">{ordinal(user.rank)}</span>
+                <span className="text-sm font-semibold">
+                  {user.user.nickname}
+                </span>
 
-            <table>
-              <tbody>
-                {gravity.leaderboard.userRanking.map((user) => (
-                  <tr
-                    key={user.rank}
-                    className={cn(
-                      "flex w-full h-10 items-center px-3 hover:bg-black/70 transition-colors font-semibold",
-                      user.rank === 1 && "text-cosmo-text"
-                    )}
-                  >
-                    <td className="w-10">{user.rank}</td>
-                    <td className="flex grow">{user.user.nickname}</td>
-                    <td className="flex justify-end">
-                      {user.totalComoUsed.toLocaleString()} COMO
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                <span className="text-sm ml-auto">
+                  {user.totalComoUsed.toLocaleString()} COMO
+                </span>
+              </div>
+            ))}
           </div>
         </TabsContent>
 
@@ -137,13 +126,10 @@ export default function PastDetails({ artist, gravity }: PastDetailsProps) {
           )}
         </TabsContent>
 
-        <TabsContent
-          value="record"
-          className="flex flex-col gap-4 w-full items-center"
-        >
+        <TabsContent value="record" className="flex w-full">
           <Suspense
             fallback={
-              <div className="flex flex-col gap-2 w-full sm:w-1/2 mx-auto animate-pulse h-24" />
+              <div className="flex flex-col gap-2 w-full animate-pulse h-24" />
             }
           >
             <MyRecord gravity={gravity} />

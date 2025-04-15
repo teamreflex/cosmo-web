@@ -18,9 +18,9 @@ export default async function MyRecord({ gravity }: Props) {
   );
 
   return (
-    <div className="contents">
+    <div className="flex flex-col lg:flex-row gap-4 w-full">
       {/* my contribution */}
-      <div className="flex flex-col gap-2 w-full sm:w-1/2 mx-auto">
+      <div className="flex flex-col gap-2 w-full">
         <h3 className="font-bold">My Contribution</h3>
         <div className="bg-accent rounded-lg grid grid-cols-2 divide-x divide-background">
           {/* total como used */}
@@ -42,7 +42,7 @@ export default async function MyRecord({ gravity }: Props) {
       </div>
 
       {/* voting record */}
-      <div className="flex flex-col gap-2 w-full sm:w-1/2 mx-auto">
+      <div className="flex flex-col gap-2 w-full">
         <h3 className="font-bold">My Voting Record</h3>
 
         {record.voteStatuses.map((status, i) =>
