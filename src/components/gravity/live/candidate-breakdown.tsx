@@ -5,7 +5,6 @@ import Image from "next/image";
 type Props = {
   content: PollSelectedContentImage[];
   comoByCandidate: Record<number, number>;
-  totalComoUsed: number;
 };
 
 export default function CandidateBreakdown(props: Props) {
@@ -15,6 +14,11 @@ export default function CandidateBreakdown(props: Props) {
       comoUsed: props.comoByCandidate[i],
     }))
     .sort((a, b) => b.comoUsed - a.comoUsed);
+
+  const totalComoUsed = candidates.reduce(
+    (acc, candidate) => acc + candidate.comoUsed,
+    0
+  );
 
   return (
     <div className="w-full flex flex-col gap-2">
@@ -31,7 +35,7 @@ export default function CandidateBreakdown(props: Props) {
         >
           <CandidateRow
             content={candidate.content}
-            totalComoUsed={props.totalComoUsed}
+            totalComoUsed={totalComoUsed}
             candidateComoUsed={candidate.comoUsed}
           />
         </motion.div>
