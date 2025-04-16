@@ -5,6 +5,8 @@ import { env } from "@/env";
 import { CosmoPollChoices, CosmoPollUpcoming } from "./universal/cosmo/gravity";
 import { ValidArtist } from "./universal/cosmo/common";
 
+export const DISABLE_CHAIN = true;
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }

@@ -1,11 +1,12 @@
 import { Plus } from "lucide-react";
 import { useObjektSpin, useSpinTickets } from "@/hooks/use-objekt-spin";
-import { cn } from "@/lib/utils";
+import { cn, DISABLE_CHAIN } from "@/lib/utils";
 import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import { ErrorBoundary } from "react-error-boundary";
 import SpinRates from "../spin-rates";
 import { useWallet } from "@/hooks/use-wallet";
 import { useMemo } from "react";
+import { toast } from "@/components/ui/use-toast";
 
 export default function StateIdle() {
   const { data } = useSpinTickets();
@@ -25,13 +26,25 @@ export default function StateIdle() {
 
   const isDisabled = data.availableTicketsCount === 0 || hasWallet === false;
 
+  function handleClick() {
+    if (DISABLE_CHAIN) {
+      toast({
+        description: "Objekt spinning is currently disabled.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    startSelecting();
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {/* get started */}
       <div className="flex flex-col gap-4 items-center justify-center">
         <button
           disabled={isDisabled}
-          onClick={startSelecting}
+          onClick={handleClick}
           className={cn(
             "group flex items-center justify-center rounded-2xl md:rounded-lg aspect-photocard w-2/3 md:w-48 cursor-pointer",
             // coloring/animation

@@ -16,6 +16,8 @@ import Links from "./links.server";
 import StateAuthenticated from "./auth/state-authenticated";
 import StateGuest from "./auth/state-guest";
 import StateMissingProfile from "./auth/state-missing-profile";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { AlertTriangle } from "lucide-react";
 
 export default async function Navbar() {
   return (
@@ -28,6 +30,35 @@ export default async function Navbar() {
               <div className="relative flex items-center">
                 <SystemStatus />
                 <UpdateDialog />
+
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button className="relative h-8 w-9 flex justify-center items-center rounded-lg bg-red-500/40 hover:bg-red-500/60 transition-colors cursor-pointer mx-2">
+                      <AlertTriangle className="text-red-500 w-5 h-5" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="text-xs flex flex-col gap-2">
+                    <p className="font-bold">
+                      MODHAUS has currently suspended on-chain activities until
+                      April 18th 3PM KST.
+                    </p>
+                    <p>
+                      The following features have been disabled until the
+                      maintenance period has ended:
+                    </p>
+                    <ul className="list-disc list-inside">
+                      <li>Objekt sending</li>
+                      <li>Objekt scanning</li>
+                      <li>Objekt spin</li>
+                      <li>Grids</li>
+                    </ul>
+                    <p>
+                      If changes have been made that break Apollo, you may
+                      experience errors and features will be disabled for longer
+                      until they can be fixed.
+                    </p>
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
 
