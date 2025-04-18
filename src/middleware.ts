@@ -37,6 +37,12 @@ const allowUnauthenticated = new RegExp(
 );
 
 export async function middleware(request: NextRequest) {
+  // maintenance
+  const maintenance = true;
+  if (maintenance) {
+    return NextResponse.rewrite(new URL("/maintenance", request.url));
+  }
+
   const path = request.nextUrl.pathname;
 
   // verifies token validity
