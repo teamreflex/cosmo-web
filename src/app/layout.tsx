@@ -1,4 +1,4 @@
-import "../../styles/tailwind.css";
+import "../styles/tailwind.css";
 import ClientProviders from "@/components/client-providers";
 import { Metadata } from "next";
 import { env } from "@/env";
@@ -15,7 +15,7 @@ const inter = Inter({
   variable: "--font-inter",
 });
 const cosmo = localFont({
-  src: "../HalvarBreit-Bd.woff2",
+  src: "./HalvarBreit-Bd.woff2",
   variable: "--font-cosmo",
 });
 
