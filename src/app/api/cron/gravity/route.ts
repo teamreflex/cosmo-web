@@ -21,7 +21,7 @@ export const GET = () => {
 /**
  * Fetch and load gravity data into the database.
  */
-export const _GET = withProxiedToken(async ({ req, token }) => {
+const _GET = withProxiedToken(async ({ req, token }) => {
   const authHeader = req.headers.get("authorization");
   if (authHeader !== `Bearer ${env.CRON_SECRET}`) {
     return new Response("unauthorized", {
