@@ -4,8 +4,6 @@ import { PublicProfile } from "./universal/cosmo/auth";
 import { env } from "@/env";
 import { ValidArtist } from "./universal/cosmo/common";
 
-export const DISABLE_CHAIN = true;
-
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }

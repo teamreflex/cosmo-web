@@ -20,7 +20,7 @@ import {
 import { useState } from "react";
 import VisuallyHidden from "../ui/visually-hidden";
 import { IDetectedBarcode } from "@yudiel/react-qr-scanner";
-import { cn, DISABLE_CHAIN, track } from "@/lib/utils";
+import { cn, track } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ofetch } from "ofetch";
 import { COSMO_ENDPOINT } from "@/lib/universal/cosmo/common";
@@ -315,18 +315,6 @@ function ClaimObjekt({ qrCode, result, onClaim, onClose }: ClaimObjektProps) {
     isClaimed ? " already claimed" : "claimable"
   }`;
 
-  function handleClick() {
-    if (DISABLE_CHAIN) {
-      toast({
-        variant: "destructive",
-        description: "Claiming is currently disabled.",
-      });
-      return;
-    }
-
-    mutate();
-  }
-
   return (
     <DrawerContent>
       <DrawerHeader>
@@ -349,7 +337,7 @@ function ClaimObjekt({ qrCode, result, onClaim, onClose }: ClaimObjektProps) {
           Cancel
         </Button>
         {isClaimed === false && (
-          <Button disabled={status === "pending"} onClick={handleClick}>
+          <Button disabled={status === "pending"} onClick={() => mutate()}>
             <span>Claim</span>
             {status === "pending" && (
               <Loader2 className="h-4 w-4 ml-2 animate-spin" />

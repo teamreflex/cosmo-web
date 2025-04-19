@@ -6,7 +6,7 @@ import {
   CosmoGridSlotCompletion,
   CosmoOngoingGridSlot,
 } from "@/lib/universal/cosmo/grid";
-import { DISABLE_CHAIN, track } from "@/lib/utils";
+import { track } from "@/lib/utils";
 import { useState, useTransition } from "react";
 
 type EmptySlot = {
@@ -85,14 +85,6 @@ export function useGrid(slug: string, slots: CosmoOngoingGridSlot[]) {
   }
 
   function completeGrid() {
-    if (DISABLE_CHAIN) {
-      toast({
-        variant: "destructive",
-        description: "Gridding is currently disabled.",
-      });
-      return;
-    }
-
     startTransition(async () => {
       const result = await submitGrid({ slug, slots: slotsForCompletion });
       if (result.status === "success") {
