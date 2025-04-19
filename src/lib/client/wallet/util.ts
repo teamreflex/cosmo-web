@@ -1,6 +1,6 @@
-import objektAbi from "@/abi/objekt.json";
-import comoAbi from "@/abi/como.json";
-import { encodeFunctionData, parseEther } from "viem";
+import objektAbi from "@/abi/objekt";
+import comoAbi from "@/abi/como";
+import { encodeFunctionData, Hex, parseEther } from "viem";
 
 export type EncryptedWallet = {
   decryptedDek: string;
@@ -26,7 +26,7 @@ export function encodeObjektTransfer({
   return encodeFunctionData({
     abi: objektAbi,
     functionName: "transferFrom",
-    args: [from, to, tokenId],
+    args: [from as Hex, to as Hex, BigInt(tokenId)],
   });
 }
 

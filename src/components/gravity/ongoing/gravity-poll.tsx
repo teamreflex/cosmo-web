@@ -1,12 +1,10 @@
 "use client";
 
 import { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
-import { CosmoPollChoices } from "@/lib/universal/cosmo/gravity";
-import { baseUrl, getPollStatus } from "@/lib/utils";
-import { useSuspenseQuery } from "@tanstack/react-query";
 import Image from "next/image";
-import { ofetch } from "ofetch";
 import VoteDialog from "./gravity-vote";
+import { useSuspenseGravityPoll } from "@/lib/client/gravity/hooks";
+import { getPollStatus } from "@/lib/client/gravity/util";
 
 type GravityPollProps = {
   title: string;
@@ -21,17 +19,11 @@ export default function GravityPoll({
   gravityId,
   pollId,
 }: GravityPollProps) {
-  const { data } = useSuspenseQuery({
-    queryKey: ["gravity-poll", artist.name, gravityId, pollId],
-    queryFn: async () => {
-      const url = new URL(
-        `/api/gravity/v3/${artist.name}/gravity/${gravityId}/polls/${pollId}`,
-        baseUrl()
-      );
-      return await ofetch<CosmoPollChoices>(url.toString());
-    },
-    refetchOnWindowFocus: false,
-    staleTime: Infinity,
+  const { data } = useSuspenseGravityPoll({
+    artistName: artist.id,
+    contract: artist.contracts.Governor,
+    gravityId,
+    pollId,
   });
 
   const content = data.pollViewMetadata.defaultContent;

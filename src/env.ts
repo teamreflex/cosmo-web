@@ -43,6 +43,8 @@ export const env = createEnv({
       .transform((s) => s === "true"),
     // alchemy api key
     NEXT_PUBLIC_ALCHEMY_KEY: z.string().min(1),
+    // cosmo alchemy key
+    NEXT_PUBLIC_COSMO_ALCHEMY_KEY: z.string().min(1),
     // ramper firebase
     NEXT_PUBLIC_RAMPER_FIREBASE_KEY: z.string().min(1),
     NEXT_PUBLIC_RAMPER_FIREBASE_ID: z.string().min(1),
@@ -58,6 +60,7 @@ export const env = createEnv({
     NEXT_PUBLIC_UMAMI_SCRIPT_URL: process.env.NEXT_PUBLIC_UMAMI_SCRIPT_URL,
     NEXT_PUBLIC_SIMULATE_GRID: process.env.NEXT_PUBLIC_SIMULATE_GRID,
     NEXT_PUBLIC_ALCHEMY_KEY: process.env.NEXT_PUBLIC_ALCHEMY_KEY,
+    NEXT_PUBLIC_COSMO_ALCHEMY_KEY: process.env.NEXT_PUBLIC_COSMO_ALCHEMY_KEY,
     NEXT_PUBLIC_RAMPER_FIREBASE_KEY:
       process.env.NEXT_PUBLIC_RAMPER_FIREBASE_KEY,
     NEXT_PUBLIC_RAMPER_FIREBASE_ID: process.env.NEXT_PUBLIC_RAMPER_FIREBASE_ID,

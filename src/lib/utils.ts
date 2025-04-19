@@ -2,7 +2,6 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { PublicProfile } from "./universal/cosmo/auth";
 import { env } from "@/env";
-import { CosmoPollChoices, CosmoPollUpcoming } from "./universal/cosmo/gravity";
 import { ValidArtist } from "./universal/cosmo/common";
 
 export function cn(...inputs: ClassValue[]) {
@@ -88,23 +87,6 @@ export function baseUrl() {
 }
 
 /**
- * Determines the status of a gravity poll.
- */
-export function getPollStatus(poll: CosmoPollChoices | CosmoPollUpcoming) {
-  const now = new Date();
-
-  if (new Date(poll.endDate) <= now) {
-    return poll.finalized ? "finalized" : "counting";
-  }
-
-  if (new Date(poll.startDate) >= now) {
-    return "upcoming";
-  }
-
-  return "ongoing";
-}
-
-/**
  * Objekt border colors for each artist, based on 1st gen fanclub colors.
  * Used for member filter buttons.
  */
@@ -125,4 +107,11 @@ export async function chunk<T>(
     const chunk = arr.slice(i, i + chunkSize);
     await callback(chunk);
   }
+}
+
+/**
+ * Safe conversion of a crypto-formatted bigint to a number.
+ */
+export function safeBigInt(value: bigint) {
+  return Number(value / BigInt(10 ** 18));
 }

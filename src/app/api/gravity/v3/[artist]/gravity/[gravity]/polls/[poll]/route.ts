@@ -12,7 +12,7 @@ type Params = {
  * API route that services the /gravity/:artist/:gravity page.
  * Fetches the poll options for the given gravity.
  */
-export const POST = withCosmoApi<Params>(async ({ ctx, user }) => {
+export const GET = withCosmoApi<Params>(async ({ ctx, user }) => {
   const params = await ctx.params;
   const poll = await fetchPoll(
     user.accessToken,

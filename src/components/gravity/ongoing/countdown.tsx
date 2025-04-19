@@ -3,7 +3,7 @@
 import { PropsWithClassName, cn } from "@/lib/utils";
 import { intervalToDuration } from "date-fns";
 import { useState } from "react";
-import Hydrated from "../hydrated";
+import Hydrated from "@/components/hydrated";
 import { useInterval } from "usehooks-ts";
 
 type Props = PropsWithClassName<{
@@ -11,7 +11,7 @@ type Props = PropsWithClassName<{
   gravityEndDate: string;
 }>;
 
-export default function GravityOngoingCountdown({
+export default function Countdown({
   className,
   pollEndDate,
   gravityEndDate,
