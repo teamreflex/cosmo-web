@@ -58,7 +58,7 @@ async function SystemStatusPopover() {
         {/* gas */}
         <div className="flex flex-col">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold">Polygon</p>
+            <p className="text-sm font-semibold">Abstract</p>
             <div
               className={cn("flex gap-1 items-center", textStatus(gas.status))}
             >

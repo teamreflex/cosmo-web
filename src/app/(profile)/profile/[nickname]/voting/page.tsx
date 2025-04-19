@@ -1,4 +1,5 @@
 import { decodeUser, getUserByIdentifier } from "@/app/data-fetching";
+import AbstractWarning from "@/components/abstract-warning";
 import GravitySection from "@/components/votes/gravity-section";
 import { fetchUserVotes } from "@/lib/server/votes";
 import { isAddressEqual } from "@/lib/utils";
@@ -46,6 +47,8 @@ export default async function VotingPage(props: Props) {
 
   return (
     <div className="flex flex-col gap-4">
+      <AbstractWarning />
+
       {results.map((gravity, index) => (
         <GravitySection
           key={`gravity-${gravity.id}`}

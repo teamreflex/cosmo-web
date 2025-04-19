@@ -43,8 +43,8 @@ export default async function Navbar() {
                       compatible with.
                     </p>
                     <p>
-                      Signing in has been disabled and everyone forcibly signed
-                      out.
+                      Signing in and features that rely on COSMO have been
+                      disabled.
                     </p>
                   </PopoverContent>
                 </Popover>

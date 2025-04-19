@@ -21,6 +21,7 @@ import {
   parseUserCollectionFilters,
 } from "@/lib/server/objekts/prefetching/objekt-polygon";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
+import AbstractWarning from "@/components/abstract-warning";
 
 type Props = {
   params: Promise<{
@@ -96,7 +97,9 @@ export default async function UserCollectionPage(props: Props) {
         lockedObjekts={targetUser.lockedObjekts}
         pins={pins}
       >
-        <section className="flex flex-col">
+        <section className="flex flex-col gap-2">
+          <AbstractWarning />
+
           <UserStateProvider artist={selectedArtist} token={user}>
             <HydrationBoundary state={dehydrate(queryClient)}>
               <ProfileRenderer

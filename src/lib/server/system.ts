@@ -41,13 +41,13 @@ type ChainStatus = {
 export async function fetchChainStatus(): Promise<ChainStatus> {
   const [blockNumber, gasPrice] = await alchemy<RPCResponse[]>("/", {
     body: [
-      // polygon block number
+      // abstract block number
       {
         id: 1,
         jsonrpc: "2.0",
         method: "eth_blockNumber",
       },
-      // polygon gas price
+      // abstract gas price
       {
         id: 2,
         jsonrpc: "2.0",
@@ -81,9 +81,9 @@ type FinalSystemStatus = {
 
 /**
  * Calculate statuses for gas price and indexer height.
- * - within 400 blocks: normal
- * - over 400 but within 1600 blocks: degraded
- * - more than 1600 blocks: down
+ * - within 1800 blocks / 30 minutes: normal
+ * - over 1800 but within 3600 blocks / 60 minutes: degraded
+ * - more than 3600 blocks / 60 minutes: down
  */
 export const getSystemStatus = unstable_cache(
   async (): Promise<FinalSystemStatus> => {
@@ -94,7 +94,7 @@ export const getSystemStatus = unstable_cache(
 
     // calculate processor status
     const diff = blockHeight - processorHeight;
-    const status = diff < 400 ? "normal" : diff < 1600 ? "degraded" : "down";
+    const status = diff < 1800 ? "normal" : diff < 3600 ? "degraded" : "down";
 
     return {
       gas,

@@ -16,7 +16,7 @@ export const cosmo = ofetch.create({
  * HTTP client for Alchemy.
  */
 export const alchemy = ofetch.create({
-  baseURL: "https://polygon-mainnet.g.alchemy.com/v2",
+  baseURL: "https://abstract-mainnet.g.alchemy.com/v2",
   method: "POST",
   headers: {
     Authorization: `Bearer ${env.NEXT_PUBLIC_ALCHEMY_KEY}`,

@@ -2,6 +2,7 @@ import {
   getArtistsWithMembers,
   getUserByIdentifier,
 } from "@/app/data-fetching";
+import AbstractWarning from "@/components/abstract-warning";
 import Portal from "@/components/portal";
 import HelpDialog from "@/components/progress/help-dialog";
 import ProgressRenderer from "@/components/progress/progress-renderer";
@@ -28,7 +29,9 @@ export default async function ProgressPage(props: Props) {
   ]);
 
   return (
-    <section className="flex flex-col">
+    <section className="flex flex-col gap-2">
+      <AbstractWarning />
+
       <ProfileProvider targetProfile={targetUser.profile}>
         <ProgressRenderer
           artists={artists}

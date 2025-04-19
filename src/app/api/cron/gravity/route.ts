@@ -13,10 +13,15 @@ import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import { chunk } from "@/lib/utils";
 import { eq } from "drizzle-orm";
 
+// TODO: undo when migrated
+export const GET = () => {
+  return new Response("ok");
+};
+
 /**
  * Fetch and load gravity data into the database.
  */
-export const GET = withProxiedToken(async ({ req, token }) => {
+export const _GET = withProxiedToken(async ({ req, token }) => {
   const authHeader = req.headers.get("authorization");
   if (authHeader !== `Bearer ${env.CRON_SECRET}`) {
     return new Response("unauthorized", {

@@ -10,6 +10,8 @@ import { unstable_cache } from "next/cache";
 import { fetchSeasons } from "@/lib/server/cosmo/season";
 import { getProxiedToken } from "@/lib/server/handlers/withProxiedToken";
 import { fetchTokenBalances } from "@/lib/server/como";
+import * as artists from "@/artists";
+import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 
 /**
  * Decode the current token.
@@ -41,16 +43,19 @@ export const getUserByIdentifier = cache(async (identifier: string) => {
  * Cached for 12 hours.
  */
 export const getArtistsWithMembers = cache(async () => {
-  return await unstable_cache(
-    async () => {
-      const token = await getProxiedToken();
-      return await Promise.all(
-        validArtists.map((artist) => fetchArtistBff(artist, token.accessToken))
-      );
-    },
-    ["artists"],
-    { revalidate: 60 * 60 * 12 }
-  )();
+  // TODO: undo when migrated
+  return [artists.ARTMS, artists.tripleS] satisfies CosmoArtistWithMembersBFF[];
+
+  // return await unstable_cache(
+  //   async () => {
+  //     const token = await getProxiedToken();
+  //     return await Promise.all(
+  //       validArtists.map((artist) => fetchArtistBff(artist, token.accessToken))
+  //     );
+  //   },
+  //   ["artists"],
+  //   { revalidate: 60 * 60 * 12 }
+  // )();
 });
 
 /**
