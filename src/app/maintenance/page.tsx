@@ -21,7 +21,11 @@ export default function Maintenance() {
         bypassing authentication and security measures.
       </p>
 
-      <p>Objekt list data still exists and will be exportable soon.</p>
+      <p>
+        Apollo may return in an extremely stripped back form with just the
+        objekt listing and descriptions, but that won&apos;t be for a few days
+        yet. Objekt list data still exists and will be exportable soon.
+      </p>
 
       <p>
         Thanks to Nites & geminipoems for updating the objekt descriptions as
