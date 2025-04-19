@@ -24,8 +24,6 @@ export default function NavbarSearch({ authenticated }: Props) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
 
-  return null;
-
   function onSelect(user: CosmoPublicUser) {
     setOpen(false);
     addRecent({
