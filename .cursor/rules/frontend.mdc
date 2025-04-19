@@ -1,6 +1,6 @@
 ---
 description: Rules for working with Nextjs, React and Tanstack Query
-globs: src/**/*.{ts,tsx}
+globs: src/**/*.ts,src/**/*.tsx
 alwaysApply: false
 ---
 **Project tooling:**

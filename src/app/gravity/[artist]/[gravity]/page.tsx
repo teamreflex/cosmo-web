@@ -5,32 +5,70 @@ import GravityBodyRenderer from "@/components/gravity/gravity-body-renderer";
 import GravityCoreDetails from "@/components/gravity/gravity-core-details";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
-import { decodeUser, getArtistsWithMembers } from "@/app/data-fetching";
+import {
+  decodeUser,
+  getArtistsWithMembers,
+  getTokenBalances,
+} from "@/app/data-fetching";
 import { getQueryClient } from "@/lib/query-client";
-import { fetchTokenBalances } from "@/lib/server/como";
 import { ComoProvider } from "@/hooks/use-como";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { getProxiedToken } from "@/lib/server/handlers/withProxiedToken";
+import GravityWagmiProvider from "@/components/gravity/gravity-wagmi-provider";
+import { GRAVITY_QUERY_KEYS } from "@/lib/client/gravity/queries";
+import { fetchUsersFromVotes } from "@/lib/server/gravity";
+import { getPollStatus } from "@/lib/client/gravity/util";
 
 type Params = {
   artist: ValidArtist;
   gravity: number;
 };
 
-const fetchData = cache(async ({ artist, gravity }: Params) => {
-  const token = await decodeUser();
-  return await Promise.all([
-    token,
+const fetchData = cache(async (params: Params) => {
+  // check for auth
+  const user = await decodeUser();
+
+  // load current user and a proxied cosmo token
+  const accessToken =
+    user?.accessToken ?? (await getProxiedToken().then((t) => t.accessToken));
+
+  // no auth available, redirect to gravity list
+  if (!accessToken) {
+    redirect("/gravity");
+  }
+
+  // load authenticated data
+  const [gravity, artists, balances] = await Promise.all([
+    fetchGravity(params.artist, params.gravity),
     getArtistsWithMembers(),
-    fetchGravity(artist, gravity),
-    token ? fetchTokenBalances(token.address) : undefined,
+    user ? getTokenBalances(user.address) : undefined,
   ]);
+
+  // get the artist
+  const artist = artists.find(
+    (a) => a.id.toLowerCase() === params.artist.toLowerCase()
+  );
+
+  // if gravity or artist is not found, 404
+  if (!gravity || !artist) {
+    notFound();
+  }
+
+  return {
+    gravity,
+    artist,
+    authenticated: user !== undefined,
+    accessToken,
+    balances,
+  };
 });
 
 export async function generateMetadata(props: {
   params: Promise<Params>;
 }): Promise<Metadata> {
   const params = await props.params;
-  const [, , gravity] = await fetchData(params);
+  const { gravity } = await fetchData(params);
+
   return {
     title: gravity.title,
   };
@@ -38,60 +76,75 @@ export async function generateMetadata(props: {
 
 export default async function GravityPage(props: { params: Promise<Params> }) {
   const params = await props.params;
-  const [token, artists, gravity, balances] = await fetchData(params);
+  const data = await fetchData(params);
+  const queryClient = getQueryClient();
 
-  // get the artist
-  const artist = artists.find(
-    (a) => a.id.toLowerCase() === params.artist.toLowerCase()
-  );
-  if (!artist) {
-    notFound();
+  /**
+   * kick off fetching of the poll details (candidates etc)
+   */
+  for (const poll of data.gravity.polls) {
+    queryClient.prefetchQuery({
+      queryKey: GRAVITY_QUERY_KEYS.POLL_DETAILS({
+        contract: data.artist.contracts.Governor,
+        pollId: BigInt(poll.id),
+      }),
+      queryFn: async () =>
+        fetchPoll(data.accessToken, params.artist, params.gravity, poll.id),
+    });
   }
 
-  // if logged in, prefetch polls
-  const queryClient = getQueryClient();
-  if (token) {
-    for (const poll of gravity.polls) {
+  /**
+   * kick off fetching of the voter names if results should be shown
+   */
+  if (data.gravity.pollType === "single-poll") {
+    const countablePolls = data.gravity.polls.filter((p) => {
+      const status = getPollStatus(p);
+      return status === "counting" || status === "finalized";
+    });
+    const fetchUsersFromVotesPromise = fetchUsersFromVotes({
+      contract: data.artist.contracts.Governor,
+      pollIds: countablePolls.map((p) => p.pollIdOnChain),
+    });
+    for (const poll of countablePolls) {
       queryClient.prefetchQuery({
-        queryKey: [
-          "gravity-poll",
-          params.artist,
-          Number(params.gravity),
-          poll.id,
-        ],
-        queryFn: async () =>
-          fetchPoll(token.accessToken, params.artist, params.gravity, poll.id),
+        queryKey: GRAVITY_QUERY_KEYS.VOTER_NAMES({
+          contract: data.artist.contracts.Governor,
+          pollId: BigInt(poll.pollIdOnChain),
+        }),
+        queryFn: async () => fetchUsersFromVotesPromise,
       });
     }
   }
 
   return (
-    <ComoProvider artist={artist} balances={balances ?? []}>
-      <main className="container flex flex-col py-2">
-        <div className="flex items-center">
-          <div className="flex gap-2 items-center">
-            <h1 className="text-3xl font-cosmo uppercase">Gravity</h1>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {/* core details */}
-          <div className="col-span-1 sm:col-span-2">
-            <HydrationBoundary state={dehydrate(queryClient)}>
-              <GravityCoreDetails
-                artist={artist}
-                gravity={gravity}
-                authenticated={token !== undefined}
-              />
-            </HydrationBoundary>
+    <GravityWagmiProvider>
+      <ComoProvider artist={data.artist} balances={data.balances ?? []}>
+        <main className="container flex flex-col py-2">
+          <div className="flex items-center">
+            <div className="flex gap-2 items-center">
+              <h1 className="text-3xl font-cosmo uppercase">Gravity</h1>
+            </div>
           </div>
 
-          {/* dynamic details */}
-          <div className="col-span-1">
-            <GravityBodyRenderer gravity={gravity} />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* core details */}
+            <div className="col-span-1 sm:col-span-2">
+              <HydrationBoundary state={dehydrate(queryClient)}>
+                <GravityCoreDetails
+                  artist={data.artist}
+                  gravity={data.gravity}
+                  authenticated={data.authenticated}
+                />
+              </HydrationBoundary>
+            </div>
+
+            {/* dynamic details */}
+            <div className="col-span-1">
+              <GravityBodyRenderer gravity={data.gravity} />
+            </div>
           </div>
-        </div>
-      </main>
-    </ComoProvider>
+        </main>
+      </ComoProvider>
+    </GravityWagmiProvider>
   );
 }

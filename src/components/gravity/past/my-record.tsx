@@ -1,15 +1,15 @@
 import { fetchMyGravityResult } from "@/lib/server/cosmo/gravity";
 import { ordinal } from "@/lib/utils";
 import Image from "next/image";
-import GravityVoteTimestamp from "./gravity-vote-timestamp";
 import { decodeUser } from "@/app/data-fetching";
 import { CosmoPastGravity } from "@/lib/universal/cosmo/gravity";
+import GravityVoteTimestamp from "../gravity-vote-timestamp";
 
 type Props = {
   gravity: CosmoPastGravity;
 };
 
-export default async function GravityMyRecord({ gravity }: Props) {
+export default async function MyRecord({ gravity }: Props) {
   const user = await decodeUser();
   const record = await fetchMyGravityResult(
     user!.accessToken,
@@ -18,9 +18,9 @@ export default async function GravityMyRecord({ gravity }: Props) {
   );
 
   return (
-    <div className="contents">
+    <div className="flex flex-col lg:flex-row gap-4 w-full">
       {/* my contribution */}
-      <div className="flex flex-col gap-2 w-full sm:w-1/2 mx-auto">
+      <div className="flex flex-col gap-2 w-full">
         <h3 className="font-bold">My Contribution</h3>
         <div className="bg-accent rounded-lg grid grid-cols-2 divide-x divide-background">
           {/* total como used */}
@@ -42,7 +42,7 @@ export default async function GravityMyRecord({ gravity }: Props) {
       </div>
 
       {/* voting record */}
-      <div className="flex flex-col gap-2 w-full sm:w-1/2 mx-auto">
+      <div className="flex flex-col gap-2 w-full">
         <h3 className="font-bold">My Voting Record</h3>
 
         {record.voteStatuses.map((status, i) =>

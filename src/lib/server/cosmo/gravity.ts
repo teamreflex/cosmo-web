@@ -11,7 +11,6 @@ import {
 } from "@/lib/universal/cosmo/gravity";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { cosmo } from "../http";
-import { redirect } from "next/navigation";
 
 type CosmoGravityList = {
   upcoming: CosmoUpcomingGravity[];
@@ -29,14 +28,13 @@ export async function fetchGravities(artist: ValidArtist) {
 
 /**
  * Fetch a single gravity.
- * Cached for 15 minutes.
  */
 export async function fetchGravity(artist: ValidArtist, gravityId: number) {
   return await cosmo<{ gravity: CosmoGravity }>(
     `/gravity/v3/${artist}/gravity/${gravityId}`
   )
     .then((res) => res.gravity)
-    .catch((_) => redirect("/gravity"));
+    .catch(() => null);
 }
 
 /**

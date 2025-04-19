@@ -5,7 +5,7 @@ import {
   PollViewDefaultContent,
   PollViewSelectedContent,
 } from "@/lib/universal/cosmo/gravity";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Drawer,
   DrawerContent,
@@ -14,13 +14,13 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "../ui/drawer";
+} from "@/components/ui/drawer";
 import { MutationStatus } from "@tanstack/react-query";
 import { startTransition, useState } from "react";
 import Image from "next/image";
-import { ScrollArea } from "../ui/scroll-area";
-import { Input } from "../ui/input";
-import { toast } from "../ui/use-toast";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
+import { toast } from "@/components/ui/use-toast";
 import { ChoiceRenderer, DefaultContent } from "./gravity-choices";
 import { useGravityVote } from "@/hooks/use-wallet-transaction";
 import {

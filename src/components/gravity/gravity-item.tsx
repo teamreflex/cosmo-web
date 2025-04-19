@@ -11,7 +11,7 @@ import Link from "next/link";
 import GravityEventType from "./gravity-event-type";
 import GravityUpcomingTimestamp from "./gravity-upcoming-timestamp";
 import { PropsWithChildren } from "react";
-import GravityOngoingCountdown from "./gravity-ongoing-countdown";
+import Countdown from "./ongoing/countdown";
 
 export default function GravityItem({ gravity }: { gravity: CosmoGravity }) {
   if (isPast(new Date(gravity.entireEndDate))) {
@@ -81,7 +81,7 @@ function GravityOngoing({ gravity }: { gravity: CosmoOngoingGravity }) {
 
   return (
     <GravityUpcomingOrOngoing gravity={gravity}>
-      <GravityOngoingCountdown
+      <Countdown
         pollEndDate={currentPoll?.endDate}
         gravityEndDate={gravity.entireEndDate}
       />

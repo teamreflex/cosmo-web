@@ -1,6 +1,6 @@
 ---
 description: Rules for working with Tailwind v4
-globs: src/**/*.{css,tsx}
+globs: src/**/*.css,src/**/*.tsx
 alwaysApply: false
 ---
 # Tailwind CSS v4.0
@@ -52,6 +52,7 @@ alwaysApply: false
     - `--shadow-*` : Box shadow utilities like `shadow-md`
     - `--inset-shadow-*` : Inset box shadow utilities like `inset-shadow-xs`
     - `--drop-shadow-*` : Drop shadow filter utilities like `drop-shadow-md`
+    - `--text-shadow-*` : Text shadow filter utilities like `text-shadow-md`
     - `--blur-*` : Blur filter utilities like `blur-md`
     - `--perspective-*` : Perspective utilities like `perspective-near`
     - `--aspect-*` : Aspect ratio utilities like `aspect-video`
