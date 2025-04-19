@@ -1,6 +1,6 @@
 import Hydrated from "@/components/hydrated";
 import { Moon } from "lucide-react";
-import SignInDialog from "./sign-in/sign-in-dialog";
+// import SignInDialog from "./sign-in/sign-in-dialog";
 import GuestThemeSwitch from "./guest-theme-switch";
 import { cn } from "@/lib/utils";
 
@@ -11,7 +11,7 @@ type Props = {
 export default function StateGuest({ hide }: Props) {
   return (
     <div className={cn("flex items-center gap-2", hide && "hidden")}>
-      <SignInDialog />
+      {/* <SignInDialog /> */}
 
       <Hydrated
         fallback={
