@@ -4,6 +4,8 @@ This project aims to build a web based version of [MODHAUS](https://www.mod-haus
 
 **Apollo is not affiliated with, endorsed by or supported by MODHAUS or its artists.**
 
+**April 18th 2025**: MODHAUS migrated COSMO over to a new authentication provider, with encryption that prevents successful COSMO signins. This branch remains as the final Polygon-compatible version before the migration occurred. It will not work with the current version of the COSMO API.
+
 <details>
   <summary><b>Replicated Features</b></summary>
 
@@ -34,6 +36,7 @@ This project aims to build a web based version of [MODHAUS](https://www.mod-haus
 - Collection completion leaderboards
 - Scan an objekt without claiming
 - Indicator for Polygon network disruptions
+- Live tracking of gravity results as they're revealed
 
 </details>
 
