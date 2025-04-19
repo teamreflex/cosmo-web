@@ -4,6 +4,8 @@ This project aims to build a web based version of [MODHAUS](https://www.mod-haus
 
 **Apollo is not affiliated with, endorsed by or supported by MODHAUS or its artists.**
 
+As of April 18th 2025, MODHAUS has migrated COSMO over to a new authentication provider (privy.io) and is encrypting the privy -> COSMO token exchange. The mobile apps are built with React Native Hermes, meaning the JS bundles are not easily disassembled. As a result, Apollo has been deprecated.
+
 <details>
   <summary><b>Replicated Features</b></summary>
 
@@ -34,6 +36,7 @@ This project aims to build a web based version of [MODHAUS](https://www.mod-haus
 - Collection completion leaderboards
 - Scan an objekt without claiming
 - Indicator for Polygon network disruptions
+- Live tracking of gravity results as they're revealed
 
 </details>
 
