@@ -1,5 +1,4 @@
 import "../styles/tailwind.css";
-import Navbar from "@/components/navbar/navbar";
 import ClientProviders from "@/components/client-providers";
 import { Metadata } from "next";
 import { env } from "@/env";
@@ -9,7 +8,6 @@ import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/toaster";
 import TailwindIndicator from "@/components/tailwind-indicator";
 import Script from "next/script";
-import Overlay from "@/components/overlay/overlay";
 import { ReactNode } from "react";
 
 const inter = Inter({
@@ -61,14 +59,10 @@ export default async function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="dark">
           <ClientProviders>
             <div className="relative flex min-h-dvh flex-col">
-              <Navbar />
-
               {/* content */}
               <div className="flex min-w-full flex-col text-foreground">
                 {children}
               </div>
-
-              <Overlay />
             </div>
           </ClientProviders>
 
