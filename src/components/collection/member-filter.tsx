@@ -29,41 +29,43 @@ export default function MemberFilter({
       <div className="absolute pointer-events-none z-20 top-0 left-0 h-full w-2 bg-linear-to-r from-background to-transparent" />
       <div className="absolute pointer-events-none z-20 top-0 right-0 h-full w-2 bg-linear-to-l from-background to-transparent" />
 
-      {artists.map((artist) => (
-        <div
-          key={artist.name}
-          className={cn(
-            "flex flex-row z-10 gap-2 p-1 xl:justify-center justify-items-start",
-            artist.artistMembers.length > 5 &&
-              "overflow-x-scroll xl:no-scrollbar"
-          )}
-        >
-          {showArtists && (
-            <MemberFilterButton
-              displayName={artist.title}
-              name={artist.name}
-              image={artist.logoImageUrl}
-              isActive={active === artist.name}
-              setActive={updateArtist}
-              color={artistColors[artist.name as ValidArtist]}
-            />
-          )}
-
-          {artist.artistMembers
-            .sort((a, b) => a.order - b.order)
-            .map((member) => (
+      {artists
+        .sort((a, b) => b.comoTokenId - a.comoTokenId)
+        .map((artist) => (
+          <div
+            key={artist.name}
+            className={cn(
+              "flex flex-row z-10 gap-2 p-1 xl:justify-center justify-items-start",
+              artist.artistMembers.length > 5 &&
+                "overflow-x-scroll xl:no-scrollbar"
+            )}
+          >
+            {showArtists && (
               <MemberFilterButton
-                key={member.name}
-                name={member.name}
-                displayName={member.name}
-                image={member.profileImageUrl}
-                isActive={active === member.name}
-                setActive={updateMember}
-                color={member.primaryColorHex}
+                displayName={artist.title}
+                name={artist.name}
+                image={artist.logoImageUrl}
+                isActive={active === artist.name}
+                setActive={updateArtist}
+                color={artistColors[artist.name as ValidArtist]}
               />
-            ))}
-        </div>
-      ))}
+            )}
+
+            {artist.artistMembers
+              .sort((a, b) => a.order - b.order)
+              .map((member) => (
+                <MemberFilterButton
+                  key={member.name}
+                  name={member.name}
+                  displayName={member.name}
+                  image={member.profileImageUrl}
+                  isActive={active === member.name}
+                  setActive={updateMember}
+                  color={member.primaryColorHex}
+                />
+              ))}
+          </div>
+        ))}
     </div>
   );
 }
