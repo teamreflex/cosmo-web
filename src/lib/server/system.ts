@@ -2,8 +2,8 @@ import "server-only";
 
 import { env } from "@/env";
 import { ofetch } from "ofetch";
-import { alchemy } from "./http";
-import { RPCResponse } from "./alchemy/common";
+import { alchemyRPC } from "./http";
+import { RPCResponse } from "./alchemy";
 import { SystemStatus } from "../universal/system";
 import { unstable_cache } from "next/cache";
 import { formatGwei } from "viem";
@@ -39,7 +39,7 @@ type ChainStatus = {
  * Requested in a batch.
  */
 export async function fetchChainStatus(): Promise<ChainStatus> {
-  const [blockNumber, gasPrice] = await alchemy<RPCResponse[]>("/", {
+  const [blockNumber, gasPrice] = await alchemyRPC<RPCResponse[]>("/", {
     body: [
       // abstract block number
       {

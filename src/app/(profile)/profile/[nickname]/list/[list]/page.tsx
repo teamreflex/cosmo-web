@@ -2,9 +2,7 @@ import { Metadata } from "next";
 import { cache } from "react";
 import { redirect } from "next/navigation";
 import {
-  decodeUser,
   getArtistsWithMembers,
-  getProfile,
   getUserByIdentifier,
 } from "@/app/data-fetching";
 import ListRenderer from "@/components/lists/list-renderer";
@@ -73,14 +71,8 @@ export default async function ObjektListPage(props: Props) {
     initialPageParam: 0,
   });
 
-  const { artists, currentUser, objektList } = await getData(
-    params.nickname,
-    params.list
-  );
+  const { artists, objektList } = await getData(params.nickname, params.list);
   if (!objektList) redirect(`/@${params.nickname}`);
-
-  const authenticated =
-    currentUser !== undefined && currentUser.address === profile.address;
 
   return (
     <ProfileProvider>
@@ -88,9 +80,9 @@ export default async function ObjektListPage(props: Props) {
         <ListRenderer
           artists={artists}
           list={objektList}
-          authenticated={authenticated}
+          authenticated={false}
           user={profile}
-          gridColumns={currentUser?.gridColumns ?? GRID_COLUMNS}
+          gridColumns={GRID_COLUMNS}
         />
       </HydrationBoundary>
     </ProfileProvider>
@@ -98,14 +90,11 @@ export default async function ObjektListPage(props: Props) {
 }
 
 const getData = cache(async (nickname: string, list: string) => {
-  const user = await decodeUser();
   const { profile } = await getUserByIdentifier(nickname);
-
-  const [artists, currentUser, objektList] = await Promise.all([
+  const [artists, objektList] = await Promise.all([
     getArtistsWithMembers(),
-    user ? getProfile(user.profileId) : undefined,
     fetchObjektList(profile.address, list),
   ]);
 
-  return { artists, currentUser, objektList };
+  return { artists, objektList };
 });

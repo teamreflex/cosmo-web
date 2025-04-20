@@ -1,9 +1,5 @@
 import { Metadata } from "next";
-import {
-  decodeUser,
-  getArtistsWithMembers,
-  getUserByIdentifier,
-} from "../data-fetching";
+import { getArtistsWithMembers } from "../data-fetching";
 import IndexRenderer from "@/components/objekt-index/index-renderer";
 import { fetchUniqueCollections } from "@/lib/server/objekts/collections";
 import { ProfileProvider } from "@/hooks/use-profile";
@@ -48,25 +44,21 @@ export default async function ObjektsIndexPage(props: Params) {
     initialPageParam: 0,
   });
 
-  const user = await decodeUser();
-  const [artists, data, collections] = await Promise.all([
+  const [artists, collections] = await Promise.all([
     getArtistsWithMembers(),
-    user ? getUserByIdentifier(user.address) : undefined,
     fetchUniqueCollections(),
   ]);
 
-  const { profile, objektLists = [] } = data ?? {};
-
   return (
     <main className="container flex flex-col py-2">
-      <ProfileProvider currentProfile={profile} objektLists={objektLists}>
+      <ProfileProvider currentProfile={undefined} objektLists={[]}>
         <HydrationBoundary state={dehydrate(queryClient)}>
           <IndexRenderer
             artists={artists}
             collections={collections}
-            objektLists={objektLists}
-            nickname={user?.nickname}
-            gridColumns={profile?.gridColumns ?? GRID_COLUMNS}
+            objektLists={[]}
+            nickname={undefined}
+            gridColumns={GRID_COLUMNS}
             activeSlug={searchParams.id}
           />
         </HydrationBoundary>

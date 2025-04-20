@@ -1,17 +1,15 @@
 import { db } from "./db";
-import { Profile, profiles } from "./db/schema";
+import { Profile } from "./db/schema";
 import { IdentifiedUser, PublicProfile } from "@/lib/universal/cosmo/auth";
-import { fetchByNickname } from "./cosmo/auth";
 import { isAddress } from "viem";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { defaultProfile } from "@/lib/utils";
 
 /**
  * Fetch a profile by various identifiers.
  */
 export async function fetchUserByIdentifier(
-  identifier: string,
-  token?: string
+  identifier: string
 ): Promise<IdentifiedUser> {
   const identifierIsAddress = isAddress(identifier);
 
@@ -48,45 +46,7 @@ export async function fetchUserByIdentifier(
     };
   }
 
-  // if the user is a guest, redirect to login due to cosmo auth block
-  if (!token) {
-    redirect("/auth");
-  }
-
-  // fall back to cosmo
-  const user = await fetchByNickname(token, identifier);
-  if (!user) {
-    notFound();
-  }
-
-  // upsert profile
-  await db
-    .insert(profiles)
-    .values({
-      userAddress: user.address,
-      nickname: user.nickname,
-      cosmoId: 0,
-      artist: "artms",
-    })
-    .onConflictDoUpdate({
-      target: profiles.userAddress,
-      set: {
-        nickname: user.nickname,
-      },
-    })
-    .returning();
-
-  return {
-    profile: {
-      ...defaultProfile,
-      nickname: user.nickname,
-      address: user.address,
-      profileImageUrl: user.profileImageUrl,
-    },
-    objektLists: [],
-    lockedObjekts: [],
-    pins: [],
-  };
+  notFound();
 }
 
 /**

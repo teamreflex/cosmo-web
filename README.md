@@ -4,6 +4,8 @@ This project aims to build a web based version of [MODHAUS](https://www.mod-haus
 
 **Apollo is not affiliated with, endorsed by or supported by MODHAUS or its artists.**
 
+**April 18th 2025**: MODHAUS migrated COSMO over to a new authentication provider, with encryption that prevents successful COSMO signins. This branch strips any COSMO API interaction.
+
 <details>
   <summary><b>Replicated Features</b></summary>
 

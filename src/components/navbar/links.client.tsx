@@ -1,8 +1,6 @@
 "use client";
 
-import { TokenPayload } from "@/lib/universal/auth";
 import { usePathname } from "next/navigation";
-import NavbarSearch from "./navbar-search";
 import {
   Tooltip,
   TooltipContent,
@@ -13,68 +11,53 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { NavbarLink } from "./links";
 import { DropdownMenuItem } from "../ui/dropdown-menu";
-import {
-  Home,
-  LayoutGrid,
-  PackageOpen,
-  Vote,
-  CalendarRange,
-  Disc3,
-  CircleUserRound,
-} from "lucide-react";
-import { IconCards, IconRotate360 } from "@tabler/icons-react";
+import { IconCards } from "@tabler/icons-react";
+import NavbarSearch from "./navbar-search";
 
-type LinksProps = {
-  user?: TokenPayload;
-};
-
-export function DesktopLinks({ user }: LinksProps) {
+export function DesktopLinks() {
   const path = usePathname();
 
   return (
     <div className="contents">
       {links.map((link, i) => {
-        const href = link.href(user);
+        const href = link.href;
         return (
           <LinkButton
             key={i}
             link={link}
             active={href === "/" ? path === "/" : path === href}
-            user={user}
           />
         );
       })}
 
-      <NavbarSearch authenticated={user !== undefined} />
+      <NavbarSearch />
     </div>
   );
 }
 
-export function MobileLinks({ user }: LinksProps) {
+export function MobileLinks() {
   const path = usePathname();
-  const authenticated = user !== undefined;
 
   return (
     <div className="contents">
       {links.map((link) => {
-        const href = link.href(user);
+        const href = link.href;
         const active = href === "/" ? path === "/" : path === href;
-        const disabled = link.requireAuth && !authenticated;
-        const prefetch = disabled === false && link.prefetch === true;
 
         return (
-          <DropdownMenuItem key={href} disabled={disabled} asChild>
-            <Link href={href} aria-label={link.name} prefetch={prefetch}>
+          <DropdownMenuItem key={href} asChild>
+            <Link
+              href={href}
+              aria-label={link.name}
+              prefetch={link.prefetch === true}
+            >
               <link.icon
                 className={cn(
                   "h-4 w-4 shrink-0 transition-all fill-transparent",
-                  active && "fill-white/50",
-                  disabled && "text-slate-500"
+                  active && "fill-white/50"
                 )}
               />
-              <span className={cn(disabled && "text-slate-500")}>
-                {link.name}
-              </span>
+              <span>{link.name}</span>
             </Link>
           </DropdownMenuItem>
         );
@@ -86,40 +69,29 @@ export function MobileLinks({ user }: LinksProps) {
 type LinkButtonProps = {
   link: NavbarLink;
   active: boolean;
-  user?: TokenPayload;
 };
 
-function LinkButton({ link, active, user }: LinkButtonProps) {
-  const authenticated = user !== undefined;
-  const pathname = link.href(user);
-  const disabled = link.requireAuth && !authenticated;
-  const prefetch = disabled === false && link.prefetch === true;
-
+function LinkButton({ link, active }: LinkButtonProps) {
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger>
           <Link
-            href={{ pathname }}
+            href={link.href}
             className="outline-hidden focus:outline-hidden"
             aria-label={link.name}
-            prefetch={prefetch}
+            prefetch={link.prefetch === true}
           >
             <link.icon
               className={cn(
                 "h-8 w-8 shrink-0 transition-all fill-transparent",
-                active && "fill-cosmo/50 dark:fill-foreground/50",
-                disabled && "text-slate-500 cursor-not-allowed"
+                active && "fill-cosmo/50 dark:fill-foreground/50"
               )}
             />
           </Link>
         </TooltipTrigger>
         <TooltipContent className="hidden sm:block">
-          <p>
-            {authenticated || (!link.requireAuth && !authenticated)
-              ? link.name
-              : "Sign in first!"}
-          </p>
+          <p>{link.name}</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
@@ -128,66 +100,9 @@ function LinkButton({ link, active, user }: LinkButtonProps) {
 
 const links: NavbarLink[] = [
   {
-    name: "Home",
-    icon: Home,
-    href: () => "/",
-    requireAuth: true,
-    prefetch: null,
-  },
-  {
-    name: "Rekord",
-    icon: Disc3,
-    href: () => "/rekord",
-    requireAuth: true,
-    prefetch: null,
-  },
-  {
-    name: "Gravity",
-    icon: Vote,
-    href: () => "/gravity",
-    requireAuth: true,
-    prefetch: null,
-  },
-  {
     name: "Objekts",
     icon: IconCards,
-    href: () => "/objekts",
-    requireAuth: false,
+    href: "/objekts",
     prefetch: true,
-  },
-  {
-    name: "Collection",
-    icon: PackageOpen,
-    href: (user) => (user ? `/@${user.nickname}` : "/"),
-    requireAuth: true,
-    prefetch: true,
-  },
-  {
-    name: "COMO",
-    icon: CalendarRange,
-    href: (user) => (user ? `/@${user.nickname}/como` : "/"),
-    requireAuth: true,
-    prefetch: null,
-  },
-  {
-    name: "Grid",
-    icon: LayoutGrid,
-    href: () => "/grid",
-    requireAuth: true,
-    prefetch: null,
-  },
-  {
-    name: "Spin",
-    icon: IconRotate360,
-    href: () => "/spin",
-    requireAuth: true,
-    prefetch: null,
-  },
-  {
-    name: "Activity",
-    icon: CircleUserRound,
-    href: () => "/activity",
-    requireAuth: true,
-    prefetch: null,
   },
 ];

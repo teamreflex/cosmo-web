@@ -4,7 +4,6 @@ import {
   getArtistsWithMembers,
   getUserByIdentifier,
 } from "@/app/data-fetching";
-import AbstractWarning from "@/components/abstract-warning";
 
 type Props = {
   params: Promise<{ nickname: string }>;
@@ -27,9 +26,7 @@ export default async function UserTransfersPage(props: Props) {
   ]);
 
   return (
-    <section className="flex flex-col gap-2">
-      <AbstractWarning />
-
+    <section className="flex flex-col">
       <TransfersRenderer profile={profile} artists={artists} />
 
       <div id="pagination" />

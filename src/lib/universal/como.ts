@@ -77,3 +77,9 @@ export function buildCalendar(date: Date, objekts: ObjektWithCollection[]) {
 export function getDays(date: Date) {
   return Array.from({ length: getDaysInMonth(date) }, (_, i) => i + 1);
 }
+
+export type ComoBalance = {
+  id: string;
+  owner: string;
+  amount: number;
+};

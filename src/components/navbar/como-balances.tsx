@@ -10,8 +10,7 @@ import { Suspense } from "react";
 import { X } from "lucide-react";
 import { ErrorBoundary } from "react-error-boundary";
 import { getArtistsWithMembers, getTokenBalances } from "@/app/data-fetching";
-import { isAddressEqual } from "@/lib/utils";
-import { ComoBalance } from "@/lib/server/db/indexer/schema";
+import { ComoBalance } from "@/lib/universal/como";
 
 type Props = {
   address: string;
@@ -64,11 +63,7 @@ async function UserBalances({ address }: Props) {
         <Balance
           key={artist.name}
           artist={artist}
-          balance={
-            balances.find((b) =>
-              isAddressEqual(b.contract, artist.contracts.Como)
-            )!
-          }
+          balance={balances.find((b) => b.id === artist.id)!}
         />
       ))}
     </div>

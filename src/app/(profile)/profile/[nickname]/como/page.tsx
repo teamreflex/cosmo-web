@@ -9,7 +9,6 @@ import {
 } from "@/app/data-fetching";
 import Portal from "@/components/portal";
 import HelpDialog from "@/components/como/help-dialog";
-import AbstractWarning from "@/components/abstract-warning";
 
 type Props = {
   params: Promise<{ nickname: string }>;
@@ -44,9 +43,7 @@ export default async function UserComoPage(props: Props) {
   });
 
   return (
-    <main className="flex flex-col gap-2">
-      <AbstractWarning />
-
+    <main className="flex flex-col">
       <div className="flex items-center">
         <div className="flex w-full gap-2 justify-between items-center">
           <CurrentMonth />

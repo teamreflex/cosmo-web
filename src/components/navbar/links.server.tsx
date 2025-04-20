@@ -1,4 +1,3 @@
-import NavbarSearch from "./navbar-search";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -6,23 +5,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { decodeUser } from "@/app/data-fetching";
 import { DesktopLinks, MobileLinks } from "./links.client";
 import { Menu } from "lucide-react";
+import NavbarSearch from "./navbar-search";
 
 export default async function Links() {
-  const user = await decodeUser();
-
   return (
     <div className="flex grow justify-end lg:justify-center">
       {/* desktop */}
       <div className="lg:flex flex-row items-center gap-6 hidden">
-        <DesktopLinks user={user} />
+        <DesktopLinks />
       </div>
 
       {/* mobile */}
       <div className="lg:hidden flex flex-row gap-2 items-center">
-        <NavbarSearch authenticated={user !== undefined} />
+        <NavbarSearch />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -33,7 +30,7 @@ export default async function Links() {
           <DropdownMenuContent>
             <DropdownMenuLabel>Menu</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <MobileLinks user={user} />
+            <MobileLinks />
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

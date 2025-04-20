@@ -1,23 +1,12 @@
 import Logo from "../logo";
 import { Suspense } from "react";
-import {
-  decodeUser,
-  getArtistsWithMembers,
-  getSelectedArtist,
-  getUserByIdentifier,
-} from "@/app/data-fetching";
 import UpdateDialog from "../misc/update-dialog";
-import ComoBalanceRenderer from "./como-balances";
-import { ErrorBoundary } from "react-error-boundary";
 import SystemStatus from "../misc/system-status";
-import CosmoAvatar from "./auth/cosmo-avatar";
-import AuthFallback from "./auth-fallback";
 import Links from "./links.server";
-import StateAuthenticated from "./auth/state-authenticated";
-import StateGuest from "./auth/state-guest";
-import StateMissingProfile from "./auth/state-missing-profile";
+import { AlertTriangle, Moon } from "lucide-react";
+import Hydrated from "../hydrated";
+import GuestThemeSwitch from "./guest-theme-switch";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { AlertTriangle } from "lucide-react";
 
 export default async function Navbar() {
   return (
@@ -33,18 +22,28 @@ export default async function Navbar() {
 
                 <Popover>
                   <PopoverTrigger asChild>
-                    <button className="relative h-8 w-9 flex justify-center items-center rounded-lg bg-red-500/40 hover:bg-red-500/60 transition-colors cursor-pointer mx-2">
-                      <AlertTriangle className="text-red-500 w-5 h-5" />
+                    <button className="relative h-8 w-9 flex justify-center items-center rounded-lg bg-orange-500/40 hover:bg-orange-500/60 transition-colors cursor-pointer mx-2">
+                      <AlertTriangle className="text-orange-500 w-5 h-5" />
                     </button>
                   </PopoverTrigger>
                   <PopoverContent className="text-xs flex flex-col gap-2">
                     <p className="font-bold">
-                      COSMO has migrated to new systems, which Apollo is not yet
-                      compatible with.
+                      All COSMO connectivity has been removed.
                     </p>
                     <p>
-                      Signing in and features that rely on COSMO have been
-                      disabled.
+                      Profiles can still be looked up by COSMO ID, but these are
+                      linked to Polygon addresses which will no longer show your
+                      data. This remains in place for users to view their objekt
+                      lists.
+                    </p>
+                    <p>
+                      To view current collections, you must use the wallet
+                      address in your COSMO settings page.
+                    </p>
+                    <p>
+                      Due to the blockchain migration, objekt receive times from
+                      before the maintenance period are all incorrect. This also
+                      affects COMO calendars.
                     </p>
                   </PopoverContent>
                 </Popover>
@@ -56,67 +55,20 @@ export default async function Navbar() {
             </Suspense>
 
             <div className="flex grow-0 items-center justify-end gap-2">
-              <ErrorBoundary
-                fallback={<AuthFallback message="Error loading user" />}
+              <Hydrated
+                fallback={
+                  <div className="inline-flex items-center justify-center h-9 px-1">
+                    <Moon className="size-8" />
+                  </div>
+                }
               >
-                <Suspense
-                  fallback={
-                    <div className="size-10 rounded-full bg-accent animate-pulse" />
-                  }
-                >
-                  <Auth />
-                </Suspense>
-              </ErrorBoundary>
+                <GuestThemeSwitch />
+              </Hydrated>
             </div>
           </div>
         </div>
       </div>
       <div className="glass-edge"></div>
     </nav>
-  );
-}
-
-async function Auth() {
-  const user = await decodeUser();
-  const [selectedArtist, artists, data] = await Promise.all([
-    getSelectedArtist(),
-    getArtistsWithMembers(),
-    user ? getUserByIdentifier(user.nickname).catch(() => null) : undefined,
-  ]);
-
-  // profile is missing
-  if (data === null) {
-    return <StateMissingProfile />;
-  }
-
-  const isAuthenticated = user !== undefined && data !== undefined;
-  return (
-    <div className="contents">
-      {/* signed in and profile exists */}
-      {isAuthenticated && (
-        <StateAuthenticated
-          profile={data.profile}
-          artists={artists}
-          selectedArtist={selectedArtist}
-          comoBalances={
-            user ? <ComoBalanceRenderer address={user.address} /> : null
-          }
-          cosmoAvatar={
-            <ErrorBoundary
-              fallback={<AuthFallback message="Error loading profile image" />}
-            >
-              <CosmoAvatar
-                token={user}
-                artist={selectedArtist}
-                nickname={user.nickname}
-              />
-            </ErrorBoundary>
-          }
-        />
-      )}
-
-      {/* not signed in, allows dialog to persist after sign-in */}
-      <StateGuest hide={isAuthenticated} />
-    </div>
   );
 }

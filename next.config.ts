@@ -20,6 +20,11 @@ const config: NextConfig = {
   async redirects() {
     return [
       {
+        source: "/",
+        destination: "/objekts",
+        permanent: true,
+      },
+      {
         source: "/admin",
         destination: "/admin/metadata",
         permanent: true,

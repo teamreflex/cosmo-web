@@ -24,6 +24,11 @@ export function isAddressEqual(a?: string, b?: string) {
 }
 
 /**
+ * Necessary due to archives returning addresses in lowercase.
+ */
+export const addr = (address: string) => address.toLowerCase();
+
+/**
  * default grid columns
  */
 export const GRID_COLUMNS = 5;
@@ -61,8 +66,11 @@ export const defaultProfile: PublicProfile = {
  * Addresses that may need special handling.
  */
 export const Addresses = {
-  NULL: "0x0000000000000000000000000000000000000000",
-  SPIN: "0xd3d5f29881ad87bb10c1100e2c709c9596de345f",
+  NULL: addr("0x0000000000000000000000000000000000000000"),
+  SPIN: addr("0xD3D5f29881ad87Bb10C1100e2c709c9596dE345F"),
+  OBJEKT: addr("0x99Bb83AE9bb0C0A6be865CaCF67760947f91Cb70"),
+  COMO: addr("0xd0EE3ba23a384A8eeFd43f33A957dED60eD12706"),
+  GRAVITY: addr("0xF1A787da84af2A6e8227aD87112a21181B7b9b39"),
 };
 
 /**

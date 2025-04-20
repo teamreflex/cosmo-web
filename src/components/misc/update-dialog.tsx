@@ -75,21 +75,13 @@ export default function UpdateDialog() {
 
 const updates = [
   {
-    date: "2025-04-10",
+    date: "2025-04-20",
     changes: [
-      "Fixed errors due to changes by MODHAUS.",
-      "Small design updates.",
-    ],
-  },
-  {
-    date: "2025-03-12",
-    changes: [
-      "Privacy settings for IDs, collections, COMO and trades have been removed as they've become redundant.",
-      "Gravity voting privacy is still available and has been moved into settings.",
-      "Sorting objekts by serial will now automatically switch to Polygon.",
-      "Updated design of the progress page.",
-      "Expanded width of the site for desktop users.",
-      "Small Firefox fixes.",
+      "Everything that interacted with COSMO has been removed.",
+      "This includes: Signing in, sending objekts, scanning objekts, objekt spin, gravity voting, showing usernames, rekord, badges, rankings, news.",
+      "Due to the blockchain migration, all the objekt receive times are incorrect, which has affected COMO calendars.",
+      "Profiles can still be looked up by COSMO ID, but these are still linked to old Polygon addresses. This remains in place for users to view their objekt lists.",
+      "Profiles can be looked up by wallet address, which will pull your collection from the new Abstract blockchain that COSMO has migrated to.",
     ],
   },
 ];

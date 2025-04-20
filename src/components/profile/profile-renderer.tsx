@@ -6,7 +6,6 @@ import FiltersContainer from "../collection/filters-container";
 import Portal from "../portal";
 import HelpDialog from "./help-dialog";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
-import SendObjekts from "../overlay/send-objekts";
 import { match } from "ts-pattern";
 import Blockchain from "../collection/data-sources/blockchain";
 import CosmoCollectionGroups from "../collection/data-sources/cosmo-groups";
@@ -84,8 +83,6 @@ export default function ProfileRenderer({
           ))
           .exhaustive()}
       </AuthenticatedContext.Provider>
-
-      <SendObjekts />
     </div>
   );
 }

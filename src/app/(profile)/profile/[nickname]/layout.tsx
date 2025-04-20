@@ -1,4 +1,4 @@
-import { decodeUser, getUserByIdentifier } from "@/app/data-fetching";
+import { getUserByIdentifier } from "@/app/data-fetching";
 import { PropsWithChildren, Suspense } from "react";
 import CopyAddressButton from "@/components/profile/copy-address-button";
 import TradesButton from "@/components/profile/trades-button";
@@ -10,8 +10,6 @@ import Skeleton from "@/components/skeleton/skeleton";
 import ListDropdown from "@/components/lists/list-dropdown";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { ObjektList } from "@/lib/universal/objekts";
-import RefreshButton from "@/components/profile/refresh-button";
-import VotesButton from "@/components/profile/votes-button";
 import Link from "next/link";
 import ModhausLogo from "@/assets/modhaus.png";
 import Image from "next/image";
@@ -30,8 +28,7 @@ type Props = PropsWithChildren<{
 
 export default async function ProfileLayout(props: Props) {
   const params = await props.params;
-  const [currentUser, targetUser] = await Promise.all([
-    decodeUser(),
+  const [targetUser] = await Promise.all([
     getUserByIdentifier(params.nickname),
   ]);
 
@@ -49,11 +46,7 @@ export default async function ProfileLayout(props: Props) {
               <Skeleton className="h-20 w-20 rounded-full aspect-square shrink-0" />
             }
           >
-            <UserAvatar
-              className="w-20 h-20"
-              token={currentUser?.accessToken}
-              nickname={profile.nickname}
-            />
+            <UserAvatar className="w-20 h-20" nickname={profile.nickname} />
           </Suspense>
 
           <div className="flex flex-col justify-between w-full">
@@ -96,11 +89,7 @@ export default async function ProfileLayout(props: Props) {
       </div>
 
       {/* mobile buttons */}
-      <Buttons
-        profile={profile}
-        objektLists={objektLists}
-        currentUserAddress={currentUser?.address}
-      />
+      <Buttons profile={profile} objektLists={objektLists} />
 
       {props.children}
     </main>
@@ -110,20 +99,13 @@ export default async function ProfileLayout(props: Props) {
 type ButtonsProps = {
   profile: PublicProfile;
   objektLists: ObjektList[];
-  currentUserAddress: string | undefined;
 };
 
-function Buttons({ profile, objektLists, currentUserAddress }: ButtonsProps) {
-  const isAuthenticated = currentUserAddress === profile.address;
-
+function Buttons({ profile, objektLists }: ButtonsProps) {
   return (
     <div className="flex flex-wrap gap-2 justify-center lg:justify-normal md:absolute md:top-2 md:right-4">
       <CopyAddressButton address={profile.address} />
-      {isAuthenticated && <RefreshButton />}
       <TradesButton
-        nickname={profile.isAddress ? profile.address : profile.nickname}
-      />
-      <VotesButton
         nickname={profile.isAddress ? profile.address : profile.nickname}
       />
       <ComoButton
@@ -135,7 +117,7 @@ function Buttons({ profile, objektLists, currentUserAddress }: ButtonsProps) {
       <ListDropdown
         lists={objektLists}
         nickname={profile.isAddress ? profile.address : profile.nickname}
-        allowCreate={currentUserAddress === profile.address}
+        allowCreate={false}
       />
 
       {/* content gets portaled in */}

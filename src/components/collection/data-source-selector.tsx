@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "../ui/select";
 import CosmoImage from "@/assets/cosmo.webp";
-import PolygonImage from "@/assets/polygon.svg";
+import AbstractImage from "@/assets/abstract.svg";
 import Image from "next/image";
 import {
   AlertDialog,
@@ -165,11 +165,11 @@ const sources: Source[] = [
     requiresAuth: true,
   },
   {
-    title: "Polygon Blockchain - Collection Groups",
+    title: "Abstract Blockchain - Collection Groups",
     subtitle: "Collection groups with extra filters",
-    label: "Polygon - Collection Groups",
+    label: "Abstract - Collection Groups",
     shortLabel: "Groups",
-    icon: <PolygonIcon />,
+    icon: <AbstractIcon />,
     value: "blockchain-groups",
     description:
       "Replicates COSMO collection groups but doesn't require signing in.",
@@ -183,17 +183,17 @@ const sources: Source[] = [
     requiresAuth: false,
   },
   {
-    title: "Polygon Blockchain - All Objekts",
+    title: "Abstract Blockchain - All Objekts",
     subtitle: "View all individual objekts",
-    label: "Polygon - All Objekts",
-    shortLabel: "Polygon",
-    icon: <PolygonIcon />,
+    label: "Abstract - All Objekts",
+    shortLabel: "Abstract",
+    icon: <AbstractIcon />,
     value: "blockchain",
     description:
       "Displays all objekts, including duplicates, with filter limitations.",
     notes: [
       "The same viewing format as COSMO prior to its collection groups update.",
-      "Has the same filter features & limitations as the Polygon - All Objekts source.",
+      "Has the same filter features & limitations as the Abstract - All Objekts source.",
     ],
     requiresAuth: false,
   },
@@ -213,16 +213,10 @@ function CosmoIcon() {
   );
 }
 
-function PolygonIcon() {
+function AbstractIcon() {
   return (
-    <div className="relative bg-polygon size-6 rounded-full" data-icon>
-      <Image
-        src={PolygonImage}
-        alt="Polygon"
-        fill={true}
-        className="p-1"
-        quality={100}
-      />
+    <div className="relative size-6 rounded-full bg-[#29E58A]" data-icon>
+      <Image src={AbstractImage} alt="Abstract" fill={true} quality={100} />
     </div>
   );
 }

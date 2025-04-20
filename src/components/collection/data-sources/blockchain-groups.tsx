@@ -2,7 +2,6 @@ import FilteredObjektDisplay from "@/components/objekt/filtered-objekt-display";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { filtersAreDirty } from "@/hooks/use-filters";
 import { objektOptions } from "@/hooks/use-objekt-response";
-import { useUserState } from "@/hooks/use-user-state";
 import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import {
@@ -36,7 +35,6 @@ export default function BlockchainGroups(props: Props) {
   const [filters] = useCosmoFilters();
   const lockedObjekts = useProfileContext((ctx) => ctx.lockedObjekts);
   const pins = useProfileContext((ctx) => ctx.pins);
-  const { artist } = useUserState();
   const isDesktop = useMediaQuery();
 
   const usingFilters = filtersAreDirty(filters);
@@ -58,20 +56,12 @@ export default function BlockchainGroups(props: Props) {
     [lockedObjekts, props.showLocked]
   );
 
-  // allow for artist filter, but default to selected artist
-  const artistName = filters.artist ?? artist;
-
   /**
    * Query options
    */
   const options = objektOptions({
     filtering: "remote",
-    queryKey: [
-      "collection",
-      "blockchain-groups",
-      props.targetUser.address,
-      artistName,
-    ],
+    queryKey: ["collection", "blockchain-groups", props.targetUser.address],
     queryFunction: async ({ pageParam = 1 }: { pageParam?: number }) => {
       const endpoint = new URL(
         `/api/bff/v1/objekt/collection-group/${props.targetUser.address}`,

@@ -14,11 +14,7 @@ import {
   TooltipTrigger,
 } from "../ui/tooltip";
 
-type Props = {
-  authenticated: boolean;
-};
-
-export default function NavbarSearch({ authenticated }: Props) {
+export default function NavbarSearch() {
   const recent = useSearchStore((state) => state.recentLookups);
   const addRecent = useSearchStore((state) => state.addRecentLookup);
   const [open, setOpen] = useState(false);
@@ -40,7 +36,7 @@ export default function NavbarSearch({ authenticated }: Props) {
       onOpenChange={setOpen}
       onSelect={onSelect}
       recent={recent}
-      authenticated={authenticated}
+      authenticated={false}
       includeSpin={true}
     >
       <TooltipProvider>
