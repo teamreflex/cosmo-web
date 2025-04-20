@@ -4,7 +4,9 @@ This project aims to build a web based version of [MODHAUS](https://www.mod-haus
 
 **Apollo is not affiliated with, endorsed by or supported by MODHAUS or its artists.**
 
-As of April 18th 2025, MODHAUS has migrated COSMO over to a new authentication provider (privy.io) and is encrypting the privy -> COSMO token exchange. The mobile apps are built with React Native Hermes, meaning the JS bundles are not easily disassembled. As a result, Apollo has been deprecated.
+**April 18th 2025**: MODHAUS migrated COSMO over to a new authentication provider, with encryption that prevents successful COSMO signins. The `main` branch remains as the final Polygon-compatible version before the migration occurred. It will not work with the current version of the COSMO API.
+
+A stripped down, Abstract-compatible version can be found on the [refactor/abstract](https://github.com/teamreflex/cosmo-web/tree/refactor/abstract) branch.
 
 <details>
   <summary><b>Replicated Features</b></summary>
