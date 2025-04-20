@@ -26,6 +26,7 @@ export type PublicProfile = {
   isObjektEditor: boolean;
   dataSource: CollectionDataSource;
   isModhaus: boolean;
+  isAbstract: boolean;
 };
 
 export type IdentifiedUser = {

@@ -107,5 +107,6 @@ function parseProfile(profile: Profile): PublicProfile {
     isObjektEditor: profile.objektEditor,
     dataSource: profile.dataSource ?? "cosmo",
     isModhaus: profile.isModhaus,
+    isAbstract: profile.isAbstract,
   };
 }
