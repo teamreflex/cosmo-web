@@ -98,7 +98,7 @@ export default async function ProfileLayout(props: Props) {
         <Alert variant="cosmo">
           <AlertDescription>
             This profile is linked to Polygon and will not receive objekt
-            updates.
+            updates. Use your wallet address to see your collection.
           </AlertDescription>
         </Alert>
       )}
