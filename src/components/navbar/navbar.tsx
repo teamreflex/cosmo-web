@@ -31,14 +31,9 @@ export default async function Navbar() {
                       All COSMO connectivity has been removed.
                     </p>
                     <p>
-                      Profiles can still be looked up by COSMO ID, but these are
-                      linked to Polygon addresses which will no longer show your
-                      data. This remains in place for users to view their objekt
-                      lists.
-                    </p>
-                    <p>
-                      To view current collections, you must use the wallet
-                      address in your COSMO settings page.
+                      Profiles have been migrated to their new Abstract
+                      addresses, and ID changes/new accounts will have their IDs
+                      synced from COSMO until it gets patched.
                     </p>
                     <p>
                       Due to the blockchain migration, objekt receive times from
