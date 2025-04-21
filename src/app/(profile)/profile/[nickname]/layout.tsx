@@ -19,7 +19,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 
 type Props = PropsWithChildren<{
   params: Promise<{
@@ -36,8 +35,6 @@ export default async function ProfileLayout(props: Props) {
   const { profile, objektLists } = targetUser;
 
   const href = `/@${profile.isAddress ? profile.address : profile.nickname}`;
-  const showWarning =
-    profile.isAddress === false && profile.isAbstract === false;
 
   return (
     <main className="relative container flex flex-col gap-2 py-2">
@@ -93,15 +90,6 @@ export default async function ProfileLayout(props: Props) {
 
       {/* mobile buttons */}
       <Buttons profile={profile} objektLists={objektLists} />
-
-      {showWarning && (
-        <Alert variant="cosmo">
-          <AlertDescription>
-            This profile is linked to Polygon and will not receive objekt
-            updates. Use your wallet address to see your collection.
-          </AlertDescription>
-        </Alert>
-      )}
 
       {props.children}
     </main>

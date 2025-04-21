@@ -29,7 +29,6 @@ export const profiles = pgTable(
       length: 24,
     }).$type<CollectionDataSource>(),
     isModhaus: boolean("is_modhaus").notNull().default(false),
-    isAbstract: boolean("is_abstract").notNull().default(false),
   },
   (t) => [
     uniqueIndex("profiles_address_idx").on(t.userAddress),
@@ -37,7 +36,6 @@ export const profiles = pgTable(
     index("profiles_nickname_idx").on(t.nickname),
     uniqueIndex("profiles_nickname_address_idx").on(t.nickname, t.userAddress),
     index("profiles_is_modhaus_idx").on(t.isModhaus),
-    index("profiles_is_abstract_idx").on(t.isAbstract),
   ]
 );
 

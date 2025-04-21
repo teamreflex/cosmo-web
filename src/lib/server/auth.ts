@@ -1,9 +1,10 @@
 import { db } from "./db";
-import { Profile } from "./db/schema";
+import { Profile, profiles } from "./db/schema";
 import { IdentifiedUser, PublicProfile } from "@/lib/universal/cosmo/auth";
 import { isAddress } from "viem";
 import { notFound } from "next/navigation";
 import { defaultProfile } from "@/lib/utils";
+import { fetchByNickname } from "./cosmo/auth";
 
 /**
  * Fetch a profile by various identifiers.
@@ -46,7 +47,31 @@ export async function fetchUserByIdentifier(
     };
   }
 
-  notFound();
+  // fetch from cosmo while it exists...
+  try {
+    const profile = await fetchByNickname(identifier);
+
+    // upsert profile
+    await db
+      .insert(profiles)
+      .values({
+        userAddress: profile.address,
+        nickname: profile.nickname,
+        cosmoId: 0,
+        artist: "artms",
+      })
+      .onConflictDoUpdate({
+        target: profiles.userAddress,
+        set: {
+          nickname: profile.nickname,
+        },
+      })
+      .returning();
+
+    return await fetchUserByIdentifier(profile.nickname);
+  } catch (err) {
+    notFound();
+  }
 }
 
 /**
@@ -107,6 +132,5 @@ function parseProfile(profile: Profile): PublicProfile {
     isObjektEditor: profile.objektEditor,
     dataSource: profile.dataSource ?? "cosmo",
     isModhaus: profile.isModhaus,
-    isAbstract: profile.isAbstract,
   };
 }

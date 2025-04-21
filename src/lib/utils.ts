@@ -60,7 +60,6 @@ export const defaultProfile: PublicProfile = {
   isObjektEditor: false,
   dataSource: "cosmo",
   isModhaus: false,
-  isAbstract: false,
 };
 
 /**

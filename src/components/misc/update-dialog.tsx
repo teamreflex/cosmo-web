@@ -75,6 +75,14 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2025-04-21",
+    changes: [
+      "All 120k logged profiles have been migrated to new Abstract addresses, so lookups via ID will now work.",
+      "ID changes and new accounts will have their IDs logged to the database until it gets patched.",
+      "Objekt mint/receive times will be corrected soon.",
+    ],
+  },
+  {
     date: "2025-04-20",
     changes: [
       "Everything that interacted with COSMO has been removed.",

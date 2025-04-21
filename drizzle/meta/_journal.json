@@ -120,6 +120,13 @@
       "when": 1745149113978,
       "tag": "0016_groovy_thanos",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1745204140504,
+      "tag": "0017_mean_mantis",
+      "breakpoints": true
     }
   ]
 }

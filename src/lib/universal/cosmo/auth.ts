@@ -26,7 +26,6 @@ export type PublicProfile = {
   isObjektEditor: boolean;
   dataSource: CollectionDataSource;
   isModhaus: boolean;
-  isAbstract: boolean;
 };
 
 export type IdentifiedUser = {
@@ -96,4 +95,12 @@ export type CosmoPublicUser = {
 
 export type CosmoSearchResult = {
   results: CosmoPublicUser[];
+};
+
+export type CosmoByNicknameResult = {
+  profile: {
+    nickname: string;
+    address: string;
+    profileImageUrl: string;
+  };
 };
