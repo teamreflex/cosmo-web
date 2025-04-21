@@ -73,6 +73,12 @@ export const unobtainables = [
   "cream01-kimlip-330z",
   "cream01-jinsoul-330z",
   "cream01-choerry-330z",
+  // burn event
+  "cream01-heejin-333z",
+  "cream01-haseul-333z",
+  "cream01-kimlip-333z",
+  "cream01-jinsoul-333z",
+  "cream01-choerry-333z",
   // zero class
   "atom01-triples-000z",
   "atom01-aaa-000z",

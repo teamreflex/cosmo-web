@@ -70,6 +70,7 @@ export async function fetchUserByIdentifier(
 
     return await fetchUserByIdentifier(profile.nickname);
   } catch (err) {
+    console.error(`[fetchUserByIdentifier] Error from COSMO`, err);
     notFound();
   }
 }
