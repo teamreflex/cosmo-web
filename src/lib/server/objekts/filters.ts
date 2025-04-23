@@ -15,17 +15,17 @@ import { collections, objekts } from "../db/indexer/schema";
 export function withCollectionSort<T extends PgSelect>(qb: T, sort: ValidSort) {
   switch (sort) {
     case "newest":
-      return qb.orderBy(desc(objekts.receivedAt));
+      return qb.orderBy(desc(objekts.receivedAt), asc(objekts.id));
     case "oldest":
-      return qb.orderBy(asc(objekts.receivedAt));
+      return qb.orderBy(asc(objekts.receivedAt), asc(objekts.id));
     case "noAscending":
-      return qb.orderBy(asc(collections.collectionNo));
+      return qb.orderBy(asc(collections.collectionNo), asc(collections.id));
     case "noDescending":
-      return qb.orderBy(desc(collections.collectionNo));
+      return qb.orderBy(desc(collections.collectionNo), asc(collections.id));
     case "serialAsc":
-      return qb.orderBy(asc(objekts.serial));
+      return qb.orderBy(asc(objekts.serial), asc(objekts.id));
     case "serialDesc":
-      return qb.orderBy(desc(objekts.serial));
+      return qb.orderBy(desc(objekts.serial), asc(objekts.id));
   }
 }
 

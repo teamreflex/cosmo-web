@@ -75,7 +75,7 @@ export default function ExpandableObjekt({
               open();
             }}
             className={cn(
-              "cursor-pointer transition-opacity w-full",
+              "transition-opacity w-full",
               isLoaded === false && "opacity-0"
             )}
             src={front.display}

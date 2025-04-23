@@ -46,7 +46,7 @@ async function SystemStatusPopover() {
       <PopoverTrigger asChild>
         <button
           className={cn(
-            "h-8 w-9 flex justify-center items-center rounded-l-lg transition-colors cursor-pointer",
+            "h-8 w-9 flex justify-center items-center rounded-l-lg transition-colors",
             textStatus(status),
             bgStatus(status)
           )}

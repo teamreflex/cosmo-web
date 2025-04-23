@@ -15,7 +15,7 @@ export default function GuestThemeSwitch() {
   }
 
   return (
-    <button className="cursor-pointer" onClick={handleClick}>
+    <button onClick={handleClick}>
       {isPending ? (
         <Loader2 className="size-8 animate-spin" />
       ) : theme === "dark" ? (

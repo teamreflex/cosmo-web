@@ -28,7 +28,6 @@ export const getUserByIdentifier = cache(async (identifier: string) => {
  * Cached for 12 hours.
  */
 export const getArtistsWithMembers = cache(async () => {
-  // TODO: undo when migrated
   return [artists.tripleS, artists.ARTMS] satisfies CosmoArtistWithMembersBFF[];
 
   // return await unstable_cache(

@@ -165,16 +165,16 @@ export async function GET(request: NextRequest, props: Props) {
 function withObjektGroupSort<T extends PgSelect>(qb: T, sort: ValidSort) {
   switch (sort) {
     case "newest":
-      return qb.orderBy(desc(max(objekts.receivedAt)));
+      return qb.orderBy(desc(max(objekts.receivedAt)), asc(collections.id));
     case "oldest":
-      return qb.orderBy(asc(max(objekts.receivedAt)));
+      return qb.orderBy(asc(max(objekts.receivedAt)), asc(collections.id));
     case "noAscending":
-      return qb.orderBy(asc(collections.collectionNo));
+      return qb.orderBy(asc(collections.collectionNo), asc(collections.id));
     case "noDescending":
-      return qb.orderBy(desc(collections.collectionNo));
+      return qb.orderBy(desc(collections.collectionNo), asc(collections.id));
     case "serialAsc":
-      return qb.orderBy(asc(max(objekts.serial)));
+      return qb.orderBy(asc(max(objekts.serial)), asc(collections.id));
     case "serialDesc":
-      return qb.orderBy(desc(max(objekts.serial)));
+      return qb.orderBy(desc(max(objekts.serial)), asc(collections.id));
   }
 }

@@ -89,7 +89,7 @@ export default function GroupedObjekt({
                 {group.count} {subtitle}
               </p>
 
-              <DialogPrimitive.Close className="place-self-end opacity-70 transition-opacity hover:opacity-100 cursor-pointer disabled:pointer-events-none outline-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+              <DialogPrimitive.Close className="place-self-end opacity-70 transition-opacity hover:opacity-100 disabled:pointer-events-none outline-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
                 <X className="size-8" />
                 <span className="sr-only">Close</span>
               </DialogPrimitive.Close>
@@ -155,7 +155,7 @@ function RootObjekt({
             onLoad={() => setIsLoaded(true)}
             onClick={onClick}
             className={cn(
-              "cursor-pointer transition-opacity w-full",
+              "transition-opacity w-full",
               isLoaded === false && "opacity-0"
             )}
             src={front.display}
@@ -207,7 +207,7 @@ function RootObjektOverlay({ count, hasNew, onClick }: RootObjektOverlayProps) {
         )}
       >
         <button
-          className="z-50 hover:cursor-pointer hover:scale-110 transition-all flex items-center place-self-end"
+          className="z-50 hover:scale-110 transition-all flex items-center place-self-end"
           onClick={onClick}
         >
           <Info className="h-3 w-3 sm:h-5 sm:w-5" />

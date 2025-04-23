@@ -26,7 +26,7 @@ export default function ProgressClass({
   return (
     <div
       className={cn(
-        "group min-h-26 relative flex flex-col justify-between rounded-lg border p-4 cursor-pointer bg-gradient-to-br from-cosmo/7 to-cosmo/2 hover:bg-cosmo/4 transition-colors shadow-sm overflow-hidden",
+        "group min-h-26 relative flex flex-col justify-between rounded-lg border p-4 bg-gradient-to-br from-cosmo/7 to-cosmo/2 hover:bg-cosmo/4 transition-colors shadow-sm overflow-hidden",
         isComplete ? "border-green-500/50" : "border-cosmo/50"
       )}
       onClick={onExpand}
@@ -58,22 +58,4 @@ export default function ProgressClass({
       </div>
     </div>
   );
-
-  // return (
-  //   <div
-  //     data-complete={percentage >= 100}
-  //     onClick={onExpand}
-  //     className="flex flex-row justify-between items-center rounded-lg py-3 px-4 border border-transparent data-[complete=true]:border-cosmo bg-accent cursor-pointer h-20"
-  //   >
-  //     <div className="flex flex-col">
-  //       <h4 className="text-lg font-semibold">{progress.class} Class</h4>
-
-  //       <p>
-  //         Progress: {owned}/{progress.total} ({percentage}%)
-  //       </p>
-  //     </div>
-
-  //     {isSelected ? <Minimize2 /> : <Maximize2 />}
-  //   </div>
-  // );
 }

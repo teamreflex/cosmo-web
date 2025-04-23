@@ -27,7 +27,7 @@ export default function LockObjekt({ tokenId, isLocked }: Props) {
 
   return (
     <button
-      className="hover:cursor-pointer hover:scale-110 transition-all flex items-center"
+      className="hover:scale-110 transition-all flex items-center"
       disabled={isPending}
       aria-label={`${isLocked ? "unlock" : "lock"} this objekt`}
       onClick={toggle}

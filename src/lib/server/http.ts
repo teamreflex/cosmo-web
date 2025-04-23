@@ -10,6 +10,9 @@ export const cosmo = ofetch.create({
   retry: 2,
   retryDelay: 500, // 500ms
   timeout: 1000 * 10, // 10s
+  headers: {
+    "User-Agent": "apollo.cafe (github.com/teamreflex/cosmo-web)",
+  },
 });
 
 /**
@@ -17,6 +20,7 @@ export const cosmo = ofetch.create({
  */
 export const alchemyHTTP = ofetch.create({
   baseURL: "https://abstract-mainnet.g.alchemy.com",
+  method: "GET",
   headers: {
     Authorization: `Bearer ${env.NEXT_PUBLIC_ALCHEMY_KEY}`,
   },

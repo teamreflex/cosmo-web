@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { fetchObjektsWithComo } from "@/lib/server/como";
-// import ComoCalendar from "@/components/como/calendar";
+import ComoCalendar from "@/components/como/calendar";
 import CurrentMonth from "@/components/como/current-month";
 import ArtistIcon from "@/components/artist-icon";
 import {
@@ -61,11 +61,7 @@ export default async function UserComoPage(props: Props) {
         </div>
       </div>
 
-      <div className="flex items-center justify-center py-2 text-sm font-semibold">
-        COMO calendar will return once timestamps have been fixed.
-      </div>
-
-      {/* <ComoCalendar artists={artists} transfers={objekts} /> */}
+      <ComoCalendar artists={artists} transfers={objekts} />
 
       <Portal to="#help">
         <HelpDialog />

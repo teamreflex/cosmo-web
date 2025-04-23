@@ -40,7 +40,7 @@ export default function RemoveFromList({ id, collection, objektList }: Props) {
     <button
       onClick={submit}
       disabled={isPending}
-      className="hover:cursor-pointer hover:scale-110 transition-all flex items-center outline-hidden"
+      className="hover:scale-110 transition-all flex items-center outline-hidden"
       aria-label={`Remove ${collection.collectionId} from ${objektList.name}`}
     >
       {isPending ? (

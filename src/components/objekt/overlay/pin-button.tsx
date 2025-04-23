@@ -46,7 +46,7 @@ export default function PinObjekt({ collectionId, tokenId, isPinned }: Props) {
 
   return (
     <button
-      className="hover:cursor-pointer hover:scale-110 transition-all flex items-center"
+      className="hover:scale-110 transition-all flex items-center"
       disabled={isPending}
       aria-label={`${isPinned ? "unpin" : "pin"} ${collectionId}`}
       onClick={toggle}

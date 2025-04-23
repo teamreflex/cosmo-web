@@ -27,7 +27,7 @@ export function LegacyOverlay({
         collection={collection.collectionNo}
         serial={token.serial}
       />
-      <InformationOverlay collection={collection} token={token} />
+      <InformationOverlay token={token} />
       <ActionOverlay
         collection={collection}
         token={token}

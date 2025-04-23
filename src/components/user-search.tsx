@@ -143,10 +143,7 @@ export function UserSearch({
 
           <CommandGroup heading="Results">
             {queryIsAddress && (
-              <CommandItem
-                onSelect={() => selectAddress(debouncedQuery)}
-                className="cursor-pointer"
-              >
+              <CommandItem onSelect={() => selectAddress(debouncedQuery)}>
                 {debouncedQuery}
               </CommandItem>
             )}
@@ -157,7 +154,7 @@ export function UserSearch({
                 <CommandItem
                   key={user.address}
                   onSelect={() => selectResult(user)}
-                  className="gap-2 cursor-pointer"
+                  className="gap-2"
                   value={user.nickname}
                 >
                   <UserAvatar artist={artist} user={user} />
@@ -172,7 +169,6 @@ export function UserSearch({
                 <CommandItem
                   key={user.address}
                   onSelect={() => selectRecent(user)}
-                  className="cursor-pointer"
                   value={user.nickname}
                 >
                   {user.nickname}

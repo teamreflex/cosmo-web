@@ -100,7 +100,7 @@ export function MemberFilterButton({
             <button
               onClick={() => setActive(name)}
               className={cn(
-                "rounded-full drop-shadow-sm cursor-pointer",
+                "rounded-full drop-shadow-sm",
                 isActive && "ring-3 ring-(--member-color)"
               )}
             >

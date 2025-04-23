@@ -22,7 +22,7 @@ export default function Logo({ className }: Props) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <button className={cn("h-full cursor-pointer", className)}>
+        <button className={cn("h-full", className)}>
           <LogoSVG />
         </button>
       </AlertDialogTrigger>

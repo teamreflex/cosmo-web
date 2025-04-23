@@ -70,17 +70,11 @@ export default function ListDropdown({ lists, nickname, allowCreate }: Props) {
             <div className="contents">
               <DropdownMenuSeparator />
 
-              <DropdownMenuItem
-                className="cursor-pointer"
-                onClick={() => setCreateOpen(true)}
-              >
+              <DropdownMenuItem onClick={() => setCreateOpen(true)}>
                 <PlusCircle className="mr-2 h-4 w-4" />
                 <span className="font-semibold">Create New</span>
               </DropdownMenuItem>
-              <DropdownMenuItem
-                className="cursor-pointer"
-                onClick={() => setCompareOpen(true)}
-              >
+              <DropdownMenuItem onClick={() => setCompareOpen(true)}>
                 <LetterText className="mr-2 h-4 w-4" />
                 <span className="font-semibold">Discord Format</span>
               </DropdownMenuItem>

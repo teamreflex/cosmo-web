@@ -22,7 +22,7 @@ export default async function Navbar() {
 
                 <Popover>
                   <PopoverTrigger asChild>
-                    <button className="relative h-8 w-9 flex justify-center items-center rounded-lg bg-orange-500/40 hover:bg-orange-500/60 transition-colors cursor-pointer mx-2">
+                    <button className="relative h-8 w-9 flex justify-center items-center rounded-lg bg-orange-500/40 hover:bg-orange-500/60 transition-colors mx-2">
                       <AlertTriangle className="text-orange-500 w-5 h-5" />
                     </button>
                   </PopoverTrigger>
