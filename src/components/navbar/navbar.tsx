@@ -37,8 +37,8 @@ export default async function Navbar() {
                     </p>
                     <p>
                       Due to the blockchain migration, objekt receive times from
-                      before the maintenance period are all incorrect. This also
-                      affects COMO calendars.
+                      before the maintenance period are all incorrect. This may
+                      be fixed in the future.
                     </p>
                   </PopoverContent>
                 </Popover>
