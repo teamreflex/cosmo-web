@@ -1,3 +1,5 @@
+import { ValidArtist } from "./common";
+
 export type OwnedObjektsResult = {
   hasNext: boolean;
   nextStartAfter?: number;
@@ -11,7 +13,7 @@ export type ObjektBaseFields = {
   member: string;
   collectionNo: string;
   class: string;
-  artists: ("artms" | "tripleS")[];
+  artists: ValidArtist[];
   thumbnailImage: string;
   frontImage: string;
   backImage: string;

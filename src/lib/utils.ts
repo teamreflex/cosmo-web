@@ -101,6 +101,7 @@ export function baseUrl() {
 export const artistColors: Record<ValidArtist, string> = {
   tripleS: "#8ebdd1",
   artms: "#D5B7E2",
+  idntt: "#25347C",
 };
 
 /**
