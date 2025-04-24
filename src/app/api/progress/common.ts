@@ -1,7 +1,7 @@
 import { indexer } from "@/lib/server/db/indexer";
 import { Collection, collections } from "@/lib/server/db/indexer/schema";
 import { ValidOnlineType, ValidSeason } from "@/lib/universal/cosmo/common";
-import { and, eq, inArray, not } from "drizzle-orm";
+import { and, desc, eq, inArray, not } from "drizzle-orm";
 
 type FetchTotal = {
   member: string;
@@ -27,7 +27,8 @@ export async function fetchTotal({
         ...(onlineType !== null ? [eq(collections.onOffline, onlineType)] : []),
         ...(season !== null ? [eq(collections.season, season)] : [])
       )
-    );
+    )
+    .orderBy(desc(collections.createdAt));
 
   return result;
 }
