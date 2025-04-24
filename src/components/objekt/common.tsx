@@ -37,7 +37,7 @@ export function ObjektSidebar({
         className={cn(
           "flex justify-center items-center gap-2 [writing-mode:vertical-lr] font-semibold text-(--objekt-text-color) select-none",
           customBand &&
-            "bg-(--objekt-background-color) rounded-l-[10px] h-[89%] my-auto justify-between px-3"
+            "bg-(--objekt-background-color) rounded-l-md lg:rounded-l-[10px] h-[89%] my-auto justify-between px-2 lg:px-3"
         )}
         style={{
           lineHeight: `${width}px`,
