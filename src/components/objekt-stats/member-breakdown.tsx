@@ -4,26 +4,24 @@ import { Card, CardContent } from "@/components/ui/card";
 import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import MemberChart from "./member-chart";
 import { HourlyBreakdown } from "@/lib/universal/stats";
-import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { useState } from "react";
 import MemberSelect from "./member-select";
 
 type Props = {
   artists: CosmoArtistWithMembersBFF[];
-  selectedArtist: ValidArtist;
+  selectedArtists: string[];
   data: Record<string, HourlyBreakdown[]>;
 };
 
 export default function MemberBreakdown({
   artists,
-  selectedArtist,
+  selectedArtists,
   data,
 }: Props) {
   // initialize checked members with the members of the selected artist
   const [checked, setChecked] = useState(() => {
-    const artist = artists.find(
-      (a) => a.id.toLowerCase() === selectedArtist.toLowerCase()
-    );
+    const artist =
+      artists.find((a) => selectedArtists.includes(a.id)) ?? artists[0];
     return artist?.artistMembers.map((m) => m.name) ?? [];
   });
 

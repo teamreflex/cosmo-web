@@ -16,6 +16,7 @@ import { fetchObjektList } from "@/lib/server/objekts/lists";
 import { getQueryClient } from "@/lib/query-client";
 import { ProfileProvider } from "@/hooks/use-profile";
 import { GRID_COLUMNS } from "@/lib/utils";
+import { SelectedArtistsProvider } from "@/hooks/use-selected-artists";
 
 type Props = {
   searchParams: Promise<Record<string, string>>;
@@ -75,17 +76,19 @@ export default async function ObjektListPage(props: Props) {
   if (!objektList) redirect(`/@${params.nickname}`);
 
   return (
-    <ProfileProvider>
-      <HydrationBoundary state={dehydrate(queryClient)}>
-        <ListRenderer
-          artists={artists}
-          list={objektList}
-          authenticated={false}
-          user={profile}
-          gridColumns={GRID_COLUMNS}
-        />
-      </HydrationBoundary>
-    </ProfileProvider>
+    <SelectedArtistsProvider selectedArtists={[]}>
+      <ProfileProvider>
+        <HydrationBoundary state={dehydrate(queryClient)}>
+          <ListRenderer
+            artists={artists}
+            list={objektList}
+            authenticated={false}
+            user={profile}
+            gridColumns={GRID_COLUMNS}
+          />
+        </HydrationBoundary>
+      </ProfileProvider>
+    </SelectedArtistsProvider>
   );
 }
 

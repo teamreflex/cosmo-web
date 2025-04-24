@@ -24,6 +24,24 @@ const map: Record<ValidArtist, ReactNode> = {
   tripleS: (
     <Sparkle className="ring-1 p-px w-4 h-4 rounded-full text-purple-300 fill-purple-300 ring-purple-300" />
   ),
+  idntt: (
+    <div className="ring-1 p-px rounded-full ring-[#3b82f6]">
+      <svg
+        className="w-[14px] h-[14px] text-[#3b82f6] fill-[#3b82f6]"
+        viewBox="0 0 100 100"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <circle cx="50" cy="25" r="10" />
+        <rect
+          x="30"
+          y="50"
+          width="30"
+          height="30"
+          transform="rotate(45 50 70)"
+        />
+      </svg>
+    </div>
+  ),
 };
 
 export default function ArtistIcon({

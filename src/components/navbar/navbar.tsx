@@ -7,6 +7,7 @@ import { AlertTriangle, Moon } from "lucide-react";
 import Hydrated from "../hydrated";
 import GuestThemeSwitch from "./guest-theme-switch";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import ArtistSelector from "./artist-selector";
 
 export default async function Navbar() {
   return (
@@ -50,6 +51,10 @@ export default async function Navbar() {
             </Suspense>
 
             <div className="flex grow-0 items-center justify-end gap-2">
+              <Suspense>
+                <ArtistSelector />
+              </Suspense>
+
               <Hydrated
                 fallback={
                   <div className="inline-flex items-center justify-center h-9 px-1">

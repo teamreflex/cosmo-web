@@ -27,6 +27,7 @@ import VirtualizedGrid from "../objekt/virtualized-grid";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import LoaderRemote from "../objekt/loader-remote";
 import ObjektIndexFilters from "../collection/filter-contexts/objekt-index-filters";
+import { useSelectedArtists } from "@/hooks/use-selected-artists";
 
 type Props = {
   artists: CosmoArtistWithMembersBFF[];
@@ -39,6 +40,7 @@ type Props = {
 
 export default function IndexRenderer(props: Props) {
   const { searchParams } = useFilters();
+  const selectedArtists = useSelectedArtists();
   const [, setActiveObjekt] = useQueryState("id", parseAsString);
   const isDesktop = useMediaQuery();
 
@@ -58,6 +60,7 @@ export default function IndexRenderer(props: Props) {
         query: {
           ...Object.fromEntries(searchParams.entries()),
           page: pageParam,
+          artists: selectedArtists,
         },
       }).then((res) => parsePage<LegacyObjektResponse<IndexedObjekt>>(res));
     },

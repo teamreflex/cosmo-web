@@ -7,6 +7,7 @@ import {
   withOnlineType,
   withSeason,
   withObjektIndexSort,
+  withSelectedArtists,
 } from "../filters";
 import { z } from "zod";
 import { objektIndex } from "@/lib/universal/parsers";
@@ -32,6 +33,7 @@ export function parseObjektIndexFilters(filters: z.infer<typeof objektIndex>) {
     sort: filters.sort === "newest" ? null : filters.sort,
     transferable: null,
     used_for_grid: null,
+    artists: filters.artists.length > 0 ? filters.artists : null,
   };
 }
 
@@ -54,6 +56,7 @@ export async function fetchObjektsIndex(filters: z.infer<typeof objektIndex>) {
           ...withOnlineType(filters.on_offline),
           ...withMember(filters.member),
           ...withCollections(filters.collectionNo),
+          ...withSelectedArtists(filters.artists),
         ]
       )
     )

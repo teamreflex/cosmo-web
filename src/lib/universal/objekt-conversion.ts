@@ -244,6 +244,7 @@ function deriveExtras(
 const artistMap: Record<string, string> = {
   artms: "ARTMS",
   triples: "tripleS",
+  idntt: "idntt",
 };
 
 const onOfflineMap: Record<string, "online" | "offline"> = {

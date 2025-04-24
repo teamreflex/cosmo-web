@@ -1,13 +1,11 @@
 import { Metadata } from "next";
 import {
   getUserByIdentifier,
-  getSelectedArtist,
   getArtistsWithMembers,
 } from "@/app/data-fetching";
 import ProfileRenderer from "@/components/profile/profile-renderer";
 import { ProfileProvider } from "@/hooks/use-profile";
 import { fetchPins } from "@/lib/server/objekts/pins";
-import { UserStateProvider } from "@/hooks/use-user-state";
 import { CosmoArtistProvider } from "@/hooks/use-cosmo-artist";
 import { parseUserCollection } from "@/lib/universal/parsers";
 import { getQueryClient } from "@/lib/query-client";
@@ -16,6 +14,7 @@ import {
   parseUserCollectionFilters,
 } from "@/lib/server/objekts/prefetching/objekt-polygon";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
+import { SelectedArtistsProvider } from "@/hooks/use-selected-artists";
 
 type Props = {
   params: Promise<{
@@ -34,10 +33,9 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 }
 
 export default async function UserCollectionPage(props: Props) {
-  const [searchParams, params, selectedArtist] = await Promise.all([
+  const [searchParams, params] = await Promise.all([
     props.searchParams,
     props.params,
-    getSelectedArtist(),
   ]);
 
   const [artists, targetUser] = await Promise.all([
@@ -72,24 +70,24 @@ export default async function UserCollectionPage(props: Props) {
   const pins = await fetchPins(targetUser.pins);
 
   return (
-    <CosmoArtistProvider artists={artists}>
-      <ProfileProvider
-        targetProfile={targetUser.profile}
-        objektLists={targetUser.objektLists}
-        lockedObjekts={targetUser.lockedObjekts}
-        pins={pins}
-      >
-        <section className="flex flex-col">
-          <UserStateProvider artist={selectedArtist} token={undefined}>
+    <SelectedArtistsProvider selectedArtists={[]}>
+      <CosmoArtistProvider artists={artists}>
+        <ProfileProvider
+          targetProfile={targetUser.profile}
+          objektLists={targetUser.objektLists}
+          lockedObjekts={targetUser.lockedObjekts}
+          pins={pins}
+        >
+          <section className="flex flex-col">
             <HydrationBoundary state={dehydrate(queryClient)}>
               <ProfileRenderer
                 artists={artists}
                 targetUser={targetUser.profile}
               />
             </HydrationBoundary>
-          </UserStateProvider>
-        </section>
-      </ProfileProvider>
-    </CosmoArtistProvider>
+          </section>
+        </ProfileProvider>
+      </CosmoArtistProvider>
+    </SelectedArtistsProvider>
   );
 }

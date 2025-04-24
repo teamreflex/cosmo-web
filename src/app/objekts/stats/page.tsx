@@ -2,16 +2,17 @@ import { Metadata } from "next";
 import { getObjektStats } from "@/lib/server/objekts/stats";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ArtistChart from "@/components/objekt-stats/artist-chart";
-import { getArtistsWithMembers, getSelectedArtist } from "@/app/data-fetching";
+import { getArtistsWithMembers } from "@/app/data-fetching";
 import MemberBreakdown from "@/components/objekt-stats/member-breakdown";
+import { getCookie } from "@/lib/server/cookies";
 
 export const metadata: Metadata = {
   title: "Objekt Stats",
 };
 
 export default async function ObjektStatsPage() {
-  const [selectedArtist, artists, stats] = await Promise.all([
-    getSelectedArtist(),
+  const [selectedArtists, artists, stats] = await Promise.all([
+    getCookie<string[]>("artists"),
     getArtistsWithMembers(),
     getObjektStats(),
   ]);
@@ -96,7 +97,7 @@ export default async function ObjektStatsPage() {
 
           {/* member breakdown chart */}
           <MemberBreakdown
-            selectedArtist={selectedArtist}
+            selectedArtists={selectedArtists ?? []}
             artists={artists}
             data={stats.memberBreakdown}
           />

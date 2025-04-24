@@ -8,6 +8,7 @@ import {
 import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import Image from "next/image";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
+import { useSelectedArtists } from "@/hooks/use-selected-artists";
 
 type Props = {
   showArtists?: boolean;
@@ -24,12 +25,19 @@ export default function MemberFilter({
   updateArtist,
   updateMember,
 }: Props) {
+  const selectedArtists = useSelectedArtists();
+
   return (
     <div className="relative flex flex-col h-fit w-full">
       <div className="absolute pointer-events-none z-20 top-0 left-0 h-full w-2 bg-linear-to-r from-background to-transparent" />
       <div className="absolute pointer-events-none z-20 top-0 right-0 h-full w-2 bg-linear-to-l from-background to-transparent" />
 
       {artists
+        .filter((artist) =>
+          selectedArtists.length > 0
+            ? selectedArtists.includes(artist.id)
+            : true
+        )
         .sort((a, b) => b.comoTokenId - a.comoTokenId)
         .map((artist) => (
           <div

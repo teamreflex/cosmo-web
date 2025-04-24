@@ -504,3 +504,46 @@ export const tripleS = {
     },
   },
 };
+
+export const idntt = {
+  name: "idntt",
+  id: "idntt" as ValidArtist,
+  title: "idntt",
+  logoImageUrl: "https://static.cosmo.fans/assets/idntt-logo.png",
+  contracts: {
+    Como: "0x0000000000000000000000000000000000000000",
+    ComoMinter: "0x0000000000000000000000000000000000000000",
+    CommunityPool: "0x0000000000000000000000000000000000000000",
+    Objekt: "0x0000000000000000000000000000000000000000",
+    ObjektMinter: "0x0000000000000000000000000000000000000000",
+    Governor: "0x0000000000000000000000000000000000000000",
+  },
+  fandomName: "idntt",
+  primaryImageUrl: "https://static.cosmo.fans/assets/idntt.png",
+  comoTokenId: 3,
+  category: "B",
+  wasReleased: false,
+  artistMembers: [],
+  snsLink: {
+    discord: {
+      name: "discord.gg/idntt-cosmo",
+      address: "https://discord.gg/idntt-cosmo",
+    },
+    instagram: {
+      name: "@idntt_cosmo",
+      address: "https://www.instagram.com/idntt_cosmo/",
+    },
+    twitter: {
+      name: "@idntt_cosmo",
+      address: "https://x.com/idntt_cosmo",
+    },
+    youtube: {
+      name: "@idntt_cosmo",
+      address: "https://www.youtube.com/@idntt_cosmo",
+    },
+    tiktok: {
+      name: "www.tiktok.com/@idntt_cosmo",
+      address: "https://tiktok.com/@idntt_cosmo",
+    },
+  },
+};

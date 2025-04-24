@@ -8,6 +8,7 @@ import {
 import { useCosmoFilters } from "./use-cosmo-filters";
 import { ReactNode } from "react";
 import { FilterType } from "@/lib/utils";
+import { useSelectedArtists } from "./use-selected-artists";
 
 export type ObjektResponseOptions<Response, Item> = {
   filtering: FilterType;
@@ -34,11 +35,19 @@ export function objektOptions<Response, Item>(
 export function useObjektResponse<Response, Item>(
   opts: ObjektResponseOptions<Response, Item>
 ) {
+  const selectedArtists = useSelectedArtists();
   const [filters] = useCosmoFilters();
   const query = useSuspenseInfiniteQuery({
     queryKey: [
       ...opts.queryKey,
-      ...(opts.filtering === "remote" ? [filters] : []),
+      ...(opts.filtering === "remote"
+        ? [
+            {
+              ...filters,
+              artists: selectedArtists,
+            },
+          ]
+        : []),
     ],
     queryFn: opts.queryFunction,
     initialPageParam: opts.initialPageParam ?? 0,

@@ -73,6 +73,7 @@ export const objektIndex = cosmoSchema
   .extend({
     page: z.coerce.number().optional().default(0),
     collectionNo: castToArray(z.string()).optional().default([]),
+    artists: z.string().array().optional().default([]),
   });
 
 /**
@@ -90,6 +91,7 @@ export function parseObjektIndex(params: URLSearchParams) {
       member: params.get("member"),
       artist: params.get("artist"),
       collectionNo: params.getAll("collectionNo"),
+      artists: params.getAll("artists"),
     },
     {
       page: 0,
@@ -100,6 +102,7 @@ export function parseObjektIndex(params: URLSearchParams) {
       member: undefined,
       artist: undefined,
       collectionNo: [],
+      artists: [],
     }
   );
 }
@@ -109,7 +112,7 @@ export function parseObjektIndex(params: URLSearchParams) {
  * Extends COSMO & objekt index schema as it has the same filters.
  * Does not add anything but this is in place for future compatibility.
  */
-export const objektList = objektIndex;
+export const objektList = objektIndex.omit({ artists: true });
 
 /**
  * Parse objekt index params with default fallback.
@@ -144,7 +147,9 @@ export function parseObjektList(params: URLSearchParams) {
  * User collection schema.
  * Extends COSMO & objekt index schemas as it has the same filters.
  */
-export const userCollection = cosmoSchema.merge(objektIndex);
+export const userCollection = cosmoSchema.merge(
+  objektIndex.omit({ artists: true })
+);
 
 /**
  * Parse user collection params with default fallback.

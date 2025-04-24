@@ -1,8 +1,6 @@
 import { cache } from "react";
 import { fetchPublicProfile, fetchUserByIdentifier } from "@/lib/server/auth";
 import { notFound } from "next/navigation";
-import { getCookie } from "@/lib/server/cookies";
-import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { fetchTokenBalances } from "@/lib/server/como";
 import * as artists from "@/artists";
 import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
@@ -28,7 +26,11 @@ export const getUserByIdentifier = cache(async (identifier: string) => {
  * Cached for 12 hours.
  */
 export const getArtistsWithMembers = cache(async () => {
-  return [artists.tripleS, artists.ARTMS] satisfies CosmoArtistWithMembersBFF[];
+  return [
+    artists.tripleS,
+    artists.ARTMS,
+    artists.idntt,
+  ] satisfies CosmoArtistWithMembersBFF[];
 
   // return await unstable_cache(
   //   async () => {
@@ -40,13 +42,6 @@ export const getArtistsWithMembers = cache(async () => {
   //   ["artists"],
   //   { revalidate: 60 * 60 * 12 }
   // )();
-});
-
-/**
- * Get the selected artist from cookies.
- */
-export const getSelectedArtist = cache(async () => {
-  return (await getCookie<ValidArtist>("artist")) || "artms";
 });
 
 /**

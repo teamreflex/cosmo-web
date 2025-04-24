@@ -106,6 +106,14 @@ export function withArtist(artist: ValidArtist | undefined | null) {
 }
 
 /**
+ * Filter by artist.
+ */
+export function withSelectedArtists(artists: string[] | undefined | null) {
+  if (!artists) return [];
+  return artists.length > 0 ? [inArray(collections.artist, artists)] : [];
+}
+
+/**
  * Filter by collection number.
  */
 export function withCollections(selected: string[] | null | undefined) {
