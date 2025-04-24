@@ -1,17 +1,27 @@
 import { NonTransferableReason } from "@/lib/universal/cosmo/objekts";
 import { useElementSize } from "@/hooks/use-element-size";
 import { cn, PropsWithClassName } from "@/lib/utils";
+import { ValidArtist } from "@/lib/universal/cosmo/common";
 
 type ObjektSidebarProps = {
+  artist: ValidArtist;
+  member: string;
   collection: string;
   serial?: number;
 };
 
-export function ObjektSidebar({ collection, serial }: ObjektSidebarProps) {
+export function ObjektSidebar({
+  artist,
+  member,
+  collection,
+  serial,
+}: ObjektSidebarProps) {
   const [ref, { width }] = useElementSize();
 
   const paddedSerial =
     serial === 0 ? "00000" : serial?.toString().padStart(5, "0");
+
+  const customBand = artist === "idntt";
 
   /**
    * sometimes the first element in the grid is a couple pixels smaller on the width, resulting in an offset number, not sure why.
@@ -21,14 +31,26 @@ export function ObjektSidebar({ collection, serial }: ObjektSidebarProps) {
   return (
     <div
       ref={ref}
-      className="absolute h-full items-center w-[11%] flex gap-2 justify-center top-0 right-0 [writing-mode:vertical-lr] font-semibold text-(--objekt-text-color) select-none"
-      style={{
-        lineHeight: `${width}px`,
-        fontSize: `${width * 0.55}px`,
-      }}
+      className="absolute flex items-center h-full w-[11%] top-0 right-0"
     >
-      <span>{collection}</span>
-      {paddedSerial && <span>#{paddedSerial}</span>}
+      <div
+        className={cn(
+          "flex justify-center items-center gap-2 [writing-mode:vertical-lr] font-semibold text-(--objekt-text-color) select-none",
+          customBand &&
+            "bg-(--objekt-background-color) rounded-l-[10px] h-[89%] my-auto justify-between px-3"
+        )}
+        style={{
+          lineHeight: `${width}px`,
+          fontSize: `${width * 0.55}px`,
+        }}
+      >
+        {customBand && <span>{member}</span>}
+        <div className="flex items-center gap-2">
+          <span>{collection}</span>
+          {paddedSerial && <span>#{paddedSerial}</span>}
+        </div>
+        {customBand && <span>{artist}</span>}
+      </div>
     </div>
   );
 }

@@ -24,6 +24,8 @@ export function LegacyOverlay({
   return (
     <div className="contents">
       <ObjektSidebar
+        artist={collection.artist}
+        member={collection.member}
         collection={collection.collectionNo}
         serial={token.serial}
       />

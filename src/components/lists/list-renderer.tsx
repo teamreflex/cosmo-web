@@ -140,7 +140,11 @@ type OverlayProps = {
 function Overlay({ id, collection, authenticated, objektList }: OverlayProps) {
   return (
     <div className="contents">
-      <ObjektSidebar collection={collection.collectionNo} />
+      <ObjektSidebar
+        collection={collection.collectionNo}
+        artist={collection.artist}
+        member={collection.member}
+      />
       {authenticated && (
         <ListOverlay id={id} collection={collection} objektList={objektList} />
       )}

@@ -22,6 +22,8 @@ export default function StaticObjekt({ collection, token, isPinned }: Props) {
   return (
     <ExpandableObjekt tokenId={token.tokenId} collection={collection}>
       <ObjektSidebar
+        artist={collection.artist}
+        member={collection.member}
         collection={collection.collectionNo}
         serial={token.serial}
       />

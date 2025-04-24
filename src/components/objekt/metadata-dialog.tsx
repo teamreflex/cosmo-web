@@ -192,7 +192,11 @@ function MetadataContent({ slug, onClose }: MetadataDialogContentProps) {
         )}
       >
         <FlippableObjekt collection={data}>
-          <ObjektSidebar collection={data.collectionNo} />
+          <ObjektSidebar
+            collection={data.collectionNo}
+            artist={data.artist}
+            member={data.member}
+          />
         </FlippableObjekt>
       </div>
 

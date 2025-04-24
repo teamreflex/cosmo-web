@@ -78,6 +78,7 @@ const updates = [
     date: "2025-04-24",
     changes: [
       "Objekt mint times have been corrected and COMO calendar re-enabled.",
+      "idntt has been added but MODHAUS has changed a lot of how seasons/classes/sidebars work, so it's gonna look weird for a bit.",
     ],
   },
   {

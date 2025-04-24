@@ -28,6 +28,7 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import LoaderRemote from "../objekt/loader-remote";
 import ObjektIndexFilters from "../collection/filter-contexts/objekt-index-filters";
 import { useSelectedArtists } from "@/hooks/use-selected-artists";
+import { ValidArtist } from "@/lib/universal/cosmo/common";
 
 type Props = {
   artists: CosmoArtistWithMembersBFF[];
@@ -187,7 +188,11 @@ type OverlayProps = {
 function Overlay({ objekt, authenticated, objektLists = [] }: OverlayProps) {
   return (
     <div className="contents">
-      <ObjektSidebar collection={objekt.collectionNo} />
+      <ObjektSidebar
+        collection={objekt.collectionNo}
+        artist={objekt.artist as ValidArtist}
+        member={objekt.member}
+      />
       {authenticated && (
         <TopOverlay objekt={objekt} objektLists={objektLists} />
       )}
