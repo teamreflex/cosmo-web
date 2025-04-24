@@ -4,11 +4,7 @@ import {
   collections,
   objekts,
 } from "@/lib/server/db/indexer/schema";
-import {
-  validClasses,
-  validOnlineTypes,
-  validSeasons,
-} from "@/lib/universal/cosmo/common";
+import { validOnlineTypes } from "@/lib/universal/cosmo/common";
 import { SeasonProgress, SeasonMatrix } from "@/lib/universal/progress";
 import { and, eq } from "drizzle-orm";
 import { fetchTotal } from "../../../common";
@@ -31,11 +27,24 @@ type Params = {
  */
 export async function GET(_: Request, props: Params) {
   const params = await props.params;
-  const matrix = buildMatrix();
+
   const [totals, progress] = await Promise.all([
     fetchTotal({ member: params.member }),
     fetchProgress(params.address.toLowerCase(), params.member),
   ]);
+
+  // dynamically build the matrix based on the data instead of hardcoding seasons and classes
+  const classes = new Set<string>();
+  const seasons = new Set<string>();
+  for (const total of totals) {
+    classes.add(total.class);
+    seasons.add(total.season);
+  }
+
+  const matrix = buildMatrix(
+    Array.from(classes).filter((c) => !["Zero", "Welcome"].includes(c)),
+    Array.from(seasons)
+  );
 
   return Response.json(zipResults(matrix, totals, progress), {
     headers: cacheHeaders(60 * 60),
@@ -45,12 +54,11 @@ export async function GET(_: Request, props: Params) {
 /**
  * Build a matrix of all available classes, seasons and online types.
  */
-function buildMatrix(): SeasonMatrix[] {
+function buildMatrix(classes: string[], seasons: string[]): SeasonMatrix[] {
   const onlineTypes = [...validOnlineTypes, "combined"] as const;
 
-  const classes = validClasses.filter((c) => !["Zero", "Welcome"].includes(c));
   return onlineTypes.flatMap((type) =>
-    validSeasons.flatMap((season) => {
+    seasons.flatMap((season) => {
       return classes.map((c) => ({
         key: `${season.toLowerCase()}_${c.toLowerCase()}_${type}`,
         season,
