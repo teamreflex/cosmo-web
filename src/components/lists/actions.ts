@@ -249,7 +249,7 @@ export const generateDiscordList = async (form: {
       });
 
       // get artists for member ordering
-      const artists = await getArtistsWithMembers();
+      const artists = getArtistsWithMembers();
 
       // map into discord format
       const haveCollections = format(collections, have.entries, artists);

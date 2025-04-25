@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { fetchTokenBalances } from "@/lib/server/como";
 import * as artists from "@/artists";
 import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
+import { getCookie } from "@/lib/server/cookies";
 
 /**
  * Fetch the user profile.
@@ -25,23 +26,19 @@ export const getUserByIdentifier = cache(async (identifier: string) => {
  * Fetch artists with all members from Cosmo.
  * Cached for 12 hours.
  */
-export const getArtistsWithMembers = cache(async () => {
+export const getArtistsWithMembers = cache(() => {
   return [
     artists.tripleS,
     artists.ARTMS,
     artists.idntt,
   ] satisfies CosmoArtistWithMembersBFF[];
+});
 
-  // return await unstable_cache(
-  //   async () => {
-  //     const token = await getProxiedToken();
-  //     return await Promise.all(
-  //       validArtists.map((artist) => fetchArtistBff(artist, token.accessToken))
-  //     );
-  //   },
-  //   ["artists"],
-  //   { revalidate: 60 * 60 * 12 }
-  // )();
+/**
+ * Fetch the selected artists from the cookie.
+ */
+export const getSelectedArtists = cache(async () => {
+  return (await getCookie<string[]>("artists")) ?? [];
 });
 
 /**

@@ -28,7 +28,7 @@ type Props = {
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params;
-  const { objektList } = await getData(params.nickname, params.list);
+  const objektList = await getData(params.nickname, params.list);
   if (!objektList) redirect(`/@${params.nickname}`);
 
   return {
@@ -72,7 +72,8 @@ export default async function ObjektListPage(props: Props) {
     initialPageParam: 0,
   });
 
-  const { artists, objektList } = await getData(params.nickname, params.list);
+  const artists = getArtistsWithMembers();
+  const objektList = await getData(params.nickname, params.list);
   if (!objektList) redirect(`/@${params.nickname}`);
 
   return (
@@ -94,10 +95,5 @@ export default async function ObjektListPage(props: Props) {
 
 const getData = cache(async (nickname: string, list: string) => {
   const { profile } = await getUserByIdentifier(nickname);
-  const [artists, objektList] = await Promise.all([
-    getArtistsWithMembers(),
-    fetchObjektList(profile.address, list),
-  ]);
-
-  return { artists, objektList };
+  return await fetchObjektList(profile.address, list);
 });

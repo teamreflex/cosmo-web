@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { getArtistsWithMembers } from "../data-fetching";
+import { getArtistsWithMembers, getSelectedArtists } from "../data-fetching";
 import IndexRenderer from "@/components/objekt-index/index-renderer";
 import { fetchUniqueCollections } from "@/lib/server/objekts/collections";
 import { ProfileProvider } from "@/hooks/use-profile";
@@ -11,7 +11,6 @@ import { parseObjektIndex } from "@/lib/universal/parsers";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import { getQueryClient } from "@/lib/query-client";
 import { GRID_COLUMNS } from "@/lib/utils";
-import { getCookie } from "@/lib/server/cookies";
 import { SelectedArtistsProvider } from "@/hooks/use-selected-artists";
 
 export const metadata: Metadata = {
@@ -23,10 +22,9 @@ type Params = {
 };
 
 export default async function ObjektsIndexPage(props: Params) {
+  const selectedArtists = await getSelectedArtists();
   const searchParams = await props.searchParams;
   const queryClient = getQueryClient();
-
-  const selectedArtists = (await getCookie<string[]>("artists")) ?? [];
 
   // parse search params
   const params = new URLSearchParams({
@@ -57,10 +55,8 @@ export default async function ObjektsIndexPage(props: Params) {
     initialPageParam: 0,
   });
 
-  const [artists, collections] = await Promise.all([
-    getArtistsWithMembers(),
-    fetchUniqueCollections(),
-  ]);
+  const artists = getArtistsWithMembers();
+  const collections = await fetchUniqueCollections();
 
   return (
     <main className="container flex flex-col py-2">

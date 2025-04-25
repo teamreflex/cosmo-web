@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import {
   getUserByIdentifier,
   getArtistsWithMembers,
+  getSelectedArtists,
 } from "@/app/data-fetching";
 import ProfileRenderer from "@/components/profile/profile-renderer";
 import { ProfileProvider } from "@/hooks/use-profile";
@@ -38,9 +39,9 @@ export default async function UserCollectionPage(props: Props) {
     props.params,
   ]);
 
-  const [artists, targetUser] = await Promise.all([
-    getArtistsWithMembers(),
+  const [targetUser, selectedArtists] = await Promise.all([
     getUserByIdentifier(params.nickname),
+    getSelectedArtists(),
   ]);
 
   const queryClient = getQueryClient();
@@ -68,9 +69,10 @@ export default async function UserCollectionPage(props: Props) {
   });
 
   const pins = await fetchPins(targetUser.pins);
+  const artists = getArtistsWithMembers();
 
   return (
-    <SelectedArtistsProvider selectedArtists={[]}>
+    <SelectedArtistsProvider selectedArtists={selectedArtists}>
       <CosmoArtistProvider artists={artists}>
         <ProfileProvider
           targetProfile={targetUser.profile}

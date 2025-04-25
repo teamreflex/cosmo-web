@@ -19,12 +19,12 @@ export default function FiltersContainer({ children, isPortaled }: Props) {
         {!isPortaled && <div id="filters-button" />}
         <Portal to="#filters-button">
           <Button
-            className="rounded-full"
+            className="rounded-full h-10"
             variant="secondary"
             size="sm"
             onClick={() => setShow((prev) => !prev)}
           >
-            <SlidersHorizontal className="mr-2" />
+            <SlidersHorizontal />
             <span>Filters</span>
           </Button>
         </Portal>

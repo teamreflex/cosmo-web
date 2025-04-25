@@ -47,7 +47,7 @@ export const POLYGON_DECIMALS = 18;
  */
 export const fetchTokenBalances = unstable_cache(
   async (address: string): Promise<ComoBalance[]> => {
-    const artists = await getArtistsWithMembers();
+    const artists = getArtistsWithMembers();
     const response = await alchemyHTTP<GetNFTsForOwnerResponse>(
       `/nft/v3/${env.NEXT_PUBLIC_ALCHEMY_KEY}/getNFTsForOwner`,
       {

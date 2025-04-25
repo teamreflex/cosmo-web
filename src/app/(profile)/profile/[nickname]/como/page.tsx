@@ -26,12 +26,9 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 export default async function UserComoPage(props: Props) {
   const params = await props.params;
   const { profile } = await getUserByIdentifier(params.nickname);
+  const objekts = await fetchObjektsWithComo(profile.address);
 
-  const [artists, objekts] = await Promise.all([
-    getArtistsWithMembers(),
-    fetchObjektsWithComo(profile.address),
-  ]);
-
+  const artists = getArtistsWithMembers();
   const totals = artists.map((artist) => {
     const total = objekts
       .filter((t) => t.contract === artist.contracts.Objekt.toLowerCase())

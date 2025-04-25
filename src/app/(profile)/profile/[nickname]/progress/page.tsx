@@ -22,10 +22,9 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 
 export default async function ProgressPage(props: Props) {
   const params = await props.params;
-  const [targetUser, artists] = await Promise.all([
-    getUserByIdentifier(params.nickname),
-    getArtistsWithMembers(),
-  ]);
+  const targetUser = await getUserByIdentifier(params.nickname);
+
+  const artists = getArtistsWithMembers();
 
   return (
     <section className="flex flex-col">

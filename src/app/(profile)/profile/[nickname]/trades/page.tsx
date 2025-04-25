@@ -20,14 +20,12 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 
 export default async function UserTransfersPage(props: Props) {
   const params = await props.params;
-  const [{ profile }, artists] = await Promise.all([
-    getUserByIdentifier(params.nickname),
-    getArtistsWithMembers(),
-  ]);
+  const targetUser = await getUserByIdentifier(params.nickname);
+  const artists = getArtistsWithMembers();
 
   return (
     <section className="flex flex-col">
-      <TransfersRenderer profile={profile} artists={artists} />
+      <TransfersRenderer profile={targetUser.profile} artists={artists} />
 
       <div id="pagination" />
     </section>

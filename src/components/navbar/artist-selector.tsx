@@ -1,10 +1,9 @@
-import { getArtistsWithMembers } from "@/app/data-fetching";
-import { getCookie } from "@/lib/server/cookies";
+import { getArtistsWithMembers, getSelectedArtists } from "@/app/data-fetching";
 import ArtistSelectbox from "./artist-selectbox";
 
 export default async function ArtistSelector() {
-  const selected = await getCookie<string[]>("artists");
-  const artists = await getArtistsWithMembers();
+  const selected = await getSelectedArtists();
+  const artists = getArtistsWithMembers();
 
   return <ArtistSelectbox artists={artists} selected={selected} />;
 }

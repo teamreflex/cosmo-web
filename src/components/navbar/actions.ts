@@ -1,23 +1,20 @@
 "use server";
 
-import { getCookie, setCookie } from "@/lib/server/cookies";
+import { getSelectedArtists } from "@/app/data-fetching";
+import { setCookie } from "@/lib/server/cookies";
 import { revalidatePath } from "next/cache";
 
 /**
  * Set the selected artists in a cookie.
  */
 export async function setSelectedArtist(artist: string) {
-  const artists = await getCookie<string[]>("artists");
+  const artists = await getSelectedArtists();
 
-  let selected = [];
-  if (!artists) {
-    selected.push(artist);
+  let selected = [...artists];
+  if (artists.includes(artist)) {
+    selected = artists.filter((a) => a !== artist);
   } else {
-    if (artists.includes(artist)) {
-      selected = artists.filter((a) => a !== artist);
-    } else {
-      selected = [...artists, artist];
-    }
+    selected.push(artist);
   }
 
   await setCookie({

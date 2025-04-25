@@ -52,10 +52,8 @@ function ComoBalanceErrorFallback() {
 }
 
 async function UserBalances({ address }: Props) {
-  const [artists, balances] = await Promise.all([
-    getArtistsWithMembers(),
-    getTokenBalances(address),
-  ]);
+  const artists = getArtistsWithMembers();
+  const balances = await getTokenBalances(address);
 
   return (
     <div className="flex flex-row gap-2">
