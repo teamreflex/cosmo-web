@@ -1,6 +1,6 @@
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { CollectionDataSource } from "@/lib/utils";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, Suspense } from "react";
 // import LockedFilter from "../filter-locked";
 import GridableFilter from "../filter-gridable";
 import TransferableFilter from "../filter-transferable";
@@ -9,6 +9,8 @@ import OnlineFilter from "../filter-online";
 import ClassFilter from "../filter-class";
 import SortFilter from "../filter-sort";
 import FilterDataSource from "../filter-data-source";
+import { ErrorBoundary } from "react-error-boundary";
+import Skeleton from "@/components/skeleton/skeleton";
 
 type Props = {
   allowCosmo?: boolean;
@@ -41,9 +43,25 @@ export default function CollectionFilters({
         filters={filters.transferable}
         setFilters={setFilters}
       />
-      <SeasonFilter filters={filters.season} setFilters={setFilters} />
+
+      <ErrorBoundary
+        fallback={<Skeleton className="w-[100px] h-9 bg-destructive" />}
+      >
+        <Suspense fallback={<Skeleton className="w-[100px] h-9" />}>
+          <SeasonFilter filters={filters.season} setFilters={setFilters} />
+        </Suspense>
+      </ErrorBoundary>
+
       <OnlineFilter filters={filters.on_offline} setFilters={setFilters} />
-      <ClassFilter filters={filters.class} setFilters={setFilters} />
+
+      <ErrorBoundary
+        fallback={<Skeleton className="w-[87px] h-9 bg-destructive" />}
+      >
+        <Suspense fallback={<Skeleton className="w-[87px] h-9" />}>
+          <ClassFilter filters={filters.class} setFilters={setFilters} />
+        </Suspense>
+      </ErrorBoundary>
+
       <SortFilter
         filters={filters.sort}
         setFilters={setFilters}
@@ -51,6 +69,7 @@ export default function CollectionFilters({
         setDataSource={setDataSource}
         serials
       />
+
       <FilterDataSource
         filters={filters}
         setFilters={setFilters}

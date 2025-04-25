@@ -11,16 +11,12 @@ import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PropsWithFilters } from "@/hooks/use-cosmo-filters";
-import { useCosmoArtists } from "@/hooks/use-cosmo-artist";
-import { useSelectedArtists } from "@/hooks/use-selected-artists";
 import Image from "next/image";
 import { useFilterData } from "@/hooks/use-filter-data";
 
 type Props = PropsWithFilters<"class">;
 
 export default function ClassFilter({ filters, setFilters }: Props) {
-  const { getArtist } = useCosmoArtists();
-  const selectedArtists = useSelectedArtists();
   const { classes } = useFilterData();
   const [open, setOpen] = useState(false);
 
@@ -33,16 +29,6 @@ export default function ClassFilter({ filters, setFilters }: Props) {
       class: newFilters.length > 0 ? newFilters : null,
     });
   }
-
-  const data = classes
-    .map(({ artistId, classes }) => {
-      const artist = getArtist(artistId)!;
-      return {
-        artist,
-        classes,
-      };
-    })
-    .filter(({ artist }) => selectedArtists.includes(artist.id));
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -59,7 +45,7 @@ export default function ClassFilter({ filters, setFilters }: Props) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="flex flex-row gap-2">
-        {data.map(({ artist, classes }) => (
+        {classes.map(({ artist, classes }) => (
           <DropdownMenuGroup key={artist.id}>
             <DropdownMenuLabel className="text-xs flex items-center gap-2">
               <Image

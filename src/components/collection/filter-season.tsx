@@ -11,16 +11,12 @@ import { PropsWithFilters } from "@/hooks/use-cosmo-filters";
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useCosmoArtists } from "@/hooks/use-cosmo-artist";
 import Image from "next/image";
-import { useSelectedArtists } from "@/hooks/use-selected-artists";
 import { useFilterData } from "@/hooks/use-filter-data";
 
 type Props = PropsWithFilters<"season">;
 
 export default function SeasonFilter({ filters, setFilters }: Props) {
-  const { getArtist } = useCosmoArtists();
-  const selectedArtists = useSelectedArtists();
   const { seasons } = useFilterData();
   const [open, setOpen] = useState(false);
 
@@ -33,16 +29,6 @@ export default function SeasonFilter({ filters, setFilters }: Props) {
       season: newFilters.length > 0 ? newFilters : null,
     });
   }
-
-  const data = seasons
-    .map(({ artistId, seasons }) => {
-      const artist = getArtist(artistId)!;
-      return {
-        artist,
-        seasons,
-      };
-    })
-    .filter(({ artist }) => selectedArtists.includes(artist.id));
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -59,7 +45,7 @@ export default function SeasonFilter({ filters, setFilters }: Props) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="flex flex-row gap-2">
-        {data.map(({ artist, seasons }) => (
+        {seasons.map(({ artist, seasons }) => (
           <DropdownMenuGroup key={artist.id}>
             <DropdownMenuLabel className="text-xs flex items-center gap-2">
               <Image

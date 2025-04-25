@@ -31,14 +31,14 @@ import {
   SelectValue,
 } from "../ui/select";
 import { Separator } from "../ui/separator";
+import Image from "next/image";
+import { FilterData } from "@/hooks/use-filter-data";
 import { useCosmoArtists } from "@/hooks/use-cosmo-artist";
 import { useSelectedArtists } from "@/hooks/use-selected-artists";
-import Image from "next/image";
-import { SeasonFilterData } from "@/hooks/use-filter-data";
 
 type Props = {
   member: string;
-  seasons: SeasonFilterData[];
+  seasons: FilterData["seasons"];
 };
 
 export default function ProgressLeaderboard({ member, seasons }: Props) {
@@ -140,7 +140,7 @@ function FilterSelect({
 }
 
 type SeasonSelectProps = {
-  seasons: SeasonFilterData[];
+  seasons: FilterData["seasons"];
   member: string;
   value: string;
   update: (value: string | null) => void;
@@ -162,12 +162,13 @@ function SeasonSelect({ seasons, member, value, update }: SeasonSelectProps) {
         seasons,
       };
     })
-    .filter(({ artist }) => {
-      return (
+    .filter(
+      ({ artist }) =>
         selectedArtists.includes(artist.id) &&
-        artist.artistMembers.map((m) => m.name).includes(member)
-      );
-    });
+        artist.artistMembers
+          .map((m) => m.name.toLowerCase())
+          .includes(member.toLowerCase())
+    );
 
   return (
     <Select value={value} onValueChange={set}>

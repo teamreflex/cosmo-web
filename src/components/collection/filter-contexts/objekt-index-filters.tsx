@@ -6,6 +6,7 @@ import SortFilter from "../filter-sort";
 import CollectionFilter from "@/components/objekt-index/collection-filter";
 import { Suspense } from "react";
 import Skeleton from "@/components/skeleton/skeleton";
+import { ErrorBoundary } from "react-error-boundary";
 
 /**
  * used on:
@@ -17,19 +18,35 @@ export default function ObjektIndexFilters() {
 
   return (
     <div className="flex gap-2 items-center flex-wrap justify-center lg:group-data-[show=false]:flex group-data-[show=false]:hidden">
-      <Suspense fallback={<Skeleton className="w-[100px] h-9" />}>
-        <SeasonFilter filters={filters.season} setFilters={setFilters} />
-      </Suspense>
-      <Suspense fallback={<Skeleton className="w-[124px] h-9" />}>
-        <CollectionFilter
-          filters={filters.collectionNo}
-          setFilters={setFilters}
-        />
-      </Suspense>
+      <ErrorBoundary
+        fallback={<Skeleton className="w-[100px] h-9 bg-destructive" />}
+      >
+        <Suspense fallback={<Skeleton className="w-[100px] h-9" />}>
+          <SeasonFilter filters={filters.season} setFilters={setFilters} />
+        </Suspense>
+      </ErrorBoundary>
+
+      <ErrorBoundary
+        fallback={<Skeleton className="w-[124px] h-9 bg-destructive" />}
+      >
+        <Suspense fallback={<Skeleton className="w-[124px] h-9" />}>
+          <CollectionFilter
+            filters={filters.collectionNo}
+            setFilters={setFilters}
+          />
+        </Suspense>
+      </ErrorBoundary>
+
       <OnlineFilter filters={filters.on_offline} setFilters={setFilters} />
-      <Suspense fallback={<Skeleton className="w-[87px] h-9" />}>
-        <ClassFilter filters={filters.class} setFilters={setFilters} />
-      </Suspense>
+
+      <ErrorBoundary
+        fallback={<Skeleton className="w-[87px] h-9 bg-destructive" />}
+      >
+        <Suspense fallback={<Skeleton className="w-[87px] h-9" />}>
+          <ClassFilter filters={filters.class} setFilters={setFilters} />
+        </Suspense>
+      </ErrorBoundary>
+
       <SortFilter
         filters={filters.sort}
         setFilters={setFilters}
