@@ -9,7 +9,11 @@ import { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
 import { Suspense } from "react";
 import { X } from "lucide-react";
 import { ErrorBoundary } from "react-error-boundary";
-import { getArtistsWithMembers, getTokenBalances } from "@/app/data-fetching";
+import {
+  getArtistsWithMembers,
+  getSelectedArtists,
+  getTokenBalances,
+} from "@/app/data-fetching";
 import { ComoBalance } from "@/lib/universal/como";
 
 type Props = {
@@ -54,10 +58,15 @@ function ComoBalanceErrorFallback() {
 async function UserBalances({ address }: Props) {
   const artists = getArtistsWithMembers();
   const balances = await getTokenBalances(address);
+  const selectedArtists = await getSelectedArtists();
+
+  const filteredArtists = artists.filter((artist) =>
+    selectedArtists.includes(artist.id)
+  );
 
   return (
     <div className="flex flex-row gap-2">
-      {artists.map((artist) => (
+      {filteredArtists.map((artist) => (
         <Balance
           key={artist.name}
           artist={artist}
