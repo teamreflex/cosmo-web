@@ -5,6 +5,7 @@ import { isAddress } from "viem";
 import { notFound } from "next/navigation";
 import { defaultProfile } from "@/lib/utils";
 import { fetchByNickname } from "./cosmo/auth";
+import { FetchError } from "ofetch";
 
 /**
  * Fetch a profile by various identifiers.
@@ -70,7 +71,9 @@ export async function fetchUserByIdentifier(
 
     return await fetchUserByIdentifier(profile.nickname);
   } catch (err) {
-    console.error(`[fetchUserByIdentifier] Error from COSMO`, err);
+    if (err instanceof FetchError && err.status !== 404) {
+      console.error(`[fetchUserByIdentifier] ${err.status} from COSMO`, err);
+    }
     notFound();
   }
 }
