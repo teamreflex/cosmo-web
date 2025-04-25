@@ -3,6 +3,7 @@ import { cache } from "react";
 import { redirect } from "next/navigation";
 import {
   getArtistsWithMembers,
+  getSelectedArtists,
   getUserByIdentifier,
 } from "@/app/data-fetching";
 import ListRenderer from "@/components/lists/list-renderer";
@@ -17,6 +18,8 @@ import { getQueryClient } from "@/lib/query-client";
 import { ProfileProvider } from "@/hooks/use-profile";
 import { GRID_COLUMNS } from "@/lib/utils";
 import { SelectedArtistsProvider } from "@/hooks/use-selected-artists";
+import { fetchFilterData } from "@/lib/server/objekts/filter-data";
+import { CosmoArtistProvider } from "@/hooks/use-cosmo-artist";
 
 type Props = {
   searchParams: Promise<Record<string, string>>;
@@ -37,13 +40,24 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 }
 
 export default async function ObjektListPage(props: Props) {
+  const queryClient = getQueryClient();
+
+  // prefetch filter data
+  queryClient.prefetchQuery({
+    queryKey: ["filter-data"],
+    queryFn: fetchFilterData,
+  });
+
   const [searchParams, { nickname, list }] = await Promise.all([
     props.searchParams,
     props.params,
   ]);
 
   // get de-duplicated profile
-  const { profile } = await getUserByIdentifier(nickname);
+  const [selectedArtists, { profile }] = await Promise.all([
+    getSelectedArtists(),
+    getUserByIdentifier(nickname),
+  ]);
 
   // parse search params
   const filters = parseObjektList(
@@ -54,7 +68,6 @@ export default async function ObjektListPage(props: Props) {
   );
 
   // prefetch list
-  const queryClient = getQueryClient();
   queryClient.prefetchInfiniteQuery({
     queryKey: [
       "objekt-list",
@@ -79,19 +92,21 @@ export default async function ObjektListPage(props: Props) {
   if (!objektList) redirect(`/@${nickname}`);
 
   return (
-    <SelectedArtistsProvider selectedArtists={[]}>
-      <ProfileProvider>
-        <HydrationBoundary state={dehydrate(queryClient)}>
-          <ListRenderer
-            artists={artists}
-            list={objektList}
-            authenticated={false}
-            user={profile}
-            gridColumns={GRID_COLUMNS}
-          />
-        </HydrationBoundary>
-      </ProfileProvider>
-    </SelectedArtistsProvider>
+    <CosmoArtistProvider artists={artists}>
+      <SelectedArtistsProvider selectedArtists={selectedArtists}>
+        <ProfileProvider>
+          <HydrationBoundary state={dehydrate(queryClient)}>
+            <ListRenderer
+              artists={artists}
+              list={objektList}
+              authenticated={false}
+              user={profile}
+              gridColumns={GRID_COLUMNS}
+            />
+          </HydrationBoundary>
+        </ProfileProvider>
+      </SelectedArtistsProvider>
+    </CosmoArtistProvider>
   );
 }
 

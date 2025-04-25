@@ -4,12 +4,11 @@ import { ofetch } from "ofetch";
 import Skeleton from "../skeleton/skeleton";
 import { baseUrl, ordinal } from "@/lib/utils";
 import Link from "next/link";
-import { ValidSeason } from "@/lib/universal/cosmo/common";
 
 type Props = {
   member: string;
   onlineType: string | null;
-  season: ValidSeason | null;
+  season: string | null;
 };
 
 export default function ProgressLeaderboardContent({
@@ -22,15 +21,14 @@ export default function ProgressLeaderboardContent({
       "progress-leaderboard",
       member,
       onlineType ?? "combined",
-      season ?? "all",
+      season || "all",
     ],
     queryFn: async () => {
       const url = new URL(`/api/progress/leaderboard/${member}`, baseUrl());
-
       return await ofetch<Leaderboard>(url.toString(), {
         query: {
-          onlineType,
-          season,
+          onlineType: onlineType ?? undefined,
+          season: season ?? undefined,
         },
       });
     },

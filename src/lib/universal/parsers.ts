@@ -1,11 +1,5 @@
 import { z } from "zod";
-import {
-  validArtists,
-  validClasses,
-  validOnlineTypes,
-  validSeasons,
-  validSorts,
-} from "./cosmo/common";
+import { validArtists, validOnlineTypes, validSorts } from "./cosmo/common";
 import { env } from "@/env";
 
 /**
@@ -28,8 +22,8 @@ export function castToArray<TSchema extends z.Schema>(schema: TSchema) {
  */
 export const cosmoSchema = z.object({
   sort: z.enum(validSorts).optional().default("newest"),
-  season: castToArray(z.enum(validSeasons)),
-  class: castToArray(z.enum(validClasses)),
+  season: z.string().array(),
+  class: z.string().array(),
   on_offline: castToArray(z.enum(validOnlineTypes)),
   member: z.string().optional().nullable(),
   artist: z.enum(validArtists).optional().nullable(),

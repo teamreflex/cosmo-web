@@ -28,11 +28,7 @@ type Props = PropsWithChildren<{
 
 export default async function ProfileLayout(props: Props) {
   const params = await props.params;
-  const [targetUser] = await Promise.all([
-    getUserByIdentifier(params.nickname),
-  ]);
-
-  const { profile, objektLists } = targetUser;
+  const { profile, objektLists } = await getUserByIdentifier(params.nickname);
 
   const href = `/@${profile.isAddress ? profile.address : profile.nickname}`;
 

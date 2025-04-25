@@ -1,7 +1,7 @@
 "use client";
 
 import { SeasonProgress } from "@/lib/universal/progress";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQueries } from "@tanstack/react-query";
 import { parseAsStringEnum, useQueryState } from "nuqs";
 import { ofetch } from "ofetch";
 import {
@@ -14,6 +14,7 @@ import {
 import ProgressSeason from "./progress-season";
 import ProgressLeaderboard from "./progress-leaderboard";
 import { baseUrl } from "@/lib/utils";
+import { filterDataQuery } from "@/hooks/use-filter-data";
 
 type Props = {
   address: string;
@@ -26,15 +27,22 @@ export default function ProgressTable({ address, member }: Props) {
     parseAsStringEnum(["combined", "online", "offline"])
   );
 
-  const { data } = useSuspenseQuery({
-    queryKey: ["progress", address, member],
-    queryFn: async () => {
-      const url = new URL(
-        `/api/progress/breakdown/${member}/${address}`,
-        baseUrl()
-      );
-      return await ofetch<SeasonProgress[]>(url.toString());
-    },
+  const [progressQuery, seasonsQuery] = useSuspenseQueries({
+    queries: [
+      // progress breakdown
+      {
+        queryKey: ["progress", address, member],
+        queryFn: async () => {
+          const url = new URL(
+            `/api/progress/breakdown/${member}/${address}`,
+            baseUrl()
+          );
+          return await ofetch<SeasonProgress[]>(url.toString());
+        },
+      },
+      // filter data
+      filterDataQuery,
+    ],
   });
 
   // used to invalidate the selected/expanded class
@@ -43,7 +51,7 @@ export default function ProgressTable({ address, member }: Props) {
   /**
    * filter out any season-class combos that have no totals and group by season.
    */
-  const items = data
+  const items = progressQuery.data
     .filter((progress) => progress.total > 0)
     .reduce((acc, progress) => {
       if (!acc[progress.season]) {
@@ -99,7 +107,10 @@ export default function ProgressTable({ address, member }: Props) {
           </div>
 
           <div className="flex gap-2 items-center">
-            <ProgressLeaderboard member={member} />
+            <ProgressLeaderboard
+              member={member}
+              seasons={seasonsQuery.data.seasons}
+            />
             <FilterSelect
               value={onlineType ?? "combined"}
               update={setOnlineType}

@@ -43,7 +43,7 @@ export default function MemberFilter({
           <div
             key={artist.name}
             className={cn(
-              "flex flex-row z-10 gap-2 p-1 xl:justify-center justify-items-start",
+              "flex flex-row z-10 gap-2 p-1 xl:justify-center justify-items-start empty:hidden",
               artist.artistMembers.length > 5 &&
                 "overflow-x-scroll xl:no-scrollbar"
             )}

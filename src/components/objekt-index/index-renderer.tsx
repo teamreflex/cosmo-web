@@ -32,7 +32,6 @@ import { ValidArtist } from "@/lib/universal/cosmo/common";
 
 type Props = {
   artists: CosmoArtistWithMembersBFF[];
-  collections: string[];
   objektLists?: ObjektList[];
   nickname?: string;
   gridColumns: number;
@@ -84,7 +83,7 @@ export default function IndexRenderer(props: Props) {
       <Title nickname={props.nickname} objektLists={props.objektLists} />
 
       <FiltersContainer>
-        <ObjektIndexFilters collections={props.collections} />
+        <ObjektIndexFilters />
       </FiltersContainer>
 
       <FilteredObjektDisplay artists={props.artists} gridColumns={gridColumns}>

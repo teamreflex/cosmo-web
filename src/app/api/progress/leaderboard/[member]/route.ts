@@ -8,9 +8,7 @@ import { Addresses, isAddressEqual } from "@/lib/utils";
 import { LeaderboardItem } from "@/lib/universal/progress";
 import {
   ValidOnlineType,
-  ValidSeason,
   validOnlineTypes,
-  validSeasons,
 } from "@/lib/universal/cosmo/common";
 import { cacheHeaders } from "@/app/api/common";
 import { z } from "zod";
@@ -23,12 +21,9 @@ const schema = z.object({
   member: z.string(),
   onlineType: z.preprocess(
     (v) => (v === "" ? null : v),
-    z.enum(validOnlineTypes).nullable()
+    z.enum(validOnlineTypes).optional().nullable().default(null)
   ),
-  season: z.preprocess(
-    (v) => (v === "" ? null : v),
-    z.enum(validSeasons).nullable()
-  ),
+  season: z.string().optional().nullable().default(null),
 });
 
 type Params = {
@@ -97,7 +92,7 @@ export async function GET(request: NextRequest, props: Params) {
 type FetchLeaderboard = {
   member: string;
   onlineType: ValidOnlineType | null;
-  season: ValidSeason | null;
+  season: string | null;
 };
 
 /**

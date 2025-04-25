@@ -6,7 +6,6 @@ import {
 } from "@/app/data-fetching";
 import ProfileRenderer from "@/components/profile/profile-renderer";
 import { ProfileProvider } from "@/hooks/use-profile";
-import { fetchPins } from "@/lib/server/objekts/pins";
 import { CosmoArtistProvider } from "@/hooks/use-cosmo-artist";
 import { parseUserCollection } from "@/lib/universal/parsers";
 import { getQueryClient } from "@/lib/query-client";
@@ -16,6 +15,7 @@ import {
 } from "@/lib/server/objekts/prefetching/objekt-polygon";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { SelectedArtistsProvider } from "@/hooks/use-selected-artists";
+import { fetchFilterData } from "@/lib/server/objekts/filter-data";
 
 type Props = {
   params: Promise<{
@@ -34,6 +34,15 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 }
 
 export default async function UserCollectionPage(props: Props) {
+  const artists = getArtistsWithMembers();
+  const queryClient = getQueryClient();
+
+  // prefetch filter data
+  queryClient.prefetchQuery({
+    queryKey: ["filter-data"],
+    queryFn: fetchFilterData,
+  });
+
   const [searchParams, { nickname }] = await Promise.all([
     props.searchParams,
     props.params,
@@ -53,7 +62,6 @@ export default async function UserCollectionPage(props: Props) {
   }
   const filters = parseUserCollection(params);
 
-  const queryClient = getQueryClient();
   queryClient.prefetchInfiniteQuery({
     queryKey: [
       "collection",
@@ -73,17 +81,12 @@ export default async function UserCollectionPage(props: Props) {
     initialPageParam: 0,
   });
 
-  const pins = await fetchPins(targetUser.pins);
-  const artists = getArtistsWithMembers();
-
   return (
     <SelectedArtistsProvider selectedArtists={selectedArtists}>
       <CosmoArtistProvider artists={artists}>
         <ProfileProvider
           targetProfile={targetUser.profile}
           objektLists={targetUser.objektLists}
-          lockedObjekts={targetUser.lockedObjekts}
-          pins={pins}
         >
           <section className="flex flex-col">
             <HydrationBoundary state={dehydrate(queryClient)}>

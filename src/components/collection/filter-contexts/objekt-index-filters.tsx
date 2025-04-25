@@ -4,29 +4,32 @@ import OnlineFilter from "../filter-online";
 import ClassFilter from "../filter-class";
 import SortFilter from "../filter-sort";
 import CollectionFilter from "@/components/objekt-index/collection-filter";
-
-type Props = {
-  collections: string[];
-};
+import { Suspense } from "react";
+import Skeleton from "@/components/skeleton/skeleton";
 
 /**
  * used on:
  * - @/nickname/list/list-name
  * - /objekts
  */
-export default function ObjektIndexFilters({ collections }: Props) {
+export default function ObjektIndexFilters() {
   const [filters, setFilters] = useCosmoFilters();
 
   return (
     <div className="flex gap-2 items-center flex-wrap justify-center lg:group-data-[show=false]:flex group-data-[show=false]:hidden">
-      <SeasonFilter filters={filters.season} setFilters={setFilters} />
-      <CollectionFilter
-        filters={filters.collectionNo}
-        setFilters={setFilters}
-        collections={collections}
-      />
+      <Suspense fallback={<Skeleton className="w-[100px] h-9" />}>
+        <SeasonFilter filters={filters.season} setFilters={setFilters} />
+      </Suspense>
+      <Suspense fallback={<Skeleton className="w-[124px] h-9" />}>
+        <CollectionFilter
+          filters={filters.collectionNo}
+          setFilters={setFilters}
+        />
+      </Suspense>
       <OnlineFilter filters={filters.on_offline} setFilters={setFilters} />
-      <ClassFilter filters={filters.class} setFilters={setFilters} />
+      <Suspense fallback={<Skeleton className="w-[87px] h-9" />}>
+        <ClassFilter filters={filters.class} setFilters={setFilters} />
+      </Suspense>
       <SortFilter
         filters={filters.sort}
         setFilters={setFilters}

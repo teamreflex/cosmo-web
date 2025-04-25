@@ -1,12 +1,8 @@
 import {
   ValidArtist,
   validArtists,
-  ValidClass,
-  validClasses,
   ValidOnlineType,
   validOnlineTypes,
-  ValidSeason,
-  validSeasons,
   ValidSort,
   validSorts,
 } from "@/lib/universal/cosmo/common";
@@ -23,12 +19,8 @@ export function useCosmoFilters() {
     member: parseAsString,
     artist: parseAsStringEnum<ValidArtist>(Object.values(validArtists)),
     sort: parseAsStringEnum<ValidSort>(Object.values(validSorts)),
-    class: parseAsArrayOf(
-      parseAsStringEnum<ValidClass>(Object.values(validClasses))
-    ),
-    season: parseAsArrayOf(
-      parseAsStringEnum<ValidSeason>(Object.values(validSeasons))
-    ),
+    class: parseAsArrayOf(parseAsString),
+    season: parseAsArrayOf(parseAsString),
     on_offline: parseAsArrayOf(
       parseAsStringEnum<ValidOnlineType>(Object.values(validOnlineTypes))
     ),

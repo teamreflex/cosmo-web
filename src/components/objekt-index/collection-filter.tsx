@@ -14,19 +14,15 @@ import {
   CommandItem,
   CommandList,
 } from "../ui/command";
+import { useFilterData } from "@/hooks/use-filter-data";
 
-interface Props extends PropsWithFilters<"collectionNo"> {
-  collections: string[];
-}
+interface Props extends PropsWithFilters<"collectionNo"> {}
 
-export default function CollectionFilter({
-  filters,
-  setFilters,
-  collections,
-}: Props) {
+export default function CollectionFilter({ filters, setFilters }: Props) {
+  const { collections } = useFilterData();
   const [open, setOpen] = useState(false);
 
-  function onChange(collection: string) {
+  function handleSelect(collection: string) {
     const newFilters = filters?.includes(collection)
       ? (filters ?? []).filter((f) => f !== collection)
       : [...(filters ?? []), collection];
@@ -63,7 +59,7 @@ export default function CollectionFilter({
                   key={collection}
                   value={collection}
                   className="[content-visibility:auto]"
-                  onSelect={(v) => onChange(collection)}
+                  onSelect={handleSelect}
                 >
                   {collection}
                   <Check

@@ -76,7 +76,7 @@ export default function ListRenderer(props: Props) {
       <Title authenticated={props.authenticated} objektList={props.list} />
 
       <FiltersContainer isPortaled>
-        <ObjektIndexFilters collections={[]} />
+        <ObjektIndexFilters />
       </FiltersContainer>
 
       <FilteredObjektDisplay artists={props.artists} gridColumns={gridColumns}>

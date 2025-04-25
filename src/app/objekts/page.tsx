@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { getArtistsWithMembers, getSelectedArtists } from "../data-fetching";
 import IndexRenderer from "@/components/objekt-index/index-renderer";
-import { fetchUniqueCollections } from "@/lib/server/objekts/collections";
+import { fetchFilterData } from "@/lib/server/objekts/filter-data";
 import { ProfileProvider } from "@/hooks/use-profile";
 import {
   fetchObjektsIndex,
@@ -12,6 +12,7 @@ import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import { getQueryClient } from "@/lib/query-client";
 import { GRID_COLUMNS } from "@/lib/utils";
 import { SelectedArtistsProvider } from "@/hooks/use-selected-artists";
+import { CosmoArtistProvider } from "@/hooks/use-cosmo-artist";
 
 export const metadata: Metadata = {
   title: "Objekts",
@@ -22,9 +23,11 @@ type Params = {
 };
 
 export default async function ObjektsIndexPage(props: Params) {
-  const selectedArtists = await getSelectedArtists();
-  const searchParams = await props.searchParams;
-  const queryClient = getQueryClient();
+  const [searchParams, selectedArtists, artists] = await Promise.all([
+    props.searchParams,
+    getSelectedArtists(),
+    getArtistsWithMembers(),
+  ]);
 
   // parse search params
   const params = new URLSearchParams({
@@ -37,6 +40,7 @@ export default async function ObjektsIndexPage(props: Params) {
   const filters = parseObjektIndex(params);
 
   // prefetch objekts
+  const queryClient = getQueryClient();
   queryClient.prefetchInfiniteQuery({
     queryKey: [
       "objekt-index",
@@ -55,24 +59,28 @@ export default async function ObjektsIndexPage(props: Params) {
     initialPageParam: 0,
   });
 
-  const artists = getArtistsWithMembers();
-  const collections = await fetchUniqueCollections();
+  // prefetch filter data
+  queryClient.prefetchQuery({
+    queryKey: ["filter-data"],
+    queryFn: fetchFilterData,
+  });
 
   return (
     <main className="container flex flex-col py-2">
       <SelectedArtistsProvider selectedArtists={selectedArtists ?? []}>
-        <ProfileProvider currentProfile={undefined} objektLists={[]}>
-          <HydrationBoundary state={dehydrate(queryClient)}>
-            <IndexRenderer
-              artists={artists}
-              collections={collections}
-              objektLists={[]}
-              nickname={undefined}
-              gridColumns={GRID_COLUMNS}
-              activeSlug={searchParams.id}
-            />
-          </HydrationBoundary>
-        </ProfileProvider>
+        <CosmoArtistProvider artists={artists}>
+          <ProfileProvider currentProfile={undefined} objektLists={[]}>
+            <HydrationBoundary state={dehydrate(queryClient)}>
+              <IndexRenderer
+                artists={artists}
+                objektLists={[]}
+                nickname={undefined}
+                gridColumns={GRID_COLUMNS}
+                activeSlug={searchParams.id}
+              />
+            </HydrationBoundary>
+          </ProfileProvider>
+        </CosmoArtistProvider>
       </SelectedArtistsProvider>
     </main>
   );

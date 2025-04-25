@@ -1,12 +1,7 @@
 import { z } from "zod";
 import type { Collection, Transfer } from "../server/db/indexer/schema";
 import { castToArray } from "./parsers";
-import {
-  validArtists,
-  validClasses,
-  validOnlineTypes,
-  validSeasons,
-} from "./cosmo/common";
+import { validArtists, validOnlineTypes } from "./cosmo/common";
 
 export type AggregatedTransfer = {
   transfer: Transfer;
@@ -26,8 +21,8 @@ export const transfersSchema = z.object({
   type: z.enum(["all", "mint", "received", "sent", "spin"]).default("all"),
   member: z.string().optional().nullable(),
   artist: z.enum(validArtists).optional().nullable(),
-  season: castToArray(z.enum(validSeasons)),
-  class: castToArray(z.enum(validClasses)),
+  season: z.string().array(),
+  class: z.string().array(),
   on_offline: castToArray(z.enum(validOnlineTypes)),
 });
 

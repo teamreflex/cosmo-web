@@ -1,8 +1,6 @@
 import {
   ValidArtist,
-  ValidClass,
   ValidOnlineType,
-  ValidSeason,
   ValidSort,
 } from "@/lib/universal/cosmo/common";
 import { asc, between, desc, eq, inArray } from "drizzle-orm";
@@ -52,7 +50,7 @@ export function withObjektIndexSort<T extends PgSelect>(
 /**
  * Filter by class.
  */
-export function withClass(classes: ValidClass[]) {
+export function withClass(classes: string[]) {
   switch (classes.length) {
     case 0:
       return [];
@@ -66,7 +64,7 @@ export function withClass(classes: ValidClass[]) {
 /**
  * Filter by season.
  */
-export function withSeason(seasons: ValidSeason[]) {
+export function withSeason(seasons: string[]) {
   switch (seasons.length) {
     case 0:
       return [];

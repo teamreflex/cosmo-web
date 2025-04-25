@@ -40,7 +40,7 @@ export default async function UserComoPage(props: Props) {
   });
 
   return (
-    <main className="flex flex-col">
+    <main className="flex flex-col gap-2">
       <div className="flex items-center">
         <div className="flex w-full gap-2 justify-between items-center">
           <CurrentMonth />

@@ -8,7 +8,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { parseAsNullableBoolean } from "@/hooks/use-cosmo-filters";
-import { parseAsStringEnum, useQueryState } from "nuqs";
+import { parseAsString, parseAsStringEnum, useQueryState } from "nuqs";
 import { Suspense } from "react";
 import ProgressLeaderboardContent, {
   LeaderboardSkeleton,
@@ -24,27 +24,30 @@ import {
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { ValidSeason, validSeasons } from "@/lib/universal/cosmo/common";
 import { Separator } from "../ui/separator";
+import { useCosmoArtists } from "@/hooks/use-cosmo-artist";
+import { useSelectedArtists } from "@/hooks/use-selected-artists";
+import Image from "next/image";
+import { SeasonFilterData } from "@/hooks/use-filter-data";
 
 type Props = {
   member: string;
+  seasons: SeasonFilterData[];
 };
 
-export default function ProgressLeaderboard({ member }: Props) {
+export default function ProgressLeaderboard({ member, seasons }: Props) {
   const [open, setOpen] = useQueryState("leaderboard", parseAsNullableBoolean);
   const [onlineType, setOnlineType] = useQueryState(
     "filter",
     parseAsStringEnum(["combined", "online", "offline"])
   );
-  const [season, setSeason] = useQueryState(
-    "season",
-    parseAsStringEnum([...validSeasons])
-  );
+  const [season, setSeason] = useQueryState("season", parseAsString);
 
   function toggle() {
     setOpen((prev) => (prev === true ? null : true));
@@ -88,7 +91,12 @@ export default function ProgressLeaderboard({ member }: Props) {
               value={onlineType ?? "combined"}
               update={setOnlineType}
             />
-            <SeasonSelect value={season ?? "all"} update={setSeason} />
+            <SeasonSelect
+              seasons={seasons}
+              member={member}
+              value={season ?? "all"}
+              update={setSeason}
+            />
           </div>
 
           <Separator orientation="horizontal" />
@@ -131,16 +139,35 @@ function FilterSelect({
   );
 }
 
-function SeasonSelect({
-  value,
-  update,
-}: {
+type SeasonSelectProps = {
+  seasons: SeasonFilterData[];
+  member: string;
   value: string;
-  update: (value: ValidSeason | null) => void;
-}) {
+  update: (value: string | null) => void;
+};
+
+function SeasonSelect({ seasons, member, value, update }: SeasonSelectProps) {
+  const { getArtist } = useCosmoArtists();
+  const selectedArtists = useSelectedArtists();
+
   function set(value: string) {
-    update(value === "all" ? null : (value as ValidSeason));
+    update(value === "all" ? null : value);
   }
+
+  const data = seasons
+    .map(({ artistId, seasons }) => {
+      const artist = getArtist(artistId)!;
+      return {
+        artist,
+        seasons,
+      };
+    })
+    .filter(({ artist }) => {
+      return (
+        selectedArtists.includes(artist.id) &&
+        artist.artistMembers.map((m) => m.name).includes(member)
+      );
+    });
 
   return (
     <Select value={value} onValueChange={set}>
@@ -149,10 +176,25 @@ function SeasonSelect({
       </SelectTrigger>
       <SelectContent>
         <SelectItem value="all">All</SelectItem>
-        {validSeasons.map((season) => (
-          <SelectItem key={season} value={season}>
-            {season}
-          </SelectItem>
+
+        {data.map(({ artist, seasons }) => (
+          <SelectGroup key={artist.id}>
+            <SelectLabel className="text-xs flex items-center gap-2">
+              <Image
+                className="rounded-full aspect-square"
+                src={artist.logoImageUrl}
+                alt={artist.title}
+                width={16}
+                height={16}
+              />
+              {artist.title}
+            </SelectLabel>
+            {seasons.map((season) => (
+              <SelectItem key={season} value={season}>
+                {season}
+              </SelectItem>
+            ))}
+          </SelectGroup>
         ))}
       </SelectContent>
     </Select>
