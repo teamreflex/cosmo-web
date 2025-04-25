@@ -2,12 +2,14 @@ import { Metadata } from "next";
 import TransfersRenderer from "@/components/transfers/transfers-renderer";
 import {
   getArtistsWithMembers,
+  getSelectedArtists,
   getUserByIdentifier,
 } from "@/app/data-fetching";
 import { CosmoArtistProvider } from "@/hooks/use-cosmo-artist";
 import { getQueryClient } from "@/lib/query-client";
 import { fetchFilterData } from "@/lib/server/objekts/filter-data";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
+import { SelectedArtistsProvider } from "@/hooks/use-selected-artists";
 
 type Props = {
   params: Promise<{ nickname: string }>;
@@ -32,16 +34,21 @@ export default async function UserTransfersPage(props: Props) {
   });
 
   const params = await props.params;
-  const targetUser = await getUserByIdentifier(params.nickname);
-  const artists = getArtistsWithMembers();
+  const [artists, selectedArtists, targetUser] = await Promise.all([
+    getArtistsWithMembers(),
+    getSelectedArtists(),
+    getUserByIdentifier(params.nickname),
+  ]);
 
   return (
     <section className="flex flex-col">
-      <CosmoArtistProvider artists={artists}>
-        <HydrationBoundary state={dehydrate(queryClient)}>
-          <TransfersRenderer profile={targetUser.profile} artists={artists} />
-        </HydrationBoundary>
-      </CosmoArtistProvider>
+      <SelectedArtistsProvider selectedArtists={selectedArtists}>
+        <CosmoArtistProvider artists={artists}>
+          <HydrationBoundary state={dehydrate(queryClient)}>
+            <TransfersRenderer profile={targetUser.profile} artists={artists} />
+          </HydrationBoundary>
+        </CosmoArtistProvider>
+      </SelectedArtistsProvider>
 
       <div id="pagination" />
     </section>
