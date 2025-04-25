@@ -238,7 +238,7 @@ function MetadataPanel({ objekt }: CommonProps) {
           <Suspense
             fallback={
               <div className="flex flex-col justify-between h-full gap-2 mx-4">
-                <div className="flex flex-col gap-2 min-h-16 sm:h-full">
+                <div className="flex flex-col gap-2 h-10 sm:h-full">
                   <Skeleton className="w-full h-4 sm:h-5 rounded-full" />
                   <Skeleton className="w-2/3 h-4 sm:h-5 rounded-full" />
                 </div>
@@ -313,7 +313,8 @@ function Metadata({ objekt }: { objekt: Objekt.Collection }) {
         />
       ) : (
         data.metadata !== undefined && (
-          <div className="min-h-16 sm:h-full">
+          // minimum of 40px / two lines of text
+          <div className="min-h-10 sm:h-full">
             <p className="text-sm sm:text-base">{data.metadata.description}</p>
           </div>
         )

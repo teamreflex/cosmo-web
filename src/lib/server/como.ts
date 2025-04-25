@@ -39,7 +39,7 @@ export async function fetchObjektsWithComo(
     );
 }
 
-export const POLYGON_DECIMALS = 18;
+export const ERC20_DECIMALS = 18;
 
 /**
  * Fetch ERC20 token balances from Alchemy.

@@ -43,7 +43,7 @@ export function parseUserCollectionFilters(
 /**
  * Fetch a user's objekts from the indexer with given filters.
  */
-export async function fetchObjektsPolygon(
+export async function fetchObjektsBlockchain(
   address: string,
   filters: z.infer<typeof userCollection>
 ) {

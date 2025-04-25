@@ -10,9 +10,9 @@ import { CosmoArtistProvider } from "@/hooks/use-cosmo-artist";
 import { parseUserCollection } from "@/lib/universal/parsers";
 import { getQueryClient } from "@/lib/query-client";
 import {
-  fetchObjektsPolygon,
+  fetchObjektsBlockchain,
   parseUserCollectionFilters,
-} from "@/lib/server/objekts/prefetching/objekt-polygon";
+} from "@/lib/server/objekts/prefetching/objekt-blockchain";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { SelectedArtistsProvider } from "@/hooks/use-selected-artists";
 import { fetchFilterData } from "@/lib/server/objekts/filter-data";
@@ -73,7 +73,7 @@ export default async function UserCollectionPage(props: Props) {
       },
     ],
     queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
-      return fetchObjektsPolygon(targetUser.profile.address, {
+      return fetchObjektsBlockchain(targetUser.profile.address, {
         ...filters,
         page: pageParam,
       });

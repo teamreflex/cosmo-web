@@ -4,40 +4,21 @@ This project aims to build a web based version of [MODHAUS](https://www.mod-haus
 
 **Apollo is not affiliated with, endorsed by or supported by MODHAUS or its artists.**
 
-**April 18th 2025**: MODHAUS migrated COSMO over to a new authentication provider, with encryption that prevents successful COSMO signins. This branch strips any COSMO API interaction.
+## Note
 
-<details>
-  <summary><b>Replicated Features</b></summary>
+On April 18th 2025, MODHAUS migrated COSMO over to a new blockchain and to a new authentication provider, with encryption that prevents tampering with the sign-in process. This `refactor/abstract` branch is a stripped down version of the platform with almost all COSMO features removed and migrated over to using the Abstract blockchain.
 
-- Signing into COSMO accounts via Ramper magic links
-- Viewing in-app news feed and exclusive COSMO content
-- Sending objekts over the Polygon blockchain
-- Scanning objekt QR codes
-- Claiming event rewards
-- Completing objekt grids
-- View and vote in Gravity events
-- View and like Rekord posts
-- View activity history, rankings, badges
-- Objekt Spin & in-progress recovery
+The [`main`](https://github.com/teamreflex/cosmo-web/blob/main) branch remains as the final Polygon-compatible version before the migration occurred. It will not work with the current version of the COSMO API.
 
-</details>
+## Features
 
-<details>
-  <summary><b>New Features</b></summary>
-
-- "lock" objekts to prevent them from being traded (like the Superstar games)
-- View other user's collections via COSMO or Polygon blockchain
-- Pin objekts to the top of your profile
+- View other user's collections via blockchain data
 - View an index of every released objekt, number of copies and how it's obtained
-- Wishlist builder with sharable links
 - Calendar to see when monthly COMO drops are coming
 - View objekt transfers
 - Per member, season and class collection progress breakdowns
 - Collection completion leaderboards
-- Scan an objekt without claiming
-- Indicator for Polygon network disruptions
-
-</details>
+- Indicator for blockchain network disruptions
 
 ## Requirements
 
@@ -50,7 +31,7 @@ This project aims to build a web based version of [MODHAUS](https://www.mod-haus
   - Migration files can also be found there
 - Alternatively, you can use Docker to run a local Postgres instance with two databases, a Neon serverless proxy and a Drizzle HTTP proxy.
 
-## Setup (Neon)
+## Setup
 
 ```bash
 git clone git@github.com:teamreflex/cosmo-web.git
@@ -60,35 +41,6 @@ cp .env.example .env.local
 pnpm db:migrate
 pnpm dev
 ```
-
-## Setup (Local Docker)
-
-Download a copy of the indexer database from [MEGA](https://mega.nz/file/LgkWQKjD#21rkI2A0f1yO5RV712IoJgZHAbWUIn6ntU7p_BHfTtk) and place it into the root of the project. This contains:
-
-- All objekt collections as of 240422
-- Objekt transfers between 240422 and 240330~
-- Objekt ownership between 240422 and 240330~
-
-```bash
-git clone git@github.com:teamreflex/cosmo-web.git
-cd cosmo-web
-pnpm install
-cp .env.example .env.local
-docker compose up -d
-psql -U postgres -h db.localtest.me -d indexer -f indexer-trimmed.sql
-pnpm db:migrate
-pnpm dev
-```
-
-## Contributing
-
-Contributions are appreciated, but unless it has been previously discussed or is small enough that it can't pose a risk, it likely **won't be accepted** and will be rewritten manually.
-
-The project is considered _source available_ rather than _open source_, meaning that codebase is available for scrutiny and for outside sources to verify nothing malicious is happening. Every month there is thousands of new sign-ins and even more active sessions refreshing. All it takes is one malicious line of code to slip through for thousands of accounts to be compromised.
-
-If you've found a bug, please make an issue on GitHub or a thread in the Discord server.
-
-As for feature requests, they will be considered on a case-by-case basis due to technical limitations or potential line-crossing.
 
 ## Tooling
 

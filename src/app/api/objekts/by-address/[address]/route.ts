@@ -1,4 +1,4 @@
-import { fetchObjektsPolygon } from "@/lib/server/objekts/prefetching/objekt-polygon";
+import { fetchObjektsBlockchain } from "@/lib/server/objekts/prefetching/objekt-blockchain";
 import { parseUserCollection } from "@/lib/universal/parsers";
 import { NextRequest } from "next/server";
 
@@ -15,6 +15,6 @@ type Params = {
 export async function GET(request: NextRequest, props: Params) {
   const params = await props.params;
   const filters = parseUserCollection(request.nextUrl.searchParams);
-  const result = await fetchObjektsPolygon(params.address, filters);
+  const result = await fetchObjektsBlockchain(params.address, filters);
   return Response.json(result);
 }

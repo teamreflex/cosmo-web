@@ -45,7 +45,7 @@ export default function ArtistSelectbox({ artists, selected = [] }: Props) {
       <DropdownMenuTrigger asChild>
         <button
           id={id}
-          className="flex items-center ml-auto -space-x-3 focus:outline-none"
+          className="flex items-center -space-x-3 focus:outline-none"
         >
           {selectedArtists.map((artist) => (
             <Avatar

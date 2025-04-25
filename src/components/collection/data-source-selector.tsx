@@ -9,7 +9,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import CosmoImage from "@/assets/cosmo.webp";
 import AbstractImage from "@/assets/abstract.svg";
 import Image from "next/image";
 import {
@@ -150,29 +149,13 @@ type Source = {
 
 const sources: Source[] = [
   {
-    title: "COSMO - Collection Groups",
-    subtitle: "Collection groups from COSMO",
-    label: "COSMO - Collection Groups",
-    shortLabel: "COSMO",
-    icon: <CosmoIcon />,
-    value: "cosmo",
-    description: "Same as the collection tab in COSMO.",
-    notes: [
-      "Only available when signed in and viewing your own profile.",
-      "Supports all the same filters and sorting methods as COSMO.",
-      "Supports viewing different objekt statuses: event/welcome reward, gridded, mint pending, etc.",
-    ],
-    requiresAuth: true,
-  },
-  {
     title: "Abstract Blockchain - Collection Groups",
     subtitle: "Collection groups with extra filters",
     label: "Abstract - Collection Groups",
     shortLabel: "Groups",
     icon: <AbstractIcon />,
     value: "blockchain-groups",
-    description:
-      "Replicates COSMO collection groups but doesn't require signing in.",
+    description: "Replicates COSMO collection groups.",
     notes: [
       "Always available on any profile.",
       "Supports sorting by serial number.",
@@ -199,23 +182,9 @@ const sources: Source[] = [
   },
 ];
 
-function CosmoIcon() {
-  return (
-    <Image
-      src={CosmoImage.src}
-      alt="COSMO"
-      width={32}
-      height={32}
-      className="rounded-full border border-foreground dark:border-transparent"
-      quality={100}
-      data-icon
-    />
-  );
-}
-
 function AbstractIcon() {
   return (
-    <div className="relative size-6 rounded-full bg-[#29E58A]" data-icon>
+    <div className="relative size-6 rounded-full bg-abstract" data-icon>
       <Image src={AbstractImage} alt="Abstract" fill={true} quality={100} />
     </div>
   );
