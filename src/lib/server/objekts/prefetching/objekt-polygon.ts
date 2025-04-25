@@ -12,6 +12,7 @@ import {
   withOnlineType,
   withSeason,
   withTransferable,
+  withSelectedArtists,
 } from "../filters";
 import { mapLegacyObjekt } from "./common";
 
@@ -65,6 +66,7 @@ export async function fetchObjektsPolygon(
           ...withMember(filters.member),
           ...withCollections(filters.collectionNo),
           ...withTransferable(filters.transferable),
+          ...withSelectedArtists(filters.artists),
         ]
       )
     )

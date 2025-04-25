@@ -21,7 +21,6 @@ type Props = {
 /**
  * used on:
  * - @/nickname
- * - /collection
  */
 export default function CollectionFilters({
   allowCosmo = false,

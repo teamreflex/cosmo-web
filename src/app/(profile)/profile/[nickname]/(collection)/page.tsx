@@ -34,30 +34,35 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 }
 
 export default async function UserCollectionPage(props: Props) {
-  const [searchParams, params] = await Promise.all([
+  const [searchParams, { nickname }] = await Promise.all([
     props.searchParams,
     props.params,
   ]);
 
   const [targetUser, selectedArtists] = await Promise.all([
-    getUserByIdentifier(params.nickname),
+    getUserByIdentifier(nickname),
     getSelectedArtists(),
   ]);
 
-  const queryClient = getQueryClient();
-  const filters = parseUserCollection(
-    new URLSearchParams({
-      ...searchParams,
-      sort: searchParams.sort ?? "newest",
-    })
-  );
+  const params = new URLSearchParams({
+    ...searchParams,
+    sort: searchParams.sort ?? "newest",
+  });
+  for (const artist of selectedArtists) {
+    params.append("artists", artist);
+  }
+  const filters = parseUserCollection(params);
 
+  const queryClient = getQueryClient();
   queryClient.prefetchInfiniteQuery({
     queryKey: [
       "collection",
       "blockchain",
       targetUser.profile.address,
-      parseUserCollectionFilters(filters),
+      {
+        ...parseUserCollectionFilters(filters),
+        artists: selectedArtists,
+      },
     ],
     queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
       return fetchObjektsPolygon(targetUser.profile.address, {

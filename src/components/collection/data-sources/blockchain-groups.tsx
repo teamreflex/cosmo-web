@@ -17,6 +17,7 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import LoaderRemote from "@/components/objekt/loader-remote";
 import { baseUrl } from "@/lib/utils";
 import { useAuthenticated } from "@/hooks/use-authenticated";
+import { useSelectedArtists } from "@/hooks/use-selected-artists";
 
 const INITIAL_PAGE = 1;
 const PAGE_SIZE = 30;
@@ -36,6 +37,7 @@ export default function BlockchainGroups(props: Props) {
   const lockedObjekts = useProfileContext((ctx) => ctx.lockedObjekts);
   const pins = useProfileContext((ctx) => ctx.pins);
   const isDesktop = useMediaQuery();
+  const selectedArtists = useSelectedArtists();
 
   const usingFilters = filtersAreDirty(filters);
   const gridColumns = isDesktop ? props.gridColumns : 3;
@@ -87,7 +89,10 @@ export default function BlockchainGroups(props: Props) {
       }
 
       return await ofetch<BFFCollectionGroupResponse>(endpoint, {
-        query: Object.fromEntries(searchParams.entries()),
+        query: {
+          ...Object.fromEntries(searchParams.entries()),
+          artists: selectedArtists,
+        },
       });
     },
     initialPageParam: INITIAL_PAGE,

@@ -37,11 +37,13 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 }
 
 export default async function ObjektListPage(props: Props) {
-  const searchParams = await props.searchParams;
-  const params = await props.params;
+  const [searchParams, { nickname, list }] = await Promise.all([
+    props.searchParams,
+    props.params,
+  ]);
 
   // get de-duplicated profile
-  const { profile } = await getUserByIdentifier(params.nickname);
+  const { profile } = await getUserByIdentifier(nickname);
 
   // parse search params
   const filters = parseObjektList(
@@ -56,13 +58,13 @@ export default async function ObjektListPage(props: Props) {
   queryClient.prefetchInfiniteQuery({
     queryKey: [
       "objekt-list",
-      params.list,
+      list,
       "blockchain",
       parseObjektListFilters(filters),
     ],
     queryFn: async ({ pageParam = 0 }: { pageParam?: number }) =>
       prefetchObjektList({
-        slug: params.list,
+        slug: list,
         address: profile.address,
         filters: {
           ...filters,
@@ -73,8 +75,8 @@ export default async function ObjektListPage(props: Props) {
   });
 
   const artists = getArtistsWithMembers();
-  const objektList = await getData(params.nickname, params.list);
-  if (!objektList) redirect(`/@${params.nickname}`);
+  const objektList = await getData(nickname, list);
+  if (!objektList) redirect(`/@${nickname}`);
 
   return (
     <SelectedArtistsProvider selectedArtists={[]}>

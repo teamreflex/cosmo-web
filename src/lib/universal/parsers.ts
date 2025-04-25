@@ -147,9 +147,11 @@ export function parseObjektList(params: URLSearchParams) {
  * User collection schema.
  * Extends COSMO & objekt index schemas as it has the same filters.
  */
-export const userCollection = cosmoSchema.merge(
-  objektIndex.omit({ artists: true })
-);
+export const userCollection = cosmoSchema
+  .merge(objektIndex.omit({ artists: true }))
+  .extend({
+    artists: z.string().array().optional().default([]),
+  });
 
 /**
  * Parse user collection params with default fallback.
@@ -168,6 +170,7 @@ export function parseUserCollection(params: URLSearchParams) {
       transferable: params.get("transferable"),
       gridable: params.get("gridable"),
       collectionNo: params.getAll("collectionNo"),
+      artists: params.getAll("artists"),
     },
     {
       page: 1,
@@ -178,6 +181,7 @@ export function parseUserCollection(params: URLSearchParams) {
       member: undefined,
       artist: undefined,
       collectionNo: [],
+      artists: [],
     }
   );
 }

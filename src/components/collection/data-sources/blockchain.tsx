@@ -17,6 +17,7 @@ import VirtualizedGrid from "@/components/objekt/virtualized-grid";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import LoaderRemote from "@/components/objekt/loader-remote";
 import { useAuthenticated } from "@/hooks/use-authenticated";
+import { useSelectedArtists } from "@/hooks/use-selected-artists";
 
 type Props = {
   artists: CosmoArtistWithMembersBFF[];
@@ -33,6 +34,7 @@ export default function Blockchain(props: Props) {
   const pins = useProfileContext((ctx) => ctx.pins);
   const lockedObjekts = useProfileContext((ctx) => ctx.lockedObjekts);
   const isDesktop = useMediaQuery();
+  const selectedArtists = useSelectedArtists();
 
   const usingFilters = filtersAreDirty(filters);
   const gridColumns = isDesktop ? props.gridColumns : 3;
@@ -75,6 +77,7 @@ export default function Blockchain(props: Props) {
         query: {
           ...Object.fromEntries(props.searchParams.entries()),
           page: pageParam,
+          artists: selectedArtists,
         },
       }).then((res) => parsePage<LegacyObjektResponse<CosmoObjekt>>(res));
     },
