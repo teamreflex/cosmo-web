@@ -4,6 +4,7 @@ import {
   getArtistsWithMembers,
   getUserByIdentifier,
 } from "@/app/data-fetching";
+import { CosmoArtistProvider } from "@/hooks/use-cosmo-artist";
 
 type Props = {
   params: Promise<{ nickname: string }>;
@@ -25,7 +26,9 @@ export default async function UserTransfersPage(props: Props) {
 
   return (
     <section className="flex flex-col">
-      <TransfersRenderer profile={targetUser.profile} artists={artists} />
+      <CosmoArtistProvider artists={artists}>
+        <TransfersRenderer profile={targetUser.profile} artists={artists} />
+      </CosmoArtistProvider>
 
       <div id="pagination" />
     </section>
