@@ -23,6 +23,14 @@ type Params = {
 };
 
 export default async function ObjektsIndexPage(props: Params) {
+  const queryClient = getQueryClient();
+
+  // prefetch filter data
+  queryClient.prefetchQuery({
+    queryKey: ["filter-data"],
+    queryFn: fetchFilterData,
+  });
+
   const [searchParams, selectedArtists, artists] = await Promise.all([
     props.searchParams,
     getSelectedArtists(),
@@ -40,7 +48,6 @@ export default async function ObjektsIndexPage(props: Params) {
   const filters = parseObjektIndex(params);
 
   // prefetch objekts
-  const queryClient = getQueryClient();
   queryClient.prefetchInfiniteQuery({
     queryKey: [
       "objekt-index",
@@ -57,12 +64,6 @@ export default async function ObjektsIndexPage(props: Params) {
       });
     },
     initialPageParam: 0,
-  });
-
-  // prefetch filter data
-  queryClient.prefetchQuery({
-    queryKey: ["filter-data"],
-    queryFn: fetchFilterData,
   });
 
   return (
