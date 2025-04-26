@@ -3,10 +3,11 @@ import { Suspense } from "react";
 import UpdateDialog from "../misc/update-dialog";
 import SystemStatus from "../misc/system-status";
 import Links from "./links.server";
-import { Moon } from "lucide-react";
+import { Loader2, Moon } from "lucide-react";
 import Hydrated from "../hydrated";
 import GuestThemeSwitch from "./guest-theme-switch";
 import ArtistSelector from "./artist-selector";
+import SignIn from "../auth/sign-in";
 
 export default async function Navbar() {
   return (
@@ -27,6 +28,10 @@ export default async function Navbar() {
             </Suspense>
 
             <div className="flex grow-0 items-center justify-end gap-2">
+              <Suspense fallback={<Loader2 className="size-5 animate-spin" />}>
+                <SignIn />
+              </Suspense>
+
               <Hydrated
                 fallback={
                   <div className="inline-flex items-center h-9 px-1">

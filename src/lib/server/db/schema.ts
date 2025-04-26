@@ -5,13 +5,14 @@ import {
   integer,
   pgTable,
   serial,
-  timestamp,
   uniqueIndex,
   varchar,
 } from "drizzle-orm/pg-core";
 import { citext } from "./columns";
 import { CollectionDataSource } from "@/lib/utils";
-import { CosmoGravityType, CosmoPollType } from "@/lib/universal/cosmo/gravity";
+import { user, session, account, verification } from "./auth-schema";
+
+export { user, session, account, verification };
 
 export const profiles = pgTable(
   "profiles",
@@ -110,78 +111,6 @@ export const pins = pgTable(
   ]
 );
 
-export const cosmoTokens = pgTable(
-  "cosmo_tokens",
-  {
-    id: serial("id").primaryKey(),
-    accessToken: varchar("access_token", { length: 255 }).notNull(),
-    refreshToken: varchar("refresh_token", { length: 255 }).notNull(),
-  },
-  (t) => [
-    index("cosmo_tokens_access_token_idx").on(t.accessToken),
-    index("cosmo_tokens_refresh_token_idx").on(t.refreshToken),
-  ]
-);
-
-export const gravities = pgTable(
-  "gravities",
-  {
-    id: serial("id").primaryKey(),
-    artist: citext("artist", { length: 36 }).notNull(),
-    cosmoId: integer("cosmo_id").notNull(),
-    title: varchar("title", { length: 255 }).notNull(),
-    description: varchar("description", { length: 255 }).notNull(),
-    image: varchar("image", { length: 255 }).notNull(),
-    gravityType: varchar("gravity_type", { length: 32 })
-      .notNull()
-      .$type<CosmoGravityType>(),
-    pollType: varchar("poll_type", { length: 32 })
-      .notNull()
-      .$type<CosmoPollType>(),
-    startDate: timestamp("start_date", { mode: "date" }).notNull(),
-    endDate: timestamp("end_date", { mode: "date" }).notNull(),
-  },
-  (t) => [
-    index("gravities_artist_idx").on(t.artist),
-    index("gravities_cosmo_id_idx").on(t.cosmoId),
-  ]
-);
-
-export const gravityPolls = pgTable(
-  "gravity_polls",
-  {
-    id: serial("id").primaryKey(),
-    cosmoGravityId: integer("cosmo_gravity_id").notNull(),
-    cosmoId: integer("cosmo_id").notNull(),
-    pollIdOnChain: integer("poll_id_on_chain").notNull(),
-    title: varchar("title", { length: 255 }).notNull(),
-  },
-  (t) => [
-    index("gravity_polls_cosmo_gravity_id_idx").on(t.cosmoGravityId),
-    index("gravity_polls_cosmo_id_idx").on(t.cosmoId),
-    index("gravity_polls_poll_id_on_chain_idx").on(t.pollIdOnChain),
-  ]
-);
-
-export const gravityPollCandidates = pgTable(
-  "gravity_poll_candidates",
-  {
-    id: serial("id").primaryKey(),
-    cosmoGravityPollId: integer("cosmo_gravity_poll_id").notNull(),
-    candidateId: integer("candidate_id").notNull(), // just the index in the array
-    cosmoId: varchar("cosmo_id", { length: 64 }).notNull(),
-    title: varchar("title", { length: 255 }).notNull(),
-    image: varchar("image", { length: 255 }).notNull(),
-  },
-  (t) => [
-    index("gravity_poll_candidates_cosmo_gravity_poll_id_idx").on(
-      t.cosmoGravityPollId
-    ),
-    index("gravity_poll_candidates_candidate_id_idx").on(t.candidateId),
-    index("gravity_poll_candidates_cosmo_id_idx").on(t.cosmoId),
-  ]
-);
-
 export type Profile = typeof profiles.$inferSelect;
 export type ObjektList = typeof lists.$inferSelect;
 export type ObjektListEntry = typeof listEntries.$inferSelect;
@@ -189,7 +118,8 @@ export type CreateObjektList = typeof lists.$inferInsert;
 export type UpdateObjektList = typeof lists.$inferInsert;
 export type ObjektMetadataEntry = typeof objektMetadata.$inferSelect;
 export type Pin = typeof pins.$inferSelect;
-export type CosmoToken = typeof cosmoTokens.$inferSelect;
-export type Gravity = typeof gravities.$inferSelect;
-export type GravityPoll = typeof gravityPolls.$inferSelect;
-export type GravityPollCandidate = typeof gravityPollCandidates.$inferSelect;
+
+export type User = typeof user.$inferSelect;
+export type Session = typeof session.$inferSelect;
+export type Account = typeof account.$inferSelect;
+export type Verification = typeof verification.$inferSelect;

@@ -25,6 +25,11 @@ export const env = createEnv({
     AUTH_KEY: z.string().min(1),
     // cron secret
     CRON_SECRET: z.string().min(1),
+    // better auth
+    BETTER_AUTH_SECRET: z.string().min(1),
+    // discord oauth
+    DISCORD_CLIENT_ID: z.string().min(1),
+    DISCORD_CLIENT_SECRET: z.string().min(1),
   },
   client: {
     // info for rebranding the app

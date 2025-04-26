@@ -39,22 +39,21 @@ export const relations = defineRelations(schema, (r) => ({
       to: r.profiles.userAddress,
     }),
   },
-  gravities: {
-    polls: r.many.gravityPolls(),
+  users: {
+    sessions: r.many.session(),
+    accounts: r.many.account(),
+    verifications: r.many.verification(),
   },
-  gravityPolls: {
-    gravity: r.one.gravities({
-      from: r.gravityPolls.cosmoGravityId,
-      to: r.gravities.cosmoId,
-      // a gravity will always exist for a poll
-      optional: false,
+  sessions: {
+    user: r.one.user({
+      from: r.session.userId,
+      to: r.user.id,
     }),
-    candidates: r.many.gravityPollCandidates(),
   },
-  gravityPollCandidates: {
-    poll: r.one.gravityPolls({
-      from: r.gravityPollCandidates.cosmoGravityPollId,
-      to: r.gravityPolls.cosmoId,
+  accounts: {
+    user: r.one.user({
+      from: r.account.userId,
+      to: r.user.id,
     }),
   },
 }));

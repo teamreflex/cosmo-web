@@ -3,9 +3,75 @@ import { Profile, profiles } from "./db/schema";
 import { IdentifiedUser, PublicProfile } from "@/lib/universal/cosmo/auth";
 import { isAddress } from "viem";
 import { notFound } from "next/navigation";
-import { defaultProfile } from "@/lib/utils";
+import { baseUrl, defaultProfile } from "@/lib/utils";
 import { fetchByNickname } from "./cosmo/auth";
 import { FetchError } from "ofetch";
+import { betterAuth } from "better-auth";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { env } from "@/env";
+import { z } from "zod";
+import * as authSchema from "@/lib/server/db/auth-schema";
+
+/**
+ * Better Auth server instance.
+ */
+export const auth = betterAuth({
+  appName: env.NEXT_PUBLIC_APP_NAME,
+  secret: env.BETTER_AUTH_SECRET,
+  baseUrl: baseUrl(),
+  database: drizzleAdapter(db, {
+    provider: "pg",
+    schema: authSchema,
+  }),
+  session: {
+    cookieCache: {
+      enabled: true,
+      maxAge: 5 * 60,
+    },
+  },
+  socialProviders: {
+    discord: {
+      clientId: env.DISCORD_CLIENT_ID,
+      clientSecret: env.DISCORD_CLIENT_SECRET,
+    },
+  },
+  advanced: {
+    cookiePrefix: "apollo",
+  },
+  user: {
+    additionalFields: {
+      username: {
+        type: "string",
+        required: false,
+        input: true,
+        returned: true,
+        fieldName: "username",
+        unique: true,
+      },
+      cosmoAddress: {
+        type: "string",
+        required: false,
+        input: true,
+        returned: true,
+        fieldName: "cosmo_address",
+        validator: {
+          input: z.string().refine((val) => isAddress(val), {
+            message: "Not a valid COSMO address",
+          }),
+          output: z.string().optional(),
+        },
+      },
+      isAdmin: {
+        type: "boolean",
+        required: false,
+        defaultValue: false,
+        input: false,
+        returned: true,
+        fieldName: "is_admin",
+      },
+    },
+  },
+});
 
 /**
  * Fetch a profile by various identifiers.
