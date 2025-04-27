@@ -2,6 +2,7 @@ import {
   bigint,
   boolean,
   integer,
+  numeric,
   pgTable,
   serial,
   timestamp,
@@ -63,7 +64,7 @@ export const transfers = pgTable("transfer", {
 
 export const comoBalances = pgTable("como_balance", {
   id: uuid("id").primaryKey(),
-  contract: varchar("contract", { length: 42 }).notNull(),
+  tokenId: numeric("token_id", { mode: "number" }).notNull(),
   owner: varchar("owner", { length: 42 }).notNull(),
   amount: bigint("amount", { mode: "number" }).notNull(),
 });

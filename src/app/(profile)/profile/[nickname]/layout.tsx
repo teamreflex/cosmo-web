@@ -18,6 +18,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import ComoBalanceRenderer from "@/components/navbar/como-balances";
 
 type Props = PropsWithChildren<{
   params: Promise<{
@@ -74,7 +75,7 @@ export default async function ProfileLayout(props: Props) {
             </div>
 
             <div className="flex items-center justify-between gap-2">
-              {/* <ComoBalanceRenderer address={profile.address} /> */}
+              <ComoBalanceRenderer address={profile.address} />
               <div></div>
               <span className="h-10 flex items-center last:ml-auto">
                 <div id="objekt-total" />
