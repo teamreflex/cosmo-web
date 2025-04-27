@@ -75,6 +75,12 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2025-04-27",
+    changes: [
+      "COMO balances will return once rate limits have been figured out.",
+    ],
+  },
+  {
     date: "2025-04-24",
     changes: [
       "Objekt mint times have been corrected and COMO calendar re-enabled.",
