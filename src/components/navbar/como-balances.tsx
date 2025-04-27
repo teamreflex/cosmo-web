@@ -60,9 +60,10 @@ async function UserBalances({ address }: Props) {
   const balances = await getTokenBalances(address);
   const selectedArtists = await getSelectedArtists();
 
-  const filteredArtists = artists.filter((artist) =>
-    selectedArtists.includes(artist.id)
-  );
+  const filteredArtists =
+    selectedArtists.length > 0
+      ? artists.filter((artist) => selectedArtists.includes(artist.id))
+      : artists;
 
   return (
     <div className="flex flex-row gap-2">

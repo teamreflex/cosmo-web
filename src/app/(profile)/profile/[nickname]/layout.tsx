@@ -4,7 +4,6 @@ import CopyAddressButton from "@/components/profile/copy-address-button";
 import TradesButton from "@/components/profile/trades-button";
 import ComoButton from "@/components/profile/como-button";
 import ProgressButton from "@/components/profile/progress-button";
-import ComoBalanceRenderer from "@/components/navbar/como-balances";
 import UserAvatar from "@/components/profile/user-avatar";
 import Skeleton from "@/components/skeleton/skeleton";
 import ListDropdown from "@/components/lists/list-dropdown";
@@ -19,6 +18,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import ComoBalanceRenderer from "@/components/navbar/como-balances";
 
 type Props = PropsWithChildren<{
   params: Promise<{
@@ -76,6 +76,7 @@ export default async function ProfileLayout(props: Props) {
 
             <div className="flex items-center justify-between gap-2">
               <ComoBalanceRenderer address={profile.address} />
+              <div></div>
               <span className="h-10 flex items-center last:ml-auto">
                 <div id="objekt-total" />
               </span>

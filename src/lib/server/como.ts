@@ -3,9 +3,7 @@ import { indexer } from "./db/indexer";
 import { collections, objekts } from "./db/indexer/schema";
 import { ComoBalance, ObjektWithCollection } from "@/lib/universal/como";
 import { unstable_cache } from "next/cache";
-import { alchemyHTTP } from "./http";
-import { Addresses } from "../utils";
-import { env } from "@/env";
+import { addr } from "../utils";
 import { getArtistsWithMembers } from "@/app/data-fetching";
 
 /**
@@ -39,7 +37,7 @@ export async function fetchObjektsWithComo(
     );
 }
 
-export const ERC20_DECIMALS = 18;
+// const ERC20_DECIMALS = 18;
 
 /**
  * Fetch ERC20 token balances from Alchemy.
@@ -48,28 +46,21 @@ export const ERC20_DECIMALS = 18;
 export const fetchTokenBalances = unstable_cache(
   async (address: string): Promise<ComoBalance[]> => {
     const artists = getArtistsWithMembers();
-    const response = await alchemyHTTP<GetNFTsForOwnerResponse>(
-      `/nft/v3/${env.NEXT_PUBLIC_ALCHEMY_KEY}/getNFTsForOwner`,
-      {
-        method: "GET",
-        query: {
-          owner: address,
-          "contractAddresses[]": Addresses.COMO,
-          withMetadata: false,
-          pageSize: 10,
-        },
-      }
-    );
+    const balances = await indexer.query.comoBalances.findMany({
+      where: {
+        owner: addr(address),
+      },
+    });
 
     return artists.map((artist) => {
-      const balance = response.ownedNfts.find(
-        (nft) => nft.tokenId === artist.comoTokenId.toString()
+      const balance = balances.find(
+        (balance) => balance.tokenId === artist.comoTokenId
       );
 
       return {
         id: artist.id,
         owner: address,
-        amount: balance ? Number(balance.balance) : 0,
+        amount: balance ? balance.amount : 0,
       };
     });
   },
@@ -78,18 +69,3 @@ export const fetchTokenBalances = unstable_cache(
     revalidate: 60 * 15, // 15 minutes
   }
 );
-
-type GetNFTsForOwnerResponse = {
-  ownedNfts: {
-    contractAddress: string;
-    tokenId: string;
-    balance: string;
-  }[];
-  totalCount: number;
-  validAt: {
-    blockNumber: number;
-    blockHash: string;
-    blockTimestamp: string;
-  };
-  pageKey: null;
-};

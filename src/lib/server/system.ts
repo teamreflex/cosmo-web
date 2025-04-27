@@ -87,22 +87,23 @@ type FinalSystemStatus = {
  */
 export const getSystemStatus = unstable_cache(
   async (): Promise<FinalSystemStatus> => {
-    const [{ gas, blockHeight }, processorHeight] = await Promise.all([
-      fetchChainStatus(),
-      fetchProcessorHeight(),
-    ]);
+    // const [{ gas, blockHeight }, processorHeight] = await Promise.all([
+    //   fetchChainStatus(),
+    //   fetchProcessorHeight(),
+    // ]);
+    const processorHeight = await fetchProcessorHeight();
 
     // calculate processor status
-    const diff = blockHeight - processorHeight;
-    const status = diff < 1800 ? "normal" : diff < 3600 ? "degraded" : "down";
+    // const diff = blockHeight - processorHeight;
+    // const status = diff < 1800 ? "normal" : diff < 3600 ? "degraded" : "down";
 
     return {
-      gas,
+      gas: { price: 0, status: "normal" },
       processor: {
-        status,
+        status: "normal",
         height: {
           processor: processorHeight,
-          chain: blockHeight,
+          chain: 0,
         },
       },
     };
