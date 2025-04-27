@@ -23,9 +23,7 @@ import { useDebounceValue } from "usehooks-ts";
 import ProfileImage from "@/assets/profile.webp";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { RecentUser } from "@/store";
-import { ValidArtist } from "@/lib/universal/cosmo/common";
 import VisuallyHidden from "./ui/visually-hidden";
-import { useUserState } from "@/hooks/use-user-state";
 import { cn } from "@/lib/utils";
 
 type Props = PropsWithChildren<{
@@ -48,7 +46,6 @@ export function UserSearch({
   authenticated = false,
   includeSpin = false,
 }: Props) {
-  const { artist } = useUserState();
   const [query, setQuery] = useState<string>("");
   const [debouncedQuery] = useDebounceValue<string>(query, 500);
   const queryIsAddress = isAddress(debouncedQuery);
@@ -157,7 +154,7 @@ export function UserSearch({
                   className="gap-2"
                   value={user.nickname}
                 >
-                  <UserAvatar artist={artist} user={user} />
+                  <UserAvatar nickname={user.nickname} />
                   <span>{user.nickname}</span>
                 </CommandItem>
               ))}
@@ -183,28 +180,18 @@ export function UserSearch({
 }
 
 type UserResultProps = {
-  artist: ValidArtist;
-  user: CosmoPublicUser;
+  nickname: string;
 };
 
-function UserAvatar({ artist, user }: UserResultProps) {
-  const profile = user.profile.find(
-    (p) => p.artistName.toLowerCase() === artist.toLowerCase()
-  );
-
+function UserAvatar({ nickname }: UserResultProps) {
   return (
     <Avatar className="h-5 w-5">
-      <AvatarFallback>{user.nickname.charAt(0).toUpperCase()}</AvatarFallback>
-
-      {profile !== undefined ? (
-        <AvatarImage src={profile.image.thumbnail} alt={user.nickname} />
-      ) : (
-        <AvatarImage
-          className="bg-cosmo-profile p-1"
-          src={ProfileImage.src}
-          alt={user.nickname}
-        />
-      )}
+      <AvatarFallback>{nickname.charAt(0).toUpperCase()}</AvatarFallback>
+      <AvatarImage
+        className="bg-cosmo-profile p-1"
+        src={ProfileImage.src}
+        alt={nickname}
+      />
     </Avatar>
   );
 }

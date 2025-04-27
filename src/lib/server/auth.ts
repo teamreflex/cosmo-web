@@ -134,7 +134,7 @@ function parseProfile(profile: Profile): PublicProfile {
     },
     gridColumns: profile.gridColumns,
     isObjektEditor: profile.objektEditor,
-    dataSource: profile.dataSource ?? "cosmo",
+    dataSource: profile.dataSource ?? "blockchain",
     isModhaus: profile.isModhaus,
   };
 }

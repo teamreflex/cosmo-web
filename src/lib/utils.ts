@@ -37,7 +37,6 @@ export const GRID_COLUMNS = 5;
  * Collection data source.
  */
 export const collectionDataSources = [
-  "cosmo",
   "blockchain",
   "blockchain-groups",
 ] as const;
@@ -58,7 +57,7 @@ export const defaultProfile: PublicProfile = {
   },
   gridColumns: GRID_COLUMNS,
   isObjektEditor: false,
-  dataSource: "cosmo",
+  dataSource: "blockchain",
   isModhaus: false,
 };
 

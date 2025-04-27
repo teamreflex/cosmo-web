@@ -8,7 +8,6 @@ import HelpDialog from "./help-dialog";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { match } from "ts-pattern";
 import Blockchain from "../collection/data-sources/blockchain";
-import CosmoCollectionGroups from "../collection/data-sources/cosmo-groups";
 import BlockchainGroups from "../collection/data-sources/blockchain-groups";
 import CollectionFilters from "../collection/filter-contexts/collection-filters";
 import { AuthenticatedContext } from "@/hooks/use-authenticated";
@@ -25,11 +24,10 @@ export default function ProfileRenderer({
   currentUser,
 }: Props) {
   const gridColumns = targetUser.gridColumns ?? currentUser?.gridColumns;
-  const authenticated = currentUser?.address === targetUser.address;
 
   const { searchParams, showLocked, setShowLocked, dataSource, setDataSource } =
     useFilters({
-      dataSource: authenticated ? currentUser.dataSource : "blockchain",
+      dataSource: "blockchain",
     });
 
   return (
@@ -44,23 +42,12 @@ export default function ProfileRenderer({
           setDataSource={setDataSource}
           showLocked={showLocked}
           setShowLocked={setShowLocked}
-          allowCosmo={authenticated}
         />
       </FiltersContainer>
 
       {/* display */}
-      <AuthenticatedContext.Provider value={authenticated}>
+      <AuthenticatedContext.Provider value={false}>
         {match(dataSource)
-          .with("cosmo", () => (
-            <CosmoCollectionGroups
-              artists={artists}
-              gridColumns={gridColumns}
-              targetUser={targetUser}
-              currentUser={currentUser}
-              searchParams={searchParams}
-              showLocked={showLocked}
-            />
-          ))
           .with("blockchain", () => (
             <Blockchain
               artists={artists}

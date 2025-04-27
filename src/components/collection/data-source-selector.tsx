@@ -36,7 +36,6 @@ type Props = {
   value?: CollectionDataSource;
   defaultValue?: CollectionDataSource;
   onValueChange?: (value: CollectionDataSource) => void;
-  allowCosmo: boolean;
 };
 
 export function DataSourceSelector(props: Props) {
@@ -61,29 +60,27 @@ export function DataSourceSelector(props: Props) {
           align="end"
           className="[&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8 [&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2"
         >
-          {sources
-            .filter((source) => !(source.requiresAuth && !props.allowCosmo))
-            .map((source) => (
-              <SelectItem
-                key={source.value}
-                value={source.value}
-                className="**:data-short-label:hidden **:data-icon:size-8"
-              >
-                <div className="flex flex-row items-center gap-2">
-                  {source.icon}
-                  <div className="flex flex-col">
-                    <span data-label>{source.label}</span>
-                    <span data-short-label>{source.shortLabel}</span>
-                    <span
-                      className="text-muted-foreground mt-1 block text-xs"
-                      data-desc
-                    >
-                      {source.subtitle}
-                    </span>
-                  </div>
+          {sources.map((source) => (
+            <SelectItem
+              key={source.value}
+              value={source.value}
+              className="**:data-short-label:hidden **:data-icon:size-8"
+            >
+              <div className="flex flex-row items-center gap-2">
+                {source.icon}
+                <div className="flex flex-col">
+                  <span data-label>{source.label}</span>
+                  <span data-short-label>{source.shortLabel}</span>
+                  <span
+                    className="text-muted-foreground mt-1 block text-xs"
+                    data-desc
+                  >
+                    {source.subtitle}
+                  </span>
                 </div>
-              </SelectItem>
-            ))}
+              </div>
+            </SelectItem>
+          ))}
 
           <SelectSeparator />
 
@@ -144,7 +141,6 @@ type Source = {
   value: CollectionDataSource;
   description: string;
   notes: string[];
-  requiresAuth: boolean;
 };
 
 const sources: Source[] = [
@@ -163,7 +159,6 @@ const sources: Source[] = [
       "Objekt statuses such as event/welcome reward, gridded, mint pending, etc. are not supported.",
       "Transferable status may not be reliable.",
     ],
-    requiresAuth: false,
   },
   {
     title: "Abstract Blockchain - All Objekts",
@@ -178,7 +173,6 @@ const sources: Source[] = [
       "The same viewing format as COSMO prior to its collection groups update.",
       "Has the same filter features & limitations as the Abstract - All Objekts source.",
     ],
-    requiresAuth: false,
   },
 ];
 
