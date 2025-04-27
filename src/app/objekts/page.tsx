@@ -1,5 +1,9 @@
 import { Metadata } from "next";
-import { getArtistsWithMembers, getSelectedArtists } from "../data-fetching";
+import {
+  getArtistsWithMembers,
+  getSelectedArtists,
+  getSession,
+} from "../data-fetching";
 import IndexRenderer from "@/components/objekt-index/index-renderer";
 import { fetchFilterData } from "@/lib/server/objekts/filter-data";
 import { ProfileProvider } from "@/hooks/use-profile";
@@ -13,6 +17,7 @@ import { getQueryClient } from "@/lib/query-client";
 import { GRID_COLUMNS } from "@/lib/utils";
 import { SelectedArtistsProvider } from "@/hooks/use-selected-artists";
 import { CosmoArtistProvider } from "@/hooks/use-cosmo-artist";
+import { UserStateProvider } from "@/hooks/use-user-state";
 
 export const metadata: Metadata = {
   title: "Objekts",
@@ -31,10 +36,11 @@ export default async function ObjektsIndexPage(props: Params) {
     queryFn: fetchFilterData,
   });
 
-  const [searchParams, selectedArtists, artists] = await Promise.all([
+  const [searchParams, selectedArtists, artists, session] = await Promise.all([
     props.searchParams,
     getSelectedArtists(),
     getArtistsWithMembers(),
+    getSession(),
   ]);
 
   // parse search params
@@ -68,7 +74,10 @@ export default async function ObjektsIndexPage(props: Params) {
 
   return (
     <main className="container flex flex-col py-2">
-      <SelectedArtistsProvider selectedArtists={selectedArtists ?? []}>
+      <UserStateProvider
+        currentUser={session?.user}
+        selectedArtists={selectedArtists}
+      >
         <CosmoArtistProvider artists={artists}>
           <ProfileProvider currentProfile={undefined} objektLists={[]}>
             <HydrationBoundary state={dehydrate(queryClient)}>
@@ -82,7 +91,7 @@ export default async function ObjektsIndexPage(props: Params) {
             </HydrationBoundary>
           </ProfileProvider>
         </CosmoArtistProvider>
-      </SelectedArtistsProvider>
+      </UserStateProvider>
     </main>
   );
 }

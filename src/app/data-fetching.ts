@@ -1,19 +1,11 @@
 import { cache } from "react";
-import { fetchPublicProfile, fetchUserByIdentifier } from "@/lib/server/auth";
-import { notFound } from "next/navigation";
+import { fetchUserByIdentifier } from "@/lib/server/profiles";
 import { fetchTokenBalances } from "@/lib/server/como";
 import * as artists from "@/artists";
 import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import { getCookie } from "@/lib/server/cookies";
-
-/**
- * Fetch the user profile.
- */
-export const getProfile = cache(async (profileId: number) => {
-  const profile = await fetchPublicProfile(profileId);
-  if (!profile) notFound();
-  return profile;
-});
+import { auth } from "@/lib/server/auth";
+import { headers } from "next/headers";
 
 /**
  * Fetch a user by nickname or address.
@@ -47,3 +39,12 @@ export const getSelectedArtists = cache(async () => {
 export const getTokenBalances = cache(async (address: string) =>
   fetchTokenBalances(address)
 );
+
+/**
+ * Fetch the current session.
+ */
+export const getSession = cache(async () => {
+  return await auth.api.getSession({
+    headers: await headers(),
+  });
+});

@@ -1,6 +1,5 @@
 "use server";
 
-import { fetchPublicProfile } from "@/lib/server/auth";
 import { db } from "@/lib/server/db";
 import { objektMetadata } from "@/lib/server/db/schema";
 import { authenticatedAction } from "@/lib/server/typed-action";
@@ -23,14 +22,11 @@ export const updateObjektMetadata = async (
   authenticatedAction({
     form,
     schema,
-    onAuthenticate: async ({ user }) => {
-      const profile = await fetchPublicProfile(user.profileId);
-      if (!profile || !profile.isObjektEditor) {
-        throw new ActionError({
-          status: "error",
-          error: "You do not have permission to edit this collection",
-        });
-      }
+    onAuthenticate: async () => {
+      throw new ActionError({
+        status: "error",
+        error: "You do not have permission to edit this collection",
+      });
     },
     onValidate: async ({ data: { description }, user }) => {
       const result = await db

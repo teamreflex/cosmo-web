@@ -1,4 +1,3 @@
-import { auth } from "@/lib/server/auth";
 import { Button } from "../ui/button";
 import {
   Dialog,
@@ -9,18 +8,9 @@ import {
   DialogTrigger,
 } from "../ui/dialog";
 import SignInWithDiscord from "./with-discord";
-import { headers } from "next/headers";
 import SignInWithTwitter from "./with-twitter";
 
-export default async function SignIn() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (session) {
-    return <p className="text-xs">{session.user.id}</p>;
-  }
-
+export default function SignIn() {
   return (
     <Dialog>
       <DialogTrigger asChild>

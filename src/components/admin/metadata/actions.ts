@@ -1,10 +1,8 @@
 "use server";
 
-import { getProfile } from "@/app/data-fetching";
 import { db } from "@/lib/server/db";
 import { objektMetadata } from "@/lib/server/db/schema";
 import { authenticatedAction } from "@/lib/server/typed-action";
-import { ActionError } from "@/lib/server/typed-action/errors";
 import { metadataObjectSchema, MetadataRow } from "@/lib/universal/metadata";
 import { sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
@@ -20,14 +18,6 @@ export const saveMetadata = async (rows: MetadataRow[]) =>
       rows: metadataObjectSchema.array(),
     }),
     onValidate: async ({ data: { rows }, user }) => {
-      const profile = await getProfile(user.profileId);
-      if (profile.isObjektEditor === false) {
-        throw new ActionError({
-          status: "error",
-          error: "Unauthorized",
-        });
-      }
-
       await db
         .insert(objektMetadata)
         .values(

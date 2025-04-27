@@ -3,11 +3,17 @@ import { Suspense } from "react";
 import UpdateDialog from "../misc/update-dialog";
 import SystemStatus from "../misc/system-status";
 import Links from "./links.server";
-import { Loader2, Moon } from "lucide-react";
-import Hydrated from "../hydrated";
-import GuestThemeSwitch from "./guest-theme-switch";
-import ArtistSelector from "./artist-selector";
-import SignIn from "../auth/sign-in";
+import { Loader2 } from "lucide-react";
+import {
+  getArtistsWithMembers,
+  getSelectedArtists,
+  getSession,
+} from "@/app/data-fetching";
+import StateGuest from "../auth/state-guest";
+import StateAuthenticated from "../auth/state-authenticated";
+import { ErrorBoundary } from "react-error-boundary";
+import AuthFallback from "../auth/auth-fallback";
+import { SelectedArtistsProvider } from "@/hooks/use-selected-artists";
 
 export default async function Navbar() {
   return (
@@ -28,28 +34,36 @@ export default async function Navbar() {
             </Suspense>
 
             <div className="flex grow-0 items-center justify-end gap-2">
-              <Suspense fallback={<Loader2 className="size-5 animate-spin" />}>
-                <SignIn />
-              </Suspense>
-
-              <Hydrated
-                fallback={
-                  <div className="inline-flex items-center h-9 px-1">
-                    <Moon className="size-8" />
-                  </div>
-                }
-              >
-                <GuestThemeSwitch />
-              </Hydrated>
-
-              <Suspense>
-                <ArtistSelector />
-              </Suspense>
+              <ErrorBoundary fallback={<AuthFallback />}>
+                <Suspense
+                  fallback={<Loader2 className="size-5 animate-spin" />}
+                >
+                  <Auth />
+                </Suspense>
+              </ErrorBoundary>
             </div>
           </div>
         </div>
       </div>
       <div className="glass-edge"></div>
     </nav>
+  );
+}
+
+async function Auth() {
+  const [session, artists, selectedArtists] = await Promise.all([
+    getSession(),
+    getArtistsWithMembers(),
+    getSelectedArtists(),
+  ]);
+
+  return (
+    <SelectedArtistsProvider artists={artists} selected={selectedArtists}>
+      {session === null ? (
+        <StateGuest />
+      ) : (
+        <StateAuthenticated user={session.user} />
+      )}
+    </SelectedArtistsProvider>
   );
 }

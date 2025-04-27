@@ -1,5 +1,13 @@
-import { pgTable, text, timestamp, boolean, index } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  timestamp,
+  boolean,
+  index,
+  integer,
+} from "drizzle-orm/pg-core";
 import { citext } from "./columns";
+import { CollectionDataSource, GRID_COLUMNS } from "@/lib/utils";
 
 export const user = pgTable(
   "user",
@@ -12,9 +20,14 @@ export const user = pgTable(
     createdAt: timestamp("created_at").notNull(),
     updatedAt: timestamp("updated_at").notNull(),
     // custom fields
+    isAdmin: boolean("is_admin").notNull().default(false),
     username: citext("username").unique(),
     cosmoAddress: citext("cosmo_address"),
-    isAdmin: boolean("is_admin").notNull().default(false),
+    gridColumns: integer("grid_columns").notNull().default(GRID_COLUMNS),
+    collectionMode: text("collection_mode")
+      .notNull()
+      .$type<CollectionDataSource>()
+      .default("blockchain"),
   },
   (t) => [
     index("user_username_idx").on(t.username),

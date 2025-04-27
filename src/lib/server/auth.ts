@@ -1,18 +1,13 @@
 import { db } from "./db";
-import { Profile, profiles } from "./db/schema";
-import { IdentifiedUser, PublicProfile } from "@/lib/universal/cosmo/auth";
 import { isAddress } from "viem";
-import { notFound } from "next/navigation";
-import { baseUrl, defaultProfile } from "@/lib/utils";
-import { fetchByNickname } from "./cosmo/auth";
-import { FetchError } from "ofetch";
+import { baseUrl, GRID_COLUMNS } from "@/lib/utils";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { env } from "@/env";
 import { z } from "zod";
 import * as authSchema from "@/lib/server/db/auth-schema";
-import { encryptToken } from "./encryption";
-import { eq } from "drizzle-orm";
+import { createCipheriv, createDecipheriv, randomBytes } from "crypto";
+import { PublicUser, User } from "../universal/auth";
 
 /**
  * Better Auth server instance.
@@ -52,12 +47,11 @@ export const auth = betterAuth({
       update: {
         async before(account) {
           // Query the user to get the current access and refresh tokens
-          const existingAccount = await db
-            .select()
-            .from(authSchema.account)
-            .where(eq(authSchema.account.id, account.id!))
-            .limit(1)
-            .then((results) => results[0] || null);
+          const existingAccount = await db.query.account.findFirst({
+            where: {
+              id: account.id,
+            },
+          });
 
           const withEncryptedTokens = { ...account };
 
@@ -139,138 +133,80 @@ export const auth = betterAuth({
         returned: true,
         fieldName: "is_admin",
       },
+      gridColumns: {
+        type: "number",
+        required: false,
+        defaultValue: GRID_COLUMNS,
+        input: true,
+        returned: true,
+        fieldName: "grid_columns",
+      },
+      collectionMode: {
+        type: "string",
+        required: false,
+        defaultValue: "blockchain",
+        input: true,
+        returned: true,
+        fieldName: "collection_mode",
+      },
     },
   },
 });
 
-/**
- * Fetch a profile by various identifiers.
- */
-export async function fetchUserByIdentifier(
-  identifier: string
-): Promise<IdentifiedUser> {
-  const identifierIsAddress = isAddress(identifier);
+const ALGORITHM = "aes-256-gcm";
+const AUTH_TAG_LENGTH = 16;
+const IV_LENGTH = 12;
 
-  // check db for a profile
-  const profile = await fetchProfileByIdentifier(
-    identifier,
-    identifierIsAddress ? "userAddress" : "nickname"
+/**
+ * Encrypt a token.
+ */
+export function encryptToken(token: string, key: string) {
+  const iv = randomBytes(IV_LENGTH);
+  const cipher = createCipheriv(ALGORITHM, Buffer.from(key, "hex"), iv, {
+    authTagLength: AUTH_TAG_LENGTH,
+  });
+
+  const encryptedToken = Buffer.concat([cipher.update(token), cipher.final()]);
+
+  // concatenate the iv, encrypted text and auth tag
+  return Buffer.concat([iv, encryptedToken, cipher.getAuthTag()]).toString(
+    "base64"
   );
-
-  if (profile) {
-    return {
-      profile: {
-        ...parseProfile(profile),
-        nickname: profile.nickname,
-        isAddress: identifierIsAddress,
-      },
-      objektLists: profile.lists,
-      lockedObjekts: profile.lockedObjekts.map((row) => row.tokenId),
-      pins: profile.pins,
-    };
-  }
-
-  // if no profile and it's an address, return it
-  if (identifierIsAddress) {
-    return {
-      profile: {
-        ...defaultProfile,
-        nickname: identifier.substring(0, 6),
-        address: identifier,
-      },
-      objektLists: [],
-      lockedObjekts: [],
-      pins: [],
-    };
-  }
-
-  // fetch from cosmo while it exists...
-  try {
-    const profile = await fetchByNickname(identifier);
-
-    // upsert profile
-    await db
-      .insert(profiles)
-      .values({
-        userAddress: profile.address,
-        nickname: profile.nickname,
-        cosmoId: 0,
-        artist: "artms",
-      })
-      .onConflictDoUpdate({
-        target: profiles.userAddress,
-        set: {
-          nickname: profile.nickname,
-        },
-      })
-      .returning();
-
-    return await fetchUserByIdentifier(profile.nickname);
-  } catch (err) {
-    if (err instanceof FetchError && err.status !== 404) {
-      console.error(`[fetchUserByIdentifier] ${err.status} from COSMO`, err);
-    }
-    notFound();
-  }
 }
 
 /**
- * Fetch a profile by ID and parse it.
+ * Decrypt a token.
  */
-export async function fetchPublicProfile(id: number) {
-  const result = await db.query.profiles.findFirst({
-    where: { id },
+export function decryptToken(encrypted: string, key: string) {
+  // convert the encrypted token to a buffer
+  const encryptedBuffer = Buffer.from(encrypted, "base64");
+
+  // pull out individual parts (iv, auth tag, encrypted text)
+  const authTag = encryptedBuffer.subarray(-AUTH_TAG_LENGTH);
+  const iv = encryptedBuffer.subarray(0, IV_LENGTH);
+  const text = encryptedBuffer.subarray(IV_LENGTH, -AUTH_TAG_LENGTH);
+
+  const decipher = createDecipheriv(ALGORITHM, Buffer.from(key, "hex"), iv, {
+    authTagLength: AUTH_TAG_LENGTH,
   });
+  decipher.setAuthTag(authTag);
 
-  return result !== undefined ? parseProfile(result) : undefined;
+  return Buffer.concat([decipher.update(text), decipher.final()]).toString(
+    "utf8"
+  );
 }
 
 /**
- * Fetch a profile by a nickname or address.
+ * Safely convert a User object to a PublicUser object.
  */
-async function fetchProfileByIdentifier(
-  identifier: string,
-  column: "nickname" | "userAddress"
-) {
-  return db.query.profiles.findFirst({
-    where: {
-      [column]: decodeURIComponent(identifier),
-    },
-    with: {
-      lists: true,
-      lockedObjekts: {
-        where: {
-          locked: true,
-        },
-        columns: {
-          tokenId: true,
-        },
-      },
-      pins: {
-        orderBy: {
-          id: "desc",
-        },
-      },
-    },
-  });
-}
-
-/**
- * Convert a database profile to a more friendly type.
- */
-function parseProfile(profile: Profile): PublicProfile {
+export function toPublicUser(user: User): PublicUser {
   return {
-    nickname: profile.nickname,
-    address: profile.userAddress,
-    profileImageUrl: "",
-    isAddress: false,
-    artist: profile.artist,
-    privacy: {
-      votes: profile.privacyVotes,
-    },
-    gridColumns: profile.gridColumns,
-    isObjektEditor: profile.objektEditor,
-    dataSource: profile.dataSource ?? "cosmo",
-    isModhaus: profile.isModhaus,
+    id: user.id,
+    username: user.username,
+    image: user.image,
+    isAdmin: user.isAdmin,
+    cosmoAddress: user.cosmoAddress,
+    gridColumns: user.gridColumns,
+    collectionMode: user.collectionMode,
   };
 }
