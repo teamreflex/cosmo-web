@@ -1,4 +1,4 @@
-import { and, desc, eq, not, or, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, not, or, sql } from "drizzle-orm";
 import { TransferParams, TransferResult } from "../universal/transfers";
 import { indexer } from "./db/indexer";
 import { collections, objekts, transfers } from "./db/indexer/schema";
@@ -113,7 +113,7 @@ function withType(address: string, type: TransferParams["type"]) {
     // address must be a sender to non-burn address
     case "sent":
       return and(
-        not(eq(transfers.to, Addresses.NULL)),
+        not(inArray(transfers.to, [Addresses.NULL, Addresses.SPIN])),
         eq(transfers.from, address)
       );
     // address must be a sender to the spin address
