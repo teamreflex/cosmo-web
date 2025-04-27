@@ -28,7 +28,10 @@ export function useFilterData() {
         seasons,
       };
     })
-    .filter(({ artist }) => selectedArtists.includes(artist.id));
+    .filter(({ artist }) => {
+      if (selectedArtists.length === 0) return true;
+      return selectedArtists.includes(artist.id);
+    });
 
   const classes = data.classes
     .map(({ artistId, classes }) => {
@@ -38,7 +41,10 @@ export function useFilterData() {
         classes,
       };
     })
-    .filter(({ artist }) => selectedArtists.includes(artist.id));
+    .filter(({ artist }) => {
+      if (selectedArtists.length === 0) return true;
+      return selectedArtists.includes(artist.id);
+    });
 
   return {
     collections: data.collections,
