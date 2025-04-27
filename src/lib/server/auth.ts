@@ -11,6 +11,8 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { env } from "@/env";
 import { z } from "zod";
 import * as authSchema from "@/lib/server/db/auth-schema";
+import { encryptToken } from "./encryption";
+import { eq } from "drizzle-orm";
 
 /**
  * Better Auth server instance.
@@ -23,6 +25,70 @@ export const auth = betterAuth({
     provider: "pg",
     schema: authSchema,
   }),
+  databaseHooks: {
+    account: {
+      create: {
+        async before(account) {
+          const withEncryptedTokens = { ...account };
+          if (account.accessToken) {
+            const encryptedAccessToken = encryptToken(
+              account.accessToken,
+              env.BETTER_AUTH_SECRET
+            );
+            withEncryptedTokens.accessToken = encryptedAccessToken;
+          }
+          if (account.refreshToken) {
+            const encryptedRefreshToken = encryptToken(
+              account.refreshToken,
+              env.BETTER_AUTH_SECRET
+            );
+            withEncryptedTokens.refreshToken = encryptedRefreshToken;
+          }
+          return {
+            data: withEncryptedTokens,
+          };
+        },
+      },
+      update: {
+        async before(account) {
+          // Query the user to get the current access and refresh tokens
+          const existingAccount = await db
+            .select()
+            .from(authSchema.account)
+            .where(eq(authSchema.account.id, account.id!))
+            .limit(1)
+            .then((results) => results[0] || null);
+
+          const withEncryptedTokens = { ...account };
+
+          // Only encrypt the tokens if they have changed
+          if (
+            account.accessToken &&
+            existingAccount?.accessToken !== account.accessToken
+          ) {
+            withEncryptedTokens.accessToken = encryptToken(
+              account.accessToken,
+              env.BETTER_AUTH_SECRET
+            );
+          }
+
+          if (
+            account.refreshToken &&
+            existingAccount?.refreshToken !== account.refreshToken
+          ) {
+            withEncryptedTokens.refreshToken = encryptToken(
+              account.refreshToken,
+              env.BETTER_AUTH_SECRET
+            );
+          }
+
+          return {
+            data: withEncryptedTokens,
+          };
+        },
+      },
+    },
+  },
   session: {
     cookieCache: {
       enabled: true,
@@ -33,6 +99,10 @@ export const auth = betterAuth({
     discord: {
       clientId: env.DISCORD_CLIENT_ID,
       clientSecret: env.DISCORD_CLIENT_SECRET,
+    },
+    twitter: {
+      clientId: env.TWITTER_CLIENT_ID,
+      clientSecret: env.TWITTER_CLIENT_SECRET,
     },
   },
   advanced: {

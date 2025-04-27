@@ -24,6 +24,9 @@ export const env = createEnv({
     // discord oauth
     DISCORD_CLIENT_ID: z.string().min(1),
     DISCORD_CLIENT_SECRET: z.string().min(1),
+    // twitter oauth
+    TWITTER_CLIENT_ID: z.string().min(1),
+    TWITTER_CLIENT_SECRET: z.string().min(1),
   },
   client: {
     // info for rebranding the app

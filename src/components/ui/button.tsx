@@ -22,6 +22,8 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
         cosmo: "rounded-xl bg-cosmo text-white hover:bg-cosmo-hover",
         icon: "bg-transparent text-foreground disabled:opacity-100",
+        discord: "bg-discord text-white hover:bg-discord/90",
+        twitter: "bg-twitter text-white hover:bg-twitter/90",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",

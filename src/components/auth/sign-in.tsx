@@ -8,9 +8,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
-import VisuallyHidden from "../ui/visually-hidden";
 import SignInWithDiscord from "./with-discord";
 import { headers } from "next/headers";
+import SignInWithTwitter from "./with-twitter";
 
 export default async function SignIn() {
   const session = await auth.api.getSession({
@@ -24,20 +24,19 @@ export default async function SignIn() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="link">Sign in</Button>
+        <Button variant="link">Sign In</Button>
       </DialogTrigger>
       <DialogContent>
-        <VisuallyHidden>
-          <DialogHeader>
-            <DialogTitle>Sign in</DialogTitle>
-            <DialogDescription>
-              Sign in to your account to continue
-            </DialogDescription>
-          </DialogHeader>
-        </VisuallyHidden>
+        <DialogHeader>
+          <DialogTitle>Sign In</DialogTitle>
+          <DialogDescription>
+            Sign in to your account to continue
+          </DialogDescription>
+        </DialogHeader>
 
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 items-center">
           <SignInWithDiscord />
+          <SignInWithTwitter />
         </div>
       </DialogContent>
     </Dialog>

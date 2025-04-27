@@ -3,26 +3,28 @@
 import { authClient } from "@/lib/client/auth";
 import { useTransition } from "react";
 import { Button } from "../ui/button";
-import { IconBrandDiscordFilled } from "@tabler/icons-react";
+import { IconBrandTwitterFilled } from "@tabler/icons-react";
 
-export default function SignInWithDiscord() {
+export default function SignInWithTwitter() {
   const [isPending, startTransition] = useTransition();
 
   function handleRedirect() {
     startTransition(async () => {
-      await authClient.signIn.social({ provider: "discord" });
+      await authClient.signIn.social({
+        provider: "twitter",
+      });
     });
   }
 
   return (
     <Button
       className="w-fit"
-      variant="discord"
+      variant="twitter"
       onClick={handleRedirect}
       disabled={isPending}
     >
-      <IconBrandDiscordFilled className="size-5" />
-      <span>Sign in with Discord</span>
+      <IconBrandTwitterFilled className="size-5" />
+      <span>Sign in with Twitter</span>
     </Button>
   );
 }
