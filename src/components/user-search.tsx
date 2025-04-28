@@ -144,7 +144,10 @@ export function UserSearch({
 
           <CommandGroup heading="Results">
             {queryIsAddress && (
-              <CommandItem onSelect={() => selectAddress(debouncedQuery)}>
+              <CommandItem
+                onSelect={() => selectAddress(debouncedQuery)}
+                className="cursor-pointer"
+              >
                 {debouncedQuery}
               </CommandItem>
             )}
@@ -155,7 +158,7 @@ export function UserSearch({
                 <CommandItem
                   key={user.address}
                   onSelect={() => selectResult(user)}
-                  className="gap-2"
+                  className="cursor-pointer gap-2"
                   value={user.nickname}
                 >
                   <UserAvatar nickname={user.nickname} />
@@ -169,6 +172,7 @@ export function UserSearch({
               {recentUsers.map((user) => (
                 <CommandItem
                   key={user.address}
+                  className="cursor-pointer"
                   onSelect={() => selectRecent(user)}
                   value={user.nickname}
                 >
@@ -224,7 +228,7 @@ function NoticeCosmo({ enabled }: { enabled: boolean }) {
   return (
     <Notice className="bg-cosmo" enabled={enabled}>
       <div className="flex gap-2 items-center">
-        <p>{env.NEXT_PUBLIC_APP_NAME} cannot search COSMO</p>
+        <p>{env.NEXT_PUBLIC_APP_NAME} does not search COSMO</p>
 
         <Popover>
           <PopoverTrigger asChild>
