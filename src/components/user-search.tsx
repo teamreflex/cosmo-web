@@ -9,7 +9,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { HelpCircle, Loader2 } from "lucide-react";
 import { isAddress } from "viem";
 import { CosmoPublicUser, CosmoSearchResult } from "@/lib/universal/cosmo/auth";
 import { ofetch } from "ofetch";
@@ -25,6 +25,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { RecentUser } from "@/store";
 import VisuallyHidden from "./ui/visually-hidden";
 import { cn } from "@/lib/utils";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { env } from "@/env";
 
 type Props = PropsWithChildren<{
   placeholder?: string;
@@ -113,8 +115,10 @@ export function UserSearch({
         </VisuallyHidden>
 
         <Notice className="bg-red-600" enabled={status === "error"}>
-          <p>COSMO error, try again soon</p>
+          <p>Search error, try again soon</p>
         </Notice>
+
+        <NoticeCosmo enabled={true} />
 
         <CommandInput
           autoFocus={true}
@@ -213,5 +217,40 @@ function Notice({ children, className, enabled }: NoticeProps) {
       {children}
       <DialogClose />
     </div>
+  );
+}
+
+function NoticeCosmo({ enabled }: { enabled: boolean }) {
+  return (
+    <Notice className="bg-cosmo" enabled={enabled}>
+      <div className="flex gap-2 items-center">
+        <p>{env.NEXT_PUBLIC_APP_NAME} cannot search COSMO</p>
+
+        <Popover>
+          <PopoverTrigger asChild>
+            <button>
+              <HelpCircle className="h-4 w-4" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent side="top" className="w-auto max-w-[22rem]" asChild>
+            <div className="flex flex-col gap-1 text-xs">
+              <p className="font-semibold">
+                COSMO requires signing in to search for users.
+              </p>
+              <p>
+                Any search queries will be made against accounts that have been
+                saved into the {env.NEXT_PUBLIC_APP_NAME} system, which does not
+                include all accounts.
+              </p>
+              <p>
+                In most cases, going directly to apollo.cafe/@
+                <span className="font-semibold">username</span> will find the
+                correct ID and load it into the system.
+              </p>
+            </div>
+          </PopoverContent>
+        </Popover>
+      </div>
+    </Notice>
   );
 }
