@@ -46,13 +46,10 @@ export default async function ProgressPage(props: Props) {
   return (
     <section className="flex flex-col">
       <CosmoArtistProvider artists={artists}>
-        <SelectedArtistsProvider selectedArtists={selectedArtists}>
+        <SelectedArtistsProvider selected={selectedArtists}>
           <ProfileProvider targetProfile={targetUser.profile}>
             <HydrationBoundary state={dehydrate(queryClient)}>
-              <ProgressRenderer
-                artists={artists}
-                address={targetUser.profile.address}
-              />
+              <ProgressRenderer address={targetUser.profile.address} />
             </HydrationBoundary>
             <Portal to="#help">
               <HelpDialog />

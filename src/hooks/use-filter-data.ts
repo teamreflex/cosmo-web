@@ -1,4 +1,4 @@
-import { baseUrl } from "@/lib/utils";
+import { baseUrl } from "@/lib/query-client";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { ofetch } from "ofetch";
 import { useCosmoArtists } from "./use-cosmo-artist";
@@ -18,7 +18,7 @@ export const filterDataQuery = queryOptions({
 export function useFilterData() {
   const { data } = useSuspenseQuery(filterDataQuery);
   const { getArtist } = useCosmoArtists();
-  const selectedArtists = useSelectedArtists();
+  const { selectedIds } = useSelectedArtists();
 
   const seasons = data.seasons
     .map(({ artistId, seasons }) => {
@@ -29,8 +29,8 @@ export function useFilterData() {
       };
     })
     .filter(({ artist }) => {
-      if (selectedArtists.length === 0) return true;
-      return selectedArtists.includes(artist.id);
+      if (selectedIds.length === 0) return true;
+      return selectedIds.includes(artist.id);
     });
 
   const classes = data.classes
@@ -42,8 +42,8 @@ export function useFilterData() {
       };
     })
     .filter(({ artist }) => {
-      if (selectedArtists.length === 0) return true;
-      return selectedArtists.includes(artist.id);
+      if (selectedIds.length === 0) return true;
+      return selectedIds.includes(artist.id);
     });
 
   return {

@@ -35,7 +35,7 @@ export function objektOptions<Response, Item>(
 export function useObjektResponse<Response, Item>(
   opts: ObjektResponseOptions<Response, Item>
 ) {
-  const selectedArtists = useSelectedArtists();
+  const { selectedIds } = useSelectedArtists();
   const [filters] = useCosmoFilters();
   const query = useSuspenseInfiniteQuery({
     queryKey: [
@@ -44,7 +44,7 @@ export function useObjektResponse<Response, Item>(
         ? [
             {
               ...filters,
-              artists: selectedArtists,
+              artists: selectedIds,
             },
           ]
         : []),

@@ -6,6 +6,7 @@ import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import { getCookie } from "@/lib/server/cookies";
 import { auth } from "@/lib/server/auth";
 import { headers } from "next/headers";
+import { experimental_taintObjectReference as taintObjectReference } from "react";
 
 /**
  * Fetch a user by nickname or address.
@@ -44,7 +45,15 @@ export const getTokenBalances = cache(async (address: string) =>
  * Fetch the current session.
  */
 export const getSession = cache(async () => {
-  return await auth.api.getSession({
+  const session = await auth.api.getSession({
     headers: await headers(),
   });
+
+  if (!session) {
+    return null;
+  }
+
+  taintObjectReference("Don't pass session information to the client", session);
+
+  return session;
 });

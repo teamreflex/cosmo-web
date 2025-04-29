@@ -2,7 +2,6 @@ import FilteredObjektDisplay from "@/components/objekt/filtered-objekt-display";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { filtersAreDirty } from "@/hooks/use-filters";
 import { objektOptions } from "@/hooks/use-objekt-response";
-import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import {
   BFFCollectionGroup,
@@ -15,7 +14,7 @@ import { useProfileContext } from "@/hooks/use-profile";
 import VirtualizedGrid from "@/components/objekt/virtualized-grid";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import LoaderRemote from "@/components/objekt/loader-remote";
-import { baseUrl } from "@/lib/utils";
+import { baseUrl } from "@/lib/query-client";
 import { useAuthenticated } from "@/hooks/use-authenticated";
 import { useSelectedArtists } from "@/hooks/use-selected-artists";
 
@@ -23,7 +22,6 @@ const INITIAL_PAGE = 1;
 const PAGE_SIZE = 30;
 
 type Props = {
-  artists: CosmoArtistWithMembersBFF[];
   gridColumns: number;
   targetUser: PublicProfile;
   currentUser?: PublicProfile;
@@ -37,7 +35,7 @@ export default function BlockchainGroups(props: Props) {
   const lockedObjekts = useProfileContext((ctx) => ctx.lockedObjekts);
   const pins = useProfileContext((ctx) => ctx.pins);
   const isDesktop = useMediaQuery();
-  const selectedArtists = useSelectedArtists();
+  const { selectedIds } = useSelectedArtists();
 
   const usingFilters = filtersAreDirty(filters);
   const gridColumns = isDesktop ? props.gridColumns : 3;
@@ -91,7 +89,7 @@ export default function BlockchainGroups(props: Props) {
       return await ofetch<BFFCollectionGroupResponse>(endpoint, {
         query: {
           ...Object.fromEntries(searchParams.entries()),
-          artists: selectedArtists,
+          artists: selectedIds,
         },
       });
     },
@@ -114,7 +112,7 @@ export default function BlockchainGroups(props: Props) {
   });
 
   return (
-    <FilteredObjektDisplay artists={props.artists} gridColumns={gridColumns}>
+    <FilteredObjektDisplay gridColumns={gridColumns}>
       <LoaderRemote
         options={options}
         shouldRender={shouldRender}

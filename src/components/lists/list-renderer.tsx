@@ -10,12 +10,11 @@ import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
 import ListOverlay from "./list-overlay";
 import DeleteList from "./delete-list";
 import UpdateList from "./update-list";
-import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { useFilters } from "@/hooks/use-filters";
 import FiltersContainer from "../collection/filters-container";
 import { ofetch } from "ofetch";
-import { baseUrl } from "@/lib/utils";
+import { baseUrl } from "@/lib/query-client";
 import { ObjektResponseOptions } from "@/hooks/use-objekt-response";
 import { ObjektSidebar } from "../objekt/common";
 import ExpandableObjekt from "../objekt/objekt-expandable";
@@ -27,7 +26,6 @@ import ObjektIndexFilters from "../collection/filter-contexts/objekt-index-filte
 
 type Props = {
   list: ObjektList;
-  artists: CosmoArtistWithMembersBFF[];
   authenticated: boolean;
   user: PublicProfile;
   gridColumns: number;
@@ -79,7 +77,7 @@ export default function ListRenderer(props: Props) {
         <ObjektIndexFilters />
       </FiltersContainer>
 
-      <FilteredObjektDisplay artists={props.artists} gridColumns={gridColumns}>
+      <FilteredObjektDisplay gridColumns={gridColumns}>
         <LoaderRemote options={options} gridColumns={gridColumns} showTotal>
           {({ rows }) => (
             <VirtualizedGrid

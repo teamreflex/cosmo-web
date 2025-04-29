@@ -1,6 +1,5 @@
 "use client";
 
-import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import ListDropdown from "../lists/list-dropdown";
 import {
   IndexedObjekt,
@@ -13,7 +12,7 @@ import { TopOverlay } from "./index-overlay";
 import { useFilters } from "@/hooks/use-filters";
 import FiltersContainer from "../collection/filters-container";
 import { ofetch } from "ofetch";
-import { baseUrl } from "@/lib/utils";
+import { baseUrl } from "@/lib/query-client";
 import { parseAsString, useQueryState } from "nuqs";
 import { ObjektResponseOptions } from "@/hooks/use-objekt-response";
 import { ObjektSidebar } from "../objekt/common";
@@ -31,7 +30,6 @@ import { useSelectedArtists } from "@/hooks/use-selected-artists";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 
 type Props = {
-  artists: CosmoArtistWithMembersBFF[];
   objektLists?: ObjektList[];
   nickname?: string;
   gridColumns: number;
@@ -40,7 +38,7 @@ type Props = {
 
 export default function IndexRenderer(props: Props) {
   const { searchParams } = useFilters();
-  const selectedArtists = useSelectedArtists();
+  const { selectedIds } = useSelectedArtists();
   const [, setActiveObjekt] = useQueryState("id", parseAsString);
   const isDesktop = useMediaQuery();
 
@@ -60,7 +58,7 @@ export default function IndexRenderer(props: Props) {
         query: {
           ...Object.fromEntries(searchParams.entries()),
           page: pageParam,
-          artists: selectedArtists,
+          artists: selectedIds,
         },
       }).then((res) => parsePage<LegacyObjektResponse<IndexedObjekt>>(res));
     },
@@ -86,7 +84,7 @@ export default function IndexRenderer(props: Props) {
         <ObjektIndexFilters />
       </FiltersContainer>
 
-      <FilteredObjektDisplay artists={props.artists} gridColumns={gridColumns}>
+      <FilteredObjektDisplay gridColumns={gridColumns}>
         <LoaderRemote options={options} gridColumns={gridColumns} showTotal>
           {({ rows }) => (
             <VirtualizedGrid

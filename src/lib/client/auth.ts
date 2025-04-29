@@ -1,6 +1,6 @@
 import { createAuthClient } from "better-auth/react";
 import { inferAdditionalFields } from "better-auth/client/plugins";
-import { baseUrl } from "../utils";
+import { baseUrl } from "../query-client";
 import type { auth } from "../server/auth";
 
 /**

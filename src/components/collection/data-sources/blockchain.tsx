@@ -2,9 +2,8 @@ import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { ofetch } from "ofetch";
 import { LegacyObjektResponse, parsePage } from "@/lib/universal/objekts";
 import { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
-import { baseUrl } from "@/lib/utils";
+import { baseUrl } from "@/lib/query-client";
 import { useProfileContext } from "@/hooks/use-profile";
-import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import { objektOptions } from "@/hooks/use-objekt-response";
 import FilteredObjektDisplay from "@/components/objekt/filtered-objekt-display";
 import { useCallback } from "react";
@@ -20,7 +19,6 @@ import { useAuthenticated } from "@/hooks/use-authenticated";
 import { useSelectedArtists } from "@/hooks/use-selected-artists";
 
 type Props = {
-  artists: CosmoArtistWithMembersBFF[];
   gridColumns: number;
   targetUser: PublicProfile;
   currentUser?: PublicProfile;
@@ -34,7 +32,7 @@ export default function Blockchain(props: Props) {
   const pins = useProfileContext((ctx) => ctx.pins);
   const lockedObjekts = useProfileContext((ctx) => ctx.lockedObjekts);
   const isDesktop = useMediaQuery();
-  const selectedArtists = useSelectedArtists();
+  const { selectedIds } = useSelectedArtists();
 
   const usingFilters = filtersAreDirty(filters);
   const gridColumns = isDesktop ? props.gridColumns : 3;
@@ -77,7 +75,7 @@ export default function Blockchain(props: Props) {
         query: {
           ...Object.fromEntries(props.searchParams.entries()),
           page: pageParam,
-          artists: selectedArtists,
+          artists: selectedIds,
         },
       }).then((res) => parsePage<LegacyObjektResponse<CosmoObjekt>>(res));
     },
@@ -94,7 +92,7 @@ export default function Blockchain(props: Props) {
   });
 
   return (
-    <FilteredObjektDisplay artists={props.artists} gridColumns={gridColumns}>
+    <FilteredObjektDisplay gridColumns={gridColumns}>
       <LoaderRemote
         options={options}
         shouldRender={shouldRender}

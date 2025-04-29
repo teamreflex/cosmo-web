@@ -5,6 +5,7 @@ import { env } from "./src/env";
 const config: NextConfig = {
   experimental: {
     reactCompiler: true,
+    taint: true,
     staleTimes: {
       dynamic: 60 * 5, // 5 minutes
       static: 60 * 5, // 5 minutes

@@ -13,7 +13,7 @@ import {
 } from "../ui/select";
 import ProgressSeason from "./progress-season";
 import ProgressLeaderboard from "./progress-leaderboard";
-import { baseUrl } from "@/lib/utils";
+import { baseUrl } from "@/lib/query-client";
 import { filterDataQuery } from "@/hooks/use-filter-data";
 
 type Props = {

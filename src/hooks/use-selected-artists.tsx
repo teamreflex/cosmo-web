@@ -1,54 +1,38 @@
 "use client";
 
-import { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
-import { ValidArtist } from "@/lib/universal/cosmo/common";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useTransition } from "react";
+import { useCosmoArtists } from "./use-cosmo-artist";
+import { setSelectedArtist } from "@/components/navbar/actions";
+import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 
 type SelectedArtistsContext = {
-  artists: CosmoArtistBFF[];
-  selectedArtists: CosmoArtistBFF[];
+  selectedArtists: CosmoArtistWithMembersBFF[];
   selectedIds: string[];
-  handleSelect: (artistId: ValidArtist) => void;
 };
 
 const SelectedArtistsContext = createContext<SelectedArtistsContext>({
-  artists: [],
   selectedArtists: [],
   selectedIds: [],
-  handleSelect: () => {},
 });
 
 type SelectedArtistsProviderProps = {
   children: React.ReactNode;
-  artists: CosmoArtistBFF[];
   selected: string[];
 };
 
 export function SelectedArtistsProvider(props: SelectedArtistsProviderProps) {
-  const [selectedIds, setSelectedIds] = useState(() => props.selected);
-
-  function handleSelect(artistId: ValidArtist) {
-    setSelectedIds((prev) => {
-      if (prev.includes(artistId)) {
-        return [...prev].filter((a) => a !== artistId);
-      }
-
-      return [...prev, artistId];
-    });
-  }
+  const { artists } = useCosmoArtists();
 
   const selectedArtists =
-    selectedIds.length > 0
-      ? props.artists.filter((a) => selectedIds.includes(a.id))
-      : props.artists;
+    props.selected.length > 0
+      ? artists.filter((a) => props.selected.includes(a.id))
+      : artists;
 
   return (
     <SelectedArtistsContext.Provider
       value={{
-        artists: props.artists,
         selectedArtists,
-        selectedIds,
-        handleSelect,
+        selectedIds: props.selected,
       }}
     >
       {props.children}
@@ -56,6 +40,35 @@ export function SelectedArtistsProvider(props: SelectedArtistsProviderProps) {
   );
 }
 
+/**
+ * Get the current selected artists.
+ */
 export function useSelectedArtists() {
-  return useContext(SelectedArtistsContext);
+  const ctx = useContext(SelectedArtistsContext);
+
+  if (!ctx) {
+    throw new Error(
+      "useSelectedArtists must be used within a SelectedArtistsProvider"
+    );
+  }
+
+  return ctx;
+}
+
+/**
+ * Update the selected artists.
+ */
+export function useUpdateSelectedArtists() {
+  const [isPending, startTransition] = useTransition();
+
+  function handleSelect(artistId: string) {
+    startTransition(async () => {
+      await setSelectedArtist(artistId);
+    });
+  }
+
+  return {
+    handleSelect,
+    isPending,
+  };
 }

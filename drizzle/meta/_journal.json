@@ -134,6 +134,13 @@
       "when": 1745656696463,
       "tag": "0018_left_hellfire_club",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1745915734111,
+      "tag": "0019_fat_silverclaw",
+      "breakpoints": true
     }
   ]
 }

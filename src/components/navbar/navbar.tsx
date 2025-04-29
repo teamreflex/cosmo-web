@@ -3,7 +3,6 @@ import { Suspense } from "react";
 import UpdateDialog from "../misc/update-dialog";
 import SystemStatus from "../misc/system-status";
 import Links from "./links.server";
-import { Loader2 } from "lucide-react";
 import {
   getArtistsWithMembers,
   getSelectedArtists,
@@ -13,7 +12,11 @@ import StateGuest from "../auth/state-guest";
 import StateAuthenticated from "../auth/state-authenticated";
 import { ErrorBoundary } from "react-error-boundary";
 import AuthFallback from "../auth/auth-fallback";
+import { UserStateProvider } from "@/hooks/use-user-state";
+import { CosmoArtistProvider } from "@/hooks/use-cosmo-artist";
+import { toPublicUser } from "@/lib/server/auth";
 import { SelectedArtistsProvider } from "@/hooks/use-selected-artists";
+import Skeleton from "../skeleton/skeleton";
 
 export default async function Navbar() {
   return (
@@ -36,7 +39,9 @@ export default async function Navbar() {
             <div className="flex grow-0 items-center justify-end gap-2">
               <ErrorBoundary fallback={<AuthFallback />}>
                 <Suspense
-                  fallback={<Loader2 className="size-5 animate-spin" />}
+                  fallback={
+                    <Skeleton className="size-8 rounded-full shrink-0 aspect-square" />
+                  }
                 >
                   <Auth />
                 </Suspense>
@@ -58,12 +63,16 @@ async function Auth() {
   ]);
 
   return (
-    <SelectedArtistsProvider artists={artists} selected={selectedArtists}>
-      {session === null ? (
-        <StateGuest />
-      ) : (
-        <StateAuthenticated user={session.user} />
-      )}
-    </SelectedArtistsProvider>
+    <CosmoArtistProvider artists={artists}>
+      <SelectedArtistsProvider selected={selectedArtists}>
+        <UserStateProvider currentUser={toPublicUser(session?.user)}>
+          {session === null ? (
+            <StateGuest />
+          ) : (
+            <StateAuthenticated user={toPublicUser(session.user)} />
+          )}
+        </UserStateProvider>
+      </SelectedArtistsProvider>
+    </CosmoArtistProvider>
   );
 }

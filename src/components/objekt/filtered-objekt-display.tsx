@@ -1,7 +1,6 @@
 import { ReactNode, Suspense, useCallback } from "react";
 import { HeartCrack, RefreshCcw } from "lucide-react";
 import { QueryErrorResetBoundary } from "@tanstack/react-query";
-import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import MemberFilter from "../collection/member-filter";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { Button } from "../ui/button";
@@ -12,13 +11,11 @@ import SkeletonGradient from "../skeleton/skeleton-overlay";
 
 type Props = {
   children: ReactNode;
-  artists: CosmoArtistWithMembersBFF[];
   gridColumns: number;
 };
 
 export default function FilteredObjektDisplay({
   children,
-  artists,
   gridColumns,
 }: Props) {
   const [filters, setFilters] = useCosmoFilters();
@@ -46,7 +43,6 @@ export default function FilteredObjektDisplay({
   return (
     <div className="flex flex-col">
       <MemberFilter
-        artists={artists}
         active={filters.artist ?? filters.member}
         updateArtist={setActiveArtist}
         updateMember={setActiveMember}

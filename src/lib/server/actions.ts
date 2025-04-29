@@ -1,0 +1,59 @@
+import {
+  createSafeActionClient,
+  DEFAULT_SERVER_ERROR_MESSAGE,
+} from "next-safe-action";
+import { z } from "zod";
+import { auth } from "./auth";
+import { headers } from "next/headers";
+
+export class ActionError extends Error {}
+
+/**
+ * Default action client that adds the session to the context.
+ */
+export const actionClient = createSafeActionClient({
+  defineMetadataSchema() {
+    return z.object({
+      actionName: z.string(),
+    });
+  },
+  handleServerError(e) {
+    if (e instanceof ActionError) {
+      return e.message;
+    }
+
+    return DEFAULT_SERVER_ERROR_MESSAGE;
+  },
+}).use(async ({ next }) => {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  return next({
+    ctx: {
+      session,
+    },
+  });
+});
+
+/**
+ * Action client that ensures the user is authenticated.
+ */
+export const authActionClient = actionClient.use(async ({ next, ctx }) => {
+  if (!ctx.session) {
+    throw new ActionError("Please sign-in to continue.");
+  }
+
+  return next({ ctx: { session: ctx.session } });
+});
+
+/**
+ * Action client that ensures the user is an admin.
+ */
+export const adminActionClient = authActionClient.use(async ({ next, ctx }) => {
+  if (ctx.session.user.isAdmin !== true) {
+    throw new ActionError("You are not authorized to perform this action.");
+  }
+
+  return next({ ctx: { session: ctx.session } });
+});

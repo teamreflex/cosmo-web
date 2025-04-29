@@ -1,8 +1,7 @@
 "use client";
 
 import { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
-import { useId, useTransition } from "react";
-import { setSelectedArtist } from "./actions";
+import { useId } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,14 +10,17 @@ import {
 } from "../ui/dropdown-menu";
 import Image from "next/image";
 import { Check, Loader2 } from "lucide-react";
-import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { useSelectedArtists } from "@/hooks/use-selected-artists";
+import {
+  useSelectedArtists,
+  useUpdateSelectedArtists,
+} from "@/hooks/use-selected-artists";
+import { useCosmoArtists } from "@/hooks/use-cosmo-artist";
 
 export default function ArtistSelectbox() {
   const id = useId();
-  const { artists, selectedArtists, selectedIds, handleSelect } =
-    useSelectedArtists();
+  const { artists } = useCosmoArtists();
+  const { selectedArtists, selectedIds } = useSelectedArtists();
 
   return (
     <DropdownMenu>
@@ -47,7 +49,6 @@ export default function ArtistSelectbox() {
             <ArtistItem
               key={artist.id}
               artist={artist}
-              onSelect={handleSelect}
               isSelected={selectedIds.includes(artist.id)}
             />
           ))}
@@ -58,26 +59,18 @@ export default function ArtistSelectbox() {
 
 type ArtistItemProps = {
   artist: CosmoArtistBFF;
-  onSelect: (artistId: ValidArtist) => void;
   isSelected: boolean;
 };
 
-export function ArtistItem({ artist, onSelect, isSelected }: ArtistItemProps) {
-  const [isPending, startTransition] = useTransition();
-
-  function handleSelect(artist: CosmoArtistBFF) {
-    onSelect(artist.id);
-    startTransition(async () => {
-      await setSelectedArtist(artist.id);
-    });
-  }
+export function ArtistItem({ artist, isSelected }: ArtistItemProps) {
+  const { handleSelect, isPending } = useUpdateSelectedArtists();
 
   return (
     <DropdownMenuItem
       key={artist.id}
       onClick={(e) => {
         e.preventDefault();
-        handleSelect(artist);
+        handleSelect(artist.id);
       }}
       disabled={isPending}
       className="min-w-40"

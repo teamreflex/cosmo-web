@@ -1,3 +1,4 @@
+import { env } from "@/env";
 import {
   defaultShouldDehydrateQuery,
   isServer,
@@ -34,4 +35,13 @@ export function getQueryClient() {
     if (!browserQueryClient) browserQueryClient = makeQueryClient();
     return browserQueryClient;
   }
+}
+
+/**
+ * Get the base URL for the app.
+ */
+export function baseUrl() {
+  const scheme =
+    env.NEXT_PUBLIC_VERCEL_ENV === "development" ? "http" : "https";
+  return `${scheme}://${env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL}`;
 }

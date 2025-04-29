@@ -5,14 +5,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
-import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import Image from "next/image";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { useSelectedArtists } from "@/hooks/use-selected-artists";
 
 type Props = {
   showArtists?: boolean;
-  artists: CosmoArtistWithMembersBFF[];
   active: string | null;
   updateArtist: (artist: string) => void;
   updateMember: (member: string) => void;
@@ -20,24 +18,18 @@ type Props = {
 
 export default function MemberFilter({
   showArtists = true,
-  artists,
   active,
   updateArtist,
   updateMember,
 }: Props) {
-  const selectedArtists = useSelectedArtists();
+  const { selectedArtists } = useSelectedArtists();
 
   return (
     <div className="relative flex flex-col h-fit w-full">
       <div className="absolute pointer-events-none z-20 top-0 left-0 h-full w-2 bg-linear-to-r from-background to-transparent" />
       <div className="absolute pointer-events-none z-20 top-0 right-0 h-full w-2 bg-linear-to-l from-background to-transparent" />
 
-      {artists
-        .filter((artist) =>
-          selectedArtists.length > 0
-            ? selectedArtists.includes(artist.id)
-            : true
-        )
+      {selectedArtists
         .sort((a, b) => b.comoTokenId - a.comoTokenId)
         .map((artist) => (
           <div

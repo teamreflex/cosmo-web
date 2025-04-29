@@ -42,13 +42,13 @@ export default async function UserTransfersPage(props: Props) {
 
   return (
     <section className="flex flex-col">
-      <SelectedArtistsProvider selectedArtists={selectedArtists}>
-        <CosmoArtistProvider artists={artists}>
+      <CosmoArtistProvider artists={artists}>
+        <SelectedArtistsProvider selected={selectedArtists}>
           <HydrationBoundary state={dehydrate(queryClient)}>
-            <TransfersRenderer profile={targetUser.profile} artists={artists} />
+            <TransfersRenderer profile={targetUser.profile} />
           </HydrationBoundary>
-        </CosmoArtistProvider>
-      </SelectedArtistsProvider>
+        </SelectedArtistsProvider>
+      </CosmoArtistProvider>
 
       <div id="pagination" />
     </section>

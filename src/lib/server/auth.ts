@@ -1,13 +1,15 @@
+import "server-only";
 import { db } from "./db";
 import { isAddress } from "viem";
-import { baseUrl, GRID_COLUMNS } from "@/lib/utils";
+import { CollectionDataSource, GRID_COLUMNS } from "@/lib/utils";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { env } from "@/env";
 import { z } from "zod";
 import * as authSchema from "@/lib/server/db/auth-schema";
 import { createCipheriv, createDecipheriv, randomBytes } from "crypto";
-import { PublicUser, User } from "../universal/auth";
+import { PublicUser } from "../universal/auth";
+import { baseUrl } from "../query-client";
 
 /**
  * Better Auth server instance.
@@ -117,7 +119,6 @@ export const auth = betterAuth({
         required: false,
         input: true,
         returned: true,
-        fieldName: "cosmo_address",
         validator: {
           input: z.string().refine((val) => isAddress(val), {
             message: "Not a valid COSMO address",
@@ -131,7 +132,6 @@ export const auth = betterAuth({
         defaultValue: false,
         input: false,
         returned: true,
-        fieldName: "is_admin",
       },
       gridColumns: {
         type: "number",
@@ -139,7 +139,6 @@ export const auth = betterAuth({
         defaultValue: GRID_COLUMNS,
         input: true,
         returned: true,
-        fieldName: "grid_columns",
       },
       collectionMode: {
         type: "string",
@@ -147,11 +146,14 @@ export const auth = betterAuth({
         defaultValue: "blockchain",
         input: true,
         returned: true,
-        fieldName: "collection_mode",
       },
     },
   },
 });
+
+// should not be used in client code
+export type Session = typeof auth.$Infer.Session;
+export type ServerUser = Session["user"];
 
 const ALGORITHM = "aes-256-gcm";
 const AUTH_TAG_LENGTH = 16;
@@ -199,14 +201,26 @@ export function decryptToken(encrypted: string, key: string) {
 /**
  * Safely convert a User object to a PublicUser object.
  */
-export function toPublicUser(user: User): PublicUser {
+export function toPublicUser(user: ServerUser): PublicUser;
+export function toPublicUser(user: undefined): undefined;
+export function toPublicUser(
+  user: ServerUser | undefined
+): PublicUser | undefined;
+export function toPublicUser(
+  user: ServerUser | undefined
+): PublicUser | undefined {
+  if (!user) {
+    return undefined;
+  }
+
   return {
     id: user.id,
     username: user.username,
     image: user.image,
-    isAdmin: user.isAdmin,
+    isAdmin: user.isAdmin ?? false,
     cosmoAddress: user.cosmoAddress,
-    gridColumns: user.gridColumns,
-    collectionMode: user.collectionMode,
+    gridColumns: user.gridColumns ?? GRID_COLUMNS,
+    collectionMode: (user.collectionMode ??
+      "blockchain") as CollectionDataSource,
   };
 }

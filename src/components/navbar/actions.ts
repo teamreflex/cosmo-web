@@ -2,7 +2,6 @@
 
 import { getSelectedArtists } from "@/app/data-fetching";
 import { setCookie } from "@/lib/server/cookies";
-import { revalidatePath } from "next/cache";
 
 /**
  * Set the selected artists in a cookie.
@@ -21,6 +20,4 @@ export async function setSelectedArtist(artist: string) {
     key: "artists",
     value: selected,
   });
-
-  revalidatePath("/");
 }

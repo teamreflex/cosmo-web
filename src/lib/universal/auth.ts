@@ -1,4 +1,5 @@
-import type { auth } from "../server/auth";
+import type { ServerUser } from "../server/auth";
+import { CollectionDataSource } from "../utils";
 
 export type TokenPayload = {
   id: number;
@@ -9,15 +10,18 @@ export type TokenPayload = {
   refreshToken: string;
 };
 
-export type Session = typeof auth.$Infer.Session;
-export type User = Session["user"];
-export type PublicUser = Pick<
-  User,
-  | "id"
-  | "username"
-  | "image"
-  | "isAdmin"
-  | "cosmoAddress"
-  | "gridColumns"
-  | "collectionMode"
->;
+export interface PublicUser
+  extends Pick<
+    ServerUser,
+    | "id"
+    | "username"
+    | "image"
+    | "isAdmin"
+    | "cosmoAddress"
+    | "gridColumns"
+    | "collectionMode"
+  > {
+  isAdmin: boolean;
+  gridColumns: number;
+  collectionMode: CollectionDataSource;
+}

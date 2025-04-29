@@ -12,17 +12,19 @@ import SettingsDialog from "./settings-dialog";
 import Link from "next/link";
 import { IconBrandDiscord } from "@tabler/icons-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { User } from "@/lib/universal/auth";
+import { PublicUser } from "@/lib/universal/auth";
 import { useSelectedArtists } from "@/hooks/use-selected-artists";
 import { ArtistItem } from "../navbar/artist-selectbox";
+import { useCosmoArtists } from "@/hooks/use-cosmo-artist";
 
 type UserDropdownProps = {
-  user: User;
+  user: PublicUser;
   onSignOut: () => void;
 };
 
 export default function UserDropdown({ user, onSignOut }: UserDropdownProps) {
-  const { artists, selectedIds, handleSelect } = useSelectedArtists();
+  const { artists } = useCosmoArtists();
+  const { selectedIds } = useSelectedArtists();
   const [openSettings, setOpenSettings] = useState(false);
 
   return (
@@ -34,9 +36,9 @@ export default function UserDropdown({ user, onSignOut }: UserDropdownProps) {
       />
 
       <DropdownMenuTrigger className="group outline-hidden">
-        <Avatar>
+        <Avatar className="size-8">
           <AvatarImage src={user.image ?? undefined} />
-          <AvatarFallback>U</AvatarFallback>
+          <AvatarFallback></AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
@@ -47,7 +49,6 @@ export default function UserDropdown({ user, onSignOut }: UserDropdownProps) {
               <ArtistItem
                 key={artist.id}
                 artist={artist}
-                onSelect={handleSelect}
                 isSelected={selectedIds.includes(artist.id)}
               />
             ))}

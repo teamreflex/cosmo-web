@@ -14,8 +14,8 @@ import {
   parseUserCollectionFilters,
 } from "@/lib/server/objekts/prefetching/objekt-blockchain";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
-import { SelectedArtistsProvider } from "@/hooks/use-selected-artists";
 import { fetchFilterData } from "@/lib/server/objekts/filter-data";
+import { SelectedArtistsProvider } from "@/hooks/use-selected-artists";
 
 type Props = {
   params: Promise<{
@@ -82,22 +82,19 @@ export default async function UserCollectionPage(props: Props) {
   });
 
   return (
-    <SelectedArtistsProvider selectedArtists={selectedArtists}>
-      <CosmoArtistProvider artists={artists}>
+    <CosmoArtistProvider artists={artists}>
+      <SelectedArtistsProvider selected={selectedArtists}>
         <ProfileProvider
           targetProfile={targetUser.profile}
           objektLists={targetUser.objektLists}
         >
           <section className="flex flex-col">
             <HydrationBoundary state={dehydrate(queryClient)}>
-              <ProfileRenderer
-                artists={artists}
-                targetUser={targetUser.profile}
-              />
+              <ProfileRenderer targetUser={targetUser.profile} />
             </HydrationBoundary>
           </section>
         </ProfileProvider>
-      </CosmoArtistProvider>
-    </SelectedArtistsProvider>
+      </SelectedArtistsProvider>
+    </CosmoArtistProvider>
   );
 }

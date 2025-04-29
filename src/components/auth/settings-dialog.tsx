@@ -6,7 +6,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { updateSettings } from "./actions";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -15,18 +14,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { toast } from "@/components/ui/use-toast";
 import { Loader2 } from "lucide-react";
 import { DataSourceSelector } from "@/components/collection/data-source-selector";
-import { User } from "@/lib/universal/auth";
+import { useAction } from "next-safe-action/hooks";
+import { updateSettings } from "./actions";
+import { PublicUser } from "@/lib/universal/auth";
 
 type SettingsDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  user: User;
+  user: PublicUser;
 };
 
 export default function SettingsDialog({
@@ -34,27 +34,23 @@ export default function SettingsDialog({
   onOpenChange,
   user,
 }: SettingsDialogProps) {
-  const [isPending, startTransition] = useTransition();
-  const router = useRouter();
   const { theme, setTheme } = useTheme();
-
-  function save(form: FormData) {
-    startTransition(async () => {
-      const result = await updateSettings(form);
-      if (result.status === "success") {
-        toast({
-          description: "Settings updated.",
-        });
-        router.refresh();
-        onOpenChange(false);
-      } else {
-        toast({
-          description: "Error updating settings.",
-          variant: "destructive",
-        });
-      }
-    });
-  }
+  const router = useRouter();
+  const { execute, isPending } = useAction(updateSettings, {
+    onSuccess() {
+      toast({
+        description: "Settings updated.",
+      });
+      router.refresh();
+      onOpenChange(false);
+    },
+    onError() {
+      toast({
+        description: "Error updating settings.",
+        variant: "destructive",
+      });
+    },
+  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -66,12 +62,16 @@ export default function SettingsDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form className="flex flex-col gap-4" action={save} id="settings-form">
+        <form
+          className="flex flex-col gap-4"
+          action={execute}
+          id="settings-form"
+        >
           {/* theme */}
           <div className="flex gap-2 items-center justify-between">
             <div className="flex flex-col">
-              <h2 className="col-span-3 font-semibold">Theme</h2>
-              <p className="col-span-3 col-start-1 row-span-2 text-sm opacity-80">
+              <h2 className="col-span-3 text-sm font-semibold">Theme</h2>
+              <p className="col-span-3 col-start-1 row-span-2 text-xs opacity-80">
                 Theme of the site.
               </p>
             </div>
@@ -94,8 +94,10 @@ export default function SettingsDialog({
           {/* grid column size */}
           <div className="flex gap-2 items-center justify-between">
             <div className="flex flex-col">
-              <h2 className="col-span-3 font-semibold">Objekt Columns</h2>
-              <p className="col-span-3 col-start-1 row-start-2 row-span-3 text-sm opacity-80">
+              <h2 className="col-span-3 text-sm font-semibold">
+                Objekt Columns
+              </h2>
+              <p className="col-span-3 col-start-1 row-start-2 row-span-3 text-xs opacity-80">
                 Number of columns to use when displaying objekts.
               </p>
             </div>
@@ -120,8 +122,10 @@ export default function SettingsDialog({
           {/* collection mode */}
           <div className="flex gap-2 items-center justify-between">
             <div className="flex flex-col">
-              <h2 className="col-span-3 font-semibold">Collection Mode</h2>
-              <p className="col-span-3 col-start-1 row-start-2 row-span-3 text-sm opacity-80">
+              <h2 className="col-span-3 text-sm font-semibold">
+                Collection Mode
+              </h2>
+              <p className="col-span-3 col-start-1 row-start-2 row-span-3 text-xs opacity-80">
                 Mode to use when displaying your own collection.
               </p>
             </div>
@@ -136,7 +140,7 @@ export default function SettingsDialog({
         <DialogFooter className="flex-row justify-end gap-2">
           <Button form="settings-form" type="submit" disabled={isPending}>
             <span>Save</span>
-            {isPending && <Loader2 className="ml-2 w-4 h-4 animate-spin" />}
+            {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
           </Button>
         </DialogFooter>
       </DialogContent>

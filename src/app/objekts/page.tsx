@@ -15,9 +15,10 @@ import { parseObjektIndex } from "@/lib/universal/parsers";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import { getQueryClient } from "@/lib/query-client";
 import { GRID_COLUMNS } from "@/lib/utils";
-import { SelectedArtistsProvider } from "@/hooks/use-selected-artists";
 import { CosmoArtistProvider } from "@/hooks/use-cosmo-artist";
 import { UserStateProvider } from "@/hooks/use-user-state";
+import { toPublicUser } from "@/lib/server/auth";
+import { SelectedArtistsProvider } from "@/hooks/use-selected-artists";
 
 export const metadata: Metadata = {
   title: "Objekts",
@@ -74,24 +75,22 @@ export default async function ObjektsIndexPage(props: Params) {
 
   return (
     <main className="container flex flex-col py-2">
-      <UserStateProvider
-        currentUser={session?.user}
-        selectedArtists={selectedArtists}
-      >
-        <CosmoArtistProvider artists={artists}>
-          <ProfileProvider currentProfile={undefined} objektLists={[]}>
-            <HydrationBoundary state={dehydrate(queryClient)}>
-              <IndexRenderer
-                artists={artists}
-                objektLists={[]}
-                nickname={undefined}
-                gridColumns={GRID_COLUMNS}
-                activeSlug={searchParams.id}
-              />
-            </HydrationBoundary>
-          </ProfileProvider>
-        </CosmoArtistProvider>
-      </UserStateProvider>
+      <CosmoArtistProvider artists={artists}>
+        <SelectedArtistsProvider selected={selectedArtists}>
+          <UserStateProvider currentUser={toPublicUser(session?.user)}>
+            <ProfileProvider currentProfile={undefined} objektLists={[]}>
+              <HydrationBoundary state={dehydrate(queryClient)}>
+                <IndexRenderer
+                  objektLists={[]}
+                  nickname={undefined}
+                  gridColumns={GRID_COLUMNS}
+                  activeSlug={searchParams.id}
+                />
+              </HydrationBoundary>
+            </ProfileProvider>
+          </UserStateProvider>
+        </SelectedArtistsProvider>
+      </CosmoArtistProvider>
     </main>
   );
 }

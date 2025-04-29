@@ -148,7 +148,7 @@ type SeasonSelectProps = {
 
 function SeasonSelect({ seasons, member, value, update }: SeasonSelectProps) {
   const { getArtist } = useCosmoArtists();
-  const selectedArtists = useSelectedArtists();
+  const { selectedIds } = useSelectedArtists();
 
   function set(value: string) {
     update(value === "all" ? null : value);
@@ -164,7 +164,7 @@ function SeasonSelect({ seasons, member, value, update }: SeasonSelectProps) {
     })
     .filter(
       ({ artist }) =>
-        selectedArtists.includes(artist.id) &&
+        selectedIds.includes(artist.id) &&
         artist.artistMembers
           .map((m) => m.name.toLowerCase())
           .includes(member.toLowerCase())

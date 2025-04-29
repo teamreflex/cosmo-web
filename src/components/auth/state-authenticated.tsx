@@ -5,10 +5,10 @@ import UserDropdown from "./user-dropdown";
 import { usePathname } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { authClient } from "@/lib/client/auth";
-import { User } from "@/lib/universal/auth";
+import { PublicUser } from "@/lib/universal/auth";
 
 type Props = {
-  user: User;
+  user: PublicUser;
 };
 
 export default function StateAuthenticated({ user }: Props) {

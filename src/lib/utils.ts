@@ -1,7 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { PublicProfile } from "./universal/cosmo/auth";
-import { env } from "@/env";
 import { ValidArtist } from "./universal/cosmo/common";
 
 export function cn(...inputs: ClassValue[]) {
@@ -82,15 +81,6 @@ export function track(event: string) {
   } catch (err) {
     // ignore
   }
-}
-
-/**
- * Get the base URL for the app.
- */
-export function baseUrl() {
-  const scheme =
-    env.NEXT_PUBLIC_VERCEL_ENV === "development" ? "http" : "https";
-  return `${scheme}://${env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL}`;
 }
 
 /**

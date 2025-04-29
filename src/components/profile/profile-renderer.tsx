@@ -1,6 +1,5 @@
 "use client";
 
-import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import { useFilters } from "@/hooks/use-filters";
 import FiltersContainer from "../collection/filters-container";
 import Portal from "../portal";
@@ -13,16 +12,11 @@ import CollectionFilters from "../collection/filter-contexts/collection-filters"
 import { AuthenticatedContext } from "@/hooks/use-authenticated";
 
 type Props = {
-  artists: CosmoArtistWithMembersBFF[];
   targetUser: PublicProfile;
   currentUser?: PublicProfile;
 };
 
-export default function ProfileRenderer({
-  artists,
-  targetUser,
-  currentUser,
-}: Props) {
+export default function ProfileRenderer({ targetUser, currentUser }: Props) {
   const gridColumns = targetUser.gridColumns ?? currentUser?.gridColumns;
 
   const { searchParams, showLocked, setShowLocked, dataSource, setDataSource } =
@@ -50,7 +44,6 @@ export default function ProfileRenderer({
         {match(dataSource)
           .with("blockchain", () => (
             <Blockchain
-              artists={artists}
               gridColumns={gridColumns}
               targetUser={targetUser}
               currentUser={currentUser}
@@ -60,7 +53,6 @@ export default function ProfileRenderer({
           ))
           .with("blockchain-groups", () => (
             <BlockchainGroups
-              artists={artists}
               gridColumns={gridColumns}
               targetUser={targetUser}
               currentUser={currentUser}
