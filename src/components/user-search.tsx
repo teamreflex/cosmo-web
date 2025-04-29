@@ -9,7 +9,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { HelpCircle, Loader2 } from "lucide-react";
 import { isAddress } from "viem";
 import { CosmoPublicUser, CosmoSearchResult } from "@/lib/universal/cosmo/auth";
 import { ofetch } from "ofetch";
@@ -23,10 +23,10 @@ import { useDebounceValue } from "usehooks-ts";
 import ProfileImage from "@/assets/profile.webp";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { RecentUser } from "@/store";
-import { ValidArtist } from "@/lib/universal/cosmo/common";
 import VisuallyHidden from "./ui/visually-hidden";
-import { useUserState } from "@/hooks/use-user-state";
 import { cn } from "@/lib/utils";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { env } from "@/env";
 
 type Props = PropsWithChildren<{
   placeholder?: string;
@@ -48,7 +48,6 @@ export function UserSearch({
   authenticated = false,
   includeSpin = false,
 }: Props) {
-  const { artist } = useUserState();
   const [query, setQuery] = useState<string>("");
   const [debouncedQuery] = useDebounceValue<string>(query, 500);
   const queryIsAddress = isAddress(debouncedQuery);
@@ -116,8 +115,10 @@ export function UserSearch({
         </VisuallyHidden>
 
         <Notice className="bg-red-600" enabled={status === "error"}>
-          <p>COSMO error, try again soon</p>
+          <p>Search error, try again soon</p>
         </Notice>
+
+        <NoticeCosmo enabled={true} />
 
         <CommandInput
           autoFocus={true}
@@ -143,7 +144,10 @@ export function UserSearch({
 
           <CommandGroup heading="Results">
             {queryIsAddress && (
-              <CommandItem onSelect={() => selectAddress(debouncedQuery)}>
+              <CommandItem
+                onSelect={() => selectAddress(debouncedQuery)}
+                className="cursor-pointer"
+              >
                 {debouncedQuery}
               </CommandItem>
             )}
@@ -154,10 +158,10 @@ export function UserSearch({
                 <CommandItem
                   key={user.address}
                   onSelect={() => selectResult(user)}
-                  className="gap-2"
+                  className="cursor-pointer gap-2"
                   value={user.nickname}
                 >
-                  <UserAvatar artist={artist} user={user} />
+                  <UserAvatar nickname={user.nickname} />
                   <span>{user.nickname}</span>
                 </CommandItem>
               ))}
@@ -168,6 +172,7 @@ export function UserSearch({
               {recentUsers.map((user) => (
                 <CommandItem
                   key={user.address}
+                  className="cursor-pointer"
                   onSelect={() => selectRecent(user)}
                   value={user.nickname}
                 >
@@ -183,28 +188,18 @@ export function UserSearch({
 }
 
 type UserResultProps = {
-  artist: ValidArtist;
-  user: CosmoPublicUser;
+  nickname: string;
 };
 
-function UserAvatar({ artist, user }: UserResultProps) {
-  const profile = user.profile.find(
-    (p) => p.artistName.toLowerCase() === artist.toLowerCase()
-  );
-
+function UserAvatar({ nickname }: UserResultProps) {
   return (
     <Avatar className="h-5 w-5">
-      <AvatarFallback>{user.nickname.charAt(0).toUpperCase()}</AvatarFallback>
-
-      {profile !== undefined ? (
-        <AvatarImage src={profile.image.thumbnail} alt={user.nickname} />
-      ) : (
-        <AvatarImage
-          className="bg-cosmo-profile p-1"
-          src={ProfileImage.src}
-          alt={user.nickname}
-        />
-      )}
+      <AvatarFallback>{nickname.charAt(0).toUpperCase()}</AvatarFallback>
+      <AvatarImage
+        className="bg-cosmo-profile p-1"
+        src={ProfileImage.src}
+        alt={nickname}
+      />
     </Avatar>
   );
 }
@@ -226,5 +221,40 @@ function Notice({ children, className, enabled }: NoticeProps) {
       {children}
       <DialogClose />
     </div>
+  );
+}
+
+function NoticeCosmo({ enabled }: { enabled: boolean }) {
+  return (
+    <Notice className="bg-cosmo" enabled={enabled}>
+      <div className="flex gap-2 items-center">
+        <p>{env.NEXT_PUBLIC_APP_NAME} does not search COSMO</p>
+
+        <Popover>
+          <PopoverTrigger asChild>
+            <button>
+              <HelpCircle className="h-4 w-4" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent side="top" className="w-auto max-w-[22rem]" asChild>
+            <div className="flex flex-col gap-1 text-xs">
+              <p className="font-semibold">
+                COSMO requires signing in to search for users.
+              </p>
+              <p>
+                Any search queries will be made against accounts that have been
+                saved into the {env.NEXT_PUBLIC_APP_NAME} system, which does not
+                include all accounts.
+              </p>
+              <p>
+                In most cases, going directly to apollo.cafe/@
+                <span className="font-semibold">username</span> will find the
+                correct ID and load it into the system.
+              </p>
+            </div>
+          </PopoverContent>
+        </Popover>
+      </div>
+    </Notice>
   );
 }

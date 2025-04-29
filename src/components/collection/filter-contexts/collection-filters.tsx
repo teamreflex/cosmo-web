@@ -2,7 +2,7 @@ import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { CollectionDataSource } from "@/lib/utils";
 import { Dispatch, SetStateAction, Suspense } from "react";
 // import LockedFilter from "../filter-locked";
-import GridableFilter from "../filter-gridable";
+// import GridableFilter from "../filter-gridable";
 import TransferableFilter from "../filter-transferable";
 import SeasonFilter from "../filter-season";
 import OnlineFilter from "../filter-online";
@@ -13,7 +13,6 @@ import { ErrorBoundary } from "react-error-boundary";
 import Skeleton from "@/components/skeleton/skeleton";
 
 type Props = {
-  allowCosmo?: boolean;
   showLocked: boolean;
   setShowLocked: (showLocked: boolean | null) => void;
   dataSource: CollectionDataSource;
@@ -25,7 +24,6 @@ type Props = {
  * - @/nickname
  */
 export default function CollectionFilters({
-  allowCosmo = false,
   showLocked,
   setShowLocked,
   dataSource,
@@ -36,9 +34,7 @@ export default function CollectionFilters({
   return (
     <div className="flex gap-2 items-center flex-wrap justify-center lg:group-data-[show=false]:flex group-data-[show=false]:hidden group-data-[show=true]:pb-2">
       {/* <LockedFilter showLocked={showLocked} setShowLocked={setShowLocked} /> */}
-      {dataSource === "cosmo" && (
-        <GridableFilter filters={filters.gridable} setFilters={setFilters} />
-      )}
+      {/* <GridableFilter filters={filters.gridable} setFilters={setFilters} /> */}
       <TransferableFilter
         filters={filters.transferable}
         setFilters={setFilters}
@@ -75,7 +71,6 @@ export default function CollectionFilters({
         setFilters={setFilters}
         dataSource={dataSource}
         setDataSource={setDataSource}
-        allowCosmo={allowCosmo}
       />
     </div>
   );

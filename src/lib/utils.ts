@@ -57,7 +57,7 @@ export const defaultProfile: PublicProfile = {
   },
   gridColumns: GRID_COLUMNS,
   isObjektEditor: false,
-  dataSource: "cosmo",
+  dataSource: "blockchain",
   isModhaus: false,
 };
 
