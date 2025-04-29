@@ -54,3 +54,14 @@ export interface AuthenticatedAction<TResponse, TSchema extends z.Schema>
     user: TokenPayload;
   }) => Promise<TResponse>;
 }
+
+export type AuthenticationResult =
+  | {
+      success: true;
+      user: TokenPayload;
+    }
+  | {
+      success: false;
+      error: string;
+      status: number;
+    };
