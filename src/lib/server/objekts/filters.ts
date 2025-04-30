@@ -100,7 +100,7 @@ export function withMember(member: string | null | undefined) {
  * Filter by artist.
  */
 export function withArtist(artist: ValidArtist | undefined | null) {
-  return artist ? [eq(collections.artist, artist)] : [];
+  return artist ? [eq(collections.artist, artist.toLowerCase())] : [];
 }
 
 /**
@@ -108,7 +108,14 @@ export function withArtist(artist: ValidArtist | undefined | null) {
  */
 export function withSelectedArtists(artists: string[] | undefined | null) {
   if (!artists) return [];
-  return artists.length > 0 ? [inArray(collections.artist, artists)] : [];
+  return artists.length > 0
+    ? [
+        inArray(
+          collections.artist,
+          artists.map((a) => a.toLowerCase())
+        ),
+      ]
+    : [];
 }
 
 /**
