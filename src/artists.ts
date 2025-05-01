@@ -136,10 +136,10 @@ export const tripleS = {
       units: "KRE,LOVElution",
       alias: "S1",
       profileImageUrl:
-        "https://static.cosmo.fans/uploads/member-profile/tripleS-240509/S1-E9B675B4-D7DD-466A-B04F-E612D77422C5.jpg",
+        "https://static.cosmo.fans/uploads/member-profile/2025-05-01/S1.jpg",
       order: 1,
       createdAt: "2022-11-17T14:26:05.102Z",
-      updatedAt: "2025-04-09T08:12:51.368Z",
+      updatedAt: "2025-05-01T00:42:15.459Z",
       mainObjektImageUrl:
         "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/1c14ab05-5adc-4eba-d553-795f75ce3300/2x",
       artistId: "tripleS",
@@ -151,10 +151,10 @@ export const tripleS = {
       units: "AAA,LOVElution",
       alias: "S2",
       profileImageUrl:
-        "https://static.cosmo.fans/uploads/member-profile/tripleS-240509/S2-5071B32D-7D1D-432D-A30E-373BD7282CF0.jpg",
+        "https://static.cosmo.fans/uploads/member-profile/2025-05-01/S2.jpg",
       order: 2,
       createdAt: "2022-11-17T14:26:05.116Z",
-      updatedAt: "2024-05-24T06:59:16.562Z",
+      updatedAt: "2025-05-01T00:42:15.487Z",
       mainObjektImageUrl:
         "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/811dd1ac-2534-48c7-7952-4a45180b7c00/2x",
       artistId: "tripleS",
@@ -166,10 +166,10 @@ export const tripleS = {
       units: "KRE,EVOLution",
       alias: "S3",
       profileImageUrl:
-        "https://static.cosmo.fans/uploads/member-profile/tripleS-240509/S3-EA92CF44-3C2D-4BB6-8573-B45AC51DB425.jpg",
+        "https://static.cosmo.fans/uploads/member-profile/2025-05-01/S3.jpg",
       order: 3,
       createdAt: "2022-11-17T14:26:05.129Z",
-      updatedAt: "2024-05-24T06:59:16.585Z",
+      updatedAt: "2025-05-01T00:42:15.593Z",
       mainObjektImageUrl:
         "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/38d7cb18-47d0-4ecc-311d-6cc05c463900/2x",
       artistId: "tripleS",
@@ -181,10 +181,10 @@ export const tripleS = {
       units: "KRE,EVOLution",
       alias: "S4",
       profileImageUrl:
-        "https://static.cosmo.fans/uploads/member-profile/tripleS-240509/S4-A9D60488-0B61-4CCD-8C00-657F839D4159.jpg",
+        "https://static.cosmo.fans/uploads/member-profile/2025-05-01/S4.jpg",
       order: 4,
       createdAt: "2022-11-17T14:26:05.143Z",
-      updatedAt: "2024-05-24T06:59:16.605Z",
+      updatedAt: "2025-05-01T00:42:15.625Z",
       mainObjektImageUrl:
         "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/828986b3-1640-4441-76c7-d03dd8941c00/2x",
       artistId: "tripleS",
@@ -196,10 +196,10 @@ export const tripleS = {
       units: "AAA,EVOLution",
       alias: "S5",
       profileImageUrl:
-        "https://static.cosmo.fans/uploads/member-profile/tripleS-240509/S5-D2B52437-85F1-47AD-9977-FE94C9F950E4.jpg",
+        "https://static.cosmo.fans/uploads/member-profile/2025-05-01/S5.jpg",
       order: 5,
       createdAt: "2022-11-17T14:26:05.156Z",
-      updatedAt: "2024-05-24T06:59:16.626Z",
+      updatedAt: "2025-05-01T00:42:15.651Z",
       mainObjektImageUrl:
         "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/bab79787-d154-4045-21eb-ba50dc947100/2x",
       artistId: "tripleS",
@@ -211,10 +211,10 @@ export const tripleS = {
       units: "KRE,EVOLution",
       alias: "S6",
       profileImageUrl:
-        "https://static.cosmo.fans/uploads/member-profile/tripleS-240509/S6-876E58C5-65F8-4FBC-824B-6C40160CE886.jpg",
+        "https://static.cosmo.fans/uploads/member-profile/2025-05-01/S6.jpg",
       order: 6,
       createdAt: "2022-11-17T14:26:05.172Z",
-      updatedAt: "2024-05-24T06:59:16.646Z",
+      updatedAt: "2025-05-01T00:42:15.677Z",
       mainObjektImageUrl:
         "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/2fc48e5b-d100-4b7e-1756-0bf3759bcb00/2x",
       artistId: "tripleS",
@@ -226,10 +226,10 @@ export const tripleS = {
       units: "AAA,EVOLution",
       alias: "S7",
       profileImageUrl:
-        "https://static.cosmo.fans/uploads/member-profile/tripleS-240509/S7-95B80948-87E9-4A94-86C5-21CAFF4AE0B9.jpg",
+        "https://static.cosmo.fans/uploads/member-profile/2025-05-01/S7.jpg",
       order: 7,
       createdAt: "2022-11-17T14:26:05.183Z",
-      updatedAt: "2024-05-24T06:59:16.668Z",
+      updatedAt: "2025-05-01T00:42:15.703Z",
       mainObjektImageUrl:
         "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/fb0ac2f3-08f9-41d8-579a-c264242ca300/2x",
       artistId: "tripleS",
@@ -241,10 +241,10 @@ export const tripleS = {
       units: "AAA,LOVElution",
       alias: "S8",
       profileImageUrl:
-        "https://static.cosmo.fans/uploads/member-profile/tripleS-240509/S8-6422BDD6-21EC-4D47-BA29-213051DB452E.jpg",
+        "https://static.cosmo.fans/uploads/member-profile/2025-05-01/S8.jpg",
       order: 8,
       createdAt: "2022-11-17T14:26:05.197Z",
-      updatedAt: "2024-05-24T06:59:16.689Z",
+      updatedAt: "2025-05-01T00:42:15.744Z",
       mainObjektImageUrl:
         "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/e6edf190-b9bf-453a-2e4a-5d7576eca300/2x",
       artistId: "tripleS",
@@ -256,10 +256,10 @@ export const tripleS = {
       units: "LOVElution",
       alias: "S9",
       profileImageUrl:
-        "https://static.cosmo.fans/uploads/member-profile/tripleS-240509/S9-8AFC3683-88E8-49C5-9977-71378A805BC9.jpg",
+        "https://static.cosmo.fans/uploads/member-profile/2025-05-01/S9.jpg",
       order: 9,
       createdAt: "2022-11-17T14:26:05.209Z",
-      updatedAt: "2024-05-24T06:59:16.713Z",
+      updatedAt: "2025-05-01T00:42:15.767Z",
       mainObjektImageUrl:
         "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/c849d3c7-fa69-43be-c981-9ec401c4a800/2x",
       artistId: "tripleS",
@@ -271,10 +271,10 @@ export const tripleS = {
       units: "LOVElution",
       alias: "S10",
       profileImageUrl:
-        "https://static.cosmo.fans/uploads/member-profile/tripleS-240509/S10-47AACF48-CEB6-4BBC-B9ED-FF799051B637.jpg",
+        "https://static.cosmo.fans/uploads/member-profile/2025-05-01/S10.jpg",
       order: 10,
       createdAt: "2022-12-13T08:16:22.456Z",
-      updatedAt: "2024-05-24T06:59:16.737Z",
+      updatedAt: "2025-05-01T00:42:15.796Z",
       mainObjektImageUrl:
         "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/64929f4b-1f9f-479a-fbd2-c218addda300/2x",
       artistId: "tripleS",
@@ -286,10 +286,10 @@ export const tripleS = {
       units: "EVOLution",
       alias: "S11",
       profileImageUrl:
-        "https://static.cosmo.fans/uploads/member-profile/tripleS-240509/S11-BCC123AC-8B84-4EFE-AD3B-7D505B0D6999.jpg",
+        "https://static.cosmo.fans/uploads/member-profile/2025-05-01/S11.jpg",
       order: 11,
       createdAt: "2023-02-23T06:54:19.828Z",
-      updatedAt: "2024-05-24T06:59:16.763Z",
+      updatedAt: "2025-05-01T00:42:15.821Z",
       mainObjektImageUrl:
         "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/d30cf869-5fdb-485f-8553-8042052ff200/2x",
       artistId: "tripleS",
@@ -301,10 +301,10 @@ export const tripleS = {
       units: "EVOLution",
       alias: "S12",
       profileImageUrl:
-        "https://static.cosmo.fans/uploads/member-profile/tripleS-240509/S12-CB3A60E3-254B-4015-B8E5-BCB1953320B2.jpg",
+        "https://static.cosmo.fans/uploads/member-profile/2025-05-01/S12.jpg",
       order: 12,
       createdAt: "2023-02-23T06:59:53.658Z",
-      updatedAt: "2024-05-24T06:59:16.787Z",
+      updatedAt: "2025-05-01T00:42:15.937Z",
       mainObjektImageUrl:
         "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/83167030-aa26-476f-3d05-162998620d00/2x",
       artistId: "tripleS",
@@ -316,10 +316,10 @@ export const tripleS = {
       units: "LOVElution",
       alias: "S13",
       profileImageUrl:
-        "https://static.cosmo.fans/uploads/member-profile/tripleS-240509/S13-F871E7CF-4E2B-4202-A271-225D593A2EE5.jpg",
+        "https://static.cosmo.fans/uploads/member-profile/2025-05-01/S13.jpg",
       order: 13,
       createdAt: "2023-03-29T06:11:41.141Z",
-      updatedAt: "2024-05-24T06:59:16.814Z",
+      updatedAt: "2025-05-01T00:42:15.965Z",
       mainObjektImageUrl:
         "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/57578d4c-266f-4b7e-6c44-c8200277d400/2x",
       artistId: "tripleS",
@@ -331,10 +331,10 @@ export const tripleS = {
       units: "LOVElution",
       alias: "S14",
       profileImageUrl:
-        "https://static.cosmo.fans/uploads/member-profile/tripleS-240509/S14-E9A8464F-EFBB-4B9C-8D66-207B2A0F3A57.jpg",
+        "https://static.cosmo.fans/uploads/member-profile/2025-05-01/S14.jpg",
       order: 14,
       createdAt: "2023-04-18T07:59:38.576Z",
-      updatedAt: "2024-05-24T06:59:16.840Z",
+      updatedAt: "2025-05-01T00:42:15.997Z",
       mainObjektImageUrl:
         "https://imagedelivery.net/qQuMkbHJ-0s6rwu8vup_5w/8a9749d6-7898-44b4-0e70-cda882a47100/2x",
       artistId: "tripleS",
@@ -346,10 +346,10 @@ export const tripleS = {
       units: "LOVElution",
       alias: "S15",
       profileImageUrl:
-        "https://static.cosmo.fans/uploads/member-profile/tripleS-240509/S15-65DAF215-2DD8-4201-A92A-3023C4AD1699.jpg",
+        "https://static.cosmo.fans/uploads/member-profile/2025-05-01/S15.jpg",
       order: 15,
       createdAt: "2023-07-03T14:55:41.416Z",
-      updatedAt: "2024-05-24T06:59:16.869Z",
+      updatedAt: "2025-05-01T00:42:16.118Z",
       mainObjektImageUrl: "https://via.placeholder.com/328x488?text=Objekt",
       artistId: "tripleS",
       primaryColorHex: "#D51313",
@@ -360,10 +360,10 @@ export const tripleS = {
       units: "EVOLution",
       alias: "S16",
       profileImageUrl:
-        "https://static.cosmo.fans/uploads/member-profile/tripleS-240509/S16-3E9B2674-8F09-4B85-883C-967669678F75.jpg",
+        "https://static.cosmo.fans/uploads/member-profile/2025-05-01/S16.jpg",
       order: 16,
       createdAt: "2023-07-24T05:04:35.866Z",
-      updatedAt: "2024-05-24T06:59:16.898Z",
+      updatedAt: "2025-05-01T00:42:16.144Z",
       mainObjektImageUrl: "https://via.placeholder.com/328x488?text=Objekt",
       artistId: "tripleS",
       primaryColorHex: "#FE8E76",
@@ -374,10 +374,10 @@ export const tripleS = {
       units: "NXT",
       alias: "S17",
       profileImageUrl:
-        "https://static.cosmo.fans/uploads/member-profile/tripleS-240509/S17-473D5B5F-9EEE-4765-A4AE-324626429AA4.jpg",
+        "https://static.cosmo.fans/uploads/member-profile/2025-05-01/S17.jpg",
       order: 17,
       createdAt: "2023-12-23T00:30:00.000Z",
-      updatedAt: "2024-05-24T06:59:16.927Z",
+      updatedAt: "2025-05-01T00:42:16.169Z",
       mainObjektImageUrl: "https://via.placeholder.com/328x488?text=Objekt",
       artistId: "tripleS",
       primaryColorHex: "#AC62B7",
@@ -388,10 +388,10 @@ export const tripleS = {
       units: "NXT",
       alias: "S18",
       profileImageUrl:
-        "https://static.cosmo.fans/uploads/member-profile/tripleS-240509/S18-04927BFC-B926-4D9C-A880-0DDA21F89196.jpg",
+        "https://static.cosmo.fans/uploads/member-profile/2025-05-01/S18.jpg",
       order: 18,
       createdAt: "2023-12-23T00:30:00.000Z",
-      updatedAt: "2024-05-24T06:59:16.956Z",
+      updatedAt: "2025-05-01T00:42:16.195Z",
       mainObjektImageUrl: "https://via.placeholder.com/328x488?text=Objekt",
       artistId: "tripleS",
       primaryColorHex: "#B7F54C",
@@ -402,10 +402,10 @@ export const tripleS = {
       units: "NXT",
       alias: "S19",
       profileImageUrl:
-        "https://static.cosmo.fans/uploads/member-profile/tripleS-240509/S19-0A9201D2-7A6F-425A-BC8E-71568372C2FF.jpg",
+        "https://static.cosmo.fans/uploads/member-profile/2025-05-01/S19.jpg",
       order: 19,
       createdAt: "2023-12-24T12:20:00.000Z",
-      updatedAt: "2024-05-24T06:59:16.985Z",
+      updatedAt: "2025-05-01T00:42:16.221Z",
       mainObjektImageUrl: "https://via.placeholder.com/328x488?text=Objekt",
       artistId: "tripleS",
       primaryColorHex: "#52D9BB",
@@ -416,10 +416,10 @@ export const tripleS = {
       units: "NXT",
       alias: "S20",
       profileImageUrl:
-        "https://static.cosmo.fans/uploads/member-profile/tripleS-240509/S20-00C58631-5A16-47CF-BF83-BE4CE45A0774.jpg",
+        "https://static.cosmo.fans/uploads/member-profile/2025-05-01/S20.jpg",
       order: 20,
       createdAt: "2023-12-24T12:20:00.000Z",
-      updatedAt: "2024-05-24T06:59:17.014Z",
+      updatedAt: "2025-05-01T00:42:16.280Z",
       mainObjektImageUrl: "https://via.placeholder.com/328x488?text=Objekt",
       artistId: "tripleS",
       primaryColorHex: "#FF428A",
@@ -430,10 +430,10 @@ export const tripleS = {
       units: "Glow",
       alias: "S21",
       profileImageUrl:
-        "https://static.cosmo.fans/uploads/member-profile/tripleS-240509/S21-47BF5239-9E28-4855-B0C9-6E9F4BFA1BE3.jpg",
+        "https://static.cosmo.fans/uploads/member-profile/2025-05-01/S21.jpg",
       order: 21,
       createdAt: "2024-04-08T01:57:32.000Z",
-      updatedAt: "2024-05-24T06:59:17.041Z",
+      updatedAt: "2025-05-01T00:42:16.304Z",
       mainObjektImageUrl: "https://via.placeholder.com/328x488?text=Objekt",
       artistId: "tripleS",
       primaryColorHex: "#C7A3E0",
@@ -444,10 +444,10 @@ export const tripleS = {
       units: "Glow",
       alias: "S22",
       profileImageUrl:
-        "https://static.cosmo.fans/uploads/member-profile/tripleS-240509/S22-FFE330C0-2E1B-49EF-8026-D321FFF18783.jpg",
+        "https://static.cosmo.fans/uploads/member-profile/2025-05-01/S22.jpg",
       order: 22,
       createdAt: "2024-04-08T01:57:32.000Z",
-      updatedAt: "2024-05-24T06:59:17.067Z",
+      updatedAt: "2025-05-01T00:42:16.330Z",
       mainObjektImageUrl: "https://via.placeholder.com/328x488?text=Objekt",
       artistId: "tripleS",
       primaryColorHex: "#7BBA8D",
@@ -458,10 +458,10 @@ export const tripleS = {
       units: "Glow",
       alias: "S23",
       profileImageUrl:
-        "https://static.cosmo.fans/uploads/member-profile/tripleS-240509/S23-85A2B777-13C1-44BE-8B91-E0C106544927.jpg",
+        "https://static.cosmo.fans/uploads/member-profile/2025-05-01/S23.jpg",
       order: 23,
       createdAt: "2024-04-08T01:57:32.000Z",
-      updatedAt: "2024-05-24T06:59:17.093Z",
+      updatedAt: "2025-05-01T00:42:16.355Z",
       mainObjektImageUrl: "https://via.placeholder.com/328x488?text=Objekt",
       artistId: "tripleS",
       primaryColorHex: "#CFF3FF",
@@ -472,10 +472,10 @@ export const tripleS = {
       units: "Glow",
       alias: "S24",
       profileImageUrl:
-        "https://static.cosmo.fans/uploads/member-profile/tripleS-240509/S24-696E6D31-1618-4DB7-83C4-29AF08CC055D.jpg",
+        "https://static.cosmo.fans/uploads/member-profile/2025-05-01/S24.jpg",
       order: 24,
       createdAt: "2024-04-08T01:57:32.000Z",
-      updatedAt: "2024-05-24T06:59:17.119Z",
+      updatedAt: "2025-05-01T00:42:16.466Z",
       mainObjektImageUrl: "https://via.placeholder.com/328x488?text=Objekt",
       artistId: "tripleS",
       primaryColorHex: "#FFAB62",
