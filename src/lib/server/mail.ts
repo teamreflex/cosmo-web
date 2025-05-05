@@ -34,12 +34,10 @@ export async function sendVerificationEmail({ to, url, token }: EmailProps) {
       <p>Click the link below to verify your ${env.NEXT_PUBLIC_APP_NAME} email address.</p>
       <a href="${url}">${url}</a>
       <br />
-      <p>Alternatively, you can use the following token to verify your email address: ${token}</p>
+      <p>If you did not request this verification, please ignore this email. Replies to this address are not monitored.</p>
       <br />
-      <p>If you did not request this verification, please ignore this email.</p>
     </body>
-  </html>
-	;`,
+  </html>`,
         },
       },
       Subject: {
@@ -69,8 +67,7 @@ export async function sendPasswordResetEmail({ to, url }: EmailProps) {
       <p>Click the link below to reset your ${env.NEXT_PUBLIC_APP_NAME} password.</p>
       <a href="${url}">${url}</a>
     </body>
-  </html>
-	;`,
+  </html>`,
         },
       },
       Subject: {

@@ -11,11 +11,11 @@ import { useState } from "react";
 import SettingsDialog from "./settings-dialog";
 import Link from "next/link";
 import { IconBrandDiscord } from "@tabler/icons-react";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { PublicUser } from "@/lib/universal/auth";
 import { useSelectedArtists } from "@/hooks/use-selected-artists";
 import { ArtistItem } from "../navbar/artist-selectbox";
 import { useCosmoArtists } from "@/hooks/use-cosmo-artist";
+import UserAvatar from "../profile/user-avatar";
 
 type UserDropdownProps = {
   user: PublicUser;
@@ -36,10 +36,10 @@ export default function UserDropdown({ user, onSignOut }: UserDropdownProps) {
       />
 
       <DropdownMenuTrigger className="group outline-hidden">
-        <Avatar className="size-8">
-          <AvatarImage src={user.image ?? undefined} />
-          <AvatarFallback></AvatarFallback>
-        </Avatar>
+        <UserAvatar
+          className="w-8 h-8 **:p-1"
+          nickname={user.username ?? "Apollo"}
+        />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuGroup>

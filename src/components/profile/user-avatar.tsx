@@ -7,7 +7,7 @@ type Props = {
   nickname: string;
 };
 
-export default async function UserAvatar({ className, nickname }: Props) {
+export default function UserAvatar({ className, nickname }: Props) {
   return (
     <Avatar className={cn("h-20 w-20", className)}>
       <AvatarFallback>{nickname.charAt(0).toUpperCase()}</AvatarFallback>
