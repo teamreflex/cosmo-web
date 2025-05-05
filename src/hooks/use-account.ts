@@ -31,3 +31,15 @@ export function useUnlinkAccount(account: LinkedAccount) {
     },
   });
 }
+
+export function useDeleteAccount() {
+  return useMutation({
+    mutationFn: async () => {
+      const result = await authClient.deleteUser();
+      if (result.error) {
+        throw new Error(getAuthErrorMessage(result.error));
+      }
+      return result.data;
+    },
+  });
+}

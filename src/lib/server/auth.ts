@@ -11,7 +11,11 @@ import { createCipheriv, createDecipheriv, randomBytes } from "crypto";
 import { PublicUser } from "../universal/auth";
 import { baseUrl } from "../query-client";
 import { username } from "better-auth/plugins/username";
-import { sendPasswordResetEmail, sendVerificationEmail } from "./mail";
+import {
+  sendAccountDeletionEmail,
+  sendPasswordResetEmail,
+  sendVerificationEmail,
+} from "./mail";
 
 /**
  * Better Auth server instance.
@@ -136,6 +140,16 @@ export const auth = betterAuth({
     cookiePrefix: "apollo",
   },
   user: {
+    deleteUser: {
+      enabled: true,
+      sendDeleteAccountVerification: async ({ user, url, token }) => {
+        await sendAccountDeletionEmail({
+          to: user.email,
+          url: url,
+          token: token,
+        });
+      },
+    },
     additionalFields: {
       cosmoAddress: {
         type: "string",

@@ -9,6 +9,9 @@ const ses = new SES({
   },
 });
 
+// format sender with friendly name
+const MAIL_SENDER = `${env.NEXT_PUBLIC_APP_NAME} <${env.MAIL_SES_FROM}>`;
+
 type EmailProps = {
   to: string;
   url: string;
@@ -18,9 +21,9 @@ type EmailProps = {
 /**
  * Send a verification email to the user.
  */
-export async function sendVerificationEmail({ to, url, token }: EmailProps) {
+export async function sendVerificationEmail({ to, url }: EmailProps) {
   await ses.sendEmail({
-    Source: env.MAIL_SES_FROM,
+    Source: MAIL_SENDER,
     Destination: {
       ToAddresses: [to],
     },
@@ -34,8 +37,9 @@ export async function sendVerificationEmail({ to, url, token }: EmailProps) {
       <p>Click the link below to verify your ${env.NEXT_PUBLIC_APP_NAME} email address.</p>
       <a href="${url}">${url}</a>
       <br />
-      <p>If you did not request this verification, please ignore this email. Replies to this address are not monitored.</p>
+      <p>If you did not request this verification, please ignore this email.</p>
       <br />
+      <p>Replies to this address are not monitored.</p>
     </body>
   </html>`,
         },
@@ -53,7 +57,7 @@ export async function sendVerificationEmail({ to, url, token }: EmailProps) {
  */
 export async function sendPasswordResetEmail({ to, url }: EmailProps) {
   await ses.sendEmail({
-    Source: env.MAIL_SES_FROM,
+    Source: MAIL_SENDER,
     Destination: {
       ToAddresses: [to],
     },
@@ -66,6 +70,8 @@ export async function sendPasswordResetEmail({ to, url }: EmailProps) {
     <body>
       <p>Click the link below to reset your ${env.NEXT_PUBLIC_APP_NAME} password.</p>
       <a href="${url}">${url}</a>
+      <br />
+      <p>Replies to this address are not monitored.</p>
     </body>
   </html>`,
         },
@@ -73,6 +79,40 @@ export async function sendPasswordResetEmail({ to, url }: EmailProps) {
       Subject: {
         Charset: "UTF-8",
         Data: `Reset your ${env.NEXT_PUBLIC_APP_NAME} password`,
+      },
+    },
+  });
+}
+
+/**
+ * Send a account deletion email to the user.
+ */
+export async function sendAccountDeletionEmail({ to, url }: EmailProps) {
+  await ses.sendEmail({
+    Source: MAIL_SENDER,
+    Destination: {
+      ToAddresses: [to],
+    },
+    Message: {
+      Body: {
+        Html: {
+          Charset: "UTF-8",
+          Data: `
+  <html>
+    <body>
+      <p>Click the link below to delete your ${env.NEXT_PUBLIC_APP_NAME} account.</p>
+      <a href="${url}">${url}</a>
+      <br />
+      <p>This action cannot be undone.</p>
+      <br />
+      <p>Replies to this address are not monitored.</p>
+    </body>
+  </html>`,
+        },
+      },
+      Subject: {
+        Charset: "UTF-8",
+        Data: `Confirm ${env.NEXT_PUBLIC_APP_NAME} account deletion`,
       },
     },
   });

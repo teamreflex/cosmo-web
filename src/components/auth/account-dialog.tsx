@@ -11,6 +11,7 @@ import Skeleton from "../skeleton/skeleton";
 import LinkedAccounts from "./account/linked-accounts";
 import Profile from "./account/profile";
 import { PublicUser } from "@/lib/universal/auth";
+import DeleteAccount from "./account/delete-account";
 
 type Props = {
   open: boolean;
@@ -39,6 +40,9 @@ export default function AccountDialog({ open, onOpenChange, user }: Props) {
               <LinkedAccounts />
             </Suspense>
           </div>
+
+          <Separator className="my-2" />
+          <DeleteAccount />
         </div>
       </DialogContent>
     </Dialog>
