@@ -17,18 +17,17 @@ import {
   List as ListIcon,
   PlusCircle,
 } from "lucide-react";
-import type { List } from "@/lib/server/db/schema";
+import type { ObjektList } from "@/lib/server/db/schema";
 import Link from "next/link";
 import CreateListDialog from "./create-list-dialog";
 import DiscordFormatDialog from "./discord-format-dialog";
 
 type Props = {
-  lists: List[];
-  nickname: string;
+  lists: ObjektList[];
   allowCreate: boolean;
 };
 
-export default function ListDropdown({ lists, nickname, allowCreate }: Props) {
+export default function ListDropdown({ lists, allowCreate }: Props) {
   const [createOpen, setCreateOpen] = useState(false);
   const [compareOpen, setCompareOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -59,7 +58,7 @@ export default function ListDropdown({ lists, nickname, allowCreate }: Props) {
               onClick={() => setDropdownOpen(false)}
             >
               <Link
-                href={`/@${nickname}/list/${list.slug}`}
+                href={`/list/${list.id}`}
                 className="w-full flex items-center justify-between"
               >
                 {list.name}

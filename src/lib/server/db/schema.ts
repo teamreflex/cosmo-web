@@ -118,7 +118,7 @@ export const objektMetadata = pgTable(
 export const objektLists = pgTable(
   "objekt_lists",
   {
-    id: uuid("id").primaryKey(),
+    id: uuid("id").primaryKey().defaultRandom(),
     createdAt,
     userId: text("user_id")
       .notNull()
@@ -126,14 +126,19 @@ export const objektLists = pgTable(
         onDelete: "cascade",
       }),
     name: varchar("name", { length: 24 }).notNull(),
+    slug: citext("slug", { length: 24 }).notNull(),
   },
-  (t) => [index("objekt_lists_user_idx").on(t.userId)]
+  (t) => [
+    index("objekt_lists_user_idx").on(t.userId),
+    index("objekt_lists_slug_idx").on(t.slug),
+    uniqueIndex("objekt_lists_user_slug_idx").on(t.userId, t.slug),
+  ]
 );
 
 export const objektListEntries = pgTable(
   "objekt_list_entries",
   {
-    id: uuid("id").primaryKey(),
+    id: uuid("id").primaryKey().defaultRandom(),
     createdAt,
     objektListId: uuid("objekt_list_id")
       .notNull()
@@ -145,10 +150,15 @@ export const objektListEntries = pgTable(
   (t) => [index("objekt_list_entries_list_idx").on(t.objektListId)]
 );
 
+// #region Legacy Types
 export type Profile = typeof profiles.$inferSelect;
 export type List = typeof lists.$inferSelect;
 export type ListEntry = typeof listEntries.$inferSelect;
 export type CreateList = typeof lists.$inferInsert;
 export type UpdateList = typeof lists.$inferInsert;
-export type ObjektMetadataEntry = typeof objektMetadata.$inferSelect;
 export type Pin = typeof pins.$inferSelect;
+// #endregion
+
+export type ObjektMetadataEntry = typeof objektMetadata.$inferSelect;
+export type ObjektList = typeof objektLists.$inferSelect;
+export type ObjektListEntry = typeof objektListEntries.$inferSelect;

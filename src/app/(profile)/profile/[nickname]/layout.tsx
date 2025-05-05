@@ -18,7 +18,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import ComoBalanceRenderer from "@/components/navbar/como-balances";
-import type { List } from "@/lib/server/db/schema";
+import type { ObjektList } from "@/lib/server/db/schema";
 
 type Props = PropsWithChildren<{
   params: Promise<{
@@ -95,7 +95,7 @@ export default async function ProfileLayout(props: Props) {
 
 type ButtonsProps = {
   profile: PublicProfile;
-  objektLists: List[];
+  objektLists: ObjektList[];
 };
 
 function Buttons({ profile, objektLists }: ButtonsProps) {

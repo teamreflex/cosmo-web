@@ -19,7 +19,6 @@ import { ProfileProvider } from "@/hooks/use-profile";
 import { GRID_COLUMNS } from "@/lib/utils";
 import { fetchFilterData } from "@/lib/server/objekts/filter-data";
 import { CosmoArtistProvider } from "@/hooks/use-cosmo-artist";
-import { UserStateProvider } from "@/hooks/use-user-state";
 import { SelectedArtistsProvider } from "@/hooks/use-selected-artists";
 
 type Props = {
@@ -95,18 +94,16 @@ export default async function ObjektListPage(props: Props) {
   return (
     <CosmoArtistProvider artists={artists}>
       <SelectedArtistsProvider selected={selectedArtists}>
-        <UserStateProvider>
-          <ProfileProvider>
-            <HydrationBoundary state={dehydrate(queryClient)}>
-              <ListRenderer
-                list={objektList}
-                authenticated={false}
-                user={profile}
-                gridColumns={GRID_COLUMNS}
-              />
-            </HydrationBoundary>
-          </ProfileProvider>
-        </UserStateProvider>
+        <ProfileProvider>
+          <HydrationBoundary state={dehydrate(queryClient)}>
+            <ListRenderer
+              list={objektList}
+              authenticated={false}
+              user={profile}
+              gridColumns={GRID_COLUMNS}
+            />
+          </HydrationBoundary>
+        </ProfileProvider>
       </SelectedArtistsProvider>
     </CosmoArtistProvider>
   );

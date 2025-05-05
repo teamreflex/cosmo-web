@@ -14,18 +14,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { toast } from "../ui/use-toast";
 import { generateDiscordList } from "./actions";
 import { Button } from "../ui/button";
 import { ScrollArea } from "../ui/scroll-area";
 import { useCopyToClipboard } from "usehooks-ts";
-import type { List } from "@/lib/server/db/schema";
+import type { ObjektList } from "@/lib/server/db/schema";
+import { useAction } from "next-safe-action/hooks";
 
 type Props = {
   open: boolean;
   onOpenChange: (state: boolean) => void;
-  lists: List[];
+  lists: ObjektList[];
 };
 
 export default function DiscordFormatDialog({
@@ -33,13 +34,12 @@ export default function DiscordFormatDialog({
   onOpenChange,
   lists,
 }: Props) {
-  const [slugHave, setSlugHave] = useState<string>();
-  const [slugWant, setSlugWant] = useState<string>();
-  const [result, setResult] = useState<string>();
-  const [isPending, startTransition] = useTransition();
+  const { execute, isPending, result } = useAction(generateDiscordList);
+  const [haveId, setHaveId] = useState<string>();
+  const [wantId, setWantId] = useState<string>();
   const [_, copyToClipboard] = useCopyToClipboard();
 
-  const disabled = !slugHave || !slugWant;
+  const disabled = !haveId || !wantId;
 
   function generate() {
     if (disabled) {
@@ -50,19 +50,14 @@ export default function DiscordFormatDialog({
       return;
     }
 
-    startTransition(async () => {
-      const result = await generateDiscordList({
-        have: slugHave,
-        want: slugWant,
-      });
-      if (result.status === "success") {
-        setResult(result.data);
-      }
+    execute({
+      haveId: haveId,
+      wantId: wantId,
     });
   }
 
   function copy() {
-    copyToClipboard(result!);
+    copyToClipboard(result.data ?? "");
     toast({
       description: "Copied to clipboard!",
     });
@@ -83,20 +78,12 @@ export default function DiscordFormatDialog({
           <div className="grid grid-cols-2 gap-2">
             <div className="grid gap-1.5">
               <Label>Have</Label>
-              <SelectList
-                lists={lists}
-                value={slugHave}
-                onSelect={setSlugHave}
-              />
+              <SelectList lists={lists} value={haveId} onSelect={setHaveId} />
             </div>
 
             <div className="grid gap-1.5">
               <Label>Want</Label>
-              <SelectList
-                lists={lists}
-                value={slugWant}
-                onSelect={setSlugWant}
-              />
+              <SelectList lists={lists} value={wantId} onSelect={setWantId} />
             </div>
           </div>
 
@@ -121,7 +108,7 @@ export default function DiscordFormatDialog({
           {result && (
             <ScrollArea className="max-h-60 rounded-lg border border-border">
               <pre className="whitespace-pre-wrap font-mono text-sm p-2">
-                {result}
+                {result.data}
               </pre>
             </ScrollArea>
           )}
@@ -132,7 +119,7 @@ export default function DiscordFormatDialog({
 }
 
 type SelectListProps = {
-  lists: List[];
+  lists: ObjektList[];
   value: string | undefined;
   onSelect: (slug: string) => void;
 };

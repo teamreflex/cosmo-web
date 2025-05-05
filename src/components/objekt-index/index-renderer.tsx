@@ -27,24 +27,23 @@ import LoaderRemote from "../objekt/loader-remote";
 import ObjektIndexFilters from "../collection/filter-contexts/objekt-index-filters";
 import { useSelectedArtists } from "@/hooks/use-selected-artists";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
-import type { List } from "@/lib/server/db/schema";
+import { useProfileContext } from "@/hooks/use-profile";
 
 type Props = {
-  objektLists?: List[];
-  nickname?: string;
-  gridColumns: number;
   activeSlug?: string;
 };
 
 export default function IndexRenderer(props: Props) {
+  const isDesktop = useMediaQuery();
+  const currentUser = useProfileContext((ctx) => ctx.currentUser);
+  const gridColumns = useProfileContext((ctx) =>
+    isDesktop ? ctx.gridColumns : 3
+  );
   const { searchParams } = useFilters();
   const { selectedIds } = useSelectedArtists();
   const [, setActiveObjekt] = useQueryState("id", parseAsString);
-  const isDesktop = useMediaQuery();
 
-  const authenticated =
-    props.objektLists !== undefined && props.nickname !== undefined;
-  const gridColumns = isDesktop ? props.gridColumns : 3;
+  const authenticated = currentUser !== undefined;
 
   /**
    * Query options
@@ -78,7 +77,7 @@ export default function IndexRenderer(props: Props) {
 
   return (
     <div className="flex flex-col">
-      <Title nickname={props.nickname} objektLists={props.objektLists} />
+      <Title />
 
       <FiltersContainer>
         <ObjektIndexFilters />
@@ -101,11 +100,7 @@ export default function IndexRenderer(props: Props) {
                     setActive={setActiveObjekt}
                     priority={priority}
                   >
-                    <Overlay
-                      objekt={item}
-                      authenticated={authenticated}
-                      objektLists={props.objektLists}
-                    />
+                    <Overlay objekt={item} authenticated={authenticated} />
                   </ExpandableObjekt>
                 );
               }}
@@ -129,13 +124,7 @@ export default function IndexRenderer(props: Props) {
   );
 }
 
-function Title({
-  nickname,
-  objektLists,
-}: {
-  nickname?: string;
-  objektLists?: List[];
-}) {
+function Title() {
   return (
     <div className="flex gap-2 items-center w-full pb-1">
       <h1 className="text-3xl font-cosmo uppercase">Objekts</h1>
@@ -150,28 +139,21 @@ function Title({
       <div className="flex gap-2 items-center last:ml-auto">
         <div className="min-w-24 text-right" id="objekt-total" />
 
-        {nickname !== undefined && objektLists !== undefined && (
-          <Options nickname={nickname} objektLists={objektLists} />
-        )}
+        <Options />
       </div>
     </div>
   );
 }
 
-function Options({
-  nickname,
-  objektLists,
-}: {
-  nickname: string;
-  objektLists: List[];
-}) {
+function Options() {
+  const currentUser = useProfileContext((ctx) => ctx.currentUser);
+  const objektLists = useProfileContext((ctx) => ctx.objektLists);
+
+  if (!currentUser) return null;
+
   return (
     <div className="flex gap-2 items-center">
-      <ListDropdown
-        lists={objektLists}
-        nickname={nickname}
-        allowCreate={true}
-      />
+      <ListDropdown lists={objektLists} allowCreate={true} />
     </div>
   );
 }
@@ -179,10 +161,11 @@ function Options({
 type OverlayProps = {
   objekt: IndexedObjekt;
   authenticated: boolean;
-  objektLists?: List[];
 };
 
-function Overlay({ objekt, authenticated, objektLists = [] }: OverlayProps) {
+function Overlay({ objekt, authenticated }: OverlayProps) {
+  const objektLists = useProfileContext((ctx) => ctx.objektLists);
+
   return (
     <div className="contents">
       <ObjektSidebar

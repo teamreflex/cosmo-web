@@ -84,10 +84,7 @@ export default async function UserCollectionPage(props: Props) {
   return (
     <CosmoArtistProvider artists={artists}>
       <SelectedArtistsProvider selected={selectedArtists}>
-        <ProfileProvider
-          targetProfile={targetUser.profile}
-          objektLists={targetUser.objektLists}
-        >
+        <ProfileProvider targetProfile={targetUser.profile} objektLists={[]}>
           <section className="flex flex-col">
             <HydrationBoundary state={dehydrate(queryClient)}>
               <ProfileRenderer targetUser={targetUser.profile} />

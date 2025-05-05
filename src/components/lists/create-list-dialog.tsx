@@ -1,5 +1,4 @@
 import { Loader2 } from "lucide-react";
-import { FieldError } from "../form/error";
 import { Button } from "../ui/button";
 import {
   Dialog,
@@ -9,13 +8,22 @@ import {
   DialogTitle,
 } from "../ui/dialog";
 import { Input } from "../ui/input";
-import { Label } from "../ui/label";
-import { useState, useTransition } from "react";
-import { TypedActionResult } from "@/lib/server/typed-action/types";
-import { create } from "./actions";
+import { createObjektList } from "./actions";
 import { track } from "@/lib/utils";
 import { toast } from "../ui/use-toast";
 import { useRouter } from "next/navigation";
+import { useHookFormAction } from "@next-safe-action/adapter-react-hook-form/hooks";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { createObjektListSchema } from "./schema";
+import { useFormStatus } from "react-dom";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "../ui/form";
 
 type Props = {
   open: boolean;
@@ -24,26 +32,22 @@ type Props = {
 
 export default function CreateListDialog({ open, onOpenChange }: Props) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
-  const [state, setState] = useState<TypedActionResult<boolean>>({
-    status: "idle",
-  });
-
-  function createNewList(form: FormData) {
-    startTransition(async () => {
-      const result = await create(form);
-      setState(result);
-
-      if (result.status === "success") {
-        track("create-list");
-        router.refresh();
-        toast({
-          description: "Objekt list created!",
-        });
-        onOpenChange(false);
-      }
-    });
-  }
+  const { form, handleSubmitWithAction } = useHookFormAction(
+    createObjektList,
+    zodResolver(createObjektListSchema),
+    {
+      actionProps: {
+        onSuccess: () => {
+          track("create-list");
+          router.refresh();
+          toast({
+            description: "Objekt list created!",
+          });
+          onOpenChange(false);
+        },
+      },
+    }
+  );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -54,27 +58,40 @@ export default function CreateListDialog({ open, onOpenChange }: Props) {
             You can add objekts to the list later.
           </DialogDescription>
         </DialogHeader>
-        <form className="w-full flex flex-col gap-3" action={createNewList}>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="name">Name</Label>
-            <Input
-              type="text"
-              autoComplete="off"
-              maxLength={24}
-              id="name"
+        <Form {...form}>
+          <form
+            onSubmit={handleSubmitWithAction}
+            className="w-full flex flex-col gap-2"
+          >
+            <FormField
+              control={form.control}
               name="name"
-              placeholder="Want To Trade"
-              data-1p-ignore
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Want To Trade" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            <FieldError state={state} field="name" />
-          </div>
 
-          <Button type="submit" disabled={isPending}>
-            <span>Create</span>
-            {isPending && <Loader2 className="ml-2 animate-spin" />}
-          </Button>
-        </form>
+            <SubmitButton />
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+
+  return (
+    <Button type="submit" disabled={pending}>
+      <span>Create</span>
+      {pending && <Loader2 className="ml-2 animate-spin" />}
+    </Button>
   );
 }

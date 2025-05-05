@@ -2,15 +2,16 @@
 
 import { createStore, useStore } from "zustand";
 import { createContext, PropsWithChildren, useContext, useRef } from "react";
-import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
 import { useShallow } from "zustand/react/shallow";
-import type { List } from "@/lib/server/db/schema";
+import type { ObjektList } from "@/lib/server/db/schema";
+import { PublicUser } from "@/lib/universal/auth";
+import { GRID_COLUMNS } from "@/lib/utils";
 
 interface ProfileProps {
-  currentProfile: PublicProfile | undefined;
-  targetProfile: PublicProfile | undefined;
-  objektLists: List[];
+  currentUser: PublicUser | undefined;
+  targetUser: PublicUser | undefined;
+  objektLists: ObjektList[];
   lockedObjekts: number[];
   pins: CosmoObjekt[];
 }
@@ -18,6 +19,7 @@ interface ProfileProps {
 type ProfileProviderProps = PropsWithChildren<Partial<ProfileProps>>;
 
 interface ProfileState extends ProfileProps {
+  gridColumns: number;
   toggleLock: (tokenId: number) => void;
   addPin: (objekt: CosmoObjekt) => void;
   removePin: (tokenId: number) => void;
@@ -27,16 +29,24 @@ type ProfileStore = ReturnType<typeof createProfileStore>;
 
 const createProfileStore = (initProps?: Partial<ProfileProps>) => {
   const DEFAULT_PROPS: ProfileProps = {
-    currentProfile: undefined,
-    targetProfile: undefined,
+    currentUser: undefined,
+    targetUser: undefined,
     objektLists: [],
     lockedObjekts: [],
     pins: [],
   };
 
-  return createStore<ProfileState>()((set) => ({
+  return createStore<ProfileState>()((set, get) => ({
     ...DEFAULT_PROPS,
     ...initProps,
+
+    /**
+     * Get the number of grid columns to use.
+     */
+    gridColumns:
+      get().targetUser?.gridColumns ??
+      get().currentUser?.gridColumns ??
+      GRID_COLUMNS,
 
     /**
      * Toggle the lock state of a token

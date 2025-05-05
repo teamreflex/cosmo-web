@@ -2,6 +2,7 @@ import { defineRelations } from "drizzle-orm";
 import * as schema from "./schema";
 
 export const relations = defineRelations(schema, (r) => ({
+  // #region Legacy
   profiles: {
     lockedObjekts: r.many.lockedObjekts(),
     lists: r.many.lists(),
@@ -27,16 +28,30 @@ export const relations = defineRelations(schema, (r) => ({
       to: r.lists.id,
     }),
   },
+  pins: {
+    profile: r.one.profiles({
+      from: r.pins.userAddress,
+      to: r.profiles.userAddress,
+    }),
+  },
+  // #endregion
   objektMetadata: {
     profile: r.one.profiles({
       from: r.objektMetadata.contributor,
       to: r.profiles.userAddress,
     }),
   },
-  pins: {
-    profile: r.one.profiles({
-      from: r.pins.userAddress,
-      to: r.profiles.userAddress,
+  objektLists: {
+    entries: r.many.objektListEntries(),
+    user: r.one.user({
+      from: r.objektLists.userId,
+      to: r.user.id,
+    }),
+  },
+  objektListEntries: {
+    list: r.one.objektLists({
+      from: r.objektListEntries.objektListId,
+      to: r.objektLists.id,
     }),
   },
   users: {

@@ -1,6 +1,6 @@
 "use server";
 
-import { authActionClient } from "@/lib/server/actions";
+import { authActionClient } from "@/lib/server/server-actions";
 import { auth } from "@/lib/server/auth";
 import { collectionDataSources } from "@/lib/utils";
 import { headers } from "next/headers";

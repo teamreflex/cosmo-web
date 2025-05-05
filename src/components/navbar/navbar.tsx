@@ -12,7 +12,6 @@ import StateGuest from "../auth/state-guest";
 import StateAuthenticated from "../auth/state-authenticated";
 import { ErrorBoundary } from "react-error-boundary";
 import AuthFallback from "../auth/auth-fallback";
-import { UserStateProvider } from "@/hooks/use-user-state";
 import { CosmoArtistProvider } from "@/hooks/use-cosmo-artist";
 import { toPublicUser } from "@/lib/server/auth";
 import { SelectedArtistsProvider } from "@/hooks/use-selected-artists";
@@ -65,13 +64,11 @@ async function Auth() {
   return (
     <CosmoArtistProvider artists={artists}>
       <SelectedArtistsProvider selected={selectedArtists}>
-        <UserStateProvider currentUser={toPublicUser(session?.user)}>
-          {session === null ? (
-            <StateGuest />
-          ) : (
-            <StateAuthenticated user={toPublicUser(session.user)} />
-          )}
-        </UserStateProvider>
+        {session === null ? (
+          <StateGuest />
+        ) : (
+          <StateAuthenticated user={toPublicUser(session.user)} />
+        )}
       </SelectedArtistsProvider>
     </CosmoArtistProvider>
   );

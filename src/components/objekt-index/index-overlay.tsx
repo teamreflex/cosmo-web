@@ -5,11 +5,11 @@ import { IndexedObjekt } from "@/lib/universal/objekts";
 import AddToList from "../lists/add-to-list";
 import OverlayStatus from "../objekt/overlay/overlay-status";
 import { useObjektOverlay } from "@/store";
-import type { List } from "@/lib/server/db/schema";
+import type { ObjektList } from "@/lib/server/db/schema";
 
 type TopOverlayProps = {
   objekt: IndexedObjekt;
-  objektLists: List[];
+  objektLists: ObjektList[];
 };
 
 export function TopOverlay({ objekt, objektLists }: TopOverlayProps) {

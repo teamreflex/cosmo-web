@@ -11,22 +11,22 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "../ui/button";
 import { Loader2, Trash } from "lucide-react";
-import { MouseEvent, useTransition } from "react";
-import { destroy } from "./actions";
-import type { List } from "@/lib/server/db/schema";
+import { MouseEvent } from "react";
+import { deleteObjektList } from "./actions";
+import type { ObjektList } from "@/lib/server/db/schema";
+import { useAction } from "next-safe-action/hooks";
 
 type Props = {
-  objektList: List;
+  objektList: ObjektList;
 };
 
 export default function DeleteList({ objektList }: Props) {
-  const [isPending, startTransition] = useTransition();
+  const { execute, isPending } = useAction(deleteObjektList);
 
   function submit(event: MouseEvent<HTMLButtonElement>) {
-    // prevent alert from dismissing on click
     event.preventDefault();
-    startTransition(async () => {
-      await destroy(objektList.id);
+    execute({
+      id: objektList.id,
     });
   }
 

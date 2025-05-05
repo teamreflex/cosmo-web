@@ -16,7 +16,6 @@ import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import { getQueryClient } from "@/lib/query-client";
 import { GRID_COLUMNS } from "@/lib/utils";
 import { CosmoArtistProvider } from "@/hooks/use-cosmo-artist";
-import { UserStateProvider } from "@/hooks/use-user-state";
 import { toPublicUser } from "@/lib/server/auth";
 import { SelectedArtistsProvider } from "@/hooks/use-selected-artists";
 
@@ -77,18 +76,14 @@ export default async function ObjektsIndexPage(props: Params) {
     <main className="container flex flex-col py-2">
       <CosmoArtistProvider artists={artists}>
         <SelectedArtistsProvider selected={selectedArtists}>
-          <UserStateProvider currentUser={toPublicUser(session?.user)}>
-            <ProfileProvider currentProfile={undefined} objektLists={[]}>
-              <HydrationBoundary state={dehydrate(queryClient)}>
-                <IndexRenderer
-                  objektLists={[]}
-                  nickname={undefined}
-                  gridColumns={GRID_COLUMNS}
-                  activeSlug={searchParams.id}
-                />
-              </HydrationBoundary>
-            </ProfileProvider>
-          </UserStateProvider>
+          <ProfileProvider
+            currentUser={toPublicUser(session?.user)}
+            objektLists={[]}
+          >
+            <HydrationBoundary state={dehydrate(queryClient)}>
+              <IndexRenderer activeSlug={searchParams.id} />
+            </HydrationBoundary>
+          </ProfileProvider>
         </SelectedArtistsProvider>
       </CosmoArtistProvider>
     </main>
