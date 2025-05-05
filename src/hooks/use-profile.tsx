@@ -44,8 +44,8 @@ const createProfileStore = (initProps?: Partial<ProfileProps>) => {
      * Get the number of grid columns to use.
      */
     gridColumns:
-      get().targetUser?.gridColumns ??
-      get().currentUser?.gridColumns ??
+      get()?.targetUser?.gridColumns ??
+      get()?.currentUser?.gridColumns ??
       GRID_COLUMNS,
 
     /**

@@ -46,6 +46,11 @@ export default function CreateListDialog({ open, onOpenChange }: Props) {
           onOpenChange(false);
         },
       },
+      formProps: {
+        defaultValues: {
+          name: "",
+        },
+      },
     }
   );
 
@@ -70,7 +75,11 @@ export default function CreateListDialog({ open, onOpenChange }: Props) {
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Want To Trade" {...field} />
+                    <Input
+                      placeholder="Want To Trade"
+                      data-1p-ignore
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

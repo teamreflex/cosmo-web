@@ -14,10 +14,11 @@ import {
 import { parseObjektIndex } from "@/lib/universal/parsers";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import { getQueryClient } from "@/lib/query-client";
-import { GRID_COLUMNS } from "@/lib/utils";
 import { CosmoArtistProvider } from "@/hooks/use-cosmo-artist";
 import { toPublicUser } from "@/lib/server/auth";
 import { SelectedArtistsProvider } from "@/hooks/use-selected-artists";
+import { fetchObjektLists } from "@/lib/server/objekts/lists";
+import { ObjektList } from "@/lib/server/db/schema";
 
 export const metadata: Metadata = {
   title: "Objekts",
@@ -72,13 +73,18 @@ export default async function ObjektsIndexPage(props: Params) {
     initialPageParam: 0,
   });
 
+  // fetch objekt lists
+  const objektLists = session
+    ? await fetchObjektLists(session.session.userId)
+    : [];
+
   return (
     <main className="container flex flex-col py-2">
       <CosmoArtistProvider artists={artists}>
         <SelectedArtistsProvider selected={selectedArtists}>
           <ProfileProvider
             currentUser={toPublicUser(session?.user)}
-            objektLists={[]}
+            objektLists={objektLists}
           >
             <HydrationBoundary state={dehydrate(queryClient)}>
               <IndexRenderer activeSlug={searchParams.id} />

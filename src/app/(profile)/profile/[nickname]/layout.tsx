@@ -113,7 +113,7 @@ function Buttons({ profile, objektLists }: ButtonsProps) {
       />
       <ListDropdown
         lists={objektLists}
-        nickname={profile.isAddress ? profile.address : profile.nickname}
+        username={profile.isAddress ? profile.address : profile.nickname}
         allowCreate={false}
       />
 

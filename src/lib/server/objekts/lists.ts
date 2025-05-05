@@ -12,3 +12,12 @@ export async function fetchObjektList(userId: string, slug: string) {
     },
   });
 }
+
+/**
+ * Fetch all objekt lists for a user.
+ */
+export async function fetchObjektLists(userId: string) {
+  return await db.query.objektLists.findMany({
+    where: { userId },
+  });
+}

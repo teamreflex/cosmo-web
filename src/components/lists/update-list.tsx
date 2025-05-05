@@ -64,7 +64,11 @@ export default function UpdateList({ objektList }: Props) {
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Want To Trade" {...field} />
+                    <Input
+                      placeholder="Want To Trade"
+                      data-1p-ignore
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

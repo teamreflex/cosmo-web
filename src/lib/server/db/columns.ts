@@ -7,6 +7,8 @@ export const citext = customType<{ data: string }>({
 });
 
 export const createdAt = timestamp("created_at", {
-  withTimezone: true,
+  withTimezone: false,
   mode: "string",
-}).defaultNow();
+})
+  .notNull()
+  .defaultNow();

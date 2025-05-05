@@ -149,11 +149,15 @@ function Options() {
   const currentUser = useProfileContext((ctx) => ctx.currentUser);
   const objektLists = useProfileContext((ctx) => ctx.objektLists);
 
-  if (!currentUser) return null;
+  if (!currentUser || !currentUser.username) return null;
 
   return (
     <div className="flex gap-2 items-center">
-      <ListDropdown lists={objektLists} allowCreate={true} />
+      <ListDropdown
+        lists={objektLists}
+        allowCreate={true}
+        username={currentUser.username}
+      />
     </div>
   );
 }
