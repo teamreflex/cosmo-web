@@ -22,6 +22,7 @@ export const user = pgTable(
     // custom fields
     isAdmin: boolean("is_admin").notNull().default(false),
     username: citext("username").unique(),
+    displayUsername: citext("display_name"),
     cosmoAddress: citext("cosmo_address"),
     gridColumns: integer("grid_columns").notNull().default(GRID_COLUMNS),
     collectionMode: text("collection_mode")

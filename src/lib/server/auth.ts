@@ -10,6 +10,7 @@ import * as authSchema from "@/lib/server/db/auth-schema";
 import { createCipheriv, createDecipheriv, randomBytes } from "crypto";
 import { PublicUser } from "../universal/auth";
 import { baseUrl } from "../query-client";
+import { username } from "better-auth/plugins/username";
 
 /**
  * Better Auth server instance.
@@ -22,6 +23,12 @@ export const auth = betterAuth({
     provider: "pg",
     schema: authSchema,
   }),
+  plugins: [
+    username({
+      minUsernameLength: 3,
+      maxUsernameLength: 20,
+    }),
+  ],
   databaseHooks: {
     account: {
       create: {
@@ -106,14 +113,6 @@ export const auth = betterAuth({
   },
   user: {
     additionalFields: {
-      username: {
-        type: "string",
-        required: false,
-        input: true,
-        returned: true,
-        fieldName: "username",
-        unique: true,
-      },
       cosmoAddress: {
         type: "string",
         required: false,
