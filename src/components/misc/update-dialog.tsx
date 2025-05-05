@@ -75,6 +75,13 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2025-05-01",
+    changes: [
+      "Trade history has been migrated from the old blockchain.",
+      "This does not include history for objekts that were sent to the spin account, as MODHAUS did not migrate those.",
+    ],
+  },
+  {
     date: "2025-04-24",
     changes: [
       "Objekt mint times have been corrected and COMO calendar re-enabled.",
