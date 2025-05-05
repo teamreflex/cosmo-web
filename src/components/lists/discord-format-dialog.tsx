@@ -7,7 +7,6 @@ import {
   DialogTitle,
 } from "../ui/dialog";
 import { Label } from "../ui/label";
-import { ObjektList } from "@/lib/universal/objekts";
 import {
   Select,
   SelectContent,
@@ -21,11 +20,12 @@ import { generateDiscordList } from "./actions";
 import { Button } from "../ui/button";
 import { ScrollArea } from "../ui/scroll-area";
 import { useCopyToClipboard } from "usehooks-ts";
+import type { List } from "@/lib/server/db/schema";
 
 type Props = {
   open: boolean;
   onOpenChange: (state: boolean) => void;
-  lists: ObjektList[];
+  lists: List[];
 };
 
 export default function DiscordFormatDialog({
@@ -132,7 +132,7 @@ export default function DiscordFormatDialog({
 }
 
 type SelectListProps = {
-  lists: ObjektList[];
+  lists: List[];
   value: string | undefined;
   onSelect: (slug: string) => void;
 };

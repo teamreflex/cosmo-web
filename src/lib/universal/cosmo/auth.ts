@@ -1,5 +1,5 @@
 import { Pin } from "@/lib/server/db/schema";
-import { ObjektList } from "../objekts";
+import type { List } from "@/lib/server/db/schema";
 import { ValidArtist } from "./common";
 import { CollectionDataSource } from "@/lib/utils";
 
@@ -30,7 +30,7 @@ export type PublicProfile = {
 
 export type IdentifiedUser = {
   profile: PublicProfile;
-  objektLists: ObjektList[];
+  objektLists: List[];
   lockedObjekts: number[];
   pins: Pin[];
 };

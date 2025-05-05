@@ -1,6 +1,5 @@
 "use client";
 
-import { ObjektList } from "@/lib/universal/objekts";
 import { ListPlus, Loader2, Plus } from "lucide-react";
 import { MouseEvent, useState, useTransition } from "react";
 import {
@@ -16,11 +15,12 @@ import { addObjektToList } from "./actions";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "../ui/use-toast";
 import { ScrollArea } from "../ui/scroll-area";
+import type { List } from "@/lib/server/db/schema";
 
 type AddToListProps = {
   collectionId: string;
   collectionSlug: string;
-  lists: ObjektList[];
+  lists: List[];
 };
 
 export default function AddToList({
@@ -71,7 +71,7 @@ export default function AddToList({
 type ListItemProps = {
   collectionId: string;
   collectionSlug: string;
-  list: ObjektList;
+  list: List;
   onDone: () => void;
 };
 

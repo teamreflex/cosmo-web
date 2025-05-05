@@ -1,4 +1,3 @@
-import { ObjektList } from "@/lib/universal/objekts";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,9 +13,10 @@ import { Button } from "../ui/button";
 import { Loader2, Trash } from "lucide-react";
 import { MouseEvent, useTransition } from "react";
 import { destroy } from "./actions";
+import type { List } from "@/lib/server/db/schema";
 
 type Props = {
-  objektList: ObjektList;
+  objektList: List;
 };
 
 export default function DeleteList({ objektList }: Props) {

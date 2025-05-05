@@ -5,15 +5,18 @@ import {
   integer,
   pgTable,
   serial,
+  text,
   uniqueIndex,
+  uuid,
   varchar,
 } from "drizzle-orm/pg-core";
-import { citext } from "./columns";
+import { citext, createdAt } from "./columns";
 import { CollectionDataSource } from "@/lib/utils";
 import { user, session, account, verification } from "./auth-schema";
 
 export { user, session, account, verification };
 
+// #region Legacy
 export const profiles = pgTable(
   "profiles",
   {
@@ -84,6 +87,20 @@ export const listEntries = pgTable(
   (t) => [index("list_entries_list_idx").on(t.listId)]
 );
 
+export const pins = pgTable(
+  "pins",
+  {
+    id: serial("id").primaryKey(),
+    userAddress: citext("user_address", { length: 42 }).notNull(),
+    tokenId: integer("token_id").notNull(),
+  },
+  (t) => [
+    index("pins_userAddress_idx").on(t.userAddress),
+    index("pins_token_id_idx").on(t.tokenId),
+  ]
+);
+// #endregion
+
 export const objektMetadata = pgTable(
   "objekt_metadata",
   {
@@ -98,23 +115,40 @@ export const objektMetadata = pgTable(
   ]
 );
 
-export const pins = pgTable(
-  "pins",
+export const objektLists = pgTable(
+  "objekt_lists",
   {
-    id: serial("id").primaryKey(),
-    userAddress: citext("user_address", { length: 42 }).notNull(),
-    tokenId: integer("token_id").notNull(),
+    id: uuid("id").primaryKey(),
+    createdAt,
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, {
+        onDelete: "cascade",
+      }),
+    name: varchar("name", { length: 24 }).notNull(),
   },
-  (t) => [
-    index("pins_userAddress_idx").on(t.userAddress),
-    index("pins_token_id_idx").on(t.tokenId),
-  ]
+  (t) => [index("objekt_lists_user_idx").on(t.userId)]
+);
+
+export const objektListEntries = pgTable(
+  "objekt_list_entries",
+  {
+    id: uuid("id").primaryKey(),
+    createdAt,
+    objektListId: uuid("objekt_list_id")
+      .notNull()
+      .references(() => objektLists.id, {
+        onDelete: "cascade",
+      }),
+    collectionId: varchar("collection_id", { length: 36 }).notNull(), // slug: atom01-jinsoul-101z
+  },
+  (t) => [index("objekt_list_entries_list_idx").on(t.objektListId)]
 );
 
 export type Profile = typeof profiles.$inferSelect;
-export type ObjektList = typeof lists.$inferSelect;
-export type ObjektListEntry = typeof listEntries.$inferSelect;
-export type CreateObjektList = typeof lists.$inferInsert;
-export type UpdateObjektList = typeof lists.$inferInsert;
+export type List = typeof lists.$inferSelect;
+export type ListEntry = typeof listEntries.$inferSelect;
+export type CreateList = typeof lists.$inferInsert;
+export type UpdateList = typeof lists.$inferInsert;
 export type ObjektMetadataEntry = typeof objektMetadata.$inferSelect;
 export type Pin = typeof pins.$inferSelect;

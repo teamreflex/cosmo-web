@@ -8,7 +8,6 @@ import UserAvatar from "@/components/profile/user-avatar";
 import Skeleton from "@/components/skeleton/skeleton";
 import ListDropdown from "@/components/lists/list-dropdown";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
-import { ObjektList } from "@/lib/universal/objekts";
 import Link from "next/link";
 import ModhausLogo from "@/assets/modhaus.png";
 import Image from "next/image";
@@ -19,6 +18,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import ComoBalanceRenderer from "@/components/navbar/como-balances";
+import type { List } from "@/lib/server/db/schema";
 
 type Props = PropsWithChildren<{
   params: Promise<{
@@ -95,7 +95,7 @@ export default async function ProfileLayout(props: Props) {
 
 type ButtonsProps = {
   profile: PublicProfile;
-  objektLists: ObjektList[];
+  objektLists: List[];
 };
 
 function Buttons({ profile, objektLists }: ButtonsProps) {

@@ -3,14 +3,14 @@
 import { createStore, useStore } from "zustand";
 import { createContext, PropsWithChildren, useContext, useRef } from "react";
 import { PublicProfile } from "@/lib/universal/cosmo/auth";
-import { ObjektList } from "@/lib/universal/objekts";
 import { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
 import { useShallow } from "zustand/react/shallow";
+import type { List } from "@/lib/server/db/schema";
 
 interface ProfileProps {
   currentProfile: PublicProfile | undefined;
   targetProfile: PublicProfile | undefined;
-  objektLists: ObjektList[];
+  objektLists: List[];
   lockedObjekts: number[];
   pins: CosmoObjekt[];
 }

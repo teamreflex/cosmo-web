@@ -1,6 +1,6 @@
 "use client";
 
-import { ObjektList } from "@/lib/universal/objekts";
+import type { List } from "@/lib/server/db/schema";
 import { ListX, Loader2 } from "lucide-react";
 import { useTransition } from "react";
 import { removeObjektFromList } from "./actions";
@@ -11,7 +11,7 @@ import { Objekt } from "@/lib/universal/objekt-conversion";
 type Props = {
   id: string;
   collection: Objekt.Collection;
-  objektList: ObjektList;
+  objektList: List;
 };
 
 export default function RemoveFromList({ id, collection, objektList }: Props) {

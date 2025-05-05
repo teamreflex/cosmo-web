@@ -1,14 +1,15 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { IndexedObjekt, ObjektList } from "@/lib/universal/objekts";
+import { IndexedObjekt } from "@/lib/universal/objekts";
 import AddToList from "../lists/add-to-list";
 import OverlayStatus from "../objekt/overlay/overlay-status";
 import { useObjektOverlay } from "@/store";
+import type { List } from "@/lib/server/db/schema";
 
 type TopOverlayProps = {
   objekt: IndexedObjekt;
-  objektLists: ObjektList[];
+  objektLists: List[];
 };
 
 export function TopOverlay({ objekt, objektLists }: TopOverlayProps) {

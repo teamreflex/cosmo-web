@@ -3,7 +3,6 @@
 import {
   IndexedObjekt,
   LegacyObjektResponse,
-  ObjektList,
   parsePage,
 } from "@/lib/universal/objekts";
 import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
@@ -23,9 +22,10 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import VirtualizedGrid from "../objekt/virtualized-grid";
 import LoaderRemote from "../objekt/loader-remote";
 import ObjektIndexFilters from "../collection/filter-contexts/objekt-index-filters";
+import type { List } from "@/lib/server/db/schema";
 
 type Props = {
-  list: ObjektList;
+  list: List;
   authenticated: boolean;
   user: PublicProfile;
   gridColumns: number;
@@ -112,7 +112,7 @@ function Title({
   objektList,
 }: {
   authenticated: boolean;
-  objektList: ObjektList;
+  objektList: List;
 }) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-2">
@@ -132,7 +132,7 @@ type OverlayProps = {
   id: string;
   collection: Objekt.Collection;
   authenticated: boolean;
-  objektList: ObjektList;
+  objektList: List;
 };
 
 function Overlay({ id, collection, authenticated, objektList }: OverlayProps) {

@@ -1,15 +1,15 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { ObjektList } from "@/lib/universal/objekts";
 import OverlayStatus from "../objekt/overlay/overlay-status";
 import RemoveFromList from "./remove-from-list";
 import { Objekt } from "@/lib/universal/objekt-conversion";
+import type { List } from "@/lib/server/db/schema";
 
 type Props = {
   id: string;
   collection: Objekt.Collection;
-  objektList: ObjektList;
+  objektList: List;
 };
 
 export default function ListOverlay({ id, collection, objektList }: Props) {

@@ -1,4 +1,4 @@
-import { ObjektList } from "@/lib/universal/objekts";
+import type { List } from "@/lib/server/db/schema";
 import { Button } from "../ui/button";
 import { Edit, Loader2 } from "lucide-react";
 import { update } from "./actions";
@@ -15,7 +15,7 @@ import { FieldError } from "../form/error";
 import { useActionState } from "react";
 
 type Props = {
-  objektList: ObjektList;
+  objektList: List;
 };
 
 export default function UpdateList({ objektList }: Props) {

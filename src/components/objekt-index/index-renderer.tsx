@@ -4,7 +4,6 @@ import ListDropdown from "../lists/list-dropdown";
 import {
   IndexedObjekt,
   LegacyObjektResponse,
-  ObjektList,
   parsePage,
 } from "@/lib/universal/objekts";
 import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
@@ -28,9 +27,10 @@ import LoaderRemote from "../objekt/loader-remote";
 import ObjektIndexFilters from "../collection/filter-contexts/objekt-index-filters";
 import { useSelectedArtists } from "@/hooks/use-selected-artists";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
+import type { List } from "@/lib/server/db/schema";
 
 type Props = {
-  objektLists?: ObjektList[];
+  objektLists?: List[];
   nickname?: string;
   gridColumns: number;
   activeSlug?: string;
@@ -134,7 +134,7 @@ function Title({
   objektLists,
 }: {
   nickname?: string;
-  objektLists?: ObjektList[];
+  objektLists?: List[];
 }) {
   return (
     <div className="flex gap-2 items-center w-full pb-1">
@@ -163,7 +163,7 @@ function Options({
   objektLists,
 }: {
   nickname: string;
-  objektLists: ObjektList[];
+  objektLists: List[];
 }) {
   return (
     <div className="flex gap-2 items-center">
@@ -179,7 +179,7 @@ function Options({
 type OverlayProps = {
   objekt: IndexedObjekt;
   authenticated: boolean;
-  objektLists?: ObjektList[];
+  objektLists?: List[];
 };
 
 function Overlay({ objekt, authenticated, objektLists = [] }: OverlayProps) {

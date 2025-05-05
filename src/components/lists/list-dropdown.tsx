@@ -11,14 +11,19 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { ChevronRight, LetterText, List, PlusCircle } from "lucide-react";
-import { ObjektList } from "@/lib/universal/objekts";
+import {
+  ChevronRight,
+  LetterText,
+  List as ListIcon,
+  PlusCircle,
+} from "lucide-react";
+import type { List } from "@/lib/server/db/schema";
 import Link from "next/link";
 import CreateListDialog from "./create-list-dialog";
 import DiscordFormatDialog from "./discord-format-dialog";
 
 type Props = {
-  lists: ObjektList[];
+  lists: List[];
   nickname: string;
   allowCreate: boolean;
 };
@@ -39,7 +44,7 @@ export default function ListDropdown({ lists, nickname, allowCreate }: Props) {
 
       <DropdownMenuTrigger asChild>
         <Button variant="secondary" size="profile" data-profile>
-          <List className="h-5 w-5" />
+          <ListIcon className="h-5 w-5" />
           <span className="hidden sm:block">Lists</span>
         </Button>
       </DropdownMenuTrigger>

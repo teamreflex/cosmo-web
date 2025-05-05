@@ -9,7 +9,7 @@ import { ActionError } from "@/lib/server/typed-action/errors";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import { Collection } from "@/lib/server/db/indexer/schema";
-import { listEntries, lists, ObjektListEntry } from "@/lib/server/db/schema";
+import { listEntries, lists, ListEntry } from "@/lib/server/db/schema";
 import { and, eq } from "drizzle-orm";
 import { getArtistsWithMembers } from "@/app/data-fetching";
 import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
@@ -287,7 +287,7 @@ function formatMemberCollections(collections: CollectionSubset[]): string {
  */
 function format(
   collections: CollectionSubset[],
-  entries: ObjektListEntry[],
+  entries: ListEntry[],
   artists: CosmoArtistWithMembersBFF[]
 ): string[] {
   // create a map for quick collection lookup by slug
