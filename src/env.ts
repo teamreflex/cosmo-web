@@ -27,6 +27,11 @@ export const env = createEnv({
     // twitter oauth
     TWITTER_CLIENT_ID: z.string().min(1),
     TWITTER_CLIENT_SECRET: z.string().min(1),
+    // aws ses
+    MAIL_SES_REGION: z.string().min(1),
+    MAIL_SES_FROM: z.string().min(1),
+    MAIL_SES_ACCESS_KEY: z.string().min(1),
+    MAIL_SES_SECRET_KEY: z.string().min(1),
   },
   client: {
     // info for rebranding the app

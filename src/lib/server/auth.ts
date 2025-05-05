@@ -11,6 +11,7 @@ import { createCipheriv, createDecipheriv, randomBytes } from "crypto";
 import { PublicUser } from "../universal/auth";
 import { baseUrl } from "../query-client";
 import { username } from "better-auth/plugins/username";
+import { sendPasswordResetEmail, sendVerificationEmail } from "./mail";
 
 /**
  * Better Auth server instance.
@@ -29,6 +30,29 @@ export const auth = betterAuth({
       maxUsernameLength: 20,
     }),
   ],
+  emailVerification: {
+    sendOnSignUp: true,
+    autoSignInAfterVerification: true,
+    sendVerificationEmail: async ({ user, url, token }) => {
+      await sendVerificationEmail({
+        to: user.email,
+        url: url,
+        token: token,
+      });
+    },
+  },
+  emailAndPassword: {
+    enabled: true,
+    autoSignIn: true,
+    requireEmailVerification: false,
+    sendResetPassword: async ({ user, url, token }) => {
+      await sendPasswordResetEmail({
+        to: user.email,
+        url: url,
+        token: token,
+      });
+    },
+  },
   databaseHooks: {
     account: {
       create: {

@@ -18,6 +18,7 @@
     "auth:generate": "dotenv -e .env.local -- pnpm dlx @better-auth/cli generate --output src/lib/server/db/auth-schema.ts --y"
   },
   "dependencies": {
+    "@aws-sdk/client-ses": "^3.799.0",
     "@hookform/resolvers": "^5.0.1",
     "@neondatabase/serverless": "^1.0.0",
     "@next/bundle-analyzer": "^15.3.1",
