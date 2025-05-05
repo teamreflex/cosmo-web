@@ -13,3 +13,27 @@ export const authClient = createAuthClient({
   baseURL: baseUrl(),
   plugins: [usernameClient(), inferAdditionalFields<typeof auth>()],
 });
+
+const authErrorMessages: Record<string, string> = {
+  USERNAME_IS_ALREADY_TAKEN_PLEASE_TRY_ANOTHER:
+    "Username is already taken. Please try another.",
+};
+
+type ErrorInput = {
+  code?: string | undefined;
+  message?: string | undefined;
+};
+
+/**
+ * Provides error messages for Better Auth errors.
+ */
+export function getAuthErrorMessage(error: ErrorInput) {
+  if (error.code) {
+    return (
+      authErrorMessages[error.code] ??
+      error.message ??
+      "An unknown error occurred."
+    );
+  }
+  return error.message ?? "An unknown error occurred.";
+}

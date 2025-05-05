@@ -238,7 +238,7 @@ export function toPublicUser(
 
   return {
     id: user.id,
-    username: user.username,
+    username: user.displayUsername,
     image: user.image,
     isAdmin: user.isAdmin ?? false,
     cosmoAddress: user.cosmoAddress,

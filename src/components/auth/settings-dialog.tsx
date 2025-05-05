@@ -23,17 +23,13 @@ import { useAction } from "next-safe-action/hooks";
 import { updateSettings } from "./actions";
 import { PublicUser } from "@/lib/universal/auth";
 
-type SettingsDialogProps = {
+type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   user: PublicUser;
 };
 
-export default function SettingsDialog({
-  open,
-  onOpenChange,
-  user,
-}: SettingsDialogProps) {
+export default function SettingsDialog({ open, onOpenChange, user }: Props) {
   const { theme, setTheme } = useTheme();
   const router = useRouter();
   const { execute, isPending } = useAction(updateSettings, {

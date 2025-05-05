@@ -10,7 +10,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
-import { Separator } from "../ui/separator";
 import SignInWithDiscord from "./with-discord";
 import WithEmail from "./with-email";
 import SignInWithTwitter from "./with-twitter";
@@ -51,7 +50,7 @@ export default function SignIn() {
 
           {state === "sign-in" && (
             <div className="contents">
-              <Separator className="my-4" />
+              <Separator />
 
               <Button onClick={() => setState("sign-up")}>
                 <span>Create an account</span>
@@ -59,7 +58,7 @@ export default function SignIn() {
             </div>
           )}
 
-          <Separator className="my-4" />
+          <Separator />
 
           <div className="flex gap-2 items-center">
             <SignInWithDiscord />
@@ -69,4 +68,18 @@ export default function SignIn() {
       </DialogContent>
     </Dialog>
   );
+}
+
+function Separator() {
+  return (
+    <div className="flex items-center justify-center gap-1 my-2">
+      <SeparatorLine />
+      <span className="text-xs text-muted-foreground">or</span>
+      <SeparatorLine />
+    </div>
+  );
+}
+
+function SeparatorLine() {
+  return <div className="flex bg-border shrink-0 h-px w-24" />;
 }

@@ -10,9 +10,16 @@ import {
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { NavbarLink } from "./links";
-import { DropdownMenuItem } from "../ui/dropdown-menu";
+import {
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "../ui/dropdown-menu";
 import { IconCards } from "@tabler/icons-react";
 import NavbarSearch from "./navbar-search";
+import { ArtistItem } from "./artist-selectbox";
+import { useCosmoArtists } from "@/hooks/use-cosmo-artist";
+import { useSelectedArtists } from "@/hooks/use-selected-artists";
 
 export function DesktopLinks() {
   const path = usePathname();
@@ -37,6 +44,8 @@ export function DesktopLinks() {
 
 export function MobileLinks() {
   const path = usePathname();
+  const { artists } = useCosmoArtists();
+  const { selectedIds } = useSelectedArtists();
 
   return (
     <div className="contents">
@@ -62,6 +71,19 @@ export function MobileLinks() {
           </DropdownMenuItem>
         );
       })}
+
+      <DropdownMenuSeparator />
+      <DropdownMenuGroup>
+        {artists
+          .sort((a, b) => a.comoTokenId - b.comoTokenId)
+          .map((artist) => (
+            <ArtistItem
+              key={artist.id}
+              artist={artist}
+              isSelected={selectedIds.includes(artist.id)}
+            />
+          ))}
+      </DropdownMenuGroup>
     </div>
   );
 }

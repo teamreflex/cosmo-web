@@ -6,7 +6,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, ShieldAlert, Wrench } from "lucide-react";
+import { LogOut, ShieldAlert, UserCog, Wrench } from "lucide-react";
 import { useState } from "react";
 import SettingsDialog from "./settings-dialog";
 import Link from "next/link";
@@ -16,6 +16,7 @@ import { useSelectedArtists } from "@/hooks/use-selected-artists";
 import { ArtistItem } from "../navbar/artist-selectbox";
 import { useCosmoArtists } from "@/hooks/use-cosmo-artist";
 import UserAvatar from "../profile/user-avatar";
+import AccountDialog from "./account-dialog";
 
 type UserDropdownProps = {
   user: PublicUser;
@@ -26,12 +27,18 @@ export default function UserDropdown({ user, onSignOut }: UserDropdownProps) {
   const { artists } = useCosmoArtists();
   const { selectedIds } = useSelectedArtists();
   const [openSettings, setOpenSettings] = useState(false);
+  const [openAccount, setOpenAccount] = useState(false);
 
   return (
     <DropdownMenu>
       <SettingsDialog
         open={openSettings}
         onOpenChange={setOpenSettings}
+        user={user}
+      />
+      <AccountDialog
+        open={openAccount}
+        onOpenChange={setOpenAccount}
         user={user}
       />
 
@@ -54,6 +61,14 @@ export default function UserDropdown({ user, onSignOut }: UserDropdownProps) {
             ))}
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
+
+        <DropdownMenuItem
+          onClick={() => setOpenAccount(true)}
+          className="cursor-pointer"
+        >
+          <UserCog className="h-4 w-4" />
+          <span>Account</span>
+        </DropdownMenuItem>
 
         <DropdownMenuItem
           onClick={() => setOpenSettings(true)}

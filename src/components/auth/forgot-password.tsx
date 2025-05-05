@@ -1,4 +1,4 @@
-import { authClient } from "@/lib/client/auth";
+import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "../ui/use-toast";
 import { Label } from "../ui/label";
@@ -19,7 +19,7 @@ export default function ForgotPassword({ onCancel }: Props) {
       });
 
       if (result.error) {
-        throw new Error(result.error.message);
+        throw new Error(getAuthErrorMessage(result.error));
       }
       return result.data;
     },

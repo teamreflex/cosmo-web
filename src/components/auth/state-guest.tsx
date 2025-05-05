@@ -9,17 +9,19 @@ export default function StateGuest() {
     <div className="flex items-center gap-2">
       <SignIn />
 
-      <Hydrated
-        fallback={
-          <div className="inline-flex items-center justify-center h-9 px-1">
-            <Moon className="size-8" />
-          </div>
-        }
-      >
-        <GuestThemeSwitch />
-      </Hydrated>
+      <div className="hidden md:contents">
+        <Hydrated
+          fallback={
+            <div className="inline-flex items-center justify-center h-9 px-1">
+              <Moon className="size-8" />
+            </div>
+          }
+        >
+          <GuestThemeSwitch />
+        </Hydrated>
 
-      <ArtistSelectbox />
+        <ArtistSelectbox />
+      </div>
     </div>
   );
 }

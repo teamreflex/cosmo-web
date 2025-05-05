@@ -1,4 +1,4 @@
-import { authClient } from "@/lib/client/auth";
+import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "../ui/use-toast";
@@ -23,7 +23,7 @@ export default function SignUp({ onCancel }: Props) {
       });
 
       if (result.error) {
-        throw new Error(result.error.message);
+        throw new Error(getAuthErrorMessage(result.error));
       }
       return result.data;
     },
@@ -75,6 +75,7 @@ export default function SignUp({ onCancel }: Props) {
           id="username"
           minLength={3}
           maxLength={20}
+          data-1p-ignore
         />
       </div>
 
