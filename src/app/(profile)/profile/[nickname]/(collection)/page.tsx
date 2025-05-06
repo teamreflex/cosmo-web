@@ -3,6 +3,7 @@ import {
   getUserByIdentifier,
   getArtistsWithMembers,
   getSelectedArtists,
+  getUserOrProfile,
 } from "@/app/data-fetching";
 import ProfileRenderer from "@/components/profile/profile-renderer";
 import { ProfileProvider } from "@/hooks/use-profile";
@@ -16,6 +17,7 @@ import {
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { fetchFilterData } from "@/lib/server/objekts/filter-data";
 import { SelectedArtistsProvider } from "@/hooks/use-selected-artists";
+import AddressFallback from "@/components/profile/address-fallback";
 
 type Props = {
   params: Promise<{
@@ -26,10 +28,10 @@ type Props = {
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params;
-  const { profile } = await getUserByIdentifier(params.nickname);
+  const user = await getUserOrProfile(params.nickname);
 
   return {
-    title: `${profile.nickname}'s Collection`,
+    title: `${user.username}'s Collection`,
   };
 }
 
@@ -49,9 +51,13 @@ export default async function UserCollectionPage(props: Props) {
   ]);
 
   const [targetUser, selectedArtists] = await Promise.all([
-    getUserByIdentifier(nickname),
+    getUserOrProfile(nickname),
     getSelectedArtists(),
   ]);
+
+  if (!targetUser.cosmoAddress) {
+    return <AddressFallback username={targetUser.username} />;
+  }
 
   const params = new URLSearchParams({
     ...searchParams,
@@ -66,14 +72,14 @@ export default async function UserCollectionPage(props: Props) {
     queryKey: [
       "collection",
       "blockchain",
-      targetUser.profile.address,
+      targetUser.cosmoAddress,
       {
         ...parseUserCollectionFilters(filters),
         artists: selectedArtists,
       },
     ],
     queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
-      return fetchObjektsBlockchain(targetUser.profile.address, {
+      return fetchObjektsBlockchain(targetUser.cosmoAddress!, {
         ...filters,
         page: pageParam,
       });
@@ -84,10 +90,10 @@ export default async function UserCollectionPage(props: Props) {
   return (
     <CosmoArtistProvider artists={artists}>
       <SelectedArtistsProvider selected={selectedArtists}>
-        <ProfileProvider targetProfile={targetUser.profile} objektLists={[]}>
+        <ProfileProvider targetUser={targetUser} objektLists={[]}>
           <section className="flex flex-col">
             <HydrationBoundary state={dehydrate(queryClient)}>
-              <ProfileRenderer targetUser={targetUser.profile} />
+              <ProfileRenderer targetUser={targetUser} />
             </HydrationBoundary>
           </section>
         </ProfileProvider>

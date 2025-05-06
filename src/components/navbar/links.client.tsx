@@ -20,19 +20,30 @@ import NavbarSearch from "./navbar-search";
 import { ArtistItem } from "./artist-selectbox";
 import { useCosmoArtists } from "@/hooks/use-cosmo-artist";
 import { useSelectedArtists } from "@/hooks/use-selected-artists";
+import { PublicUser } from "@/lib/universal/auth";
+import { PackageOpen } from "lucide-react";
 
-export function DesktopLinks() {
+type Props = {
+  user?: PublicUser;
+};
+
+export function DesktopLinks({ user }: Props) {
   const path = usePathname();
 
   return (
     <div className="contents">
       {links.map((link, i) => {
-        const href = link.href;
+        if (link.requireAuth && !user) {
+          return null;
+        }
+
+        const href = link.href(user);
         return (
           <LinkButton
             key={i}
             link={link}
             active={href === "/" ? path === "/" : path === href}
+            user={user}
           />
         );
       })}
@@ -42,7 +53,7 @@ export function DesktopLinks() {
   );
 }
 
-export function MobileLinks() {
+export function MobileLinks({ user }: Props) {
   const path = usePathname();
   const { artists } = useCosmoArtists();
   const { selectedIds } = useSelectedArtists();
@@ -50,7 +61,11 @@ export function MobileLinks() {
   return (
     <div className="contents">
       {links.map((link) => {
-        const href = link.href;
+        if (link.requireAuth && !user) {
+          return null;
+        }
+
+        const href = link.href(user);
         const active = href === "/" ? path === "/" : path === href;
 
         return (
@@ -91,29 +106,40 @@ export function MobileLinks() {
 type LinkButtonProps = {
   link: NavbarLink;
   active: boolean;
+  user?: PublicUser;
 };
 
-function LinkButton({ link, active }: LinkButtonProps) {
+function LinkButton({ link, active, user }: LinkButtonProps) {
+  const authenticated = user !== undefined;
+  const pathname = link.href(user);
+  const disabled = link.requireAuth && !authenticated;
+  const prefetch = disabled === false && link.prefetch === true;
+
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger>
           <Link
-            href={link.href}
+            href={{ pathname }}
             className="outline-hidden focus:outline-hidden"
             aria-label={link.name}
-            prefetch={link.prefetch === true}
+            prefetch={prefetch}
           >
             <link.icon
               className={cn(
                 "h-8 w-8 shrink-0 transition-all fill-transparent",
-                active && "fill-cosmo/50 dark:fill-foreground/50"
+                active && "fill-cosmo/50 dark:fill-foreground/50",
+                disabled && "text-slate-500 cursor-not-allowed"
               )}
             />
           </Link>
         </TooltipTrigger>
         <TooltipContent className="hidden sm:block">
-          <p>{link.name}</p>
+          <p>
+            {authenticated || (!link.requireAuth && !authenticated)
+              ? link.name
+              : "Sign in first!"}
+          </p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
@@ -124,7 +150,15 @@ const links: NavbarLink[] = [
   {
     name: "Objekts",
     icon: IconCards,
-    href: "/objekts",
+    href: () => "/objekts",
     prefetch: true,
+    requireAuth: false,
+  },
+  {
+    name: "Collection",
+    icon: PackageOpen,
+    href: (user) => (user ? `/@${user.username}` : "/objekts"),
+    prefetch: true,
+    requireAuth: true,
   },
 ];

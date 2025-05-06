@@ -7,12 +7,26 @@ import { getCookie } from "@/lib/server/cookies";
 import { auth } from "@/lib/server/auth";
 import { headers } from "next/headers";
 import { experimental_taintObjectReference as taintObjectReference } from "react";
+import { fetchUserOrProfile } from "@/lib/server/user";
+import { notFound } from "next/navigation";
 
 /**
  * Fetch a user by nickname or address.
  */
+export const getUserOrProfile = cache(async (identifier: string) => {
+  const user = await fetchUserOrProfile(identifier);
+  if (!user) notFound();
+  return user;
+});
+
+/**
+ * Fetch a user by nickname or address.
+ * @deprecated Use {@link getUserOrProfile} instead.
+ */
 export const getUserByIdentifier = cache(async (identifier: string) => {
-  return await fetchUserByIdentifier(identifier);
+  const profile = await fetchUserByIdentifier(identifier);
+  if (!profile) notFound();
+  return profile;
 });
 
 /**

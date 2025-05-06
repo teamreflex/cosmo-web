@@ -45,7 +45,7 @@ export default function UserDropdown({ user, onSignOut }: UserDropdownProps) {
       <DropdownMenuTrigger className="group outline-hidden">
         <UserAvatar
           className="w-8 h-8 **:p-1"
-          nickname={user.username ?? "Apollo"}
+          username={user.username ?? "Apollo"}
         />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

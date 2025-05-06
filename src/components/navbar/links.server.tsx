@@ -8,15 +8,23 @@ import {
 import { DesktopLinks, MobileLinks } from "./links.client";
 import { Menu } from "lucide-react";
 import NavbarSearch from "./navbar-search";
-import { getArtistsWithMembers, getSelectedArtists } from "@/app/data-fetching";
+import {
+  getArtistsWithMembers,
+  getSelectedArtists,
+  getSession,
+} from "@/app/data-fetching";
 import { CosmoArtistProvider } from "@/hooks/use-cosmo-artist";
 import { SelectedArtistsProvider } from "@/hooks/use-selected-artists";
+import { toPublicUser } from "@/lib/server/auth";
 
 export default async function Links() {
-  const [artists, selectedArtists] = await Promise.all([
+  const [artists, selectedArtists, session] = await Promise.all([
     getArtistsWithMembers(),
     getSelectedArtists(),
+    getSession(),
   ]);
+
+  const user = toPublicUser(session?.user);
 
   return (
     <CosmoArtistProvider artists={artists}>
@@ -24,7 +32,7 @@ export default async function Links() {
         <div className="flex grow justify-end lg:justify-center">
           {/* desktop */}
           <div className="lg:flex flex-row items-center gap-6 hidden">
-            <DesktopLinks />
+            <DesktopLinks user={user} />
           </div>
 
           {/* mobile */}
@@ -43,7 +51,7 @@ export default async function Links() {
               <DropdownMenuContent>
                 <DropdownMenuLabel>Menu</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <MobileLinks />
+                <MobileLinks user={user} />
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

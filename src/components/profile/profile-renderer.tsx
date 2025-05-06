@@ -4,19 +4,20 @@ import { useFilters } from "@/hooks/use-filters";
 import FiltersContainer from "../collection/filters-container";
 import Portal from "../portal";
 import HelpDialog from "./help-dialog";
-import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { match } from "ts-pattern";
 import Blockchain from "../collection/data-sources/blockchain";
 import BlockchainGroups from "../collection/data-sources/blockchain-groups";
 import CollectionFilters from "../collection/filter-contexts/collection-filters";
 import { AuthenticatedContext } from "@/hooks/use-authenticated";
+import { PublicUser } from "@/lib/universal/auth";
+import { useProfileContext } from "@/hooks/use-profile";
 
 type Props = {
-  targetUser: PublicProfile;
-  currentUser?: PublicProfile;
+  targetUser: PublicUser;
 };
 
-export default function ProfileRenderer({ targetUser, currentUser }: Props) {
+export default function ProfileRenderer({ targetUser }: Props) {
+  const currentUser = useProfileContext((ctx) => ctx.currentUser);
   const gridColumns = targetUser.gridColumns ?? currentUser?.gridColumns;
 
   const { searchParams, showLocked, setShowLocked, dataSource, setDataSource } =

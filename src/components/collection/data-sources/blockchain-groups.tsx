@@ -2,7 +2,6 @@ import FilteredObjektDisplay from "@/components/objekt/filtered-objekt-display";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { filtersAreDirty } from "@/hooks/use-filters";
 import { objektOptions } from "@/hooks/use-objekt-response";
-import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import {
   BFFCollectionGroup,
   BFFCollectionGroupResponse,
@@ -17,14 +16,15 @@ import LoaderRemote from "@/components/objekt/loader-remote";
 import { baseUrl } from "@/lib/query-client";
 import { useAuthenticated } from "@/hooks/use-authenticated";
 import { useSelectedArtists } from "@/hooks/use-selected-artists";
+import { PublicUser } from "@/lib/universal/auth";
 
 const INITIAL_PAGE = 1;
 const PAGE_SIZE = 30;
 
 type Props = {
   gridColumns: number;
-  targetUser: PublicProfile;
-  currentUser?: PublicProfile;
+  targetUser: PublicUser;
+  currentUser?: PublicUser;
   searchParams: URLSearchParams;
   showLocked: boolean;
 };
@@ -61,10 +61,14 @@ export default function BlockchainGroups(props: Props) {
    */
   const options = objektOptions({
     filtering: "remote",
-    queryKey: ["collection", "blockchain-groups", props.targetUser.address],
+    queryKey: [
+      "collection",
+      "blockchain-groups",
+      props.targetUser.cosmoAddress,
+    ],
     queryFunction: async ({ pageParam = 1 }: { pageParam?: number }) => {
       const endpoint = new URL(
-        `/api/bff/v1/objekt/collection-group/${props.targetUser.address}`,
+        `/api/bff/v1/objekt/collection-group/${props.targetUser.cosmoAddress}`,
         baseUrl()
       ).toString();
 

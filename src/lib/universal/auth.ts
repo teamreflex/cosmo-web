@@ -1,4 +1,3 @@
-import type { ServerUser } from "../server/auth";
 import { CollectionDataSource } from "../utils";
 
 export type TokenPayload = {
@@ -10,18 +9,16 @@ export type TokenPayload = {
   refreshToken: string;
 };
 
-export interface PublicUser
-  extends Pick<
-    ServerUser,
-    | "id"
-    | "username"
-    | "image"
-    | "isAdmin"
-    | "cosmoAddress"
-    | "gridColumns"
-    | "collectionMode"
-  > {
+export type PublicUser = {
+  id: string;
+  username: string | undefined;
+  image: string | undefined;
+  cosmoAddress: string | undefined;
   isAdmin: boolean;
   gridColumns: number;
   collectionMode: CollectionDataSource;
-}
+  href: string | undefined;
+
+  // temporary hopefully maybe?
+  fromCosmo: boolean;
+};

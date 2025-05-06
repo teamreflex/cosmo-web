@@ -12,7 +12,6 @@ import { HeartCrack, RefreshCcw } from "lucide-react";
 import { Button } from "../ui/button";
 import { Suspense, useCallback, useState } from "react";
 import Skeleton from "../skeleton/skeleton";
-import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { baseUrl } from "@/lib/query-client";
 import { ofetch } from "ofetch";
 import { TransferParams, TransferResult } from "@/lib/universal/transfers";
@@ -23,12 +22,14 @@ import MemberFilter from "../collection/member-filter";
 import { useFilters } from "@/hooks/use-filters";
 import SkeletonGradient from "../skeleton/skeleton-overlay";
 import { TransfersFilters } from "../collection/filter-contexts/transfers-filters";
+import { PublicUser } from "@/lib/universal/auth";
+import AddressFallback from "../profile/address-fallback";
 
 type Props = {
-  profile: PublicProfile;
+  user: PublicUser;
 };
 
-export default function TransfersRenderer({ profile }: Props) {
+export default function TransfersRenderer({ user }: Props) {
   const [filters, setFilters] = useCosmoFilters();
   const [type, setType] = useState<TransferParams["type"]>("all");
 
@@ -51,6 +52,10 @@ export default function TransfersRenderer({ profile }: Props) {
     },
     [setFilters]
   );
+
+  if (!user.cosmoAddress) {
+    return <AddressFallback username={user.username} />;
+  }
 
   return (
     <div className="flex flex-col">
@@ -83,7 +88,7 @@ export default function TransfersRenderer({ profile }: Props) {
             >
               <Suspense fallback={<TransfersSkeleton />}>
                 <Transfers
-                  address={profile.address}
+                  address={user.cosmoAddress!}
                   filters={filters}
                   type={type}
                 />

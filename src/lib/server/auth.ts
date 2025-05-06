@@ -252,12 +252,14 @@ export function toPublicUser(
 
   return {
     id: user.id,
-    username: user.displayUsername,
-    image: user.image,
+    username: user.displayUsername ?? undefined,
+    image: user.image ?? undefined,
     isAdmin: user.isAdmin ?? false,
-    cosmoAddress: user.cosmoAddress,
+    cosmoAddress: user.cosmoAddress ?? undefined,
     gridColumns: user.gridColumns ?? GRID_COLUMNS,
     collectionMode: (user.collectionMode ??
       "blockchain") as CollectionDataSource,
+    href: user.displayUsername ?? user.cosmoAddress ?? undefined,
+    fromCosmo: false,
   };
 }

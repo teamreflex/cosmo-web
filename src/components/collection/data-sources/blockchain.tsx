@@ -17,11 +17,12 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import LoaderRemote from "@/components/objekt/loader-remote";
 import { useAuthenticated } from "@/hooks/use-authenticated";
 import { useSelectedArtists } from "@/hooks/use-selected-artists";
+import { PublicUser } from "@/lib/universal/auth";
 
 type Props = {
   gridColumns: number;
-  targetUser: PublicProfile;
-  currentUser?: PublicProfile;
+  targetUser: PublicUser;
+  currentUser?: PublicUser;
   searchParams: URLSearchParams;
   showLocked: boolean;
 };
@@ -64,10 +65,10 @@ export default function Blockchain(props: Props) {
    */
   const options = objektOptions({
     filtering: "remote",
-    queryKey: ["collection", "blockchain", props.targetUser.address],
+    queryKey: ["collection", "blockchain", props.targetUser.cosmoAddress],
     queryFunction: async ({ pageParam = 0 }: { pageParam?: number }) => {
       const endpoint = new URL(
-        `/api/objekts/by-address/${props.targetUser.address}`,
+        `/api/objekts/by-address/${props.targetUser.cosmoAddress}`,
         baseUrl()
       ).toString();
 

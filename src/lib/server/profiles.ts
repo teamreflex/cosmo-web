@@ -5,7 +5,6 @@ import { Profile, profiles } from "./db/schema";
 import { defaultProfile } from "../utils";
 import { fetchByNickname } from "./cosmo/auth";
 import { FetchError } from "ofetch";
-import { notFound } from "next/navigation";
 
 /**
  * Fetch all known addresses from the database.
@@ -32,14 +31,16 @@ export async function fetchKnownAddresses(addresses: string[]) {
  */
 export async function fetchUserByIdentifier(
   identifier: string
-): Promise<IdentifiedUser> {
+): Promise<IdentifiedUser | undefined> {
   const identifierIsAddress = isAddress(identifier);
 
   // check db for a profile
-  const profile = await fetchProfileByIdentifier(
-    identifier,
-    identifierIsAddress ? "userAddress" : "nickname"
-  );
+  const column = identifierIsAddress ? "userAddress" : "nickname";
+  const profile = await db.query.profiles.findFirst({
+    where: {
+      [column]: decodeURIComponent(identifier),
+    },
+  });
 
   if (profile) {
     return {
@@ -48,9 +49,9 @@ export async function fetchUserByIdentifier(
         nickname: profile.nickname,
         isAddress: identifierIsAddress,
       },
-      objektLists: profile.lists,
-      lockedObjekts: profile.lockedObjekts.map((row) => row.tokenId),
-      pins: profile.pins,
+      objektLists: [],
+      lockedObjekts: [],
+      pins: [],
     };
   }
 
@@ -94,40 +95,9 @@ export async function fetchUserByIdentifier(
     if (err instanceof FetchError && err.status !== 404) {
       console.error(`[fetchUserByIdentifier] ${err.status} from COSMO`, err);
     }
-    notFound();
+    return undefined;
   }
 }
-
-/**
- * Fetch a profile by a nickname or address.
- */
-async function fetchProfileByIdentifier(
-  identifier: string,
-  column: "nickname" | "userAddress"
-) {
-  return db.query.profiles.findFirst({
-    where: {
-      [column]: decodeURIComponent(identifier),
-    },
-    with: {
-      lists: true,
-      lockedObjekts: {
-        where: {
-          locked: true,
-        },
-        columns: {
-          tokenId: true,
-        },
-      },
-      pins: {
-        orderBy: {
-          id: "desc",
-        },
-      },
-    },
-  });
-}
-
 /**
  * Convert a database profile to a more friendly type.
  */

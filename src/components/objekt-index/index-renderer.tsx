@@ -124,7 +124,7 @@ function Options() {
       <ListDropdown
         lists={objektLists}
         allowCreate={true}
-        username={currentUser.username}
+        href={currentUser.href}
       />
     </div>
   );

@@ -1,3 +1,5 @@
+"use client";
+
 import { VisuallyHidden as VisuallyHiddenPrimitive } from "radix-ui";
 import { PropsWithChildren } from "react";
 
