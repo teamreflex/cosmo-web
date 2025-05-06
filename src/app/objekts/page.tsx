@@ -18,7 +18,6 @@ import { CosmoArtistProvider } from "@/hooks/use-cosmo-artist";
 import { toPublicUser } from "@/lib/server/auth";
 import { SelectedArtistsProvider } from "@/hooks/use-selected-artists";
 import { fetchObjektLists } from "@/lib/server/objekts/lists";
-import { ObjektList } from "@/lib/server/db/schema";
 import { getTypesenseResults } from "@/lib/client/typesense";
 
 export const metadata: Metadata = {

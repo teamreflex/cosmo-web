@@ -1,6 +1,5 @@
 import { useQueryState } from "nuqs";
 import { useSelectedArtists } from "./use-selected-artists";
-import { baseUrl } from "@/lib/utils";
 import { ofetch } from "ofetch";
 import {
   IndexedObjekt,
@@ -12,11 +11,12 @@ import { useCosmoFilters } from "./use-cosmo-filters";
 import { useFilters } from "./use-filters";
 import { getTypesenseResults } from "@/lib/client/typesense";
 import { useDebounceValue } from "usehooks-ts";
+import { baseUrl } from "@/lib/query-client";
 
 export function useObjektIndex() {
   const [search] = useQueryState("search");
   const [debouncedSearch] = useDebounceValue(search, 500);
-  const selectedArtists = useSelectedArtists();
+  const { selectedIds } = useSelectedArtists();
   const [filters] = useCosmoFilters();
   const { searchParams } = useFilters();
 
@@ -31,7 +31,7 @@ export function useObjektIndex() {
           query: {
             ...Object.fromEntries(searchParams.entries()),
             page: pageParam,
-            artists: selectedArtists,
+            artists: selectedIds,
           },
         }).then((res) => parsePage<LegacyObjektResponse<IndexedObjekt>>(res));
       },
@@ -63,7 +63,7 @@ export function useObjektIndex() {
         query: debouncedSearch,
         filters: filters,
         page: pageParam,
-        artists: selectedArtists,
+        artists: selectedIds,
       });
     },
     initialPageParam: 1,
