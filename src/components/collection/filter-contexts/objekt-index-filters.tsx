@@ -7,6 +7,7 @@ import CollectionFilter from "@/components/objekt-index/collection-filter";
 import { Suspense } from "react";
 import Skeleton from "@/components/skeleton/skeleton";
 import { ErrorBoundary } from "react-error-boundary";
+import FilterSearch from "../filter-search";
 
 /**
  * used on:
@@ -52,6 +53,8 @@ export default function ObjektIndexFilters() {
         setFilters={setFilters}
         serials={false}
       />
+
+      <FilterSearch />
     </div>
   );
 }

@@ -22,6 +22,7 @@ export default function ObjektsLoading() {
             {Array.from({ length: 5 }).map((_, i) => (
               <Skeleton key={i} className="w-24 h-9" />
             ))}
+            <Skeleton className="w-48 h-9" />
           </div>
         </div>
 
