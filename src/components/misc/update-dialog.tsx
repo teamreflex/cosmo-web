@@ -75,10 +75,10 @@ export default function UpdateDialog() {
 
 const updates = [
   {
-    date: "2025-05-06",
+    date: "2025-05-07",
     changes: [
       "Objekt collections can now be searched by text.",
-      "Search is case-insensitive, has typo tolerance and supports shortcuts.",
+      "Search is case-insensitive, has typo tolerance and supports various unit name, member nickname and collection shortcuts. See the help dialog for more information.",
     ],
   },
   {

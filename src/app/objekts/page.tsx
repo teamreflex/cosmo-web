@@ -67,13 +67,9 @@ export default async function ObjektsIndexPage(props: Params) {
         return await getTypesenseResults({
           query: search,
           filters: {
-            ...filters,
+            ...parseObjektIndexFilters(filters),
             artist: filters.artist ?? null,
             member: filters.member ?? null,
-            transferable: null,
-            gridable: null,
-            used_for_grid: null,
-            collection: null,
           },
           page: pageParam,
           artists: selectedArtists,
