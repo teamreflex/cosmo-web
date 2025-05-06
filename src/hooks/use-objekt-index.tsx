@@ -63,6 +63,7 @@ export function useObjektIndex() {
         query: debouncedSearch,
         filters: filters,
         page: pageParam,
+        artists: selectedArtists,
       });
     },
     initialPageParam: 1,

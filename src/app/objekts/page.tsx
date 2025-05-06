@@ -76,6 +76,7 @@ export default async function ObjektsIndexPage(props: Params) {
             collection: null,
           },
           page: pageParam,
+          artists: selectedArtists,
         });
       },
       initialPageParam: 1,

@@ -17,6 +17,7 @@ type GetTypesenseResultsProps = {
   query: string;
   filters: CosmoFilters;
   page: number;
+  artists: string[];
 };
 
 /**
@@ -26,6 +27,7 @@ export async function getTypesenseResults({
   query,
   filters,
   page,
+  artists,
 }: GetTypesenseResultsProps) {
   const result = await typesense
     .collections("collections")
@@ -38,7 +40,7 @@ export async function getTypesenseResults({
         sort_by: "createdAt:desc",
         page: page,
         per_page: PER_PAGE,
-        filter_by: buildFilterBy(filters),
+        filter_by: buildFilterBy(filters, artists),
       },
       {
         cacheSearchResultsForSeconds: 60, // cache for 60 seconds
@@ -60,28 +62,35 @@ export async function getTypesenseResults({
 /**
  * Build a filter string for Typesense.
  */
-function buildFilterBy(filters: CosmoFilters) {
-  const filterBy: string[] = [];
+function buildFilterBy(filters: CosmoFilters, artists: string[]) {
+  const allFilters: string[] = [];
 
+  // artist filter overrides selected artists array
   if (filters.artist) {
-    filterBy.push(`artist:${filters.artist}`);
+    allFilters.push(`artist:${filters.artist}`);
+  } else if (artists.length > 0) {
+    allFilters.push(`artist:[${artists.join(",")}]`);
   }
 
+  // member filter
   if (filters.member) {
-    filterBy.push(`member:${filters.member}`);
+    allFilters.push(`member:${filters.member}`);
   }
 
+  // season filter
   if (filters.season && filters.season.length > 0) {
-    filterBy.push(`season:[${filters.season.join(",")}]`);
+    allFilters.push(`season:[${filters.season.join(",")}]`);
   }
 
+  // class filter
   if (filters.class && filters.class.length > 0) {
-    filterBy.push(`class:[${filters.class.join(",")}]`);
+    allFilters.push(`class:[${filters.class.join(",")}]`);
   }
 
+  // collectionNo filter
   if (filters.collectionNo && filters.collectionNo.length > 0) {
-    filterBy.push(`collectionNo:[${filters.collectionNo.join(",")}]`);
+    allFilters.push(`collectionNo:[${filters.collectionNo.join(",")}]`);
   }
 
-  return filterBy.join(" && ");
+  return allFilters.join(" && ");
 }
