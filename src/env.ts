@@ -45,6 +45,9 @@ export const env = createEnv({
     NEXT_PUBLIC_UMAMI_SCRIPT_URL: z.string().min(1),
     // sentry
     NEXT_PUBLIC_SENTRY_DSN: z.string().min(1),
+    // typesense
+    NEXT_PUBLIC_TYPESENSE_URL: z.string().min(1),
+    NEXT_PUBLIC_TYPESENSE_KEY: z.string().min(1),
   },
   experimental__runtimeEnv: {
     NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
@@ -54,5 +57,7 @@ export const env = createEnv({
     NEXT_PUBLIC_UMAMI_ID: process.env.NEXT_PUBLIC_UMAMI_ID,
     NEXT_PUBLIC_UMAMI_SCRIPT_URL: process.env.NEXT_PUBLIC_UMAMI_SCRIPT_URL,
     NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
+    NEXT_PUBLIC_TYPESENSE_URL: process.env.NEXT_PUBLIC_TYPESENSE_URL,
+    NEXT_PUBLIC_TYPESENSE_KEY: process.env.NEXT_PUBLIC_TYPESENSE_KEY,
   },
 });

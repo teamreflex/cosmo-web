@@ -19,6 +19,7 @@ import { toPublicUser } from "@/lib/server/auth";
 import { SelectedArtistsProvider } from "@/hooks/use-selected-artists";
 import { fetchObjektLists } from "@/lib/server/objekts/lists";
 import { ObjektList } from "@/lib/server/db/schema";
+import { getTypesenseResults } from "@/lib/client/typesense";
 
 export const metadata: Metadata = {
   title: "Objekts",
@@ -54,24 +55,55 @@ export default async function ObjektsIndexPage(props: Params) {
   }
   const filters = parseObjektIndex(params);
 
+  const search = params.get("search");
+
   // prefetch objekts
-  queryClient.prefetchInfiniteQuery({
-    queryKey: [
-      "objekt-index",
-      "blockchain",
-      {
-        ...parseObjektIndexFilters(filters),
-        artists: selectedArtists,
+  if (search) {
+    // prefetch typesense
+    queryClient.prefetchInfiniteQuery({
+      queryKey: [
+        "objekt-index",
+        "typesense",
+        { search: search || null },
+        {
+          ...parseObjektIndexFilters(filters),
+          artists: selectedArtists,
+        },
+      ],
+      queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
+        return await getTypesenseResults({
+          query: search,
+          filters: {
+            ...parseObjektIndexFilters(filters),
+            artist: filters.artist ?? null,
+            member: filters.member ?? null,
+          },
+          page: pageParam,
+          artists: selectedArtists,
+        });
       },
-    ],
-    queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
-      return fetchObjektsIndex({
-        ...filters,
-        page: pageParam,
-      });
-    },
-    initialPageParam: 0,
-  });
+      initialPageParam: 1,
+    });
+  } else {
+    // prefetch blockchain
+    queryClient.prefetchInfiniteQuery({
+      queryKey: [
+        "objekt-index",
+        "blockchain",
+        {
+          ...parseObjektIndexFilters(filters),
+          artists: selectedArtists,
+        },
+      ],
+      queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
+        return fetchObjektsIndex({
+          ...filters,
+          page: pageParam,
+        });
+      },
+      initialPageParam: 0,
+    });
+  }
 
   // fetch objekt lists
   const objektLists = session

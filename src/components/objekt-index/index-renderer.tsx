@@ -1,19 +1,10 @@
 "use client";
 
 import ListDropdown from "../lists/list-dropdown";
-import {
-  IndexedObjekt,
-  LegacyObjektResponse,
-  parsePage,
-} from "@/lib/universal/objekts";
 import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
 import { TopOverlay } from "./index-overlay";
-import { useFilters } from "@/hooks/use-filters";
 import FiltersContainer from "../collection/filters-container";
-import { ofetch } from "ofetch";
-import { baseUrl } from "@/lib/query-client";
 import { parseAsString, useQueryState } from "nuqs";
-import { ObjektResponseOptions } from "@/hooks/use-objekt-response";
 import { ObjektSidebar } from "../objekt/common";
 import RoutedExpandableObjekt from "../objekt/objekt-routed";
 import ExpandableObjekt from "../objekt/objekt-expandable";
@@ -25,9 +16,11 @@ import VirtualizedGrid from "../objekt/virtualized-grid";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import LoaderRemote from "../objekt/loader-remote";
 import ObjektIndexFilters from "../collection/filter-contexts/objekt-index-filters";
-import { useSelectedArtists } from "@/hooks/use-selected-artists";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { useProfileContext } from "@/hooks/use-profile";
+import { useObjektIndex } from "@/hooks/use-objekt-index";
+import HelpDialog from "./help-dialog";
+import { IndexedObjekt } from "@/lib/universal/objekts";
 
 type Props = {
   activeSlug?: string;
@@ -39,41 +32,10 @@ export default function IndexRenderer(props: Props) {
   const gridColumns = useProfileContext((ctx) =>
     isDesktop ? ctx.gridColumns : 3
   );
-  const { searchParams } = useFilters();
-  const { selectedIds } = useSelectedArtists();
   const [, setActiveObjekt] = useQueryState("id", parseAsString);
+  const options = useObjektIndex();
 
   const authenticated = currentUser !== undefined;
-
-  /**
-   * Query options
-   */
-  const options = {
-    filtering: "remote",
-    queryKey: ["objekt-index", "blockchain"],
-    queryFunction: async ({ pageParam = 0 }: { pageParam?: number }) => {
-      const url = new URL("/api/objekts", baseUrl());
-      return await ofetch(url.toString(), {
-        query: {
-          ...Object.fromEntries(searchParams.entries()),
-          page: pageParam,
-          artists: selectedIds,
-        },
-      }).then((res) => parsePage<LegacyObjektResponse<IndexedObjekt>>(res));
-    },
-    initialPageParam: 0,
-    getNextPageParam: (lastPage) => lastPage.nextStartAfter,
-    calculateTotal: (data) => {
-      const total = data.pages[0].total ?? 0;
-      return (
-        <p className="font-semibold">{total.toLocaleString("en")} total</p>
-      );
-    },
-    getItems: (data) => data.pages.flatMap((page) => page.objekts),
-  } satisfies ObjektResponseOptions<
-    LegacyObjektResponse<IndexedObjekt>,
-    IndexedObjekt
-  >;
 
   return (
     <div className="flex flex-col">
@@ -84,7 +46,12 @@ export default function IndexRenderer(props: Props) {
       </FiltersContainer>
 
       <FilteredObjektDisplay gridColumns={gridColumns}>
-        <LoaderRemote options={options} gridColumns={gridColumns} showTotal>
+        <LoaderRemote
+          options={options}
+          gridColumns={gridColumns}
+          showTotal
+          searchable
+        >
           {({ rows }) => (
             <VirtualizedGrid
               rows={rows}
@@ -128,6 +95,7 @@ function Title() {
   return (
     <div className="flex gap-2 items-center w-full pb-1">
       <h1 className="text-3xl font-cosmo uppercase">Objekts</h1>
+      <HelpDialog />
 
       <Button variant="secondary" size="profile" data-profile asChild>
         <Link href="/objekts/stats">
