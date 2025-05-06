@@ -13,6 +13,7 @@ import { getQueryClient } from "@/lib/query-client";
 import { GRID_COLUMNS } from "@/lib/utils";
 import { SelectedArtistsProvider } from "@/hooks/use-selected-artists";
 import { CosmoArtistProvider } from "@/hooks/use-cosmo-artist";
+import { getTypesenseResults } from "@/lib/client/typesense";
 
 export const metadata: Metadata = {
   title: "Objekts",
@@ -47,24 +48,58 @@ export default async function ObjektsIndexPage(props: Params) {
   }
   const filters = parseObjektIndex(params);
 
+  const search = params.get("search");
+
   // prefetch objekts
-  queryClient.prefetchInfiniteQuery({
-    queryKey: [
-      "objekt-index",
-      "blockchain",
-      {
-        ...parseObjektIndexFilters(filters),
-        artists: selectedArtists,
+  if (search) {
+    // prefetch typesense
+    queryClient.prefetchInfiniteQuery({
+      queryKey: [
+        "objekt-index",
+        "typesense",
+        { search: search || null },
+        {
+          ...parseObjektIndexFilters(filters),
+          artists: selectedArtists,
+        },
+      ],
+      queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
+        return await getTypesenseResults({
+          query: search,
+          filters: {
+            ...filters,
+            artist: filters.artist ?? null,
+            member: filters.member ?? null,
+            transferable: null,
+            gridable: null,
+            used_for_grid: null,
+            collection: null,
+          },
+          page: pageParam,
+        });
       },
-    ],
-    queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
-      return fetchObjektsIndex({
-        ...filters,
-        page: pageParam,
-      });
-    },
-    initialPageParam: 0,
-  });
+      initialPageParam: 1,
+    });
+  } else {
+    // prefetch blockchain
+    queryClient.prefetchInfiniteQuery({
+      queryKey: [
+        "objekt-index",
+        "blockchain",
+        {
+          ...parseObjektIndexFilters(filters),
+          artists: selectedArtists,
+        },
+      ],
+      queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
+        return fetchObjektsIndex({
+          ...filters,
+          page: pageParam,
+        });
+      },
+      initialPageParam: 0,
+    });
+  }
 
   return (
     <main className="container flex flex-col py-2">

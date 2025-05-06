@@ -18,6 +18,7 @@ type Props<Response, Item> = {
   shouldRender?: (objekt: Item) => boolean;
   gridColumns: number;
   showTotal?: boolean;
+  searchable?: boolean;
 };
 
 export default function LoaderRemote<Response, Item>({
@@ -25,6 +26,7 @@ export default function LoaderRemote<Response, Item>({
   hidePins = true,
   shouldRender = () => true,
   showTotal = false,
+  searchable = false,
   ...props
 }: Props<Response, Item>) {
   // data

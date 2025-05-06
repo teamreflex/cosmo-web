@@ -75,35 +75,17 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2025-05-06",
+    changes: [
+      "Objekt collections can now be searched by text.",
+      "Search is case-insensitive, has typo tolerance and supports shortcuts.",
+    ],
+  },
+  {
     date: "2025-05-01",
     changes: [
       "Trade history has been migrated from the old blockchain.",
       "This does not include history for objekts that were sent to the spin account, as MODHAUS did not migrate those.",
-    ],
-  },
-  {
-    date: "2025-04-24",
-    changes: [
-      "Objekt mint times have been corrected and COMO calendar re-enabled.",
-      "idntt has been added but MODHAUS has changed a lot of how seasons/classes/sidebars work, so it's gonna look weird for a bit.",
-    ],
-  },
-  {
-    date: "2025-04-21",
-    changes: [
-      "All logged profiles have been migrated to new Abstract addresses, so lookups via ID will now work.",
-      "ID changes and new accounts will have their IDs logged to the database until it gets patched.",
-      "Objekt mint/receive times will be corrected soon.",
-    ],
-  },
-  {
-    date: "2025-04-20",
-    changes: [
-      "Everything that interacted with COSMO has been removed.",
-      "This includes: Signing in, sending objekts, scanning objekts, objekt spin, gravity voting, showing usernames, rekord, badges, rankings, news.",
-      "Due to the blockchain migration, all the objekt receive times are incorrect, which has affected COMO calendars.",
-      "Profiles can still be looked up by COSMO ID, but these are still linked to old Polygon addresses. This remains in place for users to view their objekt lists.",
-      "Profiles can be looked up by wallet address, which will pull your collection from the new Abstract blockchain that COSMO has migrated to.",
     ],
   },
 ];
