@@ -22,8 +22,8 @@ export function castToArray<TSchema extends z.Schema>(schema: TSchema) {
  */
 export const cosmoSchema = z.object({
   sort: z.enum(validSorts).optional().default("newest"),
-  season: z.string().array(),
-  class: z.string().array(),
+  season: castToArray(z.string()),
+  class: castToArray(z.string()),
   on_offline: castToArray(z.enum(validOnlineTypes)),
   member: z.string().optional().nullable(),
   artist: z.enum(validArtists).optional().nullable(),

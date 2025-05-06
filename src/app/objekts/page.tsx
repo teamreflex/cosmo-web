@@ -47,8 +47,8 @@ export default async function ObjektsIndexPage(props: Params) {
     params.append("artists", artist);
   }
   const filters = parseObjektIndex(params);
-
   const search = params.get("search");
+  const parsedFilters = parseObjektIndexFilters(filters);
 
   // prefetch objekts
   if (search) {
@@ -59,7 +59,7 @@ export default async function ObjektsIndexPage(props: Params) {
         "typesense",
         { search: search || null },
         {
-          ...parseObjektIndexFilters(filters),
+          ...parsedFilters,
           artists: selectedArtists,
         },
       ],
@@ -67,7 +67,7 @@ export default async function ObjektsIndexPage(props: Params) {
         return await getTypesenseResults({
           query: search,
           filters: {
-            ...parseObjektIndexFilters(filters),
+            ...parsedFilters,
             artist: filters.artist ?? null,
             member: filters.member ?? null,
           },
@@ -84,7 +84,7 @@ export default async function ObjektsIndexPage(props: Params) {
         "objekt-index",
         "blockchain",
         {
-          ...parseObjektIndexFilters(filters),
+          ...parsedFilters,
           artists: selectedArtists,
         },
       ],
