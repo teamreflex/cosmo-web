@@ -131,36 +131,8 @@
     {
       "idx": 18,
       "version": "7",
-      "when": 1745656696463,
-      "tag": "0018_left_hellfire_club",
-      "breakpoints": true
-    },
-    {
-      "idx": 19,
-      "version": "7",
-      "when": 1745915734111,
-      "tag": "0019_fat_silverclaw",
-      "breakpoints": true
-    },
-    {
-      "idx": 20,
-      "version": "7",
-      "when": 1746434673962,
-      "tag": "0020_mushy_satana",
-      "breakpoints": true
-    },
-    {
-      "idx": 21,
-      "version": "7",
-      "when": 1746449168243,
-      "tag": "0021_windy_vulture",
-      "breakpoints": true
-    },
-    {
-      "idx": 22,
-      "version": "7",
-      "when": 1746449963758,
-      "tag": "0022_smart_nico_minoru",
+      "when": 1746694030552,
+      "tag": "0018_ambiguous_makkari",
       "breakpoints": true
     }
   ]
