@@ -112,7 +112,7 @@ async function fetchCollectionMetadata(slug: string) {
     with: {
       profile: {
         columns: {
-          nickname: true,
+          username: true,
         },
       },
     },

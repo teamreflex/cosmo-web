@@ -1,6 +1,6 @@
 import { search } from "@/lib/server/cosmo/auth";
 import { db } from "@/lib/server/db";
-import { profiles } from "@/lib/server/db/schema";
+import { cosmoAccounts } from "@/lib/server/db/schema";
 import { getProxiedToken } from "@/lib/server/handlers/withProxiedToken";
 import { CosmoSearchResult } from "@/lib/universal/cosmo/auth";
 import { Addresses } from "@/lib/utils";
@@ -30,20 +30,18 @@ export async function GET(request: NextRequest) {
   if (results.results.length > 0) {
     after(async () => {
       const newProfiles = results.results.map((r) => ({
-        nickname: r.nickname,
-        userAddress: r.address,
-        cosmoId: 0,
-        artist: "artms" as const,
+        username: r.nickname,
+        address: r.address,
       }));
 
       try {
         await db
-          .insert(profiles)
+          .insert(cosmoAccounts)
           .values(newProfiles)
           .onConflictDoUpdate({
-            target: profiles.userAddress,
+            target: cosmoAccounts.address,
             set: {
-              nickname: sql.raw(`excluded.${profiles.nickname.name}`),
+              username: sql.raw(`excluded.${cosmoAccounts.username.name}`),
             },
           });
       } catch (err) {
@@ -76,15 +74,16 @@ async function queryDatabase(query: string): Promise<CosmoSearchResult> {
 
   const users = await db
     .select({
-      nickname: profiles.nickname,
-      address: profiles.userAddress,
+      username: cosmoAccounts.username,
+      address: cosmoAccounts.address,
     })
-    .from(profiles)
-    .where(like(profiles.nickname, `${query}%`));
+    .from(cosmoAccounts)
+    .where(like(cosmoAccounts.username, `${query}%`));
 
   return {
     results: users.map((result) => ({
-      ...result,
+      nickname: result.username,
+      address: result.address,
       profileImageUrl: "",
       profile: [],
     })),

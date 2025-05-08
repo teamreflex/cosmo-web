@@ -5,6 +5,7 @@ import { toPublicUser } from "./auth";
 import { PublicProfile } from "../universal/cosmo/auth";
 import { PublicUser } from "../universal/auth";
 import { isAddress } from "viem";
+import { GRID_COLUMNS } from "../utils";
 
 /**
  * Fetches both a user and a COSMO profile in parallel.
@@ -54,13 +55,13 @@ async function fetchUser(identifier: string): Promise<PublicUser | undefined> {
 function profileToPublicUser(profile: PublicProfile): PublicUser {
   return {
     id: crypto.randomUUID(),
-    username: profile.nickname,
+    username: profile.username,
     image: undefined,
-    isAdmin: profile.isObjektEditor,
+    isAdmin: false,
     cosmoAddress: profile.address,
-    gridColumns: profile.gridColumns,
-    collectionMode: profile.dataSource,
-    href: profile.isAddress ? profile.address : profile.nickname,
+    gridColumns: GRID_COLUMNS,
+    collectionMode: "blockchain",
+    href: profile.isAddress ? profile.address : profile.username,
     fromCosmo: true,
   };
 }

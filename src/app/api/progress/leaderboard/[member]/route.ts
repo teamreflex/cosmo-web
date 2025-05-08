@@ -67,12 +67,12 @@ export async function GET(request: NextRequest, props: Params) {
   // map the nickname onto the results
   const results = leaderboard.map((row) => {
     const known = knownAddresses.find((a) =>
-      isAddressEqual(a.userAddress, row.owner)
+      isAddressEqual(a.address, row.owner)
     );
 
     return {
       count: row.count,
-      nickname: known?.nickname ?? row.owner.substring(0, 8),
+      nickname: known?.username ?? row.owner.substring(0, 8),
       address: row.owner,
       isAddress: known === undefined,
     };

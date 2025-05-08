@@ -1,7 +1,6 @@
 import { Pin } from "@/lib/server/db/schema";
 import type { List } from "@/lib/server/db/schema";
 import { ValidArtist } from "./common";
-import { CollectionDataSource } from "@/lib/utils";
 
 export type LoginChannel = "email";
 
@@ -14,18 +13,10 @@ export type CosmoProfile = {
 };
 
 export type PublicProfile = {
-  nickname: string;
+  username: string;
   profileImageUrl: string;
   address: string;
   isAddress: boolean;
-  artist: ValidArtist;
-  privacy: {
-    votes: boolean;
-  };
-  gridColumns: number;
-  isObjektEditor: boolean;
-  dataSource: CollectionDataSource;
-  isModhaus: boolean;
 };
 
 export type IdentifiedUser = {

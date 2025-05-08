@@ -42,12 +42,12 @@ export async function fetchTransfers(
     // map the nickname onto the results and apply spin flags
     results: aggregate.results.map((row) => ({
       ...row,
-      nickname: knownAddresses.find((a) =>
+      username: knownAddresses.find((a) =>
         [
           row.transfer.from.toLowerCase(),
           row.transfer.to.toLowerCase(),
-        ].includes(a.userAddress.toLowerCase())
-      )?.nickname,
+        ].includes(a.address.toLowerCase())
+      )?.username,
     })),
   };
 }

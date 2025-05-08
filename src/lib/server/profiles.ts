@@ -1,7 +1,7 @@
 import { isAddress } from "viem";
 import { IdentifiedUser, PublicProfile } from "../universal/cosmo/auth";
 import { db } from "./db";
-import { Profile, profiles } from "./db/schema";
+import { CosmoAccount, cosmoAccounts } from "./db/schema";
 import { defaultProfile } from "../utils";
 import { fetchByNickname } from "./cosmo/auth";
 import { FetchError } from "ofetch";
@@ -13,15 +13,15 @@ export async function fetchKnownAddresses(addresses: string[]) {
   if (addresses.length === 0) return [];
 
   // fetch known profiles
-  return await db.query.profiles.findMany({
+  return await db.query.cosmoAccounts.findMany({
     where: {
-      userAddress: {
+      address: {
         in: addresses,
       },
     },
     columns: {
-      userAddress: true,
-      nickname: true,
+      address: true,
+      username: true,
     },
   });
 }
@@ -35,8 +35,8 @@ export async function fetchUserByIdentifier(
   const identifierIsAddress = isAddress(identifier);
 
   // check db for a profile
-  const column = identifierIsAddress ? "userAddress" : "nickname";
-  const profile = await db.query.profiles.findFirst({
+  const column = identifierIsAddress ? "address" : "username";
+  const profile = await db.query.cosmoAccounts.findFirst({
     where: {
       [column]: decodeURIComponent(identifier),
     },
@@ -46,7 +46,7 @@ export async function fetchUserByIdentifier(
     return {
       profile: {
         ...parseProfile(profile),
-        nickname: profile.nickname,
+        username: profile.username,
         isAddress: identifierIsAddress,
       },
       objektLists: [],
@@ -60,7 +60,7 @@ export async function fetchUserByIdentifier(
     return {
       profile: {
         ...defaultProfile,
-        nickname: identifier.substring(0, 6),
+        username: identifier.substring(0, 6),
         address: identifier,
       },
       objektLists: [],
@@ -75,17 +75,15 @@ export async function fetchUserByIdentifier(
 
     // upsert profile
     await db
-      .insert(profiles)
+      .insert(cosmoAccounts)
       .values({
-        userAddress: profile.address,
-        nickname: profile.nickname,
-        cosmoId: 0,
-        artist: "artms",
+        address: profile.address,
+        username: profile.nickname,
       })
       .onConflictDoUpdate({
-        target: profiles.userAddress,
+        target: cosmoAccounts.address,
         set: {
-          nickname: profile.nickname,
+          username: profile.nickname,
         },
       })
       .returning();
@@ -101,19 +99,11 @@ export async function fetchUserByIdentifier(
 /**
  * Convert a database profile to a more friendly type.
  */
-function parseProfile(profile: Profile): PublicProfile {
+function parseProfile(profile: CosmoAccount): PublicProfile {
   return {
-    nickname: profile.nickname,
-    address: profile.userAddress,
+    username: profile.username,
+    address: profile.address,
     profileImageUrl: "",
     isAddress: false,
-    artist: profile.artist,
-    privacy: {
-      votes: profile.privacyVotes,
-    },
-    gridColumns: profile.gridColumns,
-    isObjektEditor: profile.objektEditor,
-    dataSource: profile.dataSource ?? "blockchain",
-    isModhaus: profile.isModhaus,
   };
 }

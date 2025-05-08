@@ -24,10 +24,11 @@
 
 ### profiles table refactor
 
-- [ ] rename table from `profiles` to something like `cosmo_accounts`
-- [ ] rename `user_address` to `address`
-- [ ] rename `nickname` to `username`
-- [ ] remove `artist`, `privacyVotes`, `gridColumns`, `objektEditor`, `dataSource`, `isModhaus` as these have been moved to the local account
+- [x] rename table from `profiles` to something like `cosmo_accounts`
+- [x] rename `user_address` to `address`
+- [x] rename `nickname` to `username`
+- [x] remove `artist`, `privacyVotes`, `gridColumns`, `objektEditor`, `dataSource`, `isModhaus` as these have been moved to the local account
+- [x] make `cosmoId` nullable
 
 ### public profiles
 

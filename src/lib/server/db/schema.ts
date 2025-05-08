@@ -1,4 +1,3 @@
-import { ValidArtist } from "@/lib/universal/cosmo/common";
 import {
   boolean,
   index,
@@ -17,19 +16,19 @@ import { CosmoGravityType, CosmoPollType } from "@/lib/universal/cosmo/gravity";
 
 export { user, session, account, verification };
 
-export const profiles = pgTable(
-  "profiles",
+export const cosmoAccounts = pgTable(
+  "cosmo_account",
   {
     id: serial("id").primaryKey(),
-    cosmoId: integer("cosmo_id").notNull(),
-    nickname: citext("nickname", { length: 24 }).notNull(),
-    userAddress: citext("user_address", { length: 42 }).notNull(),
+    cosmoId: integer("cosmo_id"),
+    username: citext("username", { length: 24 }).notNull(),
+    address: citext("address", { length: 42 }).notNull(),
   },
   (t) => [
-    uniqueIndex("profiles_address_idx").on(t.userAddress),
+    uniqueIndex("profiles_address_idx").on(t.address),
     index("profiles_cosmo_id_idx").on(t.cosmoId),
-    index("profiles_nickname_idx").on(t.nickname),
-    uniqueIndex("profiles_nickname_address_idx").on(t.nickname, t.userAddress),
+    index("profiles_username_idx").on(t.username),
+    uniqueIndex("profiles_username_address_idx").on(t.username, t.address),
   ]
 );
 
@@ -183,7 +182,7 @@ export const gravityPollCandidates = pgTable(
   ]
 );
 
-export type Profile = typeof profiles.$inferSelect;
+export type CosmoAccount = typeof cosmoAccounts.$inferSelect;
 export type Pin = typeof pins.$inferSelect;
 export type ObjektMetadataEntry = typeof objektMetadata.$inferSelect;
 export type ObjektList = typeof objektLists.$inferSelect;

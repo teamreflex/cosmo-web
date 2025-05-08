@@ -1,5 +1,5 @@
 import type { Collection } from "@/lib/server/db/indexer/schema";
-import { ObjektMetadataEntry, Profile } from "@/lib/server/db/schema";
+import { ObjektMetadataEntry, CosmoAccount } from "@/lib/server/db/schema";
 import { CosmoObjekt, ObjektBaseFields } from "@/lib/universal/cosmo/objekts";
 
 // alias the indexer type
@@ -15,7 +15,7 @@ export type LegacyObjektResponse<T extends LegacyObjekt> = {
 
 // metadata
 interface ObjektInformation extends ObjektMetadataEntry {
-  profile?: Pick<Profile, "nickname"> | null;
+  profile?: Pick<CosmoAccount, "username"> | null;
 }
 export type ObjektMetadata = {
   total: number;

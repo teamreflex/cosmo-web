@@ -14,9 +14,9 @@ type Params = {
  */
 export async function GET(_: NextRequest, props: Params) {
   const params = await props.params;
-  const profile = await db.query.profiles.findFirst({
+  const profile = await db.query.cosmoAccounts.findFirst({
     where: {
-      OR: [{ nickname: params.identifier }, { userAddress: params.identifier }],
+      OR: [{ username: params.identifier }, { address: params.identifier }],
     },
     with: {
       lists: true,

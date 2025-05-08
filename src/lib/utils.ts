@@ -47,17 +47,9 @@ export type FilterType = "remote" | "local";
  */
 export const defaultProfile: PublicProfile = {
   address: "",
-  nickname: "",
+  username: "",
   profileImageUrl: "",
   isAddress: true,
-  artist: "artms",
-  privacy: {
-    votes: true,
-  },
-  gridColumns: GRID_COLUMNS,
-  isObjektEditor: false,
-  dataSource: "blockchain",
-  isModhaus: false,
 };
 
 /**

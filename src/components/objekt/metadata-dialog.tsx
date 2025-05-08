@@ -349,10 +349,10 @@ function Metadata({ objekt }: { objekt: Objekt.Collection }) {
             <p>Sourced by:</p>
             <Link
               className="underline"
-              href={`/@${data.metadata.profile.nickname}`}
+              href={`/@${data.metadata.profile.username}`}
               prefetch={false}
             >
-              {data.metadata.profile.nickname}
+              {data.metadata.profile.username}
             </Link>
           </div>
         )}

@@ -2,43 +2,28 @@ import { defineRelations } from "drizzle-orm";
 import * as schema from "./schema";
 
 export const relations = defineRelations(schema, (r) => ({
-  // #region Legacy
-  profiles: {
+  cosmoAccounts: {
     lockedObjekts: r.many.lockedObjekts(),
     lists: r.many.lists(),
     objektMetadata: r.many.objektMetadata(),
     pins: r.many.pins(),
   },
   lockedObjekts: {
-    profile: r.one.profiles({
+    profile: r.one.cosmoAccounts({
       from: r.lockedObjekts.userAddress,
-      to: r.profiles.userAddress,
-    }),
-  },
-  lists: {
-    entries: r.many.listEntries(),
-    profile: r.one.profiles({
-      from: r.lists.userAddress,
-      to: r.profiles.userAddress,
-    }),
-  },
-  listEntries: {
-    list: r.one.lists({
-      from: r.listEntries.listId,
-      to: r.lists.id,
+      to: r.cosmoAccounts.address,
     }),
   },
   pins: {
-    profile: r.one.profiles({
+    profile: r.one.cosmoAccounts({
       from: r.pins.userAddress,
-      to: r.profiles.userAddress,
+      to: r.cosmoAccounts.address,
     }),
   },
-  // #endregion
   objektMetadata: {
-    profile: r.one.profiles({
+    profile: r.one.cosmoAccounts({
       from: r.objektMetadata.contributor,
-      to: r.profiles.userAddress,
+      to: r.cosmoAccounts.address,
     }),
   },
   objektLists: {
@@ -72,4 +57,19 @@ export const relations = defineRelations(schema, (r) => ({
       to: r.user.id,
     }),
   },
+  // #region Legacy
+  lists: {
+    entries: r.many.listEntries(),
+    profile: r.one.cosmoAccounts({
+      from: r.lists.userAddress,
+      to: r.cosmoAccounts.address,
+    }),
+  },
+  listEntries: {
+    list: r.one.lists({
+      from: r.listEntries.listId,
+      to: r.lists.id,
+    }),
+  },
+  // #endregion
 }));

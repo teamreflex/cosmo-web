@@ -141,6 +141,20 @@
       "when": 1746694930483,
       "tag": "0019_high_flatman",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1746695004600,
+      "tag": "0020_perpetual_silverclaw",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1746695411080,
+      "tag": "0021_faithful_ego",
+      "breakpoints": true
     }
   ]
 }
