@@ -36,8 +36,6 @@ export default function NavbarSearch() {
       onOpenChange={setOpen}
       onSelect={onSelect}
       recent={recent}
-      authenticated={false}
-      includeSpin={true}
     >
       <TooltipProvider>
         <Tooltip>

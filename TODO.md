@@ -38,7 +38,7 @@
     - cosmo verification would display that wallet's data
     - should allow for data migration
     - would need to figure out local username <-> cosmo id conflicts
-  - [ ] cosmo ids: transition would be seamless
+  - [x] cosmo ids: transition would be seamless
     - cosmo verification would allow users to "claim" pre-existing `cosmo_accounts` rows
     - lists would still need to be migrated due to being linked to the user (can be done automatically upon link)
     - pins and locked objekts could remain using addresses as foreign keys?

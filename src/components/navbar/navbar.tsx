@@ -2,7 +2,7 @@ import Logo from "../logo";
 import { Suspense } from "react";
 import UpdateDialog from "../misc/update-dialog";
 import SystemStatus from "../misc/system-status";
-import Links from "./links.server";
+import Links, { LinksSkeleton } from "./links.server";
 import {
   getArtistsWithMembers,
   getSelectedArtists,
@@ -31,7 +31,7 @@ export default async function Navbar() {
               </div>
             </div>
 
-            <Suspense>
+            <Suspense fallback={<LinksSkeleton />}>
               <Links />
             </Suspense>
 

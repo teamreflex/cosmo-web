@@ -6,7 +6,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { DesktopLinks, MobileLinks } from "./links.client";
-import { Menu } from "lucide-react";
+import { Menu, Search } from "lucide-react";
 import NavbarSearch from "./navbar-search";
 import {
   getArtistsWithMembers,
@@ -16,6 +16,7 @@ import {
 import { CosmoArtistProvider } from "@/hooks/use-cosmo-artist";
 import { SelectedArtistsProvider } from "@/hooks/use-selected-artists";
 import { toPublicUser } from "@/lib/server/auth";
+import { IconCards } from "@tabler/icons-react";
 
 export default async function Links() {
   const [artists, selectedArtists, session] = await Promise.all([
@@ -58,5 +59,16 @@ export default async function Links() {
         </div>
       </SelectedArtistsProvider>
     </CosmoArtistProvider>
+  );
+}
+
+export function LinksSkeleton() {
+  return (
+    <div className="flex justify-center items-center gap-6">
+      <IconCards className="hidden lg:block size-8 shrink-0 fill-transparent" />
+      <Search className="hidden lg:block size-8 shrink-0 fill-transparent" />
+
+      <Menu className="lg:hidden size-8 shrink-0 drop-shadow-lg" />
+    </div>
   );
 }
