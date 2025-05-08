@@ -12,36 +12,24 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 import { citext, createdAt } from "./columns";
-import { CollectionDataSource } from "@/lib/utils";
 import { user, session, account, verification } from "./auth-schema";
 import { CosmoGravityType, CosmoPollType } from "@/lib/universal/cosmo/gravity";
 
 export { user, session, account, verification };
 
-// #region Legacy
 export const profiles = pgTable(
   "profiles",
   {
     id: serial("id").primaryKey(),
-    userAddress: citext("user_address", { length: 42 }).notNull(),
     cosmoId: integer("cosmo_id").notNull(),
     nickname: citext("nickname", { length: 24 }).notNull(),
-    // using a string and casting output so the db doesn't have to know about the enum
-    artist: varchar("artist", { length: 24 }).notNull().$type<ValidArtist>(),
-    privacyVotes: boolean("privacy_votes").notNull().default(true),
-    gridColumns: integer("grid_columns").notNull().default(5),
-    objektEditor: boolean("objekt_editor").notNull().default(false),
-    dataSource: varchar("data_source", {
-      length: 24,
-    }).$type<CollectionDataSource>(),
-    isModhaus: boolean("is_modhaus").notNull().default(false),
+    userAddress: citext("user_address", { length: 42 }).notNull(),
   },
   (t) => [
     uniqueIndex("profiles_address_idx").on(t.userAddress),
     index("profiles_cosmo_id_idx").on(t.cosmoId),
     index("profiles_nickname_idx").on(t.nickname),
     uniqueIndex("profiles_nickname_address_idx").on(t.nickname, t.userAddress),
-    index("profiles_is_modhaus_idx").on(t.isModhaus),
   ]
 );
 
@@ -61,34 +49,6 @@ export const lockedObjekts = pgTable(
   ]
 );
 
-export const lists = pgTable(
-  "lists",
-  {
-    id: serial("id").primaryKey(),
-    userAddress: citext("user_address", { length: 42 }).notNull(),
-    name: varchar("name", { length: 24 }).notNull(),
-    slug: citext("slug", { length: 24 }).notNull(),
-  },
-  (t) => [
-    index("lists_address_idx").on(t.userAddress),
-    index("lists_slug_idx").on(t.slug),
-  ]
-);
-
-export const listEntries = pgTable(
-  "list_entries",
-  {
-    id: serial("id").primaryKey(),
-    listId: integer("list_id")
-      .notNull()
-      .references(() => lists.id, {
-        onDelete: "cascade",
-      }),
-    collectionId: varchar("collection_id", { length: 36 }).notNull(), // slug: atom01-jinsoul-101z
-  },
-  (t) => [index("list_entries_list_idx").on(t.listId)]
-);
-
 export const pins = pgTable(
   "pins",
   {
@@ -101,7 +61,6 @@ export const pins = pgTable(
     index("pins_token_id_idx").on(t.tokenId),
   ]
 );
-// #endregion
 
 export const objektMetadata = pgTable(
   "objekt_metadata",
@@ -224,15 +183,8 @@ export const gravityPollCandidates = pgTable(
   ]
 );
 
-// #region Legacy Types
 export type Profile = typeof profiles.$inferSelect;
-export type List = typeof lists.$inferSelect;
-export type ListEntry = typeof listEntries.$inferSelect;
-export type CreateList = typeof lists.$inferInsert;
-export type UpdateList = typeof lists.$inferInsert;
 export type Pin = typeof pins.$inferSelect;
-// #endregion
-
 export type ObjektMetadataEntry = typeof objektMetadata.$inferSelect;
 export type ObjektList = typeof objektLists.$inferSelect;
 export type ObjektListEntry = typeof objektListEntries.$inferSelect;
@@ -240,3 +192,38 @@ export type CosmoToken = typeof cosmoTokens.$inferSelect;
 export type Gravity = typeof gravities.$inferSelect;
 export type GravityPoll = typeof gravityPolls.$inferSelect;
 export type GravityPollCandidate = typeof gravityPollCandidates.$inferSelect;
+
+// #region Legacy
+export const lists = pgTable(
+  "lists",
+  {
+    id: serial("id").primaryKey(),
+    userAddress: citext("user_address", { length: 42 }).notNull(),
+    name: varchar("name", { length: 24 }).notNull(),
+    slug: citext("slug", { length: 24 }).notNull(),
+  },
+  (t) => [
+    index("lists_address_idx").on(t.userAddress),
+    index("lists_slug_idx").on(t.slug),
+  ]
+);
+
+export const listEntries = pgTable(
+  "list_entries",
+  {
+    id: serial("id").primaryKey(),
+    listId: integer("list_id")
+      .notNull()
+      .references(() => lists.id, {
+        onDelete: "cascade",
+      }),
+    collectionId: varchar("collection_id", { length: 36 }).notNull(), // slug: atom01-jinsoul-101z
+  },
+  (t) => [index("list_entries_list_idx").on(t.listId)]
+);
+
+export type List = typeof lists.$inferSelect;
+export type ListEntry = typeof listEntries.$inferSelect;
+export type CreateList = typeof lists.$inferInsert;
+export type UpdateList = typeof lists.$inferInsert;
+// #endregion
