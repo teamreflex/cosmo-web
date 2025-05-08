@@ -37,6 +37,7 @@
     "date-fns": "^4.1.0",
     "drizzle-orm": "1.0.0-beta.1-c0277c0",
     "import-in-the-middle": "^1.13.1",
+    "jose": "^6.0.11",
     "lucide-react": "^0.508.0",
     "next": "15.3.2",
     "next-safe-action": "^7.10.8",

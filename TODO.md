@@ -12,8 +12,8 @@
   - **250506**: it doesn't
 - [x] check if the old token refresh endpoint works
   - **250508**: it does
-- [ ] restore `withProxiedToken` for persistent access
-- [ ] restore user search w/ caching
+- [x] restore `withProxiedToken` for persistent access
+- [x] restore user search w/ caching
 - [ ] restore gravity importing
 - [ ] refactor polygon gravity tracking to abstract
 

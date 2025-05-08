@@ -150,6 +150,19 @@ export const objektListEntries = pgTable(
   (t) => [index("objekt_list_entries_list_idx").on(t.objektListId)]
 );
 
+export const cosmoTokens = pgTable(
+  "cosmo_tokens",
+  {
+    id: serial("id").primaryKey(),
+    accessToken: varchar("access_token", { length: 255 }).notNull(),
+    refreshToken: varchar("refresh_token", { length: 255 }).notNull(),
+  },
+  (t) => [
+    index("cosmo_tokens_access_token_idx").on(t.accessToken),
+    index("cosmo_tokens_refresh_token_idx").on(t.refreshToken),
+  ]
+);
+
 // #region Legacy Types
 export type Profile = typeof profiles.$inferSelect;
 export type List = typeof lists.$inferSelect;
@@ -162,3 +175,4 @@ export type Pin = typeof pins.$inferSelect;
 export type ObjektMetadataEntry = typeof objektMetadata.$inferSelect;
 export type ObjektList = typeof objektLists.$inferSelect;
 export type ObjektListEntry = typeof objektListEntries.$inferSelect;
+export type CosmoToken = typeof cosmoTokens.$inferSelect;

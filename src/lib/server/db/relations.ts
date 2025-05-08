@@ -54,6 +54,7 @@ export const relations = defineRelations(schema, (r) => ({
       to: r.objektLists.id,
     }),
   },
+  cosmoTokens: {},
   users: {
     sessions: r.many.session(),
     accounts: r.many.account(),
