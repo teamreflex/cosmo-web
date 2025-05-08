@@ -9,83 +9,108 @@ import {
 } from "../ui/tooltip";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { NavbarLink } from "./links";
 import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "../ui/dropdown-menu";
-import { IconCards } from "@tabler/icons-react";
+import { IconCards, TablerIcon } from "@tabler/icons-react";
 import NavbarSearch from "./navbar-search";
 import { ArtistItem } from "./artist-selectbox";
 import { useCosmoArtists } from "@/hooks/use-cosmo-artist";
 import { useSelectedArtists } from "@/hooks/use-selected-artists";
 import { PublicUser } from "@/lib/universal/auth";
-import { PackageOpen } from "lucide-react";
+import { LucideIcon, PackageOpen } from "lucide-react";
+import LinkCosmo from "../auth/link-cosmo";
+import { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 
 type Props = {
-  user?: PublicUser;
+  cosmo?: PublicCosmo;
 };
 
-export function DesktopLinks({ user }: Props) {
+export function DesktopLinks({ cosmo }: Props) {
   const path = usePathname();
 
   return (
     <div className="contents">
-      {links.map((link, i) => {
-        if (link.requireAuth && !user) {
-          return null;
-        }
+      <LinkButton
+        href="/objekts"
+        active={path === "/objekts"}
+        icon={IconCards}
+        name="Objekts"
+      />
 
-        const href = link.href(user);
-        return (
-          <LinkButton
-            key={i}
-            link={link}
-            active={href === "/" ? path === "/" : path === href}
-            user={user}
-          />
-        );
-      })}
+      {cosmo ? (
+        <LinkButton
+          href={`/@${cosmo.username}`}
+          active={path.startsWith(`/@${cosmo.username}`)}
+          icon={PackageOpen}
+          name="Collection"
+        />
+      ) : (
+        <TooltipProvider>
+          <Tooltip>
+            <LinkCosmo>
+              <TooltipTrigger asChild>
+                <button>
+                  <PackageOpen className="size-8 shrink-0 transition-all fill-transparent" />
+                </button>
+              </TooltipTrigger>
+            </LinkCosmo>
+            <TooltipContent>
+              <p>Link COSMO</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
 
       <NavbarSearch />
     </div>
   );
 }
 
-export function MobileLinks({ user }: Props) {
+export function MobileLinks({ cosmo }: Props) {
   const path = usePathname();
   const { artists } = useCosmoArtists();
   const { selectedIds } = useSelectedArtists();
 
   return (
     <div className="contents">
-      {links.map((link) => {
-        if (link.requireAuth && !user) {
-          return null;
-        }
+      {/* objekt index */}
+      <DropdownMenuItem asChild>
+        <Link href="/objekts" aria-label="Objekts">
+          <IconCards
+            className={cn(
+              "h-4 w-4 shrink-0 transition-all fill-transparent",
+              path === "/objekts" && "fill-white/50"
+            )}
+          />
+          <span>Objekts</span>
+        </Link>
+      </DropdownMenuItem>
 
-        const href = link.href(user);
-        const active = href === "/" ? path === "/" : path === href;
-
-        return (
-          <DropdownMenuItem key={href} asChild>
-            <Link
-              href={href}
-              aria-label={link.name}
-              prefetch={link.prefetch === true}
-            >
-              <link.icon
-                className={cn(
-                  "h-4 w-4 shrink-0 transition-all fill-transparent",
-                  active && "fill-white/50"
-                )}
-              />
-              <span>{link.name}</span>
-            </Link>
+      {cosmo ? (
+        // user has a cosmo cosmo, go to collection
+        <DropdownMenuItem asChild>
+          <Link href={`/@${cosmo.username}`} aria-label="Collection">
+            <PackageOpen
+              className={cn(
+                "h-4 w-4 shrink-0 transition-all fill-transparent",
+                path === `/@${cosmo.username}` && "fill-white/50"
+              )}
+            />
+            <span>Collection</span>
+          </Link>
+        </DropdownMenuItem>
+      ) : (
+        // user needs to link a cosmo cosmo
+        <LinkCosmo>
+          <DropdownMenuItem>
+            <PackageOpen className="h-4 w-4 shrink-0 transition-all fill-transparent" />
+            <span>Link COSMO</span>
           </DropdownMenuItem>
-        );
-      })}
+        </LinkCosmo>
+      )}
 
       <DropdownMenuSeparator />
       <DropdownMenuGroup>
@@ -104,61 +129,35 @@ export function MobileLinks({ user }: Props) {
 }
 
 type LinkButtonProps = {
-  link: NavbarLink;
+  href: string;
   active: boolean;
   user?: PublicUser;
+  icon: LucideIcon | TablerIcon;
+  name: string;
 };
 
-function LinkButton({ link, active, user }: LinkButtonProps) {
-  const authenticated = user !== undefined;
-  const pathname = link.href(user);
-  const disabled = link.requireAuth && !authenticated;
-  const prefetch = disabled === false && link.prefetch === true;
-
+function LinkButton(props: LinkButtonProps) {
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger>
           <Link
-            href={{ pathname }}
+            href={props.href}
             className="outline-hidden focus:outline-hidden"
-            aria-label={link.name}
-            prefetch={prefetch}
+            aria-label={props.name}
           >
-            <link.icon
+            <props.icon
               className={cn(
                 "h-8 w-8 shrink-0 transition-all fill-transparent",
-                active && "fill-cosmo/50 dark:fill-foreground/50",
-                disabled && "text-slate-500 cursor-not-allowed"
+                props.active && "fill-cosmo/50 dark:fill-foreground/50"
               )}
             />
           </Link>
         </TooltipTrigger>
         <TooltipContent className="hidden sm:block">
-          <p>
-            {authenticated || (!link.requireAuth && !authenticated)
-              ? link.name
-              : "Sign in first!"}
-          </p>
+          <p>{props.name}</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );
 }
-
-const links: NavbarLink[] = [
-  {
-    name: "Objekts",
-    icon: IconCards,
-    href: () => "/objekts",
-    prefetch: true,
-    requireAuth: false,
-  },
-  {
-    name: "Collection",
-    icon: PackageOpen,
-    href: (user) => (user ? `/@${user.username}` : "/objekts"),
-    prefetch: true,
-    requireAuth: true,
-  },
-];

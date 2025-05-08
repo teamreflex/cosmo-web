@@ -17,13 +17,19 @@ import { ArtistItem } from "../navbar/artist-selectbox";
 import { useCosmoArtists } from "@/hooks/use-cosmo-artist";
 import UserAvatar from "../profile/user-avatar";
 import AccountDialog from "./account-dialog";
+import { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 
 type UserDropdownProps = {
   user: PublicUser;
+  cosmo?: PublicCosmo;
   onSignOut: () => void;
 };
 
-export default function UserDropdown({ user, onSignOut }: UserDropdownProps) {
+export default function UserDropdown({
+  user,
+  cosmo,
+  onSignOut,
+}: UserDropdownProps) {
   const { artists } = useCosmoArtists();
   const { selectedIds } = useSelectedArtists();
   const [openSettings, setOpenSettings] = useState(false);
@@ -40,6 +46,7 @@ export default function UserDropdown({ user, onSignOut }: UserDropdownProps) {
         open={openAccount}
         onOpenChange={setOpenAccount}
         user={user}
+        cosmo={cosmo}
       />
 
       <DropdownMenuTrigger className="group outline-hidden">

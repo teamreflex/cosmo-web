@@ -9,7 +9,6 @@ import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
 import ListOverlay from "./list-overlay";
 import DeleteList from "./delete-list";
 import UpdateList from "./update-list";
-import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { useFilters } from "@/hooks/use-filters";
 import FiltersContainer from "../collection/filters-container";
 import { ofetch } from "ofetch";
@@ -23,29 +22,30 @@ import VirtualizedGrid from "../objekt/virtualized-grid";
 import LoaderRemote from "../objekt/loader-remote";
 import ObjektIndexFilters from "../collection/filter-contexts/objekt-index-filters";
 import type { ObjektList } from "@/lib/server/db/schema";
+import { useProfileContext } from "@/hooks/use-profile";
 
 type Props = {
   list: ObjektList;
   authenticated: boolean;
-  user: PublicProfile;
-  gridColumns: number;
 };
 
 export default function ListRenderer(props: Props) {
   const { searchParams } = useFilters();
   const isDesktop = useMediaQuery();
-
-  const gridColumns = isDesktop ? props.gridColumns : 3;
+  const cosmo = useProfileContext((ctx) => ctx.target!.cosmo!);
+  const gridColumns = useProfileContext((ctx) =>
+    isDesktop ? ctx.gridColumns : 3
+  );
 
   /**
    * Query options
    */
   const options = {
     filtering: "remote",
-    queryKey: ["objekt-list", props.list.slug, props.user.address],
+    queryKey: ["objekt-list", props.list.slug, cosmo.address],
     queryFunction: async ({ pageParam = 0 }: { pageParam?: number }) => {
       const url = new URL(
-        `/api/objekt-list/entries/${props.list.slug}/${props.user.address}`,
+        `/api/objekt-list/entries/${props.list.slug}/${cosmo.address}`,
         baseUrl()
       );
 

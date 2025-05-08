@@ -22,7 +22,7 @@
 - [ ] restore admin panel for metadata insertion
 - [ ] allow for typesense synonym updates?
 
-### profiles table refactor
+### profiles table refactor - done 250508
 
 - [x] rename table from `profiles` to something like `cosmo_accounts`
 - [x] rename `user_address` to `address`
@@ -30,9 +30,9 @@
 - [x] remove `artist`, `privacyVotes`, `gridColumns`, `objektEditor`, `dataSource`, `isModhaus` as these have been moved to the local account
 - [x] make `cosmoId` nullable
 
-### public profiles
+### public profiles - done 250508
 
-- [ ] decide on a strategy for which accounts to publicly display
+- [x] decide on a strategy for which accounts to publicly display
 
   - [ ] local accounts: will result in confusion due to a year+ of cosmo id usage
     - cosmo verification would display that wallet's data
@@ -42,19 +42,47 @@
     - cosmo verification would allow users to "claim" pre-existing `cosmo_accounts` rows
     - lists would still need to be migrated due to being linked to the user (can be done automatically upon link)
     - pins and locked objekts could remain using addresses as foreign keys?
+    - [x] refactor profile loading back to exclusively cosmo accounts
 
-### cosmo account verification
+### cosmo account verification - done 250508
 
-- [ ] check if playwright works on vercel fluid
+- [x] check if playwright works on vercel fluid
   - option: https://github.com/Sparticuz/chromium
   - option: browserless cloud (free tier: 1k units @ 30s exec. time each)
   - option: browserless docker (free, risk ip block)
-- [ ] ensure the recaptcha bypass still works
-- [ ] api routes or build a better-auth plugin?
-- [ ] link to signed in user
+  - [x] **250508**: using browserless cloud + bql
+- [x] ensure the recaptcha bypass still works
+  - **250508**: switched to invoking the lib directly: https://developers.google.com/recaptcha/docs/v3#programmatically_invoke_the_challenge
+- [x] api routes or build a better-auth plugin?
+  - **250508**: api routes + server action
+- [x] link to signed in user
 
-### user data migration (if using local accounts as the base)
+### server action client migration
 
-- [ ] rename old tables: `lists`, `list_entries`, `pins`, `locked_objekts`
-- [ ] create new tables for pins and locked objekts
-- [ ] allow users to migrate their data to the new tables
+- [ ] objekt lock
+- [ ] objekt pin
+- [ ] objekt unpin
+- [ ] metadata update
+- [ ] metadata bulk update (admin)
+
+### user data migration
+
+- [ ] decide whether or not to start objekt lists new or keep the existing table
+- [ ] if new, build migration tool
+- [ ] if existing, update `user_address` column name & drop "new" tables
+
+### polish
+
+- [ ] add toggle locked filter back
+- [x] fix jank around redirecting away when finishing cosmo link
+- [ ] add set password functionality for oauth users
+- [ ] add oauth linking after register for email & password users
+- [ ] remove abstract gas indicator
+
+### stretch
+
+- [ ] allow unlinking of cosmo accounts
+- [ ] display discord handle on profile
+- [ ] double check how betterauth handles oauth -> username mapping w/ conflicts
+- [ ] contingency backup for browserless failing
+- [ ] refactor artist/member filtering

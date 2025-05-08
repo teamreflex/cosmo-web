@@ -13,14 +13,24 @@ import Profile from "./account/profile";
 import { PublicUser } from "@/lib/universal/auth";
 import DeleteAccount from "./account/delete-account";
 import LinkCosmo from "./link-cosmo";
+import { Button } from "../ui/button";
+import Image from "next/image";
+import CosmoLogo from "@/assets/cosmo.webp";
+import { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   user: PublicUser;
+  cosmo?: PublicCosmo;
 };
 
-export default function AccountDialog({ open, onOpenChange, user }: Props) {
+export default function AccountDialog({
+  open,
+  onOpenChange,
+  user,
+  cosmo,
+}: Props) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-xl">
@@ -44,7 +54,33 @@ export default function AccountDialog({ open, onOpenChange, user }: Props) {
 
           <Separator className="my-2" />
           <div className="flex items-center justify-between">
-            <LinkCosmo />
+            <div className="flex items-center gap-2">
+              {cosmo === undefined ? (
+                <LinkCosmo>
+                  <Button variant="cosmo">
+                    <Image
+                      className="rounded-full"
+                      src={CosmoLogo}
+                      alt="COSMO"
+                      width={20}
+                      height={20}
+                    />
+                    <span>Link COSMO</span>
+                  </Button>
+                </LinkCosmo>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Image
+                    className="rounded-full"
+                    src={CosmoLogo}
+                    alt="COSMO"
+                    width={20}
+                    height={20}
+                  />
+                  <p className="text-sm">{cosmo.username}</p>
+                </div>
+              )}
+            </div>
             <DeleteAccount />
           </div>
         </div>

@@ -1,6 +1,5 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { PublicProfile } from "./universal/cosmo/auth";
 import { ValidArtist } from "./universal/cosmo/common";
 
 export function cn(...inputs: ClassValue[]) {
@@ -41,16 +40,6 @@ export const collectionDataSources = [
 ] as const;
 export type CollectionDataSource = (typeof collectionDataSources)[number];
 export type FilterType = "remote" | "local";
-
-/**
- * Default {@link PublicProfile} properties.
- */
-export const defaultProfile: PublicProfile = {
-  address: "",
-  username: "",
-  profileImageUrl: "",
-  isAddress: true,
-};
 
 /**
  * Addresses that may need special handling.

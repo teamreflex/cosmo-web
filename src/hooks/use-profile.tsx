@@ -2,15 +2,15 @@
 
 import { createStore, useStore } from "zustand";
 import { createContext, PropsWithChildren, useContext, useRef } from "react";
-import { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
+import type { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
 import { useShallow } from "zustand/react/shallow";
 import type { ObjektList } from "@/lib/server/db/schema";
-import { PublicUser } from "@/lib/universal/auth";
 import { GRID_COLUMNS } from "@/lib/utils";
+import type { PublicAccount } from "@/lib/universal/cosmo-accounts";
 
 interface ProfileProps {
-  currentUser: PublicUser | undefined;
-  targetUser: PublicUser | undefined;
+  account: Partial<PublicAccount> | undefined;
+  target: Partial<PublicAccount> | undefined;
   objektLists: ObjektList[];
   lockedObjekts: number[];
   pins: CosmoObjekt[];
@@ -19,6 +19,7 @@ interface ProfileProps {
 type ProfileProviderProps = PropsWithChildren<Partial<ProfileProps>>;
 
 interface ProfileState extends ProfileProps {
+  authenticated: boolean;
   gridColumns: number;
   toggleLock: (tokenId: number) => void;
   addPin: (objekt: CosmoObjekt) => void;
@@ -29,8 +30,8 @@ type ProfileStore = ReturnType<typeof createProfileStore>;
 
 const createProfileStore = (initProps?: Partial<ProfileProps>) => {
   const DEFAULT_PROPS: ProfileProps = {
-    currentUser: undefined,
-    targetUser: undefined,
+    account: undefined,
+    target: undefined,
     objektLists: [],
     lockedObjekts: [],
     pins: [],
@@ -41,11 +42,17 @@ const createProfileStore = (initProps?: Partial<ProfileProps>) => {
     ...initProps,
 
     /**
+     * Whether the target is the same as the account.
+     */
+    authenticated:
+      get()?.target?.cosmo?.address === get()?.account?.cosmo?.address,
+
+    /**
      * Get the number of grid columns to use.
      */
     gridColumns:
-      get()?.targetUser?.gridColumns ??
-      get()?.currentUser?.gridColumns ??
+      get()?.target?.user?.gridColumns ??
+      get()?.account?.user?.gridColumns ??
       GRID_COLUMNS,
 
     /**

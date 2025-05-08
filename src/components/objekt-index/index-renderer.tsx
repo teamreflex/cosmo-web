@@ -28,14 +28,14 @@ type Props = {
 
 export default function IndexRenderer(props: Props) {
   const isDesktop = useMediaQuery();
-  const currentUser = useProfileContext((ctx) => ctx.currentUser);
+  const user = useProfileContext((ctx) => ctx.account?.user);
   const gridColumns = useProfileContext((ctx) =>
     isDesktop ? ctx.gridColumns : 3
   );
   const [, setActiveObjekt] = useQueryState("id", parseAsString);
   const options = useObjektIndex();
 
-  const authenticated = currentUser !== undefined;
+  const authenticated = user !== undefined;
 
   return (
     <div className="flex flex-col">
@@ -114,17 +114,17 @@ function Title() {
 }
 
 function Options() {
-  const currentUser = useProfileContext((ctx) => ctx.currentUser);
+  const cosmo = useProfileContext((ctx) => ctx.account?.cosmo);
   const objektLists = useProfileContext((ctx) => ctx.objektLists);
 
-  if (!currentUser || !currentUser.username) return null;
+  if (!cosmo || !cosmo.username) return null;
 
   return (
     <div className="flex gap-2 items-center">
       <ListDropdown
         lists={objektLists}
         allowCreate={true}
-        href={currentUser.href}
+        username={cosmo.username}
       />
     </div>
   );

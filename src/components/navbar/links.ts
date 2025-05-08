@@ -6,6 +6,5 @@ export type NavbarLink = {
   name: string;
   icon: LucideIcon | TablerIcon;
   href: (user?: PublicUser) => string;
-  prefetch: boolean | null;
-  requireAuth: boolean;
+  render?: (user?: PublicUser) => React.ReactNode;
 };

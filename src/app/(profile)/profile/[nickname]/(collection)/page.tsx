@@ -1,9 +1,9 @@
 import { Metadata } from "next";
 import {
-  getUserByIdentifier,
+  getAccount,
   getArtistsWithMembers,
   getSelectedArtists,
-  getUserOrProfile,
+  getTargetAccount,
 } from "@/app/data-fetching";
 import ProfileRenderer from "@/components/profile/profile-renderer";
 import { ProfileProvider } from "@/hooks/use-profile";
@@ -17,7 +17,7 @@ import {
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { fetchFilterData } from "@/lib/server/objekts/filter-data";
 import { SelectedArtistsProvider } from "@/hooks/use-selected-artists";
-import AddressFallback from "@/components/profile/address-fallback";
+import { fetchPins } from "@/lib/server/objekts/pins";
 
 type Props = {
   params: Promise<{
@@ -28,10 +28,10 @@ type Props = {
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params;
-  const user = await getUserOrProfile(params.nickname);
+  const { cosmo } = await getTargetAccount(params.nickname);
 
   return {
-    title: `${user.username}'s Collection`,
+    title: `${cosmo.username}'s Collection`,
   };
 }
 
@@ -50,14 +50,11 @@ export default async function UserCollectionPage(props: Props) {
     props.params,
   ]);
 
-  const [targetUser, selectedArtists] = await Promise.all([
-    getUserOrProfile(nickname),
+  const [account, selectedArtists, target] = await Promise.all([
+    getAccount(),
     getSelectedArtists(),
+    getTargetAccount(nickname),
   ]);
-
-  if (!targetUser.cosmoAddress) {
-    return <AddressFallback username={targetUser.username} />;
-  }
 
   const params = new URLSearchParams({
     ...searchParams,
@@ -72,14 +69,14 @@ export default async function UserCollectionPage(props: Props) {
     queryKey: [
       "collection",
       "blockchain",
-      targetUser.cosmoAddress,
+      target.cosmo.address,
       {
         ...parseUserCollectionFilters(filters),
         artists: selectedArtists,
       },
     ],
     queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
-      return fetchObjektsBlockchain(targetUser.cosmoAddress!, {
+      return fetchObjektsBlockchain(target.cosmo.address, {
         ...filters,
         page: pageParam,
       });
@@ -87,13 +84,23 @@ export default async function UserCollectionPage(props: Props) {
     initialPageParam: 0,
   });
 
+  const { pins, lockedObjekts, ...targetAccount } = target;
+  const pinnedObjekts = await fetchPins(pins);
+
   return (
     <CosmoArtistProvider artists={artists}>
       <SelectedArtistsProvider selected={selectedArtists}>
-        <ProfileProvider targetUser={targetUser} objektLists={[]}>
+        <ProfileProvider
+          account={account}
+          target={targetAccount}
+          // todo: update lists
+          objektLists={[]}
+          pins={pinnedObjekts}
+          lockedObjekts={lockedObjekts}
+        >
           <section className="flex flex-col">
             <HydrationBoundary state={dehydrate(queryClient)}>
-              <ProfileRenderer targetUser={targetUser} />
+              <ProfileRenderer targetCosmo={target.cosmo} />
             </HydrationBoundary>
           </section>
         </ProfileProvider>

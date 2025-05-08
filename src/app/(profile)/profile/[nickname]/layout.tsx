@@ -1,4 +1,3 @@
-import { getUserOrProfile } from "@/app/data-fetching";
 import { PropsWithChildren, Suspense } from "react";
 import CopyAddressButton from "@/components/profile/copy-address-button";
 import TradesButton from "@/components/profile/trades-button";
@@ -17,21 +16,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import ComoBalanceRenderer from "@/components/navbar/como-balances";
-import type { ObjektList } from "@/lib/server/db/schema";
 import { Addresses } from "@/lib/utils";
-import { PublicUser } from "@/lib/universal/auth";
 import CosmoLogo from "@/assets/cosmo.webp";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { env } from "@/env";
+import { getAccount, getTargetAccount } from "@/app/data-fetching";
+import { FullAccount } from "@/lib/universal/cosmo-accounts";
 
 type Props = PropsWithChildren<{
   params: Promise<{
@@ -41,9 +29,12 @@ type Props = PropsWithChildren<{
 
 export default async function ProfileLayout(props: Props) {
   const params = await props.params;
-  const user = await getUserOrProfile(params.nickname);
+  const [account, target] = await Promise.all([
+    getAccount(),
+    getTargetAccount(params.nickname),
+  ]);
 
-  const href = user.href ? `/@${user.href}` : null;
+  const authenticated = account?.cosmo?.address === target.cosmo.address;
 
   return (
     <main className="relative container flex flex-col gap-2 py-2">
@@ -55,65 +46,41 @@ export default async function ProfileLayout(props: Props) {
               <Skeleton className="h-20 w-20 rounded-full aspect-square shrink-0" />
             }
           >
-            <UserAvatar className="w-20 h-20" username={user.username} />
+            <UserAvatar
+              className="w-20 h-20"
+              username={target.cosmo.username}
+            />
           </Suspense>
 
           <div className="flex flex-col justify-between w-full">
             <div className="flex gap-2 items-center">
-              {href !== null ? (
-                <Link
-                  href={href}
-                  className="w-fit text-2xl lg:text-3xl font-cosmo uppercase underline underline-offset-4 decoration-transparent hover:decoration-cosmo transition-colors"
-                >
-                  {user.username}
-                </Link>
-              ) : (
-                <span className="w-fit text-2xl lg:text-3xl font-cosmo uppercase">
-                  {user.username}
-                </span>
+              <Link
+                href={`/@${target.cosmo.username}`}
+                className="w-fit text-2xl lg:text-3xl font-cosmo uppercase underline underline-offset-4 decoration-transparent hover:decoration-cosmo transition-colors"
+              >
+                {target.cosmo.username}
+              </Link>
+
+              {target.verified && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <Image
+                        className="rounded-md shrink-0 invert dark:invert-0"
+                        src={CosmoLogo.src}
+                        alt="COSMO"
+                        width={24}
+                        height={24}
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <span>Account has been verified by the owner</span>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               )}
 
-              {user.fromCosmo && (
-                <AlertDialog>
-                  <AlertDialogTrigger>
-                    <Image
-                      className="rounded-md shrink-0 invert dark:invert-0"
-                      src={CosmoLogo.src}
-                      alt="COSMO"
-                      width={24}
-                      height={24}
-                    />
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>COSMO Account</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This account has been loaded from COSMO.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-
-                    <div className="flex flex-col text-sm">
-                      <p>This icon indicates one of two things:</p>
-                      <ul className="list-disc list-inside">
-                        <li>
-                          The user has not linked their COSMO account yet, but
-                          the username matches a COSMO ID.
-                        </li>
-                        <li>
-                          There is no {env.NEXT_PUBLIC_APP_NAME} account for
-                          this username, but it matches a COSMO ID.
-                        </li>
-                      </ul>
-                    </div>
-
-                    <AlertDialogFooter>
-                      <AlertDialogAction>Close</AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              )}
-
-              {user.cosmoAddress === Addresses.SPIN && (
+              {target.cosmo.address === Addresses.SPIN && (
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger>
@@ -134,9 +101,7 @@ export default async function ProfileLayout(props: Props) {
             </div>
 
             <div className="flex items-center justify-between gap-2">
-              {user.cosmoAddress !== undefined && (
-                <ComoBalanceRenderer address={user.cosmoAddress} />
-              )}
+              <ComoBalanceRenderer address={target.cosmo.address} />
               <div></div>
               <span className="h-10 flex items-center last:ml-auto">
                 <div id="objekt-total" />
@@ -147,7 +112,7 @@ export default async function ProfileLayout(props: Props) {
       </div>
 
       {/* mobile buttons */}
-      <Buttons user={user} objektLists={[]} />
+      <Buttons target={target} authenticated={authenticated} />
 
       {props.children}
     </main>
@@ -155,20 +120,22 @@ export default async function ProfileLayout(props: Props) {
 }
 
 type ButtonsProps = {
-  user: PublicUser;
-  objektLists: ObjektList[];
+  target: FullAccount;
+  authenticated: boolean;
 };
 
-function Buttons({ user, objektLists }: ButtonsProps) {
+function Buttons({ target, authenticated }: ButtonsProps) {
   return (
     <div className="flex flex-wrap gap-2 justify-center lg:justify-normal md:absolute md:top-2 md:right-4">
-      {user.cosmoAddress !== undefined && (
-        <CopyAddressButton address={user.cosmoAddress} />
-      )}
-      <TradesButton href={user.href} />
-      <ComoButton href={user.href} />
-      <ProgressButton href={user.href} />
-      <ListDropdown lists={objektLists} href={user.href} allowCreate={false} />
+      <CopyAddressButton address={target.cosmo.address} />
+      <TradesButton username={target.cosmo.username} />
+      <ComoButton username={target.cosmo.username} />
+      <ProgressButton username={target.cosmo.username} />
+      <ListDropdown
+        lists={[]}
+        username={target.cosmo.username}
+        allowCreate={authenticated}
+      />
 
       {/* content gets portaled in */}
       <span className="h-10 lg:h-8 flex items-center">

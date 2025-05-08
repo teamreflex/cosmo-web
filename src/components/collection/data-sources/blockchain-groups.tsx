@@ -14,26 +14,24 @@ import VirtualizedGrid from "@/components/objekt/virtualized-grid";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import LoaderRemote from "@/components/objekt/loader-remote";
 import { baseUrl } from "@/lib/query-client";
-import { useAuthenticated } from "@/hooks/use-authenticated";
 import { useSelectedArtists } from "@/hooks/use-selected-artists";
-import { PublicUser } from "@/lib/universal/auth";
+import { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 
 const INITIAL_PAGE = 1;
 const PAGE_SIZE = 30;
 
 type Props = {
   gridColumns: number;
-  targetUser: PublicUser;
-  currentUser?: PublicUser;
+  targetCosmo: PublicCosmo;
   searchParams: URLSearchParams;
   showLocked: boolean;
 };
 
 export default function BlockchainGroups(props: Props) {
-  const authenticated = useAuthenticated();
-  const [filters] = useCosmoFilters();
+  const authenticated = useProfileContext((ctx) => ctx.authenticated);
   const lockedObjekts = useProfileContext((ctx) => ctx.lockedObjekts);
   const pins = useProfileContext((ctx) => ctx.pins);
+  const [filters] = useCosmoFilters();
   const isDesktop = useMediaQuery();
   const { selectedIds } = useSelectedArtists();
 
@@ -61,14 +59,10 @@ export default function BlockchainGroups(props: Props) {
    */
   const options = objektOptions({
     filtering: "remote",
-    queryKey: [
-      "collection",
-      "blockchain-groups",
-      props.targetUser.cosmoAddress,
-    ],
+    queryKey: ["collection", "blockchain-groups", props.targetCosmo.address],
     queryFunction: async ({ pageParam = 1 }: { pageParam?: number }) => {
       const endpoint = new URL(
-        `/api/bff/v1/objekt/collection-group/${props.targetUser.cosmoAddress}`,
+        `/api/bff/v1/objekt/collection-group/${props.targetCosmo.address}`,
         baseUrl()
       ).toString();
 

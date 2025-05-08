@@ -10,22 +10,19 @@ import { Menu, Search } from "lucide-react";
 import NavbarSearch from "./navbar-search";
 import {
   getArtistsWithMembers,
+  getAccount,
   getSelectedArtists,
-  getSession,
 } from "@/app/data-fetching";
 import { CosmoArtistProvider } from "@/hooks/use-cosmo-artist";
 import { SelectedArtistsProvider } from "@/hooks/use-selected-artists";
-import { toPublicUser } from "@/lib/server/auth";
 import { IconCards } from "@tabler/icons-react";
 
 export default async function Links() {
-  const [artists, selectedArtists, session] = await Promise.all([
+  const [artists, selectedArtists, account] = await Promise.all([
     getArtistsWithMembers(),
     getSelectedArtists(),
-    getSession(),
+    getAccount(),
   ]);
-
-  const user = toPublicUser(session?.user);
 
   return (
     <CosmoArtistProvider artists={artists}>
@@ -33,7 +30,7 @@ export default async function Links() {
         <div className="flex grow justify-end lg:justify-center">
           {/* desktop */}
           <div className="lg:flex flex-row items-center gap-6 hidden">
-            <DesktopLinks user={user} />
+            <DesktopLinks cosmo={account?.cosmo} />
           </div>
 
           {/* mobile */}
@@ -52,7 +49,7 @@ export default async function Links() {
               <DropdownMenuContent>
                 <DropdownMenuLabel>Menu</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <MobileLinks user={user} />
+                <MobileLinks cosmo={account?.cosmo} />
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

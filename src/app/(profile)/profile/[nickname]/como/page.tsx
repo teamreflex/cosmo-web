@@ -3,7 +3,7 @@ import { fetchObjektsWithComo } from "@/lib/server/como";
 import ComoCalendar from "@/components/como/calendar";
 import CurrentMonth from "@/components/como/current-month";
 import ArtistIcon from "@/components/artist-icon";
-import { getArtistsWithMembers, getUserOrProfile } from "@/app/data-fetching";
+import { getArtistsWithMembers, getTargetAccount } from "@/app/data-fetching";
 import Portal from "@/components/portal";
 import HelpDialog from "@/components/como/help-dialog";
 
@@ -13,18 +13,18 @@ type Props = {
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params;
-  const user = await getUserOrProfile(params.nickname);
+  const { cosmo } = await getTargetAccount(params.nickname);
 
   return {
-    title: `${user.username}'s COMO`,
+    title: `${cosmo.username}'s COMO`,
   };
 }
 
 export default async function UserComoPage(props: Props) {
   const params = await props.params;
-  const user = await getUserOrProfile(params.nickname);
-  const objekts = user.cosmoAddress
-    ? await fetchObjektsWithComo(user.cosmoAddress)
+  const { cosmo } = await getTargetAccount(params.nickname);
+  const objekts = cosmo.address
+    ? await fetchObjektsWithComo(cosmo.address)
     : [];
 
   const artists = getArtistsWithMembers();

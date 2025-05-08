@@ -1,10 +1,9 @@
 import ActionOverlay from "./overlay/action-overlay";
-import { useLockedObjekt } from "@/hooks/use-profile";
+import { useLockedObjekt, useProfileContext } from "@/hooks/use-profile";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import ExpandableObjekt from "./objekt-expandable";
 import { ObjektSidebar } from "./common";
 import InformationOverlay from "./overlay/information-overlay";
-import { useAuthenticated } from "@/hooks/use-authenticated";
 
 type Props = {
   collection: Objekt.Collection;
@@ -16,7 +15,7 @@ type Props = {
  * Used within a collection group list.
  */
 export default function StaticObjekt({ collection, token, isPinned }: Props) {
-  const authenticated = useAuthenticated();
+  const authenticated = useProfileContext((ctx) => ctx.authenticated);
   const isLocked = useLockedObjekt(token.tokenId);
 
   return (

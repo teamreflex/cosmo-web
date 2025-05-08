@@ -1,11 +1,9 @@
 import {
   getArtistsWithMembers,
   getSelectedArtists,
-  getUserByIdentifier,
-  getUserOrProfile,
+  getTargetAccount,
 } from "@/app/data-fetching";
 import Portal from "@/components/portal";
-import AddressFallback from "@/components/profile/address-fallback";
 import HelpDialog from "@/components/progress/help-dialog";
 import ProgressRenderer from "@/components/progress/progress-renderer";
 import { CosmoArtistProvider } from "@/hooks/use-cosmo-artist";
@@ -21,10 +19,10 @@ type Props = {
 };
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params;
-  const user = await getUserOrProfile(params.nickname);
+  const { cosmo } = await getTargetAccount(params.nickname);
 
   return {
-    title: `${user.username}'s Progress`,
+    title: `${cosmo.username}'s Progress`,
   };
 }
 
@@ -38,23 +36,19 @@ export default async function ProgressPage(props: Props) {
   });
 
   const params = await props.params;
-  const [artists, selectedArtists, targetUser] = await Promise.all([
+  const [artists, selectedArtists, target] = await Promise.all([
     getArtistsWithMembers(),
     getSelectedArtists(),
-    getUserOrProfile(params.nickname),
+    getTargetAccount(params.nickname),
   ]);
-
-  if (!targetUser.cosmoAddress) {
-    return <AddressFallback username={targetUser.username} />;
-  }
 
   return (
     <section className="flex flex-col">
       <CosmoArtistProvider artists={artists}>
         <SelectedArtistsProvider selected={selectedArtists}>
-          <ProfileProvider targetUser={targetUser}>
+          <ProfileProvider target={target}>
             <HydrationBoundary state={dehydrate(queryClient)}>
-              <ProgressRenderer address={targetUser.cosmoAddress} />
+              <ProgressRenderer address={target.cosmo.address} />
             </HydrationBoundary>
             <Portal to="#help">
               <HelpDialog />

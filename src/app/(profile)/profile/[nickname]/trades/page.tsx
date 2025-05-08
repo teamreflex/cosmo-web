@@ -2,8 +2,8 @@ import { Metadata } from "next";
 import TransfersRenderer from "@/components/transfers/transfers-renderer";
 import {
   getArtistsWithMembers,
+  getTargetAccount,
   getSelectedArtists,
-  getUserOrProfile,
 } from "@/app/data-fetching";
 import { CosmoArtistProvider } from "@/hooks/use-cosmo-artist";
 import { getQueryClient } from "@/lib/query-client";
@@ -17,10 +17,10 @@ type Props = {
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params;
-  const user = await getUserOrProfile(params.nickname);
+  const { cosmo } = await getTargetAccount(params.nickname);
 
   return {
-    title: `${user.username}'s Trades`,
+    title: `${cosmo.username}'s Trades`,
   };
 }
 
@@ -34,10 +34,10 @@ export default async function UserTransfersPage(props: Props) {
   });
 
   const params = await props.params;
-  const [artists, selectedArtists, targetUser] = await Promise.all([
+  const [artists, selectedArtists, { cosmo }] = await Promise.all([
     getArtistsWithMembers(),
     getSelectedArtists(),
-    getUserOrProfile(params.nickname),
+    getTargetAccount(params.nickname),
   ]);
 
   return (
@@ -45,7 +45,7 @@ export default async function UserTransfersPage(props: Props) {
       <CosmoArtistProvider artists={artists}>
         <SelectedArtistsProvider selected={selectedArtists}>
           <HydrationBoundary state={dehydrate(queryClient)}>
-            <TransfersRenderer user={targetUser} />
+            <TransfersRenderer cosmo={cosmo} />
           </HydrationBoundary>
         </SelectedArtistsProvider>
       </CosmoArtistProvider>

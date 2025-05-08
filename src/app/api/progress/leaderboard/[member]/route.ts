@@ -3,7 +3,7 @@ import { collections, objekts } from "@/lib/server/db/indexer/schema";
 import { and, count, eq, inArray, not, sql } from "drizzle-orm";
 import { NextRequest } from "next/server";
 import { fetchTotal } from "../../common";
-import { fetchKnownAddresses } from "@/lib/server/profiles";
+import { fetchKnownAddresses } from "@/lib/server/cosmo-accounts";
 import { Addresses, isAddressEqual } from "@/lib/utils";
 import { LeaderboardItem } from "@/lib/universal/progress";
 import {

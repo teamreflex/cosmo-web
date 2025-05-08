@@ -44,22 +44,22 @@ export const relations = defineRelations(schema, (r) => ({
     }),
   },
   cosmoTokens: {},
-  users: {
+  user: {
     sessions: r.many.session(),
     accounts: r.many.account(),
-    verifications: r.many.verification(),
     cosmoAccount: r.one.cosmoAccounts({
       from: r.user.id,
       to: r.cosmoAccounts.userId,
     }),
+    objektLists: r.many.objektLists(),
   },
-  sessions: {
+  session: {
     user: r.one.user({
       from: r.session.userId,
       to: r.user.id,
     }),
   },
-  accounts: {
+  account: {
     user: r.one.user({
       from: r.account.userId,
       to: r.user.id,

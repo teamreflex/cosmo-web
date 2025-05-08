@@ -48,7 +48,7 @@ export default function SignUp({ onCancel }: Props) {
       <div className="flex flex-col gap-2 items-center">
         <CheckCircle className="w-10 h-10" />
         <p className="text-sm font-semibold">
-          We've sent you an email to verify your account.
+          We&apos;ve sent you an email to verify your account.
         </p>
         <p className="text-sm font-semibold">Signing in...</p>
       </div>

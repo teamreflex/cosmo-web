@@ -1,4 +1,3 @@
-import type { CosmoAccount } from "../server/db/schema";
 import { CollectionDataSource } from "../utils";
 
 export type TokenPayload = {
@@ -17,9 +16,4 @@ export type PublicUser = {
   isAdmin: boolean;
   gridColumns: number;
   collectionMode: CollectionDataSource;
-  href: string | undefined;
-  cosmo: {
-    username: string;
-    address: string;
-  } | null;
 };

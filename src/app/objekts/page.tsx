@@ -1,8 +1,8 @@
 import { Metadata } from "next";
 import {
+  getAccount,
   getArtistsWithMembers,
   getSelectedArtists,
-  getSession,
 } from "../data-fetching";
 import IndexRenderer from "@/components/objekt-index/index-renderer";
 import { fetchFilterData } from "@/lib/server/objekts/filter-data";
@@ -15,9 +15,7 @@ import { parseObjektIndex } from "@/lib/universal/parsers";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import { getQueryClient } from "@/lib/query-client";
 import { CosmoArtistProvider } from "@/hooks/use-cosmo-artist";
-import { toPublicUser } from "@/lib/server/auth";
 import { SelectedArtistsProvider } from "@/hooks/use-selected-artists";
-import { fetchObjektLists } from "@/lib/server/objekts/lists";
 import { getTypesenseResults } from "@/lib/client/typesense";
 
 export const metadata: Metadata = {
@@ -37,11 +35,10 @@ export default async function ObjektsIndexPage(props: Params) {
     queryFn: fetchFilterData,
   });
 
-  const [searchParams, selectedArtists, artists, session] = await Promise.all([
+  const [searchParams, selectedArtists, artists] = await Promise.all([
     props.searchParams,
     getSelectedArtists(),
     getArtistsWithMembers(),
-    getSession(),
   ]);
 
   // parse search params
@@ -104,19 +101,17 @@ export default async function ObjektsIndexPage(props: Params) {
     });
   }
 
-  // fetch objekt lists
-  const objektLists = session
-    ? await fetchObjektLists(session.session.userId)
-    : [];
+  const account = await getAccount().then((a) => ({
+    user: a?.user,
+    cosmo: a?.cosmo,
+    objektLists: a?.objektLists ?? [],
+  }));
 
   return (
     <main className="container flex flex-col py-2">
       <CosmoArtistProvider artists={artists}>
         <SelectedArtistsProvider selected={selectedArtists}>
-          <ProfileProvider
-            currentUser={toPublicUser(session?.user)}
-            objektLists={objektLists}
-          >
+          <ProfileProvider account={account}>
             <HydrationBoundary state={dehydrate(queryClient)}>
               <IndexRenderer activeSlug={searchParams.id} />
             </HydrationBoundary>

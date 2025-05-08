@@ -1,4 +1,3 @@
-import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { ofetch } from "ofetch";
 import { LegacyObjektResponse, parsePage } from "@/lib/universal/objekts";
 import { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
@@ -15,23 +14,21 @@ import { Objekt } from "@/lib/universal/objekt-conversion";
 import VirtualizedGrid from "@/components/objekt/virtualized-grid";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import LoaderRemote from "@/components/objekt/loader-remote";
-import { useAuthenticated } from "@/hooks/use-authenticated";
 import { useSelectedArtists } from "@/hooks/use-selected-artists";
-import { PublicUser } from "@/lib/universal/auth";
+import { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 
 type Props = {
   gridColumns: number;
-  targetUser: PublicUser;
-  currentUser?: PublicUser;
+  targetCosmo: PublicCosmo;
   searchParams: URLSearchParams;
   showLocked: boolean;
 };
 
 export default function Blockchain(props: Props) {
-  const authenticated = useAuthenticated();
-  const [filters] = useCosmoFilters();
-  const pins = useProfileContext((ctx) => ctx.pins);
+  const authenticated = useProfileContext((ctx) => ctx.authenticated);
   const lockedObjekts = useProfileContext((ctx) => ctx.lockedObjekts);
+  const pins = useProfileContext((ctx) => ctx.pins);
+  const [filters] = useCosmoFilters();
   const isDesktop = useMediaQuery();
   const { selectedIds } = useSelectedArtists();
 
@@ -65,10 +62,10 @@ export default function Blockchain(props: Props) {
    */
   const options = objektOptions({
     filtering: "remote",
-    queryKey: ["collection", "blockchain", props.targetUser.cosmoAddress],
+    queryKey: ["collection", "blockchain", props.targetCosmo.address],
     queryFunction: async ({ pageParam = 0 }: { pageParam?: number }) => {
       const endpoint = new URL(
-        `/api/objekts/by-address/${props.targetUser.cosmoAddress}`,
+        `/api/objekts/by-address/${props.targetCosmo.address}`,
         baseUrl()
       ).toString();
 

@@ -2,7 +2,6 @@ import { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
 import { indexer } from "../db/indexer";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { Collection, Objekt } from "../db/indexer/schema";
-import { Pin } from "../db/schema";
 
 interface ObjektWithCollection extends Objekt {
   collection: Collection;
@@ -11,14 +10,14 @@ interface ObjektWithCollection extends Objekt {
 /**
  * Fetch all pins for the given token ids.
  */
-export async function fetchPins(pins: Pin[]): Promise<CosmoObjekt[]> {
+export async function fetchPins(pins: number[]): Promise<CosmoObjekt[]> {
   if (pins.length === 0) return [];
 
   try {
     var results = await indexer.query.objekts.findMany({
       where: {
         id: {
-          in: pins.map((p) => p.tokenId),
+          in: pins,
         },
       },
       with: {
@@ -33,8 +32,8 @@ export async function fetchPins(pins: Pin[]): Promise<CosmoObjekt[]> {
 
   // sort by pin order
   return mapped.sort((a, b) => {
-    const indexA = pins.findIndex((item) => item.tokenId === Number(a.tokenId));
-    const indexB = pins.findIndex((item) => item.tokenId === Number(b.tokenId));
+    const indexA = pins.findIndex((item) => item === Number(a.tokenId));
+    const indexB = pins.findIndex((item) => item === Number(b.tokenId));
     return indexA - indexB;
   });
 }

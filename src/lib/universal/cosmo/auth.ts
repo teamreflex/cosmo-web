@@ -1,5 +1,3 @@
-import { Pin } from "@/lib/server/db/schema";
-import type { List } from "@/lib/server/db/schema";
 import { ValidArtist } from "./common";
 
 export type LoginChannel = "email";
@@ -10,20 +8,6 @@ export type CosmoProfile = {
     original: string;
     thumbnail: string;
   };
-};
-
-export type PublicProfile = {
-  username: string;
-  profileImageUrl: string;
-  address: string;
-  isAddress: boolean;
-};
-
-export type IdentifiedUser = {
-  profile: PublicProfile;
-  objektLists: List[];
-  lockedObjekts: number[];
-  pins: Pin[];
 };
 
 export type LoginResult = {

@@ -7,7 +7,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, CheckCircle, Loader2 } from "lucide-react";
 import { ofetch } from "ofetch";
-import { useState } from "react";
+import { createContext, useContext, useState } from "react";
 import QRCode from "react-qr-code";
 import { useRouter } from "next/navigation";
 import { toast } from "@/components/ui/use-toast";
@@ -27,33 +27,32 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
-import CosmoLogo from "@/assets/cosmo.webp";
-import Image from "next/image";
 
-export default function LinkCosmo() {
+const LinkCosmoContext = createContext({
+  open: false,
+  setOpen: (open: boolean) => {},
+});
+
+type Props = {
+  children: React.ReactNode;
+};
+
+export default function LinkCosmo({ children }: Props) {
+  const [open, setOpen] = useState(false);
+
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="cosmo">
-          <Image
-            className="rounded-full"
-            src={CosmoLogo}
-            alt="COSMO"
-            width={20}
-            height={20}
-          />
-          <span>Link COSMO</span>
-        </Button>
-      </DialogTrigger>
+    <LinkCosmoContext value={{ open, setOpen }}>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>{children}</DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Link COSMO</DialogTitle>
+          </DialogHeader>
 
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Link COSMO</DialogTitle>
-        </DialogHeader>
-
-        <StartLink />
-      </DialogContent>
-    </Dialog>
+          <StartLink />
+        </DialogContent>
+      </Dialog>
+    </LinkCosmoContext>
   );
 }
 
@@ -208,35 +207,23 @@ type OTPProps = {
 };
 
 function OTP({ ticket }: OTPProps) {
+  const ctx = useContext(LinkCosmoContext);
   const router = useRouter();
-  const { execute, isPending, hasSucceeded, hasErrored } = useAction(
-    verifyCosmo,
-    {
-      onSuccess({ data }) {
-        toast({
-          description: "COSMO account linked!",
-        });
-        router.push(`/@${data?.username}`);
-      },
-      onError() {
-        toast({
-          description: "Error linking COSMO account",
-          variant: "destructive",
-        });
-      },
-    }
-  );
-
-  if (hasSucceeded) {
-    return (
-      <div className="flex flex-col gap-2 items-center justify-center">
-        <CheckCircle className="size-12" />
-        <p className="text-sm font-semibold">
-          Successfully linked COSMO account!
-        </p>
-      </div>
-    );
-  }
+  const { execute, isPending, hasErrored } = useAction(verifyCosmo, {
+    onSuccess() {
+      toast({
+        description: "COSMO account linked!",
+      });
+      router.refresh();
+      ctx.setOpen(false);
+    },
+    onError() {
+      toast({
+        description: "Error linking COSMO account",
+        variant: "destructive",
+      });
+    },
+  });
 
   if (hasErrored) {
     return (
@@ -248,10 +235,10 @@ function OTP({ ticket }: OTPProps) {
   }
 
   return (
-    <form action={execute} className="flex flex-col gap-2">
+    <form action={execute} className="flex flex-col gap-4">
       <input type="hidden" name="ticket" value={ticket.ticket} />
 
-      <div className="flex flex-col items-center gap-2">
+      <div className="flex flex-col items-center gap-4">
         <InputOTP name="otp" maxLength={2} pattern={REGEXP_ONLY_DIGITS}>
           <InputOTPGroup>
             <InputOTPSlot index={0} />

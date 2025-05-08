@@ -261,7 +261,7 @@ function MetadataPanel({ objekt }: CommonProps) {
 function Metadata({ objekt }: { objekt: Objekt.Collection }) {
   const [_, copy] = useCopyToClipboard();
   const [showForm, setShowForm] = useState(false);
-  const currentUser = useProfileContext((ctx) => ctx.currentUser);
+  const user = useProfileContext((ctx) => ctx.account?.user);
 
   const { data } = useSuspenseQuery({
     queryKey: ["collection-metadata", "metadata", objekt.slug],
@@ -334,7 +334,7 @@ function Metadata({ objekt }: { objekt: Objekt.Collection }) {
         </Button>
 
         {/* edit metadata */}
-        {currentUser?.isAdmin === true && (
+        {user?.isAdmin === true && (
           <Button
             variant="secondary"
             size="sm"

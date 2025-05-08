@@ -2,9 +2,10 @@ import { Metadata } from "next";
 import { cache } from "react";
 import { redirect } from "next/navigation";
 import {
+  getAccount,
   getArtistsWithMembers,
   getSelectedArtists,
-  getUserByIdentifier,
+  getTargetAccount,
 } from "@/app/data-fetching";
 import ListRenderer from "@/components/lists/list-renderer";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
@@ -16,7 +17,6 @@ import {
 import { fetchObjektList } from "@/lib/server/objekts/lists";
 import { getQueryClient } from "@/lib/query-client";
 import { ProfileProvider } from "@/hooks/use-profile";
-import { GRID_COLUMNS } from "@/lib/utils";
 import { fetchFilterData } from "@/lib/server/objekts/filter-data";
 import { CosmoArtistProvider } from "@/hooks/use-cosmo-artist";
 import { SelectedArtistsProvider } from "@/hooks/use-selected-artists";
@@ -31,7 +31,7 @@ type Props = {
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params;
-  const objektList = await getData(params.nickname, params.list);
+  const { objektList } = await getData(params.nickname, params.list);
   if (!objektList) redirect(`/@${params.nickname}`);
 
   return {
@@ -48,16 +48,23 @@ export default async function ObjektListPage(props: Props) {
     queryFn: fetchFilterData,
   });
 
-  const [searchParams, { nickname, list }] = await Promise.all([
-    props.searchParams,
-    props.params,
+  const [artists, selectedArtists, searchParams, { nickname, list }] =
+    await Promise.all([
+      getArtistsWithMembers(),
+      getSelectedArtists(),
+      props.searchParams,
+      props.params,
+    ]);
+
+  // get current and target accouonts
+  const [account, { target, objektList }] = await Promise.all([
+    getAccount(),
+    getData(nickname, list),
   ]);
 
-  // get de-duplicated profile
-  const [selectedArtists, { profile }] = await Promise.all([
-    getSelectedArtists(),
-    getUserByIdentifier(nickname),
-  ]);
+  if (!objektList) {
+    redirect(`/@${nickname}`);
+  }
 
   // parse search params
   const filters = parseObjektList(
@@ -78,7 +85,7 @@ export default async function ObjektListPage(props: Props) {
     queryFn: async ({ pageParam = 0 }: { pageParam?: number }) =>
       prefetchObjektList({
         slug: list,
-        address: profile.address,
+        address: target.cosmo.address,
         filters: {
           ...filters,
           page: pageParam,
@@ -87,20 +94,14 @@ export default async function ObjektListPage(props: Props) {
     initialPageParam: 0,
   });
 
-  const artists = getArtistsWithMembers();
-  const objektList = await getData(nickname, list);
-  if (!objektList) redirect(`/@${nickname}`);
-
   return (
     <CosmoArtistProvider artists={artists}>
       <SelectedArtistsProvider selected={selectedArtists}>
-        <ProfileProvider>
+        <ProfileProvider account={account} target={target}>
           <HydrationBoundary state={dehydrate(queryClient)}>
             <ListRenderer
               list={objektList}
-              authenticated={false}
-              user={profile}
-              gridColumns={GRID_COLUMNS}
+              authenticated={account?.user !== undefined}
             />
           </HydrationBoundary>
         </ProfileProvider>
@@ -110,6 +111,13 @@ export default async function ObjektListPage(props: Props) {
 }
 
 const getData = cache(async (nickname: string, list: string) => {
-  const { profile } = await getUserByIdentifier(nickname);
-  return await fetchObjektList(profile.address, list);
+  const target = await getTargetAccount(nickname);
+  const objektList = target.user
+    ? await fetchObjektList(target.user.id, list)
+    : undefined;
+
+  return {
+    target,
+    objektList,
+  };
 });

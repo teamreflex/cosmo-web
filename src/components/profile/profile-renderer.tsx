@@ -8,21 +8,20 @@ import { match } from "ts-pattern";
 import Blockchain from "../collection/data-sources/blockchain";
 import BlockchainGroups from "../collection/data-sources/blockchain-groups";
 import CollectionFilters from "../collection/filter-contexts/collection-filters";
-import { AuthenticatedContext } from "@/hooks/use-authenticated";
-import { PublicUser } from "@/lib/universal/auth";
 import { useProfileContext } from "@/hooks/use-profile";
+import { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 
 type Props = {
-  targetUser: PublicUser;
+  targetCosmo: PublicCosmo;
 };
 
-export default function ProfileRenderer({ targetUser }: Props) {
-  const currentUser = useProfileContext((ctx) => ctx.currentUser);
-  const gridColumns = targetUser.gridColumns ?? currentUser?.gridColumns;
+export default function ProfileRenderer({ targetCosmo }: Props) {
+  const account = useProfileContext((ctx) => ctx.account);
+  const gridColumns = useProfileContext((ctx) => ctx.gridColumns);
 
   const { searchParams, showLocked, setShowLocked, dataSource, setDataSource } =
     useFilters({
-      dataSource: "blockchain",
+      dataSource: account?.user?.collectionMode,
     });
 
   return (
@@ -41,28 +40,24 @@ export default function ProfileRenderer({ targetUser }: Props) {
       </FiltersContainer>
 
       {/* display */}
-      <AuthenticatedContext.Provider value={false}>
-        {match(dataSource)
-          .with("blockchain", () => (
-            <Blockchain
-              gridColumns={gridColumns}
-              targetUser={targetUser}
-              currentUser={currentUser}
-              searchParams={searchParams}
-              showLocked={showLocked}
-            />
-          ))
-          .with("blockchain-groups", () => (
-            <BlockchainGroups
-              gridColumns={gridColumns}
-              targetUser={targetUser}
-              currentUser={currentUser}
-              searchParams={searchParams}
-              showLocked={showLocked}
-            />
-          ))
-          .exhaustive()}
-      </AuthenticatedContext.Provider>
+      {match(dataSource)
+        .with("blockchain", () => (
+          <Blockchain
+            gridColumns={gridColumns}
+            targetCosmo={targetCosmo}
+            searchParams={searchParams}
+            showLocked={showLocked}
+          />
+        ))
+        .with("blockchain-groups", () => (
+          <BlockchainGroups
+            gridColumns={gridColumns}
+            targetCosmo={targetCosmo}
+            searchParams={searchParams}
+            showLocked={showLocked}
+          />
+        ))
+        .exhaustive()}
     </div>
   );
 }

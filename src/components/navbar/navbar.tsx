@@ -4,16 +4,15 @@ import UpdateDialog from "../misc/update-dialog";
 import SystemStatus from "../misc/system-status";
 import Links, { LinksSkeleton } from "./links.server";
 import {
+  getAccount,
   getArtistsWithMembers,
   getSelectedArtists,
-  getSession,
 } from "@/app/data-fetching";
 import StateGuest from "../auth/state-guest";
 import StateAuthenticated from "../auth/state-authenticated";
 import { ErrorBoundary } from "react-error-boundary";
 import AuthFallback from "../auth/auth-fallback";
 import { CosmoArtistProvider } from "@/hooks/use-cosmo-artist";
-import { toPublicUser } from "@/lib/server/auth";
 import { SelectedArtistsProvider } from "@/hooks/use-selected-artists";
 import Skeleton from "../skeleton/skeleton";
 
@@ -55,8 +54,8 @@ export default async function Navbar() {
 }
 
 async function Auth() {
-  const [session, artists, selectedArtists] = await Promise.all([
-    getSession(),
+  const [account, artists, selectedArtists] = await Promise.all([
+    getAccount(),
     getArtistsWithMembers(),
     getSelectedArtists(),
   ]);
@@ -64,10 +63,10 @@ async function Auth() {
   return (
     <CosmoArtistProvider artists={artists}>
       <SelectedArtistsProvider selected={selectedArtists}>
-        {session === null ? (
+        {!account ? (
           <StateGuest />
         ) : (
-          <StateAuthenticated user={toPublicUser(session.user)} />
+          <StateAuthenticated user={account.user} cosmo={account.cosmo} />
         )}
       </SelectedArtistsProvider>
     </CosmoArtistProvider>

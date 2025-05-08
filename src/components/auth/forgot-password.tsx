@@ -41,7 +41,7 @@ export default function ForgotPassword({ onCancel }: Props) {
       <div className="flex flex-col gap-2 items-center">
         <MailCheck className="w-10 h-10" />
         <p className="text-sm font-semibold">
-          We've sent you an email to reset your password.
+          We&apos;ve sent you an email to reset your password.
         </p>
       </div>
     );

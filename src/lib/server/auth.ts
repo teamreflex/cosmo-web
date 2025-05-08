@@ -1,14 +1,11 @@
 import "server-only";
 import { db } from "./db";
-import { isAddress } from "viem";
 import { CollectionDataSource, GRID_COLUMNS } from "@/lib/utils";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { env } from "@/env";
-import { z } from "zod";
 import * as authSchema from "@/lib/server/db/auth-schema";
 import { createCipheriv, createDecipheriv, randomBytes } from "crypto";
-import { PublicUser } from "../universal/auth";
 import { baseUrl } from "../query-client";
 import { username } from "better-auth/plugins/username";
 import {
@@ -16,6 +13,7 @@ import {
   sendPasswordResetEmail,
   sendVerificationEmail,
 } from "./mail";
+import { PublicUser } from "../universal/auth";
 
 /**
  * Better Auth server instance.
@@ -236,13 +234,11 @@ export function decryptToken(encrypted: string, key: string) {
 }
 
 /**
- * Safely convert a User object to a PublicUser object.
+ * Safely convert a user object for public use.
  */
-export function toPublicUser(user: ServerUser): PublicUser;
 export function toPublicUser(user: undefined): undefined;
-export function toPublicUser(
-  user: ServerUser | undefined
-): PublicUser | undefined;
+export function toPublicUser(user: ServerUser): PublicUser;
+export function toPublicUser(user?: ServerUser): PublicUser | undefined;
 export function toPublicUser(
   user: ServerUser | undefined
 ): PublicUser | undefined {
@@ -252,13 +248,11 @@ export function toPublicUser(
 
   return {
     id: user.id,
-    username: user.displayUsername ?? undefined,
+    username: user.username ?? undefined,
     image: user.image ?? undefined,
     isAdmin: user.isAdmin ?? false,
     gridColumns: user.gridColumns ?? GRID_COLUMNS,
     collectionMode: (user.collectionMode ??
       "blockchain") as CollectionDataSource,
-    href: user.displayUsername ?? user.cosmoAddress ?? undefined,
-    fromCosmo: false,
   };
 }
