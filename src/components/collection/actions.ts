@@ -41,7 +41,7 @@ export async function pinObjekt(tokenId: number) {
     onValidate: async ({ data, user }) => {
       const result = await db.insert(pins).values({
         ...data,
-        userAddress: user.address,
+        address: user.address,
       });
 
       if (result.rowCount !== 1) {
@@ -85,10 +85,7 @@ export async function unpinObjekt(tokenId: number) {
       const result = await db
         .delete(pins)
         .where(
-          and(
-            eq(pins.tokenId, data.tokenId),
-            eq(pins.userAddress, user.address)
-          )
+          and(eq(pins.tokenId, data.tokenId), eq(pins.address, user.address))
         );
 
       return result.rowCount === 1;

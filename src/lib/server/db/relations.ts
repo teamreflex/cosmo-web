@@ -10,13 +10,13 @@ export const relations = defineRelations(schema, (r) => ({
   },
   lockedObjekts: {
     profile: r.one.cosmoAccounts({
-      from: r.lockedObjekts.userAddress,
+      from: r.lockedObjekts.address,
       to: r.cosmoAccounts.address,
     }),
   },
   pins: {
     profile: r.one.cosmoAccounts({
-      from: r.pins.userAddress,
+      from: r.pins.address,
       to: r.cosmoAccounts.address,
     }),
   },

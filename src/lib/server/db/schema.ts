@@ -36,15 +36,15 @@ export const lockedObjekts = pgTable(
   "locked_objekts",
   {
     id: serial("id").primaryKey(),
-    userAddress: citext("user_address", { length: 42 }).notNull(),
+    address: citext("address", { length: 42 }).notNull(),
     tokenId: integer("tokenId").notNull(),
     locked: boolean("locked").notNull(),
   },
   (t) => [
-    index("locked_objekts_user_address_idx").on(t.userAddress),
+    index("locked_objekts_address_idx").on(t.address),
     index("locked_objekts_locked_idx").on(t.locked),
-    index("address_locked_idx").on(t.userAddress, t.locked),
-    index("address_token_idx").on(t.userAddress, t.tokenId),
+    index("address_locked_idx").on(t.address, t.locked),
+    index("address_token_idx").on(t.address, t.tokenId),
   ]
 );
 
@@ -52,11 +52,11 @@ export const pins = pgTable(
   "pins",
   {
     id: serial("id").primaryKey(),
-    userAddress: citext("user_address", { length: 42 }).notNull(),
+    address: citext("address", { length: 42 }).notNull(),
     tokenId: integer("token_id").notNull(),
   },
   (t) => [
-    index("pins_userAddress_idx").on(t.userAddress),
+    index("pins_address_idx").on(t.address),
     index("pins_token_id_idx").on(t.tokenId),
   ]
 );
@@ -67,7 +67,7 @@ export const objektMetadata = pgTable(
     id: serial("id").primaryKey(),
     collectionId: varchar("collection_id", { length: 36 }).notNull().unique(), // slug: atom01-jinsoul-101z
     description: varchar("description", { length: 255 }).notNull(),
-    contributor: citext("user_address", { length: 42 }).notNull(),
+    contributor: citext("address", { length: 42 }).notNull(),
   },
   (t) => [
     index("objekt_metadata_collection_idx").on(t.collectionId),

@@ -7,24 +7,24 @@ import { lockedObjekts } from "../db/schema";
  * Toggle the lock on an objekt.
  */
 export async function setObjektLock(
-  userAddress: string,
+  address: string,
   tokenId: number,
   locked: boolean
 ) {
   if (locked) {
-    return await lockObjekt(userAddress, tokenId);
+    return await lockObjekt(address, tokenId);
   } else {
-    return await unlockObjekt(userAddress, tokenId);
+    return await unlockObjekt(address, tokenId);
   }
 }
 
 /**
  * Lock an objekt.
  */
-async function lockObjekt(userAddress: string, tokenId: number) {
+async function lockObjekt(address: string, tokenId: number) {
   const result = await db
     .insert(lockedObjekts)
-    .values({ userAddress, tokenId, locked: true })
+    .values({ address, tokenId, locked: true })
     .returning();
 
   return result.length === 1;
@@ -33,12 +33,12 @@ async function lockObjekt(userAddress: string, tokenId: number) {
 /**
  * Unlock an objekt.
  */
-async function unlockObjekt(userAddress: string, tokenId: number) {
+async function unlockObjekt(address: string, tokenId: number) {
   const result = await db
     .delete(lockedObjekts)
     .where(
       and(
-        eq(lockedObjekts.userAddress, userAddress),
+        eq(lockedObjekts.address, address),
         eq(lockedObjekts.tokenId, tokenId)
       )
     )
