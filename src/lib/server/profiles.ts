@@ -1,10 +1,11 @@
 import { isAddress } from "viem";
 import { IdentifiedUser, PublicProfile } from "../universal/cosmo/auth";
 import { db } from "./db";
-import { CosmoAccount, cosmoAccounts } from "./db/schema";
+import { CosmoAccount } from "./db/schema";
 import { defaultProfile } from "../utils";
 import { fetchByNickname } from "./cosmo/auth";
 import { FetchError } from "ofetch";
+import { cacheAccounts } from "./cosmo-accounts";
 
 /**
  * Fetch all known addresses from the database.
@@ -73,20 +74,13 @@ export async function fetchUserByIdentifier(
   try {
     const profile = await fetchByNickname(identifier);
 
-    // upsert profile
-    await db
-      .insert(cosmoAccounts)
-      .values({
+    // cache & upsert profile
+    await cacheAccounts([
+      {
         address: profile.address,
         username: profile.nickname,
-      })
-      .onConflictDoUpdate({
-        target: cosmoAccounts.address,
-        set: {
-          username: profile.nickname,
-        },
-      })
-      .returning();
+      },
+    ]);
 
     return await fetchUserByIdentifier(profile.nickname);
   } catch (err) {

@@ -23,17 +23,13 @@ export const user = pgTable(
     isAdmin: boolean("is_admin").notNull().default(false),
     username: citext("username").unique(),
     displayUsername: citext("display_name"),
-    cosmoAddress: citext("cosmo_address"),
     gridColumns: integer("grid_columns").notNull().default(GRID_COLUMNS),
     collectionMode: text("collection_mode")
       .notNull()
       .$type<CollectionDataSource>()
       .default("blockchain"),
   },
-  (t) => [
-    index("user_username_idx").on(t.username),
-    index("user_cosmo_address_idx").on(t.cosmoAddress),
-  ]
+  (t) => [index("user_username_idx").on(t.username)]
 );
 
 export const session = pgTable(

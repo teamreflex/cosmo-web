@@ -1,10 +1,11 @@
+import { cacheAccounts } from "@/lib/server/cosmo-accounts";
 import { search } from "@/lib/server/cosmo/auth";
 import { db } from "@/lib/server/db";
 import { cosmoAccounts } from "@/lib/server/db/schema";
 import { getProxiedToken } from "@/lib/server/handlers/withProxiedToken";
 import { CosmoSearchResult } from "@/lib/universal/cosmo/auth";
 import { Addresses } from "@/lib/utils";
-import { like, sql } from "drizzle-orm";
+import { like } from "drizzle-orm";
 import { NextRequest, after } from "next/server";
 
 /**
@@ -29,21 +30,13 @@ export async function GET(request: NextRequest) {
   // take the results and insert any new profiles after the response is sent
   if (results.results.length > 0) {
     after(async () => {
-      const newProfiles = results.results.map((r) => ({
+      const newAccounts = results.results.map((r) => ({
         username: r.nickname,
         address: r.address,
       }));
 
       try {
-        await db
-          .insert(cosmoAccounts)
-          .values(newProfiles)
-          .onConflictDoUpdate({
-            target: cosmoAccounts.address,
-            set: {
-              username: sql.raw(`excluded.${cosmoAccounts.username.name}`),
-            },
-          });
+        await cacheAccounts(newAccounts);
       } catch (err) {
         console.error("Bulk profile caching failed:", err);
       }

@@ -130,10 +130,22 @@ export const auth = betterAuth({
     discord: {
       clientId: env.DISCORD_CLIENT_ID,
       clientSecret: env.DISCORD_CLIENT_SECRET,
+      mapProfileToUser: async (profile) => {
+        return {
+          username: profile.username,
+          displayUsername: profile.username,
+        };
+      },
     },
     twitter: {
       clientId: env.TWITTER_CLIENT_ID,
       clientSecret: env.TWITTER_CLIENT_SECRET,
+      mapProfileToUser: async (profile) => {
+        return {
+          username: profile.username,
+          displayUsername: profile.username,
+        };
+      },
     },
   },
   advanced: {
@@ -151,18 +163,6 @@ export const auth = betterAuth({
       },
     },
     additionalFields: {
-      cosmoAddress: {
-        type: "string",
-        required: false,
-        input: true,
-        returned: true,
-        validator: {
-          input: z.string().refine((val) => isAddress(val), {
-            message: "Not a valid COSMO address",
-          }),
-          output: z.string().optional(),
-        },
-      },
       isAdmin: {
         type: "boolean",
         required: false,
@@ -255,7 +255,6 @@ export function toPublicUser(
     username: user.displayUsername ?? undefined,
     image: user.image ?? undefined,
     isAdmin: user.isAdmin ?? false,
-    cosmoAddress: user.cosmoAddress ?? undefined,
     gridColumns: user.gridColumns ?? GRID_COLUMNS,
     collectionMode: (user.collectionMode ??
       "blockchain") as CollectionDataSource,

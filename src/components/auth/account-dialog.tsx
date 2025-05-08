@@ -12,6 +12,7 @@ import LinkedAccounts from "./account/linked-accounts";
 import Profile from "./account/profile";
 import { PublicUser } from "@/lib/universal/auth";
 import DeleteAccount from "./account/delete-account";
+import LinkCosmo from "./link-cosmo";
 
 type Props = {
   open: boolean;
@@ -42,7 +43,10 @@ export default function AccountDialog({ open, onOpenChange, user }: Props) {
           </div>
 
           <Separator className="my-2" />
-          <DeleteAccount />
+          <div className="flex items-center justify-between">
+            <LinkCosmo />
+            <DeleteAccount />
+          </div>
         </div>
       </DialogContent>
     </Dialog>

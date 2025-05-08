@@ -7,6 +7,10 @@ export const relations = defineRelations(schema, (r) => ({
     lists: r.many.lists(),
     objektMetadata: r.many.objektMetadata(),
     pins: r.many.pins(),
+    user: r.one.user({
+      from: r.cosmoAccounts.userId,
+      to: r.user.id,
+    }),
   },
   lockedObjekts: {
     profile: r.one.cosmoAccounts({
@@ -44,6 +48,10 @@ export const relations = defineRelations(schema, (r) => ({
     sessions: r.many.session(),
     accounts: r.many.account(),
     verifications: r.many.verification(),
+    cosmoAccount: r.one.cosmoAccounts({
+      from: r.user.id,
+      to: r.cosmoAccounts.userId,
+    }),
   },
   sessions: {
     user: r.one.user({

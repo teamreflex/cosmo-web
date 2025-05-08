@@ -162,6 +162,20 @@
       "when": 1746695806290,
       "tag": "0022_remarkable_rumiko_fujikawa",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1746703260743,
+      "tag": "0023_broken_stardust",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1746704822550,
+      "tag": "0024_daily_black_knight",
+      "breakpoints": true
     }
   ]
 }

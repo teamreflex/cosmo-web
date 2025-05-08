@@ -10,6 +10,7 @@ import {
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 import { citext, createdAt } from "./columns";
 import { user, session, account, verification } from "./auth-schema";
 import { CosmoGravityType, CosmoPollType } from "@/lib/universal/cosmo/gravity";
@@ -23,12 +24,14 @@ export const cosmoAccounts = pgTable(
     cosmoId: integer("cosmo_id"),
     username: citext("username", { length: 24 }).notNull(),
     address: citext("address", { length: 42 }).notNull(),
+    userId: text("user_id").default(sql`NULL`),
   },
   (t) => [
-    uniqueIndex("profiles_address_idx").on(t.address),
-    index("profiles_cosmo_id_idx").on(t.cosmoId),
-    index("profiles_username_idx").on(t.username),
-    uniqueIndex("profiles_username_address_idx").on(t.username, t.address),
+    uniqueIndex("cosmo_account_address_idx").on(t.address),
+    index("cosmo_account_cosmo_id_idx").on(t.cosmoId),
+    index("cosmo_account_username_idx").on(t.username),
+    uniqueIndex("cosmo_account_username_address_idx").on(t.username, t.address),
+    index("cosmo_account_user_id_idx").on(t.userId),
   ]
 );
 

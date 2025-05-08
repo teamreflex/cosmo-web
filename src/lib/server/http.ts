@@ -27,3 +27,14 @@ export const alchemyRPC = ofetch.create({
   retry: 2,
   retryDelay: 500, // 500ms
 });
+
+/**
+ * HTTP client for Browserless.
+ */
+export const browserless = ofetch.create({
+  baseURL: env.BROWSERLESS_BASE_URL,
+  query: {
+    token: env.BROWSERLESS_API_KEY,
+  },
+  retry: false,
+});
