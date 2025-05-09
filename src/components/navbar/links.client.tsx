@@ -17,8 +17,7 @@ import {
 import { IconCards, TablerIcon } from "@tabler/icons-react";
 import NavbarSearch from "./navbar-search";
 import { ArtistItem } from "./artist-selectbox";
-import { useCosmoArtists } from "@/hooks/use-cosmo-artist";
-import { useSelectedArtists } from "@/hooks/use-selected-artists";
+import { useArtists } from "@/hooks/use-artists";
 import { PublicUser } from "@/lib/universal/auth";
 import { LucideIcon, PackageOpen } from "lucide-react";
 import LinkCosmo from "../auth/link-cosmo";
@@ -71,8 +70,7 @@ export function DesktopLinks({ cosmo }: Props) {
 
 export function MobileLinks({ cosmo }: Props) {
   const path = usePathname();
-  const { artists } = useCosmoArtists();
-  const { selectedIds } = useSelectedArtists();
+  const { artists, selectedIds } = useArtists();
 
   return (
     <div className="contents">

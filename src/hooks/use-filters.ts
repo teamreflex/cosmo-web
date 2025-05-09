@@ -1,5 +1,5 @@
 import { parseAsBoolean, useQueryState } from "nuqs";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { CosmoFilters, useCosmoFilters } from "./use-cosmo-filters";
 import { CollectionDataSource } from "@/lib/utils";
 
@@ -25,15 +25,13 @@ export function useFilters(opts?: DefaultOptions) {
     return opts?.dataSource ?? "blockchain";
   });
 
-  const searchParams = useMemo(() => {
-    return toSearchParams(
-      {
-        ...cosmoFilters,
-        sort: cosmoFilters.sort ?? "newest",
-      },
-      true
-    );
-  }, [cosmoFilters]);
+  const searchParams = toSearchParams(
+    {
+      ...cosmoFilters,
+      sort: cosmoFilters.sort ?? "newest",
+    },
+    true
+  );
 
   function reset() {
     setShowLocked(null);

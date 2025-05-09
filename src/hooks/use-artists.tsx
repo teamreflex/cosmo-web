@@ -4,22 +4,31 @@ import {
   CosmoArtistWithMembersBFF,
   CosmoMemberBFF,
 } from "@/lib/universal/cosmo/artists";
-import { ReactNode, createContext, useCallback, useContext } from "react";
+import { ReactNode, createContext, use, useCallback } from "react";
 
 type ContextProps = {
+  // cosmo artist data
   artists: CosmoArtistWithMembersBFF[];
   artistMap: Map<string, CosmoArtistWithMembersBFF>;
   memberMap: Map<string, CosmoMemberBFF>;
+  // user selected artist data
+  selected: string[];
 };
 
-const CosmoArtistContext = createContext<ContextProps | null>(null);
+const ArtistContext = createContext<ContextProps>({
+  artists: [],
+  artistMap: new Map(),
+  memberMap: new Map(),
+  selected: [],
+});
 
 type ProviderProps = {
   children: ReactNode;
   artists: CosmoArtistWithMembersBFF[];
+  selected: string[];
 };
 
-export function CosmoArtistProvider({ children, artists }: ProviderProps) {
+export function ArtistProvider({ children, artists, selected }: ProviderProps) {
   const artistMap = new Map(
     artists.map((artist) => [artist.id.toLowerCase(), artist])
   );
@@ -31,9 +40,16 @@ export function CosmoArtistProvider({ children, artists }: ProviderProps) {
   );
 
   return (
-    <CosmoArtistContext.Provider value={{ artists, artistMap, memberMap }}>
+    <ArtistContext
+      value={{
+        artists,
+        artistMap,
+        memberMap,
+        selected,
+      }}
+    >
       {children}
-    </CosmoArtistContext.Provider>
+    </ArtistContext>
   );
 }
 
@@ -43,10 +59,10 @@ export function CosmoArtistProvider({ children, artists }: ProviderProps) {
  * - /bff/v1/collection-group not including the tokenAddress property.
  * - /bff/v1/collection-group using memberIds for filtering instead of member names.
  */
-export function useCosmoArtists() {
-  const ctx = useContext(CosmoArtistContext);
+export function useArtists() {
+  const ctx = use(ArtistContext);
   if (ctx === null) {
-    throw new Error("useCosmoArtist must be used within a CosmoArtistProvider");
+    throw new Error("useArtists must be used within an ArtistProvider");
   }
 
   /**
@@ -65,5 +81,19 @@ export function useCosmoArtists() {
     [ctx.memberMap]
   );
 
-  return { artists: ctx.artists, getArtist, getMember };
+  /**
+   * Get the selected artists (or all if no selection)
+   */
+  const selected =
+    ctx.selected.length > 0
+      ? ctx.artists.filter((a) => ctx.selected.includes(a.id))
+      : ctx.artists;
+
+  return {
+    artists: ctx.artists,
+    getArtist,
+    getMember,
+    selected,
+    selectedIds: ctx.selected,
+  };
 }

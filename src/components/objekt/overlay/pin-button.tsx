@@ -14,11 +14,11 @@ type Props = {
 };
 
 export default function PinObjekt({ collectionId, tokenId, isPinned }: Props) {
-  if (isPinned) {
-    return <UnpinButton collectionId={collectionId} tokenId={tokenId} />;
-  }
-
-  return <PinButton collectionId={collectionId} tokenId={tokenId} />;
+  return isPinned ? (
+    <UnpinButton collectionId={collectionId} tokenId={tokenId} />
+  ) : (
+    <PinButton collectionId={collectionId} tokenId={tokenId} />
+  );
 }
 
 type ButtonProps = {

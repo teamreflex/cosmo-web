@@ -22,7 +22,7 @@ export const updateSettings = authActionClient
     })
   )
   .action(async ({ parsedInput }) => {
-    return await auth.api.updateUser({
+    await auth.api.updateUser({
       headers: await headers(),
       body: {
         gridColumns: parsedInput.gridColumns,

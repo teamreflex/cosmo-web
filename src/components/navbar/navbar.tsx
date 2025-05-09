@@ -12,8 +12,7 @@ import StateGuest from "../auth/state-guest";
 import StateAuthenticated from "../auth/state-authenticated";
 import { ErrorBoundary } from "react-error-boundary";
 import AuthFallback from "../auth/auth-fallback";
-import { CosmoArtistProvider } from "@/hooks/use-cosmo-artist";
-import { SelectedArtistsProvider } from "@/hooks/use-selected-artists";
+import { ArtistProvider } from "@/hooks/use-artists";
 import Skeleton from "../skeleton/skeleton";
 
 export default async function Navbar() {
@@ -54,21 +53,19 @@ export default async function Navbar() {
 }
 
 async function Auth() {
-  const [account, artists, selectedArtists] = await Promise.all([
+  const [account, artists, selected] = await Promise.all([
     getAccount(),
     getArtistsWithMembers(),
     getSelectedArtists(),
   ]);
 
   return (
-    <CosmoArtistProvider artists={artists}>
-      <SelectedArtistsProvider selected={selectedArtists}>
-        {!account ? (
-          <StateGuest />
-        ) : (
-          <StateAuthenticated user={account.user} cosmo={account.cosmo} />
-        )}
-      </SelectedArtistsProvider>
-    </CosmoArtistProvider>
+    <ArtistProvider artists={artists} selected={selected}>
+      {!account ? (
+        <StateGuest />
+      ) : (
+        <StateAuthenticated user={account.user} cosmo={account.cosmo} />
+      )}
+    </ArtistProvider>
   );
 }

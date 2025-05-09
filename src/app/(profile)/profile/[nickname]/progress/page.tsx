@@ -6,9 +6,8 @@ import {
 import Portal from "@/components/portal";
 import HelpDialog from "@/components/progress/help-dialog";
 import ProgressRenderer from "@/components/progress/progress-renderer";
-import { CosmoArtistProvider } from "@/hooks/use-cosmo-artist";
+import { ArtistProvider } from "@/hooks/use-artists";
 import { ProfileProvider } from "@/hooks/use-profile";
-import { SelectedArtistsProvider } from "@/hooks/use-selected-artists";
 import { getQueryClient } from "@/lib/query-client";
 import { fetchFilterData } from "@/lib/server/objekts/filter-data";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
@@ -36,7 +35,7 @@ export default async function ProgressPage(props: Props) {
   });
 
   const params = await props.params;
-  const [artists, selectedArtists, target] = await Promise.all([
+  const [artists, selected, target] = await Promise.all([
     getArtistsWithMembers(),
     getSelectedArtists(),
     getTargetAccount(params.nickname),
@@ -44,18 +43,16 @@ export default async function ProgressPage(props: Props) {
 
   return (
     <section className="flex flex-col">
-      <CosmoArtistProvider artists={artists}>
-        <SelectedArtistsProvider selected={selectedArtists}>
-          <ProfileProvider target={target}>
-            <HydrationBoundary state={dehydrate(queryClient)}>
-              <ProgressRenderer address={target.cosmo.address} />
-            </HydrationBoundary>
-            <Portal to="#help">
-              <HelpDialog />
-            </Portal>
-          </ProfileProvider>
-        </SelectedArtistsProvider>
-      </CosmoArtistProvider>
+      <ArtistProvider artists={artists} selected={selected}>
+        <ProfileProvider target={target}>
+          <HydrationBoundary state={dehydrate(queryClient)}>
+            <ProgressRenderer address={target.cosmo.address} />
+          </HydrationBoundary>
+          <Portal to="#help">
+            <HelpDialog />
+          </Portal>
+        </ProfileProvider>
+      </ArtistProvider>
     </section>
   );
 }

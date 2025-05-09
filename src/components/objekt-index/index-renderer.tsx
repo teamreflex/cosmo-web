@@ -13,11 +13,10 @@ import { Button } from "../ui/button";
 import Link from "next/link";
 import { ChartColumnBig } from "lucide-react";
 import VirtualizedGrid from "../objekt/virtualized-grid";
-import { useMediaQuery } from "@/hooks/use-media-query";
 import LoaderRemote from "../objekt/loader-remote";
 import ObjektIndexFilters from "../collection/filter-contexts/objekt-index-filters";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
-import { useProfileContext } from "@/hooks/use-profile";
+import { useGridColumns, useProfileContext } from "@/hooks/use-profile";
 import { useObjektIndex } from "@/hooks/use-objekt-index";
 import HelpDialog from "./help-dialog";
 import { IndexedObjekt } from "@/lib/universal/objekts";
@@ -27,15 +26,12 @@ type Props = {
 };
 
 export default function IndexRenderer(props: Props) {
-  const isDesktop = useMediaQuery();
-  const user = useProfileContext((ctx) => ctx.account?.user);
-  const gridColumns = useProfileContext((ctx) =>
-    isDesktop ? ctx.gridColumns : 3
-  );
+  const account = useProfileContext((ctx) => ctx.account);
+  const gridColumns = useGridColumns();
   const [, setActiveObjekt] = useQueryState("id", parseAsString);
   const options = useObjektIndex();
 
-  const authenticated = user !== undefined;
+  const authenticated = account !== undefined;
 
   return (
     <div className="flex flex-col">

@@ -81,34 +81,47 @@ export const auth = betterAuth({
       },
       update: {
         async before(account) {
-          // Query the user to get the current access and refresh tokens
-          const existingAccount = await db.query.account.findFirst({
+          // query the user to get the current access and refresh tokens
+          const existing = await db.query.account.findFirst({
             where: {
               id: account.id,
             },
           });
 
-          const withEncryptedTokens = { ...account };
-
-          // Only encrypt the tokens if they have changed
-          if (
-            account.accessToken &&
-            existingAccount?.accessToken !== account.accessToken
-          ) {
-            withEncryptedTokens.accessToken = encryptToken(
-              account.accessToken,
-              env.BETTER_AUTH_SECRET
-            );
+          // ???
+          if (!existing) {
+            return {
+              data: account,
+            };
           }
 
-          if (
-            account.refreshToken &&
-            existingAccount?.refreshToken !== account.refreshToken
-          ) {
-            withEncryptedTokens.refreshToken = encryptToken(
-              account.refreshToken,
+          const withEncryptedTokens = { ...account };
+
+          // only encrypt the tokens if they have changed
+          if (account.accessToken && existing.accessToken) {
+            const decrypted = decryptToken(
+              existing.accessToken,
               env.BETTER_AUTH_SECRET
             );
+            if (decrypted !== account.accessToken) {
+              withEncryptedTokens.accessToken = encryptToken(
+                account.accessToken,
+                env.BETTER_AUTH_SECRET
+              );
+            }
+          }
+
+          if (account.refreshToken && existing.refreshToken) {
+            const decrypted = decryptToken(
+              existing.refreshToken,
+              env.BETTER_AUTH_SECRET
+            );
+            if (decrypted !== account.refreshToken) {
+              withEncryptedTokens.refreshToken = encryptToken(
+                account.refreshToken,
+                env.BETTER_AUTH_SECRET
+              );
+            }
           }
 
           return {
@@ -187,8 +200,7 @@ export const auth = betterAuth({
 });
 
 // should not be used in client code
-export type Session = typeof auth.$Infer.Session;
-export type ServerUser = Session["user"];
+type ServerUser = (typeof auth.$Infer.Session)["user"];
 
 const ALGORITHM = "aes-256-gcm";
 const AUTH_TAG_LENGTH = 16;
@@ -197,7 +209,7 @@ const IV_LENGTH = 12;
 /**
  * Encrypt a token.
  */
-export function encryptToken(token: string, key: string) {
+function encryptToken(token: string, key: string) {
   const iv = randomBytes(IV_LENGTH);
   const cipher = createCipheriv(ALGORITHM, Buffer.from(key, "hex"), iv, {
     authTagLength: AUTH_TAG_LENGTH,
@@ -214,7 +226,7 @@ export function encryptToken(token: string, key: string) {
 /**
  * Decrypt a token.
  */
-export function decryptToken(encrypted: string, key: string) {
+function decryptToken(encrypted: string, key: string) {
   // convert the encrypted token to a buffer
   const encryptedBuffer = Buffer.from(encrypted, "base64");
 

@@ -7,7 +7,7 @@ import {
 } from "@/app/data-fetching";
 import ProfileRenderer from "@/components/profile/profile-renderer";
 import { ProfileProvider } from "@/hooks/use-profile";
-import { CosmoArtistProvider } from "@/hooks/use-cosmo-artist";
+import { ArtistProvider } from "@/hooks/use-artists";
 import { parseUserCollection } from "@/lib/universal/parsers";
 import { getQueryClient } from "@/lib/query-client";
 import {
@@ -16,7 +16,6 @@ import {
 } from "@/lib/server/objekts/prefetching/objekt-blockchain";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { fetchFilterData } from "@/lib/server/objekts/filter-data";
-import { SelectedArtistsProvider } from "@/hooks/use-selected-artists";
 import { fetchPins } from "@/lib/server/objekts/pins";
 
 type Props = {
@@ -50,7 +49,7 @@ export default async function UserCollectionPage(props: Props) {
     props.params,
   ]);
 
-  const [account, selectedArtists, target] = await Promise.all([
+  const [account, selected, target] = await Promise.all([
     getAccount(),
     getSelectedArtists(),
     getTargetAccount(nickname),
@@ -60,7 +59,7 @@ export default async function UserCollectionPage(props: Props) {
     ...searchParams,
     sort: searchParams.sort ?? "newest",
   });
-  for (const artist of selectedArtists) {
+  for (const artist of selected) {
     params.append("artists", artist);
   }
   const filters = parseUserCollection(params);
@@ -72,7 +71,7 @@ export default async function UserCollectionPage(props: Props) {
       target.cosmo.address,
       {
         ...parseUserCollectionFilters(filters),
-        artists: selectedArtists,
+        artists: selected,
       },
     ],
     queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
@@ -88,23 +87,21 @@ export default async function UserCollectionPage(props: Props) {
   const pinnedObjekts = await fetchPins(pins);
 
   return (
-    <CosmoArtistProvider artists={artists}>
-      <SelectedArtistsProvider selected={selectedArtists}>
-        <ProfileProvider
-          account={account}
-          target={targetAccount}
-          // todo: update lists
-          objektLists={[]}
-          pins={pinnedObjekts}
-          lockedObjekts={lockedObjekts}
-        >
-          <section className="flex flex-col">
-            <HydrationBoundary state={dehydrate(queryClient)}>
-              <ProfileRenderer targetCosmo={target.cosmo} />
-            </HydrationBoundary>
-          </section>
-        </ProfileProvider>
-      </SelectedArtistsProvider>
-    </CosmoArtistProvider>
+    <ArtistProvider artists={artists} selected={selected}>
+      <ProfileProvider
+        account={account}
+        target={targetAccount}
+        // todo: update lists
+        objektLists={[]}
+        pins={pinnedObjekts}
+        lockedObjekts={lockedObjekts}
+      >
+        <section className="flex flex-col">
+          <HydrationBoundary state={dehydrate(queryClient)}>
+            <ProfileRenderer targetCosmo={target.cosmo} />
+          </HydrationBoundary>
+        </section>
+      </ProfileProvider>
+    </ArtistProvider>
   );
 }

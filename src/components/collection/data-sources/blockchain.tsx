@@ -2,7 +2,11 @@ import { ofetch } from "ofetch";
 import { LegacyObjektResponse, parsePage } from "@/lib/universal/objekts";
 import { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
 import { baseUrl } from "@/lib/query-client";
-import { useProfileContext } from "@/hooks/use-profile";
+import {
+  useAuthenticated,
+  useGridColumns,
+  useProfileContext,
+} from "@/hooks/use-profile";
 import { objektOptions } from "@/hooks/use-objekt-response";
 import FilteredObjektDisplay from "@/components/objekt/filtered-objekt-display";
 import { useCallback } from "react";
@@ -12,10 +16,9 @@ import { LegacyOverlay } from "./common-legacy";
 import ExpandableObjekt from "@/components/objekt/objekt-expandable";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import VirtualizedGrid from "@/components/objekt/virtualized-grid";
-import { useMediaQuery } from "@/hooks/use-media-query";
 import LoaderRemote from "@/components/objekt/loader-remote";
-import { useSelectedArtists } from "@/hooks/use-selected-artists";
 import { PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import { useArtists } from "@/hooks/use-artists";
 
 type Props = {
   gridColumns: number;
@@ -25,15 +28,14 @@ type Props = {
 };
 
 export default function Blockchain(props: Props) {
-  const authenticated = useProfileContext((ctx) => ctx.authenticated);
   const lockedObjekts = useProfileContext((ctx) => ctx.lockedObjekts);
   const pins = useProfileContext((ctx) => ctx.pins);
+  const authenticated = useAuthenticated();
   const [filters] = useCosmoFilters();
-  const isDesktop = useMediaQuery();
-  const { selectedIds } = useSelectedArtists();
+  const { selectedIds } = useArtists();
+  const gridColumns = useGridColumns();
 
   const usingFilters = filtersAreDirty(filters);
-  const gridColumns = isDesktop ? props.gridColumns : 3;
 
   /**
    * Determine if the objekt should be rendered
@@ -118,7 +120,6 @@ export default function Blockchain(props: Props) {
                     collection={objekt.collection}
                     token={objekt.objekt}
                     authenticated={authenticated}
-                    isPinned={pins.findIndex((p) => p.tokenId === id) !== -1}
                     isPin={isPin}
                   />
                 </ExpandableObjekt>

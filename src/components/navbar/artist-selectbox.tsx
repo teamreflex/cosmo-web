@@ -1,7 +1,7 @@
 "use client";
 
 import { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
-import { useId } from "react";
+import { useId, useTransition } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,16 +11,12 @@ import {
 import Image from "next/image";
 import { Check, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import {
-  useSelectedArtists,
-  useUpdateSelectedArtists,
-} from "@/hooks/use-selected-artists";
-import { useCosmoArtists } from "@/hooks/use-cosmo-artist";
+import { useArtists } from "@/hooks/use-artists";
+import { setSelectedArtist } from "./actions";
 
 export default function ArtistSelectbox() {
   const id = useId();
-  const { artists } = useCosmoArtists();
-  const { selectedArtists, selectedIds } = useSelectedArtists();
+  const { artists, selected, selectedIds } = useArtists();
 
   return (
     <DropdownMenu>
@@ -29,7 +25,7 @@ export default function ArtistSelectbox() {
           id={id}
           className="flex items-center -space-x-3 focus:outline-none"
         >
-          {selectedArtists.map((artist) => (
+          {selected.map((artist) => (
             <Avatar
               key={artist.id}
               className="size-8 ring ring-accent rounded-full"
@@ -63,7 +59,13 @@ type ArtistItemProps = {
 };
 
 export function ArtistItem({ artist, isSelected }: ArtistItemProps) {
-  const { handleSelect, isPending } = useUpdateSelectedArtists();
+  const [isPending, startTransition] = useTransition();
+
+  function handleSelect(artistId: string) {
+    startTransition(async () => {
+      await setSelectedArtist(artistId);
+    });
+  }
 
   return (
     <DropdownMenuItem

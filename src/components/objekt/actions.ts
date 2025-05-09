@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/server/db";
 import { objektMetadata } from "@/lib/server/db/schema";
-import { cosmoActionClient } from "@/lib/server/server-actions";
+import { adminActionClient } from "@/lib/server/server-actions";
 import { eq } from "drizzle-orm";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
@@ -11,7 +11,7 @@ import { zfd } from "zod-form-data";
 /**
  * Update an objekt's metadata.
  */
-export const updateObjektMetadata = cosmoActionClient
+export const updateObjektMetadata = adminActionClient
   .metadata({ actionName: "updateObjektMetadata" })
   .schema(
     zfd.formData({

@@ -14,8 +14,7 @@ import {
 import { parseObjektIndex } from "@/lib/universal/parsers";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import { getQueryClient } from "@/lib/query-client";
-import { CosmoArtistProvider } from "@/hooks/use-cosmo-artist";
-import { SelectedArtistsProvider } from "@/hooks/use-selected-artists";
+import { ArtistProvider } from "@/hooks/use-artists";
 import { getTypesenseResults } from "@/lib/client/typesense";
 
 export const metadata: Metadata = {
@@ -35,7 +34,7 @@ export default async function ObjektsIndexPage(props: Params) {
     queryFn: fetchFilterData,
   });
 
-  const [searchParams, selectedArtists, artists] = await Promise.all([
+  const [searchParams, selected, artists] = await Promise.all([
     props.searchParams,
     getSelectedArtists(),
     getArtistsWithMembers(),
@@ -46,7 +45,7 @@ export default async function ObjektsIndexPage(props: Params) {
     ...searchParams,
     sort: searchParams.sort ?? "newest",
   });
-  for (const artist of selectedArtists) {
+  for (const artist of selected) {
     params.append("artists", artist);
   }
   const filters = parseObjektIndex(params);
@@ -63,7 +62,7 @@ export default async function ObjektsIndexPage(props: Params) {
         { search: search || null },
         {
           ...parsedFilters,
-          artists: selectedArtists,
+          artists: selected,
         },
       ],
       queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
@@ -75,7 +74,7 @@ export default async function ObjektsIndexPage(props: Params) {
             member: filters.member ?? null,
           },
           page: pageParam,
-          artists: selectedArtists,
+          artists: selected,
         });
       },
       initialPageParam: 1,
@@ -88,7 +87,7 @@ export default async function ObjektsIndexPage(props: Params) {
         "blockchain",
         {
           ...parsedFilters,
-          artists: selectedArtists,
+          artists: selected,
         },
       ],
       queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
@@ -109,15 +108,13 @@ export default async function ObjektsIndexPage(props: Params) {
 
   return (
     <main className="container flex flex-col py-2">
-      <CosmoArtistProvider artists={artists}>
-        <SelectedArtistsProvider selected={selectedArtists}>
-          <ProfileProvider account={account}>
-            <HydrationBoundary state={dehydrate(queryClient)}>
-              <IndexRenderer activeSlug={searchParams.id} />
-            </HydrationBoundary>
-          </ProfileProvider>
-        </SelectedArtistsProvider>
-      </CosmoArtistProvider>
+      <ArtistProvider artists={artists} selected={selected}>
+        <ProfileProvider account={account}>
+          <HydrationBoundary state={dehydrate(queryClient)}>
+            <IndexRenderer activeSlug={searchParams.id} />
+          </HydrationBoundary>
+        </ProfileProvider>
+      </ArtistProvider>
     </main>
   );
 }

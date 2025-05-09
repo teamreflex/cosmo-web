@@ -10,15 +10,6 @@ export type CosmoProfile = {
   };
 };
 
-export type LoginResult = {
-  id: number;
-  email: string;
-  nickname: string;
-  address: string;
-  accessToken: string;
-  refreshToken: string;
-};
-
 export type CosmoUserResult = {
   profile: CosmoUser;
 };

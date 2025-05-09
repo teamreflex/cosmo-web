@@ -30,10 +30,9 @@ type ChainStatus = {
 };
 
 /**
- * Fetch the current block height and gas price from the Alchemy API.
- * Requested in a batch.
+ * Fetch the current block height from the Alchemy API.
  */
-export async function fetchChainStatus(): Promise<ChainStatus> {
+async function fetchChainStatus(): Promise<ChainStatus> {
   const blockNumber = await alchemyRPC<RPCResponse>("/", {
     body: {
       id: 1,

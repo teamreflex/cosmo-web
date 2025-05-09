@@ -1,12 +1,5 @@
 import { ValidArtist } from "./common";
 
-export type OwnedObjektsResult = {
-  hasNext: boolean;
-  nextStartAfter?: number;
-  total: number;
-  objekts: CosmoObjekt[];
-};
-
 export type ObjektBaseFields = {
   collectionId: string;
   season: string;
@@ -60,24 +53,6 @@ export type CosmoObjekt = OwnedObjektMinted | OwnedObjektPending;
 export type ScannedObjekt = {
   objekt: ObjektBaseFields;
   isClaimed: boolean;
-};
-
-export type GasStationResult = {
-  safeLow: {
-    maxFee: number;
-    maxPriorityFee: number;
-  };
-  standard: {
-    maxFee: number;
-    maxPriorityFee: number;
-  };
-  fast: {
-    maxFee: number;
-    maxPriorityFee: number;
-  };
-  estimatedBaseFee: number;
-  blockTime: number;
-  blockNumber: number;
 };
 
 export type BFFCollectionGroupResponse = {

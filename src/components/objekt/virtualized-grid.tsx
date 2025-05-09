@@ -101,7 +101,6 @@ export default function VirtualizedGrid<Item>({
                         collection={legacyObjekt.collection}
                         token={legacyObjekt.objekt}
                         authenticated={authenticated}
-                        isPinned={true}
                         isPin={true}
                       />
                     </ExpandableObjekt>

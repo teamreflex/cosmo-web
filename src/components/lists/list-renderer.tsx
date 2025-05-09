@@ -17,12 +17,11 @@ import { ObjektResponseOptions } from "@/hooks/use-objekt-response";
 import { ObjektSidebar } from "../objekt/common";
 import ExpandableObjekt from "../objekt/objekt-expandable";
 import { Objekt } from "../../lib/universal/objekt-conversion";
-import { useMediaQuery } from "@/hooks/use-media-query";
 import VirtualizedGrid from "../objekt/virtualized-grid";
 import LoaderRemote from "../objekt/loader-remote";
 import ObjektIndexFilters from "../collection/filter-contexts/objekt-index-filters";
 import type { ObjektList } from "@/lib/server/db/schema";
-import { useProfileContext } from "@/hooks/use-profile";
+import { useGridColumns, useProfileContext } from "@/hooks/use-profile";
 
 type Props = {
   list: ObjektList;
@@ -31,11 +30,8 @@ type Props = {
 
 export default function ListRenderer(props: Props) {
   const { searchParams } = useFilters();
-  const isDesktop = useMediaQuery();
   const cosmo = useProfileContext((ctx) => ctx.target!.cosmo!);
-  const gridColumns = useProfileContext((ctx) =>
-    isDesktop ? ctx.gridColumns : 3
-  );
+  const gridColumns = useGridColumns();
 
   /**
    * Query options

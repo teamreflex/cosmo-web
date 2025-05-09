@@ -7,7 +7,7 @@ import {
 } from "../ui/tooltip";
 import Image from "next/image";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
-import { useSelectedArtists } from "@/hooks/use-selected-artists";
+import { useArtists } from "@/hooks/use-artists";
 
 type Props = {
   showArtists?: boolean;
@@ -22,14 +22,14 @@ export default function MemberFilter({
   updateArtist,
   updateMember,
 }: Props) {
-  const { selectedArtists } = useSelectedArtists();
+  const { selected } = useArtists();
 
   return (
     <div className="relative flex flex-col h-fit w-full">
       <div className="absolute pointer-events-none z-20 top-0 left-0 h-full w-2 bg-linear-to-r from-background to-transparent" />
       <div className="absolute pointer-events-none z-20 top-0 right-0 h-full w-2 bg-linear-to-l from-background to-transparent" />
 
-      {selectedArtists
+      {selected
         .sort((a, b) => b.comoTokenId - a.comoTokenId)
         .map((artist) => (
           <div
@@ -79,7 +79,7 @@ type MemberFilterButtonProps = {
   color?: string;
 };
 
-export function MemberFilterButton({
+function MemberFilterButton({
   displayName,
   name,
   image,

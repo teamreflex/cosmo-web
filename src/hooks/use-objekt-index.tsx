@@ -1,5 +1,4 @@
 import { useQueryState } from "nuqs";
-import { useSelectedArtists } from "./use-selected-artists";
 import { ofetch } from "ofetch";
 import {
   IndexedObjekt,
@@ -12,11 +11,12 @@ import { useFilters } from "./use-filters";
 import { getTypesenseResults } from "@/lib/client/typesense";
 import { useDebounceValue } from "usehooks-ts";
 import { baseUrl } from "@/lib/query-client";
+import { useArtists } from "./use-artists";
 
 export function useObjektIndex() {
   const [search] = useQueryState("search");
   const [debouncedSearch] = useDebounceValue(search, 500);
-  const { selectedIds } = useSelectedArtists();
+  const { selectedIds } = useArtists();
   const [filters] = useCosmoFilters();
   const { searchParams } = useFilters();
 

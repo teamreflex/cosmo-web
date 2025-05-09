@@ -71,7 +71,7 @@ export const getTargetAccount = cache(
   }
 );
 
-export type GetAccount = {
+type GetAccount = {
   user: PublicUser;
   cosmo: PublicCosmo | undefined;
   objektLists: ObjektList[];

@@ -18,8 +18,7 @@ import { fetchObjektList } from "@/lib/server/objekts/lists";
 import { getQueryClient } from "@/lib/query-client";
 import { ProfileProvider } from "@/hooks/use-profile";
 import { fetchFilterData } from "@/lib/server/objekts/filter-data";
-import { CosmoArtistProvider } from "@/hooks/use-cosmo-artist";
-import { SelectedArtistsProvider } from "@/hooks/use-selected-artists";
+import { ArtistProvider } from "@/hooks/use-artists";
 
 type Props = {
   searchParams: Promise<Record<string, string>>;
@@ -48,7 +47,7 @@ export default async function ObjektListPage(props: Props) {
     queryFn: fetchFilterData,
   });
 
-  const [artists, selectedArtists, searchParams, { nickname, list }] =
+  const [artists, selected, searchParams, { nickname, list }] =
     await Promise.all([
       getArtistsWithMembers(),
       getSelectedArtists(),
@@ -95,18 +94,16 @@ export default async function ObjektListPage(props: Props) {
   });
 
   return (
-    <CosmoArtistProvider artists={artists}>
-      <SelectedArtistsProvider selected={selectedArtists}>
-        <ProfileProvider account={account} target={target}>
-          <HydrationBoundary state={dehydrate(queryClient)}>
-            <ListRenderer
-              list={objektList}
-              authenticated={account?.user !== undefined}
-            />
-          </HydrationBoundary>
-        </ProfileProvider>
-      </SelectedArtistsProvider>
-    </CosmoArtistProvider>
+    <ArtistProvider artists={artists} selected={selected}>
+      <ProfileProvider account={account} target={target}>
+        <HydrationBoundary state={dehydrate(queryClient)}>
+          <ListRenderer
+            list={objektList}
+            authenticated={account?.user !== undefined}
+          />
+        </HydrationBoundary>
+      </ProfileProvider>
+    </ArtistProvider>
   );
 }
 

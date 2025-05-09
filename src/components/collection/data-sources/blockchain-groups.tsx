@@ -9,13 +9,16 @@ import {
 import { ofetch } from "ofetch";
 import { useCallback } from "react";
 import GroupedObjekt from "@/components/objekt/objekt-collection-group";
-import { useProfileContext } from "@/hooks/use-profile";
+import {
+  useAuthenticated,
+  useGridColumns,
+  useProfileContext,
+} from "@/hooks/use-profile";
 import VirtualizedGrid from "@/components/objekt/virtualized-grid";
-import { useMediaQuery } from "@/hooks/use-media-query";
 import LoaderRemote from "@/components/objekt/loader-remote";
 import { baseUrl } from "@/lib/query-client";
-import { useSelectedArtists } from "@/hooks/use-selected-artists";
 import { PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import { useArtists } from "@/hooks/use-artists";
 
 const INITIAL_PAGE = 1;
 const PAGE_SIZE = 30;
@@ -28,15 +31,14 @@ type Props = {
 };
 
 export default function BlockchainGroups(props: Props) {
-  const authenticated = useProfileContext((ctx) => ctx.authenticated);
   const lockedObjekts = useProfileContext((ctx) => ctx.lockedObjekts);
   const pins = useProfileContext((ctx) => ctx.pins);
+  const authenticated = useAuthenticated();
   const [filters] = useCosmoFilters();
-  const isDesktop = useMediaQuery();
-  const { selectedIds } = useSelectedArtists();
+  const { selectedIds } = useArtists();
+  const gridColumns = useGridColumns();
 
   const usingFilters = filtersAreDirty(filters);
-  const gridColumns = isDesktop ? props.gridColumns : 3;
 
   /**
    * Determine if the group should be rendered

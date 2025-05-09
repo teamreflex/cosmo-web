@@ -60,7 +60,7 @@ export default function AccountDialog({
                   <Button variant="cosmo">
                     <Image
                       className="rounded-full"
-                      src={CosmoLogo}
+                      src={CosmoLogo.src}
                       alt="COSMO"
                       width={20}
                       height={20}
@@ -72,7 +72,7 @@ export default function AccountDialog({
                 <div className="flex items-center gap-2">
                   <Image
                     className="rounded-full"
-                    src={CosmoLogo}
+                    src={CosmoLogo.src}
                     alt="COSMO"
                     width={20}
                     height={20}

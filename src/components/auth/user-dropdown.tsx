@@ -12,9 +12,8 @@ import SettingsDialog from "./settings-dialog";
 import Link from "next/link";
 import { IconBrandDiscord } from "@tabler/icons-react";
 import { PublicUser } from "@/lib/universal/auth";
-import { useSelectedArtists } from "@/hooks/use-selected-artists";
 import { ArtistItem } from "../navbar/artist-selectbox";
-import { useCosmoArtists } from "@/hooks/use-cosmo-artist";
+import { useArtists } from "@/hooks/use-artists";
 import UserAvatar from "../profile/user-avatar";
 import AccountDialog from "./account-dialog";
 import { PublicCosmo } from "@/lib/universal/cosmo-accounts";
@@ -30,8 +29,8 @@ export default function UserDropdown({
   cosmo,
   onSignOut,
 }: UserDropdownProps) {
-  const { artists } = useCosmoArtists();
-  const { selectedIds } = useSelectedArtists();
+  const { artists } = useArtists();
+  const { selectedIds } = useArtists();
   const [openSettings, setOpenSettings] = useState(false);
   const [openAccount, setOpenAccount] = useState(false);
 
