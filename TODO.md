@@ -73,7 +73,7 @@
 
 ### polish
 
-- [ ] add toggle locked filter back
+- [x] add toggle locked filter back
 - [x] fix jank around redirecting away when finishing cosmo link
 - [ ] add set password functionality for oauth users
 - [ ] add oauth linking after register for email & password users

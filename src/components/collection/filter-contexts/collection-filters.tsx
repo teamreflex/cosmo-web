@@ -1,7 +1,7 @@
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { CollectionDataSource } from "@/lib/utils";
 import { Dispatch, SetStateAction, Suspense } from "react";
-// import LockedFilter from "../filter-locked";
+import LockedFilter from "../filter-locked";
 // import GridableFilter from "../filter-gridable";
 import TransferableFilter from "../filter-transferable";
 import SeasonFilter from "../filter-season";
@@ -33,8 +33,8 @@ export default function CollectionFilters({
 
   return (
     <div className="flex gap-2 items-center flex-wrap justify-center lg:group-data-[show=false]:flex group-data-[show=false]:hidden group-data-[show=true]:pb-2">
-      {/* <LockedFilter showLocked={showLocked} setShowLocked={setShowLocked} /> */}
-      {/* <GridableFilter filters={filters.gridable} setFilters={setFilters} /> */}
+      <LockedFilter showLocked={showLocked} setShowLocked={setShowLocked} />
+
       <TransferableFilter
         filters={filters.transferable}
         setFilters={setFilters}
