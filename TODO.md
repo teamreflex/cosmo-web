@@ -77,7 +77,7 @@
 - [x] fix jank around redirecting away when finishing cosmo link
 - [ ] add set password functionality for oauth users
 - [ ] add oauth linking after register for email & password users
-- [ ] remove abstract gas indicator
+- [x] remove abstract gas indicator
 
 ### stretch
 
