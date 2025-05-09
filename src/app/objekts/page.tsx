@@ -1,8 +1,9 @@
 import { Metadata } from "next";
 import {
-  getAccount,
+  getCurrentAccount,
   getArtistsWithMembers,
   getSelectedArtists,
+  getSession,
 } from "../data-fetching";
 import IndexRenderer from "@/components/objekt-index/index-renderer";
 import { fetchFilterData } from "@/lib/server/objekts/filter-data";
@@ -34,7 +35,8 @@ export default async function ObjektsIndexPage(props: Params) {
     queryFn: fetchFilterData,
   });
 
-  const [searchParams, selected, artists] = await Promise.all([
+  const [session, searchParams, selected, artists] = await Promise.all([
+    getSession(),
     props.searchParams,
     getSelectedArtists(),
     getArtistsWithMembers(),
@@ -100,11 +102,13 @@ export default async function ObjektsIndexPage(props: Params) {
     });
   }
 
-  const account = await getAccount().then((a) => ({
-    user: a?.user,
-    cosmo: a?.cosmo,
-    objektLists: a?.objektLists ?? [],
-  }));
+  const account = await getCurrentAccount(session?.session.userId).then(
+    (a) => ({
+      user: a?.user,
+      cosmo: a?.cosmo,
+      objektLists: a?.objektLists ?? [],
+    })
+  );
 
   return (
     <main className="container flex flex-col py-2">

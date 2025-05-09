@@ -23,9 +23,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 export default async function UserComoPage(props: Props) {
   const params = await props.params;
   const { cosmo } = await getTargetAccount(params.nickname);
-  const objekts = cosmo.address
-    ? await fetchObjektsWithComo(cosmo.address)
-    : [];
+  const objekts = await fetchObjektsWithComo(cosmo.address);
 
   const artists = getArtistsWithMembers();
   const totals = artists.map((artist) => {

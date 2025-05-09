@@ -1,8 +1,9 @@
 import { Metadata } from "next";
 import {
-  getAccount,
+  getCurrentAccount,
   getArtistsWithMembers,
   getSelectedArtists,
+  getSession,
   getTargetAccount,
 } from "@/app/data-fetching";
 import ProfileRenderer from "@/components/profile/profile-renderer";
@@ -44,15 +45,17 @@ export default async function UserCollectionPage(props: Props) {
     queryFn: fetchFilterData,
   });
 
-  const [searchParams, { nickname }] = await Promise.all([
+  const [session, searchParams, { nickname }, selected] = await Promise.all([
+    getSession(),
     props.searchParams,
     props.params,
+    getSelectedArtists(),
   ]);
 
-  const [account, selected, target] = await Promise.all([
-    getAccount(),
-    getSelectedArtists(),
+  const [account, target, pins] = await Promise.all([
+    getCurrentAccount(session?.session.userId),
     getTargetAccount(nickname),
+    fetchPins(nickname),
   ]);
 
   const params = new URLSearchParams({
@@ -83,18 +86,17 @@ export default async function UserCollectionPage(props: Props) {
     initialPageParam: 0,
   });
 
-  const { pins, lockedObjekts, ...targetAccount } = target;
-  const pinnedObjekts = await fetchPins(pins);
+  const { lockedObjekts, ...targetAccount } = target;
 
   return (
     <ArtistProvider artists={artists} selected={selected}>
       <ProfileProvider
         account={account}
         target={targetAccount}
+        pins={pins}
+        lockedObjekts={lockedObjekts}
         // todo: update lists
         objektLists={[]}
-        pins={pinnedObjekts}
-        lockedObjekts={lockedObjekts}
       >
         <section className="flex flex-col">
           <HydrationBoundary state={dehydrate(queryClient)}>

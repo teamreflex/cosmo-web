@@ -78,6 +78,7 @@
 - [ ] add set password functionality for oauth users
 - [ ] add oauth linking after register for email & password users
 - [x] remove abstract gas indicator
+- [ ] fix settings save not triggering update (move into separate user state provider/hook?)
 
 ### stretch
 
@@ -86,3 +87,26 @@
 - [ ] double check how betterauth handles oauth -> username mapping w/ conflicts
 - [ ] contingency backup for browserless failing
 - [ ] refactor artist/member filtering
+
+### optimization
+
+- [ ] copy cosmo data into user table for easier querying?
+
+```sql
+CREATE OR REPLACE FUNCTION update_user_from_cosmo_account()
+RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE "user"
+    SET cosmo_username = NEW.username,
+        cosmo_address = NEW.address
+    WHERE id = NEW.user_id;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_update_user_from_cosmo_account
+AFTER INSERT OR UPDATE ON cosmo_account
+FOR EACH ROW
+EXECUTE FUNCTION update_user_from_cosmo_account();
+```

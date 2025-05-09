@@ -4,9 +4,10 @@ import UpdateDialog from "../misc/update-dialog";
 import SystemStatus from "../misc/system-status";
 import Links, { LinksSkeleton } from "./links.server";
 import {
-  getAccount,
+  getCurrentAccount,
   getArtistsWithMembers,
   getSelectedArtists,
+  getSession,
 } from "@/app/data-fetching";
 import StateGuest from "../auth/state-guest";
 import StateAuthenticated from "../auth/state-authenticated";
@@ -29,21 +30,11 @@ export default async function Navbar() {
               </div>
             </div>
 
-            <Suspense fallback={<LinksSkeleton />}>
-              <Links />
-            </Suspense>
-
-            <div className="flex grow-0 items-center justify-end gap-2">
-              <ErrorBoundary fallback={<AuthFallback />}>
-                <Suspense
-                  fallback={
-                    <Skeleton className="size-8 rounded-full shrink-0 aspect-square" />
-                  }
-                >
-                  <Auth />
-                </Suspense>
-              </ErrorBoundary>
-            </div>
+            <ErrorBoundary fallback={<AuthFallback />}>
+              <Suspense fallback={<NavbarFallback />}>
+                <AuthState />
+              </Suspense>
+            </ErrorBoundary>
           </div>
         </div>
       </div>
@@ -52,20 +43,35 @@ export default async function Navbar() {
   );
 }
 
-async function Auth() {
+function NavbarFallback() {
+  return (
+    <div className="contents">
+      <LinksSkeleton />
+      <div className="flex grow-0 items-center justify-end gap-2">
+        <Skeleton className="size-8 rounded-full shrink-0 aspect-square" />
+      </div>
+    </div>
+  );
+}
+
+async function AuthState() {
+  const session = await getSession();
   const [account, artists, selected] = await Promise.all([
-    getAccount(),
+    getCurrentAccount(session?.session.userId),
     getArtistsWithMembers(),
     getSelectedArtists(),
   ]);
 
   return (
     <ArtistProvider artists={artists} selected={selected}>
-      {!account ? (
-        <StateGuest />
-      ) : (
-        <StateAuthenticated user={account.user} cosmo={account.cosmo} />
-      )}
+      <Links cosmo={account?.cosmo} />
+      <div className="flex grow-0 items-center justify-end gap-2">
+        {!account ? (
+          <StateGuest />
+        ) : (
+          <StateAuthenticated user={account.user} cosmo={account.cosmo} />
+        )}
+      </div>
     </ArtistProvider>
   );
 }

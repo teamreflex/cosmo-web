@@ -81,43 +81,41 @@ type GetAccount = {
  * Fetch the currently signed in user.
  * For use when needing the user and COSMO account.
  */
-export const getAccount = cache(async (): Promise<GetAccount | undefined> => {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+export const getCurrentAccount = cache(
+  async (userId?: string): Promise<GetAccount | undefined> => {
+    // not signed in
+    if (!userId) {
+      return undefined;
+    }
 
-  // not signed in
-  if (!session) {
-    return undefined;
-  }
+    const result = await db.query.user.findFirst({
+      where: { id: userId },
+      with: {
+        cosmoAccount: true,
+        objektLists: true,
+      },
+    });
 
-  const result = await db.query.user.findFirst({
-    where: { id: session.session.userId },
-    with: {
-      cosmoAccount: true,
-      objektLists: true,
-    },
-  });
+    // broken user account
+    if (!result) {
+      return undefined;
+    }
 
-  // broken user account
-  if (!result) {
-    return undefined;
-  }
+    // no cosmo account, just return the user
+    const { cosmoAccount, objektLists, ...user } = result;
+    if (!cosmoAccount) {
+      return {
+        user: toPublicUser(user),
+        cosmo: undefined,
+        objektLists,
+      };
+    }
 
-  // no cosmo account, just return the user
-  const { cosmoAccount, objektLists, ...user } = result;
-  if (!cosmoAccount) {
+    // return the user and cosmo account
     return {
+      cosmo: toPublicCosmo(cosmoAccount),
       user: toPublicUser(user),
-      cosmo: undefined,
       objektLists,
     };
   }
-
-  // return the user and cosmo account
-  return {
-    cosmo: toPublicCosmo(cosmoAccount),
-    user: toPublicUser(user),
-    objektLists,
-  };
-});
+);

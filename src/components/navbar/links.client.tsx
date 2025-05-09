@@ -143,6 +143,7 @@ function LinkButton(props: LinkButtonProps) {
             href={props.href}
             className="outline-hidden focus:outline-hidden"
             aria-label={props.name}
+            prefetch={false}
           >
             <props.icon
               className={cn(

@@ -2,9 +2,10 @@ import { Metadata } from "next";
 import { cache } from "react";
 import { redirect } from "next/navigation";
 import {
-  getAccount,
+  getCurrentAccount,
   getArtistsWithMembers,
   getSelectedArtists,
+  getSession,
   getTargetAccount,
 } from "@/app/data-fetching";
 import ListRenderer from "@/components/lists/list-renderer";
@@ -47,8 +48,9 @@ export default async function ObjektListPage(props: Props) {
     queryFn: fetchFilterData,
   });
 
-  const [artists, selected, searchParams, { nickname, list }] =
+  const [session, artists, selected, searchParams, { nickname, list }] =
     await Promise.all([
+      getSession(),
       getArtistsWithMembers(),
       getSelectedArtists(),
       props.searchParams,
@@ -57,7 +59,7 @@ export default async function ObjektListPage(props: Props) {
 
   // get current and target accouonts
   const [account, { target, objektList }] = await Promise.all([
-    getAccount(),
+    getCurrentAccount(session?.session.userId),
     getData(nickname, list),
   ]);
 

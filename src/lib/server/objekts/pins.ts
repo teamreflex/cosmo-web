@@ -2,15 +2,19 @@ import { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
 import { indexer } from "../db/indexer";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { Collection, Objekt } from "../db/indexer/schema";
+import { getTargetAccount } from "@/app/data-fetching";
 
 interface ObjektWithCollection extends Objekt {
   collection: Collection;
 }
 
 /**
- * Fetch all pins for the given token ids.
+ * Fetch all pins for the given user.
  */
-export async function fetchPins(pins: number[]): Promise<CosmoObjekt[]> {
+export async function fetchPins(nickname: string): Promise<CosmoObjekt[]> {
+  const now = performance.now();
+  // should get de-duplicated at this point
+  const { pins } = await getTargetAccount(nickname);
   if (pins.length === 0) return [];
 
   try {
@@ -29,6 +33,9 @@ export async function fetchPins(pins: number[]): Promise<CosmoObjekt[]> {
   }
 
   const mapped = results.map(normalizePin);
+
+  const after = performance.now();
+  console.log("fetchPins", after - now);
 
   // sort by pin order
   return mapped.sort((a, b) => {

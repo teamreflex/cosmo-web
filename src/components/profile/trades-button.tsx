@@ -9,7 +9,7 @@ type Props = {
 export default function TradesButton({ username }: Props) {
   return (
     <Button variant="secondary" size="profile" data-profile asChild>
-      <Link href={`/@${username}/trades`}>
+      <Link href={`/@${username}/trades`} prefetch={false}>
         <Send className="h-5 w-5" />
         <span>Trades</span>
       </Link>

@@ -18,7 +18,11 @@ import {
 import ComoBalanceRenderer from "@/components/navbar/como-balances";
 import { Addresses } from "@/lib/utils";
 import CosmoLogo from "@/assets/cosmo.webp";
-import { getAccount, getTargetAccount } from "@/app/data-fetching";
+import {
+  getCurrentAccount,
+  getSession,
+  getTargetAccount,
+} from "@/app/data-fetching";
 import { FullAccount } from "@/lib/universal/cosmo-accounts";
 
 type Props = PropsWithChildren<{
@@ -28,9 +32,9 @@ type Props = PropsWithChildren<{
 }>;
 
 export default async function ProfileLayout(props: Props) {
-  const params = await props.params;
+  const [session, params] = await Promise.all([getSession(), props.params]);
   const [account, target] = await Promise.all([
-    getAccount(),
+    getCurrentAccount(session?.session.userId),
     getTargetAccount(params.nickname),
   ]);
 
@@ -57,6 +61,7 @@ export default async function ProfileLayout(props: Props) {
               <Link
                 href={`/@${target.cosmo.username}`}
                 className="w-fit text-2xl lg:text-3xl font-cosmo uppercase underline underline-offset-4 decoration-transparent hover:decoration-cosmo transition-colors"
+                prefetch={false}
               >
                 {target.cosmo.username}
               </Link>

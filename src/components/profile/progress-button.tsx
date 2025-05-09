@@ -9,7 +9,7 @@ type Props = {
 export default function ProgressButton({ username }: Props) {
   return (
     <Button variant="secondary" size="profile" data-profile asChild>
-      <Link href={`/@${username}/progress`}>
+      <Link href={`/@${username}/progress`} prefetch={false}>
         <PieChart className="h-5 w-5" />
         <span>Progress</span>
       </Link>

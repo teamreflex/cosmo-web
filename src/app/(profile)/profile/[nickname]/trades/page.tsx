@@ -2,8 +2,8 @@ import { Metadata } from "next";
 import TransfersRenderer from "@/components/transfers/transfers-renderer";
 import {
   getArtistsWithMembers,
-  getTargetAccount,
   getSelectedArtists,
+  getTargetAccount,
 } from "@/app/data-fetching";
 import { ArtistProvider } from "@/hooks/use-artists";
 import { getQueryClient } from "@/lib/query-client";
