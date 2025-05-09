@@ -27,7 +27,7 @@ import {
 } from "@tanstack/react-query";
 import { FetchError, ofetch } from "ofetch";
 import Link from "next/link";
-import { ReactNode, Suspense, useState, useTransition } from "react";
+import { ReactNode, Suspense, useState } from "react";
 import { Separator } from "../ui/separator";
 import Skeleton from "../skeleton/skeleton";
 import { useProfileContext } from "@/hooks/use-profile";
@@ -50,6 +50,7 @@ import FlippableObjekt from "./objekt-flippable";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
 import Portal from "../portal";
+import { useAction } from "next-safe-action/hooks";
 
 type CommonProps = {
   objekt: Objekt.Collection;
@@ -368,33 +369,28 @@ type EditMetadataProps = {
 };
 
 function EditMetadata({ slug, metadata, close }: EditMetadataProps) {
-  const [isPending, startTransition] = useTransition();
   const queryClient = useQueryClient();
-
-  const formAction = updateObjektMetadata.bind(null, slug);
-
-  async function submit(form: FormData) {
-    startTransition(async () => {
-      const result = await formAction(form);
-      if (result.status === "success") {
-        queryClient.invalidateQueries({
-          queryKey: ["collection-metadata", "metadata", slug],
-        });
-        toast({
-          description: "Metadata updated.",
-        });
-        close();
-      } else if (result.status === "error") {
-        toast({
-          description: result.error,
-          variant: "destructive",
-        });
-      }
-    });
-  }
+  const { execute, isPending } = useAction(updateObjektMetadata, {
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["collection-metadata", "metadata", slug],
+      });
+      toast({
+        description: "Metadata updated.",
+      });
+      close();
+    },
+    onError: () => {
+      toast({
+        description: "Failed to update metadata",
+        variant: "destructive",
+      });
+    },
+  });
 
   return (
-    <form className="flex flex-col gap-2" action={submit}>
+    <form className="flex flex-col gap-2" action={execute}>
+      <input type="hidden" name="collectionId" value={slug} />
       <Textarea
         name="description"
         rows={3}

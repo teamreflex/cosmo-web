@@ -5,6 +5,7 @@ import {
 import { z } from "zod";
 import { auth } from "./auth";
 import { headers } from "next/headers";
+import { db } from "./db";
 
 export class ActionError extends Error {}
 
@@ -17,9 +18,12 @@ export const actionClient = createSafeActionClient({
       actionName: z.string(),
     });
   },
-  handleServerError(e) {
+  handleServerError(e, { metadata }) {
     if (e instanceof ActionError) {
       return e.message;
+    } else {
+      // only log when the error is unexpected
+      console.error(`[${metadata.actionName}]`, e);
     }
 
     return DEFAULT_SERVER_ERROR_MESSAGE;
@@ -44,7 +48,27 @@ export const authActionClient = actionClient.use(async ({ next, ctx }) => {
     throw new ActionError("Please sign-in to continue.");
   }
 
-  return next({ ctx: { session: ctx.session } });
+  // fetch the user's cosmo account
+  const cosmo = await db.query.cosmoAccounts.findFirst({
+    where: { userId: ctx.session.user.id },
+  });
+
+  return next({ ctx: { session: ctx.session, cosmo } });
+});
+
+/**
+ * Action client that ensures the user has a linked COSMO account.
+ */
+export const cosmoActionClient = authActionClient.use(async ({ next, ctx }) => {
+  const cosmo = await db.query.cosmoAccounts.findFirst({
+    where: { userId: ctx.session.user.id },
+  });
+
+  if (!cosmo) {
+    throw new ActionError("Please link your COSMO account to continue.");
+  }
+
+  return next({ ctx: { ...ctx, cosmo } });
 });
 
 /**
@@ -55,5 +79,13 @@ export const adminActionClient = authActionClient.use(async ({ next, ctx }) => {
     throw new ActionError("You are not authorized to perform this action.");
   }
 
-  return next({ ctx: { session: ctx.session } });
+  const cosmo = await db.query.cosmoAccounts.findFirst({
+    where: { userId: ctx.session.user.id },
+  });
+
+  if (!cosmo) {
+    throw new ActionError("Please link your COSMO account to continue.");
+  }
+
+  return next({ ctx: { ...ctx, cosmo } });
 });

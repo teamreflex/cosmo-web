@@ -3,16 +3,30 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Clipboard, HardDriveUpload, Loader2, Plus, Trash } from "lucide-react";
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { metadataInputSchema, MetadataRow } from "@/lib/universal/metadata";
 import { toast } from "@/components/ui/use-toast";
 import { saveMetadata } from "./actions";
+import { useAction } from "next-safe-action/hooks";
 
 export default function InsertMetadata() {
-  const [isPending, startTransition] = useTransition();
   const [rows, setRows] = useState<MetadataRow[]>([
     { collectionId: "", description: "" },
   ]);
+  const { execute, isPending } = useAction(saveMetadata, {
+    onSuccess: ({ data }) => {
+      toast({
+        description: `${data} objekt metadata rows updated`,
+      });
+      setRows([]);
+    },
+    onError: (error) => {
+      toast({
+        description: error.error.serverError ?? "An unknown error occurred",
+        variant: "destructive",
+      });
+    },
+  });
 
   const hasRows =
     rows.length > 0 &&
@@ -61,23 +75,6 @@ export default function InsertMetadata() {
     setRows((prev) => prev.filter((_, i) => i !== index));
   }
 
-  function submit() {
-    startTransition(async () => {
-      const result = await saveMetadata(rows);
-      if (result.status === "success") {
-        toast({
-          description: `${rows.length} objekt metadata rows updated`,
-        });
-        setRows([]);
-      } else if (result.status === "error") {
-        toast({
-          description: result.error,
-          variant: "destructive",
-        });
-      }
-    });
-  }
-
   return (
     <div className="flex flex-col gap-2">
       {/* header */}
@@ -92,7 +89,7 @@ export default function InsertMetadata() {
         <Button
           variant="cosmo"
           size="xs"
-          onClick={submit}
+          onClick={() => execute({ rows })}
           disabled={isPending || !hasRows}
         >
           {isPending ? (

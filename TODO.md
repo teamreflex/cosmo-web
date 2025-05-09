@@ -59,11 +59,11 @@
 
 ### server action client migration
 
-- [ ] objekt lock
-- [ ] objekt pin
-- [ ] objekt unpin
-- [ ] metadata update
-- [ ] metadata bulk update (admin)
+- [x] objekt lock
+- [x] objekt pin
+- [x] objekt unpin
+- [x] metadata update
+- [x] metadata bulk update (admin)
 
 ### user data migration
 

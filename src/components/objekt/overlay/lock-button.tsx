@@ -2,9 +2,9 @@
 
 import { toggleObjektLock } from "@/components/collection/actions";
 import { Loader2, Lock, Unlock } from "lucide-react";
-import { useTransition } from "react";
 import { track } from "@/lib/utils";
 import { useProfileContext } from "@/hooks/use-profile";
+import { useAction } from "next-safe-action/hooks";
 
 type Props = {
   tokenId: number;
@@ -13,16 +13,15 @@ type Props = {
 
 export default function LockObjekt({ tokenId, isLocked }: Props) {
   const toggleLock = useProfileContext((ctx) => ctx.toggleLock);
-  const [isPending, startTransition] = useTransition();
+  const { execute, isPending } = useAction(toggleObjektLock, {
+    onSuccess: () => {
+      track(`${isLocked ? "unlock" : "lock"}-objekt`);
+      toggleLock(tokenId);
+    },
+  });
 
   function toggle() {
-    startTransition(async () => {
-      const result = await toggleObjektLock({ tokenId, lock: !isLocked });
-      if (result.status === "success" && result.data === true) {
-        track(`${isLocked ? "unlock" : "lock"}-objekt`);
-        toggleLock(tokenId);
-      }
-    });
+    execute({ tokenId, lock: !isLocked });
   }
 
   return (
