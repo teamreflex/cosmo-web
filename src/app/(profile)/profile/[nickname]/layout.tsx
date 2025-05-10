@@ -23,7 +23,6 @@ import {
   getSession,
   getTargetAccount,
 } from "@/app/data-fetching";
-import { FullAccount } from "@/lib/universal/cosmo-accounts";
 
 type Props = PropsWithChildren<{
   params: Promise<{
@@ -41,114 +40,104 @@ export default async function ProfileLayout(props: Props) {
   const authenticated = account?.cosmo?.address === target.cosmo.address;
 
   return (
-    <main className="relative container flex flex-col gap-2 py-2">
-      {/* user block */}
-      <div className="flex flex-col">
-        <div className="flex flex-row gap-4 items-center">
+    <main className="relative container flex flex-col py-2">
+      <div className="grid grid-rows-3 grid-cols-2 md:grid-rows-3 md:grid-cols-3 gap-2 md:h-24">
+        {/* user block */}
+        <div className="row-span-2 md:row-span-3 flex flex-row gap-4">
           <Suspense
             fallback={
-              <Skeleton className="h-20 w-20 rounded-full aspect-square shrink-0" />
+              <Skeleton className="h-24 w-24 rounded-full aspect-square shrink-0" />
             }
           >
             <UserAvatar
-              className="w-20 h-20"
+              className="w-24 h-24"
               username={target.cosmo.username}
             />
           </Suspense>
 
-          <div className="flex flex-col justify-between w-full">
-            <div className="flex gap-2 items-center">
+          <div className="flex flex-row">
+            <div className="flex flex-col gap-2 justify-center h-24">
               <Link
                 href={`/@${target.cosmo.username}`}
-                className="w-fit text-2xl lg:text-3xl font-cosmo uppercase underline underline-offset-4 decoration-transparent hover:decoration-cosmo transition-colors"
+                className="w-fit text-2xl leading-6 font-cosmo uppercase underline underline-offset-4 decoration-transparent hover:decoration-cosmo transition-colors"
                 prefetch={false}
               >
                 {target.cosmo.username}
               </Link>
 
-              {target.verified && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <Image
-                        className="rounded-md shrink-0 invert dark:invert-0"
-                        src={CosmoLogo.src}
-                        alt="COSMO"
-                        width={24}
-                        height={24}
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom">
-                      <span>Account has been verified by the owner</span>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
-
-              {target.cosmo.address === Addresses.SPIN && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <Image
-                        className="invert dark:invert-0"
-                        src={ModhausLogo.src}
-                        alt="Modhaus"
-                        width={28}
-                        height={27}
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom">
-                      <span>Official Modhaus account</span>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
-            </div>
-
-            <div className="flex items-center justify-between gap-2">
               <ComoBalanceRenderer address={target.cosmo.address} />
-              <div></div>
-              <span className="h-10 flex items-center last:ml-auto">
-                <div id="objekt-total" />
-              </span>
+
+              {/* badges? */}
+              <div className="flex flex-row gap-2 h-5">
+                {target.verified && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <Image
+                          className="rounded shrink-0 invert dark:invert-0"
+                          src={CosmoLogo.src}
+                          alt="COSMO"
+                          width={20}
+                          height={20}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" align="start">
+                        <span>Account has been verified by the owner</span>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+
+                {target.cosmo.address === Addresses.SPIN && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <Image
+                          className="invert dark:invert-0"
+                          src={ModhausLogo.src}
+                          alt="Modhaus"
+                          width={20}
+                          height={20}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" align="start">
+                        <span>Official Modhaus account</span>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* mobile buttons */}
-      <Buttons target={target} authenticated={authenticated} />
+        {/* profile-related buttons */}
+        <div className="row-start-3 md:row-start-auto col-span-3 md:col-span-2 flex flex-wrap gap-2 justify-center md:justify-end">
+          <CopyAddressButton address={target.cosmo.address} />
+          <TradesButton username={target.cosmo.username} />
+          <ComoButton username={target.cosmo.username} />
+          <ProgressButton username={target.cosmo.username} />
+          <ListDropdown
+            objektLists={target.objektLists}
+            username={target.cosmo.username}
+            allowCreate={authenticated}
+          />
+
+          {/* content gets portaled in */}
+          <div className="h-10 lg:h-8 flex items-center" id="help" />
+          <div
+            className="h-10 flex items-center lg:hidden"
+            id="filters-button"
+          />
+        </div>
+
+        {/* objekt total, gets portaled in */}
+        <div className="flex col-start-3 row-start-2 md:row-start-3 h-6 place-self-end">
+          <span id="objekt-total" />
+        </div>
+      </div>
 
       {props.children}
     </main>
-  );
-}
-
-type ButtonsProps = {
-  target: FullAccount;
-  authenticated: boolean;
-};
-
-function Buttons({ target, authenticated }: ButtonsProps) {
-  return (
-    <div className="flex flex-wrap gap-2 justify-center lg:justify-normal md:absolute md:top-2 md:right-4">
-      <CopyAddressButton address={target.cosmo.address} />
-      <TradesButton username={target.cosmo.username} />
-      <ComoButton username={target.cosmo.username} />
-      <ProgressButton username={target.cosmo.username} />
-      <ListDropdown
-        objektLists={target.objektLists}
-        username={target.cosmo.username}
-        allowCreate={authenticated}
-      />
-
-      {/* content gets portaled in */}
-      <span className="h-10 lg:h-8 flex items-center">
-        <div id="help" />
-      </span>
-      <span className="h-10 flex items-center lg:hidden">
-        <div id="filters-button" />
-      </span>
-    </div>
   );
 }
