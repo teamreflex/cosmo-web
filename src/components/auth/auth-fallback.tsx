@@ -12,7 +12,7 @@ type Props = {
 
 export default function AuthFallback({ message }: Props) {
   return (
-    <div className="flex grow-0 items-center justify-end gap-2">
+    <div className="flex grow-0 items-center justify-end gap-2 col-span-2">
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>

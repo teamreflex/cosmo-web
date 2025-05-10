@@ -14,6 +14,8 @@ import {
   sendVerificationEmail,
 } from "./mail";
 import { PublicUser } from "../universal/auth";
+import { nextCookies } from "better-auth/next-js";
+import { RedisSessionCache } from "./cache";
 
 /**
  * Better Auth server instance.
@@ -31,7 +33,12 @@ export const auth = betterAuth({
       minUsernameLength: 3,
       maxUsernameLength: 20,
     }),
+    nextCookies(),
   ],
+
+  /**
+   * Enable email verification.
+   */
   emailVerification: {
     sendOnSignUp: true,
     autoSignInAfterVerification: true,
@@ -43,6 +50,10 @@ export const auth = betterAuth({
       });
     },
   },
+
+  /**
+   * Enable email and password authentication.
+   */
   emailAndPassword: {
     enabled: true,
     autoSignIn: true,
@@ -55,6 +66,10 @@ export const auth = betterAuth({
       });
     },
   },
+
+  /**
+   * Encrypt OAuth access and refresh tokens.
+   */
   databaseHooks: {
     account: {
       create: {
@@ -131,12 +146,22 @@ export const auth = betterAuth({
       },
     },
   },
+
+  /**
+   * Save sessions into secondary storage.
+   */
   session: {
-    cookieCache: {
-      enabled: true,
-      maxAge: 5 * 60,
-    },
+    storeSessionInDatabase: true,
+    // cookieCache: {
+    //   enabled: true,
+    //   maxAge: 5 * 60,
+    // },
   },
+
+  /**
+   * Need to use secondary storage for session caching as RSC's cannot set cookies.
+   */
+  secondaryStorage: new RedisSessionCache(),
   socialProviders: {
     discord: {
       clientId: env.DISCORD_CLIENT_ID,

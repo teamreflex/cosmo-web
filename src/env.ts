@@ -1,12 +1,9 @@
 import { createEnv } from "@t3-oss/env-nextjs";
+import { neonVercel } from "@t3-oss/env-core/presets-zod";
 import * as z from "zod";
 
 export const env = createEnv({
   server: {
-    // used for signing cookies
-    JWT_SECRET: z.string().min(1),
-    // neon db
-    DATABASE_URL: z.string().min(1),
     // indexer db http proxy
     INDEXER_PROXY_KEY: z.string().min(1),
     INDEXER_PROXY_URL: z.string().min(1),
@@ -36,6 +33,9 @@ export const env = createEnv({
     COSMO_RECAPTCHA_KEY: z.string().min(1),
     BROWSERLESS_API_KEY: z.string().min(1),
     BROWSERLESS_BASE_URL: z.string().min(1),
+    // upstash
+    KV_REST_API_URL: z.string().url(),
+    KV_REST_API_TOKEN: z.string().min(1),
   },
   client: {
     // info for rebranding the app
@@ -64,4 +64,5 @@ export const env = createEnv({
     NEXT_PUBLIC_TYPESENSE_URL: process.env.NEXT_PUBLIC_TYPESENSE_URL,
     NEXT_PUBLIC_TYPESENSE_KEY: process.env.NEXT_PUBLIC_TYPESENSE_KEY,
   },
+  extends: [neonVercel()],
 });
