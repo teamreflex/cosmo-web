@@ -4,7 +4,7 @@ import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { Collection, Objekt } from "../db/indexer/schema";
 import { db } from "../db";
 import { cosmoAccounts, pins } from "../db/schema";
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 
 interface ObjektWithCollection extends Objekt {
   collection: Collection;
@@ -18,7 +18,8 @@ export async function fetchPins(username: string): Promise<CosmoObjekt[]> {
     .select({ tokenId: pins.tokenId })
     .from(pins)
     .innerJoin(cosmoAccounts, eq(pins.address, cosmoAccounts.address))
-    .where(eq(cosmoAccounts.username, username));
+    .where(eq(cosmoAccounts.username, username))
+    .orderBy(desc(pins.id));
 
   if (rows.length === 0) return [];
 
