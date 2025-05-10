@@ -52,7 +52,7 @@ export default function SignIn() {
             <div className="contents">
               <Separator />
 
-              <Button onClick={() => setState("sign-up")}>
+              <Button variant="link" onClick={() => setState("sign-up")}>
                 <span>Create an account</span>
               </Button>
 

@@ -7,22 +7,19 @@ import UserAvatar from "@/components/profile/user-avatar";
 import Skeleton from "@/components/skeleton/skeleton";
 import ListDropdown from "@/components/lists/list-dropdown";
 import Link from "next/link";
-import ModhausLogo from "@/assets/modhaus.png";
-import Image from "next/image";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import ComoBalanceRenderer from "@/components/navbar/como-balances";
 import { Addresses } from "@/lib/utils";
-import CosmoLogo from "@/assets/cosmo.webp";
 import {
   getCurrentAccount,
   getSession,
   getTargetAccount,
 } from "@/app/data-fetching";
+import {
+  CosmoVerifiedBadge,
+  DiscordBadge,
+  ModhausBadge,
+  TwitterBadge,
+} from "@/components/profile/profile-badges";
 
 type Props = PropsWithChildren<{
   params: Promise<{
@@ -69,42 +66,13 @@ export default async function ProfileLayout(props: Props) {
 
               {/* badges? */}
               <div className="flex flex-row gap-2 h-5">
-                {target.verified && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <Image
-                          className="rounded shrink-0 invert dark:invert-0"
-                          src={CosmoLogo.src}
-                          alt="COSMO"
-                          width={20}
-                          height={20}
-                        />
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom" align="start">
-                        <span>Account has been verified by the owner</span>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                {target.verified && <CosmoVerifiedBadge />}
+                {target.cosmo.address === Addresses.SPIN && <ModhausBadge />}
+                {target.user?.social.discord && (
+                  <DiscordBadge handle={target.user.social.discord} />
                 )}
-
-                {target.cosmo.address === Addresses.SPIN && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <Image
-                          className="invert dark:invert-0"
-                          src={ModhausLogo.src}
-                          alt="Modhaus"
-                          width={20}
-                          height={20}
-                        />
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom" align="start">
-                        <span>Official Modhaus account</span>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                {target.user?.social.twitter && (
+                  <TwitterBadge handle={target.user.social.twitter} />
                 )}
               </div>
             </div>

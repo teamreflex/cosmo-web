@@ -168,20 +168,20 @@ export const auth = betterAuth({
     discord: {
       clientId: env.DISCORD_CLIENT_ID,
       clientSecret: env.DISCORD_CLIENT_SECRET,
+      overrideUserInfoOnSignIn: true,
       mapProfileToUser: async (profile) => {
         return {
-          username: profile.username,
-          displayUsername: profile.username,
+          discord: profile.username,
         };
       },
     },
     twitter: {
       clientId: env.TWITTER_CLIENT_ID,
       clientSecret: env.TWITTER_CLIENT_SECRET,
+      overrideUserInfoOnSignIn: true,
       mapProfileToUser: async (profile) => {
         return {
-          username: profile.username,
-          displayUsername: profile.username,
+          twitter: profile.username,
         };
       },
     },
@@ -228,6 +228,20 @@ export const auth = betterAuth({
         type: "string",
         required: false,
         defaultValue: "blockchain",
+        input: true,
+        returned: true,
+      },
+      discord: {
+        type: "string",
+        required: false,
+        defaultValue: null,
+        input: true,
+        returned: true,
+      },
+      twitter: {
+        type: "string",
+        required: false,
+        defaultValue: null,
         input: true,
         returned: true,
       },
@@ -308,5 +322,9 @@ export function toPublicUser(
     gridColumns: user.gridColumns ?? GRID_COLUMNS,
     collectionMode: (user.collectionMode ??
       "blockchain") as CollectionDataSource,
+    social: {
+      discord: user.discord ?? undefined,
+      twitter: user.twitter ?? undefined,
+    },
   };
 }

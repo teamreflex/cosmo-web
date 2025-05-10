@@ -7,4 +7,8 @@ export type PublicUser = {
   isAdmin: boolean;
   gridColumns: number;
   collectionMode: CollectionDataSource;
+  social: {
+    discord: string | undefined;
+    twitter: string | undefined;
+  };
 };

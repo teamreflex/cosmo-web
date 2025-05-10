@@ -176,6 +176,13 @@
       "when": 1746704822550,
       "tag": "0024_daily_black_knight",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1746883736699,
+      "tag": "0025_nebulous_hitman",
+      "breakpoints": true
     }
   ]
 }

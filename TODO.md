@@ -78,12 +78,13 @@
 - [ ] add oauth linking after register for email & password users
 - [x] remove abstract gas indicator
 - [x] fix settings save not triggering update (move into separate user state provider/hook?)
+- [ ] use controlled inputs to work around react 19 resetting forms
 
 ### stretch
 
 - [ ] allow unlinking of cosmo accounts
-- [ ] display discord handle on profile
-- [ ] double check how betterauth handles oauth -> username mapping w/ conflicts
+- [x] display discord handle on profile
+- [x] double check how betterauth handles oauth -> username mapping w/ conflicts
 - [ ] contingency backup for browserless failing
 - [ ] refactor artist/member filtering
 

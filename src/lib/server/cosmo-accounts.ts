@@ -60,6 +60,10 @@ export async function fetchFullAccount(
         isAdmin: false,
         gridColumns: GRID_COLUMNS,
         collectionMode: "blockchain",
+        social: {
+          discord: undefined,
+          twitter: undefined,
+        },
       },
       lockedObjekts: [],
       pins: [],

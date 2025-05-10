@@ -28,8 +28,15 @@ export const user = pgTable(
       .notNull()
       .$type<CollectionDataSource>()
       .default("blockchain"),
+    discord: text("discord"),
+    twitter: text("twitter"),
   },
-  (t) => [index("user_username_idx").on(t.username)]
+  (t) => [
+    index("user_username_idx").on(t.username),
+    index("user_display_username_idx").on(t.displayUsername),
+    index("user_discord_idx").on(t.discord),
+    index("user_twitter_idx").on(t.twitter),
+  ]
 );
 
 export const session = pgTable(
