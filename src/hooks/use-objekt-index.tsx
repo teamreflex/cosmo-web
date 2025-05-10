@@ -13,6 +13,9 @@ import { useDebounceValue } from "usehooks-ts";
 import { baseUrl } from "@/lib/query-client";
 import { useArtists } from "./use-artists";
 
+/**
+ * Handles switching between the blockchain and Typesense APIs.
+ */
 export function useObjektIndex() {
   const [search] = useQueryState("search");
   const [debouncedSearch] = useDebounceValue(search, 500);

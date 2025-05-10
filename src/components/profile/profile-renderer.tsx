@@ -8,15 +8,16 @@ import { match } from "ts-pattern";
 import Blockchain from "../collection/data-sources/blockchain";
 import BlockchainGroups from "../collection/data-sources/blockchain-groups";
 import CollectionFilters from "../collection/filter-contexts/collection-filters";
-import { useGridColumns, useProfileContext } from "@/hooks/use-profile";
 import { PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import { useGridColumns } from "@/hooks/use-grid-columns";
+import { useUserState } from "@/hooks/use-user-state";
 
 type Props = {
   targetCosmo: PublicCosmo;
 };
 
 export default function ProfileRenderer({ targetCosmo }: Props) {
-  const account = useProfileContext((ctx) => ctx.account);
+  const account = useUserState();
   const gridColumns = useGridColumns();
 
   const { searchParams, showLocked, setShowLocked, dataSource, setDataSource } =

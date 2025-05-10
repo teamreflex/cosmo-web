@@ -17,6 +17,7 @@ import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import { getQueryClient } from "@/lib/query-client";
 import { ArtistProvider } from "@/hooks/use-artists";
 import { getTypesenseResults } from "@/lib/client/typesense";
+import { UserStateProvider } from "@/hooks/use-user-state";
 
 export const metadata: Metadata = {
   title: "Objekts",
@@ -112,13 +113,15 @@ export default async function ObjektsIndexPage(props: Params) {
 
   return (
     <main className="container flex flex-col py-2">
-      <ArtistProvider artists={artists} selected={selected}>
-        <ProfileProvider account={account}>
-          <HydrationBoundary state={dehydrate(queryClient)}>
-            <IndexRenderer activeSlug={searchParams.id} />
-          </HydrationBoundary>
-        </ProfileProvider>
-      </ArtistProvider>
+      <UserStateProvider user={account?.user} cosmo={account?.cosmo}>
+        <ArtistProvider artists={artists} selected={selected}>
+          <ProfileProvider objektLists={account?.objektLists}>
+            <HydrationBoundary state={dehydrate(queryClient)}>
+              <IndexRenderer activeSlug={searchParams.id} />
+            </HydrationBoundary>
+          </ProfileProvider>
+        </ArtistProvider>
+      </UserStateProvider>
     </main>
   );
 }

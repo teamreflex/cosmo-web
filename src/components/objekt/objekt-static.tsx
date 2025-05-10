@@ -1,9 +1,10 @@
 import ActionOverlay from "./overlay/action-overlay";
-import { useAuthenticated, useLockedObjekt } from "@/hooks/use-profile";
+import { useLockedObjekt } from "@/hooks/use-profile";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import ExpandableObjekt from "./objekt-expandable";
 import { ObjektSidebar } from "./common";
 import InformationOverlay from "./overlay/information-overlay";
+import { useAuthenticated } from "@/hooks/use-authenticated";
 
 type Props = {
   collection: Objekt.Collection;

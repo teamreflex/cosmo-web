@@ -21,7 +21,8 @@ import VirtualizedGrid from "../objekt/virtualized-grid";
 import LoaderRemote from "../objekt/loader-remote";
 import ObjektIndexFilters from "../collection/filter-contexts/objekt-index-filters";
 import type { ObjektList } from "@/lib/server/db/schema";
-import { useGridColumns, useProfileContext } from "@/hooks/use-profile";
+import { useProfileContext } from "@/hooks/use-profile";
+import { useGridColumns } from "@/hooks/use-grid-columns";
 
 type Props = {
   list: ObjektList;

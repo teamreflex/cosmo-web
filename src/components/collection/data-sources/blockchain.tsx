@@ -2,11 +2,7 @@ import { ofetch } from "ofetch";
 import { LegacyObjektResponse, parsePage } from "@/lib/universal/objekts";
 import { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
 import { baseUrl } from "@/lib/query-client";
-import {
-  useAuthenticated,
-  useGridColumns,
-  useProfileContext,
-} from "@/hooks/use-profile";
+import { useProfileContext } from "@/hooks/use-profile";
 import { objektOptions } from "@/hooks/use-objekt-response";
 import FilteredObjektDisplay from "@/components/objekt/filtered-objekt-display";
 import { useCallback } from "react";
@@ -19,6 +15,8 @@ import VirtualizedGrid from "@/components/objekt/virtualized-grid";
 import LoaderRemote from "@/components/objekt/loader-remote";
 import { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import { useArtists } from "@/hooks/use-artists";
+import { useAuthenticated } from "@/hooks/use-authenticated";
+import { useGridColumns } from "@/hooks/use-grid-columns";
 
 type Props = {
   gridColumns: number;

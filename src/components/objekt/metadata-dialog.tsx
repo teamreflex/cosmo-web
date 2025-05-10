@@ -30,7 +30,6 @@ import Link from "next/link";
 import { ReactNode, Suspense, useState } from "react";
 import { Separator } from "../ui/separator";
 import Skeleton from "../skeleton/skeleton";
-import { useProfileContext } from "@/hooks/use-profile";
 import { Button } from "../ui/button";
 import { updateObjektMetadata } from "./actions";
 import { Textarea } from "../ui/textarea";
@@ -51,6 +50,7 @@ import { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
 import Portal from "../portal";
 import { useAction } from "next-safe-action/hooks";
+import { useUserState } from "@/hooks/use-user-state";
 
 type CommonProps = {
   objekt: Objekt.Collection;
@@ -262,7 +262,7 @@ function MetadataPanel({ objekt }: CommonProps) {
 function Metadata({ objekt }: { objekt: Objekt.Collection }) {
   const [_, copy] = useCopyToClipboard();
   const [showForm, setShowForm] = useState(false);
-  const user = useProfileContext((ctx) => ctx.account?.user);
+  const { user } = useUserState();
 
   const { data } = useSuspenseQuery({
     queryKey: ["collection-metadata", "metadata", objekt.slug],

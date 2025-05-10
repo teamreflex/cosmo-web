@@ -16,17 +16,19 @@ import VirtualizedGrid from "../objekt/virtualized-grid";
 import LoaderRemote from "../objekt/loader-remote";
 import ObjektIndexFilters from "../collection/filter-contexts/objekt-index-filters";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
-import { useGridColumns, useProfileContext } from "@/hooks/use-profile";
+import { useProfileContext } from "@/hooks/use-profile";
 import { useObjektIndex } from "@/hooks/use-objekt-index";
 import HelpDialog from "./help-dialog";
 import { IndexedObjekt } from "@/lib/universal/objekts";
+import { useGridColumns } from "@/hooks/use-grid-columns";
+import { useUserState } from "@/hooks/use-user-state";
 
 type Props = {
   activeSlug?: string;
 };
 
 export default function IndexRenderer(props: Props) {
-  const account = useProfileContext((ctx) => ctx.account);
+  const account = useUserState();
   const gridColumns = useGridColumns();
   const [, setActiveObjekt] = useQueryState("id", parseAsString);
   const options = useObjektIndex();
@@ -110,7 +112,7 @@ function Title() {
 }
 
 function Options() {
-  const cosmo = useProfileContext((ctx) => ctx.account?.cosmo);
+  const { cosmo } = useUserState();
   const objektLists = useProfileContext((ctx) => ctx.objektLists);
 
   if (!cosmo || !cosmo.username) return null;

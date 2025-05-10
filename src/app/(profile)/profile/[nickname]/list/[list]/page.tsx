@@ -20,6 +20,7 @@ import { getQueryClient } from "@/lib/query-client";
 import { ProfileProvider } from "@/hooks/use-profile";
 import { fetchFilterData } from "@/lib/server/objekts/filter-data";
 import { ArtistProvider } from "@/hooks/use-artists";
+import { UserStateProvider } from "@/hooks/use-user-state";
 
 type Props = {
   searchParams: Promise<Record<string, string>>;
@@ -95,17 +96,21 @@ export default async function ObjektListPage(props: Props) {
     initialPageParam: 0,
   });
 
+  const { lists: _, ...targetAccount } = target;
+
   return (
-    <ArtistProvider artists={artists} selected={selected}>
-      <ProfileProvider account={account} target={target}>
-        <HydrationBoundary state={dehydrate(queryClient)}>
-          <ListRenderer
-            list={objektList}
-            authenticated={account?.user !== undefined}
-          />
-        </HydrationBoundary>
-      </ProfileProvider>
-    </ArtistProvider>
+    <UserStateProvider {...account}>
+      <ArtistProvider artists={artists} selected={selected}>
+        <ProfileProvider target={targetAccount} objektLists={[]}>
+          <HydrationBoundary state={dehydrate(queryClient)}>
+            <ListRenderer
+              list={objektList}
+              authenticated={account?.user !== undefined}
+            />
+          </HydrationBoundary>
+        </ProfileProvider>
+      </ArtistProvider>
+    </UserStateProvider>
   );
 }
 

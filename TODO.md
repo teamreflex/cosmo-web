@@ -77,7 +77,7 @@
 - [x] fix jank around redirecting away when finishing cosmo link
 - [ ] add oauth linking after register for email & password users
 - [x] remove abstract gas indicator
-- [ ] fix settings save not triggering update (move into separate user state provider/hook?)
+- [x] fix settings save not triggering update (move into separate user state provider/hook?)
 
 ### stretch
 

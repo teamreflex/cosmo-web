@@ -5,12 +5,9 @@ import { createContext, PropsWithChildren, useContext, useRef } from "react";
 import type { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
 import { useShallow } from "zustand/react/shallow";
 import type { ObjektList } from "@/lib/server/db/schema";
-import { GRID_COLUMNS } from "@/lib/utils";
 import type { PublicAccount } from "@/lib/universal/cosmo-accounts";
-import { useMediaQuery } from "./use-media-query";
 
 interface ProfileProps {
-  account: Partial<PublicAccount> | undefined;
   target: Partial<PublicAccount> | undefined;
   objektLists: ObjektList[];
   lockedObjekts: number[];
@@ -29,7 +26,6 @@ type ProfileStore = ReturnType<typeof createProfileStore>;
 
 const createProfileStore = (initProps?: Partial<ProfileProps>) => {
   const DEFAULT_PROPS: ProfileProps = {
-    account: undefined,
     target: undefined,
     objektLists: [],
     lockedObjekts: [],
@@ -111,33 +107,6 @@ export function usePinnedObjekt(tokenId: number) {
     useShallow(
       (state) =>
         state.pins.findIndex((p) => Number(p.tokenId) === tokenId) !== -1
-    )
-  );
-}
-
-/**
- * Optimized hook for getting the grid columns.
- */
-export function useGridColumns() {
-  const isDesktop = useMediaQuery();
-  const users = useProfileContext(
-    useShallow((state) => ({ account: state.account, target: state.target }))
-  );
-
-  return isDesktop
-    ? users.account?.user?.gridColumns ??
-        users.target?.user?.gridColumns ??
-        GRID_COLUMNS
-    : 3;
-}
-
-/**
- * Optimized hook for checking if the target is the same as the account.
- */
-export function useAuthenticated() {
-  return useProfileContext(
-    useShallow(
-      (state) => state.target?.cosmo?.address === state.account?.cosmo?.address
     )
   );
 }

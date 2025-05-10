@@ -18,6 +18,7 @@ import {
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { fetchFilterData } from "@/lib/server/objekts/filter-data";
 import { fetchPins } from "@/lib/server/objekts/pins";
+import { UserStateProvider } from "@/hooks/use-user-state";
 
 type Props = {
   params: Promise<{
@@ -86,24 +87,25 @@ export default async function UserCollectionPage(props: Props) {
     initialPageParam: 0,
   });
 
-  const { lockedObjekts, ...targetAccount } = target;
+  const { lists: _, lockedObjekts, ...targetAccount } = target;
 
   return (
-    <ArtistProvider artists={artists} selected={selected}>
-      <ProfileProvider
-        account={account}
-        target={targetAccount}
-        pins={pins}
-        lockedObjekts={lockedObjekts}
-        // todo: update lists
-        objektLists={[]}
-      >
-        <section className="flex flex-col">
-          <HydrationBoundary state={dehydrate(queryClient)}>
-            <ProfileRenderer targetCosmo={target.cosmo} />
-          </HydrationBoundary>
-        </section>
-      </ProfileProvider>
-    </ArtistProvider>
+    <UserStateProvider {...account}>
+      <ArtistProvider artists={artists} selected={selected}>
+        <ProfileProvider
+          target={targetAccount}
+          pins={pins}
+          lockedObjekts={lockedObjekts}
+          // todo: update lists
+          objektLists={[]}
+        >
+          <section className="flex flex-col">
+            <HydrationBoundary state={dehydrate(queryClient)}>
+              <ProfileRenderer targetCosmo={target.cosmo} />
+            </HydrationBoundary>
+          </section>
+        </ProfileProvider>
+      </ArtistProvider>
+    </UserStateProvider>
   );
 }
