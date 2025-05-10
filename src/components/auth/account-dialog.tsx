@@ -52,7 +52,7 @@ export default function AccountDialog({
             </Suspense>
           </div>
 
-          <Separator className="my-2" />
+          <Separator className="mb-2" />
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               {cosmo === undefined ? (

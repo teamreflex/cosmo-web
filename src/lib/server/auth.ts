@@ -197,6 +197,12 @@ export const auth = betterAuth({
       },
     },
   },
+  account: {
+    accountLinking: {
+      enabled: true,
+      allowDifferentEmails: true,
+    },
+  },
 });
 
 // should not be used in client code
@@ -260,7 +266,7 @@ export function toPublicUser(
 
   return {
     id: user.id,
-    username: user.username ?? undefined,
+    username: user.displayUsername ?? undefined,
     image: user.image ?? undefined,
     isAdmin: user.isAdmin ?? false,
     gridColumns: user.gridColumns ?? GRID_COLUMNS,

@@ -12,7 +12,6 @@ interface ObjektWithCollection extends Objekt {
  * Fetch all pins for the given user.
  */
 export async function fetchPins(nickname: string): Promise<CosmoObjekt[]> {
-  const now = performance.now();
   // should get de-duplicated at this point
   const { pins } = await getTargetAccount(nickname);
   if (pins.length === 0) return [];
@@ -33,9 +32,6 @@ export async function fetchPins(nickname: string): Promise<CosmoObjekt[]> {
   }
 
   const mapped = results.map(normalizePin);
-
-  const after = performance.now();
-  console.log("fetchPins", after - now);
 
   // sort by pin order
   return mapped.sort((a, b) => {

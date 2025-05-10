@@ -26,9 +26,9 @@ export default function LinkedAccounts() {
   return (
     <div className="flex flex-col gap-2">
       {oauthAccounts.length === 0 && (
-        <p className="text-sm text-muted-foreground text-center">
-          No linked accounts.
-        </p>
+        <div className="flex items-center justify-center h-9">
+          <p className="text-sm text-muted-foreground">No linked accounts.</p>
+        </div>
       )}
       {oauthAccounts.map((account) => (
         <LinkedAccountItem

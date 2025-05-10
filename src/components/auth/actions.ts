@@ -9,6 +9,7 @@ import { zfd } from "zod-form-data";
 import { certifyTicket } from "@/lib/server/cosmo/qr-auth";
 import { user } from "@/lib/server/cosmo/user";
 import { linkAccount } from "@/lib/server/cosmo-accounts";
+import { redirect } from "next/navigation";
 
 /**
  * Updates the user's settings.
@@ -76,10 +77,12 @@ export const verifyCosmo = authActionClient
     }
 
     // update the database with the new user info
-    return await linkAccount({
+    const account = await linkAccount({
       address: cosmoUser.address,
       username: cosmoUser.nickname,
       cosmoId: cosmoUser.id,
       userId: ctx.session.user.id,
     });
+
+    redirect(`/@${account.username}`);
   });

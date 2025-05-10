@@ -20,14 +20,16 @@ import { ArtistItem } from "./artist-selectbox";
 import { useArtists } from "@/hooks/use-artists";
 import { PublicUser } from "@/lib/universal/auth";
 import { LucideIcon, PackageOpen } from "lucide-react";
-import LinkCosmo from "../auth/link-cosmo";
+import { LinkCosmoContext } from "../auth/link-cosmo";
 import { PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import { use } from "react";
 
 type Props = {
   cosmo?: PublicCosmo;
 };
 
 export function DesktopLinks({ cosmo }: Props) {
+  const ctx = use(LinkCosmoContext);
   const path = usePathname();
 
   return (
@@ -49,13 +51,11 @@ export function DesktopLinks({ cosmo }: Props) {
       ) : (
         <TooltipProvider>
           <Tooltip>
-            <LinkCosmo>
-              <TooltipTrigger asChild>
-                <button>
-                  <PackageOpen className="size-8 shrink-0 transition-all fill-transparent" />
-                </button>
-              </TooltipTrigger>
-            </LinkCosmo>
+            <TooltipTrigger asChild>
+              <button onClick={() => ctx.setOpen(true)}>
+                <PackageOpen className="size-8 shrink-0 transition-all fill-transparent" />
+              </button>
+            </TooltipTrigger>
             <TooltipContent>
               <p>Link COSMO</p>
             </TooltipContent>
@@ -69,6 +69,7 @@ export function DesktopLinks({ cosmo }: Props) {
 }
 
 export function MobileLinks({ cosmo }: Props) {
+  const ctx = use(LinkCosmoContext);
   const path = usePathname();
   const { artists, selectedIds } = useArtists();
 
@@ -102,12 +103,10 @@ export function MobileLinks({ cosmo }: Props) {
         </DropdownMenuItem>
       ) : (
         // user needs to link a cosmo cosmo
-        <LinkCosmo>
-          <DropdownMenuItem>
-            <PackageOpen className="h-4 w-4 shrink-0 transition-all fill-transparent" />
-            <span>Link COSMO</span>
-          </DropdownMenuItem>
-        </LinkCosmo>
+        <DropdownMenuItem onClick={() => ctx.setOpen(true)}>
+          <PackageOpen className="h-4 w-4 shrink-0 transition-all fill-transparent" />
+          <span>Link COSMO</span>
+        </DropdownMenuItem>
       )}
 
       <DropdownMenuSeparator />

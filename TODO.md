@@ -75,7 +75,6 @@
 
 - [x] add toggle locked filter back
 - [x] fix jank around redirecting away when finishing cosmo link
-- [ ] add set password functionality for oauth users
 - [ ] add oauth linking after register for email & password users
 - [x] remove abstract gas indicator
 - [ ] fix settings save not triggering update (move into separate user state provider/hook?)

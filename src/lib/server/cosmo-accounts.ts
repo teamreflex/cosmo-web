@@ -42,7 +42,7 @@ export async function fetchFullAccount(
         .map((o) => o.tokenId),
       pins: pins.map((p) => p.tokenId),
       lists,
-      verified: user !== undefined,
+      verified: cosmo.userId !== null,
     };
   }
 

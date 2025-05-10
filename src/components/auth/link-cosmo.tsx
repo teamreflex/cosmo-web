@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import {
   generateQrCode,
@@ -9,7 +11,6 @@ import { AlertTriangle, CheckCircle, Loader2 } from "lucide-react";
 import { ofetch } from "ofetch";
 import { createContext, useContext, useState } from "react";
 import QRCode from "react-qr-code";
-import { useRouter } from "next/navigation";
 import { toast } from "@/components/ui/use-toast";
 import { useInterval } from "usehooks-ts";
 import { useAction } from "next-safe-action/hooks";
@@ -23,12 +24,14 @@ import { REGEXP_ONLY_DIGITS } from "input-otp";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "../ui/dialog";
+import { env } from "@/env";
+import Link from "next/link";
 
-const LinkCosmoContext = createContext({
+export const LinkCosmoContext = createContext({
   open: false,
   setOpen: (open: boolean) => {},
 });
@@ -43,10 +46,14 @@ export default function LinkCosmo({ children }: Props) {
   return (
     <LinkCosmoContext value={{ open, setOpen }}>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>{children}</DialogTrigger>
+        {children}
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Link COSMO</DialogTitle>
+            <DialogDescription>
+              Link your COSMO account to your {env.NEXT_PUBLIC_APP_NAME}{" "}
+              account.
+            </DialogDescription>
           </DialogHeader>
 
           <StartLink />
@@ -57,6 +64,38 @@ export default function LinkCosmo({ children }: Props) {
 }
 
 function StartLink() {
+  const [started, setStarted] = useState(false);
+
+  if (started) {
+    return <GetRecaptcha />;
+  }
+
+  return (
+    <div className="flex flex-col gap-2 text-sm text-muted-foreground">
+      <p>
+        Signing into your COSMO account will link it to your{" "}
+        {env.NEXT_PUBLIC_APP_NAME} account, verifying ownership of the COSMO ID
+        and wallet address.
+      </p>
+      <p>
+        This allows you to create/share objekt lists, pin objekts and lock
+        objekts.
+      </p>
+      <p>
+        {env.NEXT_PUBLIC_APP_NAME} does not store anything about your account
+        other than the ID and wallet address, which are used to display
+        profiles.
+      </p>
+      <p>Once linked, the account cannot be unlinked.</p>
+
+      <Button className="mt-2 w-fit mx-auto" onClick={() => setStarted(true)}>
+        Start
+      </Button>
+    </div>
+  );
+}
+
+function GetRecaptcha() {
   // get recaptcha token and exchange it for a ticket on mount
   const { data, status, refetch } = useQuery({
     queryKey: ["qr-auth", "code"],
@@ -176,6 +215,12 @@ function RenderQRCode({ ticket, retry }: RenderQRProps) {
         Scan the QR code with your mobile device to sign in.
       </p>
 
+      <Button className="inline-flex lg:hidden" variant="link" asChild>
+        <Link href={qr} target="_blank">
+          <span>Mobile: Open COSMO</span>
+        </Link>
+      </Button>
+
       {isExpired ? (
         <div className="flex flex-col items-center gap-2">
           <p className="text-sm font-semibold">The QR code has expired.</p>
@@ -208,13 +253,11 @@ type OTPProps = {
 
 function OTP({ ticket }: OTPProps) {
   const ctx = useContext(LinkCosmoContext);
-  const router = useRouter();
   const { execute, isPending, hasErrored } = useAction(verifyCosmo, {
     onSuccess() {
       toast({
         description: "COSMO account linked!",
       });
-      router.refresh();
       ctx.setOpen(false);
     },
     onError() {
@@ -239,15 +282,14 @@ function OTP({ ticket }: OTPProps) {
       <input type="hidden" name="ticket" value={ticket.ticket} />
 
       <div className="flex flex-col items-center gap-4">
+        <p className="text-sm text-center">Enter the 2-digit code from COSMO</p>
+
         <InputOTP name="otp" maxLength={2} pattern={REGEXP_ONLY_DIGITS}>
           <InputOTPGroup>
             <InputOTPSlot index={0} />
             <InputOTPSlot index={1} />
           </InputOTPGroup>
         </InputOTP>
-        <p className="text-sm text-center">
-          Enter the 2-digit code from COSMO.
-        </p>
       </div>
 
       <Button type="submit" disabled={isPending}>

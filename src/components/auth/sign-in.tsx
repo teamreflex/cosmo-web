@@ -55,15 +55,15 @@ export default function SignIn() {
               <Button onClick={() => setState("sign-up")}>
                 <span>Create an account</span>
               </Button>
+
+              <Separator />
+
+              <div className="flex gap-2 items-center">
+                <SignInWithDiscord />
+                <SignInWithTwitter />
+              </div>
             </div>
           )}
-
-          <Separator />
-
-          <div className="flex gap-2 items-center">
-            <SignInWithDiscord />
-            <SignInWithTwitter />
-          </div>
         </div>
       </DialogContent>
     </Dialog>
