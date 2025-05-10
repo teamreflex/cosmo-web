@@ -2,7 +2,9 @@ import { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
 import { indexer } from "../db/indexer";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { Collection, Objekt } from "../db/indexer/schema";
-import { getTargetAccount } from "@/app/data-fetching";
+import { db } from "../db";
+import { cosmoAccounts, pins } from "../db/schema";
+import { eq } from "drizzle-orm";
 
 interface ObjektWithCollection extends Objekt {
   collection: Collection;
@@ -11,16 +13,21 @@ interface ObjektWithCollection extends Objekt {
 /**
  * Fetch all pins for the given user.
  */
-export async function fetchPins(nickname: string): Promise<CosmoObjekt[]> {
-  // should get de-duplicated at this point
-  const { pins } = await getTargetAccount(nickname);
-  if (pins.length === 0) return [];
+export async function fetchPins(username: string): Promise<CosmoObjekt[]> {
+  const rows = await db
+    .select({ tokenId: pins.tokenId })
+    .from(pins)
+    .innerJoin(cosmoAccounts, eq(pins.address, cosmoAccounts.address))
+    .where(eq(cosmoAccounts.username, username));
 
+  if (rows.length === 0) return [];
+
+  const tokenIds = rows.map((row) => row.tokenId);
   try {
     var results = await indexer.query.objekts.findMany({
       where: {
         id: {
-          in: pins,
+          in: tokenIds,
         },
       },
       with: {
@@ -35,8 +42,8 @@ export async function fetchPins(nickname: string): Promise<CosmoObjekt[]> {
 
   // sort by pin order
   return mapped.sort((a, b) => {
-    const indexA = pins.findIndex((item) => item === Number(a.tokenId));
-    const indexB = pins.findIndex((item) => item === Number(b.tokenId));
+    const indexA = tokenIds.findIndex((item) => item === Number(a.tokenId));
+    const indexB = tokenIds.findIndex((item) => item === Number(b.tokenId));
     return indexA - indexB;
   });
 }
