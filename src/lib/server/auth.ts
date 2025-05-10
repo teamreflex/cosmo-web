@@ -3,6 +3,7 @@ import { db } from "./db";
 import { CollectionDataSource, GRID_COLUMNS } from "@/lib/utils";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { createAuthMiddleware } from "better-auth/api";
 import { env } from "@/env";
 import * as authSchema from "@/lib/server/db/auth-schema";
 import { createCipheriv, createDecipheriv, randomBytes } from "crypto";
@@ -16,6 +17,8 @@ import {
 import { PublicUser } from "../universal/auth";
 import { nextCookies } from "better-auth/next-js";
 import { RedisSessionCache } from "./cache";
+import { cosmoAccounts } from "./db/schema";
+import { eq } from "drizzle-orm";
 
 /**
  * Better Auth server instance.
@@ -196,6 +199,15 @@ export const auth = betterAuth({
           url: url,
           token: token,
         });
+      },
+      // unlink the cosmo account when the user is deleted
+      afterDelete: async (user) => {
+        await db
+          .update(cosmoAccounts)
+          .set({
+            userId: null,
+          })
+          .where(eq(cosmoAccounts.userId, user.id));
       },
     },
     additionalFields: {

@@ -6,13 +6,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Separator } from "../ui/separator";
-import { Suspense } from "react";
+import { Suspense, use } from "react";
 import Skeleton from "../skeleton/skeleton";
 import LinkedAccounts from "./account/linked-accounts";
 import Profile from "./account/profile";
 import { PublicUser } from "@/lib/universal/auth";
 import DeleteAccount from "./account/delete-account";
-import LinkCosmo from "./link-cosmo";
+import LinkCosmo, { LinkCosmoContext } from "./link-cosmo";
 import { Button } from "../ui/button";
 import Image from "next/image";
 import CosmoLogo from "@/assets/cosmo.webp";
@@ -57,16 +57,7 @@ export default function AccountDialog({
             <div className="flex items-center gap-2">
               {cosmo === undefined ? (
                 <LinkCosmo>
-                  <Button variant="cosmo">
-                    <Image
-                      className="rounded-full"
-                      src={CosmoLogo.src}
-                      alt="COSMO"
-                      width={20}
-                      height={20}
-                    />
-                    <span>Link COSMO</span>
-                  </Button>
+                  <LinkCosmoButton />
                 </LinkCosmo>
               ) : (
                 <div className="flex items-center gap-2">
@@ -86,5 +77,22 @@ export default function AccountDialog({
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function LinkCosmoButton() {
+  const ctx = use(LinkCosmoContext);
+
+  return (
+    <Button variant="cosmo" onClick={() => ctx.setOpen(true)}>
+      <Image
+        className="rounded-full"
+        src={CosmoLogo.src}
+        alt="COSMO"
+        width={20}
+        height={20}
+      />
+      <span>Link COSMO</span>
+    </Button>
   );
 }
