@@ -3,6 +3,19 @@ import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 
 export type Provider = "twitter" | "discord";
 
+export function useSessionUser() {
+  return useSuspenseQuery({
+    queryKey: ["session"],
+    queryFn: async () => {
+      const result = await authClient.getSession();
+      if (result.error) {
+        throw new Error(getAuthErrorMessage(result.error));
+      }
+      return result.data.user;
+    },
+  });
+}
+
 export function useListAccounts() {
   return useSuspenseQuery({
     queryKey: ["accounts"],

@@ -22,8 +22,17 @@ type State = "sign-in" | "sign-up" | "forgot-password";
 export default function SignIn() {
   const [state, setState] = useState<State>("sign-in");
 
+  function onOpenChange(open: boolean) {
+    if (!open) {
+      // prevents flicker due to animation
+      setTimeout(() => {
+        setState("sign-in");
+      }, 500);
+    }
+  }
+
   return (
-    <Dialog>
+    <Dialog onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
         <Button variant="link">Sign In</Button>
       </DialogTrigger>

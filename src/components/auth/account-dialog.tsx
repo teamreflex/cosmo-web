@@ -10,7 +10,6 @@ import { Suspense, use } from "react";
 import Skeleton from "../skeleton/skeleton";
 import LinkedAccounts from "./account/linked-accounts";
 import Profile from "./account/profile";
-import { PublicUser } from "@/lib/universal/auth";
 import DeleteAccount from "./account/delete-account";
 import LinkCosmo, { LinkCosmoContext } from "./link-cosmo";
 import { Button } from "../ui/button";
@@ -21,16 +20,10 @@ import { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  user: PublicUser;
   cosmo?: PublicCosmo;
 };
 
-export default function AccountDialog({
-  open,
-  onOpenChange,
-  user,
-  cosmo,
-}: Props) {
+export default function AccountDialog({ open, onOpenChange, cosmo }: Props) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-xl">
@@ -41,7 +34,7 @@ export default function AccountDialog({
 
         <div className="flex flex-col gap-4">
           <Suspense fallback={<Skeleton className="w-full h-9" />}>
-            <Profile user={user} />
+            <Profile />
           </Suspense>
 
           <Separator className="my-2" />

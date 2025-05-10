@@ -44,7 +44,6 @@ export default function UserDropdown({
       <AccountDialog
         open={openAccount}
         onOpenChange={setOpenAccount}
-        user={user}
         cosmo={cosmo}
       />
 

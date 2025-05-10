@@ -4,10 +4,24 @@ import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "../ui/use-toast";
-import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Loader2 } from "lucide-react";
+import { z } from "zod";
+import { passwordSchema } from "./account/common";
+import { Form, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "../ui/form";
+
+const schema = z.object({
+  password: passwordSchema,
+});
 
 type Props = {
   token: string;
@@ -16,9 +30,9 @@ type Props = {
 export default function ResetPassword({ token }: Props) {
   const router = useRouter();
   const mutation = useMutation({
-    mutationFn: async (form: FormData) => {
+    mutationFn: async (data: z.infer<typeof schema>) => {
       const result = await authClient.resetPassword({
-        newPassword: form.get("password") as string,
+        newPassword: data.password,
         token,
       });
 
@@ -29,8 +43,15 @@ export default function ResetPassword({ token }: Props) {
     },
   });
 
-  const handleSubmit = (form: FormData) => {
-    mutation.mutate(form, {
+  const form = useForm({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      password: "",
+    },
+  });
+
+  function handleSubmit(data: z.infer<typeof schema>) {
+    mutation.mutate(data, {
       onSuccess: () => {
         toast({
           title: "Success!",
@@ -45,19 +66,38 @@ export default function ResetPassword({ token }: Props) {
         });
       },
     });
-  };
+  }
 
   return (
-    <form action={handleSubmit} className="flex flex-col gap-2 w-full">
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="password">New Password</Label>
-        <Input type="password" name="password" id="password" />
-      </div>
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(handleSubmit)}
+        className="w-full flex flex-col gap-2"
+      >
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>New Password</FormLabel>
+              <FormControl>
+                <Input
+                  type="password"
+                  placeholder="********"
+                  data-1p-ignore
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-      <Button type="submit" disabled={mutation.isPending}>
-        <span>Reset Password</span>
-        {mutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-      </Button>
-    </form>
+        <Button type="submit" disabled={mutation.isPending}>
+          <span>Reset Password</span>
+          {mutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+        </Button>
+      </form>
+    </Form>
   );
 }

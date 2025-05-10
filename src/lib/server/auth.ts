@@ -10,6 +10,7 @@ import { baseUrl } from "../query-client";
 import { username } from "better-auth/plugins/username";
 import {
   sendAccountDeletionEmail,
+  sendEmailChangeVerification,
   sendPasswordResetEmail,
   sendVerificationEmail,
 } from "./mail";
@@ -60,6 +61,8 @@ export const auth = betterAuth({
     enabled: true,
     autoSignIn: true,
     requireEmailVerification: false,
+    minPasswordLength: 8,
+    maxPasswordLength: 24,
     sendResetPassword: async ({ user, url, token }) => {
       await sendPasswordResetEmail({
         to: user.email,
@@ -190,6 +193,16 @@ export const auth = betterAuth({
     cookiePrefix: "apollo",
   },
   user: {
+    changeEmail: {
+      enabled: true,
+      sendChangeEmailVerification: async ({ newEmail, url, token }) => {
+        await sendEmailChangeVerification({
+          to: newEmail,
+          url: url,
+          token: token,
+        });
+      },
+    },
     deleteUser: {
       enabled: true,
       sendDeleteAccountVerification: async ({ user, url, token }) => {

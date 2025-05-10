@@ -19,7 +19,7 @@
 
 ### admin
 
-- [ ] restore admin panel for metadata insertion
+- [x] restore admin panel for metadata insertion
 - [ ] allow for typesense synonym updates?
 
 ### profiles table refactor - done 250508
@@ -71,14 +71,14 @@
 - [ ] if new, build migration tool
 - [ ] if existing, update `user_address` column name & drop "new" tables
 
-### polish
+### polish - done 250511
 
 - [x] add toggle locked filter back
 - [x] fix jank around redirecting away when finishing cosmo link
 - [x] add oauth linking after register for email & password users
 - [x] remove abstract gas indicator
 - [x] fix settings save not triggering update (move into separate user state provider/hook?)
-- [ ] use controlled inputs to work around react 19 resetting forms
+- [x] use controlled inputs to work around react 19 resetting forms
 
 ### stretch
 

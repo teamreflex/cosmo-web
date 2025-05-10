@@ -1,16 +1,3 @@
-"use client";
-
-import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
-import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
-import { toast } from "../ui/use-toast";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
-import { Loader2 } from "lucide-react";
-import { z } from "zod";
-import { passwordSchema } from "./account/common";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form,
   FormControl,
@@ -18,29 +5,34 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "../ui/form";
+} from "@/components/ui/form";
+import { toast } from "@/components/ui/use-toast";
+import { authClient } from "@/lib/client/auth";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { useRouter } from "next/navigation";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
+import { passwordSchema } from "./common";
 
 const schema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: passwordSchema,
+  currentPassword: passwordSchema,
+  newPassword: passwordSchema,
 });
 
-type Props = {
-  onForgotPassword: () => void;
-};
-
-export default function WithEmail({ onForgotPassword }: Props) {
+export default function UpdatePassword() {
   const router = useRouter();
   const mutation = useMutation({
     mutationFn: async (data: z.infer<typeof schema>) => {
-      const result = await authClient.signIn.email({
-        email: data.email,
-        password: data.password,
-        rememberMe: true,
+      const result = await authClient.changePassword({
+        ...data,
+        revokeOtherSessions: true,
       });
-
       if (result.error) {
-        throw new Error(getAuthErrorMessage(result.error));
+        throw new Error(result.error.message);
       }
       return result.data;
     },
@@ -49,8 +41,8 @@ export default function WithEmail({ onForgotPassword }: Props) {
   const form = useForm({
     resolver: zodResolver(schema),
     defaultValues: {
-      email: "",
-      password: "",
+      currentPassword: "",
+      newPassword: "",
     },
   });
 
@@ -76,29 +68,10 @@ export default function WithEmail({ onForgotPassword }: Props) {
       >
         <FormField
           control={form.control}
-          name="email"
+          name="currentPassword"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
-              <FormControl>
-                <Input
-                  type="email"
-                  placeholder="me@example.com"
-                  data-1p-ignore
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>Current Password</FormLabel>
               <FormControl>
                 <Input
                   type="password"
@@ -112,14 +85,29 @@ export default function WithEmail({ onForgotPassword }: Props) {
           )}
         />
 
-        <div className="grid grid-cols-2 gap-2 items-center">
-          <Button type="submit" disabled={mutation.isPending}>
-            <span>Sign In</span>
-            {mutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-          </Button>
+        <FormField
+          control={form.control}
+          name="newPassword"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>New Password</FormLabel>
+              <FormControl>
+                <Input
+                  type="password"
+                  placeholder="********"
+                  data-1p-ignore
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-          <Button type="button" variant="secondary" onClick={onForgotPassword}>
-            <span>Forgot Password</span>
+        <div className="flex justify-end">
+          <Button type="submit" disabled={mutation.isPending}>
+            {mutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+            <span>Update</span>
           </Button>
         </div>
       </form>
