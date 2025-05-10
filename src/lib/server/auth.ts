@@ -3,7 +3,6 @@ import { db } from "./db";
 import { CollectionDataSource, GRID_COLUMNS } from "@/lib/utils";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { createAuthMiddleware } from "better-auth/api";
 import { env } from "@/env";
 import * as authSchema from "@/lib/server/db/auth-schema";
 import { createCipheriv, createDecipheriv, randomBytes } from "crypto";
