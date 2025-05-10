@@ -14,22 +14,25 @@ The [`main`](https://github.com/teamreflex/cosmo-web/blob/main) branch remains a
 
 - View other user's collections via blockchain data
 - View an index of every released objekt, number of copies and how it's obtained
+- Fuzzy search through objekt collection metadata
+- Create shareable objekt wishlists
 - Calendar to see when monthly COMO drops are coming
 - View objekt transfers
 - Per member, season and class collection progress breakdowns
 - Collection completion leaderboards
-- Indicator for blockchain network disruptions
 
 ## Requirements
 
 - [Node.js](https://nodejs.org/en/) 22.x
-- [Alchemy](https://www.alchemy.com/) API key
+- [Blockchain indexer](https://github.com/teamreflex/cosmo-db) instance w/ Drizzle HTTP proxy
 - [Neon](https://neon.tech/) instance
-  - Or swap this out for another Postgres compatible database with minimal code changes
-- Postgres instance with HTTP proxy
-  - The accompanying [blockchain indexer](https://github.com/teamreflex/cosmo-db) has containerized Postgres 15.5 and an HTTP proxy running under [Bun](https://bun.sh/).
-  - Migration files can also be found there
-- Alternatively, you can use Docker to run a local Postgres instance with two databases, a Neon serverless proxy and a Drizzle HTTP proxy.
+- [Typesense](https://typesense.org/) instance
+- [Upstash](https://upstash.com/) Redis instance
+- [Alchemy](https://www.alchemy.com/) API key
+- [AWS SES](https://aws.amazon.com/ses/) credentials
+- [Discord OAuth](https://discord.com/developers/docs/topics/oauth2) credentials
+- [Twitter OAuth](https://docs.x.com/resources/fundamentals/authentication/oauth-2-0/overview) credentials
+- [Browserless](https://www.browserless.io/) credentials
 
 ## Setup
 
@@ -45,19 +48,18 @@ pnpm dev
 ## Tooling
 
 - [Next 15](https://nextjs.org/)
-- [shadcn/ui](https://ui.shadcn.com/docs)
 - [Tailwind v4](https://tailwindcss.com/)
+- [shadcn/ui](https://ui.shadcn.com/docs)
 - [Neon](https://neon.tech/)
 - [Drizzle ORM](https://orm.drizzle.team/)
-- [Alchemy](https://www.alchemy.com/)
 
 ## License
 
-Licensed under the [MIT license](https://github.com/teamreflex/cosmo-web/blob/main/LICENSE.md).
+Licensed under the [MIT license](https://github.com/teamreflex/cosmo-web/blob/refactor/abstract/LICENSE.md).
 
 ## Contact
 
-- **Discord Server**: https://discord.gg/A72VRX8FgK
+- **Discord Server**: [discord.gg/A72VRX8FgK](https://discord.gg/A72VRX8FgK)
 - **Email**: kyle at reflex.lol
 - **Discord**: kairunz
 - **Cosmo ID**: Kairu
