@@ -75,7 +75,7 @@
 
 - [x] add toggle locked filter back
 - [x] fix jank around redirecting away when finishing cosmo link
-- [ ] add oauth linking after register for email & password users
+- [x] add oauth linking after register for email & password users
 - [x] remove abstract gas indicator
 - [x] fix settings save not triggering update (move into separate user state provider/hook?)
 - [ ] use controlled inputs to work around react 19 resetting forms

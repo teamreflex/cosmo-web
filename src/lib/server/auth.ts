@@ -169,7 +169,7 @@ export const auth = betterAuth({
       clientId: env.DISCORD_CLIENT_ID,
       clientSecret: env.DISCORD_CLIENT_SECRET,
       overrideUserInfoOnSignIn: true,
-      mapProfileToUser: async (profile) => {
+      mapProfileToUser: (profile) => {
         return {
           discord: profile.username,
         };
@@ -179,7 +179,7 @@ export const auth = betterAuth({
       clientId: env.TWITTER_CLIENT_ID,
       clientSecret: env.TWITTER_CLIENT_SECRET,
       overrideUserInfoOnSignIn: true,
-      mapProfileToUser: async (profile) => {
+      mapProfileToUser: (profile) => {
         return {
           twitter: profile.username,
         };

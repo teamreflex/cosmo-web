@@ -1,6 +1,8 @@
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 
+export type Provider = "twitter" | "discord";
+
 export function useListAccounts() {
   return useSuspenseQuery({
     queryKey: ["accounts"],
@@ -16,7 +18,7 @@ export function useListAccounts() {
 
 export type LinkedAccount = {
   id: string;
-  providerId: "discord" | "twitter";
+  providerId: Provider;
   accountId: string;
 };
 
@@ -24,6 +26,20 @@ export function useUnlinkAccount(account: LinkedAccount) {
   return useMutation({
     mutationFn: async () => {
       const result = await authClient.unlinkAccount(account);
+      if (result.error) {
+        throw new Error(getAuthErrorMessage(result.error));
+      }
+      return result.data;
+    },
+  });
+}
+
+export function useLinkAccount(provider: Provider) {
+  return useMutation({
+    mutationFn: async () => {
+      const result = await authClient.linkSocial({
+        provider: provider,
+      });
       if (result.error) {
         throw new Error(getAuthErrorMessage(result.error));
       }

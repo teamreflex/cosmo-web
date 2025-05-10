@@ -46,8 +46,15 @@ export default function AccountDialog({
 
           <Separator className="my-2" />
           <div className="flex flex-col">
-            <h3 className="text-lg font-semibold">Linked Accounts</h3>
-            <Suspense fallback={<Skeleton className="w-full h-9" />}>
+            <h3 className="text-lg font-semibold">Social Sign In</h3>
+            <Suspense
+              fallback={
+                <div className="flex flex-col gap-2">
+                  <Skeleton className="w-full h-9" />
+                  <Skeleton className="w-full h-9" />
+                </div>
+              }
+            >
               <LinkedAccounts />
             </Suspense>
           </div>
