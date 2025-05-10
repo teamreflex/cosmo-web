@@ -25,13 +25,13 @@ import { useProfileContext } from "@/hooks/use-profile";
 import { useGridColumns } from "@/hooks/use-grid-columns";
 
 type Props = {
-  list: ObjektList;
+  objektList: ObjektList;
   authenticated: boolean;
 };
 
 export default function ListRenderer(props: Props) {
   const { searchParams } = useFilters();
-  const cosmo = useProfileContext((ctx) => ctx.target!.cosmo!);
+  const user = useProfileContext((ctx) => ctx.target!.user);
   const gridColumns = useGridColumns();
 
   /**
@@ -39,10 +39,10 @@ export default function ListRenderer(props: Props) {
    */
   const options = {
     filtering: "remote",
-    queryKey: ["objekt-list", props.list.slug, cosmo.address],
+    queryKey: ["objekt-list", props.objektList.slug, user!.id],
     queryFunction: async ({ pageParam = 0 }: { pageParam?: number }) => {
       const url = new URL(
-        `/api/objekt-list/entries/${props.list.slug}/${cosmo.address}`,
+        `/api/objekt-list/entries/${props.objektList.slug}/${user!.id}`,
         baseUrl()
       );
 
@@ -68,7 +68,10 @@ export default function ListRenderer(props: Props) {
 
   return (
     <section className="flex flex-col">
-      <Title authenticated={props.authenticated} objektList={props.list} />
+      <Title
+        authenticated={props.authenticated}
+        objektList={props.objektList}
+      />
 
       <FiltersContainer isPortaled>
         <ObjektIndexFilters />
@@ -91,7 +94,7 @@ export default function ListRenderer(props: Props) {
                       id={item.id}
                       collection={collection}
                       authenticated={props.authenticated}
-                      objektList={props.list}
+                      objektList={props.objektList}
                     />
                   </ExpandableObjekt>
                 );
@@ -104,21 +107,20 @@ export default function ListRenderer(props: Props) {
   );
 }
 
-function Title({
-  authenticated,
-  objektList,
-}: {
+type TitleProps = {
   authenticated: boolean;
   objektList: ObjektList;
-}) {
+};
+
+function Title(props: TitleProps) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-2">
-      <h3 className="text-xl font-cosmo">{objektList.name}</h3>
+      <h3 className="text-xl font-cosmo">{props.objektList.name}</h3>
 
-      {authenticated && (
+      {props.authenticated && (
         <div className="flex items-center gap-2">
-          <UpdateList objektList={objektList} />
-          <DeleteList objektList={objektList} />
+          <UpdateList objektList={props.objektList} />
+          <DeleteList objektList={props.objektList} />
         </div>
       )}
     </div>

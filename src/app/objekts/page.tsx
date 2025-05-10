@@ -103,21 +103,18 @@ export default async function ObjektsIndexPage(props: Params) {
     });
   }
 
-  const account = await getCurrentAccount(session?.session.userId).then(
-    (a) => ({
-      user: a?.user,
-      cosmo: a?.cosmo,
-      objektLists: a?.objektLists ?? [],
-    })
-  );
+  const account = await getCurrentAccount(session?.session.userId);
 
   return (
     <main className="container flex flex-col py-2">
       <UserStateProvider user={account?.user} cosmo={account?.cosmo}>
         <ArtistProvider artists={artists} selected={selected}>
-          <ProfileProvider objektLists={account?.objektLists}>
+          <ProfileProvider objektLists={account?.objektLists ?? []}>
             <HydrationBoundary state={dehydrate(queryClient)}>
-              <IndexRenderer activeSlug={searchParams.id} />
+              <IndexRenderer
+                activeSlug={searchParams.id}
+                objektLists={account?.objektLists ?? []}
+              />
             </HydrationBoundary>
           </ProfileProvider>
         </ArtistProvider>

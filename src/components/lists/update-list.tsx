@@ -13,7 +13,6 @@ import { Input } from "../ui/input";
 import { useHookFormAction } from "@next-safe-action/adapter-react-hook-form/hooks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { updateObjektListSchema } from "./schema";
-import { useFormStatus } from "react-dom";
 import {
   Form,
   FormControl,
@@ -22,6 +21,7 @@ import {
   FormLabel,
   FormMessage,
 } from "../ui/form";
+import { useFormState } from "react-hook-form";
 
 type Props = {
   objektList: ObjektList;
@@ -84,12 +84,12 @@ export default function UpdateList({ objektList }: Props) {
 }
 
 function SubmitButton() {
-  const { pending } = useFormStatus();
+  const { isSubmitting } = useFormState();
 
   return (
-    <Button type="submit" disabled={pending}>
+    <Button type="submit" disabled={isSubmitting}>
       <span>Save</span>
-      {pending && <Loader2 className="ml-2 animate-spin" />}
+      {isSubmitting && <Loader2 className="animate-spin" />}
     </Button>
   );
 }

@@ -11,11 +11,9 @@ import { Input } from "../ui/input";
 import { createObjektList } from "./actions";
 import { track } from "@/lib/utils";
 import { toast } from "../ui/use-toast";
-import { useRouter } from "next/navigation";
 import { useHookFormAction } from "@next-safe-action/adapter-react-hook-form/hooks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createObjektListSchema } from "./schema";
-import { useFormStatus } from "react-dom";
 import {
   Form,
   FormControl,
@@ -24,6 +22,8 @@ import {
   FormLabel,
   FormMessage,
 } from "../ui/form";
+import { useFormState } from "react-hook-form";
+import { useRouter } from "next/navigation";
 
 type Props = {
   open: boolean;
@@ -38,8 +38,8 @@ export default function CreateListDialog({ open, onOpenChange }: Props) {
     {
       actionProps: {
         onSuccess: () => {
-          track("create-list");
           router.refresh();
+          track("create-list");
           toast({
             description: "Objekt list created!",
           });
@@ -95,12 +95,12 @@ export default function CreateListDialog({ open, onOpenChange }: Props) {
 }
 
 function SubmitButton() {
-  const { pending } = useFormStatus();
+  const { isSubmitting } = useFormState();
 
   return (
-    <Button type="submit" disabled={pending}>
+    <Button type="submit" disabled={isSubmitting}>
       <span>Create</span>
-      {pending && <Loader2 className="ml-2 animate-spin" />}
+      {isSubmitting && <Loader2 className="animate-spin" />}
     </Button>
   );
 }

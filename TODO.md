@@ -57,7 +57,7 @@
   - **250508**: api routes + server action
 - [x] link to signed in user
 
-### server action client migration
+### server action client migration - done 250510
 
 - [x] objekt lock
 - [x] objekt pin

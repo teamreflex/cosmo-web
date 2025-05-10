@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 type Params = {
   params: Promise<{
     list: string;
-    address: string;
+    userId: string;
   }>;
 };
 
@@ -23,7 +23,7 @@ export async function GET(request: NextRequest, props: Params) {
   // fetch objekts from the indexer
   const { results } = await fetchObjektList({
     slug: params.list,
-    address: params.address,
+    userId: params.userId,
     filters,
   });
 

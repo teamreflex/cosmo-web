@@ -26,13 +26,13 @@ import { useAction } from "next-safe-action/hooks";
 type Props = {
   open: boolean;
   onOpenChange: (state: boolean) => void;
-  lists: ObjektList[];
+  objektLists: ObjektList[];
 };
 
 export default function DiscordFormatDialog({
   open,
   onOpenChange,
-  lists,
+  objektLists,
 }: Props) {
   const { execute, isPending, result } = useAction(generateDiscordList);
   const [haveId, setHaveId] = useState<string>();
@@ -78,12 +78,20 @@ export default function DiscordFormatDialog({
           <div className="grid grid-cols-2 gap-2">
             <div className="grid gap-1.5">
               <Label>Have</Label>
-              <SelectList lists={lists} value={haveId} onSelect={setHaveId} />
+              <SelectList
+                objektLists={objektLists}
+                value={haveId}
+                onSelect={setHaveId}
+              />
             </div>
 
             <div className="grid gap-1.5">
               <Label>Want</Label>
-              <SelectList lists={lists} value={wantId} onSelect={setWantId} />
+              <SelectList
+                objektLists={objektLists}
+                value={wantId}
+                onSelect={setWantId}
+              />
             </div>
           </div>
 
@@ -119,19 +127,19 @@ export default function DiscordFormatDialog({
 }
 
 type SelectListProps = {
-  lists: ObjektList[];
+  objektLists: ObjektList[];
   value: string | undefined;
   onSelect: (slug: string) => void;
 };
 
-function SelectList({ lists, value, onSelect }: SelectListProps) {
+function SelectList({ objektLists, value, onSelect }: SelectListProps) {
   return (
     <Select value={value} onValueChange={onSelect}>
       <SelectTrigger className="w-full">
         <SelectValue placeholder="Objekt List" />
       </SelectTrigger>
       <SelectContent>
-        {lists.map((list) => (
+        {objektLists.map((list) => (
           <SelectItem key={list.id} value={list.slug}>
             {list.name}
           </SelectItem>

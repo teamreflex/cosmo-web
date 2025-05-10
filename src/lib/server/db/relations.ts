@@ -4,12 +4,15 @@ import * as schema from "./schema";
 export const relations = defineRelations(schema, (r) => ({
   cosmoAccounts: {
     lockedObjekts: r.many.lockedObjekts(),
-    lists: r.many.lists(),
     objektMetadata: r.many.objektMetadata(),
     pins: r.many.pins(),
     user: r.one.user({
       from: r.cosmoAccounts.userId,
       to: r.user.id,
+    }),
+    objektLists: r.many.objektLists({
+      from: r.cosmoAccounts.userId,
+      to: r.objektLists.userId,
     }),
   },
   lockedObjekts: {
@@ -35,6 +38,10 @@ export const relations = defineRelations(schema, (r) => ({
     user: r.one.user({
       from: r.objektLists.userId,
       to: r.user.id,
+    }),
+    cosmoAccount: r.one.cosmoAccounts({
+      from: r.objektLists.userId,
+      to: r.cosmoAccounts.userId,
     }),
   },
   objektListEntries: {

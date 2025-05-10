@@ -23,12 +23,16 @@ import CreateListDialog from "./create-list-dialog";
 import DiscordFormatDialog from "./discord-format-dialog";
 
 type Props = {
+  objektLists: ObjektList[];
   username?: string;
-  lists: ObjektList[];
   allowCreate: boolean;
 };
 
-export default function ListDropdown({ username, lists, allowCreate }: Props) {
+export default function ListDropdown({
+  objektLists,
+  username,
+  allowCreate,
+}: Props) {
   const [createOpen, setCreateOpen] = useState(false);
   const [compareOpen, setCompareOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -39,7 +43,7 @@ export default function ListDropdown({ username, lists, allowCreate }: Props) {
       <DiscordFormatDialog
         open={compareOpen}
         onOpenChange={setCompareOpen}
-        lists={lists}
+        objektLists={objektLists}
       />
 
       <DropdownMenuTrigger asChild>
@@ -52,7 +56,7 @@ export default function ListDropdown({ username, lists, allowCreate }: Props) {
         <DropdownMenuLabel>Objekt Lists</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          {lists.map((list) => (
+          {objektLists.map((list) => (
             <DropdownMenuItem
               key={list.id}
               className="text-sm"
@@ -67,7 +71,7 @@ export default function ListDropdown({ username, lists, allowCreate }: Props) {
               </Link>
             </DropdownMenuItem>
           ))}
-          {lists.length === 0 && (
+          {objektLists.length === 0 && (
             <DropdownMenuItem className="text-sm">0 lists</DropdownMenuItem>
           )}
 
@@ -76,11 +80,11 @@ export default function ListDropdown({ username, lists, allowCreate }: Props) {
               <DropdownMenuSeparator />
 
               <DropdownMenuItem onClick={() => setCreateOpen(true)}>
-                <PlusCircle className="mr-2 h-4 w-4" />
+                <PlusCircle className="h-4 w-4" />
                 <span className="font-semibold">Create New</span>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setCompareOpen(true)}>
-                <LetterText className="mr-2 h-4 w-4" />
+                <LetterText className="h-4 w-4" />
                 <span className="font-semibold">Discord Format</span>
               </DropdownMenuItem>
             </div>

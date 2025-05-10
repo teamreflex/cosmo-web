@@ -1,4 +1,4 @@
-import type { List } from "../server/db/schema";
+import type { ObjektList } from "../server/db/schema";
 import type { PublicUser } from "./auth";
 
 export type PublicCosmo = {
@@ -16,6 +16,6 @@ export type FullAccount = {
   user: PublicUser | undefined;
   lockedObjekts: number[];
   pins: number[];
-  lists: List[];
+  objektLists: ObjektList[];
   verified: boolean;
 };

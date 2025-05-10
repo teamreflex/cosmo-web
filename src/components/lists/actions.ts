@@ -49,13 +49,16 @@ export const createObjektList = authActionClient
     }
 
     // create the list
-    const result = await db.insert(objektLists).values({
-      name: parsedInput.name,
-      slug,
-      userId: ctx.session.session.userId,
-    });
+    const [result] = await db
+      .insert(objektLists)
+      .values({
+        name: parsedInput.name,
+        slug,
+        userId: ctx.session.session.userId,
+      })
+      .returning();
 
-    return result.rowCount === 1;
+    return result;
   });
 
 /**
@@ -107,7 +110,7 @@ export const deleteObjektList = authActionClient
   .metadata({ actionName: "deleteObjektList" })
   .schema(deleteObjektListSchema)
   .action(async ({ parsedInput, ctx }) => {
-    const result = await db
+    await db
       .delete(objektLists)
       .where(
         and(
@@ -116,9 +119,7 @@ export const deleteObjektList = authActionClient
         )
       );
 
-    if (result.rowCount === 1) {
-      redirect("/");
-    }
+    redirect("/");
   });
 
 /**

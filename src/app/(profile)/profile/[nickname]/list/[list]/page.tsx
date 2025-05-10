@@ -77,34 +77,39 @@ export default async function ObjektListPage(props: Props) {
   );
 
   // prefetch list
-  queryClient.prefetchInfiniteQuery({
-    queryKey: [
-      "objekt-list",
-      list,
-      "blockchain",
-      parseObjektListFilters(filters),
-    ],
-    queryFn: async ({ pageParam = 0 }: { pageParam?: number }) =>
-      prefetchObjektList({
-        slug: list,
-        address: target.cosmo.address,
-        filters: {
-          ...filters,
-          page: pageParam,
+  if (target.user !== undefined) {
+    queryClient.prefetchInfiniteQuery({
+      queryKey: [
+        "objekt-list",
+        list,
+        target.user.id,
+        {
+          ...parseObjektListFilters(filters),
+          artists: selected,
         },
-      }).then((r) => r.results),
-    initialPageParam: 0,
-  });
+      ],
+      queryFn: async ({ pageParam = 0 }) =>
+        prefetchObjektList({
+          slug: list,
+          userId: target.user!.id,
+          filters: {
+            ...filters,
+            page: pageParam,
+          },
+        }).then((r) => r.results),
+      initialPageParam: 0,
+    });
+  }
 
-  const { lists: _, ...targetAccount } = target;
+  const { objektLists, ...targetAccount } = target;
 
   return (
     <UserStateProvider {...account}>
       <ArtistProvider artists={artists} selected={selected}>
-        <ProfileProvider target={targetAccount} objektLists={[]}>
+        <ProfileProvider target={targetAccount} objektLists={objektLists}>
           <HydrationBoundary state={dehydrate(queryClient)}>
             <ListRenderer
-              list={objektList}
+              objektList={objektList}
               authenticated={account?.user !== undefined}
             />
           </HydrationBoundary>

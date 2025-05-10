@@ -137,7 +137,7 @@ function Buttons({ target, authenticated }: ButtonsProps) {
       <ComoButton username={target.cosmo.username} />
       <ProgressButton username={target.cosmo.username} />
       <ListDropdown
-        lists={[]}
+        objektLists={target.objektLists}
         username={target.cosmo.username}
         allowCreate={authenticated}
       />

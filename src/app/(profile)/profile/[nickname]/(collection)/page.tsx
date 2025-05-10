@@ -87,7 +87,7 @@ export default async function UserCollectionPage(props: Props) {
     initialPageParam: 0,
   });
 
-  const { lists: _, lockedObjekts, ...targetAccount } = target;
+  const { objektLists, lockedObjekts, ...targetAccount } = target;
 
   return (
     <UserStateProvider {...account}>
@@ -96,8 +96,7 @@ export default async function UserCollectionPage(props: Props) {
           target={targetAccount}
           pins={pins}
           lockedObjekts={lockedObjekts}
-          // todo: update lists
-          objektLists={[]}
+          objektLists={objektLists}
         >
           <section className="flex flex-col">
             <HydrationBoundary state={dehydrate(queryClient)}>

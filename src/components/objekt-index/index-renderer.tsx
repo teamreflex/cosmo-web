@@ -16,15 +16,16 @@ import VirtualizedGrid from "../objekt/virtualized-grid";
 import LoaderRemote from "../objekt/loader-remote";
 import ObjektIndexFilters from "../collection/filter-contexts/objekt-index-filters";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
-import { useProfileContext } from "@/hooks/use-profile";
 import { useObjektIndex } from "@/hooks/use-objekt-index";
 import HelpDialog from "./help-dialog";
 import { IndexedObjekt } from "@/lib/universal/objekts";
 import { useGridColumns } from "@/hooks/use-grid-columns";
 import { useUserState } from "@/hooks/use-user-state";
+import { ObjektList } from "@/lib/server/db/schema";
 
 type Props = {
   activeSlug?: string;
+  objektLists: ObjektList[];
 };
 
 export default function IndexRenderer(props: Props) {
@@ -37,7 +38,7 @@ export default function IndexRenderer(props: Props) {
 
   return (
     <div className="flex flex-col">
-      <Title />
+      <Title objektLists={props.objektLists} />
 
       <FiltersContainer>
         <ObjektIndexFilters />
@@ -65,7 +66,11 @@ export default function IndexRenderer(props: Props) {
                     setActive={setActiveObjekt}
                     priority={priority}
                   >
-                    <Overlay objekt={item} authenticated={authenticated} />
+                    <Overlay
+                      objekt={item}
+                      authenticated={authenticated}
+                      objektLists={props.objektLists}
+                    />
                   </ExpandableObjekt>
                 );
               }}
@@ -89,7 +94,7 @@ export default function IndexRenderer(props: Props) {
   );
 }
 
-function Title() {
+function Title(props: { objektLists: ObjektList[] }) {
   return (
     <div className="flex gap-2 items-center w-full pb-1">
       <h1 className="text-3xl font-cosmo uppercase">Objekts</h1>
@@ -105,22 +110,21 @@ function Title() {
       <div className="flex gap-2 items-center last:ml-auto">
         <div className="min-w-24 text-right" id="objekt-total" />
 
-        <Options />
+        <Options objektLists={props.objektLists} />
       </div>
     </div>
   );
 }
 
-function Options() {
+function Options(props: { objektLists: ObjektList[] }) {
   const { cosmo } = useUserState();
-  const objektLists = useProfileContext((ctx) => ctx.objektLists);
 
   if (!cosmo || !cosmo.username) return null;
 
   return (
     <div className="flex gap-2 items-center">
       <ListDropdown
-        lists={objektLists}
+        objektLists={props.objektLists}
         allowCreate={true}
         username={cosmo.username}
       />
@@ -131,11 +135,10 @@ function Options() {
 type OverlayProps = {
   objekt: IndexedObjekt;
   authenticated: boolean;
+  objektLists: ObjektList[];
 };
 
-function Overlay({ objekt, authenticated }: OverlayProps) {
-  const objektLists = useProfileContext((ctx) => ctx.objektLists);
-
+function Overlay({ objekt, authenticated, objektLists }: OverlayProps) {
   return (
     <div className="contents">
       <ObjektSidebar

@@ -23,16 +23,16 @@ export async function fetchFullAccount(
     where: { [column]: decodeURIComponent(identifier) },
     with: {
       user: true,
-      lists: true,
       lockedObjekts: true,
       pins: true,
+      objektLists: true,
     },
   });
 
   // found a cosmo account
   if (result) {
-    const { user, ...cosmoAccount } = result;
-    const { lockedObjekts, pins, lists, ...cosmo } = cosmoAccount;
+    const { user, ...cosmoResult } = result;
+    const { objektLists, lockedObjekts, pins, ...cosmo } = cosmoResult;
 
     return {
       cosmo: toPublicCosmo(cosmo),
@@ -41,7 +41,7 @@ export async function fetchFullAccount(
         .filter((o) => o.locked)
         .map((o) => o.tokenId),
       pins: pins.map((p) => p.tokenId),
-      lists,
+      objektLists: objektLists,
       verified: cosmo.userId !== null,
     };
   }
@@ -63,7 +63,7 @@ export async function fetchFullAccount(
       },
       lockedObjekts: [],
       pins: [],
-      lists: [],
+      objektLists: [],
       verified: false,
     };
   }

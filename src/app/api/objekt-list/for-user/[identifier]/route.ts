@@ -19,9 +19,9 @@ export async function GET(_: NextRequest, props: Params) {
       OR: [{ username: params.identifier }, { address: params.identifier }],
     },
     with: {
-      lists: true,
+      objektLists: true,
     },
   });
 
-  return Response.json({ results: profile?.lists ?? [] });
+  return Response.json({ results: profile?.objektLists ?? [] });
 }
