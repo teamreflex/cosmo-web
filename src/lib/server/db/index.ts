@@ -13,4 +13,4 @@ neonConfig.fetchEndpoint = (host) => {
 };
 
 // create the connection
-export const db = drizzle(env.DATABASE_URL, { relations, logger: true });
+export const db = drizzle(env.DATABASE_URL, { relations });

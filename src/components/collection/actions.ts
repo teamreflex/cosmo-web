@@ -8,6 +8,7 @@ import { and, eq } from "drizzle-orm";
 import { indexer } from "@/lib/server/db/indexer";
 import { normalizePin } from "@/lib/server/objekts/pins";
 import { ActionError, cosmoActionClient } from "@/lib/server/server-actions";
+import { revalidateTag } from "next/cache";
 
 /**
  * Toggle the lock on an objekt.
@@ -78,6 +79,7 @@ export const pinObjekt = cosmoActionClient
       throw new ActionError("Error pinning objekt");
     }
 
+    revalidateTag(`pins:${ctx.cosmo.username.toLowerCase()}`);
     return normalizePin(objekt);
   });
 
@@ -98,5 +100,6 @@ export const unpinObjekt = cosmoActionClient
         and(eq(pins.tokenId, tokenId), eq(pins.address, ctx.cosmo.address))
       );
 
+    revalidateTag(`pins:${ctx.cosmo.username.toLowerCase()}`);
     return result.rowCount === 1;
   });

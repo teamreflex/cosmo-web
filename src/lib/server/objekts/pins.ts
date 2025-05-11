@@ -5,15 +5,23 @@ import { Collection, Objekt } from "../db/indexer/schema";
 import { db } from "../db";
 import { cosmoAccounts, pins } from "../db/schema";
 import { desc, eq } from "drizzle-orm";
-
+import {
+  unstable_cacheLife as cacheLife,
+  unstable_cacheTag as cacheTag,
+} from "next/cache";
 interface ObjektWithCollection extends Objekt {
   collection: Collection;
 }
 
 /**
  * Fetch all pins for the given user.
+ * Cached for 1 day.
  */
 export async function fetchPins(username: string): Promise<CosmoObjekt[]> {
+  "use cache";
+  cacheLife("pins");
+  cacheTag(`pins:${username.toLowerCase()}`);
+
   const rows = await db
     .select({ tokenId: pins.tokenId })
     .from(pins)

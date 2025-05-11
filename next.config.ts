@@ -32,6 +32,12 @@ const config: NextConfig = {
         revalidate: 60 * 60 * 2, // 2 hours
         expire: 60 * 60 * 4, // 4 hours
       },
+      // user pins
+      pins: {
+        stale: 60 * 60 * 24, // 1 day
+        revalidate: 60 * 60 * 24, // 1 day
+        expire: 60 * 60 * 24 * 2, // 2 days
+      },
     },
     staleTimes: {
       dynamic: 60 * 5, // 5 minutes
