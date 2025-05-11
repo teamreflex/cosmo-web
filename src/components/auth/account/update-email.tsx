@@ -6,6 +6,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  useFormField,
 } from "@/components/ui/form";
 import { toast } from "@/components/ui/use-toast";
 import { authClient } from "@/lib/client/auth";
@@ -79,13 +80,7 @@ export default function UpdateEmail({ email }: Props) {
                     {...field}
                   />
 
-                  <Button type="submit" disabled={mutation.isPending}>
-                    {mutation.isPending ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Save className="w-4 h-4" />
-                    )}
-                  </Button>
+                  <Submit isPending={mutation.isPending} />
                 </div>
               </FormControl>
               <FormDescription>
@@ -98,5 +93,20 @@ export default function UpdateEmail({ email }: Props) {
         />
       </form>
     </Form>
+  );
+}
+
+function Submit(props: { isPending: boolean }) {
+  const field = useFormField();
+  console.log(field);
+
+  return (
+    <Button type="submit" disabled={props.isPending || field.isDirty === false}>
+      {props.isPending ? (
+        <Loader2 className="w-4 h-4 animate-spin" />
+      ) : (
+        <Save className="w-4 h-4" />
+      )}
+    </Button>
   );
 }

@@ -5,6 +5,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  useFormField,
 } from "@/components/ui/form";
 import { toast } from "@/components/ui/use-toast";
 import { authClient } from "@/lib/client/auth";
@@ -73,13 +74,7 @@ export default function UpdateUsername({ username }: Props) {
               <FormControl>
                 <div className="flex items-center gap-2">
                   <Input placeholder={placeholder} data-1p-ignore {...field} />
-                  <Button type="submit" disabled={mutation.isPending}>
-                    {mutation.isPending ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Save className="w-4 h-4" />
-                    )}
-                  </Button>
+                  <Submit isPending={mutation.isPending} />
                 </div>
               </FormControl>
               <FormMessage />
@@ -88,6 +83,20 @@ export default function UpdateUsername({ username }: Props) {
         />
       </form>
     </Form>
+  );
+}
+
+function Submit(props: { isPending: boolean }) {
+  const field = useFormField();
+
+  return (
+    <Button type="submit" disabled={props.isPending || field.isDirty === false}>
+      {props.isPending ? (
+        <Loader2 className="w-4 h-4 animate-spin" />
+      ) : (
+        <Save className="w-4 h-4" />
+      )}
+    </Button>
   );
 }
 

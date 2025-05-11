@@ -100,7 +100,10 @@ export default function UpdatePassword() {
         />
 
         <div className="flex justify-end">
-          <Button type="submit" disabled={mutation.isPending}>
+          <Button
+            type="submit"
+            disabled={mutation.isPending || form.formState.isDirty === false}
+          >
             {mutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
             <span>Update</span>
           </Button>
