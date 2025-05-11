@@ -6,7 +6,7 @@
 - [x] setup ssl
 - [x] harden server
 
-### cosmo data
+### cosmo data - done 250512
 
 - [x] check if app refreshes access token
   - **250506**: it doesn't
@@ -15,7 +15,6 @@
 - [x] restore `withProxiedToken` for persistent access
 - [x] restore user search w/ caching
 - [x] restore gravity importing
-- [ ] refactor polygon gravity tracking to abstract
 
 ### admin
 
@@ -80,6 +79,15 @@
 - [x] remove abstract gas indicator
 - [x] fix settings save not triggering update (move into separate user state provider/hook?)
 - [x] use controlled inputs to work around react 19 resetting forms
+
+### gravity tracking migration
+
+- [x] move client code
+- [x] update governor abi
+- [x] migrate components
+- [x] migrate hooks to new contracts
+- [ ] implement gravity listing
+- [ ] polish individual gravity page
 
 ### stretch
 

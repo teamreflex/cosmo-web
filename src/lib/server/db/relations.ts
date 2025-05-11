@@ -51,6 +51,24 @@ export const relations = defineRelations(schema, (r) => ({
     }),
   },
   cosmoTokens: {},
+  gravities: {
+    polls: r.many.gravityPolls(),
+  },
+  gravityPolls: {
+    gravity: r.one.gravities({
+      from: r.gravityPolls.cosmoGravityId,
+      to: r.gravities.cosmoId,
+      // a gravity will always exist for a poll
+      optional: false,
+    }),
+    candidates: r.many.gravityPollCandidates(),
+  },
+  gravityPollCandidates: {
+    poll: r.one.gravityPolls({
+      from: r.gravityPollCandidates.cosmoGravityPollId,
+      to: r.gravityPolls.cosmoId,
+    }),
+  },
   user: {
     sessions: r.many.session(),
     accounts: r.many.account(),
