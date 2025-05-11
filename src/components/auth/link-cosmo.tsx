@@ -83,6 +83,9 @@ function StartLink() {
         objekts.
       </p>
       <p>
+        Any previously created objekt lists will be imported upon account link.
+      </p>
+      <p>
         {env.NEXT_PUBLIC_APP_NAME} does not store anything about your account
         other than the ID and wallet address, which are used to display
         profiles.

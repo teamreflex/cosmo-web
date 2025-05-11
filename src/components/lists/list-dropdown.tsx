@@ -11,12 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import {
-  ChevronRight,
-  LetterText,
-  List as ListIcon,
-  PlusCircle,
-} from "lucide-react";
+import { ChevronRight, LetterText, List, PlusCircle } from "lucide-react";
 import type { ObjektList } from "@/lib/server/db/schema";
 import Link from "next/link";
 import CreateListDialog from "./create-list-dialog";
@@ -33,9 +28,9 @@ export default function ListDropdown({
   username,
   allowCreate,
 }: Props) {
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [compareOpen, setCompareOpen] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   return (
     <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
@@ -48,7 +43,7 @@ export default function ListDropdown({
 
       <DropdownMenuTrigger asChild>
         <Button variant="secondary" size="profile" data-profile>
-          <ListIcon className="h-5 w-5" />
+          <List className="h-5 w-5" />
           <span className="hidden sm:block">Lists</span>
         </Button>
       </DropdownMenuTrigger>

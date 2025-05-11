@@ -41,7 +41,7 @@ export default function IndexRenderer(props: Props) {
       <Title objektLists={props.objektLists} />
 
       <FiltersContainer>
-        <ObjektIndexFilters />
+        <ObjektIndexFilters search />
       </FiltersContainer>
 
       <FilteredObjektDisplay gridColumns={gridColumns}>

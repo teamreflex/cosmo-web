@@ -65,10 +65,11 @@
 - [x] metadata update
 - [x] metadata bulk update (admin)
 
-### user data migration
+### user data migration - done 250512
 
-- [ ] decide whether or not to start objekt lists new or keep the existing table
-- [ ] if new, build migration tool
+- [x] decide whether or not to start objekt lists new or keep the existing table
+- [x] if new, build migration tool
+  - **250512**: automatic import on cosmo link
 - [ ] if existing, update `user_address` column name & drop "new" tables
 
 ### polish - done 250511
@@ -90,6 +91,7 @@
 
 ### optimization
 
+- [x] solve better-auth db waterfall on `getSession`
 - [ ] copy cosmo data into user table for easier querying?
 
 ```sql

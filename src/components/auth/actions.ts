@@ -10,6 +10,7 @@ import { certifyTicket } from "@/lib/server/cosmo/qr-auth";
 import { user } from "@/lib/server/cosmo/user";
 import { linkAccount } from "@/lib/server/cosmo-accounts";
 import { redirect } from "next/navigation";
+import { importObjektLists } from "@/lib/server/objekts/lists";
 
 /**
  * Updates the user's settings.
@@ -83,6 +84,9 @@ export const verifyCosmo = authActionClient
       cosmoId: cosmoUser.id,
       userId: ctx.session.user.id,
     });
+
+    // import any existing objekt lists
+    await importObjektLists(ctx.session.user.id, account.address);
 
     redirect(`/@${account.username}`);
   });

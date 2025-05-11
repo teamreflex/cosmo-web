@@ -66,7 +66,7 @@ export const Addresses = {
  * Handles when the tracking script isn't loaded.
  */
 export function track(event: string) {
-  window.umami.track(event)?.catch(() => void 0);
+  window.umami?.track(event)?.catch(() => void 0);
 }
 
 /**

@@ -14,7 +14,11 @@ import FilterSearch from "../filter-search";
  * - @/nickname/list/list-name
  * - /objekts
  */
-export default function ObjektIndexFilters() {
+export default function ObjektIndexFilters({
+  search = false,
+}: {
+  search?: boolean;
+}) {
   const [filters, setFilters] = useCosmoFilters();
 
   return (
@@ -47,7 +51,7 @@ export default function ObjektIndexFilters() {
 
       <SortFilter filters={filters} setFilters={setFilters} serials={false} />
 
-      <FilterSearch />
+      {search && <FilterSearch />}
     </div>
   );
 }
