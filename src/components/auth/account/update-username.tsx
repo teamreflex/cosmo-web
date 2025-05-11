@@ -8,7 +8,7 @@ import {
   useFormField,
 } from "@/components/ui/form";
 import { toast } from "@/components/ui/use-toast";
-import { authClient } from "@/lib/client/auth";
+import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { useMemo } from "react";
@@ -30,7 +30,7 @@ export default function UpdateUsername({ username }: Props) {
     mutationFn: async (data: z.infer<typeof updateUsernameSchema>) => {
       const result = await authClient.updateUser(data);
       if (result.error) {
-        throw new Error(result.error.message);
+        throw new Error(getAuthErrorMessage(result.error));
       }
       return result.data;
     },

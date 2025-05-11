@@ -9,7 +9,7 @@ import {
   useFormField,
 } from "@/components/ui/form";
 import { toast } from "@/components/ui/use-toast";
-import { authClient } from "@/lib/client/auth";
+import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -32,7 +32,7 @@ export default function UpdateEmail({ email }: Props) {
         newEmail: data.email,
       });
       if (result.error) {
-        throw new Error(result.error.message);
+        throw new Error(getAuthErrorMessage(result.error));
       }
       return result.data;
     },

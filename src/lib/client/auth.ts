@@ -15,8 +15,8 @@ export const authClient = createAuthClient({
 });
 
 const authErrorMessages: Record<string, string> = {
-  USERNAME_IS_ALREADY_TAKEN_PLEASE_TRY_ANOTHER:
-    "Username is already taken. Please try another.",
+  USERNAME_IS_ALREADY_TAKEN: "Username is already taken.",
+  USER_ALREADY_EXISTS: "Email is already in use.",
 };
 
 type ErrorInput = {
