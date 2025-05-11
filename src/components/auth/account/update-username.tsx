@@ -17,13 +17,7 @@ import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2, Save } from "lucide-react";
-
-const schema = z.object({
-  username: z
-    .string()
-    .min(3, "Username must be at least 3 characters")
-    .max(20, "Username must be less than 20 characters"),
-});
+import { updateUsernameSchema } from "@/lib/universal/schema/auth";
 
 type Props = {
   username: string;
@@ -32,7 +26,7 @@ type Props = {
 export default function UpdateUsername({ username }: Props) {
   const router = useRouter();
   const mutation = useMutation({
-    mutationFn: async (data: z.infer<typeof schema>) => {
+    mutationFn: async (data: z.infer<typeof updateUsernameSchema>) => {
       const result = await authClient.updateUser(data);
       if (result.error) {
         throw new Error(result.error.message);
@@ -42,7 +36,7 @@ export default function UpdateUsername({ username }: Props) {
   });
 
   const form = useForm({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(updateUsernameSchema),
     defaultValues: {
       username,
     },
@@ -50,7 +44,7 @@ export default function UpdateUsername({ username }: Props) {
 
   const placeholder = useMemo(() => randomHandle(), []);
 
-  function handleSubmit(data: z.infer<typeof schema>) {
+  function handleSubmit(data: z.infer<typeof updateUsernameSchema>) {
     mutation.mutate(data, {
       onSuccess: () => {
         router.refresh();

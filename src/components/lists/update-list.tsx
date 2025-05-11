@@ -12,7 +12,7 @@ import {
 import { Input } from "../ui/input";
 import { useHookFormAction } from "@next-safe-action/adapter-react-hook-form/hooks";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { updateObjektListSchema } from "./schema";
+import { updateObjektListSchema } from "../../lib/universal/schema/objekt-list";
 import {
   Form,
   FormControl,

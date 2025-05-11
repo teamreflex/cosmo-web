@@ -17,10 +17,7 @@ import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2, Save } from "lucide-react";
-
-const schema = z.object({
-  email: z.string().email("Invalid email address"),
-});
+import { updateEmailSchema } from "@/lib/universal/schema/auth";
 
 type Props = {
   email: string;
@@ -29,7 +26,7 @@ type Props = {
 export default function UpdateEmail({ email }: Props) {
   const router = useRouter();
   const mutation = useMutation({
-    mutationFn: async (data: z.infer<typeof schema>) => {
+    mutationFn: async (data: z.infer<typeof updateEmailSchema>) => {
       const result = await authClient.changeEmail({
         newEmail: data.email,
       });
@@ -41,13 +38,13 @@ export default function UpdateEmail({ email }: Props) {
   });
 
   const form = useForm({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(updateEmailSchema),
     defaultValues: {
       email,
     },
   });
 
-  function handleSubmit(data: z.infer<typeof schema>) {
+  function handleSubmit(data: z.infer<typeof updateEmailSchema>) {
     mutation.mutate(data, {
       onSuccess: () => {
         router.refresh();

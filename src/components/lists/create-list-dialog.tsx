@@ -13,7 +13,7 @@ import { track } from "@/lib/utils";
 import { toast } from "../ui/use-toast";
 import { useHookFormAction } from "@next-safe-action/adapter-react-hook-form/hooks";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createObjektListSchema } from "./schema";
+import { createObjektListSchema } from "../../lib/universal/schema/objekt-list";
 import {
   Form,
   FormControl,

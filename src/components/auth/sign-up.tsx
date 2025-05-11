@@ -6,7 +6,6 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { CheckCircle, Loader2 } from "lucide-react";
 import { z } from "zod";
-import { passwordSchema } from "./account/common";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -19,15 +18,7 @@ import {
 } from "../ui/form";
 import { useMemo } from "react";
 import { randomHandle } from "./account/update-username";
-
-const schema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: passwordSchema,
-  username: z
-    .string()
-    .min(3, "Username must be at least 3 characters")
-    .max(20, "Username must be less than 20 characters"),
-});
+import { signUpSchema } from "@/lib/universal/schema/auth";
 
 type Props = {
   onCancel: () => void;
@@ -37,7 +28,7 @@ export default function SignUp({ onCancel }: Props) {
   const placeholder = useMemo(() => randomHandle(), []);
   const router = useRouter();
   const mutation = useMutation({
-    mutationFn: async (data: z.infer<typeof schema>) => {
+    mutationFn: async (data: z.infer<typeof signUpSchema>) => {
       const result = await authClient.signUp.email({
         email: data.email,
         password: data.password,
@@ -53,7 +44,7 @@ export default function SignUp({ onCancel }: Props) {
   });
 
   const form = useForm({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(signUpSchema),
     defaultValues: {
       email: "",
       password: "",
@@ -61,7 +52,7 @@ export default function SignUp({ onCancel }: Props) {
     },
   });
 
-  function handleSubmit(data: z.infer<typeof schema>) {
+  function handleSubmit(data: z.infer<typeof signUpSchema>) {
     mutation.mutate(data, {
       onSuccess: () => {
         router.refresh();

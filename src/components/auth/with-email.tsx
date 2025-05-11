@@ -8,7 +8,6 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Loader2 } from "lucide-react";
 import { z } from "zod";
-import { passwordSchema } from "./account/common";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -19,11 +18,7 @@ import {
   FormLabel,
   FormMessage,
 } from "../ui/form";
-
-const schema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: passwordSchema,
-});
+import { signInSchema } from "@/lib/universal/schema/auth";
 
 type Props = {
   onForgotPassword: () => void;
@@ -32,7 +27,7 @@ type Props = {
 export default function WithEmail({ onForgotPassword }: Props) {
   const router = useRouter();
   const mutation = useMutation({
-    mutationFn: async (data: z.infer<typeof schema>) => {
+    mutationFn: async (data: z.infer<typeof signInSchema>) => {
       const result = await authClient.signIn.email({
         email: data.email,
         password: data.password,
@@ -47,14 +42,14 @@ export default function WithEmail({ onForgotPassword }: Props) {
   });
 
   const form = useForm({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(signInSchema),
     defaultValues: {
       email: "",
       password: "",
     },
   });
 
-  function handleSubmit(data: z.infer<typeof schema>) {
+  function handleSubmit(data: z.infer<typeof signInSchema>) {
     mutation.mutate(data, {
       onSuccess: () => {
         router.refresh();

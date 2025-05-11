@@ -15,10 +15,7 @@ import {
   FormLabel,
   FormMessage,
 } from "../ui/form";
-
-const schema = z.object({
-  email: z.string().email("Invalid email address"),
-});
+import { forgotPasswordSchema } from "@/lib/universal/schema/auth";
 
 type Props = {
   onCancel: () => void;
@@ -26,7 +23,7 @@ type Props = {
 
 export default function ForgotPassword({ onCancel }: Props) {
   const mutation = useMutation({
-    mutationFn: async (data: z.infer<typeof schema>) => {
+    mutationFn: async (data: z.infer<typeof forgotPasswordSchema>) => {
       const result = await authClient.forgetPassword({
         email: data.email,
         redirectTo: "/auth/reset-password",
@@ -40,13 +37,13 @@ export default function ForgotPassword({ onCancel }: Props) {
   });
 
   const form = useForm({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(forgotPasswordSchema),
     defaultValues: {
       email: "",
     },
   });
 
-  function handleSubmit(data: z.infer<typeof schema>) {
+  function handleSubmit(data: z.infer<typeof forgotPasswordSchema>) {
     mutation.mutate(data, {
       onError: (error) => {
         toast({

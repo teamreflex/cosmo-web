@@ -22,7 +22,7 @@ import {
   generateDiscordListSchema,
   removeObjektFromListSchema,
   updateObjektListSchema,
-} from "./schema";
+} from "../../lib/universal/schema/objekt-list";
 import { redirect } from "next/navigation";
 
 function createSlug(name: string) {

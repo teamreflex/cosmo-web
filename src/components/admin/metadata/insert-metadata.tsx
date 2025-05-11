@@ -4,7 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Clipboard, HardDriveUpload, Loader2, Plus, Trash } from "lucide-react";
 import { useState } from "react";
-import { metadataInputSchema, MetadataRow } from "@/lib/universal/metadata";
+import {
+  metadataInputSchema,
+  MetadataRow,
+} from "@/lib/universal/schema/metadata";
 import { toast } from "@/components/ui/use-toast";
 import { saveMetadata } from "./actions";
 import { useAction } from "next-safe-action/hooks";

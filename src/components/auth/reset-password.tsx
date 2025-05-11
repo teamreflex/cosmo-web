@@ -8,7 +8,6 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Loader2 } from "lucide-react";
 import { z } from "zod";
-import { passwordSchema } from "./account/common";
 import { Form, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -18,10 +17,7 @@ import {
   FormLabel,
   FormMessage,
 } from "../ui/form";
-
-const schema = z.object({
-  password: passwordSchema,
-});
+import { resetPasswordSchema } from "@/lib/universal/schema/auth";
 
 type Props = {
   token: string;
@@ -30,7 +26,7 @@ type Props = {
 export default function ResetPassword({ token }: Props) {
   const router = useRouter();
   const mutation = useMutation({
-    mutationFn: async (data: z.infer<typeof schema>) => {
+    mutationFn: async (data: z.infer<typeof resetPasswordSchema>) => {
       const result = await authClient.resetPassword({
         newPassword: data.password,
         token,
@@ -44,13 +40,13 @@ export default function ResetPassword({ token }: Props) {
   });
 
   const form = useForm({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(resetPasswordSchema),
     defaultValues: {
       password: "",
     },
   });
 
-  function handleSubmit(data: z.infer<typeof schema>) {
+  function handleSubmit(data: z.infer<typeof resetPasswordSchema>) {
     mutation.mutate(data, {
       onSuccess: () => {
         toast({

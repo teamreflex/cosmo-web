@@ -16,17 +16,12 @@ import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-import { passwordSchema } from "./common";
-
-const schema = z.object({
-  currentPassword: passwordSchema,
-  newPassword: passwordSchema,
-});
+import { updatePasswordSchema } from "@/lib/universal/schema/auth";
 
 export default function UpdatePassword() {
   const router = useRouter();
   const mutation = useMutation({
-    mutationFn: async (data: z.infer<typeof schema>) => {
+    mutationFn: async (data: z.infer<typeof updatePasswordSchema>) => {
       const result = await authClient.changePassword({
         ...data,
         revokeOtherSessions: true,
@@ -39,14 +34,14 @@ export default function UpdatePassword() {
   });
 
   const form = useForm({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(updatePasswordSchema),
     defaultValues: {
       currentPassword: "",
       newPassword: "",
     },
   });
 
-  function handleSubmit(data: z.infer<typeof schema>) {
+  function handleSubmit(data: z.infer<typeof updatePasswordSchema>) {
     mutation.mutate(data, {
       onSuccess: () => {
         router.refresh();

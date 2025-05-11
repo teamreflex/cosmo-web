@@ -30,6 +30,7 @@ import {
 } from "../ui/dialog";
 import { env } from "@/env";
 import Link from "next/link";
+import { track } from "@/lib/utils";
 
 export const LinkCosmoContext = createContext({
   open: false,
@@ -255,6 +256,7 @@ function OTP({ ticket }: OTPProps) {
   const ctx = useContext(LinkCosmoContext);
   const { execute, isPending, hasErrored } = useAction(verifyCosmo, {
     onSuccess() {
+      track("cosmo-link");
       toast({
         description: "COSMO account linked!",
       });
