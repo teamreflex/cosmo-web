@@ -27,7 +27,6 @@ The [`main`](https://github.com/teamreflex/cosmo-web/blob/main) branch remains a
 - [Blockchain indexer](https://github.com/teamreflex/cosmo-db) instance w/ Drizzle HTTP proxy
 - [Neon](https://neon.tech/) instance
 - [Typesense](https://typesense.org/) instance
-- [Upstash](https://upstash.com/) Redis instance
 - [Alchemy](https://www.alchemy.com/) API key
 - [AWS SES](https://aws.amazon.com/ses/) credentials
 - [Discord OAuth](https://discord.com/developers/docs/topics/oauth2) credentials

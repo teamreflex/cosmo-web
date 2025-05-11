@@ -18,7 +18,6 @@ import {
   sendVerificationEmail,
 } from "./mail";
 import { PublicUser } from "../universal/auth";
-// import { RedisSessionCache } from "./cache";
 import { cosmoAccounts } from "./db/schema";
 import { eq } from "drizzle-orm";
 
@@ -185,15 +184,10 @@ export const auth = betterAuth({
                   if (!user) {
                     return null;
                   }
-                  const parsedSession = parseSessionOutput(
-                    ctx.context.options,
-                    session
-                  );
-                  const parsedUser = parseUserOutput(ctx.context.options, user);
 
                   return {
-                    session: parsedSession,
-                    user: parsedUser,
+                    session: parseSessionOutput(ctx.context.options, session),
+                    user: parseUserOutput(ctx.context.options, user),
                   };
                 },
               },
@@ -203,22 +197,6 @@ export const auth = betterAuth({
       }
     }),
   },
-
-  /**
-   * Save sessions into secondary storage.
-   */
-  session: {
-    // storeSessionInDatabase: true,
-    // cookieCache: {
-    //   enabled: true,
-    //   maxAge: 5 * 60,
-    // },
-  },
-
-  /**
-   * Need to use secondary storage for session caching as RSC's cannot set cookies.
-   */
-  // secondaryStorage: new RedisSessionCache(),
   socialProviders: {
     discord: {
       enabled: true,
