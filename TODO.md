@@ -14,7 +14,7 @@
   - **250508**: it does
 - [x] restore `withProxiedToken` for persistent access
 - [x] restore user search w/ caching
-- [ ] restore gravity importing
+- [x] restore gravity importing
 - [ ] refactor polygon gravity tracking to abstract
 
 ### admin

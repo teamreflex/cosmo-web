@@ -3,6 +3,10 @@
   "buildCommand": "next build && pnpm db:migrate",
   "crons": [
     {
+      "path": "/api/cron/gravity",
+      "schedule": "*/30 * * * *"
+    },
+    {
       "path": "/api/cron/objekt-stats",
       "schedule": "0 * * * *"
     }
