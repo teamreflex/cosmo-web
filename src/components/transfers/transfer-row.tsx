@@ -88,11 +88,11 @@ function User({ row, isReceiver }: UserProps) {
       <div className="flex flex-col">
         <TransferAction isReceiver={isReceiver} />
         <Link
-          href={`/@${row.nickname ?? address}`}
+          href={`/@${row.username ?? address}`}
           className="underline"
           prefetch={false}
         >
-          {row.nickname ?? address.substring(0, 8)}
+          {row.username ?? address.substring(0, 8)}
         </Link>
       </div>
     </div>

@@ -7,7 +7,7 @@ export type AggregatedTransfer = {
   transfer: Transfer;
   serial: number | null;
   collection: Collection | null;
-  nickname?: string;
+  username?: string;
   isSpin: boolean;
 };
 
