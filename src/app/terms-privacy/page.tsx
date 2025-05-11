@@ -6,7 +6,7 @@ export default function TermsPrivacyPage() {
     <div className="container flex flex-col gap-2 max-w-3xl py-2">
       <Card>
         <CardHeader>
-          <CardTitle>Privacy Policy</CardTitle>
+          <CardTitle>Terms & Privacy</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-4 text-sm">
           <ul className="list-inside list-disc space-y-2">
