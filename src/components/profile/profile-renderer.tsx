@@ -4,7 +4,6 @@ import { useFilters } from "@/hooks/use-filters";
 import FiltersContainer from "../collection/filters-container";
 import Portal from "../portal";
 import HelpDialog from "./help-dialog";
-import { match } from "ts-pattern";
 import Blockchain from "../collection/data-sources/blockchain";
 import BlockchainGroups from "../collection/data-sources/blockchain-groups";
 import CollectionFilters from "../collection/filter-contexts/collection-filters";
@@ -41,24 +40,30 @@ export default function ProfileRenderer({ targetCosmo }: Props) {
       </FiltersContainer>
 
       {/* display */}
-      {match(dataSource)
-        .with("blockchain", () => (
-          <Blockchain
-            gridColumns={gridColumns}
-            targetCosmo={targetCosmo}
-            searchParams={searchParams}
-            showLocked={showLocked}
-          />
-        ))
-        .with("blockchain-groups", () => (
-          <BlockchainGroups
-            gridColumns={gridColumns}
-            targetCosmo={targetCosmo}
-            searchParams={searchParams}
-            showLocked={showLocked}
-          />
-        ))
-        .exhaustive()}
+      {(() => {
+        switch (dataSource) {
+          case "blockchain":
+            return (
+              <Blockchain
+                gridColumns={gridColumns}
+                targetCosmo={targetCosmo}
+                searchParams={searchParams}
+                showLocked={showLocked}
+              />
+            );
+          case "blockchain-groups":
+            return (
+              <BlockchainGroups
+                gridColumns={gridColumns}
+                targetCosmo={targetCosmo}
+                searchParams={searchParams}
+                showLocked={showLocked}
+              />
+            );
+          default:
+            return null;
+        }
+      })()}
     </div>
   );
 }

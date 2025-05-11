@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/command";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { isAddress } from "viem";
 import { CosmoPublicUser, CosmoSearchResult } from "@/lib/universal/cosmo/auth";
 import { ofetch } from "ofetch";
 import {
@@ -24,7 +23,7 @@ import ProfileImage from "@/assets/profile.webp";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { RecentUser } from "@/store";
 import VisuallyHidden from "./ui/visually-hidden";
-import { cn } from "@/lib/utils";
+import { cn, isAddress } from "@/lib/utils";
 
 type Props = PropsWithChildren<{
   placeholder?: string;

@@ -27,6 +27,13 @@ export function isAddressEqual(a?: string, b?: string) {
 export const addr = (address: string) => address.toLowerCase();
 
 /**
+ * Check if an address is valid.
+ */
+export function isAddress(address: string) {
+  return /^0x[a-fA-F0-9]{40}$/g.test(address);
+}
+
+/**
  * default grid columns
  */
 export const GRID_COLUMNS = 5;

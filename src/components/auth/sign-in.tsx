@@ -14,7 +14,6 @@ import SignInWithDiscord from "./with-discord";
 import WithEmail from "./with-email";
 import SignInWithTwitter from "./with-twitter";
 import SignUp from "./sign-up";
-import { match } from "ts-pattern";
 import ForgotPassword from "./forgot-password";
 
 type State = "sign-in" | "sign-up" | "forgot-password";
@@ -45,17 +44,22 @@ export default function SignIn() {
         </DialogHeader>
 
         <div className="flex flex-col gap-2 items-center">
-          {match(state)
-            .with("sign-in", () => (
-              <WithEmail onForgotPassword={() => setState("forgot-password")} />
-            ))
-            .with("sign-up", () => (
-              <SignUp onCancel={() => setState("sign-in")} />
-            ))
-            .with("forgot-password", () => (
-              <ForgotPassword onCancel={() => setState("sign-in")} />
-            ))
-            .exhaustive()}
+          {(() => {
+            switch (state) {
+              case "sign-in":
+                return (
+                  <WithEmail
+                    onForgotPassword={() => setState("forgot-password")}
+                  />
+                );
+              case "sign-up":
+                return <SignUp onCancel={() => setState("sign-in")} />;
+              case "forgot-password":
+                return <ForgotPassword onCancel={() => setState("sign-in")} />;
+              default:
+                return null;
+            }
+          })()}
 
           {state === "sign-in" && (
             <div className="contents">
