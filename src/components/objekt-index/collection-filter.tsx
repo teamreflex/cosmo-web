@@ -16,19 +16,24 @@ import {
 } from "../ui/command";
 import { useFilterData } from "@/hooks/use-filter-data";
 
-interface Props extends PropsWithFilters<"collectionNo"> {}
-
-export default function CollectionFilter({ filters, setFilters }: Props) {
+export default function CollectionFilter({
+  filters,
+  setFilters,
+}: PropsWithFilters) {
   const { collections } = useFilterData();
   const [open, setOpen] = useState(false);
 
-  function handleSelect(collection: string) {
-    const newFilters = filters?.includes(collection)
-      ? (filters ?? []).filter((f) => f !== collection)
-      : [...(filters ?? []), collection];
+  const value = filters?.collectionNo ?? [];
 
-    setFilters({
-      collectionNo: newFilters.length > 0 ? newFilters : null,
+  function handleSelect(collection: string) {
+    setFilters((prev) => {
+      const newFilters = prev.collectionNo?.includes(collection)
+        ? (prev.collectionNo ?? []).filter((f) => f !== collection)
+        : [...(prev.collectionNo ?? []), collection];
+
+      return {
+        collectionNo: newFilters.length > 0 ? newFilters : null,
+      };
     });
   }
 
@@ -41,7 +46,7 @@ export default function CollectionFilter({ filters, setFilters }: Props) {
           aria-expanded={open}
           className={cn(
             "flex gap-2 items-center",
-            filters && filters.length > 0 && "border-cosmo"
+            value.length > 0 && "border-cosmo"
           )}
         >
           <span>Collections</span>
@@ -65,9 +70,7 @@ export default function CollectionFilter({ filters, setFilters }: Props) {
                   <Check
                     className={cn(
                       "ml-auto",
-                      filters?.includes(collection)
-                        ? "opacity-100"
-                        : "opacity-0"
+                      value.includes(collection) ? "opacity-100" : "opacity-0"
                     )}
                   />
                 </CommandItem>

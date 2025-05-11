@@ -10,7 +10,7 @@ import {
   withOnlineType,
   withSeason,
 } from "./objekts/filters";
-import { Addresses, isAddressEqual } from "../utils";
+import { Addresses, isEqual } from "../utils";
 
 const PER_PAGE = 30;
 
@@ -22,7 +22,7 @@ export async function fetchTransfers(
   params: TransferParams
 ): Promise<TransferResult> {
   // too much data, bail
-  if (isAddressEqual(address, Addresses.NULL)) {
+  if (isEqual(address, Addresses.NULL)) {
     return {
       results: [],
       nextStartAfter: undefined,

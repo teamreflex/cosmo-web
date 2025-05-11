@@ -10,23 +10,38 @@ import {
 import { PropsWithFilters } from "@/hooks/use-cosmo-filters";
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, isEqual } from "@/lib/utils";
 import Image from "next/image";
 import { useFilterData } from "@/hooks/use-filter-data";
+import { ValidArtist } from "@/lib/universal/cosmo/common";
 
-type Props = PropsWithFilters<"season">;
-
-export default function SeasonFilter({ filters, setFilters }: Props) {
+export default function SeasonFilter({
+  filters,
+  setFilters,
+}: PropsWithFilters) {
   const { seasons } = useFilterData();
   const [open, setOpen] = useState(false);
 
-  function onChange(property: string, checked: boolean) {
-    const newFilters = checked
-      ? [...(filters ?? []), property]
-      : (filters ?? []).filter((f) => f !== property);
+  const value = filters?.season ?? [];
 
-    setFilters({
-      season: newFilters.length > 0 ? newFilters : null,
+  function onChange(artist: string, season: string, checked: boolean) {
+    setFilters((prev) => {
+      // allow switching artist without needing to uncheck
+      if (prev.artist !== artist) {
+        return {
+          artist: artist as ValidArtist,
+          season: [season],
+        };
+      }
+
+      const newFilters = checked
+        ? [...(prev?.season ?? []), season]
+        : (prev?.season ?? []).filter((f) => f !== season);
+
+      return {
+        artist: newFilters.length > 0 ? (artist as ValidArtist) : null,
+        season: newFilters.length > 0 ? newFilters : null,
+      };
     });
   }
 
@@ -37,7 +52,7 @@ export default function SeasonFilter({ filters, setFilters }: Props) {
           variant="outline"
           className={cn(
             "flex gap-2 items-center",
-            filters && filters.length > 0 && "dark:border-cosmo border-cosmo"
+            value.length > 0 && "dark:border-cosmo border-cosmo"
           )}
         >
           <span>Season</span>
@@ -60,8 +75,13 @@ export default function SeasonFilter({ filters, setFilters }: Props) {
             {seasons.map((season) => (
               <DropdownMenuCheckboxItem
                 key={season}
-                checked={filters?.includes(season)}
-                onCheckedChange={(checked) => onChange(season, checked)}
+                checked={
+                  isEqual(artist.id, filters.artist ?? undefined) &&
+                  value.includes(season)
+                }
+                onCheckedChange={(checked) =>
+                  onChange(artist.id, season, checked)
+                }
               >
                 {season}
               </DropdownMenuCheckboxItem>

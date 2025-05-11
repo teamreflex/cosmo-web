@@ -9,24 +9,36 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, isEqual } from "@/lib/utils";
 import { PropsWithFilters } from "@/hooks/use-cosmo-filters";
 import Image from "next/image";
 import { useFilterData } from "@/hooks/use-filter-data";
+import { ValidArtist } from "@/lib/universal/cosmo/common";
 
-type Props = PropsWithFilters<"class">;
-
-export default function ClassFilter({ filters, setFilters }: Props) {
+export default function ClassFilter({ filters, setFilters }: PropsWithFilters) {
   const { classes } = useFilterData();
   const [open, setOpen] = useState(false);
 
-  function onChange(property: string, checked: boolean) {
-    const newFilters = checked
-      ? [...(filters ?? []), property]
-      : (filters ?? []).filter((f) => f !== property);
+  const value = filters?.class ?? [];
 
-    setFilters({
-      class: newFilters.length > 0 ? newFilters : null,
+  function onChange(artist: string, className: string, checked: boolean) {
+    setFilters((prev) => {
+      // allow switching artist without needing to uncheck
+      if (prev.artist !== artist) {
+        return {
+          artist: artist as ValidArtist,
+          class: [className],
+        };
+      }
+
+      const newFilters = checked
+        ? [...(prev?.class ?? []), className]
+        : (prev?.class ?? []).filter((f) => f !== className);
+
+      return {
+        artist: newFilters.length > 0 ? (artist as ValidArtist) : null,
+        class: newFilters.length > 0 ? newFilters : null,
+      };
     });
   }
 
@@ -37,7 +49,7 @@ export default function ClassFilter({ filters, setFilters }: Props) {
           variant="outline"
           className={cn(
             "flex gap-2 items-center",
-            filters && filters.length > 0 && "dark:border-cosmo border-cosmo"
+            value.length > 0 && "dark:border-cosmo border-cosmo"
           )}
         >
           <span>Class</span>
@@ -60,8 +72,13 @@ export default function ClassFilter({ filters, setFilters }: Props) {
             {classes.map((className) => (
               <DropdownMenuCheckboxItem
                 key={className}
-                checked={filters?.includes(className)}
-                onCheckedChange={(checked) => onChange(className, checked)}
+                checked={
+                  isEqual(artist.id, filters.artist ?? undefined) &&
+                  value.includes(className)
+                }
+                onCheckedChange={(checked) =>
+                  onChange(artist.id, className, checked)
+                }
               >
                 {className}
               </DropdownMenuCheckboxItem>

@@ -4,7 +4,7 @@ import { and, count, eq, inArray, not, sql } from "drizzle-orm";
 import { NextRequest } from "next/server";
 import { fetchTotal } from "../../common";
 import { fetchKnownAddresses } from "@/lib/server/cosmo-accounts";
-import { Addresses, isAddressEqual } from "@/lib/utils";
+import { Addresses, isEqual } from "@/lib/utils";
 import { LeaderboardItem } from "@/lib/universal/progress";
 import {
   ValidOnlineType,
@@ -66,9 +66,7 @@ export async function GET(request: NextRequest, props: Params) {
 
   // map the nickname onto the results
   const results = leaderboard.map((row) => {
-    const known = knownAddresses.find((a) =>
-      isAddressEqual(a.address, row.owner)
-    );
+    const known = knownAddresses.find((a) => isEqual(a.address, row.owner));
 
     return {
       count: row.count,

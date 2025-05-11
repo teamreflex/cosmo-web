@@ -15,10 +15,12 @@ export function ordinal(n: number) {
 }
 
 /**
- * Address compare, because those in PG are forced to lowercase.
+ * Nullable string compare.
  */
-export function isAddressEqual(a?: string, b?: string) {
-  return a?.toLowerCase() === b?.toLowerCase();
+export function isEqual(a?: string, b?: string) {
+  return (
+    a !== undefined && b !== undefined && a?.toLowerCase() === b?.toLowerCase()
+  );
 }
 
 /**
@@ -64,11 +66,7 @@ export const Addresses = {
  * Handles when the tracking script isn't loaded.
  */
 export function track(event: string) {
-  try {
-    window.umami.track(event);
-  } catch (err) {
-    // ignore
-  }
+  window.umami.track(event)?.catch(() => void 0);
 }
 
 /**

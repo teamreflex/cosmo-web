@@ -14,23 +14,28 @@ import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type Props = PropsWithFilters<"on_offline">;
-
 const map: Record<ValidOnlineType, string> = {
   online: "Digital",
   offline: "Physical",
 };
 
-export default function OnlineFilter({ filters, setFilters }: Props) {
+export default function OnlineFilter({
+  filters,
+  setFilters,
+}: PropsWithFilters) {
   const [open, setOpen] = useState(false);
 
-  function onChange(property: ValidOnlineType, checked: boolean) {
-    const newFilters = checked
-      ? [...(filters ?? []), property]
-      : (filters ?? []).filter((f) => f !== property);
+  const value = filters?.on_offline ?? [];
 
-    setFilters({
-      on_offline: newFilters.length > 0 ? newFilters : null,
+  function onChange(property: ValidOnlineType, checked: boolean) {
+    setFilters((prev) => {
+      const newFilters = checked
+        ? [...(prev?.on_offline ?? []), property]
+        : (prev?.on_offline ?? []).filter((f) => f !== property);
+
+      return {
+        on_offline: newFilters.length > 0 ? newFilters : null,
+      };
     });
   }
 
@@ -41,7 +46,7 @@ export default function OnlineFilter({ filters, setFilters }: Props) {
           variant="outline"
           className={cn(
             "flex gap-2 items-center",
-            filters && filters.length > 0 && "dark:border-cosmo border-cosmo"
+            value.length > 0 && "dark:border-cosmo border-cosmo"
           )}
         >
           <span>Physical</span>
@@ -52,7 +57,7 @@ export default function OnlineFilter({ filters, setFilters }: Props) {
         {Object.values(validOnlineTypes).map((onlineType) => (
           <DropdownMenuCheckboxItem
             key={onlineType}
-            checked={filters?.includes(onlineType)}
+            checked={value.includes(onlineType)}
             onCheckedChange={(checked) => onChange(onlineType, checked)}
           >
             {map[onlineType]}
