@@ -3,11 +3,14 @@ import { db } from "./db";
 import { CollectionDataSource, GRID_COLUMNS } from "@/lib/utils";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { createAuthMiddleware } from "better-auth/api";
+import { parseSessionOutput, parseUserOutput } from "better-auth/db";
+import { nextCookies } from "better-auth/next-js";
+import { username } from "better-auth/plugins/username";
 import { env } from "@/env";
 import * as authSchema from "@/lib/server/db/auth-schema";
 import { createCipheriv, createDecipheriv, randomBytes } from "crypto";
 import { baseUrl } from "../query-client";
-import { username } from "better-auth/plugins/username";
 import {
   sendAccountDeletionEmail,
   sendEmailChangeVerification,
@@ -15,8 +18,7 @@ import {
   sendVerificationEmail,
 } from "./mail";
 import { PublicUser } from "../universal/auth";
-import { nextCookies } from "better-auth/next-js";
-import { RedisSessionCache } from "./cache";
+// import { RedisSessionCache } from "./cache";
 import { cosmoAccounts } from "./db/schema";
 import { eq } from "drizzle-orm";
 
@@ -153,10 +155,60 @@ export const auth = betterAuth({
   },
 
   /**
+   * Hooks to modify the context.
+   */
+  hooks: {
+    before: createAuthMiddleware(async (ctx) => {
+      /**
+       * Override the internal adapter to return the session and user in one query.
+       */
+      if (ctx.path === "/get-session") {
+        return {
+          context: {
+            ...ctx,
+            context: {
+              ...ctx.context,
+              internalAdapter: {
+                ...ctx.context.internalAdapter,
+                findSession: async (token: string) => {
+                  const result = await db.query.session.findFirst({
+                    where: { token },
+                    with: {
+                      user: true,
+                    },
+                  });
+                  if (!result) {
+                    return null;
+                  }
+
+                  const { user, ...session } = result;
+                  if (!user) {
+                    return null;
+                  }
+                  const parsedSession = parseSessionOutput(
+                    ctx.context.options,
+                    session
+                  );
+                  const parsedUser = parseUserOutput(ctx.context.options, user);
+
+                  return {
+                    session: parsedSession,
+                    user: parsedUser,
+                  };
+                },
+              },
+            },
+          },
+        };
+      }
+    }),
+  },
+
+  /**
    * Save sessions into secondary storage.
    */
   session: {
-    storeSessionInDatabase: true,
+    // storeSessionInDatabase: true,
     // cookieCache: {
     //   enabled: true,
     //   maxAge: 5 * 60,
@@ -166,9 +218,10 @@ export const auth = betterAuth({
   /**
    * Need to use secondary storage for session caching as RSC's cannot set cookies.
    */
-  secondaryStorage: new RedisSessionCache(),
+  // secondaryStorage: new RedisSessionCache(),
   socialProviders: {
     discord: {
+      enabled: true,
       clientId: env.DISCORD_CLIENT_ID,
       clientSecret: env.DISCORD_CLIENT_SECRET,
       overrideUserInfoOnSignIn: true,
@@ -179,6 +232,7 @@ export const auth = betterAuth({
       },
     },
     twitter: {
+      enabled: true,
       clientId: env.TWITTER_CLIENT_ID,
       clientSecret: env.TWITTER_CLIENT_SECRET,
       overrideUserInfoOnSignIn: true,
