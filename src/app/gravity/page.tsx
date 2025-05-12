@@ -79,7 +79,7 @@ function ArtistTab({ artist, gravities }: ArtistTabProps) {
     <TabsContent
       key={artist.id}
       value={artist.id}
-      className="grid grid-cols-1 md:grid-cols-4 gap-2 data-[state=inactive]:hidden"
+      className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-2 data-[state=inactive]:hidden"
       forceMount
     >
       {gravities.map((gravity) => (
@@ -107,7 +107,7 @@ function GravityItem(props: { gravity: Gravity }) {
         />
         <CardContent className="isolate h-full w-full flex gap-2 items-end justify-start bg-gradient-to-t from-black/80 from-5% via-black/20 via-20% to-black/0 px-0">
           <div className="flex flex-row gap-2 items-center w-full p-2">
-            <CalendarDays className="size-4" />
+            <CalendarDays className="size-4 shrink-0" />
             <GravityTimestamp
               className="text-sm font-semibold"
               date={props.gravity.startDate}

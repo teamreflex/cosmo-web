@@ -10,7 +10,7 @@ export default function GravityLoading() {
         <Skeleton className="h-9 w-48 rounded-md" />
       </div>
 
-      <div className="relative grid grid-cols-1 md:grid-cols-4 gap-2 mt-2">
+      <div className="relative grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-2 mt-2">
         <SkeletonGradient />
         {Array.from({ length: 12 }).map((_, index) => (
           <Skeleton

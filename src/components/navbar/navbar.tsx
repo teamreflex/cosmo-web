@@ -45,7 +45,7 @@ export default async function Navbar() {
 
 function NavbarFallback() {
   return (
-    <div className="contents">
+    <div className="flex flex-row gap-2 lg:gap-4 items-center ml-auto">
       <LinksSkeleton />
       <div className="flex grow-0 items-center justify-end gap-2">
         <Skeleton className="size-8 rounded-full shrink-0 aspect-square" />

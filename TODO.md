@@ -99,6 +99,7 @@
 - [x] double check how betterauth handles oauth -> username mapping w/ conflicts
 - [ ] contingency backup for browserless failing
 - [ ] refactor artist/member filtering
+- [ ] implement objektlist usage without cosmo signin
 
 ### optimization
 
