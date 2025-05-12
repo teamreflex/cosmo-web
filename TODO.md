@@ -87,9 +87,10 @@
 - [x] migrate components
 - [x] migrate hooks to new contracts
 - [x] implement gravity listing
-- [ ] polish individual gravity page
-- [ ] migrate polygon data
-- [ ] re-implement polygon display
+- [x] port historical polygon data fetching to the server and cache it
+- [x] re-implement polygon display
+- [ ] polish individual gravity pages
+- [ ] migrate polygon voter data
 
 ### stretch
 

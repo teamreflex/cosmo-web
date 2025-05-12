@@ -58,7 +58,7 @@ export async function GET(_: Request, props: Params) {
       percentage: collection.percentage,
     } satisfies ObjektMetadata,
     {
-      headers: cacheHeaders(cacheTime),
+      headers: cacheHeaders({ vercel: cacheTime }),
     }
   );
 }

@@ -1,18 +1,29 @@
 "use client";
 
 import { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
-import { Loader2 } from "lucide-react";
 import CandidateBreakdown from "./candidate-breakdown";
 import { useChainData } from "@/lib/client/gravity/abstract/hooks";
 import { useMemo } from "react";
-import { CosmoPollChoices } from "@/lib/universal/cosmo/gravity";
+import {
+  CosmoOngoingGravity,
+  CosmoPastGravity,
+} from "@/lib/universal/cosmo/gravity";
+import { useGravityPoll } from "@/lib/client/gravity/common";
+import { findPoll } from "@/lib/client/gravity/util";
+import GravitySkeleton from "../gravity-skeleton";
 
 type Props = {
   artist: CosmoArtistBFF;
-  poll: CosmoPollChoices;
+  gravity: CosmoOngoingGravity | CosmoPastGravity;
 };
 
-export default function GravityLiveChart({ artist, poll }: Props) {
+export default function AbstractLiveChart({ artist, gravity }: Props) {
+  const { data: poll } = useGravityPoll({
+    artistName: artist.id,
+    tokenId: BigInt(artist.comoTokenId),
+    gravityId: gravity.id,
+    pollId: findPoll(gravity).poll.id,
+  });
   const chain = useChainData({
     startDate: poll.startDate,
     tokenId: BigInt(artist.comoTokenId),
@@ -36,12 +47,7 @@ export default function GravityLiveChart({ artist, poll }: Props) {
   }, [poll.pollViewMetadata.selectedContent, chain]);
 
   if (chain.status === "pending") {
-    return (
-      <div className="flex flex-col gap-2 justify-center items-center py-4">
-        <Loader2 className="size-12 animate-spin" />
-        <span className="text-sm font-semibold">Loading live data...</span>
-      </div>
-    );
+    return <GravitySkeleton />;
   }
 
   return (

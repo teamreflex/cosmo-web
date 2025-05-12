@@ -2,7 +2,7 @@ import "server-only";
 
 import { env } from "@/env";
 import { ofetch } from "ofetch";
-import { alchemyRPC } from "./http";
+import { abstract } from "./http";
 import { RPCResponse } from "./alchemy";
 import { SystemStatus } from "../universal/system";
 import { unstable_cacheLife as cacheLife } from "next/cache";
@@ -33,7 +33,7 @@ type ChainStatus = {
  * Fetch the current block height from the Alchemy API.
  */
 async function fetchChainStatus(): Promise<ChainStatus> {
-  const blockNumber = await alchemyRPC<RPCResponse>("/", {
+  const blockNumber = await abstract<RPCResponse>("/", {
     body: {
       id: 1,
       jsonrpc: "2.0",

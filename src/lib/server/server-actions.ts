@@ -12,7 +12,7 @@ export class ActionError extends Error {}
 /**
  * Default action client that adds the session to the context.
  */
-export const actionClient = createSafeActionClient({
+const actionClient = createSafeActionClient({
   defineMetadataSchema() {
     return z.object({
       actionName: z.string(),

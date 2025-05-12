@@ -4,7 +4,7 @@ import { abstract } from "wagmi/chains";
 /**
  * wagmi.sh config for reading from the Abstract RPC.
  */
-export const rpcConfig = createConfig({
+export const wagmiConfig = createConfig({
   ssr: true,
   chains: [abstract],
   transports: {
@@ -14,3 +14,9 @@ export const rpcConfig = createConfig({
     }),
   },
 });
+
+declare module "wagmi" {
+  interface Register {
+    config: typeof wagmiConfig;
+  }
+}

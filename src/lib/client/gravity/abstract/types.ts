@@ -1,7 +1,4 @@
-export type GravityHookParams = {
-  tokenId: bigint;
-  pollId: bigint;
-};
+import { GravityHookParams } from "../common";
 
 export interface UseChainDataOptions extends GravityHookParams {
   startDate: string;

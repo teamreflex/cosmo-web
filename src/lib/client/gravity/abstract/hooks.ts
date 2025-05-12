@@ -10,7 +10,6 @@ import { Addresses } from "@/lib/utils";
 import { getContractEvents } from "viem/actions";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  GravityHookParams,
   UseBlockStatus,
   UseChainData,
   UseChainDataError,
@@ -20,7 +19,11 @@ import {
 } from "./types";
 import { hashFn } from "wagmi/query";
 import { useMemo } from "react";
+import { abstract } from "viem/chains";
+import { GravityHookParams } from "../common";
 
+// chain to connect to
+const chainId = abstract.id;
 // abstract's average block time
 const AVG_BLOCK_TIME = 1.028;
 // polling interval in ms
@@ -67,7 +70,7 @@ function useStartBlock(startDate: string) {
  */
 function useEndBlock(params: GravityHookParams, startBlock: number | null) {
   const queryClient = useQueryClient();
-  const client = useClient();
+  const client = useClient({ chainId });
 
   const queryKey = [
     "gravity",

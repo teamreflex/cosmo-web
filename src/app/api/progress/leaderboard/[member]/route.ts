@@ -82,7 +82,7 @@ export async function GET(request: NextRequest, props: Params) {
       leaderboard: results,
     },
     {
-      headers: cacheHeaders(60 * 60),
+      headers: cacheHeaders({ vercel: 60 * 60 }),
     }
   );
 }

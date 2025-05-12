@@ -47,7 +47,7 @@ export async function GET(_: Request, props: Params) {
   );
 
   return Response.json(zipResults(matrix, totals, progress), {
-    headers: cacheHeaders(60 * 60),
+    headers: cacheHeaders({ vercel: 60 * 60 }),
   });
 }
 

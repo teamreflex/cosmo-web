@@ -1,11 +1,11 @@
 import { z } from "zod";
 
-export const emailSchema = z.string().email("Invalid email address");
-export const passwordSchema = z
+const emailSchema = z.string().email("Invalid email address");
+const passwordSchema = z
   .string()
   .min(8, "Password must be at least 8 characters")
   .max(24, "Password must be less than 24 characters");
-export const usernameSchema = z
+const usernameSchema = z
   .string()
   .min(3, "Username must be at least 3 characters")
   .max(20, "Username must be less than 20 characters");

@@ -45,7 +45,7 @@ type PollStatus = "upcoming" | "ongoing" | "finalized" | "counting";
 /**
  * Determines the status of a gravity poll.
  */
-export function getPollStatus(
+function getPollStatus(
   poll: CosmoPollChoices | CosmoPollUpcoming | CosmoPollFinalized
 ): PollStatus {
   const now = new Date();
