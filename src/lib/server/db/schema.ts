@@ -154,11 +154,7 @@ export const gravityPolls = pgTable(
   "gravity_polls",
   {
     id: serial("id").primaryKey(),
-    cosmoGravityId: integer("cosmo_gravity_id")
-      .notNull()
-      .references(() => gravities.id, {
-        onDelete: "cascade",
-      }),
+    cosmoGravityId: integer("cosmo_gravity_id").notNull(),
     cosmoId: integer("cosmo_id").notNull(),
     pollIdOnChain: integer("poll_id_on_chain").notNull(),
     title: varchar("title", { length: 255 }).notNull(),
@@ -174,11 +170,7 @@ export const gravityPollCandidates = pgTable(
   "gravity_poll_candidates",
   {
     id: serial("id").primaryKey(),
-    cosmoGravityPollId: integer("cosmo_gravity_poll_id")
-      .notNull()
-      .references(() => gravityPolls.id, {
-        onDelete: "cascade",
-      }),
+    cosmoGravityPollId: integer("cosmo_gravity_poll_id").notNull(),
     candidateId: integer("candidate_id").notNull(), // just the index in the array
     cosmoId: varchar("cosmo_id", { length: 64 }).notNull(),
     title: varchar("title", { length: 255 }).notNull(),
