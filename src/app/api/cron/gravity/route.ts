@@ -13,6 +13,9 @@ import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import { chunk } from "@/lib/utils";
 import { eq } from "drizzle-orm";
 
+// initial seed takes longer than 15 seconds
+export const maxDuration = 30;
+
 /**
  * Fetch and load gravity data into the database.
  */

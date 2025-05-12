@@ -2,13 +2,12 @@ import { getArtistsWithMembers } from "@/app/data-fetching";
 import GravityProvider from "@/components/gravity/gravity-provider";
 import { fetchGravity, fetchPoll } from "@/lib/server/cosmo/gravity";
 import { getProxiedToken } from "@/lib/server/handlers/withProxiedToken";
-import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { isEqual } from "@/lib/utils";
 import { isBefore } from "date-fns";
 import { AlertCircle, AlertTriangle } from "lucide-react";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { cache, Suspense } from "react";
+import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import AbstractLiveChart from "@/components/gravity/abstract/gravity-live-chart";
 import PolygonLiveChart from "@/components/gravity/polygon/gravity-live-chart";
@@ -17,10 +16,8 @@ import { pollDetailsKey } from "@/lib/client/gravity/common";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { findPoll } from "@/lib/client/gravity/util";
 import GravitySkeleton from "@/components/gravity/gravity-skeleton";
-
-const data = cache(async (artist: string, id: number) => {
-  return await fetchGravity(artist as ValidArtist, id);
-});
+import { db } from "@/lib/server/db";
+import { ValidArtist } from "@/lib/universal/cosmo/common";
 
 type Props = {
   params: Promise<{
@@ -31,7 +28,12 @@ type Props = {
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params;
-  const gravity = await data(params.artist, Number(params.id));
+  const gravity = await db.query.gravities.findFirst({
+    where: {
+      artist: params.artist,
+      cosmoId: Number(params.id),
+    },
+  });
   if (!gravity) {
     notFound();
   }
@@ -45,7 +47,7 @@ export default async function GravityPage(props: Props) {
   const params = await props.params;
   const [{ accessToken }, gravity] = await Promise.all([
     getProxiedToken(),
-    data(params.artist, Number(params.id)),
+    fetchGravity(params.artist as ValidArtist, Number(params.id)),
   ]);
   if (!gravity) {
     notFound();
