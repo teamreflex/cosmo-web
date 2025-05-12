@@ -6,6 +6,7 @@ import { fetchGravity, fetchPoll } from "@/lib/server/cosmo/gravity";
 import { getProxiedToken } from "@/lib/server/handlers/withProxiedToken";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { isEqual } from "@/lib/utils";
+import { isBefore } from "date-fns";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { cache } from "react";
@@ -54,7 +55,14 @@ export default async function GravityPage(props: Props) {
         </div>
 
         {/* content */}
-        <GravityLiveChart artist={artist} poll={poll} />
+        {isBefore(poll.endDate, "2025-04-18") ? (
+          <div className="flex flex-col items-center text-sm font-semibold">
+            <p>This gravity was before the April 18th blockchain migration</p>
+            <p>Results are not available yet</p>
+          </div>
+        ) : (
+          <GravityLiveChart artist={artist} poll={poll} />
+        )}
       </main>
     </GravityProvider>
   );

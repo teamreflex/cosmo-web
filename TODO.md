@@ -86,8 +86,10 @@
 - [x] update governor abi
 - [x] migrate components
 - [x] migrate hooks to new contracts
-- [ ] implement gravity listing
+- [x] implement gravity listing
 - [ ] polish individual gravity page
+- [ ] migrate polygon data
+- [ ] re-implement polygon display
 
 ### stretch
 

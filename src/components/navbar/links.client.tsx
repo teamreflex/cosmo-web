@@ -19,7 +19,7 @@ import NavbarSearch from "./navbar-search";
 import { ArtistItem } from "./artist-selectbox";
 import { useArtists } from "@/hooks/use-artists";
 import { PublicUser } from "@/lib/universal/auth";
-import { LucideIcon, PackageOpen } from "lucide-react";
+import { LucideIcon, PackageOpen, Vote } from "lucide-react";
 import { LinkCosmoContext } from "../auth/link-cosmo";
 import { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import { use } from "react";
@@ -36,9 +36,16 @@ export function DesktopLinks({ cosmo }: Props) {
     <div className="contents">
       <LinkButton
         href="/objekts"
-        active={path === "/objekts"}
+        active={path.startsWith("/objekts")}
         icon={IconCards}
         name="Objekts"
+      />
+
+      <LinkButton
+        href="/gravity"
+        active={path.startsWith("/gravity")}
+        icon={Vote}
+        name="Gravity"
       />
 
       {cosmo ? (
@@ -85,6 +92,19 @@ export function MobileLinks({ cosmo }: Props) {
             )}
           />
           <span>Objekts</span>
+        </Link>
+      </DropdownMenuItem>
+
+      {/* gravity */}
+      <DropdownMenuItem asChild>
+        <Link href="/gravity" aria-label="Gravity">
+          <Vote
+            className={cn(
+              "h-4 w-4 shrink-0 transition-all fill-transparent",
+              path === "/objekts" && "fill-white/50"
+            )}
+          />
+          <span>Gravity</span>
         </Link>
       </DropdownMenuItem>
 
