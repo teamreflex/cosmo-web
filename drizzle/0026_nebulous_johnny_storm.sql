@@ -1,2 +1,0 @@
-ALTER TABLE "gravity_poll_candidates" ADD CONSTRAINT "gravity_poll_candidates_cosmo_gravity_poll_id_gravity_polls_id_fk" FOREIGN KEY ("cosmo_gravity_poll_id") REFERENCES "public"."gravity_polls"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "gravity_polls" ADD CONSTRAINT "gravity_polls_cosmo_gravity_id_gravities_id_fk" FOREIGN KEY ("cosmo_gravity_id") REFERENCES "public"."gravities"("id") ON DELETE cascade ON UPDATE no action;
