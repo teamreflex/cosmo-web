@@ -69,7 +69,6 @@
 - [x] decide whether or not to start objekt lists new or keep the existing table
 - [x] if new, build migration tool
   - **250512**: automatic import on cosmo link
-- [ ] if existing, update `user_address` column name & drop "new" tables
 
 ### polish - done 250511
 
@@ -104,26 +103,6 @@
 ### optimization
 
 - [x] solve better-auth db waterfall on `getSession`
-- [ ] copy cosmo data into user table for easier querying?
-
-```sql
-CREATE OR REPLACE FUNCTION update_user_from_cosmo_account()
-RETURNS TRIGGER AS $$
-BEGIN
-    UPDATE "user"
-    SET cosmo_username = NEW.username,
-        cosmo_address = NEW.address
-    WHERE id = NEW.user_id;
-
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trigger_update_user_from_cosmo_account
-AFTER INSERT OR UPDATE ON cosmo_account
-FOR EACH ROW
-EXECUTE FUNCTION update_user_from_cosmo_account();
-```
 
 ### bugs
 
@@ -133,7 +112,7 @@ EXECUTE FUNCTION update_user_from_cosmo_account();
 
 ### production
 
-- [ ] wipe prod gravities, gravity_polls, gravity_poll_candidates tables
+- [x] wipe prod gravities, gravity_polls, gravity_poll_candidates tables
 - [ ] merge and deploy so database gets migrated
 - [ ] trigger gravity cron
 - [ ] run polygon address migrator
