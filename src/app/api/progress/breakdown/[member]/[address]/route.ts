@@ -9,7 +9,7 @@ import { SeasonProgress, SeasonMatrix } from "@/lib/universal/progress";
 import { and, eq } from "drizzle-orm";
 import { fetchTotal } from "../../../common";
 import { cacheHeaders } from "@/app/api/common";
-import { unobtainables } from "@/lib/universal/objekts";
+import { unobtainables } from "@/lib/unobtainables";
 
 export const runtime = "nodejs";
 

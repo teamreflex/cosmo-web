@@ -19,7 +19,8 @@ import {
   DrawerDescription,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { ObjektMetadata, unobtainables } from "@/lib/universal/objekts";
+import { ObjektMetadata } from "@/lib/universal/objekts";
+import { unobtainables } from "@/lib/unobtainables";
 import {
   QueryErrorResetBoundary,
   useQueryClient,

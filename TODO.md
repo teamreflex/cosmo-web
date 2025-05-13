@@ -89,8 +89,8 @@
 - [x] implement gravity listing
 - [x] port historical polygon data fetching to the server and cache it
 - [x] re-implement polygon display
+- [x] migrate polygon voter data, will require polygon->abstract address migration
 - [ ] polish individual gravity pages
-- [ ] migrate polygon voter data, will require polygon->abstract address migration
 
 ### stretch
 
@@ -100,12 +100,6 @@
 - [ ] contingency backup for browserless failing
 - [ ] refactor artist/member filtering
 - [ ] implement objektlist usage without cosmo signin
-
-### bugs
-
-- [x] navbar/auth suspense fallback misaligned on desktop
-- [x] gravity index crashes when no artists are selected
-- [x] link cosmo dialog opens/shows when signed out
 
 ### optimization
 
@@ -130,3 +124,17 @@ AFTER INSERT OR UPDATE ON cosmo_account
 FOR EACH ROW
 EXECUTE FUNCTION update_user_from_cosmo_account();
 ```
+
+### bugs
+
+- [x] navbar/auth suspense fallback misaligned on desktop
+- [x] gravity index crashes when no artists are selected
+- [x] link cosmo dialog opens/shows when signed out
+
+### production
+
+- [ ] wipe prod gravities, gravity_polls, gravity_poll_candidates tables
+- [ ] merge and deploy so database gets migrated
+- [ ] trigger gravity cron
+- [ ] run polygon address migrator
+- [ ] run voter data migrator

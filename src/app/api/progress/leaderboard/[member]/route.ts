@@ -12,7 +12,7 @@ import {
 } from "@/lib/universal/cosmo/common";
 import { cacheHeaders } from "@/app/api/common";
 import { z } from "zod";
-import { unobtainables } from "@/lib/universal/objekts";
+import { unobtainables } from "@/lib/unobtainables";
 
 export const runtime = "nodejs";
 const LEADERBOARD_COUNT = 25;
