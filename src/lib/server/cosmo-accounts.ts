@@ -80,6 +80,7 @@ export async function fetchFullAccount(
       {
         address: user.address,
         username: user.nickname,
+        polygonAddress: null,
       },
     ]);
 

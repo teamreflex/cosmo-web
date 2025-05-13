@@ -33,6 +33,7 @@ export async function GET(request: NextRequest) {
       const newAccounts = results.results.map((r) => ({
         username: r.nickname,
         address: r.address,
+        polygonAddress: null,
       }));
 
       try {

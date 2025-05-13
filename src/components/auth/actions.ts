@@ -83,6 +83,7 @@ export const verifyCosmo = authActionClient
       username: cosmoUser.nickname,
       cosmoId: cosmoUser.id,
       userId: ctx.session.user.id,
+      polygonAddress: null,
     });
 
     // import any existing objekt lists

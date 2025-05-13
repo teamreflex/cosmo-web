@@ -24,10 +24,14 @@ export const cosmoAccounts = pgTable(
     cosmoId: integer("cosmo_id"),
     username: citext("username", { length: 24 }).notNull(),
     address: citext("address", { length: 42 }).notNull(),
+    polygonAddress: citext("polygon_address", { length: 42 }).default(
+      sql`NULL`
+    ),
     userId: text("user_id").default(sql`NULL`),
   },
   (t) => [
     uniqueIndex("cosmo_account_address_idx").on(t.address),
+    index("cosmo_account_polygon_address_idx").on(t.polygonAddress),
     index("cosmo_account_cosmo_id_idx").on(t.cosmoId),
     index("cosmo_account_username_idx").on(t.username),
     uniqueIndex("cosmo_account_username_address_idx").on(t.username, t.address),
@@ -182,6 +186,25 @@ export const gravityPollCandidates = pgTable(
     ),
     index("gravity_poll_candidates_candidate_id_idx").on(t.candidateId),
     index("gravity_poll_candidates_cosmo_id_idx").on(t.cosmoId),
+  ]
+);
+
+export const polygonVotes = pgTable(
+  "polygon_votes",
+  {
+    id: serial("id").primaryKey(),
+    address: citext("address", { length: 42 }).notNull(),
+    createdAt: timestamp("created_at", { mode: "string" }).notNull(),
+    contract: citext("contract", { length: 42 }).notNull(),
+    pollId: integer("poll_id").notNull(),
+    candidateId: integer("candidate_id"),
+    index: integer("index").notNull(),
+    amount: integer("amount").notNull(),
+  },
+  (t) => [
+    index("polygon_votes_address_idx").on(t.address),
+    index("polygon_votes_poll_id_idx").on(t.pollId),
+    index("polygon_votes_contract_poll_id_idx").on(t.contract, t.pollId),
   ]
 );
 

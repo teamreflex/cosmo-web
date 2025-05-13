@@ -1,6 +1,6 @@
-import { desc } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import { db } from "./db";
-import { gravities } from "./db/schema";
+import { gravities, polygonVotes } from "./db/schema";
 import { alchemy } from "./http";
 import { fetchGravity, fetchPoll } from "./cosmo/gravity";
 import { ValidArtist } from "../universal/cosmo/common";
@@ -275,9 +275,47 @@ async function fetchPolygonReveals(opts: FetchRPCDataParams) {
   return reveals;
 }
 
+/**
+ * Fetch user usernames from votes for the given gravity poll.
+ */
+export async function fetchUsersFromVotes(artist: string, pollIds: number[]) {
+  const rows = await db
+    .selectDistinctOn([polygonVotes.address], { address: polygonVotes.address })
+    .from(polygonVotes)
+    .where(
+      and(
+        eq(polygonVotes.contract, ADDRESSES[artist]),
+        inArray(polygonVotes.pollId, pollIds)
+      )
+    );
+
+  if (rows.length === 0) {
+    return {};
+  }
+
+  const cosmo = await db.query.cosmoAccounts.findMany({
+    where: {
+      polygonAddress: {
+        in: rows.map((row) => row.address),
+      },
+    },
+    columns: {
+      username: true,
+      polygonAddress: true,
+    },
+  });
+
+  return cosmo
+    .filter((c) => c.polygonAddress !== null)
+    .reduce((acc, { polygonAddress, username }) => {
+      acc[polygonAddress!.toLowerCase()] = username;
+      return acc;
+    }, {} as Record<string, string | undefined>);
+}
+
 const ADDRESSES: Record<string, Hex> = {
-  triples: "0xc3E5ad11aE2F00c740E74B81f134426A3331D950",
-  artms: "0x8466e6E218F0fe438Ac8f403f684451D20E59Ee3",
+  triples: "0xc3e5ad11ae2f00c740e74b81f134426a3331d950",
+  artms: "0x8466e6e218f0fe438ac8f403f684451d20e59ee3",
 };
 
 class GravityError extends Error {}

@@ -18,6 +18,10 @@ import { findPoll } from "@/lib/client/gravity/util";
 import GravitySkeleton from "@/components/gravity/gravity-skeleton";
 import { db } from "@/lib/server/db";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
+import { fetchUsersFromVotes } from "@/lib/server/gravity";
+
+// if polygon, could be slow
+export const maxDuration = 30;
 
 type Props = {
   params: Promise<{
@@ -61,12 +65,13 @@ export default async function GravityPage(props: Props) {
     notFound();
   }
 
-  /**
-   * abstract: kick off fetching of the poll details (candidates etc)
-   */
   const queryClient = getQueryClient();
+  const { poll } = findPoll(gravity);
+
+  /**
+   * abstract: prefetch poll details (candidates etc)
+   */
   if (isPolygon === false) {
-    const { poll } = findPoll(gravity);
     queryClient.prefetchQuery({
       queryKey: pollDetailsKey({
         tokenId: BigInt(artist.comoTokenId),
@@ -76,6 +81,13 @@ export default async function GravityPage(props: Props) {
         fetchPoll(accessToken, artist.id, gravity.id, poll.id),
     });
   }
+
+  /**
+   * polygon: prefetch usernames for votes
+   */
+  const voters: Promise<Record<string, string | undefined>> = isPolygon
+    ? fetchUsersFromVotes(artist.id, [poll.pollIdOnChain])
+    : new Promise((resolve) => resolve({}));
 
   return (
     <GravityProvider>
@@ -103,7 +115,11 @@ export default async function GravityPage(props: Props) {
             <Suspense fallback={<GravitySkeleton />}>
               {isSupported ? (
                 isPolygon ? (
-                  <PolygonLiveChart artist={artist} gravity={gravity} />
+                  <PolygonLiveChart
+                    artist={artist}
+                    gravity={gravity}
+                    voters={voters}
+                  />
                 ) : (
                   <AbstractLiveChart artist={artist} gravity={gravity} />
                 )
