@@ -86,7 +86,7 @@ export default async function GravityPage(props: Props) {
    * polygon: prefetch usernames for votes
    */
   const voters: Promise<Record<string, string | undefined>> = isPolygon
-    ? fetchUsersFromVotes(artist.id, [poll.pollIdOnChain])
+    ? fetchUsersFromVotes(artist.id, poll.pollIdOnChain)
     : new Promise((resolve) => resolve({}));
 
   return (

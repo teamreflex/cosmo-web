@@ -1,6 +1,6 @@
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { db } from "./db";
-import { gravities, polygonVotes } from "./db/schema";
+import { cosmoAccounts, gravities, polygonVotes } from "./db/schema";
 import { alchemy } from "./http";
 import { fetchGravity, fetchPoll } from "./cosmo/gravity";
 import { ValidArtist } from "../universal/cosmo/common";
@@ -278,39 +278,33 @@ async function fetchPolygonReveals(opts: FetchRPCDataParams) {
 /**
  * Fetch user usernames from votes for the given gravity poll.
  */
-export async function fetchUsersFromVotes(artist: string, pollIds: number[]) {
-  const rows = await db
-    .selectDistinctOn([polygonVotes.address], { address: polygonVotes.address })
+export async function fetchUsersFromVotes(artist: string, pollId: number) {
+  const voteAddresses = db
+    .selectDistinct({ address: polygonVotes.address })
     .from(polygonVotes)
     .where(
       and(
-        eq(polygonVotes.contract, ADDRESSES[artist]),
-        inArray(polygonVotes.pollId, pollIds)
+        eq(polygonVotes.contract, ADDRESSES[artist.toLowerCase()]),
+        eq(polygonVotes.pollId, pollId)
       )
+    )
+    .as("vote_addresses");
+
+  const rows = await db
+    .select({
+      address: voteAddresses.address,
+      username: cosmoAccounts.username,
+    })
+    .from(voteAddresses)
+    .innerJoin(
+      cosmoAccounts,
+      eq(cosmoAccounts.polygonAddress, voteAddresses.address)
     );
 
-  if (rows.length === 0) {
-    return {};
-  }
-
-  const cosmo = await db.query.cosmoAccounts.findMany({
-    where: {
-      polygonAddress: {
-        in: rows.map((row) => row.address),
-      },
-    },
-    columns: {
-      username: true,
-      polygonAddress: true,
-    },
-  });
-
-  return cosmo
-    .filter((c) => c.polygonAddress !== null)
-    .reduce((acc, { polygonAddress, username }) => {
-      acc[polygonAddress!.toLowerCase()] = username;
-      return acc;
-    }, {} as Record<string, string | undefined>);
+  return rows.reduce((acc, { address, username }) => {
+    acc[address.toLowerCase()] = username;
+    return acc;
+  }, {} as Record<string, string | undefined>);
 }
 
 const ADDRESSES: Record<string, Hex> = {
