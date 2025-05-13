@@ -64,7 +64,7 @@ async function AuthState() {
 
   return (
     <ArtistProvider artists={artists} selected={selected}>
-      <Links cosmo={account?.cosmo} />
+      <Links signedIn={account !== undefined} cosmo={account?.cosmo} />
       <div className="flex grow-0 items-center justify-end gap-2">
         {!account ? (
           <StateGuest />

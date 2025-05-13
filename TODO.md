@@ -105,7 +105,7 @@
 
 - [ ] navbar/auth suspense fallback misaligned on desktop
 - [x] gravity index crashes when no artists are selected
-- [ ] link cosmo dialog opens/shows when signed out
+- [x] link cosmo dialog opens/shows when signed out
 
 ### optimization
 

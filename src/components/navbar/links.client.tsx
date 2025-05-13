@@ -25,10 +25,11 @@ import { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import { use } from "react";
 
 type Props = {
+  signedIn: boolean;
   cosmo?: PublicCosmo;
 };
 
-export function DesktopLinks({ cosmo }: Props) {
+export function DesktopLinks({ signedIn, cosmo }: Props) {
   const ctx = use(LinkCosmoContext);
   const path = usePathname();
 
@@ -55,7 +56,7 @@ export function DesktopLinks({ cosmo }: Props) {
           icon={PackageOpen}
           name="Collection"
         />
-      ) : (
+      ) : signedIn ? (
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -68,14 +69,14 @@ export function DesktopLinks({ cosmo }: Props) {
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-      )}
+      ) : null}
 
       <NavbarSearch />
     </div>
   );
 }
 
-export function MobileLinks({ cosmo }: Props) {
+export function MobileLinks({ signedIn, cosmo }: Props) {
   const ctx = use(LinkCosmoContext);
   const path = usePathname();
   const { artists, selectedIds } = useArtists();
@@ -121,13 +122,13 @@ export function MobileLinks({ cosmo }: Props) {
             <span>Collection</span>
           </Link>
         </DropdownMenuItem>
-      ) : (
-        // user needs to link a cosmo cosmo
+      ) : // user needs to link a cosmo account
+      signedIn ? (
         <DropdownMenuItem onClick={() => ctx.setOpen(true)}>
           <PackageOpen className="h-4 w-4 shrink-0 transition-all fill-transparent" />
           <span>Link COSMO</span>
         </DropdownMenuItem>
-      )}
+      ) : null}
 
       <DropdownMenuSeparator />
       <DropdownMenuGroup>

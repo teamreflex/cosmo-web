@@ -13,16 +13,17 @@ import { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import LinkCosmo from "../auth/link-cosmo";
 
 type Props = {
+  signedIn: boolean;
   cosmo?: PublicCosmo;
 };
 
-export default async function Links({ cosmo }: Props) {
+export default async function Links({ signedIn, cosmo }: Props) {
   return (
     <div className="flex grow justify-end lg:justify-center">
       <LinkCosmo>
         {/* desktop */}
         <div className="lg:flex flex-row items-center gap-6 hidden">
-          <DesktopLinks cosmo={cosmo} />
+          <DesktopLinks signedIn={signedIn} cosmo={cosmo} />
         </div>
 
         {/* mobile */}
@@ -41,7 +42,7 @@ export default async function Links({ cosmo }: Props) {
             <DropdownMenuContent>
               <DropdownMenuLabel>Menu</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <MobileLinks cosmo={cosmo} />
+              <MobileLinks signedIn={signedIn} cosmo={cosmo} />
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
