@@ -26,7 +26,10 @@ export default async function GravityPage() {
     fetchGravities(),
   ]);
 
-  const toRender = artists.filter((a) => selected.includes(a.id));
+  const toRender =
+    selected.length > 0
+      ? artists.filter((a) => selected.includes(a.id))
+      : artists;
 
   return (
     <ArtistProvider artists={artists} selected={selected}>

@@ -90,7 +90,7 @@
 - [x] port historical polygon data fetching to the server and cache it
 - [x] re-implement polygon display
 - [ ] polish individual gravity pages
-- [ ] migrate polygon voter data
+- [ ] migrate polygon voter data, will require polygon->abstract address migration
 
 ### stretch
 
@@ -100,6 +100,12 @@
 - [ ] contingency backup for browserless failing
 - [ ] refactor artist/member filtering
 - [ ] implement objektlist usage without cosmo signin
+
+### bugs
+
+- [ ] navbar/auth suspense fallback misaligned on desktop
+- [x] gravity index crashes when no artists are selected
+- [ ] link cosmo dialog opens/shows when signed out
 
 ### optimization
 
