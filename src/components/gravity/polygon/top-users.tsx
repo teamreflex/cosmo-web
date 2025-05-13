@@ -16,7 +16,6 @@ import { useMemo } from "react";
 
 type Props = {
   votes: RevealedVote[];
-  nicknames: Record<string, string | undefined>;
   candidates: PollSelectedContentImage[];
 };
 
@@ -31,7 +30,7 @@ export default function TopUsers(props: Props) {
     for (const vote of props.votes) {
       const address = vote.voter.toLowerCase();
       const candidate = props.candidates[vote.candidateId].content;
-      const nickname = props.nicknames[address];
+      const nickname = vote.username ?? address.substring(0, 8);
 
       let aggregated = voteMap.get(address);
       if (!aggregated) {
@@ -79,7 +78,7 @@ export default function TopUsers(props: Props) {
 
     // 3. sort the final top 25 desc for display
     return topUsersHeap.sort((a, b) => b.total - a.total);
-  }, [props.votes, props.candidates, props.nicknames]);
+  }, [props.votes, props.candidates]);
 
   return (
     <div className="w-full flex flex-col gap-2">

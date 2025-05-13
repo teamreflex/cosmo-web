@@ -200,6 +200,8 @@ export const polygonVotes = pgTable(
     candidateId: integer("candidate_id"),
     index: integer("index").notNull(),
     amount: integer("amount").notNull(),
+    blockNumber: integer("block_number").notNull(),
+    hash: varchar("hash", { length: 66 }).notNull(),
   },
   (t) => [
     index("polygon_votes_address_idx").on(t.address),

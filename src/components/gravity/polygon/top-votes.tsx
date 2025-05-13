@@ -5,7 +5,6 @@ import { AnimatePresence } from "motion/react";
 
 type Props = {
   votes: RevealedVote[];
-  nicknames: Record<string, string | undefined>;
   candidates: PollSelectedContentImage[];
 };
 
@@ -27,11 +26,7 @@ export default function TopVotes(props: Props) {
               damping: 30,
             }}
           >
-            <Row
-              vote={vote}
-              nickname={props.nicknames[vote.voter.toLowerCase()]}
-              candidate={props.candidates[vote.candidateId]}
-            />
+            <Row vote={vote} candidate={props.candidates[vote.candidateId]} />
           </motion.div>
         ))}
       </AnimatePresence>
@@ -41,12 +36,11 @@ export default function TopVotes(props: Props) {
 
 type RowProps = {
   vote: RevealedVote;
-  nickname: string | undefined;
   candidate: PollSelectedContentImage;
 };
 
 function Row(props: RowProps) {
-  const nickname = props.nickname ?? props.vote.voter.substring(0, 8);
+  const nickname = props.vote.username ?? props.vote.voter.substring(0, 8);
 
   return (
     <div className="w-full h-12 rounded-lg px-4 flex items-center transition-all bg-accent/70 hover:bg-accent">

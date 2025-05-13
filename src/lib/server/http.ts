@@ -29,17 +29,6 @@ export const abstract = ofetch.create({
 });
 
 /**
- * HTTP RPC client for the Alchemy API.
- */
-export const alchemy = ofetch.create({
-  baseURL: `https://api.g.alchemy.com/data/v1/${env.ALCHEMY_KEY}`,
-  headers: {
-    Authorization: `Bearer ${env.ALCHEMY_KEY}`,
-  },
-  retry: false,
-});
-
-/**
  * HTTP client for Browserless.
  */
 export const browserless = ofetch.create({

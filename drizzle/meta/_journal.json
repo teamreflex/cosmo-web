@@ -190,6 +190,13 @@
       "when": 1747111147013,
       "tag": "0026_wooden_doctor_doom",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1747117621728,
+      "tag": "0027_quick_daimon_hellstrom",
+      "breakpoints": true
     }
   ]
 }

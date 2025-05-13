@@ -16,12 +16,13 @@ export type RevealLog = {
 };
 
 export type RevealedVote = {
-  hash: string;
   pollId: number;
   voter: Hex;
   comoAmount: number;
   candidateId: number;
   blockNumber: number;
+  username: string | undefined;
+  hash: string;
 };
 
 export type AggregatedVotes = {

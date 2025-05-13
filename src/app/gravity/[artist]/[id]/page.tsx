@@ -18,7 +18,6 @@ import { findPoll } from "@/lib/client/gravity/util";
 import GravitySkeleton from "@/components/gravity/gravity-skeleton";
 import { db } from "@/lib/server/db";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
-import { fetchUsersFromVotes } from "@/lib/server/gravity";
 
 // if polygon, could be slow
 export const maxDuration = 30;
@@ -82,13 +81,6 @@ export default async function GravityPage(props: Props) {
     });
   }
 
-  /**
-   * polygon: prefetch usernames for votes
-   */
-  const voters: Promise<Record<string, string | undefined>> = isPolygon
-    ? fetchUsersFromVotes(artist.id, poll.pollIdOnChain)
-    : new Promise((resolve) => resolve({}));
-
   return (
     <GravityProvider>
       <main className="container flex flex-col py-2">
@@ -115,11 +107,7 @@ export default async function GravityPage(props: Props) {
             <Suspense fallback={<GravitySkeleton />}>
               {isSupported ? (
                 isPolygon ? (
-                  <PolygonLiveChart
-                    artist={artist}
-                    gravity={gravity}
-                    voters={voters}
-                  />
+                  <PolygonLiveChart artist={artist} gravity={gravity} />
                 ) : (
                   <AbstractLiveChart artist={artist} gravity={gravity} />
                 )

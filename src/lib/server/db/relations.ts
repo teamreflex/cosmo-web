@@ -14,6 +14,10 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.cosmoAccounts.userId,
       to: r.objektLists.userId,
     }),
+    polygonVotes: r.many.polygonVotes({
+      from: r.cosmoAccounts.polygonAddress,
+      to: r.polygonVotes.address,
+    }),
   },
   lockedObjekts: {
     profile: r.one.cosmoAccounts({
@@ -67,6 +71,12 @@ export const relations = defineRelations(schema, (r) => ({
     poll: r.one.gravityPolls({
       from: r.gravityPollCandidates.cosmoGravityPollId,
       to: r.gravityPolls.cosmoId,
+    }),
+  },
+  polygonVotes: {
+    cosmoAccount: r.one.cosmoAccounts({
+      from: r.polygonVotes.address,
+      to: r.cosmoAccounts.polygonAddress,
     }),
   },
   user: {
