@@ -130,18 +130,22 @@ export function MobileLinks({ signedIn, cosmo }: Props) {
         </DropdownMenuItem>
       ) : null}
 
-      <DropdownMenuSeparator />
-      <DropdownMenuGroup>
-        {artists
-          .sort((a, b) => a.comoTokenId - b.comoTokenId)
-          .map((artist) => (
-            <ArtistItem
-              key={artist.id}
-              artist={artist}
-              isSelected={selectedIds.includes(artist.id)}
-            />
-          ))}
-      </DropdownMenuGroup>
+      {signedIn === false && (
+        <div className="contents">
+          <DropdownMenuSeparator />
+          <DropdownMenuGroup>
+            {artists
+              .sort((a, b) => a.comoTokenId - b.comoTokenId)
+              .map((artist) => (
+                <ArtistItem
+                  key={artist.id}
+                  artist={artist}
+                  isSelected={selectedIds.includes(artist.id)}
+                />
+              ))}
+          </DropdownMenuGroup>
+        </div>
+      )}
     </div>
   );
 }

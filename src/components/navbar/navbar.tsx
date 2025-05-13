@@ -1,8 +1,8 @@
 import Logo from "../logo";
-import { Suspense } from "react";
+import { Fragment, Suspense } from "react";
 import UpdateDialog from "../misc/update-dialog";
 import SystemStatus from "../misc/system-status";
-import Links, { LinksSkeleton } from "./links.server";
+import Links from "./links.server";
 import {
   getCurrentAccount,
   getArtistsWithMembers,
@@ -15,6 +15,8 @@ import { ErrorBoundary } from "react-error-boundary";
 import AuthFallback from "../auth/auth-fallback";
 import { ArtistProvider } from "@/hooks/use-artists";
 import Skeleton from "../skeleton/skeleton";
+import { IconCards } from "@tabler/icons-react";
+import { Menu, Search, Vote } from "lucide-react";
 
 export default async function Navbar() {
   return (
@@ -45,12 +47,27 @@ export default async function Navbar() {
 
 function NavbarFallback() {
   return (
-    <div className="flex flex-row gap-2 lg:gap-4 items-center ml-auto">
-      <LinksSkeleton />
-      <div className="flex grow-0 items-center justify-end gap-2">
+    <Fragment>
+      {/* desktop */}
+      <div className="hidden lg:contents">
+        <div className="flex justify-center items-center gap-6">
+          <IconCards className="hidden lg:block size-8 shrink-0 fill-transparent" />
+          <Vote className="hidden lg:block size-8 shrink-0 fill-transparent" />
+          <Search className="hidden lg:block size-8 shrink-0 fill-transparent" />
+        </div>
+
+        <div className="flex grow-0 items-center justify-end gap-2">
+          <Skeleton className="size-8 rounded-full shrink-0 aspect-square" />
+        </div>
+      </div>
+
+      {/* mobile */}
+      <div className="flex flex-row gap-2 lg:hidden items-center ml-auto">
+        <Search className="size-8 shrink-0 drop-shadow-lg fill-transparent" />
+        <Menu className=" size-8 shrink-0 drop-shadow-lg" />
         <Skeleton className="size-8 rounded-full shrink-0 aspect-square" />
       </div>
-    </div>
+    </Fragment>
   );
 }
 

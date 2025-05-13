@@ -6,9 +6,8 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { DesktopLinks, MobileLinks } from "./links.client";
-import { Menu, Search, Vote } from "lucide-react";
+import { Menu } from "lucide-react";
 import NavbarSearch from "./navbar-search";
-import { IconCards } from "@tabler/icons-react";
 import { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import LinkCosmo from "../auth/link-cosmo";
 
@@ -47,18 +46,6 @@ export default async function Links({ signedIn, cosmo }: Props) {
           </DropdownMenu>
         </div>
       </LinkCosmo>
-    </div>
-  );
-}
-
-export function LinksSkeleton() {
-  return (
-    <div className="flex justify-center items-center gap-6">
-      <IconCards className="hidden lg:block size-8 shrink-0 fill-transparent" />
-      <Vote className="hidden lg:block size-8 shrink-0 fill-transparent" />
-      <Search className="hidden lg:block size-8 shrink-0 fill-transparent" />
-
-      <Menu className="lg:hidden size-8 shrink-0 drop-shadow-lg" />
     </div>
   );
 }

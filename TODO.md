@@ -103,7 +103,7 @@
 
 ### bugs
 
-- [ ] navbar/auth suspense fallback misaligned on desktop
+- [x] navbar/auth suspense fallback misaligned on desktop
 - [x] gravity index crashes when no artists are selected
 - [x] link cosmo dialog opens/shows when signed out
 
