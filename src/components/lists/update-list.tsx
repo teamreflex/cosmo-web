@@ -1,3 +1,5 @@
+"use client";
+
 import type { ObjektList } from "@/lib/server/db/schema";
 import { Button } from "../ui/button";
 import { Edit, Loader2 } from "lucide-react";
@@ -22,12 +24,15 @@ import {
   FormMessage,
 } from "../ui/form";
 import { useFormState } from "react-hook-form";
+import { useState } from "react";
+import { toast } from "../ui/use-toast";
 
 type Props = {
   objektList: ObjektList;
 };
 
 export default function UpdateList({ objektList }: Props) {
+  const [open, setOpen] = useState(false);
   const { form, handleSubmitWithAction } = useHookFormAction(
     updateObjektList,
     zodResolver(updateObjektListSchema),
@@ -38,11 +43,19 @@ export default function UpdateList({ objektList }: Props) {
           name: objektList.name,
         },
       },
+      actionProps: {
+        onSuccess: () => {
+          toast({
+            description: "Objekt list updated",
+          });
+          setOpen(false);
+        },
+      },
     }
   );
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="secondary" size="icon" className="rounded-full">
           <Edit />

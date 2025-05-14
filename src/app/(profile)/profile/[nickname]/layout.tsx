@@ -5,7 +5,7 @@ import ComoButton from "@/components/profile/como-button";
 import ProgressButton from "@/components/profile/progress-button";
 import UserAvatar from "@/components/profile/user-avatar";
 import Skeleton from "@/components/skeleton/skeleton";
-import ListDropdown from "@/components/lists/list-dropdown";
+import ListDropdownClient from "@/components/lists/list-dropdown.client";
 import Link from "next/link";
 import ComoBalanceRenderer from "@/components/navbar/como-balances";
 import { Addresses } from "@/lib/utils";
@@ -85,14 +85,17 @@ export default async function ProfileLayout(props: Props) {
           <TradesButton username={target.cosmo.username} />
           <ComoButton username={target.cosmo.username} />
           <ProgressButton username={target.cosmo.username} />
-          <ListDropdown
+          <ListDropdownClient
             objektLists={target.objektLists}
-            username={target.cosmo.username}
             allowCreate={authenticated}
+            username={target.cosmo.username}
           />
 
           {/* content gets portaled in */}
-          <div className="h-10 lg:h-8 flex items-center" id="help" />
+          <div
+            className="h-10 lg:h-8 flex items-center empty:hidden"
+            id="help"
+          />
           <div
             className="h-10 flex items-center lg:hidden"
             id="filters-button"

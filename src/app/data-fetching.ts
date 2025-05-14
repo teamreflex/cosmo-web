@@ -42,7 +42,6 @@ export const getTokenBalances = cache(async (address: string) =>
 
 /**
  * Fetch the current session.
- * Sessions are cookie-cached for 5 minutes.
  */
 export const getSession = cache(async () => {
   const session = await auth.api.getSession({

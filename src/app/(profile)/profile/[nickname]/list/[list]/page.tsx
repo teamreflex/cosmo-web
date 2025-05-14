@@ -21,6 +21,8 @@ import { ProfileProvider } from "@/hooks/use-profile";
 import { fetchFilterData } from "@/lib/server/objekts/filter-data";
 import { ArtistProvider } from "@/hooks/use-artists";
 import { UserStateProvider } from "@/hooks/use-user-state";
+import UpdateList from "@/components/lists/update-list";
+import DeleteList from "@/components/lists/delete-list";
 
 type Props = {
   searchParams: Promise<Record<string, string>>;
@@ -58,7 +60,7 @@ export default async function ObjektListPage(props: Props) {
       props.params,
     ]);
 
-  // get current and target accouonts
+  // get current and target accounts
   const [account, { target, objektList }] = await Promise.all([
     getCurrentAccount(session?.session.userId),
     getData(nickname, list),
@@ -81,8 +83,7 @@ export default async function ObjektListPage(props: Props) {
     queryClient.prefetchInfiniteQuery({
       queryKey: [
         "objekt-list",
-        list,
-        target.user.id,
+        objektList.id,
         {
           ...parseObjektListFilters(filters),
           artists: selected,
@@ -90,8 +91,7 @@ export default async function ObjektListPage(props: Props) {
       ],
       queryFn: async ({ pageParam = 0 }) =>
         prefetchObjektList({
-          slug: list,
-          userId: target.user!.id,
+          id: objektList.id,
           filters: {
             ...filters,
             page: pageParam,
@@ -102,15 +102,27 @@ export default async function ObjektListPage(props: Props) {
   }
 
   const { objektLists, ...targetAccount } = target;
+  const authenticated = account?.user?.id === objektList.userId;
 
   return (
     <UserStateProvider {...account}>
       <ArtistProvider artists={artists} selected={selected}>
         <ProfileProvider target={targetAccount} objektLists={objektLists}>
           <HydrationBoundary state={dehydrate(queryClient)}>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h3 className="text-xl font-cosmo">{objektList.name}</h3>
+
+              {authenticated && (
+                <div className="flex items-center gap-2">
+                  <UpdateList objektList={objektList} />
+                  <DeleteList objektList={objektList} />
+                </div>
+              )}
+            </div>
+
             <ListRenderer
               objektList={objektList}
-              authenticated={account?.user !== undefined}
+              authenticated={authenticated}
             />
           </HydrationBoundary>
         </ProfileProvider>
@@ -122,7 +134,10 @@ export default async function ObjektListPage(props: Props) {
 const getData = cache(async (nickname: string, list: string) => {
   const target = await getTargetAccount(nickname);
   const objektList = target.user
-    ? await fetchObjektList(target.user.id, list)
+    ? await fetchObjektList({
+        userId: target.user.id,
+        slug: list,
+      })
     : undefined;
 
   return {

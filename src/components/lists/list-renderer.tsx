@@ -7,8 +7,6 @@ import {
 } from "@/lib/universal/objekts";
 import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
 import ListOverlay from "./list-overlay";
-import DeleteList from "./delete-list";
-import UpdateList from "./update-list";
 import { useFilters } from "@/hooks/use-filters";
 import FiltersContainer from "../collection/filters-container";
 import { ofetch } from "ofetch";
@@ -21,7 +19,6 @@ import VirtualizedGrid from "../objekt/virtualized-grid";
 import LoaderRemote from "../objekt/loader-remote";
 import ObjektIndexFilters from "../collection/filter-contexts/objekt-index-filters";
 import type { ObjektList } from "@/lib/server/db/schema";
-import { useProfileContext } from "@/hooks/use-profile";
 import { useGridColumns } from "@/hooks/use-grid-columns";
 
 type Props = {
@@ -31,7 +28,6 @@ type Props = {
 
 export default function ListRenderer(props: Props) {
   const { searchParams } = useFilters();
-  const user = useProfileContext((ctx) => ctx.target!.user);
   const gridColumns = useGridColumns();
 
   /**
@@ -39,10 +35,10 @@ export default function ListRenderer(props: Props) {
    */
   const options = {
     filtering: "remote",
-    queryKey: ["objekt-list", props.objektList.slug, user!.id],
+    queryKey: ["objekt-list", props.objektList.id],
     queryFunction: async ({ pageParam = 0 }: { pageParam?: number }) => {
       const url = new URL(
-        `/api/objekt-list/entries/${props.objektList.slug}/${user!.id}`,
+        `/api/objekt-list/entries/${props.objektList.id}`,
         baseUrl()
       );
 
@@ -67,12 +63,7 @@ export default function ListRenderer(props: Props) {
   >;
 
   return (
-    <section className="flex flex-col">
-      <Title
-        authenticated={props.authenticated}
-        objektList={props.objektList}
-      />
-
+    <div className="flex flex-col">
       <FiltersContainer isPortaled>
         <ObjektIndexFilters />
       </FiltersContainer>
@@ -103,26 +94,6 @@ export default function ListRenderer(props: Props) {
           )}
         </LoaderRemote>
       </FilteredObjektDisplay>
-    </section>
-  );
-}
-
-type TitleProps = {
-  authenticated: boolean;
-  objektList: ObjektList;
-};
-
-function Title(props: TitleProps) {
-  return (
-    <div className="flex flex-wrap items-center justify-between gap-2">
-      <h3 className="text-xl font-cosmo">{props.objektList.name}</h3>
-
-      {props.authenticated && (
-        <div className="flex items-center gap-2">
-          <UpdateList objektList={props.objektList} />
-          <DeleteList objektList={props.objektList} />
-        </div>
-      )}
     </div>
   );
 }

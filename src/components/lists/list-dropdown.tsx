@@ -19,14 +19,14 @@ import DiscordFormatDialog from "./discord-format-dialog";
 
 type Props = {
   objektLists: ObjektList[];
-  username?: string;
   allowCreate: boolean;
+  createListUrl: (list: ObjektList) => string;
 };
 
 export default function ListDropdown({
   objektLists,
-  username,
   allowCreate,
+  createListUrl,
 }: Props) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
@@ -58,7 +58,7 @@ export default function ListDropdown({
               onClick={() => setDropdownOpen(false)}
             >
               <Link
-                href={`/@${username}/list/${list.slug}`}
+                href={createListUrl(list)}
                 className="w-full flex items-center justify-between"
               >
                 {list.name}

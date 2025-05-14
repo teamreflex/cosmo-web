@@ -37,25 +37,17 @@ export function parseObjektListFilters(filters: z.infer<typeof objektList>) {
 }
 
 type FetchObjektList = {
-  slug: string;
-  userId: string;
+  id: string;
   filters: z.infer<typeof objektList>;
 };
 
 /**
  * Fetch objekts from the indexer with given filters.
  */
-export async function fetchObjektList({
-  slug,
-  userId,
-  filters,
-}: FetchObjektList) {
+export async function fetchObjektList({ filters, id }: FetchObjektList) {
   // fetch objekt list from database
   const objektList = await db.query.objektLists.findFirst({
-    where: {
-      slug,
-      userId,
-    },
+    where: { id },
     with: {
       entries: true,
     },

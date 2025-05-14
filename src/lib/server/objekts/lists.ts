@@ -3,16 +3,20 @@ import { db } from "../db";
 import { dbi } from "../db/interactive";
 import { objektListEntries, objektLists } from "../db/schema";
 
+type FetchObjektList =
+  | {
+      id: string;
+    }
+  | {
+      userId: string;
+      slug: string;
+    };
+
 /**
  * Fetch a single objekt list.
  */
-export async function fetchObjektList(userId: string, slug: string) {
-  return await db.query.objektLists.findFirst({
-    where: {
-      userId,
-      slug,
-    },
-  });
+export async function fetchObjektList(where: FetchObjektList) {
+  return await db.query.objektLists.findFirst({ where });
 }
 
 /**

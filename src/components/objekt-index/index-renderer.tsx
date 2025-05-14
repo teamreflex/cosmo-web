@@ -117,16 +117,20 @@ function Title(props: { objektLists: ObjektList[] }) {
 }
 
 function Options(props: { objektLists: ObjektList[] }) {
-  const { cosmo } = useUserState();
+  const { user, cosmo } = useUserState();
 
-  if (!cosmo || !cosmo.username) return null;
+  if (!user) return null;
+
+  function createListUrl(list: ObjektList) {
+    return cosmo ? `/@${cosmo.username}/list/${list.slug}` : `/list/${list.id}`;
+  }
 
   return (
     <div className="flex gap-2 items-center">
       <ListDropdown
         objektLists={props.objektLists}
         allowCreate={true}
-        username={cosmo.username}
+        createListUrl={createListUrl}
       />
     </div>
   );

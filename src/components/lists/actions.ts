@@ -39,7 +39,10 @@ export const createObjektList = authActionClient
     const slug = createSlug(parsedInput.name);
 
     // check if the slug has already been used
-    const list = await fetchObjektList(ctx.session.session.userId, slug);
+    const list = await fetchObjektList({
+      userId: ctx.session.session.userId,
+      slug,
+    });
     if (list !== undefined) {
       returnValidationErrors(createObjektListSchema, {
         name: {
@@ -89,7 +92,7 @@ export const updateObjektList = authActionClient
     }
 
     // update list
-    await db
+    const [result] = await db
       .update(objektLists)
       .set({ name: parsedInput.name, slug })
       .where(
@@ -100,7 +103,20 @@ export const updateObjektList = authActionClient
       )
       .returning();
 
-    redirect(`/@${ctx.session.user.displayUsername}/list/${slug}`);
+    // check if the user has a linked cosmo
+    const cosmo = await db.query.cosmoAccounts.findFirst({
+      where: {
+        userId: ctx.session.session.userId,
+      },
+    });
+
+    // redirect to their profile if they have a linked cosmo
+    if (cosmo) {
+      redirect(`/@${cosmo.username}/list/${result.slug}`);
+    }
+
+    // otherwise redirect to the separate list page
+    redirect(`/list/${result.id}`);
   });
 
 /**
