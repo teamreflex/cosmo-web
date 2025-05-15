@@ -34,7 +34,7 @@ export default function DeleteAccount() {
               <DialogDescription>
                 This will delete all data associated with your account and
                 cannot be undone. You will be sent a verification email to
-                confirm.
+                confirm deletion.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
@@ -46,7 +46,7 @@ export default function DeleteAccount() {
                 disabled={status === "pending"}
                 onClick={() => mutate()}
               >
-                <span>Delete</span>
+                <span>Send Email</span>
                 {status === "pending" && (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 )}
@@ -67,8 +67,8 @@ function Success(props: { onClose: () => void }) {
         Click the link in the email to confirm the deletion of your account.
       </p>
       <p className="text-sm text-muted-foreground">
-        Your account will not be deleted until the verification email is
-        clicked.
+        Your account will not be deleted until the link in the verification
+        email is clicked.
       </p>
 
       <DialogFooter className="mt-4">
