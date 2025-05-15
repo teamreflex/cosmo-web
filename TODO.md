@@ -109,6 +109,8 @@
 - [x] navbar/auth suspense fallback misaligned on desktop
 - [x] gravity index crashes when no artists are selected
 - [x] link cosmo dialog opens/shows when signed out
+- [x] fix sign in form overflowing on mobile
+- [x] fix password reset page
 
 ### production
 
@@ -117,3 +119,4 @@
 - [ ] trigger gravity cron
 - [ ] run polygon address migrator
 - [ ] run voter data migrator
+- [ ] once stabilized, run objekt receivedAt migrator

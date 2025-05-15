@@ -5,7 +5,6 @@ import { fetchGravity, fetchPoll } from "./cosmo/gravity";
 import { ValidArtist } from "../universal/cosmo/common";
 import { getProxiedToken } from "./handlers/withProxiedToken";
 import { findPoll } from "../client/gravity/util";
-import { Hex } from "viem";
 import { RevealedVote } from "../client/gravity/polygon/types";
 import { unstable_cacheLife } from "next/cache";
 
@@ -69,7 +68,7 @@ export async function fetchPolygonGravity(artist: ValidArtist, id: number) {
       (vote) =>
         ({
           pollId: Number(vote.pollId),
-          voter: vote.address as Hex,
+          voter: vote.address,
           comoAmount: vote.amount,
           candidateId: vote.candidateId!,
           blockNumber: vote.blockNumber,
@@ -94,7 +93,7 @@ export async function fetchPolygonGravity(artist: ValidArtist, id: number) {
   return { poll, revealedVotes, comoByCandidate, totalComoUsed };
 }
 
-const ADDRESSES: Record<string, Hex> = {
+const ADDRESSES: Record<string, string> = {
   triples: "0xc3e5ad11ae2f00c740e74b81f134426a3331d950",
   artms: "0x8466e6e218f0fe438ac8f403f684451d20e59ee3",
 };

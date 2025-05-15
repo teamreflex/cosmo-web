@@ -1,11 +1,9 @@
-import { Hex } from "viem";
-
 export type VoteLog = {
   pollId: bigint;
   voteIndex: bigint;
-  voter: `0x${string}`;
+  voter: string;
   comoAmount: bigint;
-  hash: `0x${string}`;
+  hash: string;
   blockNumber: number;
 };
 
@@ -17,7 +15,7 @@ export type RevealLog = {
 
 export type RevealedVote = {
   pollId: number;
-  voter: Hex;
+  voter: string;
   comoAmount: number;
   candidateId: number;
   blockNumber: number;

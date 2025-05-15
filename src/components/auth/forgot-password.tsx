@@ -28,6 +28,7 @@ export default function ForgotPassword({ onCancel }: Props) {
         email: data.email,
         redirectTo: "/auth/reset-password",
       });
+      console.log(result);
 
       if (result.error) {
         throw new Error(getAuthErrorMessage(result.error));
