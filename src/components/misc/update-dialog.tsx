@@ -77,11 +77,11 @@ const updates = [
   {
     date: "2025-05-17",
     changes: [
-      "User accounts are now available. Sign in via Discord, Twitter or email & password.",
-      "Objekt lists can be created again, linked to your user account instead of COSMO ID.",
-      "COSMO IDs can be linked via a one-time QR code sign in. This will import any old objekt lists, and allow objekt pins and locking again.",
       "Gravity results are now available. Pre-migration gravity data has been imported, and any future gravity results should be realtime.",
       "All objekts have had their received time fixed, so collections are now properly sorted.",
+      // "User accounts are now available. Sign in via Discord, Twitter or email & password.",
+      // "Objekt lists can be created again, linked to your user account instead of COSMO ID.",
+      // "COSMO IDs can be linked and verified via a one-time QR code sign in. This will import any old objekt lists, and allow objekt pins and locking again.",
     ],
   },
 ];

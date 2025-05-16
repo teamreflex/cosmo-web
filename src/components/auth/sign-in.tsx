@@ -15,11 +15,16 @@ import WithEmail from "./with-email";
 import SignInWithTwitter from "./with-twitter";
 import SignUp from "./sign-up";
 import ForgotPassword from "./forgot-password";
+import { useSearchParams } from "next/navigation";
 
 type State = "sign-in" | "sign-up" | "forgot-password";
 
 export default function SignIn() {
   const [state, setState] = useState<State>("sign-in");
+  const searchParams = useSearchParams();
+
+  const login = searchParams.get("login");
+  if (!login) return null;
 
   function onOpenChange(open: boolean) {
     if (!open) {
