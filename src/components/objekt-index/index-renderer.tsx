@@ -29,12 +29,12 @@ type Props = {
 };
 
 export default function IndexRenderer(props: Props) {
-  const account = useUserState();
+  const { user } = useUserState();
   const gridColumns = useGridColumns();
   const [, setActiveObjekt] = useQueryState("id", parseAsString);
   const options = useObjektIndex();
 
-  const authenticated = account !== undefined;
+  const authenticated = user !== undefined;
 
   return (
     <div className="flex flex-col">

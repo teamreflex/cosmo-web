@@ -16,12 +16,12 @@ type Props = {
 };
 
 export default function ProfileRenderer({ targetCosmo }: Props) {
-  const account = useUserState();
+  const { user } = useUserState();
   const gridColumns = useGridColumns();
 
   const { searchParams, showLocked, setShowLocked, dataSource, setDataSource } =
     useFilters({
-      dataSource: account?.user?.collectionMode,
+      dataSource: user?.collectionMode,
     });
 
   return (

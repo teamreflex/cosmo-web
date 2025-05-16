@@ -20,8 +20,13 @@ export default function StateAuthenticated({ user, cosmo }: Props) {
 
   function signOut() {
     startTransition(async () => {
-      await authClient.signOut();
-      router.refresh();
+      await authClient.signOut({
+        fetchOptions: {
+          onSuccess: () => {
+            router.refresh();
+          },
+        },
+      });
     });
   }
 
