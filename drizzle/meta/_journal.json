@@ -197,6 +197,13 @@
       "when": 1747117621728,
       "tag": "0027_quick_daimon_hellstrom",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1747382359331,
+      "tag": "0028_goofy_boomer",
+      "breakpoints": true
     }
   ]
 }

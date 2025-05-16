@@ -293,6 +293,13 @@ export const auth = betterAuth({
         input: true,
         returned: true,
       },
+      showSocials: {
+        type: "boolean",
+        required: false,
+        defaultValue: false,
+        input: true,
+        returned: true,
+      },
     },
   },
   account: {
@@ -374,5 +381,6 @@ export function toPublicUser(
       discord: user.discord ?? undefined,
       twitter: user.twitter ?? undefined,
     },
+    showSocials: user.showSocials ?? false,
   };
 }

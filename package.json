@@ -31,7 +31,7 @@
     "@tanstack/react-query-next-experimental": "^5.76.1",
     "@tanstack/react-virtual": "^3.13.8",
     "babel-plugin-react-compiler": "19.1.0-rc.2",
-    "better-auth": "1.2.8-beta.7",
+    "better-auth": "1.2.8",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",

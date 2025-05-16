@@ -4,8 +4,7 @@ import {
   FormDescription,
   FormField,
   FormItem,
-  FormMessage,
-  useFormField,
+  FormLabel,
 } from "@/components/ui/form";
 import { toast } from "@/components/ui/use-toast";
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
@@ -14,22 +13,22 @@ import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2, Save } from "lucide-react";
-import { updateEmailSchema } from "@/lib/universal/schema/auth";
+import { Loader2 } from "lucide-react";
+import { updateSocialsSchema } from "@/lib/universal/schema/auth";
+import { Switch } from "@/components/ui/switch";
 
 type Props = {
-  email: string;
+  showSocials: boolean;
+  discord?: string;
+  twitter?: string;
 };
 
-export default function UpdateEmail({ email }: Props) {
+export default function UpdateSocial(props: Props) {
   const router = useRouter();
   const mutation = useMutation({
-    mutationFn: async (data: z.infer<typeof updateEmailSchema>) => {
-      const result = await authClient.changeEmail({
-        newEmail: data.email,
-      });
+    mutationFn: async (data: z.infer<typeof updateSocialsSchema>) => {
+      const result = await authClient.updateUser(data);
       if (result.error) {
         throw new Error(getAuthErrorMessage(result.error));
       }
@@ -38,13 +37,13 @@ export default function UpdateEmail({ email }: Props) {
   });
 
   const form = useForm({
-    resolver: zodResolver(updateEmailSchema),
+    resolver: zodResolver(updateSocialsSchema),
     defaultValues: {
-      email,
+      showSocials: props.showSocials,
     },
   });
 
-  function handleSubmit(data: z.infer<typeof updateEmailSchema>) {
+  function handleSubmit(data: z.infer<typeof updateSocialsSchema>) {
     mutation.mutate(data, {
       onSuccess: () => {
         router.refresh();
@@ -66,45 +65,37 @@ export default function UpdateEmail({ email }: Props) {
       >
         <FormField
           control={form.control}
-          name="email"
+          name="showSocials"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="flex flex-row items-center justify-between">
+              <div className="space-y-0.5">
+                <FormLabel>Show Socials</FormLabel>
+                <FormDescription>
+                  When enabled, any social accounts you sign-in with will be
+                  displayed on your profile.
+                </FormDescription>
+              </div>
               <FormControl>
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="email"
-                    placeholder="me@example.com"
-                    data-1p-ignore
-                    {...field}
-                  />
-
-                  <Submit isPending={mutation.isPending} />
-                </div>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
               </FormControl>
-              <FormDescription>
-                If changing email address, you will be sent a verification
-                email.
-              </FormDescription>
-              <FormMessage />
             </FormItem>
           )}
         />
+
+        <Submit isPending={mutation.isPending} />
       </form>
     </Form>
   );
 }
 
 function Submit(props: { isPending: boolean }) {
-  const field = useFormField();
-  console.log(field);
-
   return (
-    <Button type="submit" disabled={props.isPending || field.isDirty === false}>
-      {props.isPending ? (
-        <Loader2 className="w-4 h-4 animate-spin" />
-      ) : (
-        <Save className="w-4 h-4" />
-      )}
+    <Button className="ml-auto w-fit" type="submit" disabled={props.isPending}>
+      <span>Save</span>
+      {props.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
     </Button>
   );
 }

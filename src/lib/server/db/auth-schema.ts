@@ -30,6 +30,7 @@ export const user = pgTable(
       .default("blockchain"),
     discord: text("discord"),
     twitter: text("twitter"),
+    showSocials: boolean("show_socials").notNull().default(false),
   },
   (t) => [
     index("user_username_idx").on(t.username),

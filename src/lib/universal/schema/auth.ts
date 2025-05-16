@@ -42,3 +42,7 @@ export const updatePasswordSchema = z.object({
 export const updateUsernameSchema = z.object({
   username: usernameSchema.optional(),
 });
+
+export const updateSocialsSchema = z.object({
+  showSocials: z.coerce.boolean(),
+});

@@ -52,8 +52,8 @@ importers:
         specifier: 19.1.0-rc.2
         version: 19.1.0-rc.2
       better-auth:
-        specifier: 1.2.8-beta.7
-        version: 1.2.8-beta.7
+        specifier: 1.2.8
+        version: 1.2.8
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -3433,8 +3433,8 @@ packages:
   base64-js@1.5.1:
     resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
 
-  better-auth@1.2.8-beta.7:
-    resolution: {integrity: sha512-gVApvvhnPVqMCYYLMhxUfbTi5fJYfp9rcsoJSjjTOMV+CIc7KVlYN6Qo8E7ju1JeRU5ae1Wl1NdXrolRJHjmaQ==}
+  better-auth@1.2.8:
+    resolution: {integrity: sha512-y8ry7ZW3/3ZIr82Eo1zUDtMzdoQlFnwNuZ0+b0RxoNZgqmvgTIc/0tCDC7NDJerqSu4UCzer0dvYxBsv3WMIGg==}
 
   better-call@1.0.9:
     resolution: {integrity: sha512-Qfm0gjk0XQz0oI7qvTK1hbqTsBY4xV2hsHAxF8LZfUYl3RaECCIifXuVqtPpZJWvlCCMlQSvkvhhyuApGUba6g==}
@@ -10838,7 +10838,7 @@ snapshots:
 
   base64-js@1.5.1: {}
 
-  better-auth@1.2.8-beta.7:
+  better-auth@1.2.8:
     dependencies:
       '@better-auth/utils': 0.2.5
       '@better-fetch/fetch': 1.1.18

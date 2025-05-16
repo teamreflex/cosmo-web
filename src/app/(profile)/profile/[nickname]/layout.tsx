@@ -68,12 +68,14 @@ export default async function ProfileLayout(props: Props) {
               <div className="flex flex-row gap-2 h-5">
                 {target.verified && <CosmoVerifiedBadge />}
                 {target.cosmo.address === Addresses.SPIN && <ModhausBadge />}
-                {target.user?.social.discord && (
-                  <DiscordBadge handle={target.user.social.discord} />
-                )}
-                {target.user?.social.twitter && (
-                  <TwitterBadge handle={target.user.social.twitter} />
-                )}
+                {target.user?.showSocials === true &&
+                  target.user?.social.discord !== undefined && (
+                    <DiscordBadge handle={target.user.social.discord} />
+                  )}
+                {target.user?.showSocials === true &&
+                  target.user?.social.twitter !== undefined && (
+                    <TwitterBadge handle={target.user.social.twitter} />
+                  )}
               </div>
             </div>
           </div>

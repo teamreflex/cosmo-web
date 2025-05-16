@@ -3,7 +3,6 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
   useFormField,
 } from "@/components/ui/form";
@@ -43,7 +42,7 @@ export default function UpdateUsername({ username }: Props) {
     },
   });
 
-  const placeholder = useMemo(() => randomHandle(), []);
+  const placeholder = useMemo(() => `${randomHandle()}...`, []);
 
   function handleSubmit(data: z.infer<typeof updateUsernameSchema>) {
     mutation.mutate(data, {
@@ -70,7 +69,6 @@ export default function UpdateUsername({ username }: Props) {
           name="username"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Username</FormLabel>
               <FormControl>
                 <div className="flex items-center gap-2">
                   <Input placeholder={placeholder} data-1p-ignore {...field} />

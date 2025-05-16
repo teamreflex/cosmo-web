@@ -63,6 +63,7 @@ export async function fetchFullAccount(
           discord: undefined,
           twitter: undefined,
         },
+        showSocials: false,
       },
       lockedObjekts: [],
       pins: [],

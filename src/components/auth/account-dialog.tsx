@@ -32,14 +32,13 @@ export default function AccountDialog({ open, onOpenChange, cosmo }: Props) {
           <DialogDescription>Manage your account here.</DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2">
           <Suspense fallback={<Skeleton className="w-full h-9" />}>
             <Profile />
           </Suspense>
 
-          <Separator className="my-2" />
           <div className="flex flex-col">
-            <h3 className="text-lg font-semibold">Social Sign In</h3>
+            <h3 className="text-lg font-semibold">Sign In</h3>
             <Suspense
               fallback={
                 <div className="flex flex-col gap-2">

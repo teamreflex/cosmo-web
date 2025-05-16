@@ -11,4 +11,5 @@ export type PublicUser = {
     discord: string | undefined;
     twitter: string | undefined;
   };
+  showSocials: boolean;
 };
