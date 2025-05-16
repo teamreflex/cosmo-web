@@ -47,6 +47,10 @@ export default function UpdateEmail({ email }: Props) {
   function handleSubmit(data: z.infer<typeof updateEmailSchema>) {
     mutation.mutate(data, {
       onSuccess: () => {
+        toast({
+          description:
+            "An email has been sent to verify your new email address.",
+        });
         router.refresh();
       },
       onError: (error) => {

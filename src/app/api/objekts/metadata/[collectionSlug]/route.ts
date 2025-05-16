@@ -65,7 +65,6 @@ export async function GET(_: Request, props: Params) {
 
 /**
  * Fetch the number of copies of a collection.
- * TODO: Refactor to calculate based on SCO count, due to transferability status not being accurate.
  */
 async function fetchCollection(slug: string) {
   const result = await indexer

@@ -12,7 +12,6 @@ import {
   IconBrandTwitterFilled,
 } from "@tabler/icons-react";
 import Link from "next/link";
-import { env } from "@/env";
 import { Check } from "lucide-react";
 
 /**
@@ -34,7 +33,7 @@ export function CosmoVerifiedBadge() {
         <TooltipContent side="bottom" align="start">
           <div className="flex flex-row gap-2 items-center">
             <Check className="w-4 h-4" />
-            <span>Linked to an {env.NEXT_PUBLIC_APP_NAME} account</span>
+            <span>COSMO is verified</span>
           </div>
         </TooltipContent>
       </Tooltip>

@@ -47,6 +47,9 @@ export default function UpdateUsername({ username }: Props) {
   function handleSubmit(data: z.infer<typeof updateUsernameSchema>) {
     mutation.mutate(data, {
       onSuccess: () => {
+        toast({
+          description: "Your username has been updated.",
+        });
         router.refresh();
       },
       onError: (error) => {

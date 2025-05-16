@@ -115,8 +115,8 @@
 ### production
 
 - [x] wipe prod gravities, gravity_polls, gravity_poll_candidates tables
-- [ ] merge and deploy so database gets migrated
-- [ ] trigger gravity cron
-- [ ] run polygon address migrator
-- [ ] run voter data migrator
-- [ ] once stabilized, run objekt receivedAt migrator
+- [x] merge and deploy so database gets migrated
+- [x] trigger gravity cron
+- [x] run polygon address migrator
+- [x] run voter data migrator
+- [x] once stabilized, run objekt receivedAt migrator

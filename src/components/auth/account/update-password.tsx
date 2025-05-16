@@ -44,6 +44,9 @@ export default function UpdatePassword() {
   function handleSubmit(data: z.infer<typeof updatePasswordSchema>) {
     mutation.mutate(data, {
       onSuccess: () => {
+        toast({
+          description: "Your password has been updated.",
+        });
         router.refresh();
       },
       onError: (error) => {

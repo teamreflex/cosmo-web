@@ -46,6 +46,9 @@ export default function UpdateSocial(props: Props) {
   function handleSubmit(data: z.infer<typeof updateSocialsSchema>) {
     mutation.mutate(data, {
       onSuccess: () => {
+        toast({
+          description: "Settings updated.",
+        });
         router.refresh();
       },
       onError: (error) => {

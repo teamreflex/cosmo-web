@@ -69,10 +69,6 @@ const config: NextConfig = {
   async rewrites() {
     return [
       {
-        source: "/@:nickname/voting",
-        destination: "/profile/:nickname/voting",
-      },
-      {
         source: "/@:nickname/progress",
         destination: "/profile/:nickname/progress",
       },
