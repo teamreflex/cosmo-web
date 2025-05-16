@@ -8,7 +8,7 @@ import {
 import { useCosmoFilters } from "./use-cosmo-filters";
 import { ReactNode } from "react";
 import { FilterType } from "@/lib/utils";
-import { useSelectedArtists } from "./use-selected-artists";
+import { useArtists } from "./use-artists";
 
 export type ObjektResponseOptions<Response, Item> = {
   filtering: FilterType;
@@ -35,7 +35,7 @@ export function objektOptions<Response, Item>(
 export function useObjektResponse<Response, Item>(
   opts: ObjektResponseOptions<Response, Item>
 ) {
-  const selectedArtists = useSelectedArtists();
+  const { selectedIds } = useArtists();
   const [filters] = useCosmoFilters();
   const query = useSuspenseInfiniteQuery({
     queryKey: [
@@ -44,7 +44,7 @@ export function useObjektResponse<Response, Item>(
         ? [
             {
               ...filters,
-              artists: selectedArtists,
+              artists: selectedIds,
             },
           ]
         : []),

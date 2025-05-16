@@ -1,4 +1,3 @@
-import { getUserByIdentifier } from "@/app/data-fetching";
 import { PropsWithChildren, Suspense } from "react";
 import CopyAddressButton from "@/components/profile/copy-address-button";
 import TradesButton from "@/components/profile/trades-button";
@@ -6,19 +5,21 @@ import ComoButton from "@/components/profile/como-button";
 import ProgressButton from "@/components/profile/progress-button";
 import UserAvatar from "@/components/profile/user-avatar";
 import Skeleton from "@/components/skeleton/skeleton";
-import ListDropdown from "@/components/lists/list-dropdown";
-import { PublicProfile } from "@/lib/universal/cosmo/auth";
-import { ObjektList } from "@/lib/universal/objekts";
+import ListDropdownClient from "@/components/lists/list-dropdown.client";
 import Link from "next/link";
-import ModhausLogo from "@/assets/modhaus.png";
-import Image from "next/image";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import ComoBalanceRenderer from "@/components/navbar/como-balances";
+import { Addresses } from "@/lib/utils";
+import {
+  getCurrentAccount,
+  getSession,
+  getTargetAccount,
+} from "@/app/data-fetching";
+import {
+  CosmoVerifiedBadge,
+  DiscordBadge,
+  ModhausBadge,
+  TwitterBadge,
+} from "@/components/profile/profile-badges";
 
 type Props = PropsWithChildren<{
   params: Promise<{
@@ -27,103 +28,89 @@ type Props = PropsWithChildren<{
 }>;
 
 export default async function ProfileLayout(props: Props) {
-  const params = await props.params;
-  const { profile, objektLists } = await getUserByIdentifier(params.nickname);
+  const [session, params] = await Promise.all([getSession(), props.params]);
+  const [account, target] = await Promise.all([
+    getCurrentAccount(session?.session.userId),
+    getTargetAccount(params.nickname),
+  ]);
 
-  const href = `/@${profile.isAddress ? profile.address : profile.nickname}`;
+  const authenticated = account?.cosmo?.address === target.cosmo.address;
 
   return (
-    <main className="relative container flex flex-col gap-2 py-2">
-      {/* user block */}
-      <div className="flex flex-col">
-        <div className="flex flex-row gap-4 items-center">
+    <main className="relative container flex flex-col py-2">
+      <div className="grid grid-rows-3 grid-cols-2 md:grid-rows-3 md:grid-cols-3 gap-2 md:h-24">
+        {/* user block */}
+        <div className="row-span-2 md:row-span-3 flex flex-row gap-4">
           <Suspense
             fallback={
-              <Skeleton className="h-20 w-20 rounded-full aspect-square shrink-0" />
+              <Skeleton className="h-24 w-24 rounded-full aspect-square shrink-0" />
             }
           >
-            <UserAvatar className="w-20 h-20" nickname={profile.nickname} />
+            <UserAvatar
+              className="w-24 h-24"
+              username={target.cosmo.username}
+            />
           </Suspense>
 
-          <div className="flex flex-col justify-between w-full">
-            <div className="flex gap-2 items-center">
+          <div className="flex flex-row">
+            <div className="flex flex-col gap-2 justify-center h-24">
               <Link
-                href={href}
-                className="w-fit text-2xl lg:text-3xl font-cosmo uppercase underline underline-offset-4 decoration-transparent hover:decoration-cosmo transition-colors"
+                href={`/@${target.cosmo.username}`}
+                className="w-fit text-2xl leading-6 font-cosmo uppercase underline underline-offset-4 decoration-transparent hover:decoration-cosmo transition-colors"
+                prefetch={false}
               >
-                {profile.nickname}
+                {target.cosmo.username}
               </Link>
 
-              {profile.isModhaus && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <Image
-                        className="invert dark:invert-0"
-                        src={ModhausLogo.src}
-                        alt="Modhaus"
-                        width={28}
-                        height={27}
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom">
-                      <span>Official Modhaus account</span>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
-            </div>
+              <ComoBalanceRenderer address={target.cosmo.address} />
 
-            <div className="flex items-center justify-between gap-2">
-              <ComoBalanceRenderer address={profile.address} />
-              <div></div>
-              <span className="h-10 flex items-center last:ml-auto">
-                <div id="objekt-total" />
-              </span>
+              {/* badges? */}
+              <div className="flex flex-row gap-2 h-5">
+                {target.verified && <CosmoVerifiedBadge />}
+                {target.cosmo.address === Addresses.SPIN && <ModhausBadge />}
+                {target.user?.showSocials === true &&
+                  target.user?.social.discord !== undefined && (
+                    <DiscordBadge handle={target.user.social.discord} />
+                  )}
+                {target.user?.showSocials === true &&
+                  target.user?.social.twitter !== undefined && (
+                    <TwitterBadge handle={target.user.social.twitter} />
+                  )}
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* mobile buttons */}
-      <Buttons profile={profile} objektLists={objektLists} />
+        {/* profile-related buttons */}
+        <div className="row-start-3 md:row-start-auto col-span-3 md:col-span-2 flex flex-wrap gap-2 justify-center md:justify-end">
+          <CopyAddressButton address={target.cosmo.address} />
+          <TradesButton username={target.cosmo.username} />
+          <ComoButton username={target.cosmo.username} />
+          <ProgressButton username={target.cosmo.username} />
+          <ListDropdownClient
+            objektLists={target.objektLists}
+            allowCreate={authenticated}
+            username={target.cosmo.username}
+          />
+
+          {/* content gets portaled in */}
+          <div
+            className="h-10 lg:h-8 flex items-center empty:hidden"
+            id="help"
+          />
+          <div
+            className="h-10 flex items-center lg:hidden"
+            id="filters-button"
+          />
+        </div>
+
+        {/* objekt total, gets portaled in */}
+        <div className="flex col-start-3 row-start-2 md:row-start-3 h-6 place-self-end">
+          <span id="objekt-total" />
+        </div>
+      </div>
 
       {props.children}
     </main>
-  );
-}
-
-type ButtonsProps = {
-  profile: PublicProfile;
-  objektLists: ObjektList[];
-};
-
-function Buttons({ profile, objektLists }: ButtonsProps) {
-  return (
-    <div className="flex flex-wrap gap-2 justify-center lg:justify-normal md:absolute md:top-2 md:right-4">
-      <CopyAddressButton address={profile.address} />
-      <TradesButton
-        nickname={profile.isAddress ? profile.address : profile.nickname}
-      />
-      <ComoButton
-        nickname={profile.isAddress ? profile.address : profile.nickname}
-      />
-      <ProgressButton
-        nickname={profile.isAddress ? profile.address : profile.nickname}
-      />
-      <ListDropdown
-        lists={objektLists}
-        nickname={profile.isAddress ? profile.address : profile.nickname}
-        allowCreate={false}
-      />
-
-      {/* content gets portaled in */}
-      <span className="h-10 lg:h-8 flex items-center">
-        <div id="help" />
-      </span>
-      <span className="h-10 flex items-center lg:hidden">
-        <div id="filters-button" />
-      </span>
-    </div>
   );
 }

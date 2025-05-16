@@ -179,7 +179,7 @@ const sources: Source[] = [
 function AbstractIcon() {
   return (
     <div className="relative size-6 rounded-full bg-abstract" data-icon>
-      <Image src={AbstractImage} alt="Abstract" fill={true} quality={100} />
+      <Image src={AbstractImage.src} alt="Abstract" fill={true} quality={100} />
     </div>
   );
 }

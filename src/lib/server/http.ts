@@ -16,9 +16,9 @@ export const cosmo = ofetch.create({
 });
 
 /**
- * HTTP RPC client for Alchemy.
+ * HTTP RPC client for Abstract via Alchemy.
  */
-export const alchemyRPC = ofetch.create({
+export const abstract = ofetch.create({
   baseURL: "https://abstract-mainnet.g.alchemy.com/v2",
   method: "POST",
   headers: {
@@ -26,4 +26,15 @@ export const alchemyRPC = ofetch.create({
   },
   retry: 2,
   retryDelay: 500, // 500ms
+});
+
+/**
+ * HTTP client for Browserless.
+ */
+export const browserless = ofetch.create({
+  baseURL: env.BROWSERLESS_BASE_URL,
+  query: {
+    token: env.BROWSERLESS_API_KEY,
+  },
+  retry: false,
 });

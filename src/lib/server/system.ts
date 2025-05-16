@@ -2,11 +2,10 @@ import "server-only";
 
 import { env } from "@/env";
 import { ofetch } from "ofetch";
-import { alchemyRPC } from "./http";
+import { abstract } from "./http";
 import { RPCResponse } from "./alchemy";
 import { SystemStatus } from "../universal/system";
-import { unstable_cache } from "next/cache";
-import { formatGwei } from "viem";
+import { unstable_cacheLife as cacheLife } from "next/cache";
 
 type Status = {
   height: number;
@@ -28,48 +27,26 @@ async function fetchProcessorHeight() {
 
 type ChainStatus = {
   blockHeight: number;
-  gas: {
-    price: number;
-    status: SystemStatus;
-  };
 };
 
 /**
- * Fetch the current block height and gas price from the Alchemy API.
- * Requested in a batch.
+ * Fetch the current block height from the Alchemy API.
  */
-export async function fetchChainStatus(): Promise<ChainStatus> {
-  const [blockNumber, gasPrice] = await alchemyRPC<RPCResponse[]>("/", {
-    body: [
-      // abstract block number
-      {
-        id: 1,
-        jsonrpc: "2.0",
-        method: "eth_blockNumber",
-      },
-      // abstract gas price
-      {
-        id: 2,
-        jsonrpc: "2.0",
-        method: "eth_gasPrice",
-      },
-    ],
+async function fetchChainStatus(): Promise<ChainStatus> {
+  const blockNumber = await abstract<RPCResponse>("/", {
+    body: {
+      id: 1,
+      jsonrpc: "2.0",
+      method: "eth_blockNumber",
+    },
   });
-
-  const price = Math.round(Number(formatGwei(BigInt(gasPrice.result))));
-  const status = price < 400 ? "normal" : price < 1000 ? "degraded" : "down";
 
   return {
     blockHeight: parseInt(blockNumber.result),
-    gas: { price, status } as const,
   };
 }
 
 type FinalSystemStatus = {
-  gas: {
-    price: number;
-    status: SystemStatus;
-  };
   processor: {
     status: SystemStatus;
     height: {
@@ -80,36 +57,31 @@ type FinalSystemStatus = {
 };
 
 /**
- * Calculate statuses for gas price and indexer height.
+ * Calculate status for indexer height.
  * - within 1800 blocks / 30 minutes: normal
  * - over 1800 but within 3600 blocks / 60 minutes: degraded
  * - more than 3600 blocks / 60 minutes: down
  */
-export const getSystemStatus = unstable_cache(
-  async (): Promise<FinalSystemStatus> => {
-    // const [{ gas, blockHeight }, processorHeight] = await Promise.all([
-    //   fetchChainStatus(),
-    //   fetchProcessorHeight(),
-    // ]);
-    const processorHeight = await fetchProcessorHeight();
+export async function getSystemStatus(): Promise<FinalSystemStatus> {
+  "use cache";
+  cacheLife("system");
 
-    // calculate processor status
-    // const diff = blockHeight - processorHeight;
-    // const status = diff < 1800 ? "normal" : diff < 3600 ? "degraded" : "down";
+  const [{ blockHeight }, processorHeight] = await Promise.all([
+    fetchChainStatus(),
+    fetchProcessorHeight(),
+  ]);
 
-    return {
-      gas: { price: 0, status: "normal" },
-      processor: {
-        status: "normal",
-        height: {
-          processor: processorHeight,
-          chain: 0,
-        },
+  // calculate processor status
+  const diff = blockHeight - processorHeight;
+  const status = diff < 1800 ? "normal" : diff < 3600 ? "degraded" : "down";
+
+  return {
+    processor: {
+      status,
+      height: {
+        processor: processorHeight,
+        chain: blockHeight,
       },
-    };
-  },
-  ["system-status"],
-  {
-    revalidate: 60, // 60 seconds
-  }
-);
+    },
+  };
+}

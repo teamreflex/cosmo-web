@@ -14,7 +14,11 @@ import FilterSearch from "../filter-search";
  * - @/nickname/list/list-name
  * - /objekts
  */
-export default function ObjektIndexFilters() {
+export default function ObjektIndexFilters({
+  search = false,
+}: {
+  search?: boolean;
+}) {
   const [filters, setFilters] = useCosmoFilters();
 
   return (
@@ -23,7 +27,7 @@ export default function ObjektIndexFilters() {
         fallback={<Skeleton className="w-[100px] h-9 bg-destructive" />}
       >
         <Suspense fallback={<Skeleton className="w-[100px] h-9" />}>
-          <SeasonFilter filters={filters.season} setFilters={setFilters} />
+          <SeasonFilter filters={filters} setFilters={setFilters} />
         </Suspense>
       </ErrorBoundary>
 
@@ -31,30 +35,23 @@ export default function ObjektIndexFilters() {
         fallback={<Skeleton className="w-[124px] h-9 bg-destructive" />}
       >
         <Suspense fallback={<Skeleton className="w-[124px] h-9" />}>
-          <CollectionFilter
-            filters={filters.collectionNo}
-            setFilters={setFilters}
-          />
+          <CollectionFilter filters={filters} setFilters={setFilters} />
         </Suspense>
       </ErrorBoundary>
 
-      <OnlineFilter filters={filters.on_offline} setFilters={setFilters} />
+      <OnlineFilter filters={filters} setFilters={setFilters} />
 
       <ErrorBoundary
         fallback={<Skeleton className="w-[87px] h-9 bg-destructive" />}
       >
         <Suspense fallback={<Skeleton className="w-[87px] h-9" />}>
-          <ClassFilter filters={filters.class} setFilters={setFilters} />
+          <ClassFilter filters={filters} setFilters={setFilters} />
         </Suspense>
       </ErrorBoundary>
 
-      <SortFilter
-        filters={filters.sort}
-        setFilters={setFilters}
-        serials={false}
-      />
+      <SortFilter filters={filters} setFilters={setFilters} serials={false} />
 
-      <FilterSearch />
+      {search && <FilterSearch />}
     </div>
   );
 }

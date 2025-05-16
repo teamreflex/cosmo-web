@@ -6,8 +6,7 @@ import {
 import { getSystemStatus } from "@/lib/server/system";
 import { SystemStatus as SystemStatusType } from "@/lib/universal/system";
 import { cn } from "@/lib/utils";
-import { Activity, Fuel, HardDriveDownload, X } from "lucide-react";
-import { Separator } from "../ui/separator";
+import { Activity, HardDriveDownload, X } from "lucide-react";
 import { ErrorBoundary } from "react-error-boundary";
 import {
   Tooltip,
@@ -32,14 +31,7 @@ export default async function SystemStatus() {
 }
 
 async function SystemStatusPopover() {
-  const { gas, processor } = await getSystemStatus();
-
-  const statuses = [gas.status, processor.status];
-  const status = statuses.includes("degraded")
-    ? "degraded"
-    : statuses.includes("down")
-    ? "down"
-    : "normal";
+  const { processor } = await getSystemStatus();
 
   return (
     <Popover>
@@ -47,30 +39,14 @@ async function SystemStatusPopover() {
         <button
           className={cn(
             "h-8 w-9 flex justify-center items-center rounded-l-lg transition-colors",
-            textStatus(status),
-            bgStatus(status)
+            textStatus(processor.status),
+            bgStatus(processor.status)
           )}
         >
           <Activity className="w-5 h-5" />
         </button>
       </PopoverTrigger>
       <PopoverContent align="start" className="p-2">
-        {/* gas */}
-        <div className="flex flex-col">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold">Abstract</p>
-            <div
-              className={cn("flex gap-1 items-center", textStatus(gas.status))}
-            >
-              <span className="font-semibold">{gas.price}</span>
-              <Fuel className="size-4" />
-            </div>
-          </div>
-          <p className="text-xs">{gasText[gas.status]}</p>
-        </div>
-
-        <Separator orientation="horizontal" className="my-2" />
-
         {/* processor */}
         <div className="flex flex-col">
           <div className="flex items-center justify-between">
@@ -126,11 +102,11 @@ function bgStatus(status: SystemStatusType) {
   ];
 }
 
-const gasText = {
-  normal: "Network is normal, transfers should be fast",
-  degraded: "Network has activity, transfers may be slow",
-  down: "Network is congested, transfers will likely fail",
-};
+// const gasText = {
+//   normal: "Network is normal, transfers should be fast",
+//   degraded: "Network has activity, transfers may be slow",
+//   down: "Network is congested, transfers will likely fail",
+// };
 
 const processorText = {
   normal: "Database is up to date",

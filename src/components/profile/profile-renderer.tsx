@@ -1,33 +1,27 @@
 "use client";
 
-import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import { useFilters } from "@/hooks/use-filters";
 import FiltersContainer from "../collection/filters-container";
 import Portal from "../portal";
 import HelpDialog from "./help-dialog";
-import { PublicProfile } from "@/lib/universal/cosmo/auth";
-import { match } from "ts-pattern";
 import Blockchain from "../collection/data-sources/blockchain";
 import BlockchainGroups from "../collection/data-sources/blockchain-groups";
 import CollectionFilters from "../collection/filter-contexts/collection-filters";
-import { AuthenticatedContext } from "@/hooks/use-authenticated";
+import { PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import { useGridColumns } from "@/hooks/use-grid-columns";
+import { useUserState } from "@/hooks/use-user-state";
 
 type Props = {
-  artists: CosmoArtistWithMembersBFF[];
-  targetUser: PublicProfile;
-  currentUser?: PublicProfile;
+  targetCosmo: PublicCosmo;
 };
 
-export default function ProfileRenderer({
-  artists,
-  targetUser,
-  currentUser,
-}: Props) {
-  const gridColumns = targetUser.gridColumns ?? currentUser?.gridColumns;
+export default function ProfileRenderer({ targetCosmo }: Props) {
+  const { user } = useUserState();
+  const gridColumns = useGridColumns();
 
   const { searchParams, showLocked, setShowLocked, dataSource, setDataSource } =
     useFilters({
-      dataSource: "blockchain",
+      dataSource: user?.collectionMode,
     });
 
   return (
@@ -46,30 +40,30 @@ export default function ProfileRenderer({
       </FiltersContainer>
 
       {/* display */}
-      <AuthenticatedContext.Provider value={false}>
-        {match(dataSource)
-          .with("blockchain", () => (
-            <Blockchain
-              artists={artists}
-              gridColumns={gridColumns}
-              targetUser={targetUser}
-              currentUser={currentUser}
-              searchParams={searchParams}
-              showLocked={showLocked}
-            />
-          ))
-          .with("blockchain-groups", () => (
-            <BlockchainGroups
-              artists={artists}
-              gridColumns={gridColumns}
-              targetUser={targetUser}
-              currentUser={currentUser}
-              searchParams={searchParams}
-              showLocked={showLocked}
-            />
-          ))
-          .exhaustive()}
-      </AuthenticatedContext.Provider>
+      {(() => {
+        switch (dataSource) {
+          case "blockchain":
+            return (
+              <Blockchain
+                gridColumns={gridColumns}
+                targetCosmo={targetCosmo}
+                searchParams={searchParams}
+                showLocked={showLocked}
+              />
+            );
+          case "blockchain-groups":
+            return (
+              <BlockchainGroups
+                gridColumns={gridColumns}
+                targetCosmo={targetCosmo}
+                searchParams={searchParams}
+                showLocked={showLocked}
+              />
+            );
+          default:
+            return null;
+        }
+      })()}
     </div>
   );
 }

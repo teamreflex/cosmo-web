@@ -2,14 +2,13 @@
 
 import { createStore, useStore } from "zustand";
 import { createContext, PropsWithChildren, useContext, useRef } from "react";
-import { PublicProfile } from "@/lib/universal/cosmo/auth";
-import { ObjektList } from "@/lib/universal/objekts";
-import { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
+import type { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
 import { useShallow } from "zustand/react/shallow";
+import type { ObjektList } from "@/lib/server/db/schema";
+import type { PublicAccount } from "@/lib/universal/cosmo-accounts";
 
 interface ProfileProps {
-  currentProfile: PublicProfile | undefined;
-  targetProfile: PublicProfile | undefined;
+  target: Partial<PublicAccount> | undefined;
   objektLists: ObjektList[];
   lockedObjekts: number[];
   pins: CosmoObjekt[];
@@ -27,8 +26,7 @@ type ProfileStore = ReturnType<typeof createProfileStore>;
 
 const createProfileStore = (initProps?: Partial<ProfileProps>) => {
   const DEFAULT_PROPS: ProfileProps = {
-    currentProfile: undefined,
-    targetProfile: undefined,
+    target: undefined,
     objektLists: [],
     lockedObjekts: [],
     pins: [],
@@ -96,13 +94,19 @@ export function useProfileContext<T>(selector: (state: ProfileState) => T): T {
  * Optimized hook for checking if a token is locked.
  */
 export function useLockedObjekt(tokenId: number) {
-  const store = useContext(ProfileContext);
-  if (!store) {
-    throw new Error("useLockedObjekt must be used within a ProfileProvider");
-  }
-
-  return useStore(
-    store,
+  return useProfileContext(
     useShallow((state) => state.lockedObjekts.includes(tokenId))
+  );
+}
+
+/**
+ * Optimized hook for checking if a token is locked.
+ */
+export function usePinnedObjekt(tokenId: number) {
+  return useProfileContext(
+    useShallow(
+      (state) =>
+        state.pins.findIndex((p) => Number(p.tokenId) === tokenId) !== -1
+    )
   );
 }

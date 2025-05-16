@@ -1,7 +1,4 @@
-import { Pin } from "@/lib/server/db/schema";
-import { ObjektList } from "../objekts";
 import { ValidArtist } from "./common";
-import { CollectionDataSource } from "@/lib/utils";
 
 export type LoginChannel = "email";
 
@@ -11,37 +8,6 @@ export type CosmoProfile = {
     original: string;
     thumbnail: string;
   };
-};
-
-export type PublicProfile = {
-  nickname: string;
-  profileImageUrl: string;
-  address: string;
-  isAddress: boolean;
-  artist: ValidArtist;
-  privacy: {
-    votes: boolean;
-  };
-  gridColumns: number;
-  isObjektEditor: boolean;
-  dataSource: CollectionDataSource;
-  isModhaus: boolean;
-};
-
-export type IdentifiedUser = {
-  profile: PublicProfile;
-  objektLists: ObjektList[];
-  lockedObjekts: number[];
-  pins: Pin[];
-};
-
-export type LoginResult = {
-  id: number;
-  email: string;
-  nickname: string;
-  address: string;
-  accessToken: string;
-  refreshToken: string;
 };
 
 export type CosmoUserResult = {

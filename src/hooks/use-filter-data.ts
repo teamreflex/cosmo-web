@@ -1,9 +1,7 @@
-import { baseUrl } from "@/lib/utils";
+import { baseUrl } from "@/lib/query-client";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { ofetch } from "ofetch";
-import { useCosmoArtists } from "./use-cosmo-artist";
-import { useSelectedArtists } from "./use-selected-artists";
-import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
+import { useArtists } from "./use-artists";
 
 export const filterDataQuery = queryOptions({
   queryKey: ["filter-data"],
@@ -17,8 +15,7 @@ export const filterDataQuery = queryOptions({
 
 export function useFilterData() {
   const { data } = useSuspenseQuery(filterDataQuery);
-  const { getArtist } = useCosmoArtists();
-  const selectedArtists = useSelectedArtists();
+  const { getArtist, selectedIds } = useArtists();
 
   const seasons = data.seasons
     .map(({ artistId, seasons }) => {
@@ -29,8 +26,8 @@ export function useFilterData() {
       };
     })
     .filter(({ artist }) => {
-      if (selectedArtists.length === 0) return true;
-      return selectedArtists.includes(artist.id);
+      if (selectedIds.length === 0) return true;
+      return selectedIds.includes(artist.id);
     });
 
   const classes = data.classes
@@ -42,8 +39,8 @@ export function useFilterData() {
       };
     })
     .filter(({ artist }) => {
-      if (selectedArtists.length === 0) return true;
-      return selectedArtists.includes(artist.id);
+      if (selectedIds.length === 0) return true;
+      return selectedIds.includes(artist.id);
     });
 
   return {
@@ -63,14 +60,4 @@ export type FilterData = {
     artistId: string;
     classes: string[];
   }[];
-};
-
-export type SeasonFilterData = {
-  artist: CosmoArtistWithMembersBFF;
-  seasons: string[];
-};
-
-export type ClassFilterData = {
-  artist: CosmoArtistWithMembersBFF;
-  classes: string[];
 };

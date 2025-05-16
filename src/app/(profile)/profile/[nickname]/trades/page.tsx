@@ -3,13 +3,12 @@ import TransfersRenderer from "@/components/transfers/transfers-renderer";
 import {
   getArtistsWithMembers,
   getSelectedArtists,
-  getUserByIdentifier,
+  getTargetAccount,
 } from "@/app/data-fetching";
-import { CosmoArtistProvider } from "@/hooks/use-cosmo-artist";
+import { ArtistProvider } from "@/hooks/use-artists";
 import { getQueryClient } from "@/lib/query-client";
 import { fetchFilterData } from "@/lib/server/objekts/filter-data";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
-import { SelectedArtistsProvider } from "@/hooks/use-selected-artists";
 
 type Props = {
   params: Promise<{ nickname: string }>;
@@ -17,10 +16,10 @@ type Props = {
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params;
-  const { profile } = await getUserByIdentifier(params.nickname);
+  const { cosmo } = await getTargetAccount(params.nickname);
 
   return {
-    title: `${profile.nickname}'s Trades`,
+    title: `${cosmo.username}'s Trades`,
   };
 }
 
@@ -34,21 +33,19 @@ export default async function UserTransfersPage(props: Props) {
   });
 
   const params = await props.params;
-  const [artists, selectedArtists, targetUser] = await Promise.all([
+  const [artists, selected, { cosmo }] = await Promise.all([
     getArtistsWithMembers(),
     getSelectedArtists(),
-    getUserByIdentifier(params.nickname),
+    getTargetAccount(params.nickname),
   ]);
 
   return (
     <section className="flex flex-col">
-      <SelectedArtistsProvider selectedArtists={selectedArtists}>
-        <CosmoArtistProvider artists={artists}>
-          <HydrationBoundary state={dehydrate(queryClient)}>
-            <TransfersRenderer profile={targetUser.profile} artists={artists} />
-          </HydrationBoundary>
-        </CosmoArtistProvider>
-      </SelectedArtistsProvider>
+      <ArtistProvider artists={artists} selected={selected}>
+        <HydrationBoundary state={dehydrate(queryClient)}>
+          <TransfersRenderer cosmo={cosmo} />
+        </HydrationBoundary>
+      </ArtistProvider>
 
       <div id="pagination" />
     </section>

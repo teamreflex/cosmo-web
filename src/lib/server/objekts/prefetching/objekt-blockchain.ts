@@ -16,7 +16,7 @@ import {
 } from "../filters";
 import { mapLegacyObjekt } from "./common";
 
-export const PER_PAGE = 60;
+const PER_PAGE = 60;
 
 /**
  * Ensures the Zod-parsed filters match what the frontend parses.

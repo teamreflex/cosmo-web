@@ -1,14 +1,13 @@
 import {
   getArtistsWithMembers,
   getSelectedArtists,
-  getUserByIdentifier,
+  getTargetAccount,
 } from "@/app/data-fetching";
 import Portal from "@/components/portal";
 import HelpDialog from "@/components/progress/help-dialog";
 import ProgressRenderer from "@/components/progress/progress-renderer";
-import { CosmoArtistProvider } from "@/hooks/use-cosmo-artist";
+import { ArtistProvider } from "@/hooks/use-artists";
 import { ProfileProvider } from "@/hooks/use-profile";
-import { SelectedArtistsProvider } from "@/hooks/use-selected-artists";
 import { getQueryClient } from "@/lib/query-client";
 import { fetchFilterData } from "@/lib/server/objekts/filter-data";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
@@ -19,10 +18,10 @@ type Props = {
 };
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params;
-  const { profile } = await getUserByIdentifier(params.nickname);
+  const { cosmo } = await getTargetAccount(params.nickname);
 
   return {
-    title: `${profile.nickname}'s Progress`,
+    title: `${cosmo.username}'s Progress`,
   };
 }
 
@@ -36,30 +35,24 @@ export default async function ProgressPage(props: Props) {
   });
 
   const params = await props.params;
-  const [selectedArtists, targetUser] = await Promise.all([
+  const [artists, selected, target] = await Promise.all([
+    getArtistsWithMembers(),
     getSelectedArtists(),
-    getUserByIdentifier(params.nickname),
+    getTargetAccount(params.nickname),
   ]);
-
-  const artists = getArtistsWithMembers();
 
   return (
     <section className="flex flex-col">
-      <CosmoArtistProvider artists={artists}>
-        <SelectedArtistsProvider selectedArtists={selectedArtists}>
-          <ProfileProvider targetProfile={targetUser.profile}>
-            <HydrationBoundary state={dehydrate(queryClient)}>
-              <ProgressRenderer
-                artists={artists}
-                address={targetUser.profile.address}
-              />
-            </HydrationBoundary>
-            <Portal to="#help">
-              <HelpDialog />
-            </Portal>
-          </ProfileProvider>
-        </SelectedArtistsProvider>
-      </CosmoArtistProvider>
+      <ArtistProvider artists={artists} selected={selected}>
+        <ProfileProvider target={target}>
+          <HydrationBoundary state={dehydrate(queryClient)}>
+            <ProgressRenderer address={target.cosmo.address} />
+          </HydrationBoundary>
+          <Portal to="#help">
+            <HelpDialog />
+          </Portal>
+        </ProfileProvider>
+      </ArtistProvider>
     </section>
   );
 }

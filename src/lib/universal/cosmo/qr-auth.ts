@@ -3,13 +3,13 @@ export type AuthTicket = {
   ticket: string;
 };
 
-export type TicketWaitingForAction = {
+type TicketWaitingForAction = {
   status: "wait_for_user_action";
   ticketRemainingMs: number;
 };
 
 // not an actual status but this just makes the invalid state easier to handle
-export type TicketInvalid = {
+type TicketInvalid = {
   status: "invalid";
 };
 
@@ -28,8 +28,8 @@ type LoadedTicket<Status extends string> = {
   };
 };
 
-export type TicketWaitingForCertify = LoadedTicket<"wait_for_certify">;
-export type TicketCertified = LoadedTicket<"certified">;
+type TicketWaitingForCertify = LoadedTicket<"wait_for_certify">;
+type TicketCertified = LoadedTicket<"certified">;
 
 export type QueryTicket =
   | TicketInvalid

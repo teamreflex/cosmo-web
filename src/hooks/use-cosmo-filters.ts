@@ -47,7 +47,7 @@ export const parseAsNullableBoolean = createParser({
 type UseCosmoFiltersReturnType = ReturnType<typeof useCosmoFilters>;
 export type CosmoFilters = UseCosmoFiltersReturnType[0];
 export type SetCosmoFilters = UseCosmoFiltersReturnType[1];
-export type PropsWithFilters<T extends keyof CosmoFilters> = {
-  filters: CosmoFilters[T];
+export type PropsWithFilters = {
+  filters: CosmoFilters;
   setFilters: SetCosmoFilters;
 };

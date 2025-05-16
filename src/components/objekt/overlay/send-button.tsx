@@ -3,7 +3,7 @@
 import { Send } from "lucide-react";
 import { useObjektTransfer } from "@/hooks/use-objekt-transfer";
 import { Objekt } from "@/lib/universal/objekt-conversion";
-import { useCosmoArtists } from "@/hooks/use-cosmo-artist";
+import { useArtists } from "@/hooks/use-artists";
 import { toast } from "@/components/ui/use-toast";
 
 type Props = {
@@ -13,7 +13,7 @@ type Props = {
 
 export default function SendObjekt({ collection, token }: Props) {
   const select = useObjektTransfer((ctx) => ctx.select);
-  const { getArtist } = useCosmoArtists();
+  const { getArtist } = useArtists();
 
   function handleClick() {
     const artist = getArtist(collection.artist);

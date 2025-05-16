@@ -19,7 +19,8 @@ import {
   DrawerDescription,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { ObjektMetadata, unobtainables } from "@/lib/universal/objekts";
+import { ObjektMetadata } from "@/lib/universal/objekts";
+import { unobtainables } from "@/lib/unobtainables";
 import {
   QueryErrorResetBoundary,
   useQueryClient,
@@ -27,10 +28,9 @@ import {
 } from "@tanstack/react-query";
 import { FetchError, ofetch } from "ofetch";
 import Link from "next/link";
-import { ReactNode, Suspense, useState, useTransition } from "react";
+import { ReactNode, Suspense, useState } from "react";
 import { Separator } from "../ui/separator";
 import Skeleton from "../skeleton/skeleton";
-import { useProfileContext } from "@/hooks/use-profile";
 import { Button } from "../ui/button";
 import { updateObjektMetadata } from "./actions";
 import { Textarea } from "../ui/textarea";
@@ -50,6 +50,8 @@ import FlippableObjekt from "./objekt-flippable";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
 import Portal from "../portal";
+import { useAction } from "next-safe-action/hooks";
+import { useUserState } from "@/hooks/use-user-state";
 
 type CommonProps = {
   objekt: Objekt.Collection;
@@ -261,7 +263,7 @@ function MetadataPanel({ objekt }: CommonProps) {
 function Metadata({ objekt }: { objekt: Objekt.Collection }) {
   const [_, copy] = useCopyToClipboard();
   const [showForm, setShowForm] = useState(false);
-  const profile = useProfileContext((ctx) => ctx.currentProfile);
+  const { user } = useUserState();
 
   const { data } = useSuspenseQuery({
     queryKey: ["collection-metadata", "metadata", objekt.slug],
@@ -334,7 +336,7 @@ function Metadata({ objekt }: { objekt: Objekt.Collection }) {
         </Button>
 
         {/* edit metadata */}
-        {profile !== undefined && profile.isObjektEditor && (
+        {user?.isAdmin === true && (
           <Button
             variant="secondary"
             size="sm"
@@ -349,10 +351,10 @@ function Metadata({ objekt }: { objekt: Objekt.Collection }) {
             <p>Sourced by:</p>
             <Link
               className="underline"
-              href={`/@${data.metadata.profile.nickname}`}
+              href={`/@${data.metadata.profile.username}`}
               prefetch={false}
             >
-              {data.metadata.profile.nickname}
+              {data.metadata.profile.username}
             </Link>
           </div>
         )}
@@ -368,33 +370,28 @@ type EditMetadataProps = {
 };
 
 function EditMetadata({ slug, metadata, close }: EditMetadataProps) {
-  const [isPending, startTransition] = useTransition();
   const queryClient = useQueryClient();
-
-  const formAction = updateObjektMetadata.bind(null, slug);
-
-  async function submit(form: FormData) {
-    startTransition(async () => {
-      const result = await formAction(form);
-      if (result.status === "success") {
-        queryClient.invalidateQueries({
-          queryKey: ["collection-metadata", "metadata", slug],
-        });
-        toast({
-          description: "Metadata updated.",
-        });
-        close();
-      } else if (result.status === "error") {
-        toast({
-          description: result.error,
-          variant: "destructive",
-        });
-      }
-    });
-  }
+  const { execute, isPending } = useAction(updateObjektMetadata, {
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["collection-metadata", "metadata", slug],
+      });
+      toast({
+        description: "Metadata updated.",
+      });
+      close();
+    },
+    onError: () => {
+      toast({
+        description: "Failed to update metadata",
+        variant: "destructive",
+      });
+    },
+  });
 
   return (
-    <form className="flex flex-col gap-2" action={submit}>
+    <form className="flex flex-col gap-2" action={execute}>
+      <input type="hidden" name="collectionId" value={slug} />
       <Textarea
         name="description"
         rows={3}

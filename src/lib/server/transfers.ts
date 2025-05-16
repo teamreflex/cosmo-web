@@ -2,7 +2,7 @@ import { and, desc, eq, inArray, not, or, sql } from "drizzle-orm";
 import { TransferParams, TransferResult } from "../universal/transfers";
 import { indexer } from "./db/indexer";
 import { collections, objekts, transfers } from "./db/indexer/schema";
-import { fetchKnownAddresses } from "./profiles";
+import { fetchKnownAddresses } from "./cosmo-accounts";
 import {
   withArtist,
   withClass,
@@ -10,7 +10,7 @@ import {
   withOnlineType,
   withSeason,
 } from "./objekts/filters";
-import { Addresses, isAddressEqual } from "../utils";
+import { Addresses, isEqual } from "../utils";
 
 const PER_PAGE = 30;
 
@@ -22,7 +22,7 @@ export async function fetchTransfers(
   params: TransferParams
 ): Promise<TransferResult> {
   // too much data, bail
-  if (isAddressEqual(address, Addresses.NULL)) {
+  if (isEqual(address, Addresses.NULL)) {
     return {
       results: [],
       nextStartAfter: undefined,
@@ -42,12 +42,12 @@ export async function fetchTransfers(
     // map the nickname onto the results and apply spin flags
     results: aggregate.results.map((row) => ({
       ...row,
-      nickname: knownAddresses.find((a) =>
+      username: knownAddresses.find((a) =>
         [
           row.transfer.from.toLowerCase(),
           row.transfer.to.toLowerCase(),
-        ].includes(a.userAddress.toLowerCase())
-      )?.nickname,
+        ].includes(a.address.toLowerCase())
+      )?.username,
     })),
   };
 }

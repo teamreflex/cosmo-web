@@ -2,10 +2,14 @@ import { Button } from "@/components/ui/button";
 import { CalendarRange } from "lucide-react";
 import Link from "next/link";
 
-export default function ComoButton({ nickname }: { nickname: string }) {
+type Props = {
+  username: string;
+};
+
+export default function ComoButton({ username }: Props) {
   return (
     <Button variant="secondary" size="profile" data-profile asChild>
-      <Link href={`/@${nickname}/como`}>
+      <Link href={`/@${username}/como`} prefetch={false}>
         <CalendarRange className="h-5 w-5" />
         <span>COMO</span>
       </Link>

@@ -12,25 +12,23 @@ import { HeartCrack, RefreshCcw } from "lucide-react";
 import { Button } from "../ui/button";
 import { Suspense, useCallback, useState } from "react";
 import Skeleton from "../skeleton/skeleton";
-import { PublicProfile } from "@/lib/universal/cosmo/auth";
-import { baseUrl } from "@/lib/utils";
+import { baseUrl } from "@/lib/query-client";
 import { ofetch } from "ofetch";
 import { TransferParams, TransferResult } from "@/lib/universal/transfers";
 import { CosmoFilters, useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import FiltersContainer from "../collection/filters-container";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import MemberFilter from "../collection/member-filter";
-import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import { useFilters } from "@/hooks/use-filters";
 import SkeletonGradient from "../skeleton/skeleton-overlay";
 import { TransfersFilters } from "../collection/filter-contexts/transfers-filters";
+import { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 
 type Props = {
-  profile: PublicProfile;
-  artists: CosmoArtistWithMembersBFF[];
+  cosmo: PublicCosmo;
 };
 
-export default function TransfersRenderer({ profile, artists }: Props) {
+export default function TransfersRenderer({ cosmo }: Props) {
   const [filters, setFilters] = useCosmoFilters();
   const [type, setType] = useState<TransferParams["type"]>("all");
 
@@ -61,7 +59,6 @@ export default function TransfersRenderer({ profile, artists }: Props) {
       </FiltersContainer>
 
       <MemberFilter
-        artists={artists}
         active={filters.artist ?? filters.member}
         updateArtist={setActiveArtist}
         updateMember={setActiveMember}
@@ -86,7 +83,7 @@ export default function TransfersRenderer({ profile, artists }: Props) {
             >
               <Suspense fallback={<TransfersSkeleton />}>
                 <Transfers
-                  address={profile.address}
+                  address={cosmo.address}
                   filters={filters}
                   type={type}
                 />

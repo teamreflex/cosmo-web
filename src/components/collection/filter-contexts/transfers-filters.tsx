@@ -19,9 +19,9 @@ export function TransfersFilters({ type, setType }: Props) {
 
   return (
     <div className="flex gap-2 items-center flex-wrap justify-center lg:group-data-[show=false]:flex group-data-[show=false]:hidden">
-      <SeasonFilter filters={filters.season} setFilters={setFilters} />
-      <OnlineFilter filters={filters.on_offline} setFilters={setFilters} />
-      <ClassFilter filters={filters.class} setFilters={setFilters} />
+      <SeasonFilter filters={filters} setFilters={setFilters} />
+      <OnlineFilter filters={filters} setFilters={setFilters} />
+      <ClassFilter filters={filters} setFilters={setFilters} />
       <TransferTypeFilter type={type} setType={setType} />
     </div>
   );

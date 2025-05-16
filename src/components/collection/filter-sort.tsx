@@ -11,7 +11,7 @@ import { PropsWithFilters } from "@/hooks/use-cosmo-filters";
 import { ValidSort, validSorts } from "@/lib/universal/cosmo/common";
 import { CollectionDataSource } from "@/lib/utils";
 
-interface Props extends PropsWithFilters<"sort"> {
+interface Props extends PropsWithFilters {
   serials: boolean;
   dataSource?: CollectionDataSource;
   setDataSource?: (dataSource: CollectionDataSource) => void;
@@ -37,6 +37,8 @@ export default function SortFilter({
     serials ? true : !isSerialSort(s)
   );
 
+  const value = filters?.sort ?? "newest";
+
   function onChange(value: string) {
     const newSort = value as ValidSort;
 
@@ -51,7 +53,7 @@ export default function SortFilter({
   }
 
   return (
-    <Select value={filters ?? "newest"} onValueChange={onChange}>
+    <Select value={value} onValueChange={onChange}>
       <SelectTrigger className="w-32">
         <SelectValue placeholder="Sort" />
       </SelectTrigger>

@@ -1,4 +1,5 @@
-import { ObjektList } from "@/lib/universal/objekts";
+"use client";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,21 +13,22 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "../ui/button";
 import { Loader2, Trash } from "lucide-react";
-import { MouseEvent, useTransition } from "react";
-import { destroy } from "./actions";
+import { MouseEvent } from "react";
+import { deleteObjektList } from "./actions";
+import type { ObjektList } from "@/lib/server/db/schema";
+import { useAction } from "next-safe-action/hooks";
 
 type Props = {
   objektList: ObjektList;
 };
 
 export default function DeleteList({ objektList }: Props) {
-  const [isPending, startTransition] = useTransition();
+  const { execute, isPending } = useAction(deleteObjektList);
 
   function submit(event: MouseEvent<HTMLButtonElement>) {
-    // prevent alert from dismissing on click
     event.preventDefault();
-    startTransition(async () => {
-      await destroy(objektList.id);
+    execute({
+      id: objektList.id,
     });
   }
 
@@ -48,7 +50,7 @@ export default function DeleteList({ objektList }: Props) {
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction onClick={submit} disabled={isPending}>
             <span>Delete</span>
-            {isPending && <Loader2 className="ml-2 animate-spin" />}
+            {isPending && <Loader2 className="animate-spin" />}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

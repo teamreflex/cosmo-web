@@ -2,9 +2,11 @@ import { Metadata } from "next";
 import { cache } from "react";
 import { redirect } from "next/navigation";
 import {
+  getCurrentAccount,
   getArtistsWithMembers,
   getSelectedArtists,
-  getUserByIdentifier,
+  getSession,
+  getTargetAccount,
 } from "@/app/data-fetching";
 import ListRenderer from "@/components/lists/list-renderer";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
@@ -16,10 +18,11 @@ import {
 import { fetchObjektList } from "@/lib/server/objekts/lists";
 import { getQueryClient } from "@/lib/query-client";
 import { ProfileProvider } from "@/hooks/use-profile";
-import { GRID_COLUMNS } from "@/lib/utils";
-import { SelectedArtistsProvider } from "@/hooks/use-selected-artists";
 import { fetchFilterData } from "@/lib/server/objekts/filter-data";
-import { CosmoArtistProvider } from "@/hooks/use-cosmo-artist";
+import { ArtistProvider } from "@/hooks/use-artists";
+import { UserStateProvider } from "@/hooks/use-user-state";
+import UpdateList from "@/components/lists/update-list";
+import DeleteList from "@/components/lists/delete-list";
 
 type Props = {
   searchParams: Promise<Record<string, string>>;
@@ -31,7 +34,7 @@ type Props = {
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params;
-  const objektList = await getData(params.nickname, params.list);
+  const { objektList } = await getData(params.nickname, params.list);
   if (!objektList) redirect(`/@${params.nickname}`);
 
   return {
@@ -48,16 +51,24 @@ export default async function ObjektListPage(props: Props) {
     queryFn: fetchFilterData,
   });
 
-  const [searchParams, { nickname, list }] = await Promise.all([
-    props.searchParams,
-    props.params,
+  const [session, artists, selected, searchParams, { nickname, list }] =
+    await Promise.all([
+      getSession(),
+      getArtistsWithMembers(),
+      getSelectedArtists(),
+      props.searchParams,
+      props.params,
+    ]);
+
+  // get current and target accounts
+  const [account, { target, objektList }] = await Promise.all([
+    getCurrentAccount(session?.session.userId),
+    getData(nickname, list),
   ]);
 
-  // get de-duplicated profile
-  const [selectedArtists, { profile }] = await Promise.all([
-    getSelectedArtists(),
-    getUserByIdentifier(nickname),
-  ]);
+  if (!objektList) {
+    redirect(`/@${nickname}`);
+  }
 
   // parse search params
   const filters = parseObjektList(
@@ -68,49 +79,69 @@ export default async function ObjektListPage(props: Props) {
   );
 
   // prefetch list
-  queryClient.prefetchInfiniteQuery({
-    queryKey: [
-      "objekt-list",
-      list,
-      "blockchain",
-      parseObjektListFilters(filters),
-    ],
-    queryFn: async ({ pageParam = 0 }: { pageParam?: number }) =>
-      prefetchObjektList({
-        slug: list,
-        address: profile.address,
-        filters: {
-          ...filters,
-          page: pageParam,
+  if (target.user !== undefined) {
+    queryClient.prefetchInfiniteQuery({
+      queryKey: [
+        "objekt-list",
+        objektList.id,
+        {
+          ...parseObjektListFilters(filters),
+          artists: selected,
         },
-      }).then((r) => r.results),
-    initialPageParam: 0,
-  });
+      ],
+      queryFn: async ({ pageParam = 0 }) =>
+        prefetchObjektList({
+          id: objektList.id,
+          filters: {
+            ...filters,
+            page: pageParam,
+          },
+        }).then((r) => r.results),
+      initialPageParam: 0,
+    });
+  }
 
-  const artists = getArtistsWithMembers();
-  const objektList = await getData(nickname, list);
-  if (!objektList) redirect(`/@${nickname}`);
+  const { objektLists, ...targetAccount } = target;
+  const authenticated = account?.user?.id === objektList.userId;
 
   return (
-    <CosmoArtistProvider artists={artists}>
-      <SelectedArtistsProvider selectedArtists={selectedArtists}>
-        <ProfileProvider>
+    <UserStateProvider {...account}>
+      <ArtistProvider artists={artists} selected={selected}>
+        <ProfileProvider target={targetAccount} objektLists={objektLists}>
           <HydrationBoundary state={dehydrate(queryClient)}>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h3 className="text-xl font-cosmo">{objektList.name}</h3>
+
+              {authenticated && (
+                <div className="flex items-center gap-2">
+                  <UpdateList objektList={objektList} />
+                  <DeleteList objektList={objektList} />
+                </div>
+              )}
+            </div>
+
             <ListRenderer
-              artists={artists}
-              list={objektList}
-              authenticated={false}
-              user={profile}
-              gridColumns={GRID_COLUMNS}
+              objektList={objektList}
+              authenticated={authenticated}
             />
           </HydrationBoundary>
         </ProfileProvider>
-      </SelectedArtistsProvider>
-    </CosmoArtistProvider>
+      </ArtistProvider>
+    </UserStateProvider>
   );
 }
 
 const getData = cache(async (nickname: string, list: string) => {
-  const { profile } = await getUserByIdentifier(nickname);
-  return await fetchObjektList(profile.address, list);
+  const target = await getTargetAccount(nickname);
+  const objektList = target.user
+    ? await fetchObjektList({
+        userId: target.user.id,
+        slug: list,
+      })
+    : undefined;
+
+  return {
+    target,
+    objektList,
+  };
 });

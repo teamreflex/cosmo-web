@@ -1,12 +1,9 @@
 import { createEnv } from "@t3-oss/env-nextjs";
+import { neonVercel } from "@t3-oss/env-core/presets-zod";
 import * as z from "zod";
 
 export const env = createEnv({
   server: {
-    // used for signing cookies
-    JWT_SECRET: z.string().min(1),
-    // neon db
-    DATABASE_URL: z.string().min(1),
     // indexer db http proxy
     INDEXER_PROXY_KEY: z.string().min(1),
     INDEXER_PROXY_URL: z.string().min(1),
@@ -19,6 +16,23 @@ export const env = createEnv({
     CRON_SECRET: z.string().min(1),
     // alchemy api key
     ALCHEMY_KEY: z.string().min(1),
+    // better auth
+    BETTER_AUTH_SECRET: z.string().min(1),
+    // discord oauth
+    DISCORD_CLIENT_ID: z.string().min(1),
+    DISCORD_CLIENT_SECRET: z.string().min(1),
+    // twitter oauth
+    TWITTER_CLIENT_ID: z.string().min(1),
+    TWITTER_CLIENT_SECRET: z.string().min(1),
+    // aws ses
+    MAIL_SES_REGION: z.string().min(1),
+    MAIL_SES_FROM: z.string().min(1),
+    MAIL_SES_ACCESS_KEY: z.string().min(1),
+    MAIL_SES_SECRET_KEY: z.string().min(1),
+    // browserless.io
+    COSMO_RECAPTCHA_KEY: z.string().min(1),
+    BROWSERLESS_API_KEY: z.string().min(1),
+    BROWSERLESS_BASE_URL: z.string().min(1),
   },
   client: {
     // info for rebranding the app
@@ -47,4 +61,5 @@ export const env = createEnv({
     NEXT_PUBLIC_TYPESENSE_URL: process.env.NEXT_PUBLIC_TYPESENSE_URL,
     NEXT_PUBLIC_TYPESENSE_KEY: process.env.NEXT_PUBLIC_TYPESENSE_KEY,
   },
+  extends: [neonVercel()],
 });

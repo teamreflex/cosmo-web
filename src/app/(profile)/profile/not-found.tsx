@@ -1,3 +1,4 @@
+import { env } from "@/env";
 import { CircleAlert } from "lucide-react";
 
 export default function UserNotFound() {
@@ -6,8 +7,7 @@ export default function UserNotFound() {
       <CircleAlert className="h-24 w-24" />
       <p className="text-sm font-semibold">User not found</p>
       <p className="text-sm text-center text-balance w-64">
-        If you recently changed your COSMO ID, you may need to sign out and back
-        in again to update it.
+        User could not be found in {env.NEXT_PUBLIC_APP_NAME} or COSMO.
       </p>
     </main>
   );

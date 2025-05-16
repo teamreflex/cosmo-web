@@ -75,17 +75,13 @@ export default function UpdateDialog() {
 
 const updates = [
   {
-    date: "2025-05-07",
+    date: "2025-05-17",
     changes: [
-      "Objekt collections can now be searched by text.",
-      "Search is case-insensitive, has typo tolerance and supports various unit name, member nickname and collection shortcuts. See the help dialog for more information.",
-    ],
-  },
-  {
-    date: "2025-05-01",
-    changes: [
-      "Trade history has been migrated from the old blockchain.",
-      "This does not include history for objekts that were sent to the spin account, as MODHAUS did not migrate those.",
+      "Gravity results are now available. Pre-migration gravity data has been imported, and any future gravity results should be realtime.",
+      "All objekts have had their received time fixed, so collections are now properly sorted.",
+      // "User accounts are now available. Sign in via Discord, Twitter or email & password.",
+      // "Objekt lists can be created again, linked to your user account instead of COSMO ID.",
+      // "COSMO IDs can be linked and verified via a one-time QR code sign in. This will import any old objekt lists, and allow objekt pins and locking again.",
     ],
   },
 ];

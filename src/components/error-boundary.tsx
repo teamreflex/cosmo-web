@@ -1,21 +1,7 @@
 "use client";
 
 import { HeartCrack, RefreshCcw } from "lucide-react";
-import { PropsWithChildren } from "react";
-import { ErrorBoundary } from "react-error-boundary";
 import { Button } from "./ui/button";
-
-type Props = PropsWithChildren<{
-  message: string;
-}>;
-
-export default function ApolloErrorBoundary({ children, message }: Props) {
-  return (
-    <ErrorBoundary fallback={<Error message={message} />}>
-      {children}
-    </ErrorBoundary>
-  );
-}
 
 export function Error({ message }: { message: string }) {
   function refresh() {

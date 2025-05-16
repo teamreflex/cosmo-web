@@ -9,8 +9,7 @@ import {
   ObjektNewIndicator,
   ObjektSidebar,
 } from "./common";
-import * as DialogPrimitive from "@radix-ui/react-dialog";
-import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
+import { Dialog as DialogPrimitive, VisuallyHidden } from "radix-ui";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import { Info, X } from "lucide-react";
 import { useState } from "react";

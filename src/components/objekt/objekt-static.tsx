@@ -16,8 +16,8 @@ type Props = {
  * Used within a collection group list.
  */
 export default function StaticObjekt({ collection, token, isPinned }: Props) {
-  const authenticated = useAuthenticated();
   const isLocked = useLockedObjekt(token.tokenId);
+  const authenticated = useAuthenticated();
 
   return (
     <ExpandableObjekt tokenId={token.tokenId} collection={collection}>

@@ -1,8 +1,6 @@
 "use client";
 
-import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import ListDropdown from "../lists/list-dropdown";
-import { IndexedObjekt, ObjektList } from "@/lib/universal/objekts";
 import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
 import { TopOverlay } from "./index-overlay";
 import FiltersContainer from "../collection/filters-container";
@@ -15,39 +13,38 @@ import { Button } from "../ui/button";
 import Link from "next/link";
 import { ChartColumnBig } from "lucide-react";
 import VirtualizedGrid from "../objekt/virtualized-grid";
-import { useMediaQuery } from "@/hooks/use-media-query";
 import LoaderRemote from "../objekt/loader-remote";
 import ObjektIndexFilters from "../collection/filter-contexts/objekt-index-filters";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { useObjektIndex } from "@/hooks/use-objekt-index";
 import HelpDialog from "./help-dialog";
+import { IndexedObjekt } from "@/lib/universal/objekts";
+import { useGridColumns } from "@/hooks/use-grid-columns";
+import { useUserState } from "@/hooks/use-user-state";
+import { ObjektList } from "@/lib/server/db/schema";
 
 type Props = {
-  artists: CosmoArtistWithMembersBFF[];
-  objektLists?: ObjektList[];
-  nickname?: string;
-  gridColumns: number;
   activeSlug?: string;
+  objektLists: ObjektList[];
 };
 
 export default function IndexRenderer(props: Props) {
+  const { user } = useUserState();
+  const gridColumns = useGridColumns();
   const [, setActiveObjekt] = useQueryState("id", parseAsString);
-  const isDesktop = useMediaQuery();
   const options = useObjektIndex();
 
-  const authenticated =
-    props.objektLists !== undefined && props.nickname !== undefined;
-  const gridColumns = isDesktop ? props.gridColumns : 3;
+  const authenticated = user !== undefined;
 
   return (
     <div className="flex flex-col">
-      <Title nickname={props.nickname} objektLists={props.objektLists} />
+      <Title objektLists={props.objektLists} />
 
       <FiltersContainer>
-        <ObjektIndexFilters />
+        <ObjektIndexFilters search />
       </FiltersContainer>
 
-      <FilteredObjektDisplay artists={props.artists} gridColumns={gridColumns}>
+      <FilteredObjektDisplay gridColumns={gridColumns}>
         <LoaderRemote
           options={options}
           gridColumns={gridColumns}
@@ -97,13 +94,7 @@ export default function IndexRenderer(props: Props) {
   );
 }
 
-function Title({
-  nickname,
-  objektLists,
-}: {
-  nickname?: string;
-  objektLists?: ObjektList[];
-}) {
+function Title(props: { objektLists: ObjektList[] }) {
   return (
     <div className="flex gap-2 items-center w-full pb-1">
       <h1 className="text-3xl font-cosmo uppercase">Objekts</h1>
@@ -119,27 +110,27 @@ function Title({
       <div className="flex gap-2 items-center last:ml-auto">
         <div className="min-w-24 text-right" id="objekt-total" />
 
-        {nickname !== undefined && objektLists !== undefined && (
-          <Options nickname={nickname} objektLists={objektLists} />
-        )}
+        <Options objektLists={props.objektLists} />
       </div>
     </div>
   );
 }
 
-function Options({
-  nickname,
-  objektLists,
-}: {
-  nickname: string;
-  objektLists: ObjektList[];
-}) {
+function Options(props: { objektLists: ObjektList[] }) {
+  const { user, cosmo } = useUserState();
+
+  if (!user) return null;
+
+  function createListUrl(list: ObjektList) {
+    return cosmo ? `/@${cosmo.username}/list/${list.slug}` : `/list/${list.id}`;
+  }
+
   return (
     <div className="flex gap-2 items-center">
       <ListDropdown
-        lists={objektLists}
-        nickname={nickname}
+        objektLists={props.objektLists}
         allowCreate={true}
+        createListUrl={createListUrl}
       />
     </div>
   );
@@ -148,10 +139,10 @@ function Options({
 type OverlayProps = {
   objekt: IndexedObjekt;
   authenticated: boolean;
-  objektLists?: ObjektList[];
+  objektLists: ObjektList[];
 };
 
-function Overlay({ objekt, authenticated, objektLists = [] }: OverlayProps) {
+function Overlay({ objekt, authenticated, objektLists }: OverlayProps) {
   return (
     <div className="contents">
       <ObjektSidebar

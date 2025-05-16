@@ -1,12 +1,14 @@
 import { Metadata } from "next";
 import {
-  getUserByIdentifier,
+  getCurrentAccount,
   getArtistsWithMembers,
   getSelectedArtists,
+  getSession,
+  getTargetAccount,
 } from "@/app/data-fetching";
 import ProfileRenderer from "@/components/profile/profile-renderer";
 import { ProfileProvider } from "@/hooks/use-profile";
-import { CosmoArtistProvider } from "@/hooks/use-cosmo-artist";
+import { ArtistProvider } from "@/hooks/use-artists";
 import { parseUserCollection } from "@/lib/universal/parsers";
 import { getQueryClient } from "@/lib/query-client";
 import {
@@ -14,8 +16,9 @@ import {
   parseUserCollectionFilters,
 } from "@/lib/server/objekts/prefetching/objekt-blockchain";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
-import { SelectedArtistsProvider } from "@/hooks/use-selected-artists";
 import { fetchFilterData } from "@/lib/server/objekts/filter-data";
+import { fetchPins } from "@/lib/server/objekts/pins";
+import { UserStateProvider } from "@/hooks/use-user-state";
 
 type Props = {
   params: Promise<{
@@ -26,10 +29,10 @@ type Props = {
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params;
-  const { profile } = await getUserByIdentifier(params.nickname);
+  const { cosmo } = await getTargetAccount(params.nickname);
 
   return {
-    title: `${profile.nickname}'s Collection`,
+    title: `${cosmo.username}'s Collection`,
   };
 }
 
@@ -43,21 +46,24 @@ export default async function UserCollectionPage(props: Props) {
     queryFn: fetchFilterData,
   });
 
-  const [searchParams, { nickname }] = await Promise.all([
+  const [session, searchParams, { nickname }, selected] = await Promise.all([
+    getSession(),
     props.searchParams,
     props.params,
+    getSelectedArtists(),
   ]);
 
-  const [targetUser, selectedArtists] = await Promise.all([
-    getUserByIdentifier(nickname),
-    getSelectedArtists(),
+  const [account, target, pins] = await Promise.all([
+    getCurrentAccount(session?.session.userId),
+    getTargetAccount(nickname),
+    fetchPins(nickname),
   ]);
 
   const params = new URLSearchParams({
     ...searchParams,
     sort: searchParams.sort ?? "newest",
   });
-  for (const artist of selectedArtists) {
+  for (const artist of selected) {
     params.append("artists", artist);
   }
   const filters = parseUserCollection(params);
@@ -66,14 +72,14 @@ export default async function UserCollectionPage(props: Props) {
     queryKey: [
       "collection",
       "blockchain",
-      targetUser.profile.address,
+      target.cosmo.address,
       {
         ...parseUserCollectionFilters(filters),
-        artists: selectedArtists,
+        artists: selected,
       },
     ],
     queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
-      return fetchObjektsBlockchain(targetUser.profile.address, {
+      return fetchObjektsBlockchain(target.cosmo.address, {
         ...filters,
         page: pageParam,
       });
@@ -81,23 +87,24 @@ export default async function UserCollectionPage(props: Props) {
     initialPageParam: 0,
   });
 
+  const { objektLists, lockedObjekts, ...targetAccount } = target;
+
   return (
-    <SelectedArtistsProvider selectedArtists={selectedArtists}>
-      <CosmoArtistProvider artists={artists}>
+    <UserStateProvider {...account}>
+      <ArtistProvider artists={artists} selected={selected}>
         <ProfileProvider
-          targetProfile={targetUser.profile}
-          objektLists={targetUser.objektLists}
+          target={targetAccount}
+          pins={pins}
+          lockedObjekts={lockedObjekts}
+          objektLists={objektLists}
         >
           <section className="flex flex-col">
             <HydrationBoundary state={dehydrate(queryClient)}>
-              <ProfileRenderer
-                artists={artists}
-                targetUser={targetUser.profile}
-              />
+              <ProfileRenderer targetCosmo={target.cosmo} />
             </HydrationBoundary>
           </section>
         </ProfileProvider>
-      </CosmoArtistProvider>
-    </SelectedArtistsProvider>
+      </ArtistProvider>
+    </UserStateProvider>
   );
 }

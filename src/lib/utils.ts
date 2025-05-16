@@ -1,7 +1,5 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { PublicProfile } from "./universal/cosmo/auth";
-import { env } from "@/env";
 import { ValidArtist } from "./universal/cosmo/common";
 
 export function cn(...inputs: ClassValue[]) {
@@ -17,16 +15,25 @@ export function ordinal(n: number) {
 }
 
 /**
- * Address compare, because those in PG are forced to lowercase.
+ * Nullable string compare.
  */
-export function isAddressEqual(a?: string, b?: string) {
-  return a?.toLowerCase() === b?.toLowerCase();
+export function isEqual(a?: string, b?: string) {
+  return (
+    a !== undefined && b !== undefined && a?.toLowerCase() === b?.toLowerCase()
+  );
 }
 
 /**
  * Necessary due to archives returning addresses in lowercase.
  */
 export const addr = (address: string) => address.toLowerCase();
+
+/**
+ * Check if an address is valid.
+ */
+export function isAddress(address: string) {
+  return /^0x[a-fA-F0-9]{40}$/g.test(address);
+}
 
 /**
  * default grid columns
@@ -44,24 +51,6 @@ export type CollectionDataSource = (typeof collectionDataSources)[number];
 export type FilterType = "remote" | "local";
 
 /**
- * Default {@link PublicProfile} properties.
- */
-export const defaultProfile: PublicProfile = {
-  address: "",
-  nickname: "",
-  profileImageUrl: "",
-  isAddress: true,
-  artist: "artms",
-  privacy: {
-    votes: true,
-  },
-  gridColumns: GRID_COLUMNS,
-  isObjektEditor: false,
-  dataSource: "blockchain",
-  isModhaus: false,
-};
-
-/**
  * Addresses that may need special handling.
  */
 export const Addresses = {
@@ -77,20 +66,7 @@ export const Addresses = {
  * Handles when the tracking script isn't loaded.
  */
 export function track(event: string) {
-  try {
-    window.umami.track(event);
-  } catch (err) {
-    // ignore
-  }
-}
-
-/**
- * Get the base URL for the app.
- */
-export function baseUrl() {
-  const scheme =
-    env.NEXT_PUBLIC_VERCEL_ENV === "development" ? "http" : "https";
-  return `${scheme}://${env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL}`;
+  window.umami?.track(event)?.catch(() => void 0);
 }
 
 /**

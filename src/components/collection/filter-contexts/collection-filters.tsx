@@ -1,8 +1,7 @@
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { CollectionDataSource } from "@/lib/utils";
 import { Dispatch, SetStateAction, Suspense } from "react";
-// import LockedFilter from "../filter-locked";
-// import GridableFilter from "../filter-gridable";
+import LockedFilter from "../filter-locked";
 import TransferableFilter from "../filter-transferable";
 import SeasonFilter from "../filter-season";
 import OnlineFilter from "../filter-online";
@@ -33,33 +32,30 @@ export default function CollectionFilters({
 
   return (
     <div className="flex gap-2 items-center flex-wrap justify-center lg:group-data-[show=false]:flex group-data-[show=false]:hidden group-data-[show=true]:pb-2">
-      {/* <LockedFilter showLocked={showLocked} setShowLocked={setShowLocked} /> */}
-      {/* <GridableFilter filters={filters.gridable} setFilters={setFilters} /> */}
-      <TransferableFilter
-        filters={filters.transferable}
-        setFilters={setFilters}
-      />
+      <LockedFilter showLocked={showLocked} setShowLocked={setShowLocked} />
+
+      <TransferableFilter filters={filters} setFilters={setFilters} />
 
       <ErrorBoundary
         fallback={<Skeleton className="w-[100px] h-9 bg-destructive" />}
       >
         <Suspense fallback={<Skeleton className="w-[100px] h-9" />}>
-          <SeasonFilter filters={filters.season} setFilters={setFilters} />
+          <SeasonFilter filters={filters} setFilters={setFilters} />
         </Suspense>
       </ErrorBoundary>
 
-      <OnlineFilter filters={filters.on_offline} setFilters={setFilters} />
+      <OnlineFilter filters={filters} setFilters={setFilters} />
 
       <ErrorBoundary
         fallback={<Skeleton className="w-[87px] h-9 bg-destructive" />}
       >
         <Suspense fallback={<Skeleton className="w-[87px] h-9" />}>
-          <ClassFilter filters={filters.class} setFilters={setFilters} />
+          <ClassFilter filters={filters} setFilters={setFilters} />
         </Suspense>
       </ErrorBoundary>
 
       <SortFilter
-        filters={filters.sort}
+        filters={filters}
         setFilters={setFilters}
         dataSource={dataSource}
         setDataSource={setDataSource}

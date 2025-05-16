@@ -2,8 +2,6 @@ import FilteredObjektDisplay from "@/components/objekt/filtered-objekt-display";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { filtersAreDirty } from "@/hooks/use-filters";
 import { objektOptions } from "@/hooks/use-objekt-response";
-import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
-import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import {
   BFFCollectionGroup,
   BFFCollectionGroupResponse,
@@ -13,34 +11,32 @@ import { useCallback } from "react";
 import GroupedObjekt from "@/components/objekt/objekt-collection-group";
 import { useProfileContext } from "@/hooks/use-profile";
 import VirtualizedGrid from "@/components/objekt/virtualized-grid";
-import { useMediaQuery } from "@/hooks/use-media-query";
 import LoaderRemote from "@/components/objekt/loader-remote";
-import { baseUrl } from "@/lib/utils";
+import { baseUrl } from "@/lib/query-client";
+import { PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import { useArtists } from "@/hooks/use-artists";
 import { useAuthenticated } from "@/hooks/use-authenticated";
-import { useSelectedArtists } from "@/hooks/use-selected-artists";
+import { useGridColumns } from "@/hooks/use-grid-columns";
 
 const INITIAL_PAGE = 1;
 const PAGE_SIZE = 30;
 
 type Props = {
-  artists: CosmoArtistWithMembersBFF[];
   gridColumns: number;
-  targetUser: PublicProfile;
-  currentUser?: PublicProfile;
+  targetCosmo: PublicCosmo;
   searchParams: URLSearchParams;
   showLocked: boolean;
 };
 
 export default function BlockchainGroups(props: Props) {
-  const authenticated = useAuthenticated();
-  const [filters] = useCosmoFilters();
   const lockedObjekts = useProfileContext((ctx) => ctx.lockedObjekts);
   const pins = useProfileContext((ctx) => ctx.pins);
-  const isDesktop = useMediaQuery();
-  const selectedArtists = useSelectedArtists();
+  const authenticated = useAuthenticated();
+  const [filters] = useCosmoFilters();
+  const { selectedIds } = useArtists();
+  const gridColumns = useGridColumns();
 
   const usingFilters = filtersAreDirty(filters);
-  const gridColumns = isDesktop ? props.gridColumns : 3;
 
   /**
    * Determine if the group should be rendered
@@ -63,10 +59,10 @@ export default function BlockchainGroups(props: Props) {
    */
   const options = objektOptions({
     filtering: "remote",
-    queryKey: ["collection", "blockchain-groups", props.targetUser.address],
+    queryKey: ["collection", "blockchain-groups", props.targetCosmo.address],
     queryFunction: async ({ pageParam = 1 }: { pageParam?: number }) => {
       const endpoint = new URL(
-        `/api/bff/v1/objekt/collection-group/${props.targetUser.address}`,
+        `/api/bff/v1/objekt/collection-group/${props.targetCosmo.address}`,
         baseUrl()
       ).toString();
 
@@ -91,7 +87,7 @@ export default function BlockchainGroups(props: Props) {
       return await ofetch<BFFCollectionGroupResponse>(endpoint, {
         query: {
           ...Object.fromEntries(searchParams.entries()),
-          artists: selectedArtists,
+          artists: selectedIds,
         },
       });
     },
@@ -114,7 +110,7 @@ export default function BlockchainGroups(props: Props) {
   });
 
   return (
-    <FilteredObjektDisplay artists={props.artists} gridColumns={gridColumns}>
+    <FilteredObjektDisplay gridColumns={gridColumns}>
       <LoaderRemote
         options={options}
         shouldRender={shouldRender}

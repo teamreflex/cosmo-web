@@ -29,6 +29,6 @@ export async function GET(_: Request, props: Params) {
 
   const common = Objekt.fromIndexer(collection);
   return Response.json(common, {
-    headers: cacheHeaders(60 * 60),
+    headers: cacheHeaders({ vercel: 60 * 60 }),
   });
 }

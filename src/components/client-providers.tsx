@@ -28,7 +28,7 @@ export default function ClientProviders({ children }: Props) {
           <MediaQueryProvider>{children}</MediaQueryProvider>
         </ReactQueryStreamedHydration>
 
-        <ReactQueryDevtools buttonPosition="top-right" />
+        <ReactQueryDevtools buttonPosition="bottom-right" />
       </QueryClientProvider>
     </NuqsAdapter>
   );

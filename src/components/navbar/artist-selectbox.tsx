@@ -1,8 +1,7 @@
 "use client";
 
 import { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
-import { useId, useState, useTransition } from "react";
-import { setSelectedArtist } from "./actions";
+import { useId, useTransition } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,34 +10,13 @@ import {
 } from "../ui/dropdown-menu";
 import Image from "next/image";
 import { Check, Loader2 } from "lucide-react";
-import { ValidArtist } from "@/lib/universal/cosmo/common";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { useArtists } from "@/hooks/use-artists";
+import { setSelectedArtist } from "./actions";
 
-type Props = {
-  artists: CosmoArtistBFF[];
-  selected?: string[];
-};
-
-export default function ArtistSelectbox({ artists, selected = [] }: Props) {
+export default function ArtistSelectbox() {
   const id = useId();
-  const [state, setState] = useState(() =>
-    artists.map((a) => a.id).filter((artist) => selected.includes(artist))
-  );
-
-  function handleSelect(artistId: ValidArtist) {
-    setState((prev) => {
-      if (prev.includes(artistId)) {
-        return [...prev].filter((a) => a !== artistId);
-      }
-
-      return [...prev, artistId];
-    });
-  }
-
-  const selectedArtists =
-    selected.length > 0
-      ? artists.filter((a) => selected.includes(a.id))
-      : artists;
+  const { artists, selected, selectedIds } = useArtists();
 
   return (
     <DropdownMenu>
@@ -47,7 +25,7 @@ export default function ArtistSelectbox({ artists, selected = [] }: Props) {
           id={id}
           className="flex items-center -space-x-3 focus:outline-none"
         >
-          {selectedArtists.map((artist) => (
+          {selected.map((artist) => (
             <Avatar
               key={artist.id}
               className="size-8 ring ring-accent rounded-full"
@@ -67,8 +45,7 @@ export default function ArtistSelectbox({ artists, selected = [] }: Props) {
             <ArtistItem
               key={artist.id}
               artist={artist}
-              onSelect={handleSelect}
-              isSelected={state.includes(artist.id)}
+              isSelected={selectedIds.includes(artist.id)}
             />
           ))}
       </DropdownMenuContent>
@@ -78,17 +55,15 @@ export default function ArtistSelectbox({ artists, selected = [] }: Props) {
 
 type ArtistItemProps = {
   artist: CosmoArtistBFF;
-  onSelect: (artistId: ValidArtist) => void;
   isSelected: boolean;
 };
 
-function ArtistItem({ artist, onSelect, isSelected }: ArtistItemProps) {
+export function ArtistItem({ artist, isSelected }: ArtistItemProps) {
   const [isPending, startTransition] = useTransition();
 
-  function handleSelect(artist: CosmoArtistBFF) {
-    onSelect(artist.id);
+  function handleSelect(artistId: string) {
     startTransition(async () => {
-      await setSelectedArtist(artist.id);
+      await setSelectedArtist(artistId);
     });
   }
 
@@ -97,7 +72,7 @@ function ArtistItem({ artist, onSelect, isSelected }: ArtistItemProps) {
       key={artist.id}
       onClick={(e) => {
         e.preventDefault();
-        handleSelect(artist);
+        handleSelect(artist.id);
       }}
       disabled={isPending}
       className="min-w-40"

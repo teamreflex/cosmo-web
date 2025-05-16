@@ -3,51 +3,42 @@
 import {
   IndexedObjekt,
   LegacyObjektResponse,
-  ObjektList,
   parsePage,
 } from "@/lib/universal/objekts";
 import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
 import ListOverlay from "./list-overlay";
-import DeleteList from "./delete-list";
-import UpdateList from "./update-list";
-import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
-import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { useFilters } from "@/hooks/use-filters";
 import FiltersContainer from "../collection/filters-container";
 import { ofetch } from "ofetch";
-import { baseUrl } from "@/lib/utils";
+import { baseUrl } from "@/lib/query-client";
 import { ObjektResponseOptions } from "@/hooks/use-objekt-response";
 import { ObjektSidebar } from "../objekt/common";
 import ExpandableObjekt from "../objekt/objekt-expandable";
 import { Objekt } from "../../lib/universal/objekt-conversion";
-import { useMediaQuery } from "@/hooks/use-media-query";
 import VirtualizedGrid from "../objekt/virtualized-grid";
 import LoaderRemote from "../objekt/loader-remote";
 import ObjektIndexFilters from "../collection/filter-contexts/objekt-index-filters";
+import type { ObjektList } from "@/lib/server/db/schema";
+import { useGridColumns } from "@/hooks/use-grid-columns";
 
 type Props = {
-  list: ObjektList;
-  artists: CosmoArtistWithMembersBFF[];
+  objektList: ObjektList;
   authenticated: boolean;
-  user: PublicProfile;
-  gridColumns: number;
 };
 
 export default function ListRenderer(props: Props) {
   const { searchParams } = useFilters();
-  const isDesktop = useMediaQuery();
-
-  const gridColumns = isDesktop ? props.gridColumns : 3;
+  const gridColumns = useGridColumns();
 
   /**
    * Query options
    */
   const options = {
     filtering: "remote",
-    queryKey: ["objekt-list", props.list.slug, props.user.address],
+    queryKey: ["objekt-list", props.objektList.id],
     queryFunction: async ({ pageParam = 0 }: { pageParam?: number }) => {
       const url = new URL(
-        `/api/objekt-list/entries/${props.list.slug}/${props.user.address}`,
+        `/api/objekt-list/entries/${props.objektList.id}`,
         baseUrl()
       );
 
@@ -72,14 +63,12 @@ export default function ListRenderer(props: Props) {
   >;
 
   return (
-    <section className="flex flex-col">
-      <Title authenticated={props.authenticated} objektList={props.list} />
-
+    <div className="flex flex-col">
       <FiltersContainer isPortaled>
         <ObjektIndexFilters />
       </FiltersContainer>
 
-      <FilteredObjektDisplay artists={props.artists} gridColumns={gridColumns}>
+      <FilteredObjektDisplay gridColumns={gridColumns}>
         <LoaderRemote options={options} gridColumns={gridColumns} showTotal>
           {({ rows }) => (
             <VirtualizedGrid
@@ -96,7 +85,7 @@ export default function ListRenderer(props: Props) {
                       id={item.id}
                       collection={collection}
                       authenticated={props.authenticated}
-                      objektList={props.list}
+                      objektList={props.objektList}
                     />
                   </ExpandableObjekt>
                 );
@@ -105,27 +94,6 @@ export default function ListRenderer(props: Props) {
           )}
         </LoaderRemote>
       </FilteredObjektDisplay>
-    </section>
-  );
-}
-
-function Title({
-  authenticated,
-  objektList,
-}: {
-  authenticated: boolean;
-  objektList: ObjektList;
-}) {
-  return (
-    <div className="flex flex-wrap items-center justify-between gap-2">
-      <h3 className="text-xl font-cosmo">{objektList.name}</h3>
-
-      {authenticated && (
-        <div className="flex items-center gap-2">
-          <UpdateList objektList={objektList} />
-          <DeleteList objektList={objektList} />
-        </div>
-      )}
     </div>
   );
 }

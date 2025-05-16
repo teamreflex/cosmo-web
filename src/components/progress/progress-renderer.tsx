@@ -1,6 +1,5 @@
 "use client";
 
-import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import { Suspense, useCallback } from "react";
 import MemberFilter from "../collection/member-filter";
 import { ValidArtist } from "@/lib/universal/cosmo/common";
@@ -13,11 +12,10 @@ import Skeleton from "../skeleton/skeleton";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 
 type Props = {
-  artists: CosmoArtistWithMembersBFF[];
   address: string;
 };
 
-export default function ProgressRenderer({ artists, address }: Props) {
+export default function ProgressRenderer({ address }: Props) {
   const [filters, setFilters] = useCosmoFilters();
 
   const setActiveMember = useCallback(
@@ -44,7 +42,6 @@ export default function ProgressRenderer({ artists, address }: Props) {
     <div className="flex flex-col gap-6">
       <MemberFilter
         showArtists={false}
-        artists={artists}
         active={filters.artist ?? filters.member}
         updateArtist={setActiveArtist}
         updateMember={setActiveMember}

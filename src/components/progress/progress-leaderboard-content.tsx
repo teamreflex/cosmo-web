@@ -2,7 +2,8 @@ import { Leaderboard, LeaderboardItem } from "@/lib/universal/progress";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ofetch } from "ofetch";
 import Skeleton from "../skeleton/skeleton";
-import { baseUrl, ordinal } from "@/lib/utils";
+import { baseUrl } from "@/lib/query-client";
+import { ordinal } from "@/lib/utils";
 import Link from "next/link";
 
 type Props = {

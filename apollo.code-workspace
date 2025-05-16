@@ -1,0 +1,22 @@
+{
+  "folders": [
+	{
+		"name": "cosmo-web",
+		"path": "."
+	},
+	{
+		"path": "../cosmo-db"
+	},
+	{
+		"path": "../cosmo-typesense"
+	},
+	{
+		"path": "../apollo-migration"
+	}
+],
+  "settings": {
+    "tailwindCSS.experimental.configFile": "./src/styles/tailwind.css",
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "eslint.useFlatConfig": true
+  }
+}

@@ -1,11 +1,9 @@
 "use server";
 
-import { getProfile } from "@/app/data-fetching";
 import { db } from "@/lib/server/db";
 import { objektMetadata } from "@/lib/server/db/schema";
-import { authenticatedAction } from "@/lib/server/typed-action";
-import { ActionError } from "@/lib/server/typed-action/errors";
-import { metadataObjectSchema, MetadataRow } from "@/lib/universal/metadata";
+import { adminActionClient } from "@/lib/server/server-actions";
+import { metadataObjectSchema } from "@/lib/universal/schema/metadata";
 import { sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -13,41 +11,35 @@ import { z } from "zod";
 /**
  * Bulk inserts objekt metadata.
  */
-export const saveMetadata = async (rows: MetadataRow[]) =>
-  authenticatedAction({
-    form: { rows },
-    schema: z.object({
+export const saveMetadata = adminActionClient
+  .metadata({ actionName: "saveMetadata" })
+  .schema(
+    z.object({
       rows: metadataObjectSchema.array(),
-    }),
-    onValidate: async ({ data: { rows }, user }) => {
-      const profile = await getProfile(user.profileId);
-      if (profile.isObjektEditor === false) {
-        throw new ActionError({
-          status: "error",
-          error: "Unauthorized",
-        });
-      }
+    })
+  )
+  .action(async ({ parsedInput: { rows }, ctx }) => {
+    const result = await db
+      .insert(objektMetadata)
+      .values(
+        rows.map((r) => ({
+          collectionId: r.collectionId,
+          description: r.description,
+          contributor: ctx.cosmo.address,
+        }))
+      )
+      .onConflictDoUpdate({
+        target: objektMetadata.collectionId,
+        set: {
+          description: sql.raw(`excluded.${objektMetadata.description.name}`),
+          contributor: ctx.cosmo.address,
+        },
+      });
 
-      await db
-        .insert(objektMetadata)
-        .values(
-          rows.map((r) => ({
-            collectionId: r.collectionId,
-            description: r.description,
-            contributor: user.address,
-          }))
-        )
-        .onConflictDoUpdate({
-          target: objektMetadata.collectionId,
-          set: {
-            description: sql.raw(`excluded.${objektMetadata.description.name}`),
-            contributor: user.address,
-          },
-        });
+    // revalidate the metadata path for each row
+    for (const row of rows) {
+      revalidatePath(`/api/objekts/metadata/${row.collectionId}`);
+    }
 
-      // revalidate the metadata path for each row
-      for (const row of rows) {
-        revalidatePath(`/api/objekts/metadata/${row.collectionId}`);
-      }
-    },
+    return result.rowCount;
   });

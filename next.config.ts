@@ -5,6 +5,40 @@ import { env } from "./src/env";
 const config: NextConfig = {
   experimental: {
     reactCompiler: true,
+    taint: true,
+    useCache: true,
+    cacheLife: {
+      // system status (block height)
+      system: {
+        stale: 60, // 1 minute
+        revalidate: 60, // 1 minute
+        expire: 90, // 1.5 minutes
+      },
+      // como balances
+      como: {
+        stale: 60 * 15, // 15 minutes
+        revalidate: 60 * 15, // 15 minutes
+        expire: 60 * 20, // 20 minutes
+      },
+      // filter data (collections, seasons, classes)
+      filterData: {
+        stale: 60 * 60 * 4, // 4 hours
+        revalidate: 60 * 60 * 4, // 4 hours
+        expire: 60 * 60 * 8, // 8 hours
+      },
+      // objekt stats (24-hour window)
+      objektStats: {
+        stale: 60 * 60 * 2, // 2 hours
+        revalidate: 60 * 60 * 2, // 2 hours
+        expire: 60 * 60 * 4, // 4 hours
+      },
+      // user pins
+      pins: {
+        stale: 60 * 60 * 24, // 1 day
+        revalidate: 60 * 60 * 24, // 1 day
+        expire: 60 * 60 * 24 * 2, // 2 days
+      },
+    },
     staleTimes: {
       dynamic: 60 * 5, // 5 minutes
       static: 60 * 5, // 5 minutes

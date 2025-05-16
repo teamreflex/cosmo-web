@@ -1,7 +1,17 @@
-import { createContext, useContext } from "react";
+import { useShallow } from "zustand/react/shallow";
+import { useProfileContext } from "./use-profile";
+import { useUserState } from "./use-user-state";
 
-export const AuthenticatedContext = createContext(false);
-
+/**
+ * Optimized hook for checking if the target is the same as the account.
+ */
 export function useAuthenticated() {
-  return useContext(AuthenticatedContext);
+  const { cosmo } = useUserState();
+  const target = useProfileContext(
+    useShallow((state) => state.target?.cosmo?.address)
+  );
+
+  return (
+    target !== undefined && cosmo !== undefined && target === cosmo.address
+  );
 }

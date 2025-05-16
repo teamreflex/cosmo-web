@@ -1,58 +1,44 @@
 "use server";
 
-import { fetchPublicProfile } from "@/lib/server/auth";
 import { db } from "@/lib/server/db";
 import { objektMetadata } from "@/lib/server/db/schema";
-import { authenticatedAction } from "@/lib/server/typed-action";
-import { ActionError } from "@/lib/server/typed-action/errors";
+import { adminActionClient } from "@/lib/server/server-actions";
 import { eq } from "drizzle-orm";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
-
-const schema = z.object({
-  description: z.string().min(3).max(254),
-});
+import { zfd } from "zod-form-data";
 
 /**
  * Update an objekt's metadata.
  */
-export const updateObjektMetadata = async (
-  collectionSlug: string,
-  form: FormData
-) =>
-  authenticatedAction({
-    form,
-    schema,
-    onAuthenticate: async ({ user }) => {
-      const profile = await fetchPublicProfile(user.profileId);
-      if (!profile || !profile.isObjektEditor) {
-        throw new ActionError({
-          status: "error",
-          error: "You do not have permission to edit this collection",
-        });
-      }
-    },
-    onValidate: async ({ data: { description }, user }) => {
-      const result = await db
-        .insert(objektMetadata)
-        .values({
-          collectionId: collectionSlug,
+export const updateObjektMetadata = adminActionClient
+  .metadata({ actionName: "updateObjektMetadata" })
+  .schema(
+    zfd.formData({
+      collectionId: zfd.text(),
+      description: zfd.text(z.string().min(3).max(254)),
+    })
+  )
+  .action(async ({ parsedInput: { collectionId, description }, ctx }) => {
+    const [result] = await db
+      .insert(objektMetadata)
+      .values({
+        collectionId,
+        description,
+        contributor: ctx.cosmo.address,
+      })
+      .onConflictDoUpdate({
+        set: {
           description,
-          contributor: user.address,
-        })
-        .onConflictDoUpdate({
-          set: {
-            description,
-            contributor: user.address,
-          },
-          target: objektMetadata.collectionId,
-          where: eq(objektMetadata.collectionId, collectionSlug),
-        })
-        .returning();
+          contributor: ctx.cosmo.address,
+        },
+        target: objektMetadata.collectionId,
+        where: eq(objektMetadata.collectionId, collectionId),
+      })
+      .returning();
 
-      revalidatePath(`/api/objekts/metadata/${collectionSlug}`);
-      revalidateTag(collectionSlug);
+    revalidatePath(`/api/objekts/metadata/${collectionId}`);
+    revalidateTag(collectionId);
 
-      return result[0];
-    },
+    return result;
   });

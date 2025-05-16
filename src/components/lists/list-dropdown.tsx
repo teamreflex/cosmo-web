@@ -12,21 +12,25 @@ import {
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { ChevronRight, LetterText, List, PlusCircle } from "lucide-react";
-import { ObjektList } from "@/lib/universal/objekts";
+import type { ObjektList } from "@/lib/server/db/schema";
 import Link from "next/link";
 import CreateListDialog from "./create-list-dialog";
 import DiscordFormatDialog from "./discord-format-dialog";
 
 type Props = {
-  lists: ObjektList[];
-  nickname: string;
+  objektLists: ObjektList[];
   allowCreate: boolean;
+  createListUrl: (list: ObjektList) => string;
 };
 
-export default function ListDropdown({ lists, nickname, allowCreate }: Props) {
+export default function ListDropdown({
+  objektLists,
+  allowCreate,
+  createListUrl,
+}: Props) {
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [compareOpen, setCompareOpen] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   return (
     <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
@@ -34,7 +38,7 @@ export default function ListDropdown({ lists, nickname, allowCreate }: Props) {
       <DiscordFormatDialog
         open={compareOpen}
         onOpenChange={setCompareOpen}
-        lists={lists}
+        objektLists={objektLists}
       />
 
       <DropdownMenuTrigger asChild>
@@ -47,14 +51,14 @@ export default function ListDropdown({ lists, nickname, allowCreate }: Props) {
         <DropdownMenuLabel>Objekt Lists</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          {lists.map((list) => (
+          {objektLists.map((list) => (
             <DropdownMenuItem
               key={list.id}
               className="text-sm"
               onClick={() => setDropdownOpen(false)}
             >
               <Link
-                href={`/@${nickname}/list/${list.slug}`}
+                href={createListUrl(list)}
                 className="w-full flex items-center justify-between"
               >
                 {list.name}
@@ -62,7 +66,7 @@ export default function ListDropdown({ lists, nickname, allowCreate }: Props) {
               </Link>
             </DropdownMenuItem>
           ))}
-          {lists.length === 0 && (
+          {objektLists.length === 0 && (
             <DropdownMenuItem className="text-sm">0 lists</DropdownMenuItem>
           )}
 
@@ -71,11 +75,11 @@ export default function ListDropdown({ lists, nickname, allowCreate }: Props) {
               <DropdownMenuSeparator />
 
               <DropdownMenuItem onClick={() => setCreateOpen(true)}>
-                <PlusCircle className="mr-2 h-4 w-4" />
+                <PlusCircle className="h-4 w-4" />
                 <span className="font-semibold">Create New</span>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setCompareOpen(true)}>
-                <LetterText className="mr-2 h-4 w-4" />
+                <LetterText className="h-4 w-4" />
                 <span className="font-semibold">Discord Format</span>
               </DropdownMenuItem>
             </div>

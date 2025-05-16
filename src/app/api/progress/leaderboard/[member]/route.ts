@@ -3,8 +3,8 @@ import { collections, objekts } from "@/lib/server/db/indexer/schema";
 import { and, count, eq, inArray, not, sql } from "drizzle-orm";
 import { NextRequest } from "next/server";
 import { fetchTotal } from "../../common";
-import { fetchKnownAddresses } from "@/lib/server/profiles";
-import { Addresses, isAddressEqual } from "@/lib/utils";
+import { fetchKnownAddresses } from "@/lib/server/cosmo-accounts";
+import { Addresses, isEqual } from "@/lib/utils";
 import { LeaderboardItem } from "@/lib/universal/progress";
 import {
   ValidOnlineType,
@@ -12,7 +12,7 @@ import {
 } from "@/lib/universal/cosmo/common";
 import { cacheHeaders } from "@/app/api/common";
 import { z } from "zod";
-import { unobtainables } from "@/lib/universal/objekts";
+import { unobtainables } from "@/lib/unobtainables";
 
 export const runtime = "nodejs";
 const LEADERBOARD_COUNT = 25;
@@ -66,13 +66,11 @@ export async function GET(request: NextRequest, props: Params) {
 
   // map the nickname onto the results
   const results = leaderboard.map((row) => {
-    const known = knownAddresses.find((a) =>
-      isAddressEqual(a.userAddress, row.owner)
-    );
+    const known = knownAddresses.find((a) => isEqual(a.address, row.owner));
 
     return {
       count: row.count,
-      nickname: known?.nickname ?? row.owner.substring(0, 8),
+      nickname: known?.username ?? row.owner.substring(0, 8),
       address: row.owner,
       isAddress: known === undefined,
     };
@@ -84,7 +82,7 @@ export async function GET(request: NextRequest, props: Params) {
       leaderboard: results,
     },
     {
-      headers: cacheHeaders(60 * 60),
+      headers: cacheHeaders({ vercel: 60 * 60 }),
     }
   );
 }

@@ -1,8 +1,7 @@
 "use client";
 
-import { ObjektList } from "@/lib/universal/objekts";
 import { ListPlus, Loader2, Plus } from "lucide-react";
-import { MouseEvent, useState, useTransition } from "react";
+import { MouseEvent, useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +15,8 @@ import { addObjektToList } from "./actions";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "../ui/use-toast";
 import { ScrollArea } from "../ui/scroll-area";
+import type { ObjektList } from "@/lib/server/db/schema";
+import { useAction } from "next-safe-action/hooks";
 
 type AddToListProps = {
   collectionId: string;
@@ -81,25 +82,24 @@ function ListItem({
   list,
   onDone,
 }: ListItemProps) {
-  const [isPending, startTransition] = useTransition();
+  const { execute, isPending } = useAction(addObjektToList, {
+    onSuccess() {
+      toast({
+        description: `Added ${collectionId} to ${list.name}`,
+      });
+      queryClient.removeQueries({ queryKey: ["objekt-list", list.slug] });
+      onDone();
+    },
+  });
 
   const queryClient = useQueryClient();
 
   function submit(event: MouseEvent<HTMLButtonElement>) {
     event.preventDefault();
 
-    startTransition(async () => {
-      const result = await addObjektToList({
-        listId: list.id,
-        collectionSlug: collectionSlug,
-      });
-      if (result.status === "success" && result.data) {
-        toast({
-          description: `Added ${collectionId} to ${list.name}`,
-        });
-        queryClient.removeQueries({ queryKey: ["objekt-list", list.slug] });
-      }
-      onDone();
+    execute({
+      objektListId: list.id,
+      collectionSlug: collectionSlug,
     });
   }
 

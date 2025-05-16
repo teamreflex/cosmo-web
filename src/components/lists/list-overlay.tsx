@@ -1,10 +1,10 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { ObjektList } from "@/lib/universal/objekts";
 import OverlayStatus from "../objekt/overlay/overlay-status";
 import RemoveFromList from "./remove-from-list";
 import { Objekt } from "@/lib/universal/objekt-conversion";
+import type { ObjektList } from "@/lib/server/db/schema";
 
 type Props = {
   id: string;

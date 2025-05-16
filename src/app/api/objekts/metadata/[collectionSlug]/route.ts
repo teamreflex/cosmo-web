@@ -58,7 +58,7 @@ export async function GET(_: Request, props: Params) {
       percentage: collection.percentage,
     } satisfies ObjektMetadata,
     {
-      headers: cacheHeaders(cacheTime),
+      headers: cacheHeaders({ vercel: cacheTime }),
     }
   );
 }
@@ -112,7 +112,7 @@ async function fetchCollectionMetadata(slug: string) {
     with: {
       profile: {
         columns: {
-          nickname: true,
+          username: true,
         },
       },
     },

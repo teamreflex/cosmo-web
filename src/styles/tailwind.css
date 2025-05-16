@@ -17,6 +17,8 @@
   --color-cosmo-profile: var(--color-violet-200);
 
   --color-abstract: #29e58a;
+  --color-discord: #5865f2;
+  --color-twitter: #1da1f2;
 
   --color-border: var(--border);
   --color-input: var(--input);
@@ -72,6 +74,19 @@
     }
     to {
       height: 0;
+    }
+  }
+
+  --animate-caret-blink: caret-blink 1.25s ease-out infinite;
+  @keyframes caret-blink {
+    0%,
+    70%,
+    100% {
+      opacity: 1;
+    }
+    20%,
+    50% {
+      opacity: 0;
     }
   }
 }

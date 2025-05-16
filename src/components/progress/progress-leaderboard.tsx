@@ -33,8 +33,7 @@ import {
 import { Separator } from "../ui/separator";
 import Image from "next/image";
 import { FilterData } from "@/hooks/use-filter-data";
-import { useCosmoArtists } from "@/hooks/use-cosmo-artist";
-import { useSelectedArtists } from "@/hooks/use-selected-artists";
+import { useArtists } from "@/hooks/use-artists";
 
 type Props = {
   member: string;
@@ -147,8 +146,7 @@ type SeasonSelectProps = {
 };
 
 function SeasonSelect({ seasons, member, value, update }: SeasonSelectProps) {
-  const { getArtist } = useCosmoArtists();
-  const selectedArtists = useSelectedArtists();
+  const { getArtist, selectedIds } = useArtists();
 
   function set(value: string) {
     update(value === "all" ? null : value);
@@ -164,7 +162,7 @@ function SeasonSelect({ seasons, member, value, update }: SeasonSelectProps) {
     })
     .filter(
       ({ artist }) =>
-        selectedArtists.includes(artist.id) &&
+        selectedIds.includes(artist.id) &&
         artist.artistMembers
           .map((m) => m.name.toLowerCase())
           .includes(member.toLowerCase())

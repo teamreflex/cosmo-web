@@ -1,10 +1,8 @@
-import { PublicProfile } from "@/lib/universal/cosmo/auth";
 import { ofetch } from "ofetch";
 import { LegacyObjektResponse, parsePage } from "@/lib/universal/objekts";
 import { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
-import { baseUrl } from "@/lib/utils";
+import { baseUrl } from "@/lib/query-client";
 import { useProfileContext } from "@/hooks/use-profile";
-import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import { objektOptions } from "@/hooks/use-objekt-response";
 import FilteredObjektDisplay from "@/components/objekt/filtered-objekt-display";
 import { useCallback } from "react";
@@ -14,30 +12,28 @@ import { LegacyOverlay } from "./common-legacy";
 import ExpandableObjekt from "@/components/objekt/objekt-expandable";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import VirtualizedGrid from "@/components/objekt/virtualized-grid";
-import { useMediaQuery } from "@/hooks/use-media-query";
 import LoaderRemote from "@/components/objekt/loader-remote";
+import { PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import { useArtists } from "@/hooks/use-artists";
 import { useAuthenticated } from "@/hooks/use-authenticated";
-import { useSelectedArtists } from "@/hooks/use-selected-artists";
+import { useGridColumns } from "@/hooks/use-grid-columns";
 
 type Props = {
-  artists: CosmoArtistWithMembersBFF[];
   gridColumns: number;
-  targetUser: PublicProfile;
-  currentUser?: PublicProfile;
+  targetCosmo: PublicCosmo;
   searchParams: URLSearchParams;
   showLocked: boolean;
 };
 
 export default function Blockchain(props: Props) {
+  const lockedObjekts = useProfileContext((ctx) => ctx.lockedObjekts);
+  const pins = useProfileContext((ctx) => ctx.pins);
   const authenticated = useAuthenticated();
   const [filters] = useCosmoFilters();
-  const pins = useProfileContext((ctx) => ctx.pins);
-  const lockedObjekts = useProfileContext((ctx) => ctx.lockedObjekts);
-  const isDesktop = useMediaQuery();
-  const selectedArtists = useSelectedArtists();
+  const { selectedIds } = useArtists();
+  const gridColumns = useGridColumns();
 
   const usingFilters = filtersAreDirty(filters);
-  const gridColumns = isDesktop ? props.gridColumns : 3;
 
   /**
    * Determine if the objekt should be rendered
@@ -66,10 +62,10 @@ export default function Blockchain(props: Props) {
    */
   const options = objektOptions({
     filtering: "remote",
-    queryKey: ["collection", "blockchain", props.targetUser.address],
+    queryKey: ["collection", "blockchain", props.targetCosmo.address],
     queryFunction: async ({ pageParam = 0 }: { pageParam?: number }) => {
       const endpoint = new URL(
-        `/api/objekts/by-address/${props.targetUser.address}`,
+        `/api/objekts/by-address/${props.targetCosmo.address}`,
         baseUrl()
       ).toString();
 
@@ -77,7 +73,7 @@ export default function Blockchain(props: Props) {
         query: {
           ...Object.fromEntries(props.searchParams.entries()),
           page: pageParam,
-          artists: selectedArtists,
+          artists: selectedIds,
         },
       }).then((res) => parsePage<LegacyObjektResponse<CosmoObjekt>>(res));
     },
@@ -94,7 +90,7 @@ export default function Blockchain(props: Props) {
   });
 
   return (
-    <FilteredObjektDisplay artists={props.artists} gridColumns={gridColumns}>
+    <FilteredObjektDisplay gridColumns={gridColumns}>
       <LoaderRemote
         options={options}
         shouldRender={shouldRender}
@@ -122,7 +118,6 @@ export default function Blockchain(props: Props) {
                     collection={objekt.collection}
                     token={objekt.objekt}
                     authenticated={authenticated}
-                    isPinned={pins.findIndex((p) => p.tokenId === id) !== -1}
                     isPin={isPin}
                   />
                 </ExpandableObjekt>
