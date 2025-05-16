@@ -65,7 +65,7 @@ export default function LinkCosmo({ children }: Props) {
 }
 
 function StartLink() {
-  const [started, setStarted] = useState(false);
+  const [started, _] = useState(false);
 
   if (started) {
     return <GetRecaptcha />;
@@ -79,11 +79,8 @@ function StartLink() {
         and wallet address.
       </p>
       <p>
-        This allows you to create/share objekt lists, pin objekts and lock
-        objekts.
-      </p>
-      <p>
-        Any previously created objekt lists will be imported upon account link.
+        This allows you to pin and lock objekts. Any previously created objekt
+        lists will be imported upon account link.
       </p>
       <p>
         {env.NEXT_PUBLIC_APP_NAME} does not store anything about your account
@@ -92,8 +89,8 @@ function StartLink() {
       </p>
       <p>Once linked, the account cannot be unlinked.</p>
 
-      <Button className="mt-2 w-fit mx-auto" onClick={() => setStarted(true)}>
-        Start
+      <Button className="mt-2 w-fit mx-auto" disabled>
+        Coming soon
       </Button>
     </div>
   );
@@ -114,7 +111,10 @@ function GetRecaptcha() {
 
       {status === "error" && (
         <div className="flex flex-col">
-          <p className="text-sm font-semibold">Error loading QR code</p>
+          <p className="text-sm font-semibold">
+            Error: There may be too many attempts at once. Please try again
+            later.
+          </p>
           <Button variant="secondary" size="sm" onClick={() => refetch()}>
             Try again
           </Button>
@@ -133,7 +133,7 @@ type RenderQRProps = {
 
 function RenderTicket({ ticket, retry }: RenderQRProps) {
   // query the ticket when the QR code is loaded
-  const { data, status } = useQuery({
+  const { data, status, refetch } = useQuery({
     queryKey: ["qr-auth", "ticket"],
     queryFn: () =>
       ofetch<QueryTicket>("/api/cosmo/qr-auth/ticket", {
@@ -152,8 +152,8 @@ function RenderTicket({ ticket, retry }: RenderQRProps) {
   if (status === "error") {
     return (
       <div className="flex flex-col items-center gap-2">
-        <p className="text-sm font-semibold">Error loading QR code</p>
-        <Button variant="secondary" size="sm" onClick={retry}>
+        <p className="text-sm font-semibold">Error checking OTP status</p>
+        <Button variant="secondary" size="sm" onClick={() => refetch()}>
           Try again
         </Button>
       </div>

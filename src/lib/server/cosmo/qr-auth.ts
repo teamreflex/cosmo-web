@@ -14,7 +14,6 @@ const bql = `
 mutation COSMORecaptchaToken {
   goto(url: "https://shop.cosmo.fans", waitUntil: firstContentfulPaint, timeout: 5000) {
     status
-    time
   }
   getToken: evaluate(
     content: """
@@ -34,7 +33,6 @@ mutation COSMORecaptchaToken {
     timeout: 1000
   ) {
     value
-    time
   }
 }
 `;

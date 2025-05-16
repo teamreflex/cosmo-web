@@ -33,7 +33,7 @@ export default function AccountDialog({ open, onOpenChange, cosmo }: Props) {
         </DialogHeader>
 
         <div className="flex flex-col gap-2">
-          <Suspense fallback={<Skeleton className="w-full h-9" />}>
+          <Suspense fallback={<Skeleton className="w-full h-[211px]" />}>
             <Profile />
           </Suspense>
 
