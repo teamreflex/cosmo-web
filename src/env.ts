@@ -33,6 +33,9 @@ export const env = createEnv({
     COSMO_RECAPTCHA_KEY: z.string().min(1),
     BROWSERLESS_API_KEY: z.string().min(1),
     BROWSERLESS_BASE_URL: z.string().min(1),
+    // upstash redis
+    KV_REST_API_URL: z.string().min(1),
+    KV_REST_API_TOKEN: z.string().min(1),
   },
   client: {
     // info for rebranding the app

@@ -6,7 +6,7 @@ import { ValidArtist } from "../universal/cosmo/common";
 import { getProxiedToken } from "./handlers/withProxiedToken";
 import { findPoll } from "../client/gravity/util";
 import { RevealedVote } from "../client/gravity/polygon/types";
-import { unstable_cacheLife } from "next/cache";
+import { remember } from "./cache";
 
 /**
  * Fetch all gravities and group them by artist.
@@ -24,77 +24,120 @@ export async function fetchGravities() {
  * Cached for 30 days.
  */
 export async function fetchPolygonGravity(artist: ValidArtist, id: number) {
-  "use cache";
-  unstable_cacheLife({
-    stale: 60 * 60 * 24 * 30, // 30 days
-    revalidate: 60 * 60 * 24 * 30, // 30 days
-  });
+  return await remember(
+    `gravity:${artist}:${id}`,
+    60 * 60 * 24 * 30, // 30 days
+    async () => {
+      // 1. get a cosmo token
+      const { accessToken } = await getProxiedToken();
 
-  // 1. get a cosmo token
-  const { accessToken } = await getProxiedToken();
+      // 2. fetch gravity from cosmo
+      const gravity = await fetchGravity(artist, id);
+      if (!gravity) {
+        throw new GravityMissingError();
+      }
 
-  // 2. fetch gravity from cosmo
-  const gravity = await fetchGravity(artist, id);
-  if (!gravity) {
-    throw new GravityMissingError();
+      // 3. fetch poll details
+      const poll = await fetchPoll(
+        accessToken,
+        artist,
+        gravity.id,
+        findPoll(gravity).poll.id
+      );
+
+      // prior to gravity 11, they used the cosmo poll ID on-chain instead of a separate ID
+      const chainPollId = gravity.id <= 11 ? poll.id : poll.pollIdOnChain;
+
+      // 4. fetch votes
+      const votes = await db.query.polygonVotes.findMany({
+        where: {
+          contract: ADDRESSES[artist],
+          pollId: chainPollId,
+        },
+        with: {
+          cosmoAccount: {
+            columns: {
+              username: true,
+            },
+          },
+        },
+      });
+
+      // 5. map votes
+      const revealedVotes = votes
+        .map(
+          (vote) =>
+            ({
+              pollId: Number(vote.pollId),
+              voter: vote.address,
+              comoAmount: vote.amount,
+              candidateId: vote.candidateId!,
+              blockNumber: vote.blockNumber,
+              username: vote.cosmoAccount?.username,
+              hash: vote.hash,
+            } satisfies RevealedVote)
+        )
+        .filter((vote) => vote.candidateId !== null)
+        .sort((a, b) => b.comoAmount - a.comoAmount);
+
+      // 6. aggregate como by candidate
+      const comoByCandidate = revealedVotes.reduce((acc, vote) => {
+        const id = vote.candidateId.toString();
+        acc[id] = (acc[id] ?? 0) + vote.comoAmount;
+        return acc;
+      }, {} as Record<string, number>);
+
+      // 7. calculate total como used
+      const totalComoUsed = revealedVotes.reduce((acc, vote) => {
+        return acc + vote.comoAmount;
+      }, 0);
+
+      return { poll, revealedVotes, comoByCandidate, totalComoUsed };
+    }
+  );
+}
+
+/**
+ * Fetch a gravity, and if it's in the past, cache it for 30 days.
+ */
+export async function fetchCachedGravity(
+  artist: ValidArtist,
+  id: number,
+  isPast: boolean
+) {
+  if (isPast) {
+    return await remember(
+      `gravity:${artist}:${id}`,
+      60 * 60 * 24 * 30, // 30 days
+      () => fetchGravity(artist, id)
+    );
   }
 
-  // 3. fetch poll details
-  const poll = await fetchPoll(
-    accessToken,
-    artist,
-    gravity.id,
-    findPoll(gravity).poll.id
-  );
+  return await fetchGravity(artist, id);
+}
 
-  // prior to gravity 11, they used the cosmo poll ID on-chain instead of a separate ID
-  const chainPollId = gravity.id <= 11 ? poll.id : poll.pollIdOnChain;
+/**
+ * Fetch a poll, and if it's in the past, cache it for 30 days.
+ */
+export async function fetchCachedPoll(
+  artist: ValidArtist,
+  gravityId: number,
+  pollId: number,
+  isPast: boolean
+) {
+  if (isPast) {
+    return await remember(
+      `poll:${artist}:${gravityId}:${pollId}`,
+      60 * 60 * 24 * 30, // 30 days
+      async () => {
+        const { accessToken } = await getProxiedToken();
+        return await fetchPoll(accessToken, artist, gravityId, pollId);
+      }
+    );
+  }
 
-  // 4. fetch votes
-  const votes = await db.query.polygonVotes.findMany({
-    where: {
-      contract: ADDRESSES[artist],
-      pollId: chainPollId,
-    },
-    with: {
-      cosmoAccount: {
-        columns: {
-          username: true,
-        },
-      },
-    },
-  });
-
-  // 5. map votes
-  const revealedVotes = votes
-    .map(
-      (vote) =>
-        ({
-          pollId: Number(vote.pollId),
-          voter: vote.address,
-          comoAmount: vote.amount,
-          candidateId: vote.candidateId!,
-          blockNumber: vote.blockNumber,
-          username: vote.cosmoAccount?.username,
-          hash: vote.hash,
-        } satisfies RevealedVote)
-    )
-    .filter((vote) => vote.candidateId !== null)
-    .sort((a, b) => b.comoAmount - a.comoAmount);
-
-  // 6. aggregate como by candidate
-  const comoByCandidate = revealedVotes.reduce((acc, vote) => {
-    const id = vote.candidateId.toString();
-    acc[id] = (acc[id] ?? 0) + vote.comoAmount;
-    return acc;
-  }, {} as Record<string, number>);
-
-  // 7. calculate total como used
-  const totalComoUsed = revealedVotes.reduce((acc, vote) => {
-    return acc + vote.comoAmount;
-  }, 0);
-
-  return { poll, revealedVotes, comoByCandidate, totalComoUsed };
+  const { accessToken } = await getProxiedToken();
+  return await fetchPoll(accessToken, artist, gravityId, pollId);
 }
 
 const ADDRESSES: Record<string, string> = {

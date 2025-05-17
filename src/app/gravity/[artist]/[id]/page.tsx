@@ -1,13 +1,11 @@
 import { getArtistsWithMembers } from "@/app/data-fetching";
 import GravityProvider from "@/components/gravity/gravity-provider";
-import { fetchGravity, fetchPoll } from "@/lib/server/cosmo/gravity";
-import { getProxiedToken } from "@/lib/server/handlers/withProxiedToken";
 import { isEqual } from "@/lib/utils";
 import { isBefore } from "date-fns";
 import { AlertCircle, AlertTriangle } from "lucide-react";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Suspense } from "react";
+import { cache, Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import AbstractLiveChart from "@/components/gravity/abstract/gravity-live-chart";
 import PolygonLiveChart from "@/components/gravity/polygon/gravity-live-chart";
@@ -17,7 +15,7 @@ import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { findPoll } from "@/lib/client/gravity/util";
 import GravitySkeleton from "@/components/gravity/gravity-skeleton";
 import { db } from "@/lib/server/db";
-import { ValidArtist } from "@/lib/universal/cosmo/common";
+import { fetchCachedGravity, fetchCachedPoll } from "@/lib/server/gravity";
 
 // if polygon, could be slow
 export const maxDuration = 30;
@@ -31,12 +29,7 @@ type Props = {
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params;
-  const gravity = await db.query.gravities.findFirst({
-    where: {
-      artist: params.artist,
-      cosmoId: Number(params.id),
-    },
-  });
+  const gravity = await getGravity(params);
   if (!gravity) {
     notFound();
   }
@@ -48,15 +41,15 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 
 export default async function GravityPage(props: Props) {
   const params = await props.params;
-  const [{ accessToken }, gravity] = await Promise.all([
-    getProxiedToken(),
-    fetchGravity(params.artist as ValidArtist, Number(params.id)),
-  ]);
-  if (!gravity) {
+
+  // use the database as a quick info check for metadata
+  const info = await getGravity(params);
+  if (!info) {
     notFound();
   }
 
-  if (gravity.pollType === "combination-poll") {
+  // TODO: support combination polls
+  if (info.pollType === "combination-poll") {
     return (
       <p className="text-sm font-semibold">
         Combination poll support is not available yet.
@@ -64,15 +57,23 @@ export default async function GravityPage(props: Props) {
     );
   }
 
-  const isPolygon = isBefore(gravity.entireEndDate, "2025-04-18");
-  const isSupported = gravity.pollType === "single-poll";
+  const queryClient = getQueryClient();
+  const isPast = isBefore(info.endDate, Date.now());
+  const isPolygon = isBefore(info.endDate, "2025-04-18");
+  const isSupported = info.pollType === "single-poll";
   const artists = getArtistsWithMembers();
   const artist = artists.find((a) => isEqual(a.id, params.artist));
   if (!artist) {
     notFound();
   }
 
-  const queryClient = getQueryClient();
+  // fetch the full gravity from cosmo or cache, depending on timing
+  const gravity = await fetchCachedGravity(artist.id, info.cosmoId, isPast);
+  if (!gravity) {
+    notFound();
+  }
+
+  // pull the correct poll from the gravity
   const { poll } = findPoll(gravity);
 
   /**
@@ -85,7 +86,7 @@ export default async function GravityPage(props: Props) {
         pollId: BigInt(poll.id),
       }),
       queryFn: async () =>
-        fetchPoll(accessToken, artist.id, gravity.id, poll.id),
+        fetchCachedPoll(artist.id, info.cosmoId, poll.id, isPast),
     });
   }
 
@@ -96,7 +97,7 @@ export default async function GravityPage(props: Props) {
         <div className="flex flex-col pb-4">
           <h1 className="text-3xl font-cosmo uppercase">Gravity</h1>
           <p className="text-sm font-semibold text-muted-foreground">
-            {gravity.title}
+            {info.title}
           </p>
         </div>
 
@@ -134,3 +135,12 @@ export default async function GravityPage(props: Props) {
     </GravityProvider>
   );
 }
+
+const getGravity = cache(async (params: Awaited<Props["params"]>) => {
+  return await db.query.gravities.findFirst({
+    where: {
+      artist: params.artist,
+      cosmoId: Number(params.id),
+    },
+  });
+});
