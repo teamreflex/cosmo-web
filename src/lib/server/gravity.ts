@@ -25,7 +25,7 @@ export async function fetchGravities() {
  */
 export async function fetchPolygonGravity(artist: ValidArtist, id: number) {
   return await remember(
-    `gravity:${artist}:${id}`,
+    `gravity-polygon:${artist}:${id}`,
     60 * 60 * 24 * 30, // 30 days
     async () => {
       // 1. get a cosmo token
