@@ -94,8 +94,8 @@ export default async function UserCollectionPage(props: Props) {
       <ArtistProvider artists={artists} selected={selected}>
         <ProfileProvider
           target={targetAccount}
-          pins={pins}
-          lockedObjekts={lockedObjekts}
+          pins={targetAccount.user ? pins : []}
+          lockedObjekts={targetAccount.user ? lockedObjekts : []}
           objektLists={objektLists}
         >
           <section className="flex flex-col">
