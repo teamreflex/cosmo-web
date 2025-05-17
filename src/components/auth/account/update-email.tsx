@@ -100,7 +100,6 @@ export default function UpdateEmail({ email }: Props) {
 
 function Submit(props: { isPending: boolean }) {
   const field = useFormField();
-  console.log(field);
 
   return (
     <Button type="submit" disabled={props.isPending || field.isDirty === false}>

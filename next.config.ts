@@ -10,9 +10,9 @@ const config: NextConfig = {
     cacheLife: {
       // system status (block height)
       system: {
-        stale: 60, // 1 minute
-        revalidate: 60, // 1 minute
-        expire: 90, // 1.5 minutes
+        stale: 60, // 60 seconds
+        revalidate: 75, // 75 seconds
+        expire: 90, // 90 seconds
       },
       // como balances
       como: {

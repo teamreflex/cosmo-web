@@ -56,6 +56,14 @@ export default async function GravityPage(props: Props) {
     notFound();
   }
 
+  if (gravity.pollType === "combination-poll") {
+    return (
+      <p className="text-sm font-semibold">
+        Combination poll support is not available yet.
+      </p>
+    );
+  }
+
   const isPolygon = isBefore(gravity.entireEndDate, "2025-04-18");
   const isSupported = gravity.pollType === "single-poll";
   const artists = getArtistsWithMembers();

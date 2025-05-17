@@ -47,11 +47,14 @@ export async function fetchPolygonGravity(artist: ValidArtist, id: number) {
     findPoll(gravity).poll.id
   );
 
+  // prior to gravity 11, they used the cosmo poll ID on-chain instead of a separate ID
+  const chainPollId = gravity.id <= 11 ? poll.id : poll.pollIdOnChain;
+
   // 4. fetch votes
   const votes = await db.query.polygonVotes.findMany({
     where: {
       contract: ADDRESSES[artist],
-      pollId: poll.pollIdOnChain,
+      pollId: chainPollId,
     },
     with: {
       cosmoAccount: {
@@ -76,6 +79,7 @@ export async function fetchPolygonGravity(artist: ValidArtist, id: number) {
           hash: vote.hash,
         } satisfies RevealedVote)
     )
+    .filter((vote) => vote.candidateId !== null)
     .sort((a, b) => b.comoAmount - a.comoAmount);
 
   // 6. aggregate como by candidate
