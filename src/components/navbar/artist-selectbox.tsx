@@ -30,9 +30,7 @@ export default function ArtistSelectbox() {
               key={artist.id}
               className="size-8 ring ring-accent rounded-full"
             >
-              <AvatarFallback className="rounded-full">
-                {artist.title.at(0)}
-              </AvatarFallback>
+              <AvatarFallback className="rounded-full">A</AvatarFallback>
               <AvatarImage src={artist.logoImageUrl} />
             </Avatar>
           ))}
