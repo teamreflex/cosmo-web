@@ -29,7 +29,7 @@ type Props = {
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params;
-  const gravity = await getGravity(params);
+  const gravity = await getGravity(params.artist, Number(params.id));
   if (!gravity) {
     notFound();
   }
@@ -43,7 +43,7 @@ export default async function GravityPage(props: Props) {
   const params = await props.params;
 
   // use the database as a quick info check for metadata
-  const info = await getGravity(params);
+  const info = await getGravity(params.artist, Number(params.id));
   if (!info) {
     notFound();
   }
@@ -136,11 +136,11 @@ export default async function GravityPage(props: Props) {
   );
 }
 
-const getGravity = cache(async (params: Awaited<Props["params"]>) => {
+const getGravity = cache(async (artist: string, id: number) => {
   return await db.query.gravities.findFirst({
     where: {
-      artist: params.artist,
-      cosmoId: Number(params.id),
+      artist,
+      cosmoId: id,
     },
   });
 });
