@@ -1,6 +1,7 @@
 import {
   getArtistsWithMembers,
   getSelectedArtists,
+  getSession,
   getTargetAccount,
 } from "@/app/data-fetching";
 import Portal from "@/components/portal";
@@ -8,7 +9,9 @@ import HelpDialog from "@/components/progress/help-dialog";
 import ProgressRenderer from "@/components/progress/progress-renderer";
 import { ArtistProvider } from "@/hooks/use-artists";
 import { ProfileProvider } from "@/hooks/use-profile";
+import { UserStateProvider } from "@/hooks/use-user-state";
 import { getQueryClient } from "@/lib/query-client";
+import { toPublicUser } from "@/lib/server/auth";
 import { fetchFilterData } from "@/lib/server/objekts/filter-data";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { Metadata } from "next";
@@ -35,24 +38,27 @@ export default async function ProgressPage(props: Props) {
   });
 
   const params = await props.params;
-  const [artists, selected, target] = await Promise.all([
+  const [artists, selected, target, session] = await Promise.all([
     getArtistsWithMembers(),
     getSelectedArtists(),
     getTargetAccount(params.nickname),
+    getSession(),
   ]);
 
   return (
     <section className="flex flex-col">
-      <ArtistProvider artists={artists} selected={selected}>
-        <ProfileProvider target={target}>
-          <HydrationBoundary state={dehydrate(queryClient)}>
-            <ProgressRenderer address={target.cosmo.address} />
-          </HydrationBoundary>
-          <Portal to="#help">
-            <HelpDialog />
-          </Portal>
-        </ProfileProvider>
-      </ArtistProvider>
+      <UserStateProvider user={toPublicUser(session?.user)}>
+        <ArtistProvider artists={artists} selected={selected}>
+          <ProfileProvider target={target}>
+            <HydrationBoundary state={dehydrate(queryClient)}>
+              <ProgressRenderer address={target.cosmo.address} />
+            </HydrationBoundary>
+            <Portal to="#help">
+              <HelpDialog />
+            </Portal>
+          </ProfileProvider>
+        </ArtistProvider>
+      </UserStateProvider>
     </section>
   );
 }
