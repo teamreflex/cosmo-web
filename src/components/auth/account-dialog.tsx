@@ -16,6 +16,7 @@ import { Button } from "../ui/button";
 import Image from "next/image";
 import CosmoLogo from "@/assets/cosmo.webp";
 import { PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import { useSearchParams } from "next/navigation";
 
 type Props = {
   open: boolean;
@@ -81,6 +82,10 @@ export default function AccountDialog({ open, onOpenChange, cosmo }: Props) {
 
 function LinkCosmoButton() {
   const ctx = use(LinkCosmoContext);
+  // TODO: ungate when stable
+  const searchParams = useSearchParams();
+  const gate = searchParams.get("cosmo");
+  if (!gate) return null;
 
   return (
     <Button variant="cosmo" onClick={() => ctx.setOpen(true)}>

@@ -65,7 +65,7 @@ export default function LinkCosmo({ children }: Props) {
 }
 
 function StartLink() {
-  const [started, _] = useState(false);
+  const [started, setStarted] = useState(false);
 
   if (started) {
     return <GetRecaptcha />;
@@ -89,8 +89,8 @@ function StartLink() {
       </p>
       <p>Once linked, the account cannot be unlinked.</p>
 
-      <Button className="mt-2 w-fit mx-auto" disabled>
-        Coming soon
+      <Button className="mt-2 w-fit mx-auto" onClick={() => setStarted(true)}>
+        Start
       </Button>
     </div>
   );
