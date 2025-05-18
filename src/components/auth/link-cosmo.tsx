@@ -8,7 +8,7 @@ import {
 } from "@/lib/universal/cosmo/qr-auth";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, CheckCircle, Loader2 } from "lucide-react";
-import { ofetch } from "ofetch";
+import { FetchError, ofetch } from "ofetch";
 import { createContext, useContext, useState } from "react";
 import QRCode from "react-qr-code";
 import { toast } from "@/components/ui/use-toast";
@@ -98,22 +98,28 @@ function StartLink() {
 
 function GetRecaptcha() {
   // get recaptcha token and exchange it for a ticket on mount
-  const { data, status, refetch } = useQuery({
+  const { data, error, status, refetch } = useQuery({
     queryKey: ["qr-auth", "code"],
-    queryFn: () => ofetch<AuthTicket>("/api/cosmo/qr-auth/recaptcha"),
+    queryFn: () =>
+      ofetch<AuthTicket>("/api/cosmo/qr-auth/recaptcha", {
+        retry: false,
+      }),
     staleTime: Infinity,
     retry: false,
   });
+
+  const isRateLimited = error instanceof FetchError && error.statusCode === 429;
 
   return (
     <div className="flex flex-col justify-center items-center">
       {status === "pending" && <Loader2 className="h-8 w-8 animate-spin" />}
 
       {status === "error" && (
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-2">
           <p className="text-sm font-semibold">
-            Error: There may be too many attempts at once. Please try again
-            later.
+            {isRateLimited
+              ? "There may be too many attempts at once. Please try again later."
+              : "Error getting QR code. Please try again later."}
           </p>
           <Button variant="secondary" size="sm" onClick={() => refetch()}>
             Try again

@@ -1,12 +1,40 @@
+import { getSession } from "@/app/data-fetching";
+import { IP_HEADER } from "@/lib/server/auth";
+import { redis } from "@/lib/server/cache";
 import {
   exchangeLoginTicket,
   getRecaptchaToken,
 } from "@/lib/server/cosmo/qr-auth";
+import { Ratelimit } from "@upstash/ratelimit"; // for deno: see above
+import { after, NextRequest } from "next/server";
 
 /**
  * Use a headless browser to get the reCAPTCHA token, then exchange it for a login ticket.
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const ip = req.headers.get(IP_HEADER) ?? undefined;
+  const session = await getSession();
+
+  // auth check
+  if (!session) {
+    return Response.json({ error: "unauthorized" }, { status: 401 });
+  }
+
+  // rate limit check
+  const identifier = `user:${session.session.userId}`;
+  const { success, pending } = await ratelimit.limit(identifier, {
+    ip,
+  });
+
+  // don't stop execution until analytics are done
+  after(pending);
+
+  // rate limit exceeded
+  if (!success) {
+    return Response.json({ error: "rate limit exceeded" }, { status: 429 });
+  }
+
+  // use browserless to get the recaptcha token
   try {
     var recaptcha = await getRecaptchaToken();
   } catch (err) {
@@ -17,6 +45,7 @@ export async function GET() {
     );
   }
 
+  // exchange recaptcha token for a cosmo qr ticket
   try {
     var ticket = await exchangeLoginTicket(recaptcha);
   } catch (err) {
@@ -28,3 +57,13 @@ export async function GET() {
 
   return Response.json(ticket);
 }
+
+/**
+ * Upstash ratelimiter ensuring that the same IP address can only make 1 request per 5 minutes.
+ */
+const ratelimit = new Ratelimit({
+  redis,
+  limiter: Ratelimit.fixedWindow(1, "5 m"),
+  analytics: true,
+  prefix: "rl:recaptcha",
+});

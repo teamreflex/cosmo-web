@@ -21,6 +21,8 @@ import { PublicUser } from "../universal/auth";
 import { cosmoAccounts } from "./db/schema";
 import { eq } from "drizzle-orm";
 
+export const IP_HEADER = "cf-connecting-ip";
+
 /**
  * Better Auth server instance.
  */
@@ -42,6 +44,15 @@ export const auth = betterAuth({
     }),
     nextCookies(),
   ],
+
+  /**
+   * Ensure IP address logging uses the correct header.
+   */
+  security: {
+    ipAddress: {
+      ipAddressHeaders: [IP_HEADER],
+    },
+  },
 
   /**
    * Enable email verification.
