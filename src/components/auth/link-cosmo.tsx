@@ -106,6 +106,7 @@ function GetRecaptcha() {
       }),
     staleTime: Infinity,
     retry: false,
+    refetchOnWindowFocus: false,
   });
 
   const isRateLimited = error instanceof FetchError && error.statusCode === 429;
