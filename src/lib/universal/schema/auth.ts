@@ -4,7 +4,7 @@ const emailSchema = z.string().email("Invalid email address");
 const passwordSchema = z
   .string()
   .min(8, "Password must be at least 8 characters")
-  .max(24, "Password must be less than 24 characters");
+  .max(32, "Password must be less than 32 characters");
 const usernameSchema = z
   .string()
   .min(3, "Username must be at least 3 characters")
