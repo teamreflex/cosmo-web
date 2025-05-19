@@ -230,6 +230,7 @@ export const generateDiscordList = authActionClient
         season: true,
         collectionNo: true,
         member: true,
+        artist: true,
       },
     });
 
@@ -251,7 +252,7 @@ export const generateDiscordList = authActionClient
 
 type CollectionSubset = Pick<
   Collection,
-  "slug" | "member" | "season" | "collectionNo"
+  "slug" | "member" | "season" | "collectionNo" | "artist"
 >;
 
 /**
@@ -260,7 +261,20 @@ type CollectionSubset = Pick<
 function formatMemberCollections(collections: CollectionSubset[]): string {
   // extract unique season initial + collection number, sort, and join
   return [
-    ...new Set(collections.map((c) => `${c.season.at(0)}${c.collectionNo}`)),
+    ...new Set(
+      collections.map((c) => {
+        if (c.artist === "idntt") {
+          return `${c.season} ${c.collectionNo}`;
+        }
+
+        const match = c.season.match(/([A-Za-z]+)(\d+)/);
+        if (!match) return `${c.season.at(0)}${c.collectionNo}`;
+        const [, seasonText, seasonNum] = match;
+        const firstLetter = seasonText.at(0) || "";
+        const seasonPart = firstLetter.repeat(parseInt(seasonNum, 10));
+        return `${seasonPart}${c.collectionNo}`;
+      })
+    ),
   ]
     .sort()
     .join(", ");

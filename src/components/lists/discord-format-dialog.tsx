@@ -99,16 +99,16 @@ export default function DiscordFormatDialog({
             <Button onClick={generate} disabled={disabled || isPending}>
               <span>Generate</span>
               {isPending ? (
-                <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <CloudDownload className="ml-2 h-4 w-4" />
+                <CloudDownload className="h-4 w-4" />
               )}
             </Button>
 
             {result && (
               <Button onClick={copy}>
                 <span>Copy</span>
-                <Copy className="ml-2 h-4 w-4" />
+                <Copy className="h-4 w-4" />
               </Button>
             )}
           </div>
