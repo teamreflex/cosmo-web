@@ -3,6 +3,7 @@ import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import { collections, objekts } from "@/lib/server/db/indexer/schema";
 import { ObjektMetadata } from "@/lib/universal/objekts";
+import { addr, Addresses } from "@/lib/utils";
 import { eq, sql } from "drizzle-orm";
 
 export const runtime = "nodejs";
@@ -71,10 +72,14 @@ async function fetchCollection(slug: string) {
     .select({
       createdAt: collections.createdAt,
       total: sql<number>`COUNT(*)`,
-      transferable: sql<number>`COUNT(CASE WHEN transferable = true THEN 1 END)`,
+      transferable: sql<number>`COUNT(CASE WHEN transferable = true AND ${
+        objekts.owner
+      } != ${addr(Addresses.SPIN)} THEN 1 END)`,
       percentage: sql<number>`
         ROUND(
-          100.0 * COUNT(CASE WHEN transferable = true THEN 1 END) / COUNT(*), 
+          100.0 * COUNT(CASE WHEN transferable = true AND ${
+            objekts.owner
+          } != ${addr(Addresses.SPIN)} THEN 1 END) / COUNT(*), 
           2
         )
       `,
