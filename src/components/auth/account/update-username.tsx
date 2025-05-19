@@ -1,6 +1,7 @@
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormMessage,
@@ -78,6 +79,9 @@ export default function UpdateUsername({ username }: Props) {
                   <Submit isPending={mutation.isPending} />
                 </div>
               </FormControl>
+              <FormDescription>
+                Not <span className="italic">currently</span> shown anywhere.
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
