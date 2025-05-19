@@ -72,12 +72,12 @@ export async function getSystemStatus(): Promise<FinalSystemStatus> {
   ]);
 
   // calculate processor status
-  const diff = blockHeight - processorHeight;
-  const status = diff < 1800 ? "normal" : diff < 3600 ? "degraded" : "down";
+  // const diff = blockHeight - processorHeight;
+  // const status = diff < 1800 ? "normal" : diff < 3600 ? "degraded" : "down";
 
   return {
     processor: {
-      status,
+      status: "normal",
       height: {
         processor: processorHeight,
         chain: blockHeight,
