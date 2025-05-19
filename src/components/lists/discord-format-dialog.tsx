@@ -140,7 +140,7 @@ function SelectList({ objektLists, value, onSelect }: SelectListProps) {
       </SelectTrigger>
       <SelectContent>
         {objektLists.map((list) => (
-          <SelectItem key={list.id} value={list.slug}>
+          <SelectItem key={list.id} value={list.id}>
             {list.name}
           </SelectItem>
         ))}
