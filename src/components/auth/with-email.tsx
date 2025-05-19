@@ -19,6 +19,7 @@ import {
   FormMessage,
 } from "../ui/form";
 import { signInSchema } from "@/lib/universal/schema/auth";
+import { track } from "@/lib/utils";
 
 type Props = {
   onForgotPassword: () => void;
@@ -52,6 +53,7 @@ export default function WithEmail({ onForgotPassword }: Props) {
   function handleSubmit(data: z.infer<typeof signInSchema>) {
     mutation.mutate(data, {
       onSuccess: () => {
+        track("sign-in");
         router.refresh();
       },
       onError: (error) => {

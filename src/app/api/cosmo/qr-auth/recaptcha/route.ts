@@ -1,7 +1,7 @@
 import { getSession } from "@/app/data-fetching";
-import { env } from "@/env";
 import { IP_HEADER } from "@/lib/server/auth";
 import { redis } from "@/lib/server/cache";
+import { getCorsHeaders } from "@/lib/server/cors";
 import {
   exchangeLoginTicket,
   getRecaptchaToken,
@@ -13,18 +13,7 @@ import { after } from "next/server";
  * Handle CORS preflight requests.
  */
 export async function OPTIONS(req: Request) {
-  const headers = new Headers([
-    ["Access-Control-Allow-Methods", "GET, OPTIONS"],
-    ["Access-Control-Allow-Headers", "Content-Type, Authorization"],
-    ["Access-Control-Max-Age", "86400"],
-    ["Vary", "Origin"],
-  ]);
-
-  const origin = req.headers.get("Origin");
-  if (origin === env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL) {
-    headers.set("Access-Control-Allow-Origin", origin);
-    headers.set("Access-Control-Allow-Credentials", "true");
-  }
+  const headers = getCorsHeaders(req);
 
   return new Response(null, {
     status: 200,
@@ -38,6 +27,7 @@ export async function OPTIONS(req: Request) {
 export async function GET(req: Request) {
   const ip = req.headers.get(IP_HEADER) ?? undefined;
   const session = await getSession();
+  const headers = getCorsHeaders(req);
 
   // auth check
   if (!session) {
@@ -45,9 +35,7 @@ export async function GET(req: Request) {
       { error: "unauthorized" },
       {
         status: 401,
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-        },
+        headers,
       }
     );
   }
@@ -67,9 +55,7 @@ export async function GET(req: Request) {
       { error: "rate limit exceeded" },
       {
         status: 429,
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-        },
+        headers,
       }
     );
   }
@@ -83,9 +69,7 @@ export async function GET(req: Request) {
       { error: "error getting recaptcha token" },
       {
         status: 500,
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-        },
+        headers,
       }
     );
   }
@@ -98,17 +82,13 @@ export async function GET(req: Request) {
       { error: "error exchanging login ticket" },
       {
         status: 500,
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-        },
+        headers,
       }
     );
   }
 
   return Response.json(ticket, {
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-    },
+    headers,
   });
 }
 

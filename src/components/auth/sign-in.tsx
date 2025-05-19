@@ -15,6 +15,7 @@ import WithEmail from "./with-email";
 import SignInWithTwitter from "./with-twitter";
 import SignUp from "./sign-up";
 import ForgotPassword from "./forgot-password";
+import { env } from "@/env";
 
 type State = "sign-in" | "sign-up" | "forgot-password";
 
@@ -39,7 +40,7 @@ export default function SignIn() {
         <DialogHeader>
           <DialogTitle>Sign In</DialogTitle>
           <DialogDescription>
-            Sign in to your account to continue
+            Sign in to your {env.NEXT_PUBLIC_APP_NAME} account
           </DialogDescription>
         </DialogHeader>
 

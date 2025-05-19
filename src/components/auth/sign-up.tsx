@@ -19,6 +19,7 @@ import {
 import { useMemo } from "react";
 import { randomHandle } from "./account/update-username";
 import { signUpSchema } from "@/lib/universal/schema/auth";
+import { track } from "@/lib/utils";
 
 type Props = {
   onCancel: () => void;
@@ -55,6 +56,7 @@ export default function SignUp({ onCancel }: Props) {
   function handleSubmit(data: z.infer<typeof signUpSchema>) {
     mutation.mutate(data, {
       onSuccess: () => {
+        track("sign-up");
         router.refresh();
       },
       onError: (error) => {
