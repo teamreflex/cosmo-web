@@ -14,7 +14,7 @@ import { getQueryClient } from "@/lib/query-client";
 import { toPublicUser } from "@/lib/server/auth";
 import { fetchFilterData } from "@/lib/server/objekts/filter-data";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
-import { Metadata } from "next";
+import type { Metadata } from "next";
 
 type Props = {
   params: Promise<{ nickname: string }>;

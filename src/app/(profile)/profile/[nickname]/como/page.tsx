@@ -1,4 +1,4 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import { fetchObjektsWithComo } from "@/lib/server/como";
 import ComoCalendar from "@/components/como/calendar";
 import CurrentMonth from "@/components/como/current-month";

@@ -1,4 +1,4 @@
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 import { fetchTransfers } from "@/lib/server/transfers";
 import { parse } from "@/lib/universal/parsers";
 import { transfersSchema } from "@/lib/universal/transfers";

@@ -1,6 +1,6 @@
 "use client";
 
-import { PollSelectedContentImage } from "@/lib/universal/cosmo/gravity";
+import type { PollSelectedContentImage } from "@/lib/universal/cosmo/gravity";
 import * as motion from "motion/react-client";
 import Image from "next/image";
 

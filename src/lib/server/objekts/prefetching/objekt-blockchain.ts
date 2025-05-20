@@ -1,5 +1,5 @@
-import { userCollection } from "@/lib/universal/parsers";
-import { z } from "zod";
+import type { userCollection } from "@/lib/universal/parsers";
+import type { z } from "zod";
 import { indexer } from "../../db/indexer";
 import { and, eq, sql } from "drizzle-orm";
 import { collections, objekts } from "../../db/indexer/schema";

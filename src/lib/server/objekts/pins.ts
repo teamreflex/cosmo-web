@@ -1,7 +1,7 @@
-import { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
+import type { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
 import { indexer } from "../db/indexer";
-import { ValidArtist } from "@/lib/universal/cosmo/common";
-import { Collection, Objekt } from "../db/indexer/schema";
+import type { ValidArtist } from "@/lib/universal/cosmo/common";
+import type { Collection, Objekt } from "../db/indexer/schema";
 import { db } from "../db";
 import { cosmoAccounts, pins } from "../db/schema";
 import { desc, eq } from "drizzle-orm";

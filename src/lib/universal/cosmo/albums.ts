@@ -1,4 +1,4 @@
-import { CosmoArtistBFF } from "./artists";
+import type { CosmoArtistBFF } from "./artists";
 
 export type CosmoAlbum = {
   artist: CosmoArtistBFF;

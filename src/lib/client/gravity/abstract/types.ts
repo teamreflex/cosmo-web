@@ -1,4 +1,4 @@
-import { GravityHookParams } from "../common";
+import type { GravityHookParams } from "../common";
 
 export interface UseChainDataOptions extends GravityHookParams {
   startDate: string;

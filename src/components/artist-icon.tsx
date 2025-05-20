@@ -1,6 +1,6 @@
-import { ValidArtist } from "@/lib/universal/cosmo/common";
+import type { ValidArtist } from "@/lib/universal/cosmo/common";
 import { Sparkle } from "lucide-react";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 const map: Record<ValidArtist, ReactNode> = {
   artms: (

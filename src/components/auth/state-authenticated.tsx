@@ -5,8 +5,8 @@ import UserDropdown from "./user-dropdown";
 import { usePathname, useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { authClient } from "@/lib/client/auth";
-import { PublicUser } from "@/lib/universal/auth";
-import { PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import type { PublicUser } from "@/lib/universal/auth";
+import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 
 type Props = {
   user: PublicUser;

@@ -1,7 +1,7 @@
 import { env } from "@/env";
 import { fetchObjektsWithComo } from "@/lib/server/como";
 import { buildCalendar } from "@/lib/universal/como";
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 
 type Props = {
   params: Promise<{

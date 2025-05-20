@@ -5,7 +5,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
-import { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
+import type { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
 import { Suspense } from "react";
 import { X } from "lucide-react";
 import { ErrorBoundary } from "react-error-boundary";
@@ -14,7 +14,7 @@ import {
   getSelectedArtists,
   getTokenBalances,
 } from "@/app/data-fetching";
-import { ComoBalance } from "@/lib/universal/como";
+import type { ComoBalance } from "@/lib/universal/como";
 
 type Props = {
   address: string;

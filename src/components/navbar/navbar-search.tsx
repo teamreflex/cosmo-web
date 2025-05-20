@@ -5,8 +5,8 @@ import { useState } from "react";
 import { UserSearch } from "../user-search";
 import { Search } from "lucide-react";
 import { useSearchStore } from "@/store";
-import { Route } from "next";
-import { CosmoPublicUser } from "@/lib/universal/cosmo/auth";
+import type { Route } from "next";
+import type { CosmoPublicUser } from "@/lib/universal/cosmo/auth";
 import {
   Tooltip,
   TooltipContent,

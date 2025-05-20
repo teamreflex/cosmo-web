@@ -3,8 +3,8 @@
 import { Button } from "@/components/ui/button";
 import {
   generateQrCode,
-  AuthTicket,
-  QueryTicket,
+  type AuthTicket,
+  type QueryTicket,
 } from "@/lib/universal/cosmo/qr-auth";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, CheckCircle, Loader2 } from "lucide-react";
@@ -296,7 +296,12 @@ function OTP({ ticket }: OTPProps) {
       <div className="flex flex-col items-center gap-4">
         <p className="text-sm text-center">Enter the 2-digit code from COSMO</p>
 
-        <InputOTP name="otp" maxLength={2} pattern={REGEXP_ONLY_DIGITS}>
+        <InputOTP
+          name="otp"
+          maxLength={2}
+          pattern={REGEXP_ONLY_DIGITS}
+          autoFocus
+        >
           <InputOTPGroup>
             <InputOTPSlot index={0} />
             <InputOTPSlot index={1} />

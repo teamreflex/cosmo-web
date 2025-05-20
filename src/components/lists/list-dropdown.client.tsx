@@ -1,6 +1,6 @@
 "use client";
 
-import { ObjektList } from "@/lib/server/db/schema";
+import type { ObjektList } from "@/lib/server/db/schema";
 import ListDropdown from "./list-dropdown";
 
 type Props = {

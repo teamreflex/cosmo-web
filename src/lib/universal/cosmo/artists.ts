@@ -1,4 +1,4 @@
-import { ValidArtist } from "./common";
+import type { ValidArtist } from "./common";
 
 export type CosmoArtist = {
   name: ValidArtist;

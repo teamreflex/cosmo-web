@@ -3,8 +3,8 @@ import "server-only";
 import { env } from "@/env";
 import { ofetch } from "ofetch";
 import { abstract } from "./http";
-import { RPCResponse } from "./alchemy";
-import { SystemStatus } from "../universal/system";
+import type { RPCResponse } from "./alchemy";
+import type { SystemStatus } from "../universal/system";
 import { unstable_cacheLife as cacheLife } from "next/cache";
 
 type Status = {

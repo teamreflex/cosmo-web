@@ -5,9 +5,9 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { PropsWithFilters } from "@/hooks/use-cosmo-filters";
+import type { PropsWithFilters } from "@/hooks/use-cosmo-filters";
 import {
-  ValidOnlineType,
+  type ValidOnlineType,
   validOnlineTypes,
 } from "@/lib/universal/cosmo/common";
 import { useState } from "react";

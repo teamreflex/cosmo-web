@@ -1,5 +1,5 @@
 import { queryTicket } from "@/lib/server/cosmo/qr-auth";
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 
 /**
  * Query the status of a login ticket.

@@ -1,9 +1,9 @@
 import {
-  ValidArtist,
+  type ValidArtist,
   validArtists,
-  ValidOnlineType,
+  type ValidOnlineType,
   validOnlineTypes,
-  ValidSort,
+  type ValidSort,
   validSorts,
 } from "@/lib/universal/cosmo/common";
 import {

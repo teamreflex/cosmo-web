@@ -4,7 +4,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { getSystemStatus } from "@/lib/server/system";
-import { SystemStatus as SystemStatusType } from "@/lib/universal/system";
+import type { SystemStatus as SystemStatusType } from "@/lib/universal/system";
 import { cn } from "@/lib/utils";
 import { Activity, HardDriveDownload, X } from "lucide-react";
 import { ErrorBoundary } from "react-error-boundary";

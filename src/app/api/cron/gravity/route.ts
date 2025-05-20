@@ -9,7 +9,7 @@ import {
   gravityPolls,
 } from "@/lib/server/db/schema";
 import { withProxiedToken } from "@/lib/server/handlers/withProxiedToken";
-import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
+import type { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import { chunk } from "@/lib/utils";
 import { eq } from "drizzle-orm";
 

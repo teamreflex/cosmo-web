@@ -1,6 +1,6 @@
 "use client";
 
-import { cn, PropsWithClassName } from "@/lib/utils";
+import { cn, type PropsWithClassName } from "@/lib/utils";
 import Image from "next/image";
 import { useState } from "react";
 

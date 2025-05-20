@@ -1,7 +1,7 @@
 import { and, eq, gte, lt, sql } from "drizzle-orm";
 import { collections, objekts } from "../db/indexer/schema";
 import { indexer } from "../db/indexer";
-import { HourlyBreakdown, ObjektStats } from "@/lib/universal/stats";
+import type { HourlyBreakdown, ObjektStats } from "@/lib/universal/stats";
 import {
   unstable_cacheLife as cacheLife,
   unstable_cacheTag as cacheTag,

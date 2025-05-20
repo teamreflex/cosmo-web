@@ -1,5 +1,5 @@
 import { baseUrl } from "@/lib/query-client";
-import { CosmoPollChoices } from "@/lib/universal/cosmo/gravity";
+import type { CosmoPollChoices } from "@/lib/universal/cosmo/gravity";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ofetch } from "ofetch";
 

@@ -1,5 +1,5 @@
-import { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
-import {
+import type { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
+import type {
   CosmoOngoingGravity,
   CosmoPastGravity,
 } from "@/lib/universal/cosmo/gravity";

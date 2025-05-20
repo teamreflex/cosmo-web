@@ -2,7 +2,7 @@
 
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import {
-  ChartConfig,
+  type ChartConfig,
   ChartContainer,
   ChartLegend,
   ChartLegendContent,
@@ -10,8 +10,8 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { artistColors } from "@/lib/utils";
-import { HourlyBreakdown } from "@/lib/universal/stats";
-import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
+import type { HourlyBreakdown } from "@/lib/universal/stats";
+import type { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 
 type Props = {
   artists: CosmoArtistWithMembersBFF[];

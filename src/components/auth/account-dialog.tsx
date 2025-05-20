@@ -15,7 +15,7 @@ import LinkCosmo, { LinkCosmoContext } from "./link-cosmo";
 import { Button } from "../ui/button";
 import Image from "next/image";
 import CosmoLogo from "@/assets/cosmo.webp";
-import { PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import { useSearchParams } from "next/navigation";
 
 type Props = {

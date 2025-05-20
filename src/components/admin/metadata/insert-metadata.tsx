@@ -6,7 +6,7 @@ import { Clipboard, HardDriveUpload, Loader2, Plus, Trash } from "lucide-react";
 import { useState } from "react";
 import {
   metadataInputSchema,
-  MetadataRow,
+  type MetadataRow,
 } from "@/lib/universal/schema/metadata";
 import { toast } from "@/components/ui/use-toast";
 import { saveMetadata } from "./actions";

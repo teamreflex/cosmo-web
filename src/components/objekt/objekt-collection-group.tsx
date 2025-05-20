@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { default as NextImage } from "next/image";
-import {
+import type {
   BFFCollectionGroup,
   BFFCollectionGroupObjekt,
 } from "@/lib/universal/cosmo/objekts";

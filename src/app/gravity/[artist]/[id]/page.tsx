@@ -3,7 +3,7 @@ import GravityProvider from "@/components/gravity/gravity-provider";
 import { isEqual } from "@/lib/utils";
 import { isBefore } from "date-fns";
 import { AlertCircle, AlertTriangle } from "lucide-react";
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { cache, Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";

@@ -1,6 +1,6 @@
 import { fetchObjektsBlockchain } from "@/lib/server/objekts/prefetching/objekt-blockchain";
 import { parseUserCollection } from "@/lib/universal/parsers";
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 
 type Params = {
   params: Promise<{

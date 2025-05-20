@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Check, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { PropsWithFilters } from "@/hooks/use-cosmo-filters";
+import type { PropsWithFilters } from "@/hooks/use-cosmo-filters";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import {
   Command,

@@ -21,7 +21,7 @@ import { Loader2 } from "lucide-react";
 import { DataSourceSelector } from "@/components/collection/data-source-selector";
 import { useAction } from "next-safe-action/hooks";
 import { updateSettings } from "./actions";
-import { PublicUser } from "@/lib/universal/auth";
+import type { PublicUser } from "@/lib/universal/auth";
 
 type Props = {
   open: boolean;

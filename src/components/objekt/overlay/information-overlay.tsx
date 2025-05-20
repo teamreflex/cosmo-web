@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { Maximize2 } from "lucide-react";
 import { useState } from "react";
-import { Objekt } from "@/lib/universal/objekt-conversion";
+import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { useObjektOverlay } from "@/store";
 
 type Props = {

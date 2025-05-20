@@ -1,6 +1,6 @@
 import { fetchObjektsIndex } from "@/lib/server/objekts/prefetching/objekt-index";
 import { parseObjektIndex } from "@/lib/universal/parsers";
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 
 export const runtime = "nodejs";
 

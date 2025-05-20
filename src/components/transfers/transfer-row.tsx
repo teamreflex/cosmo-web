@@ -1,4 +1,4 @@
-import { AggregatedTransfer } from "@/lib/universal/transfers";
+import type { AggregatedTransfer } from "@/lib/universal/transfers";
 import Image from "next/image";
 import CosmoImage from "@/assets/cosmo.webp";
 import ProfileImage from "@/assets/profile.webp";

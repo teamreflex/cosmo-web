@@ -1,10 +1,10 @@
-import { ObjektProgression } from "@/lib/universal/progress";
+import type { ObjektProgression } from "@/lib/universal/progress";
 import { ObjektSidebar } from "../objekt/common";
 import { Star } from "lucide-react";
 import ExpandableObjekt from "../objekt/objekt-expandable";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
-import { ValidArtist } from "@/lib/universal/cosmo/common";
+import type { ValidArtist } from "@/lib/universal/cosmo/common";
 
 type Props = {
   objekt: ObjektProgression;

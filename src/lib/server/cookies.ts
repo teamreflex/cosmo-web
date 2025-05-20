@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { generateCookiePayload } from "./jwt";
-import { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
+import type { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 
 type CookieKey = "artists" | "token" | "user-session";
 

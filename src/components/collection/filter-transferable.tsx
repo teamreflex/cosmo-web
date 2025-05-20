@@ -1,5 +1,5 @@
 import { Toggle } from "@/components/ui/toggle";
-import { PropsWithFilters } from "@/hooks/use-cosmo-filters";
+import type { PropsWithFilters } from "@/hooks/use-cosmo-filters";
 
 export default function TransferableFilter({
   filters,

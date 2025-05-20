@@ -4,15 +4,15 @@ import "server-only";
 import { fetchObjektList } from "@/lib/server/objekts/lists";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
-import { Collection } from "@/lib/server/db/indexer/schema";
+import type { Collection } from "@/lib/server/db/indexer/schema";
 import {
   objektLists,
   objektListEntries,
-  ObjektListEntry,
+  type ObjektListEntry,
 } from "@/lib/server/db/schema";
 import { and, eq } from "drizzle-orm";
 import { getArtistsWithMembers } from "@/app/data-fetching";
-import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
+import type { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import { ActionError, authActionClient } from "@/lib/server/server-actions";
 import { returnValidationErrors } from "next-safe-action";
 import {

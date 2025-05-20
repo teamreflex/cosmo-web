@@ -1,7 +1,7 @@
-import { PropsWithChildren, useState } from "react";
+import { type PropsWithChildren, useState } from "react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
-import { Objekt } from "@/lib/universal/objekt-conversion";
+import type { Objekt } from "@/lib/universal/objekt-conversion";
 
 type Props = PropsWithChildren<{
   collection: Objekt.Collection;

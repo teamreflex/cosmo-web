@@ -14,14 +14,14 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "../ui/dropdown-menu";
-import { IconCards, TablerIcon } from "@tabler/icons-react";
+import { IconCards, type TablerIcon } from "@tabler/icons-react";
 import NavbarSearch from "./navbar-search";
 import { ArtistItem } from "./artist-selectbox";
 import { useArtists } from "@/hooks/use-artists";
-import { PublicUser } from "@/lib/universal/auth";
-import { LucideIcon, PackageOpen, Vote } from "lucide-react";
+import type { PublicUser } from "@/lib/universal/auth";
+import { type LucideIcon, PackageOpen, Vote } from "lucide-react";
 import { LinkCosmoContext } from "../auth/link-cosmo";
-import { PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import { use } from "react";
 
 type Props = {

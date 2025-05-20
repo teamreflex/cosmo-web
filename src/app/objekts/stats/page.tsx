@@ -1,4 +1,4 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import { fetchObjektStats } from "@/lib/server/objekts/stats";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ArtistChart from "@/components/objekt-stats/artist-chart";

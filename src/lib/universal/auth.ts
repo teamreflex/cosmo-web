@@ -1,4 +1,4 @@
-import { CollectionDataSource } from "../utils";
+import type { CollectionDataSource } from "../utils";
 
 export type PublicUser = {
   id: string;

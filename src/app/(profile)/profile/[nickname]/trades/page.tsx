@@ -1,4 +1,4 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import TransfersRenderer from "@/components/transfers/transfers-renderer";
 import {
   getArtistsWithMembers,

@@ -1,6 +1,6 @@
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
-import { CollectionDataSource } from "@/lib/utils";
-import { Dispatch, SetStateAction, Suspense } from "react";
+import type { CollectionDataSource } from "@/lib/utils";
+import { type Dispatch, type SetStateAction, Suspense } from "react";
 import LockedFilter from "../filter-locked";
 import TransferableFilter from "../filter-transferable";
 import SeasonFilter from "../filter-season";

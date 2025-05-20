@@ -1,9 +1,9 @@
 import { validateExpiry } from "../jwt";
 import { refresh } from "../cosmo/auth";
-import { NextRequest } from "next/server";
-import { RouteContext, RouteHandler, RouteParams } from "./common";
+import type { NextRequest } from "next/server";
+import type { RouteContext, RouteHandler, RouteParams } from "./common";
 import { db } from "../db";
-import { CosmoToken, cosmoTokens } from "../db/schema";
+import { type CosmoToken, cosmoTokens } from "../db/schema";
 import { captureException } from "@sentry/nextjs";
 
 type Payload = {

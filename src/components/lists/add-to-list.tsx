@@ -1,7 +1,7 @@
 "use client";
 
 import { ListPlus, Loader2, Plus } from "lucide-react";
-import { MouseEvent, useState } from "react";
+import { type MouseEvent, useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,

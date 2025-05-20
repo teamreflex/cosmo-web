@@ -1,6 +1,6 @@
 import { fetchObjektList } from "@/lib/server/objekts/prefetching/objekt-list";
 import { parseObjektList } from "@/lib/universal/parsers";
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 
 export const runtime = "nodejs";
 

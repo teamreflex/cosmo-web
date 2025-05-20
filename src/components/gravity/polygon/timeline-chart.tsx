@@ -1,12 +1,12 @@
 "use client";
 
 import {
-  ChartConfig,
+  type ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { RevealedVote } from "@/lib/client/gravity/polygon/types";
+import type { RevealedVote } from "@/lib/client/gravity/polygon/types";
 import { CheckCircle } from "lucide-react";
 import { Bar, BarChart, CartesianGrid } from "recharts";
 

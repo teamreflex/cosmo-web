@@ -25,6 +25,20 @@ export default tseslint.config(
       },
     },
     rules: {
+      "@typescript-eslint/consistent-type-exports": [
+        "warn",
+        {
+          fixMixedExportsWithInlineTypeSpecifier: true,
+        },
+      ],
+      "@typescript-eslint/consistent-type-imports": [
+        "warn",
+        {
+          fixStyle: "inline-type-imports",
+          prefer: "type-imports",
+        },
+      ],
+      "@typescript-eslint/no-import-type-side-effects": "warn",
       // prevent type definitions from being flagged as unused
       "no-unused-vars": "off",
       "@typescript-eslint/no-unused-vars": [

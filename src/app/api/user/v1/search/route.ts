@@ -3,10 +3,10 @@ import { search } from "@/lib/server/cosmo/auth";
 import { db } from "@/lib/server/db";
 import { cosmoAccounts } from "@/lib/server/db/schema";
 import { getProxiedToken } from "@/lib/server/handlers/withProxiedToken";
-import { CosmoSearchResult } from "@/lib/universal/cosmo/auth";
+import type { CosmoSearchResult } from "@/lib/universal/cosmo/auth";
 import { Addresses } from "@/lib/utils";
 import { like } from "drizzle-orm";
-import { NextRequest, after } from "next/server";
+import { type NextRequest, after } from "next/server";
 
 /**
  * API route for user search.

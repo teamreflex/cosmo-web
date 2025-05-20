@@ -1,4 +1,4 @@
-import { ValidArtist } from "./lib/universal/cosmo/common";
+import type { ValidArtist } from "./lib/universal/cosmo/common";
 
 export const ARTMS = {
   name: "artms",

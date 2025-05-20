@@ -32,7 +32,7 @@ import {
 } from "../ui/select";
 import { Separator } from "../ui/separator";
 import Image from "next/image";
-import { FilterData } from "@/hooks/use-filter-data";
+import type { FilterData } from "@/hooks/use-filter-data";
 import { useArtists } from "@/hooks/use-artists";
 
 type Props = {

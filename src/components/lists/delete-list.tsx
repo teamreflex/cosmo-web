@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "../ui/button";
 import { Loader2, Trash } from "lucide-react";
-import { MouseEvent } from "react";
+import type { MouseEvent } from "react";
 import { deleteObjektList } from "./actions";
 import type { ObjektList } from "@/lib/server/db/schema";
 import { useAction } from "next-safe-action/hooks";

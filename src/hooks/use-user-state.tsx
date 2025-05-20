@@ -1,8 +1,8 @@
 "use client";
 
-import { PublicUser } from "@/lib/universal/auth";
-import { PublicCosmo } from "@/lib/universal/cosmo-accounts";
-import { createContext, PropsWithChildren, use } from "react";
+import type { PublicUser } from "@/lib/universal/auth";
+import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import { createContext, type PropsWithChildren, use } from "react";
 
 type UserState = {
   user?: PublicUser;

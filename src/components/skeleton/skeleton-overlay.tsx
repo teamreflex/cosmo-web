@@ -1,4 +1,4 @@
-import { cn, PropsWithClassName } from "@/lib/utils";
+import { cn, type PropsWithClassName } from "@/lib/utils";
 
 type Props = PropsWithClassName<{}>;
 

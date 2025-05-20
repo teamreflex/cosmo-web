@@ -1,4 +1,4 @@
-import { type Hex } from "viem";
+import type { Hex } from "viem";
 import {
   useBlockNumber,
   useClient,
@@ -9,7 +9,7 @@ import governorAbi from "@/abi/governor";
 import { Addresses } from "@/lib/utils";
 import { getContractEvents } from "viem/actions";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import {
+import type {
   UseBlockStatus,
   UseChainData,
   UseChainDataError,
@@ -20,7 +20,7 @@ import {
 import { hashFn } from "wagmi/query";
 import { useMemo } from "react";
 import { abstract } from "viem/chains";
-import { GravityHookParams } from "../common";
+import type { GravityHookParams } from "../common";
 
 // chain to connect to
 const chainId = abstract.id;

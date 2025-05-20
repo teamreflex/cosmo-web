@@ -1,4 +1,4 @@
-import { Leaderboard, LeaderboardItem } from "@/lib/universal/progress";
+import type { Leaderboard, LeaderboardItem } from "@/lib/universal/progress";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ofetch } from "ofetch";
 import Skeleton from "../skeleton/skeleton";

@@ -1,4 +1,4 @@
-import { Hoverable } from "@/components/objekt/common";
+import type { Hoverable } from "@/components/objekt/common";
 import { useState } from "react";
 
 export default function useOverlayHover() {

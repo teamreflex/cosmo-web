@@ -1,8 +1,8 @@
 "use client";
 
 import {
-  IndexedObjekt,
-  LegacyObjektResponse,
+  type IndexedObjekt,
+  type LegacyObjektResponse,
   parsePage,
 } from "@/lib/universal/objekts";
 import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
@@ -11,7 +11,7 @@ import { useFilters } from "@/hooks/use-filters";
 import FiltersContainer from "../collection/filters-container";
 import { ofetch } from "ofetch";
 import { baseUrl } from "@/lib/query-client";
-import { ObjektResponseOptions } from "@/hooks/use-objekt-response";
+import type { ObjektResponseOptions } from "@/hooks/use-objekt-response";
 import { ObjektSidebar } from "../objekt/common";
 import ExpandableObjekt from "../objekt/objekt-expandable";
 import { Objekt } from "../../lib/universal/objekt-conversion";

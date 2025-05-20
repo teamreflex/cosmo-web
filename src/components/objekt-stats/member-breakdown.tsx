@@ -1,9 +1,9 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
-import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
+import type { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import MemberChart from "./member-chart";
-import { HourlyBreakdown } from "@/lib/universal/stats";
+import type { HourlyBreakdown } from "@/lib/universal/stats";
 import { useState } from "react";
 import MemberSelect from "./member-select";
 

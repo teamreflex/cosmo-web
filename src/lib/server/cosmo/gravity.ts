@@ -1,12 +1,12 @@
 import "server-only";
-import {
+import type {
   CosmoGravity,
   CosmoOngoingGravity,
   CosmoPastGravity,
   CosmoPollChoices,
   CosmoUpcomingGravity,
 } from "@/lib/universal/cosmo/gravity";
-import { ValidArtist } from "@/lib/universal/cosmo/common";
+import type { ValidArtist } from "@/lib/universal/cosmo/common";
 import { cosmo } from "../http";
 
 type CosmoGravityList = {

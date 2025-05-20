@@ -1,5 +1,5 @@
 import { browserless, cosmo } from "../http";
-import { AuthTicket, QueryTicket } from "@/lib/universal/cosmo/qr-auth";
+import type { AuthTicket, QueryTicket } from "@/lib/universal/cosmo/qr-auth";
 import { env } from "@/env";
 
 /**

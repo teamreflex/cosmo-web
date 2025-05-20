@@ -2,17 +2,17 @@ import "server-only";
 import { cache } from "react";
 import { fetchTokenBalances } from "@/lib/server/como";
 import * as artists from "@/artists";
-import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
+import type { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import { getCookie } from "@/lib/server/cookies";
 import { auth, toPublicUser } from "@/lib/server/auth";
 import { headers } from "next/headers";
 import { experimental_taintObjectReference as taintObjectReference } from "react";
 import { fetchFullAccount, toPublicCosmo } from "@/lib/server/cosmo-accounts";
 import { notFound } from "next/navigation";
-import { FullAccount, PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import type { FullAccount, PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import { db } from "@/lib/server/db";
-import { PublicUser } from "@/lib/universal/auth";
-import { ObjektList } from "@/lib/server/db/schema";
+import type { PublicUser } from "@/lib/universal/auth";
+import type { ObjektList } from "@/lib/server/db/schema";
 
 /**
  * Fetch artists with all members from Cosmo.

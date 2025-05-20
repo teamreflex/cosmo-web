@@ -7,13 +7,13 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { PropsWithFilters } from "@/hooks/use-cosmo-filters";
+import type { PropsWithFilters } from "@/hooks/use-cosmo-filters";
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn, isEqual } from "@/lib/utils";
 import Image from "next/image";
 import { useFilterData } from "@/hooks/use-filter-data";
-import { ValidArtist } from "@/lib/universal/cosmo/common";
+import type { ValidArtist } from "@/lib/universal/cosmo/common";
 
 export default function SeasonFilter({
   filters,

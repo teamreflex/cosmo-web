@@ -1,6 +1,6 @@
 import "server-only";
 import { db } from "./db";
-import { CollectionDataSource, GRID_COLUMNS } from "@/lib/utils";
+import { type CollectionDataSource, GRID_COLUMNS } from "@/lib/utils";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { createAuthMiddleware } from "better-auth/api";
@@ -17,7 +17,7 @@ import {
   sendPasswordResetEmail,
   sendVerificationEmail,
 } from "./mail";
-import { PublicUser } from "../universal/auth";
+import type { PublicUser } from "../universal/auth";
 import { cosmoAccounts } from "./db/schema";
 import { eq } from "drizzle-orm";
 

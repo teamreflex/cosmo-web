@@ -1,6 +1,6 @@
 "use client";
 
-import { PropsWithChildren, useState } from "react";
+import { type PropsWithChildren, useState } from "react";
 import {
   CommandDialog,
   CommandGroup,
@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/command";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { CosmoPublicUser, CosmoSearchResult } from "@/lib/universal/cosmo/auth";
+import type { CosmoPublicUser, CosmoSearchResult } from "@/lib/universal/cosmo/auth";
 import { ofetch } from "ofetch";
 import {
   DialogClose,
@@ -21,7 +21,7 @@ import {
 import { useDebounceValue } from "usehooks-ts";
 import ProfileImage from "@/assets/profile.webp";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { RecentUser } from "@/store";
+import type { RecentUser } from "@/store";
 import VisuallyHidden from "./ui/visually-hidden";
 import { cn, isAddress } from "@/lib/utils";
 

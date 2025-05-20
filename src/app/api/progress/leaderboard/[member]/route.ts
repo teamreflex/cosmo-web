@@ -1,13 +1,13 @@
 import { indexer } from "@/lib/server/db/indexer";
 import { collections, objekts } from "@/lib/server/db/indexer/schema";
 import { and, count, eq, inArray, not, sql } from "drizzle-orm";
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 import { fetchTotal } from "../../common";
 import { fetchKnownAddresses } from "@/lib/server/cosmo-accounts";
 import { Addresses, isEqual } from "@/lib/utils";
-import { LeaderboardItem } from "@/lib/universal/progress";
+import type { LeaderboardItem } from "@/lib/universal/progress";
 import {
-  ValidOnlineType,
+  type ValidOnlineType,
   validOnlineTypes,
 } from "@/lib/universal/cosmo/common";
 import { cacheHeaders } from "@/app/api/common";

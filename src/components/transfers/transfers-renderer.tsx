@@ -14,15 +14,15 @@ import { Suspense, useCallback, useState } from "react";
 import Skeleton from "../skeleton/skeleton";
 import { baseUrl } from "@/lib/query-client";
 import { ofetch } from "ofetch";
-import { TransferParams, TransferResult } from "@/lib/universal/transfers";
-import { CosmoFilters, useCosmoFilters } from "@/hooks/use-cosmo-filters";
+import type { TransferParams, TransferResult } from "@/lib/universal/transfers";
+import { type CosmoFilters, useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import FiltersContainer from "../collection/filters-container";
-import { ValidArtist } from "@/lib/universal/cosmo/common";
+import type { ValidArtist } from "@/lib/universal/cosmo/common";
 import MemberFilter from "../collection/member-filter";
 import { useFilters } from "@/hooks/use-filters";
 import SkeletonGradient from "../skeleton/skeleton-overlay";
 import { TransfersFilters } from "../collection/filter-contexts/transfers-filters";
-import { PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 
 type Props = {
   cosmo: PublicCosmo;

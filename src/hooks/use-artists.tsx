@@ -1,10 +1,10 @@
 "use client";
 
-import {
+import type {
   CosmoArtistWithMembersBFF,
   CosmoMemberBFF,
 } from "@/lib/universal/cosmo/artists";
-import { ReactNode, createContext, use, useCallback } from "react";
+import { type ReactNode, createContext, use, useCallback } from "react";
 
 type ContextProps = {
   // cosmo artist data

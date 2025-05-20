@@ -7,7 +7,7 @@ import {
   integer,
 } from "drizzle-orm/pg-core";
 import { citext } from "./columns";
-import { CollectionDataSource, GRID_COLUMNS } from "@/lib/utils";
+import { type CollectionDataSource, GRID_COLUMNS } from "@/lib/utils";
 
 export const user = pgTable(
   "user",

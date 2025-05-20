@@ -6,7 +6,7 @@ import {
   TooltipTrigger,
 } from "../ui/tooltip";
 import Image from "next/image";
-import { ValidArtist } from "@/lib/universal/cosmo/common";
+import type { ValidArtist } from "@/lib/universal/cosmo/common";
 import { useArtists } from "@/hooks/use-artists";
 
 type Props = {

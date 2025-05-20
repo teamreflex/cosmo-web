@@ -1,4 +1,4 @@
-import {
+import type {
   CosmoByNicknameResult,
   CosmoSearchResult,
 } from "@/lib/universal/cosmo/auth";

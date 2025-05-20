@@ -11,12 +11,12 @@ import { useState } from "react";
 import SettingsDialog from "./settings-dialog";
 import Link from "next/link";
 import { IconBrandDiscord } from "@tabler/icons-react";
-import { PublicUser } from "@/lib/universal/auth";
+import type { PublicUser } from "@/lib/universal/auth";
 import { ArtistItem } from "../navbar/artist-selectbox";
 import { useArtists } from "@/hooks/use-artists";
 import UserAvatar from "../profile/user-avatar";
 import AccountDialog from "./account-dialog";
-import { PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 
 type UserDropdownProps = {
   user: PublicUser;

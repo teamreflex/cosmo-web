@@ -1,4 +1,4 @@
-import { ValidArtist } from "@/lib/universal/cosmo/common";
+import type { ValidArtist } from "@/lib/universal/cosmo/common";
 import { z } from "zod";
 
 export type CosmoGravityType = "event-gravity" | "grand-gravity";

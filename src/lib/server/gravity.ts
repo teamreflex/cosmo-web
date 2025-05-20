@@ -2,10 +2,10 @@ import { desc } from "drizzle-orm";
 import { db } from "./db";
 import { gravities } from "./db/schema";
 import { fetchGravity, fetchPoll } from "./cosmo/gravity";
-import { ValidArtist } from "../universal/cosmo/common";
+import type { ValidArtist } from "../universal/cosmo/common";
 import { getProxiedToken } from "./handlers/withProxiedToken";
 import { findPoll } from "../client/gravity/util";
-import { RevealedVote } from "../client/gravity/polygon/types";
+import type { RevealedVote } from "../client/gravity/polygon/types";
 import { remember } from "./cache";
 
 /**

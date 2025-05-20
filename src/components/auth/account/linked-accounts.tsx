@@ -6,8 +6,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
-  LinkedAccount,
-  Provider,
+  type LinkedAccount,
+  type Provider,
   useLinkAccount,
   useListAccounts,
   useUnlinkAccount,

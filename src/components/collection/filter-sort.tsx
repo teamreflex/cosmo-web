@@ -7,9 +7,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PropsWithFilters } from "@/hooks/use-cosmo-filters";
-import { ValidSort, validSorts } from "@/lib/universal/cosmo/common";
-import { CollectionDataSource } from "@/lib/utils";
+import type { PropsWithFilters } from "@/hooks/use-cosmo-filters";
+import { type ValidSort, validSorts } from "@/lib/universal/cosmo/common";
+import type { CollectionDataSource } from "@/lib/utils";
 
 interface Props extends PropsWithFilters {
   serials: boolean;

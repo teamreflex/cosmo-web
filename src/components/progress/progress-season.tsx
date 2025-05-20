@@ -1,4 +1,4 @@
-import { SeasonProgress } from "@/lib/universal/progress";
+import type { SeasonProgress } from "@/lib/universal/progress";
 import { useState } from "react";
 import ProgressClass from "./progress-class";
 import ProgressObjektGrid from "./progress-objekt-grid";

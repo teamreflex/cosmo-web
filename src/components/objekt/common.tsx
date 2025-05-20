@@ -1,7 +1,7 @@
-import { NonTransferableReason } from "@/lib/universal/cosmo/objekts";
+import type { NonTransferableReason } from "@/lib/universal/cosmo/objekts";
 import { useElementSize } from "@/hooks/use-element-size";
-import { cn, PropsWithClassName } from "@/lib/utils";
-import { ValidArtist } from "@/lib/universal/cosmo/common";
+import { cn, type PropsWithClassName } from "@/lib/utils";
+import type { ValidArtist } from "@/lib/universal/cosmo/common";
 
 type ObjektSidebarProps = {
   artist: ValidArtist;

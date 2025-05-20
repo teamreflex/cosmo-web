@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import { CalendarRange } from "lucide-react";
 import Link from "next/link";
 

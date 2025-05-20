@@ -1,14 +1,14 @@
 "use client";
 
 import {
-  ObjektResponseOptions,
+  type ObjektResponseOptions,
   useObjektResponse,
 } from "@/hooks/use-objekt-response";
-import { ReactElement, useMemo } from "react";
+import { type ReactElement, useMemo } from "react";
 import Portal from "../portal";
 import { InfiniteQueryNext } from "../infinite-query-pending";
-import { ObjektRowItem } from "./virtualized-grid";
-import { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
+import type { ObjektRowItem } from "./virtualized-grid";
+import type { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
 
 type Props<Response, Item> = {
   children: (props: RenderProps<Item>) => ReactElement;

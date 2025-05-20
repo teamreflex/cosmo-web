@@ -1,11 +1,11 @@
 "use client";
 
 import {
-  ObjektWithCollection,
+  type ObjektWithCollection,
   buildCalendar,
   getDays,
 } from "@/lib/universal/como";
-import { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
+import type { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
 import { cn } from "@/lib/utils";
 import ArtistIcon from "../artist-icon";
 import { Sparkles } from "lucide-react";

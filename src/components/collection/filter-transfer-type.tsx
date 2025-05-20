@@ -5,7 +5,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { TransferParams } from "@/lib/universal/transfers";
+import type { TransferParams } from "@/lib/universal/transfers";
 
 type Props = {
   type: TransferParams["type"];

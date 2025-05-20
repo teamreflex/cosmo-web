@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useState } from "react";
+import { type ReactNode, useState } from "react";
 import {
   Select,
   SelectContent,
@@ -29,7 +29,7 @@ import {
 } from "../ui/accordion";
 import { CircleHelp } from "lucide-react";
 import { Button } from "../ui/button";
-import { CollectionDataSource } from "@/lib/utils";
+import type { CollectionDataSource } from "@/lib/utils";
 
 type Props = {
   name: string;

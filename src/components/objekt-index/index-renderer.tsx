@@ -15,13 +15,13 @@ import { ChartColumnBig } from "lucide-react";
 import VirtualizedGrid from "../objekt/virtualized-grid";
 import LoaderRemote from "../objekt/loader-remote";
 import ObjektIndexFilters from "../collection/filter-contexts/objekt-index-filters";
-import { ValidArtist } from "@/lib/universal/cosmo/common";
+import type { ValidArtist } from "@/lib/universal/cosmo/common";
 import { useObjektIndex } from "@/hooks/use-objekt-index";
 import HelpDialog from "./help-dialog";
-import { IndexedObjekt } from "@/lib/universal/objekts";
+import type { IndexedObjekt } from "@/lib/universal/objekts";
 import { useGridColumns } from "@/hooks/use-grid-columns";
 import { useUserState } from "@/hooks/use-user-state";
-import { ObjektList } from "@/lib/server/db/schema";
+import type { ObjektList } from "@/lib/server/db/schema";
 
 type Props = {
   activeSlug?: string;

@@ -1,4 +1,4 @@
-import { PollSelectedContentImage } from "@/lib/universal/cosmo/gravity";
+import type { PollSelectedContentImage } from "@/lib/universal/cosmo/gravity";
 import { motion } from "motion/react";
 import Image from "next/image";
 

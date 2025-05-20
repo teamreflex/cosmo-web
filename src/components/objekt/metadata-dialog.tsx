@@ -19,16 +19,16 @@ import {
   DrawerDescription,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { ObjektMetadata } from "@/lib/universal/objekts";
+import type { ObjektMetadata } from "@/lib/universal/objekts";
 import { unobtainables } from "@/lib/unobtainables";
 import {
   QueryErrorResetBoundary,
   useQueryClient,
   useSuspenseQuery,
 } from "@tanstack/react-query";
-import { FetchError, ofetch } from "ofetch";
+import { type FetchError, ofetch } from "ofetch";
 import Link from "next/link";
-import { ReactNode, Suspense, useState } from "react";
+import { type ReactNode, Suspense, useState } from "react";
 import { Separator } from "../ui/separator";
 import Skeleton from "../skeleton/skeleton";
 import { Button } from "../ui/button";
@@ -47,7 +47,7 @@ import { toast } from "../ui/use-toast";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import VisuallyHidden from "../ui/visually-hidden";
 import FlippableObjekt from "./objekt-flippable";
-import { Objekt } from "@/lib/universal/objekt-conversion";
+import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
 import Portal from "../portal";
 import { useAction } from "next-safe-action/hooks";

@@ -2,7 +2,7 @@ import { getSession } from "@/app/data-fetching";
 import InsertMetadata from "@/components/admin/metadata/insert-metadata";
 import LatestMetadata from "@/components/admin/metadata/latest-metadata";
 import Skeleton from "@/components/skeleton/skeleton";
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 

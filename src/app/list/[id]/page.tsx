@@ -1,4 +1,4 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import { cache } from "react";
 import { redirect } from "next/navigation";
 import {

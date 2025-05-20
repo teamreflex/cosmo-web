@@ -7,7 +7,7 @@ import HelpDialog from "./help-dialog";
 import Blockchain from "../collection/data-sources/blockchain";
 import BlockchainGroups from "../collection/data-sources/blockchain-groups";
 import CollectionFilters from "../collection/filter-contexts/collection-filters";
-import { PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import { useGridColumns } from "@/hooks/use-grid-columns";
 import { useUserState } from "@/hooks/use-user-state";
 

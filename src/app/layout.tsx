@@ -1,7 +1,7 @@
 import "../styles/tailwind.css";
 import Navbar from "@/components/navbar/navbar";
 import ClientProviders from "@/components/client-providers";
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import { env } from "@/env";
 import { Inter } from "next/font/google";
 import localFont from "next/font/local";
@@ -9,7 +9,7 @@ import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/toaster";
 import TailwindIndicator from "@/components/tailwind-indicator";
 import Script from "next/script";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 const inter = Inter({
   subsets: ["latin"],

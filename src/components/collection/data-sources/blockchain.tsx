@@ -1,6 +1,6 @@
 import { ofetch } from "ofetch";
-import { LegacyObjektResponse, parsePage } from "@/lib/universal/objekts";
-import { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
+import { type LegacyObjektResponse, parsePage } from "@/lib/universal/objekts";
+import type { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
 import { baseUrl } from "@/lib/query-client";
 import { useProfileContext } from "@/hooks/use-profile";
 import { objektOptions } from "@/hooks/use-objekt-response";
@@ -13,7 +13,7 @@ import ExpandableObjekt from "@/components/objekt/objekt-expandable";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import VirtualizedGrid from "@/components/objekt/virtualized-grid";
 import LoaderRemote from "@/components/objekt/loader-remote";
-import { PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import { useArtists } from "@/hooks/use-artists";
 import { useAuthenticated } from "@/hooks/use-authenticated";
 import { useGridColumns } from "@/hooks/use-grid-columns";

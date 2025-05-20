@@ -1,13 +1,13 @@
 import {
-  GetNextPageParamFunction,
-  InfiniteData,
-  QueryFunction,
-  QueryKey,
+  type GetNextPageParamFunction,
+  type InfiniteData,
+  type QueryFunction,
+  type QueryKey,
   useSuspenseInfiniteQuery,
 } from "@tanstack/react-query";
 import { useCosmoFilters } from "./use-cosmo-filters";
-import { ReactNode } from "react";
-import { FilterType } from "@/lib/utils";
+import type { ReactNode } from "react";
+import type { FilterType } from "@/lib/utils";
 import { useArtists } from "./use-artists";
 
 export type ObjektResponseOptions<Response, Item> = {

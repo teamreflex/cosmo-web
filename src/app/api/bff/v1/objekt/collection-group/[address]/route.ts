@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { indexer } from "@/lib/server/db/indexer";
 import { eq, sql, desc, max, and, asc } from "drizzle-orm";
 import { collections, objekts } from "@/lib/server/db/indexer/schema";
-import {
+import type {
   BFFCollectionGroup,
   BFFCollectionGroupObjekt,
   BFFCollectionGroupResponse,
@@ -16,8 +16,8 @@ import {
   withSeason,
   withTransferable,
 } from "@/lib/server/objekts/filters";
-import { PgSelect } from "drizzle-orm/pg-core";
-import { ValidSort } from "@/lib/universal/cosmo/common";
+import type { PgSelect } from "drizzle-orm/pg-core";
+import type { ValidSort } from "@/lib/universal/cosmo/common";
 import { nonTransferableReason } from "@/lib/server/objekts/prefetching/common";
 
 const PER_PAGE = 30;

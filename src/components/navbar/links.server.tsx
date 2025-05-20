@@ -8,7 +8,7 @@ import {
 import { DesktopLinks, MobileLinks } from "./links.client";
 import { Menu } from "lucide-react";
 import NavbarSearch from "./navbar-search";
-import { PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import LinkCosmo from "../auth/link-cosmo";
 
 type Props = {

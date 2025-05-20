@@ -1,4 +1,4 @@
-import { PropsWithChildren, useState } from "react";
+import { type PropsWithChildren, useState } from "react";
 import { SlidersHorizontal } from "lucide-react";
 import Portal from "../portal";
 import { Button } from "../ui/button";

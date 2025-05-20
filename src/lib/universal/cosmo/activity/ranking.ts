@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ValidArtist, validArtists } from "../common";
+import { type ValidArtist, validArtists } from "../common";
 import { parse } from "../../parsers";
 
 // #region Common

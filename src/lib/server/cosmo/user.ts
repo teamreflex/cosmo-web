@@ -1,4 +1,4 @@
-import { CosmoShopUser } from "@/lib/universal/cosmo/user";
+import type { CosmoShopUser } from "@/lib/universal/cosmo/user";
 import { cosmo } from "../http";
 import { cosmoShopHeaders } from "./qr-auth";
 

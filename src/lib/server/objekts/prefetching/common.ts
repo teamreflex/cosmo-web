@@ -1,9 +1,9 @@
-import {
+import type {
   CosmoObjekt,
   NonTransferableReason,
 } from "@/lib/universal/cosmo/objekts";
-import { Collection, Objekt } from "../../db/indexer/schema";
-import { ValidArtist } from "@/lib/universal/cosmo/common";
+import type { Collection, Objekt } from "../../db/indexer/schema";
+import type { ValidArtist } from "@/lib/universal/cosmo/common";
 
 /**
  * Map indexed objekt/collection into an entity compatible with existing type.

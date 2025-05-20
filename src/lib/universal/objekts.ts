@@ -1,6 +1,6 @@
 import type { Collection } from "@/lib/server/db/indexer/schema";
-import { ObjektMetadataEntry, CosmoAccount } from "@/lib/server/db/schema";
-import { CosmoObjekt, ObjektBaseFields } from "@/lib/universal/cosmo/objekts";
+import type { ObjektMetadataEntry, CosmoAccount } from "@/lib/server/db/schema";
+import type { CosmoObjekt, ObjektBaseFields } from "@/lib/universal/cosmo/objekts";
 
 // alias the indexer type
 export type IndexedObjekt = Collection;

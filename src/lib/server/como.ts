@@ -1,7 +1,7 @@
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { indexer } from "./db/indexer";
 import { collections, objekts } from "./db/indexer/schema";
-import { ComoBalance, ObjektWithCollection } from "@/lib/universal/como";
+import type { ComoBalance, ObjektWithCollection } from "@/lib/universal/como";
 import { unstable_cacheLife as cacheLife } from "next/cache";
 import { addr } from "../utils";
 import { getArtistsWithMembers } from "@/app/data-fetching";

@@ -17,7 +17,7 @@ import AddToList from "@/components/lists/add-to-list";
 import useOverlayHover from "@/hooks/use-overlay-hover";
 import PinObjekt from "@/components/objekt/overlay/pin-button";
 // import SendObjekt from "./send-button";
-import { Objekt } from "@/lib/universal/objekt-conversion";
+import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { useObjektOverlay } from "@/store";
 
 type Props = {

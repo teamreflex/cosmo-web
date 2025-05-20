@@ -1,4 +1,4 @@
-import { PropsWithChildren, Suspense } from "react";
+import { type PropsWithChildren, Suspense } from "react";
 import CopyAddressButton from "@/components/profile/copy-address-button";
 import TradesButton from "@/components/profile/trades-button";
 import ComoButton from "@/components/profile/como-button";

@@ -1,8 +1,8 @@
-import { ReactNode, Suspense, useCallback } from "react";
+import { type ReactNode, Suspense, useCallback } from "react";
 import { HeartCrack, RefreshCcw } from "lucide-react";
 import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import MemberFilter from "../collection/member-filter";
-import { ValidArtist } from "@/lib/universal/cosmo/common";
+import type { ValidArtist } from "@/lib/universal/cosmo/common";
 import { Button } from "../ui/button";
 import Skeleton from "../skeleton/skeleton";
 import { ErrorBoundary } from "react-error-boundary";

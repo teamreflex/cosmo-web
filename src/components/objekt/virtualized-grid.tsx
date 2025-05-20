@@ -1,11 +1,11 @@
 import { useElementSize } from "@/hooks/use-element-size";
-import { cloneElement, ReactElement } from "react";
+import { cloneElement, type ReactElement } from "react";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { useRef } from "react";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import ExpandableObjekt from "./objekt-expandable";
 import { LegacyOverlay } from "../collection/data-sources/common-legacy";
-import { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
+import type { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
 
 type RenderProps<T> = {
   id: string | number;

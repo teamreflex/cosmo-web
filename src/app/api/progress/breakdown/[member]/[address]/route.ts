@@ -1,11 +1,11 @@
 import { indexer } from "@/lib/server/db/indexer";
 import {
-  Collection,
+  type Collection,
   collections,
   objekts,
 } from "@/lib/server/db/indexer/schema";
 import { validOnlineTypes } from "@/lib/universal/cosmo/common";
-import { SeasonProgress, SeasonMatrix } from "@/lib/universal/progress";
+import type { SeasonProgress, SeasonMatrix } from "@/lib/universal/progress";
 import { and, eq } from "drizzle-orm";
 import { fetchTotal } from "../../../common";
 import { cacheHeaders } from "@/app/api/common";

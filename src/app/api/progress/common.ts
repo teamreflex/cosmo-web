@@ -1,6 +1,6 @@
 import { indexer } from "@/lib/server/db/indexer";
-import { Collection, collections } from "@/lib/server/db/indexer/schema";
-import { ValidOnlineType } from "@/lib/universal/cosmo/common";
+import { type Collection, collections } from "@/lib/server/db/indexer/schema";
+import type { ValidOnlineType } from "@/lib/universal/cosmo/common";
 import { and, desc, eq, inArray, not } from "drizzle-orm";
 
 type FetchTotal = {

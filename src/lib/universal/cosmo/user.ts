@@ -1,4 +1,4 @@
-import { CosmoProfile, LoginChannel } from "./auth";
+import type { CosmoProfile, LoginChannel } from "./auth";
 
 export type CosmoShopUser = {
   id: number;

@@ -9,8 +9,8 @@ import {
   withObjektIndexSort,
   withSelectedArtists,
 } from "../filters";
-import { z } from "zod";
-import { objektIndex } from "@/lib/universal/parsers";
+import type { z } from "zod";
+import type { objektIndex } from "@/lib/universal/parsers";
 import { indexer } from "../../db/indexer";
 import { collections } from "../../db/indexer/schema";
 

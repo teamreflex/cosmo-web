@@ -1,5 +1,5 @@
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
-import { TransferParams } from "@/lib/universal/transfers";
+import type { TransferParams } from "@/lib/universal/transfers";
 import SeasonFilter from "../filter-season";
 import OnlineFilter from "../filter-online";
 import ClassFilter from "../filter-class";

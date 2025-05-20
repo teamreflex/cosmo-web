@@ -2,7 +2,7 @@ import FilteredObjektDisplay from "@/components/objekt/filtered-objekt-display";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { filtersAreDirty } from "@/hooks/use-filters";
 import { objektOptions } from "@/hooks/use-objekt-response";
-import {
+import type {
   BFFCollectionGroup,
   BFFCollectionGroupResponse,
 } from "@/lib/universal/cosmo/objekts";
@@ -13,7 +13,7 @@ import { useProfileContext } from "@/hooks/use-profile";
 import VirtualizedGrid from "@/components/objekt/virtualized-grid";
 import LoaderRemote from "@/components/objekt/loader-remote";
 import { baseUrl } from "@/lib/query-client";
-import { PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import { useArtists } from "@/hooks/use-artists";
 import { useAuthenticated } from "@/hooks/use-authenticated";
 import { useGridColumns } from "@/hooks/use-grid-columns";

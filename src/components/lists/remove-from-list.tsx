@@ -5,7 +5,7 @@ import { ListX, Loader2 } from "lucide-react";
 import { removeObjektFromList } from "./actions";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "../ui/use-toast";
-import { Objekt } from "@/lib/universal/objekt-conversion";
+import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { useAction } from "next-safe-action/hooks";
 
 type Props = {

@@ -1,10 +1,10 @@
 "use client";
 
-import { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
+import type { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
 import CandidateBreakdown from "./candidate-breakdown";
 import { useChainData } from "@/lib/client/gravity/abstract/hooks";
 import { useMemo } from "react";
-import {
+import type {
   CosmoOngoingGravity,
   CosmoPastGravity,
 } from "@/lib/universal/cosmo/gravity";

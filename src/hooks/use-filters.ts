@@ -1,7 +1,7 @@
 import { parseAsBoolean, useQueryState } from "nuqs";
 import { useState } from "react";
-import { CosmoFilters, useCosmoFilters } from "./use-cosmo-filters";
-import { CollectionDataSource } from "@/lib/utils";
+import { type CosmoFilters, useCosmoFilters } from "./use-cosmo-filters";
+import type { CollectionDataSource } from "@/lib/utils";
 
 type DefaultOptions = {
   dataSource?: CollectionDataSource;

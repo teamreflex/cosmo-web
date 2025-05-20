@@ -1,6 +1,6 @@
 import { fetchPoll } from "@/lib/server/cosmo/gravity";
 import { withProxiedToken } from "@/lib/server/handlers/withProxiedToken";
-import { ValidArtist } from "@/lib/universal/cosmo/common";
+import type { ValidArtist } from "@/lib/universal/cosmo/common";
 
 type Params = {
   artist: ValidArtist;

@@ -2,7 +2,7 @@ import { cacheHeaders } from "@/app/api/common";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import { collections, objekts } from "@/lib/server/db/indexer/schema";
-import { ObjektMetadata } from "@/lib/universal/objekts";
+import type { ObjektMetadata } from "@/lib/universal/objekts";
 import { addr, Addresses } from "@/lib/utils";
 import { eq, sql } from "drizzle-orm";
 

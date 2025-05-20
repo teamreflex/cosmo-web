@@ -3,7 +3,7 @@ import { db } from "./db";
 import { cosmoAccounts, type CosmoAccount } from "./db/schema";
 import { fetchByNickname } from "./cosmo/auth";
 import { FetchError } from "ofetch";
-import { FullAccount, PublicCosmo } from "../universal/cosmo-accounts";
+import type { FullAccount, PublicCosmo } from "../universal/cosmo-accounts";
 import { GRID_COLUMNS, isAddress } from "../utils";
 import { toPublicUser } from "./auth";
 

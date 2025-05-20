@@ -13,7 +13,7 @@ import {
 import { sql } from "drizzle-orm";
 import { citext, createdAt } from "./columns";
 import { user, session, account, verification } from "./auth-schema";
-import { CosmoGravityType, CosmoPollType } from "@/lib/universal/cosmo/gravity";
+import type { CosmoGravityType, CosmoPollType } from "@/lib/universal/cosmo/gravity";
 
 export { user, session, account, verification };
 

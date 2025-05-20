@@ -1,4 +1,4 @@
-import { ObjektProgression } from "@/lib/universal/progress";
+import type { ObjektProgression } from "@/lib/universal/progress";
 import ProgressObjekt from "./progress-objekt";
 
 type Props = {

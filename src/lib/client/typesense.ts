@@ -1,7 +1,7 @@
 import { env } from "@/env";
-import { CosmoFilters } from "@/hooks/use-cosmo-filters";
+import type { CosmoFilters } from "@/hooks/use-cosmo-filters";
 import { SearchClient } from "typesense";
-import { IndexedObjekt } from "../universal/objekts";
+import type { IndexedObjekt } from "../universal/objekts";
 
 const PER_PAGE = 30;
 

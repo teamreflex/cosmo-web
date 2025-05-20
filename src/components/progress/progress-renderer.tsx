@@ -2,7 +2,7 @@
 
 import { Suspense, useCallback } from "react";
 import MemberFilter from "../collection/member-filter";
-import { ValidArtist } from "@/lib/universal/cosmo/common";
+import type { ValidArtist } from "@/lib/universal/cosmo/common";
 import ProgressTable from "./progress-table";
 import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import { ErrorBoundary } from "react-error-boundary";

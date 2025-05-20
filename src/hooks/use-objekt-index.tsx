@@ -1,11 +1,11 @@
 import { useQueryState } from "nuqs";
 import { ofetch } from "ofetch";
 import {
-  IndexedObjekt,
-  LegacyObjektResponse,
+  type IndexedObjekt,
+  type LegacyObjektResponse,
   parsePage,
 } from "@/lib/universal/objekts";
-import { ObjektResponseOptions } from "./use-objekt-response";
+import type { ObjektResponseOptions } from "./use-objekt-response";
 import { useCosmoFilters } from "./use-cosmo-filters";
 import { useFilters } from "./use-filters";
 import { getTypesenseResults } from "@/lib/client/typesense";

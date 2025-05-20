@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
-import { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
+import type { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import { ScrollArea } from "../ui/scroll-area";
 import { artistColors } from "@/lib/utils";
 import Image from "next/image";

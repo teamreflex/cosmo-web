@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { IndexedObjekt } from "@/lib/universal/objekts";
+import type { IndexedObjekt } from "@/lib/universal/objekts";
 import AddToList from "../lists/add-to-list";
 import OverlayStatus from "../objekt/overlay/overlay-status";
 import { useObjektOverlay } from "@/store";

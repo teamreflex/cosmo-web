@@ -2,7 +2,7 @@
 
 import { Send } from "lucide-react";
 import { useObjektTransfer } from "@/hooks/use-objekt-transfer";
-import { Objekt } from "@/lib/universal/objekt-conversion";
+import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { useArtists } from "@/hooks/use-artists";
 import { toast } from "@/components/ui/use-toast";
 

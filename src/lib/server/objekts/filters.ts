@@ -1,10 +1,10 @@
-import {
+import type {
   ValidArtist,
   ValidOnlineType,
   ValidSort,
 } from "@/lib/universal/cosmo/common";
 import { asc, between, desc, eq, inArray } from "drizzle-orm";
-import { PgSelect } from "drizzle-orm/pg-core";
+import type { PgSelect } from "drizzle-orm/pg-core";
 import { collections, objekts } from "../db/indexer/schema";
 
 /**

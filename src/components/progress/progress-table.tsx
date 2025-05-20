@@ -1,6 +1,6 @@
 "use client";
 
-import { SeasonProgress } from "@/lib/universal/progress";
+import type { SeasonProgress } from "@/lib/universal/progress";
 import { useSuspenseQueries } from "@tanstack/react-query";
 import { parseAsStringEnum, useQueryState } from "nuqs";
 import { ofetch } from "ofetch";

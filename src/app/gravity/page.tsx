@@ -1,19 +1,19 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import { getArtistsWithMembers, getSelectedArtists } from "../data-fetching";
 import { fetchGravities } from "@/lib/server/gravity";
 import { ArtistProvider } from "@/hooks/use-artists";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
-import { Gravity } from "@/lib/server/db/schema";
-import { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
+import type { Gravity } from "@/lib/server/db/schema";
+import type { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
 import Link from "next/link";
 import { isFuture } from "date-fns";
 import GravityTimestamp from "@/components/gravity/timestamp";
 import { CalendarDays } from "lucide-react";
-import { CosmoGravityType } from "@/lib/universal/cosmo/gravity";
+import type { CosmoGravityType } from "@/lib/universal/cosmo/gravity";
 import { Badge } from "@/components/ui/badge";
-import { PropsWithClassName } from "@/lib/utils";
+import type { PropsWithClassName } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Gravity",

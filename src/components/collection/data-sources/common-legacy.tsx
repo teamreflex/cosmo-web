@@ -2,7 +2,7 @@ import ActionOverlay from "@/components/objekt/overlay/action-overlay";
 import InformationOverlay from "@/components/objekt/overlay/information-overlay";
 import { useLockedObjekt, usePinnedObjekt } from "@/hooks/use-profile";
 import { ObjektSidebar } from "@/components/objekt/common";
-import { Objekt } from "@/lib/universal/objekt-conversion";
+import type { Objekt } from "@/lib/universal/objekt-conversion";
 
 type LegacyOverlayProps = {
   collection: Objekt.Collection;

@@ -1,6 +1,6 @@
 "use client";
 
-import { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
+import type { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
 import { useId, useTransition } from "react";
 import {
   DropdownMenu,
