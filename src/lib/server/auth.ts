@@ -21,7 +21,7 @@ import { PublicUser } from "../universal/auth";
 import { cosmoAccounts } from "./db/schema";
 import { eq } from "drizzle-orm";
 
-export const IP_HEADER = "cf-connecting-ip";
+export const IP_HEADER = "x-vercel-forwarded-for";
 
 /**
  * Better Auth server instance.
