@@ -160,7 +160,7 @@ function processRawStats(rawStats: RawStats[], referenceHours: string[]) {
  * Cached for 2 hours, but a cron job flushes the cache every hour.
  */
 export async function fetchObjektStats(): Promise<ObjektStats> {
-  "use cache";
+  "use cache: remote";
   cacheLife("objektStats");
   cacheTag("objekt-stats");
 

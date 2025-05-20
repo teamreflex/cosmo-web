@@ -46,7 +46,7 @@ export async function fetchObjektsWithComo(
 export async function fetchTokenBalances(
   address: string
 ): Promise<ComoBalance[]> {
-  "use cache";
+  "use cache: remote";
   cacheLife("como");
 
   const artists = getArtistsWithMembers();

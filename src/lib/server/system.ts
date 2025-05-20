@@ -63,7 +63,7 @@ type FinalSystemStatus = {
  * - more than 3600 blocks / 60 minutes: down
  */
 export async function getSystemStatus(): Promise<FinalSystemStatus> {
-  "use cache";
+  "use cache: remote";
   cacheLife("system");
 
   const [{ blockHeight }, processorHeight] = await Promise.all([
@@ -72,12 +72,12 @@ export async function getSystemStatus(): Promise<FinalSystemStatus> {
   ]);
 
   // calculate processor status
-  // const diff = blockHeight - processorHeight;
-  // const status = diff < 1800 ? "normal" : diff < 3600 ? "degraded" : "down";
+  const diff = blockHeight - processorHeight;
+  const status = diff < 1800 ? "normal" : diff < 3600 ? "degraded" : "down";
 
   return {
     processor: {
-      status: "normal",
+      status,
       height: {
         processor: processorHeight,
         chain: blockHeight,

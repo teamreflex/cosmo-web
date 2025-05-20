@@ -18,7 +18,7 @@ interface ObjektWithCollection extends Objekt {
  * Cached for 1 day.
  */
 export async function fetchPins(username: string): Promise<CosmoObjekt[]> {
-  "use cache";
+  "use cache: remote";
   cacheLife("pins");
   cacheTag(`pins:${username.toLowerCase()}`);
 
