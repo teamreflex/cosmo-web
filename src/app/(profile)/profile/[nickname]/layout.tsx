@@ -84,9 +84,9 @@ export default async function ProfileLayout(props: Props) {
         {/* profile-related buttons */}
         <div className="row-start-3 md:row-start-auto col-span-3 md:col-span-2 flex flex-wrap gap-2 justify-center md:justify-end">
           <CopyAddressButton address={target.cosmo.address} />
-          <TradesButton username={target.cosmo.username} />
-          <ComoButton username={target.cosmo.username} />
-          <ProgressButton username={target.cosmo.username} />
+          <TradesButton cosmo={target.cosmo} />
+          <ComoButton cosmo={target.cosmo} />
+          <ProgressButton cosmo={target.cosmo} />
           <ListDropdownClient
             objektLists={target.objektLists}
             allowCreate={authenticated}

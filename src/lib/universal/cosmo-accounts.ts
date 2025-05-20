@@ -4,6 +4,7 @@ import type { PublicUser } from "./auth";
 export type PublicCosmo = {
   username: string;
   address: string;
+  isAddress: boolean;
 };
 
 export type PublicAccount = {

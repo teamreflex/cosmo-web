@@ -51,6 +51,7 @@ export async function fetchFullAccount(
       cosmo: {
         username: identifier.substring(0, 6),
         address: identifier,
+        isAddress: true,
       },
       user: {
         id: crypto.randomUUID(),
@@ -171,5 +172,6 @@ export function toPublicCosmo(
   return {
     username: cosmo.username,
     address: cosmo.address,
+    isAddress: false,
   };
 }
