@@ -32,8 +32,8 @@ export default function Logo({ className }: Props) {
           <AlertDialogDescription asChild>
             <div className="flex flex-col gap-2">
               <p>
-                {env.NEXT_PUBLIC_APP_NAME} is an unofficial desktop client for{" "}
-                <span className="italic">Cosmo: the Gate</span>.
+                {env.NEXT_PUBLIC_APP_NAME} is platform for exploring objekts &
+                gravities from Cosmo: the Gate.
               </p>
               <p>Source code can be found below.</p>
             </div>

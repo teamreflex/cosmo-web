@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     default: env.NEXT_PUBLIC_APP_NAME,
     absolute: env.NEXT_PUBLIC_APP_NAME,
   },
-  description: `${env.NEXT_PUBLIC_APP_NAME} - Unofficial desktop client for Cosmo`,
+  description: `${env.NEXT_PUBLIC_APP_NAME} - Objekt & gravity explorer for Cosmo`,
   keywords: [
     "kpop",
     "korea",
@@ -34,6 +34,8 @@ export const metadata: Metadata = {
     "모드하우스",
     "cosmo",
     "objekt",
+    "como",
+    "gravity",
     "tripleS",
     "트리플에스",
     "artms",
@@ -44,6 +46,7 @@ export const metadata: Metadata = {
     "오드아이써클",
     "loona",
     "이달의 소녀",
+    "idntt",
   ],
 };
 

@@ -1,12 +1,12 @@
 # cosmo-web (Apollo)
 
-This project aims to build a web based version of [MODHAUS](https://www.mod-haus.com/)' **[Cosmo: the Gate](https://play.google.com/store/apps/details?id=com.modhaus.cosmo)** mobile application, replicate its core features as close as possible, and add new features on top.
+A platform for exploring objekts & gravities from [MODHAUS](https://www.mod-haus.com/)' **[Cosmo: the Gate](https://play.google.com/store/apps/details?id=com.modhaus.cosmo)** app via blockchain data.
 
 **Apollo is not affiliated with, endorsed by or supported by MODHAUS or its artists.**
 
 ## Note
 
-On April 18th 2025, MODHAUS migrated COSMO over to a new blockchain and to a new authentication provider, with encryption that prevents tampering with the sign-in process. This `refactor/abstract` branch is a stripped down version of the platform with almost all COSMO features removed and migrated over to using the Abstract blockchain.
+On April 18th 2025, MODHAUS migrated COSMO over to a new blockchain and a new authentication provider, with encryption that prevents tampering with the sign-in process. This `refactor/abstract` branch is a stripped down version of the platform with almost all COSMO connectivity removed.
 
 The [`main`](https://github.com/teamreflex/cosmo-web/blob/main) branch remains as the final Polygon-compatible version before the migration occurred. It will not work with the current version of the COSMO API.
 
@@ -20,6 +20,7 @@ The [`main`](https://github.com/teamreflex/cosmo-web/blob/main) branch remains a
 - View objekt transfers
 - Per member, season and class collection progress breakdowns
 - Collection completion leaderboards
+- View historical and live gravity results
 
 ## Requirements
 
