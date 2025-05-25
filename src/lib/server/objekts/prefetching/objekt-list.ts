@@ -8,7 +8,7 @@ import {
   withSeason,
   withObjektIndexSort,
 } from "../filters";
-import type { z } from "zod";
+import type { z } from "zod/v4";
 import type { objektList } from "@/lib/universal/parsers";
 import { indexer } from "../../db/indexer";
 import { collections } from "../../db/indexer/schema";

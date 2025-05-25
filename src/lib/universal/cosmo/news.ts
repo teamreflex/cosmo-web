@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 import type { CosmoArtist } from "./artists";
 import { type ValidArtist, validArtists } from "./common";
 import { parse } from "../parsers";

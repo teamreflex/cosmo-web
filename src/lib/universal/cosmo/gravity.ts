@@ -1,5 +1,5 @@
 import type { ValidArtist } from "@/lib/universal/cosmo/common";
-import { z } from "zod";
+import { z } from "zod/v4";
 
 export type CosmoGravityType = "event-gravity" | "grand-gravity";
 export type CosmoPollType = "single-poll" | "combination-poll";

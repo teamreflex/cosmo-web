@@ -1,7 +1,7 @@
 "use server";
 
 import "server-only";
-import { z } from "zod";
+import { z } from "zod/v4";
 import { db } from "@/lib/server/db";
 import { lockedObjekts, pins } from "@/lib/server/db/schema";
 import { and, eq } from "drizzle-orm";
@@ -15,7 +15,7 @@ import { revalidateTag } from "next/cache";
  */
 export const toggleObjektLock = cosmoActionClient
   .metadata({ actionName: "toggleObjektLock" })
-  .schema(z.object({ tokenId: z.number(), lock: z.boolean() }))
+  .inputSchema(z.object({ tokenId: z.number(), lock: z.boolean() }))
   .action(async ({ parsedInput: { tokenId, lock }, ctx }) => {
     // lock the objekt
     if (lock) {
@@ -51,7 +51,7 @@ export const toggleObjektLock = cosmoActionClient
  */
 export const pinObjekt = cosmoActionClient
   .metadata({ actionName: "pinObjekt" })
-  .schema(
+  .inputSchema(
     z.object({
       tokenId: z.coerce.number(),
     })
@@ -88,7 +88,7 @@ export const pinObjekt = cosmoActionClient
  */
 export const unpinObjekt = cosmoActionClient
   .metadata({ actionName: "unpinObjekt" })
-  .schema(
+  .inputSchema(
     z.object({
       tokenId: z.coerce.number(),
     })

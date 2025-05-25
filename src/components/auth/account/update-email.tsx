@@ -9,10 +9,10 @@ import {
 } from "@/components/ui/form";
 import { toast } from "sonner";
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
-import type { z } from "zod";
+import type { z } from "zod/v4";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -37,8 +37,8 @@ export default function UpdateEmail({ email }: Props) {
     },
   });
 
-  const form = useForm({
-    resolver: zodResolver(updateEmailSchema),
+  const form = useForm<z.infer<typeof updateEmailSchema>>({
+    resolver: standardSchemaResolver(updateEmailSchema),
     defaultValues: {
       email,
     },

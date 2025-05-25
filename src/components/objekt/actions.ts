@@ -5,18 +5,17 @@ import { objektMetadata } from "@/lib/server/db/schema";
 import { adminActionClient } from "@/lib/server/server-actions";
 import { eq } from "drizzle-orm";
 import { revalidatePath, revalidateTag } from "next/cache";
-import { z } from "zod";
-import { zfd } from "zod-form-data";
+import { z } from "zod/v4";
 
 /**
  * Update an objekt's metadata.
  */
 export const updateObjektMetadata = adminActionClient
   .metadata({ actionName: "updateObjektMetadata" })
-  .schema(
-    zfd.formData({
-      collectionId: zfd.text(),
-      description: zfd.text(z.string().min(3).max(254)),
+  .inputSchema(
+    z.object({
+      collectionId: z.string(),
+      description: z.string().min(3).max(254),
     })
   )
   .action(async ({ parsedInput: { collectionId, description }, ctx }) => {

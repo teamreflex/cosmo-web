@@ -8,10 +8,10 @@ import {
 } from "@/components/ui/form";
 import { toast } from "sonner";
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
-import type { z } from "zod";
+import type { z } from "zod/v4";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
@@ -36,8 +36,8 @@ export default function UpdateSocial(props: Props) {
     },
   });
 
-  const form = useForm({
-    resolver: zodResolver(updateSocialsSchema),
+  const form = useForm<z.infer<typeof updateSocialsSchema>>({
+    resolver: standardSchemaResolver(updateSocialsSchema),
     defaultValues: {
       showSocials: props.showSocials,
     },

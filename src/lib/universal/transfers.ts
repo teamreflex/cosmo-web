@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 import type { Collection, Transfer } from "../server/db/indexer/schema";
 import { castToArray } from "./parsers";
 import { validArtists, validOnlineTypes } from "./cosmo/common";

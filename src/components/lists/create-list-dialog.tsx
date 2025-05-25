@@ -12,7 +12,7 @@ import { createObjektList } from "./actions";
 import { track } from "@/lib/utils";
 import { toast } from "sonner";
 import { useHookFormAction } from "@next-safe-action/adapter-react-hook-form/hooks";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { createObjektListSchema } from "../../lib/universal/schema/objekt-list";
 import {
   Form,
@@ -34,7 +34,7 @@ export default function CreateListDialog({ open, onOpenChange }: Props) {
   const router = useRouter();
   const { form, handleSubmitWithAction } = useHookFormAction(
     createObjektList,
-    zodResolver(createObjektListSchema),
+    standardSchemaResolver(createObjektListSchema),
     {
       actionProps: {
         onSuccess: () => {

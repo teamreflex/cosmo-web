@@ -34,7 +34,7 @@ function createSlug(name: string) {
  */
 export const createObjektList = authActionClient
   .metadata({ actionName: "createObjektList" })
-  .schema(createObjektListSchema)
+  .inputSchema(createObjektListSchema)
   .action(async ({ parsedInput, ctx }) => {
     const slug = createSlug(parsedInput.name);
 
@@ -69,7 +69,7 @@ export const createObjektList = authActionClient
  */
 export const updateObjektList = authActionClient
   .metadata({ actionName: "updateObjektList" })
-  .schema(updateObjektListSchema)
+  .inputSchema(updateObjektListSchema)
   .action(async ({ parsedInput, ctx }) => {
     const slug = createSlug(parsedInput.name);
 
@@ -124,7 +124,7 @@ export const updateObjektList = authActionClient
  */
 export const deleteObjektList = authActionClient
   .metadata({ actionName: "deleteObjektList" })
-  .schema(deleteObjektListSchema)
+  .inputSchema(deleteObjektListSchema)
   .action(async ({ parsedInput, ctx }) => {
     await db
       .delete(objektLists)
@@ -143,7 +143,7 @@ export const deleteObjektList = authActionClient
  */
 export const addObjektToList = authActionClient
   .metadata({ actionName: "addObjektToList" })
-  .schema(addObjektToListSchema)
+  .inputSchema(addObjektToListSchema)
   .action(async ({ parsedInput, ctx }) => {
     await assertUserOwnsList(
       parsedInput.objektListId,
@@ -163,7 +163,7 @@ export const addObjektToList = authActionClient
  */
 export const removeObjektFromList = authActionClient
   .metadata({ actionName: "removeObjektFromList" })
-  .schema(removeObjektFromListSchema)
+  .inputSchema(removeObjektFromListSchema)
   .action(async ({ parsedInput, ctx }) => {
     await assertUserOwnsList(
       parsedInput.objektListId,
@@ -187,7 +187,7 @@ export const removeObjektFromList = authActionClient
  */
 export const generateDiscordList = authActionClient
   .metadata({ actionName: "generateDiscordList" })
-  .schema(generateDiscordListSchema)
+  .inputSchema(generateDiscordListSchema)
   .action(async ({ parsedInput, ctx }) => {
     // fetch lists and associated entries
     const lists = await db.query.objektLists.findMany({

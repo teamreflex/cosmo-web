@@ -7,9 +7,9 @@ import { toast } from "sonner";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Loader2 } from "lucide-react";
-import type { z } from "zod";
+import type { z } from "zod/v4";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import {
   Form,
   FormControl,
@@ -40,8 +40,8 @@ export default function ResetPassword({ token }: Props) {
     },
   });
 
-  const form = useForm({
-    resolver: zodResolver(resetPasswordSchema),
+  const form = useForm<z.infer<typeof resetPasswordSchema>>({
+    resolver: standardSchemaResolver(resetPasswordSchema),
     defaultValues: {
       password: "",
     },

@@ -2,7 +2,7 @@ import {
   createSafeActionClient,
   DEFAULT_SERVER_ERROR_MESSAGE,
 } from "next-safe-action";
-import { z } from "zod";
+import { z } from "zod/v4";
 import { auth } from "./auth";
 import { headers } from "next/headers";
 import { db } from "./db";

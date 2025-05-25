@@ -1,6 +1,6 @@
 import { createEnv } from "@t3-oss/env-nextjs";
 import { neonVercel } from "@t3-oss/env-core/presets-zod";
-import * as z from "zod";
+import { z } from "zod/v4";
 
 export const env = createEnv({
   server: {

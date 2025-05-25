@@ -2,27 +2,21 @@
 
 import { ActionError, authActionClient } from "@/lib/server/server-actions";
 import { auth } from "@/lib/server/auth";
-import { collectionDataSources } from "@/lib/utils";
 import { headers } from "next/headers";
-import { z } from "zod";
-import { zfd } from "zod-form-data";
 import { certifyTicket } from "@/lib/server/cosmo/qr-auth";
 import { user } from "@/lib/server/cosmo/user";
 import { linkAccount } from "@/lib/server/cosmo-accounts";
 import { redirect } from "next/navigation";
 import { importObjektLists } from "@/lib/server/objekts/lists";
+import { verifyCosmoSchema } from "@/lib/universal/schema/cosmo";
+import { settingsSchema } from "@/lib/universal/schema/auth";
 
 /**
  * Updates the user's settings.
  */
 export const updateSettings = authActionClient
   .metadata({ actionName: "updateSettings" })
-  .schema(
-    zfd.formData({
-      gridColumns: zfd.numeric(z.number().min(3).max(8)),
-      collectionMode: zfd.text(z.enum(collectionDataSources)),
-    })
-  )
+  .inputSchema(settingsSchema)
   .action(async ({ parsedInput }) => {
     await auth.api.updateUser({
       headers: await headers(),
@@ -38,12 +32,7 @@ export const updateSettings = authActionClient
  */
 export const verifyCosmo = authActionClient
   .metadata({ actionName: "verifyCosmo" })
-  .schema(
-    zfd.formData({
-      otp: zfd.numeric(z.number()),
-      ticket: zfd.text(),
-    })
-  )
+  .inputSchema(verifyCosmoSchema)
   .action(async ({ parsedInput: { otp, ticket }, ctx }) => {
     // send the otp and ticket to the cosmo api
     try {

@@ -17,13 +17,18 @@ import type { MouseEvent } from "react";
 import { deleteObjektList } from "./actions";
 import type { ObjektList } from "@/lib/server/db/schema";
 import { useAction } from "next-safe-action/hooks";
+import { toast } from "sonner";
 
 type Props = {
   objektList: ObjektList;
 };
 
 export default function DeleteList({ objektList }: Props) {
-  const { execute, isPending } = useAction(deleteObjektList);
+  const { execute, isPending } = useAction(deleteObjektList, {
+    onNavigation: () => {
+      toast.success("Objekt list deleted");
+    },
+  });
 
   function submit(event: MouseEvent<HTMLButtonElement>) {
     event.preventDefault();

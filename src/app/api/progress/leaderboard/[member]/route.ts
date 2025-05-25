@@ -11,7 +11,7 @@ import {
   validOnlineTypes,
 } from "@/lib/universal/cosmo/common";
 import { cacheHeaders } from "@/app/api/common";
-import { z } from "zod";
+import { z } from "zod/v4";
 import { unobtainables } from "@/lib/unobtainables";
 
 export const runtime = "nodejs";

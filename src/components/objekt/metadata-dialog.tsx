@@ -52,6 +52,17 @@ import { cn } from "@/lib/utils";
 import Portal from "../portal";
 import { useAction } from "next-safe-action/hooks";
 import { useUserState } from "@/hooks/use-user-state";
+import { metadataObjectSchema } from "@/lib/universal/schema/metadata";
+import { useForm } from "react-hook-form";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import type { z } from "zod/v4";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "../ui/form";
 
 type CommonProps = {
   objekt: Objekt.Collection;
@@ -380,19 +391,43 @@ function EditMetadata({ slug, metadata, close }: EditMetadataProps) {
     },
   });
 
-  return (
-    <form className="flex flex-col gap-2" action={execute}>
-      <input type="hidden" name="collectionId" value={slug} />
-      <Textarea
-        name="description"
-        rows={3}
-        defaultValue={metadata.metadata?.description ?? ""}
-      />
+  const form = useForm<z.infer<typeof metadataObjectSchema>>({
+    resolver: standardSchemaResolver(metadataObjectSchema),
+    defaultValues: {
+      collectionId: slug,
+      description: metadata.metadata?.description ?? "",
+    },
+  });
 
-      <Button variant="secondary" size="sm" type="submit" disabled={isPending}>
-        {isPending ? "Saving..." : "Save"}
-      </Button>
-    </form>
+  return (
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit((data) => execute(data))}
+        className="flex flex-col gap-2"
+      >
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormControl>
+                <Textarea rows={3} {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <Button
+          variant="secondary"
+          size="sm"
+          type="submit"
+          disabled={isPending}
+        >
+          {isPending ? "Saving..." : "Save"}
+        </Button>
+      </form>
+    </Form>
   );
 }
 

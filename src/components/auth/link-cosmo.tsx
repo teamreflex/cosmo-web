@@ -31,6 +31,17 @@ import {
 import { env } from "@/env";
 import Link from "next/link";
 import { track } from "@/lib/utils";
+import { verifyCosmoSchema } from "@/lib/universal/schema/cosmo";
+import type { z } from "zod/v4";
+import { useForm } from "react-hook-form";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "../ui/form";
 
 export const LinkCosmoContext = createContext({
   open: false,
@@ -265,13 +276,21 @@ type OTPProps = {
 function OTP({ ticket }: OTPProps) {
   const ctx = useContext(LinkCosmoContext);
   const { execute, isPending, hasErrored } = useAction(verifyCosmo, {
-    onSuccess() {
+    onNavigation() {
       track("cosmo-link");
       toast.success("COSMO account linked!");
       ctx.setOpen(false);
     },
     onError() {
       toast.error("Error linking COSMO account");
+    },
+  });
+
+  const form = useForm<z.infer<typeof verifyCosmoSchema>>({
+    resolver: standardSchemaResolver(verifyCosmoSchema),
+    defaultValues: {
+      otp: undefined,
+      ticket: ticket.ticket,
     },
   });
 
@@ -285,29 +304,46 @@ function OTP({ ticket }: OTPProps) {
   }
 
   return (
-    <form action={execute} className="flex flex-col gap-4">
-      <input type="hidden" name="ticket" value={ticket.ticket} />
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit((data) => execute(data))}
+        className="flex flex-col gap-4"
+      >
+        <div className="flex flex-col items-center gap-4">
+          <p className="text-sm text-center">
+            Enter the 2-digit code from COSMO
+          </p>
 
-      <div className="flex flex-col items-center gap-4">
-        <p className="text-sm text-center">Enter the 2-digit code from COSMO</p>
+          <FormField
+            control={form.control}
+            name="otp"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <InputOTP
+                    value={field.value?.toString() ?? ""}
+                    onChange={(value) => field.onChange(Number(value))}
+                    maxLength={2}
+                    pattern={REGEXP_ONLY_DIGITS}
+                    autoFocus
+                  >
+                    <InputOTPGroup>
+                      <InputOTPSlot index={0} />
+                      <InputOTPSlot index={1} />
+                    </InputOTPGroup>
+                  </InputOTP>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
-        <InputOTP
-          name="otp"
-          maxLength={2}
-          pattern={REGEXP_ONLY_DIGITS}
-          autoFocus
-        >
-          <InputOTPGroup>
-            <InputOTPSlot index={0} />
-            <InputOTPSlot index={1} />
-          </InputOTPGroup>
-        </InputOTP>
-      </div>
-
-      <Button type="submit" disabled={isPending}>
-        <span>Submit</span>
-        {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-      </Button>
-    </form>
+        <Button type="submit" disabled={isPending}>
+          <span>Submit</span>
+          {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+        </Button>
+      </form>
+    </Form>
   );
 }

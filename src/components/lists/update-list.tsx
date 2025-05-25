@@ -13,7 +13,7 @@ import {
 } from "../ui/dialog";
 import { Input } from "../ui/input";
 import { useHookFormAction } from "@next-safe-action/adapter-react-hook-form/hooks";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { updateObjektListSchema } from "../../lib/universal/schema/objekt-list";
 import {
   Form,
@@ -35,7 +35,7 @@ export default function UpdateList({ objektList }: Props) {
   const [open, setOpen] = useState(false);
   const { form, handleSubmitWithAction } = useHookFormAction(
     updateObjektList,
-    zodResolver(updateObjektListSchema),
+    standardSchemaResolver(updateObjektListSchema),
     {
       formProps: {
         defaultValues: {
@@ -44,7 +44,7 @@ export default function UpdateList({ objektList }: Props) {
         },
       },
       actionProps: {
-        onSuccess: () => {
+        onNavigation: () => {
           toast.success("Objekt list updated");
           setOpen(false);
         },

@@ -1,8 +1,8 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 
 export const metadataObjectSchema = z.object({
   collectionId: z.string().min(1),
-  description: z.string().min(1),
+  description: z.string().min(3).max(254),
 });
 
 export const metadataInputSchema = z.preprocess((value) => {

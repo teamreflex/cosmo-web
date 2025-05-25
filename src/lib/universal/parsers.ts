@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 import { validArtists, validOnlineTypes, validSorts } from "./cosmo/common";
 import { env } from "@/env";
 
@@ -226,7 +226,7 @@ export function parseUserCollectionGroups(params: URLSearchParams) {
 /**
  * Parse URLSearchParams with Zod and provide defaults as an optional fallback.
  */
-export function parse<TSchema extends z.AnyZodObject>(
+export function parse<TSchema extends z.ZodObject>(
   schema: TSchema,
   params: Record<
     keyof z.infer<TSchema>,

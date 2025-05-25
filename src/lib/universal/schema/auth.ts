@@ -1,4 +1,5 @@
-import { z } from "zod";
+import { collectionDataSources } from "@/lib/utils";
+import { z } from "zod/v4";
 
 const emailSchema = z.string().email("Invalid email address");
 const passwordSchema = z
@@ -45,4 +46,9 @@ export const updateUsernameSchema = z.object({
 
 export const updateSocialsSchema = z.object({
   showSocials: z.coerce.boolean(),
+});
+
+export const settingsSchema = z.object({
+  gridColumns: z.coerce.number().min(3).max(8),
+  collectionMode: z.enum(collectionDataSources),
 });
