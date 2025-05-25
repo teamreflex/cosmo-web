@@ -4,7 +4,7 @@ import type { ObjektList } from "@/lib/server/db/schema";
 import { ListX, Loader2 } from "lucide-react";
 import { removeObjektFromList } from "./actions";
 import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "../ui/use-toast";
+import { toast } from "sonner";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { useAction } from "next-safe-action/hooks";
 
@@ -17,11 +17,11 @@ type Props = {
 export default function RemoveFromList({ id, collection, objektList }: Props) {
   const { execute, isPending } = useAction(removeObjektFromList, {
     onSuccess() {
-      toast({
-        description: `Removed ${collection.collectionId} from ${objektList.name}`,
-      });
+      toast.success(
+        `Removed ${collection.collectionId} from ${objektList.name}`
+      );
       queryClient.invalidateQueries({
-        queryKey: ["objekt-list", objektList.slug],
+        queryKey: ["objekt-list", objektList.id],
       });
     },
   });

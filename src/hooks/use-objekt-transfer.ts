@@ -1,4 +1,4 @@
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import type { CosmoPublicUser } from "@/lib/universal/cosmo/auth";
 import { create } from "zustand";
 
@@ -101,9 +101,7 @@ export const useObjektTransfer = create<ObjektTransferState>()((set, get) => ({
       );
 
       if (!existing && state.selected.length >= MAX_SELECTIONS) {
-        toast({
-          description: `Only ${MAX_SELECTIONS} objekts can be selected`,
-        });
+        toast.info(`Only ${MAX_SELECTIONS} objekts can be selected`);
         return state;
       }
 

@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { DataSourceSelector } from "@/components/collection/data-source-selector";
 import { useAction } from "next-safe-action/hooks";
@@ -34,17 +34,12 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
   const router = useRouter();
   const { execute, isPending } = useAction(updateSettings, {
     onSuccess() {
-      toast({
-        description: "Settings updated.",
-      });
+      toast.success("Settings updated.");
       router.refresh();
       onOpenChange(false);
     },
     onError() {
-      toast({
-        description: "Error updating settings.",
-        variant: "destructive",
-      });
+      toast.error("Error updating settings.");
     },
   });
 

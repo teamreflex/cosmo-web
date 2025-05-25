@@ -1,6 +1,6 @@
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { useMutation } from "@tanstack/react-query";
-import { toast } from "../ui/use-toast";
+import { toast } from "sonner";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Loader2, MailCheck } from "lucide-react";
@@ -46,10 +46,7 @@ export default function ForgotPassword({ onCancel }: Props) {
   function handleSubmit(data: z.infer<typeof forgotPasswordSchema>) {
     mutation.mutate(data, {
       onError: (error) => {
-        toast({
-          title: "Error!",
-          description: error.message,
-        });
+        toast.error(error.message);
       },
     });
   }

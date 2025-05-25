@@ -6,7 +6,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
@@ -44,16 +44,11 @@ export default function UpdatePassword() {
   function handleSubmit(data: z.infer<typeof updatePasswordSchema>) {
     mutation.mutate(data, {
       onSuccess: () => {
-        toast({
-          description: "Your password has been updated.",
-        });
+        toast.success("Your password has been updated.");
         router.refresh();
       },
       onError: (error) => {
-        toast({
-          title: "Error!",
-          description: error.message,
-        });
+        toast.error(error.message);
       },
     });
   }

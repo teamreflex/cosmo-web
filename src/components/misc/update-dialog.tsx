@@ -75,6 +75,12 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2025-05-25",
+    changes: [
+      "Tradable percentage now displays for all objekts, not just FCOs. This also excludes cosmo-spin from the calculation.",
+    ],
+  },
+  {
     date: "2025-05-19",
     changes: [
       "User accounts are now available. Sign in via Discord, Twitter or email & password.",

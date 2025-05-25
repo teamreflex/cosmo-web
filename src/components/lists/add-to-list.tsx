@@ -13,7 +13,7 @@ import {
 } from "../ui/dropdown-menu";
 import { addObjektToList } from "./actions";
 import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "../ui/use-toast";
+import { toast } from "sonner";
 import { ScrollArea } from "../ui/scroll-area";
 import type { ObjektList } from "@/lib/server/db/schema";
 import { useAction } from "next-safe-action/hooks";
@@ -84,9 +84,7 @@ function ListItem({
 }: ListItemProps) {
   const { execute, isPending } = useAction(addObjektToList, {
     onSuccess() {
-      toast({
-        description: `Added ${collectionId} to ${list.name}`,
-      });
+      toast.success(`Added ${collectionId} to ${list.name}`);
       queryClient.removeQueries({ queryKey: ["objekt-list", list.slug] });
       onDone();
     },

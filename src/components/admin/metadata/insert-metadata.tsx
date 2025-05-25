@@ -8,7 +8,7 @@ import {
   metadataInputSchema,
   type MetadataRow,
 } from "@/lib/universal/schema/metadata";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { saveMetadata } from "./actions";
 import { useAction } from "next-safe-action/hooks";
 
@@ -18,16 +18,11 @@ export default function InsertMetadata() {
   ]);
   const { execute, isPending } = useAction(saveMetadata, {
     onSuccess: ({ data }) => {
-      toast({
-        description: `${data} objekt metadata rows updated`,
-      });
+      toast.success(`${data} objekt metadata rows updated`);
       setRows([]);
     },
     onError: (error) => {
-      toast({
-        description: error.error.serverError ?? "An unknown error occurred",
-        variant: "destructive",
-      });
+      toast.error(error.error.serverError ?? "An unknown error occurred");
     },
   });
 
@@ -53,11 +48,9 @@ export default function InsertMetadata() {
     const data = await navigator.clipboard.readText();
     const result = metadataInputSchema.safeParse(data);
     if (result.success === false) {
-      toast({
-        variant: "destructive",
-        description:
-          "Invalid format: Required format is 'collectionId :: description'",
-      });
+      toast.error(
+        "Invalid format: Required format is 'collectionId :: description'"
+      );
       return;
     }
 

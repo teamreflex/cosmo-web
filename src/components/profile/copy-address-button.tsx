@@ -1,7 +1,7 @@
 "use client";
 
 import { useCopyToClipboard } from "usehooks-ts";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -10,9 +10,7 @@ export default function CopyAddressButton({ address }: { address: string }) {
 
   function copyAddress() {
     copy(address);
-    toast({
-      description: "Wallet address copied to clipboard",
-    });
+    toast.success("Wallet address copied to clipboard");
   }
 
   return (

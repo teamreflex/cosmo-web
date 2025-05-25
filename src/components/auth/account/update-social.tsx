@@ -6,7 +6,7 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/ui/form";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
@@ -46,16 +46,11 @@ export default function UpdateSocial(props: Props) {
   function handleSubmit(data: z.infer<typeof updateSocialsSchema>) {
     mutation.mutate(data, {
       onSuccess: () => {
-        toast({
-          description: "Settings updated.",
-        });
+        toast.success("Settings updated.");
         router.refresh();
       },
       onError: (error) => {
-        toast({
-          title: "Error!",
-          description: error.message,
-        });
+        toast.error(error.message);
       },
     });
   }

@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "../ui/select";
 import { useState } from "react";
-import { toast } from "../ui/use-toast";
+import { toast } from "sonner";
 import { generateDiscordList } from "./actions";
 import { Button } from "../ui/button";
 import { ScrollArea } from "../ui/scroll-area";
@@ -43,10 +43,7 @@ export default function DiscordFormatDialog({
 
   function generate() {
     if (disabled) {
-      toast({
-        variant: "destructive",
-        description: "Please select both lists.",
-      });
+      toast.error("Please select both lists.");
       return;
     }
 
@@ -58,9 +55,7 @@ export default function DiscordFormatDialog({
 
   function copy() {
     copyToClipboard(result.data ?? "");
-    toast({
-      description: "Copied to clipboard!",
-    });
+    toast.success("Copied to clipboard!");
   }
 
   return (

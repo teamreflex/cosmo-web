@@ -43,7 +43,7 @@ import {
 import { ErrorBoundary } from "react-error-boundary";
 import { useCopyToClipboard } from "usehooks-ts";
 import { env } from "@/env";
-import { toast } from "../ui/use-toast";
+import { toast } from "sonner";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import VisuallyHidden from "../ui/visually-hidden";
 import FlippableObjekt from "./objekt-flippable";
@@ -281,9 +281,7 @@ function Metadata({ objekt }: { objekt: Objekt.Collection }) {
     copy(
       `${scheme}://${env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL}/objekts?id=${objekt.slug}`
     );
-    toast({
-      description: "Objekt URL copied to clipboard",
-    });
+    toast.success("Objekt URL copied to clipboard");
   }
 
   const { front } = getObjektImageUrls(objekt);
@@ -297,9 +295,7 @@ function Metadata({ objekt }: { objekt: Objekt.Collection }) {
           label={objekt.onOffline === "online" ? "Copies" : "Scanned Copies"}
           value={total}
         />
-        {objekt.class === "First" && (
-          <Pill label="Tradable" value={`${data.percentage}%`} />
-        )}
+        <Pill label="Tradable" value={`${data.percentage}%`} />
         {isUnobtainable && (
           <div className="flex items-center gap-1 rounded-full px-2 py-1 text-xs sm:text-sm bg-red-500">
             <span className="font-semibold text-white">Unobtainable</span>
@@ -376,16 +372,11 @@ function EditMetadata({ slug, metadata, close }: EditMetadataProps) {
       queryClient.invalidateQueries({
         queryKey: ["collection-metadata", "metadata", slug],
       });
-      toast({
-        description: "Metadata updated.",
-      });
+      toast.success("Metadata updated.");
       close();
     },
     onError: () => {
-      toast({
-        description: "Failed to update metadata",
-        variant: "destructive",
-      });
+      toast.error("Failed to update metadata");
     },
   });
 

@@ -4,7 +4,7 @@ import { pinObjekt, unpinObjekt } from "@/components/collection/actions";
 import { Loader2, Pin, PinOff } from "lucide-react";
 import { track } from "@/lib/utils";
 import { useProfileContext } from "@/hooks/use-profile";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { useAction } from "next-safe-action/hooks";
 
 type Props = {
@@ -32,9 +32,7 @@ function PinButton(props: ButtonProps) {
     onSuccess: ({ data }) => {
       track("pin-objekt");
       addPin(data!);
-      toast({
-        description: `Pinned ${props.collectionId}`,
-      });
+      toast.success(`Pinned ${props.collectionId}`);
     },
   });
 
@@ -60,9 +58,7 @@ function UnpinButton(props: ButtonProps) {
     onSuccess: () => {
       track("unpin-objekt");
       removePin(props.tokenId);
-      toast({
-        description: `Unpinned ${props.collectionId}`,
-      });
+      toast.success(`Unpinned ${props.collectionId}`);
     },
   });
 

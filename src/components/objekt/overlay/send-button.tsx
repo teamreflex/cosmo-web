@@ -4,7 +4,7 @@ import { Send } from "lucide-react";
 import { useObjektTransfer } from "@/hooks/use-objekt-transfer";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { useArtists } from "@/hooks/use-artists";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 
 type Props = {
   collection: Objekt.Collection;
@@ -18,10 +18,7 @@ export default function SendObjekt({ collection, token }: Props) {
   function handleClick() {
     const artist = getArtist(collection.artist);
     if (!artist) {
-      toast({
-        description: "Artist not found",
-        variant: "destructive",
-      });
+      toast.error("Artist not found");
       return;
     }
 

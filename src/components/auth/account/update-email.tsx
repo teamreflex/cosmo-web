@@ -7,7 +7,7 @@ import {
   FormMessage,
   useFormField,
 } from "@/components/ui/form";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
@@ -47,17 +47,13 @@ export default function UpdateEmail({ email }: Props) {
   function handleSubmit(data: z.infer<typeof updateEmailSchema>) {
     mutation.mutate(data, {
       onSuccess: () => {
-        toast({
-          description:
-            "An email has been sent to verify your new email address.",
-        });
+        toast.success(
+          "An email has been sent to verify your new email address."
+        );
         router.refresh();
       },
       onError: (error) => {
-        toast({
-          title: "Error!",
-          description: error.message,
-        });
+        toast.error(error.message);
       },
     });
   }

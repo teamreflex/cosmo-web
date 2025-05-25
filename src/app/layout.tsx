@@ -6,10 +6,10 @@ import { env } from "@/env";
 import { Inter } from "next/font/google";
 import localFont from "next/font/local";
 import { ThemeProvider } from "next-themes";
-import { Toaster } from "@/components/ui/toaster";
 import TailwindIndicator from "@/components/tailwind-indicator";
 import Script from "next/script";
 import type { ReactNode } from "react";
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({
   subsets: ["latin"],

@@ -3,7 +3,7 @@
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { toast } from "../ui/use-toast";
+import { toast } from "sonner";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Loader2 } from "lucide-react";
@@ -50,17 +50,11 @@ export default function ResetPassword({ token }: Props) {
   function handleSubmit(data: z.infer<typeof resetPasswordSchema>) {
     mutation.mutate(data, {
       onSuccess: () => {
-        toast({
-          title: "Success!",
-          description: "Password reset successfully, please sign in again.",
-        });
+        toast.success("Password reset successfully, please sign in again.");
         router.push("/");
       },
       onError: (error) => {
-        toast({
-          title: "Error!",
-          description: error.message,
-        });
+        toast.error(error.message);
       },
     });
   }

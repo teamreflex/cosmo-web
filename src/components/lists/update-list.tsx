@@ -25,7 +25,7 @@ import {
 } from "../ui/form";
 import { useFormState } from "react-hook-form";
 import { useState } from "react";
-import { toast } from "../ui/use-toast";
+import { toast } from "sonner";
 
 type Props = {
   objektList: ObjektList;
@@ -45,9 +45,7 @@ export default function UpdateList({ objektList }: Props) {
       },
       actionProps: {
         onSuccess: () => {
-          toast({
-            description: "Objekt list updated",
-          });
+          toast.success("Objekt list updated");
           setOpen(false);
         },
       },

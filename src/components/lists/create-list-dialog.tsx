@@ -10,7 +10,7 @@ import {
 import { Input } from "../ui/input";
 import { createObjektList } from "./actions";
 import { track } from "@/lib/utils";
-import { toast } from "../ui/use-toast";
+import { toast } from "sonner";
 import { useHookFormAction } from "@next-safe-action/adapter-react-hook-form/hooks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createObjektListSchema } from "../../lib/universal/schema/objekt-list";
@@ -40,9 +40,7 @@ export default function CreateListDialog({ open, onOpenChange }: Props) {
         onSuccess: () => {
           router.refresh();
           track("create-list");
-          toast({
-            description: "Objekt list created!",
-          });
+          toast.success("Objekt list created!");
           onOpenChange(false);
         },
       },

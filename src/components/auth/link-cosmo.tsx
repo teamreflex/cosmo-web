@@ -11,7 +11,7 @@ import { AlertTriangle, CheckCircle, Loader2 } from "lucide-react";
 import { FetchError, ofetch } from "ofetch";
 import { createContext, useContext, useState } from "react";
 import QRCode from "react-qr-code";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { useInterval } from "usehooks-ts";
 import { useAction } from "next-safe-action/hooks";
 import { verifyCosmo } from "./actions";
@@ -267,16 +267,11 @@ function OTP({ ticket }: OTPProps) {
   const { execute, isPending, hasErrored } = useAction(verifyCosmo, {
     onSuccess() {
       track("cosmo-link");
-      toast({
-        description: "COSMO account linked!",
-      });
+      toast.success("COSMO account linked!");
       ctx.setOpen(false);
     },
     onError() {
-      toast({
-        description: "Error linking COSMO account",
-        variant: "destructive",
-      });
+      toast.error("Error linking COSMO account");
     },
   });
 
