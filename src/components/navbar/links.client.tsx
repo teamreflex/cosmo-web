@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   Tooltip,
   TooltipContent,
@@ -32,9 +32,6 @@ type Props = {
 export function DesktopLinks({ signedIn, cosmo }: Props) {
   const ctx = use(LinkCosmoContext);
   const path = usePathname();
-  // TODO: ungate when stable
-  const searchParams = useSearchParams();
-  const gate = searchParams.get("cosmo");
 
   return (
     <div className="contents">
@@ -59,7 +56,7 @@ export function DesktopLinks({ signedIn, cosmo }: Props) {
           icon={PackageOpen}
           name="Collection"
         />
-      ) : signedIn && gate ? (
+      ) : signedIn ? (
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -83,9 +80,6 @@ export function MobileLinks({ signedIn, cosmo }: Props) {
   const ctx = use(LinkCosmoContext);
   const path = usePathname();
   const { artists, selectedIds } = useArtists();
-  // TODO: ungate when stable
-  const searchParams = useSearchParams();
-  const gate = searchParams.get("cosmo");
 
   return (
     <div className="contents">
@@ -129,7 +123,7 @@ export function MobileLinks({ signedIn, cosmo }: Props) {
           </Link>
         </DropdownMenuItem>
       ) : // user needs to link a cosmo account
-      signedIn && gate ? (
+      signedIn ? (
         <DropdownMenuItem onClick={() => ctx.setOpen(true)}>
           <PackageOpen className="h-4 w-4 shrink-0 transition-all fill-transparent" />
           <span>Link COSMO</span>

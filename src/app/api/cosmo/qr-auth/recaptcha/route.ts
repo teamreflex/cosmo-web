@@ -6,6 +6,7 @@ import {
   exchangeLoginTicket,
   getRecaptchaToken,
 } from "@/lib/server/cosmo/qr-auth";
+import { captureException } from "@sentry/nextjs";
 import { Ratelimit } from "@upstash/ratelimit";
 import { after } from "next/server";
 
@@ -64,7 +65,8 @@ export async function GET(req: Request) {
   try {
     var recaptcha = await getRecaptchaToken();
   } catch (err) {
-    console.error(err);
+    captureException(err);
+    console.error("[getRecaptchaToken] error:", err);
     return Response.json(
       { error: "error getting recaptcha token" },
       {
@@ -78,6 +80,7 @@ export async function GET(req: Request) {
   try {
     var ticket = await exchangeLoginTicket(recaptcha);
   } catch (err) {
+    console.error("[exchangeLoginTicket] error:", err);
     return Response.json(
       { error: "error exchanging login ticket" },
       {
