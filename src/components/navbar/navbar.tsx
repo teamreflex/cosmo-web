@@ -18,7 +18,7 @@ import Skeleton from "../skeleton/skeleton";
 import { IconCards } from "@tabler/icons-react";
 import { Menu, Search, Vote } from "lucide-react";
 
-export default async function Navbar() {
+export default function Navbar() {
   return (
     <nav className="sticky left-0 right-0 top-0 h-14 z-30">
       <div className="glass">

@@ -16,7 +16,7 @@ import {
 } from "../ui/tooltip";
 import { Suspense } from "react";
 
-export default async function SystemStatus() {
+export default function SystemStatus() {
   return (
     <ErrorBoundary fallback={<ErrorFallback />}>
       <Suspense
