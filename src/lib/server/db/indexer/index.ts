@@ -8,6 +8,7 @@ export const indexer = drizzle(
     try {
       const rows = await ofetch(`${env.INDEXER_PROXY_URL}/query`, {
         retry: false,
+        timeout: 10000,
         method: "POST",
         headers: {
           "proxy-key": env.INDEXER_PROXY_KEY,
