@@ -60,6 +60,7 @@ export default function ListDropdown({
               <Link
                 href={createListUrl(list)}
                 className="w-full flex items-center justify-between"
+                prefetch={false}
               >
                 {list.name}
                 <ChevronRight className="h-4 w-4" />

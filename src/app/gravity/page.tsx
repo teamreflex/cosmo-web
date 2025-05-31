@@ -97,7 +97,7 @@ function GravityItem(props: { gravity: Gravity }) {
   const isRecent = isFuture(props.gravity.endDate);
 
   return (
-    <Link href={href} className="[content-visibility:auto]">
+    <Link href={href} className="[content-visibility:auto]" prefetch={false}>
       <Card
         data-recent={isRecent}
         className="relative aspect-square overflow-clip group data-[recent=true]:border-cosmo py-0"
