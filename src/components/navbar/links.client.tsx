@@ -20,9 +20,9 @@ import { ArtistItem } from "./artist-selectbox";
 import { useArtists } from "@/hooks/use-artists";
 import type { PublicUser } from "@/lib/universal/auth";
 import { type LucideIcon, PackageOpen, Vote } from "lucide-react";
-import { LinkCosmoContext } from "../auth/link-cosmo";
+// import { use } from "react";
+// import { LinkCosmoContext } from "../auth/link-cosmo";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
-import { use } from "react";
 
 type Props = {
   signedIn: boolean;
@@ -30,7 +30,7 @@ type Props = {
 };
 
 export function DesktopLinks({ signedIn, cosmo }: Props) {
-  const ctx = use(LinkCosmoContext);
+  // const ctx = use(LinkCosmoContext);
   const path = usePathname();
 
   return (
@@ -49,27 +49,14 @@ export function DesktopLinks({ signedIn, cosmo }: Props) {
         name="Gravity"
       />
 
-      {cosmo ? (
+      {cosmo && (
         <LinkButton
           href={`/@${cosmo.username}`}
           active={path.startsWith(`/@${cosmo.username}`)}
           icon={PackageOpen}
           name="Collection"
         />
-      ) : signedIn ? (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button onClick={() => ctx.setOpen(true)}>
-                <PackageOpen className="size-8 shrink-0 transition-all fill-transparent" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Link COSMO</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      ) : null}
+      )}
 
       <NavbarSearch />
     </div>
@@ -77,7 +64,7 @@ export function DesktopLinks({ signedIn, cosmo }: Props) {
 }
 
 export function MobileLinks({ signedIn, cosmo }: Props) {
-  const ctx = use(LinkCosmoContext);
+  // const ctx = use(LinkCosmoContext);
   const path = usePathname();
   const { artists, selectedIds } = useArtists();
 
@@ -109,7 +96,7 @@ export function MobileLinks({ signedIn, cosmo }: Props) {
         </Link>
       </DropdownMenuItem>
 
-      {cosmo ? (
+      {cosmo && (
         // user has a cosmo cosmo, go to collection
         <DropdownMenuItem asChild>
           <Link href={`/@${cosmo.username}`} aria-label="Collection">
@@ -122,13 +109,7 @@ export function MobileLinks({ signedIn, cosmo }: Props) {
             <span>Collection</span>
           </Link>
         </DropdownMenuItem>
-      ) : // user needs to link a cosmo account
-      signedIn ? (
-        <DropdownMenuItem onClick={() => ctx.setOpen(true)}>
-          <PackageOpen className="h-4 w-4 shrink-0 transition-all fill-transparent" />
-          <span>Link COSMO</span>
-        </DropdownMenuItem>
-      ) : null}
+      )}
 
       {signedIn === false && (
         <div className="contents">

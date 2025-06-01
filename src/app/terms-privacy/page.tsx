@@ -18,8 +18,11 @@ export default function TermsPrivacyPage() {
               You will only receive emails from us if you have requested them
               for account recovery purposes.
             </li>
+            <li>You can delete your account at any time.</li>
             <li>
-              You can delete your account and all associated data at any time.
+              When linking a COSMO account, the sign-in is only used to read the
+              account&apos;s username and wallet address, which are then stored
+              to display profiles.
             </li>
             <li>
               Source code for this application is available on{" "}

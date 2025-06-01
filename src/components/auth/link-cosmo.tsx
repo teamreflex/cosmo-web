@@ -98,7 +98,10 @@ function StartLink() {
         other than the ID and wallet address, which are used to display
         profiles.
       </p>
-      <p>Once linked, the account cannot be unlinked.</p>
+      <p>
+        Once linked, the account cannot be unlinked and your profile will have a
+        &quot;COSMO verified&quot; badge.
+      </p>
 
       <Button className="mt-2 w-fit mx-auto" onClick={() => setStarted(true)}>
         Start

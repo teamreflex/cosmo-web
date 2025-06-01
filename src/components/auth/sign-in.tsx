@@ -16,13 +16,17 @@ import SignInWithTwitter from "./with-twitter";
 import SignUp from "./sign-up";
 import ForgotPassword from "./forgot-password";
 import { env } from "@/env";
+import Link from "next/link";
 
 type State = "sign-in" | "sign-up" | "forgot-password";
 
 export default function SignIn() {
+  const [open, setOpen] = useState(false);
   const [state, setState] = useState<State>("sign-in");
 
   function onOpenChange(open: boolean) {
+    setOpen(open);
+
     if (!open) {
       // prevents flicker due to animation
       setTimeout(() => {
@@ -32,9 +36,11 @@ export default function SignIn() {
   }
 
   return (
-    <Dialog onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="link">Sign In</Button>
+        <Button variant="link" onClick={() => setOpen(true)}>
+          Sign In
+        </Button>
       </DialogTrigger>
       <DialogContent className="w-full">
         <DialogHeader>
@@ -76,6 +82,14 @@ export default function SignIn() {
                 <SignInWithDiscord />
                 <SignInWithTwitter />
               </div>
+
+              <Link
+                onClick={() => setOpen(false)}
+                href="/terms-privacy"
+                className="text-xs text-muted-foreground underline pt-2"
+              >
+                Terms & Privacy
+              </Link>
             </div>
           )}
         </div>

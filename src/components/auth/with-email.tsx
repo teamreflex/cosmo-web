@@ -76,6 +76,7 @@ export default function WithEmail({ onForgotPassword }: Props) {
               <FormLabel>Email</FormLabel>
               <FormControl>
                 <Input
+                  id="email"
                   type="email"
                   placeholder="me@example.com"
                   data-1p-ignore
@@ -95,6 +96,7 @@ export default function WithEmail({ onForgotPassword }: Props) {
               <FormLabel>Password</FormLabel>
               <FormControl>
                 <Input
+                  id="password"
                   type="password"
                   placeholder="********"
                   data-1p-ignore

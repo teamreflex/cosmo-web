@@ -41,11 +41,19 @@ export async function importObjektLists(userId: string, address: string) {
     const result = await tx
       .insert(objektLists)
       .values(
-        lists.map((list) => ({
-          userId,
-          name: list.name,
-          slug: list.slug,
-        }))
+        // ensure there's no slug or name collision
+        lists.map((list) => {
+          const name =
+            list.name.length > 22 ? list.name.slice(0, 22) : list.name;
+          const slug =
+            list.slug.length > 22 ? list.slug.slice(0, 22) : list.slug;
+
+          return {
+            userId,
+            name: `${name} 2`,
+            slug: `${slug}-2`,
+          };
+        })
       )
       .returning();
 
