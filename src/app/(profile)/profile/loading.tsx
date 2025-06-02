@@ -3,7 +3,7 @@ import Skeleton from "@/components/skeleton/skeleton";
 export default function ProfileLayoutLoading() {
   return (
     <main className="relative container flex flex-col py-2">
-      <div className="grid grid-rows-3 grid-cols-2 md:grid-rows-3 md:grid-cols-3 gap-2 md:h-24">
+      <div className="grid grid-rows-[auto_auto_min-content] grid-cols-2 md:grid-cols-3 gap-2 md:h-24">
         {/* user block */}
         <div className="row-span-2 md:row-span-3 flex flex-row gap-4">
           <Skeleton className="h-24 w-24 rounded-full aspect-square" />
