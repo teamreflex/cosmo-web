@@ -8,7 +8,7 @@ import Skeleton from "@/components/skeleton/skeleton";
 import ListDropdownClient from "@/components/lists/list-dropdown.client";
 import Link from "next/link";
 import ComoBalanceRenderer from "@/components/navbar/como-balances";
-import { Addresses } from "@/lib/utils";
+import { Addresses, isEqual } from "@/lib/utils";
 import {
   getCurrentAccount,
   getSession,
@@ -67,7 +67,9 @@ export default async function ProfileLayout(props: Props) {
               {/* badges? */}
               <div className="flex flex-row gap-2 h-5">
                 {target.verified && <CosmoVerifiedBadge />}
-                {target.cosmo.address === Addresses.SPIN && <ModhausBadge />}
+                {isEqual(target.cosmo.address, Addresses.SPIN) && (
+                  <ModhausBadge />
+                )}
                 {target.user?.showSocials === true &&
                   target.user?.social.discord !== undefined && (
                     <DiscordBadge handle={target.user.social.discord} />
