@@ -9,7 +9,10 @@ import {
 import ProfileRenderer from "@/components/profile/profile-renderer";
 import { ProfileProvider } from "@/hooks/use-profile";
 import { ArtistProvider } from "@/hooks/use-artists";
-import { parseUserCollection } from "@/lib/universal/parsers";
+import {
+  parseUserCollection,
+  parseUserCollectionGroups,
+} from "@/lib/universal/parsers";
 import { getQueryClient } from "@/lib/query-client";
 import {
   fetchObjektsBlockchain,
@@ -19,6 +22,11 @@ import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { fetchFilterData } from "@/lib/server/objekts/filter-data";
 import { fetchPins } from "@/lib/server/objekts/pins";
 import { UserStateProvider } from "@/hooks/use-user-state";
+import {
+  fetchObjektsBlockchainGroups,
+  parseUserCollectionGroupsFilters,
+} from "@/lib/server/objekts/prefetching/objekt-blockchain-groups";
+import { Addresses, isEqual } from "@/lib/utils";
 
 type Props = {
   params: Promise<{
@@ -59,33 +67,60 @@ export default async function UserCollectionPage(props: Props) {
     fetchPins(nickname),
   ]);
 
-  const params = new URLSearchParams({
-    ...searchParams,
-    sort: searchParams.sort ?? "newest",
-  });
+  const params = new URLSearchParams(searchParams);
   for (const artist of selected) {
     params.append("artists", artist);
   }
-  const filters = parseUserCollection(params);
 
-  queryClient.prefetchInfiniteQuery({
-    queryKey: [
-      "collection",
-      "blockchain",
-      target.cosmo.address,
-      {
-        ...parseUserCollectionFilters(filters),
-        artists: selected,
+  // if the user is in collection groups mode, prefetch the collection groups
+  if (
+    account?.user.collectionMode === "blockchain-groups" &&
+    !isEqual(target.cosmo.address, Addresses.SPIN)
+  ) {
+    params.set("order", searchParams.sort ?? "newest");
+    const filters = parseUserCollectionGroups(params);
+    queryClient.prefetchInfiniteQuery({
+      queryKey: [
+        "collection",
+        "blockchain-groups",
+        target.cosmo.address,
+        {
+          ...parseUserCollectionGroupsFilters(filters),
+          artist: filters.artistName,
+          artists: selected,
+        },
+      ],
+      queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
+        return fetchObjektsBlockchainGroups(target.cosmo.address, {
+          ...filters,
+          page: pageParam,
+        });
       },
-    ],
-    queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
-      return fetchObjektsBlockchain(target.cosmo.address, {
-        ...filters,
-        page: pageParam,
-      });
-    },
-    initialPageParam: 0,
-  });
+      initialPageParam: 0,
+    });
+  } else {
+    // if the user is a guest or is in blockchain mode, prefetch the objekts
+    params.set("sort", searchParams.sort ?? "newest");
+    const filters = parseUserCollection(params);
+    queryClient.prefetchInfiniteQuery({
+      queryKey: [
+        "collection",
+        "blockchain",
+        target.cosmo.address,
+        {
+          ...parseUserCollectionFilters(filters),
+          artists: selected,
+        },
+      ],
+      queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
+        return fetchObjektsBlockchain(target.cosmo.address, {
+          ...filters,
+          page: pageParam,
+        });
+      },
+      initialPageParam: 0,
+    });
+  }
 
   const { objektLists, lockedObjekts, ...targetAccount } = target;
 

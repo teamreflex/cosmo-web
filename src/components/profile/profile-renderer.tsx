@@ -10,6 +10,7 @@ import CollectionFilters from "../collection/filter-contexts/collection-filters"
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import { useGridColumns } from "@/hooks/use-grid-columns";
 import { useUserState } from "@/hooks/use-user-state";
+import { Addresses, isEqual } from "@/lib/utils";
 
 type Props = {
   targetCosmo: PublicCosmo;
@@ -21,7 +22,9 @@ export default function ProfileRenderer({ targetCosmo }: Props) {
 
   const { searchParams, showLocked, setShowLocked, dataSource, setDataSource } =
     useFilters({
-      dataSource: user?.collectionMode,
+      dataSource: isEqual(targetCosmo.address, Addresses.SPIN)
+        ? "blockchain"
+        : user?.collectionMode,
     });
 
   return (
