@@ -49,7 +49,6 @@ export async function fetchObjektsBlockchain(
 ) {
   let query = indexer
     .select({
-      count: sql<number>`count(*) OVER() AS count`,
       objekts,
       collections,
     })
@@ -74,17 +73,51 @@ export async function fetchObjektsBlockchain(
   query = withCollectionSort(query, filters.sort);
   query = query.limit(PER_PAGE).offset(filters.page * PER_PAGE);
 
-  const results = await query;
+  // fetch both objekts and total count in parallel
+  const [results, total] = await Promise.all([
+    query,
+    fetchCount(address, filters),
+  ]);
 
   const hasNext = results.length === PER_PAGE;
   const nextStartAfter = hasNext ? filters.page + 1 : undefined;
 
   return {
-    total: Number(results[0]?.count ?? 0),
+    total: Number(total),
     hasNext,
     nextStartAfter,
     objekts: results
       .filter((r) => r.collections !== null) // should never happen but just in case
       .map((row) => mapLegacyObjekt(row.objekts, row.collections!)),
   };
+}
+
+/**
+ * Fetch the total number of objekts for a user with given filters.
+ */
+async function fetchCount(
+  address: string,
+  filters: z.infer<typeof userCollection>
+) {
+  const [results] = await indexer
+    .select({ count: sql<number>`count(*)` })
+    .from(objekts)
+    .leftJoin(collections, eq(collections.id, objekts.collectionId))
+    .where(
+      and(
+        eq(objekts.owner, address.toLowerCase()),
+        ...[
+          ...withArtist(filters.artist),
+          ...withClass(filters.class),
+          ...withSeason(filters.season),
+          ...withOnlineType(filters.on_offline),
+          ...withMember(filters.member),
+          ...withCollections(filters.collectionNo),
+          ...withTransferable(filters.transferable),
+          ...withSelectedArtists(filters.artists),
+        ]
+      )
+    );
+
+  return results.count;
 }
