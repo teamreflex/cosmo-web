@@ -51,7 +51,7 @@ export async function fetchObjektsBlockchainGroups(
   address: string,
   filters: z.infer<typeof userCollectionGroups>
 ) {
-  const offset = filters.page * PER_PAGE;
+  const offset = (filters.page - 1) * PER_PAGE;
 
   // main query with pagination and filters
   let query = indexer

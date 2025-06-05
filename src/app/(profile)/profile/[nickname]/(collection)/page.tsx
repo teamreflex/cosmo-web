@@ -90,13 +90,13 @@ export default async function UserCollectionPage(props: Props) {
           artists: selected,
         },
       ],
-      queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
+      queryFn: async ({ pageParam = 1 }: { pageParam?: number }) => {
         return fetchObjektsBlockchainGroups(target.cosmo.address, {
           ...filters,
           page: pageParam,
         });
       },
-      initialPageParam: 0,
+      initialPageParam: 1,
     });
   } else {
     // if the user is a guest or is in blockchain mode, prefetch the objekts
