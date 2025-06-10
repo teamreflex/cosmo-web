@@ -11,6 +11,9 @@ import type {
 import { useGravityPoll } from "@/lib/client/gravity/common";
 import { findPoll } from "@/lib/client/gravity/util";
 import GravitySkeleton from "../gravity-skeleton";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { CirclePause } from "lucide-react";
+import { format } from "date-fns";
 
 type Props = {
   artist: CosmoArtistBFF;
@@ -52,6 +55,14 @@ export default function AbstractLiveChart({ artist, gravity }: Props) {
 
   return (
     <div className="flex flex-col w-full gap-2">
+      <Alert>
+        <CirclePause />
+        <AlertTitle>Gravity has started!</AlertTitle>
+        <AlertDescription>
+          Voting will end on {format(poll.endDate, "MMM d, yyyy")}.
+        </AlertDescription>
+      </Alert>
+
       <CandidateBreakdown
         content={poll.pollViewMetadata.selectedContent}
         comoByCandidate={comoByCandidate}

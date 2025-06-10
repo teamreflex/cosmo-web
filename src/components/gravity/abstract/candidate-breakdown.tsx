@@ -47,6 +47,7 @@ type CandidateRowProps = {
 };
 
 function CandidateRow(props: CandidateRowProps) {
+  const started = props.candidateComoUsed > 0 && props.totalComoUsed > 0;
   const percentage = (props.candidateComoUsed / props.totalComoUsed) * 100;
 
   return (
@@ -69,11 +70,15 @@ function CandidateRow(props: CandidateRowProps) {
         <span className="text-lg font-semibold">
           {props.content.content.title}
         </span>
-        <span className="text-xs md:text-sm sm:ml-auto">
-          {props.candidateComoUsed.toLocaleString()} COMO (
-          {percentage.toFixed(2)}
-          %)
-        </span>
+        {started ? (
+          <span className="text-xs md:text-sm sm:ml-auto">
+            {props.candidateComoUsed.toLocaleString()} COMO (
+            {percentage.toFixed(2)}
+            %)
+          </span>
+        ) : (
+          <div className="sm:ml-auto"></div>
+        )}
       </div>
     </div>
   );
