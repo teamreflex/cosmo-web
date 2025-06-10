@@ -86,7 +86,7 @@ function useEndBlock(params: GravityHookParams, startBlock: number | null) {
     queryKey,
     queryKeyHashFn: hashFn,
     queryFn: async () => {
-      const events = await getContractEvents(client!, {
+      const events = await getContractEvents(client, {
         ...config,
         eventName: "Finalized",
         fromBlock: startBlock ? BigInt(startBlock) : undefined,

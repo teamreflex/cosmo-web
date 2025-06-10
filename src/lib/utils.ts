@@ -1,6 +1,7 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import type { ValidArtist } from "./universal/cosmo/common";
+import { z } from "zod/v4";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -33,6 +34,21 @@ export const addr = (address: string) => address.toLowerCase();
  */
 export function isAddress(address: string) {
   return /^0x[a-fA-F0-9]{40}$/g.test(address);
+}
+
+/**
+ * Sanitize and validate a UUID string.
+ * Discord users will accidentally apply formatting to URLs, resulting in an ID of something like `8043b748-011c-4705-a0a1-eb9d261970ff**`
+ * This will error when sent to Postgres, so we need to sanitize it.
+ */
+export function sanitizeUuid(uuid: string): string | null {
+  const schema = z
+    .string()
+    .transform((val) => val.slice(0, 36))
+    .pipe(z.uuid());
+
+  const result = schema.safeParse(uuid);
+  return result.success ? result.data : null;
 }
 
 /**
@@ -91,11 +107,4 @@ export async function chunk<T>(
     const chunk = arr.slice(i, i + chunkSize);
     await callback(chunk);
   }
-}
-
-/**
- * Safe conversion of a crypto-formatted bigint to a number.
- */
-export function safeBigInt(value: bigint) {
-  return Number(value / BigInt(10 ** 18));
 }

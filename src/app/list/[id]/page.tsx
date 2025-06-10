@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { cache } from "react";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import {
   getCurrentAccount,
   getArtistsWithMembers,
@@ -22,6 +22,7 @@ import { ArtistProvider } from "@/hooks/use-artists";
 import { UserStateProvider } from "@/hooks/use-user-state";
 import UpdateList from "@/components/lists/update-list";
 import DeleteList from "@/components/lists/delete-list";
+import { sanitizeUuid } from "@/lib/utils";
 
 type Props = {
   searchParams: Promise<Record<string, string>>;
@@ -33,7 +34,7 @@ type Props = {
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params;
   const objektList = await getObjektList(params.id);
-  if (!objektList) redirect("/");
+  if (!objektList) notFound();
 
   return {
     title: objektList.name,
@@ -62,7 +63,7 @@ export default async function ObjektListPage(props: Props) {
     getObjektList(id),
     getCurrentAccount(session?.session.userId),
   ]);
-  if (!objektList) redirect("/");
+  if (!objektList) notFound();
 
   // if the user has a cosmo linked, redirect to the profile page
   if (account?.cosmo !== undefined) {
@@ -142,5 +143,15 @@ export default async function ObjektListPage(props: Props) {
 }
 
 const getObjektList = cache(async (id: string) => {
-  return await fetchObjektList({ id });
+  const sanitized = sanitizeUuid(id);
+
+  if (!sanitized) {
+    return null;
+  }
+
+  if (id !== sanitized) {
+    redirect(`/list/${sanitized}`);
+  }
+
+  return await fetchObjektList({ id: sanitized });
 });
