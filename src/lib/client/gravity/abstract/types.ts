@@ -2,6 +2,7 @@ import type { GravityHookParams } from "../common";
 
 export interface UseChainDataOptions extends GravityHookParams {
   startDate: string;
+  endDate: string;
 }
 
 type UseBlockStatusPending = {
@@ -25,9 +26,12 @@ export type UseChainDataError = {
   error: string;
 };
 
+export type LiveStatus = "voting" | "live" | "finalized";
+
 export type UseChainDataSuccess = {
   status: "success";
-  isLive: boolean;
+  liveStatus: LiveStatus;
+  isRefreshing: boolean;
   totalVotesCount: number;
   comoPerCandidate: number[];
   remainingVotesCount: number;

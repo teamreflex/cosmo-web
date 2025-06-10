@@ -17,17 +17,17 @@ import type {
   UseChainDataPending,
   UseChainDataSuccess,
 } from "./types";
-import { hashFn } from "wagmi/query";
 import { useMemo } from "react";
 import { abstract } from "viem/chains";
 import type { GravityHookParams } from "../common";
+import { isAfter, isBefore } from "date-fns";
 
 // chain to connect to
 const chainId = abstract.id;
 // abstract's average block time
 const AVG_BLOCK_TIME = 1.028;
 // polling interval in ms
-const POLLING_INTERVAL = 5000;
+const POLLING_INTERVAL = 2500;
 
 /**
  * Default config for interacting with the Governor contract.
@@ -68,7 +68,11 @@ function useStartBlock(startDate: string) {
 /**
  * Fetch the end block for a given poll.
  */
-function useEndBlock(params: GravityHookParams, startBlock: number | null) {
+function useEndBlock(
+  params: GravityHookParams,
+  startBlock: number | null,
+  endDate: string
+) {
   const queryClient = useQueryClient();
   const client = useClient({ chainId });
 
@@ -84,7 +88,6 @@ function useEndBlock(params: GravityHookParams, startBlock: number | null) {
    */
   const endQuery = useQuery({
     queryKey,
-    queryKeyHashFn: hashFn,
     queryFn: async () => {
       const events = await getContractEvents(client, {
         ...config,
@@ -118,9 +121,14 @@ function useEndBlock(params: GravityHookParams, startBlock: number | null) {
       }
     },
     enabled:
+      // wait for start block estimation
       startBlock !== null &&
+      // wait for end block initial fetch
       endQuery.status === "success" &&
-      endQuery.data === null,
+      // ensure end block wasn't found yet
+      endQuery.data === null &&
+      // ensure poll has ended
+      isBefore(new Date(endDate), new Date()),
   });
 
   return endQuery;
@@ -131,10 +139,11 @@ function useEndBlock(params: GravityHookParams, startBlock: number | null) {
  */
 function useBlockStatus({
   startDate,
+  endDate,
   ...params
 }: UseChainDataOptions): UseBlockStatus {
   const startBlock = useStartBlock(startDate);
-  const endQuery = useEndBlock(params, startBlock);
+  const endQuery = useEndBlock(params, startBlock, endDate);
 
   if (startBlock === null || endQuery.isPending) {
     return { isPending: true };
@@ -155,11 +164,16 @@ export function useChainData(params: UseChainDataOptions): UseChainData {
 
   const args = [BigInt(params.tokenId), BigInt(params.pollId)] as const;
   const shouldPoll =
+    // ensure all block statuses are ready
     blockStatus.isPending === false &&
+    // ensure start block is estimated
     blockStatus.startBlock !== null &&
-    blockStatus.endBlock === null;
+    // ensure end block is not found yet
+    blockStatus.endBlock === null &&
+    // ensure poll has ended
+    isBefore(new Date(params.endDate), new Date());
 
-  const { data, status, error } = useReadContracts({
+  const { data, status, error, isFetching } = useReadContracts({
     contracts: [
       { ...config, args, functionName: "totalVotesCount" },
       { ...config, args, functionName: "votesPerCandidates" },
@@ -170,6 +184,20 @@ export function useChainData(params: UseChainDataOptions): UseChainData {
       refetchIntervalInBackground: true,
     },
   });
+
+  const liveStatus = useMemo(() => {
+    // poll is still voting
+    if (isAfter(new Date(params.endDate), new Date())) {
+      return "voting";
+    }
+
+    // haven't found the Finalized event yet
+    if (blockStatus.isPending === false && blockStatus.endBlock !== null) {
+      return "finalized";
+    }
+
+    return "live";
+  }, [blockStatus, params.endDate]);
 
   if (status === "pending") {
     return {
@@ -185,15 +213,14 @@ export function useChainData(params: UseChainDataOptions): UseChainData {
   }
 
   const [total, comoPerCandidate, remaining] = data;
-  const isLive =
-    blockStatus.isPending === false && blockStatus.endBlock === null;
   const totalVotesCount = total.status === "success" ? Number(total.result) : 0;
   const remainingVotesCount =
     remaining.status === "success" ? Number(remaining.result) : 0;
 
   return {
     status: "success",
-    isLive,
+    liveStatus,
+    isRefreshing: isFetching,
     totalVotesCount,
     remainingVotesCount,
     comoPerCandidate:

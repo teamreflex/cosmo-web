@@ -95,7 +95,10 @@ export default async function GravityPage(props: Props) {
       <main className="container flex flex-col py-2">
         {/* header */}
         <div className="flex flex-col pb-4">
-          <h1 className="text-3xl font-cosmo uppercase">Gravity</h1>
+          <div className="flex items-center gap-2 justify-between">
+            <h1 className="text-3xl font-cosmo uppercase">Gravity</h1>
+            <div id="gravity-status"></div>
+          </div>
           <p className="text-sm font-semibold text-muted-foreground">
             {info.title}
           </p>

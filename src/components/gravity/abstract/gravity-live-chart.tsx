@@ -12,8 +12,16 @@ import { useGravityPoll } from "@/lib/client/gravity/common";
 import { findPoll } from "@/lib/client/gravity/util";
 import GravitySkeleton from "../gravity-skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { CircleAlert } from "lucide-react";
+import {
+  Activity,
+  AlertTriangle,
+  CircleAlert,
+  CircleCheckBig,
+  Loader2,
+} from "lucide-react";
 import { format } from "date-fns";
+import Portal from "@/components/portal";
+import type { LiveStatus } from "@/lib/client/gravity/abstract/types";
 
 type Props = {
   artist: CosmoArtistBFF;
@@ -29,6 +37,7 @@ export default function AbstractLiveChart({ artist, gravity }: Props) {
   });
   const chain = useChainData({
     startDate: poll.startDate,
+    endDate: poll.endDate,
     tokenId: BigInt(artist.comoTokenId),
     pollId: BigInt(poll.id),
   });
@@ -53,6 +62,15 @@ export default function AbstractLiveChart({ artist, gravity }: Props) {
     return <GravitySkeleton />;
   }
 
+  if (chain.status === "error") {
+    return (
+      <div className="flex flex-col w-full gap-2">
+        <AlertTriangle className="size-12" />
+        <p className="text-sm font-semibold">Error loading gravity</p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col w-full gap-2">
       <Alert>
@@ -70,7 +88,59 @@ export default function AbstractLiveChart({ artist, gravity }: Props) {
         content={poll.pollViewMetadata.selectedContent}
         comoByCandidate={comoByCandidate}
         totalComoUsed={comoUsed}
+        liveStatus={chain.liveStatus}
+        isRefreshing={chain.isRefreshing}
       />
+
+      <Portal to="#gravity-status">
+        <Status
+          liveStatus={chain.liveStatus}
+          isRefreshing={chain.isRefreshing}
+        />
+      </Portal>
     </div>
   );
+}
+
+type StatusProps = {
+  liveStatus: LiveStatus;
+  isRefreshing: boolean;
+};
+
+function Status(props: StatusProps) {
+  switch (props.liveStatus) {
+    case "voting":
+      return (
+        <div className="flex items-center gap-2">
+          {props.isRefreshing ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <Activity className="size-5 text-cosmo" />
+          )}
+          <p className="text-sm font-semibold">VOTING</p>
+        </div>
+      );
+    case "live":
+      return (
+        <div className="flex items-center gap-2">
+          {props.isRefreshing ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <div className="aspect-square size-3 bg-red-500 rounded-full animate-pulse"></div>
+          )}
+          <p className="text-sm font-semibold">LIVE</p>
+        </div>
+      );
+    case "finalized":
+      return (
+        <div className="flex items-center gap-2">
+          {props.isRefreshing ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <CircleCheckBig className="size-4 text-green-500" />
+          )}
+          <p className="text-sm font-semibold">FINALIZED</p>
+        </div>
+      );
+  }
 }

@@ -1,3 +1,4 @@
+import type { LiveStatus } from "@/lib/client/gravity/abstract/types";
 import type { PollSelectedContentImage } from "@/lib/universal/cosmo/gravity";
 import { motion } from "motion/react";
 import Image from "next/image";
@@ -6,6 +7,8 @@ type Props = {
   content: PollSelectedContentImage[];
   comoByCandidate: Record<number, number>;
   totalComoUsed: number;
+  liveStatus: LiveStatus;
+  isRefreshing: boolean;
 };
 
 export default function CandidateBreakdown(props: Props) {

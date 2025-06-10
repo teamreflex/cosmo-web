@@ -4,6 +4,7 @@ import {
   isServer,
   QueryClient,
 } from "@tanstack/react-query";
+import { hashFn } from "wagmi/query";
 
 let browserQueryClient: QueryClient | undefined = undefined;
 
@@ -15,6 +16,7 @@ function makeQueryClient() {
     defaultOptions: {
       queries: {
         staleTime: 1000 * 60 * 5, // 5 minutes
+        queryKeyHashFn: hashFn,
       },
       dehydrate: {
         shouldDehydrateQuery: (query) =>
