@@ -12,7 +12,7 @@ import { useGravityPoll } from "@/lib/client/gravity/common";
 import { findPoll } from "@/lib/client/gravity/util";
 import GravitySkeleton from "../gravity-skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { CirclePause } from "lucide-react";
+import { CircleAlert } from "lucide-react";
 import { format } from "date-fns";
 
 type Props = {
@@ -56,10 +56,13 @@ export default function AbstractLiveChart({ artist, gravity }: Props) {
   return (
     <div className="flex flex-col w-full gap-2">
       <Alert>
-        <CirclePause />
-        <AlertTitle>Gravity has started!</AlertTitle>
+        <CircleAlert />
+        <AlertTitle>
+          Voting will end on {format(poll.endDate, "MMM d yyyy hh:mm a")}
+        </AlertTitle>
         <AlertDescription>
-          Voting will end on {format(poll.endDate, "MMM d, yyyy")}.
+          Live results have not been tested on a live gravity yet, and may not
+          work correctly or at all.
         </AlertDescription>
       </Alert>
 
