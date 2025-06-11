@@ -17,3 +17,9 @@
 
 - [ ] redesign artist/member filtering so `n` artists fit in the same space without layout shift
 - [ ] test performing locked filtering on the server
+
+### gravity
+
+- [ ] update liveStatus in real time based on the current time
+- [ ] add totalVote/votesRemaining calculation for total progress
+- [ ] fetch Voted events for implementing the timeline
