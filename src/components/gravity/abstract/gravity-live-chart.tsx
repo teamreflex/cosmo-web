@@ -50,6 +50,15 @@ export default function AbstractLiveChart({ artist, gravity }: Props) {
     return { comoByCandidate, comoUsed };
   }, [poll.pollViewMetadata.selectedContent, chain]);
 
+  const percentageCounted =
+    chain.status === "success"
+      ? Math.round(
+          ((chain.totalVotesCount - chain.remainingVotesCount) /
+            chain.totalVotesCount) *
+            100
+        )
+      : 0;
+
   if (chain.status === "pending") {
     return <GravitySkeleton />;
   }
@@ -74,10 +83,16 @@ export default function AbstractLiveChart({ artist, gravity }: Props) {
       />
 
       <Portal to="#gravity-status">
-        <Status
-          liveStatus={chain.liveStatus}
-          isRefreshing={chain.isRefreshing}
-        />
+        <div className="flex flex-col items-end">
+          <Status
+            liveStatus={chain.liveStatus}
+            isRefreshing={chain.isRefreshing}
+          />
+          <p className="text-xs font-semibold">
+            {chain.totalVotesCount - chain.remainingVotesCount}/
+            {chain.totalVotesCount} ({percentageCounted}%)
+          </p>
+        </div>
       </Portal>
     </div>
   );
@@ -88,40 +103,36 @@ type StatusProps = {
   isRefreshing: boolean;
 };
 
-function Status(props: StatusProps) {
-  switch (props.liveStatus) {
-    case "voting":
-      return (
-        <div className="flex items-center gap-2">
-          {props.isRefreshing ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            <Activity className="size-5 text-cosmo" />
-          )}
-          <p className="text-sm font-semibold">VOTING</p>
-        </div>
-      );
-    case "live":
-      return (
-        <div className="flex items-center gap-2">
-          {props.isRefreshing ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            <div className="aspect-square size-3 bg-red-500 rounded-full animate-pulse"></div>
-          )}
-          <p className="text-sm font-semibold">LIVE</p>
-        </div>
-      );
-    case "finalized":
-      return (
-        <div className="flex items-center gap-2">
-          {props.isRefreshing ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            <CircleCheckBig className="size-4 text-green-500" />
-          )}
-          <p className="text-sm font-semibold">FINALIZED</p>
-        </div>
-      );
-  }
+function Status({ liveStatus, isRefreshing }: StatusProps) {
+  const config = statusConfig[liveStatus];
+
+  return (
+    <div className="flex items-center gap-2">
+      <span>
+        {isRefreshing ? (
+          <Loader2 className="size-4 animate-spin" />
+        ) : (
+          config.icon
+        )}
+      </span>
+      <p className="text-sm font-semibold">{config.text}</p>
+    </div>
+  );
 }
+
+const statusConfig = {
+  voting: {
+    icon: <Activity className="size-5 text-cosmo" />,
+    text: "VOTING",
+  },
+  live: {
+    icon: (
+      <div className="aspect-square size-3 bg-red-500 rounded-full animate-pulse" />
+    ),
+    text: "LIVE",
+  },
+  finalized: {
+    icon: <CircleCheckBig className="size-4 text-green-500" />,
+    text: "COMPLETE",
+  },
+} as const;
