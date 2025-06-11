@@ -20,6 +20,6 @@
 
 ### gravity
 
-- [ ] update liveStatus in real time based on the current time
+- [x] update liveStatus in real time based on the current time
 - [x] add totalVote/votesRemaining calculation for total progress
 - [ ] fetch Voted events for implementing the timeline

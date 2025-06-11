@@ -3,6 +3,7 @@ import type { GravityHookParams } from "../common";
 export interface UseChainDataOptions extends GravityHookParams {
   startDate: string;
   endDate: string;
+  now: Date;
 }
 
 type UseBlockStatusPending = {

@@ -2,7 +2,10 @@
 
 import type { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
 import CandidateBreakdown from "./candidate-breakdown";
-import { useChainData } from "@/lib/client/gravity/abstract/hooks";
+import {
+  useChainData,
+  useCurrentDate,
+} from "@/lib/client/gravity/abstract/hooks";
 import { useMemo } from "react";
 import type {
   CosmoOngoingGravity,
@@ -21,6 +24,7 @@ type Props = {
 };
 
 export default function AbstractLiveChart({ artist, gravity }: Props) {
+  const now = useCurrentDate();
   const { data: poll } = useGravityPoll({
     artistName: artist.id,
     tokenId: BigInt(artist.comoTokenId),
@@ -32,6 +36,7 @@ export default function AbstractLiveChart({ artist, gravity }: Props) {
     endDate: poll.endDate,
     tokenId: BigInt(artist.comoTokenId),
     pollId: BigInt(poll.id),
+    now,
   });
 
   // get the number of como used for each candidate

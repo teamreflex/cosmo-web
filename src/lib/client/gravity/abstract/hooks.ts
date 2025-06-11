@@ -17,7 +17,7 @@ import type {
   UseChainDataPending,
   UseChainDataSuccess,
 } from "./types";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { abstract } from "viem/chains";
 import type { GravityHookParams } from "../common";
 import { isAfter, isBefore } from "date-fns";
@@ -36,6 +36,23 @@ const config = {
   abi: governorAbi,
   address: Addresses.GRAVITY as Hex,
 };
+
+/**
+ * Get the current date and updates with the polling interval.
+ */
+export function useCurrentDate() {
+  const [date, setDate] = useState(() => new Date());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setDate(new Date());
+    }, POLLING_INTERVAL);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return date;
+}
 
 /**
  * Fetch the start block for a given poll.
@@ -71,7 +88,8 @@ function useStartBlock(startDate: string) {
 function useEndBlock(
   params: GravityHookParams,
   startBlock: number | null,
-  endDate: string
+  endDate: string,
+  now: Date
 ) {
   const queryClient = useQueryClient();
   const client = useClient({ chainId });
@@ -128,7 +146,7 @@ function useEndBlock(
       // ensure end block wasn't found yet
       endQuery.data === null &&
       // ensure poll has ended
-      isBefore(new Date(endDate), new Date()),
+      isBefore(new Date(endDate), now),
   });
 
   return endQuery;
@@ -140,10 +158,11 @@ function useEndBlock(
 function useBlockStatus({
   startDate,
   endDate,
+  now,
   ...params
 }: UseChainDataOptions): UseBlockStatus {
   const startBlock = useStartBlock(startDate);
-  const endQuery = useEndBlock(params, startBlock, endDate);
+  const endQuery = useEndBlock(params, startBlock, endDate, now);
 
   if (startBlock === null || endQuery.isPending) {
     return { isPending: true };
@@ -171,7 +190,7 @@ export function useChainData(params: UseChainDataOptions): UseChainData {
     // ensure end block is not found yet
     blockStatus.endBlock === null &&
     // ensure poll has ended
-    isBefore(new Date(params.endDate), new Date());
+    isBefore(new Date(params.endDate), params.now);
 
   const { data, status, error, isFetching } = useReadContracts({
     contracts: [
@@ -187,7 +206,7 @@ export function useChainData(params: UseChainDataOptions): UseChainData {
 
   const liveStatus = useMemo(() => {
     // poll is still voting
-    if (isAfter(new Date(params.endDate), new Date())) {
+    if (isAfter(new Date(params.endDate), params.now)) {
       return "voting";
     }
 
@@ -197,7 +216,7 @@ export function useChainData(params: UseChainDataOptions): UseChainData {
     }
 
     return "live";
-  }, [blockStatus, params.endDate]);
+  }, [blockStatus, params.endDate, params.now]);
 
   if (status === "pending") {
     return {
