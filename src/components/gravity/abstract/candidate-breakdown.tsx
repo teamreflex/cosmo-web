@@ -36,6 +36,7 @@ export default function CandidateBreakdown(props: Props) {
             content={candidate.content}
             totalComoUsed={props.totalComoUsed}
             candidateComoUsed={candidate.comoUsed}
+            liveStatus={props.liveStatus}
           />
         </motion.div>
       ))}
@@ -47,11 +48,14 @@ type CandidateRowProps = {
   content: PollSelectedContentImage;
   totalComoUsed: number;
   candidateComoUsed: number;
+  liveStatus: LiveStatus;
 };
 
 function CandidateRow(props: CandidateRowProps) {
-  const started = props.candidateComoUsed > 0 && props.totalComoUsed > 0;
-  const percentage = (props.candidateComoUsed / props.totalComoUsed) * 100;
+  const percentage =
+    props.candidateComoUsed > 0
+      ? (props.candidateComoUsed / props.totalComoUsed) * 100
+      : 0;
 
   return (
     <div className="relative w-full h-16 rounded-lg px-4 flex items-center gap-4 transition-all bg-accent/70 hover:bg-accent overflow-clip">
@@ -73,7 +77,7 @@ function CandidateRow(props: CandidateRowProps) {
         <span className="text-lg font-semibold">
           {props.content.content.title}
         </span>
-        {started ? (
+        {props.liveStatus !== "voting" ? (
           <span className="text-xs md:text-sm sm:ml-auto">
             {props.candidateComoUsed.toLocaleString()} COMO (
             {percentage.toFixed(2)}
