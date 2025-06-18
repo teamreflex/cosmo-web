@@ -9,15 +9,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { env } from "@/env";
-import {
-  DownloadCloud,
-  Grid2X2,
-  HelpCircle,
-  Lock,
-  MailX,
-  PartyPopper,
-  Smartphone,
-} from "lucide-react";
+import { HelpCircle, Lock, MailX } from "lucide-react";
 import { Button } from "../ui/button";
 import VisuallyHidden from "../ui/visually-hidden";
 
@@ -87,53 +79,13 @@ export default function HelpDialog() {
                 <p className="font-semibold text-sm">Objekt has been locked</p>
               </div>
 
-              {/* mint pending */}
+              {/* not transferable */}
               <div className="flex gap-2 items-center">
                 <div className="bg-[#75FB4C] text-black rounded-lg p-1 flex items-center justify-center w-fit">
-                  <DownloadCloud className="h-5 w-5" />
-                </div>
-                <p className="font-semibold text-sm">
-                  Objekt has not been minted yet
-                </p>
-              </div>
-
-              {/* grid */}
-              <div className="flex gap-2 items-center">
-                <div className="bg-[#FF7477] text-black rounded-lg p-1 flex items-center justify-center w-fit">
-                  <Grid2X2 className="h-5 w-5" />
-                </div>
-                <p className="font-semibold text-sm">
-                  Objekt has been used in a grid (not transferable)
-                </p>
-              </div>
-
-              {/* welcome */}
-              <div className="flex gap-2 items-center">
-                <div className="bg-[#FFFFFF] text-black rounded-lg p-1 flex items-center justify-center w-fit">
                   <MailX className="h-5 w-5" />
                 </div>
                 <p className="font-semibold text-sm">
-                  Objekt is a welcome reward (not transferable)
-                </p>
-              </div>
-
-              {/* event reward */}
-              <div className="flex gap-2 items-center">
-                <div className="bg-[#8A8C8E] text-white rounded-lg p-1 flex items-center justify-center w-fit">
-                  <PartyPopper className="h-5 w-5" />
-                </div>
-                <p className="font-semibold text-sm">
-                  Objekt is an event reward (not transferable)
-                </p>
-              </div>
-
-              {/* lenticular */}
-              <div className="flex gap-2 items-center">
-                <div className="bg-[#294a80] text-white rounded-lg p-1 flex items-center justify-center w-fit">
-                  <Smartphone className="h-5 w-5" />
-                </div>
-                <p className="font-semibold text-sm">
-                  Objekt is in a lenticular pair (not transferable)
+                  Objekt is not transferable
                 </p>
               </div>
             </div>
