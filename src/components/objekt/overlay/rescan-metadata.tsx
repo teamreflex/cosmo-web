@@ -13,7 +13,7 @@ type Props = {
 
 export default function RescanMetadata({ collection, token }: Props) {
   const { execute, isPending } = useAction(rescanObjektMetadata, {
-    onSuccess({ data }) {
+    onSuccess() {
       toast.success("Objekt updated!", {
         description: `${collection.collectionId} #${token.serial} has been updated from COSMO.`,
       });

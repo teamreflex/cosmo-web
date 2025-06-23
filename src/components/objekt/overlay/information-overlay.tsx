@@ -7,6 +7,7 @@ import { useState } from "react";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { useObjektOverlay } from "@/store";
 import RescanMetadata from "./rescan-metadata";
+import { useUserState } from "@/hooks/use-user-state";
 
 type Props = {
   collection: Objekt.Collection;
@@ -15,6 +16,7 @@ type Props = {
 
 export default function InformationOverlay({ collection, token }: Props) {
   const [open, setOpen] = useState(false);
+  const { user } = useUserState();
   const isHidden = useObjektOverlay((state) => state.isHidden);
 
   const formatted = format(Date.parse(token.acquiredAt), "dd/MM/yy h:mmaa");
@@ -37,7 +39,9 @@ export default function InformationOverlay({ collection, token }: Props) {
       </button>
 
       <div className="z-40 absolute flex flex-col gap-1 group-data-[open=false]:opacity-0 group-data-[open=true]:opacity-100 transition-all">
-        <RescanMetadata collection={collection} token={token} />
+        {user !== undefined && (
+          <RescanMetadata collection={collection} token={token} />
+        )}
 
         <div className="flex flex-col text-xs">
           <span className="font-semibold">Token ID</span>
