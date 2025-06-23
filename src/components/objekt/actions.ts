@@ -2,7 +2,11 @@
 
 import { db } from "@/lib/server/db";
 import { objektMetadata } from "@/lib/server/db/schema";
-import { adminActionClient } from "@/lib/server/server-actions";
+import { rescanMetadata } from "@/lib/server/objekts/metadata";
+import {
+  adminActionClient,
+  authActionClient,
+} from "@/lib/server/server-actions";
 import { eq } from "drizzle-orm";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod/v4";
@@ -40,4 +44,18 @@ export const updateObjektMetadata = adminActionClient
     revalidateTag(collectionId);
 
     return result;
+  });
+
+/**
+ * Rescan an objekt's metadata.
+ */
+export const rescanObjektMetadata = authActionClient
+  .metadata({ actionName: "rescanObjektMetadata" })
+  .inputSchema(
+    z.object({
+      tokenId: z.string(),
+    })
+  )
+  .action(async ({ parsedInput: { tokenId } }) => {
+    return await rescanMetadata(tokenId);
   });

@@ -6,12 +6,14 @@ import { Maximize2 } from "lucide-react";
 import { useState } from "react";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { useObjektOverlay } from "@/store";
+import RescanMetadata from "./rescan-metadata";
 
 type Props = {
+  collection: Objekt.Collection;
   token: Objekt.Token;
 };
 
-export default function InformationOverlay({ token }: Props) {
+export default function InformationOverlay({ collection, token }: Props) {
   const [open, setOpen] = useState(false);
   const isHidden = useObjektOverlay((state) => state.isHidden);
 
@@ -35,6 +37,8 @@ export default function InformationOverlay({ token }: Props) {
       </button>
 
       <div className="z-40 absolute flex flex-col gap-1 group-data-[open=false]:opacity-0 group-data-[open=true]:opacity-100 transition-all">
+        <RescanMetadata collection={collection} token={token} />
+
         <div className="flex flex-col text-xs">
           <span className="font-semibold">Token ID</span>
           <span>{token.tokenId}</span>
