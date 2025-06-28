@@ -29,7 +29,8 @@ import {
 } from "../ui/accordion";
 import { CircleHelp } from "lucide-react";
 import { Button } from "../ui/button";
-import type { CollectionDataSource } from "@/lib/utils";
+import { Addresses, isEqual, type CollectionDataSource } from "@/lib/utils";
+import { useProfileContext } from "@/hooks/use-profile";
 
 type Props = {
   name: string;
@@ -40,6 +41,7 @@ type Props = {
 
 export function DataSourceSelector(props: Props) {
   const [helpOpen, setHelpOpen] = useState(false);
+  const target = useProfileContext((state) => state.target);
 
   function onHelpClose() {
     setHelpOpen(false);
@@ -60,27 +62,29 @@ export function DataSourceSelector(props: Props) {
           align="end"
           className="[&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8 [&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2"
         >
-          {sources.map((source) => (
-            <SelectItem
-              key={source.value}
-              value={source.value}
-              className="**:data-short-label:hidden **:data-icon:size-8"
-            >
-              <div className="flex flex-row items-center gap-2">
-                {source.icon}
-                <div className="flex flex-col">
-                  <span data-label>{source.label}</span>
-                  <span data-short-label>{source.shortLabel}</span>
-                  <span
-                    className="text-muted-foreground mt-1 block text-xs"
-                    data-desc
-                  >
-                    {source.subtitle}
-                  </span>
+          {sources
+            .filter((source) => source.isAvailable(target?.cosmo?.address))
+            .map((source) => (
+              <SelectItem
+                key={source.value}
+                value={source.value}
+                className="**:data-short-label:hidden **:data-icon:size-8"
+              >
+                <div className="flex flex-row items-center gap-2">
+                  {source.icon}
+                  <div className="flex flex-col">
+                    <span data-label>{source.label}</span>
+                    <span data-short-label>{source.shortLabel}</span>
+                    <span
+                      className="text-muted-foreground mt-1 block text-xs"
+                      data-desc
+                    >
+                      {source.subtitle}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            </SelectItem>
-          ))}
+              </SelectItem>
+            ))}
 
           <SelectSeparator />
 
@@ -141,6 +145,7 @@ type Source = {
   value: CollectionDataSource;
   description: string;
   notes: string[];
+  isAvailable: (address?: string) => boolean;
 };
 
 const sources: Source[] = [
@@ -159,6 +164,13 @@ const sources: Source[] = [
       "Objekt statuses such as event/welcome reward, gridded, mint pending, etc. are not supported.",
       "Transferable status may not be reliable.",
     ],
+    /**
+     * prevent collection groups being used on the spin account.
+     * the SQL query to pull this off needs optimization.
+     */
+    isAvailable: (address) => {
+      return address !== undefined ? !isEqual(address, Addresses.SPIN) : true;
+    },
   },
   {
     title: "Abstract Blockchain - All Objekts",
@@ -173,6 +185,7 @@ const sources: Source[] = [
       "The same viewing format as COSMO prior to its collection groups update.",
       "Has the same filter features & limitations as the Abstract - All Objekts source.",
     ],
+    isAvailable: () => true,
   },
 ];
 
