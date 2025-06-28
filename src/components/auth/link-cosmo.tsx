@@ -32,7 +32,6 @@ import { env } from "@/env";
 import Link from "next/link";
 import { track } from "@/lib/utils";
 import { verifyCosmoSchema } from "@/lib/universal/schema/cosmo";
-import type { z } from "zod/v4";
 import { useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import {
@@ -289,7 +288,7 @@ function OTP({ ticket }: OTPProps) {
     },
   });
 
-  const form = useForm<z.infer<typeof verifyCosmoSchema>>({
+  const form = useForm({
     resolver: standardSchemaResolver(verifyCosmoSchema),
     defaultValues: {
       otp: undefined,

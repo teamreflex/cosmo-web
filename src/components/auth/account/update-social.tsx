@@ -36,7 +36,7 @@ export default function UpdateSocial(props: Props) {
     },
   });
 
-  const form = useForm<z.infer<typeof updateSocialsSchema>>({
+  const form = useForm({
     resolver: standardSchemaResolver(updateSocialsSchema),
     defaultValues: {
       showSocials: props.showSocials,

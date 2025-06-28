@@ -23,7 +23,6 @@ import { updateSettings } from "./actions";
 import type { PublicUser } from "@/lib/universal/auth";
 import { settingsSchema } from "@/lib/universal/schema/auth";
 import { useForm } from "react-hook-form";
-import type { z } from "zod/v4";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import {
   Form,
@@ -51,7 +50,7 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
     },
   });
 
-  const form = useForm<z.infer<typeof settingsSchema>>({
+  const form = useForm({
     resolver: standardSchemaResolver(settingsSchema),
     defaultValues: {
       gridColumns: user.gridColumns,

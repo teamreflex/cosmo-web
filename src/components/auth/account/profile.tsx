@@ -14,6 +14,10 @@ export default function Profile() {
   const { data: accounts } = useListAccounts();
   const { data: user } = useSessionUser();
 
+  if (!user) {
+    return null;
+  }
+
   const hasCredentialAccount =
     accounts.findIndex((account) => account.provider === "credential") !== -1;
 
@@ -23,7 +27,7 @@ export default function Profile() {
       <AccordionItem value="username">
         <AccordionTrigger>Username</AccordionTrigger>
         <AccordionContent>
-          <UpdateUsername username={user?.displayUsername ?? ""} />
+          <UpdateUsername username={user.displayUsername ?? ""} />
         </AccordionContent>
       </AccordionItem>
 

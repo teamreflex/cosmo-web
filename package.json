@@ -56,7 +56,7 @@
     "react-hook-form": "^7.59.0",
     "react-intersection-observer": "^9.16.0",
     "react-qr-code": "^2.0.16",
-    "recharts": "^3.0.2",
+    "recharts": "^2.15.4",
     "require-in-the-middle": "^7.5.2",
     "server-only": "^0.0.1",
     "sonner": "^2.0.5",

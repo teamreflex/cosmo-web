@@ -45,10 +45,10 @@ export const updateUsernameSchema = z.object({
 });
 
 export const updateSocialsSchema = z.object({
-  showSocials: z.coerce.boolean(),
+  showSocials: z.coerce.boolean<boolean>(),
 });
 
 export const settingsSchema = z.object({
-  gridColumns: z.coerce.number().min(3).max(8),
+  gridColumns: z.coerce.number<number>().min(3).max(8),
   collectionMode: z.enum(collectionDataSources),
 });
