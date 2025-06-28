@@ -77,6 +77,9 @@ export default function AbstractLiveChart({ artist, gravity }: Props) {
     );
   }
 
+  const totalVotes = chain.totalVotesCount;
+  const countedVotes = totalVotes - chain.remainingVotesCount;
+
   return (
     <div className="flex flex-col w-full gap-2">
       <CandidateBreakdown
@@ -94,8 +97,8 @@ export default function AbstractLiveChart({ artist, gravity }: Props) {
             isRefreshing={chain.isRefreshing}
           />
           <p className="text-xs font-semibold">
-            {chain.totalVotesCount - chain.remainingVotesCount}/
-            {chain.totalVotesCount} ({percentageCounted}%)
+            {countedVotes.toLocaleString()}/{totalVotes.toLocaleString()} (
+            {percentageCounted}%)
           </p>
         </div>
       </Portal>
