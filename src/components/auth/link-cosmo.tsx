@@ -41,6 +41,7 @@ import {
   FormItem,
   FormMessage,
 } from "../ui/form";
+import type { z } from "zod/v4";
 
 export const LinkCosmoContext = createContext({
   open: false,
@@ -288,7 +289,7 @@ function OTP({ ticket }: OTPProps) {
     },
   });
 
-  const form = useForm({
+  const form = useForm<z.infer<typeof verifyCosmoSchema>>({
     resolver: standardSchemaResolver(verifyCosmoSchema),
     defaultValues: {
       otp: undefined,

@@ -31,6 +31,7 @@ import {
   FormItem,
   FormMessage,
 } from "../ui/form";
+import type { z } from "zod/v4";
 
 type Props = {
   open: boolean;
@@ -50,7 +51,7 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
     },
   });
 
-  const form = useForm({
+  const form = useForm<z.infer<typeof settingsSchema>>({
     resolver: standardSchemaResolver(settingsSchema),
     defaultValues: {
       gridColumns: user.gridColumns,
