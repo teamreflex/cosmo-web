@@ -8,10 +8,8 @@ type Props = {
 
 export default function ProgressObjektGrid({ title, collections }: Props) {
   const sorted = [...collections]
-    .sort(
-      (a, b) =>
-        parseInt(a.collection.collectionNo) -
-        parseInt(b.collection.collectionNo)
+    .sort((a, b) =>
+      a.collection.collectionNo.localeCompare(b.collection.collectionNo)
     )
     .filter((c) => !(c.unobtainable && !c.obtained));
 
