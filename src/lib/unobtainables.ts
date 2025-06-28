@@ -72,10 +72,4 @@ export const unobtainables = [
   "divine01-sullin-312z",
   "divine01-seoah-312z",
   "divine01-jiyeon-312z",
-  // assemble25 tiktok event
-  "atom02-yooyeon-311z",
-  "atom02-nakyoung-311z",
-  "atom02-kotone-311z",
-  "atom02-yeonji-311z",
-  "atom02-seoah-311z",
 ];
