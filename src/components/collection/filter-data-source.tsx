@@ -2,6 +2,7 @@ import type { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
 import type { CollectionDataSource } from "@/lib/utils";
 import type { Dispatch, SetStateAction } from "react";
 import { DataSourceSelector } from "./data-source-selector";
+import { useProfileContext } from "@/hooks/use-profile";
 
 type Props = {
   filters: CosmoFilters;
@@ -16,6 +17,8 @@ export default function FilterDataSource({
   dataSource,
   setDataSource,
 }: Props) {
+  const target = useProfileContext((state) => state.target);
+
   function onChange(val: string) {
     const source = val as CollectionDataSource;
 
@@ -43,6 +46,7 @@ export default function FilterDataSource({
       name="dataSource"
       value={dataSource}
       onValueChange={onChange}
+      targetCosmo={target?.cosmo?.address}
     />
   );
 }

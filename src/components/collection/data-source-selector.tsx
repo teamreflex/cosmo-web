@@ -30,18 +30,17 @@ import {
 import { CircleHelp } from "lucide-react";
 import { Button } from "../ui/button";
 import { Addresses, isEqual, type CollectionDataSource } from "@/lib/utils";
-import { useProfileContext } from "@/hooks/use-profile";
 
 type Props = {
   name: string;
   value?: CollectionDataSource;
   defaultValue?: CollectionDataSource;
   onValueChange?: (value: CollectionDataSource) => void;
+  targetCosmo?: string;
 };
 
 export function DataSourceSelector(props: Props) {
   const [helpOpen, setHelpOpen] = useState(false);
-  const target = useProfileContext((state) => state.target);
 
   function onHelpClose() {
     setHelpOpen(false);
@@ -63,7 +62,7 @@ export function DataSourceSelector(props: Props) {
           className="[&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8 [&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2"
         >
           {sources
-            .filter((source) => source.isAvailable(target?.cosmo?.address))
+            .filter((source) => source.isAvailable(props.targetCosmo))
             .map((source) => (
               <SelectItem
                 key={source.value}
