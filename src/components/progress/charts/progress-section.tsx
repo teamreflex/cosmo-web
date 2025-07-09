@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/expandable-card";
 import ProgressChart from "./chart.client";
 import type { Stat } from "@/lib/universal/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Props = {
   title: string;
@@ -45,6 +46,15 @@ export default function ProgressSection(props: Props) {
       <div className="flex items-start justify-center h-fit">
         <ProgressChart data={sorted} colors={props.colors} />
       </div>
+    </div>
+  );
+}
+
+export function ProgressSectionSkeleton() {
+  return (
+    <div className="grid grid-cols-2 justify-center gap-2 w-full">
+      <Skeleton className="h-64 rounded-xl" />
+      <Skeleton className="aspect-square size-64 rounded-full" />
     </div>
   );
 }

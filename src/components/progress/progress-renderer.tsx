@@ -41,7 +41,6 @@ export default function ProgressRenderer(props: Props) {
   return (
     <div className="flex flex-col gap-6">
       <MemberFilter
-        showArtists={false}
         active={filters.artist ?? filters.member}
         updateArtist={setActiveArtist}
         updateMember={setActiveMember}

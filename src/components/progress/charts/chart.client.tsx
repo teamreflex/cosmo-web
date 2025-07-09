@@ -39,6 +39,9 @@ export default function ProgressChart(props: Props) {
           outerRadius={100}
           labelLine={false}
           label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
+            // only show label if slice is large enough for readability
+            if (percent < 0.05) return null;
+
             const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
             const x = cx + radius * Math.cos(-midAngle * RADIAN);
             const y = cy + radius * Math.sin(-midAngle * RADIAN);

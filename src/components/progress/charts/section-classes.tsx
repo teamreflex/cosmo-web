@@ -1,8 +1,14 @@
 "use client";
 
 import type { Stat } from "@/lib/universal/progress";
-import ProgressSection from "./progress-section";
 import { randomColor } from "@/lib/utils";
+import dynamic from "next/dynamic";
+import { ProgressSectionSkeleton } from "./progress-section";
+
+const ProgressSection = dynamic(() => import("./progress-section"), {
+  ssr: false,
+  loading: () => <ProgressSectionSkeleton />,
+});
 
 type Props = {
   data: Stat[];
