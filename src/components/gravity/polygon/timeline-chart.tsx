@@ -27,7 +27,7 @@ export default function TimelineChart(props: Props) {
   const isComplete = props.totalComoUsed === totalRevealed;
 
   return (
-    <div className="flex flex-col gap-2 w-full bg-accent rounded-md p-3 pb-0">
+    <div className="flex flex-col gap-2 w-full bg-secondary rounded-md p-3 pb-0">
       <div className="flex items-center justify-between text-sm">
         {isComplete ? (
           <div className="flex items-center gap-2">

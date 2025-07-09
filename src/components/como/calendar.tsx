@@ -38,9 +38,9 @@ export default function ComoCalendar({ artists, transfers }: Props) {
   const calendar = buildCalendar(now, transfers);
 
   return (
-    <div className="flex flex-col rounded-lg bg-accent border border-accent text-clip h-fit overflow-clip">
+    <div className="flex flex-col rounded-lg bg-secondary border border-secondary text-clip h-fit overflow-hidden">
       {/* days of the week */}
-      <div className="grid grid-cols-7 gap-px border-b border-accent">
+      <div className="grid grid-cols-7 gap-px border-b border-secondary">
         {week.map((day) => (
           <div
             key={day}

@@ -4,7 +4,7 @@ import TradesButton from "@/components/profile/trades-button";
 import ComoButton from "@/components/profile/como-button";
 import ProgressButton from "@/components/profile/progress-button";
 import UserAvatar from "@/components/profile/user-avatar";
-import Skeleton from "@/components/skeleton/skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 import ListDropdownClient from "@/components/lists/list-dropdown.client";
 import Link from "next/link";
 import ComoBalanceRenderer from "@/components/navbar/como-balances";

@@ -43,7 +43,7 @@ function Row(props: RowProps) {
   const nickname = props.vote.username ?? props.vote.voter.substring(0, 8);
 
   return (
-    <div className="w-full h-12 rounded-lg px-4 flex items-center transition-all bg-accent/70 hover:bg-accent">
+    <div className="w-full h-12 rounded-lg px-4 flex items-center transition-all bg-secondary/70 hover:bg-secondary">
       <div className="flex flex-col">
         <span className="text-sm font-semibold">{nickname}</span>
         <span className="text-xs">{props.candidate.content.title}</span>

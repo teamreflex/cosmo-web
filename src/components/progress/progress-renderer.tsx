@@ -8,7 +8,7 @@ import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import { ErrorBoundary } from "react-error-boundary";
 import { Button } from "../ui/button";
 import { RefreshCcw } from "lucide-react";
-import Skeleton from "../skeleton/skeleton";
+import { Skeleton } from "../ui/skeleton";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 
 type Props = {

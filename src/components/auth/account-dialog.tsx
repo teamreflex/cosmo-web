@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "../ui/separator";
 import { Suspense, use } from "react";
-import Skeleton from "../skeleton/skeleton";
+import { Skeleton } from "../ui/skeleton";
 import LinkedAccounts from "./account/linked-accounts";
 import Profile from "./account/profile";
 import DeleteAccount from "./account/delete-account";

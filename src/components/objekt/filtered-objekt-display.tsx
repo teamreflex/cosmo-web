@@ -4,7 +4,7 @@ import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import MemberFilter from "../collection/member-filter";
 import type { ValidArtist } from "@/lib/universal/cosmo/common";
 import { Button } from "../ui/button";
-import Skeleton from "../skeleton/skeleton";
+import { Skeleton } from "../ui/skeleton";
 import { ErrorBoundary } from "react-error-boundary";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import SkeletonGradient from "../skeleton/skeleton-overlay";

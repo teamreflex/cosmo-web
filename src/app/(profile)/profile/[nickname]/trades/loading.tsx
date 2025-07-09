@@ -1,5 +1,5 @@
 import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
-import Skeleton from "@/components/skeleton/skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 import { TransfersSkeleton } from "@/components/transfers/transfers-renderer";
 
 export default function UserTransfersLoading() {

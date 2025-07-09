@@ -58,7 +58,7 @@ function CandidateRow(props: CandidateRowProps) {
       : 0;
 
   return (
-    <div className="relative w-full h-16 rounded-lg px-4 flex items-center gap-4 transition-all bg-accent/70 hover:bg-accent overflow-clip">
+    <div className="relative w-full h-16 rounded-lg px-4 flex items-center gap-4 transition-all bg-secondary/70 hover:bg-secondary overflow-clip">
       <div
         className="absolute inset-0 bg-cosmo transition-all"
         style={{ width: `${percentage}%` }}

@@ -30,7 +30,7 @@ import { type FetchError, ofetch } from "ofetch";
 import Link from "next/link";
 import { type ReactNode, Suspense, useState } from "react";
 import { Separator } from "../ui/separator";
-import Skeleton from "../skeleton/skeleton";
+import { Skeleton } from "../ui/skeleton";
 import { Button } from "../ui/button";
 import { updateObjektMetadata } from "./actions";
 import { Textarea } from "../ui/textarea";
@@ -438,7 +438,7 @@ type PillProps = {
 
 function Pill({ label, value }: PillProps) {
   return (
-    <div className="flex items-center gap-1 rounded-full bg-accent px-2 py-1 text-xs sm:text-sm">
+    <div className="flex items-center gap-1 rounded-full bg-secondary px-2 py-1 text-xs sm:text-sm">
       <span className="font-semibold">{label}</span>
       <span>{value}</span>
     </div>

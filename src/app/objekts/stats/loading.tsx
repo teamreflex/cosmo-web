@@ -1,4 +1,4 @@
-import Skeleton from "@/components/skeleton/skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default async function ObjektStatsLoading() {

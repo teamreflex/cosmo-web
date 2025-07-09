@@ -1,7 +1,7 @@
 import type { Leaderboard, LeaderboardItem } from "@/lib/universal/progress";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ofetch } from "ofetch";
-import Skeleton from "../skeleton/skeleton";
+import { Skeleton } from "../ui/skeleton";
 import { baseUrl } from "@/lib/query-client";
 import { ordinal } from "@/lib/utils";
 import Link from "next/link";
@@ -74,14 +74,14 @@ function LeaderboardRow({ member, total, item, rank }: LeaderboardRowProps) {
         </Link>
       </div>
 
-      <div className="relative h-4 w-full overflow-hidden rounded-full bg-primary dark:bg-accent border border-primary dark:border-transparent">
+      <div className="relative h-4 w-full overflow-hidden rounded-full bg-primary dark:bg-secondary border border-primary dark:border-transparent">
         <div className="z-20 absolute w-full h-full flex items-center justify-center">
           <p className="text-sm font-semibold text-cosmo mix-blend-overlay">
             {progress}%
           </p>
         </div>
         <div
-          className="z-10 h-full w-full flex-1 bg-accent dark:bg-primary transition-all"
+          className="z-10 h-full w-full flex-1 bg-secondary dark:bg-primary transition-all"
           style={{ transform: `translateX(-${100 - (progress || 0)}%)` }}
         />
       </div>

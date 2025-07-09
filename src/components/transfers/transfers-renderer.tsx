@@ -11,7 +11,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import { HeartCrack, RefreshCcw } from "lucide-react";
 import { Button } from "../ui/button";
 import { Suspense, useCallback, useState } from "react";
-import Skeleton from "../skeleton/skeleton";
+import { Skeleton } from "../ui/skeleton";
 import { baseUrl } from "@/lib/query-client";
 import { ofetch } from "ofetch";
 import type { TransferParams, TransferResult } from "@/lib/universal/transfers";

@@ -116,7 +116,7 @@ function Row({ user }: RowProps) {
   );
 
   return (
-    <div className="w-full h-12 rounded-lg px-4 flex items-center transition-all bg-accent/70 hover:bg-accent">
+    <div className="w-full h-12 rounded-lg px-4 flex items-center transition-all bg-secondary/70 hover:bg-secondary">
       <div className="flex flex-col">
         <span className="text-sm font-semibold">{nickname}</span>
         <span className="text-xs">{user.total.toLocaleString()} COMO</span>
@@ -129,7 +129,7 @@ function Row({ user }: RowProps) {
               <TooltipTrigger>
                 <Avatar
                   key={candidate.title}
-                  className="size-8 ring ring-accent rounded"
+                  className="size-8 ring ring-secondary rounded"
                 >
                   <AvatarFallback>{candidate.title.at(0)}</AvatarFallback>
                   <AvatarImage src={candidate.imageUrl} />

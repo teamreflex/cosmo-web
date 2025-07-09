@@ -1,4 +1,4 @@
-import Skeleton from "@/components/skeleton/skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 import SkeletonGradient from "@/components/skeleton/skeleton-overlay";
 
 export default function GravityLoading() {

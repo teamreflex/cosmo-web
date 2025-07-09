@@ -14,7 +14,7 @@ import StateAuthenticated from "../auth/state-authenticated";
 import { ErrorBoundary } from "react-error-boundary";
 import AuthFallback from "../auth/auth-fallback";
 import { ArtistProvider } from "@/hooks/use-artists";
-import Skeleton from "../skeleton/skeleton";
+import { Skeleton } from "../ui/skeleton";
 import { IconCards } from "@tabler/icons-react";
 import { Menu, Search, Vote } from "lucide-react";
 

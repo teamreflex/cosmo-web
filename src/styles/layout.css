@@ -41,7 +41,7 @@
 
   .dark {
     ::-webkit-scrollbar-thumb {
-      @apply bg-accent rounded-full;
+      @apply bg-secondary rounded-full;
     }
   }
 }

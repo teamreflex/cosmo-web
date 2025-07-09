@@ -5,7 +5,7 @@ import ClassFilter from "../filter-class";
 import SortFilter from "../filter-sort";
 import CollectionFilter from "@/components/objekt-index/collection-filter";
 import { Suspense } from "react";
-import Skeleton from "@/components/skeleton/skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorBoundary } from "react-error-boundary";
 import FilterSearch from "../filter-search";
 

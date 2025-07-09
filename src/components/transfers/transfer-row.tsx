@@ -25,7 +25,7 @@ export default function TransferRow({ row, address }: Props) {
   });
 
   return (
-    <div className="text-xs sm:text-sm items-center grid grid-cols-[3fr_2fr_2fr] gap-2 h-14 px-4 border-t border-accent hover:bg-accent/40 transition-colors">
+    <div className="text-xs sm:text-sm items-center grid grid-cols-[3fr_2fr_2fr] gap-2 h-14 px-4 border-t border-accent hover:bg-secondary/40 transition-colors">
       <div className="flex flex-col">
         <span>{row.collection?.collectionId ?? "Unknown"}</span>
         <span className="text-xs">#{serial}</span>

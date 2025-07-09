@@ -1,4 +1,4 @@
-import Skeleton from "./skeleton";
+import { Skeleton } from "../ui/skeleton";
 
 type Props = {
   artists?: boolean;

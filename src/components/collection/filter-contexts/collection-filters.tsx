@@ -9,7 +9,7 @@ import ClassFilter from "../filter-class";
 import SortFilter from "../filter-sort";
 import FilterDataSource from "../filter-data-source";
 import { ErrorBoundary } from "react-error-boundary";
-import Skeleton from "@/components/skeleton/skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Props = {
   showLocked: boolean;

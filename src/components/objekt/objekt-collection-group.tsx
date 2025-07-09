@@ -88,7 +88,7 @@ export default function GroupedObjekt({
                 {group.count} {subtitle}
               </p>
 
-              <DialogPrimitive.Close className="place-self-end opacity-70 transition-opacity hover:opacity-100 disabled:pointer-events-none outline-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+              <DialogPrimitive.Close className="place-self-end opacity-70 transition-opacity hover:opacity-100 disabled:pointer-events-none outline-none data-[state=open]:bg-secondary data-[state=open]:text-muted-foreground">
                 <X className="size-8" />
                 <span className="sr-only">Close</span>
               </DialogPrimitive.Close>
@@ -145,7 +145,7 @@ function RootObjekt({
             "--objekt-text-color": collection.textColor,
           }}
           className={cn(
-            "relative overflow-hidden rounded-lg md:rounded-xl lg:rounded-2xl touch-manipulation bg-accent transition-colors ring-2 ring-transparent aspect-photocard drop-shadow-sm",
+            "relative overflow-hidden rounded-lg md:rounded-xl lg:rounded-2xl touch-manipulation bg-secondary transition-colors ring-2 ring-transparent aspect-photocard drop-shadow-sm",
             hasSelected && "ring-foreground"
           )}
         >
