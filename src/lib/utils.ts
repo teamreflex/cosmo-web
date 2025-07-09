@@ -96,6 +96,15 @@ export const artistColors: Record<ValidArtist, string> = {
 };
 
 /**
+ * Generate a random hex color.
+ */
+export function randomColor(): string {
+  return `#${Math.floor(Math.random() * 0xffffff)
+    .toString(16)
+    .padStart(6, "0")}`;
+}
+
+/**
  * Chunk an array into chunks of a given size.
  */
 export async function chunk<T>(

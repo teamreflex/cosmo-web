@@ -6,6 +6,11 @@ import {
 } from "@/app/data-fetching";
 import Portal from "@/components/portal";
 import HelpDialog from "@/components/progress/help-dialog";
+import ProgressCharts from "@/components/progress/charts/progress-charts";
+import {
+  ProgressChartsError,
+  ProgressChartsSkeleton,
+} from "@/components/progress/charts/progress-charts-state";
 import ProgressRenderer from "@/components/progress/progress-renderer";
 import { ArtistProvider } from "@/hooks/use-artists";
 import { ProfileProvider } from "@/hooks/use-profile";
@@ -15,6 +20,8 @@ import { toPublicUser } from "@/lib/server/auth";
 import { fetchFilterData } from "@/lib/server/objekts/filter-data";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import type { Metadata } from "next";
+import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 
 type Props = {
   params: Promise<{ nickname: string }>;
@@ -51,7 +58,13 @@ export default async function ProgressPage(props: Props) {
         <ArtistProvider artists={artists} selected={selected}>
           <ProfileProvider target={target}>
             <HydrationBoundary state={dehydrate(queryClient)}>
-              <ProgressRenderer address={target.cosmo.address} />
+              <ProgressRenderer address={target.cosmo.address}>
+                <ErrorBoundary fallback={<ProgressChartsError />}>
+                  <Suspense fallback={<ProgressChartsSkeleton />}>
+                    <ProgressCharts address={target.cosmo.address} />
+                  </Suspense>
+                </ErrorBoundary>
+              </ProgressRenderer>
             </HydrationBoundary>
             <Portal to="#help">
               <HelpDialog />

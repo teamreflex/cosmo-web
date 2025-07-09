@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback } from "react";
+import { Suspense, useCallback, type PropsWithChildren } from "react";
 import MemberFilter from "../collection/member-filter";
 import type { ValidArtist } from "@/lib/universal/cosmo/common";
 import ProgressTable from "./progress-table";
@@ -11,11 +11,11 @@ import { RefreshCcw } from "lucide-react";
 import { Skeleton } from "../ui/skeleton";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 
-type Props = {
+type Props = PropsWithChildren<{
   address: string;
-};
+}>;
 
-export default function ProgressRenderer({ address }: Props) {
+export default function ProgressRenderer(props: Props) {
   const [filters, setFilters] = useCosmoFilters();
 
   const setActiveMember = useCallback(
@@ -65,12 +65,13 @@ export default function ProgressRenderer({ address }: Props) {
           >
             {filters.member !== null ? (
               <Suspense fallback={<ProgressTableSkeleton />}>
-                <ProgressTable address={address} member={filters.member} />
+                <ProgressTable
+                  address={props.address}
+                  member={filters.member}
+                />
               </Suspense>
             ) : (
-              <p className="flex flex-col items-center py-6 text-sm font-semibold">
-                Select a member to view collection progress
-              </p>
+              props.children
             )}
           </ErrorBoundary>
         )}

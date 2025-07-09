@@ -32,3 +32,22 @@ export type Leaderboard = {
   total: number;
   leaderboard: LeaderboardItem[];
 };
+
+export type ProcessingArtistStats = {
+  artistName: string;
+  seasons: Map<string, number>;
+  members: Map<string, number>;
+  classes: Map<string, number>;
+};
+
+export type ArtistStats = {
+  artistName: string;
+  seasons: Stat[];
+  members: Stat[];
+  classes: Stat[];
+};
+
+export type Stat = {
+  name: string;
+  count: number;
+};
