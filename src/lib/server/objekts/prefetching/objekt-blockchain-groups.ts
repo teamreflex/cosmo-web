@@ -16,6 +16,7 @@ import {
   withMember,
   withOnlineType,
   withSeason,
+  withSelectedArtists,
   withTransferable,
 } from "../filters";
 import { nonTransferableReason } from "./common";
@@ -113,6 +114,7 @@ export async function fetchObjektsBlockchainGroups(
           ...withOnlineType(filters.on_offline),
           ...withMember(filters.member),
           ...withTransferable(filters.transferable),
+          ...withSelectedArtists(filters.artists),
         ]
       )
     )

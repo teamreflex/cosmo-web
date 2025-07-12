@@ -188,6 +188,7 @@ export const userCollectionGroups = cosmoSchema
     artistName: z.enum(validArtists).optional().nullable(),
     order: z.enum(validSorts).optional().default("newest"),
     page: z.coerce.number().optional().default(1),
+    artists: z.string().array().optional().default([]),
   })
   .omit({
     artist: true,
@@ -210,6 +211,7 @@ export function parseUserCollectionGroups(params: URLSearchParams) {
       member: params.get("member"),
       artistName: params.get("artistName"),
       transferable: params.get("transferable"),
+      artists: params.getAll("artists"),
     },
     {
       page: 1,
@@ -219,6 +221,7 @@ export function parseUserCollectionGroups(params: URLSearchParams) {
       on_offline: [],
       member: undefined,
       artistName: "artms",
+      artists: [],
     }
   );
 }
