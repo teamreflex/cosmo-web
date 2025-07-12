@@ -75,13 +75,20 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2025-07-12",
+    changes: [
+      "Added: Progress pages now have per member/class/season breakdowns and charts.",
+      "Fixed: Selected artists are now correctly applied when using collection groups.",
+      // "COSMO IDs can be linked and verified via a one-time QR code sign in. This will import any old objekt lists, and allow objekt pins and locking again.",
+    ],
+  },
+  {
     date: "2025-06-28",
     changes: [
       "Real-time gravity tracking should now be stable.",
       "Fixed: FCOs on progress pages are now correctly sorted: 101A, 101Z, 102A, 102Z, etc.",
       "Fixed: Removed the Assemble25 TikTok event from the unobtainable list.",
       'Added: "Rescan" functionality to the bottom left info panel of objekts. This can be used to update an objekt\'s information from COSMO, in the rare event it becomes out of sync.',
-      // "COSMO IDs can be linked and verified via a one-time QR code sign in. This will import any old objekt lists, and allow objekt pins and locking again.",
     ],
   },
 ];
