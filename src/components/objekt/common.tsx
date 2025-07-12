@@ -2,6 +2,7 @@ import type { NonTransferableReason } from "@/lib/universal/cosmo/objekts";
 import { useElementSize } from "@/hooks/use-element-size";
 import { cn, type PropsWithClassName } from "@/lib/utils";
 import type { ValidArtist } from "@/lib/universal/cosmo/common";
+import type { PropsWithChildren } from "react";
 
 type ObjektSidebarProps = {
   artist: ValidArtist;
@@ -9,6 +10,28 @@ type ObjektSidebarProps = {
   collection: string;
   serial?: number;
 };
+
+const fontSizeConfig = {
+  collection: 0.55,
+  name: 0.45,
+} as const;
+
+type SidebarTextProps = PropsWithChildren<{
+  type: keyof typeof fontSizeConfig;
+}>;
+
+function SidebarText(props: SidebarTextProps) {
+  return (
+    <span
+      style={{
+        "--font-ratio": fontSizeConfig[props.type],
+      }}
+      className="text-[calc(var(--sidebar-width)*var(--font-ratio))]/[var(--sidebar-width)]"
+    >
+      {props.children}
+    </span>
+  );
+}
 
 export function ObjektSidebar({
   artist,
@@ -40,16 +63,17 @@ export function ObjektSidebar({
             "bg-(--objekt-background-color) rounded-l-md lg:rounded-l-[10px] w-full h-[89%] my-auto justify-between px-2 lg:px-3"
         )}
         style={{
-          lineHeight: `${width}px`,
-          fontSize: `${width * 0.55}px`,
+          "--sidebar-width": `${width}px`,
         }}
       >
-        {customBand && <span>{member}</span>}
-        <div className="flex items-center gap-2">
-          <span>{collection}</span>
-          {paddedSerial && <span>#{paddedSerial}</span>}
-        </div>
-        {customBand && <span>{artist}</span>}
+        {customBand && <SidebarText type="name">{member}</SidebarText>}
+        <SidebarText type="collection">
+          <div className="flex items-center gap-2">
+            <span>{collection}</span>
+            {paddedSerial && <span>#{paddedSerial}</span>}
+          </div>
+        </SidebarText>
+        {customBand && <SidebarText type="name">{artist}</SidebarText>}
       </div>
     </div>
   );
