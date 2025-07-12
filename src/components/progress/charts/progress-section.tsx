@@ -45,7 +45,7 @@ export default function ProgressSection(props: Props) {
         </ExpandableCard>
       </div>
 
-      <div className="flex items-start justify-center h-fit">
+      <div className="flex items-start justify-center">
         <ProgressChart data={sorted} colors={props.colors} />
       </div>
     </div>

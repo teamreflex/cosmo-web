@@ -29,14 +29,14 @@ export default function ProgressChart(props: Props) {
   }, [props.data, props.colors]);
 
   return (
-    <ChartContainer config={{}} className="aspect-square size-64">
+    <ChartContainer config={{}} className="mx-auto aspect-square h-48 md:h-64">
       <PieChart className="outline-hidden">
         <Pie
           data={data}
           nameKey="name"
           dataKey="count"
-          innerRadius={0}
-          outerRadius={100}
+          innerRadius="0%"
+          outerRadius="80%"
           labelLine={false}
           label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
             // only show label if slice is large enough for readability
