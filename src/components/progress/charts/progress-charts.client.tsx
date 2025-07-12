@@ -21,7 +21,54 @@ export default function ProgressChartsInner(props: Props) {
       );
     }
 
-    return props.stats[0];
+    // merge all stats when no specific artist is selected
+    const mergedStats: ArtistStats = {
+      artistName: "All Artists",
+      seasons: [],
+      members: [],
+      classes: [],
+    };
+
+    // merge seasons
+    const seasonMap = new Map<string, number>();
+    for (const stat of props.stats) {
+      for (const season of stat.seasons) {
+        seasonMap.set(
+          season.name,
+          (seasonMap.get(season.name) || 0) + season.count
+        );
+      }
+    }
+    mergedStats.seasons = Array.from(seasonMap.entries()).map(
+      ([name, count]) => ({ name, count })
+    );
+
+    // merge members
+    const memberMap = new Map<string, number>();
+    for (const stat of props.stats) {
+      for (const member of stat.members) {
+        memberMap.set(
+          member.name,
+          (memberMap.get(member.name) || 0) + member.count
+        );
+      }
+    }
+    mergedStats.members = Array.from(memberMap.entries()).map(
+      ([name, count]) => ({ name, count })
+    );
+
+    // merge classes
+    const classMap = new Map<string, number>();
+    for (const stat of props.stats) {
+      for (const cls of stat.classes) {
+        classMap.set(cls.name, (classMap.get(cls.name) || 0) + cls.count);
+      }
+    }
+    mergedStats.classes = Array.from(classMap.entries()).map(
+      ([name, count]) => ({ name, count })
+    );
+
+    return mergedStats;
   }, [filters, props.stats]);
 
   if (!stats) {

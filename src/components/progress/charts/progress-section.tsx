@@ -36,7 +36,9 @@ export default function ProgressSection(props: Props) {
                 className="flex items-center justify-between h-10 px-6 bg-(--stat-color)/10 hover:bg-(--stat-color)/20 transition-colors"
               >
                 <span className="text-sm font-semibold">{stat.name}</span>
-                <span className="text-xs font-medium">{stat.count}</span>
+                <span className="text-xs font-medium">
+                  {stat.count.toLocaleString()}
+                </span>
               </div>
             ))}
           </ExpandableCardContent>
