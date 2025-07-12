@@ -38,6 +38,12 @@ const config: NextConfig = {
         revalidate: 60 * 60 * 24, // 1 day
         expire: 60 * 60 * 24 * 2, // 2 days
       },
+      // progress stats
+      progressStats: {
+        stale: 60 * 60, // 1 hour
+        revalidate: 60 * 60, // 1 hour
+        expire: 60 * 60 * 2, // 2 hours
+      },
     },
     staleTimes: {
       dynamic: 60 * 5, // 5 minutes

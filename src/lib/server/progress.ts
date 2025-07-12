@@ -2,13 +2,18 @@ import { indexer } from "@/lib/server/db/indexer";
 import { collections, objekts } from "@/lib/server/db/indexer/schema";
 import { count, eq } from "drizzle-orm";
 import type { ArtistStats, ProcessingArtistStats } from "../universal/progress";
+import { unstable_cacheLife as cacheLife } from "next/cache";
 
 /**
  * Get objekts stats grouped by artist for a given address
+ * Cached for 1 hour.
  */
 export async function getArtistStatsByAddress(
   address: string
 ): Promise<ArtistStats[]> {
+  "use cache: remote";
+  cacheLife("progressStats");
+
   // query objekts grouped by season, member and artist in a single query
   const stats = await indexer
     .select({
