@@ -55,7 +55,7 @@ import { useUserState } from "@/hooks/use-user-state";
 import { metadataObjectSchema } from "@/lib/universal/schema/metadata";
 import { useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import type { z } from "zod/v4";
+import type { z } from "zod";
 import {
   Form,
   FormControl,

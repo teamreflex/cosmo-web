@@ -11,7 +11,7 @@ import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
-import type { z } from "zod/v4";
+import type { z } from "zod";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";

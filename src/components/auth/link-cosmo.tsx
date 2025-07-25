@@ -41,7 +41,7 @@ import {
   FormItem,
   FormMessage,
 } from "../ui/form";
-import type { z } from "zod/v4";
+import type { z } from "zod";
 
 export const LinkCosmoContext = createContext({
   open: false,

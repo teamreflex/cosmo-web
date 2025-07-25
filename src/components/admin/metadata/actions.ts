@@ -6,7 +6,7 @@ import { adminActionClient } from "@/lib/server/server-actions";
 import { metadataObjectSchema } from "@/lib/universal/schema/metadata";
 import { sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { z } from "zod/v4";
+import { z } from "zod";
 
 /**
  * Bulk inserts objekt metadata.

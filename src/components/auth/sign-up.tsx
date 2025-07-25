@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { CheckCircle, Loader2 } from "lucide-react";
-import type { z } from "zod/v4";
+import type { z } from "zod";
 import { useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import {

@@ -1,4 +1,4 @@
-import { z } from "zod/v4";
+import { z } from "zod";
 
 export const verifyCosmoSchema = z.object({
   otp: z.coerce.number<number>(),

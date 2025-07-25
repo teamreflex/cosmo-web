@@ -1,4 +1,4 @@
-import { z } from "zod/v4";
+import { z } from "zod";
 
 export const metadataObjectSchema = z.object({
   collectionId: z.string().min(1),

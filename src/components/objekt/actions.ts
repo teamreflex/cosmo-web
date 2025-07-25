@@ -9,7 +9,7 @@ import {
 } from "@/lib/server/server-actions";
 import { eq } from "drizzle-orm";
 import { revalidatePath, revalidateTag } from "next/cache";
-import { z } from "zod/v4";
+import { z } from "zod";
 
 /**
  * Update an objekt's metadata.

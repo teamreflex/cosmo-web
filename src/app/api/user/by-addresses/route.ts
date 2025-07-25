@@ -39,7 +39,7 @@ export async function POST(req: Request) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return Response.json(
-        { error: "validation error", details: error.errors },
+        { error: "validation error", details: error.issues },
         { status: 422 }
       );
     }

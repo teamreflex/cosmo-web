@@ -1,7 +1,7 @@
 "use server";
 
 import "server-only";
-import { z } from "zod/v4";
+import { z } from "zod";
 import { db } from "@/lib/server/db";
 import { lockedObjekts, pins } from "@/lib/server/db/schema";
 import { and, eq } from "drizzle-orm";

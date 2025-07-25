@@ -2,7 +2,7 @@ import type { ValidSort } from "@/lib/universal/cosmo/common";
 import { and, asc, desc, eq, max, sql } from "drizzle-orm";
 import type { PgSelect } from "drizzle-orm/pg-core";
 import { collections, objekts } from "../../db/indexer/schema";
-import type { z } from "zod/v4";
+import type { z } from "zod";
 import type { userCollectionGroups } from "@/lib/universal/parsers";
 import { indexer } from "../../db/indexer";
 import type {
