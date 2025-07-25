@@ -12,6 +12,8 @@ import { getTypesenseResults } from "@/lib/client/typesense";
 import { useDebounceValue } from "usehooks-ts";
 import { baseUrl } from "@/lib/query-client";
 import { useArtists } from "./use-artists";
+import { useEffect } from "react";
+import { track } from "@/lib/utils";
 
 /**
  * Handles switching between the blockchain and Typesense APIs.
@@ -22,6 +24,13 @@ export function useObjektIndex() {
   const { selectedIds } = useArtists();
   const [filters] = useCosmoFilters();
   const { searchParams } = useFilters();
+
+  // track when a user searches for an objekt
+  useEffect(() => {
+    if (debouncedSearch && debouncedSearch.length > 0) {
+      track("objekt-search");
+    }
+  }, [debouncedSearch]);
 
   // if no search, use the default API
   if (!debouncedSearch) {
