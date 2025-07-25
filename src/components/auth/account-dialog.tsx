@@ -80,7 +80,6 @@ export default function AccountDialog({ open, onOpenChange, cosmo }: Props) {
 }
 
 function LinkCosmoButton() {
-  return null;
   const ctx = use(LinkCosmoContext);
 
   return (

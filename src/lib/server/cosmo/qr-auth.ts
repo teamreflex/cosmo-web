@@ -12,7 +12,7 @@ export const cosmoShopHeaders = {
 
 const bql = `
 mutation COSMORecaptchaToken {
-  goto(url: "https://shop.cosmo.fans", waitUntil: firstContentfulPaint, timeout: 5000) {
+  goto(url: "https://shop.cosmo.fans/ko/login/landing", waitUntil: networkIdle, timeout: 7500) {
     status
   }
   getToken: evaluate(
