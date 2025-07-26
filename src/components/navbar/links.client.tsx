@@ -19,7 +19,12 @@ import NavbarSearch from "./navbar-search";
 import { ArtistItem } from "./artist-selectbox";
 import { useArtists } from "@/hooks/use-artists";
 import type { PublicUser } from "@/lib/universal/auth";
-import { type LucideIcon, PackageOpen, Vote } from "lucide-react";
+import {
+  ChartColumnBig,
+  type LucideIcon,
+  PackageOpen,
+  Vote,
+} from "lucide-react";
 // import { use } from "react";
 // import { LinkCosmoContext } from "../auth/link-cosmo";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
@@ -40,6 +45,13 @@ export function DesktopLinks({ signedIn, cosmo }: Props) {
         active={path.startsWith("/objekts")}
         icon={IconCards}
         name="Objekts"
+      />
+
+      <LinkButton
+        href="/objekts/stats"
+        active={path.startsWith("/objekts/stats")}
+        icon={ChartColumnBig}
+        name="Objekt Stats"
       />
 
       <LinkButton
@@ -80,6 +92,19 @@ export function MobileLinks({ signedIn, cosmo }: Props) {
             )}
           />
           <span>Objekts</span>
+        </Link>
+      </DropdownMenuItem>
+
+      {/* objekt stats */}
+      <DropdownMenuItem asChild>
+        <Link href="/objekts/stats" aria-label="Objekt Stats">
+          <ChartColumnBig
+            className={cn(
+              "h-4 w-4 shrink-0 transition-all fill-transparent",
+              path === "/objekts/stats" && "fill-white/50"
+            )}
+          />
+          <span>Objekt Stats</span>
         </Link>
       </DropdownMenuItem>
 

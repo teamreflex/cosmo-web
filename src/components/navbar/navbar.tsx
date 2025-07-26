@@ -16,7 +16,7 @@ import AuthFallback from "../auth/auth-fallback";
 import { ArtistProvider } from "@/hooks/use-artists";
 import { Skeleton } from "../ui/skeleton";
 import { IconCards } from "@tabler/icons-react";
-import { Menu, Search, Vote } from "lucide-react";
+import { ChartColumnBig, Menu, Search, Vote } from "lucide-react";
 
 export default function Navbar() {
   return (
@@ -52,6 +52,7 @@ function NavbarFallback() {
       <div className="hidden lg:contents">
         <div className="flex justify-center items-center gap-6">
           <IconCards className="hidden lg:block size-8 shrink-0 fill-transparent" />
+          <ChartColumnBig className="hidden lg:block size-8 shrink-0 fill-transparent" />
           <Vote className="hidden lg:block size-8 shrink-0 fill-transparent" />
           <Search className="hidden lg:block size-8 shrink-0 fill-transparent" />
         </div>
