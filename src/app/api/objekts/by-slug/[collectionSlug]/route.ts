@@ -13,7 +13,7 @@ type Params = {
 /**
  * API route for individual objekt dialogs.
  * Fetches a single objekt from the database.
- * Cached for 1 hour.
+ * Cached for 24 hours.
  */
 export async function GET(_: Request, props: Params) {
   const params = await props.params;
@@ -29,6 +29,6 @@ export async function GET(_: Request, props: Params) {
 
   const common = Objekt.fromIndexer(collection);
   return Response.json(common, {
-    headers: cacheHeaders({ vercel: 60 * 60 }),
+    headers: cacheHeaders({ vercel: 60 * 60 * 24 }),
   });
 }

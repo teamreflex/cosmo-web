@@ -42,13 +42,19 @@ export async function GET(_: Request, props: Params) {
 
   /**
    * cache for:
-   * - <= 12 hours: 5 minutes
-   * - > 12 hours: 1 hour
+   * - older than 12 hours: 5 minutes
+   * - older than 24 hours: 1 hour
+   * - older than 48 hours: 4 hours
+   * - else: 12 hours
    */
   if (now - timestamp <= 12 * hourInMs) {
-    cacheTime = 5 * 60;
-  } else {
+    cacheTime = 60 * 5;
+  } else if (now - timestamp <= 24 * hourInMs) {
     cacheTime = 60 * 60;
+  } else if (now - timestamp <= 48 * hourInMs) {
+    cacheTime = 60 * 60 * 4;
+  } else {
+    cacheTime = 60 * 60 * 12;
   }
 
   return Response.json(
