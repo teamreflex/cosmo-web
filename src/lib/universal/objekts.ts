@@ -1,6 +1,9 @@
-import type { Collection } from "@/lib/server/db/indexer/schema";
+import type { Collection, Transfer } from "@/lib/server/db/indexer/schema";
 import type { ObjektMetadataEntry, CosmoAccount } from "@/lib/server/db/schema";
-import type { CosmoObjekt, ObjektBaseFields } from "@/lib/universal/cosmo/objekts";
+import type {
+  CosmoObjekt,
+  ObjektBaseFields,
+} from "@/lib/universal/cosmo/objekts";
 
 // alias the indexer type
 export type IndexedObjekt = Collection;
@@ -22,6 +25,13 @@ export type ObjektMetadata = {
   transferable: number;
   percentage: number;
   metadata: ObjektInformation | undefined;
+};
+
+export type SerialObjekt = {
+  username: string | null;
+  address: string;
+  serial: number;
+  transfers: Transfer[];
 };
 
 /**

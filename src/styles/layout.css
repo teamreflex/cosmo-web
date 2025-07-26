@@ -44,6 +44,11 @@
       @apply bg-secondary rounded-full;
     }
   }
+
+  /* fixes vaul drawer 200% padding on small mobile displays */
+  [data-vaul-drawer][data-vaul-drawer-direction="bottom"]::after {
+    height: unset !important;
+  }
 }
 
 @utility container {

@@ -3,7 +3,7 @@ import { type PropsWithChildren, useState } from "react";
 import { getObjektImageUrls } from "./common";
 import { useQueryClient } from "@tanstack/react-query";
 import { useObjektTransfer } from "@/hooks/use-objekt-transfer";
-import { fetchObjektQuery } from "./metadata-dialog";
+import { fetchObjektQuery } from "./metadata/common";
 import MetadataDialog from "./metadata-dialog";
 import { cn } from "@/lib/utils";
 import { default as NextImage } from "next/image";
