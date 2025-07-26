@@ -4,8 +4,8 @@ import { Separator } from "../../ui/separator";
 import { ObjektSidebar } from "../common";
 import FlippableObjekt from "../objekt-flippable";
 import AttributePanel from "./attribute-panel";
-import MetadataPanel from "./metadata-panel";
 import { fetchObjektQuery } from "./common";
+import MetadataPanel from "./metadata-panel";
 
 type Props = {
   slug: string;

@@ -18,6 +18,7 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import VisuallyHidden from "../ui/visually-hidden";
 import MetadataContent from "./metadata/metadata-content";
 import { MetadataDialogError } from "./metadata/common";
+import { useObjektSerial } from "@/hooks/use-objekt-serial";
 
 type RenderProps = {
   open: () => void;
@@ -38,10 +39,12 @@ export default function MetadataDialog({
 }: Props) {
   const isDesktop = useMediaQuery();
   const [open, setOpen] = useState(isActive);
+  const { reset } = useObjektSerial();
 
   function onOpenChange(state: boolean) {
     setOpen(state);
     if (state === false && onClose !== undefined) {
+      reset();
       onClose();
     }
   }

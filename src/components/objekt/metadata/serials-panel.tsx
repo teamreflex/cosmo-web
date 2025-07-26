@@ -1,0 +1,218 @@
+import {
+  QueryErrorResetBoundary,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
+import { ErrorBoundary } from "react-error-boundary";
+import { MetadataDialogError } from "./common";
+import { Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ofetch } from "ofetch";
+import type { SerialObjekt, SerialTransfer } from "@/lib/universal/objekts";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import Link from "next/link";
+import Image from "next/image";
+import ProfileImage from "@/assets/profile.webp";
+import CosmoImage from "@/assets/cosmo.webp";
+import { Addresses, isEqual } from "@/lib/utils";
+
+type Props = {
+  slug: string;
+  serial: number | null;
+  setSerial: (serial: number) => void;
+};
+
+export default function SerialsPanel(props: Props) {
+  function handleNext() {
+    props.setSerial((props.serial ?? 0) + 1);
+  }
+
+  function handlePrevious() {
+    props.setSerial((props.serial ?? 0) - 1);
+  }
+
+  return (
+    <div className="flex flex-col gap-2 w-full">
+      <div className="flex flex-row gap-1">
+        <Input
+          type="number"
+          value={props.serial ?? ""}
+          onChange={(e) => props.setSerial(parseInt(e.target.value))}
+          className="flex-1"
+        />
+
+        <Button variant="ghost" size="icon" onClick={handleNext}>
+          <ChevronUp />
+        </Button>
+        <Button variant="ghost" size="icon" onClick={handlePrevious}>
+          <ChevronDown />
+        </Button>
+      </div>
+
+      {props.serial !== null && (
+        <QueryErrorResetBoundary>
+          {({ reset }) => (
+            <ErrorBoundary
+              FallbackComponent={MetadataDialogError}
+              onReset={reset}
+            >
+              <Suspense fallback={<Fallback />}>
+                <Content {...props} />
+              </Suspense>
+            </ErrorBoundary>
+          )}
+        </QueryErrorResetBoundary>
+      )}
+    </div>
+  );
+}
+
+function Fallback() {
+  return (
+    <div className="flex flex-col gap-4">
+      <Skeleton className="h-16 rounded-lg" />
+      <Skeleton className="h-32 rounded-lg" />
+    </div>
+  );
+}
+
+function Content(props: Props) {
+  const { data } = useSuspenseQuery({
+    queryKey: ["objekt-serial", props.slug, props.serial],
+    queryFn: async () => {
+      return await ofetch<SerialObjekt>(
+        `/api/objekts/metadata/${props.slug}/${props.serial}`
+      );
+    },
+    retry: 1,
+  });
+
+  const href = data.username ? `/@${data.username}` : `/@${data.address}`;
+
+  return (
+    <div className="flex flex-col gap-2 w-full">
+      {/* owner */}
+      <Link
+        href={href}
+        className="group flex items-center gap-3 p-3 bg-secondary/50 rounded-lg hover:bg-secondary/60 transition-colors"
+        prefetch={false}
+      >
+        <Image
+          src={ProfileImage.src}
+          width={40}
+          height={40}
+          alt="Profile"
+          className="rounded-full bg-cosmo-profile p-1"
+        />
+        <div className="flex flex-col">
+          <span className="text-xs text-muted-foreground">Owner</span>
+          <span className="font-medium group-hover:underline">
+            {data.username ?? data.address.substring(0, 8) + "..."}
+          </span>
+        </div>
+      </Link>
+
+      {/* Transfers section */}
+      {data.transfers.length > 0 && (
+        <div className="border rounded-lg overflow-hidden">
+          <div className="text-xs font-medium grid grid-cols-[2fr_2fr_2fr] gap-2 px-4 py-2 bg-secondary/30 border-b">
+            <span>From</span>
+            <span>To</span>
+            <span className="text-right">Date</span>
+          </div>
+          <div className="md:max-h-36 md:overflow-y-auto">
+            {data.transfers.map((transfer) => (
+              <TransferItem key={transfer.id} transfer={transfer} />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+type TransferItemProps = {
+  transfer: SerialTransfer;
+};
+
+function TransferItem({ transfer }: TransferItemProps) {
+  const timestamp = new Date(transfer.timestamp).toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+    hour12: true,
+  });
+
+  return (
+    <div className="text-xs items-center grid grid-cols-[2fr_2fr_2fr] gap-2 px-4 h-10 border-b last:border-b-0 hover:bg-secondary/20 transition-colors">
+      <div className="flex items-center gap-2">
+        {/* from cosmo */}
+        {isEqual(transfer.from, Addresses.NULL) && (
+          <Image
+            src={CosmoImage.src}
+            width={20}
+            height={20}
+            alt="COSMO"
+            className="rounded-full ring ring-accent"
+          />
+        )}
+
+        {/* from user */}
+        {transfer.fromUsername &&
+        !isEqual(transfer.from, Addresses.NULL) &&
+        !isEqual(transfer.from, Addresses.SPIN) ? (
+          <Link
+            href={`/@${transfer.fromUsername}`}
+            className="hover:underline truncate"
+            prefetch={false}
+          >
+            {formatAddress(transfer.from, transfer.fromUsername)}
+          </Link>
+        ) : (
+          <span className="truncate">
+            {formatAddress(transfer.from, transfer.fromUsername)}
+          </span>
+        )}
+      </div>
+
+      {/* to user */}
+      <div className="truncate">
+        {transfer.toUsername &&
+        !isEqual(transfer.to, Addresses.NULL) &&
+        !isEqual(transfer.to, Addresses.SPIN) ? (
+          <Link
+            href={`/@${transfer.toUsername}`}
+            className="hover:underline"
+            prefetch={false}
+          >
+            {formatAddress(transfer.to, transfer.toUsername)}
+          </Link>
+        ) : (
+          <span>{formatAddress(transfer.to, transfer.toUsername)}</span>
+        )}
+      </div>
+
+      {/* timestamp */}
+      <span className="text-right text-muted-foreground">{timestamp}</span>
+    </div>
+  );
+}
+
+function formatAddress(address: string, username: string | null) {
+  if (isEqual(address, Addresses.NULL)) {
+    return "COSMO";
+  }
+
+  if (isEqual(address, Addresses.SPIN)) {
+    return "COSMO Spin";
+  }
+
+  if (username) {
+    return username;
+  }
+
+  return address.substring(0, 8) + "...";
+}

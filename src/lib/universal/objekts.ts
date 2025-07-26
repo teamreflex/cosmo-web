@@ -27,11 +27,16 @@ export type ObjektMetadata = {
   metadata: ObjektInformation | undefined;
 };
 
+export type SerialTransfer = Transfer & {
+  fromUsername: string | null;
+  toUsername: string | null;
+};
+
 export type SerialObjekt = {
   username: string | null;
   address: string;
   serial: number;
-  transfers: Transfer[];
+  transfers: SerialTransfer[];
 };
 
 /**
