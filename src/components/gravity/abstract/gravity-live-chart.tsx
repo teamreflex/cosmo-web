@@ -14,9 +14,9 @@ import type {
 import { useGravityPoll } from "@/lib/client/gravity/common";
 import { findPoll } from "@/lib/client/gravity/util";
 import GravitySkeleton from "../gravity-skeleton";
-import { Activity, AlertTriangle, CircleCheckBig, Loader2 } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import Portal from "@/components/portal";
-import type { LiveStatus } from "@/lib/client/gravity/abstract/types";
+import TimelineChart from "./timeline-chart";
 
 type Props = {
   artist: CosmoArtistBFF;
@@ -82,6 +82,13 @@ export default function AbstractLiveChart({ artist, gravity }: Props) {
 
   return (
     <div className="flex flex-col w-full gap-2">
+      <TimelineChart
+        endDate={poll.endDate}
+        pollId={Number(poll.id)}
+        liveStatus={chain.liveStatus}
+        totalComoUsed={comoUsed}
+      />
+
       <CandidateBreakdown
         content={poll.pollViewMetadata.selectedContent}
         comoByCandidate={comoByCandidate}
@@ -91,12 +98,9 @@ export default function AbstractLiveChart({ artist, gravity }: Props) {
       />
 
       <Portal to="#gravity-status">
-        <div className="flex flex-col items-end">
-          <Status
-            liveStatus={chain.liveStatus}
-            isRefreshing={chain.isRefreshing}
-          />
-          <p className="text-xs font-semibold">
+        <div className="flex flex-col items-end text-xs font-semibold">
+          <p>Votes</p>
+          <p>
             {countedVotes.toLocaleString()}/{totalVotes.toLocaleString()} (
             {percentageCounted}%)
           </p>
@@ -105,42 +109,3 @@ export default function AbstractLiveChart({ artist, gravity }: Props) {
     </div>
   );
 }
-
-type StatusProps = {
-  liveStatus: LiveStatus;
-  isRefreshing: boolean;
-};
-
-function Status({ liveStatus, isRefreshing }: StatusProps) {
-  const config = statusConfig[liveStatus];
-
-  return (
-    <div className="flex items-center gap-2">
-      <span>
-        {isRefreshing ? (
-          <Loader2 className="size-4 animate-spin" />
-        ) : (
-          config.icon
-        )}
-      </span>
-      <p className="text-sm font-semibold">{config.text}</p>
-    </div>
-  );
-}
-
-const statusConfig = {
-  voting: {
-    icon: <Activity className="size-5 text-cosmo" />,
-    text: "VOTING",
-  },
-  live: {
-    icon: (
-      <div className="aspect-square size-3 bg-red-500 rounded-full animate-pulse" />
-    ),
-    text: "LIVE",
-  },
-  finalized: {
-    icon: <CircleCheckBig className="size-4 text-green-500" />,
-    text: "COMPLETE",
-  },
-} as const;

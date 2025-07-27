@@ -7,6 +7,8 @@ import { getProxiedToken } from "./handlers/withProxiedToken";
 import { findPoll } from "../client/gravity/util";
 import type { RevealedVote } from "../client/gravity/polygon/types";
 import { remember } from "./cache";
+import { indexer } from "./db/indexer";
+import type { GravityVote } from "../universal/gravity";
 
 /**
  * Fetch all gravities and group them by artist.
@@ -138,6 +140,24 @@ export async function fetchCachedPoll(
 
   const { accessToken } = await getProxiedToken();
   return await fetchPoll(accessToken, artist, gravityId, pollId);
+}
+
+/**
+ * Fetch votes from the indexer.
+ */
+export async function fetchAbstractVotes(
+  pollId: number
+): Promise<GravityVote[]> {
+  const votes = await indexer.query.votes.findMany({
+    where: {
+      pollId,
+    },
+  });
+
+  return votes.map((vote) => ({
+    ...vote,
+    amount: Number(vote.amount),
+  }));
 }
 
 const ADDRESSES: Record<string, string> = {

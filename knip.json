@@ -1,3 +1,0 @@
-{
-  "project": ["src/**/*.{js,ts,mjs,mts,tsx}"]
-}

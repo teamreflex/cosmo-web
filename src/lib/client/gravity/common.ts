@@ -1,5 +1,6 @@
 import { baseUrl } from "@/lib/query-client";
 import type { CosmoPollChoices } from "@/lib/universal/cosmo/gravity";
+import type { GravityVote } from "@/lib/universal/gravity";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ofetch } from "ofetch";
 
@@ -14,6 +15,23 @@ export const pollDetailsKey = (params: GravityHookParams) => [
   { tokenId: Number(params.tokenId) },
   Number(params.pollId),
 ];
+
+export const gravityVotesKey = (pollId: number) => ["gravity", "votes", pollId];
+
+/**
+ * Fetch votes for a given poll.
+ */
+export function useGravityVotes(pollId: number) {
+  return useSuspenseQuery({
+    queryKey: gravityVotesKey(pollId),
+    queryFn: async () => {
+      const url = new URL(`/api/gravity/${pollId}/votes`, baseUrl());
+      return await ofetch<GravityVote[]>(url.toString());
+    },
+    refetchOnWindowFocus: false,
+    staleTime: Infinity,
+  });
+}
 
 type UseGravityPollParams = {
   artistName: string;

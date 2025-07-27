@@ -5,12 +5,15 @@
       "path": "."
     },
     {
+      "name": "cosmo-db",
       "path": "../cosmo-db"
     },
     {
+      "name": "cosmo-typesense",
       "path": "../cosmo-typesense"
     },
     {
+      "name": "apollo-migration",
       "path": "../apollo-migration"
     }
   ],

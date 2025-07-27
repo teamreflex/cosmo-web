@@ -10,12 +10,16 @@ import { ErrorBoundary } from "react-error-boundary";
 import AbstractLiveChart from "@/components/gravity/abstract/gravity-live-chart";
 import PolygonLiveChart from "@/components/gravity/polygon/gravity-live-chart";
 import { getQueryClient } from "@/lib/query-client";
-import { pollDetailsKey } from "@/lib/client/gravity/common";
+import { gravityVotesKey, pollDetailsKey } from "@/lib/client/gravity/common";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { findPoll } from "@/lib/client/gravity/util";
 import GravitySkeleton from "@/components/gravity/gravity-skeleton";
 import { db } from "@/lib/server/db";
-import { fetchCachedGravity, fetchCachedPoll } from "@/lib/server/gravity";
+import {
+  fetchAbstractVotes,
+  fetchCachedGravity,
+  fetchCachedPoll,
+} from "@/lib/server/gravity";
 
 // if polygon, could be slow
 export const maxDuration = 30;
@@ -85,8 +89,12 @@ export default async function GravityPage(props: Props) {
         tokenId: BigInt(artist.comoTokenId),
         pollId: BigInt(poll.id),
       }),
-      queryFn: async () =>
-        fetchCachedPoll(artist.id, info.cosmoId, poll.id, isPast),
+      queryFn: () => fetchCachedPoll(artist.id, info.cosmoId, poll.id, isPast),
+    });
+
+    queryClient.prefetchQuery({
+      queryKey: gravityVotesKey(poll.id),
+      queryFn: () => fetchAbstractVotes(poll.id),
     });
   }
 

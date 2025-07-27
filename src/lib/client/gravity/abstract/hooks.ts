@@ -20,7 +20,8 @@ import type {
 import { useEffect, useMemo, useState } from "react";
 import { abstract } from "viem/chains";
 import type { GravityHookParams } from "../common";
-import { isAfter, isBefore } from "date-fns";
+import { useGravityVotes } from "../common";
+import { isAfter, isBefore, startOfHour, addMinutes } from "date-fns";
 
 // chain to connect to
 const chainId = abstract.id;
@@ -61,6 +62,9 @@ function useStartBlock(startDate: string) {
   const { data: currentBlock } = useBlockNumber({
     watch: false,
     cacheTime: Infinity,
+    query: {
+      enabled: (query) => query.state.data === undefined,
+    },
   });
 
   /**
@@ -247,4 +251,82 @@ export function useChainData(params: UseChainDataOptions): UseChainData {
         ? comoPerCandidate.result.map((candidate) => Number(candidate))
         : [],
   } satisfies UseChainDataSuccess;
+}
+
+/**
+ * Timeline data point for vote visualization.
+ */
+export interface VoteTimelineSegment {
+  timestamp: Date;
+  voteCount: number;
+  totalTokenAmount: number;
+}
+
+/**
+ * Fetch all Voted events and format them for timeline visualization.
+ * Groups votes by 30-minute time segments for consistent visualization.
+ */
+export function useVotedEvents(
+  pollId: number,
+  endDate: string
+): VoteTimelineSegment[] {
+  const { data: votes } = useGravityVotes(pollId);
+
+  // Process votes into time-based segments
+  const data = useMemo(() => {
+    if (votes.length === 0) {
+      return [];
+    }
+
+    // Find the first vote timestamp and use endDate for range
+    const voteTimes = votes.map((vote) => new Date(vote.createdAt));
+    const earliestVoteTime = new Date(
+      Math.min(...voteTimes.map((t) => t.getTime()))
+    );
+    const endTime = new Date(endDate);
+
+    // Generate 30-minute time segments from first vote to end date
+    const segments: VoteTimelineSegment[] = [];
+    const segmentMap = new Map<string, VoteTimelineSegment>();
+
+    // Start from the 30-minute segment containing the first vote
+    const firstVoteHour = startOfHour(earliestVoteTime);
+    let currentTime =
+      earliestVoteTime.getMinutes() < 30
+        ? firstVoteHour
+        : addMinutes(firstVoteHour, 30);
+
+    while (currentTime < endTime) {
+      const segment = {
+        timestamp: currentTime,
+        voteCount: 0,
+        totalTokenAmount: 0,
+      };
+
+      segments.push(segment);
+      segmentMap.set(currentTime.toISOString(), segment);
+
+      currentTime = addMinutes(currentTime, 30);
+    }
+
+    // Populate segments with vote data using exact timestamps
+    votes.forEach((vote) => {
+      const voteTime = new Date(vote.createdAt);
+
+      // Find the appropriate 30-minute segment
+      const hour = startOfHour(voteTime);
+      const segmentTime =
+        voteTime.getMinutes() < 30 ? hour : addMinutes(hour, 30);
+
+      const segment = segmentMap.get(segmentTime.toISOString());
+      if (segment) {
+        segment.voteCount += 1;
+        segment.totalTokenAmount += vote.amount;
+      }
+    });
+
+    return segments;
+  }, [votes, endDate]);
+
+  return data;
 }

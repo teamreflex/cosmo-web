@@ -75,8 +75,6 @@ export const votes = pgTable("vote", {
   createdAt: timestamp("created_at", { mode: "string" }).notNull(),
   contract: varchar("contract", { length: 42 }).notNull(),
   pollId: integer("poll_id").notNull(),
-  candidateId: integer("candidate_id"),
-  index: integer("index").notNull(),
   amount: bigint("amount", { mode: "number" }).notNull(),
 });
 
