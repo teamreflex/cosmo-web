@@ -10,12 +10,14 @@ import { ofetch } from "ofetch";
 import type { SerialObjekt, SerialTransfer } from "@/lib/universal/objekts";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, HeartCrack } from "lucide-react";
+import { IconRotate360 } from "@tabler/icons-react";
 import Link from "next/link";
 import Image from "next/image";
 import ProfileImage from "@/assets/profile.webp";
 import CosmoImage from "@/assets/cosmo.webp";
 import { Addresses, isEqual } from "@/lib/utils";
+import { useDebounceValue } from "usehooks-ts";
 
 type Props = {
   slug: string;
@@ -24,33 +26,40 @@ type Props = {
 };
 
 export default function SerialsPanel(props: Props) {
+  const [debounced] = useDebounceValue(props.serial, 300);
+
   function handleNext() {
     props.setSerial((props.serial ?? 0) + 1);
   }
 
   function handlePrevious() {
+    if (props.serial === 1 || props.serial === null) {
+      return;
+    }
+
     props.setSerial((props.serial ?? 0) - 1);
   }
 
   return (
     <div className="flex flex-col gap-2 w-full">
-      <div className="flex flex-row gap-1">
+      <div className="flex flex-row gap-2">
         <Input
           type="number"
+          placeholder="Select a serial..."
           value={props.serial ?? ""}
           onChange={(e) => props.setSerial(parseInt(e.target.value))}
           className="flex-1"
         />
 
-        <Button variant="ghost" size="icon" onClick={handleNext}>
+        <Button variant="outline" size="icon" onClick={handleNext}>
           <ChevronUp />
         </Button>
-        <Button variant="ghost" size="icon" onClick={handlePrevious}>
+        <Button variant="outline" size="icon" onClick={handlePrevious}>
           <ChevronDown />
         </Button>
       </div>
 
-      {props.serial !== null && (
+      {debounced !== null && debounced > 0 && (
         <QueryErrorResetBoundary>
           {({ reset }) => (
             <ErrorBoundary
@@ -58,7 +67,7 @@ export default function SerialsPanel(props: Props) {
               onReset={reset}
             >
               <Suspense fallback={<Fallback />}>
-                <Content {...props} />
+                <Content serial={debounced} slug={props.slug} />
               </Suspense>
             </ErrorBoundary>
           )}
@@ -70,25 +79,43 @@ export default function SerialsPanel(props: Props) {
 
 function Fallback() {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-2">
       <Skeleton className="h-16 rounded-lg" />
       <Skeleton className="h-32 rounded-lg" />
     </div>
   );
 }
 
-function Content(props: Props) {
-  const { data } = useSuspenseQuery({
+type ContentProps = {
+  serial: number;
+  slug: string;
+};
+
+function Content(props: ContentProps) {
+  const {
+    data: { result },
+  } = useSuspenseQuery({
     queryKey: ["objekt-serial", props.slug, props.serial],
     queryFn: async () => {
-      return await ofetch<SerialObjekt>(
+      return await ofetch<{ result: SerialObjekt | null }>(
         `/api/objekts/metadata/${props.slug}/${props.serial}`
       );
     },
     retry: 1,
   });
 
-  const href = data.username ? `/@${data.username}` : `/@${data.address}`;
+  if (!result) {
+    return (
+      <div className="flex flex-col items-center justify-center py-4">
+        <HeartCrack className="size-8" />
+        <span className="text-sm font-medium">
+          Serial #{props.serial.toString().padStart(5, "0")} does not exist
+        </span>
+      </div>
+    );
+  }
+
+  const href = result.username ? `/@${result.username}` : `/@${result.address}`;
 
   return (
     <div className="flex flex-col gap-2 w-full">
@@ -108,13 +135,13 @@ function Content(props: Props) {
         <div className="flex flex-col">
           <span className="text-xs text-muted-foreground">Owner</span>
           <span className="font-medium group-hover:underline">
-            {data.username ?? data.address.substring(0, 8) + "..."}
+            {result.username ?? result.address.substring(0, 8) + "..."}
           </span>
         </div>
       </Link>
 
       {/* Transfers section */}
-      {data.transfers.length > 0 && (
+      {result.transfers.length > 0 && (
         <div className="border rounded-lg overflow-hidden">
           <div className="text-xs font-medium grid grid-cols-[2fr_2fr_2fr] gap-2 px-4 py-2 bg-secondary/30 border-b">
             <span>From</span>
@@ -122,7 +149,7 @@ function Content(props: Props) {
             <span className="text-right">Date</span>
           </div>
           <div className="md:max-h-36 md:overflow-y-auto">
-            {data.transfers.map((transfer) => (
+            {result.transfers.map((transfer) => (
               <TransferItem key={transfer.id} transfer={transfer} />
             ))}
           </div>
@@ -161,11 +188,14 @@ function TransferItem({ transfer }: TransferItemProps) {
         )}
 
         {/* from user */}
-        {transfer.fromUsername &&
-        !isEqual(transfer.from, Addresses.NULL) &&
-        !isEqual(transfer.from, Addresses.SPIN) ? (
+        {isEqual(transfer.from, Addresses.SPIN) ? (
+          <div className="flex items-center gap-1">
+            <IconRotate360 className="size-4" />
+            <span className="truncate">COSMO Spin</span>
+          </div>
+        ) : !isEqual(transfer.from, Addresses.NULL) ? (
           <Link
-            href={`/@${transfer.fromUsername}`}
+            href={`/@${transfer.fromUsername ?? transfer.from}`}
             className="hover:underline truncate"
             prefetch={false}
           >
@@ -180,11 +210,14 @@ function TransferItem({ transfer }: TransferItemProps) {
 
       {/* to user */}
       <div className="truncate">
-        {transfer.toUsername &&
-        !isEqual(transfer.to, Addresses.NULL) &&
-        !isEqual(transfer.to, Addresses.SPIN) ? (
+        {isEqual(transfer.to, Addresses.SPIN) ? (
+          <div className="flex items-center gap-1">
+            <IconRotate360 className="size-4" />
+            <span className="truncate">COSMO Spin</span>
+          </div>
+        ) : !isEqual(transfer.to, Addresses.NULL) ? (
           <Link
-            href={`/@${transfer.toUsername}`}
+            href={`/@${transfer.toUsername ?? transfer.to}`}
             className="hover:underline"
             prefetch={false}
           >
@@ -196,7 +229,9 @@ function TransferItem({ transfer }: TransferItemProps) {
       </div>
 
       {/* timestamp */}
-      <span className="text-right text-muted-foreground">{timestamp}</span>
+      <span className="text-right text-muted-foreground break-words">
+        {timestamp}
+      </span>
     </div>
   );
 }

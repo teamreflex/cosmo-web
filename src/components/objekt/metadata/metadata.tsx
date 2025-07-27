@@ -33,11 +33,8 @@ export default function Metadata({ objekt }: Props) {
 
   const { data } = useSuspenseQuery({
     queryKey: ["collection-metadata", "metadata", objekt.slug],
-    queryFn: async () => {
-      return await ofetch<ObjektMetadata>(
-        `/api/objekts/metadata/${objekt.slug}`
-      );
-    },
+    queryFn: () =>
+      ofetch<ObjektMetadata>(`/api/objekts/metadata/${objekt.slug}`),
     retry: 1,
   });
 

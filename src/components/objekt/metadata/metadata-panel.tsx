@@ -15,25 +15,23 @@ export default function MetadataPanel({ objekt }: Props) {
     <QueryErrorResetBoundary>
       {({ reset }) => (
         <ErrorBoundary FallbackComponent={MetadataDialogError} onReset={reset}>
-          <Suspense
-            fallback={
-              <div className="flex flex-col justify-between h-full gap-2 mx-4">
-                <div className="flex flex-col gap-2 h-10 sm:h-full">
-                  <Skeleton className="w-full h-4 sm:h-5 rounded-full" />
-                  <Skeleton className="w-2/3 h-4 sm:h-5 rounded-full" />
-                </div>
-
-                <div className="flex flex-row-reverse gap-2 self-end mt-auto w-full">
-                  <Skeleton className="w-12 h-9 rounded-md" />
-                  <Skeleton className="w-12 h-9 rounded-md" />
-                </div>
-              </div>
-            }
-          >
+          <Suspense fallback={<Fallback />}>
             <Metadata objekt={objekt} />
           </Suspense>
         </ErrorBoundary>
       )}
     </QueryErrorResetBoundary>
+  );
+}
+
+function Fallback() {
+  return (
+    <div className="flex grow flex-col justify-between gap-2 px-4">
+      <div className="flex flex-col gap-2 min-h-10 sm:h-full">
+        <Skeleton className="w-46 h-8 rounded-md mx-auto md:mx-0" />
+        <Skeleton className="w-full h-3 sm:h-5 rounded-full" />
+        <Skeleton className="w-2/3 h-3 sm:h-5 rounded-full" />
+      </div>
+    </div>
   );
 }

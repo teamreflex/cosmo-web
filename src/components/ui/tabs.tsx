@@ -28,7 +28,7 @@ const tabsTriggerVariants = cva(
         default:
           "rounded-md px-3 py-1 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow",
         underline:
-          "px-4 py-1.5 border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-foreground hover:text-foreground/80",
+          "px-4 py-1.5 border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-foreground hover:text-foreground/80 focus:outline-none focus-visible:outline-none",
       },
     },
     defaultVariants: {

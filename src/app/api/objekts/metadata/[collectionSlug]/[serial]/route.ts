@@ -47,12 +47,12 @@ export async function GET(_: Request, props: Params) {
   });
 
   if (!collection) {
-    return Response.json({ message: "Collection not found" }, { status: 404 });
+    return Response.json({ result: null });
   }
 
   const objekt = collection.objekts[0];
   if (!objekt) {
-    return Response.json({ message: "Objekt not found" }, { status: 404 });
+    return Response.json({ result: null });
   }
 
   // collect all unique addresses from transfers and owner
@@ -83,7 +83,10 @@ export async function GET(_: Request, props: Params) {
     transfers,
   } satisfies SerialObjekt;
 
-  return Response.json(result, {
-    headers: cacheHeaders({ vercel: 60 * 60 * 4 }),
-  });
+  return Response.json(
+    { result },
+    {
+      headers: cacheHeaders({ vercel: 60 * 60 * 4 }),
+    }
+  );
 }
