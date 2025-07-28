@@ -65,7 +65,7 @@ export default function MetadataDialog({
         </Dialog>
       ) : (
         <Drawer open={open} onOpenChange={onOpenChange}>
-          <DrawerContent className="grid-cols-auto grid-flow-row p-0 gap-2 sm:gap-0 outline-hidden overflow-y-auto">
+          <DrawerContent className="grid-cols-auto grid-flow-row p-0 gap-2 sm:gap-0 outline-hidden">
             <VisuallyHidden>
               <DrawerTitle>{slug}</DrawerTitle>
               <DrawerDescription>{slug}</DrawerDescription>

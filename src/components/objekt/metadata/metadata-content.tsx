@@ -35,7 +35,7 @@ export default function MetadataContent(props: Props) {
         </FlippableObjekt>
       </div>
 
-      <div className="flex flex-col gap-2 mb-2 sm:my-4">
+      <div className="flex flex-col gap-2 mb-2 sm:my-4 overflow-y-auto sm:overflow-y-hidden">
         <AttributePanel objekt={data} />
         <Separator orientation="horizontal" />
         <MetadataPanel objekt={data} />
