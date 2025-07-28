@@ -2,7 +2,7 @@ import { and, eq, inArray, sql } from "drizzle-orm";
 import { indexer } from "./db/indexer";
 import { collections, objekts } from "./db/indexer/schema";
 import type { ComoBalance, ObjektWithCollection } from "@/lib/universal/como";
-import { unstable_cacheLife as cacheLife } from "next/cache";
+import { unstable_cache } from "next/cache";
 import { addr } from "../utils";
 import { getArtistsWithMembers } from "@/app/data-fetching";
 
@@ -43,28 +43,29 @@ export async function fetchObjektsWithComo(
  * Fetch ERC20 token balances from Alchemy.
  * Cached for 15 minutes.
  */
-export async function fetchTokenBalances(
-  address: string
-): Promise<ComoBalance[]> {
-  "use cache";
-  cacheLife("como");
+export const fetchTokenBalances = unstable_cache(
+  async (address: string): Promise<ComoBalance[]> => {
+    const artists = getArtistsWithMembers();
+    const balances = await indexer.query.comoBalances.findMany({
+      where: {
+        owner: addr(address),
+      },
+    });
 
-  const artists = getArtistsWithMembers();
-  const balances = await indexer.query.comoBalances.findMany({
-    where: {
-      owner: addr(address),
-    },
-  });
+    return artists.map((artist) => {
+      const balance = balances.find(
+        (balance) => balance.tokenId === artist.comoTokenId
+      );
 
-  return artists.map((artist) => {
-    const balance = balances.find(
-      (balance) => balance.tokenId === artist.comoTokenId
-    );
-
-    return {
-      id: artist.id,
-      owner: address,
-      amount: balance ? balance.amount : 0,
-    };
-  });
-}
+      return {
+        id: artist.id,
+        owner: address,
+        amount: balance ? balance.amount : 0,
+      };
+    });
+  },
+  ["como-balances"],
+  {
+    revalidate: 60 * 15, // 15 minutes
+  }
+);

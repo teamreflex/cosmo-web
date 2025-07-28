@@ -5,7 +5,7 @@ import { ofetch } from "ofetch";
 import { abstract } from "./http";
 import type { RPCResponse } from "./alchemy";
 import type { SystemStatus } from "../universal/system";
-import { unstable_cacheLife as cacheLife } from "next/cache";
+import { unstable_cache } from "next/cache";
 
 type Status = {
   height: number;
@@ -62,26 +62,29 @@ type FinalSystemStatus = {
  * - over 1800 but within 3600 blocks / 60 minutes: degraded
  * - more than 3600 blocks / 60 minutes: down
  */
-export async function getSystemStatus(): Promise<FinalSystemStatus> {
-  "use cache";
-  cacheLife("system");
+export const getSystemStatus = unstable_cache(
+  async (): Promise<FinalSystemStatus> => {
+    const [{ blockHeight }, processorHeight] = await Promise.all([
+      fetchChainStatus(),
+      fetchProcessorHeight(),
+    ]);
 
-  const [{ blockHeight }, processorHeight] = await Promise.all([
-    fetchChainStatus(),
-    fetchProcessorHeight(),
-  ]);
+    // calculate processor status
+    const diff = blockHeight - processorHeight;
+    const status = diff < 1800 ? "normal" : diff < 3600 ? "degraded" : "down";
 
-  // calculate processor status
-  const diff = blockHeight - processorHeight;
-  const status = diff < 1800 ? "normal" : diff < 3600 ? "degraded" : "down";
-
-  return {
-    processor: {
-      status,
-      height: {
-        processor: processorHeight,
-        chain: blockHeight,
+    return {
+      processor: {
+        status,
+        height: {
+          processor: processorHeight,
+          chain: blockHeight,
+        },
       },
-    },
-  };
-}
+    };
+  },
+  ["system-status"],
+  {
+    revalidate: 60, // 60 seconds
+  }
+);

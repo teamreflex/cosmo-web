@@ -1,7 +1,7 @@
 import { asc } from "drizzle-orm";
 import { indexer } from "../db/indexer";
 import { collections } from "../db/indexer/schema";
-import { unstable_cacheLife as cacheLife } from "next/cache";
+import { unstable_cache } from "next/cache";
 
 /**
  * Fetch all unique collections from the index.
@@ -95,19 +95,22 @@ async function fetchUniqueClasses() {
  * Fetch all unique collections, seasons, and classes.
  * Cached for 4 hours.
  */
-export async function fetchFilterData() {
-  "use cache";
-  cacheLife("filterData");
+export const fetchFilterData = unstable_cache(
+  async () => {
+    const [collections, seasons, classes] = await Promise.all([
+      fetchUniqueCollections(),
+      fetchUniqueSeasons(),
+      fetchUniqueClasses(),
+    ]);
 
-  const [collections, seasons, classes] = await Promise.all([
-    fetchUniqueCollections(),
-    fetchUniqueSeasons(),
-    fetchUniqueClasses(),
-  ]);
-
-  return {
-    collections,
-    seasons,
-    classes,
-  };
-}
+    return {
+      collections,
+      seasons,
+      classes,
+    };
+  },
+  ["filter-data"],
+  {
+    revalidate: 60 * 60 * 4, // 4 hours
+  }
+);

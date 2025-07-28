@@ -2,10 +2,7 @@ import { and, eq, gte, lt, sql } from "drizzle-orm";
 import { collections, objekts } from "../db/indexer/schema";
 import { indexer } from "../db/indexer";
 import type { HourlyBreakdown, ObjektStats } from "@/lib/universal/stats";
-import {
-  unstable_cacheLife as cacheLife,
-  unstable_cacheTag as cacheTag,
-} from "next/cache";
+import { unstable_cache } from "next/cache";
 
 interface RawStats {
   timestamp: string;
@@ -159,22 +156,24 @@ function processRawStats(rawStats: RawStats[], referenceHours: string[]) {
  * Get the stats for the fixed 24-hour window.
  * Cached for 2 hours, but a cron job flushes the cache every hour.
  */
-export async function fetchObjektStats(): Promise<ObjektStats> {
-  "use cache";
-  cacheLife("objektStats");
-  cacheTag("objekt-stats");
+export const fetchObjektStats = unstable_cache(
+  async (): Promise<ObjektStats> => {
+    const { start, end } = get24HourWindow();
+    const hourlyTimestamps = timestamps();
 
-  const { start, end } = get24HourWindow();
-  const hourlyTimestamps = timestamps();
+    const [rawStats, { premierCount, scannedCount }] = await Promise.all([
+      getHourlyStats(start, end),
+      getObjektCounts(start, end),
+    ]);
 
-  const [rawStats, { premierCount, scannedCount }] = await Promise.all([
-    getHourlyStats(start, end),
-    getObjektCounts(start, end),
-  ]);
-
-  return {
-    ...processRawStats(rawStats, hourlyTimestamps),
-    premierCount,
-    scannedCount,
-  };
-}
+    return {
+      ...processRawStats(rawStats, hourlyTimestamps),
+      premierCount,
+      scannedCount,
+    };
+  },
+  ["objekt-stats"],
+  {
+    revalidate: 60 * 60 * 2, // 2 hours
+  }
+);

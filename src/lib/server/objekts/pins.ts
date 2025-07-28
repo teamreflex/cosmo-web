@@ -5,10 +5,8 @@ import type { Collection, Objekt } from "../db/indexer/schema";
 import { db } from "../db";
 import { cosmoAccounts, pins } from "../db/schema";
 import { desc, eq } from "drizzle-orm";
-import {
-  unstable_cacheLife as cacheLife,
-  unstable_cacheTag as cacheTag,
-} from "next/cache";
+import { remember } from "../cache";
+
 interface ObjektWithCollection extends Objekt {
   collection: Collection;
 }
@@ -18,42 +16,43 @@ interface ObjektWithCollection extends Objekt {
  * Cached for 1 day.
  */
 export async function fetchPins(username: string): Promise<CosmoObjekt[]> {
-  "use cache";
-  cacheLife("pins");
-  cacheTag(`pins:${username.toLowerCase()}`);
+  const tag = `pins:${username.toLowerCase()}`;
+  const ttl = 60 * 60 * 24; // 1 day
 
-  const rows = await db
-    .select({ tokenId: pins.tokenId })
-    .from(pins)
-    .innerJoin(cosmoAccounts, eq(pins.address, cosmoAccounts.address))
-    .where(eq(cosmoAccounts.username, username))
-    .orderBy(desc(pins.id));
+  return await remember(tag, ttl, async () => {
+    const rows = await db
+      .select({ tokenId: pins.tokenId })
+      .from(pins)
+      .innerJoin(cosmoAccounts, eq(pins.address, cosmoAccounts.address))
+      .where(eq(cosmoAccounts.username, username))
+      .orderBy(desc(pins.id));
 
-  if (rows.length === 0) return [];
+    if (rows.length === 0) return [];
 
-  const tokenIds = rows.map((row) => row.tokenId);
-  try {
-    var results = await indexer.query.objekts.findMany({
-      where: {
-        id: {
-          in: tokenIds,
+    const tokenIds = rows.map((row) => row.tokenId);
+    try {
+      var results = await indexer.query.objekts.findMany({
+        where: {
+          id: {
+            in: tokenIds,
+          },
         },
-      },
-      with: {
-        collection: true,
-      },
+        with: {
+          collection: true,
+        },
+      });
+    } catch (err) {
+      return [];
+    }
+
+    const mapped = results.map(normalizePin);
+
+    // sort by pin order
+    return mapped.sort((a, b) => {
+      const indexA = tokenIds.findIndex((item) => item === Number(a.tokenId));
+      const indexB = tokenIds.findIndex((item) => item === Number(b.tokenId));
+      return indexA - indexB;
     });
-  } catch (err) {
-    return [];
-  }
-
-  const mapped = results.map(normalizePin);
-
-  // sort by pin order
-  return mapped.sort((a, b) => {
-    const indexA = tokenIds.findIndex((item) => item === Number(a.tokenId));
-    const indexB = tokenIds.findIndex((item) => item === Number(b.tokenId));
-    return indexA - indexB;
   });
 }
 

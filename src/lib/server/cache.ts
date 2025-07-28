@@ -26,3 +26,10 @@ export async function remember<T>(
 
   return fresh;
 }
+
+/**
+ * Clear a tag from the cache.
+ */
+export async function clearTag(tag: string) {
+  await redis.del(tag);
+}
