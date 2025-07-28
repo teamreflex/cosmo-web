@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/chart";
 import type { RevealedVote } from "@/lib/client/gravity/polygon/types";
 import { CheckCircle } from "lucide-react";
-import { Bar, BarChart, CartesianGrid } from "recharts";
+import { Bar, BarChart } from "recharts";
 
 type Props = {
   totalComoUsed: number;
@@ -52,7 +52,6 @@ export default function TimelineChart(props: Props) {
             right: 0,
           }}
         >
-          <CartesianGrid vertical={false} />
           <ChartTooltip
             labelFormatter={(_, payload) => {
               return `Block ${payload[0].payload.startBlock} ~ ${payload[0].payload.endBlock}`;

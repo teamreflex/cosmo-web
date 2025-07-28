@@ -28,7 +28,7 @@ export default function UpdateDialog() {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <button className="relative h-8 w-9 flex justify-center items-center rounded-r-lg bg-cosmo-text/25 hover:bg-cosmo-text/40 transition-colors">
+        <button className="relative h-8 w-9 flex justify-center items-center rounded-r-md bg-cosmo-text/25 hover:bg-cosmo-text/40 transition-colors">
           <Newspaper className="text-cosmo-text w-5 h-5" />
           {isNew && (
             <span className="absolute top-0 right-0 rounded-full h-2 w-2 bg-red-500 animate-pulse" />

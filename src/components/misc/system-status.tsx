@@ -21,7 +21,7 @@ export default function SystemStatus() {
     <ErrorBoundary fallback={<ErrorFallback />}>
       <Suspense
         fallback={
-          <div className="h-8 w-9 rounded-l-lg bg-secondary animate-pulse" />
+          <div className="h-8 w-9 rounded-l-md bg-secondary animate-pulse" />
         }
       >
         <SystemStatusPopover />

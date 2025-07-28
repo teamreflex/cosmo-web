@@ -99,7 +99,7 @@ export default function AbstractLiveChart({ artist, gravity }: Props) {
 
       <Portal to="#gravity-status">
         <div className="flex flex-col items-end text-xs font-semibold">
-          <p>Votes</p>
+          <p>Votes Counted</p>
           <p>
             {countedVotes.toLocaleString()}/{totalVotes.toLocaleString()} (
             {percentageCounted}%)

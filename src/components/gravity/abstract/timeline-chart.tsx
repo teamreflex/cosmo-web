@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/chart";
 import type { LiveStatus } from "@/lib/client/gravity/abstract/types";
 import { useVotedEvents } from "@/lib/client/gravity/abstract/hooks";
-import { Bar, BarChart, CartesianGrid } from "recharts";
+import { Bar, BarChart } from "recharts";
 import { format } from "date-fns";
 import GravityStatus from "./gravity-status";
 import { Suspense } from "react";
@@ -72,7 +72,6 @@ function TimelineChartContent(props: Props) {
             right: 0,
           }}
         >
-          <CartesianGrid vertical={false} />
           <ChartTooltip
             labelFormatter={(_, payload) => {
               if (payload && payload[0] && payload[0].payload.timestamp) {
