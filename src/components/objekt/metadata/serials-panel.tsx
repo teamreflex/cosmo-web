@@ -18,26 +18,35 @@ import ProfileImage from "@/assets/profile.webp";
 import CosmoImage from "@/assets/cosmo.webp";
 import { Addresses, isEqual } from "@/lib/utils";
 import { useDebounceValue } from "usehooks-ts";
+import { useObjektSerial } from "@/hooks/use-objekt-serial";
 
 type Props = {
   slug: string;
-  serial: number | null;
-  setSerial: (serial: number) => void;
 };
 
 export default function SerialsPanel(props: Props) {
-  const [debounced] = useDebounceValue(props.serial, 300);
+  const { serial, setSerial } = useObjektSerial();
+  const [debounced] = useDebounceValue(serial, 300);
 
   function handleNext() {
-    props.setSerial((props.serial ?? 0) + 1);
+    setSerial((prev) => (prev ?? 0) + 1);
   }
 
   function handlePrevious() {
-    if (props.serial === 1 || props.serial === null) {
+    if (serial === 1 || serial === null) {
       return;
     }
 
-    props.setSerial((props.serial ?? 0) - 1);
+    setSerial((prev) => (prev ?? 0) - 1);
+  }
+
+  function handleChange(value: string) {
+    const parsed = parseInt(value);
+    if (isNaN(parsed)) {
+      return;
+    }
+
+    setSerial(parsed);
   }
 
   return (
@@ -46,8 +55,8 @@ export default function SerialsPanel(props: Props) {
         <Input
           type="number"
           placeholder="Select a serial..."
-          value={props.serial ?? ""}
-          onChange={(e) => props.setSerial(parseInt(e.target.value))}
+          value={serial ?? ""}
+          onChange={(e) => handleChange(e.target.value)}
           className="flex-1"
         />
 

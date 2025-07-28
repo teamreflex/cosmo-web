@@ -3,20 +3,22 @@ import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import { ErrorBoundary } from "react-error-boundary";
 import { Skeleton } from "../../ui/skeleton";
 import Metadata from "./metadata";
-import { MetadataDialogError } from "./common";
+import { MetadataDialogError, type ObjektMetadataTab } from "./common";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 
 type Props = {
   objekt: Objekt.Collection;
+  tab: ObjektMetadataTab;
+  setTab: (tab: ObjektMetadataTab) => void;
 };
 
-export default function MetadataPanel({ objekt }: Props) {
+export default function MetadataPanel(props: Props) {
   return (
     <QueryErrorResetBoundary>
       {({ reset }) => (
         <ErrorBoundary FallbackComponent={MetadataDialogError} onReset={reset}>
           <Suspense fallback={<Fallback />}>
-            <Metadata objekt={objekt} />
+            <Metadata {...props} />
           </Suspense>
         </ErrorBoundary>
       )}

@@ -1,5 +1,3 @@
-"use client";
-
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ofetch } from "ofetch";
 import Link from "next/link";
@@ -19,22 +17,23 @@ import type { Objekt } from "@/lib/universal/objekt-conversion";
 import type { ObjektMetadata } from "@/lib/universal/objekts";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SerialsPanel from "./serials-panel";
-import { useObjektSerial } from "@/hooks/use-objekt-serial";
+import type { ObjektMetadataTab } from "./common";
 
 type Props = {
   objekt: Objekt.Collection;
+  tab: ObjektMetadataTab;
+  setTab: (tab: ObjektMetadataTab) => void;
 };
 
-export default function Metadata({ objekt }: Props) {
+export default function Metadata(props: Props) {
   const [_, copy] = useCopyToClipboard();
   const [showForm, setShowForm] = useState(false);
   const { user } = useUserState();
-  const { serial, setSerial } = useObjektSerial();
 
   const { data } = useSuspenseQuery({
-    queryKey: ["collection-metadata", "metadata", objekt.slug],
+    queryKey: ["collection-metadata", "metadata", props.objekt.slug],
     queryFn: () =>
-      ofetch<ObjektMetadata>(`/api/objekts/metadata/${objekt.slug}`),
+      ofetch<ObjektMetadata>(`/api/objekts/metadata/${props.objekt.slug}`),
     retry: 1,
   });
 
@@ -42,19 +41,20 @@ export default function Metadata({ objekt }: Props) {
     const scheme =
       env.NEXT_PUBLIC_VERCEL_ENV === "development" ? "http" : "https";
     copy(
-      `${scheme}://${env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL}/objekts?id=${objekt.slug}`
+      `${scheme}://${env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL}/objekts?id=${props.objekt.slug}`
     );
     toast.success("Objekt URL copied to clipboard");
   }
 
-  const { front } = getObjektImageUrls(objekt);
-  const isUnobtainable = unobtainables.includes(objekt.slug);
+  const { front } = getObjektImageUrls(props.objekt);
+  const isUnobtainable = unobtainables.includes(props.objekt.slug);
   const total = Number(data.total).toLocaleString();
 
   return (
     <div className="flex grow flex-col justify-between gap-2 px-4">
       <Tabs
-        defaultValue={serial ? "serials" : "metadata"}
+        value={props.tab}
+        onValueChange={(value) => props.setTab(value as ObjektMetadataTab)}
         className="flex flex-col h-full"
         variant="underline"
       >
@@ -67,7 +67,7 @@ export default function Metadata({ objekt }: Props) {
         <TabsContent value="metadata" className="flex flex-col grow">
           {showForm ? (
             <EditMetadata
-              slug={objekt.slug}
+              slug={props.objekt.slug}
               metadata={data}
               onClose={() => setShowForm(false)}
             />
@@ -119,17 +119,15 @@ export default function Metadata({ objekt }: Props) {
 
         {/* serials */}
         <TabsContent value="serials" className="flex grow">
-          <SerialsPanel
-            slug={objekt.slug}
-            serial={serial}
-            setSerial={setSerial}
-          />
+          <SerialsPanel slug={props.objekt.slug} />
         </TabsContent>
       </Tabs>
 
       <Portal to="#attribute-panel">
         <Pill
-          label={objekt.onOffline === "online" ? "Copies" : "Scanned Copies"}
+          label={
+            props.objekt.onOffline === "online" ? "Copies" : "Scanned Copies"
+          }
           value={total}
         />
         <Pill label="Tradable" value={`${data.percentage}%`} />

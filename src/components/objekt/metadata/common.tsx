@@ -4,6 +4,8 @@ import { Button } from "../../ui/button";
 import { ObjektNotFoundError } from "../common";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 
+export type ObjektMetadataTab = "metadata" | "serials";
+
 export const fetchObjektQuery = (slug: string) => ({
   queryKey: ["collection-metadata", "objekt", slug],
   queryFn: async () => {
