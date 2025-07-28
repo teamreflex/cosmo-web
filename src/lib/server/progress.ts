@@ -11,7 +11,7 @@ import { unstable_cacheLife as cacheLife } from "next/cache";
 export async function getArtistStatsByAddress(
   address: string
 ): Promise<ArtistStats[]> {
-  "use cache: remote";
+  "use cache";
   cacheLife("progressStats");
 
   // query objekts grouped by season, member and artist in a single query

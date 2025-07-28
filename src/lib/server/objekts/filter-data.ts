@@ -96,7 +96,7 @@ async function fetchUniqueClasses() {
  * Cached for 4 hours.
  */
 export async function fetchFilterData() {
-  "use cache: remote";
+  "use cache";
   cacheLife("filterData");
 
   const [collections, seasons, classes] = await Promise.all([

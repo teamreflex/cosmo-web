@@ -63,7 +63,7 @@ type FinalSystemStatus = {
  * - more than 3600 blocks / 60 minutes: down
  */
 export async function getSystemStatus(): Promise<FinalSystemStatus> {
-  "use cache: remote";
+  "use cache";
   cacheLife("system");
 
   const [{ blockHeight }, processorHeight] = await Promise.all([
