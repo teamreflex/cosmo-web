@@ -42,6 +42,7 @@ export const relations = defineRelations(schema, (r) => ({
     user: r.one.user({
       from: r.objektLists.userId,
       to: r.user.id,
+      optional: false,
     }),
     cosmoAccount: r.one.cosmoAccounts({
       from: r.objektLists.userId,

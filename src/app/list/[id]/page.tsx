@@ -14,7 +14,6 @@ import {
   parseObjektListFilters,
   fetchObjektList as prefetchObjektList,
 } from "@/lib/server/objekts/prefetching/objekt-list";
-import { fetchObjektList } from "@/lib/server/objekts/lists";
 import { getQueryClient } from "@/lib/query-client";
 import { ProfileProvider } from "@/hooks/use-profile";
 import { fetchFilterData } from "@/lib/server/objekts/filter-data";
@@ -23,6 +22,7 @@ import { UserStateProvider } from "@/hooks/use-user-state";
 import UpdateList from "@/components/lists/update-list";
 import DeleteList from "@/components/lists/delete-list";
 import { sanitizeUuid } from "@/lib/utils";
+import { db } from "@/lib/server/db";
 
 type Props = {
   searchParams: Promise<Record<string, string>>;
@@ -33,7 +33,7 @@ type Props = {
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params;
-  const objektList = await getObjektList(params.id);
+  const objektList = await getObjektListWithUser(params.id);
   if (!objektList) notFound();
 
   return {
@@ -59,15 +59,18 @@ export default async function ObjektListPage(props: Props) {
   ]);
 
   // get current account and list
-  const [objektList, account] = await Promise.all([
-    getObjektList(id),
+  const [listData, account] = await Promise.all([
+    getObjektListWithUser(id),
     getCurrentAccount(session?.session.userId),
   ]);
-  if (!objektList) notFound();
+  if (!listData) notFound();
+
+  const { user, ...objektList } = listData;
 
   // if the user has a cosmo linked, redirect to the profile page
-  if (account?.cosmo !== undefined) {
-    redirect(`/@${account.cosmo.username}/list/${objektList.slug}`);
+  const cosmo = user?.cosmoAccount?.username;
+  if (cosmo !== undefined) {
+    redirect(`/@${cosmo}/list/${objektList.slug}`);
   }
 
   // parse search params
@@ -142,16 +145,31 @@ export default async function ObjektListPage(props: Props) {
   );
 }
 
-const getObjektList = cache(async (id: string) => {
+const getObjektListWithUser = cache(async (id: string) => {
   const sanitized = sanitizeUuid(id);
-
   if (!sanitized) {
-    return null;
+    return undefined;
   }
 
   if (id !== sanitized) {
     redirect(`/list/${sanitized}`);
   }
 
-  return await fetchObjektList({ id: sanitized });
+  return await db.query.objektLists.findFirst({
+    where: { id: sanitized },
+    with: {
+      user: {
+        columns: {
+          id: true,
+        },
+        with: {
+          cosmoAccount: {
+            columns: {
+              username: true,
+            },
+          },
+        },
+      },
+    },
+  });
 });
