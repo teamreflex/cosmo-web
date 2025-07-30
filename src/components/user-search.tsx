@@ -47,7 +47,7 @@ export function UserSearch({
   const [query, setQuery] = useState<string>("");
   const [debouncedQuery] = useDebounceValue<string>(query, 500);
   const queryIsAddress = isAddress(debouncedQuery);
-  const enableQuery = debouncedQuery.length > 1 && queryIsAddress === false;
+  const enableQuery = debouncedQuery.length > 0 && queryIsAddress === false;
 
   const { status, data } = useQuery({
     queryKey: ["user-search", debouncedQuery],
