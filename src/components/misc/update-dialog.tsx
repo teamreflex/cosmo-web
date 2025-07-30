@@ -79,6 +79,7 @@ const updates = [
     changes: [
       "User search now supports Chinese, Japanese and Korean characters.",
       "If you have changed your ID, searching for the new ID will update your profile.",
+      "Fixed: Objekt pinning for users with CJK characters in their ID.",
     ],
   },
   {

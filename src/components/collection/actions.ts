@@ -6,7 +6,7 @@ import { db } from "@/lib/server/db";
 import { lockedObjekts, pins } from "@/lib/server/db/schema";
 import { and, eq } from "drizzle-orm";
 import { indexer } from "@/lib/server/db/indexer";
-import { normalizePin } from "@/lib/server/objekts/pins";
+import { normalizePin, pinCacheKey } from "@/lib/server/objekts/pins";
 import { ActionError, cosmoActionClient } from "@/lib/server/server-actions";
 import { clearTag } from "@/lib/server/cache";
 
@@ -79,7 +79,7 @@ export const pinObjekt = cosmoActionClient
       throw new ActionError("Error pinning objekt");
     }
 
-    clearTag(`pins:${ctx.cosmo.username.toLowerCase()}`);
+    clearTag(pinCacheKey(ctx.cosmo.username));
     return normalizePin(objekt);
   });
 
@@ -100,6 +100,6 @@ export const unpinObjekt = cosmoActionClient
         and(eq(pins.tokenId, tokenId), eq(pins.address, ctx.cosmo.address))
       );
 
-    clearTag(`pins:${ctx.cosmo.username.toLowerCase()}`);
+    clearTag(pinCacheKey(ctx.cosmo.username));
     return result.rowCount === 1;
   });
