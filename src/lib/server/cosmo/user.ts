@@ -1,6 +1,22 @@
-import type { CosmoShopUser } from "@/lib/universal/cosmo/user";
+import type {
+  CosmoByNicknameResult,
+  CosmoSearchResult,
+  CosmoShopUser,
+} from "@/lib/universal/cosmo/user";
 import { cosmo } from "../http";
 import { cosmoShopHeaders } from "./qr-auth";
+
+/**
+ * Fetch a user from COSMO by nickname.
+ */
+export async function fetchByNickname(nickname: string) {
+  return await cosmo<CosmoByNicknameResult>(
+    `/user/v1/by-nickname/${nickname}`,
+    {
+      retry: false,
+    }
+  ).then((res) => res.profile);
+}
 
 /**
  * Fetch the current user via webshop cookie.
@@ -14,6 +30,22 @@ export async function user(cookie: string) {
     },
     query: {
       tid: crypto.randomUUID(),
+    },
+  });
+}
+
+/**
+ * Search for the given user.
+ */
+export async function search(token: string, term: string) {
+  return await cosmo<CosmoSearchResult>("/bff/v3/users/search", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    query: {
+      nickname: term,
+      skip: 0,
+      take: 100,
     },
   });
 }

@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 import { db } from "./db";
 import { cosmoAccounts, type CosmoAccount } from "./db/schema";
-import { fetchByNickname } from "./cosmo/auth";
+import { fetchByNickname } from "./cosmo/user";
 import { FetchError } from "ofetch";
 import type { FullAccount, PublicCosmo } from "../universal/cosmo-accounts";
 import { GRID_COLUMNS, isAddress } from "../utils";

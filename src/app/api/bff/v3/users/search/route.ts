@@ -1,9 +1,9 @@
 import { cacheAccounts } from "@/lib/server/cosmo-accounts";
-import { search } from "@/lib/server/cosmo/auth";
+import { search } from "@/lib/server/cosmo/user";
 import { db } from "@/lib/server/db";
 import { cosmoAccounts } from "@/lib/server/db/schema";
 import { getProxiedToken } from "@/lib/server/handlers/withProxiedToken";
-import type { CosmoSearchResult } from "@/lib/universal/cosmo/auth";
+import type { CosmoSearchResult } from "@/lib/universal/cosmo/user";
 import { Addresses } from "@/lib/utils";
 import { like } from "drizzle-orm";
 import { type NextRequest, after } from "next/server";
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
       nickname: "cosmo-spin",
       address: Addresses.SPIN,
       profileImageUrl: "",
-      profile: [],
+      userProfiles: [],
     });
   }
 
@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
  * Search the database for users with a nickname that starts with the query.
  */
 async function queryDatabase(query: string): Promise<CosmoSearchResult> {
-  if (query.length < 4) {
+  if (query.length < 2) {
     return { results: [] };
   }
 
@@ -79,7 +79,7 @@ async function queryDatabase(query: string): Promise<CosmoSearchResult> {
       nickname: result.username,
       address: result.address,
       profileImageUrl: "",
-      profile: [],
+      userProfiles: [],
     })),
   };
 }

@@ -10,7 +10,10 @@ import {
 } from "@/components/ui/command";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import type { CosmoPublicUser, CosmoSearchResult } from "@/lib/universal/cosmo/auth";
+import type {
+  CosmoPublicUser,
+  CosmoSearchResult,
+} from "@/lib/universal/cosmo/user";
 import { ofetch } from "ofetch";
 import {
   DialogClose,
@@ -44,12 +47,12 @@ export function UserSearch({
   const [query, setQuery] = useState<string>("");
   const [debouncedQuery] = useDebounceValue<string>(query, 500);
   const queryIsAddress = isAddress(debouncedQuery);
-  const enableQuery = debouncedQuery.length > 3 && queryIsAddress === false;
+  const enableQuery = debouncedQuery.length > 1 && queryIsAddress === false;
 
   const { status, data } = useQuery({
     queryKey: ["user-search", debouncedQuery],
     queryFn: async () => {
-      return await ofetch<CosmoSearchResult>(`/api/user/v1/search`, {
+      return await ofetch<CosmoSearchResult>(`/api/bff/v3/users/search`, {
         query: {
           query: debouncedQuery,
         },
@@ -78,7 +81,7 @@ export function UserSearch({
       nickname: address,
       address,
       profileImageUrl: "",
-      profile: [],
+      userProfiles: [],
     });
   }
 
@@ -86,7 +89,7 @@ export function UserSearch({
     setQuery("");
     onSelect({
       ...user,
-      profile: [],
+      userProfiles: [],
     });
   }
 

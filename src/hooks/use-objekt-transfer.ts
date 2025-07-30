@@ -1,5 +1,5 @@
 import { toast } from "sonner";
-import type { CosmoPublicUser } from "@/lib/universal/cosmo/auth";
+import type { CosmoPublicUser } from "@/lib/universal/cosmo/user";
 import { create } from "zustand";
 
 const MAX_SELECTIONS = 10;
