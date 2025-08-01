@@ -17,8 +17,9 @@ export default function ResetFilters({
 
   function handleReset() {
     setFilters({
-      artist: null,
       member: null,
+      artist: null,
+      sort: null,
       class: null,
       season: null,
       on_offline: null,
