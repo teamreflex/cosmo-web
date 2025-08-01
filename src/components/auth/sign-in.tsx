@@ -17,6 +17,7 @@ import SignUp from "./sign-up";
 import ForgotPassword from "./forgot-password";
 import { env } from "@/env";
 import Link from "next/link";
+import { LogIn } from "lucide-react";
 
 type State = "sign-in" | "sign-up" | "forgot-password";
 
@@ -31,15 +32,22 @@ export default function SignIn() {
       // prevents flicker due to animation
       setTimeout(() => {
         setState("sign-in");
-      }, 500);
+      }, 200);
     }
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="link" onClick={() => setOpen(true)}>
-          Sign In
+        <Button
+          onClick={() => setOpen(true)}
+          variant="link"
+          size="icon"
+          className="drop-shadow-lg outline-hidden md:mx-2"
+          aria-label="Sign In"
+        >
+          <LogIn className="size-8 shrink-0 md:hidden" />
+          <span className="hidden md:contents">Sign In</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="w-full">
