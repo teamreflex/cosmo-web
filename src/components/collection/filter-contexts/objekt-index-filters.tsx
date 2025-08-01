@@ -8,6 +8,7 @@ import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorBoundary } from "react-error-boundary";
 import FilterSearch from "../filter-search";
+import ResetFilters from "../reset-filters";
 
 /**
  * used on:
@@ -52,6 +53,8 @@ export default function ObjektIndexFilters({
       <SortFilter filters={filters} setFilters={setFilters} serials={false} />
 
       {search && <FilterSearch />}
+
+      <ResetFilters filters={filters} setFilters={setFilters} />
     </div>
   );
 }

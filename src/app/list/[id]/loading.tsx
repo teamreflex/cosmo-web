@@ -16,6 +16,7 @@ export default function ObjektListLoading() {
           {Array.from({ length: 7 }).map((_, i) => (
             <Skeleton key={i} className="w-24 h-9" />
           ))}
+          <Skeleton className="w-[42px] h-[36px]" />
         </div>
 
         <div className="flex flex-col">

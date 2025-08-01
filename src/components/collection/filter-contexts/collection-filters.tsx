@@ -10,6 +10,7 @@ import SortFilter from "../filter-sort";
 import FilterDataSource from "../filter-data-source";
 import { ErrorBoundary } from "react-error-boundary";
 import { Skeleton } from "@/components/ui/skeleton";
+import ResetFilters from "../reset-filters";
 
 type Props = {
   showLocked: boolean;
@@ -68,6 +69,8 @@ export default function CollectionFilters({
         dataSource={dataSource}
         setDataSource={setDataSource}
       />
+
+      <ResetFilters filters={filters} setFilters={setFilters} />
     </div>
   );
 }

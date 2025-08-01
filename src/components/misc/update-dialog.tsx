@@ -75,6 +75,14 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2025-08-01",
+    changes: [
+      "Fixed: Loading profile error on older browsers.",
+      "Fixed: Sign in button being too wide on smaller mobile screens.",
+      "Added: Reset filters button.",
+    ],
+  },
+  {
     date: "2025-07-30",
     changes: [
       "User search now supports Chinese, Japanese and Korean characters.",

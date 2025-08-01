@@ -10,6 +10,7 @@ export default function UserCollectionLoading() {
           {Array.from({ length: 6 }).map((_, i) => (
             <Skeleton key={i} className="w-24 h-9" />
           ))}
+          <Skeleton className="w-[42px] h-[36px]" />
         </div>
       </div>
 

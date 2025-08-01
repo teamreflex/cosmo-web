@@ -25,6 +25,7 @@ export default function ObjektsLoading() {
               <Skeleton key={i} className="w-24 h-9" />
             ))}
             <Skeleton className="w-48 h-9" />
+            <Skeleton className="w-[42px] h-[36px]" />
           </div>
         </div>
 
