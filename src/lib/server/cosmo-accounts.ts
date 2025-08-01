@@ -118,16 +118,26 @@ export async function linkAccount(account: Omit<CosmoAccount, "id">) {
   return result;
 }
 
+type PartialAccount = Omit<CosmoAccount, "id" | "cosmoId" | "userId">;
+
 /**
  * Upsert COSMO accounts into the database without linking it to a user.
  * Used when caching profiles from `/@:username` and search results.
  */
-export async function cacheAccounts(
-  accounts: Omit<CosmoAccount, "id" | "cosmoId" | "userId">[]
-) {
+export async function cacheAccounts(accounts: PartialAccount[]) {
+  // deduplicate accounts by address to prevent constraint violations
+  const uniqueAccounts = accounts.reduce((acc, account) => {
+    acc.set(account.address, account);
+    return acc;
+  }, new Map<string, PartialAccount>());
+
+  if (uniqueAccounts.size === 0) {
+    return [];
+  }
+
   return await db
     .insert(cosmoAccounts)
-    .values(accounts)
+    .values(Array.from(uniqueAccounts.values()))
     .onConflictDoUpdate({
       target: cosmoAccounts.address,
       set: {
