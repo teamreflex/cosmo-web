@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { Maximize2 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { useObjektOverlay } from "@/store";
 import RescanMetadata from "./rescan-metadata";
@@ -19,7 +19,14 @@ export default function InformationOverlay({ collection, token }: Props) {
   const { user } = useUserState();
   const isHidden = useObjektOverlay((state) => state.isHidden);
 
-  const formatted = format(Date.parse(token.acquiredAt), "dd/MM/yy h:mmaa");
+  // safari 15 doesn't like to parse the date string for some reason
+  const formatted = useMemo(() => {
+    try {
+      return format(new Date(token.acquiredAt), "dd/MM/yy h:mmaa");
+    } catch (error) {
+      return token.acquiredAt;
+    }
+  }, [token.acquiredAt]);
 
   return (
     <div
