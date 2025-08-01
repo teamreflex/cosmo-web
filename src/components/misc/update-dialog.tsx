@@ -79,6 +79,7 @@ const updates = [
     changes: [
       "Fixed: Loading profile error on older browsers.",
       "Fixed: Sign in button being too wide on smaller mobile screens.",
+      "Fixed: Password managers now work on register & sign in.",
       "Added: Reset filters button.",
     ],
   },

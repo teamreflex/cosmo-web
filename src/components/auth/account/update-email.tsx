@@ -74,7 +74,6 @@ export default function UpdateEmail({ email }: Props) {
                   <Input
                     type="email"
                     placeholder="me@example.com"
-                    data-1p-ignore
                     {...field}
                   />
 

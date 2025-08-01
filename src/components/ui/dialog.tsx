@@ -54,6 +54,8 @@ function DialogContent({
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showClose?: boolean;
 }) {
+  const ref = React.useRef<HTMLDivElement>(null);
+
   return (
     <DialogPortal data-slot="dialog-portal">
       <DialogOverlay />
@@ -64,6 +66,25 @@ function DialogContent({
           className
         )}
         {...props}
+        ref={ref}
+        /**
+         * fixes password manager extension clicks dismissing the dialog
+         * https://github.com/radix-ui/primitives/issues/1280#issuecomment-1319109163
+         */
+        onPointerDownOutside={(e) => {
+          if (!ref.current) return;
+          const contentRect = ref.current.getBoundingClientRect();
+          const actuallyClickedInside =
+            e.detail.originalEvent.clientX > contentRect.left &&
+            e.detail.originalEvent.clientX <
+              contentRect.left + contentRect.width &&
+            e.detail.originalEvent.clientY > contentRect.top &&
+            e.detail.originalEvent.clientY <
+              contentRect.top + contentRect.height;
+          if (actuallyClickedInside) {
+            e.preventDefault();
+          }
+        }}
       >
         {children}
         {showClose && (

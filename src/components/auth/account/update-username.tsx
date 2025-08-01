@@ -70,7 +70,7 @@ export default function UpdateUsername({ username }: Props) {
             <FormItem>
               <FormControl>
                 <div className="flex items-center gap-2">
-                  <Input placeholder={placeholder} data-1p-ignore {...field} />
+                  <Input placeholder={placeholder} {...field} />
                   <Submit isPending={mutation.isPending} />
                 </div>
               </FormControl>

@@ -72,12 +72,7 @@ export default function ResetPassword({ token }: Props) {
             <FormItem>
               <FormLabel>New Password</FormLabel>
               <FormControl>
-                <Input
-                  type="password"
-                  placeholder="********"
-                  data-1p-ignore
-                  {...field}
-                />
+                <Input type="password" placeholder="********" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

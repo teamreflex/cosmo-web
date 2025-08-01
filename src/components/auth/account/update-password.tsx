@@ -66,12 +66,7 @@ export default function UpdatePassword() {
             <FormItem>
               <FormLabel>Current Password</FormLabel>
               <FormControl>
-                <Input
-                  type="password"
-                  placeholder="********"
-                  data-1p-ignore
-                  {...field}
-                />
+                <Input type="password" placeholder="********" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -85,12 +80,7 @@ export default function UpdatePassword() {
             <FormItem>
               <FormLabel>New Password</FormLabel>
               <FormControl>
-                <Input
-                  type="password"
-                  placeholder="********"
-                  data-1p-ignore
-                  {...field}
-                />
+                <Input type="password" placeholder="********" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

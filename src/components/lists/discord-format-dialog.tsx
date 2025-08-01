@@ -108,7 +108,7 @@ export default function DiscordFormatDialog({
             )}
           </div>
 
-          {result && (
+          {result.data && (
             <ScrollArea className="max-h-60 rounded-lg border border-border">
               <pre className="whitespace-pre-wrap font-mono text-sm p-2">
                 {result.data}

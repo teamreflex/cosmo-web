@@ -1,5 +1,3 @@
-"use client";
-
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
@@ -79,7 +77,6 @@ export default function WithEmail({ onForgotPassword }: Props) {
                   id="email"
                   type="email"
                   placeholder="me@example.com"
-                  data-1p-ignore
                   {...field}
                 />
               </FormControl>
@@ -99,7 +96,6 @@ export default function WithEmail({ onForgotPassword }: Props) {
                   id="password"
                   type="password"
                   placeholder="********"
-                  data-1p-ignore
                   {...field}
                 />
               </FormControl>

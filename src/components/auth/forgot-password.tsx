@@ -75,12 +75,7 @@ export default function ForgotPassword({ onCancel }: Props) {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input
-                  type="email"
-                  placeholder="me@example.com"
-                  data-1p-ignore
-                  {...field}
-                />
+                <Input type="email" placeholder="me@example.com" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
