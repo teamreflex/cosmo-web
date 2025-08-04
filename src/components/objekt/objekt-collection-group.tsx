@@ -247,9 +247,13 @@ function ObjektList({
   const pins = useProfileContext((ctx) => ctx.pins);
   const lockedObjekts = useProfileContext((ctx) => ctx.lockedObjekts);
 
-  const toRender = objekts.filter((objekt) => {
-    return lockedObjekts.includes(objekt.metadata.tokenId) ? showLocked : true;
-  });
+  const toRender = objekts
+    .filter((objekt) => {
+      return lockedObjekts.includes(objekt.metadata.tokenId)
+        ? showLocked
+        : true;
+    })
+    .sort((a, b) => a.metadata.objektNo - b.metadata.objektNo);
 
   return (
     <div

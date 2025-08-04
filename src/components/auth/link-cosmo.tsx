@@ -76,7 +76,7 @@ export default function LinkCosmo({ children }: Props) {
 }
 
 function StartLink() {
-  const [started, setStarted] = useState(false);
+  const [started, _setStarted] = useState(false);
 
   if (started) {
     return <GetRecaptcha />;
@@ -84,30 +84,36 @@ function StartLink() {
 
   return (
     <div className="flex flex-col gap-2 text-sm text-muted-foreground">
-      <p>
-        Signing into your COSMO account will link it to your{" "}
-        {env.NEXT_PUBLIC_APP_NAME} account, verifying ownership of the COSMO ID
-        and wallet address.
-      </p>
-      <p>
-        This allows you to pin and lock objekts. Any previously created objekt
-        lists will be imported upon account link.
-      </p>
-      <p>
-        {env.NEXT_PUBLIC_APP_NAME} does not store anything about your account
-        other than the ID and wallet address, which are used to display
-        profiles.
-      </p>
-      <p>
-        Once linked, the account cannot be unlinked and your profile will have a
-        &quot;COSMO verified&quot; badge.
-      </p>
-
-      <Button className="mt-2 w-fit mx-auto" onClick={() => setStarted(true)}>
-        Start
-      </Button>
+      <p>COSMO linking will return soon!</p>
     </div>
   );
+
+  // return (
+  //   <div className="flex flex-col gap-2 text-sm text-muted-foreground">
+  //     <p>
+  //       Signing into your COSMO account will link it to your{" "}
+  //       {env.NEXT_PUBLIC_APP_NAME} account, verifying ownership of the COSMO ID
+  //       and wallet address.
+  //     </p>
+  //     <p>
+  //       This allows you to pin and lock objekts. Any previously created objekt
+  //       lists will be imported upon account link.
+  //     </p>
+  //     <p>
+  //       {env.NEXT_PUBLIC_APP_NAME} does not store anything about your account
+  //       other than the ID and wallet address, which are used to display
+  //       profiles.
+  //     </p>
+  //     <p>
+  //       Once linked, the account cannot be unlinked and your profile will have a
+  //       &quot;COSMO verified&quot; badge.
+  //     </p>
+
+  //     <Button className="mt-2 w-fit mx-auto" onClick={() => setStarted(true)}>
+  //       Start
+  //     </Button>
+  //   </div>
+  // );
 }
 
 function GetRecaptcha() {
