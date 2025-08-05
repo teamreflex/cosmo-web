@@ -13,7 +13,10 @@ import {
 import { sql } from "drizzle-orm";
 import { citext, createdAt } from "./columns";
 import { user, session, account, verification } from "./auth-schema";
-import type { CosmoGravityType, CosmoPollType } from "@/lib/universal/cosmo/gravity";
+import type {
+  CosmoGravityType,
+  CosmoPollType,
+} from "@/lib/universal/cosmo/gravity";
 
 export { user, session, account, verification };
 
@@ -36,6 +39,22 @@ export const cosmoAccounts = pgTable(
     index("cosmo_account_username_idx").on(t.username),
     uniqueIndex("cosmo_account_username_address_idx").on(t.username, t.address),
     index("cosmo_account_user_id_idx").on(t.userId),
+  ]
+);
+
+export const cosmoAccountChanges = pgTable(
+  "cosmo_account_changes",
+  {
+    address: citext("address", { length: 42 }).notNull(),
+    username: citext("username", { length: 24 }).notNull(),
+    createdAt: timestamp("created_at", { mode: "string" })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    index("cosmo_account_changes_address_idx").on(t.address),
+    index("cosmo_account_changes_username_idx").on(t.username),
+    index("cosmo_account_changes_created_at_idx").on(t.createdAt),
   ]
 );
 
@@ -211,6 +230,7 @@ export const polygonVotes = pgTable(
 );
 
 export type CosmoAccount = typeof cosmoAccounts.$inferSelect;
+export type CosmoAccountChange = typeof cosmoAccountChanges.$inferSelect;
 export type Pin = typeof pins.$inferSelect;
 export type ObjektMetadataEntry = typeof objektMetadata.$inferSelect;
 export type ObjektList = typeof objektLists.$inferSelect;

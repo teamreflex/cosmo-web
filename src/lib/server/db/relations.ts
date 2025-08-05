@@ -18,6 +18,10 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.cosmoAccounts.polygonAddress,
       to: r.polygonVotes.address,
     }),
+    idChanges: r.many.cosmoAccountChanges({
+      from: r.cosmoAccounts.address,
+      to: r.cosmoAccountChanges.address,
+    }),
   },
   lockedObjekts: {
     profile: r.one.cosmoAccounts({
