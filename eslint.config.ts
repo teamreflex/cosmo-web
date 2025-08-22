@@ -9,7 +9,11 @@ const compat = new FlatCompat({
 
 export default tseslint.config(
   {
+    ignores: ["node_modules", ".next"],
+  },
+  {
     files: ["**/*.ts", "**/*.tsx"],
+
     extends: [
       eslint.configs.recommended,
       compat.extends(
