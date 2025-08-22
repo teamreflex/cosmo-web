@@ -3,6 +3,7 @@ import { useElementSize } from "@/hooks/use-element-size";
 import { cn, type PropsWithClassName } from "@/lib/utils";
 import type { ValidArtist } from "@/lib/universal/cosmo/common";
 import type { PropsWithChildren } from "react";
+import ArtistLogo from "./artist-logo";
 
 type ObjektSidebarProps = {
   artist: ValidArtist;
@@ -60,10 +61,12 @@ export function ObjektSidebar({
         className={cn(
           "flex justify-center items-center gap-2 [writing-mode:vertical-lr] font-semibold text-(--objekt-text-color) select-none",
           customBand &&
-            "bg-(--objekt-background-color) rounded-l-md lg:rounded-l-[10px] w-full h-[89%] my-auto justify-between px-2 lg:px-3"
+            "bg-(--objekt-background-color) rounded-l-(--border-radius) w-full h-[89%] my-auto justify-between px-(--border-padding)"
         )}
         style={{
           "--sidebar-width": `${width}px`,
+          "--border-radius": `${width * 0.35}px`,
+          "--border-padding": `${width * 0.5}px`,
         }}
       >
         {customBand && <SidebarText type="name">{member}</SidebarText>}
@@ -73,7 +76,7 @@ export function ObjektSidebar({
             {paddedSerial && <span>#{paddedSerial}</span>}
           </div>
         </SidebarText>
-        {customBand && <SidebarText type="name">{artist}</SidebarText>}
+        {customBand && <ArtistLogo artist={artist} />}
       </div>
     </div>
   );
