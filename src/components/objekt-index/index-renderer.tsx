@@ -12,7 +12,6 @@ import { Objekt } from "../../lib/universal/objekt-conversion";
 import VirtualizedGrid from "../objekt/virtualized-grid";
 import LoaderRemote from "../objekt/loader-remote";
 import ObjektIndexFilters from "../collection/filter-contexts/objekt-index-filters";
-import type { ValidArtist } from "@/lib/universal/cosmo/common";
 import { useObjektIndex } from "@/hooks/use-objekt-index";
 import HelpDialog from "./help-dialog";
 import type { IndexedObjekt } from "@/lib/universal/objekts";
@@ -133,13 +132,11 @@ type OverlayProps = {
 };
 
 function Overlay({ objekt, authenticated, objektLists }: OverlayProps) {
+  const collection = Objekt.fromIndexer(objekt);
+
   return (
     <div className="contents">
-      <ObjektSidebar
-        collection={objekt.collectionNo}
-        artist={objekt.artist as ValidArtist}
-        member={objekt.member}
-      />
+      <ObjektSidebar collection={collection} />
       {authenticated && (
         <TopOverlay objekt={objekt} objektLists={objektLists} />
       )}

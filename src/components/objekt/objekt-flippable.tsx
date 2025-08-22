@@ -27,7 +27,8 @@ export default function FlippableObjekt({ children, collection }: Props) {
       data-flipped={flipped}
       onClick={() => setFlipped((prev) => !prev)}
       className={cn(
-        "relative bg-secondary w-full aspect-photocard object-contain touch-manipulation transition-transform transform-3d transform-gpu duration-500 data-[flipped=true]:rotate-y-180 rounded-2xl"
+        "relative bg-secondary w-full aspect-photocard object-contain touch-manipulation transition-transform transform-3d transform-gpu duration-500 data-[flipped=true]:rotate-y-180 rounded-2xl",
+        !flipped && "will-change-transform"
       )}
     >
       {/* front */}

@@ -4,7 +4,6 @@ import { Star } from "lucide-react";
 import ExpandableObjekt from "../objekt/objekt-expandable";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
-import type { ValidArtist } from "@/lib/universal/cosmo/common";
 
 type Props = {
   objekt: ObjektProgression;
@@ -26,11 +25,7 @@ export default function ProgressObjekt({ objekt }: Props) {
           <Star className="size-4 fill-white text-white" />
         </div>
       )}
-      <ObjektSidebar
-        collection={objekt.collection.collectionNo}
-        artist={objekt.collection.artist as ValidArtist}
-        member={objekt.collection.member}
-      />
+      <ObjektSidebar collection={collection} />
     </ExpandableObjekt>
   );
 }

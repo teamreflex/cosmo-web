@@ -22,12 +22,7 @@ export function LegacyOverlay({
 
   return (
     <div className="contents">
-      <ObjektSidebar
-        artist={collection.artist}
-        member={collection.member}
-        collection={collection.collectionNo}
-        serial={token.serial}
-      />
+      <ObjektSidebar collection={collection} serial={token.serial} />
       <InformationOverlay collection={collection} token={token} />
       <ActionOverlay
         collection={collection}

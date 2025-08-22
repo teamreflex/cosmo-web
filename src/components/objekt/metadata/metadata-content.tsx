@@ -34,11 +34,7 @@ export default function MetadataContent(props: Props) {
         )}
       >
         <FlippableObjekt collection={data}>
-          <ObjektSidebar
-            collection={data.collectionNo}
-            artist={data.artist}
-            member={data.member}
-          />
+          <ObjektSidebar collection={data} />
         </FlippableObjekt>
       </div>
 

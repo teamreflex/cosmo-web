@@ -33,6 +33,7 @@ export const collections = pgTable("collection", {
   onOffline: varchar("on_offline", { length: 16 })
     .notNull()
     .$type<"online" | "offline">(),
+  bandImageUrl: varchar("band_image_url", { length: 255 }),
 });
 
 export const objekts = pgTable("objekt", {

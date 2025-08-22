@@ -72,6 +72,7 @@ export async function fetchObjektsBlockchainGroups(
         backgroundColor: collections.backgroundColor,
         textColor: collections.textColor,
         comoAmount: collections.comoAmount,
+        bandImageUrl: collections.bandImageUrl,
         transferableByDefault: sql<boolean>`true`,
         gridableByDefault: sql<boolean>`false`,
         createdAt: collections.createdAt,
@@ -133,6 +134,7 @@ export async function fetchObjektsBlockchainGroups(
       collections.backgroundColor,
       collections.textColor,
       collections.comoAmount,
+      collections.bandImageUrl,
       collections.createdAt
     )
     .$dynamic();

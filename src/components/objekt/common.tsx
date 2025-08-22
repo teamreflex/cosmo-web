@@ -1,14 +1,13 @@
 import type { NonTransferableReason } from "@/lib/universal/cosmo/objekts";
 import { useElementSize } from "@/hooks/use-element-size";
 import { cn, type PropsWithClassName } from "@/lib/utils";
-import type { ValidArtist } from "@/lib/universal/cosmo/common";
-import type { PropsWithChildren } from "react";
+import { Fragment, useState, type PropsWithChildren } from "react";
 import ArtistLogo from "./artist-logo";
+import type { Objekt } from "@/lib/universal/objekt-conversion";
+import Image from "next/image";
 
 type ObjektSidebarProps = {
-  artist: ValidArtist;
-  member: string;
-  collection: string;
+  collection: Objekt.Collection;
   serial?: number;
 };
 
@@ -34,18 +33,14 @@ function SidebarText(props: SidebarTextProps) {
   );
 }
 
-export function ObjektSidebar({
-  artist,
-  member,
-  collection,
-  serial,
-}: ObjektSidebarProps) {
+export function ObjektSidebar({ collection, serial }: ObjektSidebarProps) {
+  const [bandLoaded, setBandLoaded] = useState(false);
   const [ref, { width }] = useElementSize();
 
   const paddedSerial =
     serial === 0 ? "00000" : serial?.toString().padStart(5, "0");
 
-  const customBand = artist === "idntt";
+  const customBand = collection.artist === "idntt";
 
   /**
    * sometimes the first element in the grid is a couple pixels smaller on the width, resulting in an offset number, not sure why.
@@ -53,32 +48,52 @@ export function ObjektSidebar({
    * sometimes the actual objekt image has a larger border by a few px (~12% width), this cannot account for that.
    */
   return (
-    <div
-      ref={ref}
-      className="absolute flex items-center h-full w-[11%] top-0 right-0"
-    >
+    <Fragment>
+      {collection.bandImageUrl && (
+        <Image
+          src={collection.bandImageUrl}
+          className={cn(
+            "top-0 left-0 h-full w-full object-cover pointer-events-none opacity-0 transition-opacity",
+            bandLoaded && "opacity-100"
+          )}
+          alt={`${collection.artist} band image`}
+          onLoad={() => setBandLoaded(true)}
+          priority
+          fill
+        />
+      )}
+
       <div
-        className={cn(
-          "flex justify-center items-center gap-2 [writing-mode:vertical-lr] font-semibold text-(--objekt-text-color) select-none",
-          customBand &&
-            "bg-(--objekt-background-color) rounded-l-(--border-radius) w-full h-[89%] my-auto justify-between px-(--border-padding)"
-        )}
-        style={{
-          "--sidebar-width": `${width}px`,
-          "--border-radius": `${width * 0.35}px`,
-          "--border-padding": `${width * 0.5}px`,
-        }}
+        ref={ref}
+        className="absolute flex items-center h-full w-[11%] top-0 right-0"
+        data-has-band={collection.bandImageUrl !== null && bandLoaded}
       >
-        {customBand && <SidebarText type="name">{member}</SidebarText>}
-        <SidebarText type="collection">
-          <div className="flex items-center gap-2">
-            <span>{collection}</span>
-            {paddedSerial && <span>#{paddedSerial}</span>}
-          </div>
-        </SidebarText>
-        {customBand && <ArtistLogo artist={artist} />}
+        <div
+          className={cn(
+            "flex justify-center items-center gap-2 [writing-mode:vertical-lr] font-semibold text-(--objekt-text-color) select-none",
+            customBand &&
+              "rounded-l-(--border-radius) w-full h-[89%] my-auto justify-between px-(--border-padding)",
+            bandLoaded === false && "bg-(--objekt-background-color)"
+          )}
+          style={{
+            "--sidebar-width": `${width}px`,
+            "--border-radius": `${width * 0.35}px`,
+            "--border-padding": `${width * 0.5}px`,
+          }}
+        >
+          {customBand && (
+            <SidebarText type="name">{collection.member}</SidebarText>
+          )}
+          <SidebarText type="collection">
+            <div className="flex items-center gap-2">
+              <span>{collection.collectionNo}</span>
+              {paddedSerial && <span>#{paddedSerial}</span>}
+            </div>
+          </SidebarText>
+          {customBand && <ArtistLogo artist={collection.artist} />}
+        </div>
       </div>
-    </div>
+    </Fragment>
   );
 }
 

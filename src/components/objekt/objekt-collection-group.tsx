@@ -167,11 +167,7 @@ function RootObjekt({
             unoptimized
           />
 
-          <ObjektSidebar
-            collection={collection.collectionNo}
-            artist={collection.artist}
-            member={collection.member}
-          />
+          <ObjektSidebar collection={collection} />
           <RootObjektOverlay
             count={count}
             hasNew={hasNew}
