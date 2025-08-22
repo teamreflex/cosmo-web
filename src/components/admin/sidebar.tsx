@@ -1,4 +1,4 @@
-import { HardDriveUpload, Home } from "lucide-react";
+import { HardDriveUpload, Home, PanelRight } from "lucide-react";
 
 import {
   Sidebar,
@@ -22,6 +22,11 @@ export const items = [
     title: "Objekt Metadata",
     url: "/admin/metadata",
     icon: HardDriveUpload,
+  },
+  {
+    title: "Objekt Bands",
+    url: "/admin/bands",
+    icon: PanelRight,
   },
 ];
 

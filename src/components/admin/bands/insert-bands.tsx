@@ -5,21 +5,21 @@ import { Input } from "@/components/ui/input";
 import { Clipboard, HardDriveUpload, Loader2, Plus, Trash } from "lucide-react";
 import { useState } from "react";
 import {
-  metadataInputSchema,
-  type MetadataRow,
+  bandUrlInputSchema,
+  type BandUrlRow,
 } from "@/lib/universal/schema/admin";
 import { toast } from "sonner";
-import { saveMetadata } from "./actions";
+import { saveBandUrls } from "./actions";
 import { useAction } from "next-safe-action/hooks";
 
 export default function InsertMetadata() {
-  const [rows, setRows] = useState<MetadataRow[]>([
-    { collectionId: "", description: "" },
+  const [items, setItems] = useState<BandUrlRow[]>([
+    { slug: "", bandImageUrl: "" },
   ]);
-  const { execute, isPending } = useAction(saveMetadata, {
-    onSuccess: ({ data }) => {
-      toast.success(`${data} objekt metadata rows updated`);
-      setRows([]);
+  const { execute, isPending } = useAction(saveBandUrls, {
+    onSuccess: () => {
+      toast.success(`${items.length} objekt bands updated`);
+      setItems([{ slug: "", bandImageUrl: "" }]);
     },
     onError: (error) => {
       toast.error(error.error.serverError ?? "An unknown error occurred");
@@ -27,11 +27,11 @@ export default function InsertMetadata() {
   });
 
   const hasRows =
-    rows.length > 0 &&
-    rows.some((r) => r.collectionId.length > 0 && r.description.length > 0);
+    items.length > 0 &&
+    items.some((r) => r.slug.length > 0 && r.bandImageUrl.length > 0);
 
-  function update(index: number, key: keyof MetadataRow, value: string) {
-    setRows((prev) =>
+  function update(index: number, key: keyof BandUrlRow, value: string) {
+    setItems((prev) =>
       prev.map((p, i) => {
         if (i === index) {
           return {
@@ -46,36 +46,36 @@ export default function InsertMetadata() {
 
   async function onPaste() {
     const data = await navigator.clipboard.readText();
-    const result = metadataInputSchema.safeParse(data);
+    const result = bandUrlInputSchema.safeParse(data);
     if (result.success === false) {
       toast.error(
-        "Invalid format: Required format is 'collectionId :: description'"
+        "Invalid format: Required format is 'collectionId :: bandImageUrl'"
       );
       return;
     }
 
-    setRows(result.data);
+    setItems(result.data);
   }
 
   function addRow() {
-    setRows((prev) => [
+    setItems((prev) => [
       ...prev,
       {
-        collectionId: "",
-        description: "",
+        slug: "",
+        bandImageUrl: "",
       },
     ]);
   }
 
   function removeRow(index: number) {
-    setRows((prev) => prev.filter((_, i) => i !== index));
+    setItems((prev) => prev.filter((_, i) => i !== index));
   }
 
   return (
     <div className="flex flex-col gap-2">
       {/* header */}
       <div className="flex items-center gap-2">
-        <h1 className="text-lg font-semibold">Insert Metadata</h1>
+        <h1 className="text-lg font-semibold">Insert Bands</h1>
         <Button size="xs" onClick={addRow}>
           <Plus className="size-4" /> <span>Add Row</span>
         </Button>
@@ -85,7 +85,7 @@ export default function InsertMetadata() {
         <Button
           variant="cosmo"
           size="xs"
-          onClick={() => execute({ rows })}
+          onClick={() => execute(items)}
           disabled={isPending || !hasRows}
         >
           {isPending ? (
@@ -99,23 +99,21 @@ export default function InsertMetadata() {
 
       {/* rows */}
       <div className="flex flex-col gap-2">
-        {rows.map((row, index) => (
+        {items.map((row, index) => (
           <div key={index} className="grid grid-cols-[20%_70%_auto] gap-2">
             <Input
-              id="collectionId"
+              id="slug"
               placeholder="atom01-heejin-101z..."
-              value={row.collectionId}
-              onChange={(e) =>
-                update(index, "collectionId", e.currentTarget.value)
-              }
+              value={row.slug}
+              onChange={(e) => update(index, "slug", e.currentTarget.value)}
             />
 
             <Input
-              id="description"
-              placeholder="Purchased from COSMO..."
-              value={row.description}
+              id="bandImageUrl"
+              placeholder="https://resources.cosmo.fans/..."
+              value={row.bandImageUrl}
               onChange={(e) =>
-                update(index, "description", e.currentTarget.value)
+                update(index, "bandImageUrl", e.currentTarget.value)
               }
             />
 

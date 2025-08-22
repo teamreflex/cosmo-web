@@ -14,7 +14,7 @@ import {
   FormMessage,
 } from "../../ui/form";
 import { updateObjektMetadata } from "../actions";
-import { metadataObjectSchema } from "@/lib/universal/schema/metadata";
+import { metadataObjectSchema } from "@/lib/universal/schema/admin";
 import type { ObjektMetadata } from "@/lib/universal/objekts";
 
 type Props = {
