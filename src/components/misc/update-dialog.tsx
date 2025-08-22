@@ -75,34 +75,10 @@ export default function UpdateDialog() {
 
 const updates = [
   {
-    date: "2025-08-01",
+    date: "2025-08-23",
     changes: [
-      "Fixed: Loading profile error on older browsers.",
-      "Fixed: Sign in button being too wide on smaller mobile screens.",
-      "Fixed: Password managers now work on register & sign in.",
-      "Added: Reset filters button.",
-    ],
-  },
-  {
-    date: "2025-07-30",
-    changes: [
-      "User search now supports Chinese, Japanese and Korean characters.",
-      "If you have changed your ID, searching for the new ID will update your profile.",
-      "Fixed: Objekt pinning for users with CJK characters in their ID.",
-    ],
-  },
-  {
-    date: "2025-07-28",
-    changes: [
-      "Added: Timeline chart for gravity results.",
-      "Added: Objekt serial searching.",
-    ],
-  },
-  {
-    date: "2025-07-12",
-    changes: [
-      "Added: Progress pages now have per member/class/season breakdowns and charts.",
-      "Fixed: Selected artists are now correctly applied when using collection groups.",
+      "Custom objekt borders/bands (idntt) are now supported.",
+      "These will be added into the system as we receive them. Until then, a default band will be used based on the objekt color settings.",
     ],
   },
 ];
