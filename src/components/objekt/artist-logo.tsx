@@ -12,7 +12,7 @@ export default function ArtistLogo({ artist }: Props) {
   }
 
   return (
-    <div className="flex w-[calc(var(--sidebar-width)*1.2)] h-(--sidebar-width) rotate-90">
+    <div className="flex w-[calc(var(--sidebar-width)*1.2)] h-(--sidebar-width) rotate-90 mb-[2px]">
       <LogoComponent />
     </div>
   );
