@@ -41,6 +41,7 @@ export function ObjektSidebar({ collection, serial }: ObjektSidebarProps) {
     serial === 0 ? "00000" : serial?.toString().padStart(5, "0");
 
   const customBand = collection.artist === "idntt";
+  const useFallbackBand = customBand && collection.bandImageUrl === null;
 
   /**
    * sometimes the first element in the grid is a couple pixels smaller on the width, resulting in an offset number, not sure why.
@@ -66,14 +67,13 @@ export function ObjektSidebar({ collection, serial }: ObjektSidebarProps) {
       <div
         ref={ref}
         className="absolute flex items-center h-full w-[11%] top-0 right-0"
-        data-has-band={collection.bandImageUrl !== null && bandLoaded}
       >
         <div
           className={cn(
             "flex justify-center items-center gap-2 [writing-mode:vertical-lr] font-semibold text-(--objekt-text-color) select-none",
             customBand &&
               "rounded-l-(--border-radius) w-full h-[89%] my-auto justify-between px-(--border-padding)",
-            bandLoaded === false && "bg-(--objekt-background-color)"
+            useFallbackBand && "bg-(--objekt-background-color)"
           )}
           style={{
             "--sidebar-width": `${width}px`,
