@@ -39,7 +39,11 @@ export async function GET(request: NextRequest) {
       try {
         await cacheAccounts(newAccounts);
       } catch (err) {
-        console.error("Bulk profile caching failed:", err);
+        console.error("Bulk profile caching failed", {
+          err,
+          query,
+          results: results.results,
+        });
       }
     });
   }
