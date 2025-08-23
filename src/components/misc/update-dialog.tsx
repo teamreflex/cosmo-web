@@ -75,7 +75,7 @@ export default function UpdateDialog() {
 
 const updates = [
   {
-    date: "2025-08-23",
+    date: "2025-08-24",
     changes: [
       "Custom objekt borders/bands (idntt) are now supported.",
       "These will be added into the system as we receive them. Until then, a default band will be used based on the objekt color settings.",
