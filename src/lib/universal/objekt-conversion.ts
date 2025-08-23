@@ -86,7 +86,7 @@ export namespace Objekt {
       backImage: objekt.backImage,
       backgroundColor: objekt.backgroundColor,
       textColor: objekt.textColor,
-      bandImageUrl: null,
+      bandImageUrl: objekt.bandImageUrl,
     };
 
     return {
