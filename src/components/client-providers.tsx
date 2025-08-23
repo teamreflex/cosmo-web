@@ -15,9 +15,8 @@ export default function ClientProviders({ children }: Props) {
   // preconnect for objekt images
   preconnect("https://imagedelivery.net");
   prefetchDNS("https://imagedelivery.net");
-  // preconnect to cosmo
-  preconnect("https://api.cosmo.fans");
-  prefetchDNS("https://api.cosmo.fans");
+  preconnect("https://resources.cosmo.fans");
+  prefetchDNS("https://resources.cosmo.fans");
 
   const queryClient = getQueryClient();
 
