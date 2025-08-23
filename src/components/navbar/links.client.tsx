@@ -41,15 +41,15 @@ export function DesktopLinks({ signedIn, cosmo }: Props) {
   return (
     <div className="contents">
       <LinkButton
-        href="/objekts"
-        active={path.startsWith("/objekts")}
+        href="/"
+        active={path === "/" || path === "/objekts"}
         icon={IconCards}
         name="Objekts"
       />
 
       <LinkButton
         href="/objekts/stats"
-        active={path.startsWith("/objekts/stats")}
+        active={path === "/objekts/stats"}
         icon={ChartColumnBig}
         name="Objekt Stats"
       />
@@ -84,11 +84,11 @@ export function MobileLinks({ signedIn, cosmo }: Props) {
     <div className="contents">
       {/* objekt index */}
       <DropdownMenuItem asChild>
-        <Link href="/objekts" aria-label="Objekts">
+        <Link href="/" aria-label="Objekts">
           <IconCards
             className={cn(
               "h-4 w-4 shrink-0 transition-all fill-transparent",
-              path === "/objekts" && "fill-white/50"
+              (path === "/" || path === "/objekts") && "fill-white/50"
             )}
           />
           <span>Objekts</span>
@@ -114,7 +114,7 @@ export function MobileLinks({ signedIn, cosmo }: Props) {
           <Vote
             className={cn(
               "h-4 w-4 shrink-0 transition-all fill-transparent",
-              path === "/objekts" && "fill-white/50"
+              path.startsWith("/gravity") && "fill-white/50"
             )}
           />
           <span>Gravity</span>

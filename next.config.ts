@@ -21,11 +21,6 @@ const config: NextConfig = {
   async redirects() {
     return [
       {
-        source: "/",
-        destination: "/objekts",
-        permanent: true,
-      },
-      {
         source: "/admin",
         destination: "/admin/metadata",
         permanent: true,
@@ -35,6 +30,10 @@ const config: NextConfig = {
 
   async rewrites() {
     return [
+      {
+        source: "/",
+        destination: "/objekts",
+      },
       {
         source: "/@:nickname/progress",
         destination: "/profile/:nickname/progress",
