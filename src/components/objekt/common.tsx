@@ -40,8 +40,9 @@ export function ObjektSidebar({ collection, serial }: ObjektSidebarProps) {
   const paddedSerial =
     serial === 0 ? "00000" : serial?.toString().padStart(5, "0");
 
-  const customBand = collection.artist === "idntt";
-  const useFallbackBand = customBand && collection.bandImageUrl === null;
+  const useCustomBand = collection.artist === "idntt";
+  const useBackground =
+    useCustomBand && (!collection.bandImageUrl || !bandLoaded);
 
   /**
    * sometimes the first element in the grid is a couple pixels smaller on the width, resulting in an offset number, not sure why.
@@ -71,9 +72,9 @@ export function ObjektSidebar({ collection, serial }: ObjektSidebarProps) {
         <div
           className={cn(
             "flex justify-center items-center gap-2 [writing-mode:vertical-lr] font-semibold text-(--objekt-text-color) select-none",
-            customBand &&
+            useCustomBand &&
               "rounded-l-(--border-radius) w-full h-[89%] my-auto justify-between px-(--border-padding)",
-            useFallbackBand && "bg-(--objekt-background-color)"
+            useBackground && "bg-(--objekt-background-color)"
           )}
           style={{
             "--sidebar-width": `${width}px`,
@@ -81,7 +82,7 @@ export function ObjektSidebar({ collection, serial }: ObjektSidebarProps) {
             "--border-padding": `${width * 0.5}px`,
           }}
         >
-          {customBand && (
+          {useCustomBand && (
             <SidebarText type="name">{collection.member}</SidebarText>
           )}
           <SidebarText type="collection">
@@ -90,7 +91,7 @@ export function ObjektSidebar({ collection, serial }: ObjektSidebarProps) {
               {paddedSerial && <span>#{paddedSerial}</span>}
             </div>
           </SidebarText>
-          {customBand && <ArtistLogo artist={collection.artist} />}
+          {useCustomBand && <ArtistLogo artist={collection.artist} />}
         </div>
       </div>
     </Fragment>
