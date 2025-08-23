@@ -74,6 +74,7 @@ export function normalizePin(objekt: ObjektWithCollection): CosmoObjekt {
     receivedAt: objekt.receivedAt,
     tokenId: objekt.id.toString(),
     objektNo: objekt.serial,
+    bandImageUrl: objekt.collection.bandImageUrl,
     artists: [objekt.collection.artist] as ValidArtist[],
   };
 }
