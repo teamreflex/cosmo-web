@@ -16,6 +16,8 @@ export async function register() {
         // we have no control over the cosmo API
         "TimeoutError",
         "<no response> fetch failed",
+        // i assume something to do with CJK characters
+        "Cannot convert argument to a ByteString",
       ],
     });
   }

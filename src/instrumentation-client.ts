@@ -11,7 +11,7 @@ Sentry.init({
   enabled: env.NEXT_PUBLIC_VERCEL_ENV === "production",
   dsn: env.NEXT_PUBLIC_SENTRY_DSN,
   debug: false,
-  tracesSampleRate: 0.15,
+  tracesSampleRate: 0.1,
   // ignore any errors based on message
   ignoreErrors: [
     // client connection issues
@@ -24,6 +24,10 @@ Sentry.init({
     "Method not found",
     // android camera issue?
     "Could not start video source",
+    // react bs
+    "Failed to execute 'removeChild' on 'Node'",
+    // lol?
+    "Failed to connect to MetaMask",
   ],
   // ignore any errors based on stacktrace
   beforeSend(event) {
