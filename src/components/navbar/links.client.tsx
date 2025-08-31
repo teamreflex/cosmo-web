@@ -84,7 +84,7 @@ export function MobileLinks({ signedIn, cosmo }: Props) {
     <div className="contents">
       {/* objekt index */}
       <DropdownMenuItem asChild>
-        <Link href="/" aria-label="Objekts">
+        <Link href="/" aria-label="Objekts" prefetch={false}>
           <IconCards
             className={cn(
               "h-4 w-4 shrink-0 transition-all fill-transparent",
@@ -97,7 +97,7 @@ export function MobileLinks({ signedIn, cosmo }: Props) {
 
       {/* objekt stats */}
       <DropdownMenuItem asChild>
-        <Link href="/objekts/stats" aria-label="Objekt Stats">
+        <Link href="/objekts/stats" aria-label="Objekt Stats" prefetch={false}>
           <ChartColumnBig
             className={cn(
               "h-4 w-4 shrink-0 transition-all fill-transparent",
@@ -110,7 +110,7 @@ export function MobileLinks({ signedIn, cosmo }: Props) {
 
       {/* gravity */}
       <DropdownMenuItem asChild>
-        <Link href="/gravity" aria-label="Gravity">
+        <Link href="/gravity" aria-label="Gravity" prefetch={false}>
           <Vote
             className={cn(
               "h-4 w-4 shrink-0 transition-all fill-transparent",
@@ -124,7 +124,11 @@ export function MobileLinks({ signedIn, cosmo }: Props) {
       {cosmo && (
         // user has a cosmo cosmo, go to collection
         <DropdownMenuItem asChild>
-          <Link href={`/@${cosmo.username}`} aria-label="Collection">
+          <Link
+            href={`/@${cosmo.username}`}
+            aria-label="Collection"
+            prefetch={false}
+          >
             <PackageOpen
               className={cn(
                 "h-4 w-4 shrink-0 transition-all fill-transparent",
@@ -173,6 +177,7 @@ function LinkButton(props: LinkButtonProps) {
             href={props.href}
             className="outline-hidden focus:outline-hidden"
             aria-label={props.name}
+            prefetch={false}
           >
             <props.icon
               className={cn(

@@ -11,6 +11,8 @@ import {
   withSeason,
 } from "./objekts/filters";
 import { Addresses, isEqual } from "../utils";
+import { parse } from "@/lib/universal/parsers";
+import { transfersSchema } from "@/lib/universal/transfers";
 
 const PER_PAGE = 30;
 
@@ -120,4 +122,31 @@ function withType(address: string, type: TransferParams["type"]) {
     case "spin":
       return and(eq(transfers.to, Addresses.SPIN), eq(transfers.from, address));
   }
+}
+
+/**
+ * Parse URL params for transfers.
+ */
+export function parseTransfersParams(params: URLSearchParams) {
+  return parse(
+    transfersSchema,
+    {
+      page: params.get("page"),
+      type: params.get("type") ?? "all",
+      member: params.get("member"),
+      artist: params.get("artist"),
+      season: params.getAll("season"),
+      class: params.getAll("class"),
+      on_offline: params.getAll("on_offline"),
+    },
+    {
+      page: 0,
+      type: "all",
+      member: null,
+      artist: null,
+      season: [],
+      class: [],
+      on_offline: [],
+    }
+  );
 }
