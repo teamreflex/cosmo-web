@@ -75,9 +75,6 @@ importers:
       drizzle-orm:
         specifier: 1.0.0-beta.1-578e9fd
         version: 1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.3)(bun-types@1.2.12)(pg@8.16.3)
-      drizzle-zod:
-        specifier: 0.8.3-578e9fd
-        version: 0.8.3-578e9fd(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.3)(bun-types@1.2.12)(pg@8.16.3))(zod@4.1.5)
       import-in-the-middle:
         specifier: ^1.14.2
         version: 1.14.2
@@ -4081,12 +4078,6 @@ packages:
         optional: true
       sqlite3:
         optional: true
-
-  drizzle-zod@0.8.3-578e9fd:
-    resolution: {integrity: sha512-/rDJ94GIQ0wHsAOWM80gGd4it3ThwtlSECH5owVN9yX9nZsZUkMRfjZ4w15oDgtGPFGP5ZjFY3z3EZHueY6FLA==}
-    peerDependencies:
-      drizzle-orm: '>=0.36.0'
-      zod: ^3.25.0 || ^4.0.0
 
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
@@ -11539,11 +11530,6 @@ snapshots:
       '@upstash/redis': 1.35.3
       bun-types: 1.2.12
       pg: 8.16.3
-
-  drizzle-zod@0.8.3-578e9fd(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.3)(bun-types@1.2.12)(pg@8.16.3))(zod@4.1.5):
-    dependencies:
-      drizzle-orm: 1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.3)(bun-types@1.2.12)(pg@8.16.3)
-      zod: 4.1.5
 
   dunder-proto@1.0.1:
     dependencies:

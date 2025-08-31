@@ -38,7 +38,6 @@
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
     "drizzle-orm": "1.0.0-beta.1-578e9fd",
-    "drizzle-zod": "0.8.3-578e9fd",
     "import-in-the-middle": "^1.14.2",
     "input-otp": "^1.4.2",
     "jose": "^6.1.0",

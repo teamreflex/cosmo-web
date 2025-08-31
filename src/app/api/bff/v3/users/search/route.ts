@@ -4,7 +4,6 @@ import { db } from "@/lib/server/db";
 import { cosmoAccounts } from "@/lib/server/db/schema";
 import { getProxiedToken } from "@/lib/server/handlers/withProxiedToken";
 import type { CosmoSearchResult } from "@/lib/universal/cosmo/user";
-import { Addresses } from "@/lib/utils";
 import { like } from "drizzle-orm";
 import { type NextRequest, after } from "next/server";
 
@@ -45,16 +44,6 @@ export async function GET(request: NextRequest) {
           results: results.results,
         });
       }
-    });
-  }
-
-  // insert @cosmo-spin when doing a cosmo search
-  if (query.toLowerCase().includes("cosmo-")) {
-    results.results.push({
-      nickname: "cosmo-spin",
-      address: Addresses.SPIN,
-      profileImageUrl: "",
-      userProfiles: [],
     });
   }
 
