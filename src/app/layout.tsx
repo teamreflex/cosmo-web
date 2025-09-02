@@ -10,6 +10,7 @@ import TailwindIndicator from "@/components/tailwind-indicator";
 import Script from "next/script";
 import type { ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
+import { preconnect } from "react-dom";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -55,6 +56,11 @@ export default async function RootLayout({
 }: {
   children: ReactNode;
 }) {
+  preconnect(new URL(env.NEXT_PUBLIC_SENTRY_DSN).origin);
+  preconnect("https://imagedelivery.net");
+  preconnect("https://resources.cosmo.fans");
+  preconnect("https://static.cosmo.fans");
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body
