@@ -11,7 +11,7 @@ Sentry.init({
   enabled: env.NEXT_PUBLIC_VERCEL_ENV === "production",
   dsn: env.NEXT_PUBLIC_SENTRY_DSN,
   debug: false,
-  tracesSampleRate: 0.1,
+  tracesSampleRate: 0,
   // ignore any errors based on message
   ignoreErrors: [
     // client connection issues

@@ -10,6 +10,7 @@ export async function register() {
     Sentry.init({
       dsn: env.NEXT_PUBLIC_SENTRY_DSN,
       debug: false,
+      tracesSampleRate: 0,
       ignoreErrors: [
         // it happens, can't do much about it
         "NeonDbError",
@@ -26,6 +27,7 @@ export async function register() {
     Sentry.init({
       dsn: env.NEXT_PUBLIC_SENTRY_DSN,
       debug: false,
+      tracesSampleRate: 0,
     });
   }
 }
