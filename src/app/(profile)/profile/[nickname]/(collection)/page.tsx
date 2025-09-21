@@ -45,21 +45,23 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 }
 
 export default async function UserCollectionPage(props: Props) {
-  const artists = getArtistsWithMembers();
   const queryClient = getQueryClient();
 
-  // prefetch filter data
   queryClient.prefetchQuery({
     queryKey: ["filter-data"],
     queryFn: fetchFilterData,
   });
 
-  const [session, searchParams, { nickname }, selected] = await Promise.all([
-    getSession(),
-    props.searchParams,
-    props.params,
-    getSelectedArtists(),
-  ]);
+  const [searchParams, routeParams, artists, session, selected] =
+    await Promise.all([
+      props.searchParams,
+      props.params,
+      getArtistsWithMembers(),
+      getSession(),
+      getSelectedArtists(),
+    ]);
+
+  const { nickname } = routeParams;
 
   const [account, target, pins] = await Promise.all([
     getCurrentAccount(session?.session.userId),

@@ -1,10 +1,9 @@
-import { type PropsWithChildren, Suspense } from "react";
+import { type PropsWithChildren } from "react";
 import CopyAddressButton from "@/components/profile/copy-address-button";
 import TradesButton from "@/components/profile/trades-button";
 import ComoButton from "@/components/profile/como-button";
 import ProgressButton from "@/components/profile/progress-button";
 import UserAvatar from "@/components/profile/user-avatar";
-import { Skeleton } from "@/components/ui/skeleton";
 import ListDropdownClient from "@/components/lists/list-dropdown.client";
 import Link from "next/link";
 import ComoBalanceRenderer from "@/components/navbar/como-balances";
@@ -41,16 +40,7 @@ export default async function ProfileLayout(props: Props) {
       <div className="grid grid-rows-[auto_auto_min-content] grid-cols-2 md:grid-cols-3 gap-2 md:h-24">
         {/* user block */}
         <div className="row-span-2 md:row-span-3 flex flex-row gap-4">
-          <Suspense
-            fallback={
-              <Skeleton className="h-24 w-24 rounded-full aspect-square shrink-0" />
-            }
-          >
-            <UserAvatar
-              className="w-24 h-24"
-              username={target.cosmo.username}
-            />
-          </Suspense>
+          <UserAvatar className="w-24 h-24" username={params.nickname} />
 
           <div className="flex flex-row">
             <div className="flex flex-col gap-2 justify-center h-24">
