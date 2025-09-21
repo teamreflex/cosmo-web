@@ -8,14 +8,71 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
+import { createServerRootRoute } from '@tanstack/react-start/server'
+
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { ServerRoute as ApiFilterDataServerRouteImport } from './routes/api/filter-data'
+import { ServerRoute as ApiCronObjektStatsServerRouteImport } from './routes/api/cron.objekt-stats'
+import { ServerRoute as ApiCronGravityServerRouteImport } from './routes/api/cron.gravity'
+import { ServerRoute as ApiAuthSplatServerRouteImport } from './routes/api/auth/$'
+import { ServerRoute as ApiCosmoQrAuthTicketServerRouteImport } from './routes/api/cosmo/qr-auth/ticket'
+import { ServerRoute as ApiCosmoQrAuthRecaptchaServerRouteImport } from './routes/api/cosmo/qr-auth/recaptcha'
+import { ServerRoute as ApiBffV3UsersSearchServerRouteImport } from './routes/api/bff/v3/users/search'
+import { ServerRoute as ApiBffV1ObjektCollectionGroupAddressServerRouteImport } from './routes/api/bff/v1/objekt/collection-group.$address'
+
+const rootServerRouteImport = createServerRootRoute()
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiFilterDataServerRoute = ApiFilterDataServerRouteImport.update({
+  id: '/api/filter-data',
+  path: '/api/filter-data',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiCronObjektStatsServerRoute =
+  ApiCronObjektStatsServerRouteImport.update({
+    id: '/api/cron/objekt-stats',
+    path: '/api/cron/objekt-stats',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
+const ApiCronGravityServerRoute = ApiCronGravityServerRouteImport.update({
+  id: '/api/cron/gravity',
+  path: '/api/cron/gravity',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiAuthSplatServerRoute = ApiAuthSplatServerRouteImport.update({
+  id: '/api/auth/$',
+  path: '/api/auth/$',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiCosmoQrAuthTicketServerRoute =
+  ApiCosmoQrAuthTicketServerRouteImport.update({
+    id: '/api/cosmo/qr-auth/ticket',
+    path: '/api/cosmo/qr-auth/ticket',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
+const ApiCosmoQrAuthRecaptchaServerRoute =
+  ApiCosmoQrAuthRecaptchaServerRouteImport.update({
+    id: '/api/cosmo/qr-auth/recaptcha',
+    path: '/api/cosmo/qr-auth/recaptcha',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
+const ApiBffV3UsersSearchServerRoute =
+  ApiBffV3UsersSearchServerRouteImport.update({
+    id: '/api/bff/v3/users/search',
+    path: '/api/bff/v3/users/search',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
+const ApiBffV1ObjektCollectionGroupAddressServerRoute =
+  ApiBffV1ObjektCollectionGroupAddressServerRouteImport.update({
+    id: '/api/bff/v1/objekt/collection-group/$address',
+    path: '/api/bff/v1/objekt/collection-group/$address',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -38,6 +95,80 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
 }
+export interface FileServerRoutesByFullPath {
+  '/api/filter-data': typeof ApiFilterDataServerRoute
+  '/api/auth/$': typeof ApiAuthSplatServerRoute
+  '/api/cron/gravity': typeof ApiCronGravityServerRoute
+  '/api/cron/objekt-stats': typeof ApiCronObjektStatsServerRoute
+  '/api/cosmo/qr-auth/recaptcha': typeof ApiCosmoQrAuthRecaptchaServerRoute
+  '/api/cosmo/qr-auth/ticket': typeof ApiCosmoQrAuthTicketServerRoute
+  '/api/bff/v3/users/search': typeof ApiBffV3UsersSearchServerRoute
+  '/api/bff/v1/objekt/collection-group/$address': typeof ApiBffV1ObjektCollectionGroupAddressServerRoute
+}
+export interface FileServerRoutesByTo {
+  '/api/filter-data': typeof ApiFilterDataServerRoute
+  '/api/auth/$': typeof ApiAuthSplatServerRoute
+  '/api/cron/gravity': typeof ApiCronGravityServerRoute
+  '/api/cron/objekt-stats': typeof ApiCronObjektStatsServerRoute
+  '/api/cosmo/qr-auth/recaptcha': typeof ApiCosmoQrAuthRecaptchaServerRoute
+  '/api/cosmo/qr-auth/ticket': typeof ApiCosmoQrAuthTicketServerRoute
+  '/api/bff/v3/users/search': typeof ApiBffV3UsersSearchServerRoute
+  '/api/bff/v1/objekt/collection-group/$address': typeof ApiBffV1ObjektCollectionGroupAddressServerRoute
+}
+export interface FileServerRoutesById {
+  __root__: typeof rootServerRouteImport
+  '/api/filter-data': typeof ApiFilterDataServerRoute
+  '/api/auth/$': typeof ApiAuthSplatServerRoute
+  '/api/cron/gravity': typeof ApiCronGravityServerRoute
+  '/api/cron/objekt-stats': typeof ApiCronObjektStatsServerRoute
+  '/api/cosmo/qr-auth/recaptcha': typeof ApiCosmoQrAuthRecaptchaServerRoute
+  '/api/cosmo/qr-auth/ticket': typeof ApiCosmoQrAuthTicketServerRoute
+  '/api/bff/v3/users/search': typeof ApiBffV3UsersSearchServerRoute
+  '/api/bff/v1/objekt/collection-group/$address': typeof ApiBffV1ObjektCollectionGroupAddressServerRoute
+}
+export interface FileServerRouteTypes {
+  fileServerRoutesByFullPath: FileServerRoutesByFullPath
+  fullPaths:
+    | '/api/filter-data'
+    | '/api/auth/$'
+    | '/api/cron/gravity'
+    | '/api/cron/objekt-stats'
+    | '/api/cosmo/qr-auth/recaptcha'
+    | '/api/cosmo/qr-auth/ticket'
+    | '/api/bff/v3/users/search'
+    | '/api/bff/v1/objekt/collection-group/$address'
+  fileServerRoutesByTo: FileServerRoutesByTo
+  to:
+    | '/api/filter-data'
+    | '/api/auth/$'
+    | '/api/cron/gravity'
+    | '/api/cron/objekt-stats'
+    | '/api/cosmo/qr-auth/recaptcha'
+    | '/api/cosmo/qr-auth/ticket'
+    | '/api/bff/v3/users/search'
+    | '/api/bff/v1/objekt/collection-group/$address'
+  id:
+    | '__root__'
+    | '/api/filter-data'
+    | '/api/auth/$'
+    | '/api/cron/gravity'
+    | '/api/cron/objekt-stats'
+    | '/api/cosmo/qr-auth/recaptcha'
+    | '/api/cosmo/qr-auth/ticket'
+    | '/api/bff/v3/users/search'
+    | '/api/bff/v1/objekt/collection-group/$address'
+  fileServerRoutesById: FileServerRoutesById
+}
+export interface RootServerRouteChildren {
+  ApiFilterDataServerRoute: typeof ApiFilterDataServerRoute
+  ApiAuthSplatServerRoute: typeof ApiAuthSplatServerRoute
+  ApiCronGravityServerRoute: typeof ApiCronGravityServerRoute
+  ApiCronObjektStatsServerRoute: typeof ApiCronObjektStatsServerRoute
+  ApiCosmoQrAuthRecaptchaServerRoute: typeof ApiCosmoQrAuthRecaptchaServerRoute
+  ApiCosmoQrAuthTicketServerRoute: typeof ApiCosmoQrAuthTicketServerRoute
+  ApiBffV3UsersSearchServerRoute: typeof ApiBffV3UsersSearchServerRoute
+  ApiBffV1ObjektCollectionGroupAddressServerRoute: typeof ApiBffV1ObjektCollectionGroupAddressServerRoute
+}
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
@@ -50,6 +181,66 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+declare module '@tanstack/react-start/server' {
+  interface ServerFileRoutesByPath {
+    '/api/filter-data': {
+      id: '/api/filter-data'
+      path: '/api/filter-data'
+      fullPath: '/api/filter-data'
+      preLoaderRoute: typeof ApiFilterDataServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/cron/objekt-stats': {
+      id: '/api/cron/objekt-stats'
+      path: '/api/cron/objekt-stats'
+      fullPath: '/api/cron/objekt-stats'
+      preLoaderRoute: typeof ApiCronObjektStatsServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/cron/gravity': {
+      id: '/api/cron/gravity'
+      path: '/api/cron/gravity'
+      fullPath: '/api/cron/gravity'
+      preLoaderRoute: typeof ApiCronGravityServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/api/auth/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/cosmo/qr-auth/ticket': {
+      id: '/api/cosmo/qr-auth/ticket'
+      path: '/api/cosmo/qr-auth/ticket'
+      fullPath: '/api/cosmo/qr-auth/ticket'
+      preLoaderRoute: typeof ApiCosmoQrAuthTicketServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/cosmo/qr-auth/recaptcha': {
+      id: '/api/cosmo/qr-auth/recaptcha'
+      path: '/api/cosmo/qr-auth/recaptcha'
+      fullPath: '/api/cosmo/qr-auth/recaptcha'
+      preLoaderRoute: typeof ApiCosmoQrAuthRecaptchaServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/bff/v3/users/search': {
+      id: '/api/bff/v3/users/search'
+      path: '/api/bff/v3/users/search'
+      fullPath: '/api/bff/v3/users/search'
+      preLoaderRoute: typeof ApiBffV3UsersSearchServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/bff/v1/objekt/collection-group/$address': {
+      id: '/api/bff/v1/objekt/collection-group/$address'
+      path: '/api/bff/v1/objekt/collection-group/$address'
+      fullPath: '/api/bff/v1/objekt/collection-group/$address'
+      preLoaderRoute: typeof ApiBffV1ObjektCollectionGroupAddressServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+  }
+}
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -57,3 +248,17 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+const rootServerRouteChildren: RootServerRouteChildren = {
+  ApiFilterDataServerRoute: ApiFilterDataServerRoute,
+  ApiAuthSplatServerRoute: ApiAuthSplatServerRoute,
+  ApiCronGravityServerRoute: ApiCronGravityServerRoute,
+  ApiCronObjektStatsServerRoute: ApiCronObjektStatsServerRoute,
+  ApiCosmoQrAuthRecaptchaServerRoute: ApiCosmoQrAuthRecaptchaServerRoute,
+  ApiCosmoQrAuthTicketServerRoute: ApiCosmoQrAuthTicketServerRoute,
+  ApiBffV3UsersSearchServerRoute: ApiBffV3UsersSearchServerRoute,
+  ApiBffV1ObjektCollectionGroupAddressServerRoute:
+    ApiBffV1ObjektCollectionGroupAddressServerRoute,
+}
+export const serverRouteTree = rootServerRouteImport
+  ._addFileChildren(rootServerRouteChildren)
+  ._addFileTypes<FileServerRouteTypes>()

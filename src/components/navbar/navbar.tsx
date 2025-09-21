@@ -2,6 +2,7 @@ import { Fragment, Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { IconCards } from "@tabler/icons-react";
 import { ChartColumnBig, Menu, Search, Vote } from "lucide-react";
+import { useSuspenseQueries, useSuspenseQuery } from "@tanstack/react-query";
 import Logo from "../logo";
 import UpdateDialog from "../misc/update-dialog";
 import SystemStatus from "../misc/system-status";
@@ -15,8 +16,13 @@ import {
   getCurrentAccount,
   getSelectedArtists,
   getSession,
-} from "@/app/data-fetching";
+} from "@/data-fetching";
 import { ArtistProvider } from "@/hooks/use-artists";
+import {
+  artistsQuery,
+  currentAccountQuery,
+  selectedArtistsQuery,
+} from "@/queries";
 
 export default function Navbar() {
   return (
@@ -72,13 +78,11 @@ function NavbarFallback() {
   );
 }
 
-async function AuthState() {
-  const session = await getSession();
-  const [account, artists, selected] = await Promise.all([
-    getCurrentAccount(session?.session.userId),
-    getArtistsWithMembers(),
-    getSelectedArtists(),
-  ]);
+function AuthState() {
+  const [{ data: account }, { data: artists }, { data: selected }] =
+    useSuspenseQueries({
+      queries: [currentAccountQuery, artistsQuery, selectedArtistsQuery],
+    });
 
   return (
     <ArtistProvider artists={artists} selected={selected}>

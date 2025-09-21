@@ -1,4 +1,4 @@
-import { getSession } from "@/app/data-fetching";
+import { getSession } from "@/data-fetching";
 import InsertBands from "@/components/admin/bands/insert-bands";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";

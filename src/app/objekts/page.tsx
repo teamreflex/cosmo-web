@@ -4,7 +4,7 @@ import {
   getArtistsWithMembers,
   getSelectedArtists,
   getSession,
-} from "../data-fetching";
+} from "../../data-fetching";
 import IndexRenderer from "@/components/objekt-index/index-renderer";
 import { fetchFilterData } from "@/lib/server/objekts/filter-data";
 import { ProfileProvider } from "@/hooks/use-profile";

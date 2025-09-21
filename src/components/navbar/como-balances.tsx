@@ -13,7 +13,7 @@ import {
   getArtistsWithMembers,
   getSelectedArtists,
   getTokenBalances,
-} from "@/app/data-fetching";
+} from "@/data-fetching";
 import type { ComoBalance } from "@/lib/universal/como";
 
 type Props = {

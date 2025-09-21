@@ -1,15 +1,12 @@
 import "server-only";
-import { db } from "./db";
-import { type CollectionDataSource, GRID_COLUMNS } from "@/lib/utils";
+import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { createAuthMiddleware } from "better-auth/api";
 import { parseSessionOutput, parseUserOutput } from "better-auth/db";
-import { nextCookies } from "better-auth/next-js";
 import { username } from "better-auth/plugins/username";
-import { env } from "@/env";
-import * as authSchema from "@/lib/server/db/auth-schema";
-import { createCipheriv, createDecipheriv, randomBytes } from "crypto";
+import { eq } from "drizzle-orm";
+import { reactStartCookies } from "better-auth/react-start";
 import { baseUrl } from "../query-client";
 import {
   sendAccountDeletionEmail,
@@ -17,9 +14,13 @@ import {
   sendPasswordResetEmail,
   sendVerificationEmail,
 } from "./mail";
-import type { PublicUser } from "../universal/auth";
 import { cosmoAccounts } from "./db/schema";
-import { eq } from "drizzle-orm";
+import { db } from "./db";
+import type { PublicUser } from "../universal/auth";
+import type { CollectionDataSource } from "@/lib/utils";
+import { env } from "@/env";
+import { GRID_COLUMNS } from "@/lib/utils";
+import * as authSchema from "@/lib/server/db/auth-schema";
 
 export const IP_HEADER = "x-vercel-forwarded-for";
 
@@ -27,7 +28,7 @@ export const IP_HEADER = "x-vercel-forwarded-for";
  * Better Auth server instance.
  */
 export const auth = betterAuth({
-  appName: env.NEXT_PUBLIC_APP_NAME,
+  appName: env.VITE_APP_NAME,
   secret: env.BETTER_AUTH_SECRET,
   baseUrl: baseUrl(),
   database: drizzleAdapter(db, {
@@ -35,14 +36,14 @@ export const auth = betterAuth({
     schema: authSchema,
   }),
   plugins: [
+    reactStartCookies(),
     username({
       minUsernameLength: 3,
       maxUsernameLength: 20,
-      usernameValidator: (username) => {
-        return /^[a-zA-Z0-9]+$/.test(username);
+      usernameValidator: (str) => {
+        return /^[a-zA-Z0-9]+$/.test(str);
       },
     }),
-    nextCookies(),
   ],
 
   /**

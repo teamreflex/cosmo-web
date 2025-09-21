@@ -1,4 +1,4 @@
-import { getArtistsWithMembers } from "@/app/data-fetching";
+import { getArtistsWithMembers } from "@/data-fetching";
 import GravityProvider from "@/components/gravity/gravity-provider";
 import { isEqual } from "@/lib/utils";
 import { isBefore } from "date-fns";

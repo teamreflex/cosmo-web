@@ -3,7 +3,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/admin/sidebar";
 import { Separator } from "@/components/ui/separator";
 import AdminBreadcrumbs from "@/components/admin/breadcrumbs";
-import { getSession } from "../data-fetching";
+import { getSession } from "../../data-fetching";
 import { redirect } from "next/navigation";
 
 type Props = PropsWithChildren;

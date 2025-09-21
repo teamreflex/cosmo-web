@@ -1,6 +1,6 @@
 "use server";
 
-import { getSelectedArtists } from "@/app/data-fetching";
+import { getSelectedArtists } from "@/data-fetching";
 import { setCookie } from "@/lib/server/cookies";
 
 /**

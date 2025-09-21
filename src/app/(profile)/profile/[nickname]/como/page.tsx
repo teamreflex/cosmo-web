@@ -3,7 +3,7 @@ import { fetchObjektsWithComo } from "@/lib/server/como";
 import ComoCalendar from "@/components/como/calendar";
 import CurrentMonth from "@/components/como/current-month";
 import ArtistIcon from "@/components/artist-icon";
-import { getArtistsWithMembers, getTargetAccount } from "@/app/data-fetching";
+import { getArtistsWithMembers, getTargetAccount } from "@/data-fetching";
 import Portal from "@/components/portal";
 import HelpDialog from "@/components/como/help-dialog";
 

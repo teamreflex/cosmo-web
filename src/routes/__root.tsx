@@ -16,6 +16,7 @@ import TanStackQueryDevtools from "@/components/devtools";
 import Navbar from "@/components/navbar/navbar";
 import TailwindIndicator from "@/components/tailwind-indicator";
 import { env } from "@/env";
+import { currentAccountQuery, filterDataQuery } from "@/queries";
 
 interface RouterContext {
   queryClient: QueryClient;
@@ -48,6 +49,12 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     ],
   }),
   shellComponent: RootDocument,
+  async loader({ context }) {
+    await Promise.all([
+      context.queryClient.ensureQueryData(filterDataQuery),
+      context.queryClient.ensureQueryData(currentAccountQuery),
+    ]);
+  },
 });
 
 function RootDocument({ children }: { children: React.ReactNode }) {

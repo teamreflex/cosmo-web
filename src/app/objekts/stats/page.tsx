@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { fetchObjektStats } from "@/lib/server/objekts/stats";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ArtistChart from "@/components/objekt-stats/artist-chart";
-import { getArtistsWithMembers, getSelectedArtists } from "@/app/data-fetching";
+import { getArtistsWithMembers, getSelectedArtists } from "@/data-fetching";
 import MemberBreakdown from "@/components/objekt-stats/member-breakdown";
 
 export const metadata: Metadata = {

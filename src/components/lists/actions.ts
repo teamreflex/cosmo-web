@@ -11,7 +11,7 @@ import {
   type ObjektListEntry,
 } from "@/lib/server/db/schema";
 import { and, eq } from "drizzle-orm";
-import { getArtistsWithMembers } from "@/app/data-fetching";
+import { getArtistsWithMembers } from "@/data-fetching";
 import type { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import { ActionError, authActionClient } from "@/lib/server/server-actions";
 import { returnValidationErrors } from "next-safe-action";

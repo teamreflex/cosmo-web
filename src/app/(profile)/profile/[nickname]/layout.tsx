@@ -12,7 +12,7 @@ import {
   getCurrentAccount,
   getSession,
   getTargetAccount,
-} from "@/app/data-fetching";
+} from "@/data-fetching";
 import {
   CosmoVerifiedBadge,
   DiscordBadge,

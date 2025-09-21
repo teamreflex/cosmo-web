@@ -1,4 +1,4 @@
-import { getSession } from "@/app/data-fetching";
+import { getSession } from "@/data-fetching";
 import InsertMetadata from "@/components/admin/metadata/insert-metadata";
 import LatestMetadata from "@/components/admin/metadata/latest-metadata";
 import { Skeleton } from "@/components/ui/skeleton";

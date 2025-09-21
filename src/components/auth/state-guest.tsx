@@ -1,8 +1,8 @@
-import Hydrated from "@/components/hydrated";
 import { Moon } from "lucide-react";
-import SignIn from "./sign-in";
 import GuestThemeSwitch from "../navbar/guest-theme-switch";
 import ArtistSelectbox from "../navbar/artist-selectbox";
+import SignIn from "./sign-in";
+import Hydrated from "@/components/hydrated";
 
 export default function StateGuest() {
   return (

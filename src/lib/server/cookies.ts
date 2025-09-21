@@ -1,16 +1,13 @@
-import { cookies } from "next/headers";
+import { getCookie, setCookie } from "@tanstack/react-start/server";
 import { generateCookiePayload } from "./jwt";
-import type { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 
 type CookieKey = "artists" | "token" | "user-session";
 
 /**
  * Read the value from a cookie.
  */
-export async function getCookie<T = string>(key: CookieKey) {
-  const store = await cookies();
-  const value = store.get(key)?.value;
-
+export function fetchCookie<T = string>(key: CookieKey) {
+  const value = getCookie(key);
   if (!value) return undefined;
 
   try {
@@ -23,18 +20,16 @@ export async function getCookie<T = string>(key: CookieKey) {
 type SetCookie = {
   key: CookieKey;
   value: string | string[] | object;
-  cookie?: Partial<ResponseCookie>;
+  maxAge?: number;
 };
 
 /**
  * Save a new cookie.
  */
-export async function setCookie({ key, value, cookie }: SetCookie) {
-  const store = await cookies();
+export function putCookie({ key, value, maxAge }: SetCookie) {
   const stringValue = typeof value === "string" ? value : JSON.stringify(value);
-
-  return store.set(key, stringValue, {
+  setCookie(key, stringValue, {
     ...generateCookiePayload(),
-    ...cookie,
+    ...(maxAge ? { maxAge } : {}),
   });
 }

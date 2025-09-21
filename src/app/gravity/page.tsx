@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getArtistsWithMembers, getSelectedArtists } from "../data-fetching";
+import { getArtistsWithMembers, getSelectedArtists } from "../../data-fetching";
 import { fetchGravities } from "@/lib/server/gravity";
 import { ArtistProvider } from "@/hooks/use-artists";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";

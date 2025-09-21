@@ -4,7 +4,7 @@ import { collections, objekts } from "./db/indexer/schema";
 import type { ComoBalance, ObjektWithCollection } from "@/lib/universal/como";
 import { unstable_cache } from "next/cache";
 import { addr } from "../utils";
-import { getArtistsWithMembers } from "@/app/data-fetching";
+import { getArtistsWithMembers } from "@/data-fetching";
 
 /**
  * Fetch incoming transfers for Special & Premier objekts for a given address

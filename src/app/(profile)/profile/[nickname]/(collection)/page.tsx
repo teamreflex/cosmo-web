@@ -5,7 +5,7 @@ import {
   getSelectedArtists,
   getSession,
   getTargetAccount,
-} from "@/app/data-fetching";
+} from "@/data-fetching";
 import ProfileRenderer from "@/components/profile/profile-renderer";
 import { ProfileProvider } from "@/hooks/use-profile";
 import { ArtistProvider } from "@/hooks/use-artists";

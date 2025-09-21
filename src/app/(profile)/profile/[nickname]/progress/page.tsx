@@ -3,7 +3,7 @@ import {
   getSelectedArtists,
   getSession,
   getTargetAccount,
-} from "@/app/data-fetching";
+} from "@/data-fetching";
 import Portal from "@/components/portal";
 import HelpDialog from "@/components/progress/help-dialog";
 import ProgressCharts from "@/components/progress/charts/progress-charts";

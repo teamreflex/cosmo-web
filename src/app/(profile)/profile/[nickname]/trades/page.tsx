@@ -4,7 +4,7 @@ import {
   getArtistsWithMembers,
   getSelectedArtists,
   getTargetAccount,
-} from "@/app/data-fetching";
+} from "@/data-fetching";
 import { ArtistProvider } from "@/hooks/use-artists";
 import { getQueryClient } from "@/lib/query-client";
 import { fetchFilterData } from "@/lib/server/objekts/filter-data";

@@ -1,12 +1,11 @@
 import { asc } from "drizzle-orm";
 import { indexer } from "../db/indexer";
 import { collections } from "../db/indexer/schema";
-import { unstable_cache } from "next/cache";
 
 /**
  * Fetch all unique collections from the index.
  */
-async function fetchUniqueCollections() {
+export async function fetchUniqueCollections() {
   const rows = await indexer
     .selectDistinctOn([collections.collectionNo], {
       collectionNo: collections.collectionNo,
@@ -20,7 +19,7 @@ async function fetchUniqueCollections() {
 /**
  * Fetch all unique seasons and group by artist.
  */
-async function fetchUniqueSeasons() {
+export async function fetchUniqueSeasons() {
   const rows = await indexer
     .selectDistinctOn([collections.artist, collections.season], {
       createdAt: collections.createdAt,
@@ -67,7 +66,7 @@ async function fetchUniqueSeasons() {
 /**
  * Fetch all unique classes and group by artist.
  */
-async function fetchUniqueClasses() {
+export async function fetchUniqueClasses() {
   const rows = await indexer
     .selectDistinctOn([collections.artist, collections.class], {
       createdAt: collections.createdAt,
@@ -90,27 +89,3 @@ async function fetchUniqueClasses() {
     classes,
   }));
 }
-
-/**
- * Fetch all unique collections, seasons, and classes.
- * Cached for 4 hours.
- */
-export const fetchFilterData = unstable_cache(
-  async () => {
-    const [collections, seasons, classes] = await Promise.all([
-      fetchUniqueCollections(),
-      fetchUniqueSeasons(),
-      fetchUniqueClasses(),
-    ]);
-
-    return {
-      collections,
-      seasons,
-      classes,
-    };
-  },
-  ["filter-data"],
-  {
-    revalidate: 60 * 60 * 4, // 4 hours
-  }
-);

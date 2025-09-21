@@ -6,7 +6,7 @@ import {
   getArtistsWithMembers,
   getSelectedArtists,
   getSession,
-} from "@/app/data-fetching";
+} from "@/data-fetching";
 import ListRenderer from "@/components/lists/list-renderer";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { parseObjektList } from "@/lib/universal/parsers";
