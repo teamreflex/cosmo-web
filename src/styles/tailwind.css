@@ -5,9 +5,22 @@
 @import "./layout.css";
 @import "./utilities.css";
 
+@import "@fontsource-variable/inter";
+
+@font-face {
+  font-family: HalvarBreitBd;
+  font-style: normal;
+  font-weight: 200 700;
+  font-display: swap;
+  src: url("/HalvarBreit-Bd.woff2") format("woff2");
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --font-sans: "Inter Variable", sans-serif;
+  --font-cosmo: "HalvarBreitBd", sans-serif;
+
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -38,9 +51,6 @@
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
-
-  --font-inter: var(--font-inter);
-  --font-cosmo: var(--font-cosmo);
 
   --color-cosmo: var(--color-violet-600);
   --color-cosmo-text: var(--color-violet-400);

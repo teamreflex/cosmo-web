@@ -1,6 +1,7 @@
 import eslint from "@eslint/js";
 import { FlatCompat } from "@eslint/eslintrc";
 import tseslint from "typescript-eslint";
+import { tanstackConfig } from "@tanstack/eslint-config";
 
 // create compatibility layer between new flat config and legacy config system
 const compat = new FlatCompat({
@@ -8,20 +9,13 @@ const compat = new FlatCompat({
 });
 
 export default tseslint.config(
+  ...tanstackConfig,
   {
-    ignores: ["node_modules", ".next"],
+    ignores: ["node_modules"],
   },
   {
     files: ["**/*.ts", "**/*.tsx"],
-
-    extends: [
-      eslint.configs.recommended,
-      compat.extends(
-        "plugin:drizzle/all",
-        "next/core-web-vitals",
-        "next/typescript"
-      ),
-    ],
+    extends: [eslint.configs.recommended, compat.extends("plugin:drizzle/all")],
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
@@ -29,6 +23,7 @@ export default tseslint.config(
       },
     },
     rules: {
+      "@typescript-eslint/array-type": "off",
       "@typescript-eslint/triple-slash-reference": "off",
       "@typescript-eslint/consistent-type-exports": [
         "warn",

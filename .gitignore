@@ -8,9 +8,14 @@
 # testing
 /coverage
 
-# next.js
-/.next/
-/out/
+# tanstack
+dist
+dist-ssr
+.env
+.nitro
+.tanstack
+.output
+.vinxi
 
 # production
 /build

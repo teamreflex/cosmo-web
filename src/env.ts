@@ -1,4 +1,4 @@
-import { createEnv } from "@t3-oss/env-nextjs";
+import { createEnv } from "@t3-oss/env-core";
 import { neonVercel } from "@t3-oss/env-core/presets-zod";
 import { z } from "zod";
 
@@ -10,6 +10,7 @@ export const env = createEnv({
     // sentry
     SENTRY_ORG: z.string().min(1),
     SENTRY_PROJECT: z.string().min(1),
+    SENTRY_AUTH_TOKEN: z.string().min(1),
     // auth key
     AUTH_KEY: z.string().min(1),
     // cron secret
@@ -37,32 +38,27 @@ export const env = createEnv({
     KV_REST_API_URL: z.string().min(1),
     KV_REST_API_TOKEN: z.string().min(1),
   },
+
   client: {
     // info for rebranding the app
-    NEXT_PUBLIC_APP_NAME: z.string().min(1),
+    VITE_APP_NAME: z.string().min(1),
     // url of the app
-    NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL: z.string().min(1),
+    VITE_VERCEL_PROJECT_PRODUCTION_URL: z.string().min(1),
     // environment type
-    NEXT_PUBLIC_VERCEL_ENV: z.string().min(1),
+    VITE_VERCEL_ENV: z.string().min(1),
     // umami analytics
-    NEXT_PUBLIC_UMAMI_ID: z.string().min(1),
-    NEXT_PUBLIC_UMAMI_SCRIPT_URL: z.string().min(1),
+    VITE_UMAMI_ID: z.string().min(1),
+    VITE_UMAMI_SCRIPT_URL: z.string().min(1),
     // sentry
-    NEXT_PUBLIC_SENTRY_DSN: z.string().min(1),
+    VITE_SENTRY_DSN: z.string().min(1),
     // typesense
-    NEXT_PUBLIC_TYPESENSE_URL: z.string().min(1),
-    NEXT_PUBLIC_TYPESENSE_KEY: z.string().min(1),
+    VITE_TYPESENSE_URL: z.string().min(1),
+    VITE_TYPESENSE_KEY: z.string().min(1),
   },
-  experimental__runtimeEnv: {
-    NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
-    NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL:
-      process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL,
-    NEXT_PUBLIC_VERCEL_ENV: process.env.NEXT_PUBLIC_VERCEL_ENV,
-    NEXT_PUBLIC_UMAMI_ID: process.env.NEXT_PUBLIC_UMAMI_ID,
-    NEXT_PUBLIC_UMAMI_SCRIPT_URL: process.env.NEXT_PUBLIC_UMAMI_SCRIPT_URL,
-    NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
-    NEXT_PUBLIC_TYPESENSE_URL: process.env.NEXT_PUBLIC_TYPESENSE_URL,
-    NEXT_PUBLIC_TYPESENSE_KEY: process.env.NEXT_PUBLIC_TYPESENSE_KEY,
-  },
+
+  clientPrefix: "VITE_",
+  runtimeEnv: import.meta.env,
+  emptyStringAsUndefined: true,
+
   extends: [neonVercel()],
 });

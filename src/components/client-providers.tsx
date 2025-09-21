@@ -1,27 +1,33 @@
-"use client";
-
-import type { PropsWithChildren } from "react";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { ReactQueryStreamedHydration } from "@tanstack/react-query-next-experimental";
-import { getQueryClient } from "@/lib/query-client";
-import { NuqsAdapter } from "nuqs/adapters/next/app";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import React from "react";
+import { hashFn } from "wagmi/query";
 import { MediaQueryProvider } from "@/hooks/use-media-query";
 
-type Props = PropsWithChildren;
+export function getContext() {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 1000 * 60 * 5, // 5 minutes
+        queryKeyHashFn: hashFn,
+      },
+    },
+  });
 
-export default function ClientProviders({ children }: Props) {
-  const queryClient = getQueryClient();
+  return {
+    queryClient,
+  };
+}
 
+export function Provider({
+  children,
+  queryClient,
+}: {
+  children: React.ReactNode;
+  queryClient: QueryClient;
+}) {
   return (
-    <NuqsAdapter>
-      <QueryClientProvider client={queryClient}>
-        <ReactQueryStreamedHydration>
-          <MediaQueryProvider>{children}</MediaQueryProvider>
-        </ReactQueryStreamedHydration>
-
-        <ReactQueryDevtools buttonPosition="bottom-right" />
-      </QueryClientProvider>
-    </NuqsAdapter>
+    <QueryClientProvider client={queryClient}>
+      <MediaQueryProvider>{children}</MediaQueryProvider>
+    </QueryClientProvider>
   );
 }

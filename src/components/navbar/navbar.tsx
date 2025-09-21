@@ -1,22 +1,22 @@
-import Logo from "../logo";
 import { Fragment, Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
+import { IconCards } from "@tabler/icons-react";
+import { ChartColumnBig, Menu, Search, Vote } from "lucide-react";
+import Logo from "../logo";
 import UpdateDialog from "../misc/update-dialog";
 import SystemStatus from "../misc/system-status";
+import StateGuest from "../auth/state-guest";
+import StateAuthenticated from "../auth/state-authenticated";
+import AuthFallback from "../auth/auth-fallback";
+import { Skeleton } from "../ui/skeleton";
 import Links from "./links.server";
 import {
-  getCurrentAccount,
   getArtistsWithMembers,
+  getCurrentAccount,
   getSelectedArtists,
   getSession,
 } from "@/app/data-fetching";
-import StateGuest from "../auth/state-guest";
-import StateAuthenticated from "../auth/state-authenticated";
-import { ErrorBoundary } from "react-error-boundary";
-import AuthFallback from "../auth/auth-fallback";
 import { ArtistProvider } from "@/hooks/use-artists";
-import { Skeleton } from "../ui/skeleton";
-import { IconCards } from "@tabler/icons-react";
-import { ChartColumnBig, Menu, Search, Vote } from "lucide-react";
 
 export default function Navbar() {
   return (
