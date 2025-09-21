@@ -1,10 +1,11 @@
+import { captureException } from "@sentry/nextjs";
 import { validateExpiry } from "../jwt";
 import { refresh } from "../cosmo/auth";
+import { db } from "../db";
+import { cosmoTokens } from "../db/schema";
 import type { NextRequest } from "next/server";
 import type { RouteContext, RouteHandler, RouteParams } from "./common";
-import { db } from "../db";
-import { type CosmoToken, cosmoTokens } from "../db/schema";
-import { captureException } from "@sentry/nextjs";
+import type { CosmoToken } from "../db/schema";
 
 type Payload = {
   token: CosmoToken;
@@ -40,7 +41,7 @@ export function withProxiedToken<TParams extends RouteParams>(
 /**
  * Get the latest COSMO token from the database, refresh if necessary.
  */
-export async function getProxiedToken() {
+export async function getProxiedToken(): Promise<CosmoToken> {
   const latestToken: CosmoToken | undefined =
     await db.query.cosmoTokens.findFirst({
       orderBy: {
@@ -68,6 +69,10 @@ export async function getProxiedToken() {
             refreshToken: newTokens.refreshToken,
           })
           .returning();
+
+        if (!newToken) {
+          throw new TokenCreateError();
+        }
 
         // return new token
         return newToken;
@@ -115,5 +120,14 @@ class RefreshTokenInvalidError extends TokenError {
 class TokenRefreshError extends TokenError {
   constructor() {
     super("Error refreshing token");
+  }
+}
+
+/**
+ * Creating a new token failed.
+ */
+class TokenCreateError extends TokenError {
+  constructor() {
+    super("Error creating token");
   }
 }

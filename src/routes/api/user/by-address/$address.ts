@@ -1,38 +1,36 @@
+import { createServerFileRoute } from "@tanstack/react-start/server";
+import { count, eq } from "drizzle-orm";
 import { env } from "@/env";
 import { fetchObjektsWithComo } from "@/lib/server/como";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import { collections, objekts } from "@/lib/server/db/indexer/schema";
 import { buildCalendar } from "@/lib/universal/como";
-import { count, eq } from "drizzle-orm";
-import type { NextRequest } from "next/server";
 
-type Props = {
-  params: Promise<{
-    address: string;
-  }>;
-};
+export const ServerRoute = createServerFileRoute(
+  "/api/user/by-address/$address"
+).methods({
+  /**
+   * Endpoint for getting the COMO calendar for a given address.
+   */
+  GET: async ({ request, params }) => {
+    const authKey = request.headers.get("Authorization");
+    if (authKey !== env.AUTH_KEY) {
+      return Response.json({ error: "invalid authorization" }, { status: 401 });
+    }
 
-/**
- * Endpoint for getting the COMO calendar for a given address.
- */
-export async function GET(req: NextRequest, props: Props) {
-  const authKey = req.headers.get("Authorization");
-  if (authKey !== env.AUTH_KEY) {
-    return Response.json({ error: "invalid authorization" }, { status: 401 });
-  }
+    const url = new URL(request.url);
+    const now = url.searchParams.get("now");
 
-  const { address } = await props.params;
-  const now = req.nextUrl.searchParams.get("now");
+    const [account, calendar, stats] = await Promise.all([
+      getCosmoAccount(params.address),
+      getCalendar(params.address, now),
+      getObjektStats(params.address),
+    ]);
 
-  const [account, calendar, stats] = await Promise.all([
-    getCosmoAccount(address),
-    getCalendar(address, now),
-    getObjektStats(address),
-  ]);
-
-  return Response.json({ account, calendar, stats });
-}
+    return Response.json({ account, calendar, stats });
+  },
+});
 
 /**
  * Get the cosmo account for a given Abstract address.
@@ -56,8 +54,8 @@ async function getCalendar(address: string, now: string | null) {
   const timestamp = now ? parseInt(now) : new Date().getTime();
   const date = new Date(timestamp < 10000000000 ? timestamp * 1000 : timestamp);
 
-  const objekts = await fetchObjektsWithComo(address);
-  return buildCalendar(date, objekts);
+  const result = await fetchObjektsWithComo(address);
+  return buildCalendar(date, result);
 }
 
 /**
