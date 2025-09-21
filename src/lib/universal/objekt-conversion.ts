@@ -314,4 +314,14 @@ const colorFixes: Record<string, ColorFixes> = {
   "ever01-seoyeon-338z": {
     textColor: "#07328D",
   },
+  // tripleS Alphie tour trading cafe: fix text color
+  "atom02-yeonji-361z": {
+    textColor: "#000000",
+  },
+  "atom02-lynn-361z": {
+    textColor: "#000000",
+  },
+  "atom02-joobin-361z": {
+    textColor: "#000000",
+  },
 };
