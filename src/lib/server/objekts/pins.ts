@@ -7,6 +7,7 @@ import { cosmoAccounts, pins } from "../db/schema";
 import { desc, eq } from "drizzle-orm";
 import { remember } from "../cache";
 import { createHash } from "crypto";
+import { isAddress } from "@/lib/utils";
 
 interface ObjektWithCollection extends Objekt {
   collection: Collection;
@@ -16,17 +17,21 @@ interface ObjektWithCollection extends Objekt {
  * Fetch all pins for the given user.
  * Cached for 1 day.
  */
-export async function fetchPins(username: string): Promise<CosmoObjekt[]> {
-  const tag = pinCacheKey(username);
+export async function fetchPins(identifier: string): Promise<CosmoObjekt[]> {
+  const tag = pinCacheKey(identifier);
   const ttl = 60 * 60 * 24; // 1 day
 
   return await remember(tag, ttl, async () => {
+    const column = isAddress(identifier)
+      ? cosmoAccounts.address
+      : cosmoAccounts.username;
+
     const rows = await db
       .select({ tokenId: pins.tokenId })
       .from(pins)
       .innerJoin(cosmoAccounts, eq(pins.address, cosmoAccounts.address))
-      // decoding username from URL
-      .where(eq(cosmoAccounts.username, decodeURIComponent(username)))
+      // decoding identifier from URL
+      .where(eq(column, decodeURIComponent(identifier)))
       .orderBy(desc(pins.id));
 
     if (rows.length === 0) return [];
@@ -83,9 +88,9 @@ export function normalizePin(objekt: ObjektWithCollection): CosmoObjekt {
  * Get the cache key for the pins of a user.
  * Hashing the decoded username to avoid CJK characters.
  */
-export function pinCacheKey(username: string) {
+export function pinCacheKey(identifier: string) {
   const hash = createHash("md5")
-    .update(decodeURIComponent(username.toLowerCase()))
+    .update(decodeURIComponent(identifier.toLowerCase()))
     .digest("hex");
   return `pins:${hash}`;
 }

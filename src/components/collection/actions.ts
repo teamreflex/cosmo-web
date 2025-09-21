@@ -79,7 +79,10 @@ export const pinObjekt = cosmoActionClient
       throw new ActionError("Error pinning objekt");
     }
 
-    clearTag(pinCacheKey(ctx.cosmo.username));
+    await Promise.all([
+      clearTag(pinCacheKey(ctx.cosmo.username)),
+      clearTag(pinCacheKey(ctx.cosmo.address)),
+    ]);
     return normalizePin(objekt);
   });
 
@@ -100,6 +103,9 @@ export const unpinObjekt = cosmoActionClient
         and(eq(pins.tokenId, tokenId), eq(pins.address, ctx.cosmo.address))
       );
 
-    clearTag(pinCacheKey(ctx.cosmo.username));
+    await Promise.all([
+      clearTag(pinCacheKey(ctx.cosmo.username)),
+      clearTag(pinCacheKey(ctx.cosmo.address)),
+    ]);
     return result.rowCount === 1;
   });
