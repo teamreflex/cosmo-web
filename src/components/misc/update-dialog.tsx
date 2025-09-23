@@ -75,7 +75,7 @@ export default function UpdateDialog() {
 
 const updates = [
   {
-    date: "2025-09-22",
+    date: "2025-09-24",
     changes: [
       "Fixed: Objekt pins not displaying when viewing a profile via blockchain address.",
     ],
