@@ -1,5 +1,5 @@
 {
-  "include": ["**/*.ts", "**/*.tsx", "eslint.config.ts", "vite.config.mts"],
+  "include": ["**/*.ts", "**/*.tsx"],
 
   "compilerOptions": {
     "target": "ES2022",
@@ -13,6 +13,8 @@
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": false,
     "noEmit": true,
+    "isolatedModules": true,
+    "resolveJsonModule": true,
 
     /* Linting */
     "skipLibCheck": true,

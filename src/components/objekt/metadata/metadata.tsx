@@ -1,23 +1,23 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ofetch } from "ofetch";
-import Link from "next/link";
 import { useState } from "react";
 import { useCopyToClipboard } from "usehooks-ts";
-import { LinkIcon, ImageDown } from "lucide-react";
+import { ImageDown, LinkIcon } from "lucide-react";
 import { toast } from "sonner";
+import { Link } from "@tanstack/react-router";
 import { Button } from "../../ui/button";
 import { getObjektImageUrls } from "../common";
-import { useUserState } from "@/hooks/use-user-state";
-import { unobtainables } from "@/lib/unobtainables";
-import { env } from "@/env";
 import Portal from "../../portal";
 import Pill from "./pill";
 import EditMetadata from "./edit-metadata";
+import SerialsPanel from "./serials-panel";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import type { ObjektMetadata } from "@/lib/universal/objekts";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import SerialsPanel from "./serials-panel";
 import type { ObjektMetadataTab } from "./common";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { env } from "@/lib/env/client";
+import { unobtainables } from "@/lib/unobtainables";
+import { useUserState } from "@/hooks/use-user-state";
 
 type Props = {
   objekt: Objekt.Collection;
@@ -38,10 +38,9 @@ export default function Metadata(props: Props) {
   });
 
   function copyUrl() {
-    const scheme =
-      env.NEXT_PUBLIC_VERCEL_ENV === "development" ? "http" : "https";
+    const scheme = env.VITE_VERCEL_ENV === "development" ? "http" : "https";
     copy(
-      `${scheme}://${env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL}/objekts?id=${props.objekt.slug}`
+      `${scheme}://${env.VITE_VERCEL_PROJECT_PRODUCTION_URL}/objekts?id=${props.objekt.slug}`
     );
     toast.success("Objekt URL copied to clipboard");
   }
@@ -87,9 +86,9 @@ export default function Metadata(props: Props) {
             </Button>
 
             <Button variant="secondary" size="sm" asChild>
-              <Link href={front.download} target="_blank">
+              <a href={front.download} target="_blank">
                 <ImageDown />
-              </Link>
+              </a>
             </Button>
 
             {user?.isAdmin === true && (
@@ -107,8 +106,7 @@ export default function Metadata(props: Props) {
                 <p>Sourced by:</p>
                 <Link
                   className="underline"
-                  href={`/@${data.metadata.profile.username}`}
-                  prefetch={false}
+                  to={`/@${data.metadata.profile.username}`}
                 >
                   {data.metadata.profile.username}
                 </Link>

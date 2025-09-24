@@ -1,13 +1,11 @@
-import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
 import { Loader2 } from "lucide-react";
-import type { z } from "zod";
 import { useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { useRouter } from "@tanstack/react-router";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
 import {
   Form,
   FormControl,
@@ -16,6 +14,8 @@ import {
   FormLabel,
   FormMessage,
 } from "../ui/form";
+import type { z } from "zod";
+import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { signInSchema } from "@/lib/universal/schema/auth";
 import { track } from "@/lib/utils";
 
@@ -52,7 +52,7 @@ export default function WithEmail({ onForgotPassword }: Props) {
     mutation.mutate(data, {
       onSuccess: () => {
         track("sign-in");
-        router.refresh();
+        router.invalidate();
       },
       onError: (error) => {
         toast.error(error.message);

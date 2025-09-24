@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { count, eq } from "drizzle-orm";
-import { env } from "@/env";
+import { env } from "@/lib/env/server";
 import { fetchObjektsWithComo } from "@/lib/server/como";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";

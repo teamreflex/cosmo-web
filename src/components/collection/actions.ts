@@ -1,13 +1,10 @@
-"use server";
-
-import "server-only";
 import { z } from "zod";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/server/db";
 import { lockedObjekts, pins } from "@/lib/server/db/schema";
-import { and, eq } from "drizzle-orm";
 import { indexer } from "@/lib/server/db/indexer";
 import { normalizePin, pinCacheKey } from "@/lib/server/objekts/pins";
-import { ActionError, cosmoActionClient } from "@/lib/server/server-actions";
+import { ActionError, cosmoActionClient } from "@/lib/server/middlewares";
 import { clearTag } from "@/lib/server/cache";
 
 /**

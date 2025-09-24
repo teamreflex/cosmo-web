@@ -1,16 +1,17 @@
-import { env } from "@/env";
 import { SES } from "@aws-sdk/client-ses";
+import { env as serverEnv } from "@/lib/env/server";
+import { env as clientEnv } from "@/lib/env/client";
 
 const ses = new SES({
-  region: env.MAIL_SES_REGION,
+  region: serverEnv.MAIL_SES_REGION,
   credentials: {
-    accessKeyId: env.MAIL_SES_ACCESS_KEY,
-    secretAccessKey: env.MAIL_SES_SECRET_KEY,
+    accessKeyId: serverEnv.MAIL_SES_ACCESS_KEY,
+    secretAccessKey: serverEnv.MAIL_SES_SECRET_KEY,
   },
 });
 
 // format sender with friendly name
-const MAIL_SENDER = `${env.NEXT_PUBLIC_APP_NAME} <${env.MAIL_SES_FROM}>`;
+const MAIL_SENDER = `${clientEnv.VITE_APP_NAME} <${serverEnv.MAIL_SES_FROM}>`;
 
 type EmailProps = {
   to: string;
@@ -34,7 +35,7 @@ export async function sendEmailChangeVerification({ to, url }: EmailProps) {
           Data: `
   <html>
     <body>
-      <p>Click the link below to verify your ${env.NEXT_PUBLIC_APP_NAME} email address.</p>
+      <p>Click the link below to verify your ${clientEnv.VITE_APP_NAME} email address.</p>
       <a href="${url}">${url}</a>
       <br />
       <p>Replies to this address are not monitored.</p>
@@ -44,7 +45,7 @@ export async function sendEmailChangeVerification({ to, url }: EmailProps) {
       },
       Subject: {
         Charset: "UTF-8",
-        Data: `Verify your ${env.NEXT_PUBLIC_APP_NAME} email`,
+        Data: `Verify your ${clientEnv.VITE_APP_NAME} email`,
       },
     },
   });
@@ -66,7 +67,7 @@ export async function sendVerificationEmail({ to, url }: EmailProps) {
           Data: `
   <html>
     <body>
-      <p>Click the link below to verify your ${env.NEXT_PUBLIC_APP_NAME} email address.</p>
+      <p>Click the link below to verify your ${clientEnv.VITE_APP_NAME} email address.</p>
       <a href="${url}">${url}</a>
       <br />
       <p>If you did not request this verification, please ignore this email.</p>
@@ -78,7 +79,7 @@ export async function sendVerificationEmail({ to, url }: EmailProps) {
       },
       Subject: {
         Charset: "UTF-8",
-        Data: `Verify your ${env.NEXT_PUBLIC_APP_NAME} email`,
+        Data: `Verify your ${clientEnv.VITE_APP_NAME} email`,
       },
     },
   });
@@ -100,7 +101,7 @@ export async function sendPasswordResetEmail({ to, url }: EmailProps) {
           Data: `
   <html>
     <body>
-      <p>Click the link below to reset your ${env.NEXT_PUBLIC_APP_NAME} password.</p>
+      <p>Click the link below to reset your ${clientEnv.VITE_APP_NAME} password.</p>
       <a href="${url}">${url}</a>
       <br />
       <p>Replies to this address are not monitored.</p>
@@ -110,7 +111,7 @@ export async function sendPasswordResetEmail({ to, url }: EmailProps) {
       },
       Subject: {
         Charset: "UTF-8",
-        Data: `Reset your ${env.NEXT_PUBLIC_APP_NAME} password`,
+        Data: `Reset your ${clientEnv.VITE_APP_NAME} password`,
       },
     },
   });
@@ -132,7 +133,7 @@ export async function sendAccountDeletionEmail({ to, url }: EmailProps) {
           Data: `
   <html>
     <body>
-      <p>Click the link below to delete your ${env.NEXT_PUBLIC_APP_NAME} account.</p>
+      <p>Click the link below to delete your ${clientEnv.VITE_APP_NAME} account.</p>
       <a href="${url}">${url}</a>
       <br />
       <p>This action cannot be undone.</p>
@@ -144,7 +145,7 @@ export async function sendAccountDeletionEmail({ to, url }: EmailProps) {
       },
       Subject: {
         Charset: "UTF-8",
-        Data: `Confirm ${env.NEXT_PUBLIC_APP_NAME} account deletion`,
+        Data: `Confirm ${clientEnv.VITE_APP_NAME} account deletion`,
       },
     },
   });

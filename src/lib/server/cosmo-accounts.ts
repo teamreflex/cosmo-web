@@ -1,11 +1,12 @@
 import { sql } from "drizzle-orm";
-import { db } from "./db";
-import { cosmoAccounts, type CosmoAccount } from "./db/schema";
-import { fetchByNickname } from "./cosmo/user";
 import { FetchError } from "ofetch";
-import type { FullAccount, PublicCosmo } from "../universal/cosmo-accounts";
 import { GRID_COLUMNS, isAddress } from "../utils";
+import { db } from "./db";
+import { cosmoAccounts } from "./db/schema";
+import { fetchByNickname } from "./cosmo/user";
 import { toPublicUser } from "./auth";
+import type { CosmoAccount } from "./db/schema";
+import type { FullAccount, PublicCosmo } from "../universal/cosmo-accounts";
 
 /**
  * Fetch a full account from the database.
@@ -114,6 +115,10 @@ export async function linkAccount(account: Omit<CosmoAccount, "id">) {
       },
     })
     .returning();
+
+  if (!result) {
+    throw new Error("Failed to link COSMO account");
+  }
 
   return result;
 }

@@ -1,12 +1,11 @@
-"use server";
-
-import { ActionError, authActionClient } from "@/lib/server/server-actions";
+import { createServerFn } from "@tanstack/react-start";
+import { redirect } from "@tanstack/react-router";
+import { getRequestHeaders } from "@tanstack/react-start/server";
+import { authenticatedMiddleware } from "@/lib/server/middlewares";
 import { auth } from "@/lib/server/auth";
-import { headers } from "next/headers";
 import { certifyTicket } from "@/lib/server/cosmo/qr-auth";
 import { user } from "@/lib/server/cosmo/user";
 import { linkAccount } from "@/lib/server/cosmo-accounts";
-import { redirect } from "next/navigation";
 import { importObjektLists } from "@/lib/server/objekts/lists";
 import { verifyCosmoSchema } from "@/lib/universal/schema/cosmo";
 import { settingsSchema } from "@/lib/universal/schema/auth";
@@ -14,15 +13,15 @@ import { settingsSchema } from "@/lib/universal/schema/auth";
 /**
  * Updates the user's settings.
  */
-export const updateSettings = authActionClient
-  .metadata({ actionName: "updateSettings" })
-  .inputSchema(settingsSchema)
-  .action(async ({ parsedInput }) => {
+export const updateSettings = createServerFn({ method: "POST" })
+  .middleware([authenticatedMiddleware])
+  .inputValidator((data) => settingsSchema.parse(data))
+  .handler(async ({ data }) => {
     await auth.api.updateUser({
-      headers: await headers(),
+      headers: getRequestHeaders(),
       body: {
-        gridColumns: parsedInput.gridColumns,
-        collectionMode: parsedInput.collectionMode,
+        gridColumns: data.gridColumns,
+        collectionMode: data.collectionMode,
       },
     });
   });
@@ -30,15 +29,15 @@ export const updateSettings = authActionClient
 /**
  * Verify the user's COSMO account.
  */
-export const verifyCosmo = authActionClient
-  .metadata({ actionName: "verifyCosmo" })
-  .inputSchema(verifyCosmoSchema)
-  .action(async ({ parsedInput: { otp, ticket }, ctx }) => {
+export const verifyCosmo = createServerFn({ method: "POST" })
+  .middleware([authenticatedMiddleware])
+  .inputValidator((data) => verifyCosmoSchema.parse(data))
+  .handler(async ({ data, context }) => {
     // send the otp and ticket to the cosmo api
     try {
-      var response = await certifyTicket(otp, ticket);
+      var response = await certifyTicket(data.otp, data.ticket);
     } catch (err) {
-      throw new ActionError("Error connecting to COSMO");
+      throw new Error("Error connecting to COSMO");
     }
 
     // get the user-session cookie from the response
@@ -48,7 +47,7 @@ export const verifyCosmo = authActionClient
       const parts = header.split(";");
       for (const part of parts) {
         const [name, value] = part.trim().split("=");
-        if (name === "user-session") {
+        if (name === "user-session" && value !== undefined) {
           session = value;
           break;
         }
@@ -56,14 +55,14 @@ export const verifyCosmo = authActionClient
     }
 
     if (!session) {
-      throw new ActionError("Error getting webshop session");
+      throw new Error("Error getting webshop session");
     }
 
     // get user info from cosmo
     try {
       var cosmoUser = await user(session);
     } catch (err) {
-      throw new ActionError("Error getting user from COSMO");
+      throw new Error("Error getting user from COSMO");
     }
 
     // update the database with the new user info
@@ -71,12 +70,12 @@ export const verifyCosmo = authActionClient
       address: cosmoUser.address,
       username: cosmoUser.nickname,
       cosmoId: cosmoUser.id,
-      userId: ctx.session.user.id,
+      userId: context.session.user.id,
       polygonAddress: null,
     });
 
     // import any existing objekt lists
-    await importObjektLists(ctx.session.user.id, account.address);
+    await importObjektLists(context.session.user.id, account.address);
 
-    redirect(`/@${account.username}`);
+    throw redirect({ to: `/@${account.username}` });
   });

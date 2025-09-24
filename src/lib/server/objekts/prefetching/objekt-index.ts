@@ -4,43 +4,24 @@ import {
   withClass,
   withCollections,
   withMember,
+  withObjektIndexSort,
   withOnlineType,
   withSeason,
-  withObjektIndexSort,
   withSelectedArtists,
 } from "../filters";
-import type { z } from "zod";
-import type { objektIndex } from "@/lib/universal/parsers";
 import { indexer } from "../../db/indexer";
 import { collections } from "../../db/indexer/schema";
+import type { z } from "zod";
+import type { objektIndexSearchSchema } from "@/lib/universal/parsers";
 
 const LIMIT = 60;
 
 /**
- * Ensures the Zod-parsed filters match what the frontend parses.
- * Used for hydrating the query client.
- */
-export function parseObjektIndexFilters(filters: z.infer<typeof objektIndex>) {
-  return {
-    artist: filters.artist,
-    class: filters.class.length > 0 ? filters.class : null,
-    collection: null,
-    collectionNo: filters.collectionNo.length > 0 ? filters.collectionNo : null,
-    gridable: null,
-    member: filters.member,
-    on_offline: filters.on_offline.length > 0 ? filters.on_offline : null,
-    season: filters.season.length > 0 ? filters.season : null,
-    sort: filters.sort === "newest" ? null : filters.sort,
-    transferable: null,
-    used_for_grid: null,
-    artists: filters.artists.length > 0 ? filters.artists : null,
-  };
-}
-
-/**
  * Fetch objekts from the indexer with given filters.
  */
-export async function fetchObjektsIndex(filters: z.infer<typeof objektIndex>) {
+export async function fetchObjektsIndex(
+  filters: z.infer<typeof objektIndexSearchSchema>
+) {
   let query = indexer
     .select({
       count: sql<number>`count(*) OVER() AS count`,

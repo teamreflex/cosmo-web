@@ -1,7 +1,7 @@
 "use server";
 
 import { env } from "@/env";
-import { adminActionClient } from "@/lib/server/server-actions";
+import { adminActionClient } from "@/lib/server/middlewares";
 import { bandUrlRowSchema } from "@/lib/universal/schema/admin";
 import { ofetch } from "ofetch";
 

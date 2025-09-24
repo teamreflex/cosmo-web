@@ -1,4 +1,6 @@
 import { Newspaper } from "lucide-react";
+import { addDays, format, isWithinInterval, subDays } from "date-fns";
+import { useMemo } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -9,21 +11,25 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
+import VisuallyHidden from "../ui/visually-hidden";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { addDays, format, isWithinInterval, subDays } from "date-fns";
-import { env } from "@/env";
-import VisuallyHidden from "../ui/visually-hidden";
+import { env } from "@/lib/env/client";
 
 export default function UpdateDialog() {
-  const isNew = isWithinInterval(updates[0].date, {
-    start: subDays(new Date(), 2),
-    end: addDays(new Date(), 2),
-  });
+  const isNew = useMemo(() => {
+    const latest = updates[0];
+    if (!latest) return false;
+
+    return isWithinInterval(latest.date, {
+      start: subDays(new Date(), 2),
+      end: addDays(new Date(), 2),
+    });
+  }, []);
 
   return (
     <AlertDialog>
@@ -37,12 +43,10 @@ export default function UpdateDialog() {
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>
-            {env.NEXT_PUBLIC_APP_NAME} Updates
-          </AlertDialogTitle>
+          <AlertDialogTitle>{env.VITE_APP_NAME} Updates</AlertDialogTitle>
           <VisuallyHidden>
             <AlertDialogDescription>
-              {env.NEXT_PUBLIC_APP_NAME} Updates
+              {env.VITE_APP_NAME} Updates
             </AlertDialogDescription>
           </VisuallyHidden>
         </AlertDialogHeader>

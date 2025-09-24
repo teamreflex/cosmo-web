@@ -1,6 +1,22 @@
-"use client";
-
-import { type PropsWithChildren, useState } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
+import { ofetch } from "ofetch";
+import { useDebounceValue } from "usehooks-ts";
+import {
+  DialogClose,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "./ui/dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import VisuallyHidden from "./ui/visually-hidden";
+import type { RecentUser } from "@/store";
+import type {
+  CosmoPublicUser,
+  CosmoSearchResult,
+} from "@/lib/universal/cosmo/user";
+import type { PropsWithChildren } from "react";
 import {
   CommandDialog,
   CommandGroup,
@@ -8,24 +24,6 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { useQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
-import type {
-  CosmoPublicUser,
-  CosmoSearchResult,
-} from "@/lib/universal/cosmo/user";
-import { ofetch } from "ofetch";
-import {
-  DialogClose,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "./ui/dialog";
-import { useDebounceValue } from "usehooks-ts";
-import ProfileImage from "@/assets/profile.webp";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import type { RecentUser } from "@/store";
-import VisuallyHidden from "./ui/visually-hidden";
 import { cn, isAddress } from "@/lib/utils";
 
 type Props = PropsWithChildren<{
@@ -190,7 +188,7 @@ function UserAvatar({ nickname }: UserResultProps) {
       <AvatarFallback>{nickname.charAt(0).toUpperCase()}</AvatarFallback>
       <AvatarImage
         className="bg-cosmo-profile p-1"
-        src={ProfileImage.src}
+        src="/profile.webp"
         alt={nickname}
       />
     </Avatar>

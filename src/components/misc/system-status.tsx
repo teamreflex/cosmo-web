@@ -1,20 +1,21 @@
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { getSystemStatus } from "@/lib/server/system";
-import type { SystemStatus as SystemStatusType } from "@/lib/universal/system";
-import { cn } from "@/lib/utils";
 import { Activity, HardDriveDownload, X } from "lucide-react";
 import { ErrorBoundary } from "react-error-boundary";
+import { Suspense } from "react";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
-import { Suspense } from "react";
+import type { SystemStatus as SystemStatusType } from "@/lib/universal/system";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { systemStatusQuery } from "@/lib/server/system";
 
 export default function SystemStatus() {
   return (
@@ -30,8 +31,10 @@ export default function SystemStatus() {
   );
 }
 
-async function SystemStatusPopover() {
-  const { processor } = await getSystemStatus();
+function SystemStatusPopover() {
+  const {
+    data: { processor },
+  } = useSuspenseQuery(systemStatusQuery);
 
   return (
     <Popover>

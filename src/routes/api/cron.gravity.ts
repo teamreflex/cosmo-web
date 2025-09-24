@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { eq } from "drizzle-orm";
 import type { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
-import { env } from "@/env";
+import { env } from "@/lib/env/server";
 import { fetchGravities, fetchPoll } from "@/lib/server/cosmo/gravity";
 import { db } from "@/lib/server/db";
 import { dbi } from "@/lib/server/db/interactive";

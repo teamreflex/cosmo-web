@@ -1,7 +1,7 @@
-import { env } from "@/env";
+import { env } from "@/lib/env/client";
 
 export default function TailwindIndicator() {
-  if (env.NEXT_PUBLIC_VERCEL_ENV === "production") return null;
+  if (env.VITE_VERCEL_ENV === "production") return null;
 
   return (
     <div className="fixed bottom-1 left-1 z-50 flex size-6 items-center justify-center rounded-full bg-gray-800 p-4 text-xs text-white">

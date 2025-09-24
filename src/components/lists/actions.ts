@@ -1,20 +1,6 @@
-"use server";
-
-import "server-only";
-import { fetchObjektList } from "@/lib/server/objekts/lists";
-import { db } from "@/lib/server/db";
-import { indexer } from "@/lib/server/db/indexer";
-import type { Collection } from "@/lib/server/db/indexer/schema";
-import {
-  objektLists,
-  objektListEntries,
-  type ObjektListEntry,
-} from "@/lib/server/db/schema";
 import { and, eq } from "drizzle-orm";
-import { getArtistsWithMembers } from "@/data-fetching";
-import type { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
-import { ActionError, authActionClient } from "@/lib/server/server-actions";
 import { returnValidationErrors } from "next-safe-action";
+import { redirect } from "next/navigation";
 import {
   addObjektToListSchema,
   createObjektListSchema,
@@ -23,7 +9,15 @@ import {
   removeObjektFromListSchema,
   updateObjektListSchema,
 } from "../../lib/universal/schema/objekt-list";
-import { redirect } from "next/navigation";
+import type { Collection } from "@/lib/server/db/indexer/schema";
+import type { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
+import type { ObjektListEntry } from "@/lib/server/db/schema";
+import { fetchObjektList } from "@/lib/server/objekts/lists";
+import { db } from "@/lib/server/db";
+import { indexer } from "@/lib/server/db/indexer";
+import { objektListEntries, objektLists } from "@/lib/server/db/schema";
+import { getArtistsWithMembers } from "@/data-fetching";
+import { ActionError, authActionClient } from "@/lib/server/middlewares";
 
 function createSlug(name: string) {
   return name.trim().toLowerCase().replace(/ /g, "-");

@@ -1,9 +1,9 @@
 "use client";
 
-import { authClient } from "@/lib/client/auth";
 import { useTransition } from "react";
-import { Button } from "../ui/button";
 import { IconBrandDiscordFilled } from "@tabler/icons-react";
+import { Button } from "../ui/button";
+import { authClient } from "@/lib/client/auth";
 import { track } from "@/lib/utils";
 
 export default function SignInWithDiscord() {

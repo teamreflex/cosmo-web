@@ -1,24 +1,21 @@
-"use client";
-
-import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { UserSearch } from "../user-search";
 import { Search } from "lucide-react";
-import { useSearchStore } from "@/store";
-import type { Route } from "next";
-import type { CosmoPublicUser } from "@/lib/universal/cosmo/user";
+import { useNavigate } from "@tanstack/react-router";
+import { UserSearch } from "../user-search";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
+import type { CosmoPublicUser } from "@/lib/universal/cosmo/user";
+import { useSearchStore } from "@/store";
 
 export default function NavbarSearch() {
   const recent = useSearchStore((state) => state.recentLookups);
   const addRecent = useSearchStore((state) => state.addRecentLookup);
   const [open, setOpen] = useState(false);
-  const router = useRouter();
+  const navigate = useNavigate();
 
   function onSelect(user: CosmoPublicUser) {
     setOpen(false);
@@ -27,7 +24,7 @@ export default function NavbarSearch() {
       address: user.address,
       profileImageUrl: user.profileImageUrl,
     });
-    router.push(`/@${user.nickname}` as Route);
+    navigate({ to: `/@${user.nickname}` });
   }
 
   return (

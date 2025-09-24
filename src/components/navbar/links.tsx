@@ -1,70 +1,105 @@
-"use client";
-
-import { usePathname } from "next/navigation";
+import { ChartColumnBig, Menu, PackageOpen, Vote } from "lucide-react";
+import { Link, useLocation } from "@tanstack/react-router";
+import { IconCards } from "@tabler/icons-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import LinkCosmo from "../auth/link-cosmo";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
-import Link from "next/link";
-import { cn } from "@/lib/utils";
-import {
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-} from "../ui/dropdown-menu";
-import { IconCards, type TablerIcon } from "@tabler/icons-react";
 import NavbarSearch from "./navbar-search";
 import { ArtistItem } from "./artist-selectbox";
-import { useArtists } from "@/hooks/use-artists";
-import type { PublicUser } from "@/lib/universal/auth";
-import {
-  ChartColumnBig,
-  type LucideIcon,
-  PackageOpen,
-  Vote,
-} from "lucide-react";
-// import { use } from "react";
-// import { LinkCosmoContext } from "../auth/link-cosmo";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import type { TablerIcon } from "@tabler/icons-react";
+import type { PublicUser } from "@/lib/universal/auth";
+import type { LucideIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useArtists } from "@/hooks/use-artists";
 
 type Props = {
   signedIn: boolean;
   cosmo?: PublicCosmo;
 };
 
-export function DesktopLinks({ signedIn, cosmo }: Props) {
-  // const ctx = use(LinkCosmoContext);
-  const path = usePathname();
+export default function Links(props: Props) {
+  return (
+    <div className="flex grow justify-end lg:justify-center">
+      <LinkCosmo>
+        {/* desktop */}
+        <div className="lg:flex flex-row items-center gap-6 hidden">
+          <DesktopLinks {...props} />
+        </div>
+
+        {/* mobile */}
+        <div className="lg:hidden flex flex-row gap-2 items-center">
+          <NavbarSearch />
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className="drop-shadow-lg outline-hidden"
+                aria-label="Menu"
+              >
+                <Menu className="h-8 w-8 shrink-0" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuLabel>Menu</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <MobileLinks {...props} />
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </LinkCosmo>
+    </div>
+  );
+}
+
+type LinksProps = {
+  signedIn: boolean;
+  cosmo?: PublicCosmo;
+};
+
+function DesktopLinks(props: LinksProps) {
+  const location = useLocation();
 
   return (
     <div className="contents">
       <LinkButton
         href="/"
-        active={path === "/" || path === "/objekts"}
+        active={location.pathname === "/" || location.pathname === "/objekts"}
         icon={IconCards}
         name="Objekts"
       />
 
       <LinkButton
         href="/objekts/stats"
-        active={path === "/objekts/stats"}
+        active={location.pathname === "/objekts/stats"}
         icon={ChartColumnBig}
         name="Objekt Stats"
       />
 
       <LinkButton
         href="/gravity"
-        active={path.startsWith("/gravity")}
+        active={location.pathname.startsWith("/gravity")}
         icon={Vote}
         name="Gravity"
       />
 
-      {cosmo && (
+      {props.cosmo && (
         <LinkButton
-          href={`/@${cosmo.username}`}
-          active={path.startsWith(`/@${cosmo.username}`)}
+          href={`/@${props.cosmo.username}`}
+          active={location.pathname.startsWith(`/@${props.cosmo.username}`)}
           icon={PackageOpen}
           name="Collection"
         />
@@ -75,20 +110,20 @@ export function DesktopLinks({ signedIn, cosmo }: Props) {
   );
 }
 
-export function MobileLinks({ signedIn, cosmo }: Props) {
-  // const ctx = use(LinkCosmoContext);
-  const path = usePathname();
+export function MobileLinks(props: Props) {
+  const location = useLocation();
   const { artists, selectedIds } = useArtists();
 
   return (
     <div className="contents">
       {/* objekt index */}
       <DropdownMenuItem asChild>
-        <Link href="/" aria-label="Objekts" prefetch={false}>
+        <Link to="/" aria-label="Objekts">
           <IconCards
             className={cn(
               "h-4 w-4 shrink-0 transition-all fill-transparent",
-              (path === "/" || path === "/objekts") && "fill-white/50"
+              (location.pathname === "/" || location.pathname === "/objekts") &&
+                "fill-white/50"
             )}
           />
           <span>Objekts</span>
@@ -97,11 +132,11 @@ export function MobileLinks({ signedIn, cosmo }: Props) {
 
       {/* objekt stats */}
       <DropdownMenuItem asChild>
-        <Link href="/objekts/stats" aria-label="Objekt Stats" prefetch={false}>
+        <Link to="/objekts/stats" aria-label="Objekt Stats">
           <ChartColumnBig
             className={cn(
               "h-4 w-4 shrink-0 transition-all fill-transparent",
-              path === "/objekts/stats" && "fill-white/50"
+              location.pathname === "/objekts/stats" && "fill-white/50"
             )}
           />
           <span>Objekt Stats</span>
@@ -110,29 +145,26 @@ export function MobileLinks({ signedIn, cosmo }: Props) {
 
       {/* gravity */}
       <DropdownMenuItem asChild>
-        <Link href="/gravity" aria-label="Gravity" prefetch={false}>
+        <Link to="/gravity" aria-label="Gravity">
           <Vote
             className={cn(
               "h-4 w-4 shrink-0 transition-all fill-transparent",
-              path.startsWith("/gravity") && "fill-white/50"
+              location.pathname.startsWith("/gravity") && "fill-white/50"
             )}
           />
           <span>Gravity</span>
         </Link>
       </DropdownMenuItem>
 
-      {cosmo && (
+      {props.cosmo && (
         // user has a cosmo cosmo, go to collection
         <DropdownMenuItem asChild>
-          <Link
-            href={`/@${cosmo.username}`}
-            aria-label="Collection"
-            prefetch={false}
-          >
+          <Link to={`/@${props.cosmo.username}`} aria-label="Collection">
             <PackageOpen
               className={cn(
                 "h-4 w-4 shrink-0 transition-all fill-transparent",
-                path === `/@${cosmo.username}` && "fill-white/50"
+                location.pathname === `/@${props.cosmo.username}` &&
+                  "fill-white/50"
               )}
             />
             <span>Collection</span>
@@ -140,7 +172,7 @@ export function MobileLinks({ signedIn, cosmo }: Props) {
         </DropdownMenuItem>
       )}
 
-      {signedIn === false && (
+      {props.signedIn === false && (
         <div className="contents">
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
@@ -174,10 +206,9 @@ function LinkButton(props: LinkButtonProps) {
       <Tooltip>
         <TooltipTrigger>
           <Link
-            href={props.href}
+            to={props.href}
             className="outline-hidden focus:outline-hidden"
             aria-label={props.name}
-            prefetch={false}
           >
             <props.icon
               className={cn(

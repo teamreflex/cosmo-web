@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { env } from "@/env";
+import { env } from "@/lib/env/server";
 import { clearTag } from "@/lib/server/cache";
 
 export const Route = createFileRoute("/api/cron/objekt-stats")({

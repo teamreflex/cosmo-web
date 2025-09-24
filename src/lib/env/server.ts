@@ -1,9 +1,10 @@
 import { createEnv } from "@t3-oss/env-core";
-import { neonVercel } from "@t3-oss/env-core/presets-zod";
 import { z } from "zod";
 
 export const env = createEnv({
   server: {
+    // neon database
+    DATABASE_URL: z.string().min(1),
     // indexer db http proxy
     INDEXER_PROXY_KEY: z.string().min(1),
     INDEXER_PROXY_URL: z.string().min(1),
@@ -38,27 +39,7 @@ export const env = createEnv({
     KV_REST_API_URL: z.string().min(1),
     KV_REST_API_TOKEN: z.string().min(1),
   },
-
-  client: {
-    // info for rebranding the app
-    VITE_APP_NAME: z.string().min(1),
-    // url of the app
-    VITE_VERCEL_PROJECT_PRODUCTION_URL: z.string().min(1),
-    // environment type
-    VITE_VERCEL_ENV: z.string().min(1),
-    // umami analytics
-    VITE_UMAMI_ID: z.string().min(1),
-    VITE_UMAMI_SCRIPT_URL: z.string().min(1),
-    // sentry
-    VITE_SENTRY_DSN: z.string().min(1),
-    // typesense
-    VITE_TYPESENSE_URL: z.string().min(1),
-    VITE_TYPESENSE_KEY: z.string().min(1),
-  },
-
-  clientPrefix: "VITE_",
-  runtimeEnv: import.meta.env,
+  runtimeEnv: process.env,
   emptyStringAsUndefined: true,
-
-  extends: [neonVercel()],
+  skipValidation: process.env.BUILD_ENV === "production",
 });

@@ -1,18 +1,15 @@
-"use client";
-
-import type { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
 import { useId, useTransition } from "react";
+import { Check, Loader2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import Image from "next/image";
-import { Check, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { useArtists } from "@/hooks/use-artists";
 import { setSelectedArtist } from "./actions";
+import type { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
+import { useArtists } from "@/hooks/use-artists";
 
 export default function ArtistSelectbox() {
   const id = useId();
@@ -60,6 +57,7 @@ export function ArtistItem({ artist, isSelected }: ArtistItemProps) {
   const [isPending, startTransition] = useTransition();
 
   function handleSelect(artistId: string) {
+    // TODO: refactor
     startTransition(async () => {
       await setSelectedArtist(artistId);
     });
@@ -75,12 +73,10 @@ export function ArtistItem({ artist, isSelected }: ArtistItemProps) {
       disabled={isPending}
       className="min-w-40"
     >
-      <Image
-        className="rounded-full aspect-square"
+      <img
+        className="rounded-full size-6 aspect-square"
         src={artist.logoImageUrl}
         alt={artist.title}
-        width={24}
-        height={24}
       />
 
       <span className="grow">{artist.title}</span>

@@ -1,13 +1,10 @@
-import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
 import { CheckCircle, Loader2 } from "lucide-react";
-import type { z } from "zod";
 import { useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { useMemo } from "react";
+import { useRouter } from "@tanstack/react-router";
 import {
   Form,
   FormControl,
@@ -16,8 +13,11 @@ import {
   FormLabel,
   FormMessage,
 } from "../ui/form";
-import { useMemo } from "react";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
 import { randomHandle } from "./account/update-username";
+import type { z } from "zod";
+import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { signUpSchema } from "@/lib/universal/schema/auth";
 import { track } from "@/lib/utils";
 
@@ -57,7 +57,7 @@ export default function SignUp({ onCancel }: Props) {
     mutation.mutate(data, {
       onSuccess: () => {
         track("sign-up");
-        router.refresh();
+        router.invalidate();
       },
       onError: (error) => {
         toast.error(error.message);

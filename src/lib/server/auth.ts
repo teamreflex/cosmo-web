@@ -1,4 +1,3 @@
-import "server-only";
 import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
@@ -18,7 +17,8 @@ import { cosmoAccounts } from "./db/schema";
 import { db } from "./db";
 import type { PublicUser } from "../universal/auth";
 import type { CollectionDataSource } from "@/lib/utils";
-import { env } from "@/env";
+import * as serverEnv from "@/lib/env/server";
+import * as clientEnv from "@/lib/env/client";
 import { GRID_COLUMNS } from "@/lib/utils";
 import * as authSchema from "@/lib/server/db/auth-schema";
 
@@ -28,8 +28,8 @@ export const IP_HEADER = "x-vercel-forwarded-for";
  * Better Auth server instance.
  */
 export const auth = betterAuth({
-  appName: env.VITE_APP_NAME,
-  secret: env.BETTER_AUTH_SECRET,
+  appName: clientEnv.env.VITE_APP_NAME,
+  secret: serverEnv.env.BETTER_AUTH_SECRET,
   baseUrl: baseUrl(),
   database: drizzleAdapter(db, {
     provider: "pg",
@@ -99,14 +99,14 @@ export const auth = betterAuth({
           if (account.accessToken) {
             const encryptedAccessToken = encryptToken(
               account.accessToken,
-              env.BETTER_AUTH_SECRET
+              serverEnv.env.BETTER_AUTH_SECRET
             );
             withEncryptedTokens.accessToken = encryptedAccessToken;
           }
           if (account.refreshToken) {
             const encryptedRefreshToken = encryptToken(
               account.refreshToken,
-              env.BETTER_AUTH_SECRET
+              serverEnv.env.BETTER_AUTH_SECRET
             );
             withEncryptedTokens.refreshToken = encryptedRefreshToken;
           }
@@ -137,12 +137,12 @@ export const auth = betterAuth({
           if (account.accessToken && existing.accessToken) {
             const decrypted = decryptToken(
               existing.accessToken,
-              env.BETTER_AUTH_SECRET
+              serverEnv.env.BETTER_AUTH_SECRET
             );
             if (decrypted !== account.accessToken) {
               withEncryptedTokens.accessToken = encryptToken(
                 account.accessToken,
-                env.BETTER_AUTH_SECRET
+                serverEnv.env.BETTER_AUTH_SECRET
               );
             }
           }
@@ -150,12 +150,12 @@ export const auth = betterAuth({
           if (account.refreshToken && existing.refreshToken) {
             const decrypted = decryptToken(
               existing.refreshToken,
-              env.BETTER_AUTH_SECRET
+              serverEnv.env.BETTER_AUTH_SECRET
             );
             if (decrypted !== account.refreshToken) {
               withEncryptedTokens.refreshToken = encryptToken(
                 account.refreshToken,
-                env.BETTER_AUTH_SECRET
+                serverEnv.env.BETTER_AUTH_SECRET
               );
             }
           }
@@ -215,8 +215,8 @@ export const auth = betterAuth({
   socialProviders: {
     discord: {
       enabled: true,
-      clientId: env.DISCORD_CLIENT_ID,
-      clientSecret: env.DISCORD_CLIENT_SECRET,
+      clientId: serverEnv.env.DISCORD_CLIENT_ID,
+      clientSecret: serverEnv.env.DISCORD_CLIENT_SECRET,
       overrideUserInfoOnSignIn: true,
       mapProfileToUser: (profile) => {
         return {
@@ -226,8 +226,8 @@ export const auth = betterAuth({
     },
     twitter: {
       enabled: true,
-      clientId: env.TWITTER_CLIENT_ID,
-      clientSecret: env.TWITTER_CLIENT_SECRET,
+      clientId: serverEnv.env.TWITTER_CLIENT_ID,
+      clientSecret: serverEnv.env.TWITTER_CLIENT_SECRET,
       overrideUserInfoOnSignIn: true,
       mapProfileToUser: (profile) => {
         return {

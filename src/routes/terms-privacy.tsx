@@ -1,7 +1,15 @@
-import Link from "next/link";
+import { createFileRoute } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { seoTitle } from "@/lib/seo";
 
-export default function TermsPrivacyPage() {
+export const Route = createFileRoute("/terms-privacy")({
+  head: () => ({
+    meta: [seoTitle("Terms & Privacy")],
+  }),
+  component: TermsPrivacy,
+});
+
+function TermsPrivacy() {
   return (
     <div className="container flex flex-col gap-2 max-w-3xl py-2">
       <Card>
@@ -26,14 +34,14 @@ export default function TermsPrivacyPage() {
             </li>
             <li>
               Source code for this application is available on{" "}
-              <Link
+              <a
                 href="https://github.com/teamreflex/cosmo-web"
                 className="underline"
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 GitHub
-              </Link>
+              </a>
               .
             </li>
           </ul>

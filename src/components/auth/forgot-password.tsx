@@ -1,12 +1,10 @@
-import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
 import { Loader2, MailCheck } from "lucide-react";
-import type { z } from "zod";
 import { useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
 import {
   Form,
   FormControl,
@@ -15,6 +13,8 @@ import {
   FormLabel,
   FormMessage,
 } from "../ui/form";
+import type { z } from "zod";
+import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { forgotPasswordSchema } from "@/lib/universal/schema/auth";
 
 type Props = {

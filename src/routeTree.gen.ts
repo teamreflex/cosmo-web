@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsPrivacyRouteImport } from './routes/terms-privacy'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiFilterDataRouteImport } from './routes/api/filter-data'
 import { Route as ApiObjektsIndexRouteImport } from './routes/api/objekts/index'
@@ -35,6 +36,11 @@ import { Route as ApiBffV3UsersSearchRouteImport } from './routes/api/bff/v3/use
 import { Route as ApiBffV1ObjektCollectionGroupAddressRouteImport } from './routes/api/bff/v1/objekt/collection-group.$address'
 import { Route as ApiGravityV3ArtistGravityGravityPollsPollRouteImport } from './routes/api/gravity/v3/$artist.gravity.$gravity.polls.$poll'
 
+const TermsPrivacyRoute = TermsPrivacyRouteImport.update({
+  id: '/terms-privacy',
+  path: '/terms-privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -174,6 +180,7 @@ const ApiGravityV3ArtistGravityGravityPollsPollRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/terms-privacy': typeof TermsPrivacyRoute
   '/api/filter-data': typeof ApiFilterDataRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/gravity': typeof ApiCronGravityRoute
@@ -201,6 +208,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/terms-privacy': typeof TermsPrivacyRoute
   '/api/filter-data': typeof ApiFilterDataRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/gravity': typeof ApiCronGravityRoute
@@ -229,6 +237,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/terms-privacy': typeof TermsPrivacyRoute
   '/api/filter-data': typeof ApiFilterDataRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/gravity': typeof ApiCronGravityRoute
@@ -258,6 +267,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/terms-privacy'
     | '/api/filter-data'
     | '/api/auth/$'
     | '/api/cron/gravity'
@@ -285,6 +295,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/terms-privacy'
     | '/api/filter-data'
     | '/api/auth/$'
     | '/api/cron/gravity'
@@ -312,6 +323,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/terms-privacy'
     | '/api/filter-data'
     | '/api/auth/$'
     | '/api/cron/gravity'
@@ -340,6 +352,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  TermsPrivacyRoute: typeof TermsPrivacyRoute
   ApiFilterDataRoute: typeof ApiFilterDataRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiCronGravityRoute: typeof ApiCronGravityRoute
@@ -368,6 +381,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms-privacy': {
+      id: '/terms-privacy'
+      path: '/terms-privacy'
+      fullPath: '/terms-privacy'
+      preLoaderRoute: typeof TermsPrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -548,6 +568,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  TermsPrivacyRoute: TermsPrivacyRoute,
   ApiFilterDataRoute: ApiFilterDataRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiCronGravityRoute: ApiCronGravityRoute,

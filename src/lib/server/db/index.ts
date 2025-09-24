@@ -1,7 +1,7 @@
 import { neonConfig } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
-import { env } from "@/env";
 import { relations } from "./relations";
+import { env } from "@/lib/env/server";
 
 /**
  * Enables local proxy support.

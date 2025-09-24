@@ -1,4 +1,3 @@
-import "server-only";
 import { decodeJwt } from "jose";
 
 /**

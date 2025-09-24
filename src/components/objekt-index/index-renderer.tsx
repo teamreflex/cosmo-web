@@ -1,10 +1,7 @@
-"use client";
-
+import { getRouteApi } from "@tanstack/react-router";
 import ListDropdown from "../lists/list-dropdown";
 import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
-import { TopOverlay } from "./index-overlay";
 import FiltersContainer from "../collection/filters-container";
-import { parseAsString, useQueryState } from "nuqs";
 import { ObjektSidebar } from "../objekt/common";
 import RoutedExpandableObjekt from "../objekt/objekt-routed";
 import ExpandableObjekt from "../objekt/objekt-expandable";
@@ -12,23 +9,32 @@ import { Objekt } from "../../lib/universal/objekt-conversion";
 import VirtualizedGrid from "../objekt/virtualized-grid";
 import LoaderRemote from "../objekt/loader-remote";
 import ObjektIndexFilters from "../collection/filter-contexts/objekt-index-filters";
-import { useObjektIndex } from "@/hooks/use-objekt-index";
+import { TopOverlay } from "./index-overlay";
 import HelpDialog from "./help-dialog";
 import type { IndexedObjekt } from "@/lib/universal/objekts";
+import type { ObjektList } from "@/lib/server/db/schema";
 import { useGridColumns } from "@/hooks/use-grid-columns";
 import { useUserState } from "@/hooks/use-user-state";
-import type { ObjektList } from "@/lib/server/db/schema";
+import { useObjektIndex } from "@/hooks/use-objekt-index";
+
+const route = getRouteApi("/");
 
 type Props = {
-  activeSlug?: string;
   objektLists: ObjektList[];
 };
 
 export default function IndexRenderer(props: Props) {
   const { user } = useUserState();
   const gridColumns = useGridColumns();
-  const [, setActiveObjekt] = useQueryState("id", parseAsString);
   const options = useObjektIndex();
+  const { id: activeObjekt } = route.useSearch();
+  const navigate = route.useNavigate();
+
+  function setActiveObjekt(slug: string | null) {
+    navigate({
+      search: (prev) => ({ ...prev, id: slug }),
+    });
+  }
 
   const authenticated = user !== undefined;
 
@@ -80,9 +86,9 @@ export default function IndexRenderer(props: Props) {
        * activeSlug is populated on first load from the server
        * using activeObjekt here results in two dialogs being open at once
        */}
-      {props.activeSlug !== undefined && (
+      {!!activeObjekt && (
         <RoutedExpandableObjekt
-          slug={props.activeSlug}
+          slug={activeObjekt}
           setActive={setActiveObjekt}
         />
       )}

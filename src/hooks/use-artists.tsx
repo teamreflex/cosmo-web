@@ -1,10 +1,9 @@
-"use client";
-
+import { createContext, use, useCallback } from "react";
+import type { ReactNode } from "react";
 import type {
   CosmoArtistWithMembersBFF,
   CosmoMemberBFF,
 } from "@/lib/universal/cosmo/artists";
-import { type ReactNode, createContext, use, useCallback } from "react";
 
 type ContextProps = {
   // cosmo artist data
@@ -61,9 +60,6 @@ export function ArtistProvider({ children, artists, selected }: ProviderProps) {
  */
 export function useArtists() {
   const ctx = use(ArtistContext);
-  if (ctx === null) {
-    throw new Error("useArtists must be used within an ArtistProvider");
-  }
 
   /**
    * Get an artist by name

@@ -1,42 +1,8 @@
-import { captureException } from "@sentry/nextjs";
 import { validateExpiry } from "../jwt";
 import { refresh } from "../cosmo/auth";
 import { db } from "../db";
 import { cosmoTokens } from "../db/schema";
-import type { NextRequest } from "next/server";
-import type { RouteContext, RouteHandler, RouteParams } from "./common";
 import type { CosmoToken } from "../db/schema";
-
-type Payload = {
-  token: CosmoToken;
-};
-
-/**
- * HOF for route handlers that utilize a proxied COSMO access token.
- */
-export function withProxiedToken<TParams extends RouteParams>(
-  handler: RouteHandler<TParams, Payload>
-) {
-  return async function (req: NextRequest, ctx: RouteContext<TParams>) {
-    try {
-      return await handler({
-        req,
-        ctx,
-        token: await getProxiedToken(),
-      });
-    } catch (err) {
-      if (err instanceof TokenError) {
-        captureException(err);
-        console.error(`[withProxiedToken] ${err.message}`);
-        return new Response(`unauthorized: ${err.message}`, { status: 401 });
-      }
-
-      captureException(err);
-      console.error(`[withProxiedToken] Error getting proxied token`, err);
-      return new Response(`unauthorized: unknown error`, { status: 401 });
-    }
-  };
-}
 
 /**
  * Get the latest COSMO token from the database, refresh if necessary.

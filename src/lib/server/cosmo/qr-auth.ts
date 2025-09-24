@@ -1,6 +1,6 @@
 import { browserless, cosmo } from "../http";
 import type { AuthTicket, QueryTicket } from "@/lib/universal/cosmo/qr-auth";
-import { env } from "@/env";
+import { env } from "@/lib/env/server";
 
 /**
  * Headers to use when interacting with the webshop.

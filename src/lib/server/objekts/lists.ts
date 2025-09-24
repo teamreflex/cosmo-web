@@ -1,4 +1,3 @@
-import "server-only";
 import { db } from "../db";
 import { dbi } from "../db/interactive";
 import { objektListEntries, objektLists } from "../db/schema";

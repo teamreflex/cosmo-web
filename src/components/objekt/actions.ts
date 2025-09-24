@@ -3,10 +3,7 @@
 import { db } from "@/lib/server/db";
 import { objektMetadata } from "@/lib/server/db/schema";
 import { rescanMetadata } from "@/lib/server/objekts/metadata";
-import {
-  adminActionClient,
-  authActionClient,
-} from "@/lib/server/server-actions";
+import { adminActionClient, authActionClient } from "@/lib/server/middlewares";
 import { eq } from "drizzle-orm";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";

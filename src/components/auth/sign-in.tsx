@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { LogIn } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { Button } from "../ui/button";
 import {
   Dialog,
@@ -15,9 +17,7 @@ import WithEmail from "./with-email";
 import SignInWithTwitter from "./with-twitter";
 import SignUp from "./sign-up";
 import ForgotPassword from "./forgot-password";
-import { env } from "@/env";
-import Link from "next/link";
-import { LogIn } from "lucide-react";
+import { env } from "@/lib/env/client";
 
 type State = "sign-in" | "sign-up" | "forgot-password";
 
@@ -25,10 +25,10 @@ export default function SignIn() {
   const [open, setOpen] = useState(false);
   const [state, setState] = useState<State>("sign-in");
 
-  function onOpenChange(open: boolean) {
-    setOpen(open);
+  function onOpenChange(openState: boolean) {
+    setOpen(openState);
 
-    if (!open) {
+    if (!openState) {
       // prevents flicker due to animation
       setTimeout(() => {
         setState("sign-in");
@@ -54,7 +54,7 @@ export default function SignIn() {
         <DialogHeader>
           <DialogTitle>Sign In</DialogTitle>
           <DialogDescription>
-            Sign in to your {env.NEXT_PUBLIC_APP_NAME} account
+            Sign in to your {env.VITE_APP_NAME} account
           </DialogDescription>
         </DialogHeader>
 
@@ -92,8 +92,8 @@ export default function SignIn() {
               </div>
 
               <Link
+                to="/terms-privacy"
                 onClick={() => setOpen(false)}
-                href="/terms-privacy"
                 className="text-xs text-muted-foreground underline pt-2"
               >
                 Terms & Privacy

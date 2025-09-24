@@ -3,20 +3,20 @@ import {
   Scripts,
   createRootRouteWithContext,
 } from "@tanstack/react-router";
-import "./globals.css";
 import { preconnect } from "react-dom";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "sonner";
 import React from "react";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
-import appCss from "../styles.css?url";
+import appCss from "../styles/tailwind.css?url";
 import type { QueryClient } from "@tanstack/react-query";
 import TanStackQueryDevtools from "@/components/devtools";
 import Navbar from "@/components/navbar/navbar";
 import TailwindIndicator from "@/components/tailwind-indicator";
-import { env } from "@/env";
+import { env } from "@/lib/env/client";
 import { currentAccountQuery, filterDataQuery } from "@/queries";
+import { systemStatusQuery } from "@/lib/server/system";
 
 interface RouterContext {
   queryClient: QueryClient;
@@ -31,6 +31,32 @@ export const Route = createRootRouteWithContext<RouterContext>()({
         content: "width=device-width, initial-scale=1",
       },
       { title: env.VITE_APP_NAME },
+      {
+        description: `${env.VITE_APP_NAME} - Objekt & gravity explorer for Cosmo`,
+      },
+      {
+        keywords: [
+          "kpop",
+          "korea",
+          "modhaus",
+          "모드하우스",
+          "cosmo",
+          "objekt",
+          "como",
+          "gravity",
+          "tripleS",
+          "트리플에스",
+          "artms",
+          "artemis",
+          "아르테미스",
+          "아르테미스 스트래티지",
+          "odd eye circle",
+          "오드아이써클",
+          "loona",
+          "이달의 소녀",
+          "idntt",
+        ],
+      },
     ],
     links: [
       {
@@ -49,11 +75,10 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     ],
   }),
   shellComponent: RootDocument,
-  async loader({ context }) {
-    await Promise.all([
-      context.queryClient.ensureQueryData(filterDataQuery),
-      context.queryClient.ensureQueryData(currentAccountQuery),
-    ]);
+  loader({ context }) {
+    context.queryClient.ensureQueryData(filterDataQuery);
+    context.queryClient.ensureQueryData(currentAccountQuery);
+    context.queryClient.ensureQueryData(systemStatusQuery);
   },
 });
 

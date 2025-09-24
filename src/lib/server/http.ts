@@ -1,6 +1,6 @@
 import { ofetch } from "ofetch";
 import { COSMO_ENDPOINT } from "../universal/cosmo/common";
-import { env } from "@/env";
+import { env } from "@/lib/env/server";
 
 /**
  * HTTP client for Cosmo.

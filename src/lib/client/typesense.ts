@@ -1,13 +1,13 @@
-import { env } from "@/env";
-import type { CosmoFilters } from "@/hooks/use-cosmo-filters";
 import { SearchClient } from "typesense";
+import type { CosmoFilters } from "@/hooks/use-cosmo-filters";
 import type { IndexedObjekt } from "../universal/objekts";
+import { env } from "@/lib/env/client";
 
 const PER_PAGE = 30;
 
 const typesense = new SearchClient({
-  nodes: [{ url: env.NEXT_PUBLIC_TYPESENSE_URL }],
-  apiKey: env.NEXT_PUBLIC_TYPESENSE_KEY,
+  nodes: [{ url: env.VITE_TYPESENSE_URL }],
+  apiKey: env.VITE_TYPESENSE_KEY,
   numRetries: 2,
   connectionTimeoutSeconds: 5,
   retryIntervalSeconds: 0.5,

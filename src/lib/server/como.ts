@@ -1,10 +1,10 @@
 import { and, eq, inArray, sql } from "drizzle-orm";
+import { addr } from "../utils";
 import { indexer } from "./db/indexer";
 import { collections, objekts } from "./db/indexer/schema";
+import { remember } from "./cache";
 import type { ComoBalance, ObjektWithCollection } from "@/lib/universal/como";
-import { unstable_cache } from "next/cache";
-import { addr } from "../utils";
-import { getArtistsWithMembers } from "@/data-fetching";
+import { fetchArtists } from "@/queries";
 
 /**
  * Fetch incoming transfers for Special & Premier objekts for a given address
@@ -12,8 +12,6 @@ import { getArtistsWithMembers } from "@/data-fetching";
 export async function fetchObjektsWithComo(
   address: string
 ): Promise<ObjektWithCollection[]> {
-  const addr = address.toLowerCase();
-
   return await indexer
     .select({
       contract: collections.contract,
@@ -27,7 +25,7 @@ export async function fetchObjektsWithComo(
       `.mapWith(Number),
     })
     .from(objekts)
-    .where(eq(objekts.owner, addr))
+    .where(eq(objekts.owner, address.toLowerCase()))
     .innerJoin(
       collections,
       and(
@@ -43,9 +41,9 @@ export async function fetchObjektsWithComo(
  * Fetch ERC20 token balances from Alchemy.
  * Cached for 15 minutes.
  */
-export const fetchTokenBalances = unstable_cache(
-  async (address: string): Promise<ComoBalance[]> => {
-    const artists = getArtistsWithMembers();
+export function fetchTokenBalances(address: string): Promise<ComoBalance[]> {
+  return remember(`como-balances:${address}`, 60 * 15, async () => {
+    const artists = await fetchArtists();
     const balances = await indexer.query.comoBalances.findMany({
       where: {
         owner: addr(address),
@@ -53,9 +51,7 @@ export const fetchTokenBalances = unstable_cache(
     });
 
     return artists.map((artist) => {
-      const balance = balances.find(
-        (balance) => balance.tokenId === artist.comoTokenId
-      );
+      const balance = balances.find((b) => b.tokenId === artist.comoTokenId);
 
       return {
         id: artist.id,
@@ -63,9 +59,5 @@ export const fetchTokenBalances = unstable_cache(
         amount: balance ? balance.amount : 0,
       };
     });
-  },
-  ["como-balances"],
-  {
-    revalidate: 60 * 15, // 15 minutes
-  }
-);
+  });
+}

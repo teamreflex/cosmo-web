@@ -1,5 +1,3 @@
-"use client";
-
 import { Loader2, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useTransition } from "react";

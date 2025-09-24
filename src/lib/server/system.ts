@@ -1,11 +1,11 @@
-import "server-only";
-
-import { env } from "@/env";
 import { ofetch } from "ofetch";
+import { createServerFn } from "@tanstack/react-start";
+import { queryOptions } from "@tanstack/react-query";
 import { abstract } from "./http";
+import { remember } from "./cache";
 import type { RPCResponse } from "./alchemy";
 import type { SystemStatus } from "../universal/system";
-import { unstable_cache } from "next/cache";
+import { env } from "@/lib/env/server";
 
 type Status = {
   height: number;
@@ -62,29 +62,36 @@ type FinalSystemStatus = {
  * - over 1800 but within 3600 blocks / 60 minutes: degraded
  * - more than 3600 blocks / 60 minutes: down
  */
-export const getSystemStatus = unstable_cache(
-  async (): Promise<FinalSystemStatus> => {
-    const [{ blockHeight }, processorHeight] = await Promise.all([
-      fetchChainStatus(),
-      fetchProcessorHeight(),
-    ]);
+export const fetchSystemStatus = createServerFn().handler(async () => {
+  return await remember(
+    `system-status`,
+    60,
+    async (): Promise<FinalSystemStatus> => {
+      const [{ blockHeight }, processorHeight] = await Promise.all([
+        fetchChainStatus(),
+        fetchProcessorHeight(),
+      ]);
 
-    // calculate processor status
-    const diff = blockHeight - processorHeight;
-    const status = diff < 1800 ? "normal" : diff < 3600 ? "degraded" : "down";
+      // calculate processor status
+      const diff = blockHeight - processorHeight;
+      const status = diff < 1800 ? "normal" : diff < 3600 ? "degraded" : "down";
 
-    return {
-      processor: {
-        status,
-        height: {
-          processor: processorHeight,
-          chain: blockHeight,
+      return {
+        processor: {
+          status,
+          height: {
+            processor: processorHeight,
+            chain: blockHeight,
+          },
         },
-      },
-    };
-  },
-  ["system-status"],
-  {
-    revalidate: 60, // 60 seconds
-  }
-);
+      };
+    }
+  );
+});
+
+export const systemStatusQuery = queryOptions({
+  queryKey: ["system-status"],
+  queryFn: fetchSystemStatus,
+  staleTime: 60 * 5, // 5 minutes
+  refetchOnWindowFocus: false,
+});

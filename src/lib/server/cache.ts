@@ -1,5 +1,6 @@
 import { Redis } from "@upstash/redis";
-import { env } from "@/env";
+import { waitUntil } from "@vercel/functions";
+import { env } from "@/lib/env/server";
 
 export const redis = new Redis({
   url: env.KV_REST_API_URL,
@@ -22,7 +23,9 @@ export async function remember<T>(
   }
 
   const fresh = await callback();
-  await redis.set(key, fresh, { ex: ttl });
+
+  // return fresh data first, then set cache in the background
+  waitUntil(redis.set(key, fresh, { ex: ttl }));
 
   return fresh;
 }

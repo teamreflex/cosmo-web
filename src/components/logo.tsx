@@ -1,3 +1,4 @@
+import { Check, Github } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -9,9 +10,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { env } from "@/env";
-import Link from "next/link";
-import { Check, Github } from "lucide-react";
+import { env } from "@/lib/env/client";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -28,11 +27,11 @@ export default function Logo({ className }: Props) {
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{env.NEXT_PUBLIC_APP_NAME}</AlertDialogTitle>
+          <AlertDialogTitle>{env.VITE_APP_NAME}</AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div className="flex flex-col gap-2">
               <p>
-                {env.NEXT_PUBLIC_APP_NAME} is platform for exploring objekts &
+                {env.VITE_APP_NAME} is platform for exploring objekts &
                 gravities from Cosmo: the Gate.
               </p>
               <p>Source code can be found below.</p>
@@ -41,12 +40,9 @@ export default function Logo({ className }: Props) {
         </AlertDialogHeader>
         <AlertDialogFooter className="sm:justify-between">
           <AlertDialogCancel asChild>
-            <Link
-              href="https://github.com/teamreflex/cosmo-web"
-              target="_blank"
-            >
+            <a href="https://github.com/teamreflex/cosmo-web" target="_blank">
               <Github />
-            </Link>
+            </a>
           </AlertDialogCancel>
           <AlertDialogAction>
             <Check />

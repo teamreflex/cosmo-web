@@ -1,5 +1,5 @@
-import { env } from "@/env";
 import { ofetch } from "ofetch";
+import { env } from "@/lib/env/server";
 
 /**
  * Rescan an objekt's metadata.

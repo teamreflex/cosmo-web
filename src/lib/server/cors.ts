@@ -1,4 +1,4 @@
-import { env } from "@/env";
+import { env } from "@/lib/env/client";
 
 /**
  * Get CORS headers based on the request origin
@@ -12,7 +12,7 @@ export function getCorsHeaders(req: Request): Headers {
   ]);
 
   const origin = req.headers.get("Origin");
-  if (origin === env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL) {
+  if (origin === env.VITE_VERCEL_PROJECT_PRODUCTION_URL) {
     headers.set("Access-Control-Allow-Origin", origin);
     headers.set("Access-Control-Allow-Credentials", "true");
   }

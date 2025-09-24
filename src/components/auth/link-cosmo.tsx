@@ -1,26 +1,14 @@
-"use client";
-
-import { Button } from "@/components/ui/button";
-import {
-  generateQrCode,
-  type AuthTicket,
-  type QueryTicket,
-} from "@/lib/universal/cosmo/qr-auth";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { AlertTriangle, CheckCircle, Loader2 } from "lucide-react";
 import { FetchError, ofetch } from "ofetch";
 import { createContext, useContext, useState } from "react";
 import QRCode from "react-qr-code";
 import { toast } from "sonner";
 import { useInterval } from "usehooks-ts";
-import { useAction } from "next-safe-action/hooks";
-import { verifyCosmo } from "./actions";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
+import { useForm } from "react-hook-form";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { useServerFn } from "@tanstack/react-start";
 import {
   Dialog,
   DialogContent,
@@ -28,12 +16,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../ui/dialog";
-import { env } from "@/env";
-import Link from "next/link";
-import { track } from "@/lib/utils";
-import { verifyCosmoSchema } from "@/lib/universal/schema/cosmo";
-import { useForm } from "react-hook-form";
-import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import {
   Form,
   FormControl,
@@ -41,7 +23,20 @@ import {
   FormItem,
   FormMessage,
 } from "../ui/form";
+import { verifyCosmo } from "./actions";
+import type { ReactNode } from "react";
 import type { z } from "zod";
+import type { AuthTicket, QueryTicket } from "@/lib/universal/cosmo/qr-auth";
+import { generateQrCode } from "@/lib/universal/cosmo/qr-auth";
+import { verifyCosmoSchema } from "@/lib/universal/schema/cosmo";
+import { track } from "@/lib/utils";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
+import { Button } from "@/components/ui/button";
+import { env } from "@/lib/env/client";
 
 export const LinkCosmoContext = createContext({
   open: false,
@@ -49,7 +44,7 @@ export const LinkCosmoContext = createContext({
 });
 
 type Props = {
-  children: React.ReactNode;
+  children: ReactNode;
 };
 
 export default function LinkCosmo({ children }: Props) {
@@ -63,8 +58,7 @@ export default function LinkCosmo({ children }: Props) {
           <DialogHeader>
             <DialogTitle>Link COSMO</DialogTitle>
             <DialogDescription>
-              Link your COSMO account to your {env.NEXT_PUBLIC_APP_NAME}{" "}
-              account.
+              Link your COSMO account to your {env.VITE_APP_NAME} account.
             </DialogDescription>
           </DialogHeader>
 
@@ -85,18 +79,16 @@ function StartLink() {
   return (
     <div className="flex flex-col gap-2 text-sm text-muted-foreground">
       <p>
-        Signing into your COSMO account will link it to your{" "}
-        {env.NEXT_PUBLIC_APP_NAME} account, verifying ownership of the COSMO ID
-        and wallet address.
+        Signing into your COSMO account will link it to your {env.VITE_APP_NAME}{" "}
+        account, verifying ownership of the COSMO ID and wallet address.
       </p>
       <p>
         This allows you to pin and lock objekts. Any previously created objekt
         lists will be imported upon account link.
       </p>
       <p>
-        {env.NEXT_PUBLIC_APP_NAME} does not store anything about your account
-        other than the ID and wallet address, which are used to display
-        profiles.
+        {env.VITE_APP_NAME} does not store anything about your account other
+        than the ID and wallet address, which are used to display profiles.
       </p>
       <p>
         Once linked, the account cannot be unlinked and your profile will have a
@@ -204,13 +196,11 @@ function RenderTicket({ ticket, retry }: RenderQRProps) {
   }
 
   // login success
-  if (data.status === "certified") {
-    return (
-      <div className="flex items-center justify-center">
-        <CheckCircle className="h-8 w-8" />
-      </div>
-    );
-  }
+  return (
+    <div className="flex items-center justify-center">
+      <CheckCircle className="h-8 w-8" />
+    </div>
+  );
 }
 
 function RenderQRCode({ ticket, retry }: RenderQRProps) {
@@ -241,9 +231,9 @@ function RenderQRCode({ ticket, retry }: RenderQRProps) {
       </p>
 
       <Button className="inline-flex lg:hidden" variant="link" asChild>
-        <Link href={qr} target="_blank">
+        <a href={qr} target="_blank">
           <span>Mobile: Open COSMO</span>
-        </Link>
+        </a>
       </Button>
 
       {isExpired ? (
@@ -278,8 +268,9 @@ type OTPProps = {
 
 function OTP({ ticket }: OTPProps) {
   const ctx = useContext(LinkCosmoContext);
-  const { execute, isPending, hasErrored } = useAction(verifyCosmo, {
-    onNavigation() {
+  const mutation = useMutation({
+    mutationFn: useServerFn(verifyCosmo),
+    onSuccess() {
       track("cosmo-link");
       toast.success("COSMO account linked!");
       ctx.setOpen(false);
@@ -297,7 +288,19 @@ function OTP({ ticket }: OTPProps) {
     },
   });
 
-  if (hasErrored) {
+  async function handleSubmit(data: z.infer<typeof verifyCosmoSchema>) {
+    await mutation.mutateAsync(
+      { data },
+      {
+        onSuccess: () => {
+          track("cosmo-link");
+          toast.success("COSMO account linked!");
+        },
+      }
+    );
+  }
+
+  if (mutation.status === "error") {
     return (
       <div className="flex flex-col gap-2 items-center justify-center">
         <AlertTriangle className="size-12" />
@@ -309,7 +312,7 @@ function OTP({ ticket }: OTPProps) {
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit((data) => execute(data))}
+        onSubmit={form.handleSubmit(handleSubmit)}
         className="flex flex-col gap-4"
       >
         <div className="flex flex-col items-center gap-4">
@@ -324,7 +327,7 @@ function OTP({ ticket }: OTPProps) {
               <FormItem>
                 <FormControl>
                   <InputOTP
-                    value={field.value?.toString() ?? ""}
+                    value={field.value.toString()}
                     onChange={(value) => field.onChange(Number(value))}
                     maxLength={2}
                     pattern={REGEXP_ONLY_DIGITS}
@@ -342,9 +345,9 @@ function OTP({ ticket }: OTPProps) {
           />
         </div>
 
-        <Button type="submit" disabled={isPending}>
+        <Button type="submit" disabled={mutation.isPending}>
           <span>Submit</span>
-          {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+          {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
         </Button>
       </form>
     </Form>
