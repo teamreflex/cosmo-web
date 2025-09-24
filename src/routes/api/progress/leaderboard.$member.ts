@@ -1,20 +1,17 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { and, count, eq, inArray, not, sql } from "drizzle-orm";
+import { z } from "zod";
+import type { LeaderboardItem } from "@/lib/universal/progress";
+import type { ValidOnlineType } from "@/lib/universal/cosmo/common";
 import { indexer } from "@/lib/server/db/indexer";
 import { collections, objekts } from "@/lib/server/db/indexer/schema";
-import { and, count, eq, inArray, not, sql } from "drizzle-orm";
-import type { NextRequest } from "next/server";
-import { fetchTotal } from "../../common";
 import { fetchKnownAddresses } from "@/lib/server/cosmo-accounts";
 import { Addresses, isEqual } from "@/lib/utils";
-import type { LeaderboardItem } from "@/lib/universal/progress";
-import {
-  type ValidOnlineType,
-  validOnlineTypes,
-} from "@/lib/universal/cosmo/common";
-import { cacheHeaders } from "@/routes/api/common";
-import { z } from "zod";
+import { validOnlineTypes } from "@/lib/universal/cosmo/common";
 import { unobtainables } from "@/lib/unobtainables";
+import { fetchTotal } from "@/lib/server/progress";
+import { cacheHeaders } from "@/lib/server/cache";
 
-export const runtime = "nodejs";
 const LEADERBOARD_COUNT = 25;
 
 const schema = z.object({
@@ -26,66 +23,68 @@ const schema = z.object({
   season: z.string().optional().nullable().default(null),
 });
 
-type Params = {
-  params: Promise<{
-    member: string;
-  }>;
-};
+export const Route = createFileRoute("/api/progress/leaderboard/$member")({
+  server: {
+    handlers: {
+      /**
+       * API route that services the progress leaderboard component.
+       * Takes a member name, and returns the progress leaderboard for that member.
+       * Cached for 1 hour.
+       */
+      GET: async ({ params, request }) => {
+        // parse search params
+        const url = new URL(request.url);
+        const result = schema.safeParse({
+          member: params.member,
+          ...Object.fromEntries(url.searchParams.entries()),
+        });
 
-/**
- * API route that services the progress leaderboard component.
- * Takes a member name, and returns the progress leaderboard for that member.
- * Cached for 1 hour.
- */
-export async function GET(request: NextRequest, props: Params) {
-  const params = await props.params;
-  // parse search params
-  const result = schema.safeParse({
-    member: params.member,
-    ...Object.fromEntries(request.nextUrl.searchParams.entries()),
-  });
+        // use fallbacks if parsing fails
+        const options = result.success
+          ? result.data
+          : {
+              member: params.member,
+              onlineType: null,
+              season: null,
+            };
 
-  // use fallbacks if parsing fails
-  const options = result.success
-    ? result.data
-    : {
-        member: params.member,
-        onlineType: null,
-        season: null,
-      };
+        const [totals, leaderboard] = await Promise.all([
+          fetchTotal(options),
+          fetchLeaderboard(options),
+        ]);
 
-  const [totals, leaderboard] = await Promise.all([
-    fetchTotal(options),
-    fetchLeaderboard(options),
-  ]);
+        // fetch profiles for each address
+        const knownAddresses = await fetchKnownAddresses(
+          leaderboard.map((a) => a.owner)
+        );
 
-  // fetch profiles for each address
-  const knownAddresses = await fetchKnownAddresses(
-    leaderboard.map((a) => a.owner)
-  );
+        // map the nickname onto the results
+        const results = leaderboard.map((row) => {
+          const known = knownAddresses.find((a) =>
+            isEqual(a.address, row.owner)
+          );
 
-  // map the nickname onto the results
-  const results = leaderboard.map((row) => {
-    const known = knownAddresses.find((a) => isEqual(a.address, row.owner));
+          return {
+            count: row.count,
+            nickname: known?.username ?? row.owner.substring(0, 8),
+            address: row.owner,
+            isAddress: known === undefined,
+          };
+        }) satisfies LeaderboardItem[];
 
-    return {
-      count: row.count,
-      nickname: known?.username ?? row.owner.substring(0, 8),
-      address: row.owner,
-      isAddress: known === undefined,
-    };
-  }) satisfies LeaderboardItem[];
-
-  return Response.json(
-    {
-      total: totals.filter((c) => !unobtainables.includes(c.slug)).length,
-      leaderboard: results,
+        return Response.json(
+          {
+            total: totals.filter((c) => !unobtainables.includes(c.slug)).length,
+            leaderboard: results,
+          },
+          {
+            headers: cacheHeaders({ vercel: 60 * 60 }),
+          }
+        );
+      },
     },
-    {
-      headers: cacheHeaders({ vercel: 60 * 60 }),
-    }
-  );
-}
+  },
+});
 
 type FetchLeaderboard = {
   member: string;

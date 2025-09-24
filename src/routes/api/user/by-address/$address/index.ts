@@ -1,4 +1,4 @@
-import { createServerFileRoute } from "@tanstack/react-start/server";
+import { createFileRoute } from "@tanstack/react-router";
 import { count, eq } from "drizzle-orm";
 import { env } from "@/env";
 import { fetchObjektsWithComo } from "@/lib/server/como";
@@ -7,28 +7,33 @@ import { indexer } from "@/lib/server/db/indexer";
 import { collections, objekts } from "@/lib/server/db/indexer/schema";
 import { buildCalendar } from "@/lib/universal/como";
 
-export const ServerRoute = createServerFileRoute(
-  "/api/user/by-address/$address"
-).methods({
-  /**
-   * Endpoint for getting the COMO calendar for a given address.
-   */
-  GET: async ({ request, params }) => {
-    const authKey = request.headers.get("Authorization");
-    if (authKey !== env.AUTH_KEY) {
-      return Response.json({ error: "invalid authorization" }, { status: 401 });
-    }
+export const Route = createFileRoute("/api/user/by-address/$address/")({
+  server: {
+    handlers: {
+      /**
+       * Endpoint for getting the COMO calendar for a given address.
+       */
+      GET: async ({ request, params }) => {
+        const authKey = request.headers.get("Authorization");
+        if (authKey !== env.AUTH_KEY) {
+          return Response.json(
+            { error: "invalid authorization" },
+            { status: 401 }
+          );
+        }
 
-    const url = new URL(request.url);
-    const now = url.searchParams.get("now");
+        const url = new URL(request.url);
+        const now = url.searchParams.get("now");
 
-    const [account, calendar, stats] = await Promise.all([
-      getCosmoAccount(params.address),
-      getCalendar(params.address, now),
-      getObjektStats(params.address),
-    ]);
+        const [account, calendar, stats] = await Promise.all([
+          getCosmoAccount(params.address),
+          getCalendar(params.address, now),
+          getObjektStats(params.address),
+        ]);
 
-    return Response.json({ account, calendar, stats });
+        return Response.json({ account, calendar, stats });
+      },
+    },
   },
 });
 

@@ -1,7 +1,7 @@
 "use server";
 
 import { getSelectedArtists } from "@/data-fetching";
-import { setCookie } from "@/lib/server/cookies";
+import { putCookie } from "@/lib/server/cookies";
 
 /**
  * Set the selected artists in a cookie.
@@ -16,7 +16,7 @@ export async function setSelectedArtist(artist: string) {
     selected.push(artist);
   }
 
-  await setCookie({
+  putCookie({
     key: "artists",
     value: selected,
   });

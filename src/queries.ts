@@ -1,6 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
-import { getWebRequest } from "@tanstack/react-start/server";
+import { getRequestHeaders } from "@tanstack/react-start/server";
 import {
   fetchUniqueClasses,
   fetchUniqueCollections,
@@ -58,9 +58,8 @@ type GetAccount = {
  */
 export const fetchCurrentAccount = createServerFn({ method: "GET" }).handler(
   async (): Promise<GetAccount | undefined> => {
-    const req = getWebRequest();
     const session = await auth.api.getSession({
-      headers: req.headers,
+      headers: getRequestHeaders(),
     });
 
     // not signed in

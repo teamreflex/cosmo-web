@@ -8,290 +8,362 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { createServerRootRoute } from '@tanstack/react-start/server'
-
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { ServerRoute as ApiFilterDataServerRouteImport } from './routes/api/filter-data'
-import { ServerRoute as ApiUserByAddressesServerRouteImport } from './routes/api/user/by-addresses'
-import { ServerRoute as ApiTransfersAddressServerRouteImport } from './routes/api/transfers/$address'
-import { ServerRoute as ApiCronObjektStatsServerRouteImport } from './routes/api/cron.objekt-stats'
-import { ServerRoute as ApiCronGravityServerRouteImport } from './routes/api/cron.gravity'
-import { ServerRoute as ApiAuthSplatServerRouteImport } from './routes/api/auth/$'
-import { ServerRoute as ApiUserByAddressAddressServerRouteImport } from './routes/api/user/by-address/$address'
-import { ServerRoute as ApiObjektListForUserIdentifierServerRouteImport } from './routes/api/objekt-list/for-user.$identifier'
-import { ServerRoute as ApiObjektListEntriesIdServerRouteImport } from './routes/api/objekt-list/entries.$id'
-import { ServerRoute as ApiGravityPollIdVotesServerRouteImport } from './routes/api/gravity/$pollId.votes'
-import { ServerRoute as ApiCosmoQrAuthTicketServerRouteImport } from './routes/api/cosmo/qr-auth/ticket'
-import { ServerRoute as ApiCosmoQrAuthRecaptchaServerRouteImport } from './routes/api/cosmo/qr-auth/recaptcha'
-import { ServerRoute as ApiUserByAddressAddressStatsServerRouteImport } from './routes/api/user/by-address/$address.stats'
-import { ServerRoute as ApiUserByAddressAddressComoServerRouteImport } from './routes/api/user/by-address/$address.como'
-import { ServerRoute as ApiBffV3UsersSearchServerRouteImport } from './routes/api/bff/v3/users/search'
-import { ServerRoute as ApiBffV1ObjektCollectionGroupAddressServerRouteImport } from './routes/api/bff/v1/objekt/collection-group.$address'
-import { ServerRoute as ApiGravityV3ArtistGravityGravityPollsPollServerRouteImport } from './routes/api/gravity/v3/$artist.gravity.$gravity.polls.$poll'
-
-const rootServerRouteImport = createServerRootRoute()
+import { Route as ApiFilterDataRouteImport } from './routes/api/filter-data'
+import { Route as ApiObjektsIndexRouteImport } from './routes/api/objekts/index'
+import { Route as ApiUserByAddressesRouteImport } from './routes/api/user/by-addresses'
+import { Route as ApiTransfersAddressRouteImport } from './routes/api/transfers/$address'
+import { Route as ApiCronObjektStatsRouteImport } from './routes/api/cron.objekt-stats'
+import { Route as ApiCronGravityRouteImport } from './routes/api/cron.gravity'
+import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiProgressLeaderboardMemberRouteImport } from './routes/api/progress/leaderboard.$member'
+import { Route as ApiObjektsBySlugSlugRouteImport } from './routes/api/objekts/by-slug.$slug'
+import { Route as ApiObjektsByAddressAddressRouteImport } from './routes/api/objekts/by-address.$address'
+import { Route as ApiObjektListForUserIdentifierRouteImport } from './routes/api/objekt-list/for-user.$identifier'
+import { Route as ApiObjektListEntriesIdRouteImport } from './routes/api/objekt-list/entries.$id'
+import { Route as ApiGravityPollIdVotesRouteImport } from './routes/api/gravity/$pollId.votes'
+import { Route as ApiCosmoQrAuthTicketRouteImport } from './routes/api/cosmo/qr-auth/ticket'
+import { Route as ApiCosmoQrAuthRecaptchaRouteImport } from './routes/api/cosmo/qr-auth/recaptcha'
+import { Route as ApiUserByAddressAddressIndexRouteImport } from './routes/api/user/by-address/$address/index'
+import { Route as ApiObjektsMetadataSlugIndexRouteImport } from './routes/api/objekts/metadata/$slug/index'
+import { Route as ApiUserByAddressAddressStatsRouteImport } from './routes/api/user/by-address/$address/stats'
+import { Route as ApiUserByAddressAddressComoRouteImport } from './routes/api/user/by-address/$address/como'
+import { Route as ApiProgressBreakdownMemberAddressRouteImport } from './routes/api/progress/breakdown.$member.$address'
+import { Route as ApiObjektsMetadataSlugSerialRouteImport } from './routes/api/objekts/metadata/$slug/$serial'
+import { Route as ApiBffV3UsersSearchRouteImport } from './routes/api/bff/v3/users/search'
+import { Route as ApiBffV1ObjektCollectionGroupAddressRouteImport } from './routes/api/bff/v1/objekt/collection-group.$address'
+import { Route as ApiGravityV3ArtistGravityGravityPollsPollRouteImport } from './routes/api/gravity/v3/$artist.gravity.$gravity.polls.$poll'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiFilterDataServerRoute = ApiFilterDataServerRouteImport.update({
+const ApiFilterDataRoute = ApiFilterDataRouteImport.update({
   id: '/api/filter-data',
   path: '/api/filter-data',
-  getParentRoute: () => rootServerRouteImport,
+  getParentRoute: () => rootRouteImport,
 } as any)
-const ApiUserByAddressesServerRoute =
-  ApiUserByAddressesServerRouteImport.update({
-    id: '/api/user/by-addresses',
-    path: '/api/user/by-addresses',
-    getParentRoute: () => rootServerRouteImport,
-  } as any)
-const ApiTransfersAddressServerRoute =
-  ApiTransfersAddressServerRouteImport.update({
-    id: '/api/transfers/$address',
-    path: '/api/transfers/$address',
-    getParentRoute: () => rootServerRouteImport,
-  } as any)
-const ApiCronObjektStatsServerRoute =
-  ApiCronObjektStatsServerRouteImport.update({
-    id: '/api/cron/objekt-stats',
-    path: '/api/cron/objekt-stats',
-    getParentRoute: () => rootServerRouteImport,
-  } as any)
-const ApiCronGravityServerRoute = ApiCronGravityServerRouteImport.update({
+const ApiObjektsIndexRoute = ApiObjektsIndexRouteImport.update({
+  id: '/api/objekts/',
+  path: '/api/objekts/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiUserByAddressesRoute = ApiUserByAddressesRouteImport.update({
+  id: '/api/user/by-addresses',
+  path: '/api/user/by-addresses',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTransfersAddressRoute = ApiTransfersAddressRouteImport.update({
+  id: '/api/transfers/$address',
+  path: '/api/transfers/$address',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCronObjektStatsRoute = ApiCronObjektStatsRouteImport.update({
+  id: '/api/cron/objekt-stats',
+  path: '/api/cron/objekt-stats',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCronGravityRoute = ApiCronGravityRouteImport.update({
   id: '/api/cron/gravity',
   path: '/api/cron/gravity',
-  getParentRoute: () => rootServerRouteImport,
+  getParentRoute: () => rootRouteImport,
 } as any)
-const ApiAuthSplatServerRoute = ApiAuthSplatServerRouteImport.update({
+const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
-  getParentRoute: () => rootServerRouteImport,
+  getParentRoute: () => rootRouteImport,
 } as any)
-const ApiUserByAddressAddressServerRoute =
-  ApiUserByAddressAddressServerRouteImport.update({
-    id: '/api/user/by-address/$address',
-    path: '/api/user/by-address/$address',
-    getParentRoute: () => rootServerRouteImport,
+const ApiProgressLeaderboardMemberRoute =
+  ApiProgressLeaderboardMemberRouteImport.update({
+    id: '/api/progress/leaderboard/$member',
+    path: '/api/progress/leaderboard/$member',
+    getParentRoute: () => rootRouteImport,
   } as any)
-const ApiObjektListForUserIdentifierServerRoute =
-  ApiObjektListForUserIdentifierServerRouteImport.update({
+const ApiObjektsBySlugSlugRoute = ApiObjektsBySlugSlugRouteImport.update({
+  id: '/api/objekts/by-slug/$slug',
+  path: '/api/objekts/by-slug/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiObjektsByAddressAddressRoute =
+  ApiObjektsByAddressAddressRouteImport.update({
+    id: '/api/objekts/by-address/$address',
+    path: '/api/objekts/by-address/$address',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiObjektListForUserIdentifierRoute =
+  ApiObjektListForUserIdentifierRouteImport.update({
     id: '/api/objekt-list/for-user/$identifier',
     path: '/api/objekt-list/for-user/$identifier',
-    getParentRoute: () => rootServerRouteImport,
+    getParentRoute: () => rootRouteImport,
   } as any)
-const ApiObjektListEntriesIdServerRoute =
-  ApiObjektListEntriesIdServerRouteImport.update({
-    id: '/api/objekt-list/entries/$id',
-    path: '/api/objekt-list/entries/$id',
-    getParentRoute: () => rootServerRouteImport,
+const ApiObjektListEntriesIdRoute = ApiObjektListEntriesIdRouteImport.update({
+  id: '/api/objekt-list/entries/$id',
+  path: '/api/objekt-list/entries/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiGravityPollIdVotesRoute = ApiGravityPollIdVotesRouteImport.update({
+  id: '/api/gravity/$pollId/votes',
+  path: '/api/gravity/$pollId/votes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCosmoQrAuthTicketRoute = ApiCosmoQrAuthTicketRouteImport.update({
+  id: '/api/cosmo/qr-auth/ticket',
+  path: '/api/cosmo/qr-auth/ticket',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCosmoQrAuthRecaptchaRoute = ApiCosmoQrAuthRecaptchaRouteImport.update({
+  id: '/api/cosmo/qr-auth/recaptcha',
+  path: '/api/cosmo/qr-auth/recaptcha',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiUserByAddressAddressIndexRoute =
+  ApiUserByAddressAddressIndexRouteImport.update({
+    id: '/api/user/by-address/$address/',
+    path: '/api/user/by-address/$address/',
+    getParentRoute: () => rootRouteImport,
   } as any)
-const ApiGravityPollIdVotesServerRoute =
-  ApiGravityPollIdVotesServerRouteImport.update({
-    id: '/api/gravity/$pollId/votes',
-    path: '/api/gravity/$pollId/votes',
-    getParentRoute: () => rootServerRouteImport,
+const ApiObjektsMetadataSlugIndexRoute =
+  ApiObjektsMetadataSlugIndexRouteImport.update({
+    id: '/api/objekts/metadata/$slug/',
+    path: '/api/objekts/metadata/$slug/',
+    getParentRoute: () => rootRouteImport,
   } as any)
-const ApiCosmoQrAuthTicketServerRoute =
-  ApiCosmoQrAuthTicketServerRouteImport.update({
-    id: '/api/cosmo/qr-auth/ticket',
-    path: '/api/cosmo/qr-auth/ticket',
-    getParentRoute: () => rootServerRouteImport,
+const ApiUserByAddressAddressStatsRoute =
+  ApiUserByAddressAddressStatsRouteImport.update({
+    id: '/api/user/by-address/$address/stats',
+    path: '/api/user/by-address/$address/stats',
+    getParentRoute: () => rootRouteImport,
   } as any)
-const ApiCosmoQrAuthRecaptchaServerRoute =
-  ApiCosmoQrAuthRecaptchaServerRouteImport.update({
-    id: '/api/cosmo/qr-auth/recaptcha',
-    path: '/api/cosmo/qr-auth/recaptcha',
-    getParentRoute: () => rootServerRouteImport,
+const ApiUserByAddressAddressComoRoute =
+  ApiUserByAddressAddressComoRouteImport.update({
+    id: '/api/user/by-address/$address/como',
+    path: '/api/user/by-address/$address/como',
+    getParentRoute: () => rootRouteImport,
   } as any)
-const ApiUserByAddressAddressStatsServerRoute =
-  ApiUserByAddressAddressStatsServerRouteImport.update({
-    id: '/stats',
-    path: '/stats',
-    getParentRoute: () => ApiUserByAddressAddressServerRoute,
+const ApiProgressBreakdownMemberAddressRoute =
+  ApiProgressBreakdownMemberAddressRouteImport.update({
+    id: '/api/progress/breakdown/$member/$address',
+    path: '/api/progress/breakdown/$member/$address',
+    getParentRoute: () => rootRouteImport,
   } as any)
-const ApiUserByAddressAddressComoServerRoute =
-  ApiUserByAddressAddressComoServerRouteImport.update({
-    id: '/como',
-    path: '/como',
-    getParentRoute: () => ApiUserByAddressAddressServerRoute,
+const ApiObjektsMetadataSlugSerialRoute =
+  ApiObjektsMetadataSlugSerialRouteImport.update({
+    id: '/api/objekts/metadata/$slug/$serial',
+    path: '/api/objekts/metadata/$slug/$serial',
+    getParentRoute: () => rootRouteImport,
   } as any)
-const ApiBffV3UsersSearchServerRoute =
-  ApiBffV3UsersSearchServerRouteImport.update({
-    id: '/api/bff/v3/users/search',
-    path: '/api/bff/v3/users/search',
-    getParentRoute: () => rootServerRouteImport,
-  } as any)
-const ApiBffV1ObjektCollectionGroupAddressServerRoute =
-  ApiBffV1ObjektCollectionGroupAddressServerRouteImport.update({
+const ApiBffV3UsersSearchRoute = ApiBffV3UsersSearchRouteImport.update({
+  id: '/api/bff/v3/users/search',
+  path: '/api/bff/v3/users/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiBffV1ObjektCollectionGroupAddressRoute =
+  ApiBffV1ObjektCollectionGroupAddressRouteImport.update({
     id: '/api/bff/v1/objekt/collection-group/$address',
     path: '/api/bff/v1/objekt/collection-group/$address',
-    getParentRoute: () => rootServerRouteImport,
+    getParentRoute: () => rootRouteImport,
   } as any)
-const ApiGravityV3ArtistGravityGravityPollsPollServerRoute =
-  ApiGravityV3ArtistGravityGravityPollsPollServerRouteImport.update({
+const ApiGravityV3ArtistGravityGravityPollsPollRoute =
+  ApiGravityV3ArtistGravityGravityPollsPollRouteImport.update({
     id: '/api/gravity/v3/$artist/gravity/$gravity/polls/$poll',
     path: '/api/gravity/v3/$artist/gravity/$gravity/polls/$poll',
-    getParentRoute: () => rootServerRouteImport,
+    getParentRoute: () => rootRouteImport,
   } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/api/filter-data': typeof ApiFilterDataRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/cron/gravity': typeof ApiCronGravityRoute
+  '/api/cron/objekt-stats': typeof ApiCronObjektStatsRoute
+  '/api/transfers/$address': typeof ApiTransfersAddressRoute
+  '/api/user/by-addresses': typeof ApiUserByAddressesRoute
+  '/api/objekts': typeof ApiObjektsIndexRoute
+  '/api/cosmo/qr-auth/recaptcha': typeof ApiCosmoQrAuthRecaptchaRoute
+  '/api/cosmo/qr-auth/ticket': typeof ApiCosmoQrAuthTicketRoute
+  '/api/gravity/$pollId/votes': typeof ApiGravityPollIdVotesRoute
+  '/api/objekt-list/entries/$id': typeof ApiObjektListEntriesIdRoute
+  '/api/objekt-list/for-user/$identifier': typeof ApiObjektListForUserIdentifierRoute
+  '/api/objekts/by-address/$address': typeof ApiObjektsByAddressAddressRoute
+  '/api/objekts/by-slug/$slug': typeof ApiObjektsBySlugSlugRoute
+  '/api/progress/leaderboard/$member': typeof ApiProgressLeaderboardMemberRoute
+  '/api/bff/v3/users/search': typeof ApiBffV3UsersSearchRoute
+  '/api/objekts/metadata/$slug/$serial': typeof ApiObjektsMetadataSlugSerialRoute
+  '/api/progress/breakdown/$member/$address': typeof ApiProgressBreakdownMemberAddressRoute
+  '/api/user/by-address/$address/como': typeof ApiUserByAddressAddressComoRoute
+  '/api/user/by-address/$address/stats': typeof ApiUserByAddressAddressStatsRoute
+  '/api/objekts/metadata/$slug': typeof ApiObjektsMetadataSlugIndexRoute
+  '/api/user/by-address/$address': typeof ApiUserByAddressAddressIndexRoute
+  '/api/bff/v1/objekt/collection-group/$address': typeof ApiBffV1ObjektCollectionGroupAddressRoute
+  '/api/gravity/v3/$artist/gravity/$gravity/polls/$poll': typeof ApiGravityV3ArtistGravityGravityPollsPollRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api/filter-data': typeof ApiFilterDataRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/cron/gravity': typeof ApiCronGravityRoute
+  '/api/cron/objekt-stats': typeof ApiCronObjektStatsRoute
+  '/api/transfers/$address': typeof ApiTransfersAddressRoute
+  '/api/user/by-addresses': typeof ApiUserByAddressesRoute
+  '/api/objekts': typeof ApiObjektsIndexRoute
+  '/api/cosmo/qr-auth/recaptcha': typeof ApiCosmoQrAuthRecaptchaRoute
+  '/api/cosmo/qr-auth/ticket': typeof ApiCosmoQrAuthTicketRoute
+  '/api/gravity/$pollId/votes': typeof ApiGravityPollIdVotesRoute
+  '/api/objekt-list/entries/$id': typeof ApiObjektListEntriesIdRoute
+  '/api/objekt-list/for-user/$identifier': typeof ApiObjektListForUserIdentifierRoute
+  '/api/objekts/by-address/$address': typeof ApiObjektsByAddressAddressRoute
+  '/api/objekts/by-slug/$slug': typeof ApiObjektsBySlugSlugRoute
+  '/api/progress/leaderboard/$member': typeof ApiProgressLeaderboardMemberRoute
+  '/api/bff/v3/users/search': typeof ApiBffV3UsersSearchRoute
+  '/api/objekts/metadata/$slug/$serial': typeof ApiObjektsMetadataSlugSerialRoute
+  '/api/progress/breakdown/$member/$address': typeof ApiProgressBreakdownMemberAddressRoute
+  '/api/user/by-address/$address/como': typeof ApiUserByAddressAddressComoRoute
+  '/api/user/by-address/$address/stats': typeof ApiUserByAddressAddressStatsRoute
+  '/api/objekts/metadata/$slug': typeof ApiObjektsMetadataSlugIndexRoute
+  '/api/user/by-address/$address': typeof ApiUserByAddressAddressIndexRoute
+  '/api/bff/v1/objekt/collection-group/$address': typeof ApiBffV1ObjektCollectionGroupAddressRoute
+  '/api/gravity/v3/$artist/gravity/$gravity/polls/$poll': typeof ApiGravityV3ArtistGravityGravityPollsPollRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/api/filter-data': typeof ApiFilterDataRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/cron/gravity': typeof ApiCronGravityRoute
+  '/api/cron/objekt-stats': typeof ApiCronObjektStatsRoute
+  '/api/transfers/$address': typeof ApiTransfersAddressRoute
+  '/api/user/by-addresses': typeof ApiUserByAddressesRoute
+  '/api/objekts/': typeof ApiObjektsIndexRoute
+  '/api/cosmo/qr-auth/recaptcha': typeof ApiCosmoQrAuthRecaptchaRoute
+  '/api/cosmo/qr-auth/ticket': typeof ApiCosmoQrAuthTicketRoute
+  '/api/gravity/$pollId/votes': typeof ApiGravityPollIdVotesRoute
+  '/api/objekt-list/entries/$id': typeof ApiObjektListEntriesIdRoute
+  '/api/objekt-list/for-user/$identifier': typeof ApiObjektListForUserIdentifierRoute
+  '/api/objekts/by-address/$address': typeof ApiObjektsByAddressAddressRoute
+  '/api/objekts/by-slug/$slug': typeof ApiObjektsBySlugSlugRoute
+  '/api/progress/leaderboard/$member': typeof ApiProgressLeaderboardMemberRoute
+  '/api/bff/v3/users/search': typeof ApiBffV3UsersSearchRoute
+  '/api/objekts/metadata/$slug/$serial': typeof ApiObjektsMetadataSlugSerialRoute
+  '/api/progress/breakdown/$member/$address': typeof ApiProgressBreakdownMemberAddressRoute
+  '/api/user/by-address/$address/como': typeof ApiUserByAddressAddressComoRoute
+  '/api/user/by-address/$address/stats': typeof ApiUserByAddressAddressStatsRoute
+  '/api/objekts/metadata/$slug/': typeof ApiObjektsMetadataSlugIndexRoute
+  '/api/user/by-address/$address/': typeof ApiUserByAddressAddressIndexRoute
+  '/api/bff/v1/objekt/collection-group/$address': typeof ApiBffV1ObjektCollectionGroupAddressRoute
+  '/api/gravity/v3/$artist/gravity/$gravity/polls/$poll': typeof ApiGravityV3ArtistGravityGravityPollsPollRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
-  fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
-  fileRoutesById: FileRoutesById
-}
-export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-}
-export interface FileServerRoutesByFullPath {
-  '/api/filter-data': typeof ApiFilterDataServerRoute
-  '/api/auth/$': typeof ApiAuthSplatServerRoute
-  '/api/cron/gravity': typeof ApiCronGravityServerRoute
-  '/api/cron/objekt-stats': typeof ApiCronObjektStatsServerRoute
-  '/api/transfers/$address': typeof ApiTransfersAddressServerRoute
-  '/api/user/by-addresses': typeof ApiUserByAddressesServerRoute
-  '/api/cosmo/qr-auth/recaptcha': typeof ApiCosmoQrAuthRecaptchaServerRoute
-  '/api/cosmo/qr-auth/ticket': typeof ApiCosmoQrAuthTicketServerRoute
-  '/api/gravity/$pollId/votes': typeof ApiGravityPollIdVotesServerRoute
-  '/api/objekt-list/entries/$id': typeof ApiObjektListEntriesIdServerRoute
-  '/api/objekt-list/for-user/$identifier': typeof ApiObjektListForUserIdentifierServerRoute
-  '/api/user/by-address/$address': typeof ApiUserByAddressAddressServerRouteWithChildren
-  '/api/bff/v3/users/search': typeof ApiBffV3UsersSearchServerRoute
-  '/api/user/by-address/$address/como': typeof ApiUserByAddressAddressComoServerRoute
-  '/api/user/by-address/$address/stats': typeof ApiUserByAddressAddressStatsServerRoute
-  '/api/bff/v1/objekt/collection-group/$address': typeof ApiBffV1ObjektCollectionGroupAddressServerRoute
-  '/api/gravity/v3/$artist/gravity/$gravity/polls/$poll': typeof ApiGravityV3ArtistGravityGravityPollsPollServerRoute
-}
-export interface FileServerRoutesByTo {
-  '/api/filter-data': typeof ApiFilterDataServerRoute
-  '/api/auth/$': typeof ApiAuthSplatServerRoute
-  '/api/cron/gravity': typeof ApiCronGravityServerRoute
-  '/api/cron/objekt-stats': typeof ApiCronObjektStatsServerRoute
-  '/api/transfers/$address': typeof ApiTransfersAddressServerRoute
-  '/api/user/by-addresses': typeof ApiUserByAddressesServerRoute
-  '/api/cosmo/qr-auth/recaptcha': typeof ApiCosmoQrAuthRecaptchaServerRoute
-  '/api/cosmo/qr-auth/ticket': typeof ApiCosmoQrAuthTicketServerRoute
-  '/api/gravity/$pollId/votes': typeof ApiGravityPollIdVotesServerRoute
-  '/api/objekt-list/entries/$id': typeof ApiObjektListEntriesIdServerRoute
-  '/api/objekt-list/for-user/$identifier': typeof ApiObjektListForUserIdentifierServerRoute
-  '/api/user/by-address/$address': typeof ApiUserByAddressAddressServerRouteWithChildren
-  '/api/bff/v3/users/search': typeof ApiBffV3UsersSearchServerRoute
-  '/api/user/by-address/$address/como': typeof ApiUserByAddressAddressComoServerRoute
-  '/api/user/by-address/$address/stats': typeof ApiUserByAddressAddressStatsServerRoute
-  '/api/bff/v1/objekt/collection-group/$address': typeof ApiBffV1ObjektCollectionGroupAddressServerRoute
-  '/api/gravity/v3/$artist/gravity/$gravity/polls/$poll': typeof ApiGravityV3ArtistGravityGravityPollsPollServerRoute
-}
-export interface FileServerRoutesById {
-  __root__: typeof rootServerRouteImport
-  '/api/filter-data': typeof ApiFilterDataServerRoute
-  '/api/auth/$': typeof ApiAuthSplatServerRoute
-  '/api/cron/gravity': typeof ApiCronGravityServerRoute
-  '/api/cron/objekt-stats': typeof ApiCronObjektStatsServerRoute
-  '/api/transfers/$address': typeof ApiTransfersAddressServerRoute
-  '/api/user/by-addresses': typeof ApiUserByAddressesServerRoute
-  '/api/cosmo/qr-auth/recaptcha': typeof ApiCosmoQrAuthRecaptchaServerRoute
-  '/api/cosmo/qr-auth/ticket': typeof ApiCosmoQrAuthTicketServerRoute
-  '/api/gravity/$pollId/votes': typeof ApiGravityPollIdVotesServerRoute
-  '/api/objekt-list/entries/$id': typeof ApiObjektListEntriesIdServerRoute
-  '/api/objekt-list/for-user/$identifier': typeof ApiObjektListForUserIdentifierServerRoute
-  '/api/user/by-address/$address': typeof ApiUserByAddressAddressServerRouteWithChildren
-  '/api/bff/v3/users/search': typeof ApiBffV3UsersSearchServerRoute
-  '/api/user/by-address/$address/como': typeof ApiUserByAddressAddressComoServerRoute
-  '/api/user/by-address/$address/stats': typeof ApiUserByAddressAddressStatsServerRoute
-  '/api/bff/v1/objekt/collection-group/$address': typeof ApiBffV1ObjektCollectionGroupAddressServerRoute
-  '/api/gravity/v3/$artist/gravity/$gravity/polls/$poll': typeof ApiGravityV3ArtistGravityGravityPollsPollServerRoute
-}
-export interface FileServerRouteTypes {
-  fileServerRoutesByFullPath: FileServerRoutesByFullPath
   fullPaths:
+    | '/'
     | '/api/filter-data'
     | '/api/auth/$'
     | '/api/cron/gravity'
     | '/api/cron/objekt-stats'
     | '/api/transfers/$address'
     | '/api/user/by-addresses'
+    | '/api/objekts'
     | '/api/cosmo/qr-auth/recaptcha'
     | '/api/cosmo/qr-auth/ticket'
     | '/api/gravity/$pollId/votes'
     | '/api/objekt-list/entries/$id'
     | '/api/objekt-list/for-user/$identifier'
-    | '/api/user/by-address/$address'
+    | '/api/objekts/by-address/$address'
+    | '/api/objekts/by-slug/$slug'
+    | '/api/progress/leaderboard/$member'
     | '/api/bff/v3/users/search'
+    | '/api/objekts/metadata/$slug/$serial'
+    | '/api/progress/breakdown/$member/$address'
     | '/api/user/by-address/$address/como'
     | '/api/user/by-address/$address/stats'
+    | '/api/objekts/metadata/$slug'
+    | '/api/user/by-address/$address'
     | '/api/bff/v1/objekt/collection-group/$address'
     | '/api/gravity/v3/$artist/gravity/$gravity/polls/$poll'
-  fileServerRoutesByTo: FileServerRoutesByTo
+  fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/api/filter-data'
     | '/api/auth/$'
     | '/api/cron/gravity'
     | '/api/cron/objekt-stats'
     | '/api/transfers/$address'
     | '/api/user/by-addresses'
+    | '/api/objekts'
     | '/api/cosmo/qr-auth/recaptcha'
     | '/api/cosmo/qr-auth/ticket'
     | '/api/gravity/$pollId/votes'
     | '/api/objekt-list/entries/$id'
     | '/api/objekt-list/for-user/$identifier'
-    | '/api/user/by-address/$address'
+    | '/api/objekts/by-address/$address'
+    | '/api/objekts/by-slug/$slug'
+    | '/api/progress/leaderboard/$member'
     | '/api/bff/v3/users/search'
+    | '/api/objekts/metadata/$slug/$serial'
+    | '/api/progress/breakdown/$member/$address'
     | '/api/user/by-address/$address/como'
     | '/api/user/by-address/$address/stats'
+    | '/api/objekts/metadata/$slug'
+    | '/api/user/by-address/$address'
     | '/api/bff/v1/objekt/collection-group/$address'
     | '/api/gravity/v3/$artist/gravity/$gravity/polls/$poll'
   id:
     | '__root__'
+    | '/'
     | '/api/filter-data'
     | '/api/auth/$'
     | '/api/cron/gravity'
     | '/api/cron/objekt-stats'
     | '/api/transfers/$address'
     | '/api/user/by-addresses'
+    | '/api/objekts/'
     | '/api/cosmo/qr-auth/recaptcha'
     | '/api/cosmo/qr-auth/ticket'
     | '/api/gravity/$pollId/votes'
     | '/api/objekt-list/entries/$id'
     | '/api/objekt-list/for-user/$identifier'
-    | '/api/user/by-address/$address'
+    | '/api/objekts/by-address/$address'
+    | '/api/objekts/by-slug/$slug'
+    | '/api/progress/leaderboard/$member'
     | '/api/bff/v3/users/search'
+    | '/api/objekts/metadata/$slug/$serial'
+    | '/api/progress/breakdown/$member/$address'
     | '/api/user/by-address/$address/como'
     | '/api/user/by-address/$address/stats'
+    | '/api/objekts/metadata/$slug/'
+    | '/api/user/by-address/$address/'
     | '/api/bff/v1/objekt/collection-group/$address'
     | '/api/gravity/v3/$artist/gravity/$gravity/polls/$poll'
-  fileServerRoutesById: FileServerRoutesById
+  fileRoutesById: FileRoutesById
 }
-export interface RootServerRouteChildren {
-  ApiFilterDataServerRoute: typeof ApiFilterDataServerRoute
-  ApiAuthSplatServerRoute: typeof ApiAuthSplatServerRoute
-  ApiCronGravityServerRoute: typeof ApiCronGravityServerRoute
-  ApiCronObjektStatsServerRoute: typeof ApiCronObjektStatsServerRoute
-  ApiTransfersAddressServerRoute: typeof ApiTransfersAddressServerRoute
-  ApiUserByAddressesServerRoute: typeof ApiUserByAddressesServerRoute
-  ApiCosmoQrAuthRecaptchaServerRoute: typeof ApiCosmoQrAuthRecaptchaServerRoute
-  ApiCosmoQrAuthTicketServerRoute: typeof ApiCosmoQrAuthTicketServerRoute
-  ApiGravityPollIdVotesServerRoute: typeof ApiGravityPollIdVotesServerRoute
-  ApiObjektListEntriesIdServerRoute: typeof ApiObjektListEntriesIdServerRoute
-  ApiObjektListForUserIdentifierServerRoute: typeof ApiObjektListForUserIdentifierServerRoute
-  ApiUserByAddressAddressServerRoute: typeof ApiUserByAddressAddressServerRouteWithChildren
-  ApiBffV3UsersSearchServerRoute: typeof ApiBffV3UsersSearchServerRoute
-  ApiBffV1ObjektCollectionGroupAddressServerRoute: typeof ApiBffV1ObjektCollectionGroupAddressServerRoute
-  ApiGravityV3ArtistGravityGravityPollsPollServerRoute: typeof ApiGravityV3ArtistGravityGravityPollsPollServerRoute
+export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
+  ApiFilterDataRoute: typeof ApiFilterDataRoute
+  ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiCronGravityRoute: typeof ApiCronGravityRoute
+  ApiCronObjektStatsRoute: typeof ApiCronObjektStatsRoute
+  ApiTransfersAddressRoute: typeof ApiTransfersAddressRoute
+  ApiUserByAddressesRoute: typeof ApiUserByAddressesRoute
+  ApiObjektsIndexRoute: typeof ApiObjektsIndexRoute
+  ApiCosmoQrAuthRecaptchaRoute: typeof ApiCosmoQrAuthRecaptchaRoute
+  ApiCosmoQrAuthTicketRoute: typeof ApiCosmoQrAuthTicketRoute
+  ApiGravityPollIdVotesRoute: typeof ApiGravityPollIdVotesRoute
+  ApiObjektListEntriesIdRoute: typeof ApiObjektListEntriesIdRoute
+  ApiObjektListForUserIdentifierRoute: typeof ApiObjektListForUserIdentifierRoute
+  ApiObjektsByAddressAddressRoute: typeof ApiObjektsByAddressAddressRoute
+  ApiObjektsBySlugSlugRoute: typeof ApiObjektsBySlugSlugRoute
+  ApiProgressLeaderboardMemberRoute: typeof ApiProgressLeaderboardMemberRoute
+  ApiBffV3UsersSearchRoute: typeof ApiBffV3UsersSearchRoute
+  ApiObjektsMetadataSlugSerialRoute: typeof ApiObjektsMetadataSlugSerialRoute
+  ApiProgressBreakdownMemberAddressRoute: typeof ApiProgressBreakdownMemberAddressRoute
+  ApiUserByAddressAddressComoRoute: typeof ApiUserByAddressAddressComoRoute
+  ApiUserByAddressAddressStatsRoute: typeof ApiUserByAddressAddressStatsRoute
+  ApiObjektsMetadataSlugIndexRoute: typeof ApiObjektsMetadataSlugIndexRoute
+  ApiUserByAddressAddressIndexRoute: typeof ApiUserByAddressAddressIndexRoute
+  ApiBffV1ObjektCollectionGroupAddressRoute: typeof ApiBffV1ObjektCollectionGroupAddressRoute
+  ApiGravityV3ArtistGravityGravityPollsPollRoute: typeof ApiGravityV3ArtistGravityGravityPollsPollRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -303,177 +375,215 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-  }
-}
-declare module '@tanstack/react-start/server' {
-  interface ServerFileRoutesByPath {
     '/api/filter-data': {
       id: '/api/filter-data'
       path: '/api/filter-data'
       fullPath: '/api/filter-data'
-      preLoaderRoute: typeof ApiFilterDataServerRouteImport
-      parentRoute: typeof rootServerRouteImport
+      preLoaderRoute: typeof ApiFilterDataRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/objekts/': {
+      id: '/api/objekts/'
+      path: '/api/objekts'
+      fullPath: '/api/objekts'
+      preLoaderRoute: typeof ApiObjektsIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/user/by-addresses': {
       id: '/api/user/by-addresses'
       path: '/api/user/by-addresses'
       fullPath: '/api/user/by-addresses'
-      preLoaderRoute: typeof ApiUserByAddressesServerRouteImport
-      parentRoute: typeof rootServerRouteImport
+      preLoaderRoute: typeof ApiUserByAddressesRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/transfers/$address': {
       id: '/api/transfers/$address'
       path: '/api/transfers/$address'
       fullPath: '/api/transfers/$address'
-      preLoaderRoute: typeof ApiTransfersAddressServerRouteImport
-      parentRoute: typeof rootServerRouteImport
+      preLoaderRoute: typeof ApiTransfersAddressRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/cron/objekt-stats': {
       id: '/api/cron/objekt-stats'
       path: '/api/cron/objekt-stats'
       fullPath: '/api/cron/objekt-stats'
-      preLoaderRoute: typeof ApiCronObjektStatsServerRouteImport
-      parentRoute: typeof rootServerRouteImport
+      preLoaderRoute: typeof ApiCronObjektStatsRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/cron/gravity': {
       id: '/api/cron/gravity'
       path: '/api/cron/gravity'
       fullPath: '/api/cron/gravity'
-      preLoaderRoute: typeof ApiCronGravityServerRouteImport
-      parentRoute: typeof rootServerRouteImport
+      preLoaderRoute: typeof ApiCronGravityRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
       fullPath: '/api/auth/$'
-      preLoaderRoute: typeof ApiAuthSplatServerRouteImport
-      parentRoute: typeof rootServerRouteImport
+      preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/api/user/by-address/$address': {
-      id: '/api/user/by-address/$address'
-      path: '/api/user/by-address/$address'
-      fullPath: '/api/user/by-address/$address'
-      preLoaderRoute: typeof ApiUserByAddressAddressServerRouteImport
-      parentRoute: typeof rootServerRouteImport
+    '/api/progress/leaderboard/$member': {
+      id: '/api/progress/leaderboard/$member'
+      path: '/api/progress/leaderboard/$member'
+      fullPath: '/api/progress/leaderboard/$member'
+      preLoaderRoute: typeof ApiProgressLeaderboardMemberRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/objekts/by-slug/$slug': {
+      id: '/api/objekts/by-slug/$slug'
+      path: '/api/objekts/by-slug/$slug'
+      fullPath: '/api/objekts/by-slug/$slug'
+      preLoaderRoute: typeof ApiObjektsBySlugSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/objekts/by-address/$address': {
+      id: '/api/objekts/by-address/$address'
+      path: '/api/objekts/by-address/$address'
+      fullPath: '/api/objekts/by-address/$address'
+      preLoaderRoute: typeof ApiObjektsByAddressAddressRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/objekt-list/for-user/$identifier': {
       id: '/api/objekt-list/for-user/$identifier'
       path: '/api/objekt-list/for-user/$identifier'
       fullPath: '/api/objekt-list/for-user/$identifier'
-      preLoaderRoute: typeof ApiObjektListForUserIdentifierServerRouteImport
-      parentRoute: typeof rootServerRouteImport
+      preLoaderRoute: typeof ApiObjektListForUserIdentifierRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/objekt-list/entries/$id': {
       id: '/api/objekt-list/entries/$id'
       path: '/api/objekt-list/entries/$id'
       fullPath: '/api/objekt-list/entries/$id'
-      preLoaderRoute: typeof ApiObjektListEntriesIdServerRouteImport
-      parentRoute: typeof rootServerRouteImport
+      preLoaderRoute: typeof ApiObjektListEntriesIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/gravity/$pollId/votes': {
       id: '/api/gravity/$pollId/votes'
       path: '/api/gravity/$pollId/votes'
       fullPath: '/api/gravity/$pollId/votes'
-      preLoaderRoute: typeof ApiGravityPollIdVotesServerRouteImport
-      parentRoute: typeof rootServerRouteImport
+      preLoaderRoute: typeof ApiGravityPollIdVotesRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/cosmo/qr-auth/ticket': {
       id: '/api/cosmo/qr-auth/ticket'
       path: '/api/cosmo/qr-auth/ticket'
       fullPath: '/api/cosmo/qr-auth/ticket'
-      preLoaderRoute: typeof ApiCosmoQrAuthTicketServerRouteImport
-      parentRoute: typeof rootServerRouteImport
+      preLoaderRoute: typeof ApiCosmoQrAuthTicketRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/cosmo/qr-auth/recaptcha': {
       id: '/api/cosmo/qr-auth/recaptcha'
       path: '/api/cosmo/qr-auth/recaptcha'
       fullPath: '/api/cosmo/qr-auth/recaptcha'
-      preLoaderRoute: typeof ApiCosmoQrAuthRecaptchaServerRouteImport
-      parentRoute: typeof rootServerRouteImport
+      preLoaderRoute: typeof ApiCosmoQrAuthRecaptchaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/user/by-address/$address/': {
+      id: '/api/user/by-address/$address/'
+      path: '/api/user/by-address/$address'
+      fullPath: '/api/user/by-address/$address'
+      preLoaderRoute: typeof ApiUserByAddressAddressIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/objekts/metadata/$slug/': {
+      id: '/api/objekts/metadata/$slug/'
+      path: '/api/objekts/metadata/$slug'
+      fullPath: '/api/objekts/metadata/$slug'
+      preLoaderRoute: typeof ApiObjektsMetadataSlugIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/user/by-address/$address/stats': {
       id: '/api/user/by-address/$address/stats'
-      path: '/stats'
+      path: '/api/user/by-address/$address/stats'
       fullPath: '/api/user/by-address/$address/stats'
-      preLoaderRoute: typeof ApiUserByAddressAddressStatsServerRouteImport
-      parentRoute: typeof ApiUserByAddressAddressServerRoute
+      preLoaderRoute: typeof ApiUserByAddressAddressStatsRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/user/by-address/$address/como': {
       id: '/api/user/by-address/$address/como'
-      path: '/como'
+      path: '/api/user/by-address/$address/como'
       fullPath: '/api/user/by-address/$address/como'
-      preLoaderRoute: typeof ApiUserByAddressAddressComoServerRouteImport
-      parentRoute: typeof ApiUserByAddressAddressServerRoute
+      preLoaderRoute: typeof ApiUserByAddressAddressComoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/progress/breakdown/$member/$address': {
+      id: '/api/progress/breakdown/$member/$address'
+      path: '/api/progress/breakdown/$member/$address'
+      fullPath: '/api/progress/breakdown/$member/$address'
+      preLoaderRoute: typeof ApiProgressBreakdownMemberAddressRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/objekts/metadata/$slug/$serial': {
+      id: '/api/objekts/metadata/$slug/$serial'
+      path: '/api/objekts/metadata/$slug/$serial'
+      fullPath: '/api/objekts/metadata/$slug/$serial'
+      preLoaderRoute: typeof ApiObjektsMetadataSlugSerialRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/bff/v3/users/search': {
       id: '/api/bff/v3/users/search'
       path: '/api/bff/v3/users/search'
       fullPath: '/api/bff/v3/users/search'
-      preLoaderRoute: typeof ApiBffV3UsersSearchServerRouteImport
-      parentRoute: typeof rootServerRouteImport
+      preLoaderRoute: typeof ApiBffV3UsersSearchRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/bff/v1/objekt/collection-group/$address': {
       id: '/api/bff/v1/objekt/collection-group/$address'
       path: '/api/bff/v1/objekt/collection-group/$address'
       fullPath: '/api/bff/v1/objekt/collection-group/$address'
-      preLoaderRoute: typeof ApiBffV1ObjektCollectionGroupAddressServerRouteImport
-      parentRoute: typeof rootServerRouteImport
+      preLoaderRoute: typeof ApiBffV1ObjektCollectionGroupAddressRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/gravity/v3/$artist/gravity/$gravity/polls/$poll': {
       id: '/api/gravity/v3/$artist/gravity/$gravity/polls/$poll'
       path: '/api/gravity/v3/$artist/gravity/$gravity/polls/$poll'
       fullPath: '/api/gravity/v3/$artist/gravity/$gravity/polls/$poll'
-      preLoaderRoute: typeof ApiGravityV3ArtistGravityGravityPollsPollServerRouteImport
-      parentRoute: typeof rootServerRouteImport
+      preLoaderRoute: typeof ApiGravityV3ArtistGravityGravityPollsPollRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
 
-interface ApiUserByAddressAddressServerRouteChildren {
-  ApiUserByAddressAddressComoServerRoute: typeof ApiUserByAddressAddressComoServerRoute
-  ApiUserByAddressAddressStatsServerRoute: typeof ApiUserByAddressAddressStatsServerRoute
-}
-
-const ApiUserByAddressAddressServerRouteChildren: ApiUserByAddressAddressServerRouteChildren =
-  {
-    ApiUserByAddressAddressComoServerRoute:
-      ApiUserByAddressAddressComoServerRoute,
-    ApiUserByAddressAddressStatsServerRoute:
-      ApiUserByAddressAddressStatsServerRoute,
-  }
-
-const ApiUserByAddressAddressServerRouteWithChildren =
-  ApiUserByAddressAddressServerRoute._addFileChildren(
-    ApiUserByAddressAddressServerRouteChildren,
-  )
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApiFilterDataRoute: ApiFilterDataRoute,
+  ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiCronGravityRoute: ApiCronGravityRoute,
+  ApiCronObjektStatsRoute: ApiCronObjektStatsRoute,
+  ApiTransfersAddressRoute: ApiTransfersAddressRoute,
+  ApiUserByAddressesRoute: ApiUserByAddressesRoute,
+  ApiObjektsIndexRoute: ApiObjektsIndexRoute,
+  ApiCosmoQrAuthRecaptchaRoute: ApiCosmoQrAuthRecaptchaRoute,
+  ApiCosmoQrAuthTicketRoute: ApiCosmoQrAuthTicketRoute,
+  ApiGravityPollIdVotesRoute: ApiGravityPollIdVotesRoute,
+  ApiObjektListEntriesIdRoute: ApiObjektListEntriesIdRoute,
+  ApiObjektListForUserIdentifierRoute: ApiObjektListForUserIdentifierRoute,
+  ApiObjektsByAddressAddressRoute: ApiObjektsByAddressAddressRoute,
+  ApiObjektsBySlugSlugRoute: ApiObjektsBySlugSlugRoute,
+  ApiProgressLeaderboardMemberRoute: ApiProgressLeaderboardMemberRoute,
+  ApiBffV3UsersSearchRoute: ApiBffV3UsersSearchRoute,
+  ApiObjektsMetadataSlugSerialRoute: ApiObjektsMetadataSlugSerialRoute,
+  ApiProgressBreakdownMemberAddressRoute:
+    ApiProgressBreakdownMemberAddressRoute,
+  ApiUserByAddressAddressComoRoute: ApiUserByAddressAddressComoRoute,
+  ApiUserByAddressAddressStatsRoute: ApiUserByAddressAddressStatsRoute,
+  ApiObjektsMetadataSlugIndexRoute: ApiObjektsMetadataSlugIndexRoute,
+  ApiUserByAddressAddressIndexRoute: ApiUserByAddressAddressIndexRoute,
+  ApiBffV1ObjektCollectionGroupAddressRoute:
+    ApiBffV1ObjektCollectionGroupAddressRoute,
+  ApiGravityV3ArtistGravityGravityPollsPollRoute:
+    ApiGravityV3ArtistGravityGravityPollsPollRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-const rootServerRouteChildren: RootServerRouteChildren = {
-  ApiFilterDataServerRoute: ApiFilterDataServerRoute,
-  ApiAuthSplatServerRoute: ApiAuthSplatServerRoute,
-  ApiCronGravityServerRoute: ApiCronGravityServerRoute,
-  ApiCronObjektStatsServerRoute: ApiCronObjektStatsServerRoute,
-  ApiTransfersAddressServerRoute: ApiTransfersAddressServerRoute,
-  ApiUserByAddressesServerRoute: ApiUserByAddressesServerRoute,
-  ApiCosmoQrAuthRecaptchaServerRoute: ApiCosmoQrAuthRecaptchaServerRoute,
-  ApiCosmoQrAuthTicketServerRoute: ApiCosmoQrAuthTicketServerRoute,
-  ApiGravityPollIdVotesServerRoute: ApiGravityPollIdVotesServerRoute,
-  ApiObjektListEntriesIdServerRoute: ApiObjektListEntriesIdServerRoute,
-  ApiObjektListForUserIdentifierServerRoute:
-    ApiObjektListForUserIdentifierServerRoute,
-  ApiUserByAddressAddressServerRoute:
-    ApiUserByAddressAddressServerRouteWithChildren,
-  ApiBffV3UsersSearchServerRoute: ApiBffV3UsersSearchServerRoute,
-  ApiBffV1ObjektCollectionGroupAddressServerRoute:
-    ApiBffV1ObjektCollectionGroupAddressServerRoute,
-  ApiGravityV3ArtistGravityGravityPollsPollServerRoute:
-    ApiGravityV3ArtistGravityGravityPollsPollServerRoute,
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
 }
-export const serverRouteTree = rootServerRouteImport
-  ._addFileChildren(rootServerRouteChildren)
-  ._addFileTypes<FileServerRouteTypes>()

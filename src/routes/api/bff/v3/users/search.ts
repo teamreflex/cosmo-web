@@ -1,4 +1,4 @@
-import { createServerFileRoute } from "@tanstack/react-start/server";
+import { createFileRoute } from "@tanstack/react-router";
 import { like } from "drizzle-orm";
 import { waitUntil } from "@vercel/functions";
 import type { CosmoSearchResult } from "@/lib/universal/cosmo/user";
@@ -8,36 +8,35 @@ import { db } from "@/lib/server/db";
 import { cosmoAccounts } from "@/lib/server/db/schema";
 import { getProxiedToken } from "@/lib/server/handlers/withProxiedToken";
 
-export const ServerRoute = createServerFileRoute(
-  "/api/bff/v3/users/search"
-).methods({
-  /**
-   * Search for a user by nickname.
-   */
-  GET: async ({ request }) => {
-    const url = new URL(request.url);
-    const query = url.searchParams.get("query") ?? "";
+export const Route = createFileRoute("/api/bff/v3/users/search")({
+  server: {
+    handlers: {
+      GET: async ({ request }) => {
+        const url = new URL(request.url);
+        const query = url.searchParams.get("query") ?? "";
 
-    // get the latest cosmo token
-    const { accessToken } = await getProxiedToken();
+        // get the latest cosmo token
+        const { accessToken } = await getProxiedToken();
 
-    let results: CosmoSearchResult = { results: [] };
+        let results: CosmoSearchResult = { results: [] };
 
-    // try cosmo first
-    try {
-      results = await search(accessToken, query);
-    } catch {
-      // fallback to database
-      return Response.json(await queryDatabase(query));
-    }
+        // try cosmo first
+        try {
+          results = await search(accessToken, query);
+        } catch {
+          // fallback to database
+          return Response.json(await queryDatabase(query));
+        }
 
-    // take the results and insert any new profiles after the response is sent
-    if (results.results.length > 0) {
-      waitUntil(cacheResults(results, query));
-    }
+        // take the results and insert any new profiles after the response is sent
+        if (results.results.length > 0) {
+          waitUntil(cacheResults(results, query));
+        }
 
-    // return results
-    return Response.json(results);
+        // return results
+        return Response.json(results);
+      },
+    },
   },
 });
 

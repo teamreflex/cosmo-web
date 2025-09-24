@@ -4,7 +4,7 @@ import React from "react";
 import { routeTree } from "./routeTree.gen";
 import * as TanstackQuery from "@/components/client-providers";
 
-export const createRouter = () => {
+export function getRouter() {
   const rqContext = TanstackQuery.getContext();
 
   const router = createTanstackRouter({
@@ -27,11 +27,11 @@ export const createRouter = () => {
   });
 
   return router;
-};
+}
 
 // Register the router instance for type safety
 declare module "@tanstack/react-router" {
   interface Register {
-    router: ReturnType<typeof createRouter>;
+    router: ReturnType<typeof getRouter>;
   }
 }

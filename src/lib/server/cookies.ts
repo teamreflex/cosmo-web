@@ -1,7 +1,7 @@
 import { getCookie, setCookie } from "@tanstack/react-start/server";
 import { generateCookiePayload } from "./jwt";
 
-type CookieKey = "artists" | "token" | "user-session";
+type CookieKey = "artists";
 
 /**
  * Read the value from a cookie.

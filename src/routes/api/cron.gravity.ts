@@ -1,4 +1,4 @@
-import { createServerFileRoute } from "@tanstack/react-start/server";
+import { createFileRoute } from "@tanstack/react-router";
 import { eq } from "drizzle-orm";
 import type { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import { env } from "@/env";
@@ -14,30 +14,34 @@ import { getProxiedToken } from "@/lib/server/handlers/withProxiedToken";
 import { chunk } from "@/lib/utils";
 import { fetchArtists } from "@/queries";
 
-export const ServerRoute = createServerFileRoute("/api/cron/gravity").methods({
-  /**
-   * Search for a user by nickname.
-   */
-  GET: async ({ request }) => {
-    const authHeader = request.headers.get("authorization");
-    if (authHeader !== `Bearer ${env.CRON_SECRET}`) {
-      return new Response("unauthorized", {
-        status: 401,
-      });
-    }
+export const Route = createFileRoute("/api/cron/gravity")({
+  server: {
+    handlers: {
+      /**
+       * Search for a user by nickname.
+       */
+      GET: async ({ request }) => {
+        const authHeader = request.headers.get("authorization");
+        if (authHeader !== `Bearer ${env.CRON_SECRET}`) {
+          return new Response("unauthorized", {
+            status: 401,
+          });
+        }
 
-    // fetch all artists
-    const artists = await fetchArtists();
+        // fetch all artists
+        const artists = await fetchArtists();
 
-    // get a proxied token
-    const token = await getProxiedToken();
+        // get a proxied token
+        const token = await getProxiedToken();
 
-    // process gravities for each artist in parallel
-    await Promise.all(
-      artists.map((artist) => processGravities(token.accessToken, artist))
-    );
+        // process gravities for each artist in parallel
+        await Promise.all(
+          artists.map((artist) => processGravities(token.accessToken, artist))
+        );
 
-    return new Response("ok");
+        return new Response("ok");
+      },
+    },
   },
 });
 

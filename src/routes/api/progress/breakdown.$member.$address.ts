@@ -1,55 +1,50 @@
-import { indexer } from "@/lib/server/db/indexer";
-import {
-  type Collection,
-  collections,
-  objekts,
-} from "@/lib/server/db/indexer/schema";
-import { validOnlineTypes } from "@/lib/universal/cosmo/common";
-import type { SeasonProgress, SeasonMatrix } from "@/lib/universal/progress";
+import { createFileRoute } from "@tanstack/react-router";
 import { and, eq } from "drizzle-orm";
-import { fetchTotal } from "../../../common";
-import { cacheHeaders } from "@/routes/api/common";
+import type { SeasonMatrix, SeasonProgress } from "@/lib/universal/progress";
+import type { Collection } from "@/lib/server/db/indexer/schema";
+import { indexer } from "@/lib/server/db/indexer";
+import { collections, objekts } from "@/lib/server/db/indexer/schema";
+import { validOnlineTypes } from "@/lib/universal/cosmo/common";
 import { unobtainables } from "@/lib/unobtainables";
+import { fetchTotal } from "@/lib/server/progress";
+import { cacheHeaders } from "@/lib/server/cache";
 
-export const runtime = "nodejs";
+export const Route = createFileRoute(
+  "/api/progress/breakdown/$member/$address"
+)({
+  server: {
+    handlers: {
+      /**
+       * API route that services the /@:nickname/progress page.
+       * Takes an address and a member name, and returns the collection progress breakdown of that member.
+       * Cached for 1 hour.
+       */
+      GET: async ({ params }) => {
+        const [totals, progress] = await Promise.all([
+          fetchTotal({ member: params.member }),
+          fetchProgress(params.address.toLowerCase(), params.member),
+        ]);
 
-type Params = {
-  params: Promise<{
-    address: string;
-    member: string;
-  }>;
-};
+        // dynamically build the matrix based on the data instead of hardcoding seasons and classes
+        const classes = new Set<string>();
+        const seasons = new Set<string>();
+        for (const total of totals) {
+          classes.add(total.class);
+          seasons.add(total.season);
+        }
 
-/**
- * API route that services the /@:nickname/progress page.
- * Takes an address and a member name, and returns the collection progress breakdown of that member.
- * Cached for 1 hour.
- */
-export async function GET(_: Request, props: Params) {
-  const params = await props.params;
+        const matrix = buildMatrix(
+          Array.from(classes).filter((c) => !["Zero", "Welcome"].includes(c)),
+          Array.from(seasons)
+        );
 
-  const [totals, progress] = await Promise.all([
-    fetchTotal({ member: params.member }),
-    fetchProgress(params.address.toLowerCase(), params.member),
-  ]);
-
-  // dynamically build the matrix based on the data instead of hardcoding seasons and classes
-  const classes = new Set<string>();
-  const seasons = new Set<string>();
-  for (const total of totals) {
-    classes.add(total.class);
-    seasons.add(total.season);
-  }
-
-  const matrix = buildMatrix(
-    Array.from(classes).filter((c) => !["Zero", "Welcome"].includes(c)),
-    Array.from(seasons)
-  );
-
-  return Response.json(zipResults(matrix, totals, progress), {
-    headers: cacheHeaders({ vercel: 60 * 60 }),
-  });
-}
+        return Response.json(zipResults(matrix, totals, progress), {
+          headers: cacheHeaders({ vercel: 60 * 60 }),
+        });
+      },
+    },
+  },
+});
 
 /**
  * Build a matrix of all available classes, seasons and online types.

@@ -1,15 +1,17 @@
-import { indexer } from "@/lib/server/db/indexer";
-import { collections, objekts } from "@/lib/server/db/indexer/schema";
-import { count, eq } from "drizzle-orm";
+import { and, count, desc, eq, notInArray } from "drizzle-orm";
+import { remember } from "./cache";
+import type { ValidOnlineType } from "../universal/cosmo/common";
 import type { ArtistStats, ProcessingArtistStats } from "../universal/progress";
-import { unstable_cache } from "next/cache";
+import type { Collection } from "@/lib/server/db/indexer/schema";
+import { collections, objekts } from "@/lib/server/db/indexer/schema";
+import { indexer } from "@/lib/server/db/indexer";
 
 /**
  * Get objekts stats grouped by artist for a given address
  * Cached for 1 hour.
  */
-export const getArtistStatsByAddress = unstable_cache(
-  async (address: string): Promise<ArtistStats[]> => {
+export const getArtistStatsByAddress = (address: string) =>
+  remember(`progress-stats:${address}`, 60 * 60, async () => {
     // query objekts grouped by season, member and artist in a single query
     const stats = await indexer
       .select({
@@ -78,9 +80,34 @@ export const getArtistStatsByAddress = unstable_cache(
     );
 
     return finalStats;
-  },
-  ["progress-stats"],
-  {
-    revalidate: 60 * 60, // 1 hour
-  }
-);
+  });
+
+type FetchTotal = {
+  member: string;
+  onlineType?: ValidOnlineType | null;
+  season?: string | null;
+};
+
+/**
+ * Fetch all collections for the given member.
+ */
+export async function fetchTotal({
+  member,
+  onlineType = null,
+  season = null,
+}: FetchTotal): Promise<Collection[]> {
+  const result = await indexer
+    .select()
+    .from(collections)
+    .where(
+      and(
+        eq(collections.member, member),
+        notInArray(collections.class, ["Welcome", "Zero"]),
+        ...(onlineType !== null ? [eq(collections.onOffline, onlineType)] : []),
+        ...(season !== null ? [eq(collections.season, season)] : [])
+      )
+    )
+    .orderBy(desc(collections.createdAt));
+
+  return result;
+}

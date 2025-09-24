@@ -1,13 +1,13 @@
 import "server-only";
 import { cache } from "react";
 import { createServerFn } from "@tanstack/react-start";
-import { getWebRequest } from "@tanstack/react-start/server";
+import { getRequestHeaders } from "@tanstack/react-start/server";
 import { notFound } from "@tanstack/react-router";
 import type { FullAccount, PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import type { PublicUser } from "@/lib/universal/auth";
 import type { ObjektList } from "@/lib/server/db/schema";
 import { fetchTokenBalances } from "@/lib/server/como";
-import { getCookie } from "@/lib/server/cookies";
+import { fetchCookie } from "@/lib/server/cookies";
 import { auth, toPublicUser } from "@/lib/server/auth";
 import { fetchFullAccount, toPublicCosmo } from "@/lib/server/cosmo-accounts";
 import { db } from "@/lib/server/db";
@@ -15,14 +15,14 @@ import { db } from "@/lib/server/db";
 /**
  * Fetch the selected artists from the cookie.
  */
-export const getSelectedArtists = cache(async () => {
-  return (await getCookie<string[]>("artists")) ?? [];
+export const getSelectedArtists = cache(() => {
+  return fetchCookie<string[]>("artists") ?? [];
 });
 
 /**
  * Fetch the token balances for the given address.
  */
-export const getTokenBalances = cache(async (address: string) =>
+export const getTokenBalances = cache((address: string) =>
   fetchTokenBalances(address)
 );
 
@@ -30,9 +30,9 @@ export const getTokenBalances = cache(async (address: string) =>
  * Fetch the current session.
  */
 export const getSession = createServerFn().handler(async () => {
-  const req = getWebRequest();
+  const headers = getRequestHeaders();
   const session = await auth.api.getSession({
-    headers: req.headers,
+    headers: headers,
   });
 
   if (!session) {
