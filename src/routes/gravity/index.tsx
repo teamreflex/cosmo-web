@@ -19,7 +19,7 @@ import GravityTimestamp from "@/components/gravity/timestamp";
 import { Badge } from "@/components/ui/badge";
 import { artistsQuery, selectedArtistsQuery } from "@/queries";
 
-export const Route = createFileRoute("/gravity")({
+export const Route = createFileRoute("/gravity/")({
   head: () => ({
     meta: [seoTitle("Gravity")],
   }),

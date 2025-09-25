@@ -77,5 +77,8 @@ export const verifyCosmo = createServerFn({ method: "POST" })
     // import any existing objekt lists
     await importObjektLists(context.session.user.id, account.address);
 
-    throw redirect({ to: `/@${account.username}` });
+    throw redirect({
+      to: "/@$username",
+      params: { username: account.username },
+    });
   });

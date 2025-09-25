@@ -1,4 +1,5 @@
-import { usePathname } from "next/navigation";
+import { useLocation } from "@tanstack/react-router";
+import { items } from "./sidebar";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -7,12 +8,11 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { items } from "./sidebar";
 
 export default function AdminBreadcrumbs() {
-  const pathname = usePathname();
+  const location = useLocation();
 
-  const match = items.find((i) => i.url === pathname);
+  const match = items.find((i) => i.url === location.pathname);
 
   return (
     <Breadcrumb>

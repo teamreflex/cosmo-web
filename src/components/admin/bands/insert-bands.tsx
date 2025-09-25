@@ -1,26 +1,27 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Clipboard, HardDriveUpload, Loader2, Plus, Trash } from "lucide-react";
 import { useState } from "react";
-import {
-  bandUrlInputSchema,
-  type BandUrlRow,
-} from "@/lib/universal/schema/admin";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { useMutation } from "@tanstack/react-query";
 import { saveBandUrls } from "./actions";
-import { useAction } from "next-safe-action/hooks";
+import type { BandUrlRow } from "@/lib/universal/schema/admin";
+import { bandUrlInputSchema } from "@/lib/universal/schema/admin";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export default function InsertMetadata() {
   const [items, setItems] = useState<BandUrlRow[]>([
     { slug: "", bandImageUrl: "" },
   ]);
-  const { execute, isPending } = useAction(saveBandUrls, {
+  const mutationFn = useServerFn(saveBandUrls);
+  const mutation = useMutation({
+    mutationFn,
     onSuccess: () => {
       toast.success(`${items.length} objekt bands updated`);
       setItems([{ slug: "", bandImageUrl: "" }]);
     },
-    onError: (error) => {
-      toast.error(error.error.serverError ?? "An unknown error occurred");
+    onError: () => {
+      toast.error("An unknown error occurred");
     },
   });
 
@@ -83,10 +84,10 @@ export default function InsertMetadata() {
         <Button
           variant="cosmo"
           size="xs"
-          onClick={() => execute(items)}
-          disabled={isPending || !hasRows}
+          onClick={() => mutation.mutate({ data: items })}
+          disabled={mutation.isPending || !hasRows}
         >
-          {isPending ? (
+          {mutation.isPending ? (
             <Loader2 className="size-4 animate-spin" />
           ) : (
             <HardDriveUpload className="size-4" />

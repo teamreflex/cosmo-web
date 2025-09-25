@@ -1,14 +1,8 @@
+import { useMemo } from "react";
+import ProgressSection from "./progress-section";
 import type { Stat } from "@/lib/universal/progress";
 import { useArtists } from "@/hooks/use-artists";
-import { useMemo } from "react";
 import { randomColor } from "@/lib/utils";
-import dynamic from "next/dynamic";
-import { ProgressSectionSkeleton } from "./progress-section";
-
-const ProgressSection = dynamic(() => import("./progress-section"), {
-  ssr: false,
-  loading: () => <ProgressSectionSkeleton />,
-});
 
 type Props = {
   data: Stat[];

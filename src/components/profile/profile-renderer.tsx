@@ -18,12 +18,11 @@ export default function ProfileRenderer({ targetCosmo }: Props) {
   const { user } = useUserState();
   const gridColumns = useGridColumns();
 
-  const { searchParams, showLocked, setShowLocked, dataSource, setDataSource } =
-    useFilters({
-      dataSource: isEqual(targetCosmo.address, Addresses.SPIN)
-        ? "blockchain"
-        : user?.collectionMode,
-    });
+  const { showLocked, setShowLocked, dataSource, setDataSource } = useFilters({
+    dataSource: isEqual(targetCosmo.address, Addresses.SPIN)
+      ? "blockchain"
+      : user?.collectionMode,
+  });
 
   return (
     <div className="relative flex flex-col">
@@ -48,7 +47,6 @@ export default function ProfileRenderer({ targetCosmo }: Props) {
               <Blockchain
                 gridColumns={gridColumns}
                 targetCosmo={targetCosmo}
-                searchParams={searchParams}
                 showLocked={showLocked}
               />
             );
@@ -57,7 +55,6 @@ export default function ProfileRenderer({ targetCosmo }: Props) {
               <BlockchainGroups
                 gridColumns={gridColumns}
                 targetCosmo={targetCosmo}
-                searchParams={searchParams}
                 showLocked={showLocked}
               />
             );

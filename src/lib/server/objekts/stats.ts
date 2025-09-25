@@ -1,10 +1,10 @@
 import { and, eq, gte, lt, sql } from "drizzle-orm";
 import { createServerFn } from "@tanstack/react-start";
+import { queryOptions } from "@tanstack/react-query";
 import { collections, objekts } from "../db/indexer/schema";
 import { indexer } from "../db/indexer";
 import { remember } from "../cache";
 import type { HourlyBreakdown, ObjektStats } from "@/lib/universal/stats";
-import { queryOptions } from "@tanstack/react-query";
 
 interface RawStats {
   timestamp: string;
@@ -103,8 +103,8 @@ async function getObjektCounts(
     );
 
   return {
-    premierCount: result?.[0]?.premierCount ?? 0,
-    scannedCount: result?.[0]?.scannedCount ?? 0,
+    premierCount: result[0]?.premierCount ?? 0,
+    scannedCount: result[0]?.scannedCount ?? 0,
   };
 }
 
@@ -142,8 +142,8 @@ function processRawStats(rawStats: RawStats[], referenceHours: string[]) {
     });
 
     if (hourIndex !== -1) {
-      memberBreakdown[stat.member][hourIndex].count += stat.count;
-      artistBreakdown[stat.artist][hourIndex].count += stat.count;
+      memberBreakdown[stat.member]![hourIndex]!.count += stat.count;
+      artistBreakdown[stat.artist]![hourIndex]!.count += stat.count;
     }
   }
 

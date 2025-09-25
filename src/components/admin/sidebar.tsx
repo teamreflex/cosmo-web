@@ -10,7 +10,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { env } from "@/env";
+import { env } from "@/lib/env/client";
 
 export const items = [
   {
@@ -35,9 +35,7 @@ export function AdminSidebar() {
     <Sidebar className="mt-14">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>
-            {env.NEXT_PUBLIC_APP_NAME} Admin
-          </SidebarGroupLabel>
+          <SidebarGroupLabel>{env.VITE_APP_NAME} Admin</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (

@@ -1,11 +1,11 @@
+import { asc, between, desc, eq, inArray } from "drizzle-orm";
+import { collections, objekts } from "../db/indexer/schema";
 import type {
   ValidArtist,
   ValidOnlineType,
   ValidSort,
 } from "@/lib/universal/cosmo/common";
-import { asc, between, desc, eq, inArray } from "drizzle-orm";
 import type { PgSelect } from "drizzle-orm/pg-core";
-import { collections, objekts } from "../db/indexer/schema";
 
 /**
  * Sorting for user collections.
@@ -55,7 +55,7 @@ export function withClass(classes: string[]) {
     case 0:
       return [];
     case 1:
-      return [eq(collections.class, classes[0])];
+      return [eq(collections.class, classes[0]!)];
     default:
       return [inArray(collections.class, classes)];
   }
@@ -69,7 +69,7 @@ export function withSeason(seasons: string[]) {
     case 0:
       return [];
     case 1:
-      return [eq(collections.season, seasons[0])];
+      return [eq(collections.season, seasons[0]!)];
     default:
       return [inArray(collections.season, seasons)];
   }
@@ -83,7 +83,7 @@ export function withOnlineType(onlineTypes: ValidOnlineType[]) {
     case 0:
       return [];
     case 1:
-      return [eq(collections.onOffline, onlineTypes[0])];
+      return [eq(collections.onOffline, onlineTypes[0]!)];
     default:
       return [inArray(collections.onOffline, onlineTypes)];
   }

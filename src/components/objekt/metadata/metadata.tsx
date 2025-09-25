@@ -106,7 +106,8 @@ export default function Metadata(props: Props) {
                 <p>Sourced by:</p>
                 <Link
                   className="underline"
-                  to={`/@${data.metadata.profile.username}`}
+                  to="/@$username"
+                  params={{ username: data.metadata.profile.username }}
                 >
                   {data.metadata.profile.username}
                 </Link>

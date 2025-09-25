@@ -76,7 +76,7 @@ export namespace Objekt {
    */
   export function fromLegacy(objekt: CosmoObjekt): Objekt.Objekt {
     const collection = {
-      artist: objekt.artists[0],
+      artist: objekt.artists[0]!,
       member: objekt.member,
       season: objekt.season,
       class: objekt.class,
@@ -233,14 +233,14 @@ function deriveExtras(
       return slug;
     },
     get artistName() {
-      return artistMap[objekt.artist.toLowerCase()];
+      return artistMap[objekt.artist.toLowerCase()] ?? "";
     },
     get onOffline() {
       const suffix = objekt.collectionNo.at(-1);
       if (!suffix) {
         throw new Error("Invalid collectionNo");
       }
-      return onOfflineMap[suffix];
+      return onOfflineMap[suffix] ?? "online";
     },
     ...colorFixes[slug],
   };

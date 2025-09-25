@@ -1,11 +1,11 @@
+import ProgressChart from "./chart.client";
+import type { Stat } from "@/lib/universal/progress";
 import {
   ExpandableCard,
   ExpandableCardContent,
   ExpandableCardHeader,
   ExpandableCardTitle,
 } from "@/components/ui/expandable-card";
-import ProgressChart from "./chart.client";
-import type { Stat } from "@/lib/universal/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type Props = {

@@ -1,26 +1,27 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Clipboard, HardDriveUpload, Loader2, Plus, Trash } from "lucide-react";
 import { useState } from "react";
-import {
-  metadataInputSchema,
-  type MetadataRow,
-} from "@/lib/universal/schema/admin";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { useMutation } from "@tanstack/react-query";
 import { saveMetadata } from "./actions";
-import { useAction } from "next-safe-action/hooks";
+import type { MetadataRow } from "@/lib/universal/schema/admin";
+import { metadataInputSchema } from "@/lib/universal/schema/admin";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export default function InsertMetadata() {
   const [rows, setRows] = useState<MetadataRow[]>([
     { collectionId: "", description: "" },
   ]);
-  const { execute, isPending } = useAction(saveMetadata, {
-    onSuccess: ({ data }) => {
+  const mutationFn = useServerFn(saveMetadata);
+  const mutation = useMutation({
+    mutationFn,
+    onSuccess: (data) => {
       toast.success(`${data} objekt metadata rows updated`);
       setRows([]);
     },
-    onError: (error) => {
-      toast.error(error.error.serverError ?? "An unknown error occurred");
+    onError: () => {
+      toast.error("An unknown error occurred");
     },
   });
 
@@ -83,10 +84,10 @@ export default function InsertMetadata() {
         <Button
           variant="cosmo"
           size="xs"
-          onClick={() => execute({ rows })}
-          disabled={isPending || !hasRows}
+          onClick={() => mutation.mutate({ data: { rows } })}
+          disabled={mutation.isPending || !hasRows}
         >
-          {isPending ? (
+          {mutation.isPending ? (
             <Loader2 className="size-4 animate-spin" />
           ) : (
             <HardDriveUpload className="size-4" />

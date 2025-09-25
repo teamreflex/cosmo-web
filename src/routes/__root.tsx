@@ -9,7 +9,7 @@ import { Toaster } from "sonner";
 import React from "react";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
-import { FileQuestion } from "lucide-react";
+import { FileQuestion, RefreshCcw } from "lucide-react";
 import appCss from "../styles/tailwind.css?url";
 import type { QueryClient } from "@tanstack/react-query";
 import TanStackQueryDevtools from "@/components/devtools";
@@ -18,6 +18,7 @@ import TailwindIndicator from "@/components/tailwind-indicator";
 import { env } from "@/lib/env/client";
 import { currentAccountQuery, filterDataQuery } from "@/queries";
 import { systemStatusQuery } from "@/lib/server/system";
+import { Button } from "@/components/ui/button";
 
 interface RouterContext {
   queryClient: QueryClient;
@@ -77,6 +78,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   }),
   shellComponent: RootDocument,
   notFoundComponent: NotFoundComponent,
+  errorComponent: ErrorComponent,
   loader({ context }) {
     context.queryClient.prefetchQuery(filterDataQuery);
     context.queryClient.prefetchQuery(currentAccountQuery);
@@ -134,5 +136,21 @@ function NotFoundComponent() {
       <FileQuestion className="w-24 h-24" />
       <p className="font-semibold text-sm text-center">Page not found</p>
     </div>
+  );
+}
+
+function ErrorComponent() {
+  return (
+    <main className="flex flex-col gap-1.5 items-center justify-center h-dvh w-full">
+      <h2 className="font-semibold text-lg">Something went wrong!</h2>
+      <p className="text-sm">
+        This means COSMO is under maintenance, experiencing heavy traffic, or a
+        bug in {env.VITE_APP_NAME} needs to be fixed.
+      </p>
+      <Button variant="outline" onClick={() => window.location.reload()}>
+        <RefreshCcw className="mr-2" />
+        <span>Reload</span>
+      </Button>
+    </main>
   );
 }

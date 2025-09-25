@@ -21,7 +21,7 @@ import ListRenderer from "@/components/lists/list-renderer";
 import { objektListFrontendSchema } from "@/lib/universal/parsers";
 import { objektListQuery } from "@/lib/universal/objekt-queries";
 
-export const Route = createFileRoute("/@$username/list/$slug")({
+export const Route = createFileRoute("/(profile)/@$username/list/$slug")({
   head: () => ({
     // TODO: fix loaderData access here
     meta: [seoTitle("Objekt List")],

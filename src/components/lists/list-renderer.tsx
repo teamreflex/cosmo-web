@@ -1,4 +1,3 @@
-import { ofetch } from "ofetch";
 import FiltersContainer from "../collection/filters-container";
 import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
 import { ObjektSidebar } from "../objekt/common";
@@ -8,13 +7,12 @@ import VirtualizedGrid from "../objekt/virtualized-grid";
 import LoaderRemote from "../objekt/loader-remote";
 import ObjektIndexFilters from "../collection/filter-contexts/objekt-index-filters";
 import ListOverlay from "./list-overlay";
-import type { ObjektResponseOptions } from "@/hooks/use-objekt-response";
 import type { ObjektList } from "@/lib/server/db/schema";
-import type { IndexedObjekt, ObjektResponse } from "@/lib/universal/objekts";
-import { baseUrl } from "@/lib/query-client";
-import { useFilters } from "@/hooks/use-filters";
-import { parsePage } from "@/lib/universal/objekts";
+import { objektOptions } from "@/hooks/use-objekt-response";
 import { useGridColumns } from "@/hooks/use-grid-columns";
+import { objektListQuery } from "@/lib/universal/objekt-queries";
+import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
+import { useArtists } from "@/hooks/use-artists";
 
 type Props = {
   objektList: ObjektList;
@@ -22,40 +20,24 @@ type Props = {
 };
 
 export default function ListRenderer(props: Props) {
-  const { searchParams } = useFilters();
+  const { filters } = useCosmoFilters();
+  const { selectedIds } = useArtists();
   const gridColumns = useGridColumns();
 
   /**
    * Query options
    */
-  const options = {
+  const options = objektOptions({
     filtering: "remote",
-    queryKey: ["objekt-list", props.objektList.id],
-    queryFunction: async ({ pageParam = 0 }: { pageParam?: number }) => {
-      const url = new URL(
-        `/api/objekt-list/entries/${props.objektList.id}`,
-        baseUrl()
-      );
-
-      return await ofetch(url.toString(), {
-        query: {
-          ...Object.fromEntries(searchParams.entries()),
-          page: pageParam,
-        },
-      }).then((res) => parsePage<ObjektResponse<IndexedObjekt>>(res));
-    },
-    getNextPageParam: (lastPage) => lastPage.nextStartAfter,
+    query: objektListQuery(props.objektList.id, filters, selectedIds),
     calculateTotal: (data) => {
-      const total = data.pages[0].total ?? 0;
+      const total = data.pages[0]?.total ?? 0;
       return (
         <p className="font-semibold">{total.toLocaleString("en")} total</p>
       );
     },
     getItems: (data) => data.pages.flatMap((page) => page.objekts),
-  } satisfies ObjektResponseOptions<
-    ObjektResponse<IndexedObjekt>,
-    IndexedObjekt
-  >;
+  });
 
   return (
     <div className="flex flex-col">

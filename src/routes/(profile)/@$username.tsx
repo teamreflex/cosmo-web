@@ -22,11 +22,12 @@ import { env } from "@/lib/env/client";
 import { currentAccountQuery, targetAccountQuery } from "@/queries";
 import ListDropdown from "@/components/lists/list-dropdown";
 
-export const Route = createFileRoute("/@$username/_layout")({
+export const Route = createFileRoute("/(profile)/@$username")({
   component: RouteComponent,
   pendingComponent: PendingComponent,
   notFoundComponent: NotFoundComponent,
   loader: async ({ context, params }) => {
+    console.log("layout");
     const [account, target] = await Promise.all([
       context.queryClient.ensureQueryData(currentAccountQuery),
       context.queryClient.ensureQueryData(targetAccountQuery(params.username)),
@@ -81,11 +82,11 @@ function RouteComponent() {
                   <ModhausBadge />
                 )}
                 {target.user?.showSocials === true &&
-                  target.user?.social.discord !== undefined && (
+                  target.user.social.discord !== undefined && (
                     <DiscordBadge handle={target.user.social.discord} />
                   )}
                 {target.user?.showSocials === true &&
-                  target.user?.social.twitter !== undefined && (
+                  target.user.social.twitter !== undefined && (
                     <TwitterBadge handle={target.user.social.twitter} />
                   )}
               </div>
