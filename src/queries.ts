@@ -1,6 +1,8 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeaders } from "@tanstack/react-start/server";
+import { notFound } from "@tanstack/react-router";
+import { z } from "zod";
 import {
   fetchUniqueClasses,
   fetchUniqueCollections,
@@ -9,10 +11,10 @@ import {
 import { remember } from "./lib/server/cache";
 import { db } from "./lib/server/db";
 import { auth, toPublicUser } from "./lib/server/auth";
-import { toPublicCosmo } from "./lib/server/cosmo-accounts";
+import { fetchFullAccount, toPublicCosmo } from "./lib/server/cosmo-accounts";
 import { fetchCookie } from "./lib/server/cookies";
 import type { PublicUser } from "./lib/universal/auth";
-import type { PublicCosmo } from "./lib/universal/cosmo-accounts";
+import type { FullAccount, PublicCosmo } from "./lib/universal/cosmo-accounts";
 import type { ObjektList } from "./lib/server/db/schema";
 import type { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import * as artists from "@/artists";
@@ -108,6 +110,30 @@ export const currentAccountQuery = queryOptions({
   staleTime: Infinity,
   refetchOnWindowFocus: false,
 });
+
+/**
+ * Fetch the target account.
+ */
+export const fetchTargetAccount = createServerFn({ method: "GET" })
+  .inputValidator((data) => z.object({ identifier: z.string() }).parse(data))
+  .handler(async ({ data }): Promise<FullAccount> => {
+    const account = await fetchFullAccount(data.identifier);
+    if (!account) {
+      throw notFound();
+    }
+    return account;
+  });
+
+/**
+ * Fetch the target account.
+ */
+export const targetAccountQuery = (identifier: string) =>
+  queryOptions({
+    queryKey: ["target-account", identifier],
+    queryFn: () => fetchTargetAccount({ data: { identifier } }),
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+  });
 
 /**
  * Fetch the artists.

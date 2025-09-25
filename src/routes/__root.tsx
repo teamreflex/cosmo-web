@@ -76,9 +76,9 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   }),
   shellComponent: RootDocument,
   loader({ context }) {
-    context.queryClient.ensureQueryData(filterDataQuery);
-    context.queryClient.ensureQueryData(currentAccountQuery);
-    context.queryClient.ensureQueryData(systemStatusQuery);
+    context.queryClient.prefetchQuery(filterDataQuery);
+    context.queryClient.prefetchQuery(currentAccountQuery);
+    context.queryClient.prefetchQuery(systemStatusQuery);
   },
 });
 

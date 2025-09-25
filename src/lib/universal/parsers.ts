@@ -43,6 +43,7 @@ export const objektIndexSearchSchema = cosmoSchema
     collectionNo: castToArray(z.string()).default([]),
     artists: z.string().array().default([]),
   })
+  .partial()
   .default({
     // cosmo defaults
     sort: "newest",

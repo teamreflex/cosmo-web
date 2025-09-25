@@ -1,5 +1,7 @@
-import { useId, useTransition } from "react";
+import { useId } from "react";
 import { Check, Loader2 } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -54,13 +56,12 @@ type ArtistItemProps = {
 };
 
 export function ArtistItem({ artist, isSelected }: ArtistItemProps) {
-  const [isPending, startTransition] = useTransition();
+  const mutation = useMutation({
+    mutationFn: useServerFn(setSelectedArtist),
+  });
 
   function handleSelect(artistId: string) {
-    // TODO: refactor
-    startTransition(async () => {
-      await setSelectedArtist(artistId);
-    });
+    mutation.mutate({ data: artistId });
   }
 
   return (
@@ -70,7 +71,7 @@ export function ArtistItem({ artist, isSelected }: ArtistItemProps) {
         e.preventDefault();
         handleSelect(artist.id);
       }}
-      disabled={isPending}
+      disabled={mutation.isPending}
       className="min-w-40"
     >
       <img
@@ -82,7 +83,7 @@ export function ArtistItem({ artist, isSelected }: ArtistItemProps) {
       <span className="grow">{artist.title}</span>
 
       <div className="flex items-center aspect-square justify-end">
-        {isPending ? (
+        {mutation.isPending ? (
           <Loader2 className="size-5 animate-spin" />
         ) : isSelected ? (
           <Check className="size-5" />

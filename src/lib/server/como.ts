@@ -1,4 +1,7 @@
 import { and, eq, inArray, sql } from "drizzle-orm";
+import { createServerFn } from "@tanstack/react-start";
+import z from "zod";
+import { queryOptions } from "@tanstack/react-query";
 import { addr } from "../utils";
 import { indexer } from "./db/indexer";
 import { collections, objekts } from "./db/indexer/schema";
@@ -9,31 +12,39 @@ import { fetchArtists } from "@/queries";
 /**
  * Fetch incoming transfers for Special & Premier objekts for a given address
  */
-export async function fetchObjektsWithComo(
-  address: string
-): Promise<ObjektWithCollection[]> {
-  return await indexer
-    .select({
-      contract: collections.contract,
-      mintedAt: objekts.mintedAt,
-      amount: sql<number>`
+export const fetchObjektsWithComo = createServerFn({ method: "GET" })
+  .inputValidator((data) => z.string().parse(data))
+  .handler(async ({ data }): Promise<ObjektWithCollection[]> => {
+    return await indexer
+      .select({
+        contract: collections.contract,
+        mintedAt: objekts.mintedAt,
+        amount: sql<number>`
         case 
           when ${collections.class} = 'Special' then 1
           when ${collections.class} = 'Premier' then 2
           else 0
         end
       `.mapWith(Number),
-    })
-    .from(objekts)
-    .where(eq(objekts.owner, address.toLowerCase()))
-    .innerJoin(
-      collections,
-      and(
-        eq(objekts.collectionId, collections.id),
-        inArray(collections.class, ["Special", "Premier"])
-      )
-    );
-}
+      })
+      .from(objekts)
+      .where(eq(objekts.owner, data.toLowerCase()))
+      .innerJoin(
+        collections,
+        and(
+          eq(objekts.collectionId, collections.id),
+          inArray(collections.class, ["Special", "Premier"])
+        )
+      );
+  });
+
+export const fetchObjektsWithComoQuery = (address: string) =>
+  queryOptions({
+    queryKey: ["como-calendar", address],
+    queryFn: () => fetchObjektsWithComo({ data: address }),
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+  });
 
 // const ERC20_DECIMALS = 18;
 

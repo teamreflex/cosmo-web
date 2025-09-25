@@ -1,4 +1,9 @@
 import { CloudDownload, Copy, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { useCopyToClipboard } from "usehooks-ts";
+import { useMutation } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import {
   Dialog,
   DialogContent,
@@ -14,14 +19,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { useState } from "react";
-import { toast } from "sonner";
-import { generateDiscordList } from "./actions";
 import { Button } from "../ui/button";
 import { ScrollArea } from "../ui/scroll-area";
-import { useCopyToClipboard } from "usehooks-ts";
+import { generateDiscordList } from "./actions";
 import type { ObjektList } from "@/lib/server/db/schema";
-import { useAction } from "next-safe-action/hooks";
 
 type Props = {
   open: boolean;
@@ -34,7 +35,14 @@ export default function DiscordFormatDialog({
   onOpenChange,
   objektLists,
 }: Props) {
-  const { execute, isPending, result } = useAction(generateDiscordList);
+  const mutationFn = useServerFn(generateDiscordList);
+  const mutation = useMutation({
+    mutationFn,
+    onSuccess: (data) => {
+      setResult(data);
+    },
+  });
+  const [result, setResult] = useState<string>();
   const [haveId, setHaveId] = useState<string>();
   const [wantId, setWantId] = useState<string>();
   const [_, copyToClipboard] = useCopyToClipboard();
@@ -47,14 +55,16 @@ export default function DiscordFormatDialog({
       return;
     }
 
-    execute({
-      haveId: haveId,
-      wantId: wantId,
+    mutation.mutate({
+      data: {
+        haveId,
+        wantId,
+      },
     });
   }
 
   function copy() {
-    copyToClipboard(result.data ?? "");
+    copyToClipboard(result ?? "");
     toast.success("Copied to clipboard!");
   }
 
@@ -91,9 +101,12 @@ export default function DiscordFormatDialog({
           </div>
 
           <div className="w-full flex justify-center gap-2">
-            <Button onClick={generate} disabled={disabled || isPending}>
+            <Button
+              onClick={generate}
+              disabled={disabled || mutation.isPending}
+            >
               <span>Generate</span>
-              {isPending ? (
+              {mutation.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <CloudDownload className="h-4 w-4" />
@@ -108,10 +121,10 @@ export default function DiscordFormatDialog({
             )}
           </div>
 
-          {result.data && (
+          {result !== undefined && (
             <ScrollArea className="max-h-60 rounded-lg border border-border">
               <pre className="whitespace-pre-wrap font-mono text-sm p-2">
-                {result.data}
+                {result}
               </pre>
             </ScrollArea>
           )}

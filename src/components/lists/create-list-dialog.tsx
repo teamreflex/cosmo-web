@@ -1,4 +1,9 @@
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { useForm, useFormState } from "react-hook-form";
+import { useMutation } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { Button } from "../ui/button";
 import {
   Dialog,
@@ -8,11 +13,6 @@ import {
   DialogTitle,
 } from "../ui/dialog";
 import { Input } from "../ui/input";
-import { createObjektList } from "./actions";
-import { track } from "@/lib/utils";
-import { toast } from "sonner";
-import { useHookFormAction } from "@next-safe-action/adapter-react-hook-form/hooks";
-import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { createObjektListSchema } from "../../lib/universal/schema/objekt-list";
 import {
   Form,
@@ -22,8 +22,9 @@ import {
   FormLabel,
   FormMessage,
 } from "../ui/form";
-import { useFormState } from "react-hook-form";
-import { useRouter } from "next/navigation";
+import { createObjektList } from "./actions";
+import type z from "zod";
+import { track } from "@/lib/utils";
 
 type Props = {
   open: boolean;
@@ -31,26 +32,26 @@ type Props = {
 };
 
 export default function CreateListDialog({ open, onOpenChange }: Props) {
-  const router = useRouter();
-  const { form, handleSubmitWithAction } = useHookFormAction(
-    createObjektList,
-    standardSchemaResolver(createObjektListSchema),
-    {
-      actionProps: {
-        onSuccess: () => {
-          router.refresh();
-          track("create-list");
-          toast.success("Objekt list created!");
-          onOpenChange(false);
-        },
-      },
-      formProps: {
-        defaultValues: {
-          name: "",
-        },
-      },
-    }
-  );
+  const mutation = useMutation({
+    mutationFn: useServerFn(createObjektList),
+    onSuccess: () => {
+      // TODO: insert into cache
+      track("create-list");
+      toast.success("Objekt list created!");
+      onOpenChange(false);
+    },
+  });
+
+  const form = useForm<z.infer<typeof createObjektListSchema>>({
+    resolver: standardSchemaResolver(createObjektListSchema),
+    defaultValues: {
+      name: "",
+    },
+  });
+
+  async function handleSubmit(data: z.infer<typeof createObjektListSchema>) {
+    await mutation.mutateAsync({ data });
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -63,7 +64,7 @@ export default function CreateListDialog({ open, onOpenChange }: Props) {
         </DialogHeader>
         <Form {...form}>
           <form
-            onSubmit={handleSubmitWithAction}
+            onSubmit={form.handleSubmit(handleSubmit)}
             className="w-full flex flex-col gap-2"
           >
             <FormField

@@ -1,13 +1,11 @@
-import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
 import { Loader2 } from "lucide-react";
-import type { z } from "zod";
 import { useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { useNavigate } from "@tanstack/react-router";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
 import {
   Form,
   FormControl,
@@ -16,6 +14,8 @@ import {
   FormLabel,
   FormMessage,
 } from "../ui/form";
+import type { z } from "zod";
+import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { resetPasswordSchema } from "@/lib/universal/schema/auth";
 
 type Props = {
@@ -23,7 +23,7 @@ type Props = {
 };
 
 export default function ResetPassword({ token }: Props) {
-  const router = useRouter();
+  const navigate = useNavigate();
   const mutation = useMutation({
     mutationFn: async (data: z.infer<typeof resetPasswordSchema>) => {
       const result = await authClient.resetPassword({
@@ -49,7 +49,7 @@ export default function ResetPassword({ token }: Props) {
     mutation.mutate(data, {
       onSuccess: () => {
         toast.success("Password reset successfully, please sign in again.");
-        router.push("/");
+        navigate({ to: "/" });
       },
       onError: (error) => {
         toast.error(error.message);

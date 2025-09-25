@@ -1,18 +1,20 @@
 import {
-  type ValidArtist,
-  validArtists,
-  type ValidOnlineType,
-  validOnlineTypes,
-  type ValidSort,
-  validSorts,
-} from "@/lib/universal/cosmo/common";
-import {
   createParser,
   parseAsArrayOf,
   parseAsString,
   parseAsStringEnum,
   useQueryStates,
 } from "nuqs";
+import type {
+  ValidArtist,
+  ValidOnlineType,
+  ValidSort,
+} from "@/lib/universal/cosmo/common";
+import {
+  validArtists,
+  validOnlineTypes,
+  validSorts,
+} from "@/lib/universal/cosmo/common";
 
 export function useCosmoFilters() {
   return useQueryStates({

@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
-import { returnValidationErrors } from "next-safe-action";
-import { redirect } from "next/navigation";
+import { createServerFn } from "@tanstack/react-start";
+import { redirect } from "@tanstack/react-router";
 import {
   addObjektToListSchema,
   createObjektListSchema,
@@ -16,8 +16,8 @@ import { fetchObjektList } from "@/lib/server/objekts/lists";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import { objektListEntries, objektLists } from "@/lib/server/db/schema";
-import { getArtistsWithMembers } from "@/data-fetching";
-import { ActionError, authActionClient } from "@/lib/server/middlewares";
+import { authenticatedMiddleware } from "@/lib/server/middlewares";
+import { fetchArtists } from "@/queries";
 
 function createSlug(name: string) {
   return name.trim().toLowerCase().replace(/ /g, "-");
@@ -26,32 +26,28 @@ function createSlug(name: string) {
 /**
  * Create a new objekt list.
  */
-export const createObjektList = authActionClient
-  .metadata({ actionName: "createObjektList" })
-  .inputSchema(createObjektListSchema)
-  .action(async ({ parsedInput, ctx }) => {
-    const slug = createSlug(parsedInput.name);
+export const createObjektList = createServerFn({ method: "POST" })
+  .inputValidator(createObjektListSchema)
+  .middleware([authenticatedMiddleware])
+  .handler(async ({ data, context }) => {
+    const slug = createSlug(data.name);
 
     // check if the slug has already been used
     const list = await fetchObjektList({
-      userId: ctx.session.session.userId,
+      userId: context.session.session.userId,
       slug,
     });
     if (list !== undefined) {
-      returnValidationErrors(createObjektListSchema, {
-        name: {
-          _errors: ["You already have a list with this name"],
-        },
-      });
+      throw new Error("You already have a list with this name");
     }
 
     // create the list
     const [result] = await db
       .insert(objektLists)
       .values({
-        name: parsedInput.name,
+        name: data.name,
         slug,
-        userId: ctx.session.session.userId,
+        userId: context.session.session.userId,
       })
       .returning();
 
@@ -61,92 +57,92 @@ export const createObjektList = authActionClient
 /**
  * Update an objekt list.
  */
-export const updateObjektList = authActionClient
-  .metadata({ actionName: "updateObjektList" })
-  .inputSchema(updateObjektListSchema)
-  .action(async ({ parsedInput, ctx }) => {
-    const slug = createSlug(parsedInput.name);
+export const updateObjektList = createServerFn({ method: "POST" })
+  .inputValidator(updateObjektListSchema)
+  .middleware([authenticatedMiddleware])
+  .handler(async ({ data, context }) => {
+    const slug = createSlug(data.name);
 
     // check if the slug has already been used
     const list = await db.query.objektLists.findFirst({
       where: {
         slug,
-        userId: ctx.session.session.userId,
+        userId: context.session.session.userId,
         id: {
-          NOT: parsedInput.id,
+          NOT: data.id,
         },
       },
     });
     if (list !== undefined) {
-      returnValidationErrors(createObjektListSchema, {
-        name: {
-          _errors: ["You already have a list with this name"],
-        },
-      });
+      throw new Error("You already have a list with this name");
     }
 
     // update list
     const [result] = await db
       .update(objektLists)
-      .set({ name: parsedInput.name, slug })
+      .set({ name: data.name, slug })
       .where(
         and(
-          eq(objektLists.id, parsedInput.id),
-          eq(objektLists.userId, ctx.session.session.userId)
+          eq(objektLists.id, data.id),
+          eq(objektLists.userId, context.session.session.userId)
         )
       )
       .returning();
 
+    if (!result) {
+      throw new Error("Failed to update list");
+    }
+
     // check if the user has a linked cosmo
     const cosmo = await db.query.cosmoAccounts.findFirst({
       where: {
-        userId: ctx.session.session.userId,
+        userId: context.session.session.userId,
       },
     });
 
     // redirect to their profile if they have a linked cosmo
     if (cosmo) {
-      redirect(`/@${cosmo.username}/list/${result.slug}`);
+      throw redirect({
+        to: `/@$username/list/$id`,
+        params: { username: cosmo.username, id: result.id },
+      });
     }
 
     // otherwise redirect to the separate list page
-    redirect(`/list/${result.id}`);
+    throw redirect({ to: `/list/$id`, params: { id: result.id } });
   });
 
 /**
  * Delete an objekt list.
  */
-export const deleteObjektList = authActionClient
-  .metadata({ actionName: "deleteObjektList" })
-  .inputSchema(deleteObjektListSchema)
-  .action(async ({ parsedInput, ctx }) => {
+export const deleteObjektList = createServerFn({ method: "POST" })
+  .inputValidator(deleteObjektListSchema)
+  .middleware([authenticatedMiddleware])
+  .handler(async ({ data, context }) => {
     await db
       .delete(objektLists)
       .where(
         and(
-          eq(objektLists.id, parsedInput.id),
-          eq(objektLists.userId, ctx.session.session.userId)
+          eq(objektLists.id, data.id),
+          eq(objektLists.userId, context.session.session.userId)
         )
       );
 
-    redirect("/");
+    throw redirect({ to: "/" });
   });
 
 /**
  * Add an objekt to a list
  */
-export const addObjektToList = authActionClient
-  .metadata({ actionName: "addObjektToList" })
-  .inputSchema(addObjektToListSchema)
-  .action(async ({ parsedInput, ctx }) => {
-    await assertUserOwnsList(
-      parsedInput.objektListId,
-      ctx.session.session.userId
-    );
+export const addObjektToList = createServerFn({ method: "POST" })
+  .inputValidator(addObjektToListSchema)
+  .middleware([authenticatedMiddleware])
+  .handler(async ({ data, context }) => {
+    await assertUserOwnsList(data.objektListId, context.session.session.userId);
 
     const result = await db.insert(objektListEntries).values({
-      objektListId: parsedInput.objektListId,
-      collectionId: parsedInput.collectionSlug,
+      objektListId: data.objektListId,
+      collectionId: data.collectionSlug,
     });
 
     return result.rowCount === 1;
@@ -155,21 +151,18 @@ export const addObjektToList = authActionClient
 /**
  * Remove an objekt from a list
  */
-export const removeObjektFromList = authActionClient
-  .metadata({ actionName: "removeObjektFromList" })
-  .inputSchema(removeObjektFromListSchema)
-  .action(async ({ parsedInput, ctx }) => {
-    await assertUserOwnsList(
-      parsedInput.objektListId,
-      ctx.session.session.userId
-    );
+export const removeObjektFromList = createServerFn({ method: "POST" })
+  .inputValidator(removeObjektFromListSchema)
+  .middleware([authenticatedMiddleware])
+  .handler(async ({ data, context }) => {
+    await assertUserOwnsList(data.objektListId, context.session.session.userId);
 
     const result = await db
       .delete(objektListEntries)
       .where(
         and(
-          eq(objektListEntries.objektListId, parsedInput.objektListId),
-          eq(objektListEntries.id, parsedInput.objektListEntryId)
+          eq(objektListEntries.objektListId, data.objektListId),
+          eq(objektListEntries.id, data.objektListEntryId)
         )
       );
 
@@ -179,28 +172,28 @@ export const removeObjektFromList = authActionClient
 /**
  * Generate a Discord have/want list.
  */
-export const generateDiscordList = authActionClient
-  .metadata({ actionName: "generateDiscordList" })
-  .inputSchema(generateDiscordListSchema)
-  .action(async ({ parsedInput, ctx }) => {
+export const generateDiscordList = createServerFn({ method: "POST" })
+  .inputValidator(generateDiscordListSchema)
+  .middleware([authenticatedMiddleware])
+  .handler(async ({ data, context }) => {
     // fetch lists and associated entries
     const lists = await db.query.objektLists.findMany({
       where: {
         id: {
-          in: [parsedInput.haveId, parsedInput.wantId],
+          in: [data.haveId, data.wantId],
         },
-        userId: ctx.session.session.userId,
+        userId: context.session.session.userId,
       },
       with: {
         entries: true,
       },
     });
 
-    const have = lists.find((l) => l.id === parsedInput.haveId);
-    const want = lists.find((l) => l.id === parsedInput.wantId);
+    const have = lists.find((l) => l.id === data.haveId);
+    const want = lists.find((l) => l.id === data.wantId);
 
     if (!have || !want) {
-      throw new ActionError("Please select both lists.");
+      throw new Error("Please select both lists.");
     }
 
     // fetch collections from the indexer
@@ -210,7 +203,7 @@ export const generateDiscordList = authActionClient
     ]);
 
     if (unique.size === 0) {
-      throw new ActionError("Please select lists that are not empty");
+      throw new Error("Please select lists that are not empty");
     }
 
     const collections = await indexer.query.collections.findMany({
@@ -229,19 +222,21 @@ export const generateDiscordList = authActionClient
     });
 
     // get artists for member ordering
-    const artists = getArtistsWithMembers();
+    const artists = await fetchArtists();
 
     // map into discord format
     const haveCollections = format(collections, have.entries, artists);
     const wantCollections = format(collections, want.entries, artists);
 
-    return [
+    const result = [
       "Have:",
       haveCollections.join("\n"),
       "",
       "Want:",
       wantCollections.join("\n"),
     ].join("\n");
+
+    return result;
   });
 
 type CollectionSubset = Pick<
@@ -264,8 +259,8 @@ function formatMemberCollections(collections: CollectionSubset[]): string {
         const match = c.season.match(/([A-Za-z]+)(\d+)/);
         if (!match) return `${c.season.at(0)}${c.collectionNo}`;
         const [, seasonText, seasonNum] = match;
-        const firstLetter = seasonText.at(0) || "";
-        const seasonPart = firstLetter.repeat(parseInt(seasonNum, 10));
+        const firstLetter = seasonText?.at(0) ?? "";
+        const seasonPart = firstLetter.repeat(parseInt(seasonNum ?? "0", 10));
         return `${seasonPart}${c.collectionNo}`;
       })
     ),
@@ -335,6 +330,6 @@ async function assertUserOwnsList(id: string, userId: string) {
   });
 
   if (!list) {
-    throw new ActionError("You do not have access to this list");
+    throw new Error("You do not have access to this list");
   }
 }

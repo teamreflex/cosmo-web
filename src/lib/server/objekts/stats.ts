@@ -1,8 +1,10 @@
 import { and, eq, gte, lt, sql } from "drizzle-orm";
+import { createServerFn } from "@tanstack/react-start";
 import { collections, objekts } from "../db/indexer/schema";
 import { indexer } from "../db/indexer";
 import { remember } from "../cache";
 import type { HourlyBreakdown, ObjektStats } from "@/lib/universal/stats";
+import { queryOptions } from "@tanstack/react-query";
 
 interface RawStats {
   timestamp: string;
@@ -156,10 +158,8 @@ function processRawStats(rawStats: RawStats[], referenceHours: string[]) {
  * Get the stats for the fixed 24-hour window.
  * Cached for 2 hours, but a cron job flushes the cache every hour.
  */
-export const fetchObjektStats = remember(
-  `objekt-stats`,
-  60 * 60 * 2,
-  async (): Promise<ObjektStats> => {
+export const fetchObjektStats = createServerFn({ method: "GET" }).handler(() =>
+  remember(`objekt-stats`, 60 * 60 * 2, async (): Promise<ObjektStats> => {
     const { start, end } = get24HourWindow();
     const hourlyTimestamps = timestamps();
 
@@ -173,5 +173,10 @@ export const fetchObjektStats = remember(
       premierCount,
       scannedCount,
     };
-  }
+  })
 );
+
+export const objektStatsQuery = queryOptions({
+  queryKey: ["objekt-stats"],
+  queryFn: fetchObjektStats,
+});

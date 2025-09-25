@@ -1,21 +1,25 @@
-import { getSelectedArtists } from "@/data-fetching";
+import { createServerFn } from "@tanstack/react-start";
+import z from "zod";
 import { putCookie } from "@/lib/server/cookies";
+import { fetchSelectedArtists } from "@/queries";
 
 /**
  * Set the selected artists in a cookie.
  */
-export async function setSelectedArtist(artist: string) {
-  const artists = await getSelectedArtists();
+export const setSelectedArtist = createServerFn({ method: "POST" })
+  .inputValidator((data) => z.string().parse(data))
+  .handler(async ({ data }) => {
+    const artists = await fetchSelectedArtists();
 
-  let selected = [...artists];
-  if (artists.includes(artist)) {
-    selected = artists.filter((a) => a !== artist);
-  } else {
-    selected.push(artist);
-  }
+    let selected = [...artists];
+    if (artists.includes(data)) {
+      selected = artists.filter((a) => a !== data);
+    } else {
+      selected.push(data);
+    }
 
-  putCookie({
-    key: "artists",
-    value: selected,
+    putCookie({
+      key: "artists",
+      value: selected,
+    });
   });
-}

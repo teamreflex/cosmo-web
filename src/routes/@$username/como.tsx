@@ -1,0 +1,143 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import CurrentMonth from "@/components/como/current-month";
+import { Error } from "@/components/error-boundary";
+import { seoTitle } from "@/lib/seo";
+import { artistsQuery, targetAccountQuery } from "@/queries";
+import { fetchObjektsWithComoQuery } from "@/lib/server/como";
+import ArtistIcon from "@/components/artist-icon";
+import ComoCalendar from "@/components/como/calendar";
+import Portal from "@/components/portal";
+import HelpDialog from "@/components/como/help-dialog";
+
+export const Route = createFileRoute("/@$username/como")({
+  head: () => ({
+    // TODO: fix loaderData access here
+    meta: [seoTitle(`COMO`)],
+  }),
+  component: RouteComponent,
+  pendingComponent: PendingComponent,
+  errorComponent: ErrorComponent,
+  loader: async ({ context, params }) => {
+    const [target, artists] = await Promise.all([
+      context.queryClient.ensureQueryData(targetAccountQuery(params.username)),
+      context.queryClient.ensureQueryData(artistsQuery),
+    ]);
+
+    await context.queryClient.ensureQueryData(
+      fetchObjektsWithComoQuery(target.cosmo.address)
+    );
+
+    return { target, artists };
+  },
+});
+
+function RouteComponent() {
+  const { target, artists } = Route.useLoaderData();
+  const { data } = useSuspenseQuery(
+    fetchObjektsWithComoQuery(target.cosmo.address)
+  );
+
+  const totals = artists.map((artist) => {
+    const total = data
+      .filter((t) => t.contract === artist.contracts.Objekt.toLowerCase())
+      .reduce((sum, objekt) => {
+        return sum + objekt.amount;
+      }, 0);
+
+    return { artist, total };
+  });
+
+  return (
+    <main className="flex flex-col gap-2">
+      <div className="flex items-center">
+        <div className="flex w-full gap-2 justify-between items-center">
+          <CurrentMonth />
+
+          <div className="flex items-center gap-4">
+            {totals.map((total) => (
+              <div className="flex items-center gap-1" key={total.artist.name}>
+                <ArtistIcon artist={total.artist.name} />
+                <span className="font-semibold">
+                  +{total.total.toLocaleString()}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <ComoCalendar artists={artists} transfers={data} />
+
+      <Portal to="#help">
+        <HelpDialog />
+      </Portal>
+    </main>
+  );
+}
+
+function PendingComponent() {
+  const cells = Array.from(
+    { length: getCellCount(new Date()) },
+    (_, i) => i + 1
+  );
+
+  return (
+    <main className="flex flex-col gap-2">
+      <CurrentMonth />
+
+      <div className="flex flex-col rounded-lg bg-secondary border border-secondary text-clip h-fit overflow-hidden">
+        {/* days of the week */}
+        <div className="grid grid-cols-7 gap-px border-b border-secondary">
+          <div className="flex items-center justify-center font-bold bg-background/80 py-2">
+            Mon
+          </div>
+          <div className="flex items-center justify-center font-bold bg-background/80 py-2">
+            Tue
+          </div>
+          <div className="flex items-center justify-center font-bold bg-background/80 py-2">
+            Wed
+          </div>
+          <div className="flex items-center justify-center font-bold bg-background/80 py-2">
+            Thu
+          </div>
+          <div className="flex items-center justify-center font-bold bg-background/80 py-2">
+            Fri
+          </div>
+          <div className="flex items-center justify-center font-bold bg-background/80 py-2">
+            Sat
+          </div>
+          <div className="flex items-center justify-center font-bold bg-background/80 py-2">
+            Sun
+          </div>
+        </div>
+
+        {/* days of the month */}
+        <div className="grid grid-cols-7 gap-px">
+          {cells.map((day) => (
+            <div
+              key={day}
+              className="relative flex items-center justify-center h-24 sm:h-20 bg-background/70 hover:bg-background/50 transition-colors animate-pulse"
+            />
+          ))}
+        </div>
+      </div>
+    </main>
+  );
+}
+
+function ErrorComponent() {
+  return <Error message="Could not load COMO calendar" />;
+}
+
+/**
+ * Get the number of cells needed for the current month.
+ */
+function getCellCount(now: Date) {
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const firstDay = new Date(year, month, 1).getDay();
+  const firstDayIndex = firstDay === 0 ? 6 : firstDay - 1;
+  const lastDate = new Date(year, month + 1, 0).getDate();
+  return Math.ceil((firstDayIndex + lastDate) / 7) * 7;
+}

@@ -1,9 +1,9 @@
-import { Card, CardContent } from "@/components/ui/card";
-import type { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
-import MemberChart from "./member-chart";
-import type { HourlyBreakdown } from "@/lib/universal/stats";
 import { useState } from "react";
+import MemberChart from "./member-chart";
 import MemberSelect from "./member-select";
+import type { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
+import type { HourlyBreakdown } from "@/lib/universal/stats";
+import { Card, CardContent } from "@/components/ui/card";
 
 type Props = {
   artists: CosmoArtistWithMembersBFF[];

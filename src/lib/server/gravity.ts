@@ -1,25 +1,35 @@
 import { desc } from "drizzle-orm";
+import { createServerFn } from "@tanstack/react-start";
+import { queryOptions } from "@tanstack/react-query";
+import { notFound } from "@tanstack/react-router";
+import { findPoll } from "../client/gravity/util";
 import { db } from "./db";
 import { gravities } from "./db/schema";
 import { fetchGravity, fetchPoll } from "./cosmo/gravity";
-import type { ValidArtist } from "../universal/cosmo/common";
 import { getProxiedToken } from "./handlers/withProxiedToken";
-import { findPoll } from "../client/gravity/util";
-import type { RevealedVote } from "../client/gravity/polygon/types";
 import { remember } from "./cache";
 import { indexer } from "./db/indexer";
+import type { RevealedVote } from "../client/gravity/polygon/types";
+import type { ValidArtist } from "../universal/cosmo/common";
 import type { GravityVote } from "../universal/gravity";
 
 /**
  * Fetch all gravities and group them by artist.
  */
-export async function fetchGravities() {
-  const data = await db
-    .select()
-    .from(gravities)
-    .orderBy(desc(gravities.startDate));
-  return Object.groupBy(data, (r) => r.artist);
-}
+export const fetchGravities = createServerFn({ method: "GET" }).handler(
+  async () => {
+    const data = await db
+      .select()
+      .from(gravities)
+      .orderBy(desc(gravities.startDate));
+    return Object.groupBy(data, (r) => r.artist);
+  }
+);
+
+export const gravitiesIndexQuery = queryOptions({
+  queryKey: ["gravities"],
+  queryFn: fetchGravities,
+});
 
 /**
  * Fetch historical data for a Polygon gravity.
@@ -36,15 +46,20 @@ export async function fetchPolygonGravity(artist: ValidArtist, id: number) {
       // 2. fetch gravity from cosmo
       const gravity = await fetchGravity(artist, id);
       if (!gravity) {
-        throw new GravityMissingError();
+        throw notFound();
       }
 
       // 3. fetch poll details
+      const gravityPoll = findPoll(gravity);
+      if (!gravityPoll) {
+        throw notFound();
+      }
+
       const poll = await fetchPoll(
         accessToken,
         artist,
         gravity.id,
-        findPoll(gravity).poll.id
+        gravityPoll.poll.id
       );
 
       // prior to gravity 11, they used the cosmo poll ID on-chain instead of a separate ID
@@ -84,8 +99,8 @@ export async function fetchPolygonGravity(artist: ValidArtist, id: number) {
 
       // 6. aggregate como by candidate
       const comoByCandidate = revealedVotes.reduce((acc, vote) => {
-        const id = vote.candidateId.toString();
-        acc[id] = (acc[id] ?? 0) + vote.comoAmount;
+        const candidateId = vote.candidateId.toString();
+        acc[candidateId] = (acc[candidateId] ?? 0) + vote.comoAmount;
         return acc;
       }, {} as Record<string, number>);
 
@@ -164,8 +179,3 @@ const ADDRESSES: Record<string, string> = {
   triples: "0xc3e5ad11ae2f00c740e74b81f134426a3331d950",
   artms: "0x8466e6e218f0fe438ac8f403f684451d20e59ee3",
 };
-
-class GravityError extends Error {}
-class GravityMissingError extends GravityError {
-  message = "Gravity not found";
-}
