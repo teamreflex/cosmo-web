@@ -1,5 +1,3 @@
-"use client";
-
 import { Card, CardContent } from "@/components/ui/card";
 import type { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import MemberChart from "./member-chart";

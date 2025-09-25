@@ -1,5 +1,3 @@
-"use client";
-
 import type { Stat } from "@/lib/universal/progress";
 import { useArtists } from "@/hooks/use-artists";
 import { useMemo } from "react";

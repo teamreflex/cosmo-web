@@ -1,5 +1,3 @@
-"use client";
-
 import { cn } from "@/lib/utils";
 import OverlayStatus from "../objekt/overlay/overlay-status";
 import RemoveFromList from "./remove-from-list";

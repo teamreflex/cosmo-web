@@ -1,3 +1,7 @@
+import { useState } from "react";
+import { ChevronDown } from "lucide-react";
+import type { PropsWithFilters } from "@/hooks/use-cosmo-filters";
+import type { ValidArtist } from "@/lib/universal/cosmo/common";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -7,13 +11,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useState } from "react";
-import { ChevronDown } from "lucide-react";
 import { cn, isEqual } from "@/lib/utils";
-import type { PropsWithFilters } from "@/hooks/use-cosmo-filters";
-import Image from "next/image";
 import { useFilterData } from "@/hooks/use-filter-data";
-import type { ValidArtist } from "@/lib/universal/cosmo/common";
 
 export default function ClassFilter({ filters, setFilters }: PropsWithFilters) {
   const { classes } = useFilterData();
@@ -60,12 +59,10 @@ export default function ClassFilter({ filters, setFilters }: PropsWithFilters) {
         {classes.map(({ artist, classes }) => (
           <DropdownMenuGroup key={artist.id}>
             <DropdownMenuLabel className="text-xs flex items-center gap-2">
-              <Image
-                className="rounded-full aspect-square"
+              <img
+                className="rounded-full aspect-square size-4"
                 src={artist.logoImageUrl}
                 alt={artist.title}
-                width={16}
-                height={16}
               />
               {artist.title}
             </DropdownMenuLabel>

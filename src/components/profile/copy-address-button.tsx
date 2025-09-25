@@ -1,5 +1,3 @@
-"use client";
-
 import { useCopyToClipboard } from "usehooks-ts";
 import { toast } from "sonner";
 import { Copy } from "lucide-react";

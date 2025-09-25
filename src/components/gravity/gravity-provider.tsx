@@ -1,5 +1,3 @@
-"use client";
-
 import { wagmiConfig } from "@/lib/client/gravity/config";
 import { WagmiProvider } from "wagmi";
 

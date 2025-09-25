@@ -1,5 +1,3 @@
-"use client";
-
 import type { Stat } from "@/lib/universal/progress";
 import { randomColor } from "@/lib/utils";
 import dynamic from "next/dynamic";

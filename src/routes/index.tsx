@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQueries } from "@tanstack/react-query";
-import { zodValidator } from "@tanstack/zod-adapter";
 import { Error } from "@/components/error-boundary";
 import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -26,7 +25,7 @@ export const Route = createFileRoute("/")({
   component: Home,
   errorComponent: HomeError,
   pendingComponent: HomePending,
-  validateSearch: zodValidator(objektIndexSearchSchema),
+  validateSearch: objektIndexSearchSchema,
   loaderDeps: ({ search }) => ({ searchParams: search }),
   loader: async ({ context, deps }) => {
     // prefetch queries

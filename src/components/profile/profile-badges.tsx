@@ -1,18 +1,15 @@
 import {
+  IconBrandDiscordFilled,
+  IconBrandTwitterFilled,
+} from "@tabler/icons-react";
+import { Link } from "@tanstack/react-router";
+import { Check } from "lucide-react";
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import CosmoLogo from "@/assets/cosmo.webp";
-import ModhausLogo from "@/assets/modhaus.png";
-import Image from "next/image";
-import {
-  IconBrandDiscordFilled,
-  IconBrandTwitterFilled,
-} from "@tabler/icons-react";
-import Link from "next/link";
-import { Check } from "lucide-react";
 
 /**
  * User has verified their COSMO account
@@ -22,12 +19,10 @@ export function CosmoVerifiedBadge() {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger>
-          <Image
-            className="rounded shrink-0 invert dark:invert-0"
-            src={CosmoLogo.src}
+          <img
+            className="rounded shrink-0 size-5 invert dark:invert-0"
+            src="/cosmo.webp"
             alt="COSMO"
-            width={20}
-            height={20}
           />
         </TooltipTrigger>
         <TooltipContent side="bottom" align="start">
@@ -49,12 +44,10 @@ export function ModhausBadge() {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger>
-          <Image
-            className="invert dark:invert-0"
-            src={ModhausLogo.src}
+          <img
+            className="size-5 invert dark:invert-0"
+            src="/modhaus.png"
             alt="Modhaus"
-            width={20}
-            height={20}
           />
         </TooltipTrigger>
         <TooltipContent side="bottom" align="start">
@@ -96,7 +89,7 @@ export function TwitterBadge(props: { handle: string }) {
       <Tooltip>
         <TooltipTrigger asChild>
           <Link
-            href={href}
+            to={href}
             className="bg-twitter text-white rounded size-5 flex items-center justify-center"
           >
             <IconBrandTwitterFilled className="w-4" />

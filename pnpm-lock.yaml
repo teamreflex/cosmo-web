@@ -13,8 +13,8 @@ importers:
   .:
     dependencies:
       '@aws-sdk/client-ses':
-        specifier: ^3.895.0
-        version: 3.895.0
+        specifier: ^3.896.0
+        version: 3.896.0
       '@hookform/resolvers':
         specifier: ^5.2.2
         version: 5.2.2(react-hook-form@7.63.0(react@19.1.1))
@@ -22,8 +22,8 @@ importers:
         specifier: ^1.0.1
         version: 1.0.1
       '@sentry/tanstackstart-react':
-        specifier: ^10.14.0
-        version: 10.14.0(react@19.1.1)
+        specifier: ^10.15.0
+        version: 10.15.0(react@19.1.1)
       '@t3-oss/env-core':
         specifier: ^0.13.8
         version: 0.13.8(arktype@2.1.20)(typescript@5.9.2)(zod@4.1.11)
@@ -37,26 +37,23 @@ importers:
         specifier: ^5.90.2
         version: 5.90.2(react@19.1.1)
       '@tanstack/react-router':
-        specifier: ^1.132.2
-        version: 1.132.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        specifier: ^1.132.6
+        version: 1.132.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@tanstack/react-router-devtools':
-        specifier: ^1.132.2
-        version: 1.132.2(@tanstack/react-router@1.132.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@tanstack/router-core@1.132.2)(@types/node@22.17.2)(csstype@3.1.3)(jiti@2.5.1)(lightningcss@1.30.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(solid-js@1.9.9)(terser@5.44.0)(tiny-invariant@1.3.3)(tsx@4.20.5)
+        specifier: ^1.132.6
+        version: 1.132.6(@tanstack/react-router@1.132.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@tanstack/router-core@1.132.6)(@types/node@22.17.2)(csstype@3.1.3)(jiti@2.5.1)(lightningcss@1.30.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(solid-js@1.9.9)(terser@5.44.0)(tiny-invariant@1.3.3)(tsx@4.20.5)
       '@tanstack/react-router-ssr-query':
-        specifier: ^1.132.2
-        version: 1.132.2(@tanstack/query-core@5.90.2)(@tanstack/react-query@5.90.2(react@19.1.1))(@tanstack/react-router@1.132.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@tanstack/router-core@1.132.2)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        specifier: ^1.132.6
+        version: 1.132.6(@tanstack/query-core@5.90.2)(@tanstack/react-query@5.90.2(react@19.1.1))(@tanstack/react-router@1.132.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@tanstack/router-core@1.132.6)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@tanstack/react-start':
-        specifier: ^1.132.2
-        version: 1.132.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(vite@7.1.7(@types/node@22.17.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.5))
+        specifier: ^1.132.6
+        version: 1.132.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(vite@7.1.7(@types/node@22.17.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.5))
       '@tanstack/react-virtual':
         specifier: ^3.13.12
         version: 3.13.12(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@tanstack/router-plugin':
-        specifier: ^1.132.2
-        version: 1.132.2(@tanstack/react-router@1.132.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(vite@7.1.7(@types/node@22.17.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.5))
-      '@tanstack/zod-adapter':
-        specifier: ^1.132.2
-        version: 1.132.2(@tanstack/react-router@1.132.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(zod@4.1.11)
+        specifier: ^1.132.6
+        version: 1.132.6(@tanstack/react-router@1.132.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(vite@7.1.7(@types/node@22.17.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.5))
       '@upstash/ratelimit':
         specifier: ^2.0.6
         version: 2.0.6(@upstash/redis@1.35.4)
@@ -65,7 +62,7 @@ importers:
         version: 1.35.4
       '@vercel/functions':
         specifier: ^3.1.0
-        version: 3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0)
+        version: 3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0)
       babel-plugin-react-compiler:
         specifier: 19.1.0-rc.3
         version: 19.1.0-rc.3
@@ -87,9 +84,6 @@ importers:
       drizzle-orm:
         specifier: 1.0.0-beta.1-578e9fd
         version: 1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)
-      import-in-the-middle:
-        specifier: ^1.14.2
-        version: 1.14.2
       input-otp:
         specifier: ^1.4.2
         version: 1.4.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -100,8 +94,8 @@ importers:
         specifier: ^0.544.0
         version: 0.544.0(react@19.1.1)
       motion:
-        specifier: ^12.23.20
-        version: 12.23.20(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        specifier: ^12.23.21
+        version: 12.23.21(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -132,9 +126,6 @@ importers:
       recharts:
         specifier: ^2.15.4
         version: 2.15.4(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
-      require-in-the-middle:
-        specifier: ^7.5.2
-        version: 7.5.2
       sonner:
         specifier: ^2.0.7
         version: 2.0.7(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -157,8 +148,8 @@ importers:
         specifier: ^2.37.8
         version: 2.37.8(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
       wagmi:
-        specifier: ^2.17.2
-        version: 2.17.2(@tanstack/query-core@5.90.2)(@tanstack/react-query@5.90.2(react@19.1.1))(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(immer@10.1.1)(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(viem@2.37.8(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11))(zod@4.1.11)
+        specifier: ^2.17.4
+        version: 2.17.4(@tanstack/query-core@5.90.2)(@tanstack/react-query@5.90.2(react@19.1.1))(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(immer@10.1.1)(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(viem@2.37.8(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11))(zod@4.1.11)
       zod:
         specifier: ^4.1.11
         version: 4.1.11
@@ -276,44 +267,44 @@ packages:
   '@aws-crypto/util@5.2.0':
     resolution: {integrity: sha512-4RkU9EsI6ZpBve5fseQlGNUWKMa1RLPQ1dnjnQoe07ldfIzcsGb5hC5W0Dm7u423KWzawlrpbjXBrXCEv9zazQ==}
 
-  '@aws-sdk/client-ses@3.895.0':
-    resolution: {integrity: sha512-30rxTv8l+z7CCwUH14mr6A+0L1OQvRO3dle+9MfN8kLmgUWRuk1ahSxrwJlrwBxAqroyKhVXk1Px7JQFqYIQnA==}
+  '@aws-sdk/client-ses@3.896.0':
+    resolution: {integrity: sha512-L5C1ZLdTnAAZJqngRxt6RB6boHnx1Jp1U/awmLsBcnW3tEax5iCLtaNkDRZ6XrccYktVcy2lIUXnFJ7G7WunoQ==}
     engines: {node: '>=18.0.0'}
 
-  '@aws-sdk/client-sso@3.895.0':
-    resolution: {integrity: sha512-AQHk6iJrwce/NwZa5/Njy0ZGoHdxWCajkgufhXk53L0kRiC3vUPPWEV1m1F3etQWhaUsatcO2xtRuKvLpe4zgA==}
+  '@aws-sdk/client-sso@3.896.0':
+    resolution: {integrity: sha512-mpE3mrNili1dcvEvxaYjyoib8HlRXkb2bY5a3WeK++KObFY+HUujKtgQmiNSRX5YwQszm//fTrmGMmv9zpMcKg==}
     engines: {node: '>=18.0.0'}
 
-  '@aws-sdk/core@3.894.0':
-    resolution: {integrity: sha512-7zbO31NV2FaocmMtWOg/fuTk3PC2Ji2AC0Fi2KqrppEDIcwLlTTuT9w/rdu/93Pz+wyUhCxWnDc0tPbwtCLs+A==}
+  '@aws-sdk/core@3.896.0':
+    resolution: {integrity: sha512-uJaoyWKeGNyCyeI+cIJrD7LEB4iF/W8/x2ij7zg32OFpAAJx96N34/e+XSKp/xkJpO5FKiBOskKLnHeUsJsAPA==}
     engines: {node: '>=18.0.0'}
 
-  '@aws-sdk/credential-provider-env@3.894.0':
-    resolution: {integrity: sha512-2aiQJIRWOuROPPISKgzQnH/HqSfucdk5z5VMemVH3Mm2EYOrzBwmmiiFpmSMN3ST+sE8c7gusqycUchP+KfALQ==}
+  '@aws-sdk/credential-provider-env@3.896.0':
+    resolution: {integrity: sha512-Cnqhupdkp825ICySrz4QTI64Nq3AmUAscPW8dueanni0avYBDp7RBppX4H0+6icqN569B983XNfQ0YSImQhfhg==}
     engines: {node: '>=18.0.0'}
 
-  '@aws-sdk/credential-provider-http@3.894.0':
-    resolution: {integrity: sha512-Z5QQpqFRflszrT+lUq6+ORuu4jRDcpgCUSoTtlhczidMqfdOSckKmK3chZEfmUUJPSwoFQZ7EiVTsX3c886fBg==}
+  '@aws-sdk/credential-provider-http@3.896.0':
+    resolution: {integrity: sha512-CN0fTCKCUA1OTSx1c76o8XyJCy2WoI/av3J8r8mL6GmxTerhLRyzDy/MwxzPjTYPoL+GLEg6V4a9fRkWj1hBUA==}
     engines: {node: '>=18.0.0'}
 
-  '@aws-sdk/credential-provider-ini@3.895.0':
-    resolution: {integrity: sha512-uIh7N4IN/yIk+qYMAkVpVkjhB90SGKSfaXEVcnmxzBDG6e5304HKT0esqoCVZvtFfLKasjm2TOpalM5l3fi/dA==}
+  '@aws-sdk/credential-provider-ini@3.896.0':
+    resolution: {integrity: sha512-+rbYG98czzwZLTYHJasK+VBjnIeXk73mRpZXHvaa4kDNxBezdN2YsoGNpLlPSxPdbpq18LY3LRtkdFTaT6DIQA==}
     engines: {node: '>=18.0.0'}
 
-  '@aws-sdk/credential-provider-node@3.895.0':
-    resolution: {integrity: sha512-7xsBCmkBUz+2sNqNsDJ1uyQsBvwhNFzwFt8wX39WrFJTpTQh3uNQ5g8QH21BbkKqIFKCLdvgHgwt3Ub5RGVuPA==}
+  '@aws-sdk/credential-provider-node@3.896.0':
+    resolution: {integrity: sha512-J0Jm+56MNngk1PIyqoJFf5FC2fjA4CYXlqODqNRDtid7yk7HB9W3UTtvxofmii5KJOLcHGNPdGnHWKkUc+xYgw==}
     engines: {node: '>=18.0.0'}
 
-  '@aws-sdk/credential-provider-process@3.894.0':
-    resolution: {integrity: sha512-VU74GNsj+SsO+pl4d+JimlQ7+AcderZaC6bFndQssQdFZ5NRad8yFNz5Xbec8CPJr+z/VAwHib6431F5nYF46g==}
+  '@aws-sdk/credential-provider-process@3.896.0':
+    resolution: {integrity: sha512-UfWVMQPZy7dus40c4LWxh5vQ+I51z0q4vf09Eqas5848e9DrGRG46GYIuc/gy+4CqEypjbg/XNMjnZfGLHxVnQ==}
     engines: {node: '>=18.0.0'}
 
-  '@aws-sdk/credential-provider-sso@3.895.0':
-    resolution: {integrity: sha512-bZCcHUZGz+XlCaK0KEOHGHkMtlwIvnpxJvlZtSCVaBdX/IgouxaB42fxChflxSMRWF45ygdezfky4i17f6vC4w==}
+  '@aws-sdk/credential-provider-sso@3.896.0':
+    resolution: {integrity: sha512-77Te8WrVdLABKlv7QyetXP6aYEX1UORiahLA1PXQb/p66aFBw18Xc6JiN/6zJ4RqdyV1Xr9rwYBwGYua93ANIA==}
     engines: {node: '>=18.0.0'}
 
-  '@aws-sdk/credential-provider-web-identity@3.895.0':
-    resolution: {integrity: sha512-tKbXbOp2xrL02fxKvB7ko1E4Uvyy5TF9qi5pT2MVWNnfSsBlUM80aJ6tyUPKWXdUTdAlPrU3XcwgQl/DnnRa9A==}
+  '@aws-sdk/credential-provider-web-identity@3.896.0':
+    resolution: {integrity: sha512-gwMwZWumo+V0xJplO8j2HIb1TfPsF9fbcRGXS0CanEvjg4fF2Xs1pOQl2oCw3biPZpxHB0plNZjqSF2eneGg9g==}
     engines: {node: '>=18.0.0'}
 
   '@aws-sdk/middleware-host-header@3.893.0':
@@ -328,20 +319,20 @@ packages:
     resolution: {integrity: sha512-H7Zotd9zUHQAr/wr3bcWHULYhEeoQrF54artgsoUGIf/9emv6LzY89QUccKIxYd6oHKNTrTyXm9F0ZZrzXNxlg==}
     engines: {node: '>=18.0.0'}
 
-  '@aws-sdk/middleware-user-agent@3.895.0':
-    resolution: {integrity: sha512-JUqQW2RPp4I95wZ/Im9fTiaX3DF55oJgeoiNlLdHkQZPSNNS/pT1WMWMReSvJdcfSNU3xSUaLtI+h4mQjQUDbQ==}
+  '@aws-sdk/middleware-user-agent@3.896.0':
+    resolution: {integrity: sha512-so/3tZH34YIeqG/QJgn5ZinnmHRdXV1ehsj4wVUrezL/dVW86jfwIkQIwpw8roOC657UoUf91c9FDhCxs3J5aQ==}
     engines: {node: '>=18.0.0'}
 
-  '@aws-sdk/nested-clients@3.895.0':
-    resolution: {integrity: sha512-8w1ihfYgvds6kfal/qJXQQrHRsKYh2nujSyzWMo2TMKMze9WPZA93G4mRbRtKtbSuQ66mVWePH8Cksq35ABu2Q==}
+  '@aws-sdk/nested-clients@3.896.0':
+    resolution: {integrity: sha512-KaHALB6DIXScJL/ExmonADr3jtTV6dpOHoEeTRSskJ/aW+rhZo7kH8SLmrwOT/qX8d5tza17YyR/oRkIKY6Eaw==}
     engines: {node: '>=18.0.0'}
 
   '@aws-sdk/region-config-resolver@3.893.0':
     resolution: {integrity: sha512-/cJvh3Zsa+Of0Zbg7vl9wp/kZtdb40yk/2+XcroAMVPO9hPvmS9r/UOm6tO7FeX4TtkRFwWaQJiTZTgSdsPY+Q==}
     engines: {node: '>=18.0.0'}
 
-  '@aws-sdk/token-providers@3.895.0':
-    resolution: {integrity: sha512-vJqrEHFFGRZ3ok5T+jII00sa2DQ3HdVkTBIfM0DcrcPssqDV18VKdA767qiBdIEN/cygjdBg8Ri/cuq6ER9BeQ==}
+  '@aws-sdk/token-providers@3.896.0':
+    resolution: {integrity: sha512-WBoD+RY7tUfW9M+wGrZ2vdveR+ziZOjGHWFY3lcGnDvI8KE+fcSccEOTxgJBNBS5Z8B+WHKU2sZjb+Z7QqGwjw==}
     engines: {node: '>=18.0.0'}
 
   '@aws-sdk/types@3.893.0':
@@ -359,8 +350,8 @@ packages:
   '@aws-sdk/util-user-agent-browser@3.893.0':
     resolution: {integrity: sha512-PE9NtbDBW6Kgl1bG6A5fF3EPo168tnkj8TgMcT0sg4xYBWsBpq0bpJZRh+Jm5Bkwiw9IgTCLjEU7mR6xWaMB9w==}
 
-  '@aws-sdk/util-user-agent-node@3.895.0':
-    resolution: {integrity: sha512-lLRC7BAFOPtJk4cZC0Q0MZBMCGF109QpGnug3L3n/2TJW02Sinz9lzA0ykBpYXe9j60LjIYSENCg+F4DZE5vxg==}
+  '@aws-sdk/util-user-agent-node@3.896.0':
+    resolution: {integrity: sha512-jegizucAwoxyBddKl0kRGNEgRHcfGuMeyhP1Nf+wIUmHz/9CxobIajqcVk/KRNLdZY5mSn7YG2VtP3z0BcBb0w==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       aws-crt: '>=1.0.0'
@@ -1279,8 +1270,8 @@ packages:
     resolution: {integrity: sha512-fLgJnDOXFmuVlB38rUN5SmU7hAFQcCjrg3Vrxz67KTY7YHFnSNEKvX4avmEBdOI0yTCxZjwMCFEqsC8k2+Wd3g==}
     engines: {node: '>=16.0.0'}
 
-  '@metamask/utils@11.8.0':
-    resolution: {integrity: sha512-EJqiuvVBAjV1vd1kBhmVmRtGfadrBfY3ImcAMjl+8MSSByTB3VNwvlIBLQdp+TwdAomUdenJCx2BvOSQykm8Hg==}
+  '@metamask/utils@11.8.1':
+    resolution: {integrity: sha512-DIbsNUyqWLFgqJlZxi1OOCMYvI23GqFCvNJAtzv8/WXWzJfnJnvp1M24j7VvUe3URBi3S86UgQ7+7aWU9p/cnQ==}
     engines: {node: ^18.18 || ^20.14 || >=22}
 
   '@metamask/utils@5.0.2':
@@ -2415,6 +2406,9 @@ packages:
   '@rolldown/pluginutils@1.0.0-beta.35':
     resolution: {integrity: sha512-slYrCpoxJUqzFDDNlvrOYRazQUNRvWPjXA17dAOISY3rDMxX6k8K4cj2H+hEYMHF81HO3uNd5rHVigAWRM5dSg==}
 
+  '@rolldown/pluginutils@1.0.0-beta.40':
+    resolution: {integrity: sha512-s3GeJKSQOwBlzdUrj4ISjJj5SfSh+aqn0wjOar4Bx95iV1ETI7F6S/5hLcfAxZ9kXDcyrAkxPlqmd1ZITttf+w==}
+
   '@rollup/rollup-android-arm-eabi@4.52.2':
     resolution: {integrity: sha512-o3pcKzJgSGt4d74lSZ+OCnHwkKBeAbFDmbEm5gg70eA8VkyCuC/zV9TwBnmw6VjDlRdF4Pshfb+WE9E6XY1PoQ==}
     cpu: [arm]
@@ -2559,32 +2553,32 @@ packages:
   '@scure/bip39@1.6.0':
     resolution: {integrity: sha512-+lF0BbLiJNwVlev4eKelw1WWLaiKXw7sSl8T6FvBlWkdX+94aGJ4o8XjUdlyhTCjd8c+B3KT3JfS8P0bLRNU6A==}
 
-  '@sentry-internal/browser-utils@10.14.0':
-    resolution: {integrity: sha512-32kM7Fs9x6d2GGiE3YaaKq2+qWwSaV2h0XhaIdvs/Ewkh9bJq81xlgEor7gjmJ6UpfxjPpU8rGST6hI1I5lcVg==}
+  '@sentry-internal/browser-utils@10.15.0':
+    resolution: {integrity: sha512-hJxo6rj3cMqiYlZd6PC8o/i2FG6hRnZdHcJkfm1HXgWCRgdCPilKghL6WU+B2H5dLyRKJ17nWjDAVQPRdCxO9w==}
     engines: {node: '>=18'}
 
-  '@sentry-internal/feedback@10.14.0':
-    resolution: {integrity: sha512-Lj8VGq+VSdwfEu6/Oo7hhcLKQRaRmOs30CAvbcPFSYRKfoi/0xT+dsOm2/C7vgIM9tmXJJ3hMHjgTgnJ3PIZfw==}
+  '@sentry-internal/feedback@10.15.0':
+    resolution: {integrity: sha512-EP+NvdU9yfmepGzQwz0jnqhd0DBxHzrP16TsJIVXJe93QJ+gumdN3XQ0lvYtEC9zHuU08DghRLjfI1kLRfGzdQ==}
     engines: {node: '>=18'}
 
-  '@sentry-internal/replay-canvas@10.14.0':
-    resolution: {integrity: sha512-z0DrutMZtxnCf8ZUxYttdbaFeUlnG6CQuDPJ9DQkQVTE2BOiVegZTMMRkj0cUDmIiRQ42Agf1hPbxVmqh2AUuQ==}
+  '@sentry-internal/replay-canvas@10.15.0':
+    resolution: {integrity: sha512-SXgUWArk+haUJ24W6pIm9IiwmIk3WxeQyFUxFfMUetSRb06CVAoNjPb0YuzKIeuFYJb6hDPGQ9UWhShnQpTmkw==}
     engines: {node: '>=18'}
 
-  '@sentry-internal/replay@10.14.0':
-    resolution: {integrity: sha512-C/DYUVTTlIxTLdgVlrPbilk2fYw/EPw4SfQgLC7tZXx/X7+Hh/Yi4ESrTlaKBsEUPhK/b82vdbS04+J1dZRyxA==}
+  '@sentry-internal/replay@10.15.0':
+    resolution: {integrity: sha512-vHBAFVdDfa51oqPWyRCK4fOIFhFeE2mVlqBWrBb+S3vCNcmtpvqJUq6o4sjSYcQzdZQpMSp5/Lj8Y3a8x/ed7w==}
     engines: {node: '>=18'}
 
-  '@sentry/browser@10.14.0':
-    resolution: {integrity: sha512-bDtsrHX+wtyOK0J1CcZoSgSJm2U1ITHVceAQfnQeEwWNP9y9xPRsEZDHfE3DnVNl/jB8iA/IOl5I8p4cCQdtpQ==}
+  '@sentry/browser@10.15.0':
+    resolution: {integrity: sha512-YV42VgW7xdmY23u7+nQLNJXDVilNTP0d5WWkHDxeI/uD6AAvn3GyKjx1YMG/KCulxva3dPDPEUunzDm3al26Sw==}
     engines: {node: '>=18'}
 
-  '@sentry/core@10.14.0':
-    resolution: {integrity: sha512-gyJB7/mW0OteM+vwEsAWaPcLd3fTaKRAc4LZM1aXRbl7juPRmhgwFftjqGg7AMMGNDE0JMs1Fb2W4xSVxH1ItQ==}
+  '@sentry/core@10.15.0':
+    resolution: {integrity: sha512-J7WsQvb9G6nsVgWkTHwyX7wR2djtEACYCx19hAnRbSGIg+ysVG+7Ti3RL4bz9/VXfcxsz346cleKc7ljhynYlQ==}
     engines: {node: '>=18'}
 
-  '@sentry/node-core@10.14.0':
-    resolution: {integrity: sha512-IHL2gEWTb1YvlPduPi9bRLUM43ZpS+/ZbkKgjI/X8X/ck0LCpgu93Kq/Fzgk3Ae9DyB7p+dd/Tu+B89td5kTVw==}
+  '@sentry/node-core@10.15.0':
+    resolution: {integrity: sha512-X6QAHulgfkpONYrXNK2QXfW02ja5FS31sn5DWfCDO8ggHej/u2mrf5nwnUU8vilSwbInHmiMpkUswGEKYDEKTA==}
     engines: {node: '>=18'}
     peerDependencies:
       '@opentelemetry/api': ^1.9.0
@@ -2595,12 +2589,12 @@ packages:
       '@opentelemetry/sdk-trace-base': ^1.30.1 || ^2.1.0
       '@opentelemetry/semantic-conventions': ^1.37.0
 
-  '@sentry/node@10.14.0':
-    resolution: {integrity: sha512-2e4g9lPJ/DuJsS4IMcd7RZq8vhqTAnT30GNSY/Sd2Pv6t64Eb5suXtkrHpH6y14QPlp0egQmq5jRs6RpINZSAA==}
+  '@sentry/node@10.15.0':
+    resolution: {integrity: sha512-5V9BX55DEIscU/S5+AEIQuIMKKbSd+MVo1/x5UkOceBxfiA0KUmgQ0POIpUEZqGCS9rpQ5fEajByRXAQ7bjaWA==}
     engines: {node: '>=18'}
 
-  '@sentry/opentelemetry@10.14.0':
-    resolution: {integrity: sha512-DAVv6vFVeFclCtg8+6g90r2n2MmM6LZLEwfd8POgCL2MNd3cswC5CM1XFNOwG61stYtQ9PTFh/FQWHFv9fA+Pg==}
+  '@sentry/opentelemetry@10.15.0':
+    resolution: {integrity: sha512-j+uk3bfxGgsBejwpq78iRZ+aBOKR/fWcJi72MBTboTEK3B4LINO65PyJqwOhcZOJVVAPL6IK1+sWQp4RL24GTg==}
     engines: {node: '>=18'}
     peerDependencies:
       '@opentelemetry/api': ^1.9.0
@@ -2609,14 +2603,14 @@ packages:
       '@opentelemetry/sdk-trace-base': ^1.30.1 || ^2.1.0
       '@opentelemetry/semantic-conventions': ^1.37.0
 
-  '@sentry/react@10.14.0':
-    resolution: {integrity: sha512-kG2q/ICoDaCRJKbGGnyCOokSsHjxjA3TVRPZYOLuaP9rvuvrYGBUwXFUwSUtFV0A38o4F20HSPLMbLuu1oCH3Q==}
+  '@sentry/react@10.15.0':
+    resolution: {integrity: sha512-dyJTv0rJtHunGE0rZ3amQAgBaKR9YnbIJcg9Y1uZt+vPK/B19sqM9S8D7DUvlBfDk9iWfhBCK6gHLEUOckFrKA==}
     engines: {node: '>=18'}
     peerDependencies:
       react: ^16.14.0 || 17.x || 18.x || 19.x
 
-  '@sentry/tanstackstart-react@10.14.0':
-    resolution: {integrity: sha512-oD1yWc+XNJhIshKzYVpJSVR8s0G/nj3gHyYp8E0i1Eb3tO7t3W3LtovPWtGZJTYgGJ5EFDHm9EZ3t3aQ9G64mg==}
+  '@sentry/tanstackstart-react@10.15.0':
+    resolution: {integrity: sha512-KlJ0pDhKbRQUzuLwgsjBEadzHd7CNhcrBMUi/euTkvV4zC9fqMZs9TjyMlql4kRY6+zIEeAK9/qHlxPBafbdIw==}
     engines: {node: '>=18'}
 
   '@simplewebauthn/browser@13.1.2':
@@ -3005,16 +2999,16 @@ packages:
     peerDependencies:
       react: ^18 || ^19
 
-  '@tanstack/react-router-devtools@1.132.2':
-    resolution: {integrity: sha512-Vxltjzdc2BDKVGflESGcZIMAqfrCqlpzh6kEsrzt0xC5XkTcjJO9ZupWOuIN/3oMGcX7gqCpWiemaTKBOM5Djw==}
+  '@tanstack/react-router-devtools@1.132.6':
+    resolution: {integrity: sha512-NwcStEA5ePPGvuogDONuQX5oDL+Wl3NI7N5HiI9rqcOSY5kF85DfaMrTBADS8r1CCY7NMjRrjULEfgR8Z1CrxA==}
     engines: {node: '>=12'}
     peerDependencies:
-      '@tanstack/react-router': ^1.132.2
+      '@tanstack/react-router': ^1.132.6
       react: '>=18.0.0 || >=19.0.0'
       react-dom: '>=18.0.0 || >=19.0.0'
 
-  '@tanstack/react-router-ssr-query@1.132.2':
-    resolution: {integrity: sha512-HGBoGOsYX94hKoQsmWdS/yQLZY16JfHU+fEOjMQPHORTtgKOo+L6dq6frd+mpmHeVNK4rfybGDypk2o33VdafQ==}
+  '@tanstack/react-router-ssr-query@1.132.6':
+    resolution: {integrity: sha512-NoTxdXpsqXf0lfjBYDE+aNZRcjENyPf9bJnybGgYuRNBN3UROTMiiNLIipX2SUk5ksspVFCIn26UYqzUId29IA==}
     engines: {node: '>=12'}
     peerDependencies:
       '@tanstack/query-core': '>=5.66.0'
@@ -3023,29 +3017,29 @@ packages:
       react: '>=18.0.0 || >=19.0.0'
       react-dom: '>=18.0.0 || >=19.0.0'
 
-  '@tanstack/react-router@1.132.2':
-    resolution: {integrity: sha512-667txdisNZVLS8jZnu8HNe8fhQAvayMobUBAGsLjMN7YWOT9F9YwGA1tHugtm0PkfS6k4aevBcNpCKZbJsHc5w==}
+  '@tanstack/react-router@1.132.6':
+    resolution: {integrity: sha512-YfRHfEzOS2TtrP0+nQ98aUvqQBg6uNRZPzOT4X35lLOwmXJbK8dTzlZva5KhfT5wrkZfU5N8jSc0COB+ALwkLQ==}
     engines: {node: '>=12'}
     peerDependencies:
       react: '>=18.0.0 || >=19.0.0'
       react-dom: '>=18.0.0 || >=19.0.0'
 
-  '@tanstack/react-start-client@1.132.2':
-    resolution: {integrity: sha512-S6VEvP/QTqtmH3DAy4tHzzee+Xdsmy9z19+R+lDUDBGNcKTwDgQ04lIU65YzSBOdwalCvb54L79iTR8kSjvE6g==}
+  '@tanstack/react-start-client@1.132.6':
+    resolution: {integrity: sha512-kYZmGzK8mxEfHhZBbTWfCSa/sYq23uCNR4myMpU0nuQWwfkoeS+OC/do3T30AfdGEMPMFWRY+9jgBkXAPbPB0A==}
     engines: {node: '>=22.12.0'}
     peerDependencies:
       react: '>=18.0.0 || >=19.0.0'
       react-dom: '>=18.0.0 || >=19.0.0'
 
-  '@tanstack/react-start-server@1.132.2':
-    resolution: {integrity: sha512-l+9A5Ka9kqG3a6iljLIs+zkG+GOrlqvqHUcuck5LIpDFn6wYb3t/FmyUN2IR/H8OrcR8dNbjya5HQE1TGjBPTw==}
+  '@tanstack/react-start-server@1.132.6':
+    resolution: {integrity: sha512-JTUmRi5oBj/ulh8pevaBQNZ8NSixwI8WCB8Lz26kJvwsFAXH4/eCibEZ2mvEmUuwITcN391lpRUA77UfPfzqLA==}
     engines: {node: '>=22.12.0'}
     peerDependencies:
       react: '>=18.0.0 || >=19.0.0'
       react-dom: '>=18.0.0 || >=19.0.0'
 
-  '@tanstack/react-start@1.132.2':
-    resolution: {integrity: sha512-o4LejOKUyxVyCj3ZRvHjSs097QS5lztNNA5wbifApq75BEGKhjq+LqmCDylehG3Ugcu5ClRViqgg2ATpjet4Jw==}
+  '@tanstack/react-start@1.132.6':
+    resolution: {integrity: sha512-YL/vQ2A8Mi7EASoqTm2iUpSlrW0iotxUneVFUFqAY+EYYvd75T1q8KdeXPT9PcaH1ulDrA7MM13amUKbNdzJfg==}
     engines: {node: '>=22.12.0'}
     peerDependencies:
       react: '>=18.0.0 || >=19.0.0'
@@ -3064,15 +3058,15 @@ packages:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
-  '@tanstack/router-core@1.132.2':
-    resolution: {integrity: sha512-PDaEp1tmBirGaNDtrV6AS7awbO42GCegNTxMi0H1mwgWccDwp6RUS7nOF33jPzfBJXhDJ0xFBNdRI3ItakZgug==}
+  '@tanstack/router-core@1.132.6':
+    resolution: {integrity: sha512-K5DqCnCSaxRw1BN63aZaZCkTKsGTXkAikzlTBSMVeijLE+D5P1Q9+m7xfuhVkr1sa/0yNNeP5VBmw28AZhnoJA==}
     engines: {node: '>=12'}
 
-  '@tanstack/router-devtools-core@1.132.2':
-    resolution: {integrity: sha512-QdBv1Z1dxqnMn1RHvcL58cPQEW3yFmBW+gOK6mr4pzPTPzJpqVP/UA7Mg9wHJGUG50EywTIiWB/x3OrcwVR0Ww==}
+  '@tanstack/router-devtools-core@1.132.6':
+    resolution: {integrity: sha512-j1r97ox6cSMXX6Rh8I+ReFelGoRyrCE030/7auZpxO/hhVfQHcTeIhMwXh9/I54XIEx70SnG6UVEUKuP9AhT8g==}
     engines: {node: '>=12'}
     peerDependencies:
-      '@tanstack/router-core': ^1.132.2
+      '@tanstack/router-core': ^1.132.6
       csstype: ^3.0.10
       solid-js: '>=1.9.5'
       tiny-invariant: ^1.3.3
@@ -3080,16 +3074,16 @@ packages:
       csstype:
         optional: true
 
-  '@tanstack/router-generator@1.132.2':
-    resolution: {integrity: sha512-Y3wnh+aMJtNXr9v+IoeIlN3o/I82y6vpu00mKMIJt4YlgDbsdQXRqriJolvfFpMMjKqYxUo9NE2/KvKI9zUm5A==}
+  '@tanstack/router-generator@1.132.6':
+    resolution: {integrity: sha512-C09gIsljx72HpOzmjEZp+1YgAmD6DnOpr+UZcdIEgaLtc9hqCZ+JO2YJZuSxsMIRizjovCP+fmcKDSuVUgCwLA==}
     engines: {node: '>=12'}
 
-  '@tanstack/router-plugin@1.132.2':
-    resolution: {integrity: sha512-gizOuK733HnqW2UqjkYCK4fUuxvKtD8bWw6H2HXnLPbxoLfDXAiMJ1qD7vnSAg1Ovts19k0wGGAJtcdZu+3FJA==}
+  '@tanstack/router-plugin@1.132.6':
+    resolution: {integrity: sha512-PmcMLBY0Y3Fnjo17O/BQm8IrMxJgli6DTT/0+7420+KbYXL8D30BG4xURj0gzYR0Kh7vHO6DK/c6r9NBPa+0zQ==}
     engines: {node: '>=12'}
     peerDependencies:
       '@rsbuild/core': '>=1.0.2'
-      '@tanstack/react-router': ^1.132.2
+      '@tanstack/react-router': ^1.132.6
       vite: '>=5.0.0 || >=6.0.0 || >=7.0.0'
       vite-plugin-solid: ^2.11.8
       webpack: '>=5.92.0'
@@ -3105,8 +3099,8 @@ packages:
       webpack:
         optional: true
 
-  '@tanstack/router-ssr-query-core@1.132.2':
-    resolution: {integrity: sha512-mWPJAF3KCswA9pxHKvBBnI7j+6FnOPTmj4eodq8MIWWtrOv/P9+vaotUgZPz36rLTbzBhh+tZ37GbfkFqlcRxQ==}
+  '@tanstack/router-ssr-query-core@1.132.6':
+    resolution: {integrity: sha512-ZbkPI/37hyeBTmHF7x12Fo5awJcWnb+sG5H6sCVKxO2/kZIhdoHGYCpMK19xwE9gU/dLEePX/eMGWpgpxUw/xw==}
     engines: {node: '>=12'}
     peerDependencies:
       '@tanstack/query-core': '>=5.66.0'
@@ -3120,22 +3114,22 @@ packages:
     resolution: {integrity: sha512-0a5NVOfiWWdkHI+ZO63tdUF4n8Qksts76pxYd+PUf0+fx6ENsOjeAF9NJS8RAYfNnjtB/aiyAbElvOxcL756Hw==}
     engines: {node: '>=12'}
 
-  '@tanstack/start-client-core@1.132.2':
-    resolution: {integrity: sha512-QiD1GQmxGenPyN9cAthb407CoCwoP7Rbw73D8TwUfBjx1Z502PvGvvwVfDIK8Nsc3h4mORfb2x9VGw9oS3Y0Vg==}
+  '@tanstack/start-client-core@1.132.6':
+    resolution: {integrity: sha512-iguv/Hh8O8tG8+T1qQ5JlpsGZWZIGpjfLVLhMx9b848MC8Y2lFsBY/+zKSi2heQpHudqLhYT1m9Ab+AQxWMHbw==}
     engines: {node: '>=22.12.0'}
 
-  '@tanstack/start-plugin-core@1.132.2':
-    resolution: {integrity: sha512-p6HaD3SoHco+xlU4mV+J/UP39BYSZ/BJAaiEPtG3pE2bVNBamSOnFOEpN6EqFPfjF30OUFa3+Ggrw3yIY2S4Aw==}
+  '@tanstack/start-plugin-core@1.132.6':
+    resolution: {integrity: sha512-L6PDTrtO/pMznbi5CdgSb0Dgff9D6CLJ9TynyfCcbUMNBCX/CfZPataxeCrep13NCdhVtvMmxxeJ1pqyMrIZgw==}
     engines: {node: '>=22.12.0'}
     peerDependencies:
       vite: '>=7.0.0'
 
-  '@tanstack/start-server-core@1.132.2':
-    resolution: {integrity: sha512-eVO0RyJ8iuMkz5PF+qidrJ1IsFNt5hMb0Dx+oJfzhjA2ucuNoC/OfGP+QkRcMNlGGx3tCw2m1KzZzfhjoNKfvw==}
+  '@tanstack/start-server-core@1.132.6':
+    resolution: {integrity: sha512-STWCGivKmJBzw+cHYNXzwV/LCQSzCmRY2JkwhC+TSNp/yGsZtbjfPaNZB4xG9c4HSgvmVU2soo7W5fCafS4x7A==}
     engines: {node: '>=22.12.0'}
 
-  '@tanstack/start-storage-context@1.132.2':
-    resolution: {integrity: sha512-2dtjvcqeddLvb8Xjhs42fOMWeH2+EhGZoFXdLIYxNuso0NkNtumJ5+4mET2+Ta95Jtgf4kLUjSvZF2pmLm+wRQ==}
+  '@tanstack/start-storage-context@1.132.6':
+    resolution: {integrity: sha512-PR/jUh/ITnPwV+njlYOAEQrIXcE6e35VQZzGPM+3i0P72P/4TK8+weUgK0XR275uERBPxW1nkJj9iCItdUy9OA==}
     engines: {node: '>=22.12.0'}
 
   '@tanstack/store@0.7.7':
@@ -3147,13 +3141,6 @@ packages:
   '@tanstack/virtual-file-routes@1.132.0':
     resolution: {integrity: sha512-d3do4ih9IdLPBVY4Gb8x7Ho7z0oFDLpxoao7uNVkfWtYU7nc3B+rnnVejXIgprmI5gt1hNzyNDJFr8G/W926GA==}
     engines: {node: '>=12'}
-
-  '@tanstack/zod-adapter@1.132.2':
-    resolution: {integrity: sha512-uvbX9Vj21yHRmEcCNFKHDF2zfhPDGw4SOIYhU/LpHfQgreB8NT5KmmmB+063x+ngo4WV3dcaFmz12381QS7esg==}
-    engines: {node: '>=12'}
-    peerDependencies:
-      '@tanstack/react-router': '>=1.43.2'
-      zod: ^3.23.8
 
   '@tybys/wasm-util@0.10.1':
     resolution: {integrity: sha512-9tTaPJLSiejZKx+Bmog4uSubteqTvFrVrURwkmHixBo0G4seD0zUxp98E1DzUBJxLQ3NPwXrGKDiVjwx/DpPsg==}
@@ -3432,8 +3419,8 @@ packages:
     peerDependencies:
       vite: ^4.2.0 || ^5.0.0 || ^6.0.0 || ^7.0.0
 
-  '@wagmi/connectors@5.10.2':
-    resolution: {integrity: sha512-qyXO1poEeJtCIuJGDd5FlmqZ9JHXepDxKxoPAptqHampPLastWPnNZTAH616/ITmysRiNQ4AzeSUcbsNE46uyg==}
+  '@wagmi/connectors@5.11.1':
+    resolution: {integrity: sha512-2jbx6z8rk/srQdbnKF2viCc3ke02HSMQU5EZS90jWoJ1t4+Fn3+bhphgVeJ1LnVFWsuEBSuIcY63iic4emwGfg==}
     peerDependencies:
       '@wagmi/core': 2.21.1
       typescript: '>=5.0.4'
@@ -4500,8 +4487,8 @@ packages:
   forwarded-parse@2.1.2:
     resolution: {integrity: sha512-alTFZZQDKMporBH77856pXgzhEzaUVmLCDk+egLgIgHst3Tpndzz8MnKe+GzRJRfvVdn69HhpW7cmXzvtLvJAw==}
 
-  framer-motion@12.23.20:
-    resolution: {integrity: sha512-+GWIKV6Rb8XtZO3gQ1adkZI3Oq14zQdeZdgcy+smOIbXGnqzOcNz1luU27bCtBiUxTXsE9hCLLnbeRJrcbAuLQ==}
+  framer-motion@12.23.21:
+    resolution: {integrity: sha512-UWDtzzPdRA3UpSNGril5HjUtPF1Uo/BCt5VKG/YQ8tVpSkAZ22+q8o+hYO0C1uDAZuotQjcfzsTsDtQxD46E/Q==}
     peerDependencies:
       '@emotion/is-prop-valid': '*'
       react: ^18.0.0 || ^19.0.0
@@ -4627,6 +4614,10 @@ packages:
   hoist-non-react-statics@3.3.2:
     resolution: {integrity: sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw==}
 
+  hono@4.9.8:
+    resolution: {integrity: sha512-JW8Bb4RFWD9iOKxg5PbUarBYGM99IcxFl2FPBo2gSJO11jjUDqlP1Bmfyqt8Z/dGhIQ63PMA9LdcLefXyIasyg==}
+    engines: {node: '>=16.9.0'}
+
   htmlparser2@10.0.0:
     resolution: {integrity: sha512-TwAZM+zE5Tq3lrEHvOlvwgj1XLWQCtaaibSN11Q+gGBAS7Y1uZSWwXXRe4iF6OXnaq1riyQAPFOBtYc77Mxq0g==}
 
@@ -4658,8 +4649,8 @@ packages:
     resolution: {integrity: sha512-TR3KfrTZTYLPB6jUjfx6MF9WcWrHL9su5TObK4ZkYgBdWKPOFoSoQIdEuTuR82pmtxH2spWG9h6etwfr1pLBqQ==}
     engines: {node: '>=6'}
 
-  import-in-the-middle@1.14.2:
-    resolution: {integrity: sha512-5tCuY9BV8ujfOpwtAGgsTx9CGUapcFMEEyByLv1B+v2+6DhAcw+Zr0nhQT7uwaZ7DiourxFEscghOR8e1aPLQw==}
+  import-in-the-middle@1.14.3:
+    resolution: {integrity: sha512-ajmxBgfBxVO9GWzD79xktBvMk2kTrqsXPKV0jg5pcwwcFpuLNSHwcPPvp4cgCQshlWz2ivgu5JiuRgDh+2ixGQ==}
 
   imurmurhash@0.1.4:
     resolution: {integrity: sha512-JmXMZ6wuvDmLiHEml9ykzqO6lwFbof0GG4IkcGaENdCRDDmMVnny7s5HsIgHCbaq0w2MyPhDqkhTUgS2LU2PHA==}
@@ -5000,14 +4991,14 @@ packages:
   module-details-from-path@1.0.4:
     resolution: {integrity: sha512-EGWKgxALGMgzvxYF1UyGTy0HXX/2vHLkw6+NvDKW2jypWbHpjQuj4UMcqQWXHERJhVGKikolT06G3bcKe4fi7w==}
 
-  motion-dom@12.23.20:
-    resolution: {integrity: sha512-0eFXthY9L6F1trIu/9q99DkBfpAjrdqsw+pZQVEEl6IvS4QiF7Nz9HSbQ5HrXVdE0Xsm72ZDmmoGAivATxEJqg==}
+  motion-dom@12.23.21:
+    resolution: {integrity: sha512-5xDXx/AbhrfgsQmSE7YESMn4Dpo6x5/DTZ4Iyy4xqDvVHWvFVoV+V2Ri2S/ksx+D40wrZ7gPYiMWshkdoqNgNQ==}
 
   motion-utils@12.23.6:
     resolution: {integrity: sha512-eAWoPgr4eFEOFfg2WjIsMoqJTW6Z8MTUCgn/GZ3VRpClWBdnbjryiA3ZSNLyxCTmCQx4RmYX6jX1iWHbenUPNQ==}
 
-  motion@12.23.20:
-    resolution: {integrity: sha512-pji+O9EPr/Kxbd5S8Ewn2QJ0JGj/itl/nxZkYBI0jtkS5SBHt3ED6k1coBSS7NrxhG0oy273HvndL5arAQfH6g==}
+  motion@12.23.21:
+    resolution: {integrity: sha512-FzgbQNeZXHWXXEKmpfenYvF5wdc5i7lT/Kwr3xV4dmGVsU7Y30QcgCZsWHAlE/4McAWhNGbOAhgdiabXZ1EjnA==}
     peerDependencies:
       '@emotion/is-prop-valid': '*'
       react: ^18.0.0 || ^19.0.0
@@ -5137,6 +5128,14 @@ packages:
       typescript:
         optional: true
 
+  ox@0.9.7:
+    resolution: {integrity: sha512-KX9Lvv0Rd+SKZXcT6Y85cuYbkmrQbK8Bz26k+s3X4EiT5bSU/hTDNSK/ApBeorJeIaOZbxEmJD2hHW0q1vIDEA==}
+    peerDependencies:
+      typescript: '>=5.4.0'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
   p-limit@2.3.0:
     resolution: {integrity: sha512-//88mFWSJx8lxCzwdAABTJL2MyWB12+eIY7MDL2SqLmAkeKU9qxRvWuSyTjm3FUmpBEMuFfckAIqEaVGUDxb6w==}
     engines: {node: '>=6'}
@@ -5254,6 +5253,26 @@ packages:
   pony-cause@2.1.11:
     resolution: {integrity: sha512-M7LhCsdNbNgiLYiP4WjsfLUuFmCfnjdF6jKe2R9NKl4WFN+HZPGHJZ9lnLP7f9ZnKe3U9nuWD0szirmj+migUg==}
     engines: {node: '>=12.0.0'}
+
+  porto@0.2.19:
+    resolution: {integrity: sha512-q1vEJgdtlEOf6byWgD31GHiMwpfLuxFSfx9f7Sw4RGdvpQs2ANBGfnzzardADZegr87ZXsebSp+3vaaznEUzPQ==}
+    hasBin: true
+    peerDependencies:
+      '@tanstack/react-query': '>=5.59.0'
+      '@wagmi/core': '>=2.16.3'
+      react: '>=18'
+      typescript: '>=5.4.0'
+      viem: '>=2.37.0'
+      wagmi: '>=2.0.0'
+    peerDependenciesMeta:
+      '@tanstack/react-query':
+        optional: true
+      react:
+        optional: true
+      typescript:
+        optional: true
+      wagmi:
+        optional: true
 
   possible-typed-array-names@1.1.0:
     resolution: {integrity: sha512-/+5VFTchJDoVj3bhoqi6UeymcD00DAwb1nJwamzPvHEszJ4FpF6SNNbUbOS8yI56qHzdV8eK0qEfOSiodkTdxg==}
@@ -5724,8 +5743,8 @@ packages:
     resolution: {integrity: sha512-j2Zq4NyQYG5XMST4cbs02Ak8iJUdxRM0XI5QyxXuZOzKOINmWurp3smXu3y5wDcJrptwpSjgXHzIQxR0omXljQ==}
     engines: {node: '>=12.0.0'}
 
-  to-buffer@1.2.1:
-    resolution: {integrity: sha512-tB82LpAIWjhLYbqjx3X4zEeHN6M8CiuOEy2JY8SEQVdYRe3CCHOFaqrBW1doLDrfpWhplcW7BL+bO3/6S3pcDQ==}
+  to-buffer@1.2.2:
+    resolution: {integrity: sha512-db0E3UJjcFhpDhAF4tLo03oli3pwl3dbnzXOUIlRKrp+ldk/VUxzpWYZENsw2SZiuBjHAk7DfB0VU7NKdpb6sw==}
     engines: {node: '>= 0.4'}
 
   to-regex-range@5.0.1:
@@ -6048,8 +6067,8 @@ packages:
     peerDependencies:
       eslint: ^8.57.0 || ^9.0.0
 
-  wagmi@2.17.2:
-    resolution: {integrity: sha512-r5yf2Nwzs469aT066tsGAuRt38z4RpQ2YZ09Kaxhd8q0IhLvw0aWBBgzXXbPqcGNEAJHtHAkXzum3wkqoHLgmA==}
+  wagmi@2.17.4:
+    resolution: {integrity: sha512-AJpTQ5O7JFv2LDaRuMiCKxZEVBeDprh9oagA0dLSp/iAEsbd5VwmMy3rn4lCO3pl9umJ+afEkuRIq+5dx02jzg==}
     peerDependencies:
       '@tanstack/react-query': '>=5.0.0'
       react: '>=18'
@@ -6296,21 +6315,21 @@ snapshots:
       '@smithy/util-utf8': 2.3.0
       tslib: 2.8.1
 
-  '@aws-sdk/client-ses@3.895.0':
+  '@aws-sdk/client-ses@3.896.0':
     dependencies:
       '@aws-crypto/sha256-browser': 5.2.0
       '@aws-crypto/sha256-js': 5.2.0
-      '@aws-sdk/core': 3.894.0
-      '@aws-sdk/credential-provider-node': 3.895.0
+      '@aws-sdk/core': 3.896.0
+      '@aws-sdk/credential-provider-node': 3.896.0
       '@aws-sdk/middleware-host-header': 3.893.0
       '@aws-sdk/middleware-logger': 3.893.0
       '@aws-sdk/middleware-recursion-detection': 3.893.0
-      '@aws-sdk/middleware-user-agent': 3.895.0
+      '@aws-sdk/middleware-user-agent': 3.896.0
       '@aws-sdk/region-config-resolver': 3.893.0
       '@aws-sdk/types': 3.893.0
       '@aws-sdk/util-endpoints': 3.895.0
       '@aws-sdk/util-user-agent-browser': 3.893.0
-      '@aws-sdk/util-user-agent-node': 3.895.0
+      '@aws-sdk/util-user-agent-node': 3.896.0
       '@smithy/config-resolver': 4.2.2
       '@smithy/core': 3.12.0
       '@smithy/fetch-http-handler': 5.2.1
@@ -6341,20 +6360,20 @@ snapshots:
     transitivePeerDependencies:
       - aws-crt
 
-  '@aws-sdk/client-sso@3.895.0':
+  '@aws-sdk/client-sso@3.896.0':
     dependencies:
       '@aws-crypto/sha256-browser': 5.2.0
       '@aws-crypto/sha256-js': 5.2.0
-      '@aws-sdk/core': 3.894.0
+      '@aws-sdk/core': 3.896.0
       '@aws-sdk/middleware-host-header': 3.893.0
       '@aws-sdk/middleware-logger': 3.893.0
       '@aws-sdk/middleware-recursion-detection': 3.893.0
-      '@aws-sdk/middleware-user-agent': 3.895.0
+      '@aws-sdk/middleware-user-agent': 3.896.0
       '@aws-sdk/region-config-resolver': 3.893.0
       '@aws-sdk/types': 3.893.0
       '@aws-sdk/util-endpoints': 3.895.0
       '@aws-sdk/util-user-agent-browser': 3.893.0
-      '@aws-sdk/util-user-agent-node': 3.895.0
+      '@aws-sdk/util-user-agent-node': 3.896.0
       '@smithy/config-resolver': 4.2.2
       '@smithy/core': 3.12.0
       '@smithy/fetch-http-handler': 5.2.1
@@ -6384,7 +6403,7 @@ snapshots:
     transitivePeerDependencies:
       - aws-crt
 
-  '@aws-sdk/core@3.894.0':
+  '@aws-sdk/core@3.896.0':
     dependencies:
       '@aws-sdk/types': 3.893.0
       '@aws-sdk/xml-builder': 3.894.0
@@ -6396,22 +6415,21 @@ snapshots:
       '@smithy/smithy-client': 4.6.4
       '@smithy/types': 4.5.0
       '@smithy/util-base64': 4.1.0
-      '@smithy/util-body-length-browser': 4.1.0
       '@smithy/util-middleware': 4.1.1
       '@smithy/util-utf8': 4.1.0
       tslib: 2.8.1
 
-  '@aws-sdk/credential-provider-env@3.894.0':
+  '@aws-sdk/credential-provider-env@3.896.0':
     dependencies:
-      '@aws-sdk/core': 3.894.0
+      '@aws-sdk/core': 3.896.0
       '@aws-sdk/types': 3.893.0
       '@smithy/property-provider': 4.1.1
       '@smithy/types': 4.5.0
       tslib: 2.8.1
 
-  '@aws-sdk/credential-provider-http@3.894.0':
+  '@aws-sdk/credential-provider-http@3.896.0':
     dependencies:
-      '@aws-sdk/core': 3.894.0
+      '@aws-sdk/core': 3.896.0
       '@aws-sdk/types': 3.893.0
       '@smithy/fetch-http-handler': 5.2.1
       '@smithy/node-http-handler': 4.2.1
@@ -6422,15 +6440,15 @@ snapshots:
       '@smithy/util-stream': 4.3.2
       tslib: 2.8.1
 
-  '@aws-sdk/credential-provider-ini@3.895.0':
+  '@aws-sdk/credential-provider-ini@3.896.0':
     dependencies:
-      '@aws-sdk/core': 3.894.0
-      '@aws-sdk/credential-provider-env': 3.894.0
-      '@aws-sdk/credential-provider-http': 3.894.0
-      '@aws-sdk/credential-provider-process': 3.894.0
-      '@aws-sdk/credential-provider-sso': 3.895.0
-      '@aws-sdk/credential-provider-web-identity': 3.895.0
-      '@aws-sdk/nested-clients': 3.895.0
+      '@aws-sdk/core': 3.896.0
+      '@aws-sdk/credential-provider-env': 3.896.0
+      '@aws-sdk/credential-provider-http': 3.896.0
+      '@aws-sdk/credential-provider-process': 3.896.0
+      '@aws-sdk/credential-provider-sso': 3.896.0
+      '@aws-sdk/credential-provider-web-identity': 3.896.0
+      '@aws-sdk/nested-clients': 3.896.0
       '@aws-sdk/types': 3.893.0
       '@smithy/credential-provider-imds': 4.1.2
       '@smithy/property-provider': 4.1.1
@@ -6440,14 +6458,14 @@ snapshots:
     transitivePeerDependencies:
       - aws-crt
 
-  '@aws-sdk/credential-provider-node@3.895.0':
+  '@aws-sdk/credential-provider-node@3.896.0':
     dependencies:
-      '@aws-sdk/credential-provider-env': 3.894.0
-      '@aws-sdk/credential-provider-http': 3.894.0
-      '@aws-sdk/credential-provider-ini': 3.895.0
-      '@aws-sdk/credential-provider-process': 3.894.0
-      '@aws-sdk/credential-provider-sso': 3.895.0
-      '@aws-sdk/credential-provider-web-identity': 3.895.0
+      '@aws-sdk/credential-provider-env': 3.896.0
+      '@aws-sdk/credential-provider-http': 3.896.0
+      '@aws-sdk/credential-provider-ini': 3.896.0
+      '@aws-sdk/credential-provider-process': 3.896.0
+      '@aws-sdk/credential-provider-sso': 3.896.0
+      '@aws-sdk/credential-provider-web-identity': 3.896.0
       '@aws-sdk/types': 3.893.0
       '@smithy/credential-provider-imds': 4.1.2
       '@smithy/property-provider': 4.1.1
@@ -6457,20 +6475,20 @@ snapshots:
     transitivePeerDependencies:
       - aws-crt
 
-  '@aws-sdk/credential-provider-process@3.894.0':
+  '@aws-sdk/credential-provider-process@3.896.0':
     dependencies:
-      '@aws-sdk/core': 3.894.0
+      '@aws-sdk/core': 3.896.0
       '@aws-sdk/types': 3.893.0
       '@smithy/property-provider': 4.1.1
       '@smithy/shared-ini-file-loader': 4.2.0
       '@smithy/types': 4.5.0
       tslib: 2.8.1
 
-  '@aws-sdk/credential-provider-sso@3.895.0':
+  '@aws-sdk/credential-provider-sso@3.896.0':
     dependencies:
-      '@aws-sdk/client-sso': 3.895.0
-      '@aws-sdk/core': 3.894.0
-      '@aws-sdk/token-providers': 3.895.0
+      '@aws-sdk/client-sso': 3.896.0
+      '@aws-sdk/core': 3.896.0
+      '@aws-sdk/token-providers': 3.896.0
       '@aws-sdk/types': 3.893.0
       '@smithy/property-provider': 4.1.1
       '@smithy/shared-ini-file-loader': 4.2.0
@@ -6479,10 +6497,10 @@ snapshots:
     transitivePeerDependencies:
       - aws-crt
 
-  '@aws-sdk/credential-provider-web-identity@3.895.0':
+  '@aws-sdk/credential-provider-web-identity@3.896.0':
     dependencies:
-      '@aws-sdk/core': 3.894.0
-      '@aws-sdk/nested-clients': 3.895.0
+      '@aws-sdk/core': 3.896.0
+      '@aws-sdk/nested-clients': 3.896.0
       '@aws-sdk/types': 3.893.0
       '@smithy/property-provider': 4.1.1
       '@smithy/shared-ini-file-loader': 4.2.0
@@ -6512,9 +6530,9 @@ snapshots:
       '@smithy/types': 4.5.0
       tslib: 2.8.1
 
-  '@aws-sdk/middleware-user-agent@3.895.0':
+  '@aws-sdk/middleware-user-agent@3.896.0':
     dependencies:
-      '@aws-sdk/core': 3.894.0
+      '@aws-sdk/core': 3.896.0
       '@aws-sdk/types': 3.893.0
       '@aws-sdk/util-endpoints': 3.895.0
       '@smithy/core': 3.12.0
@@ -6522,20 +6540,20 @@ snapshots:
       '@smithy/types': 4.5.0
       tslib: 2.8.1
 
-  '@aws-sdk/nested-clients@3.895.0':
+  '@aws-sdk/nested-clients@3.896.0':
     dependencies:
       '@aws-crypto/sha256-browser': 5.2.0
       '@aws-crypto/sha256-js': 5.2.0
-      '@aws-sdk/core': 3.894.0
+      '@aws-sdk/core': 3.896.0
       '@aws-sdk/middleware-host-header': 3.893.0
       '@aws-sdk/middleware-logger': 3.893.0
       '@aws-sdk/middleware-recursion-detection': 3.893.0
-      '@aws-sdk/middleware-user-agent': 3.895.0
+      '@aws-sdk/middleware-user-agent': 3.896.0
       '@aws-sdk/region-config-resolver': 3.893.0
       '@aws-sdk/types': 3.893.0
       '@aws-sdk/util-endpoints': 3.895.0
       '@aws-sdk/util-user-agent-browser': 3.893.0
-      '@aws-sdk/util-user-agent-node': 3.895.0
+      '@aws-sdk/util-user-agent-node': 3.896.0
       '@smithy/config-resolver': 4.2.2
       '@smithy/core': 3.12.0
       '@smithy/fetch-http-handler': 5.2.1
@@ -6574,10 +6592,10 @@ snapshots:
       '@smithy/util-middleware': 4.1.1
       tslib: 2.8.1
 
-  '@aws-sdk/token-providers@3.895.0':
+  '@aws-sdk/token-providers@3.896.0':
     dependencies:
-      '@aws-sdk/core': 3.894.0
-      '@aws-sdk/nested-clients': 3.895.0
+      '@aws-sdk/core': 3.896.0
+      '@aws-sdk/nested-clients': 3.896.0
       '@aws-sdk/types': 3.893.0
       '@smithy/property-provider': 4.1.1
       '@smithy/shared-ini-file-loader': 4.2.0
@@ -6610,9 +6628,9 @@ snapshots:
       bowser: 2.12.1
       tslib: 2.8.1
 
-  '@aws-sdk/util-user-agent-node@3.895.0':
+  '@aws-sdk/util-user-agent-node@3.896.0':
     dependencies:
-      '@aws-sdk/middleware-user-agent': 3.895.0
+      '@aws-sdk/middleware-user-agent': 3.896.0
       '@aws-sdk/types': 3.893.0
       '@smithy/node-config-provider': 4.2.2
       '@smithy/types': 4.5.0
@@ -7478,7 +7496,7 @@ snapshots:
 
   '@metamask/rpc-errors@7.0.2':
     dependencies:
-      '@metamask/utils': 11.8.0
+      '@metamask/utils': 11.8.1
       fast-safe-stringify: 2.1.1
     transitivePeerDependencies:
       - supports-color
@@ -7541,7 +7559,7 @@ snapshots:
 
   '@metamask/superstruct@3.2.1': {}
 
-  '@metamask/utils@11.8.0':
+  '@metamask/utils@11.8.1':
     dependencies:
       '@ethereumjs/tx': 4.2.0
       '@metamask/superstruct': 3.2.1
@@ -7883,7 +7901,7 @@ snapshots:
     dependencies:
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/api-logs': 0.204.0
-      import-in-the-middle: 1.14.2
+      import-in-the-middle: 1.14.3
       require-in-the-middle: 7.5.2
     transitivePeerDependencies:
       - supports-color
@@ -7893,7 +7911,7 @@ snapshots:
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/api-logs': 0.57.2
       '@types/shimmer': 1.2.0
-      import-in-the-middle: 1.14.2
+      import-in-the-middle: 1.14.3
       require-in-the-middle: 7.5.2
       semver: 7.7.2
       shimmer: 1.2.1
@@ -8823,11 +8841,11 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@reown/appkit-controllers@1.7.8(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)':
+  '@reown/appkit-controllers@1.7.8(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)':
     dependencies:
       '@reown/appkit-common': 1.7.8(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
       '@reown/appkit-wallet': 1.7.8(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)
-      '@walletconnect/universal-provider': 2.21.0(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
+      '@walletconnect/universal-provider': 2.21.0(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
       valtio: 1.13.2(@types/react@19.1.12)(react@19.1.1)
       viem: 2.37.8(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
     transitivePeerDependencies:
@@ -8858,12 +8876,12 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@reown/appkit-pay@1.7.8(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)':
+  '@reown/appkit-pay@1.7.8(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)':
     dependencies:
       '@reown/appkit-common': 1.7.8(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
-      '@reown/appkit-controllers': 1.7.8(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
-      '@reown/appkit-ui': 1.7.8(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
-      '@reown/appkit-utils': 1.7.8(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(valtio@1.13.2(@types/react@19.1.12)(react@19.1.1))(zod@4.1.11)
+      '@reown/appkit-controllers': 1.7.8(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
+      '@reown/appkit-ui': 1.7.8(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
+      '@reown/appkit-utils': 1.7.8(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(valtio@1.13.2(@types/react@19.1.12)(react@19.1.1))(zod@4.1.11)
       lit: 3.3.0
       valtio: 1.13.2(@types/react@19.1.12)(react@19.1.1)
     transitivePeerDependencies:
@@ -8898,12 +8916,12 @@ snapshots:
     dependencies:
       buffer: 6.0.3
 
-  '@reown/appkit-scaffold-ui@1.7.8(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(valtio@1.13.2(@types/react@19.1.12)(react@19.1.1))(zod@4.1.11)':
+  '@reown/appkit-scaffold-ui@1.7.8(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(valtio@1.13.2(@types/react@19.1.12)(react@19.1.1))(zod@4.1.11)':
     dependencies:
       '@reown/appkit-common': 1.7.8(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
-      '@reown/appkit-controllers': 1.7.8(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
-      '@reown/appkit-ui': 1.7.8(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
-      '@reown/appkit-utils': 1.7.8(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(valtio@1.13.2(@types/react@19.1.12)(react@19.1.1))(zod@4.1.11)
+      '@reown/appkit-controllers': 1.7.8(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
+      '@reown/appkit-ui': 1.7.8(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
+      '@reown/appkit-utils': 1.7.8(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(valtio@1.13.2(@types/react@19.1.12)(react@19.1.1))(zod@4.1.11)
       '@reown/appkit-wallet': 1.7.8(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)
       lit: 3.3.0
     transitivePeerDependencies:
@@ -8935,10 +8953,10 @@ snapshots:
       - valtio
       - zod
 
-  '@reown/appkit-ui@1.7.8(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)':
+  '@reown/appkit-ui@1.7.8(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)':
     dependencies:
       '@reown/appkit-common': 1.7.8(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
-      '@reown/appkit-controllers': 1.7.8(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
+      '@reown/appkit-controllers': 1.7.8(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
       '@reown/appkit-wallet': 1.7.8(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)
       lit: 3.3.0
       qrcode: 1.5.3
@@ -8970,14 +8988,14 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@reown/appkit-utils@1.7.8(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(valtio@1.13.2(@types/react@19.1.12)(react@19.1.1))(zod@4.1.11)':
+  '@reown/appkit-utils@1.7.8(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(valtio@1.13.2(@types/react@19.1.12)(react@19.1.1))(zod@4.1.11)':
     dependencies:
       '@reown/appkit-common': 1.7.8(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
-      '@reown/appkit-controllers': 1.7.8(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
+      '@reown/appkit-controllers': 1.7.8(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
       '@reown/appkit-polyfills': 1.7.8
       '@reown/appkit-wallet': 1.7.8(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)
       '@walletconnect/logger': 2.1.2
-      '@walletconnect/universal-provider': 2.21.0(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
+      '@walletconnect/universal-provider': 2.21.0(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
       valtio: 1.13.2(@types/react@19.1.12)(react@19.1.1)
       viem: 2.37.8(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
     transitivePeerDependencies:
@@ -9019,18 +9037,18 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@reown/appkit@1.7.8(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)':
+  '@reown/appkit@1.7.8(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)':
     dependencies:
       '@reown/appkit-common': 1.7.8(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
-      '@reown/appkit-controllers': 1.7.8(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
-      '@reown/appkit-pay': 1.7.8(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
+      '@reown/appkit-controllers': 1.7.8(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
+      '@reown/appkit-pay': 1.7.8(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
       '@reown/appkit-polyfills': 1.7.8
-      '@reown/appkit-scaffold-ui': 1.7.8(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(valtio@1.13.2(@types/react@19.1.12)(react@19.1.1))(zod@4.1.11)
-      '@reown/appkit-ui': 1.7.8(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
-      '@reown/appkit-utils': 1.7.8(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(valtio@1.13.2(@types/react@19.1.12)(react@19.1.1))(zod@4.1.11)
+      '@reown/appkit-scaffold-ui': 1.7.8(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(valtio@1.13.2(@types/react@19.1.12)(react@19.1.1))(zod@4.1.11)
+      '@reown/appkit-ui': 1.7.8(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
+      '@reown/appkit-utils': 1.7.8(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(valtio@1.13.2(@types/react@19.1.12)(react@19.1.1))(zod@4.1.11)
       '@reown/appkit-wallet': 1.7.8(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)
-      '@walletconnect/types': 2.21.0(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)
-      '@walletconnect/universal-provider': 2.21.0(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
+      '@walletconnect/types': 2.21.0(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)
+      '@walletconnect/universal-provider': 2.21.0(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
       bs58: 6.0.0
       valtio: 1.13.2(@types/react@19.1.12)(react@19.1.1)
       viem: 2.37.8(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
@@ -9063,6 +9081,8 @@ snapshots:
       - zod
 
   '@rolldown/pluginutils@1.0.0-beta.35': {}
+
+  '@rolldown/pluginutils@1.0.0-beta.40': {}
 
   '@rollup/rollup-android-arm-eabi@4.52.2':
     optional: true
@@ -9189,35 +9209,35 @@ snapshots:
       '@noble/hashes': 1.8.0
       '@scure/base': 1.2.6
 
-  '@sentry-internal/browser-utils@10.14.0':
+  '@sentry-internal/browser-utils@10.15.0':
     dependencies:
-      '@sentry/core': 10.14.0
+      '@sentry/core': 10.15.0
 
-  '@sentry-internal/feedback@10.14.0':
+  '@sentry-internal/feedback@10.15.0':
     dependencies:
-      '@sentry/core': 10.14.0
+      '@sentry/core': 10.15.0
 
-  '@sentry-internal/replay-canvas@10.14.0':
+  '@sentry-internal/replay-canvas@10.15.0':
     dependencies:
-      '@sentry-internal/replay': 10.14.0
-      '@sentry/core': 10.14.0
+      '@sentry-internal/replay': 10.15.0
+      '@sentry/core': 10.15.0
 
-  '@sentry-internal/replay@10.14.0':
+  '@sentry-internal/replay@10.15.0':
     dependencies:
-      '@sentry-internal/browser-utils': 10.14.0
-      '@sentry/core': 10.14.0
+      '@sentry-internal/browser-utils': 10.15.0
+      '@sentry/core': 10.15.0
 
-  '@sentry/browser@10.14.0':
+  '@sentry/browser@10.15.0':
     dependencies:
-      '@sentry-internal/browser-utils': 10.14.0
-      '@sentry-internal/feedback': 10.14.0
-      '@sentry-internal/replay': 10.14.0
-      '@sentry-internal/replay-canvas': 10.14.0
-      '@sentry/core': 10.14.0
+      '@sentry-internal/browser-utils': 10.15.0
+      '@sentry-internal/feedback': 10.15.0
+      '@sentry-internal/replay': 10.15.0
+      '@sentry-internal/replay-canvas': 10.15.0
+      '@sentry/core': 10.15.0
 
-  '@sentry/core@10.14.0': {}
+  '@sentry/core@10.15.0': {}
 
-  '@sentry/node-core@10.14.0(@opentelemetry/api@1.9.0)(@opentelemetry/context-async-hooks@2.1.0(@opentelemetry/api@1.9.0))(@opentelemetry/core@2.1.0(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.204.0(@opentelemetry/api@1.9.0))(@opentelemetry/resources@2.1.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.1.0(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.37.0)':
+  '@sentry/node-core@10.15.0(@opentelemetry/api@1.9.0)(@opentelemetry/context-async-hooks@2.1.0(@opentelemetry/api@1.9.0))(@opentelemetry/core@2.1.0(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.204.0(@opentelemetry/api@1.9.0))(@opentelemetry/resources@2.1.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.1.0(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.37.0)':
     dependencies:
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/context-async-hooks': 2.1.0(@opentelemetry/api@1.9.0)
@@ -9226,11 +9246,11 @@ snapshots:
       '@opentelemetry/resources': 2.1.0(@opentelemetry/api@1.9.0)
       '@opentelemetry/sdk-trace-base': 2.1.0(@opentelemetry/api@1.9.0)
       '@opentelemetry/semantic-conventions': 1.37.0
-      '@sentry/core': 10.14.0
-      '@sentry/opentelemetry': 10.14.0(@opentelemetry/api@1.9.0)(@opentelemetry/context-async-hooks@2.1.0(@opentelemetry/api@1.9.0))(@opentelemetry/core@2.1.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.1.0(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.37.0)
-      import-in-the-middle: 1.14.2
+      '@sentry/core': 10.15.0
+      '@sentry/opentelemetry': 10.15.0(@opentelemetry/api@1.9.0)(@opentelemetry/context-async-hooks@2.1.0(@opentelemetry/api@1.9.0))(@opentelemetry/core@2.1.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.1.0(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.37.0)
+      import-in-the-middle: 1.14.3
 
-  '@sentry/node@10.14.0':
+  '@sentry/node@10.15.0':
     dependencies:
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/context-async-hooks': 2.1.0(@opentelemetry/api@1.9.0)
@@ -9262,38 +9282,38 @@ snapshots:
       '@opentelemetry/sdk-trace-base': 2.1.0(@opentelemetry/api@1.9.0)
       '@opentelemetry/semantic-conventions': 1.37.0
       '@prisma/instrumentation': 6.15.0(@opentelemetry/api@1.9.0)
-      '@sentry/core': 10.14.0
-      '@sentry/node-core': 10.14.0(@opentelemetry/api@1.9.0)(@opentelemetry/context-async-hooks@2.1.0(@opentelemetry/api@1.9.0))(@opentelemetry/core@2.1.0(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.204.0(@opentelemetry/api@1.9.0))(@opentelemetry/resources@2.1.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.1.0(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.37.0)
-      '@sentry/opentelemetry': 10.14.0(@opentelemetry/api@1.9.0)(@opentelemetry/context-async-hooks@2.1.0(@opentelemetry/api@1.9.0))(@opentelemetry/core@2.1.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.1.0(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.37.0)
-      import-in-the-middle: 1.14.2
+      '@sentry/core': 10.15.0
+      '@sentry/node-core': 10.15.0(@opentelemetry/api@1.9.0)(@opentelemetry/context-async-hooks@2.1.0(@opentelemetry/api@1.9.0))(@opentelemetry/core@2.1.0(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.204.0(@opentelemetry/api@1.9.0))(@opentelemetry/resources@2.1.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.1.0(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.37.0)
+      '@sentry/opentelemetry': 10.15.0(@opentelemetry/api@1.9.0)(@opentelemetry/context-async-hooks@2.1.0(@opentelemetry/api@1.9.0))(@opentelemetry/core@2.1.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.1.0(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.37.0)
+      import-in-the-middle: 1.14.3
       minimatch: 9.0.5
     transitivePeerDependencies:
       - supports-color
 
-  '@sentry/opentelemetry@10.14.0(@opentelemetry/api@1.9.0)(@opentelemetry/context-async-hooks@2.1.0(@opentelemetry/api@1.9.0))(@opentelemetry/core@2.1.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.1.0(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.37.0)':
+  '@sentry/opentelemetry@10.15.0(@opentelemetry/api@1.9.0)(@opentelemetry/context-async-hooks@2.1.0(@opentelemetry/api@1.9.0))(@opentelemetry/core@2.1.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.1.0(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.37.0)':
     dependencies:
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/context-async-hooks': 2.1.0(@opentelemetry/api@1.9.0)
       '@opentelemetry/core': 2.1.0(@opentelemetry/api@1.9.0)
       '@opentelemetry/sdk-trace-base': 2.1.0(@opentelemetry/api@1.9.0)
       '@opentelemetry/semantic-conventions': 1.37.0
-      '@sentry/core': 10.14.0
+      '@sentry/core': 10.15.0
 
-  '@sentry/react@10.14.0(react@19.1.1)':
+  '@sentry/react@10.15.0(react@19.1.1)':
     dependencies:
-      '@sentry/browser': 10.14.0
-      '@sentry/core': 10.14.0
+      '@sentry/browser': 10.15.0
+      '@sentry/core': 10.15.0
       hoist-non-react-statics: 3.3.2
       react: 19.1.1
 
-  '@sentry/tanstackstart-react@10.14.0(react@19.1.1)':
+  '@sentry/tanstackstart-react@10.15.0(react@19.1.1)':
     dependencies:
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/semantic-conventions': 1.37.0
-      '@sentry-internal/browser-utils': 10.14.0
-      '@sentry/core': 10.14.0
-      '@sentry/node': 10.14.0
-      '@sentry/react': 10.14.0(react@19.1.1)
+      '@sentry-internal/browser-utils': 10.15.0
+      '@sentry/core': 10.15.0
+      '@sentry/node': 10.15.0
+      '@sentry/react': 10.15.0(react@19.1.1)
     transitivePeerDependencies:
       - react
       - supports-color
@@ -9796,10 +9816,10 @@ snapshots:
       '@tanstack/query-core': 5.90.2
       react: 19.1.1
 
-  '@tanstack/react-router-devtools@1.132.2(@tanstack/react-router@1.132.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@tanstack/router-core@1.132.2)(@types/node@22.17.2)(csstype@3.1.3)(jiti@2.5.1)(lightningcss@1.30.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(solid-js@1.9.9)(terser@5.44.0)(tiny-invariant@1.3.3)(tsx@4.20.5)':
+  '@tanstack/react-router-devtools@1.132.6(@tanstack/react-router@1.132.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@tanstack/router-core@1.132.6)(@types/node@22.17.2)(csstype@3.1.3)(jiti@2.5.1)(lightningcss@1.30.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(solid-js@1.9.9)(terser@5.44.0)(tiny-invariant@1.3.3)(tsx@4.20.5)':
     dependencies:
-      '@tanstack/react-router': 1.132.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
-      '@tanstack/router-devtools-core': 1.132.2(@tanstack/router-core@1.132.2)(@types/node@22.17.2)(csstype@3.1.3)(jiti@2.5.1)(lightningcss@1.30.1)(solid-js@1.9.9)(terser@5.44.0)(tiny-invariant@1.3.3)(tsx@4.20.5)
+      '@tanstack/react-router': 1.132.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      '@tanstack/router-devtools-core': 1.132.6(@tanstack/router-core@1.132.6)(@types/node@22.17.2)(csstype@3.1.3)(jiti@2.5.1)(lightningcss@1.30.1)(solid-js@1.9.9)(terser@5.44.0)(tiny-invariant@1.3.3)(tsx@4.20.5)
       react: 19.1.1
       react-dom: 19.1.1(react@19.1.1)
       vite: 7.1.7(@types/node@22.17.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.5)
@@ -9820,58 +9840,58 @@ snapshots:
       - tsx
       - yaml
 
-  '@tanstack/react-router-ssr-query@1.132.2(@tanstack/query-core@5.90.2)(@tanstack/react-query@5.90.2(react@19.1.1))(@tanstack/react-router@1.132.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@tanstack/router-core@1.132.2)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
+  '@tanstack/react-router-ssr-query@1.132.6(@tanstack/query-core@5.90.2)(@tanstack/react-query@5.90.2(react@19.1.1))(@tanstack/react-router@1.132.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(@tanstack/router-core@1.132.6)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
     dependencies:
       '@tanstack/query-core': 5.90.2
       '@tanstack/react-query': 5.90.2(react@19.1.1)
-      '@tanstack/react-router': 1.132.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
-      '@tanstack/router-ssr-query-core': 1.132.2(@tanstack/query-core@5.90.2)(@tanstack/router-core@1.132.2)
+      '@tanstack/react-router': 1.132.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      '@tanstack/router-ssr-query-core': 1.132.6(@tanstack/query-core@5.90.2)(@tanstack/router-core@1.132.6)
       react: 19.1.1
       react-dom: 19.1.1(react@19.1.1)
     transitivePeerDependencies:
       - '@tanstack/router-core'
 
-  '@tanstack/react-router@1.132.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
+  '@tanstack/react-router@1.132.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
     dependencies:
       '@tanstack/history': 1.132.0
       '@tanstack/react-store': 0.7.7(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
-      '@tanstack/router-core': 1.132.2
+      '@tanstack/router-core': 1.132.6
       isbot: 5.1.31
       react: 19.1.1
       react-dom: 19.1.1(react@19.1.1)
       tiny-invariant: 1.3.3
       tiny-warning: 1.0.3
 
-  '@tanstack/react-start-client@1.132.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
+  '@tanstack/react-start-client@1.132.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
     dependencies:
-      '@tanstack/react-router': 1.132.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
-      '@tanstack/router-core': 1.132.2
-      '@tanstack/start-client-core': 1.132.2
+      '@tanstack/react-router': 1.132.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      '@tanstack/router-core': 1.132.6
+      '@tanstack/start-client-core': 1.132.6
       react: 19.1.1
       react-dom: 19.1.1(react@19.1.1)
       tiny-invariant: 1.3.3
       tiny-warning: 1.0.3
 
-  '@tanstack/react-start-server@1.132.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
+  '@tanstack/react-start-server@1.132.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
     dependencies:
       '@tanstack/history': 1.132.0
-      '@tanstack/react-router': 1.132.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
-      '@tanstack/router-core': 1.132.2
-      '@tanstack/start-client-core': 1.132.2
-      '@tanstack/start-server-core': 1.132.2
+      '@tanstack/react-router': 1.132.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      '@tanstack/router-core': 1.132.6
+      '@tanstack/start-client-core': 1.132.6
+      '@tanstack/start-server-core': 1.132.6
       react: 19.1.1
       react-dom: 19.1.1(react@19.1.1)
     transitivePeerDependencies:
       - crossws
 
-  '@tanstack/react-start@1.132.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(vite@7.1.7(@types/node@22.17.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.5))':
+  '@tanstack/react-start@1.132.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(vite@7.1.7(@types/node@22.17.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.5))':
     dependencies:
-      '@tanstack/react-router': 1.132.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
-      '@tanstack/react-start-client': 1.132.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
-      '@tanstack/react-start-server': 1.132.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      '@tanstack/react-router': 1.132.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      '@tanstack/react-start-client': 1.132.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      '@tanstack/react-start-server': 1.132.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@tanstack/router-utils': 1.132.0
-      '@tanstack/start-client-core': 1.132.2
-      '@tanstack/start-plugin-core': 1.132.2(@tanstack/react-router@1.132.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(vite@7.1.7(@types/node@22.17.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.5))
+      '@tanstack/start-client-core': 1.132.6
+      '@tanstack/start-plugin-core': 1.132.6(@tanstack/react-router@1.132.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(vite@7.1.7(@types/node@22.17.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.5))
       pathe: 2.0.3
       react: 19.1.1
       react-dom: 19.1.1(react@19.1.1)
@@ -9896,7 +9916,7 @@ snapshots:
       react: 19.1.1
       react-dom: 19.1.1(react@19.1.1)
 
-  '@tanstack/router-core@1.132.2':
+  '@tanstack/router-core@1.132.6':
     dependencies:
       '@tanstack/history': 1.132.0
       '@tanstack/store': 0.7.7
@@ -9906,9 +9926,9 @@ snapshots:
       tiny-invariant: 1.3.3
       tiny-warning: 1.0.3
 
-  '@tanstack/router-devtools-core@1.132.2(@tanstack/router-core@1.132.2)(@types/node@22.17.2)(csstype@3.1.3)(jiti@2.5.1)(lightningcss@1.30.1)(solid-js@1.9.9)(terser@5.44.0)(tiny-invariant@1.3.3)(tsx@4.20.5)':
+  '@tanstack/router-devtools-core@1.132.6(@tanstack/router-core@1.132.6)(@types/node@22.17.2)(csstype@3.1.3)(jiti@2.5.1)(lightningcss@1.30.1)(solid-js@1.9.9)(terser@5.44.0)(tiny-invariant@1.3.3)(tsx@4.20.5)':
     dependencies:
-      '@tanstack/router-core': 1.132.2
+      '@tanstack/router-core': 1.132.6
       clsx: 2.1.1
       goober: 2.1.16(csstype@3.1.3)
       solid-js: 1.9.9
@@ -9929,9 +9949,9 @@ snapshots:
       - tsx
       - yaml
 
-  '@tanstack/router-generator@1.132.2':
+  '@tanstack/router-generator@1.132.6':
     dependencies:
-      '@tanstack/router-core': 1.132.2
+      '@tanstack/router-core': 1.132.6
       '@tanstack/router-utils': 1.132.0
       '@tanstack/virtual-file-routes': 1.132.0
       prettier: 3.6.2
@@ -9942,7 +9962,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@tanstack/router-plugin@1.132.2(@tanstack/react-router@1.132.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(vite@7.1.7(@types/node@22.17.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.5))':
+  '@tanstack/router-plugin@1.132.6(@tanstack/react-router@1.132.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(vite@7.1.7(@types/node@22.17.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.5))':
     dependencies:
       '@babel/core': 7.28.4
       '@babel/plugin-syntax-jsx': 7.27.1(@babel/core@7.28.4)
@@ -9950,8 +9970,8 @@ snapshots:
       '@babel/template': 7.27.2
       '@babel/traverse': 7.28.4
       '@babel/types': 7.28.4
-      '@tanstack/router-core': 1.132.2
-      '@tanstack/router-generator': 1.132.2
+      '@tanstack/router-core': 1.132.6
+      '@tanstack/router-generator': 1.132.6
       '@tanstack/router-utils': 1.132.0
       '@tanstack/virtual-file-routes': 1.132.0
       babel-dead-code-elimination: 1.0.10
@@ -9959,15 +9979,15 @@ snapshots:
       unplugin: 2.3.10
       zod: 3.25.76
     optionalDependencies:
-      '@tanstack/react-router': 1.132.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      '@tanstack/react-router': 1.132.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       vite: 7.1.7(@types/node@22.17.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.5)
     transitivePeerDependencies:
       - supports-color
 
-  '@tanstack/router-ssr-query-core@1.132.2(@tanstack/query-core@5.90.2)(@tanstack/router-core@1.132.2)':
+  '@tanstack/router-ssr-query-core@1.132.6(@tanstack/query-core@5.90.2)(@tanstack/router-core@1.132.6)':
     dependencies:
       '@tanstack/query-core': 5.90.2
-      '@tanstack/router-core': 1.132.2
+      '@tanstack/router-core': 1.132.6
 
   '@tanstack/router-utils@1.132.0':
     dependencies:
@@ -9998,25 +10018,26 @@ snapshots:
       - supports-color
       - vite
 
-  '@tanstack/start-client-core@1.132.2':
+  '@tanstack/start-client-core@1.132.6':
     dependencies:
-      '@tanstack/router-core': 1.132.2
-      '@tanstack/start-storage-context': 1.132.2
+      '@tanstack/router-core': 1.132.6
+      '@tanstack/start-storage-context': 1.132.6
       seroval: 1.3.2
       tiny-invariant: 1.3.3
       tiny-warning: 1.0.3
 
-  '@tanstack/start-plugin-core@1.132.2(@tanstack/react-router@1.132.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(vite@7.1.7(@types/node@22.17.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.5))':
+  '@tanstack/start-plugin-core@1.132.6(@tanstack/react-router@1.132.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(vite@7.1.7(@types/node@22.17.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.5))':
     dependencies:
       '@babel/code-frame': 7.26.2
       '@babel/core': 7.28.4
       '@babel/types': 7.28.4
-      '@tanstack/router-core': 1.132.2
-      '@tanstack/router-generator': 1.132.2
-      '@tanstack/router-plugin': 1.132.2(@tanstack/react-router@1.132.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(vite@7.1.7(@types/node@22.17.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.5))
+      '@rolldown/pluginutils': 1.0.0-beta.40
+      '@tanstack/router-core': 1.132.6
+      '@tanstack/router-generator': 1.132.6
+      '@tanstack/router-plugin': 1.132.6(@tanstack/react-router@1.132.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(vite@7.1.7(@types/node@22.17.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.5))
       '@tanstack/router-utils': 1.132.0
       '@tanstack/server-functions-plugin': 1.132.0(vite@7.1.7(@types/node@22.17.2)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.44.0)(tsx@4.20.5))
-      '@tanstack/start-server-core': 1.132.2
+      '@tanstack/start-server-core': 1.132.6
       babel-dead-code-elimination: 1.0.10
       cheerio: 1.1.2
       exsolve: 1.0.7
@@ -10035,32 +10056,27 @@ snapshots:
       - vite-plugin-solid
       - webpack
 
-  '@tanstack/start-server-core@1.132.2':
+  '@tanstack/start-server-core@1.132.6':
     dependencies:
       '@tanstack/history': 1.132.0
-      '@tanstack/router-core': 1.132.2
-      '@tanstack/start-client-core': 1.132.2
-      '@tanstack/start-storage-context': 1.132.2
+      '@tanstack/router-core': 1.132.6
+      '@tanstack/start-client-core': 1.132.6
+      '@tanstack/start-storage-context': 1.132.6
       h3: 2.0.0-beta.4
       seroval: 1.3.2
       tiny-invariant: 1.3.3
     transitivePeerDependencies:
       - crossws
 
-  '@tanstack/start-storage-context@1.132.2':
+  '@tanstack/start-storage-context@1.132.6':
     dependencies:
-      '@tanstack/router-core': 1.132.2
+      '@tanstack/router-core': 1.132.6
 
   '@tanstack/store@0.7.7': {}
 
   '@tanstack/virtual-core@3.13.12': {}
 
   '@tanstack/virtual-file-routes@1.132.0': {}
-
-  '@tanstack/zod-adapter@1.132.2(@tanstack/react-router@1.132.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(zod@4.1.11)':
-    dependencies:
-      '@tanstack/react-router': 1.132.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
-      zod: 4.1.11
 
   '@tybys/wasm-util@0.10.1':
     dependencies:
@@ -10329,11 +10345,11 @@ snapshots:
     dependencies:
       uncrypto: 0.1.3
 
-  '@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0)':
+  '@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0)':
     dependencies:
       '@vercel/oidc': 3.0.0
     optionalDependencies:
-      '@aws-sdk/credential-provider-web-identity': 3.895.0
+      '@aws-sdk/credential-provider-web-identity': 3.896.0
 
   '@vercel/oidc@3.0.0':
     dependencies:
@@ -10352,7 +10368,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@wagmi/connectors@5.10.2(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(@wagmi/core@2.21.1(@tanstack/query-core@5.90.2)(@types/react@19.1.12)(immer@10.1.1)(react@19.1.1)(typescript@5.9.2)(use-sync-external-store@1.4.0(react@19.1.1))(viem@2.37.8(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(immer@10.1.1)(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(use-sync-external-store@1.4.0(react@19.1.1))(utf-8-validate@5.0.10)(viem@2.37.8(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11))(zod@4.1.11)':
+  '@wagmi/connectors@5.11.1(0072c0ac2a35e176fa22ec4cbe0ce6b2)':
     dependencies:
       '@base-org/account': 1.1.1(@types/react@19.1.12)(bufferutil@4.0.9)(immer@10.1.1)(react@19.1.1)(typescript@5.9.2)(use-sync-external-store@1.4.0(react@19.1.1))(utf-8-validate@5.0.10)(zod@4.1.11)
       '@coinbase/wallet-sdk': 4.3.6(@types/react@19.1.12)(bufferutil@4.0.9)(immer@10.1.1)(react@19.1.1)(typescript@5.9.2)(use-sync-external-store@1.4.0(react@19.1.1))(utf-8-validate@5.0.10)(zod@4.1.11)
@@ -10361,8 +10377,9 @@ snapshots:
       '@safe-global/safe-apps-provider': 0.18.6(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
       '@safe-global/safe-apps-sdk': 9.1.0(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
       '@wagmi/core': 2.21.1(@tanstack/query-core@5.90.2)(@types/react@19.1.12)(immer@10.1.1)(react@19.1.1)(typescript@5.9.2)(use-sync-external-store@1.4.0(react@19.1.1))(viem@2.37.8(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11))
-      '@walletconnect/ethereum-provider': 2.21.1(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
+      '@walletconnect/ethereum-provider': 2.21.1(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
       cbw-sdk: '@coinbase/wallet-sdk@3.9.3'
+      porto: 0.2.19(156c4c8f485be3839a8df5cf3c230128)
       viem: 2.37.8(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
     optionalDependencies:
       typescript: 5.9.2
@@ -10378,6 +10395,7 @@ snapshots:
       - '@netlify/blobs'
       - '@planetscale/database'
       - '@react-native-async-storage/async-storage'
+      - '@tanstack/react-query'
       - '@types/react'
       - '@upstash/redis'
       - '@vercel/blob'
@@ -10394,6 +10412,7 @@ snapshots:
       - uploadthing
       - use-sync-external-store
       - utf-8-validate
+      - wagmi
       - zod
 
   '@wagmi/core@2.21.1(@tanstack/query-core@5.90.2)(@types/react@19.1.12)(immer@10.1.1)(react@19.1.1)(typescript@5.9.2)(use-sync-external-store@1.4.0(react@19.1.1))(viem@2.37.8(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11))':
@@ -10411,21 +10430,21 @@ snapshots:
       - react
       - use-sync-external-store
 
-  '@walletconnect/core@2.21.0(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)':
+  '@walletconnect/core@2.21.0(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)':
     dependencies:
       '@walletconnect/heartbeat': 1.2.2
       '@walletconnect/jsonrpc-provider': 1.0.14
       '@walletconnect/jsonrpc-types': 1.0.4
       '@walletconnect/jsonrpc-utils': 1.0.8
       '@walletconnect/jsonrpc-ws-connection': 1.0.16(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      '@walletconnect/keyvaluestorage': 1.1.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)
+      '@walletconnect/keyvaluestorage': 1.1.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)
       '@walletconnect/logger': 2.1.2
       '@walletconnect/relay-api': 1.0.11
       '@walletconnect/relay-auth': 1.1.0
       '@walletconnect/safe-json': 1.0.2
       '@walletconnect/time': 1.0.2
-      '@walletconnect/types': 2.21.0(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)
-      '@walletconnect/utils': 2.21.0(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
+      '@walletconnect/types': 2.21.0(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)
+      '@walletconnect/utils': 2.21.0(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
       '@walletconnect/window-getters': 1.0.1
       es-toolkit: 1.33.0
       events: 3.3.0
@@ -10455,21 +10474,21 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@walletconnect/core@2.21.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)':
+  '@walletconnect/core@2.21.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)':
     dependencies:
       '@walletconnect/heartbeat': 1.2.2
       '@walletconnect/jsonrpc-provider': 1.0.14
       '@walletconnect/jsonrpc-types': 1.0.4
       '@walletconnect/jsonrpc-utils': 1.0.8
       '@walletconnect/jsonrpc-ws-connection': 1.0.16(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      '@walletconnect/keyvaluestorage': 1.1.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)
+      '@walletconnect/keyvaluestorage': 1.1.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)
       '@walletconnect/logger': 2.1.2
       '@walletconnect/relay-api': 1.0.11
       '@walletconnect/relay-auth': 1.1.0
       '@walletconnect/safe-json': 1.0.2
       '@walletconnect/time': 1.0.2
-      '@walletconnect/types': 2.21.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)
-      '@walletconnect/utils': 2.21.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
+      '@walletconnect/types': 2.21.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)
+      '@walletconnect/utils': 2.21.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
       '@walletconnect/window-getters': 1.0.1
       es-toolkit: 1.33.0
       events: 3.3.0
@@ -10503,18 +10522,18 @@ snapshots:
     dependencies:
       tslib: 1.14.1
 
-  '@walletconnect/ethereum-provider@2.21.1(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)':
+  '@walletconnect/ethereum-provider@2.21.1(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)':
     dependencies:
-      '@reown/appkit': 1.7.8(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
+      '@reown/appkit': 1.7.8(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
       '@walletconnect/jsonrpc-http-connection': 1.0.8
       '@walletconnect/jsonrpc-provider': 1.0.14
       '@walletconnect/jsonrpc-types': 1.0.4
       '@walletconnect/jsonrpc-utils': 1.0.8
-      '@walletconnect/keyvaluestorage': 1.1.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)
-      '@walletconnect/sign-client': 2.21.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
-      '@walletconnect/types': 2.21.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)
-      '@walletconnect/universal-provider': 2.21.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
-      '@walletconnect/utils': 2.21.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
+      '@walletconnect/keyvaluestorage': 1.1.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)
+      '@walletconnect/sign-client': 2.21.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
+      '@walletconnect/types': 2.21.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)
+      '@walletconnect/universal-provider': 2.21.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
+      '@walletconnect/utils': 2.21.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
       events: 3.3.0
     transitivePeerDependencies:
       - '@azure/app-configuration'
@@ -10591,11 +10610,11 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@walletconnect/keyvaluestorage@1.1.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)':
+  '@walletconnect/keyvaluestorage@1.1.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)':
     dependencies:
       '@walletconnect/safe-json': 1.0.2
       idb-keyval: 6.2.2
-      unstorage: 1.17.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(idb-keyval@6.2.2)(ioredis@5.7.0)
+      unstorage: 1.17.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(idb-keyval@6.2.2)(ioredis@5.7.0)
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -10637,16 +10656,16 @@ snapshots:
     dependencies:
       tslib: 1.14.1
 
-  '@walletconnect/sign-client@2.21.0(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)':
+  '@walletconnect/sign-client@2.21.0(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)':
     dependencies:
-      '@walletconnect/core': 2.21.0(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
+      '@walletconnect/core': 2.21.0(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
       '@walletconnect/events': 1.0.1
       '@walletconnect/heartbeat': 1.2.2
       '@walletconnect/jsonrpc-utils': 1.0.8
       '@walletconnect/logger': 2.1.2
       '@walletconnect/time': 1.0.2
-      '@walletconnect/types': 2.21.0(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)
-      '@walletconnect/utils': 2.21.0(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
+      '@walletconnect/types': 2.21.0(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)
+      '@walletconnect/utils': 2.21.0(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
       events: 3.3.0
     transitivePeerDependencies:
       - '@azure/app-configuration'
@@ -10673,16 +10692,16 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@walletconnect/sign-client@2.21.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)':
+  '@walletconnect/sign-client@2.21.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)':
     dependencies:
-      '@walletconnect/core': 2.21.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
+      '@walletconnect/core': 2.21.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
       '@walletconnect/events': 1.0.1
       '@walletconnect/heartbeat': 1.2.2
       '@walletconnect/jsonrpc-utils': 1.0.8
       '@walletconnect/logger': 2.1.2
       '@walletconnect/time': 1.0.2
-      '@walletconnect/types': 2.21.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)
-      '@walletconnect/utils': 2.21.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
+      '@walletconnect/types': 2.21.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)
+      '@walletconnect/utils': 2.21.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
       events: 3.3.0
     transitivePeerDependencies:
       - '@azure/app-configuration'
@@ -10713,12 +10732,12 @@ snapshots:
     dependencies:
       tslib: 1.14.1
 
-  '@walletconnect/types@2.21.0(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)':
+  '@walletconnect/types@2.21.0(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)':
     dependencies:
       '@walletconnect/events': 1.0.1
       '@walletconnect/heartbeat': 1.2.2
       '@walletconnect/jsonrpc-types': 1.0.4
-      '@walletconnect/keyvaluestorage': 1.1.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)
+      '@walletconnect/keyvaluestorage': 1.1.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)
       '@walletconnect/logger': 2.1.2
       events: 3.3.0
     transitivePeerDependencies:
@@ -10742,12 +10761,12 @@ snapshots:
       - ioredis
       - uploadthing
 
-  '@walletconnect/types@2.21.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)':
+  '@walletconnect/types@2.21.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)':
     dependencies:
       '@walletconnect/events': 1.0.1
       '@walletconnect/heartbeat': 1.2.2
       '@walletconnect/jsonrpc-types': 1.0.4
-      '@walletconnect/keyvaluestorage': 1.1.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)
+      '@walletconnect/keyvaluestorage': 1.1.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)
       '@walletconnect/logger': 2.1.2
       events: 3.3.0
     transitivePeerDependencies:
@@ -10771,18 +10790,18 @@ snapshots:
       - ioredis
       - uploadthing
 
-  '@walletconnect/universal-provider@2.21.0(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)':
+  '@walletconnect/universal-provider@2.21.0(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)':
     dependencies:
       '@walletconnect/events': 1.0.1
       '@walletconnect/jsonrpc-http-connection': 1.0.8
       '@walletconnect/jsonrpc-provider': 1.0.14
       '@walletconnect/jsonrpc-types': 1.0.4
       '@walletconnect/jsonrpc-utils': 1.0.8
-      '@walletconnect/keyvaluestorage': 1.1.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)
+      '@walletconnect/keyvaluestorage': 1.1.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)
       '@walletconnect/logger': 2.1.2
-      '@walletconnect/sign-client': 2.21.0(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
-      '@walletconnect/types': 2.21.0(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)
-      '@walletconnect/utils': 2.21.0(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
+      '@walletconnect/sign-client': 2.21.0(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
+      '@walletconnect/types': 2.21.0(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)
+      '@walletconnect/utils': 2.21.0(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
       es-toolkit: 1.33.0
       events: 3.3.0
     transitivePeerDependencies:
@@ -10811,18 +10830,18 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@walletconnect/universal-provider@2.21.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)':
+  '@walletconnect/universal-provider@2.21.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)':
     dependencies:
       '@walletconnect/events': 1.0.1
       '@walletconnect/jsonrpc-http-connection': 1.0.8
       '@walletconnect/jsonrpc-provider': 1.0.14
       '@walletconnect/jsonrpc-types': 1.0.4
       '@walletconnect/jsonrpc-utils': 1.0.8
-      '@walletconnect/keyvaluestorage': 1.1.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)
+      '@walletconnect/keyvaluestorage': 1.1.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)
       '@walletconnect/logger': 2.1.2
-      '@walletconnect/sign-client': 2.21.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
-      '@walletconnect/types': 2.21.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)
-      '@walletconnect/utils': 2.21.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
+      '@walletconnect/sign-client': 2.21.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
+      '@walletconnect/types': 2.21.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)
+      '@walletconnect/utils': 2.21.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
       es-toolkit: 1.33.0
       events: 3.3.0
     transitivePeerDependencies:
@@ -10851,18 +10870,18 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@walletconnect/utils@2.21.0(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)':
+  '@walletconnect/utils@2.21.0(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)':
     dependencies:
       '@noble/ciphers': 1.2.1
       '@noble/curves': 1.8.1
       '@noble/hashes': 1.7.1
       '@walletconnect/jsonrpc-utils': 1.0.8
-      '@walletconnect/keyvaluestorage': 1.1.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)
+      '@walletconnect/keyvaluestorage': 1.1.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)
       '@walletconnect/relay-api': 1.0.11
       '@walletconnect/relay-auth': 1.1.0
       '@walletconnect/safe-json': 1.0.2
       '@walletconnect/time': 1.0.2
-      '@walletconnect/types': 2.21.0(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)
+      '@walletconnect/types': 2.21.0(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)
       '@walletconnect/window-getters': 1.0.1
       '@walletconnect/window-metadata': 1.0.1
       bs58: 6.0.0
@@ -10895,18 +10914,18 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@walletconnect/utils@2.21.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)':
+  '@walletconnect/utils@2.21.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)':
     dependencies:
       '@noble/ciphers': 1.2.1
       '@noble/curves': 1.8.1
       '@noble/hashes': 1.7.1
       '@walletconnect/jsonrpc-utils': 1.0.8
-      '@walletconnect/keyvaluestorage': 1.1.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)
+      '@walletconnect/keyvaluestorage': 1.1.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)
       '@walletconnect/relay-api': 1.0.11
       '@walletconnect/relay-auth': 1.1.0
       '@walletconnect/safe-json': 1.0.2
       '@walletconnect/time': 1.0.2
-      '@walletconnect/types': 2.21.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)
+      '@walletconnect/types': 2.21.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(ioredis@5.7.0)
       '@walletconnect/window-getters': 1.0.1
       '@walletconnect/window-metadata': 1.0.1
       bs58: 6.0.0
@@ -10968,9 +10987,9 @@ snapshots:
       typescript: 5.9.2
       zod: 4.1.11
 
-  acorn-import-attributes@1.9.5(acorn@8.14.1):
+  acorn-import-attributes@1.9.5(acorn@8.15.0):
     dependencies:
-      acorn: 8.14.1
+      acorn: 8.15.0
 
   acorn-jsx@5.3.2(acorn@8.14.1):
     dependencies:
@@ -11929,9 +11948,9 @@ snapshots:
 
   forwarded-parse@2.1.2: {}
 
-  framer-motion@12.23.20(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
+  framer-motion@12.23.21(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
     dependencies:
-      motion-dom: 12.23.20
+      motion-dom: 12.23.21
       motion-utils: 12.23.6
       tslib: 2.8.1
     optionalDependencies:
@@ -12044,6 +12063,8 @@ snapshots:
     dependencies:
       react-is: 16.13.1
 
+  hono@4.9.8: {}
+
   htmlparser2@10.0.0:
     dependencies:
       domelementtype: 2.3.0
@@ -12073,10 +12094,10 @@ snapshots:
       parent-module: 1.0.1
       resolve-from: 4.0.0
 
-  import-in-the-middle@1.14.2:
+  import-in-the-middle@1.14.3:
     dependencies:
-      acorn: 8.14.1
-      acorn-import-attributes: 1.9.5(acorn@8.14.1)
+      acorn: 8.15.0
+      acorn-import-attributes: 1.9.5(acorn@8.15.0)
       cjs-module-lexer: 1.4.3
       module-details-from-path: 1.0.4
 
@@ -12368,15 +12389,15 @@ snapshots:
 
   module-details-from-path@1.0.4: {}
 
-  motion-dom@12.23.20:
+  motion-dom@12.23.21:
     dependencies:
       motion-utils: 12.23.6
 
   motion-utils@12.23.6: {}
 
-  motion@12.23.20(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
+  motion@12.23.21(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
     dependencies:
-      framer-motion: 12.23.20(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      framer-motion: 12.23.21(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       tslib: 2.8.1
     optionalDependencies:
       react: 19.1.1
@@ -12516,6 +12537,21 @@ snapshots:
     transitivePeerDependencies:
       - zod
 
+  ox@0.9.7(typescript@5.9.2)(zod@4.1.11):
+    dependencies:
+      '@adraffy/ens-normalize': 1.11.1
+      '@noble/ciphers': 1.3.0
+      '@noble/curves': 1.9.1
+      '@noble/hashes': 1.8.0
+      '@scure/bip32': 1.7.0
+      '@scure/bip39': 1.6.0
+      abitype: 1.1.1(typescript@5.9.2)(zod@4.1.11)
+      eventemitter3: 5.0.1
+    optionalDependencies:
+      typescript: 5.9.2
+    transitivePeerDependencies:
+      - zod
+
   p-limit@2.3.0:
     dependencies:
       p-try: 2.2.0
@@ -12628,6 +12664,26 @@ snapshots:
   pngjs@5.0.0: {}
 
   pony-cause@2.1.11: {}
+
+  porto@0.2.19(156c4c8f485be3839a8df5cf3c230128):
+    dependencies:
+      '@wagmi/core': 2.21.1(@tanstack/query-core@5.90.2)(@types/react@19.1.12)(immer@10.1.1)(react@19.1.1)(typescript@5.9.2)(use-sync-external-store@1.4.0(react@19.1.1))(viem@2.37.8(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11))
+      hono: 4.9.8
+      idb-keyval: 6.2.2
+      mipd: 0.0.7(typescript@5.9.2)
+      ox: 0.9.7(typescript@5.9.2)(zod@4.1.11)
+      viem: 2.37.8(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)
+      zod: 4.1.11
+      zustand: 5.0.8(@types/react@19.1.12)(immer@10.1.1)(react@19.1.1)(use-sync-external-store@1.4.0(react@19.1.1))
+    optionalDependencies:
+      '@tanstack/react-query': 5.90.2(react@19.1.1)
+      react: 19.1.1
+      typescript: 5.9.2
+      wagmi: 2.17.4(@tanstack/query-core@5.90.2)(@tanstack/react-query@5.90.2(react@19.1.1))(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(immer@10.1.1)(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(viem@2.37.8(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11))(zod@4.1.11)
+    transitivePeerDependencies:
+      - '@types/react'
+      - immer
+      - use-sync-external-store
 
   possible-typed-array-names@1.1.0: {}
 
@@ -12906,7 +12962,7 @@ snapshots:
 
   require-in-the-middle@7.5.2:
     dependencies:
-      debug: 4.4.0
+      debug: 4.4.3
       module-details-from-path: 1.0.4
       resolve: 1.22.10
     transitivePeerDependencies:
@@ -13007,7 +13063,7 @@ snapshots:
     dependencies:
       inherits: 2.0.4
       safe-buffer: 5.2.1
-      to-buffer: 1.2.1
+      to-buffer: 1.2.2
 
   shebang-command@2.0.0:
     dependencies:
@@ -13146,7 +13202,7 @@ snapshots:
       fdir: 6.5.0(picomatch@4.0.3)
       picomatch: 4.0.3
 
-  to-buffer@1.2.1:
+  to-buffer@1.2.2:
     dependencies:
       isarray: 2.0.5
       safe-buffer: 5.2.1
@@ -13259,7 +13315,7 @@ snapshots:
       '@unrs/resolver-binding-win32-ia32-msvc': 1.11.1
       '@unrs/resolver-binding-win32-x64-msvc': 1.11.1
 
-  unstorage@1.17.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(idb-keyval@6.2.2)(ioredis@5.7.0):
+  unstorage@1.17.1(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(idb-keyval@6.2.2)(ioredis@5.7.0):
     dependencies:
       anymatch: 3.1.3
       chokidar: 4.0.3
@@ -13271,7 +13327,7 @@ snapshots:
       ufo: 1.6.1
     optionalDependencies:
       '@upstash/redis': 1.35.4
-      '@vercel/functions': 3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0)
+      '@vercel/functions': 3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0)
       db0: 0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3))
       idb-keyval: 6.2.2
       ioredis: 5.7.0
@@ -13465,10 +13521,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  wagmi@2.17.2(@tanstack/query-core@5.90.2)(@tanstack/react-query@5.90.2(react@19.1.1))(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(immer@10.1.1)(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(viem@2.37.8(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11))(zod@4.1.11):
+  wagmi@2.17.4(@tanstack/query-core@5.90.2)(@tanstack/react-query@5.90.2(react@19.1.1))(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.896.0))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(immer@10.1.1)(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(viem@2.37.8(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11))(zod@4.1.11):
     dependencies:
       '@tanstack/react-query': 5.90.2(react@19.1.1)
-      '@wagmi/connectors': 5.10.2(@types/react@19.1.12)(@upstash/redis@1.35.4)(@vercel/functions@3.1.0(@aws-sdk/credential-provider-web-identity@3.895.0))(@wagmi/core@2.21.1(@tanstack/query-core@5.90.2)(@types/react@19.1.12)(immer@10.1.1)(react@19.1.1)(typescript@5.9.2)(use-sync-external-store@1.4.0(react@19.1.1))(viem@2.37.8(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11)))(bufferutil@4.0.9)(db0@0.3.2(drizzle-orm@1.0.0-beta.1-578e9fd(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)(@upstash/redis@1.35.4)(bun-types@1.2.12)(pg@8.16.3)))(immer@10.1.1)(ioredis@5.7.0)(react@19.1.1)(typescript@5.9.2)(use-sync-external-store@1.4.0(react@19.1.1))(utf-8-validate@5.0.10)(viem@2.37.8(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11))(zod@4.1.11)
+      '@wagmi/connectors': 5.11.1(0072c0ac2a35e176fa22ec4cbe0ce6b2)
       '@wagmi/core': 2.21.1(@tanstack/query-core@5.90.2)(@types/react@19.1.12)(immer@10.1.1)(react@19.1.1)(typescript@5.9.2)(use-sync-external-store@1.4.0(react@19.1.1))(viem@2.37.8(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@4.1.11))
       react: 19.1.1
       use-sync-external-store: 1.4.0(react@19.1.1)

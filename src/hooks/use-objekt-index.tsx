@@ -1,25 +1,27 @@
-import { useQueryState } from "nuqs";
 import { ofetch } from "ofetch";
-import {
-  type IndexedObjekt,
-  type LegacyObjektResponse,
-  parsePage,
-} from "@/lib/universal/objekts";
-import type { ObjektResponseOptions } from "./use-objekt-response";
+import { useDebounceValue } from "usehooks-ts";
+import { useEffect } from "react";
+import { getRouteApi } from "@tanstack/react-router";
 import { useCosmoFilters } from "./use-cosmo-filters";
 import { useFilters } from "./use-filters";
-import { getTypesenseResults } from "@/lib/client/typesense";
-import { useDebounceValue } from "usehooks-ts";
-import { baseUrl } from "@/lib/query-client";
 import { useArtists } from "./use-artists";
-import { useEffect } from "react";
+import type { ObjektResponseOptions } from "./use-objekt-response";
+import type {
+  IndexedObjekt,
+  LegacyObjektResponse,
+} from "@/lib/universal/objekts";
+import { parsePage } from "@/lib/universal/objekts";
+import { getTypesenseResults } from "@/lib/client/typesense";
+import { baseUrl } from "@/lib/query-client";
 import { track } from "@/lib/utils";
+
+const route = getRouteApi("/");
 
 /**
  * Handles switching between the blockchain and Typesense APIs.
  */
 export function useObjektIndex() {
-  const [search] = useQueryState("search");
+  const { search } = route.useSearch();
   const [debouncedSearch] = useDebounceValue(search, 500);
   const { selectedIds } = useArtists();
   const [filters] = useCosmoFilters();
@@ -50,7 +52,7 @@ export function useObjektIndex() {
       initialPageParam: 0,
       getNextPageParam: (lastPage) => lastPage.nextStartAfter,
       calculateTotal: (data) => {
-        const total = data.pages[0].total ?? 0;
+        const total = data.pages[0]?.total ?? 0;
         return (
           <p className="font-semibold">{total.toLocaleString("en")} total</p>
         );
@@ -81,7 +83,7 @@ export function useObjektIndex() {
     initialPageParam: 1,
     getNextPageParam: (lastPage) => lastPage.nextStartAfter,
     calculateTotal: (data) => {
-      const total = data.pages[0].total ?? 0;
+      const total = data.pages[0]?.total ?? 0;
       return (
         <p className="font-semibold">{total.toLocaleString("en")} total</p>
       );

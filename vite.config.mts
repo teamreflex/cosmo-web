@@ -15,6 +15,9 @@ const config = defineConfig(async ({ mode }) => {
   await import("./src/lib/env/client");
 
   return {
+    server: {
+      port: 3000,
+    },
     plugins: [
       viteTsConfigPaths({
         projects: ["./tsconfig.json"],

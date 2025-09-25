@@ -1,5 +1,3 @@
-"use client";
-
 import { toggleObjektLock } from "@/components/collection/actions";
 import { Loader2, Lock, Unlock } from "lucide-react";
 import { track } from "@/lib/utils";

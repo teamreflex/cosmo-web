@@ -1,5 +1,3 @@
-"use client";
-
 import { pinObjekt, unpinObjekt } from "@/components/collection/actions";
 import { Loader2, Pin, PinOff } from "lucide-react";
 import { track } from "@/lib/utils";

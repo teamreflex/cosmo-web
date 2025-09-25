@@ -1,5 +1,3 @@
-"use client";
-
 import type { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
 import CandidateBreakdown from "./candidate-breakdown";
 import {

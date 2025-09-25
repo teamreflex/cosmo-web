@@ -1,25 +1,24 @@
-import { cn } from "@/lib/utils";
-import { default as NextImage } from "next/image";
+import { Dialog as DialogPrimitive, VisuallyHidden } from "radix-ui";
+import { Info, X } from "lucide-react";
+import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useShallow } from "zustand/react/shallow";
+import MetadataDialog from "./metadata-dialog";
+import { fetchObjektQuery } from "./metadata/common";
+import StaticObjekt from "./objekt-static";
+import {
+  ObjektNewIndicator,
+  ObjektSidebar,
+  getObjektImageUrls,
+} from "./common";
 import type {
   BFFCollectionGroup,
   BFFCollectionGroupObjekt,
 } from "@/lib/universal/cosmo/objekts";
-import {
-  getObjektImageUrls,
-  ObjektNewIndicator,
-  ObjektSidebar,
-} from "./common";
-import { Dialog as DialogPrimitive, VisuallyHidden } from "radix-ui";
-import { Objekt } from "@/lib/universal/objekt-conversion";
-import { Info, X } from "lucide-react";
-import { useState } from "react";
-import MetadataDialog from "./metadata-dialog";
-import { fetchObjektQuery } from "./metadata/common";
-import { useQueryClient } from "@tanstack/react-query";
-import { useProfileContext } from "@/hooks/use-profile";
-import StaticObjekt from "./objekt-static";
 import { useObjektTransfer } from "@/hooks/use-objekt-transfer";
-import { useShallow } from "zustand/react/shallow";
+import { useProfileContext } from "@/hooks/use-profile";
+import { Objekt } from "@/lib/universal/objekt-conversion";
+import { cn } from "@/lib/utils";
 import { useObjektOverlay } from "@/store";
 
 interface Props {
@@ -150,7 +149,7 @@ function RootObjekt({
             hasSelected && "ring-foreground"
           )}
         >
-          <NextImage
+          <img
             onMouseOver={prefetch}
             onLoad={() => setIsLoaded(true)}
             onClick={onClick}
@@ -162,9 +161,7 @@ function RootObjekt({
             width={291}
             height={450}
             alt={collection.collectionId}
-            priority={priority}
             decoding="async"
-            unoptimized
           />
 
           <ObjektSidebar collection={collection} />

@@ -1,5 +1,3 @@
-"use client";
-
 import { useTransition } from "react";
 import { IconBrandTwitterFilled } from "@tabler/icons-react";
 import { Button } from "../ui/button";

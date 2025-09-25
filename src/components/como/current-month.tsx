@@ -1,5 +1,3 @@
-"use client";
-
 export default function CurrentMonth() {
   const today = new Date().toLocaleString("default", {
     month: "long",

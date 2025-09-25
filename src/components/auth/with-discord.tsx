@@ -1,5 +1,3 @@
-"use client";
-
 import { useTransition } from "react";
 import { IconBrandDiscordFilled } from "@tabler/icons-react";
 import { Button } from "../ui/button";

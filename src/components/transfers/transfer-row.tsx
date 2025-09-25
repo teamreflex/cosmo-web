@@ -1,9 +1,6 @@
-import type { AggregatedTransfer } from "@/lib/universal/transfers";
-import Image from "next/image";
-import CosmoImage from "@/assets/cosmo.webp";
-import ProfileImage from "@/assets/profile.webp";
-import Link from "next/link";
 import { IconRotate360 } from "@tabler/icons-react";
+import { Link } from "@tanstack/react-router";
+import type { AggregatedTransfer } from "@/lib/universal/transfers";
 import { Addresses } from "@/lib/utils";
 
 type Props = {
@@ -59,12 +56,10 @@ function User({ row, isReceiver }: UserProps) {
   if (isReceiver && row.transfer.from === Addresses.NULL) {
     return (
       <div className="flex gap-2 items-center">
-        <Image
-          src={CosmoImage.src}
-          width={30}
-          height={30}
+        <img
+          src="/cosmo.webp"
           alt="COSMO"
-          className="rounded-full ring ring-accent"
+          className="size-7 aspect-square rounded-full ring ring-accent"
         />
         <div className="flex flex-col">
           <TransferAction isReceiver={true} />
@@ -78,20 +73,14 @@ function User({ row, isReceiver }: UserProps) {
   const address = isReceiver ? row.transfer.from : row.transfer.to;
   return (
     <div className="flex gap-2 items-center">
-      <Image
-        src={ProfileImage.src}
-        width={30}
-        height={30}
+      <img
+        src="/profile.webp"
         alt="Cosmo"
-        className="rounded-full bg-cosmo-profile p-1"
+        className="size-7 aspect-square rounded-full bg-cosmo-profile p-1"
       />
       <div className="flex flex-col">
         <TransferAction isReceiver={isReceiver} />
-        <Link
-          href={`/@${row.username ?? address}`}
-          className="underline"
-          prefetch={false}
-        >
+        <Link to={`/@${row.username ?? address}`} className="underline">
           {row.username ?? address.substring(0, 8)}
         </Link>
       </div>

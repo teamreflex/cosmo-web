@@ -1,5 +1,3 @@
-"use client";
-
 import type { PublicUser } from "@/lib/universal/auth";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import { createContext, type PropsWithChildren, use } from "react";

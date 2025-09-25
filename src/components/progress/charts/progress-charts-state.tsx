@@ -1,5 +1,3 @@
-"use client";
-
 import { useErrorBoundary } from "react-error-boundary";
 import { Button } from "../../ui/button";
 import { RefreshCcw } from "lucide-react";

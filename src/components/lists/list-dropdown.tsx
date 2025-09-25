@@ -1,5 +1,10 @@
-"use client";
-
+import { useState } from "react";
+import { ChevronRight, LetterText, List, PlusCircle } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import CreateListDialog from "./create-list-dialog";
+import DiscordFormatDialog from "./discord-format-dialog";
+import type { ObjektList } from "@/lib/server/db/schema";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,13 +14,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import { ChevronRight, LetterText, List, PlusCircle } from "lucide-react";
-import type { ObjektList } from "@/lib/server/db/schema";
-import Link from "next/link";
-import CreateListDialog from "./create-list-dialog";
-import DiscordFormatDialog from "./discord-format-dialog";
 
 type Props = {
   objektLists: ObjektList[];
@@ -58,9 +56,8 @@ export default function ListDropdown({
               onClick={() => setDropdownOpen(false)}
             >
               <Link
-                href={createListUrl(list)}
+                to={createListUrl(list)}
                 className="w-full flex items-center justify-between"
-                prefetch={false}
               >
                 {list.name}
                 <ChevronRight className="h-4 w-4" />

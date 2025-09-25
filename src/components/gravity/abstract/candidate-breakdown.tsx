@@ -1,7 +1,6 @@
+import { motion } from "motion/react";
 import type { LiveStatus } from "@/lib/client/gravity/abstract/types";
 import type { PollSelectedContentImage } from "@/lib/universal/cosmo/gravity";
-import { motion } from "motion/react";
-import Image from "next/image";
 
 type Props = {
   content: PollSelectedContentImage[];
@@ -15,7 +14,7 @@ export default function CandidateBreakdown(props: Props) {
   const candidates = props.content
     .map((content, i) => ({
       content,
-      comoUsed: props.comoByCandidate[i],
+      comoUsed: props.comoByCandidate[i] ?? 0,
     }))
     .sort((a, b) => b.comoUsed - a.comoUsed);
 
@@ -65,11 +64,10 @@ function CandidateRow(props: CandidateRowProps) {
       />
 
       <div className="relative rounded aspect-square h-2/3">
-        <Image
+        <img
           src={props.content.content.imageUrl}
           alt={props.content.content.title}
-          fill
-          className="object-cover rounded"
+          className="absolute object-cover rounded"
         />
       </div>
 

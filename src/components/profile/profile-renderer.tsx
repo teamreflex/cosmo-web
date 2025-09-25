@@ -1,5 +1,3 @@
-"use client";
-
 import { useFilters } from "@/hooks/use-filters";
 import FiltersContainer from "../collection/filters-container";
 import Portal from "../portal";

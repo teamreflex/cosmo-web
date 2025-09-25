@@ -1,19 +1,18 @@
-import type { Metadata } from "next";
+import { isFuture } from "date-fns";
+import { CalendarDays } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { getArtistsWithMembers, getSelectedArtists } from "../../data-fetching";
+import type { Metadata } from "next";
+import type { Gravity } from "@/lib/server/db/schema";
+import type { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
+import type { CosmoGravityType } from "@/lib/universal/cosmo/gravity";
+import type { PropsWithClassName } from "@/lib/utils";
 import { fetchGravities } from "@/lib/server/gravity";
 import { ArtistProvider } from "@/hooks/use-artists";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
-import type { Gravity } from "@/lib/server/db/schema";
-import type { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
-import Link from "next/link";
-import { isFuture } from "date-fns";
 import GravityTimestamp from "@/components/gravity/timestamp";
-import { CalendarDays } from "lucide-react";
-import type { CosmoGravityType } from "@/lib/universal/cosmo/gravity";
 import { Badge } from "@/components/ui/badge";
-import type { PropsWithClassName } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Gravity",
@@ -46,12 +45,10 @@ export default async function GravityPage() {
                   value={artist.id}
                   className="gap-2"
                 >
-                  <Image
-                    className="rounded-full aspect-square shrink-0"
+                  <img
+                    className="rounded-full aspect-square shrink-0 size-5"
                     src={artist.logoImageUrl}
                     alt={artist.title}
-                    width={20}
-                    height={20}
                   />
                   {artist.title}
                 </TabsTrigger>
@@ -97,16 +94,15 @@ function GravityItem(props: { gravity: Gravity }) {
   const isRecent = isFuture(props.gravity.endDate);
 
   return (
-    <Link href={href} className="[content-visibility:auto]" prefetch={false}>
+    <Link to={href} className="[content-visibility:auto]">
       <Card
         data-recent={isRecent}
         className="relative aspect-square overflow-clip group data-[recent=true]:border-cosmo py-0"
       >
-        <Image
+        <img
           src={props.gravity.image}
           alt={props.gravity.title}
-          fill={true}
-          className="object-cover grayscale group-data-[recent=true]:grayscale-0 group-hover:grayscale-0 transition-all duration-300"
+          className="absolute object-cover grayscale group-data-[recent=true]:grayscale-0 group-hover:grayscale-0 transition-all duration-300"
         />
         <CardContent className="isolate h-full w-full flex gap-2 items-end justify-start bg-gradient-to-t from-black/80 from-5% via-black/20 via-20% to-black/0 px-0">
           <div className="flex flex-row gap-2 items-center w-full p-2">

@@ -1,5 +1,3 @@
-"use client";
-
 import { Send } from "lucide-react";
 import { useObjektTransfer } from "@/hooks/use-objekt-transfer";
 import type { Objekt } from "@/lib/universal/objekt-conversion";

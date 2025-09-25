@@ -1,5 +1,3 @@
-"use server";
-
 import { getSelectedArtists } from "@/data-fetching";
 import { putCookie } from "@/lib/server/cookies";
 

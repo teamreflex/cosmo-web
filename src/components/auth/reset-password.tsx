@@ -1,5 +1,3 @@
-"use client";
-
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";

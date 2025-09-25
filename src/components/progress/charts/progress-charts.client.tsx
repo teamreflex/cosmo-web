@@ -1,5 +1,3 @@
-"use client";
-
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import type { ArtistStats } from "@/lib/universal/progress";
 import { useMemo } from "react";

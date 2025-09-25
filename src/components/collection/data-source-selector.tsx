@@ -1,6 +1,5 @@
-"use client";
-
-import { type ReactNode, useState } from "react";
+import { useState } from "react";
+import { CircleHelp } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -9,8 +8,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import AbstractImage from "@/assets/abstract.svg";
-import Image from "next/image";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,16 +17,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "../ui/alert-dialog";
-import { env } from "@/env";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "../ui/accordion";
-import { CircleHelp } from "lucide-react";
 import { Button } from "../ui/button";
-import { Addresses, isEqual, type CollectionDataSource } from "@/lib/utils";
+import type { ReactNode } from "react";
+import type { CollectionDataSource } from "@/lib/utils";
+import { Addresses, isEqual } from "@/lib/utils";
+import { env } from "@/lib/env/client";
 
 type Props = {
   name: string;
@@ -108,7 +106,7 @@ function Content(props: { onClose: () => void }) {
       <AlertDialogHeader>
         <AlertDialogTitle>Objekt Data Source</AlertDialogTitle>
         <AlertDialogDescription>
-          {env.NEXT_PUBLIC_APP_NAME} can display collections in different ways.
+          {env.VITE_APP_NAME} can display collections in different ways.
         </AlertDialogDescription>
       </AlertDialogHeader>
 
@@ -119,8 +117,8 @@ function Content(props: { onClose: () => void }) {
             <AccordionContent className="flex flex-col gap-2">
               <p className="font-semibold">{source.description}</p>
               <ul className="list-disc list-inside">
-                {source.notes.map((text, i) => (
-                  <li key={i}>{text}</li>
+                {source.notes.map((text, j) => (
+                  <li key={j}>{text}</li>
                 ))}
               </ul>
             </AccordionContent>
@@ -191,7 +189,7 @@ const sources: Source[] = [
 function AbstractIcon() {
   return (
     <div className="relative size-6 rounded-full bg-abstract" data-icon>
-      <Image src={AbstractImage.src} alt="Abstract" fill={true} quality={100} />
+      <img src="/abstract.svg" alt="Abstract" className="absolute" />
     </div>
   );
 }

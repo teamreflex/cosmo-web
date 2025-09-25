@@ -1,5 +1,3 @@
-"use client";
-
 import { ListPlus, Loader2, Plus } from "lucide-react";
 import { type MouseEvent, useState } from "react";
 import {

@@ -1,5 +1,3 @@
-"use client";
-
 import { Suspense, useCallback, type PropsWithChildren } from "react";
 import MemberFilter from "../collection/member-filter";
 import type { ValidArtist } from "@/lib/universal/cosmo/common";

@@ -1,5 +1,3 @@
-"use client";
-
 import type { RevealedVote } from "@/lib/client/gravity/polygon/types";
 import type { PollSelectedContentImage } from "@/lib/universal/cosmo/gravity";
 import TopVotes from "./top-votes";

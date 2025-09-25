@@ -1,5 +1,3 @@
-"use client";
-
 import type { SeasonProgress } from "@/lib/universal/progress";
 import { useSuspenseQueries } from "@tanstack/react-query";
 import { parseAsStringEnum, useQueryState } from "nuqs";

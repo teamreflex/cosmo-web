@@ -1,5 +1,3 @@
-"use client";
-
 import * as React from "react";
 import { Slot as Slot } from "radix-ui";
 import { type VariantProps, cva } from "class-variance-authority";

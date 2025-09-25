@@ -1,7 +1,10 @@
-"use client";
-
 import { createStore, useStore } from "zustand";
-import { createContext, type PropsWithChildren, useContext, useRef } from "react";
+import {
+  createContext,
+  type PropsWithChildren,
+  useContext,
+  useRef,
+} from "react";
 import type { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
 import { useShallow } from "zustand/react/shallow";
 import type { ObjektList } from "@/lib/server/db/schema";

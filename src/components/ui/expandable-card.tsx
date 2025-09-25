@@ -1,5 +1,3 @@
-"use client";
-
 import { motion } from "motion/react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";

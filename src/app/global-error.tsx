@@ -1,12 +1,10 @@
-"use client";
-
 import "../styles/tailwind.css";
 import { Inter } from "next/font/google";
-import { env } from "@/env";
-import { Button } from "@/components/ui/button";
 import { RefreshCcw } from "lucide-react";
 import * as Sentry from "@sentry/nextjs";
 import { useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { env } from "@/env";
 
 const inter = Inter({
   subsets: ["latin"],

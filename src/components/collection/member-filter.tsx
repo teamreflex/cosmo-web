@@ -1,12 +1,11 @@
-import { artistColors, cn } from "@/lib/utils";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
-import Image from "next/image";
 import type { ValidArtist } from "@/lib/universal/cosmo/common";
+import { artistColors, cn } from "@/lib/utils";
 import { useArtists } from "@/hooks/use-artists";
 
 type Props = {
@@ -119,15 +118,7 @@ function MemberImage({ name, image }: { name: string; image: string }) {
   return (
     <div className="flex justify-center items-center relative h-10 w-10 bg-muted rounded-full overflow-hidden">
       <span>{name.charAt(0)}</span>
-      <Image
-        className="absolute rounded-full"
-        src={image}
-        alt={name}
-        width={40}
-        height={40}
-        priority={true}
-        quality={100}
-      />
+      <img className="absolute rounded-full size-10" src={image} alt={name} />
     </div>
   );
 }

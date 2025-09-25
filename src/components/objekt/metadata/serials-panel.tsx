@@ -3,21 +3,18 @@ import {
   useSuspenseQuery,
 } from "@tanstack/react-query";
 import { ErrorBoundary } from "react-error-boundary";
-import { MetadataDialogError } from "./common";
 import { Suspense } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
 import { ofetch } from "ofetch";
-import type { SerialObjekt, SerialTransfer } from "@/lib/universal/objekts";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp, HeartCrack } from "lucide-react";
 import { IconRotate360 } from "@tabler/icons-react";
-import Link from "next/link";
-import Image from "next/image";
-import ProfileImage from "@/assets/profile.webp";
-import CosmoImage from "@/assets/cosmo.webp";
-import { Addresses, isEqual } from "@/lib/utils";
 import { useDebounceValue } from "usehooks-ts";
+import { Link } from "@tanstack/react-router";
+import { MetadataDialogError } from "./common";
+import type { SerialObjekt, SerialTransfer } from "@/lib/universal/objekts";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Addresses, isEqual } from "@/lib/utils";
 import { useObjektSerial } from "@/hooks/use-objekt-serial";
 
 type Props = {
@@ -130,16 +127,13 @@ function Content(props: ContentProps) {
     <div className="flex flex-col gap-2 w-full">
       {/* owner */}
       <Link
-        href={href}
+        to={href}
         className="group flex items-center gap-3 p-3 bg-secondary/50 rounded-lg hover:bg-secondary/60 transition-colors"
-        prefetch={false}
       >
-        <Image
-          src={ProfileImage.src}
-          width={40}
-          height={40}
+        <img
+          src="/profile.webp"
           alt="Profile"
-          className="rounded-full bg-cosmo-profile p-1"
+          className="rounded-full bg-cosmo-profile size-10 p-1"
         />
         <div className="flex flex-col">
           <span className="text-xs text-muted-foreground">Owner</span>
@@ -187,12 +181,10 @@ function TransferItem({ transfer }: TransferItemProps) {
       <div className="flex items-center gap-2">
         {/* from cosmo */}
         {isEqual(transfer.from, Addresses.NULL) && (
-          <Image
-            src={CosmoImage.src}
-            width={20}
-            height={20}
+          <img
+            src="/cosmo.webp"
             alt="COSMO"
-            className="rounded-full ring ring-accent"
+            className="rounded-full size-5 shrink-0 aspect-square ring ring-accent"
           />
         )}
 
@@ -204,9 +196,8 @@ function TransferItem({ transfer }: TransferItemProps) {
           </div>
         ) : !isEqual(transfer.from, Addresses.NULL) ? (
           <Link
-            href={`/@${transfer.fromUsername ?? transfer.from}`}
+            to={`/@${transfer.fromUsername ?? transfer.from}`}
             className="hover:underline truncate"
-            prefetch={false}
           >
             {formatAddress(transfer.from, transfer.fromUsername)}
           </Link>
@@ -226,9 +217,8 @@ function TransferItem({ transfer }: TransferItemProps) {
           </div>
         ) : !isEqual(transfer.to, Addresses.NULL) ? (
           <Link
-            href={`/@${transfer.toUsername ?? transfer.to}`}
+            to={`/@${transfer.toUsername ?? transfer.to}`}
             className="hover:underline"
-            prefetch={false}
           >
             {formatAddress(transfer.to, transfer.toUsername)}
           </Link>

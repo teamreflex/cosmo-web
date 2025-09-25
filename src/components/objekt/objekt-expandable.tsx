@@ -1,13 +1,13 @@
 import { useShallow } from "zustand/react/shallow";
-import { type PropsWithChildren, useState } from "react";
-import { getObjektImageUrls } from "./common";
+import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useObjektTransfer } from "@/hooks/use-objekt-transfer";
+import { getObjektImageUrls } from "./common";
 import { fetchObjektQuery } from "./metadata/common";
 import MetadataDialog from "./metadata-dialog";
-import { cn } from "@/lib/utils";
-import { default as NextImage } from "next/image";
+import type { PropsWithChildren } from "react";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
+import { useObjektTransfer } from "@/hooks/use-objekt-transfer";
+import { cn } from "@/lib/utils";
 
 type Props = PropsWithChildren<{
   collection: Objekt.Collection;
@@ -59,7 +59,7 @@ export default function ExpandableObjekt({
             className
           )}
         >
-          <NextImage
+          <img
             role="button"
             onMouseOver={prefetch}
             onLoad={() => setIsLoaded(true)}
@@ -82,9 +82,7 @@ export default function ExpandableObjekt({
             width={291}
             height={450}
             alt={collection.collectionId}
-            priority={priority}
             decoding="async"
-            unoptimized
           />
 
           {children}

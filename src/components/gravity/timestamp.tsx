@@ -1,5 +1,3 @@
-"use client";
-
 import { cn, type PropsWithClassName } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { Skeleton } from "../ui/skeleton";

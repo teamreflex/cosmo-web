@@ -1,5 +1,3 @@
-"use client";
-
 import { HeartCrack, RefreshCcw } from "lucide-react";
 import { Button } from "./ui/button";
 

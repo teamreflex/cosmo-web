@@ -1,20 +1,7 @@
-"use client";
-
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import { parseAsNullableBoolean } from "@/hooks/use-cosmo-filters";
 import { parseAsString, parseAsStringEnum, useQueryState } from "nuqs";
 import { Suspense } from "react";
-import ProgressLeaderboardContent, {
-  LeaderboardSkeleton,
-} from "./progress-leaderboard-content";
-import { Button } from "../ui/button";
 import { Trophy } from "lucide-react";
+import { Button } from "../ui/button";
 import {
   Tooltip,
   TooltipContent,
@@ -31,8 +18,18 @@ import {
   SelectValue,
 } from "../ui/select";
 import { Separator } from "../ui/separator";
-import Image from "next/image";
+import ProgressLeaderboardContent, {
+  LeaderboardSkeleton,
+} from "./progress-leaderboard-content";
 import type { FilterData } from "@/hooks/use-filter-data";
+import { parseAsNullableBoolean } from "@/hooks/use-cosmo-filters";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { useArtists } from "@/hooks/use-artists";
 
 type Props = {
@@ -179,12 +176,10 @@ function SeasonSelect({ seasons, member, value, update }: SeasonSelectProps) {
         {data.map(({ artist, seasons }) => (
           <SelectGroup key={artist.id}>
             <SelectLabel className="text-xs flex items-center gap-2">
-              <Image
-                className="rounded-full aspect-square"
+              <img
+                className="rounded-full aspect-square size-4"
                 src={artist.logoImageUrl}
                 alt={artist.title}
-                width={16}
-                height={16}
               />
               {artist.title}
             </SelectLabel>

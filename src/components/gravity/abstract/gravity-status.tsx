@@ -1,5 +1,3 @@
-"use client";
-
 import { Activity, CircleCheckBig, Loader2 } from "lucide-react";
 import type { LiveStatus } from "@/lib/client/gravity/abstract/types";
 
@@ -8,7 +6,10 @@ type StatusProps = {
   isRefreshing?: boolean;
 };
 
-export default function GravityStatus({ liveStatus, isRefreshing = false }: StatusProps) {
+export default function GravityStatus({
+  liveStatus,
+  isRefreshing = false,
+}: StatusProps) {
   const config = statusConfig[liveStatus];
 
   return (

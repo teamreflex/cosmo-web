@@ -1,5 +1,3 @@
-"use client";
-
 import { useTransition } from "react";
 import UserDropdown from "./user-dropdown";
 import { usePathname, useRouter } from "next/navigation";

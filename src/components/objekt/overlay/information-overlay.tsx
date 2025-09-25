@@ -1,5 +1,3 @@
-"use client";
-
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { Maximize2 } from "lucide-react";

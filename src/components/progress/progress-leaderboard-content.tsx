@@ -1,10 +1,10 @@
-import type { Leaderboard, LeaderboardItem } from "@/lib/universal/progress";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ofetch } from "ofetch";
+import { Link } from "@tanstack/react-router";
 import { Skeleton } from "../ui/skeleton";
+import type { Leaderboard, LeaderboardItem } from "@/lib/universal/progress";
 import { baseUrl } from "@/lib/query-client";
 import { ordinal } from "@/lib/utils";
-import Link from "next/link";
 
 type Props = {
   member: string;
@@ -65,10 +65,8 @@ function LeaderboardRow({ member, total, item, rank }: LeaderboardRowProps) {
         <span className="font-semibold">{ordinal(rank)}</span>
         <Link
           className="font-cosmo underline"
-          href={`/@${
-            item.isAddress ? item.address : item.nickname
-          }/progress?member=${member}`}
-          prefetch={false}
+          to={`/@${item.isAddress ? item.address : item.nickname}/progress`}
+          search={{ member }}
         >
           {item.nickname}
         </Link>

@@ -1,5 +1,3 @@
-"use client";
-
 import { useAction } from "next-safe-action/hooks";
 import { rescanObjektMetadata } from "../actions";
 import { toast } from "sonner";

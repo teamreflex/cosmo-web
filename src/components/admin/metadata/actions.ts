@@ -1,12 +1,10 @@
-"use server";
-
+import { sql } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import { db } from "@/lib/server/db";
 import { objektMetadata } from "@/lib/server/db/schema";
 import { adminActionClient } from "@/lib/server/middlewares";
 import { metadataObjectSchema } from "@/lib/universal/schema/admin";
-import { sql } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
-import { z } from "zod";
 
 /**
  * Bulk inserts objekt metadata.

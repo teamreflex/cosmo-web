@@ -1,3 +1,14 @@
+import { LogOut, ShieldAlert, UserCog, Wrench } from "lucide-react";
+import { useState } from "react";
+import { IconBrandDiscord } from "@tabler/icons-react";
+import { Link } from "@tanstack/react-router";
+import { ArtistItem } from "../navbar/artist-selectbox";
+import UserAvatar from "../profile/user-avatar";
+import SettingsDialog from "./settings-dialog";
+import AccountDialog from "./account-dialog";
+import type { PublicUser } from "@/lib/universal/auth";
+import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import { useArtists } from "@/hooks/use-artists";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -6,17 +17,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, ShieldAlert, UserCog, Wrench } from "lucide-react";
-import { useState } from "react";
-import SettingsDialog from "./settings-dialog";
-import Link from "next/link";
-import { IconBrandDiscord } from "@tabler/icons-react";
-import type { PublicUser } from "@/lib/universal/auth";
-import { ArtistItem } from "../navbar/artist-selectbox";
-import { useArtists } from "@/hooks/use-artists";
-import UserAvatar from "../profile/user-avatar";
-import AccountDialog from "./account-dialog";
-import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 
 type UserDropdownProps = {
   user: PublicUser;
@@ -94,7 +94,7 @@ export default function UserDropdown({
           <div className="contents">
             <DropdownMenuSeparator />
             <DropdownMenuItem className="cursor-pointer" asChild>
-              <Link href="/admin">
+              <Link to="/admin">
                 <ShieldAlert className="h-4 w-4" />
                 <span>Admin</span>
               </Link>

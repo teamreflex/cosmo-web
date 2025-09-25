@@ -1,5 +1,3 @@
-"use client";
-
 import { cn } from "@/lib/utils";
 import type { IndexedObjekt } from "@/lib/universal/objekts";
 import AddToList from "../lists/add-to-list";

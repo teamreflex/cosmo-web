@@ -1,3 +1,12 @@
+import { Suspense, use } from "react";
+import { Separator } from "../ui/separator";
+import { Skeleton } from "../ui/skeleton";
+import { Button } from "../ui/button";
+import LinkedAccounts from "./account/linked-accounts";
+import Profile from "./account/profile";
+import DeleteAccount from "./account/delete-account";
+import LinkCosmo, { LinkCosmoContext } from "./link-cosmo";
+import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import {
   Dialog,
   DialogContent,
@@ -5,17 +14,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Separator } from "../ui/separator";
-import { Suspense, use } from "react";
-import { Skeleton } from "../ui/skeleton";
-import LinkedAccounts from "./account/linked-accounts";
-import Profile from "./account/profile";
-import DeleteAccount from "./account/delete-account";
-import LinkCosmo, { LinkCosmoContext } from "./link-cosmo";
-import { Button } from "../ui/button";
-import Image from "next/image";
-import CosmoLogo from "@/assets/cosmo.webp";
-import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 
 type Props = {
   open: boolean;
@@ -60,12 +58,10 @@ export default function AccountDialog({ open, onOpenChange, cosmo }: Props) {
                 </LinkCosmo>
               ) : (
                 <div className="flex items-center gap-2">
-                  <Image
-                    className="rounded-full"
-                    src={CosmoLogo.src}
+                  <img
+                    className="rounded-full size-5 aspect-square"
+                    src="/cosmo.webp"
                     alt="COSMO"
-                    width={20}
-                    height={20}
                   />
                   <p className="text-sm">{cosmo.username}</p>
                 </div>
@@ -84,12 +80,10 @@ function LinkCosmoButton() {
 
   return (
     <Button variant="cosmo" onClick={() => ctx.setOpen(true)}>
-      <Image
-        className="rounded-full"
-        src={CosmoLogo.src}
+      <img
+        src="/cosmo.webp"
         alt="COSMO"
-        width={20}
-        height={20}
+        className="rounded-full size-5 aspect-square"
       />
       <span>Link COSMO</span>
     </Button>

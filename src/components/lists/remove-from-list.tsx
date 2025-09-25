@@ -1,5 +1,3 @@
-"use client";
-
 import type { ObjektList } from "@/lib/server/db/schema";
 import { ListX, Loader2 } from "lucide-react";
 import { removeObjektFromList } from "./actions";

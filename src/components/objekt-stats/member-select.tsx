@@ -1,6 +1,7 @@
-"use client";
-
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { ChevronDown } from "lucide-react";
+import { ScrollArea } from "../ui/scroll-area";
+import type { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -9,12 +10,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useState } from "react";
-import { ChevronDown } from "lucide-react";
-import type { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
-import { ScrollArea } from "../ui/scroll-area";
+import { Button } from "@/components/ui/button";
 import { artistColors } from "@/lib/utils";
-import Image from "next/image";
 
 type Props = {
   artists: CosmoArtistWithMembersBFF[];
@@ -56,11 +53,9 @@ export default function MemberSelect({ artists, value = [], onChange }: Props) {
                 selectArtist(artist);
               }}
             >
-              <Image
+              <img
                 src={artist.logoImageUrl}
                 alt={artist.title}
-                width={20}
-                height={20}
                 className="rounded-full size-4 shrink-0"
               />
               <span

@@ -1,7 +1,7 @@
-import { type PropsWithChildren, useState } from "react";
-import { cn } from "@/lib/utils";
-import Image from "next/image";
+import { useState } from "react";
+import type { PropsWithChildren } from "react";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
+import { cn } from "@/lib/utils";
 
 type Props = PropsWithChildren<{
   collection: Objekt.Collection;
@@ -33,22 +33,20 @@ export default function FlippableObjekt({ children, collection }: Props) {
     >
       {/* front */}
       <div className="absolute inset-0 backface-hidden">
-        <Image
+        <img
+          className="absolute"
           src={collection.frontImage}
-          fill={true}
           alt={collection.collectionId}
-          unoptimized
         />
         {children}
       </div>
 
       {/* back */}
       <div className="absolute inset-0 backface-hidden rotate-y-180">
-        <Image
+        <img
+          className="absolute"
           src={collection.backImage}
-          fill={true}
           alt={collection.collectionId}
-          unoptimized
         />
       </div>
     </div>

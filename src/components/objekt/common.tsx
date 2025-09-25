@@ -1,10 +1,11 @@
-import type { NonTransferableReason } from "@/lib/universal/cosmo/objekts";
-import { useElementSize } from "@/hooks/use-element-size";
-import { cn, type PropsWithClassName } from "@/lib/utils";
-import { Fragment, useState, type PropsWithChildren } from "react";
+import { Fragment, useState } from "react";
 import ArtistLogo from "./artist-logo";
+import type { PropsWithChildren } from "react";
+import type { NonTransferableReason } from "@/lib/universal/cosmo/objekts";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
-import Image from "next/image";
+import type { PropsWithClassName } from "@/lib/utils";
+import { useElementSize } from "@/hooks/use-element-size";
+import { cn } from "@/lib/utils";
 
 type ObjektSidebarProps = {
   collection: Objekt.Collection;
@@ -52,16 +53,14 @@ export function ObjektSidebar({ collection, serial }: ObjektSidebarProps) {
   return (
     <Fragment>
       {collection.bandImageUrl && (
-        <Image
+        <img
           src={collection.bandImageUrl}
           className={cn(
-            "top-0 left-0 h-full w-full object-cover pointer-events-none opacity-0 transition-opacity",
+            "absolute top-0 left-0 h-full w-full object-cover pointer-events-none opacity-0 transition-opacity",
             bandLoaded && "opacity-100"
           )}
           alt={`${collection.artist} band image`}
           onLoad={() => setBandLoaded(true)}
-          priority
-          fill
         />
       )}
 

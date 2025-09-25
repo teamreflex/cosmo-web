@@ -1,5 +1,3 @@
-"use client";
-
 import type { ObjektList } from "@/lib/server/db/schema";
 import { Button } from "../ui/button";
 import { Edit, Loader2 } from "lucide-react";
