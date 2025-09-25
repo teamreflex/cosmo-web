@@ -1,24 +1,16 @@
-import { ofetch } from "ofetch";
-import { env } from "@/lib/env/server";
+import { createServerFn } from "@tanstack/react-start";
+import { db } from "../db";
 
 /**
- * Rescan an objekt's metadata.
+ * Fetch the latest 10 metadata entries.
  */
-export async function rescanMetadata(tokenId: string) {
-  try {
-    await ofetch<{ message: string }>(
-      `${env.INDEXER_PROXY_URL}/rescan-metadata/${tokenId}`,
-      {
-        method: "POST",
-        headers: {
-          "proxy-key": env.INDEXER_PROXY_KEY,
-        },
-      }
-    );
-
-    return true;
-  } catch (e) {
-    console.error("Failed to rescan metadata:", e);
-    throw new Error("Failed to rescan metadata");
+export const fetchLatestMetadata = createServerFn({ method: "GET" }).handler(
+  async () => {
+    return await db.query.objektMetadata.findMany({
+      orderBy: {
+        id: "desc",
+      },
+      limit: 10,
+    });
   }
-}
+);

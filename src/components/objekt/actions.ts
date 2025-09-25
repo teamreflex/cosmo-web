@@ -1,14 +1,15 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { createServerFn } from "@tanstack/react-start";
+import { ofetch } from "ofetch";
 import { db } from "@/lib/server/db";
 import { objektMetadata } from "@/lib/server/db/schema";
-import { rescanMetadata } from "@/lib/server/objekts/metadata";
 import {
   adminMiddleware,
   authenticatedMiddleware,
 } from "@/lib/server/middlewares";
 import { metadataObjectSchema } from "@/lib/universal/schema/admin";
+import { env } from "@/lib/env/server";
 
 /**
  * Update an objekt's metadata.
@@ -43,5 +44,20 @@ export const rescanObjektMetadata = createServerFn({ method: "POST" })
   .middleware([authenticatedMiddleware])
   .inputValidator((data) => z.object({ tokenId: z.string() }).parse(data))
   .handler(async ({ data }) => {
-    return await rescanMetadata(data.tokenId);
+    try {
+      await ofetch<{ message: string }>(
+        `${env.INDEXER_PROXY_URL}/rescan-metadata/${data.tokenId}`,
+        {
+          method: "POST",
+          headers: {
+            "proxy-key": env.INDEXER_PROXY_KEY,
+          },
+        }
+      );
+
+      return true;
+    } catch (e) {
+      console.error("Failed to rescan metadata:", e);
+      throw new Error("Failed to rescan metadata");
+    }
   });

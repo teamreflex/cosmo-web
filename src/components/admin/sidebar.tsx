@@ -1,5 +1,6 @@
 import { HardDriveUpload, Home, PanelRight } from "lucide-react";
 
+import { Link, useLocation } from "@tanstack/react-router";
 import {
   Sidebar,
   SidebarContent,
@@ -31,6 +32,8 @@ export const items = [
 ];
 
 export function AdminSidebar() {
+  const location = useLocation();
+
   return (
     <Sidebar className="mt-14">
       <SidebarContent>
@@ -40,11 +43,14 @@ export function AdminSidebar() {
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <a href={item.url}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={location.pathname === item.url}
+                  >
+                    <Link to={item.url}>
                       <item.icon />
                       <span>{item.title}</span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}

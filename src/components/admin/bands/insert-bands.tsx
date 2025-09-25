@@ -9,7 +9,7 @@ import { bandUrlInputSchema } from "@/lib/universal/schema/admin";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-export default function InsertMetadata() {
+export default function InsertBands() {
   const [items, setItems] = useState<BandUrlRow[]>([
     { slug: "", bandImageUrl: "" },
   ]);

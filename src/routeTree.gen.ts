@@ -10,9 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermsPrivacyRouteImport } from './routes/terms-privacy'
+import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as GravityIndexRouteImport } from './routes/gravity/index'
-import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as ObjektsStatsRouteImport } from './routes/objekts/stats'
 import { Route as ListIdRouteImport } from './routes/list/$id'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
@@ -20,7 +20,6 @@ import { Route as ApiFilterDataRouteImport } from './routes/api/filter-data'
 import { Route as AdminMetadataRouteImport } from './routes/admin/metadata'
 import { Route as AdminBandsRouteImport } from './routes/admin/bands'
 import { Route as profileAtusernameRouteImport } from './routes/(profile)/@$username'
-import { Route as ApiObjektsIndexRouteImport } from './routes/api/objekts/index'
 import { Route as profileAtusernameIndexRouteImport } from './routes/(profile)/@$username.index'
 import { Route as GravityArtistIdRouteImport } from './routes/gravity/$artist/$id'
 import { Route as ApiUserByAddressesRouteImport } from './routes/api/user/by-addresses'
@@ -32,9 +31,7 @@ import { Route as profileAtusernameProgressRouteImport } from './routes/(profile
 import { Route as profileAtusernameComoRouteImport } from './routes/(profile)/@$username.como'
 import { Route as ApiProgressLeaderboardMemberRouteImport } from './routes/api/progress/leaderboard.$member'
 import { Route as ApiObjektsBySlugSlugRouteImport } from './routes/api/objekts/by-slug.$slug'
-import { Route as ApiObjektsByAddressAddressRouteImport } from './routes/api/objekts/by-address.$address'
 import { Route as ApiObjektListForUserIdentifierRouteImport } from './routes/api/objekt-list/for-user.$identifier'
-import { Route as ApiObjektListEntriesIdRouteImport } from './routes/api/objekt-list/entries.$id'
 import { Route as ApiGravityPollIdVotesRouteImport } from './routes/api/gravity/$pollId.votes'
 import { Route as ApiCosmoQrAuthTicketRouteImport } from './routes/api/cosmo/qr-auth/ticket'
 import { Route as ApiCosmoQrAuthRecaptchaRouteImport } from './routes/api/cosmo/qr-auth/recaptcha'
@@ -46,12 +43,16 @@ import { Route as ApiUserByAddressAddressComoRouteImport } from './routes/api/us
 import { Route as ApiProgressBreakdownMemberAddressRouteImport } from './routes/api/progress/breakdown.$member.$address'
 import { Route as ApiObjektsMetadataSlugSerialRouteImport } from './routes/api/objekts/metadata/$slug/$serial'
 import { Route as ApiBffV3UsersSearchRouteImport } from './routes/api/bff/v3/users/search'
-import { Route as ApiBffV1ObjektCollectionGroupAddressRouteImport } from './routes/api/bff/v1/objekt/collection-group.$address'
 import { Route as ApiGravityV3ArtistGravityGravityPollsPollRouteImport } from './routes/api/gravity/v3/$artist.gravity.$gravity.polls.$poll'
 
 const TermsPrivacyRoute = TermsPrivacyRouteImport.update({
   id: '/terms-privacy',
   path: '/terms-privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRouteRoute = AdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -62,11 +63,6 @@ const IndexRoute = IndexRouteImport.update({
 const GravityIndexRoute = GravityIndexRouteImport.update({
   id: '/gravity/',
   path: '/gravity/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminIndexRoute = AdminIndexRouteImport.update({
-  id: '/admin/',
-  path: '/admin/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ObjektsStatsRoute = ObjektsStatsRouteImport.update({
@@ -90,23 +86,18 @@ const ApiFilterDataRoute = ApiFilterDataRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminMetadataRoute = AdminMetadataRouteImport.update({
-  id: '/admin/metadata',
-  path: '/admin/metadata',
-  getParentRoute: () => rootRouteImport,
+  id: '/metadata',
+  path: '/metadata',
+  getParentRoute: () => AdminRouteRoute,
 } as any)
 const AdminBandsRoute = AdminBandsRouteImport.update({
-  id: '/admin/bands',
-  path: '/admin/bands',
-  getParentRoute: () => rootRouteImport,
+  id: '/bands',
+  path: '/bands',
+  getParentRoute: () => AdminRouteRoute,
 } as any)
 const profileAtusernameRoute = profileAtusernameRouteImport.update({
   id: '/(profile)/@$username',
   path: '/@$username',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiObjektsIndexRoute = ApiObjektsIndexRouteImport.update({
-  id: '/api/objekts/',
-  path: '/api/objekts/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const profileAtusernameIndexRoute = profileAtusernameIndexRouteImport.update({
@@ -166,23 +157,12 @@ const ApiObjektsBySlugSlugRoute = ApiObjektsBySlugSlugRouteImport.update({
   path: '/api/objekts/by-slug/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiObjektsByAddressAddressRoute =
-  ApiObjektsByAddressAddressRouteImport.update({
-    id: '/api/objekts/by-address/$address',
-    path: '/api/objekts/by-address/$address',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const ApiObjektListForUserIdentifierRoute =
   ApiObjektListForUserIdentifierRouteImport.update({
     id: '/api/objekt-list/for-user/$identifier',
     path: '/api/objekt-list/for-user/$identifier',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiObjektListEntriesIdRoute = ApiObjektListEntriesIdRouteImport.update({
-  id: '/api/objekt-list/entries/$id',
-  path: '/api/objekt-list/entries/$id',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiGravityPollIdVotesRoute = ApiGravityPollIdVotesRouteImport.update({
   id: '/api/gravity/$pollId/votes',
   path: '/api/gravity/$pollId/votes',
@@ -245,12 +225,6 @@ const ApiBffV3UsersSearchRoute = ApiBffV3UsersSearchRouteImport.update({
   path: '/api/bff/v3/users/search',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiBffV1ObjektCollectionGroupAddressRoute =
-  ApiBffV1ObjektCollectionGroupAddressRouteImport.update({
-    id: '/api/bff/v1/objekt/collection-group/$address',
-    path: '/api/bff/v1/objekt/collection-group/$address',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const ApiGravityV3ArtistGravityGravityPollsPollRoute =
   ApiGravityV3ArtistGravityGravityPollsPollRouteImport.update({
     id: '/api/gravity/v3/$artist/gravity/$gravity/polls/$poll',
@@ -260,6 +234,7 @@ const ApiGravityV3ArtistGravityGravityPollsPollRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteRouteWithChildren
   '/terms-privacy': typeof TermsPrivacyRoute
   '/@$username': typeof profileAtusernameRouteWithChildren
   '/admin/bands': typeof AdminBandsRoute
@@ -268,7 +243,6 @@ export interface FileRoutesByFullPath {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/list/$id': typeof ListIdRoute
   '/objekts/stats': typeof ObjektsStatsRoute
-  '/admin': typeof AdminIndexRoute
   '/gravity': typeof GravityIndexRoute
   '/@$username/como': typeof profileAtusernameComoRoute
   '/@$username/progress': typeof profileAtusernameProgressRoute
@@ -279,14 +253,11 @@ export interface FileRoutesByFullPath {
   '/api/user/by-addresses': typeof ApiUserByAddressesRoute
   '/gravity/$artist/$id': typeof GravityArtistIdRoute
   '/@$username/': typeof profileAtusernameIndexRoute
-  '/api/objekts': typeof ApiObjektsIndexRoute
   '/@$username/list/$slug': typeof profileAtusernameListSlugRoute
   '/api/cosmo/qr-auth/recaptcha': typeof ApiCosmoQrAuthRecaptchaRoute
   '/api/cosmo/qr-auth/ticket': typeof ApiCosmoQrAuthTicketRoute
   '/api/gravity/$pollId/votes': typeof ApiGravityPollIdVotesRoute
-  '/api/objekt-list/entries/$id': typeof ApiObjektListEntriesIdRoute
   '/api/objekt-list/for-user/$identifier': typeof ApiObjektListForUserIdentifierRoute
-  '/api/objekts/by-address/$address': typeof ApiObjektsByAddressAddressRoute
   '/api/objekts/by-slug/$slug': typeof ApiObjektsBySlugSlugRoute
   '/api/progress/leaderboard/$member': typeof ApiProgressLeaderboardMemberRoute
   '/api/bff/v3/users/search': typeof ApiBffV3UsersSearchRoute
@@ -296,11 +267,11 @@ export interface FileRoutesByFullPath {
   '/api/user/by-address/$address/stats': typeof ApiUserByAddressAddressStatsRoute
   '/api/objekts/metadata/$slug': typeof ApiObjektsMetadataSlugIndexRoute
   '/api/user/by-address/$address': typeof ApiUserByAddressAddressIndexRoute
-  '/api/bff/v1/objekt/collection-group/$address': typeof ApiBffV1ObjektCollectionGroupAddressRoute
   '/api/gravity/v3/$artist/gravity/$gravity/polls/$poll': typeof ApiGravityV3ArtistGravityGravityPollsPollRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteRouteWithChildren
   '/terms-privacy': typeof TermsPrivacyRoute
   '/admin/bands': typeof AdminBandsRoute
   '/admin/metadata': typeof AdminMetadataRoute
@@ -308,7 +279,6 @@ export interface FileRoutesByTo {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/list/$id': typeof ListIdRoute
   '/objekts/stats': typeof ObjektsStatsRoute
-  '/admin': typeof AdminIndexRoute
   '/gravity': typeof GravityIndexRoute
   '/@$username/como': typeof profileAtusernameComoRoute
   '/@$username/progress': typeof profileAtusernameProgressRoute
@@ -319,14 +289,11 @@ export interface FileRoutesByTo {
   '/api/user/by-addresses': typeof ApiUserByAddressesRoute
   '/gravity/$artist/$id': typeof GravityArtistIdRoute
   '/@$username': typeof profileAtusernameIndexRoute
-  '/api/objekts': typeof ApiObjektsIndexRoute
   '/@$username/list/$slug': typeof profileAtusernameListSlugRoute
   '/api/cosmo/qr-auth/recaptcha': typeof ApiCosmoQrAuthRecaptchaRoute
   '/api/cosmo/qr-auth/ticket': typeof ApiCosmoQrAuthTicketRoute
   '/api/gravity/$pollId/votes': typeof ApiGravityPollIdVotesRoute
-  '/api/objekt-list/entries/$id': typeof ApiObjektListEntriesIdRoute
   '/api/objekt-list/for-user/$identifier': typeof ApiObjektListForUserIdentifierRoute
-  '/api/objekts/by-address/$address': typeof ApiObjektsByAddressAddressRoute
   '/api/objekts/by-slug/$slug': typeof ApiObjektsBySlugSlugRoute
   '/api/progress/leaderboard/$member': typeof ApiProgressLeaderboardMemberRoute
   '/api/bff/v3/users/search': typeof ApiBffV3UsersSearchRoute
@@ -336,12 +303,12 @@ export interface FileRoutesByTo {
   '/api/user/by-address/$address/stats': typeof ApiUserByAddressAddressStatsRoute
   '/api/objekts/metadata/$slug': typeof ApiObjektsMetadataSlugIndexRoute
   '/api/user/by-address/$address': typeof ApiUserByAddressAddressIndexRoute
-  '/api/bff/v1/objekt/collection-group/$address': typeof ApiBffV1ObjektCollectionGroupAddressRoute
   '/api/gravity/v3/$artist/gravity/$gravity/polls/$poll': typeof ApiGravityV3ArtistGravityGravityPollsPollRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteRouteWithChildren
   '/terms-privacy': typeof TermsPrivacyRoute
   '/(profile)/@$username': typeof profileAtusernameRouteWithChildren
   '/admin/bands': typeof AdminBandsRoute
@@ -350,7 +317,6 @@ export interface FileRoutesById {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/list/$id': typeof ListIdRoute
   '/objekts/stats': typeof ObjektsStatsRoute
-  '/admin/': typeof AdminIndexRoute
   '/gravity/': typeof GravityIndexRoute
   '/(profile)/@$username/como': typeof profileAtusernameComoRoute
   '/(profile)/@$username/progress': typeof profileAtusernameProgressRoute
@@ -361,14 +327,11 @@ export interface FileRoutesById {
   '/api/user/by-addresses': typeof ApiUserByAddressesRoute
   '/gravity/$artist/$id': typeof GravityArtistIdRoute
   '/(profile)/@$username/': typeof profileAtusernameIndexRoute
-  '/api/objekts/': typeof ApiObjektsIndexRoute
   '/(profile)/@$username/list/$slug': typeof profileAtusernameListSlugRoute
   '/api/cosmo/qr-auth/recaptcha': typeof ApiCosmoQrAuthRecaptchaRoute
   '/api/cosmo/qr-auth/ticket': typeof ApiCosmoQrAuthTicketRoute
   '/api/gravity/$pollId/votes': typeof ApiGravityPollIdVotesRoute
-  '/api/objekt-list/entries/$id': typeof ApiObjektListEntriesIdRoute
   '/api/objekt-list/for-user/$identifier': typeof ApiObjektListForUserIdentifierRoute
-  '/api/objekts/by-address/$address': typeof ApiObjektsByAddressAddressRoute
   '/api/objekts/by-slug/$slug': typeof ApiObjektsBySlugSlugRoute
   '/api/progress/leaderboard/$member': typeof ApiProgressLeaderboardMemberRoute
   '/api/bff/v3/users/search': typeof ApiBffV3UsersSearchRoute
@@ -378,13 +341,13 @@ export interface FileRoutesById {
   '/api/user/by-address/$address/stats': typeof ApiUserByAddressAddressStatsRoute
   '/api/objekts/metadata/$slug/': typeof ApiObjektsMetadataSlugIndexRoute
   '/api/user/by-address/$address/': typeof ApiUserByAddressAddressIndexRoute
-  '/api/bff/v1/objekt/collection-group/$address': typeof ApiBffV1ObjektCollectionGroupAddressRoute
   '/api/gravity/v3/$artist/gravity/$gravity/polls/$poll': typeof ApiGravityV3ArtistGravityGravityPollsPollRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/terms-privacy'
     | '/@$username'
     | '/admin/bands'
@@ -393,7 +356,6 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/list/$id'
     | '/objekts/stats'
-    | '/admin'
     | '/gravity'
     | '/@$username/como'
     | '/@$username/progress'
@@ -404,14 +366,11 @@ export interface FileRouteTypes {
     | '/api/user/by-addresses'
     | '/gravity/$artist/$id'
     | '/@$username/'
-    | '/api/objekts'
     | '/@$username/list/$slug'
     | '/api/cosmo/qr-auth/recaptcha'
     | '/api/cosmo/qr-auth/ticket'
     | '/api/gravity/$pollId/votes'
-    | '/api/objekt-list/entries/$id'
     | '/api/objekt-list/for-user/$identifier'
-    | '/api/objekts/by-address/$address'
     | '/api/objekts/by-slug/$slug'
     | '/api/progress/leaderboard/$member'
     | '/api/bff/v3/users/search'
@@ -421,11 +380,11 @@ export interface FileRouteTypes {
     | '/api/user/by-address/$address/stats'
     | '/api/objekts/metadata/$slug'
     | '/api/user/by-address/$address'
-    | '/api/bff/v1/objekt/collection-group/$address'
     | '/api/gravity/v3/$artist/gravity/$gravity/polls/$poll'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
     | '/terms-privacy'
     | '/admin/bands'
     | '/admin/metadata'
@@ -433,7 +392,6 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/list/$id'
     | '/objekts/stats'
-    | '/admin'
     | '/gravity'
     | '/@$username/como'
     | '/@$username/progress'
@@ -444,14 +402,11 @@ export interface FileRouteTypes {
     | '/api/user/by-addresses'
     | '/gravity/$artist/$id'
     | '/@$username'
-    | '/api/objekts'
     | '/@$username/list/$slug'
     | '/api/cosmo/qr-auth/recaptcha'
     | '/api/cosmo/qr-auth/ticket'
     | '/api/gravity/$pollId/votes'
-    | '/api/objekt-list/entries/$id'
     | '/api/objekt-list/for-user/$identifier'
-    | '/api/objekts/by-address/$address'
     | '/api/objekts/by-slug/$slug'
     | '/api/progress/leaderboard/$member'
     | '/api/bff/v3/users/search'
@@ -461,11 +416,11 @@ export interface FileRouteTypes {
     | '/api/user/by-address/$address/stats'
     | '/api/objekts/metadata/$slug'
     | '/api/user/by-address/$address'
-    | '/api/bff/v1/objekt/collection-group/$address'
     | '/api/gravity/v3/$artist/gravity/$gravity/polls/$poll'
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/terms-privacy'
     | '/(profile)/@$username'
     | '/admin/bands'
@@ -474,7 +429,6 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/list/$id'
     | '/objekts/stats'
-    | '/admin/'
     | '/gravity/'
     | '/(profile)/@$username/como'
     | '/(profile)/@$username/progress'
@@ -485,14 +439,11 @@ export interface FileRouteTypes {
     | '/api/user/by-addresses'
     | '/gravity/$artist/$id'
     | '/(profile)/@$username/'
-    | '/api/objekts/'
     | '/(profile)/@$username/list/$slug'
     | '/api/cosmo/qr-auth/recaptcha'
     | '/api/cosmo/qr-auth/ticket'
     | '/api/gravity/$pollId/votes'
-    | '/api/objekt-list/entries/$id'
     | '/api/objekt-list/for-user/$identifier'
-    | '/api/objekts/by-address/$address'
     | '/api/objekts/by-slug/$slug'
     | '/api/progress/leaderboard/$member'
     | '/api/bff/v3/users/search'
@@ -502,34 +453,28 @@ export interface FileRouteTypes {
     | '/api/user/by-address/$address/stats'
     | '/api/objekts/metadata/$slug/'
     | '/api/user/by-address/$address/'
-    | '/api/bff/v1/objekt/collection-group/$address'
     | '/api/gravity/v3/$artist/gravity/$gravity/polls/$poll'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRouteRoute: typeof AdminRouteRouteWithChildren
   TermsPrivacyRoute: typeof TermsPrivacyRoute
   profileAtusernameRoute: typeof profileAtusernameRouteWithChildren
-  AdminBandsRoute: typeof AdminBandsRoute
-  AdminMetadataRoute: typeof AdminMetadataRoute
   ApiFilterDataRoute: typeof ApiFilterDataRoute
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   ListIdRoute: typeof ListIdRoute
   ObjektsStatsRoute: typeof ObjektsStatsRoute
-  AdminIndexRoute: typeof AdminIndexRoute
   GravityIndexRoute: typeof GravityIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiCronGravityRoute: typeof ApiCronGravityRoute
   ApiCronObjektStatsRoute: typeof ApiCronObjektStatsRoute
   ApiUserByAddressesRoute: typeof ApiUserByAddressesRoute
   GravityArtistIdRoute: typeof GravityArtistIdRoute
-  ApiObjektsIndexRoute: typeof ApiObjektsIndexRoute
   ApiCosmoQrAuthRecaptchaRoute: typeof ApiCosmoQrAuthRecaptchaRoute
   ApiCosmoQrAuthTicketRoute: typeof ApiCosmoQrAuthTicketRoute
   ApiGravityPollIdVotesRoute: typeof ApiGravityPollIdVotesRoute
-  ApiObjektListEntriesIdRoute: typeof ApiObjektListEntriesIdRoute
   ApiObjektListForUserIdentifierRoute: typeof ApiObjektListForUserIdentifierRoute
-  ApiObjektsByAddressAddressRoute: typeof ApiObjektsByAddressAddressRoute
   ApiObjektsBySlugSlugRoute: typeof ApiObjektsBySlugSlugRoute
   ApiProgressLeaderboardMemberRoute: typeof ApiProgressLeaderboardMemberRoute
   ApiBffV3UsersSearchRoute: typeof ApiBffV3UsersSearchRoute
@@ -539,7 +484,6 @@ export interface RootRouteChildren {
   ApiUserByAddressAddressStatsRoute: typeof ApiUserByAddressAddressStatsRoute
   ApiObjektsMetadataSlugIndexRoute: typeof ApiObjektsMetadataSlugIndexRoute
   ApiUserByAddressAddressIndexRoute: typeof ApiUserByAddressAddressIndexRoute
-  ApiBffV1ObjektCollectionGroupAddressRoute: typeof ApiBffV1ObjektCollectionGroupAddressRoute
   ApiGravityV3ArtistGravityGravityPollsPollRoute: typeof ApiGravityV3ArtistGravityGravityPollsPollRoute
 }
 
@@ -550,6 +494,13 @@ declare module '@tanstack/react-router' {
       path: '/terms-privacy'
       fullPath: '/terms-privacy'
       preLoaderRoute: typeof TermsPrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -564,13 +515,6 @@ declare module '@tanstack/react-router' {
       path: '/gravity'
       fullPath: '/gravity'
       preLoaderRoute: typeof GravityIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/': {
-      id: '/admin/'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/objekts/stats': {
@@ -603,30 +547,23 @@ declare module '@tanstack/react-router' {
     }
     '/admin/metadata': {
       id: '/admin/metadata'
-      path: '/admin/metadata'
+      path: '/metadata'
       fullPath: '/admin/metadata'
       preLoaderRoute: typeof AdminMetadataRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminRouteRoute
     }
     '/admin/bands': {
       id: '/admin/bands'
-      path: '/admin/bands'
+      path: '/bands'
       fullPath: '/admin/bands'
       preLoaderRoute: typeof AdminBandsRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminRouteRoute
     }
     '/(profile)/@$username': {
       id: '/(profile)/@$username'
       path: '/@$username'
       fullPath: '/@$username'
       preLoaderRoute: typeof profileAtusernameRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/objekts/': {
-      id: '/api/objekts/'
-      path: '/api/objekts'
-      fullPath: '/api/objekts'
-      preLoaderRoute: typeof ApiObjektsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/(profile)/@$username/': {
@@ -706,25 +643,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiObjektsBySlugSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/objekts/by-address/$address': {
-      id: '/api/objekts/by-address/$address'
-      path: '/api/objekts/by-address/$address'
-      fullPath: '/api/objekts/by-address/$address'
-      preLoaderRoute: typeof ApiObjektsByAddressAddressRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/objekt-list/for-user/$identifier': {
       id: '/api/objekt-list/for-user/$identifier'
       path: '/api/objekt-list/for-user/$identifier'
       fullPath: '/api/objekt-list/for-user/$identifier'
       preLoaderRoute: typeof ApiObjektListForUserIdentifierRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/objekt-list/entries/$id': {
-      id: '/api/objekt-list/entries/$id'
-      path: '/api/objekt-list/entries/$id'
-      fullPath: '/api/objekt-list/entries/$id'
-      preLoaderRoute: typeof ApiObjektListEntriesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/gravity/$pollId/votes': {
@@ -804,13 +727,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiBffV3UsersSearchRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/bff/v1/objekt/collection-group/$address': {
-      id: '/api/bff/v1/objekt/collection-group/$address'
-      path: '/api/bff/v1/objekt/collection-group/$address'
-      fullPath: '/api/bff/v1/objekt/collection-group/$address'
-      preLoaderRoute: typeof ApiBffV1ObjektCollectionGroupAddressRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/gravity/v3/$artist/gravity/$gravity/polls/$poll': {
       id: '/api/gravity/v3/$artist/gravity/$gravity/polls/$poll'
       path: '/api/gravity/v3/$artist/gravity/$gravity/polls/$poll'
@@ -820,6 +736,20 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface AdminRouteRouteChildren {
+  AdminBandsRoute: typeof AdminBandsRoute
+  AdminMetadataRoute: typeof AdminMetadataRoute
+}
+
+const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminBandsRoute: AdminBandsRoute,
+  AdminMetadataRoute: AdminMetadataRoute,
+}
+
+const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
+  AdminRouteRouteChildren,
+)
 
 interface profileAtusernameRouteChildren {
   profileAtusernameComoRoute: typeof profileAtusernameComoRoute
@@ -842,28 +772,23 @@ const profileAtusernameRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRouteRoute: AdminRouteRouteWithChildren,
   TermsPrivacyRoute: TermsPrivacyRoute,
   profileAtusernameRoute: profileAtusernameRouteWithChildren,
-  AdminBandsRoute: AdminBandsRoute,
-  AdminMetadataRoute: AdminMetadataRoute,
   ApiFilterDataRoute: ApiFilterDataRoute,
   AuthResetPasswordRoute: AuthResetPasswordRoute,
   ListIdRoute: ListIdRoute,
   ObjektsStatsRoute: ObjektsStatsRoute,
-  AdminIndexRoute: AdminIndexRoute,
   GravityIndexRoute: GravityIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiCronGravityRoute: ApiCronGravityRoute,
   ApiCronObjektStatsRoute: ApiCronObjektStatsRoute,
   ApiUserByAddressesRoute: ApiUserByAddressesRoute,
   GravityArtistIdRoute: GravityArtistIdRoute,
-  ApiObjektsIndexRoute: ApiObjektsIndexRoute,
   ApiCosmoQrAuthRecaptchaRoute: ApiCosmoQrAuthRecaptchaRoute,
   ApiCosmoQrAuthTicketRoute: ApiCosmoQrAuthTicketRoute,
   ApiGravityPollIdVotesRoute: ApiGravityPollIdVotesRoute,
-  ApiObjektListEntriesIdRoute: ApiObjektListEntriesIdRoute,
   ApiObjektListForUserIdentifierRoute: ApiObjektListForUserIdentifierRoute,
-  ApiObjektsByAddressAddressRoute: ApiObjektsByAddressAddressRoute,
   ApiObjektsBySlugSlugRoute: ApiObjektsBySlugSlugRoute,
   ApiProgressLeaderboardMemberRoute: ApiProgressLeaderboardMemberRoute,
   ApiBffV3UsersSearchRoute: ApiBffV3UsersSearchRoute,
@@ -874,8 +799,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiUserByAddressAddressStatsRoute: ApiUserByAddressAddressStatsRoute,
   ApiObjektsMetadataSlugIndexRoute: ApiObjektsMetadataSlugIndexRoute,
   ApiUserByAddressAddressIndexRoute: ApiUserByAddressAddressIndexRoute,
-  ApiBffV1ObjektCollectionGroupAddressRoute:
-    ApiBffV1ObjektCollectionGroupAddressRoute,
   ApiGravityV3ArtistGravityGravityPollsPollRoute:
     ApiGravityV3ArtistGravityGravityPollsPollRoute,
 }

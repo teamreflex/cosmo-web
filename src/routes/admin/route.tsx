@@ -1,19 +1,14 @@
-import type { PropsWithChildren } from "react";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { Outlet, createFileRoute } from "@tanstack/react-router";
+import AdminBreadcrumbs from "@/components/admin/breadcrumbs";
 import { AdminSidebar } from "@/components/admin/sidebar";
 import { Separator } from "@/components/ui/separator";
-import AdminBreadcrumbs from "@/components/admin/breadcrumbs";
-import { getSession } from "../../data-fetching";
-import { redirect } from "next/navigation";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
-type Props = PropsWithChildren;
+export const Route = createFileRoute("/admin")({
+  component: RouteComponent,
+});
 
-export default async function AdminLayout({ children }: Props) {
-  const session = await getSession();
-  if (!session?.user.isAdmin) {
-    redirect("/");
-  }
-
+function RouteComponent() {
   return (
     <SidebarProvider>
       <AdminSidebar />
@@ -25,7 +20,7 @@ export default async function AdminLayout({ children }: Props) {
           <AdminBreadcrumbs />
         </header>
 
-        {children}
+        <Outlet />
       </main>
     </SidebarProvider>
   );

@@ -1,9 +1,48 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import InsertMetadata from "@/components/admin/metadata/insert-metadata";
+import { getSession } from "@/queries";
+import { fetchLatestMetadata } from "@/lib/server/objekts/metadata";
+import { seoTitle } from "@/lib/seo";
 
-export const Route = createFileRoute('/admin/metadata')({
+export const Route = createFileRoute("/admin/metadata")({
+  head: () => ({
+    meta: [seoTitle("Objekt Metadata")],
+  }),
+  beforeLoad: async () => {
+    const session = await getSession();
+    if (!session?.user.isAdmin) {
+      throw redirect({ to: "/" });
+    }
+  },
+  loader: async () => {
+    const metadata = await fetchLatestMetadata();
+    return { metadata };
+  },
   component: RouteComponent,
-})
+});
 
 function RouteComponent() {
-  return <div>Hello "/admin/metadata"!</div>
+  const { metadata } = Route.useLoaderData();
+
+  return (
+    <section className="flex flex-col gap-2 px-4 py-2">
+      <InsertMetadata />
+
+      {/* latest metadata */}
+      <div className="flex flex-col gap-2">
+        <h1 className="text-lg font-semibold">Latest 10</h1>
+        <div className="flex flex-col text-sm border border-accent rounded-md">
+          {metadata.map((row) => (
+            <div
+              key={row.id}
+              className="grid grid-cols-[20%_70%] border-b border-accent p-1 last:border-0"
+            >
+              <p className="font-semibold">{row.collectionId}</p>
+              <p>{row.description}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
 }
