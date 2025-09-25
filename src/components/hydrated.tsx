@@ -1,8 +1,5 @@
-import {
-  type PropsWithChildren,
-  type ReactNode,
-  useSyncExternalStore,
-} from "react";
+import { useSyncExternalStore } from "react";
+import type { PropsWithChildren, ReactNode } from "react";
 
 type Props = PropsWithChildren<{
   fallback?: ReactNode;

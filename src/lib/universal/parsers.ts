@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { validArtists, validOnlineTypes, validSorts } from "./cosmo/common";
+import { transferTypes } from "./transfers";
 
 /**
  * COSMO expects comma-separated values for array filters like:
@@ -39,6 +40,7 @@ export const objektIndexFrontendSchema = cosmoSchema
   .extend({
     id: z.string().nullish(),
     search: z.string().nullish(),
+    serial: z.coerce.number().nullish(),
   })
   .partial();
 
@@ -55,6 +57,7 @@ export const userCollectionFrontendSchema = cosmoSchema
   .omit({ gridable: true })
   .extend({
     locked: z.boolean().nullish(),
+    serial: z.coerce.number().nullish(),
   })
   .partial();
 
@@ -69,6 +72,9 @@ export const userCollectionBackendSchema = cosmoSchema
 // objekt list frontend - user facing, validated by the router
 export const objektListFrontendSchema = cosmoSchema
   .omit({ transferable: true, gridable: true })
+  .extend({
+    serial: z.coerce.number().nullish(),
+  })
   .partial();
 
 // objekt list backend
@@ -78,3 +84,49 @@ export const objektListBackendSchema = cosmoSchema
     page: z.coerce.number().default(0),
     artists: z.string().array().default([]),
   });
+
+// transfers frontend
+export const transfersFrontendSchema = cosmoSchema
+  .pick({
+    member: true,
+    artist: true,
+    season: true,
+    class: true,
+    on_offline: true,
+  })
+  .extend({
+    type: z.enum(transferTypes).default("all"),
+  })
+  .partial();
+
+// transfers backend
+export const transfersBackendSchema = cosmoSchema
+  .pick({
+    member: true,
+    artist: true,
+    season: true,
+    class: true,
+    on_offline: true,
+  })
+  .extend({
+    address: z.string(),
+    page: z.coerce.number().default(0),
+    type: z.enum(transferTypes).default("all"),
+  });
+
+/**
+ * Ensures extra query params are removed and don't trigger queryKey changes.
+ */
+export function normalizeFilters(data: z.infer<typeof cosmoSchema>) {
+  return {
+    sort: data.sort,
+    season: data.season,
+    class: data.class,
+    on_offline: data.on_offline,
+    member: data.member,
+    artist: data.artist,
+    transferable: data.transferable,
+    gridable: data.gridable,
+    collectionNo: data.collectionNo,
+  };
+}

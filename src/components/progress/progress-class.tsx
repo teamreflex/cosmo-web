@@ -1,6 +1,6 @@
+import { Expand, Shrink } from "lucide-react";
 import type { SeasonProgress } from "@/lib/universal/progress";
 import { cn } from "@/lib/utils";
-import { Expand, Shrink } from "lucide-react";
 
 type Props = {
   progress: SeasonProgress;

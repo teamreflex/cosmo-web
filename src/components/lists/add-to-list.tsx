@@ -1,5 +1,7 @@
 import { ListPlus, Loader2, Plus } from "lucide-react";
-import { type MouseEvent, useState } from "react";
+import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,12 +11,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { addObjektToList } from "./actions";
-import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { ScrollArea } from "../ui/scroll-area";
+import { addObjektToList } from "./actions";
 import type { ObjektList } from "@/lib/server/db/schema";
-import { useAction } from "next-safe-action/hooks";
+import type { MouseEvent } from "react";
 
 type AddToListProps = {
   collectionId: string;
@@ -80,7 +80,9 @@ function ListItem({
   list,
   onDone,
 }: ListItemProps) {
-  const { execute, isPending } = useAction(addObjektToList, {
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: addObjektToList,
     onSuccess() {
       toast.success(`Added ${collectionId} to ${list.name}`);
       queryClient.removeQueries({ queryKey: ["objekt-list", list.slug] });
@@ -88,27 +90,27 @@ function ListItem({
     },
   });
 
-  const queryClient = useQueryClient();
-
-  function submit(event: MouseEvent<HTMLButtonElement>) {
+  function handleClick(event: MouseEvent<HTMLButtonElement>) {
     event.preventDefault();
-
-    execute({
-      objektListId: list.id,
-      collectionSlug: collectionSlug,
+    mutation.mutate({
+      data: {
+        objektListId: list.id,
+        collectionSlug: collectionSlug,
+      },
     });
   }
 
   return (
     <DropdownMenuItem className="text-sm truncate group">
       <button
-        onClick={submit}
-        disabled={isPending}
-        className="w-full flex items-center justify-between"
+        type="button"
+        onClick={handleClick}
+        disabled={mutation.isPending}
+        className="w-full fex items-center justify-between"
         aria-label="Add objekt to list"
       >
         {list.name}
-        {isPending ? (
+        {mutation.isPending ? (
           <Loader2 className="h-4 w-4 animate-spin" />
         ) : (
           <Plus className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all" />

@@ -80,7 +80,11 @@ function User({ row, isReceiver }: UserProps) {
       />
       <div className="flex flex-col">
         <TransferAction isReceiver={isReceiver} />
-        <Link to={`/@${row.username ?? address}`} className="underline">
+        <Link
+          to={`/@$username`}
+          className="underline"
+          params={{ username: row.username ?? address }}
+        >
           {row.username ?? address.substring(0, 8)}
         </Link>
       </div>

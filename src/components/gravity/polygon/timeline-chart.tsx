@@ -1,12 +1,12 @@
+import { CheckCircle } from "lucide-react";
+import { Bar, BarChart } from "recharts";
+import type { RevealedVote } from "@/lib/client/gravity/polygon/types";
+import type { ChartConfig } from "@/components/ui/chart";
 import {
-  type ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import type { RevealedVote } from "@/lib/client/gravity/polygon/types";
-import { CheckCircle } from "lucide-react";
-import { Bar, BarChart } from "recharts";
 
 type Props = {
   totalComoUsed: number;
@@ -52,6 +52,10 @@ export default function TimelineChart(props: Props) {
         >
           <ChartTooltip
             labelFormatter={(_, payload) => {
+              if (!payload[0]?.payload) {
+                return "N/A";
+              }
+
               return `Block ${payload[0].payload.startBlock} ~ ${payload[0].payload.endBlock}`;
             }}
             content={<ChartTooltipContent indicator="dot" className="w-48" />}
@@ -131,9 +135,8 @@ function generateChartData(props: Props): ChartDataPoint[] {
     const segmentIndex = Math.floor(
       (vote.blockNumber - minBlock) / BLOCK_SEGMENT_SIZE
     );
-    const segmentStart = minBlock + segmentIndex * BLOCK_SEGMENT_SIZE;
-
-    const segment = segmentMap[segmentStart];
+    const start = minBlock + segmentIndex * BLOCK_SEGMENT_SIZE;
+    const segment = segmentMap[start];
     if (segment) {
       segment.voteCount += 1;
       segment.comoAmount += vote.comoAmount;

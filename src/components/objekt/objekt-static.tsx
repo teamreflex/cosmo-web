@@ -1,9 +1,9 @@
 import ActionOverlay from "./overlay/action-overlay";
-import { useLockedObjekt } from "@/hooks/use-profile";
-import type { Objekt } from "@/lib/universal/objekt-conversion";
 import ExpandableObjekt from "./objekt-expandable";
 import { ObjektSidebar } from "./common";
 import InformationOverlay from "./overlay/information-overlay";
+import type { Objekt } from "@/lib/universal/objekt-conversion";
+import { useLockedObjekt } from "@/hooks/use-profile";
 import { useAuthenticated } from "@/hooks/use-authenticated";
 
 type Props = {

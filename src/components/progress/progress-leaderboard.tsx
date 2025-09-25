@@ -1,4 +1,3 @@
-import { parseAsString, parseAsStringEnum, useQueryState } from "nuqs";
 import { Suspense } from "react";
 import { Trophy } from "lucide-react";
 import { Button } from "../ui/button";
@@ -22,7 +21,6 @@ import ProgressLeaderboardContent, {
   LeaderboardSkeleton,
 } from "./progress-leaderboard-content";
 import type { FilterData } from "@/hooks/use-filter-data";
-import { parseAsNullableBoolean } from "@/hooks/use-cosmo-filters";
 import {
   Sheet,
   SheetContent,

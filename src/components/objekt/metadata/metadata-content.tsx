@@ -1,12 +1,13 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { cn } from "@/lib/utils";
+import { useState } from "react";
 import { Separator } from "../../ui/separator";
 import { ObjektSidebar } from "../common";
 import FlippableObjekt from "../objekt-flippable";
 import AttributePanel from "./attribute-panel";
-import { fetchObjektQuery, type ObjektMetadataTab } from "./common";
+import { fetchObjektQuery } from "./common";
 import MetadataPanel from "./metadata-panel";
-import { useState } from "react";
+import type { ObjektMetadataTab } from "./common";
+import { cn } from "@/lib/utils";
 import { useObjektSerial } from "@/hooks/use-objekt-serial";
 
 type Props = {

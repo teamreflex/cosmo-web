@@ -1,9 +1,5 @@
-import { ofetch } from "ofetch";
 import { useCallback } from "react";
-import type {
-  BFFCollectionGroup,
-  BFFCollectionGroupResponse,
-} from "@/lib/universal/cosmo/objekts";
+import type { BFFCollectionGroup } from "@/lib/universal/cosmo/objekts";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import FilteredObjektDisplay from "@/components/objekt/filtered-objekt-display";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
@@ -13,18 +9,14 @@ import GroupedObjekt from "@/components/objekt/objekt-collection-group";
 import { useProfileContext } from "@/hooks/use-profile";
 import VirtualizedGrid from "@/components/objekt/virtualized-grid";
 import LoaderRemote from "@/components/objekt/loader-remote";
-import { baseUrl } from "@/lib/query-client";
 import { useArtists } from "@/hooks/use-artists";
 import { useAuthenticated } from "@/hooks/use-authenticated";
 import { useGridColumns } from "@/hooks/use-grid-columns";
-
-const INITIAL_PAGE = 1;
-const PAGE_SIZE = 30;
+import { userCollectionBlockchainGroupsQuery } from "@/lib/universal/objekt-queries";
 
 type Props = {
   gridColumns: number;
   targetCosmo: PublicCosmo;
-  searchParams: URLSearchParams;
   showLocked: boolean;
 };
 
@@ -32,7 +24,7 @@ export default function BlockchainGroups(props: Props) {
   const lockedObjekts = useProfileContext((ctx) => ctx.lockedObjekts);
   const pins = useProfileContext((ctx) => ctx.pins);
   const authenticated = useAuthenticated();
-  const [filters] = useCosmoFilters();
+  const { filters } = useCosmoFilters();
   const { selectedIds } = useArtists();
   const gridColumns = useGridColumns();
 
@@ -59,47 +51,13 @@ export default function BlockchainGroups(props: Props) {
    */
   const options = objektOptions({
     filtering: "remote",
-    queryKey: ["collection", "blockchain-groups", props.targetCosmo.address],
-    queryFunction: async ({ pageParam = 1 }: { pageParam?: number }) => {
-      const endpoint = new URL(
-        `/api/bff/v1/objekt/collection-group/${props.targetCosmo.address}`,
-        baseUrl()
-      ).toString();
-
-      const searchParams = new URLSearchParams(props.searchParams);
-
-      // add required params
-      searchParams.set("page", pageParam.toString());
-      searchParams.set("size", PAGE_SIZE.toString());
-
-      // remap artist to artistName
-      if (searchParams.has("artist")) {
-        searchParams.set("artistName", searchParams.get("artist") ?? "");
-        searchParams.delete("artist");
-      }
-
-      // remap sort param to order
-      if (searchParams.has("sort")) {
-        searchParams.set("order", searchParams.get("sort") ?? "newest");
-        searchParams.delete("sort");
-      }
-
-      return await ofetch<BFFCollectionGroupResponse>(endpoint, {
-        query: {
-          ...Object.fromEntries(searchParams.entries()),
-          artists: selectedIds,
-        },
-      });
-    },
-    initialPageParam: INITIAL_PAGE,
-    getNextPageParam: (lastPage, _, lastPageParam) => {
-      lastPageParam ??= INITIAL_PAGE;
-      return lastPage.collections.length === PAGE_SIZE
-        ? lastPageParam + 1
-        : undefined;
-    },
+    query: userCollectionBlockchainGroupsQuery(
+      props.targetCosmo.address,
+      filters,
+      selectedIds
+    ),
     calculateTotal: (data) => {
-      const total = data.pages[0].collectionCount ?? 0;
+      const total = data.pages[0]?.collectionCount ?? 0;
       return (
         <p className="font-semibold text-end">
           {total.toLocaleString("en")} types

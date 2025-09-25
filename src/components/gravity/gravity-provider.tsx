@@ -1,8 +1,9 @@
-import { wagmiConfig } from "@/lib/client/gravity/config";
 import { WagmiProvider } from "wagmi";
+import type { ReactNode } from "react";
+import { wagmiConfig } from "@/lib/client/gravity/config";
 
 type Props = {
-  children: React.ReactNode;
+  children: ReactNode;
 };
 
 /**

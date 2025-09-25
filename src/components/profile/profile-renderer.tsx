@@ -1,11 +1,11 @@
-import { useFilters } from "@/hooks/use-filters";
 import FiltersContainer from "../collection/filters-container";
 import Portal from "../portal";
-import HelpDialog from "./help-dialog";
 import Blockchain from "../collection/data-sources/blockchain";
 import BlockchainGroups from "../collection/data-sources/blockchain-groups";
 import CollectionFilters from "../collection/filter-contexts/collection-filters";
+import HelpDialog from "./help-dialog";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import { useFilters } from "@/hooks/use-filters";
 import { useGridColumns } from "@/hooks/use-grid-columns";
 import { useUserState } from "@/hooks/use-user-state";
 import { Addresses, isEqual } from "@/lib/utils";

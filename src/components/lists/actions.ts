@@ -34,8 +34,10 @@ export const createObjektList = createServerFn({ method: "POST" })
 
     // check if the slug has already been used
     const list = await fetchObjektList({
-      userId: context.session.session.userId,
-      slug,
+      data: {
+        userId: context.session.session.userId,
+        slug,
+      },
     });
     if (list !== undefined) {
       throw new Error("You already have a list with this name");

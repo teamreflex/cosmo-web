@@ -1,5 +1,6 @@
-import { type PropsWithChildren, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import type { PropsWithChildren } from "react";
 
 type Props = PropsWithChildren<{
   to: string;

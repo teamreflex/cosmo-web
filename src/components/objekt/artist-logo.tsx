@@ -1,3 +1,4 @@
+import type { ComponentType } from "react";
 import type { ValidArtist } from "@/lib/universal/cosmo/common";
 
 type Props = {
@@ -18,7 +19,7 @@ export default function ArtistLogo({ artist }: Props) {
   );
 }
 
-const logo: Record<ValidArtist, React.ComponentType | null> = {
+const logo: Record<ValidArtist, ComponentType | null> = {
   idntt: idntt,
   artms: null,
   tripleS: null,

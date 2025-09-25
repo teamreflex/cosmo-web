@@ -1,23 +1,24 @@
 import { Loader2 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { QueryErrorResetBoundary } from "@tanstack/react-query";
+import { Suspense, useState } from "react";
+import { ErrorBoundary } from "react-error-boundary";
+import VisuallyHidden from "../ui/visually-hidden";
+import MetadataContent from "./metadata/metadata-content";
+import { MetadataDialogError } from "./metadata/common";
+import type { ReactNode } from "react";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import {
   Drawer,
   DrawerContent,
   DrawerDescription,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { QueryErrorResetBoundary } from "@tanstack/react-query";
-import { type ReactNode, Suspense, useState } from "react";
-import { ErrorBoundary } from "react-error-boundary";
-import { useMediaQuery } from "@/hooks/use-media-query";
-import VisuallyHidden from "../ui/visually-hidden";
-import MetadataContent from "./metadata/metadata-content";
-import { MetadataDialogError } from "./metadata/common";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useObjektSerial } from "@/hooks/use-objekt-serial";
 
 type RenderProps = {

@@ -1,7 +1,7 @@
-import type { RevealedVote } from "@/lib/client/gravity/polygon/types";
-import type { PollSelectedContentImage } from "@/lib/universal/cosmo/gravity";
 import * as motion from "motion/react-client";
 import { AnimatePresence } from "motion/react";
+import type { RevealedVote } from "@/lib/client/gravity/polygon/types";
+import type { PollSelectedContentImage } from "@/lib/universal/cosmo/gravity";
 
 type Props = {
   votes: RevealedVote[];

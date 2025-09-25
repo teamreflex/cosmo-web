@@ -60,13 +60,12 @@ export default function IndexRenderer(props: Props) {
               authenticated={authenticated}
               gridColumns={gridColumns}
             >
-              {({ item, priority }) => {
+              {({ item }) => {
                 const collection = Objekt.fromIndexer(item);
                 return (
                   <ExpandableObjekt
                     collection={collection}
                     setActive={setActiveObjekt}
-                    priority={priority}
                   >
                     <Overlay
                       objekt={item}

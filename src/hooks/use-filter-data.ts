@@ -1,17 +1,6 @@
-import { baseUrl } from "@/lib/query-client";
-import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
-import { ofetch } from "ofetch";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { useArtists } from "./use-artists";
-
-export const filterDataQuery = queryOptions({
-  queryKey: ["filter-data"],
-  queryFn: async () => {
-    const url = new URL("/api/filter-data", baseUrl());
-    return await ofetch<FilterData>(url.toString());
-  },
-  staleTime: Infinity,
-  refetchOnWindowFocus: false,
-});
+import { filterDataQuery } from "@/queries";
 
 export function useFilterData() {
   const { data } = useSuspenseQuery(filterDataQuery);

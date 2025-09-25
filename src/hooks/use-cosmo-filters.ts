@@ -9,6 +9,9 @@ export function useCosmoFilters() {
     strict: false,
   });
 
+  /**
+   * Parses the search params into a CosmoFilters object.
+   */
   const filters = useMemo((): CosmoFilters => {
     const parsed = cosmoSchema.safeParse(searchParams);
     if (!parsed.success) {
@@ -17,9 +20,21 @@ export function useCosmoFilters() {
     return parsed.data;
   }, [searchParams]);
 
+  /**
+   * Sets multiple filters at once and commits to the URL.
+   */
   const setFilters = useCallback(
-    (input: Partial<CosmoFilters>) => {
+    (
+      input:
+        | Partial<CosmoFilters>
+        | ((prev: CosmoFilters) => Partial<CosmoFilters>)
+    ) => {
+      if (typeof input === "function") {
+        input = input(filters);
+      }
+
       navigate({
+        // @ts-ignore - TODO: fix
         search: (prev) => ({
           ...prev,
           ...input,
@@ -29,11 +44,32 @@ export function useCosmoFilters() {
     [searchParams]
   );
 
-  return [filters, setFilters] as const;
+  /**
+   * Sets a single filter.
+   */
+  const setFilter = useCallback(
+    (key: keyof CosmoFilters, value: CosmoFilters[keyof CosmoFilters]) => {
+      setFilters((prev) => ({ ...prev, [key]: value }));
+    },
+    [setFilters]
+  );
+
+  return {
+    filters,
+    setFilters,
+    setFilter,
+  };
 }
 
 export type CosmoFilters = z.infer<typeof cosmoSchema>;
-export type SetCosmoFilters = (filters: CosmoFilters) => void;
+export type SetCosmoFilters = (
+  input: Partial<CosmoFilters> | ((prev: CosmoFilters) => Partial<CosmoFilters>)
+) => void;
+export type SetCosmoFilter<TKey extends keyof CosmoFilters> = (
+  key: TKey,
+  value: CosmoFilters[TKey]
+) => void;
+
 export type PropsWithFilters = {
   filters: CosmoFilters;
   setFilters: SetCosmoFilters;

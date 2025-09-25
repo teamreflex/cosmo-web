@@ -1,4 +1,3 @@
-import { cn } from "@/lib/utils";
 import {
   DownloadCloud,
   Grid2X2,
@@ -10,12 +9,12 @@ import {
 } from "lucide-react";
 import LockObjekt from "./lock-button";
 import OverlayStatus from "./overlay-status";
+import type { Objekt } from "@/lib/universal/objekt-conversion";
+import { cn } from "@/lib/utils";
 import { useProfileContext } from "@/hooks/use-profile";
 import AddToList from "@/components/lists/add-to-list";
 import useOverlayHover from "@/hooks/use-overlay-hover";
 import PinObjekt from "@/components/objekt/overlay/pin-button";
-// import SendObjekt from "./send-button";
-import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { useObjektOverlay } from "@/store";
 
 type Props = {
@@ -57,7 +56,7 @@ export default function ActionOverlay({
     usedForGrid ||
     isLocked ||
     (isPinned && isPin) ||
-    (token.transferable && authenticated);
+    authenticated;
 
   return (
     <div

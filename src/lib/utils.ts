@@ -1,7 +1,8 @@
-import { type ClassValue, clsx } from "clsx";
+import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import type { ValidArtist } from "./universal/cosmo/common";
 import { z } from "zod";
+import type { ClassValue } from "clsx";
+import type { ValidArtist } from "./universal/cosmo/common";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -20,7 +21,7 @@ export function ordinal(n: number) {
  */
 export function isEqual(a?: string, b?: string) {
   return (
-    a !== undefined && b !== undefined && a?.toLowerCase() === b?.toLowerCase()
+    a !== undefined && b !== undefined && a.toLowerCase() === b.toLowerCase()
   );
 }
 

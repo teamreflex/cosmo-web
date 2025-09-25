@@ -1,16 +1,16 @@
-import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
-import type { ArtistStats } from "@/lib/universal/progress";
 import { useMemo } from "react";
 import SectionClasses from "./section-classes";
 import SectionSeasons from "./section-seasons";
 import SectionMembers from "./section-members";
+import type { ArtistStats } from "@/lib/universal/progress";
+import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 
 type Props = {
   stats: ArtistStats[];
 };
 
 export default function ProgressChartsInner(props: Props) {
-  const [filters] = useCosmoFilters();
+  const { filters } = useCosmoFilters();
   const stats = useMemo(() => {
     if (filters.artist !== null) {
       return props.stats.find(

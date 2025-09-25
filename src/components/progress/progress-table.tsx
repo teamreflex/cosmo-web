@@ -1,6 +1,4 @@
-import type { SeasonProgress } from "@/lib/universal/progress";
 import { useSuspenseQueries } from "@tanstack/react-query";
-import { parseAsStringEnum, useQueryState } from "nuqs";
 import { ofetch } from "ofetch";
 import {
   Select,
@@ -11,8 +9,9 @@ import {
 } from "../ui/select";
 import ProgressSeason from "./progress-season";
 import ProgressLeaderboard from "./progress-leaderboard";
+import type { SeasonProgress } from "@/lib/universal/progress";
 import { baseUrl } from "@/lib/query-client";
-import { filterDataQuery } from "@/hooks/use-filter-data";
+import { filterDataQuery } from "@/queries";
 
 type Props = {
   address: string;

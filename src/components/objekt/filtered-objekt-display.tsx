@@ -1,13 +1,14 @@
-import { type ReactNode, Suspense, useCallback } from "react";
+import { Suspense, useCallback } from "react";
 import { HeartCrack, RefreshCcw } from "lucide-react";
 import { QueryErrorResetBoundary } from "@tanstack/react-query";
+import { ErrorBoundary } from "react-error-boundary";
 import MemberFilter from "../collection/member-filter";
-import type { ValidArtist } from "@/lib/universal/cosmo/common";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
-import { ErrorBoundary } from "react-error-boundary";
-import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import SkeletonGradient from "../skeleton/skeleton-overlay";
+import type { ValidArtist } from "@/lib/universal/cosmo/common";
+import type { ReactNode } from "react";
+import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 
 type Props = {
   children: ReactNode;
@@ -18,7 +19,7 @@ export default function FilteredObjektDisplay({
   children,
   gridColumns,
 }: Props) {
-  const [filters, setFilters] = useCosmoFilters();
+  const { filters, setFilters } = useCosmoFilters();
 
   const setActiveMember = useCallback(
     (member: string) => {

@@ -1,20 +1,20 @@
-import type { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
-import CandidateBreakdown from "./candidate-breakdown";
-import {
-  useChainData,
-  useCurrentDate,
-} from "@/lib/client/gravity/abstract/hooks";
 import { useMemo } from "react";
+import { AlertTriangle } from "lucide-react";
+import GravitySkeleton from "../gravity-skeleton";
+import CandidateBreakdown from "./candidate-breakdown";
+import TimelineChart from "./timeline-chart";
+import type { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
 import type {
   CosmoOngoingGravity,
   CosmoPastGravity,
 } from "@/lib/universal/cosmo/gravity";
+import {
+  useChainData,
+  useCurrentDate,
+} from "@/lib/client/gravity/abstract/hooks";
 import { useGravityPoll } from "@/lib/client/gravity/common";
 import { findPoll } from "@/lib/client/gravity/util";
-import GravitySkeleton from "../gravity-skeleton";
-import { AlertTriangle } from "lucide-react";
 import Portal from "@/components/portal";
-import TimelineChart from "./timeline-chart";
 
 type Props = {
   artist: CosmoArtistBFF;
@@ -46,7 +46,7 @@ export default function AbstractLiveChart({ artist, gravity }: Props) {
 
     let comoUsed = 0;
     for (let i = 0; i < poll.pollViewMetadata.selectedContent.length; i++) {
-      const chainComo = chain.comoPerCandidate?.[i] ?? 0;
+      const chainComo = chain.comoPerCandidate[i] ?? 0;
       comoByCandidate[i] = chainComo;
       comoUsed += chainComo;
     }

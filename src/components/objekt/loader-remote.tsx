@@ -1,15 +1,21 @@
 import { useMemo } from "react";
 import Portal from "../portal";
 import { InfiniteQueryNext } from "../infinite-query-pending";
+import type { DefaultError, QueryKey } from "@tanstack/react-query";
 import type { ReactElement } from "react";
 import type { ObjektRowItem } from "./virtualized-grid";
 import type { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
 import type { ObjektResponseOptions } from "@/hooks/use-objekt-response";
 import { useObjektResponse } from "@/hooks/use-objekt-response";
 
-type Props<TResponse, TItem> = {
+type Props<
+  TResponse,
+  TItem,
+  TError = DefaultError,
+  TQueryKey extends QueryKey = QueryKey
+> = {
   children: (props: RenderProps<TItem>) => ReactElement;
-  options: ObjektResponseOptions<TResponse, TItem>;
+  options: ObjektResponseOptions<TResponse, TItem, TError, TQueryKey>;
   pins?: CosmoObjekt[];
   hidePins?: boolean;
   shouldRender?: (objekt: TItem) => boolean;
@@ -18,14 +24,19 @@ type Props<TResponse, TItem> = {
   searchable?: boolean;
 };
 
-export default function LoaderRemote<TResponse, TItem>({
+export default function LoaderRemote<
+  TResponse,
+  TItem,
+  TError = DefaultError,
+  TQueryKey extends QueryKey = QueryKey
+>({
   pins = [],
   hidePins = true,
   shouldRender = () => true,
   showTotal = false,
   searchable = false,
   ...props
-}: Props<TResponse, TItem>) {
+}: Props<TResponse, TItem, TError, TQueryKey>) {
   // data
   const { query, total, items } = useObjektResponse(props.options);
 

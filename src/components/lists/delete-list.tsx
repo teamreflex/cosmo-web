@@ -1,3 +1,11 @@
+import { Loader2, Trash } from "lucide-react";
+import { toast } from "sonner";
+import { useMutation } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { Button } from "../ui/button";
+import { deleteObjektList } from "./actions";
+import type { MouseEvent } from "react";
+import type { ObjektList } from "@/lib/server/db/schema";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -9,29 +17,26 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Button } from "../ui/button";
-import { Loader2, Trash } from "lucide-react";
-import type { MouseEvent } from "react";
-import { deleteObjektList } from "./actions";
-import type { ObjektList } from "@/lib/server/db/schema";
-import { useAction } from "next-safe-action/hooks";
-import { toast } from "sonner";
 
 type Props = {
   objektList: ObjektList;
 };
 
 export default function DeleteList({ objektList }: Props) {
-  const { execute, isPending } = useAction(deleteObjektList, {
-    onNavigation: () => {
+  const mutationFn = useServerFn(deleteObjektList);
+  const mutation = useMutation({
+    mutationFn,
+    onSuccess: () => {
       toast.success("Objekt list deleted");
     },
   });
 
-  function submit(event: MouseEvent<HTMLButtonElement>) {
+  function handleClick(event: MouseEvent<HTMLButtonElement>) {
     event.preventDefault();
-    execute({
-      id: objektList.id,
+    mutation.mutate({
+      data: {
+        id: objektList.id,
+      },
     });
   }
 
@@ -51,9 +56,13 @@ export default function DeleteList({ objektList }: Props) {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={submit} disabled={isPending}>
+          <AlertDialogAction
+            type="button"
+            onClick={handleClick}
+            disabled={mutation.isPending}
+          >
             <span>Delete</span>
-            {isPending && <Loader2 className="animate-spin" />}
+            {mutation.isPending && <Loader2 className="animate-spin" />}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

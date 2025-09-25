@@ -1,8 +1,8 @@
 import { Send } from "lucide-react";
-import { useObjektTransfer } from "@/hooks/use-objekt-transfer";
-import type { Objekt } from "@/lib/universal/objekt-conversion";
-import { useArtists } from "@/hooks/use-artists";
 import { toast } from "sonner";
+import type { Objekt } from "@/lib/universal/objekt-conversion";
+import { useObjektTransfer } from "@/hooks/use-objekt-transfer";
+import { useArtists } from "@/hooks/use-artists";
 
 type Props = {
   collection: Objekt.Collection;

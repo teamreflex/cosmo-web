@@ -2,33 +2,32 @@ import {
   QueryErrorResetBoundary,
   useSuspenseInfiniteQuery,
 } from "@tanstack/react-query";
-import TransferRow from "./transfer-row";
-import { InfiniteQueryNext } from "../infinite-query-pending";
-import Portal from "../portal";
 import { ErrorBoundary } from "react-error-boundary";
 import { HeartCrack, RefreshCcw } from "lucide-react";
-import { Button } from "../ui/button";
 import { Suspense, useCallback, useState } from "react";
 import { Skeleton } from "../ui/skeleton";
-import { baseUrl } from "@/lib/query-client";
-import { ofetch } from "ofetch";
-import type { TransferParams, TransferResult } from "@/lib/universal/transfers";
-import { type CosmoFilters, useCosmoFilters } from "@/hooks/use-cosmo-filters";
+import { Button } from "../ui/button";
+import Portal from "../portal";
+import { InfiniteQueryNext } from "../infinite-query-pending";
 import FiltersContainer from "../collection/filters-container";
-import type { ValidArtist } from "@/lib/universal/cosmo/common";
 import MemberFilter from "../collection/member-filter";
-import { useFilters } from "@/hooks/use-filters";
 import SkeletonGradient from "../skeleton/skeleton-overlay";
 import { TransfersFilters } from "../collection/filter-contexts/transfers-filters";
+import TransferRow from "./transfer-row";
+import type { ValidArtist } from "@/lib/universal/cosmo/common";
+import type { TransferType } from "@/lib/universal/transfers";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import type { CosmoFilters } from "@/hooks/use-cosmo-filters";
+import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
+import { transfersQuery } from "@/lib/universal/objekt-queries";
 
 type Props = {
   cosmo: PublicCosmo;
 };
 
 export default function TransfersRenderer({ cosmo }: Props) {
-  const [filters, setFilters] = useCosmoFilters();
-  const [type, setType] = useState<TransferParams["type"]>("all");
+  const { filters, setFilters } = useCosmoFilters();
+  const [type, setType] = useState<TransferType>("all");
 
   const setActiveMember = useCallback(
     (member: string) => {
@@ -97,32 +96,13 @@ export default function TransfersRenderer({ cosmo }: Props) {
 type TransfersProps = {
   address: string;
   filters: CosmoFilters;
-  type: TransferParams["type"];
+  type: TransferType;
 };
 
 function Transfers({ address, filters, type }: TransfersProps) {
-  const { searchParams } = useFilters();
-  const query = useSuspenseInfiniteQuery({
-    queryKey: ["transfers", address, type, filters],
-    queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
-      const endpoint = new URL(`/api/transfers/${address}`, baseUrl());
-
-      const query = new URLSearchParams(searchParams);
-      query.set("page", pageParam.toString());
-      query.set("type", type);
-      query.delete("sort");
-
-      return await ofetch<TransferResult>(endpoint.toString(), {
-        retry: false,
-        query: Object.fromEntries(query.entries()),
-      });
-    },
-    initialPageParam: 0,
-    getNextPageParam: (lastPage) => lastPage.nextStartAfter,
-    refetchOnWindowFocus: false,
-    staleTime: 1000 * 60,
-    retry: false,
-  });
+  const query = useSuspenseInfiniteQuery(
+    transfersQuery(address, filters, type)
+  );
 
   const rows = query.data.pages
     .flatMap((p) => p.results)

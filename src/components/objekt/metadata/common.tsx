@@ -1,7 +1,8 @@
-import { ofetch, type FetchError } from "ofetch";
+import { ofetch } from "ofetch";
 import { HeartCrack, RefreshCcw } from "lucide-react";
 import { Button } from "../../ui/button";
 import { ObjektNotFoundError } from "../common";
+import type { FetchError } from "ofetch";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 
 export type ObjektMetadataTab = "metadata" | "serials";

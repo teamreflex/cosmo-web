@@ -1,7 +1,7 @@
-import type { ObjektProgression } from "@/lib/universal/progress";
-import { ObjektSidebar } from "../objekt/common";
 import { Star } from "lucide-react";
+import { ObjektSidebar } from "../objekt/common";
 import ExpandableObjekt from "../objekt/objekt-expandable";
+import type { ObjektProgression } from "@/lib/universal/progress";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
 

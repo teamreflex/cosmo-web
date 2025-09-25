@@ -1,22 +1,19 @@
-import {
-  type IndexedObjekt,
-  type LegacyObjektResponse,
-  parsePage,
-} from "@/lib/universal/objekts";
-import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
-import ListOverlay from "./list-overlay";
-import { useFilters } from "@/hooks/use-filters";
-import FiltersContainer from "../collection/filters-container";
 import { ofetch } from "ofetch";
-import { baseUrl } from "@/lib/query-client";
-import type { ObjektResponseOptions } from "@/hooks/use-objekt-response";
+import FiltersContainer from "../collection/filters-container";
+import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
 import { ObjektSidebar } from "../objekt/common";
 import ExpandableObjekt from "../objekt/objekt-expandable";
 import { Objekt } from "../../lib/universal/objekt-conversion";
 import VirtualizedGrid from "../objekt/virtualized-grid";
 import LoaderRemote from "../objekt/loader-remote";
 import ObjektIndexFilters from "../collection/filter-contexts/objekt-index-filters";
+import ListOverlay from "./list-overlay";
+import type { ObjektResponseOptions } from "@/hooks/use-objekt-response";
 import type { ObjektList } from "@/lib/server/db/schema";
+import type { IndexedObjekt, ObjektResponse } from "@/lib/universal/objekts";
+import { baseUrl } from "@/lib/query-client";
+import { useFilters } from "@/hooks/use-filters";
+import { parsePage } from "@/lib/universal/objekts";
 import { useGridColumns } from "@/hooks/use-grid-columns";
 
 type Props = {
@@ -45,7 +42,7 @@ export default function ListRenderer(props: Props) {
           ...Object.fromEntries(searchParams.entries()),
           page: pageParam,
         },
-      }).then((res) => parsePage<LegacyObjektResponse<IndexedObjekt>>(res));
+      }).then((res) => parsePage<ObjektResponse<IndexedObjekt>>(res));
     },
     getNextPageParam: (lastPage) => lastPage.nextStartAfter,
     calculateTotal: (data) => {
@@ -56,7 +53,7 @@ export default function ListRenderer(props: Props) {
     },
     getItems: (data) => data.pages.flatMap((page) => page.objekts),
   } satisfies ObjektResponseOptions<
-    LegacyObjektResponse<IndexedObjekt>,
+    ObjektResponse<IndexedObjekt>,
     IndexedObjekt
   >;
 

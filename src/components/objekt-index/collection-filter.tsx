@@ -1,8 +1,5 @@
-import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Check, ChevronDown } from "lucide-react";
-import { cn } from "@/lib/utils";
-import type { PropsWithFilters } from "@/hooks/use-cosmo-filters";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import {
   Command,
@@ -12,22 +9,25 @@ import {
   CommandItem,
   CommandList,
 } from "../ui/command";
+import type { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { useFilterData } from "@/hooks/use-filter-data";
 
-export default function CollectionFilter({
-  filters,
-  setFilters,
-}: PropsWithFilters) {
+type Props = {
+  collections: CosmoFilters["collectionNo"];
+  onChange: SetCosmoFilters;
+};
+
+export default function CollectionFilter(props: Props) {
   const { collections } = useFilterData();
   const [open, setOpen] = useState(false);
 
-  const value = filters?.collectionNo ?? [];
-
   function handleSelect(collection: string) {
-    setFilters((prev) => {
-      const newFilters = prev.collectionNo?.includes(collection)
-        ? (prev.collectionNo ?? []).filter((f) => f !== collection)
-        : [...(prev.collectionNo ?? []), collection];
+    props.onChange(() => {
+      const newFilters = props.collections?.includes(collection)
+        ? props.collections.filter((f) => f !== collection)
+        : [...(props.collections ?? []), collection];
 
       return {
         collectionNo: newFilters.length > 0 ? newFilters : null,
@@ -44,7 +44,7 @@ export default function CollectionFilter({
           aria-expanded={open}
           className={cn(
             "flex gap-2 items-center",
-            value.length > 0 && "border-cosmo"
+            (props.collections?.length ?? 0) > 0 && "border-cosmo"
           )}
         >
           <span>Collections</span>
@@ -68,7 +68,9 @@ export default function CollectionFilter({
                   <Check
                     className={cn(
                       "ml-auto",
-                      value.includes(collection) ? "opacity-100" : "opacity-0"
+                      props.collections?.includes(collection)
+                        ? "opacity-100"
+                        : "opacity-0"
                     )}
                   />
                 </CommandItem>

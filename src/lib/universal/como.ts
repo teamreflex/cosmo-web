@@ -23,7 +23,7 @@ export function buildCalendar(date: Date, objekts: ObjektWithCollection[]) {
 
   // get the days in the given month
   const currentDays = getDays(date);
-  const lastDayOfMonth = currentDays[currentDays.length - 1];
+  const lastDayOfMonth = currentDays.at(-1)!;
 
   for (const objekt of objekts) {
     const day = new Date(objekt.mintedAt).getDate();
@@ -41,7 +41,7 @@ export function buildCalendar(date: Date, objekts: ObjektWithCollection[]) {
       };
     }
     // increment count for day and contract
-    calendar[day][objekt.contract].count += objekt.amount;
+    calendar[day][objekt.contract]!.count += objekt.amount;
 
     // carry over drops from non-existent days to the last day of the month
     if (!currentDays.includes(day)) {
@@ -56,8 +56,8 @@ export function buildCalendar(date: Date, objekts: ObjektWithCollection[]) {
         };
       }
 
-      calendar[lastDayOfMonth][objekt.contract].carried += objekt.amount;
-      calendar[lastDayOfMonth][objekt.contract].count += objekt.amount;
+      calendar[lastDayOfMonth][objekt.contract]!.carried += objekt.amount;
+      calendar[lastDayOfMonth][objekt.contract]!.count += objekt.amount;
     }
   }
 

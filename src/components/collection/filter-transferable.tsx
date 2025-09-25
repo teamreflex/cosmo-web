@@ -1,22 +1,26 @@
+import type { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { Toggle } from "@/components/ui/toggle";
-import type { PropsWithFilters } from "@/hooks/use-cosmo-filters";
 
-export default function TransferableFilter({
-  filters,
-  setFilters,
-}: PropsWithFilters) {
-  const pressed = filters?.transferable ?? false;
+type Props = {
+  transferable: CosmoFilters["transferable"];
+  onChange: SetCosmoFilters;
+};
+
+export default function TransferableFilter(props: Props) {
+  const pressed = props.transferable ?? false;
+
+  function handleChange(value: boolean) {
+    props.onChange({
+      transferable: value ? true : null,
+    });
+  }
 
   return (
     <Toggle
       className="data-[state=on]:border-cosmo"
       variant="outline"
       pressed={pressed}
-      onPressedChange={(v) =>
-        setFilters({
-          transferable: v ? true : null,
-        })
-      }
+      onPressedChange={handleChange}
       aria-label="Toggle transferable"
     >
       Transferable

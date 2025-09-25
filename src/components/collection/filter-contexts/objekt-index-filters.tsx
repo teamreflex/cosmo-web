@@ -1,26 +1,26 @@
-import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
+import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 import SeasonFilter from "../filter-season";
 import OnlineFilter from "../filter-online";
 import ClassFilter from "../filter-class";
 import SortFilter from "../filter-sort";
-import CollectionFilter from "@/components/objekt-index/collection-filter";
-import { Suspense } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ErrorBoundary } from "react-error-boundary";
 import FilterSearch from "../filter-search";
 import ResetFilters from "../reset-filters";
+import CollectionFilter from "@/components/objekt-index/collection-filter";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
+
+type Props = {
+  search?: boolean;
+};
 
 /**
  * used on:
  * - @/nickname/list/list-name
  * - /objekts
  */
-export default function ObjektIndexFilters({
-  search = false,
-}: {
-  search?: boolean;
-}) {
-  const [filters, setFilters] = useCosmoFilters();
+export default function ObjektIndexFilters({ search = false }: Props) {
+  const { filters, setFilters } = useCosmoFilters();
 
   return (
     <div className="flex gap-2 items-center flex-wrap justify-center lg:group-data-[show=false]:flex group-data-[show=false]:hidden">
@@ -28,7 +28,11 @@ export default function ObjektIndexFilters({
         fallback={<Skeleton className="w-[100px] h-9 bg-destructive" />}
       >
         <Suspense fallback={<Skeleton className="w-[100px] h-9" />}>
-          <SeasonFilter filters={filters} setFilters={setFilters} />
+          <SeasonFilter
+            seasons={filters.season}
+            artist={filters.artist}
+            onChange={setFilters}
+          />
         </Suspense>
       </ErrorBoundary>
 
@@ -36,21 +40,28 @@ export default function ObjektIndexFilters({
         fallback={<Skeleton className="w-[124px] h-9 bg-destructive" />}
       >
         <Suspense fallback={<Skeleton className="w-[124px] h-9" />}>
-          <CollectionFilter filters={filters} setFilters={setFilters} />
+          <CollectionFilter
+            collections={filters.collectionNo}
+            onChange={setFilters}
+          />
         </Suspense>
       </ErrorBoundary>
 
-      <OnlineFilter filters={filters} setFilters={setFilters} />
+      <OnlineFilter onOffline={filters.on_offline} onChange={setFilters} />
 
       <ErrorBoundary
         fallback={<Skeleton className="w-[87px] h-9 bg-destructive" />}
       >
         <Suspense fallback={<Skeleton className="w-[87px] h-9" />}>
-          <ClassFilter filters={filters} setFilters={setFilters} />
+          <ClassFilter
+            classes={filters.class}
+            artist={filters.artist}
+            onChange={setFilters}
+          />
         </Suspense>
       </ErrorBoundary>
 
-      <SortFilter filters={filters} setFilters={setFilters} serials={false} />
+      <SortFilter sort={filters.sort} onChange={setFilters} serials={false} />
 
       {search && <FilterSearch />}
 

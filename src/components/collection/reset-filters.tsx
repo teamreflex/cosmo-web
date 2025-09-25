@@ -1,6 +1,3 @@
-import { Button } from "@/components/ui/button";
-import type { PropsWithFilters } from "@/hooks/use-cosmo-filters";
-import { filtersAreDirty } from "@/hooks/use-filters";
 import { RotateCcw } from "lucide-react";
 import {
   Tooltip,
@@ -8,15 +5,20 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
+import type { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
+import { Button } from "@/components/ui/button";
+import { filtersAreDirty } from "@/hooks/use-filters";
 
-export default function ResetFilters({
-  filters,
-  setFilters,
-}: PropsWithFilters) {
-  const disabled = !filtersAreDirty(filters);
+type Props = {
+  filters: CosmoFilters;
+  setFilters: SetCosmoFilters;
+};
+
+export default function ResetFilters(props: Props) {
+  const disabled = !filtersAreDirty(props.filters);
 
   function handleReset() {
-    setFilters({
+    props.setFilters({
       member: null,
       artist: null,
       sort: null,

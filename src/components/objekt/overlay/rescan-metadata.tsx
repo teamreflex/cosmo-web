@@ -1,8 +1,8 @@
-import { useAction } from "next-safe-action/hooks";
-import { rescanObjektMetadata } from "../actions";
 import { toast } from "sonner";
-import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { RefreshCcw } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { rescanObjektMetadata } from "../actions";
+import type { Objekt } from "@/lib/universal/objekt-conversion";
 
 type Props = {
   collection: Objekt.Collection;
@@ -10,7 +10,8 @@ type Props = {
 };
 
 export default function RescanMetadata({ collection, token }: Props) {
-  const { execute, isPending } = useAction(rescanObjektMetadata, {
+  const mutation = useMutation({
+    mutationFn: rescanObjektMetadata,
     onSuccess() {
       toast.success("Objekt updated!", {
         description: `${collection.collectionId} #${token.serial} has been updated from COSMO.`,
@@ -23,14 +24,14 @@ export default function RescanMetadata({ collection, token }: Props) {
     },
   });
 
-  const handleClick = () => {
-    execute({ tokenId: token.tokenId.toString() });
-  };
+  function handleClick() {
+    mutation.mutate({ data: { tokenId: token.tokenId.toString() } });
+  }
 
   return (
     <button
       onClick={handleClick}
-      disabled={isPending}
+      disabled={mutation.isPending}
       className="group/button flex items-center gap-1 text-xs underline"
     >
       <RefreshCcw className="size-3 group-disabled/button:animate-spin" />

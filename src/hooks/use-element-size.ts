@@ -1,5 +1,6 @@
-import { type RefObject, useRef, useState, useCallback } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useIsomorphicLayoutEffect } from "usehooks-ts";
+import type { RefObject } from "react";
 
 type Size = {
   width: number;

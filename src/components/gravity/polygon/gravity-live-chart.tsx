@@ -1,11 +1,11 @@
-import type { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
+import CandidateBreakdown from "./candidate-breakdown";
+import TimelineChart from "./timeline-chart";
+import VoterBreakdown from "./voter-breakdown";
 import type {
   CosmoOngoingGravity,
   CosmoPastGravity,
 } from "@/lib/universal/cosmo/gravity";
-import CandidateBreakdown from "./candidate-breakdown";
-import TimelineChart from "./timeline-chart";
-import VoterBreakdown from "./voter-breakdown";
+import type { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
 import { fetchPolygonGravity } from "@/lib/server/gravity";
 
 type Props = {

@@ -3,7 +3,8 @@ import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import { ErrorBoundary } from "react-error-boundary";
 import { Skeleton } from "../../ui/skeleton";
 import Metadata from "./metadata";
-import { MetadataDialogError, type ObjektMetadataTab } from "./common";
+import { MetadataDialogError } from "./common";
+import type { ObjektMetadataTab } from "./common";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 
 type Props = {

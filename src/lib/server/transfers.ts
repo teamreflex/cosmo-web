@@ -1,5 +1,6 @@
 import { and, desc, eq, inArray, not, or, sql } from "drizzle-orm";
-import type { TransferParams, TransferResult } from "../universal/transfers";
+import { createServerFn } from "@tanstack/react-start";
+import { Addresses, isEqual } from "../utils";
 import { indexer } from "./db/indexer";
 import { collections, objekts, transfers } from "./db/indexer/schema";
 import { fetchKnownAddresses } from "./cosmo-accounts";
@@ -10,56 +11,55 @@ import {
   withOnlineType,
   withSeason,
 } from "./objekts/filters";
-import { Addresses, isEqual } from "../utils";
-import { parse } from "@/lib/universal/parsers";
-import { transfersSchema } from "@/lib/universal/transfers";
+import type z from "zod";
+import type { TransferResult, TransferType } from "../universal/transfers";
+import { transfersBackendSchema } from "@/lib/universal/parsers";
 
 const PER_PAGE = 30;
 
 /**
  * Fetches transfers and zips known nicknames into the results.
  */
-export async function fetchTransfers(
-  address: string,
-  params: TransferParams
-): Promise<TransferResult> {
-  // too much data, bail
-  if (isEqual(address, Addresses.NULL)) {
+export const fetchTransfers = createServerFn({ method: "GET" })
+  .inputValidator((data) => transfersBackendSchema.parse(data))
+  .handler(async ({ data }): Promise<TransferResult> => {
+    // too much data, bail
+    if (isEqual(data.address, Addresses.NULL)) {
+      return {
+        results: [],
+        nextStartAfter: undefined,
+      };
+    }
+
+    const aggregate = await fetchTransferRows(data.address, data);
+    const addresses = aggregate.results
+      .flatMap((r) => [r.transfer.from, r.transfer.to])
+      // can't send to yourself, so filter out the current address
+      .filter((a) => a !== data.address.toLowerCase());
+
+    const knownAddresses = await fetchKnownAddresses(addresses);
+
     return {
-      results: [],
-      nextStartAfter: undefined,
+      ...aggregate,
+      // map the nickname onto the results and apply spin flags
+      results: aggregate.results.map((row) => ({
+        ...row,
+        username: knownAddresses.find((a) =>
+          [
+            row.transfer.from.toLowerCase(),
+            row.transfer.to.toLowerCase(),
+          ].includes(a.address.toLowerCase())
+        )?.username,
+      })),
     };
-  }
-
-  const aggregate = await fetchTransferRows(address, params);
-  const addresses = aggregate.results
-    .flatMap((r) => [r.transfer.from, r.transfer.to])
-    // can't send to yourself, so filter out the current address
-    .filter((a) => a !== address.toLowerCase());
-
-  const knownAddresses = await fetchKnownAddresses(addresses);
-
-  return {
-    ...aggregate,
-    // map the nickname onto the results and apply spin flags
-    results: aggregate.results.map((row) => ({
-      ...row,
-      username: knownAddresses.find((a) =>
-        [
-          row.transfer.from.toLowerCase(),
-          row.transfer.to.toLowerCase(),
-        ].includes(a.address.toLowerCase())
-      )?.username,
-    })),
-  };
-}
+  });
 
 /**
  * Fetch transfers from the indexer by address.
  */
 async function fetchTransferRows(
   address: string,
-  params: TransferParams
+  params: z.infer<typeof transfersBackendSchema>
 ): Promise<TransferResult> {
   const results = await indexer
     .select({
@@ -78,9 +78,9 @@ async function fetchTransferRows(
         // additional filters
         ...[
           ...withArtist(params.artist),
-          ...withClass(params.class),
-          ...withSeason(params.season),
-          ...withOnlineType(params.on_offline),
+          ...withClass(params.class ?? []),
+          ...withSeason(params.season ?? []),
+          ...withOnlineType(params.on_offline ?? []),
           ...withMember(params.member),
         ]
       )
@@ -98,7 +98,7 @@ async function fetchTransferRows(
 /**
  * Filter transfers by type.
  */
-function withType(address: string, type: TransferParams["type"]) {
+function withType(address: string, type: TransferType) {
   switch (type) {
     // address must be either a sender or receiver
     case "all":
@@ -122,31 +122,4 @@ function withType(address: string, type: TransferParams["type"]) {
     case "spin":
       return and(eq(transfers.to, Addresses.SPIN), eq(transfers.from, address));
   }
-}
-
-/**
- * Parse URL params for transfers.
- */
-export function parseTransfersParams(params: URLSearchParams) {
-  return parse(
-    transfersSchema,
-    {
-      page: params.get("page"),
-      type: params.get("type") ?? "all",
-      member: params.get("member"),
-      artist: params.get("artist"),
-      season: params.getAll("season"),
-      class: params.getAll("class"),
-      on_offline: params.getAll("on_offline"),
-    },
-    {
-      page: 0,
-      type: "all",
-      member: null,
-      artist: null,
-      season: [],
-      class: [],
-      on_offline: [],
-    }
-  );
 }

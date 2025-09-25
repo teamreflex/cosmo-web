@@ -1,12 +1,13 @@
-import { Suspense, useCallback, type PropsWithChildren } from "react";
-import MemberFilter from "../collection/member-filter";
-import type { ValidArtist } from "@/lib/universal/cosmo/common";
-import ProgressTable from "./progress-table";
+import { Suspense, useCallback } from "react";
 import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import { ErrorBoundary } from "react-error-boundary";
-import { Button } from "../ui/button";
 import { RefreshCcw } from "lucide-react";
+import { Button } from "../ui/button";
+import MemberFilter from "../collection/member-filter";
 import { Skeleton } from "../ui/skeleton";
+import ProgressTable from "./progress-table";
+import type { PropsWithChildren } from "react";
+import type { ValidArtist } from "@/lib/universal/cosmo/common";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 
 type Props = PropsWithChildren<{
@@ -14,7 +15,7 @@ type Props = PropsWithChildren<{
 }>;
 
 export default function ProgressRenderer(props: Props) {
-  const [filters, setFilters] = useCosmoFilters();
+  const { filters, setFilters } = useCosmoFilters();
 
   const setActiveMember = useCallback(
     (member: string) => {
@@ -60,7 +61,7 @@ export default function ProgressRenderer(props: Props) {
               </div>
             )}
           >
-            {filters.member !== null ? (
+            {filters.member ? (
               <Suspense fallback={<ProgressTableSkeleton />}>
                 <ProgressTable
                   address={props.address}

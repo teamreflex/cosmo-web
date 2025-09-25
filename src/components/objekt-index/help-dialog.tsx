@@ -1,3 +1,5 @@
+import { HelpCircle } from "lucide-react";
+import VisuallyHidden from "../ui/visually-hidden";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -8,9 +10,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import VisuallyHidden from "../ui/visually-hidden";
 
 export default function HelpDialog() {
   return (

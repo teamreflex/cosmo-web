@@ -1,42 +1,37 @@
 import { eq } from "drizzle-orm";
-import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
+import { createServerFn } from "@tanstack/react-start";
 import { db } from "@/lib/server/db";
 import { objektMetadata } from "@/lib/server/db/schema";
 import { rescanMetadata } from "@/lib/server/objekts/metadata";
-import { adminActionClient, authActionClient } from "@/lib/server/middlewares";
+import {
+  adminMiddleware,
+  authenticatedMiddleware,
+} from "@/lib/server/middlewares";
+import { metadataObjectSchema } from "@/lib/universal/schema/admin";
 
 /**
  * Update an objekt's metadata.
  */
-export const updateObjektMetadata = adminActionClient
-  .metadata({ actionName: "updateObjektMetadata" })
-  .inputSchema(
-    z.object({
-      collectionId: z.string(),
-      description: z.string().min(3).max(254),
-    })
-  )
-  .action(async ({ parsedInput: { collectionId, description }, ctx }) => {
+export const updateObjektMetadata = createServerFn({ method: "POST" })
+  .middleware([adminMiddleware])
+  .inputValidator((data) => metadataObjectSchema.parse(data))
+  .handler(async ({ data, context }) => {
     const [result] = await db
       .insert(objektMetadata)
       .values({
-        collectionId,
-        description,
-        contributor: ctx.cosmo.address,
+        ...data,
+        contributor: context.cosmo.address,
       })
       .onConflictDoUpdate({
         set: {
-          description,
-          contributor: ctx.cosmo.address,
+          description: data.description,
+          contributor: context.cosmo.address,
         },
         target: objektMetadata.collectionId,
-        where: eq(objektMetadata.collectionId, collectionId),
+        where: eq(objektMetadata.collectionId, data.collectionId),
       })
       .returning();
-
-    revalidatePath(`/api/objekts/metadata/${collectionId}`);
-    revalidateTag(collectionId);
 
     return result;
   });
@@ -44,13 +39,9 @@ export const updateObjektMetadata = adminActionClient
 /**
  * Rescan an objekt's metadata.
  */
-export const rescanObjektMetadata = authActionClient
-  .metadata({ actionName: "rescanObjektMetadata" })
-  .inputSchema(
-    z.object({
-      tokenId: z.string(),
-    })
-  )
-  .action(async ({ parsedInput: { tokenId } }) => {
-    return await rescanMetadata(tokenId);
+export const rescanObjektMetadata = createServerFn({ method: "POST" })
+  .middleware([authenticatedMiddleware])
+  .inputValidator((data) => z.object({ tokenId: z.string() }).parse(data))
+  .handler(async ({ data }) => {
+    return await rescanMetadata(data.tokenId);
   });

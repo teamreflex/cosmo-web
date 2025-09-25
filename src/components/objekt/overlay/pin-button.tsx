@@ -1,9 +1,9 @@
-import { pinObjekt, unpinObjekt } from "@/components/collection/actions";
 import { Loader2, Pin, PinOff } from "lucide-react";
+import { toast } from "sonner";
+import { useMutation } from "@tanstack/react-query";
+import { pinObjekt, unpinObjekt } from "@/components/collection/actions";
 import { track } from "@/lib/utils";
 import { useProfileContext } from "@/hooks/use-profile";
-import { toast } from "sonner";
-import { useAction } from "next-safe-action/hooks";
 
 type Props = {
   collectionId: string;
@@ -26,22 +26,27 @@ type ButtonProps = {
 
 function PinButton(props: ButtonProps) {
   const addPin = useProfileContext((ctx) => ctx.addPin);
-  const { execute, isPending } = useAction(pinObjekt, {
-    onSuccess: ({ data }) => {
+  const mutation = useMutation({
+    mutationFn: pinObjekt,
+    onSuccess: (data) => {
       track("pin-objekt");
-      addPin(data!);
+      addPin(data);
       toast.success(`Pinned ${props.collectionId}`);
     },
   });
 
+  function handleClick() {
+    mutation.mutate({ data: { tokenId: props.tokenId } });
+  }
+
   return (
     <button
       className="hover:scale-110 transition-all flex items-center"
-      disabled={isPending}
+      disabled={mutation.isPending}
       aria-label={`Pin ${props.collectionId}`}
-      onClick={() => execute({ tokenId: props.tokenId })}
+      onClick={handleClick}
     >
-      {isPending ? (
+      {mutation.isPending ? (
         <Loader2 className="h-3 w-3 sm:h-5 sm:w-5 animate-spin" />
       ) : (
         <Pin className="h-3 w-3 sm:h-5 sm:w-5" />
@@ -52,7 +57,8 @@ function PinButton(props: ButtonProps) {
 
 function UnpinButton(props: ButtonProps) {
   const removePin = useProfileContext((ctx) => ctx.removePin);
-  const { execute, isPending } = useAction(unpinObjekt, {
+  const mutation = useMutation({
+    mutationFn: unpinObjekt,
     onSuccess: () => {
       track("unpin-objekt");
       removePin(props.tokenId);
@@ -60,14 +66,18 @@ function UnpinButton(props: ButtonProps) {
     },
   });
 
+  function handleClick() {
+    mutation.mutate({ data: { tokenId: props.tokenId } });
+  }
+
   return (
     <button
       className="hover:scale-110 transition-all flex items-center"
-      disabled={isPending}
+      disabled={mutation.isPending}
       aria-label={`Unpin ${props.collectionId}`}
-      onClick={() => execute({ tokenId: props.tokenId })}
+      onClick={handleClick}
     >
-      {isPending ? (
+      {mutation.isPending ? (
         <Loader2 className="h-3 w-3 sm:h-5 sm:w-5 animate-spin" />
       ) : (
         <PinOff className="h-3 w-3 sm:h-5 sm:w-5" />

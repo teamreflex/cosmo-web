@@ -1,16 +1,16 @@
+import { Bar, BarChart } from "recharts";
+import { format } from "date-fns";
+import { Suspense } from "react";
+import { Loader2 } from "lucide-react";
+import GravityStatus from "./gravity-status";
+import type { LiveStatus } from "@/lib/client/gravity/abstract/types";
+import type { ChartConfig } from "@/components/ui/chart";
 import {
-  type ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import type { LiveStatus } from "@/lib/client/gravity/abstract/types";
 import { useVotedEvents } from "@/lib/client/gravity/abstract/hooks";
-import { Bar, BarChart } from "recharts";
-import { format } from "date-fns";
-import GravityStatus from "./gravity-status";
-import { Suspense } from "react";
-import { Loader2 } from "lucide-react";
 
 type Props = {
   pollId: number;
@@ -72,7 +72,7 @@ function TimelineChartContent(props: Props) {
         >
           <ChartTooltip
             labelFormatter={(_, payload) => {
-              if (payload && payload[0] && payload[0].payload.timestamp) {
+              if (payload[0] && payload[0].payload.timestamp) {
                 return format(
                   new Date(payload[0].payload.timestamp),
                   "MMM d, h:mm a"

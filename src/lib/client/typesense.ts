@@ -1,6 +1,6 @@
 import { SearchClient } from "typesense";
 import type { CosmoFilters } from "@/hooks/use-cosmo-filters";
-import type { IndexedObjekt } from "../universal/objekts";
+import type { IndexedObjekt, ObjektResponse } from "../universal/objekts";
 import { env } from "@/lib/env/client";
 
 const PER_PAGE = 30;
@@ -57,7 +57,7 @@ export async function getTypesenseResults({
     objekts: hits.map((hit) => hit.document as IndexedObjekt),
     hasNext,
     nextStartAfter,
-  };
+  } satisfies ObjektResponse<IndexedObjekt>;
 }
 
 /**

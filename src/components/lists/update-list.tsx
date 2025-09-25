@@ -1,18 +1,10 @@
-import type { ObjektList } from "@/lib/server/db/schema";
-import { Button } from "../ui/button";
 import { Edit, Loader2 } from "lucide-react";
-import { updateObjektList } from "./actions";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "../ui/dialog";
-import { Input } from "../ui/input";
-import { useHookFormAction } from "@next-safe-action/adapter-react-hook-form/hooks";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { updateObjektListSchema } from "../../lib/universal/schema/objekt-list";
+import { useForm, useFormState } from "react-hook-form";
+import { useState } from "react";
+import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { useMutation } from "@tanstack/react-query";
 import {
   Form,
   FormControl,
@@ -21,9 +13,19 @@ import {
   FormLabel,
   FormMessage,
 } from "../ui/form";
-import { useFormState } from "react-hook-form";
-import { useState } from "react";
-import { toast } from "sonner";
+import { updateObjektListSchema } from "../../lib/universal/schema/objekt-list";
+import { Input } from "../ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../ui/dialog";
+import { Button } from "../ui/button";
+import { updateObjektList } from "./actions";
+import type z from "zod";
+import type { ObjektList } from "@/lib/server/db/schema";
 
 type Props = {
   objektList: ObjektList;
@@ -31,24 +33,28 @@ type Props = {
 
 export default function UpdateList({ objektList }: Props) {
   const [open, setOpen] = useState(false);
-  const { form, handleSubmitWithAction } = useHookFormAction(
-    updateObjektList,
-    standardSchemaResolver(updateObjektListSchema),
-    {
-      formProps: {
-        defaultValues: {
-          id: objektList.id,
-          name: objektList.name,
-        },
-      },
-      actionProps: {
-        onNavigation: () => {
-          toast.success("Objekt list updated");
-          setOpen(false);
-        },
-      },
-    }
-  );
+  const mutationFn = useServerFn(updateObjektList);
+  const mutation = useMutation({
+    mutationFn,
+    onSuccess: () => {
+      toast.success("Objekt list updated");
+      setOpen(false);
+    },
+  });
+
+  const form = useForm<z.infer<typeof updateObjektListSchema>>({
+    resolver: standardSchemaResolver(updateObjektListSchema),
+    defaultValues: {
+      id: objektList.id,
+      name: objektList.name,
+    },
+  });
+
+  async function handleSubmit(data: z.infer<typeof updateObjektListSchema>) {
+    await mutation.mutateAsync({
+      data,
+    });
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -63,7 +69,7 @@ export default function UpdateList({ objektList }: Props) {
         </DialogHeader>
         <Form {...form}>
           <form
-            onSubmit={handleSubmitWithAction}
+            onSubmit={form.handleSubmit(handleSubmit)}
             className="w-full flex flex-col gap-2"
           >
             <FormField

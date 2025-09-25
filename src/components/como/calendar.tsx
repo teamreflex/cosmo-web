@@ -1,18 +1,15 @@
-import {
-  type ObjektWithCollection,
-  buildCalendar,
-  getDays,
-} from "@/lib/universal/como";
-import type { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
-import { cn } from "@/lib/utils";
-import ArtistIcon from "../artist-icon";
 import { Sparkles } from "lucide-react";
+import ArtistIcon from "../artist-icon";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
+import type { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
+import type { ObjektWithCollection } from "@/lib/universal/como";
+import { buildCalendar, getDays } from "@/lib/universal/como";
+import { cn } from "@/lib/utils";
 
 type Props = {
   artists: CosmoArtistBFF[];

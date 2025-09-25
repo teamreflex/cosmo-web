@@ -1,8 +1,6 @@
-import { useQueryClient } from "@tanstack/react-query";
-import { useAction } from "next-safe-action/hooks";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import type { z } from "zod";
 import { toast } from "sonner";
 import { Button } from "../../ui/button";
 import { Textarea } from "../../ui/textarea";
@@ -14,8 +12,9 @@ import {
   FormMessage,
 } from "../../ui/form";
 import { updateObjektMetadata } from "../actions";
-import { metadataObjectSchema } from "@/lib/universal/schema/admin";
+import type { z } from "zod";
 import type { ObjektMetadata } from "@/lib/universal/objekts";
+import { metadataObjectSchema } from "@/lib/universal/schema/admin";
 
 type Props = {
   slug: string;
@@ -25,7 +24,8 @@ type Props = {
 
 export default function EditMetadata(props: Props) {
   const queryClient = useQueryClient();
-  const { execute, isPending } = useAction(updateObjektMetadata, {
+  const mutation = useMutation({
+    mutationFn: updateObjektMetadata,
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["collection-metadata", "metadata", props.slug],
@@ -46,10 +46,14 @@ export default function EditMetadata(props: Props) {
     },
   });
 
+  async function handleSubmit(data: z.infer<typeof metadataObjectSchema>) {
+    await mutation.mutateAsync({ data });
+  }
+
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit((data) => execute(data))}
+        onSubmit={form.handleSubmit(handleSubmit)}
         className="flex flex-col gap-2"
       >
         <FormField
@@ -69,9 +73,9 @@ export default function EditMetadata(props: Props) {
           variant="secondary"
           size="sm"
           type="submit"
-          disabled={isPending}
+          disabled={mutation.isPending}
         >
-          {isPending ? "Saving..." : "Save"}
+          {mutation.isPending ? "Saving..." : "Save"}
         </Button>
       </form>
     </Form>

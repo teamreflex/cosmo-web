@@ -1,10 +1,5 @@
-import {
-  type ReactNode,
-  createContext,
-  useContext,
-  useLayoutEffect,
-  useState,
-} from "react";
+import { createContext, useContext, useLayoutEffect, useState } from "react";
+import type { ReactNode } from "react";
 
 type ContextProps = {
   isDesktop: boolean;

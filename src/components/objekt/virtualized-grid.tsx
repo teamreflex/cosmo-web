@@ -1,11 +1,11 @@
-import { useElementSize } from "@/hooks/use-element-size";
-import { cloneElement, type ReactElement } from "react";
+import { cloneElement, useRef } from "react";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
-import { useRef } from "react";
-import { Objekt } from "@/lib/universal/objekt-conversion";
-import ExpandableObjekt from "./objekt-expandable";
 import { LegacyOverlay } from "../collection/data-sources/common-legacy";
+import ExpandableObjekt from "./objekt-expandable";
+import type { ReactElement } from "react";
 import type { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
+import { Objekt } from "@/lib/universal/objekt-conversion";
+import { useElementSize } from "@/hooks/use-element-size";
 
 type RenderProps<T> = {
   id: string | number;
@@ -24,10 +24,10 @@ export type ObjektRowItem<T> =
       item: T;
     };
 
-type Props<Item> = {
-  children: (props: RenderProps<Item>) => ReactElement | null;
-  rows: ObjektRowItem<Item>[][];
-  getObjektId: (objekt: Item) => string;
+type Props<TItem> = {
+  children: (props: RenderProps<TItem>) => ReactElement | null;
+  rows: ObjektRowItem<TItem>[][];
+  getObjektId: (objekt: TItem) => string;
   gridColumns: number;
   authenticated: boolean;
 };
@@ -35,13 +35,13 @@ type Props<Item> = {
 const GAP = 16;
 const ASPECT_RATIO = 8.5 / 5.5;
 
-export default function VirtualizedGrid<Item>({
+export default function VirtualizedGrid<TItem>({
   children,
   rows,
   getObjektId,
   authenticated,
   gridColumns,
-}: Props<Item>) {
+}: Props<TItem>) {
   // virtualization
   const [containerRef, { width }] = useElementSize();
   const virtualizer = useWindowVirtualizer({
@@ -68,6 +68,7 @@ export default function VirtualizedGrid<Item>({
       >
         {virtualList.map((rowItem) => {
           const row = rows[rowItem.index];
+          if (!row) return null;
           return (
             <div
               key={rowItem.key}
@@ -108,19 +109,17 @@ export default function VirtualizedGrid<Item>({
                 }
 
                 // render non-pin items
-                if (objekt.type === "item") {
-                  const element = children({
-                    item: objekt.item,
-                    id: getObjektId(objekt.item),
-                    isPin: false,
-                    // preload items in the first 4 rows
-                    priority: index <= gridColumns * 4,
-                  });
+                const element = children({
+                  item: objekt.item,
+                  id: getObjektId(objekt.item),
+                  isPin: false,
+                  // preload items in the first 4 rows
+                  priority: index <= gridColumns * 4,
+                });
 
-                  return element
-                    ? cloneElement(element, { key: getObjektId(objekt.item) })
-                    : null;
-                }
+                return element
+                  ? cloneElement(element, { key: getObjektId(objekt.item) })
+                  : null;
               })}
             </div>
           );

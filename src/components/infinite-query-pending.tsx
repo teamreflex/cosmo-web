@@ -1,6 +1,6 @@
-import type { QueryStatus } from "@tanstack/react-query";
 import { ChevronDown, Loader2, PawPrint } from "lucide-react";
 import { InView } from "react-intersection-observer";
+import type { QueryStatus } from "@tanstack/react-query";
 
 type Props = {
   status: QueryStatus;
@@ -27,7 +27,7 @@ export function InfiniteQueryNext({
           as="button"
           onChange={onInView}
           onClick={fetchNextPage}
-          disabled={!hasNextPage || isFetchingNextPage}
+          disabled={isFetchingNextPage}
         >
           <ChevronDown className="animate-bounce h-12 w-12" />
         </InView>

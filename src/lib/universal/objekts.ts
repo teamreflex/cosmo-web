@@ -1,5 +1,5 @@
 import type { Collection, Transfer } from "@/lib/server/db/indexer/schema";
-import type { ObjektMetadataEntry, CosmoAccount } from "@/lib/server/db/schema";
+import type { CosmoAccount, ObjektMetadataEntry } from "@/lib/server/db/schema";
 import type {
   CosmoObjekt,
   ObjektBaseFields,
@@ -9,11 +9,11 @@ import type {
 export type IndexedObjekt = Collection;
 
 type LegacyObjekt = ObjektBaseFields | CosmoObjekt | IndexedObjekt;
-export type LegacyObjektResponse<T extends LegacyObjekt> = {
+export type ObjektResponse<T extends LegacyObjekt> = {
   hasNext: boolean;
   total: number;
   objekts: T[];
-  nextStartAfter?: number | undefined;
+  nextStartAfter: number | undefined;
 };
 
 // metadata
@@ -38,15 +38,3 @@ export type SerialObjekt = {
   serial: number;
   transfers: SerialTransfer[];
 };
-
-/**
- * Parse a Cosmo-compatible objekts response.
- */
-export function parsePage<T>(data: { nextStartAfter?: string }): T {
-  return {
-    ...data,
-    nextStartAfter: data.nextStartAfter
-      ? parseInt(data.nextStartAfter)
-      : undefined,
-  } as T;
-}

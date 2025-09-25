@@ -10,7 +10,7 @@ import { useArtists } from "@/hooks/use-artists";
 
 type Props = {
   showArtists?: boolean;
-  active: string | null;
+  active?: string | null;
   updateArtist: (artist: string) => void;
   updateMember: (member: string) => void;
 };

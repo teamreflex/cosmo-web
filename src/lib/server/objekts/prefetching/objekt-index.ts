@@ -12,6 +12,7 @@ import {
 } from "../filters";
 import { indexer } from "../../db/indexer";
 import { collections } from "../../db/indexer/schema";
+import type { IndexedObjekt, ObjektResponse } from "@/lib/universal/objekts";
 import { objektIndexBackendSchema } from "@/lib/universal/parsers";
 
 const LIMIT = 60;
@@ -56,5 +57,5 @@ export const fetchObjektsIndex = createServerFn({ method: "GET" })
       hasNext,
       nextStartAfter,
       objekts: collectionList,
-    };
+    } satisfies ObjektResponse<IndexedObjekt>;
   });

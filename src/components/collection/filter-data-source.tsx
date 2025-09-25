@@ -1,7 +1,7 @@
+import { DataSourceSelector } from "./data-source-selector";
 import type { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
 import type { CollectionDataSource } from "@/lib/utils";
 import type { Dispatch, SetStateAction } from "react";
-import { DataSourceSelector } from "./data-source-selector";
 import { useProfileContext } from "@/hooks/use-profile";
 
 type Props = {

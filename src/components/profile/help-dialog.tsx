@@ -1,3 +1,6 @@
+import { HelpCircle, Lock, MailX } from "lucide-react";
+import { Button } from "../ui/button";
+import VisuallyHidden from "../ui/visually-hidden";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -8,15 +11,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { env } from "@/env";
-import { HelpCircle, Lock, MailX } from "lucide-react";
-import { Button } from "../ui/button";
-import VisuallyHidden from "../ui/visually-hidden";
+import { env } from "@/lib/env/client";
 
 export default function HelpDialog() {
-  const str = env.NEXT_PUBLIC_APP_NAME.toLowerCase().match(/^[aeiou]/i)
-    ? "an"
-    : "a";
+  const str = env.VITE_APP_NAME.toLowerCase().match(/^[aeiou]/i) ? "an" : "a";
 
   return (
     <AlertDialog>
@@ -56,7 +54,7 @@ export default function HelpDialog() {
               to other people that it is not up for trade.
             </p>
             <p>
-              This is {str} {env.NEXT_PUBLIC_APP_NAME} feature and{" "}
+              This is {str} {env.VITE_APP_NAME} feature and{" "}
               <b>does not prevent trading within the COSMO app</b>.
             </p>
           </div>

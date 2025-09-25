@@ -1,3 +1,5 @@
+import { X } from "lucide-react";
+import { useSuspenseQueries } from "@tanstack/react-query";
 import ArtistIcon from "../artist-icon";
 import {
   Tooltip,
@@ -6,38 +8,43 @@ import {
   TooltipTrigger,
 } from "../ui/tooltip";
 import type { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
-import { Suspense } from "react";
-import { X } from "lucide-react";
-import { ErrorBoundary } from "react-error-boundary";
-import {
-  getArtistsWithMembers,
-  getSelectedArtists,
-  getTokenBalances,
-} from "@/data-fetching";
 import type { ComoBalance } from "@/lib/universal/como";
+import { artistsQuery, selectedArtistsQuery } from "@/queries";
+import { tokenBalancesQuery } from "@/lib/server/como";
 
 type Props = {
   address: string;
 };
 
-export default async function ComoBalanceRenderer({ address }: Props) {
+export default function UserBalances(props: Props) {
+  const [{ data: selectedArtists }, { data: artists }, { data: balances }] =
+    useSuspenseQueries({
+      queries: [
+        selectedArtistsQuery,
+        artistsQuery,
+        tokenBalancesQuery(props.address),
+      ],
+    });
+
+  const filteredArtists =
+    selectedArtists.length > 0
+      ? artists.filter((artist) => selectedArtists.includes(artist.id))
+      : artists;
+
   return (
-    <ErrorBoundary fallback={<ComoBalanceErrorFallback />}>
-      <Suspense
-        fallback={
-          <div className="flex items-center gap-2">
-            <div className="h-[26px] w-16 rounded-lg bg-secondary border border-border animate-pulse" />
-            <div className="h-[26px] w-16 rounded-lg bg-secondary border border-border animate-pulse" />
-          </div>
-        }
-      >
-        <UserBalances address={address} />
-      </Suspense>
-    </ErrorBoundary>
+    <div className="flex flex-row gap-2">
+      {filteredArtists.map((artist) => (
+        <Balance
+          key={artist.name}
+          artist={artist}
+          balance={balances.find((b) => b.id === artist.id)}
+        />
+      ))}
+    </div>
   );
 }
 
-function ComoBalanceErrorFallback() {
+export function ComoBalanceErrorFallback() {
   return (
     <TooltipProvider>
       <Tooltip>
@@ -52,29 +59,6 @@ function ComoBalanceErrorFallback() {
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
-  );
-}
-
-async function UserBalances({ address }: Props) {
-  const artists = getArtistsWithMembers();
-  const balances = await getTokenBalances(address);
-  const selectedArtists = await getSelectedArtists();
-
-  const filteredArtists =
-    selectedArtists.length > 0
-      ? artists.filter((artist) => selectedArtists.includes(artist.id))
-      : artists;
-
-  return (
-    <div className="flex flex-row gap-2">
-      {filteredArtists.map((artist) => (
-        <Balance
-          key={artist.name}
-          artist={artist}
-          balance={balances.find((b) => b.id === artist.id)!}
-        />
-      ))}
-    </div>
   );
 }
 

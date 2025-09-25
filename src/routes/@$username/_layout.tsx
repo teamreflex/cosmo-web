@@ -1,12 +1,15 @@
 import { Link, Outlet, createFileRoute } from "@tanstack/react-router";
 import { CircleAlert } from "lucide-react";
+import { ErrorBoundary } from "react-error-boundary";
+import { Suspense } from "react";
 import CopyAddressButton from "@/components/profile/copy-address-button";
 import TradesButton from "@/components/profile/trades-button";
 import ComoButton from "@/components/profile/como-button";
 import ProgressButton from "@/components/profile/progress-button";
 import UserAvatar from "@/components/profile/user-avatar";
-import ListDropdownClient from "@/components/lists/list-dropdown.client";
-import ComoBalanceRenderer from "@/components/navbar/como-balances";
+import UserBalances, {
+  ComoBalanceErrorFallback,
+} from "@/components/navbar/como-balances";
 import { Addresses, isEqual } from "@/lib/utils";
 import {
   CosmoVerifiedBadge,
@@ -17,6 +20,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { env } from "@/lib/env/client";
 import { currentAccountQuery, targetAccountQuery } from "@/queries";
+import ListDropdown from "@/components/lists/list-dropdown";
 
 export const Route = createFileRoute("/@$username/_layout")({
   component: RouteComponent,
@@ -57,7 +61,18 @@ function RouteComponent() {
                 {target.cosmo.username}
               </Link>
 
-              <ComoBalanceRenderer address={target.cosmo.address} />
+              <ErrorBoundary fallback={<ComoBalanceErrorFallback />}>
+                <Suspense
+                  fallback={
+                    <div className="flex items-center gap-2">
+                      <div className="h-[26px] w-16 rounded-lg bg-secondary border border-border animate-pulse" />
+                      <div className="h-[26px] w-16 rounded-lg bg-secondary border border-border animate-pulse" />
+                    </div>
+                  }
+                >
+                  <UserBalances address={target.cosmo.address} />
+                </Suspense>
+              </ErrorBoundary>
 
               {/* badges? */}
               <div className="flex flex-row gap-2 h-5">
@@ -84,10 +99,12 @@ function RouteComponent() {
           <TradesButton cosmo={target.cosmo} />
           <ComoButton cosmo={target.cosmo} />
           <ProgressButton cosmo={target.cosmo} />
-          <ListDropdownClient
+          <ListDropdown
             objektLists={target.objektLists}
             allowCreate={isAuthenticated}
-            username={target.cosmo.username}
+            createListUrl={(list) =>
+              `/@${target.cosmo.username}/list/${list.slug}`
+            }
           />
 
           {/* content gets portaled in */}

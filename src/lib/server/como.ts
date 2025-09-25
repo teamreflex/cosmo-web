@@ -46,29 +46,36 @@ export const fetchObjektsWithComoQuery = (address: string) =>
     refetchOnWindowFocus: false,
   });
 
-// const ERC20_DECIMALS = 18;
-
 /**
  * Fetch ERC20 token balances from Alchemy.
  * Cached for 15 minutes.
  */
-export function fetchTokenBalances(address: string): Promise<ComoBalance[]> {
-  return remember(`como-balances:${address}`, 60 * 15, async () => {
-    const artists = await fetchArtists();
-    const balances = await indexer.query.comoBalances.findMany({
-      where: {
-        owner: addr(address),
-      },
-    });
+export const fetchTokenBalances = createServerFn({ method: "GET" })
+  .inputValidator((data) => z.string().parse(data))
+  .handler(async ({ data }): Promise<ComoBalance[]> => {
+    return remember(`como-balances:${data}`, 60 * 15, async () => {
+      const artists = await fetchArtists();
+      const balances = await indexer.query.comoBalances.findMany({
+        where: {
+          owner: addr(data),
+        },
+      });
 
-    return artists.map((artist) => {
-      const balance = balances.find((b) => b.tokenId === artist.comoTokenId);
+      return artists.map((artist) => {
+        const balance = balances.find((b) => b.tokenId === artist.comoTokenId);
 
-      return {
-        id: artist.id,
-        owner: address,
-        amount: balance ? balance.amount : 0,
-      };
+        return {
+          id: artist.id,
+          owner: data,
+          amount: balance ? balance.amount : 0,
+        };
+      });
     });
   });
-}
+
+export const tokenBalancesQuery = (address: string) =>
+  queryOptions({
+    queryKey: ["como-balances", address],
+    queryFn: () => fetchTokenBalances({ data: address }),
+    refetchOnWindowFocus: false,
+  });

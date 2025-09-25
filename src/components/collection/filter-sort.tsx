@@ -1,3 +1,6 @@
+import type { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
+import type { ValidSort } from "@/lib/universal/cosmo/common";
+import type { CollectionDataSource } from "@/lib/utils";
 import {
   Select,
   SelectContent,
@@ -5,15 +8,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { PropsWithFilters } from "@/hooks/use-cosmo-filters";
-import { type ValidSort, validSorts } from "@/lib/universal/cosmo/common";
-import type { CollectionDataSource } from "@/lib/utils";
+import { validSorts } from "@/lib/universal/cosmo/common";
 
-interface Props extends PropsWithFilters {
+type Props = {
+  sort: CosmoFilters["sort"];
+  onChange: SetCosmoFilters;
   serials: boolean;
   dataSource?: CollectionDataSource;
   setDataSource?: (dataSource: CollectionDataSource) => void;
-}
+};
 
 const map: Record<ValidSort, string> = {
   newest: "Newest",
@@ -24,34 +27,26 @@ const map: Record<ValidSort, string> = {
   serialDesc: "Highest Serial",
 };
 
-export default function SortFilter({
-  filters,
-  setFilters,
-  dataSource,
-  setDataSource,
-  serials,
-}: Props) {
+export default function SortFilter(props: Props) {
   const availableSorts = validSorts.filter((s) =>
-    serials ? true : !isSerialSort(s)
+    props.serials ? true : !isSerialSort(s)
   );
 
-  const value = filters?.sort ?? "newest";
-
-  function onChange(value: string) {
-    const newSort = value as ValidSort;
+  function handleChange(newValue: string) {
+    const newSort = newValue as ValidSort;
 
     // if the user is sorting by serial, we need to switch to blockchain
-    if (isSerialSort(newSort) && dataSource && setDataSource) {
-      setDataSource("blockchain");
+    if (isSerialSort(newSort) && props.dataSource && props.setDataSource) {
+      props.setDataSource("blockchain");
     }
 
-    setFilters({
+    props.onChange({
       sort: newSort === "newest" ? null : newSort,
     });
   }
 
   return (
-    <Select value={value} onValueChange={onChange}>
+    <Select value={props.sort ?? "newest"} onValueChange={handleChange}>
       <SelectTrigger className="w-32">
         <SelectValue placeholder="Sort" />
       </SelectTrigger>

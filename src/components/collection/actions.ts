@@ -1,25 +1,28 @@
 import { z } from "zod";
 import { and, eq } from "drizzle-orm";
+import { createServerFn } from "@tanstack/react-start";
 import { db } from "@/lib/server/db";
 import { lockedObjekts, pins } from "@/lib/server/db/schema";
 import { indexer } from "@/lib/server/db/indexer";
 import { normalizePin, pinCacheKey } from "@/lib/server/objekts/pins";
-import { ActionError, cosmoActionClient } from "@/lib/server/middlewares";
 import { clearTag } from "@/lib/server/cache";
+import { cosmoMiddleware } from "@/lib/server/middlewares";
 
 /**
  * Toggle the lock on an objekt.
  */
-export const toggleObjektLock = cosmoActionClient
-  .metadata({ actionName: "toggleObjektLock" })
-  .inputSchema(z.object({ tokenId: z.number(), lock: z.boolean() }))
-  .action(async ({ parsedInput: { tokenId, lock }, ctx }) => {
+export const toggleObjektLock = createServerFn({ method: "POST" })
+  .inputValidator((data) =>
+    z.object({ tokenId: z.number(), lock: z.boolean() }).parse(data)
+  )
+  .middleware([cosmoMiddleware])
+  .handler(async ({ data, context }) => {
     // lock the objekt
-    if (lock) {
+    if (data.lock) {
       try {
         const result = await db.insert(lockedObjekts).values({
-          address: ctx.cosmo.address,
-          tokenId,
+          address: context.cosmo.address,
+          tokenId: data.tokenId,
           locked: true,
         });
 
@@ -35,8 +38,8 @@ export const toggleObjektLock = cosmoActionClient
       .delete(lockedObjekts)
       .where(
         and(
-          eq(lockedObjekts.address, ctx.cosmo.address),
-          eq(lockedObjekts.tokenId, tokenId)
+          eq(lockedObjekts.address, context.cosmo.address),
+          eq(lockedObjekts.tokenId, data.tokenId)
         )
       );
 
@@ -46,25 +49,27 @@ export const toggleObjektLock = cosmoActionClient
 /**
  * Pin an objekt to the user's profile.
  */
-export const pinObjekt = cosmoActionClient
-  .metadata({ actionName: "pinObjekt" })
-  .inputSchema(
-    z.object({
-      tokenId: z.coerce.number(),
-    })
+export const pinObjekt = createServerFn({ method: "POST" })
+  .inputValidator((data) =>
+    z
+      .object({
+        tokenId: z.coerce.number(),
+      })
+      .parse(data)
   )
-  .action(async ({ parsedInput: { tokenId }, ctx }) => {
+  .middleware([cosmoMiddleware])
+  .handler(async ({ data, context }) => {
     // perform both operations in parallel
     const [pin, objekt] = await Promise.all([
       // insert pin
       db.insert(pins).values({
-        tokenId,
-        address: ctx.cosmo.address,
+        tokenId: data.tokenId,
+        address: context.cosmo.address,
       }),
       // fetch objekt
       indexer.query.objekts.findFirst({
         where: {
-          id: tokenId,
+          id: data.tokenId,
         },
         with: {
           collection: true,
@@ -73,30 +78,35 @@ export const pinObjekt = cosmoActionClient
     ]);
 
     if (pin.rowCount !== 1 || objekt === undefined) {
-      throw new ActionError("Error pinning objekt");
+      throw new Error("Error pinning objekt");
     }
 
-    clearTag(pinCacheKey(ctx.cosmo.username));
+    clearTag(pinCacheKey(context.cosmo.username));
     return normalizePin(objekt);
   });
 
 /**
  * Delete a pin.
  */
-export const unpinObjekt = cosmoActionClient
-  .metadata({ actionName: "unpinObjekt" })
-  .inputSchema(
-    z.object({
-      tokenId: z.coerce.number(),
-    })
+export const unpinObjekt = createServerFn({ method: "POST" })
+  .inputValidator((data) =>
+    z
+      .object({
+        tokenId: z.coerce.number(),
+      })
+      .parse(data)
   )
-  .action(async ({ parsedInput: { tokenId }, ctx }) => {
+  .middleware([cosmoMiddleware])
+  .handler(async ({ data, context }) => {
     const result = await db
       .delete(pins)
       .where(
-        and(eq(pins.tokenId, tokenId), eq(pins.address, ctx.cosmo.address))
+        and(
+          eq(pins.tokenId, data.tokenId),
+          eq(pins.address, context.cosmo.address)
+        )
       );
 
-    clearTag(pinCacheKey(ctx.cosmo.username));
+    clearTag(pinCacheKey(context.cosmo.username));
     return result.rowCount === 1;
   });

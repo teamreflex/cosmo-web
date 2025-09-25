@@ -20,6 +20,24 @@ import type { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import * as artists from "@/artists";
 
 /**
+ * Fetch the current session.
+ */
+export const getSession = createServerFn({ method: "GET" }).handler(
+  async () => {
+    const headers = getRequestHeaders();
+    const session = await auth.api.getSession({
+      headers: headers,
+    });
+
+    if (!session) {
+      return null;
+    }
+
+    return session;
+  }
+);
+
+/**
  * Fetch all unique collections, seasons, and classes.
  * Cached for 4 hours.
  */

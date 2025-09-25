@@ -5,11 +5,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import type { TransferParams } from "@/lib/universal/transfers";
+import type { TransferType } from "@/lib/universal/transfers";
 
 type Props = {
-  type: TransferParams["type"];
-  setType: (type: TransferParams["type"]) => void;
+  type: TransferType;
+  setType: (type: TransferType) => void;
 };
 
 export default function TransferTypeFilter({ type, setType }: Props) {

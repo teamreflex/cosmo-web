@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
-import type { PropsWithFilters } from "@/hooks/use-cosmo-filters";
+import type { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
 import type { ValidArtist } from "@/lib/universal/cosmo/common";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,28 +14,32 @@ import {
 import { cn, isEqual } from "@/lib/utils";
 import { useFilterData } from "@/hooks/use-filter-data";
 
-export default function ClassFilter({ filters, setFilters }: PropsWithFilters) {
+type Props = {
+  classes: CosmoFilters["class"];
+  artist: CosmoFilters["artist"];
+  onChange: SetCosmoFilters;
+};
+
+export default function ClassFilter(props: Props) {
   const { classes } = useFilterData();
   const [open, setOpen] = useState(false);
 
-  const value = filters?.class ?? [];
-
-  function onChange(artist: string, className: string, checked: boolean) {
-    setFilters((prev) => {
+  function handleChange(artistId: string, className: string, checked: boolean) {
+    props.onChange((prev) => {
       // allow switching artist without needing to uncheck
-      if (prev.artist !== artist) {
+      if (prev.artist !== artistId) {
         return {
-          artist: artist as ValidArtist,
+          artist: artistId as ValidArtist,
           class: [className],
         };
       }
 
       const newFilters = checked
-        ? [...(prev?.class ?? []), className]
-        : (prev?.class ?? []).filter((f) => f !== className);
+        ? [...(props.classes ?? []), className]
+        : (props.classes ?? []).filter((f) => f !== className);
 
       return {
-        artist: newFilters.length > 0 ? (artist as ValidArtist) : null,
+        artist: newFilters.length > 0 ? artistId : null,
         class: newFilters.length > 0 ? newFilters : null,
       };
     });
@@ -48,7 +52,7 @@ export default function ClassFilter({ filters, setFilters }: PropsWithFilters) {
           variant="outline"
           className={cn(
             "flex gap-2 items-center",
-            value.length > 0 && "dark:border-cosmo border-cosmo"
+            (props.classes?.length ?? 0) > 0 && "dark:border-cosmo border-cosmo"
           )}
         >
           <span>Class</span>
@@ -56,25 +60,25 @@ export default function ClassFilter({ filters, setFilters }: PropsWithFilters) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="flex flex-row gap-2">
-        {classes.map(({ artist, classes }) => (
-          <DropdownMenuGroup key={artist.id}>
+        {classes.map(({ artist: classArtist, classes: classNames }) => (
+          <DropdownMenuGroup key={classArtist.id}>
             <DropdownMenuLabel className="text-xs flex items-center gap-2">
               <img
                 className="rounded-full aspect-square size-4"
-                src={artist.logoImageUrl}
-                alt={artist.title}
+                src={classArtist.logoImageUrl}
+                alt={classArtist.title}
               />
-              {artist.title}
+              {classArtist.title}
             </DropdownMenuLabel>
-            {classes.map((className) => (
+            {classNames.map((className) => (
               <DropdownMenuCheckboxItem
                 key={className}
                 checked={
-                  isEqual(artist.id, filters.artist ?? undefined) &&
-                  value.includes(className)
+                  isEqual(classArtist.id, props.artist ?? undefined) &&
+                  (props.classes?.includes(className) ?? false)
                 }
                 onCheckedChange={(checked) =>
-                  onChange(artist.id, className, checked)
+                  handleChange(classArtist.id, className, checked)
                 }
               >
                 {className}

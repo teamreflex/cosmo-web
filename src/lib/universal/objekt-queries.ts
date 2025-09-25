@@ -7,12 +7,15 @@ import {
 } from "../server/objekts/prefetching/objekt-blockchain-groups";
 import { fetchObjektsBlockchain } from "../server/objekts/prefetching/objekt-blockchain";
 import { fetchObjektListEntries } from "../server/objekts/prefetching/objekt-list";
-import type z from "zod";
+import { fetchTransfers } from "../server/transfers";
+import { normalizeFilters } from "./parsers";
 import type {
   objektIndexFrontendSchema,
   objektListFrontendSchema,
+  transfersFrontendSchema,
   userCollectionFrontendSchema,
 } from "./parsers";
+import type z from "zod";
 
 /**
  * Object index: Searching via Typesense
@@ -26,14 +29,14 @@ export function objektIndexTypesenseQuery(
       "objekt-index",
       "typesense",
       {
-        ...searchParams,
+        ...normalizeFilters(searchParams),
         id: null, // should never trigger a refetch
         search: searchParams.search || null,
         artists: selectedArtists,
       },
     ],
-    queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
-      return await getTypesenseResults({
+    queryFn: ({ pageParam = 0 }) => {
+      return getTypesenseResults({
         query: searchParams.search || "",
         filters: {
           ...searchParams,
@@ -46,6 +49,8 @@ export function objektIndexTypesenseQuery(
     },
     initialPageParam: 1,
     getNextPageParam: (lastPage) => lastPage.nextStartAfter,
+    staleTime: 1000 * 60 * 5,
+    refetchOnMount: false,
   });
 }
 
@@ -61,13 +66,14 @@ export function objektIndexBlockchainQuery(
       "objekt-index",
       "blockchain",
       {
-        ...searchParams,
+        ...normalizeFilters(searchParams),
         id: null, // should never trigger a refetch
+        search: searchParams.search ?? null, // required to make the types happy
         artists: selectedArtists,
       },
     ],
-    queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
-      return await fetchObjektsIndex({
+    queryFn: ({ pageParam = 0 }) => {
+      return fetchObjektsIndex({
         data: {
           ...searchParams,
           page: pageParam,
@@ -76,6 +82,8 @@ export function objektIndexBlockchainQuery(
     },
     initialPageParam: 0,
     getNextPageParam: (lastPage) => lastPage.nextStartAfter,
+    staleTime: 1000 * 60 * 5,
+    refetchOnMount: false,
   });
 }
 
@@ -93,13 +101,12 @@ export function userCollectionBlockchainGroupsQuery(
       "blockchain-groups",
       address,
       {
-        ...searchParams,
-        locked: null, // should never trigger a refetch
+        ...normalizeFilters(searchParams),
         artists: selectedArtists,
       },
     ],
-    queryFn: async ({ pageParam = 1 }: { pageParam?: number }) => {
-      return await fetchObjektsBlockchainGroups({
+    queryFn: ({ pageParam = 1 }) => {
+      return fetchObjektsBlockchainGroups({
         data: {
           ...searchParams,
           address,
@@ -113,6 +120,8 @@ export function userCollectionBlockchainGroupsQuery(
       lastPage.collections.length === BLOCKCHAIN_GROUPS_PER_PAGE
         ? lastPageParam + 1
         : undefined,
+    staleTime: 1000 * 60 * 5,
+    refetchOnMount: false,
   });
 }
 
@@ -130,13 +139,12 @@ export function userCollectionBlockchainQuery(
       "blockchain",
       address,
       {
-        ...searchParams,
-        locked: null, // should never trigger a refetch
+        ...normalizeFilters(searchParams),
         artists: selectedArtists,
       },
     ],
-    queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
-      return await fetchObjektsBlockchain({
+    queryFn: ({ pageParam = 0 }) => {
+      return fetchObjektsBlockchain({
         data: {
           ...searchParams,
           address,
@@ -147,6 +155,8 @@ export function userCollectionBlockchainQuery(
     },
     initialPageParam: 0,
     getNextPageParam: (lastPage) => lastPage.nextStartAfter,
+    staleTime: 1000 * 60 * 5,
+    refetchOnMount: false,
   });
 }
 
@@ -163,12 +173,12 @@ export function objektListQuery(
       "objekt-list",
       objektListId,
       {
-        ...searchParams,
+        ...normalizeFilters(searchParams),
         artists: selectedArtists,
       },
     ],
-    queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
-      return await fetchObjektListEntries({
+    queryFn: ({ pageParam = 0 }) => {
+      return fetchObjektListEntries({
         data: {
           ...searchParams,
           objektListId,
@@ -179,5 +189,41 @@ export function objektListQuery(
     },
     initialPageParam: 0,
     getNextPageParam: (lastPage) => lastPage.nextStartAfter,
+    staleTime: 1000 * 60 * 5,
+    refetchOnMount: false,
+  });
+}
+
+/**
+ * Objekt list: Listing entries
+ */
+export function transfersQuery(
+  address: string,
+  searchParams: z.infer<typeof transfersFrontendSchema>,
+  selectedArtists: string[]
+) {
+  return infiniteQueryOptions({
+    queryKey: [
+      "transfers",
+      address,
+      {
+        ...normalizeFilters(searchParams),
+        type: searchParams.type,
+        artists: selectedArtists,
+      },
+    ],
+    queryFn: ({ pageParam = 0 }) => {
+      return fetchTransfers({
+        data: {
+          ...searchParams,
+          address,
+          page: pageParam,
+        },
+      });
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => lastPage.nextStartAfter,
+    staleTime: 1000 * 60 * 5,
+    refetchOnMount: false,
   });
 }

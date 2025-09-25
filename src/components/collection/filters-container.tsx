@@ -1,7 +1,8 @@
-import { type PropsWithChildren, useState } from "react";
+import { useState } from "react";
 import { SlidersHorizontal } from "lucide-react";
 import Portal from "../portal";
 import { Button } from "../ui/button";
+import type { PropsWithChildren } from "react";
 
 type Props = PropsWithChildren<{
   isPortaled?: boolean;

@@ -1,3 +1,7 @@
+import { useState } from "react";
+import { ChevronDown } from "lucide-react";
+import type { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
+import type { ValidOnlineType } from "@/lib/universal/cosmo/common";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -5,13 +9,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { PropsWithFilters } from "@/hooks/use-cosmo-filters";
-import {
-  type ValidOnlineType,
-  validOnlineTypes,
-} from "@/lib/universal/cosmo/common";
-import { useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { validOnlineTypes } from "@/lib/universal/cosmo/common";
 import { cn } from "@/lib/utils";
 
 const map: Record<ValidOnlineType, string> = {
@@ -19,19 +17,19 @@ const map: Record<ValidOnlineType, string> = {
   offline: "Physical",
 };
 
-export default function OnlineFilter({
-  filters,
-  setFilters,
-}: PropsWithFilters) {
+type Props = {
+  onOffline: CosmoFilters["on_offline"];
+  onChange: SetCosmoFilters;
+};
+
+export default function OnlineFilter({ onOffline: value, onChange }: Props) {
   const [open, setOpen] = useState(false);
 
-  const value = filters?.on_offline ?? [];
-
-  function onChange(property: ValidOnlineType, checked: boolean) {
-    setFilters((prev) => {
+  function handleChange(property: ValidOnlineType, checked: boolean) {
+    onChange(() => {
       const newFilters = checked
-        ? [...(prev?.on_offline ?? []), property]
-        : (prev?.on_offline ?? []).filter((f) => f !== property);
+        ? [...(value ?? []), property]
+        : (value ?? []).filter((f) => f !== property);
 
       return {
         on_offline: newFilters.length > 0 ? newFilters : null,
@@ -46,7 +44,7 @@ export default function OnlineFilter({
           variant="outline"
           className={cn(
             "flex gap-2 items-center",
-            value.length > 0 && "dark:border-cosmo border-cosmo"
+            (value?.length ?? 0) > 0 && "dark:border-cosmo border-cosmo"
           )}
         >
           <span>Physical</span>
@@ -57,8 +55,8 @@ export default function OnlineFilter({
         {Object.values(validOnlineTypes).map((onlineType) => (
           <DropdownMenuCheckboxItem
             key={onlineType}
-            checked={value.includes(onlineType)}
-            onCheckedChange={(checked) => onChange(onlineType, checked)}
+            checked={value?.includes(onlineType) ?? false}
+            onCheckedChange={(checked) => handleChange(onlineType, checked)}
           >
             {map[onlineType]}
           </DropdownMenuCheckboxItem>
