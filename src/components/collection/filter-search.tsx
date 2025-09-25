@@ -1,9 +1,21 @@
-import { cn } from "@/lib/utils";
 import { X } from "lucide-react";
-import { useQueryState } from "nuqs";
+import { getRouteApi } from "@tanstack/react-router";
+import { cn } from "@/lib/utils";
+
+const route = getRouteApi("/");
 
 export default function FilterSearch() {
-  const [query, setQuery] = useQueryState("search");
+  const { search } = route.useSearch();
+  const navigate = route.useNavigate();
+
+  function setQuery(query: string | null) {
+    navigate({
+      search: (prev) => ({
+        ...prev,
+        search: query,
+      }),
+    });
+  }
 
   return (
     <div
@@ -15,7 +27,7 @@ export default function FilterSearch() {
       <input
         type="text"
         placeholder="Search..."
-        value={query ?? ""}
+        value={search ?? ""}
         onChange={(e) => setQuery(e.currentTarget.value || null)}
         className="pl-3 py-1 text-base md:text-sm h-full w-full grow outline-none"
         maxLength={32}

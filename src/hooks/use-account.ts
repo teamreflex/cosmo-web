@@ -1,5 +1,5 @@
-import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
+import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 
 export type Provider = "twitter" | "discord";
 

@@ -77,12 +77,13 @@ export const Route = createFileRoute("/")({
             artists: selected,
           },
         ],
-        queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
-          return fetchObjektsIndex({
-            ...deps.searchParams,
-            page: pageParam,
-          });
-        },
+        queryFn: ({ pageParam = 0 }: { pageParam?: number }) =>
+          fetchObjektsIndex({
+            data: {
+              ...deps.searchParams,
+              page: pageParam,
+            },
+          }),
         initialPageParam: 0,
       });
     }

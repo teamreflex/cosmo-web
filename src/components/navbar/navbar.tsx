@@ -6,8 +6,8 @@ import { useSuspenseQueries } from "@tanstack/react-query";
 import Logo from "../logo";
 import UpdateDialog from "../misc/update-dialog";
 import SystemStatus from "../misc/system-status";
-// import StateGuest from "../auth/state-guest";
-// import StateAuthenticated from "../auth/state-authenticated";
+import StateGuest from "../auth/state-guest";
+import StateAuthenticated from "../auth/state-authenticated";
 import AuthFallback from "../auth/auth-fallback";
 import { Skeleton } from "../ui/skeleton";
 import Links from "./links";
@@ -81,13 +81,13 @@ function AuthState() {
   return (
     <ArtistProvider artists={artists} selected={selected}>
       <Links signedIn={account !== undefined} cosmo={account?.cosmo} />
-      {/* <div className="flex grow-0 items-center justify-end gap-2">
+      <div className="flex grow-0 items-center justify-end gap-2">
         {!account ? (
           <StateGuest />
         ) : (
           <StateAuthenticated user={account.user} cosmo={account.cosmo} />
         )}
-      </div> */}
+      </div>
     </ArtistProvider>
   );
 }

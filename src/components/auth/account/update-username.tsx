@@ -1,3 +1,14 @@
+import { toast } from "sonner";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { useMutation } from "@tanstack/react-query";
+import { useMemo } from "react";
+import { useForm } from "react-hook-form";
+import { Loader2, Save } from "lucide-react";
+import { useRouter } from "@tanstack/react-router";
+import type { z } from "zod";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import {
   Form,
   FormControl,
@@ -7,17 +18,6 @@ import {
   FormMessage,
   useFormField,
 } from "@/components/ui/form";
-import { toast } from "sonner";
-import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
-import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { useMutation } from "@tanstack/react-query";
-import { useMemo } from "react";
-import { useForm } from "react-hook-form";
-import type { z } from "zod";
-import { useRouter } from "next/navigation";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Loader2, Save } from "lucide-react";
 import { updateUsernameSchema } from "@/lib/universal/schema/auth";
 
 type Props = {
@@ -49,7 +49,7 @@ export default function UpdateUsername({ username }: Props) {
     mutation.mutate(data, {
       onSuccess: () => {
         toast.success("Your username has been updated.");
-        router.refresh();
+        router.invalidate();
       },
       onError: (error) => {
         toast.error(error.message);

@@ -1,10 +1,10 @@
 import { useTransition } from "react";
-import UserDropdown from "./user-dropdown";
-import { usePathname, useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
-import { authClient } from "@/lib/client/auth";
+import { useLocation, useRouter } from "@tanstack/react-router";
+import UserDropdown from "./user-dropdown";
 import type { PublicUser } from "@/lib/universal/auth";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import { authClient } from "@/lib/client/auth";
 
 type Props = {
   user: PublicUser;
@@ -12,7 +12,7 @@ type Props = {
 };
 
 export default function StateAuthenticated({ user, cosmo }: Props) {
-  const pathname = usePathname();
+  const location = useLocation();
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -21,7 +21,7 @@ export default function StateAuthenticated({ user, cosmo }: Props) {
       await authClient.signOut({
         fetchOptions: {
           onSuccess: () => {
-            router.refresh();
+            router.invalidate();
           },
         },
       });
@@ -34,7 +34,7 @@ export default function StateAuthenticated({ user, cosmo }: Props) {
 
   return (
     <UserDropdown
-      key={pathname}
+      key={location.pathname}
       onSignOut={signOut}
       user={user}
       cosmo={cosmo}

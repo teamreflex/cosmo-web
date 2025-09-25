@@ -1,8 +1,8 @@
-import { useListAccounts, useSessionUser } from "@/hooks/use-account";
 import UpdateUsername from "./update-username";
 import UpdateEmail from "./update-email";
 import UpdatePassword from "./update-password";
 import UpdateSocial from "./update-social";
+import { useListAccounts, useSessionUser } from "@/hooks/use-account";
 import {
   Accordion,
   AccordionContent,

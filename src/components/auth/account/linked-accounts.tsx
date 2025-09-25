@@ -1,3 +1,9 @@
+import {
+  IconBrandDiscordFilled,
+  IconBrandTwitterFilled,
+} from "@tabler/icons-react";
+import { Link, Loader2, Unlink } from "lucide-react";
+import type { LinkedAccount, Provider } from "@/hooks/use-account";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -6,17 +12,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
-  type LinkedAccount,
-  type Provider,
   useLinkAccount,
   useListAccounts,
   useUnlinkAccount,
 } from "@/hooks/use-account";
-import {
-  IconBrandDiscordFilled,
-  IconBrandTwitterFilled,
-} from "@tabler/icons-react";
-import { Link, Loader2, Unlink } from "lucide-react";
 
 export default function LinkedAccounts() {
   const { data } = useListAccounts();

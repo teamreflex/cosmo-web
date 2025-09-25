@@ -1,3 +1,30 @@
+import { useTheme } from "next-themes";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { useServerFn } from "@tanstack/react-start";
+import { useMutation } from "@tanstack/react-query";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "../ui/form";
+import { updateSettings } from "./actions";
+import type { PublicUser } from "@/lib/universal/auth";
+import type { z } from "zod";
+import { settingsSchema } from "@/lib/universal/schema/auth";
+import { DataSourceSelector } from "@/components/collection/data-source-selector";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -6,32 +33,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useTheme } from "next-themes";
-import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
-import { DataSourceSelector } from "@/components/collection/data-source-selector";
-import { useAction } from "next-safe-action/hooks";
-import { updateSettings } from "./actions";
-import type { PublicUser } from "@/lib/universal/auth";
-import { settingsSchema } from "@/lib/universal/schema/auth";
-import { useForm } from "react-hook-form";
-import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "../ui/form";
-import type { z } from "zod";
 
 type Props = {
   open: boolean;
@@ -41,14 +42,8 @@ type Props = {
 
 export default function SettingsDialog({ open, onOpenChange, user }: Props) {
   const { theme, setTheme } = useTheme();
-  const { execute, isPending } = useAction(updateSettings, {
-    onSuccess() {
-      toast.success("Settings updated.");
-      onOpenChange(false);
-    },
-    onError() {
-      toast.error("Error updating settings.");
-    },
+  const mutation = useMutation({
+    mutationFn: useServerFn(updateSettings),
   });
 
   const form = useForm<z.infer<typeof settingsSchema>>({
@@ -58,6 +53,21 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
       collectionMode: user.collectionMode,
     },
   });
+
+  async function handleSubmit(data: z.infer<typeof settingsSchema>) {
+    await mutation.mutateAsync(
+      { data },
+      {
+        onSuccess() {
+          toast.success("Settings updated.");
+          onOpenChange(false);
+        },
+        onError() {
+          toast.error("Error updating settings.");
+        },
+      }
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -72,7 +82,7 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
         <Form {...form}>
           <form
             id="settings-form"
-            onSubmit={form.handleSubmit((data) => execute(data))}
+            onSubmit={form.handleSubmit(handleSubmit)}
             className="flex flex-col gap-4"
           >
             {/* theme */}
@@ -171,9 +181,13 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
         </Form>
 
         <DialogFooter className="flex-row justify-end gap-2">
-          <Button form="settings-form" type="submit" disabled={isPending}>
+          <Button
+            form="settings-form"
+            type="submit"
+            disabled={mutation.isPending}
+          >
             <span>Save</span>
-            {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+            {mutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,3 +1,5 @@
+import { Loader2, MailCheck, Trash2 } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -9,8 +11,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useDeleteAccount } from "@/hooks/use-account";
-import { Loader2, MailCheck, Trash2 } from "lucide-react";
-import { useState } from "react";
 
 export default function DeleteAccount() {
   const [open, setOpen] = useState(false);

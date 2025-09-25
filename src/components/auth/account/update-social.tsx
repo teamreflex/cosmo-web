@@ -1,3 +1,14 @@
+import { toast } from "sonner";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { useMutation } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { Loader2 } from "lucide-react";
+import { useRouter } from "@tanstack/react-router";
+import type { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { updateSocialsSchema } from "@/lib/universal/schema/auth";
+import { Switch } from "@/components/ui/switch";
+import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import {
   Form,
   FormControl,
@@ -6,17 +17,6 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/ui/form";
-import { toast } from "sonner";
-import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
-import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { useMutation } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
-import type { z } from "zod";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
-import { updateSocialsSchema } from "@/lib/universal/schema/auth";
-import { Switch } from "@/components/ui/switch";
 
 type Props = {
   showSocials: boolean;
@@ -47,7 +47,7 @@ export default function UpdateSocial(props: Props) {
     mutation.mutate(data, {
       onSuccess: () => {
         toast.success("Settings updated.");
-        router.refresh();
+        router.invalidate();
       },
       onError: (error) => {
         toast.error(error.message);

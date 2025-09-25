@@ -1,3 +1,14 @@
+import { toast } from "sonner";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { useMutation } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { Loader2, Save } from "lucide-react";
+import { useRouter } from "@tanstack/react-router";
+import type { z } from "zod";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { updateEmailSchema } from "@/lib/universal/schema/auth";
+import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import {
   Form,
   FormControl,
@@ -7,17 +18,6 @@ import {
   FormMessage,
   useFormField,
 } from "@/components/ui/form";
-import { toast } from "sonner";
-import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
-import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { useMutation } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
-import type { z } from "zod";
-import { useRouter } from "next/navigation";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Loader2, Save } from "lucide-react";
-import { updateEmailSchema } from "@/lib/universal/schema/auth";
 
 type Props = {
   email: string;
@@ -50,7 +50,7 @@ export default function UpdateEmail({ email }: Props) {
         toast.success(
           "An email has been sent to verify your new email address."
         );
-        router.refresh();
+        router.invalidate();
       },
       onError: (error) => {
         toast.error(error.message);
@@ -71,11 +71,7 @@ export default function UpdateEmail({ email }: Props) {
             <FormItem>
               <FormControl>
                 <div className="flex items-center gap-2">
-                  <Input
-                    type="email"
-                    placeholder="me@example.com"
-                    {...field}
-                  />
+                  <Input type="email" placeholder="me@example.com" {...field} />
 
                   <Submit isPending={mutation.isPending} />
                 </div>

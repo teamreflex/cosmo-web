@@ -1,5 +1,4 @@
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import ProfileImage from "@/assets/profile.webp";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -13,7 +12,7 @@ export default function UserAvatar({ className, username = "User" }: Props) {
       <AvatarFallback>{username.charAt(0).toUpperCase()}</AvatarFallback>
       <AvatarImage
         className="bg-cosmo-profile p-3"
-        src={ProfileImage.src}
+        src="/profile.webp"
         alt={username}
       />
     </Avatar>
