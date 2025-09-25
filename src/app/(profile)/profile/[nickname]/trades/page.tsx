@@ -65,8 +65,6 @@ export default async function UserTransfersPage(props: Props) {
         on_offline: filters.on_offline,
         transferable: true,
         gridable: true,
-        used_for_grid: true,
-        collection: null,
         collectionNo: [],
       },
     ],

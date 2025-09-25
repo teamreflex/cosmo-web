@@ -22,6 +22,7 @@ type GetTypesenseResultsProps = {
 
 /**
  * Get results from Typesense.
+ * Runs on both the client and server.
  */
 export async function getTypesenseResults({
   query,

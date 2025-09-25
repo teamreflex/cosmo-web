@@ -1,55 +1,50 @@
-import {
-  createParser,
-  parseAsArrayOf,
-  parseAsString,
-  parseAsStringEnum,
-  useQueryStates,
-} from "nuqs";
-import type {
-  ValidArtist,
-  ValidOnlineType,
-  ValidSort,
-} from "@/lib/universal/cosmo/common";
-import {
-  validArtists,
-  validOnlineTypes,
-  validSorts,
-} from "@/lib/universal/cosmo/common";
+import { useNavigate, useSearch } from "@tanstack/react-router";
+import { useCallback, useMemo } from "react";
+import type z from "zod";
+import { cosmoSchema } from "@/lib/universal/parsers";
 
 export function useCosmoFilters() {
-  return useQueryStates({
-    member: parseAsString,
-    artist: parseAsStringEnum<ValidArtist>(Object.values(validArtists)),
-    sort: parseAsStringEnum<ValidSort>(Object.values(validSorts)),
-    class: parseAsArrayOf(parseAsString),
-    season: parseAsArrayOf(parseAsString),
-    on_offline: parseAsArrayOf(
-      parseAsStringEnum<ValidOnlineType>(Object.values(validOnlineTypes))
-    ),
-    transferable: parseAsNullableBoolean,
-    gridable: parseAsNullableBoolean,
-    used_for_grid: parseAsNullableBoolean,
-    // grid param: "Atom01 JinSoul 101Z"
-    collection: parseAsString,
-    // index param: ["101Z", "102Z"]
-    collectionNo: parseAsArrayOf(parseAsString),
+  const navigate = useNavigate();
+  const searchParams = useSearch({
+    strict: false,
   });
+
+  const filters = useMemo((): CosmoFilters => {
+    const parsed = cosmoSchema.safeParse(searchParams);
+    if (!parsed.success) {
+      return defaultFilters;
+    }
+    return parsed.data;
+  }, [searchParams]);
+
+  const setFilters = useCallback(
+    (input: Partial<CosmoFilters>) => {
+      navigate({
+        search: (prev) => ({
+          ...prev,
+          ...input,
+        }),
+      });
+    },
+    [searchParams]
+  );
+
+  return [filters, setFilters] as const;
 }
 
-// cosmo only accepts "true" or empty/null/undefined for boolean params
-export const parseAsNullableBoolean = createParser({
-  parse(query) {
-    return query === "true" ? true : null;
-  },
-  serialize(value) {
-    return value === true ? "true" : "";
-  },
-});
-
-type UseCosmoFiltersReturnType = ReturnType<typeof useCosmoFilters>;
-export type CosmoFilters = UseCosmoFiltersReturnType[0];
-export type SetCosmoFilters = UseCosmoFiltersReturnType[1];
+export type CosmoFilters = z.infer<typeof cosmoSchema>;
+export type SetCosmoFilters = (filters: CosmoFilters) => void;
 export type PropsWithFilters = {
   filters: CosmoFilters;
   setFilters: SetCosmoFilters;
 };
+
+export const defaultFilters = {
+  sort: "newest",
+  season: [],
+  class: [],
+  on_offline: [],
+  member: undefined,
+  artist: undefined,
+  collectionNo: [],
+} satisfies CosmoFilters;

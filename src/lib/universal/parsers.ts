@@ -10,6 +10,8 @@ import { validArtists, validOnlineTypes, validSorts } from "./cosmo/common";
  */
 export function castToArray<TSchema extends z.Schema>(schema: TSchema) {
   return z.preprocess((val) => {
+    if (Array.isArray(val)) return val;
+
     const str = String(val);
     if (str === "") return [];
     return str.includes(",") ? str.split(",") : [str];
@@ -17,103 +19,62 @@ export function castToArray<TSchema extends z.Schema>(schema: TSchema) {
 }
 
 /**
- * Cosmo-compatible Zod schema for parsing query params.
+ * Base schema for querying objekts.
  */
-const cosmoSchema = z.object({
-  sort: z.enum(validSorts).catch("newest"),
-  season: castToArray(z.string()),
-  class: castToArray(z.string()),
-  on_offline: castToArray(z.enum(validOnlineTypes)),
-  member: z.string().optional().nullable(),
-  artist: z.enum(validArtists).optional().nullable(),
-  transferable: z.coerce.boolean().optional().nullable(),
-  gridable: z.coerce.boolean().optional().nullable(),
+export const cosmoSchema = z.object({
+  sort: z.enum(validSorts).nullish(),
+  season: castToArray(z.string()).nullish(),
+  class: castToArray(z.string()).nullish(),
+  on_offline: castToArray(z.enum(validOnlineTypes)).nullish(),
+  member: z.string().nullish(),
+  artist: z.enum(validArtists).nullish(),
+  transferable: z.coerce.boolean().nullish(),
+  gridable: z.coerce.boolean().nullish(),
+  collectionNo: castToArray(z.string()).nullish(),
 });
 
-/**
- * Objekt index schema.
- * Extends COSMO schema as it has the same filters.
- */
-export const objektIndexSearchSchema = cosmoSchema
+// index page frontend - user facing, validated by the router
+export const objektIndexFrontendSchema = cosmoSchema
   .omit({ transferable: true, gridable: true })
   .extend({
-    id: z.string().optional().nullable(),
-    search: z.string().optional().nullable().default(""),
-    page: z.coerce.number().catch(0),
-    collectionNo: castToArray(z.string()).default([]),
+    id: z.string().nullish(),
+    search: z.string().nullish(),
+  })
+  .partial();
+
+// index page backend
+export const objektIndexBackendSchema = cosmoSchema
+  .omit({ transferable: true, gridable: true })
+  .extend({
+    page: z.coerce.number().default(0),
     artists: z.string().array().default([]),
-  })
-  .partial()
-  .default({
-    // cosmo defaults
-    sort: "newest",
-    season: [],
-    class: [],
-    on_offline: [],
-    member: undefined,
-    artist: undefined,
-    // additional defaults
-    id: undefined,
-    search: "",
-    page: 0,
-    collectionNo: [],
-    artists: [],
   });
 
-/**
- * Objekt list schema.
- * Extends COSMO & objekt index schema as it has the same filters.
- * Does not add anything but this is in place for future compatibility.
- */
-export const objektList = cosmoSchema
+// user collection frontend - user facing, validated by the router
+export const userCollectionFrontendSchema = cosmoSchema
+  .omit({ gridable: true })
+  .extend({
+    locked: z.boolean().nullish(),
+  })
+  .partial();
+
+// user collection backend
+export const userCollectionBackendSchema = cosmoSchema
+  .omit({ gridable: true })
+  .extend({
+    page: z.coerce.number().default(0),
+    artists: z.string().array().default([]),
+  });
+
+// objekt list frontend - user facing, validated by the router
+export const objektListFrontendSchema = cosmoSchema
+  .omit({ transferable: true, gridable: true })
+  .partial();
+
+// objekt list backend
+export const objektListBackendSchema = cosmoSchema
   .omit({ transferable: true, gridable: true })
   .extend({
-    page: z.coerce.number().catch(0),
-    collectionNo: castToArray(z.string()).default([]),
-  })
-  .default({
-    // cosmo defaults
-    sort: "newest",
-    season: [],
-    class: [],
-    on_offline: [],
-    member: undefined,
-    artist: undefined,
-    // additional defaults
-    page: 0,
-    collectionNo: [],
-  });
-
-/**
- * User collection schema.
- * Extends COSMO & objekt index schemas as it has the same filters.
- */
-export const userCollection = objektIndexSearchSchema;
-
-/**
- * User collection schema for collection groups.
- */
-export const userCollectionGroups = cosmoSchema
-  .extend({
-    artistName: z.enum(validArtists).optional().nullable(),
-    order: z.enum(validSorts).optional().catch("newest"),
-    page: z.coerce.number().optional().catch(1),
-    artists: z.string().array().optional().catch([]),
-  })
-  .omit({
-    artist: true,
-    sort: true,
-    gridable: true,
-  })
-  .default({
-    // cosmo defaults
-    season: [],
-    class: [],
-    on_offline: [],
-    member: undefined,
-    // additional defaults
-    artistName: undefined,
-    order: "newest",
-    page: 1,
-    artists: [],
+    page: z.coerce.number().default(0),
+    artists: z.string().array().default([]),
   });

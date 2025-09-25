@@ -1,6 +1,7 @@
-import { parseAsBoolean, useQueryState } from "nuqs";
-import { useState } from "react";
-import { type CosmoFilters, useCosmoFilters } from "./use-cosmo-filters";
+import { useCallback, useMemo, useState } from "react";
+import { useNavigate, useSearch } from "@tanstack/react-router";
+import { defaultFilters, useCosmoFilters } from "./use-cosmo-filters";
+import type { CosmoFilters } from "./use-cosmo-filters";
 import type { CollectionDataSource } from "@/lib/utils";
 
 type DefaultOptions = {
@@ -8,11 +9,16 @@ type DefaultOptions = {
 };
 
 export function useFilters(opts?: DefaultOptions) {
+  const searchParams = useSearch({
+    strict: false,
+  });
+  const navigate = useNavigate();
+
   // setup cosmo filters
   const [cosmoFilters, setCosmoFilters] = useCosmoFilters();
 
   // use separate state for apollo features so a refetch doesn't occur
-  const [showLocked, setShowLocked] = useQueryState("locked", parseAsBoolean);
+  const showLocked = searchParams.locked ?? true;
   const [dataSource, setDataSource] = useState<CollectionDataSource>(() => {
     // upon first render, adjust data source based on source-specific filters
     const useBlockchain =
@@ -25,29 +31,26 @@ export function useFilters(opts?: DefaultOptions) {
     return opts?.dataSource ?? "blockchain";
   });
 
-  const searchParams = toSearchParams(
-    {
-      ...cosmoFilters,
-      sort: cosmoFilters.sort ?? "newest",
+  const cosmoSearchParams = useMemo(
+    () => toSearchParams(cosmoFilters, true),
+    [cosmoFilters]
+  );
+
+  const setShowLocked = useCallback(
+    (state: boolean | null) => {
+      navigate({
+        search: (prev) => ({
+          ...prev,
+          locked: state,
+        }),
+      });
     },
-    true
+    [searchParams]
   );
 
   function reset() {
     setShowLocked(null);
-    setCosmoFilters({
-      member: null,
-      artist: null,
-      sort: null,
-      class: null,
-      season: null,
-      on_offline: null,
-      transferable: null,
-      gridable: null,
-      used_for_grid: null,
-      collectionNo: null,
-      collection: null,
-    });
+    setCosmoFilters(defaultFilters);
   }
 
   return {
@@ -56,7 +59,7 @@ export function useFilters(opts?: DefaultOptions) {
     setShowLocked,
     dataSource,
     setDataSource,
-    searchParams,
+    searchParams: cosmoSearchParams,
     reset,
   };
 }
@@ -72,7 +75,7 @@ function toSearchParams(input: CosmoFilters, join = false): URLSearchParams {
 
     if (typeof value === "string") {
       query.set(key, value);
-    } else if (typeof value === "boolean" && value) {
+    } else if (typeof value === "boolean") {
       query.set(key, "true");
     } else if (Array.isArray(value)) {
       if (join) {
@@ -93,16 +96,14 @@ function toSearchParams(input: CosmoFilters, join = false): URLSearchParams {
  */
 export function filtersAreDirty(filters: CosmoFilters) {
   return (
-    filters.member !== null ||
-    filters.artist !== null ||
-    filters.sort !== null ||
-    filters.class !== null ||
-    filters.season !== null ||
-    filters.on_offline !== null ||
-    filters.transferable !== null ||
-    filters.gridable !== null ||
-    filters.used_for_grid !== null ||
-    filters.collectionNo !== null ||
-    filters.collection !== null
+    !filters.member ||
+    !filters.artist ||
+    filters.sort !== "newest" ||
+    filters.class.length > 0 ||
+    filters.season.length > 0 ||
+    filters.on_offline.length > 0 ||
+    filters.transferable !== false ||
+    filters.gridable !== false ||
+    filters.collectionNo.length > 0
   );
 }

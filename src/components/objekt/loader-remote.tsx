@@ -1,32 +1,31 @@
-import {
-  type ObjektResponseOptions,
-  useObjektResponse,
-} from "@/hooks/use-objekt-response";
-import { type ReactElement, useMemo } from "react";
+import { useMemo } from "react";
 import Portal from "../portal";
 import { InfiniteQueryNext } from "../infinite-query-pending";
+import type { ReactElement } from "react";
 import type { ObjektRowItem } from "./virtualized-grid";
 import type { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
+import type { ObjektResponseOptions } from "@/hooks/use-objekt-response";
+import { useObjektResponse } from "@/hooks/use-objekt-response";
 
-type Props<Response, Item> = {
-  children: (props: RenderProps<Item>) => ReactElement;
-  options: ObjektResponseOptions<Response, Item>;
+type Props<TResponse, TItem> = {
+  children: (props: RenderProps<TItem>) => ReactElement;
+  options: ObjektResponseOptions<TResponse, TItem>;
   pins?: CosmoObjekt[];
   hidePins?: boolean;
-  shouldRender?: (objekt: Item) => boolean;
+  shouldRender?: (objekt: TItem) => boolean;
   gridColumns: number;
   showTotal?: boolean;
   searchable?: boolean;
 };
 
-export default function LoaderRemote<Response, Item>({
+export default function LoaderRemote<TResponse, TItem>({
   pins = [],
   hidePins = true,
   shouldRender = () => true,
   showTotal = false,
   searchable = false,
   ...props
-}: Props<Response, Item>) {
+}: Props<TResponse, TItem>) {
   // data
   const { query, total, items } = useObjektResponse(props.options);
 
@@ -45,7 +44,7 @@ export default function LoaderRemote<Response, Item>({
       })),
     ];
 
-    const result: ObjektRowItem<Item>[][] = [];
+    const result: ObjektRowItem<TItem>[][] = [];
     for (let i = 0; i < initialItems.length; i += props.gridColumns) {
       result.push(initialItems.slice(i, i + props.gridColumns));
     }
@@ -71,6 +70,6 @@ export default function LoaderRemote<Response, Item>({
   );
 }
 
-type RenderProps<Item> = {
-  rows: ObjektRowItem<Item>[][];
+type RenderProps<TItem> = {
+  rows: ObjektRowItem<TItem>[][];
 };

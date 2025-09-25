@@ -1,22 +1,22 @@
+import { createServerFn } from "@tanstack/react-start";
+import z from "zod";
 import { db } from "../db";
 import { dbi } from "../db/interactive";
 import { objektListEntries, objektLists } from "../db/schema";
 
-type FetchObjektList =
-  | {
-      id: string;
-    }
-  | {
-      userId: string;
-      slug: string;
-    };
-
 /**
  * Fetch a single objekt list.
  */
-export async function fetchObjektList(where: FetchObjektList) {
-  return await db.query.objektLists.findFirst({ where });
-}
+export const fetchObjektList = createServerFn({ method: "GET" })
+  .inputValidator(
+    z.union([
+      z.object({ id: z.string() }),
+      z.object({ userId: z.string(), slug: z.string() }),
+    ])
+  )
+  .handler(async ({ data }) => {
+    return await db.query.objektLists.findFirst({ where: data });
+  });
 
 /**
  * Import objekt lists from the old tables into the new ones.

@@ -1,103 +1,85 @@
-import type { userCollection } from "@/lib/universal/parsers";
-import type { z } from "zod";
-import { indexer } from "../../db/indexer";
 import { and, eq, sql } from "drizzle-orm";
+import { z } from "zod";
+import { createServerFn } from "@tanstack/react-start";
+import { indexer } from "../../db/indexer";
 import { collections, objekts } from "../../db/indexer/schema";
 import {
   withArtist,
   withClass,
+  withCollectionSort,
   withCollections,
   withMember,
-  withCollectionSort,
   withOnlineType,
   withSeason,
-  withTransferable,
   withSelectedArtists,
+  withTransferable,
 } from "../filters";
 import { mapLegacyObjekt } from "./common";
+import { userCollectionBackendSchema } from "@/lib/universal/parsers";
 
 const PER_PAGE = 60;
 
 /**
- * Ensures the Zod-parsed filters match what the frontend parses.
- * Used for hydrating the query client.
- */
-export function parseUserCollectionFilters(
-  filters: z.infer<typeof userCollection>
-) {
-  return {
-    artist: filters.artist,
-    class: filters.class.length > 0 ? filters.class : null,
-    collection: null,
-    collectionNo: filters.collectionNo.length > 0 ? filters.collectionNo : null,
-    gridable: null,
-    member: filters.member,
-    on_offline: filters.on_offline.length > 0 ? filters.on_offline : null,
-    season: filters.season.length > 0 ? filters.season : null,
-    sort: filters.sort === "newest" ? null : filters.sort,
-    transferable: null,
-    used_for_grid: null,
-  };
-}
-
-/**
  * Fetch a user's objekts from the indexer with given filters.
  */
-export async function fetchObjektsBlockchain(
-  address: string,
-  filters: z.infer<typeof userCollection>
-) {
-  let query = indexer
-    .select({
-      objekts,
-      collections,
+export const fetchObjektsBlockchain = createServerFn({ method: "GET" })
+  .inputValidator(
+    userCollectionBackendSchema.extend({
+      address: z.string().min(1),
     })
-    .from(objekts)
-    .leftJoin(collections, eq(collections.id, objekts.collectionId))
-    .where(
-      and(
-        eq(objekts.owner, address.toLowerCase()),
-        ...[
-          ...withArtist(filters.artist),
-          ...withClass(filters.class),
-          ...withSeason(filters.season),
-          ...withOnlineType(filters.on_offline),
-          ...withMember(filters.member),
-          ...withCollections(filters.collectionNo),
-          ...withTransferable(filters.transferable),
-          ...withSelectedArtists(filters.artists),
-        ]
+  )
+  .handler(async ({ data }) => {
+    let query = indexer
+      .select({
+        objekts,
+        collections,
+      })
+      .from(objekts)
+      .leftJoin(collections, eq(collections.id, objekts.collectionId))
+      .where(
+        and(
+          eq(objekts.owner, data.address.toLowerCase()),
+          ...[
+            ...withArtist(data.artist),
+            ...withClass(data.class ?? []),
+            ...withSeason(data.season ?? []),
+            ...withOnlineType(data.on_offline ?? []),
+            ...withMember(data.member),
+            ...withCollections(data.collectionNo),
+            ...withTransferable(data.transferable),
+            ...withSelectedArtists(data.artists),
+          ]
+        )
       )
-    )
-    .$dynamic();
-  query = withCollectionSort(query, filters.sort);
-  query = query.limit(PER_PAGE).offset(filters.page * PER_PAGE);
+      .$dynamic();
+    query = withCollectionSort(query, data.sort ?? "newest");
+    query = query.limit(PER_PAGE).offset(data.page * PER_PAGE);
 
-  // fetch both objekts and total count in parallel
-  const [results, total] = await Promise.all([
-    query,
-    fetchCount(address, filters),
-  ]);
+    // fetch both objekts and total count in parallel
+    const [results, total] = await Promise.all([
+      query,
+      fetchCount(data.address, data),
+    ]);
 
-  const hasNext = results.length === PER_PAGE;
-  const nextStartAfter = hasNext ? filters.page + 1 : undefined;
+    const hasNext = results.length === PER_PAGE;
+    const nextStartAfter = hasNext ? data.page + 1 : undefined;
 
-  return {
-    total: Number(total),
-    hasNext,
-    nextStartAfter,
-    objekts: results
-      .filter((r) => r.collections !== null) // should never happen but just in case
-      .map((row) => mapLegacyObjekt(row.objekts, row.collections!)),
-  };
-}
+    return {
+      total: Number(total),
+      hasNext,
+      nextStartAfter,
+      objekts: results
+        .filter((r) => r.collections !== null) // should never happen but just in case
+        .map((row) => mapLegacyObjekt(row.objekts, row.collections!)),
+    };
+  });
 
 /**
  * Fetch the total number of objekts for a user with given filters.
  */
 async function fetchCount(
   address: string,
-  filters: z.infer<typeof userCollection>
+  filters: z.infer<typeof userCollectionBackendSchema>
 ) {
   const [results] = await indexer
     .select({ count: sql<number>`count(*)` })
@@ -108,9 +90,9 @@ async function fetchCount(
         eq(objekts.owner, address.toLowerCase()),
         ...[
           ...withArtist(filters.artist),
-          ...withClass(filters.class),
-          ...withSeason(filters.season),
-          ...withOnlineType(filters.on_offline),
+          ...withClass(filters.class ?? []),
+          ...withSeason(filters.season ?? []),
+          ...withOnlineType(filters.on_offline ?? []),
           ...withMember(filters.member),
           ...withCollections(filters.collectionNo),
           ...withTransferable(filters.transferable),
@@ -119,5 +101,5 @@ async function fetchCount(
       )
     );
 
-  return results.count;
+  return results?.count ?? 0;
 }

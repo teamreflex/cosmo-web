@@ -25,8 +25,6 @@ export default function ResetFilters({
       on_offline: null,
       transferable: null,
       gridable: null,
-      used_for_grid: null,
-      collection: null,
       collectionNo: null,
     });
   }

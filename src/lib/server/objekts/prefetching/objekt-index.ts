@@ -12,7 +12,7 @@ import {
 } from "../filters";
 import { indexer } from "../../db/indexer";
 import { collections } from "../../db/indexer/schema";
-import { objektIndexSearchSchema } from "@/lib/universal/parsers";
+import { objektIndexBackendSchema } from "@/lib/universal/parsers";
 
 const LIMIT = 60;
 
@@ -20,7 +20,7 @@ const LIMIT = 60;
  * Fetch objekts from the indexer with given filters.
  */
 export const fetchObjektsIndex = createServerFn({ method: "GET" })
-  .inputValidator(objektIndexSearchSchema)
+  .inputValidator(objektIndexBackendSchema)
   .handler(async ({ data }) => {
     let query = indexer
       .select({
@@ -32,9 +32,9 @@ export const fetchObjektsIndex = createServerFn({ method: "GET" })
         and(
           ...[
             ...withArtist(data.artist),
-            ...withClass(data.class),
-            ...withSeason(data.season),
-            ...withOnlineType(data.on_offline),
+            ...withClass(data.class ?? []),
+            ...withSeason(data.season ?? []),
+            ...withOnlineType(data.on_offline ?? []),
             ...withMember(data.member),
             ...withCollections(data.collectionNo),
             ...withSelectedArtists(data.artists),
@@ -42,7 +42,7 @@ export const fetchObjektsIndex = createServerFn({ method: "GET" })
         )
       )
       .$dynamic();
-    query = withObjektIndexSort(query, data.sort);
+    query = withObjektIndexSort(query, data.sort ?? "newest");
     query = query.limit(LIMIT).offset(data.page * LIMIT);
 
     const result = await query;

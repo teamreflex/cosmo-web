@@ -1,12 +1,15 @@
-import type { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
+import { createHash } from "node:crypto";
+import { desc, eq } from "drizzle-orm";
+import { createServerFn } from "@tanstack/react-start";
+import z from "zod";
+import { queryOptions } from "@tanstack/react-query";
 import { indexer } from "../db/indexer";
-import type { ValidArtist } from "@/lib/universal/cosmo/common";
-import type { Collection, Objekt } from "../db/indexer/schema";
 import { db } from "../db";
 import { cosmoAccounts, pins } from "../db/schema";
-import { desc, eq } from "drizzle-orm";
 import { remember } from "../cache";
-import { createHash } from "crypto";
+import type { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
+import type { ValidArtist } from "@/lib/universal/cosmo/common";
+import type { Collection, Objekt } from "../db/indexer/schema";
 
 interface ObjektWithCollection extends Objekt {
   collection: Collection;
@@ -16,47 +19,55 @@ interface ObjektWithCollection extends Objekt {
  * Fetch all pins for the given user.
  * Cached for 1 day.
  */
-export async function fetchPins(username: string): Promise<CosmoObjekt[]> {
-  const tag = pinCacheKey(username);
-  const ttl = 60 * 60 * 24; // 1 day
+export const fetchPins = createServerFn({ method: "GET" })
+  .inputValidator((data) => z.object({ username: z.string() }).parse(data))
+  .handler(async ({ data }): Promise<CosmoObjekt[]> => {
+    const tag = pinCacheKey(data.username);
+    const ttl = 60 * 60 * 24; // 1 day
 
-  return await remember(tag, ttl, async () => {
-    const rows = await db
-      .select({ tokenId: pins.tokenId })
-      .from(pins)
-      .innerJoin(cosmoAccounts, eq(pins.address, cosmoAccounts.address))
-      // decoding username from URL
-      .where(eq(cosmoAccounts.username, decodeURIComponent(username)))
-      .orderBy(desc(pins.id));
+    return await remember(tag, ttl, async () => {
+      const rows = await db
+        .select({ tokenId: pins.tokenId })
+        .from(pins)
+        .innerJoin(cosmoAccounts, eq(pins.address, cosmoAccounts.address))
+        // decoding username from URL
+        .where(eq(cosmoAccounts.username, decodeURIComponent(data.username)))
+        .orderBy(desc(pins.id));
 
-    if (rows.length === 0) return [];
+      if (rows.length === 0) return [];
 
-    const tokenIds = rows.map((row) => row.tokenId);
-    try {
-      var results = await indexer.query.objekts.findMany({
-        where: {
-          id: {
-            in: tokenIds,
+      const tokenIds = rows.map((row) => row.tokenId);
+      try {
+        var results = await indexer.query.objekts.findMany({
+          where: {
+            id: {
+              in: tokenIds,
+            },
           },
-        },
-        with: {
-          collection: true,
-        },
+          with: {
+            collection: true,
+          },
+        });
+      } catch (err) {
+        return [];
+      }
+
+      const mapped = results.map(normalizePin);
+
+      // sort by pin order
+      return mapped.sort((a, b) => {
+        const indexA = tokenIds.findIndex((item) => item === Number(a.tokenId));
+        const indexB = tokenIds.findIndex((item) => item === Number(b.tokenId));
+        return indexA - indexB;
       });
-    } catch (err) {
-      return [];
-    }
-
-    const mapped = results.map(normalizePin);
-
-    // sort by pin order
-    return mapped.sort((a, b) => {
-      const indexA = tokenIds.findIndex((item) => item === Number(a.tokenId));
-      const indexB = tokenIds.findIndex((item) => item === Number(b.tokenId));
-      return indexA - indexB;
     });
   });
-}
+
+export const pinsQuery = (username: string) =>
+  queryOptions({
+    queryKey: ["pins", username],
+    queryFn: () => fetchPins({ data: { username } }),
+  });
 
 /**
  * Normalize an objekt with collection into an owned objekt.

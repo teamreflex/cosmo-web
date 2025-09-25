@@ -1,30 +1,30 @@
-import {
-  type GetNextPageParamFunction,
-  type InfiniteData,
-  type QueryFunction,
-  type QueryKey,
-  useSuspenseInfiniteQuery,
-} from "@tanstack/react-query";
+import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import { useCosmoFilters } from "./use-cosmo-filters";
+import { useArtists } from "./use-artists";
+import type {
+  GetNextPageParamFunction,
+  InfiniteData,
+  QueryFunction,
+  QueryKey,
+} from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import type { FilterType } from "@/lib/utils";
-import { useArtists } from "./use-artists";
 
-export type ObjektResponseOptions<Response, Item> = {
+export type ObjektResponseOptions<TResponse, TItem> = {
   filtering: FilterType;
   queryKey: QueryKey;
-  queryFunction: QueryFunction<Response, QueryKey, number | undefined>;
+  queryFunction: QueryFunction<TResponse, QueryKey, number | undefined>;
   initialPageParam?: number;
-  getNextPageParam: GetNextPageParamFunction<number | undefined, Response>;
-  calculateTotal: (data: InfiniteData<Response>) => ReactNode;
-  getItems: (data: InfiniteData<Response>) => Item[];
+  getNextPageParam: GetNextPageParamFunction<number | undefined, TResponse>;
+  calculateTotal: (data: InfiniteData<TResponse>) => ReactNode;
+  getItems: (data: InfiniteData<TResponse>) => TItem[];
 };
 
 /**
  * Create a new typed options object for the useObjektResponse hook.
  */
-export function objektOptions<Response, Item>(
-  opts: ObjektResponseOptions<Response, Item>
+export function objektOptions<TResponse, TItem>(
+  opts: ObjektResponseOptions<TResponse, TItem>
 ) {
   return opts;
 }
@@ -32,8 +32,8 @@ export function objektOptions<Response, Item>(
 /**
  * Suspense-powered hook to fetch objekts.
  */
-export function useObjektResponse<Response, Item>(
-  opts: ObjektResponseOptions<Response, Item>
+export function useObjektResponse<TResponse, TItem>(
+  opts: ObjektResponseOptions<TResponse, TItem>
 ) {
   const { selectedIds } = useArtists();
   const [filters] = useCosmoFilters();

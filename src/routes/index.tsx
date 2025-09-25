@@ -13,10 +13,12 @@ import { UserStateProvider } from "@/hooks/use-user-state";
 import { ArtistProvider } from "@/hooks/use-artists";
 import { ProfileProvider } from "@/hooks/use-profile";
 import IndexRenderer from "@/components/objekt-index/index-renderer";
-import { objektIndexSearchSchema } from "@/lib/universal/parsers";
-import { fetchObjektsIndex } from "@/lib/server/objekts/prefetching/objekt-index";
-import { getTypesenseResults } from "@/lib/client/typesense";
+import { objektIndexFrontendSchema } from "@/lib/universal/parsers";
 import { seoTitle } from "@/lib/seo";
+import {
+  objektIndexBlockchainQuery,
+  objektIndexTypesenseQuery,
+} from "@/lib/universal/objekt-queries";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -25,15 +27,14 @@ export const Route = createFileRoute("/")({
   component: Home,
   errorComponent: HomeError,
   pendingComponent: HomePending,
-  validateSearch: objektIndexSearchSchema,
+  validateSearch: objektIndexFrontendSchema,
   loaderDeps: ({ search }) => ({ searchParams: search }),
   loader: async ({ context, deps }) => {
-    // prefetch queries
+    // prefetch background data
     context.queryClient.prefetchQuery(filterDataQuery);
     context.queryClient.prefetchQuery(artistsQuery);
-    context.queryClient.prefetchQuery(currentAccountQuery);
 
-    // get selected artists
+    // get selected artists from cookies
     const selected = await context.queryClient.ensureQueryData(
       selectedArtistsQuery
     );
@@ -42,51 +43,18 @@ export const Route = createFileRoute("/")({
     const searchTerm = deps.searchParams.search ?? "";
     if (searchTerm) {
       // prefetch typesense
-      context.queryClient.prefetchInfiniteQuery({
-        queryKey: [
-          "objekt-index",
-          "typesense",
-          { search: searchTerm || null },
-          {
-            ...deps.searchParams,
-            artists: selected,
-          },
-        ],
-        queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
-          return await getTypesenseResults({
-            query: searchTerm,
-            filters: {
-              ...deps.searchParams,
-              artist: deps.searchParams.artist,
-              member: deps.searchParams.member,
-            },
-            page: pageParam,
-            artists: selected,
-          });
-        },
-        initialPageParam: 1,
-      });
+      context.queryClient.prefetchInfiniteQuery(
+        objektIndexTypesenseQuery(deps.searchParams, selected)
+      );
     } else {
       // prefetch blockchain
-      context.queryClient.prefetchInfiniteQuery({
-        queryKey: [
-          "objekt-index",
-          "blockchain",
-          {
-            ...deps.searchParams,
-            artists: selected,
-          },
-        ],
-        queryFn: ({ pageParam = 0 }: { pageParam?: number }) =>
-          fetchObjektsIndex({
-            data: {
-              ...deps.searchParams,
-              page: pageParam,
-            },
-          }),
-        initialPageParam: 0,
-      });
+      context.queryClient.prefetchInfiniteQuery(
+        objektIndexBlockchainQuery(deps.searchParams, selected)
+      );
     }
+
+    // fetch required data
+    await context.queryClient.ensureQueryData(currentAccountQuery);
   },
 });
 

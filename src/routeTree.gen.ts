@@ -8,6 +8,8 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
+import { createFileRoute } from '@tanstack/react-router'
+
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermsPrivacyRouteImport } from './routes/terms-privacy'
 import { Route as GravityRouteImport } from './routes/gravity'
@@ -31,7 +33,7 @@ import { Route as ApiTransfersAddressRouteImport } from './routes/api/transfers/
 import { Route as ApiCronObjektStatsRouteImport } from './routes/api/cron.objekt-stats'
 import { Route as ApiCronGravityRouteImport } from './routes/api/cron.gravity'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
-import { Route as AtusernameListIdRouteImport } from './routes/@$username/list.$id'
+import { Route as AtusernameListSlugRouteImport } from './routes/@$username/list.$slug'
 import { Route as ApiProgressLeaderboardMemberRouteImport } from './routes/api/progress/leaderboard.$member'
 import { Route as ApiObjektsBySlugSlugRouteImport } from './routes/api/objekts/by-slug.$slug'
 import { Route as ApiObjektsByAddressAddressRouteImport } from './routes/api/objekts/by-address.$address'
@@ -50,6 +52,13 @@ import { Route as ApiBffV3UsersSearchRouteImport } from './routes/api/bff/v3/use
 import { Route as ApiBffV1ObjektCollectionGroupAddressRouteImport } from './routes/api/bff/v1/objekt/collection-group.$address'
 import { Route as ApiGravityV3ArtistGravityGravityPollsPollRouteImport } from './routes/api/gravity/v3/$artist.gravity.$gravity.polls.$poll'
 
+const AtusernameRouteImport = createFileRoute('/@$username')()
+
+const AtusernameRoute = AtusernameRouteImport.update({
+  id: '/@$username',
+  path: '/@$username',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermsPrivacyRoute = TermsPrivacyRouteImport.update({
   id: '/terms-privacy',
   path: '/terms-privacy',
@@ -159,9 +168,9 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AtusernameListIdRoute = AtusernameListIdRouteImport.update({
-  id: '/list/$id',
-  path: '/list/$id',
+const AtusernameListSlugRoute = AtusernameListSlugRouteImport.update({
+  id: '/list/$slug',
+  path: '/list/$slug',
   getParentRoute: () => AtusernameRoute,
 } as any)
 const ApiProgressLeaderboardMemberRoute =
@@ -277,7 +286,7 @@ export interface FileRoutesByFullPath {
   '/objekts/stats': typeof ObjektsStatsRoute
   '/@$username/': typeof AtusernameIndexRoute
   '/admin': typeof AdminIndexRoute
-  '/@$username/list/$id': typeof AtusernameListIdRoute
+  '/@$username/list/$slug': typeof AtusernameListSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/gravity': typeof ApiCronGravityRoute
   '/api/cron/objekt-stats': typeof ApiCronObjektStatsRoute
@@ -318,7 +327,7 @@ export interface FileRoutesByTo {
   '/list/$id': typeof ListIdRoute
   '/objekts/stats': typeof ObjektsStatsRoute
   '/admin': typeof AdminIndexRoute
-  '/@$username/list/$id': typeof AtusernameListIdRoute
+  '/@$username/list/$slug': typeof AtusernameListSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/gravity': typeof ApiCronGravityRoute
   '/api/cron/objekt-stats': typeof ApiCronObjektStatsRoute
@@ -349,6 +358,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/gravity': typeof GravityRouteWithChildren
   '/terms-privacy': typeof TermsPrivacyRoute
+  '/@$username': typeof AtusernameRouteWithChildren
   '/@$username/_layout': typeof AtusernameLayoutRoute
   '/@$username/como': typeof AtusernameComoRoute
   '/@$username/progress': typeof AtusernameProgressRoute
@@ -361,7 +371,7 @@ export interface FileRoutesById {
   '/objekts/stats': typeof ObjektsStatsRoute
   '/@$username/': typeof AtusernameIndexRoute
   '/admin/': typeof AdminIndexRoute
-  '/@$username/list/$id': typeof AtusernameListIdRoute
+  '/@$username/list/$slug': typeof AtusernameListSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/gravity': typeof ApiCronGravityRoute
   '/api/cron/objekt-stats': typeof ApiCronObjektStatsRoute
@@ -405,7 +415,7 @@ export interface FileRouteTypes {
     | '/objekts/stats'
     | '/@$username/'
     | '/admin'
-    | '/@$username/list/$id'
+    | '/@$username/list/$slug'
     | '/api/auth/$'
     | '/api/cron/gravity'
     | '/api/cron/objekt-stats'
@@ -446,7 +456,7 @@ export interface FileRouteTypes {
     | '/list/$id'
     | '/objekts/stats'
     | '/admin'
-    | '/@$username/list/$id'
+    | '/@$username/list/$slug'
     | '/api/auth/$'
     | '/api/cron/gravity'
     | '/api/cron/objekt-stats'
@@ -476,6 +486,7 @@ export interface FileRouteTypes {
     | '/'
     | '/gravity'
     | '/terms-privacy'
+    | '/@$username'
     | '/@$username/_layout'
     | '/@$username/como'
     | '/@$username/progress'
@@ -488,7 +499,7 @@ export interface FileRouteTypes {
     | '/objekts/stats'
     | '/@$username/'
     | '/admin/'
-    | '/@$username/list/$id'
+    | '/@$username/list/$slug'
     | '/api/auth/$'
     | '/api/cron/gravity'
     | '/api/cron/objekt-stats'
@@ -519,6 +530,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   GravityRoute: typeof GravityRouteWithChildren
   TermsPrivacyRoute: typeof TermsPrivacyRoute
+  AtusernameRoute: typeof AtusernameRouteWithChildren
   AdminBandsRoute: typeof AdminBandsRoute
   AdminMetadataRoute: typeof AdminMetadataRoute
   ApiFilterDataRoute: typeof ApiFilterDataRoute
@@ -553,6 +565,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/@$username': {
+      id: '/@$username'
+      path: '/@$username'
+      fullPath: '/@$username'
+      preLoaderRoute: typeof AtusernameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/terms-privacy': {
       id: '/terms-privacy'
       path: '/terms-privacy'
@@ -653,7 +672,7 @@ declare module '@tanstack/react-router' {
     }
     '/@$username/_layout': {
       id: '/@$username/_layout'
-      path: ''
+      path: '/@$username'
       fullPath: '/@$username'
       preLoaderRoute: typeof AtusernameLayoutRouteImport
       parentRoute: typeof AtusernameRoute
@@ -707,11 +726,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/@$username/list/$id': {
-      id: '/@$username/list/$id'
-      path: '/list/$id'
-      fullPath: '/@$username/list/$id'
-      preLoaderRoute: typeof AtusernameListIdRouteImport
+    '/@$username/list/$slug': {
+      id: '/@$username/list/$slug'
+      path: '/list/$slug'
+      fullPath: '/@$username/list/$slug'
+      preLoaderRoute: typeof AtusernameListSlugRouteImport
       parentRoute: typeof AtusernameRoute
     }
     '/api/progress/leaderboard/$member': {
@@ -847,10 +866,33 @@ const GravityRouteChildren: GravityRouteChildren = {
 const GravityRouteWithChildren =
   GravityRoute._addFileChildren(GravityRouteChildren)
 
+interface AtusernameRouteChildren {
+  AtusernameLayoutRoute: typeof AtusernameLayoutRoute
+  AtusernameComoRoute: typeof AtusernameComoRoute
+  AtusernameProgressRoute: typeof AtusernameProgressRoute
+  AtusernameTradesRoute: typeof AtusernameTradesRoute
+  AtusernameIndexRoute: typeof AtusernameIndexRoute
+  AtusernameListSlugRoute: typeof AtusernameListSlugRoute
+}
+
+const AtusernameRouteChildren: AtusernameRouteChildren = {
+  AtusernameLayoutRoute: AtusernameLayoutRoute,
+  AtusernameComoRoute: AtusernameComoRoute,
+  AtusernameProgressRoute: AtusernameProgressRoute,
+  AtusernameTradesRoute: AtusernameTradesRoute,
+  AtusernameIndexRoute: AtusernameIndexRoute,
+  AtusernameListSlugRoute: AtusernameListSlugRoute,
+}
+
+const AtusernameRouteWithChildren = AtusernameRoute._addFileChildren(
+  AtusernameRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   GravityRoute: GravityRouteWithChildren,
   TermsPrivacyRoute: TermsPrivacyRoute,
+  AtusernameRoute: AtusernameRouteWithChildren,
   AdminBandsRoute: AdminBandsRoute,
   AdminMetadataRoute: AdminMetadataRoute,
   ApiFilterDataRoute: ApiFilterDataRoute,
