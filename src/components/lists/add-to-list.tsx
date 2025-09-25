@@ -2,6 +2,7 @@ import { ListPlus, Loader2, Plus } from "lucide-react";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -81,8 +82,9 @@ function ListItem({
   onDone,
 }: ListItemProps) {
   const queryClient = useQueryClient();
+  const mutationFn = useServerFn(addObjektToList);
   const mutation = useMutation({
-    mutationFn: addObjektToList,
+    mutationFn,
     onSuccess() {
       toast.success(`Added ${collectionId} to ${list.name}`);
       queryClient.removeQueries({ queryKey: ["objekt-list", list.slug] });

@@ -1,6 +1,7 @@
 import { toast } from "sonner";
 import { RefreshCcw } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { rescanObjektMetadata } from "../actions";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 
@@ -10,8 +11,9 @@ type Props = {
 };
 
 export default function RescanMetadata({ collection, token }: Props) {
+  const mutationFn = useServerFn(rescanObjektMetadata);
   const mutation = useMutation({
-    mutationFn: rescanObjektMetadata,
+    mutationFn,
     onSuccess() {
       toast.success("Objekt updated!", {
         description: `${collection.collectionId} #${token.serial} has been updated from COSMO.`,

@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
 import { Button } from "../../ui/button";
 import { Textarea } from "../../ui/textarea";
 import {
@@ -24,8 +25,9 @@ type Props = {
 
 export default function EditMetadata(props: Props) {
   const queryClient = useQueryClient();
+  const mutationFn = useServerFn(updateObjektMetadata);
   const mutation = useMutation({
-    mutationFn: updateObjektMetadata,
+    mutationFn,
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["collection-metadata", "metadata", props.slug],

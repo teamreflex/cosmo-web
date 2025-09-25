@@ -56,8 +56,9 @@ type ArtistItemProps = {
 };
 
 export function ArtistItem({ artist, isSelected }: ArtistItemProps) {
+  const mutationFn = useServerFn(setSelectedArtist);
   const mutation = useMutation({
-    mutationFn: useServerFn(setSelectedArtist),
+    mutationFn,
   });
 
   function handleSelect(artistId: string) {

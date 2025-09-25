@@ -32,8 +32,9 @@ type Props = {
 };
 
 export default function CreateListDialog({ open, onOpenChange }: Props) {
+  const mutationFn = useServerFn(createObjektList);
   const mutation = useMutation({
-    mutationFn: useServerFn(createObjektList),
+    mutationFn,
     onSuccess: () => {
       // TODO: insert into cache
       track("create-list");

@@ -9,6 +9,7 @@ import { Toaster } from "sonner";
 import React from "react";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
+import { FileQuestion } from "lucide-react";
 import appCss from "../styles/tailwind.css?url";
 import type { QueryClient } from "@tanstack/react-query";
 import TanStackQueryDevtools from "@/components/devtools";
@@ -75,6 +76,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     ],
   }),
   shellComponent: RootDocument,
+  notFoundComponent: NotFoundComponent,
   loader({ context }) {
     context.queryClient.prefetchQuery(filterDataQuery);
     context.queryClient.prefetchQuery(currentAccountQuery);
@@ -123,5 +125,14 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <Scripts />
       </body>
     </html>
+  );
+}
+
+function NotFoundComponent() {
+  return (
+    <div className="flex flex-col justify-center items-center w-full gap-2 py-12">
+      <FileQuestion className="w-24 h-24" />
+      <p className="font-semibold text-sm text-center">Page not found</p>
+    </div>
   );
 }

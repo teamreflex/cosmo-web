@@ -268,8 +268,9 @@ type OTPProps = {
 
 function OTP({ ticket }: OTPProps) {
   const ctx = useContext(LinkCosmoContext);
+  const mutationFn = useServerFn(verifyCosmo);
   const mutation = useMutation({
-    mutationFn: useServerFn(verifyCosmo),
+    mutationFn,
     onSuccess() {
       track("cosmo-link");
       toast.success("COSMO account linked!");

@@ -24,9 +24,9 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [seoTitle("Objekts")],
   }),
-  component: Home,
-  errorComponent: HomeError,
-  pendingComponent: HomePending,
+  component: RouteComponent,
+  errorComponent: ErrorComponent,
+  pendingComponent: PendingComponent,
   validateSearch: objektIndexFrontendSchema,
   loaderDeps: ({ search }) => ({ searchParams: search }),
   loader: async ({ context, deps }) => {
@@ -58,7 +58,7 @@ export const Route = createFileRoute("/")({
   },
 });
 
-function Home() {
+function RouteComponent() {
   const [account, artists, selected] = useSuspenseQueries({
     queries: [currentAccountQuery, artistsQuery, selectedArtistsQuery],
   });
@@ -76,11 +76,11 @@ function Home() {
   );
 }
 
-function HomeError() {
+function ErrorComponent() {
   return <Error message="Could not load objekts" />;
 }
 
-function HomePending() {
+function PendingComponent() {
   return (
     <div className="container flex flex-col py-2">
       <div className="flex flex-col">

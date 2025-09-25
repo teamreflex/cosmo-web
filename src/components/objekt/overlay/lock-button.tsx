@@ -1,5 +1,6 @@
 import { Loader2, Lock, Unlock } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { toggleObjektLock } from "@/components/collection/actions";
 import { track } from "@/lib/utils";
 import { useProfileContext } from "@/hooks/use-profile";
@@ -11,8 +12,9 @@ type Props = {
 
 export default function LockObjekt({ tokenId, isLocked }: Props) {
   const toggleLock = useProfileContext((ctx) => ctx.toggleLock);
+  const mutationFn = useServerFn(toggleObjektLock);
   const mutation = useMutation({
-    mutationFn: toggleObjektLock,
+    mutationFn,
     onSuccess: () => {
       track(`${isLocked ? "unlock" : "lock"}-objekt`);
       toggleLock(tokenId);

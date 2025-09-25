@@ -42,8 +42,9 @@ type Props = {
 
 export default function SettingsDialog({ open, onOpenChange, user }: Props) {
   const { theme, setTheme } = useTheme();
+  const mutationFn = useServerFn(updateSettings);
   const mutation = useMutation({
-    mutationFn: useServerFn(updateSettings),
+    mutationFn,
   });
 
   const form = useForm<z.infer<typeof settingsSchema>>({
