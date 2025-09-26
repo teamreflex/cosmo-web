@@ -1,5 +1,6 @@
 import {
   HeadContent,
+  Outlet,
   Scripts,
   createRootRouteWithContext,
 } from "@tanstack/react-router";
@@ -76,7 +77,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       },
     ],
   }),
-  shellComponent: RootDocument,
+  component: RootComponent,
   notFoundComponent: NotFoundComponent,
   errorComponent: ErrorComponent,
   loader({ context }) {
@@ -85,6 +86,14 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     context.queryClient.prefetchQuery(systemStatusQuery);
   },
 });
+
+function RootComponent() {
+  return (
+    <RootDocument>
+      <Outlet />
+    </RootDocument>
+  );
+}
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   preconnect(new URL(env.VITE_SENTRY_DSN).origin);

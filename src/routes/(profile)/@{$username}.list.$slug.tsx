@@ -22,10 +22,6 @@ import { objektListFrontendSchema } from "@/lib/universal/parsers";
 import { objektListQuery } from "@/lib/universal/objekt-queries";
 
 export const Route = createFileRoute("/(profile)/@{$username}/list/$slug")({
-  head: () => ({
-    // TODO: fix loaderData access here
-    meta: [seoTitle("Objekt List")],
-  }),
   component: RouteComponent,
   pendingComponent: PendingComponent,
   errorComponent: ErrorComponent,
@@ -80,6 +76,9 @@ export const Route = createFileRoute("/(profile)/@{$username}/list/$slug")({
       objektList,
     };
   },
+  head: ({ loaderData }) => ({
+    meta: [seoTitle(loaderData?.objektList.name ?? `Objekt List`)],
+  }),
 });
 
 function RouteComponent() {

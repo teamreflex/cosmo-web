@@ -23,10 +23,6 @@ import {
 } from "@/lib/universal/objekt-queries";
 
 export const Route = createFileRoute("/(profile)/@{$username}/")({
-  head: () => ({
-    // TODO: fix loaderData access here
-    meta: [seoTitle(`User's Collection`)],
-  }),
   validateSearch: userCollectionFrontendSchema,
   loaderDeps: ({ search }) => ({ searchParams: search }),
   component: RouteComponent,
@@ -68,6 +64,15 @@ export const Route = createFileRoute("/(profile)/@{$username}/")({
 
     return { artists, selected, account, target, pins };
   },
+  head: ({ loaderData }) => ({
+    meta: [
+      seoTitle(
+        loaderData?.target.user
+          ? `${loaderData.target.user.username}'s Collection`
+          : `Collection`
+      ),
+    ],
+  }),
 });
 
 function RouteComponent() {

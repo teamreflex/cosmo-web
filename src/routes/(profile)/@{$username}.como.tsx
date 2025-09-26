@@ -11,10 +11,6 @@ import Portal from "@/components/portal";
 import HelpDialog from "@/components/como/help-dialog";
 
 export const Route = createFileRoute("/(profile)/@{$username}/como")({
-  head: () => ({
-    // TODO: fix loaderData access here
-    meta: [seoTitle(`COMO`)],
-  }),
   component: RouteComponent,
   pendingComponent: PendingComponent,
   errorComponent: ErrorComponent,
@@ -30,6 +26,15 @@ export const Route = createFileRoute("/(profile)/@{$username}/como")({
 
     return { target, artists };
   },
+  head: ({ loaderData }) => ({
+    meta: [
+      seoTitle(
+        loaderData?.target.user
+          ? `${loaderData.target.user.username}'s COMO`
+          : `COMO`
+      ),
+    ],
+  }),
 });
 
 function RouteComponent() {

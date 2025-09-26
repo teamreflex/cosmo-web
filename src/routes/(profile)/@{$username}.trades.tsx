@@ -16,10 +16,6 @@ import { ArtistProvider } from "@/hooks/use-artists";
 import { transfersQuery } from "@/lib/universal/objekt-queries";
 
 export const Route = createFileRoute("/(profile)/@{$username}/trades")({
-  head: () => ({
-    // TODO: fix loaderData access here
-    meta: [seoTitle("Trades")],
-  }),
   component: RouteComponent,
   pendingComponent: PendingComponent,
   validateSearch: transfersFrontendSchema,
@@ -39,6 +35,13 @@ export const Route = createFileRoute("/(profile)/@{$username}/trades")({
 
     return { artists, selected, cosmo: target.cosmo };
   },
+  head: ({ loaderData }) => ({
+    meta: [
+      seoTitle(
+        loaderData?.cosmo ? `${loaderData.cosmo.username}'s Trades` : `Trades`
+      ),
+    ],
+  }),
 });
 
 function RouteComponent() {
