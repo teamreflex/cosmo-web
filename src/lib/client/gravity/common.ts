@@ -1,20 +1,14 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ofetch } from "ofetch";
-import type { CosmoPollChoices } from "@/lib/universal/cosmo/gravity";
 import type { GravityVote } from "@/lib/universal/gravity";
+import type { GravityPollDetailsParams } from "@/lib/queries/gravity";
 import { baseUrl } from "@/lib/utils";
+import { gravityPollDetailsQuery } from "@/lib/queries/gravity";
 
 export type GravityHookParams = {
   tokenId: bigint;
   pollId: bigint;
 };
-
-export const pollDetailsKey = (params: GravityHookParams) => [
-  "gravity",
-  "details",
-  { tokenId: Number(params.tokenId) },
-  Number(params.pollId),
-];
 
 export const gravityVotesKey = (pollId: number) => ["gravity", "votes", pollId];
 
@@ -33,30 +27,9 @@ export function useGravityVotes(pollId: number) {
   });
 }
 
-type UseGravityPollParams = {
-  artistName: string;
-  tokenId: bigint;
-  gravityId: number;
-  pollId: number;
-};
-
 /**
  * Fetch a poll and its candidates.
  */
-export function useGravityPoll(params: UseGravityPollParams) {
-  return useSuspenseQuery({
-    queryKey: pollDetailsKey({
-      tokenId: params.tokenId,
-      pollId: BigInt(params.pollId),
-    }),
-    queryFn: async () => {
-      const url = new URL(
-        `/api/gravity/v3/${params.artistName}/gravity/${params.gravityId}/polls/${params.pollId}`,
-        baseUrl()
-      );
-      return await ofetch<CosmoPollChoices>(url.toString());
-    },
-    refetchOnWindowFocus: false,
-    staleTime: Infinity,
-  });
+export function useGravityPoll(params: GravityPollDetailsParams) {
+  return useSuspenseQuery(gravityPollDetailsQuery(params));
 }

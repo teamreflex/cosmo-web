@@ -19,7 +19,7 @@ export default function Profile() {
   }
 
   const hasCredentialAccount =
-    accounts.findIndex((account) => account.provider === "credential") !== -1;
+    accounts.findIndex((account) => account.providerId === "credential") !== -1;
 
   return (
     <Accordion type="single" collapsible>

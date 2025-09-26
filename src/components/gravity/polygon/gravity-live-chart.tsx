@@ -1,3 +1,4 @@
+import { useSuspenseQuery } from "@tanstack/react-query";
 import CandidateBreakdown from "./candidate-breakdown";
 import TimelineChart from "./timeline-chart";
 import VoterBreakdown from "./voter-breakdown";
@@ -6,15 +7,15 @@ import type {
   CosmoPastGravity,
 } from "@/lib/universal/cosmo/gravity";
 import type { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
-import { fetchPolygonGravity } from "@/lib/server/gravity";
+import { polygonGravityQuery } from "@/lib/queries/gravity";
 
-type Props = {
+export type Props = {
   artist: CosmoArtistBFF;
   gravity: CosmoOngoingGravity | CosmoPastGravity;
 };
 
-export default async function PolygonLiveChart({ artist, gravity }: Props) {
-  const data = await fetchPolygonGravity(artist.id, gravity.id);
+export default function PolygonLiveChart({ artist, gravity }: Props) {
+  const { data } = useSuspenseQuery(polygonGravityQuery(artist.id, gravity.id));
 
   return (
     <div className="flex flex-col w-full gap-2">

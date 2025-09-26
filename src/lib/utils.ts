@@ -19,10 +19,14 @@ export function baseUrl() {
   return `${scheme}://${env.VITE_VERCEL_PROJECT_PRODUCTION_URL}`;
 }
 
-export function ordinal(n: number) {
-  const s = ["th", "st", "nd", "rd"];
-  const v = n % 100;
-  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+/**
+ * Get the ordinal suffix for a number.
+ */
+export function ordinal(input: number) {
+  const suffixes = ["th", "st", "nd", "rd"];
+  const value = input % 100;
+  const suffix = suffixes[(value - 20) % 10] || suffixes[value] || suffixes[0];
+  return suffix ? input + suffix : input;
 }
 
 /**
@@ -123,7 +127,6 @@ export async function chunk<T>(
   callback: (chunk: T[]) => Promise<void>
 ) {
   for (let i = 0; i < arr.length; i += chunkSize) {
-    const chunk = arr.slice(i, i + chunkSize);
-    await callback(chunk);
+    await callback(arr.slice(i, i + chunkSize));
   }
 }

@@ -13,44 +13,44 @@ import {
   useCurrentDate,
 } from "@/lib/client/gravity/abstract/hooks";
 import { useGravityPoll } from "@/lib/client/gravity/common";
-import { findPoll } from "@/lib/client/gravity/util";
 import Portal from "@/components/portal";
 
-type Props = {
+export type Props = {
   artist: CosmoArtistBFF;
   gravity: CosmoOngoingGravity | CosmoPastGravity;
+  pollId: number;
 };
 
-export default function AbstractLiveChart({ artist, gravity }: Props) {
+export default function AbstractLiveChart(props: Props) {
   const now = useCurrentDate();
   const { data: poll } = useGravityPoll({
-    artistName: artist.id,
-    tokenId: BigInt(artist.comoTokenId),
-    gravityId: gravity.id,
-    pollId: findPoll(gravity).poll.id,
+    artistName: props.artist.id,
+    tokenId: BigInt(props.artist.comoTokenId),
+    gravityId: props.gravity.id,
+    pollId: props.pollId,
   });
   const chain = useChainData({
     startDate: poll.startDate,
     endDate: poll.endDate,
-    tokenId: BigInt(artist.comoTokenId),
+    tokenId: BigInt(props.artist.comoTokenId),
     pollId: BigInt(poll.id),
     now,
   });
 
   // get the number of como used for each candidate
   const { comoByCandidate, comoUsed } = useMemo(() => {
-    const comoByCandidate: Record<string, number> = {};
+    const comoMap: Record<string, number> = {};
     if (chain.status !== "success") {
-      return { comoByCandidate, comoUsed: 0 };
+      return { comoByCandidate: comoMap, comoUsed: 0 };
     }
 
-    let comoUsed = 0;
+    let used = 0;
     for (let i = 0; i < poll.pollViewMetadata.selectedContent.length; i++) {
       const chainComo = chain.comoPerCandidate[i] ?? 0;
-      comoByCandidate[i] = chainComo;
-      comoUsed += chainComo;
+      comoMap[i] = chainComo;
+      used += chainComo;
     }
-    return { comoByCandidate, comoUsed };
+    return { comoByCandidate: comoMap, comoUsed: used };
   }, [poll.pollViewMetadata.selectedContent, chain]);
 
   const percentageCounted =

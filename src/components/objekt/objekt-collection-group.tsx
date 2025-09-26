@@ -162,6 +162,7 @@ function RootObjekt({
             height={450}
             alt={collection.collectionId}
             decoding="async"
+            fetchPriority={priority ? "high" : "auto"}
           />
 
           <ObjektSidebar collection={collection} />

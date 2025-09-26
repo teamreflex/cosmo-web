@@ -43,7 +43,6 @@ import { Route as ApiUserByAddressAddressComoRouteImport } from './routes/api/us
 import { Route as ApiProgressBreakdownMemberAddressRouteImport } from './routes/api/progress/breakdown.$member.$address'
 import { Route as ApiObjektsMetadataSlugSerialRouteImport } from './routes/api/objekts/metadata/$slug/$serial'
 import { Route as ApiBffV3UsersSearchRouteImport } from './routes/api/bff/v3/users/search'
-import { Route as ApiGravityV3ArtistGravityGravityPollsPollRouteImport } from './routes/api/gravity/v3/$artist.gravity.$gravity.polls.$poll'
 
 const TermsPrivacyRoute = TermsPrivacyRouteImport.update({
   id: '/terms-privacy',
@@ -229,12 +228,6 @@ const ApiBffV3UsersSearchRoute = ApiBffV3UsersSearchRouteImport.update({
   path: '/api/bff/v3/users/search',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiGravityV3ArtistGravityGravityPollsPollRoute =
-  ApiGravityV3ArtistGravityGravityPollsPollRouteImport.update({
-    id: '/api/gravity/v3/$artist/gravity/$gravity/polls/$poll',
-    path: '/api/gravity/v3/$artist/gravity/$gravity/polls/$poll',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -271,7 +264,6 @@ export interface FileRoutesByFullPath {
   '/api/user/by-address/$address/stats': typeof ApiUserByAddressAddressStatsRoute
   '/api/objekts/metadata/$slug': typeof ApiObjektsMetadataSlugIndexRoute
   '/api/user/by-address/$address': typeof ApiUserByAddressAddressIndexRoute
-  '/api/gravity/v3/$artist/gravity/$gravity/polls/$poll': typeof ApiGravityV3ArtistGravityGravityPollsPollRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -307,7 +299,6 @@ export interface FileRoutesByTo {
   '/api/user/by-address/$address/stats': typeof ApiUserByAddressAddressStatsRoute
   '/api/objekts/metadata/$slug': typeof ApiObjektsMetadataSlugIndexRoute
   '/api/user/by-address/$address': typeof ApiUserByAddressAddressIndexRoute
-  '/api/gravity/v3/$artist/gravity/$gravity/polls/$poll': typeof ApiGravityV3ArtistGravityGravityPollsPollRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -345,7 +336,6 @@ export interface FileRoutesById {
   '/api/user/by-address/$address/stats': typeof ApiUserByAddressAddressStatsRoute
   '/api/objekts/metadata/$slug/': typeof ApiObjektsMetadataSlugIndexRoute
   '/api/user/by-address/$address/': typeof ApiUserByAddressAddressIndexRoute
-  '/api/gravity/v3/$artist/gravity/$gravity/polls/$poll': typeof ApiGravityV3ArtistGravityGravityPollsPollRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -384,7 +374,6 @@ export interface FileRouteTypes {
     | '/api/user/by-address/$address/stats'
     | '/api/objekts/metadata/$slug'
     | '/api/user/by-address/$address'
-    | '/api/gravity/v3/$artist/gravity/$gravity/polls/$poll'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -420,7 +409,6 @@ export interface FileRouteTypes {
     | '/api/user/by-address/$address/stats'
     | '/api/objekts/metadata/$slug'
     | '/api/user/by-address/$address'
-    | '/api/gravity/v3/$artist/gravity/$gravity/polls/$poll'
   id:
     | '__root__'
     | '/'
@@ -457,7 +445,6 @@ export interface FileRouteTypes {
     | '/api/user/by-address/$address/stats'
     | '/api/objekts/metadata/$slug/'
     | '/api/user/by-address/$address/'
-    | '/api/gravity/v3/$artist/gravity/$gravity/polls/$poll'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -488,7 +475,6 @@ export interface RootRouteChildren {
   ApiUserByAddressAddressStatsRoute: typeof ApiUserByAddressAddressStatsRoute
   ApiObjektsMetadataSlugIndexRoute: typeof ApiObjektsMetadataSlugIndexRoute
   ApiUserByAddressAddressIndexRoute: typeof ApiUserByAddressAddressIndexRoute
-  ApiGravityV3ArtistGravityGravityPollsPollRoute: typeof ApiGravityV3ArtistGravityGravityPollsPollRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -731,13 +717,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiBffV3UsersSearchRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/gravity/v3/$artist/gravity/$gravity/polls/$poll': {
-      id: '/api/gravity/v3/$artist/gravity/$gravity/polls/$poll'
-      path: '/api/gravity/v3/$artist/gravity/$gravity/polls/$poll'
-      fullPath: '/api/gravity/v3/$artist/gravity/$gravity/polls/$poll'
-      preLoaderRoute: typeof ApiGravityV3ArtistGravityGravityPollsPollRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -812,8 +791,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiUserByAddressAddressStatsRoute: ApiUserByAddressAddressStatsRoute,
   ApiObjektsMetadataSlugIndexRoute: ApiObjektsMetadataSlugIndexRoute,
   ApiUserByAddressAddressIndexRoute: ApiUserByAddressAddressIndexRoute,
-  ApiGravityV3ArtistGravityGravityPollsPollRoute:
-    ApiGravityV3ArtistGravityGravityPollsPollRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
