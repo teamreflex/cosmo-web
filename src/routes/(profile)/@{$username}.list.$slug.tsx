@@ -10,7 +10,7 @@ import {
   filterDataQuery,
   selectedArtistsQuery,
   targetAccountQuery,
-} from "@/queries";
+} from "@/lib/queries/core";
 import { fetchObjektList } from "@/lib/server/objekts/lists";
 import { UserStateProvider } from "@/hooks/use-user-state";
 import { ArtistProvider } from "@/hooks/use-artists";
@@ -19,7 +19,7 @@ import UpdateList from "@/components/lists/update-list";
 import DeleteList from "@/components/lists/delete-list";
 import ListRenderer from "@/components/lists/list-renderer";
 import { objektListFrontendSchema } from "@/lib/universal/parsers";
-import { objektListQuery } from "@/lib/universal/objekt-queries";
+import { objektListQuery } from "@/lib/queries/objekt-queries";
 
 export const Route = createFileRoute("/(profile)/@{$username}/list/$slug")({
   component: RouteComponent,

@@ -11,13 +11,14 @@ import { seoTitle } from "@/lib/seo";
 import { Skeleton } from "@/components/ui/skeleton";
 import SkeletonGradient from "@/components/skeleton/skeleton-overlay";
 import { Error } from "@/components/error-boundary";
-import { fetchGravities, gravitiesIndexQuery } from "@/lib/server/gravity";
+import { gravitiesIndexQuery } from "@/lib/queries/gravity";
 import { ArtistProvider } from "@/hooks/use-artists";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import GravityTimestamp from "@/components/gravity/timestamp";
 import { Badge } from "@/components/ui/badge";
-import { artistsQuery, selectedArtistsQuery } from "@/queries";
+import { artistsQuery, selectedArtistsQuery } from "@/lib/queries/core";
+import { fetchGravities } from "@/lib/server/gravity";
 
 export const Route = createFileRoute("/gravity/")({
   head: () => ({

@@ -17,7 +17,7 @@ import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import { objektListEntries, objektLists } from "@/lib/server/db/schema";
 import { authenticatedMiddleware } from "@/lib/server/middlewares";
-import { fetchArtists } from "@/queries";
+import { fetchArtists } from "@/lib/queries/core";
 
 function createSlug(name: string) {
   return name.trim().toLowerCase().replace(/ /g, "-");

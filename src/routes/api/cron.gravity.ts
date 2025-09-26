@@ -12,7 +12,7 @@ import {
 } from "@/lib/server/db/schema";
 import { getProxiedToken } from "@/lib/server/handlers/withProxiedToken";
 import { chunk } from "@/lib/utils";
-import { fetchArtists } from "@/queries";
+import { fetchArtists } from "@/lib/queries/core";
 
 export const Route = createFileRoute("/api/cron/gravity")({
   server: {

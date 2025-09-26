@@ -19,7 +19,7 @@ import {
 } from "@/components/profile/profile-badges";
 import { Skeleton } from "@/components/ui/skeleton";
 import { env } from "@/lib/env/client";
-import { currentAccountQuery, targetAccountQuery } from "@/queries";
+import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
 import ListDropdown from "@/components/lists/list-dropdown";
 
 export const Route = createFileRoute("/(profile)/@{$username}")({

@@ -11,7 +11,7 @@ import ProgressSeason from "./progress-season";
 import ProgressLeaderboard from "./progress-leaderboard";
 import type { SeasonProgress } from "@/lib/universal/progress";
 import { baseUrl } from "@/lib/query-client";
-import { filterDataQuery } from "@/queries";
+import { filterDataQuery } from "@/lib/queries/core";
 
 type Props = {
   address: string;

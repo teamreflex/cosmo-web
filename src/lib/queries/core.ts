@@ -3,20 +3,20 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeaders } from "@tanstack/react-start/server";
 import { notFound } from "@tanstack/react-router";
 import { z } from "zod";
+import type { PublicUser } from "@/lib/universal/auth";
+import type { FullAccount, PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import type { ObjektList } from "@/lib/server/db/schema";
+import type { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import {
   fetchUniqueClasses,
   fetchUniqueCollections,
   fetchUniqueSeasons,
-} from "./lib/server/objekts/filter-data";
-import { remember } from "./lib/server/cache";
-import { db } from "./lib/server/db";
-import { auth, toPublicUser } from "./lib/server/auth";
-import { fetchFullAccount, toPublicCosmo } from "./lib/server/cosmo-accounts";
-import { fetchCookie } from "./lib/server/cookies";
-import type { PublicUser } from "./lib/universal/auth";
-import type { FullAccount, PublicCosmo } from "./lib/universal/cosmo-accounts";
-import type { ObjektList } from "./lib/server/db/schema";
-import type { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
+} from "@/lib/server/objekts/filter-data";
+import { remember } from "@/lib/server/cache";
+import { db } from "@/lib/server/db";
+import { auth, toPublicUser } from "@/lib/server/auth";
+import { fetchFullAccount, toPublicCosmo } from "@/lib/server/cosmo-accounts";
+import { fetchCookie } from "@/lib/server/cookies";
 import * as artists from "@/artists";
 
 /**

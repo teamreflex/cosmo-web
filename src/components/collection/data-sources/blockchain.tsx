@@ -14,7 +14,7 @@ import LoaderRemote from "@/components/objekt/loader-remote";
 import { useArtists } from "@/hooks/use-artists";
 import { useAuthenticated } from "@/hooks/use-authenticated";
 import { useGridColumns } from "@/hooks/use-grid-columns";
-import { userCollectionBlockchainQuery } from "@/lib/universal/objekt-queries";
+import { userCollectionBlockchainQuery } from "@/lib/queries/objekt-queries";
 
 type Props = {
   gridColumns: number;

@@ -1,6 +1,6 @@
 import { and, eq, sql } from "drizzle-orm";
 import { z } from "zod";
-import { createServerFn } from "@tanstack/react-start";
+import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
 import { indexer } from "../../db/indexer";
 import { collections, objekts } from "../../db/indexer/schema";
 import {
@@ -77,29 +77,31 @@ export const fetchObjektsBlockchain = createServerFn({ method: "GET" })
 /**
  * Fetch the total number of objekts for a user with given filters.
  */
-async function fetchCount(
-  address: string,
-  filters: z.infer<typeof userCollectionBackendSchema>
-) {
-  const [results] = await indexer
-    .select({ count: sql<number>`count(*)` })
-    .from(objekts)
-    .leftJoin(collections, eq(collections.id, objekts.collectionId))
-    .where(
-      and(
-        eq(objekts.owner, address.toLowerCase()),
-        ...[
-          ...withArtist(filters.artist),
-          ...withClass(filters.class ?? []),
-          ...withSeason(filters.season ?? []),
-          ...withOnlineType(filters.on_offline ?? []),
-          ...withMember(filters.member),
-          ...withCollections(filters.collectionNo),
-          ...withTransferable(filters.transferable),
-          ...withSelectedArtists(filters.artists),
-        ]
-      )
-    );
+const fetchCount = createServerOnlyFn(
+  async (
+    address: string,
+    filters: z.infer<typeof userCollectionBackendSchema>
+  ) => {
+    const [results] = await indexer
+      .select({ count: sql<number>`count(*)` })
+      .from(objekts)
+      .leftJoin(collections, eq(collections.id, objekts.collectionId))
+      .where(
+        and(
+          eq(objekts.owner, address.toLowerCase()),
+          ...[
+            ...withArtist(filters.artist),
+            ...withClass(filters.class ?? []),
+            ...withSeason(filters.season ?? []),
+            ...withOnlineType(filters.on_offline ?? []),
+            ...withMember(filters.member),
+            ...withCollections(filters.collectionNo),
+            ...withTransferable(filters.transferable),
+            ...withSelectedArtists(filters.artists),
+          ]
+        )
+      );
 
-  return results?.count ?? 0;
-}
+    return results?.count ?? 0;
+  }
+);

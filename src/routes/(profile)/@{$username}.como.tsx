@@ -3,7 +3,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import CurrentMonth from "@/components/como/current-month";
 import { Error } from "@/components/error-boundary";
 import { seoTitle } from "@/lib/seo";
-import { artistsQuery, targetAccountQuery } from "@/queries";
+import { artistsQuery, targetAccountQuery } from "@/lib/queries/core";
 import { fetchObjektsWithComoQuery } from "@/lib/server/como";
 import ArtistIcon from "@/components/artist-icon";
 import ComoCalendar from "@/components/como/calendar";

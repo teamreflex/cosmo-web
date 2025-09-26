@@ -10,7 +10,7 @@ import ListOverlay from "./list-overlay";
 import type { ObjektList } from "@/lib/server/db/schema";
 import { objektOptions } from "@/hooks/use-objekt-response";
 import { useGridColumns } from "@/hooks/use-grid-columns";
-import { objektListQuery } from "@/lib/universal/objekt-queries";
+import { objektListQuery } from "@/lib/queries/objekt-queries";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { useArtists } from "@/hooks/use-artists";
 

@@ -1,6 +1,6 @@
 import { and, asc, desc, eq, max, sql } from "drizzle-orm";
 import { z } from "zod";
-import { createServerFn } from "@tanstack/react-start";
+import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
 import { collections, objekts } from "../../db/indexer/schema";
 import { indexer } from "../../db/indexer";
 import {
@@ -157,19 +157,21 @@ export const fetchObjektsBlockchainGroups = createServerFn({ method: "GET" })
 /**
  * Custom sorting filters as collection groups have a different mechanism for sorting.
  */
-function withObjektGroupSort<T extends PgSelect>(qb: T, sort: ValidSort) {
-  switch (sort) {
-    case "newest":
-      return qb.orderBy(desc(max(objekts.receivedAt)), asc(collections.id));
-    case "oldest":
-      return qb.orderBy(asc(max(objekts.receivedAt)), asc(collections.id));
-    case "noAscending":
-      return qb.orderBy(asc(collections.collectionNo), asc(collections.id));
-    case "noDescending":
-      return qb.orderBy(desc(collections.collectionNo), asc(collections.id));
-    case "serialAsc":
-      return qb.orderBy(asc(max(objekts.serial)), asc(collections.id));
-    case "serialDesc":
-      return qb.orderBy(desc(max(objekts.serial)), asc(collections.id));
+const withObjektGroupSort = createServerOnlyFn(
+  <T extends PgSelect>(qb: T, sort: ValidSort) => {
+    switch (sort) {
+      case "newest":
+        return qb.orderBy(desc(max(objekts.receivedAt)), asc(collections.id));
+      case "oldest":
+        return qb.orderBy(asc(max(objekts.receivedAt)), asc(collections.id));
+      case "noAscending":
+        return qb.orderBy(asc(collections.collectionNo), asc(collections.id));
+      case "noDescending":
+        return qb.orderBy(desc(collections.collectionNo), asc(collections.id));
+      case "serialAsc":
+        return qb.orderBy(asc(max(objekts.serial)), asc(collections.id));
+      case "serialDesc":
+        return qb.orderBy(desc(max(objekts.serial)), asc(collections.id));
+    }
   }
-}
+);

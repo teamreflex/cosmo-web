@@ -11,9 +11,9 @@ import {
   filterDataQuery,
   selectedArtistsQuery,
   targetAccountQuery,
-} from "@/queries";
+} from "@/lib/queries/core";
 import { ArtistProvider } from "@/hooks/use-artists";
-import { transfersQuery } from "@/lib/universal/objekt-queries";
+import { transfersQuery } from "@/lib/queries/objekt-queries";
 
 export const Route = createFileRoute("/(profile)/@{$username}/trades")({
   component: RouteComponent,

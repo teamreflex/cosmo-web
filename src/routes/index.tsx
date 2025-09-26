@@ -8,7 +8,7 @@ import {
   currentAccountQuery,
   filterDataQuery,
   selectedArtistsQuery,
-} from "@/queries";
+} from "@/lib/queries/core";
 import { UserStateProvider } from "@/hooks/use-user-state";
 import { ArtistProvider } from "@/hooks/use-artists";
 import { ProfileProvider } from "@/hooks/use-profile";
@@ -18,7 +18,7 @@ import { seoTitle } from "@/lib/seo";
 import {
   objektIndexBlockchainQuery,
   objektIndexTypesenseQuery,
-} from "@/lib/universal/objekt-queries";
+} from "@/lib/queries/objekt-queries";
 
 export const Route = createFileRoute("/")({
   head: () => ({

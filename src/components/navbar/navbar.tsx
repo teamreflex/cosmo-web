@@ -16,7 +16,7 @@ import {
   artistsQuery,
   currentAccountQuery,
   selectedArtistsQuery,
-} from "@/queries";
+} from "@/lib/queries/core";
 
 export default function Navbar() {
   return (

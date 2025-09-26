@@ -1,12 +1,12 @@
 import { createRouter } from "@tanstack/react-router";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
-import React from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient } from "@tanstack/react-query";
 import { hashFn } from "wagmi/query";
 import { routeTree } from "./routeTree.gen";
 import { MediaQueryProvider } from "./hooks/use-media-query";
+import type { ReactNode } from "react";
 
-function getContext() {
+export function getRouter() {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
@@ -16,31 +16,19 @@ function getContext() {
     },
   });
 
-  return {
-    queryClient,
-  };
-}
-
-export function getRouter() {
-  const context = getContext();
-
   const router = createRouter({
     routeTree,
-    context: { ...context },
+    context: { queryClient },
     defaultPreload: "intent",
     scrollRestoration: true,
-    Wrap: (props: { children: React.ReactNode }) => {
-      return (
-        <QueryClientProvider client={context.queryClient}>
-          <MediaQueryProvider>{props.children}</MediaQueryProvider>
-        </QueryClientProvider>
-      );
+    Wrap: (props: { children: ReactNode }) => {
+      return <MediaQueryProvider>{props.children}</MediaQueryProvider>;
     },
   });
 
   setupRouterSsrQueryIntegration({
     router,
-    queryClient: context.queryClient,
+    queryClient,
   });
 
   return router;

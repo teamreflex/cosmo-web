@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import InsertMetadata from "@/components/admin/metadata/insert-metadata";
-import { getSession } from "@/queries";
+import { getSession } from "@/lib/queries/core";
 import { fetchLatestMetadata } from "@/lib/server/objekts/metadata";
 import { seoTitle } from "@/lib/seo";
 

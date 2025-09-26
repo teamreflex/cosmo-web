@@ -11,13 +11,13 @@ import React from "react";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { FileQuestion, RefreshCcw } from "lucide-react";
+import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import appCss from "../styles/tailwind.css?url";
 import type { QueryClient } from "@tanstack/react-query";
-import TanStackQueryDevtools from "@/components/devtools";
 import Navbar from "@/components/navbar/navbar";
 import TailwindIndicator from "@/components/tailwind-indicator";
 import { env } from "@/lib/env/client";
-import { currentAccountQuery, filterDataQuery } from "@/queries";
+import { currentAccountQuery, filterDataQuery } from "@/lib/queries/core";
 import { systemStatusQuery } from "@/lib/server/system";
 import { Button } from "@/components/ui/button";
 
@@ -123,14 +123,17 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 
         <TanStackDevtools
           config={{
-            position: "bottom-left",
+            position: "bottom-right",
           }}
           plugins={[
             {
               name: "Tanstack Router",
               render: <TanStackRouterDevtoolsPanel />,
             },
-            TanStackQueryDevtools,
+            {
+              name: "Tanstack Query",
+              render: <ReactQueryDevtoolsPanel />,
+            },
           ]}
         />
         <Scripts />

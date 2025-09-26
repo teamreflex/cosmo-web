@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { getSession } from "@/queries";
+import { getSession } from "@/lib/queries/core";
 import InsertBands from "@/components/admin/bands/insert-bands";
 import { seoTitle } from "@/lib/seo";
 

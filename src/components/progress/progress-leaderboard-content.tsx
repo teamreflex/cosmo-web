@@ -65,7 +65,8 @@ function LeaderboardRow({ member, total, item, rank }: LeaderboardRowProps) {
         <span className="font-semibold">{ordinal(rank)}</span>
         <Link
           className="font-cosmo underline"
-          to={`/@${item.isAddress ? item.address : item.nickname}/progress`}
+          to="/@{$username}/progress"
+          params={{ username: item.isAddress ? item.address : item.nickname }}
           search={{ member }}
         >
           {item.nickname}

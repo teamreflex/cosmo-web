@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Ratelimit } from "@upstash/ratelimit";
 import { waitUntil } from "@vercel/functions";
 import { captureException } from "@sentry/tanstackstart-react";
-import { getSession } from "@/queries";
+import { getSession } from "@/lib/queries/core";
 import { IP_HEADER } from "@/lib/server/auth";
 import { redis } from "@/lib/server/cache";
 import { getCorsHeaders } from "@/lib/server/cors";

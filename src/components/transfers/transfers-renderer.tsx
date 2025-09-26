@@ -19,7 +19,7 @@ import type { TransferType } from "@/lib/universal/transfers";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import type { CosmoFilters } from "@/hooks/use-cosmo-filters";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
-import { transfersQuery } from "@/lib/universal/objekt-queries";
+import { transfersQuery } from "@/lib/queries/objekt-queries";
 
 type Props = {
   cosmo: PublicCosmo;

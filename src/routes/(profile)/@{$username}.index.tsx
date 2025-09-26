@@ -10,17 +10,17 @@ import {
   filterDataQuery,
   selectedArtistsQuery,
   targetAccountQuery,
-} from "@/queries";
+} from "@/lib/queries/core";
 import { UserStateProvider } from "@/hooks/use-user-state";
 import { ArtistProvider } from "@/hooks/use-artists";
 import { ProfileProvider } from "@/hooks/use-profile";
 import ProfileRenderer from "@/components/profile/profile-renderer";
-import { pinsQuery } from "@/lib/server/objekts/pins";
+import { pinsQuery } from "@/lib/queries/profile";
 import { Addresses, isEqual } from "@/lib/utils";
 import {
   userCollectionBlockchainGroupsQuery,
   userCollectionBlockchainQuery,
-} from "@/lib/universal/objekt-queries";
+} from "@/lib/queries/objekt-queries";
 
 export const Route = createFileRoute("/(profile)/@{$username}/")({
   validateSearch: userCollectionFrontendSchema,

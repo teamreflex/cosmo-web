@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { seoTitle } from "@/lib/seo";
-import { artistsQuery, selectedArtistsQuery } from "@/queries";
+import { artistsQuery, selectedArtistsQuery } from "@/lib/queries/core";
 import { objektStatsQuery } from "@/lib/server/objekts/stats";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ArtistChart from "@/components/objekt-stats/artist-chart";

@@ -9,7 +9,7 @@ import {
 } from "../ui/tooltip";
 import type { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
 import type { ComoBalance } from "@/lib/universal/como";
-import { artistsQuery, selectedArtistsQuery } from "@/queries";
+import { artistsQuery, selectedArtistsQuery } from "@/lib/queries/core";
 import { tokenBalancesQuery } from "@/lib/server/como";
 
 type Props = {

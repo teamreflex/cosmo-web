@@ -7,7 +7,7 @@ import { indexer } from "./db/indexer";
 import { collections, objekts } from "./db/indexer/schema";
 import { remember } from "./cache";
 import type { ComoBalance, ObjektWithCollection } from "@/lib/universal/como";
-import { fetchArtists } from "@/queries";
+import { fetchArtists } from "@/lib/queries/core";
 
 /**
  * Fetch incoming transfers for Special & Premier objekts for a given address

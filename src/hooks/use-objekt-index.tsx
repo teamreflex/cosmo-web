@@ -7,7 +7,7 @@ import { track } from "@/lib/utils";
 import {
   objektIndexBlockchainQuery,
   objektIndexTypesenseQuery,
-} from "@/lib/universal/objekt-queries";
+} from "@/lib/queries/objekt-queries";
 
 const route = getRouteApi("/");
 

@@ -1,5 +1,5 @@
 import { and, desc, eq, inArray, not, or, sql } from "drizzle-orm";
-import { createServerFn } from "@tanstack/react-start";
+import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
 import { Addresses, isEqual } from "../utils";
 import { indexer } from "./db/indexer";
 import { collections, objekts, transfers } from "./db/indexer/schema";
@@ -57,48 +57,50 @@ export const fetchTransfers = createServerFn({ method: "GET" })
 /**
  * Fetch transfers from the indexer by address.
  */
-async function fetchTransferRows(
-  address: string,
-  params: z.infer<typeof transfersBackendSchema>
-): Promise<TransferResult> {
-  const results = await indexer
-    .select({
-      transfer: transfers,
-      serial: objekts.serial,
-      collection: collections,
-      isSpin: sql<boolean>`${transfers.to} = ${Addresses.SPIN}`,
-    })
-    .from(transfers)
-    .leftJoin(objekts, eq(transfers.objektId, objekts.id))
-    .leftJoin(collections, eq(transfers.collectionId, collections.id))
-    .where(
-      and(
-        // base requirements
-        withType(address.toLowerCase(), params.type),
-        // additional filters
-        ...[
-          ...withArtist(params.artist),
-          ...withClass(params.class ?? []),
-          ...withSeason(params.season ?? []),
-          ...withOnlineType(params.on_offline ?? []),
-          ...withMember(params.member),
-        ]
+const fetchTransferRows = createServerOnlyFn(
+  async (
+    address: string,
+    params: z.infer<typeof transfersBackendSchema>
+  ): Promise<TransferResult> => {
+    const results = await indexer
+      .select({
+        transfer: transfers,
+        serial: objekts.serial,
+        collection: collections,
+        isSpin: sql<boolean>`${transfers.to} = ${Addresses.SPIN}`,
+      })
+      .from(transfers)
+      .leftJoin(objekts, eq(transfers.objektId, objekts.id))
+      .leftJoin(collections, eq(transfers.collectionId, collections.id))
+      .where(
+        and(
+          // base requirements
+          withType(address.toLowerCase(), params.type),
+          // additional filters
+          ...[
+            ...withArtist(params.artist),
+            ...withClass(params.class ?? []),
+            ...withSeason(params.season ?? []),
+            ...withOnlineType(params.on_offline ?? []),
+            ...withMember(params.member),
+          ]
+        )
       )
-    )
-    .orderBy(desc(transfers.timestamp))
-    .limit(PER_PAGE)
-    .offset(params.page * PER_PAGE);
+      .orderBy(desc(transfers.timestamp))
+      .limit(PER_PAGE)
+      .offset(params.page * PER_PAGE);
 
-  return {
-    results,
-    nextStartAfter: results.length === PER_PAGE ? params.page + 1 : undefined,
-  };
-}
+    return {
+      results,
+      nextStartAfter: results.length === PER_PAGE ? params.page + 1 : undefined,
+    };
+  }
+);
 
 /**
  * Filter transfers by type.
  */
-function withType(address: string, type: TransferType) {
+const withType = createServerOnlyFn((address: string, type: TransferType) => {
   switch (type) {
     // address must be either a sender or receiver
     case "all":
@@ -122,4 +124,4 @@ function withType(address: string, type: TransferType) {
     case "spin":
       return and(eq(transfers.to, Addresses.SPIN), eq(transfers.from, address));
   }
-}
+});

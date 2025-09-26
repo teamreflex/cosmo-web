@@ -1,8 +1,7 @@
 import { createHash } from "node:crypto";
 import { desc, eq } from "drizzle-orm";
-import { createServerFn } from "@tanstack/react-start";
+import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
 import z from "zod";
-import { queryOptions } from "@tanstack/react-query";
 import { indexer } from "../db/indexer";
 import { db } from "../db";
 import { cosmoAccounts, pins } from "../db/schema";
@@ -63,12 +62,6 @@ export const fetchPins = createServerFn({ method: "GET" })
     });
   });
 
-export const pinsQuery = (username: string) =>
-  queryOptions({
-    queryKey: ["pins", username],
-    queryFn: () => fetchPins({ data: { username } }),
-  });
-
 /**
  * Normalize an objekt with collection into an owned objekt.
  */
@@ -94,9 +87,9 @@ export function normalizePin(objekt: ObjektWithCollection): CosmoObjekt {
  * Get the cache key for the pins of a user.
  * Hashing the decoded username to avoid CJK characters.
  */
-export function pinCacheKey(username: string) {
+export const pinCacheKey = createServerOnlyFn((username: string) => {
   const hash = createHash("md5")
     .update(decodeURIComponent(username.toLowerCase()))
     .digest("hex");
   return `pins:${hash}`;
-}
+});

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { fetchFilterData } from "@/queries";
+import { fetchFilterData } from "@/lib/queries/core";
 
 export const Route = createFileRoute("/api/filter-data")({
   server: {

@@ -1,5 +1,6 @@
 import { Redis } from "@upstash/redis";
 import { waitUntil } from "@vercel/functions";
+import { createServerOnlyFn } from "@tanstack/react-start";
 import { env } from "@/lib/env/server";
 
 export const redis = new Redis({
@@ -10,32 +11,34 @@ export const redis = new Redis({
 /**
  * Get an item from the cache, or store the default value.
  */
-export async function remember<T>(
-  key: string,
-  ttl: number,
-  callback: () => Promise<T>
-): Promise<T> {
-  key = key.toLowerCase();
-  const cached = await redis.get<T>(key);
+export const remember = createServerOnlyFn(
+  async <T>(
+    key: string,
+    ttl: number,
+    callback: () => Promise<T>
+  ): Promise<T> => {
+    key = key.toLowerCase();
+    const cached = await redis.get<T>(key);
 
-  if (cached !== null) {
-    return cached;
+    if (cached !== null) {
+      return cached;
+    }
+
+    const fresh = await callback();
+
+    // return fresh data first, then set cache in the background
+    waitUntil(redis.set(key, fresh, { ex: ttl }));
+
+    return fresh;
   }
-
-  const fresh = await callback();
-
-  // return fresh data first, then set cache in the background
-  waitUntil(redis.set(key, fresh, { ex: ttl }));
-
-  return fresh;
-}
+);
 
 /**
  * Clear a tag from the cache.
  */
-export async function clearTag(tag: string) {
+export const clearTag = createServerOnlyFn(async (tag: string) => {
   await redis.del(tag);
-}
+});
 
 type CacheHeaders = {
   vercel: number;

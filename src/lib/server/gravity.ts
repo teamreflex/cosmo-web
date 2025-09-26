@@ -1,14 +1,13 @@
-import { desc } from "drizzle-orm";
-import { createServerFn } from "@tanstack/react-start";
-import { queryOptions } from "@tanstack/react-query";
 import { notFound } from "@tanstack/react-router";
+import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
+import { desc } from "drizzle-orm";
 import { findPoll } from "../client/gravity/util";
 import { db } from "./db";
-import { gravities } from "./db/schema";
 import { fetchGravity, fetchPoll } from "./cosmo/gravity";
 import { getProxiedToken } from "./handlers/withProxiedToken";
 import { remember } from "./cache";
 import { indexer } from "./db/indexer";
+import { gravities } from "./db/schema";
 import type { RevealedVote } from "../client/gravity/polygon/types";
 import type { ValidArtist } from "../universal/cosmo/common";
 import type { GravityVote } from "../universal/gravity";
@@ -26,154 +25,151 @@ export const fetchGravities = createServerFn({ method: "GET" }).handler(
   }
 );
 
-export const gravitiesIndexQuery = queryOptions({
-  queryKey: ["gravities"],
-  queryFn: fetchGravities,
-});
-
 /**
  * Fetch historical data for a Polygon gravity.
  * Cached for 30 days.
  */
-export async function fetchPolygonGravity(artist: ValidArtist, id: number) {
-  return await remember(
-    `gravity-polygon:${artist}:${id}`,
-    60 * 60 * 24 * 30, // 30 days
-    async () => {
-      // 1. get a cosmo token
-      const { accessToken } = await getProxiedToken();
+export const fetchPolygonGravity = createServerOnlyFn(
+  async (artist: ValidArtist, id: number) => {
+    return await remember(
+      `gravity-polygon:${artist}:${id}`,
+      60 * 60 * 24 * 30, // 30 days
+      async () => {
+        // 1. get a cosmo token
+        const { accessToken } = await getProxiedToken();
 
-      // 2. fetch gravity from cosmo
-      const gravity = await fetchGravity(artist, id);
-      if (!gravity) {
-        throw notFound();
-      }
+        // 2. fetch gravity from cosmo
+        const gravity = await fetchGravity(artist, id);
+        if (!gravity) {
+          throw notFound();
+        }
 
-      // 3. fetch poll details
-      const gravityPoll = findPoll(gravity);
-      if (!gravityPoll) {
-        throw notFound();
-      }
+        // 3. fetch poll details
+        const gravityPoll = findPoll(gravity);
+        if (!gravityPoll) {
+          throw notFound();
+        }
 
-      const poll = await fetchPoll(
-        accessToken,
-        artist,
-        gravity.id,
-        gravityPoll.poll.id
-      );
+        const poll = await fetchPoll(
+          accessToken,
+          artist,
+          gravity.id,
+          gravityPoll.poll.id
+        );
 
-      // prior to gravity 11, they used the cosmo poll ID on-chain instead of a separate ID
-      const chainPollId = gravity.id <= 11 ? poll.id : poll.pollIdOnChain;
+        // prior to gravity 11, they used the cosmo poll ID on-chain instead of a separate ID
+        const chainPollId = gravity.id <= 11 ? poll.id : poll.pollIdOnChain;
 
-      // 4. fetch votes
-      const votes = await db.query.polygonVotes.findMany({
-        where: {
-          contract: ADDRESSES[artist],
-          pollId: chainPollId,
-        },
-        with: {
-          cosmoAccount: {
-            columns: {
-              username: true,
+        // 4. fetch votes
+        const votes = await db.query.polygonVotes.findMany({
+          where: {
+            contract: ADDRESSES[artist],
+            pollId: chainPollId,
+          },
+          with: {
+            cosmoAccount: {
+              columns: {
+                username: true,
+              },
             },
           },
-        },
-      });
+        });
 
-      // 5. map votes
-      const revealedVotes = votes
-        .map(
-          (vote) =>
-            ({
-              pollId: Number(vote.pollId),
-              voter: vote.address,
-              comoAmount: vote.amount,
-              candidateId: vote.candidateId!,
-              blockNumber: vote.blockNumber,
-              username: vote.cosmoAccount?.username,
-              hash: vote.hash,
-            } satisfies RevealedVote)
-        )
-        .filter((vote) => vote.candidateId !== null)
-        .sort((a, b) => b.comoAmount - a.comoAmount);
+        // 5. map votes
+        const revealedVotes = votes
+          .map(
+            (vote) =>
+              ({
+                pollId: Number(vote.pollId),
+                voter: vote.address,
+                comoAmount: vote.amount,
+                candidateId: vote.candidateId!,
+                blockNumber: vote.blockNumber,
+                username: vote.cosmoAccount?.username,
+                hash: vote.hash,
+              } satisfies RevealedVote)
+          )
+          .filter((vote) => vote.candidateId !== null)
+          .sort((a, b) => b.comoAmount - a.comoAmount);
 
-      // 6. aggregate como by candidate
-      const comoByCandidate = revealedVotes.reduce((acc, vote) => {
-        const candidateId = vote.candidateId.toString();
-        acc[candidateId] = (acc[candidateId] ?? 0) + vote.comoAmount;
-        return acc;
-      }, {} as Record<string, number>);
+        // 6. aggregate como by candidate
+        const comoByCandidate = revealedVotes.reduce((acc, vote) => {
+          const candidateId = vote.candidateId.toString();
+          acc[candidateId] = (acc[candidateId] ?? 0) + vote.comoAmount;
+          return acc;
+        }, {} as Record<string, number>);
 
-      // 7. calculate total como used
-      const totalComoUsed = revealedVotes.reduce((acc, vote) => {
-        return acc + vote.comoAmount;
-      }, 0);
+        // 7. calculate total como used
+        const totalComoUsed = revealedVotes.reduce((acc, vote) => {
+          return acc + vote.comoAmount;
+        }, 0);
 
-      return { poll, revealedVotes, comoByCandidate, totalComoUsed };
-    }
-  );
-}
+        return { poll, revealedVotes, comoByCandidate, totalComoUsed };
+      }
+    );
+  }
+);
 
 /**
  * Fetch a gravity, and if it's in the past, cache it for 30 days.
  */
-export async function fetchCachedGravity(
-  artist: ValidArtist,
-  id: number,
-  isPast: boolean
-) {
-  if (isPast) {
-    return await remember(
-      `gravity:${artist}:${id}`,
-      60 * 60 * 24 * 30, // 30 days
-      () => fetchGravity(artist, id)
-    );
-  }
+export const fetchCachedGravity = createServerOnlyFn(
+  async (artist: ValidArtist, id: number, isPast: boolean) => {
+    if (isPast) {
+      return await remember(
+        `gravity:${artist}:${id}`,
+        60 * 60 * 24 * 30, // 30 days
+        () => fetchGravity(artist, id)
+      );
+    }
 
-  return await fetchGravity(artist, id);
-}
+    return await fetchGravity(artist, id);
+  }
+);
 
 /**
  * Fetch a poll, and if it's in the past, cache it for 30 days.
  */
-export async function fetchCachedPoll(
-  artist: ValidArtist,
-  gravityId: number,
-  pollId: number,
-  isPast: boolean
-) {
-  if (isPast) {
-    return await remember(
-      `poll:${artist}:${gravityId}:${pollId}`,
-      60 * 60 * 24 * 30, // 30 days
-      async () => {
-        const { accessToken } = await getProxiedToken();
-        return await fetchPoll(accessToken, artist, gravityId, pollId);
-      }
-    );
-  }
+export const fetchCachedPoll = createServerOnlyFn(
+  async (
+    artist: ValidArtist,
+    gravityId: number,
+    pollId: number,
+    isPast: boolean
+  ) => {
+    if (isPast) {
+      return await remember(
+        `poll:${artist}:${gravityId}:${pollId}`,
+        60 * 60 * 24 * 30, // 30 days
+        async () => {
+          const { accessToken } = await getProxiedToken();
+          return await fetchPoll(accessToken, artist, gravityId, pollId);
+        }
+      );
+    }
 
-  const { accessToken } = await getProxiedToken();
-  return await fetchPoll(accessToken, artist, gravityId, pollId);
-}
+    const { accessToken } = await getProxiedToken();
+    return await fetchPoll(accessToken, artist, gravityId, pollId);
+  }
+);
 
 /**
  * Fetch votes from the indexer.
  */
-export async function fetchAbstractVotes(
-  pollId: number
-): Promise<GravityVote[]> {
-  const votes = await indexer.query.votes.findMany({
-    where: {
-      pollId,
-    },
-  });
+export const fetchAbstractVotes = createServerOnlyFn(
+  async (pollId: number): Promise<GravityVote[]> => {
+    const votes = await indexer.query.votes.findMany({
+      where: {
+        pollId,
+      },
+    });
 
-  return votes.map((vote) => ({
-    ...vote,
-    amount: Number(vote.amount),
-  }));
-}
+    return votes.map((vote) => ({
+      ...vote,
+      amount: Number(vote.amount),
+    }));
+  }
+);
 
 const ADDRESSES: Record<string, string> = {
   triples: "0xc3e5ad11ae2f00c740e74b81f134426a3331d950",

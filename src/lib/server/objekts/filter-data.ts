@@ -1,11 +1,12 @@
 import { asc } from "drizzle-orm";
+import { createServerOnlyFn } from "@tanstack/react-start";
 import { indexer } from "../db/indexer";
 import { collections } from "../db/indexer/schema";
 
 /**
  * Fetch all unique collections from the index.
  */
-export async function fetchUniqueCollections() {
+export const fetchUniqueCollections = createServerOnlyFn(async () => {
   const rows = await indexer
     .selectDistinctOn([collections.collectionNo], {
       collectionNo: collections.collectionNo,
@@ -14,12 +15,12 @@ export async function fetchUniqueCollections() {
     .orderBy(asc(collections.collectionNo));
 
   return rows.map((row) => row.collectionNo);
-}
+});
 
 /**
  * Fetch all unique seasons and group by artist.
  */
-export async function fetchUniqueSeasons() {
+export const fetchUniqueSeasons = createServerOnlyFn(async () => {
   const rows = await indexer
     .selectDistinctOn([collections.artist, collections.season], {
       createdAt: collections.createdAt,
@@ -61,12 +62,12 @@ export async function fetchUniqueSeasons() {
       seasons,
     };
   });
-}
+});
 
 /**
  * Fetch all unique classes and group by artist.
  */
-export async function fetchUniqueClasses() {
+export const fetchUniqueClasses = createServerOnlyFn(async () => {
   const rows = await indexer
     .selectDistinctOn([collections.artist, collections.class], {
       createdAt: collections.createdAt,
@@ -88,4 +89,4 @@ export async function fetchUniqueClasses() {
     artistId,
     classes,
   }));
-}
+});
