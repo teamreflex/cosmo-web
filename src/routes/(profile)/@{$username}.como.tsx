@@ -10,7 +10,7 @@ import ComoCalendar from "@/components/como/calendar";
 import Portal from "@/components/portal";
 import HelpDialog from "@/components/como/help-dialog";
 
-export const Route = createFileRoute("/(profile)/@$username/como")({
+export const Route = createFileRoute("/(profile)/@{$username}/como")({
   head: () => ({
     // TODO: fix loaderData access here
     meta: [seoTitle(`COMO`)],

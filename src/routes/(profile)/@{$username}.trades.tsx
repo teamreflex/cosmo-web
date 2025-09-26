@@ -15,7 +15,7 @@ import {
 import { ArtistProvider } from "@/hooks/use-artists";
 import { transfersQuery } from "@/lib/universal/objekt-queries";
 
-export const Route = createFileRoute("/(profile)/@$username/trades")({
+export const Route = createFileRoute("/(profile)/@{$username}/trades")({
   head: () => ({
     // TODO: fix loaderData access here
     meta: [seoTitle("Trades")],

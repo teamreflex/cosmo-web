@@ -22,7 +22,7 @@ import {
   userCollectionBlockchainQuery,
 } from "@/lib/universal/objekt-queries";
 
-export const Route = createFileRoute("/(profile)/@$username/")({
+export const Route = createFileRoute("/(profile)/@{$username}/")({
   head: () => ({
     // TODO: fix loaderData access here
     meta: [seoTitle(`User's Collection`)],
@@ -33,7 +33,6 @@ export const Route = createFileRoute("/(profile)/@$username/")({
   pendingComponent: PendingComponent,
   errorComponent: ErrorComponent,
   loader: async ({ context, params, deps }) => {
-    console.log("index", params.username);
     context.queryClient.prefetchQuery(filterDataQuery);
 
     const [artists, selected, account, target, pins] = await Promise.all([
