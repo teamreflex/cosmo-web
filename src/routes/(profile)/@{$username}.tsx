@@ -54,7 +54,7 @@ function RouteComponent() {
           <div className="flex flex-row">
             <div className="flex flex-col gap-2 justify-center h-24">
               <Link
-                to="/@$username"
+                to="/@{$username}"
                 params={{ username: target.cosmo.username }}
                 className="w-fit text-2xl leading-6 font-cosmo uppercase underline underline-offset-4 decoration-transparent hover:decoration-cosmo transition-colors"
               >

@@ -160,7 +160,7 @@ export function MobileLinks(props: Props) {
         // user has a cosmo cosmo, go to collection
         <DropdownMenuItem asChild>
           <Link
-            to="/@$username"
+            to="/@{$username}"
             params={{ username: props.cosmo.username }}
             aria-label="Collection"
           >

@@ -196,7 +196,7 @@ function TransferItem({ transfer }: TransferItemProps) {
           </div>
         ) : !isEqual(transfer.from, Addresses.NULL) ? (
           <Link
-            to="/@$username"
+            to="/@{$username}"
             params={{ username: transfer.fromUsername ?? transfer.from }}
             className="hover:underline truncate"
           >
@@ -218,7 +218,7 @@ function TransferItem({ transfer }: TransferItemProps) {
           </div>
         ) : !isEqual(transfer.to, Addresses.NULL) ? (
           <Link
-            to="/@$username"
+            to="/@{$username}"
             params={{ username: transfer.toUsername ?? transfer.to }}
             className="hover:underline"
           >

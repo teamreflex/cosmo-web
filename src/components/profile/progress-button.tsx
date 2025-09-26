@@ -11,7 +11,7 @@ export default function ProgressButton({ cosmo }: Props) {
   return (
     <Button variant="secondary" size="profile" data-profile asChild>
       <Link
-        to="/@$username/progress"
+        to="/@{$username}/progress"
         params={{ username: cosmo.isAddress ? cosmo.address : cosmo.username }}
       >
         <PieChart className="h-5 w-5" />

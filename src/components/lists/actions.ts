@@ -105,7 +105,7 @@ export const updateObjektList = createServerFn({ method: "POST" })
     // redirect to their profile if they have a linked cosmo
     if (cosmo) {
       throw redirect({
-        to: "/@$username/list/$slug",
+        to: "/@{$username}/list/$slug",
         params: { username: cosmo.username, slug: result.slug },
       });
     }

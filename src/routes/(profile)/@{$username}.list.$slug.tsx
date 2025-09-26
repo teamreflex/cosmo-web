@@ -57,7 +57,7 @@ export const Route = createFileRoute("/(profile)/@{$username}/list/$slug")({
 
     if (!objektList) {
       throw redirect({
-        to: "/@$username",
+        to: "/@{$username}",
         params: { username: params.username },
       });
     }

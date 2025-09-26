@@ -11,7 +11,7 @@ export default function ComoButton({ cosmo }: Props) {
   return (
     <Button variant="secondary" size="profile" data-profile asChild>
       <Link
-        to="/@$username/como"
+        to="/@{$username}/como"
         params={{ username: cosmo.isAddress ? cosmo.address : cosmo.username }}
       >
         <CalendarRange className="h-5 w-5" />
