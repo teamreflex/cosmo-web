@@ -1,6 +1,6 @@
 import { useId } from "react";
 import { Check, Loader2 } from "lucide-react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
   DropdownMenu,
@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { setSelectedArtist } from "./actions";
 import type { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
 import { useArtists } from "@/hooks/use-artists";
+import { selectedArtistsQuery } from "@/lib/queries/core";
 
 export default function ArtistSelectbox() {
   const id = useId();
@@ -56,13 +57,22 @@ type ArtistItemProps = {
 };
 
 export function ArtistItem({ artist, isSelected }: ArtistItemProps) {
+  const queryClient = useQueryClient();
   const mutationFn = useServerFn(setSelectedArtist);
   const mutation = useMutation({
+    mutationKey: ["set-selected-artist", artist.id],
     mutationFn,
   });
 
   function handleSelect(artistId: string) {
-    mutation.mutate({ data: artistId });
+    mutation.mutate(
+      { data: artistId },
+      {
+        onSuccess: (newSelected) => {
+          queryClient.setQueryData(selectedArtistsQuery.queryKey, newSelected);
+        },
+      }
+    );
   }
 
   return (

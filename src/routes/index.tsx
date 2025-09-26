@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQueries } from "@tanstack/react-query";
 import { Error } from "@/components/error-boundary";
 import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -34,9 +34,9 @@ export const Route = createFileRoute("/")({
     context.queryClient.prefetchQuery(filterDataQuery);
 
     // load quick required data
-    const [selected, artists] = await Promise.all([
-      context.queryClient.ensureQueryData(selectedArtistsQuery),
+    const [artists, selected] = await Promise.all([
       context.queryClient.ensureQueryData(artistsQuery),
+      context.queryClient.ensureQueryData(selectedArtistsQuery),
     ]);
 
     // prefetch objekts
@@ -56,18 +56,20 @@ export const Route = createFileRoute("/")({
     // fetch slower required data
     await context.queryClient.ensureQueryData(currentAccountQuery);
 
-    return { artists, selected };
+    return { artists };
   },
 });
 
 function RouteComponent() {
-  const { artists, selected } = Route.useLoaderData();
-  const account = useSuspenseQuery(currentAccountQuery);
+  const { artists } = Route.useLoaderData();
+  const [account, selected] = useSuspenseQueries({
+    queries: [currentAccountQuery, selectedArtistsQuery],
+  });
 
   return (
     <main className="container flex flex-col py-2">
       <UserStateProvider user={account.data?.user} cosmo={account.data?.cosmo}>
-        <ArtistProvider artists={artists} selected={selected}>
+        <ArtistProvider artists={artists} selected={selected.data}>
           <ProfileProvider objektLists={account.data?.objektLists ?? []}>
             <IndexRenderer objektLists={account.data?.objektLists ?? []} />
           </ProfileProvider>

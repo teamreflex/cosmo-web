@@ -22,4 +22,6 @@ export const setSelectedArtist = createServerFn({ method: "POST" })
       key: "artists",
       value: selected,
     });
+
+    return selected;
   });

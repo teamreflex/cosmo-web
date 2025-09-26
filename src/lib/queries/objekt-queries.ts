@@ -77,6 +77,7 @@ export function objektIndexBlockchainQuery(
         data: {
           ...searchParams,
           page: pageParam,
+          artists: selectedArtists,
         },
       });
     },
