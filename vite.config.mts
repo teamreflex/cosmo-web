@@ -23,7 +23,11 @@ const config = defineConfig(async ({ mode }) => {
         projects: ["./tsconfig.json"],
       }),
       tanstackStart(),
-      react(),
+      react({
+        babel: {
+          plugins: ["babel-plugin-react-compiler"],
+        },
+      }),
       tailwindcss(),
     ],
   };

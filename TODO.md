@@ -1,0 +1,9 @@
+- migrate /profile/progress
+- migrate /gravity/:artist/:id
+- migrate /list/:id
+- fix residual type errors from enabling noUncheckedArrayAccess
+- ensure env var split is working and server vars aren't leaking to client
+- optimize query preloading
+- strip dead code
+- update documentation
+- move server code around so it's more isolated from RPC and queries
