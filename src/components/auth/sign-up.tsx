@@ -4,7 +4,6 @@ import { CheckCircle, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useMemo } from "react";
-import { useRouter } from "@tanstack/react-router";
 import {
   Form,
   FormControl,
@@ -27,7 +26,6 @@ type Props = {
 
 export default function SignUp({ onCancel }: Props) {
   const placeholder = useMemo(() => randomHandle(), []);
-  const router = useRouter();
   const mutation = useMutation({
     mutationFn: async (data: z.infer<typeof signUpSchema>) => {
       const result = await authClient.signUp.email({
@@ -57,7 +55,6 @@ export default function SignUp({ onCancel }: Props) {
     mutation.mutate(data, {
       onSuccess: () => {
         track("sign-up");
-        router.invalidate();
       },
       onError: (error) => {
         toast.error(error.message);

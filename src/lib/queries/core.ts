@@ -77,14 +77,14 @@ type GetAccount = {
  * Fetch current user account.
  */
 export const fetchCurrentAccount = createServerFn({ method: "GET" }).handler(
-  async (): Promise<GetAccount | undefined> => {
+  async (): Promise<GetAccount | null> => {
     const session = await auth.api.getSession({
       headers: getRequestHeaders(),
     });
 
     // not signed in
     if (!session) {
-      return undefined;
+      return null;
     }
 
     const result = await db.query.user.findFirst({
@@ -97,7 +97,7 @@ export const fetchCurrentAccount = createServerFn({ method: "GET" }).handler(
 
     // broken user account
     if (!result) {
-      return undefined;
+      return null;
     }
 
     // no cosmo account, just return the user

@@ -63,6 +63,7 @@ export default function SignIn() {
                 return (
                   <WithEmail
                     onForgotPassword={() => setState("forgot-password")}
+                    onSuccess={() => setOpen(false)}
                   />
                 );
               case "sign-up":

@@ -17,8 +17,6 @@ export function useFilters(opts?: DefaultOptions) {
   // setup cosmo filters
   const { filters, setFilters } = useCosmoFilters();
 
-  // use separate state for apollo features so a refetch doesn't occur
-  const showLocked = searchParams.locked ?? true;
   const [dataSource, setDataSource] = useState<CollectionDataSource>(() => {
     // upon first render, adjust data source based on source-specific filters
     const useBlockchain =
@@ -32,7 +30,7 @@ export function useFilters(opts?: DefaultOptions) {
   });
 
   const setShowLocked = useCallback(
-    (state: boolean | null) => {
+    (state: boolean | undefined) => {
       navigate({
         // @ts-ignore - TODO: fix
         search: (prev) => ({
@@ -45,13 +43,13 @@ export function useFilters(opts?: DefaultOptions) {
   );
 
   function reset() {
-    setShowLocked(null);
+    setShowLocked(undefined);
     setFilters(defaultFilters);
   }
 
   return {
-    // masks the fact that null means show locked
-    showLocked: showLocked ?? true,
+    // masks the fact that undefined means show locked
+    showLocked: searchParams.locked ?? true,
     setShowLocked,
     dataSource,
     setDataSource,

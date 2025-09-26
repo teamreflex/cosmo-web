@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -18,13 +18,16 @@ import type { z } from "zod";
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { signInSchema } from "@/lib/universal/schema/auth";
 import { track } from "@/lib/utils";
+import { currentAccountQuery } from "@/lib/queries/core";
 
 type Props = {
   onForgotPassword: () => void;
+  onSuccess: () => void;
 };
 
-export default function WithEmail({ onForgotPassword }: Props) {
+export default function WithEmail(props: Props) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: async (data: z.infer<typeof signInSchema>) => {
       const result = await authClient.signIn.email({
@@ -36,7 +39,9 @@ export default function WithEmail({ onForgotPassword }: Props) {
       if (result.error) {
         throw new Error(getAuthErrorMessage(result.error));
       }
-      return result.data;
+
+      await router.invalidate();
+      await router.navigate({ to: "/" });
     },
   });
 
@@ -52,7 +57,10 @@ export default function WithEmail({ onForgotPassword }: Props) {
     mutation.mutate(data, {
       onSuccess: () => {
         track("sign-in");
-        router.invalidate();
+        queryClient.invalidateQueries({
+          queryKey: currentAccountQuery.queryKey,
+        });
+        props.onSuccess();
       },
       onError: (error) => {
         toast.error(error.message);
@@ -110,7 +118,11 @@ export default function WithEmail({ onForgotPassword }: Props) {
             {mutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
           </Button>
 
-          <Button type="button" variant="secondary" onClick={onForgotPassword}>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={props.onForgotPassword}
+          >
             <span>Forgot Password</span>
           </Button>
         </div>

@@ -15,7 +15,7 @@ import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 
 type Props = {
   showLocked: boolean;
-  setShowLocked: (showLocked: boolean | null) => void;
+  setShowLocked: (showLocked: boolean | undefined) => void;
   dataSource: CollectionDataSource;
   setDataSource: Dispatch<SetStateAction<CollectionDataSource>>;
 };

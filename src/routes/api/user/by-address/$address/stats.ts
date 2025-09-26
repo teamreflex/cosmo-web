@@ -17,7 +17,7 @@ export const Route = createFileRoute("/api/user/by-address/$address/stats")({
           );
         }
 
-        const stats = await fetchArtistStatsByAddress(params.address);
+        const stats = await fetchArtistStatsByAddress({ data: params.address });
 
         return Response.json(stats);
       },
