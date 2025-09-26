@@ -3,8 +3,8 @@ import {
   inferAdditionalFields,
   usernameClient,
 } from "better-auth/client/plugins";
-import { baseUrl } from "../query-client";
 import type { auth } from "../server/auth";
+import { baseUrl } from "@/lib/utils";
 
 /**
  * Better Auth client instance.

@@ -92,6 +92,7 @@ export const fetchSystemStatus = createServerFn().handler(async () => {
 export const systemStatusQuery = queryOptions({
   queryKey: ["system-status"],
   queryFn: fetchSystemStatus,
-  staleTime: 60 * 5, // 5 minutes
   refetchOnWindowFocus: false,
+  refetchOnMount: false,
+  refetchOnReconnect: false,
 });

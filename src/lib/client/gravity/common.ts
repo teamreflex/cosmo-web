@@ -1,8 +1,8 @@
-import { baseUrl } from "@/lib/query-client";
-import type { CosmoPollChoices } from "@/lib/universal/cosmo/gravity";
-import type { GravityVote } from "@/lib/universal/gravity";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ofetch } from "ofetch";
+import type { CosmoPollChoices } from "@/lib/universal/cosmo/gravity";
+import type { GravityVote } from "@/lib/universal/gravity";
+import { baseUrl } from "@/lib/utils";
 
 export type GravityHookParams = {
   tokenId: bigint;

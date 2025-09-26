@@ -6,7 +6,6 @@ import { parseSessionOutput, parseUserOutput } from "better-auth/db";
 import { username } from "better-auth/plugins/username";
 import { eq } from "drizzle-orm";
 import { reactStartCookies } from "better-auth/react-start";
-import { baseUrl } from "../query-client";
 import {
   sendAccountDeletionEmail,
   sendEmailChangeVerification,
@@ -19,7 +18,7 @@ import type { PublicUser } from "../universal/auth";
 import type { CollectionDataSource } from "@/lib/utils";
 import * as serverEnv from "@/lib/env/server";
 import * as clientEnv from "@/lib/env/client";
-import { GRID_COLUMNS } from "@/lib/utils";
+import { GRID_COLUMNS, baseUrl } from "@/lib/utils";
 import * as authSchema from "@/lib/server/db/auth-schema";
 
 export const IP_HEADER = "x-vercel-forwarded-for";
@@ -36,7 +35,6 @@ export const auth = betterAuth({
     schema: authSchema,
   }),
   plugins: [
-    reactStartCookies(),
     username({
       minUsernameLength: 3,
       maxUsernameLength: 20,
@@ -44,6 +42,7 @@ export const auth = betterAuth({
         return /^[a-zA-Z0-9]+$/.test(str);
       },
     }),
+    reactStartCookies(),
   ],
 
   /**

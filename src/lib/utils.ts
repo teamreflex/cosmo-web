@@ -1,6 +1,7 @@
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { z } from "zod";
+import { env } from "./env/client";
 import type { ClassValue } from "clsx";
 import type { ValidArtist } from "./universal/cosmo/common";
 
@@ -9,6 +10,14 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export type PropsWithClassName<T> = T & { className?: string };
+
+/**
+ * Get the base URL for the app.
+ */
+export function baseUrl() {
+  const scheme = env.VITE_VERCEL_ENV === "development" ? "http" : "https";
+  return `${scheme}://${env.VITE_VERCEL_PROJECT_PRODUCTION_URL}`;
+}
 
 export function ordinal(n: number) {
   const s = ["th", "st", "nd", "rd"];
