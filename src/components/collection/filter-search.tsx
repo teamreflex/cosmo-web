@@ -8,7 +8,7 @@ export default function FilterSearch() {
   const { search } = route.useSearch();
   const navigate = route.useNavigate();
 
-  function setQuery(query: string | null) {
+  function setQuery(query: string | undefined) {
     navigate({
       search: (prev) => ({
         ...prev,
@@ -28,12 +28,12 @@ export default function FilterSearch() {
         type="text"
         placeholder="Search..."
         value={search ?? ""}
-        onChange={(e) => setQuery(e.currentTarget.value || null)}
+        onChange={(e) => setQuery(e.currentTarget.value || undefined)}
         className="pl-3 py-1 text-base md:text-sm h-full w-full grow outline-none"
         maxLength={32}
       />
 
-      <button type="button" onClick={() => setQuery(null)}>
+      <button type="button" onClick={() => setQuery(undefined)}>
         <X className="w-4 h-4 mr-3" />
       </button>
     </div>

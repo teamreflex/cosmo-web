@@ -30,7 +30,7 @@ export default function SerialsPanel(props: Props) {
   }
 
   function handlePrevious() {
-    if (serial === 1 || serial === null) {
+    if (serial === 1 || serial === undefined) {
       return;
     }
 
@@ -65,7 +65,7 @@ export default function SerialsPanel(props: Props) {
         </Button>
       </div>
 
-      {debounced !== null && debounced > 0 && (
+      {debounced !== undefined && debounced > 0 && (
         <QueryErrorResetBoundary>
           {({ reset }) => (
             <ErrorBoundary

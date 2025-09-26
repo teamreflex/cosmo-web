@@ -39,8 +39,8 @@ export default function ClassFilter(props: Props) {
         : (props.classes ?? []).filter((f) => f !== className);
 
       return {
-        artist: newFilters.length > 0 ? artistId : null,
-        class: newFilters.length > 0 ? newFilters : null,
+        artist: newFilters.length > 0 ? artistId : undefined,
+        class: newFilters.length > 0 ? newFilters : undefined,
       };
     });
   }

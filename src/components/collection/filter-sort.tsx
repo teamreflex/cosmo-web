@@ -41,7 +41,7 @@ export default function SortFilter(props: Props) {
     }
 
     props.onChange({
-      sort: newSort === "newest" ? null : newSort,
+      sort: newSort === "newest" ? undefined : newSort,
     });
   }
 

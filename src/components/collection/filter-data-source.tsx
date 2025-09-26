@@ -32,7 +32,7 @@ export default function FilterDataSource({
         // reset gridable
         if (filters.gridable) {
           setFilters({
-            gridable: null,
+            gridable: undefined,
           });
         }
         break;

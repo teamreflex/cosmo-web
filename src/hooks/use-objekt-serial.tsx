@@ -8,9 +8,14 @@ export function useObjektSerial() {
   });
 
   const setSerial = useCallback(
-    (serial: number | null | ((prev: number | null) => number | null)) => {
+    (
+      serial:
+        | number
+        | undefined
+        | ((prev: number | undefined) => number | undefined)
+    ) => {
       if (typeof serial === "function") {
-        serial = serial(search.serial ?? null);
+        serial = serial(search.serial ?? undefined);
       }
 
       navigate({
@@ -22,8 +27,8 @@ export function useObjektSerial() {
   );
 
   const reset = useCallback(() => {
-    setSerial(null);
+    setSerial(undefined);
   }, [setSerial]);
 
-  return { serial: search.serial ?? null, setSerial, reset };
+  return { serial: search.serial ?? undefined, setSerial, reset };
 }

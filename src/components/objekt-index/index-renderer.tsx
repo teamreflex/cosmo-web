@@ -1,9 +1,7 @@
-import { getRouteApi } from "@tanstack/react-router";
 import ListDropdown from "../lists/list-dropdown";
 import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
 import FiltersContainer from "../collection/filters-container";
 import { ObjektSidebar } from "../objekt/common";
-import RoutedExpandableObjekt from "../objekt/objekt-routed";
 import ExpandableObjekt from "../objekt/objekt-expandable";
 import { Objekt } from "../../lib/universal/objekt-conversion";
 import VirtualizedGrid from "../objekt/virtualized-grid";
@@ -16,8 +14,7 @@ import type { ObjektList } from "@/lib/server/db/schema";
 import { useGridColumns } from "@/hooks/use-grid-columns";
 import { useUserState } from "@/hooks/use-user-state";
 import { useObjektIndex } from "@/hooks/use-objekt-index";
-
-const route = getRouteApi("/");
+import { useActiveObjekt } from "@/hooks/use-active-objekt";
 
 type Props = {
   objektLists: ObjektList[];
@@ -27,14 +24,7 @@ export default function IndexRenderer(props: Props) {
   const { user } = useUserState();
   const gridColumns = useGridColumns();
   const options = useObjektIndex();
-  const { id: activeObjekt } = route.useSearch();
-  const navigate = route.useNavigate();
-
-  function setActiveObjekt(slug: string | null) {
-    navigate({
-      search: (prev) => ({ ...prev, id: slug }),
-    });
-  }
+  const { setActiveObjekt } = useActiveObjekt();
 
   const authenticated = user !== undefined;
 
@@ -82,15 +72,16 @@ export default function IndexRenderer(props: Props) {
 
       {/**
        * if there's a slug in the url, open an expandable objekt dialog.
-       * activeSlug is populated on first load from the server
+       * serverActiveObjekt is populated on first load from the server
        * using activeObjekt here results in two dialogs being open at once
+       * TODO: rethink this due to new behavior
        */}
-      {!!activeObjekt && (
+      {/* {activeObjekt !== undefined && (
         <RoutedExpandableObjekt
           slug={activeObjekt}
           setActive={setActiveObjekt}
         />
-      )}
+      )} */}
     </div>
   );
 }

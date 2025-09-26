@@ -41,8 +41,8 @@ export default function SeasonFilter(props: Props) {
         : (prev.season ?? []).filter((f) => f !== season);
 
       return {
-        artist: newFilters.length > 0 ? artist : null,
-        season: newFilters.length > 0 ? newFilters : null,
+        artist: newFilters.length > 0 ? artist : undefined,
+        season: newFilters.length > 0 ? newFilters : undefined,
       };
     });
   }

@@ -24,8 +24,8 @@ export default function FilteredObjektDisplay({
   const setActiveMember = useCallback(
     (member: string) => {
       setFilters((prev) => ({
-        artist: null,
-        member: prev.member === member ? null : member,
+        artist: undefined,
+        member: prev.member === member ? undefined : member,
       }));
     },
     [setFilters]
@@ -34,8 +34,8 @@ export default function FilteredObjektDisplay({
   const setActiveArtist = useCallback(
     (artist: string) => {
       setFilters((prev) => ({
-        member: null,
-        artist: prev.artist === artist ? null : (artist as ValidArtist),
+        member: undefined,
+        artist: prev.artist === artist ? undefined : (artist as ValidArtist),
       }));
     },
     [setFilters]

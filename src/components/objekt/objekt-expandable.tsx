@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 type Props = PropsWithChildren<{
   collection: Objekt.Collection;
   tokenId?: number | string;
-  setActive?: (slug: string | null) => void;
+  setActive?: (slug: string | undefined) => void;
   priority?: boolean;
   className?: string;
 }>;
@@ -45,7 +45,7 @@ export default function ExpandableObjekt({
     <MetadataDialog
       slug={collection.slug}
       isActive={false}
-      onClose={() => setActive?.(null)}
+      onClose={() => setActive?.(undefined)}
     >
       {({ open }) => (
         <div

@@ -19,15 +19,15 @@ export default function ResetFilters(props: Props) {
 
   function handleReset() {
     props.setFilters({
-      member: null,
-      artist: null,
-      sort: null,
-      class: null,
-      season: null,
-      on_offline: null,
-      transferable: null,
-      gridable: null,
-      collectionNo: null,
+      member: undefined,
+      artist: undefined,
+      sort: undefined,
+      class: undefined,
+      season: undefined,
+      on_offline: undefined,
+      transferable: undefined,
+      gridable: undefined,
+      collectionNo: undefined,
     });
   }
 

@@ -11,7 +11,7 @@ export default function TransferableFilter(props: Props) {
 
   function handleChange(value: boolean) {
     props.onChange({
-      transferable: value ? true : null,
+      transferable: value ? true : undefined,
     });
   }
 

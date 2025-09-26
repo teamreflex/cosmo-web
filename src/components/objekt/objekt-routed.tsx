@@ -2,7 +2,7 @@ import MetadataDialog from "./metadata-dialog";
 
 type Props = {
   slug: string;
-  setActive: (slug: string | null) => void;
+  setActive: (slug: string | undefined) => void;
 };
 
 /**
@@ -13,7 +13,7 @@ export default function RoutedExpandableObjekt({ slug, setActive }: Props) {
     <MetadataDialog
       slug={slug}
       isActive={true}
-      onClose={() => setActive(null)}
+      onClose={() => setActive(undefined)}
     />
   );
 }

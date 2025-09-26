@@ -18,7 +18,7 @@ export default function MetadataContent(props: Props) {
   const { data } = useSuspenseQuery(fetchObjektQuery(props.slug));
   const { serial } = useObjektSerial();
   const [tab, setTab] = useState<ObjektMetadataTab>(() =>
-    serial !== null ? "serials" : "metadata"
+    serial !== undefined ? "serials" : "metadata"
   );
 
   return (

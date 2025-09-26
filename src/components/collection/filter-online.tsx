@@ -32,7 +32,7 @@ export default function OnlineFilter({ onOffline: value, onChange }: Props) {
         : (value ?? []).filter((f) => f !== property);
 
       return {
-        on_offline: newFilters.length > 0 ? newFilters : null,
+        on_offline: newFilters.length > 0 ? newFilters : undefined,
       };
     });
   }
