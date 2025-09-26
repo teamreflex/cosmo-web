@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useSuspenseQueries } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { Error } from "@/components/error-boundary";
 import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -30,14 +30,14 @@ export const Route = createFileRoute("/")({
   validateSearch: objektIndexFrontendSchema,
   loaderDeps: ({ search }) => ({ searchParams: search }),
   loader: async ({ context, deps }) => {
-    // prefetch background data
+    // prefetch filter data
     context.queryClient.prefetchQuery(filterDataQuery);
-    context.queryClient.prefetchQuery(artistsQuery);
 
-    // get selected artists from cookies
-    const selected = await context.queryClient.ensureQueryData(
-      selectedArtistsQuery
-    );
+    // load quick required data
+    const [selected, artists] = await Promise.all([
+      context.queryClient.ensureQueryData(selectedArtistsQuery),
+      context.queryClient.ensureQueryData(artistsQuery),
+    ]);
 
     // prefetch objekts
     const searchTerm = deps.searchParams.search ?? "";
@@ -53,20 +53,21 @@ export const Route = createFileRoute("/")({
       );
     }
 
-    // fetch required data
+    // fetch slower required data
     await context.queryClient.ensureQueryData(currentAccountQuery);
+
+    return { artists, selected };
   },
 });
 
 function RouteComponent() {
-  const [account, artists, selected] = useSuspenseQueries({
-    queries: [currentAccountQuery, artistsQuery, selectedArtistsQuery],
-  });
+  const { artists, selected } = Route.useLoaderData();
+  const account = useSuspenseQuery(currentAccountQuery);
 
   return (
     <main className="container flex flex-col py-2">
       <UserStateProvider user={account.data?.user} cosmo={account.data?.cosmo}>
-        <ArtistProvider artists={artists.data} selected={selected.data}>
+        <ArtistProvider artists={artists} selected={selected}>
           <ProfileProvider objektLists={account.data?.objektLists ?? []}>
             <IndexRenderer objektLists={account.data?.objektLists ?? []} />
           </ProfileProvider>

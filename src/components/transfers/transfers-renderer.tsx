@@ -4,7 +4,8 @@ import {
 } from "@tanstack/react-query";
 import { ErrorBoundary } from "react-error-boundary";
 import { HeartCrack, RefreshCcw } from "lucide-react";
-import { Suspense, useCallback, useState } from "react";
+import { Suspense, useCallback } from "react";
+import { getRouteApi } from "@tanstack/react-router";
 import { Skeleton } from "../ui/skeleton";
 import { Button } from "../ui/button";
 import Portal from "../portal";
@@ -15,19 +16,28 @@ import SkeletonGradient from "../skeleton/skeleton-overlay";
 import { TransfersFilters } from "../collection/filter-contexts/transfers-filters";
 import TransferRow from "./transfer-row";
 import type { ValidArtist } from "@/lib/universal/cosmo/common";
-import type { TransferType } from "@/lib/universal/transfers";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
-import type { CosmoFilters } from "@/hooks/use-cosmo-filters";
-import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
+import type { TransferFilters } from "@/hooks/use-transfer-filters";
+import type { TransferType } from "@/lib/universal/transfers";
 import { transfersQuery } from "@/lib/queries/objekt-queries";
+import { useTransferFilters } from "@/hooks/use-transfer-filters";
+
+const route = getRouteApi("/(profile)/@{$username}/trades");
 
 type Props = {
   cosmo: PublicCosmo;
 };
 
 export default function TransfersRenderer({ cosmo }: Props) {
-  const { filters, setFilters } = useCosmoFilters();
-  const [type, setType] = useState<TransferType>("all");
+  const { filters, setFilters } = useTransferFilters();
+  const type = filters.type ?? "all";
+
+  function setType(value: TransferType) {
+    setFilters((prev) => ({
+      ...prev,
+      type: value,
+    }));
+  }
 
   const setActiveMember = useCallback(
     (member: string) => {
@@ -79,11 +89,7 @@ export default function TransfersRenderer({ cosmo }: Props) {
               )}
             >
               <Suspense fallback={<TransfersSkeleton />}>
-                <Transfers
-                  address={cosmo.address}
-                  filters={filters}
-                  type={type}
-                />
+                <Transfers address={cosmo.address} filters={filters} />
               </Suspense>
             </ErrorBoundary>
           )}
@@ -95,13 +101,13 @@ export default function TransfersRenderer({ cosmo }: Props) {
 
 type TransfersProps = {
   address: string;
-  filters: CosmoFilters;
-  type: TransferType;
+  filters: TransferFilters;
 };
 
-function Transfers({ address, filters, type }: TransfersProps) {
+function Transfers({ address, filters }: TransfersProps) {
+  const { selected } = route.useLoaderData();
   const query = useSuspenseInfiniteQuery(
-    transfersQuery(address, filters, type)
+    transfersQuery(address, filters, selected)
   );
 
   const rows = query.data.pages

@@ -17,7 +17,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import Navbar from "@/components/navbar/navbar";
 import TailwindIndicator from "@/components/tailwind-indicator";
 import { env } from "@/lib/env/client";
-import { currentAccountQuery, filterDataQuery } from "@/lib/queries/core";
+import { currentAccountQuery } from "@/lib/queries/core";
 import { systemStatusQuery } from "@/lib/server/system";
 import { Button } from "@/components/ui/button";
 
@@ -81,7 +81,6 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   notFoundComponent: NotFoundComponent,
   errorComponent: ErrorComponent,
   loader({ context }) {
-    context.queryClient.prefetchQuery(filterDataQuery);
     context.queryClient.prefetchQuery(currentAccountQuery);
     context.queryClient.prefetchQuery(systemStatusQuery);
   },

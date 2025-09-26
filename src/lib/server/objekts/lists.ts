@@ -1,8 +1,10 @@
 import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
 import z from "zod";
+import { redirect } from "@tanstack/react-router";
 import { db } from "../db";
 import { dbi } from "../db/interactive";
 import { objektListEntries, objektLists } from "../db/schema";
+import { sanitizeUuid } from "@/lib/utils";
 
 /**
  * Fetch a single objekt list.
@@ -16,6 +18,40 @@ export const fetchObjektList = createServerFn({ method: "GET" })
   )
   .handler(async ({ data }) => {
     return await db.query.objektLists.findFirst({ where: data });
+  });
+
+/**
+ * Fetch a single objekt list with the user.
+ */
+export const getObjektListWithUser = createServerFn({ method: "GET" })
+  .inputValidator(z.object({ id: z.string() }))
+  .handler(async ({ data }) => {
+    const sanitized = sanitizeUuid(data.id);
+    if (!sanitized) {
+      return undefined;
+    }
+
+    if (data.id !== sanitized) {
+      throw redirect({ to: "/list/$id", params: { id: sanitized } });
+    }
+
+    return await db.query.objektLists.findFirst({
+      where: { id: sanitized },
+      with: {
+        user: {
+          columns: {
+            id: true,
+          },
+          with: {
+            cosmoAccount: {
+              columns: {
+                username: true,
+              },
+            },
+          },
+        },
+      },
+    });
   });
 
 /**

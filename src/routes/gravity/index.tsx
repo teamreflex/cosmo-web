@@ -49,11 +49,11 @@ export const Route = createFileRoute("/gravity/")({
 });
 
 function RouteComponent() {
+  const { artists, selected, toRender } = Route.useLoaderData();
   const { data: gravities } = useSuspenseQuery({
     ...gravitiesIndexQuery,
     queryFn: useServerFn(fetchGravities),
   });
-  const { artists, selected, toRender } = Route.useLoaderData();
 
   return (
     <ArtistProvider artists={artists} selected={selected}>

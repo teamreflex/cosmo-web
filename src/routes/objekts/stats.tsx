@@ -32,8 +32,8 @@ export const Route = createFileRoute("/objekts/stats")({
 });
 
 function RouteComponent() {
-  const { data: stats } = useSuspenseQuery(objektStatsQuery);
   const { artists, selected } = Route.useLoaderData();
+  const { data } = useSuspenseQuery(objektStatsQuery);
 
   return (
     <main className="container flex flex-col py-2">
@@ -57,7 +57,7 @@ function RouteComponent() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {stats.totalCount.toLocaleString()}
+                {data.totalCount.toLocaleString()}
               </div>
               <p className="text-xs text-muted-foreground">
                 Total objekts minted in last 24 hours
@@ -73,7 +73,7 @@ function RouteComponent() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {stats.scannedCount.toLocaleString()}
+                {data.scannedCount.toLocaleString()}
               </div>
               <p className="text-xs text-muted-foreground">
                 Objekts scanned in last 24 hours
@@ -89,7 +89,7 @@ function RouteComponent() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {stats.premierCount.toLocaleString()}
+                {data.premierCount.toLocaleString()}
               </div>
               <p className="text-xs text-muted-foreground">
                 Premier class objekts minted in last 24 hours (digital)
@@ -108,7 +108,7 @@ function RouteComponent() {
 
             <Card>
               <CardContent className="pl-0 pt-6">
-                <ArtistChart artists={artists} data={stats.artistBreakdown} />
+                <ArtistChart artists={artists} data={data.artistBreakdown} />
               </CardContent>
             </Card>
           </div>
@@ -117,7 +117,7 @@ function RouteComponent() {
           <MemberBreakdown
             selectedArtists={selected}
             artists={artists}
-            data={stats.memberBreakdown}
+            data={data.memberBreakdown}
           />
         </div>
       </div>
