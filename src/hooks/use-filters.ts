@@ -39,7 +39,7 @@ export function useFilters(opts?: DefaultOptions) {
         }),
       });
     },
-    [searchParams]
+    [searchParams],
   );
 
   function reset() {

@@ -36,10 +36,14 @@ export default function TopVotes(props: Props) {
 
 type RowProps = {
   vote: RevealedVote;
-  candidate: PollSelectedContentImage;
+  candidate: PollSelectedContentImage | undefined;
 };
 
 function Row(props: RowProps) {
+  if (!props.candidate) {
+    return null;
+  }
+
   const nickname = props.vote.username ?? props.vote.voter.substring(0, 8);
 
   return (

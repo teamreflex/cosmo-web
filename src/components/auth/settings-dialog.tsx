@@ -66,7 +66,7 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
         onError() {
           toast.error("Error updating settings.");
         },
-      }
+      },
     );
   }
 

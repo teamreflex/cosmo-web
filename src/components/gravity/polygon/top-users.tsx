@@ -29,7 +29,12 @@ export default function TopUsers(props: Props) {
     const voteMap = new Map<string, AggregatedVotes>();
     for (const vote of props.votes) {
       const address = vote.voter.toLowerCase();
-      const candidate = props.candidates[vote.candidateId].content;
+      const candidate = props.candidates[vote.candidateId];
+      if (!candidate) {
+        continue;
+      }
+
+      const content = candidate.content;
       const nickname = vote.username ?? address.substring(0, 8);
 
       let aggregated = voteMap.get(address);
@@ -47,13 +52,13 @@ export default function TopUsers(props: Props) {
         aggregated.candidates[vote.candidateId] = {
           comoAmount: 0,
           id: vote.candidateId,
-          title: candidate.title,
-          imageUrl: candidate.imageUrl,
+          title: content.title,
+          imageUrl: content.imageUrl,
         };
       }
 
       aggregated.total += vote.comoAmount;
-      aggregated.candidates[vote.candidateId].comoAmount += vote.comoAmount;
+      aggregated.candidates[vote.candidateId]!.comoAmount += vote.comoAmount;
     }
 
     // 2. use a min-heap to find top 25 users efficiently
@@ -69,7 +74,10 @@ export default function TopUsers(props: Props) {
       if (topUsersHeap.length < heapSize) {
         topUsersHeap.push(user);
         maintainHeap();
-      } else if (user.total > topUsersHeap[0].total) {
+      } else if (
+        topUsersHeap[0] !== undefined &&
+        user.total > topUsersHeap[0].total
+      ) {
         // compare with min element
         topUsersHeap[0] = user;
         maintainHeap();
@@ -112,7 +120,7 @@ type RowProps = {
 function Row({ user }: RowProps) {
   const nickname = user.nickname ?? user.address.substring(0, 8);
   const candidates = Object.values(user.candidates).sort(
-    (a, b) => b.comoAmount - a.comoAmount
+    (a, b) => b.comoAmount - a.comoAmount,
   );
 
   return (

@@ -1,6 +1,6 @@
 import { useErrorBoundary } from "react-error-boundary";
-import { Button } from "../../ui/button";
 import { RefreshCcw } from "lucide-react";
+import { Button } from "../../ui/button";
 import { ProgressSectionSkeleton } from "./progress-section";
 
 export function ProgressChartsSkeleton() {

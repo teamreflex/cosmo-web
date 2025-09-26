@@ -8,7 +8,7 @@ import { useUserState } from "./use-user-state";
 export function useAuthenticated() {
   const { cosmo } = useUserState();
   const target = useProfileContext(
-    useShallow((state) => state.target?.cosmo?.address)
+    useShallow((state) => state.target?.cosmo?.address),
   );
 
   return (

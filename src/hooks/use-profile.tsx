@@ -94,7 +94,7 @@ export function useProfileContext<T>(selector: (state: ProfileState) => T): T {
  */
 export function useLockedObjekt(tokenId: number) {
   return useProfileContext(
-    useShallow((state) => state.lockedObjekts.includes(tokenId))
+    useShallow((state) => state.lockedObjekts.includes(tokenId)),
   );
 }
 
@@ -105,7 +105,7 @@ export function usePinnedObjekt(tokenId: number) {
   return useProfileContext(
     useShallow(
       (state) =>
-        state.pins.findIndex((p) => Number(p.tokenId) === tokenId) !== -1
-    )
+        state.pins.findIndex((p) => Number(p.tokenId) === tokenId) !== -1,
+    ),
   );
 }

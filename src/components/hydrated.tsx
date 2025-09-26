@@ -11,7 +11,7 @@ export default function Hydrated({ children, fallback }: Props) {
   const isServer = useSyncExternalStore(
     subscriber,
     () => false,
-    () => true
+    () => true,
   );
 
   return isServer ? fallback : children;

@@ -3,10 +3,10 @@ import type { Props as AbstractProps } from "@/components/gravity/abstract/gravi
 import type { Props as PolygonProps } from "@/components/gravity/polygon/gravity-live-chart";
 
 const AbstractLiveChart = lazy(
-  () => import("@/components/gravity/abstract/gravity-live-chart")
+  () => import("@/components/gravity/abstract/gravity-live-chart"),
 );
 const PolygonLiveChart = lazy(
-  () => import("@/components/gravity/polygon/gravity-live-chart")
+  () => import("@/components/gravity/polygon/gravity-live-chart"),
 );
 
 type Props =

@@ -44,7 +44,7 @@ export default function CollectionFilter(props: Props) {
           aria-expanded={open}
           className={cn(
             "flex gap-2 items-center",
-            (props.collections?.length ?? 0) > 0 && "border-cosmo"
+            (props.collections?.length ?? 0) > 0 && "border-cosmo",
           )}
         >
           <span>Collections</span>
@@ -70,7 +70,7 @@ export default function CollectionFilter(props: Props) {
                       "ml-auto",
                       props.collections?.includes(collection)
                         ? "opacity-100"
-                        : "opacity-0"
+                        : "opacity-0",
                     )}
                   />
                 </CommandItem>

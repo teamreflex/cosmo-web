@@ -24,7 +24,7 @@ export default function ProgressRenderer(props: Props) {
         member: prev.member === member ? undefined : member,
       }));
     },
-    [setFilters]
+    [setFilters],
   );
 
   const setActiveArtist = useCallback(
@@ -34,7 +34,7 @@ export default function ProgressRenderer(props: Props) {
         artist: prev.artist === artist ? undefined : (artist as ValidArtist),
       }));
     },
-    [setFilters]
+    [setFilters],
   );
 
   return (

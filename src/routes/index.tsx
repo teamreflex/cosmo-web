@@ -21,13 +21,10 @@ import {
 } from "@/lib/queries/objekt-queries";
 
 export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [seoTitle("Objekts")],
-  }),
+  validateSearch: objektIndexFrontendSchema,
   component: RouteComponent,
   errorComponent: ErrorComponent,
   pendingComponent: PendingComponent,
-  validateSearch: objektIndexFrontendSchema,
   loaderDeps: ({ search }) => ({ searchParams: search }),
   loader: async ({ context, deps }) => {
     // prefetch filter data
@@ -44,12 +41,12 @@ export const Route = createFileRoute("/")({
     if (searchTerm) {
       // prefetch typesense
       context.queryClient.prefetchInfiniteQuery(
-        objektIndexTypesenseQuery(deps.searchParams, selected)
+        objektIndexTypesenseQuery(deps.searchParams, selected),
       );
     } else {
       // prefetch blockchain
       context.queryClient.prefetchInfiniteQuery(
-        objektIndexBlockchainQuery(deps.searchParams, selected)
+        objektIndexBlockchainQuery(deps.searchParams, selected),
       );
     }
 
@@ -58,6 +55,9 @@ export const Route = createFileRoute("/")({
 
     return { artists };
   },
+  head: () => ({
+    meta: [seoTitle("Objekts")],
+  }),
 });
 
 function RouteComponent() {

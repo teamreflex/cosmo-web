@@ -1,15 +1,5 @@
 import { motion } from "motion/react";
 import { ChevronDown } from "lucide-react";
-import { cn } from "@/lib/utils";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardAction,
-  CardContent,
-  CardFooter,
-} from "./card";
 import {
   createContext,
   useCallback,
@@ -17,9 +7,18 @@ import {
   useEffect,
   useRef,
   useState,
-  type ComponentProps,
-  type RefObject,
 } from "react";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "./card";
+import type { ComponentProps, RefObject } from "react";
+import { cn } from "@/lib/utils";
 
 interface ExpandableCardProps extends ComponentProps<typeof Card> {}
 interface ExpandableCardContentProps
@@ -34,14 +33,14 @@ interface ExpandableCardContextType {
 }
 
 const ExpandableCardContext = createContext<ExpandableCardContextType | null>(
-  null
+  null,
 );
 
 function useExpandableCard() {
   const context = useContext(ExpandableCardContext);
   if (!context) {
     throw new Error(
-      "ExpandableCard components must be used within ExpandableCard"
+      "ExpandableCard components must be used within ExpandableCard",
     );
   }
   return context;
@@ -131,7 +130,7 @@ function ExpandableCardTitle(props: ComponentProps<typeof CardTitle>) {
 }
 
 function ExpandableCardDescription(
-  props: ComponentProps<typeof CardDescription>
+  props: ComponentProps<typeof CardDescription>,
 ) {
   return <CardDescription {...props} />;
 }
@@ -187,7 +186,7 @@ function ExpandableCardContent({
             data-expanded={isExpanded}
             onClick={toggleExpanded}
             className={cn(
-              "group flex items-center gap-2 text-xs text-background dark:text-foreground focus:outline-none w-full justify-center"
+              "group flex items-center gap-2 text-xs text-background dark:text-foreground focus:outline-none w-full justify-center",
             )}
           >
             <ChevronDown className="size-4 transition-transform group-data-[expanded=true]:rotate-180" />

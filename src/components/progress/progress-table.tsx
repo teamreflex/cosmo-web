@@ -36,24 +36,27 @@ export default function ProgressTable(props: Props) {
    */
   const items = progressQuery.data
     .filter((progress) => progress.total > 0)
-    .reduce((acc, progress) => {
-      if (!acc[progress.season]) {
-        acc[progress.season] = [];
-      }
+    .reduce(
+      (acc, progress) => {
+        if (!acc[progress.season]) {
+          acc[progress.season] = [];
+        }
 
-      // apply filter
-      if (progress.type === "combined" && props.onlineType === undefined) {
-        acc[progress.season]?.push(progress);
-      } else if (progress.type === props.onlineType) {
-        acc[progress.season]?.push(progress);
-      }
+        // apply filter
+        if (progress.type === "combined" && props.onlineType === undefined) {
+          acc[progress.season]?.push(progress);
+        } else if (progress.type === props.onlineType) {
+          acc[progress.season]?.push(progress);
+        }
 
-      return acc;
-    }, {} as Record<string, SeasonProgress[]>);
+        return acc;
+      },
+      {} as Record<string, SeasonProgress[]>,
+    );
 
   // filter out any seasons that have no class/online type combinations
   const seasons = Object.entries(items).filter(
-    ([_, classes]) => classes.length > 0
+    ([_, classes]) => classes.length > 0,
   );
 
   // calculate total progress
@@ -61,12 +64,12 @@ export default function ProgressTable(props: Props) {
   let { progress, total, unobtainable } = Object.values(items)
     .flat()
     .reduce(
-      (acc, progress) => ({
-        progress: acc.progress + progress.progress,
-        total: acc.total + progress.total,
-        unobtainable: acc.unobtainable + progress.unobtainable,
+      (acc, p) => ({
+        progress: acc.progress + p.progress,
+        total: acc.total + p.total,
+        unobtainable: acc.unobtainable + p.unobtainable,
       }),
-      { progress: 0, total: 0, unobtainable: 0 }
+      { progress: 0, total: 0, unobtainable: 0 },
     );
 
   // if the user has 100%, add their unobtainables in

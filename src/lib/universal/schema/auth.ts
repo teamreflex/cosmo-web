@@ -1,5 +1,5 @@
-import { collectionDataSources } from "@/lib/utils";
 import { z } from "zod";
+import { collectionDataSources } from "@/lib/utils";
 
 const emailSchema = z.string().email("Invalid email address");
 const passwordSchema = z

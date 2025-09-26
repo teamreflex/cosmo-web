@@ -13,7 +13,7 @@ export const Route = createFileRoute("/api/user/by-address/$address/stats")({
         if (authKey !== env.AUTH_KEY) {
           return Response.json(
             { error: "invalid authorization" },
-            { status: 401 }
+            { status: 401 },
           );
         }
 

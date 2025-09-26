@@ -22,7 +22,7 @@ import { normalizeFilters } from "@/lib/universal/parsers";
  */
 export function objektIndexTypesenseQuery(
   searchParams: z.infer<typeof objektIndexFrontendSchema>,
-  selectedArtists: string[]
+  selectedArtists: string[],
 ) {
   return infiniteQueryOptions({
     queryKey: [
@@ -59,7 +59,7 @@ export function objektIndexTypesenseQuery(
  */
 export function objektIndexBlockchainQuery(
   searchParams: z.infer<typeof objektIndexFrontendSchema>,
-  selectedArtists: string[]
+  selectedArtists: string[],
 ) {
   return infiniteQueryOptions({
     queryKey: [
@@ -94,7 +94,7 @@ export function objektIndexBlockchainQuery(
 export function userCollectionBlockchainGroupsQuery(
   address: string,
   searchParams: z.infer<typeof userCollectionFrontendSchema>,
-  selectedArtists: string[]
+  selectedArtists: string[],
 ) {
   return infiniteQueryOptions({
     queryKey: [
@@ -132,7 +132,7 @@ export function userCollectionBlockchainGroupsQuery(
 export function userCollectionBlockchainQuery(
   address: string,
   searchParams: z.infer<typeof userCollectionFrontendSchema>,
-  selectedArtists: string[]
+  selectedArtists: string[],
 ) {
   return infiniteQueryOptions({
     queryKey: [
@@ -167,7 +167,7 @@ export function userCollectionBlockchainQuery(
 export function objektListQuery(
   objektListId: string,
   searchParams: z.infer<typeof objektListFrontendSchema>,
-  selectedArtists: string[]
+  selectedArtists: string[],
 ) {
   return infiniteQueryOptions({
     queryKey: [
@@ -201,7 +201,7 @@ export function objektListQuery(
 export function transfersQuery(
   address: string,
   searchParams: z.infer<typeof transfersFrontendSchema>,
-  selectedArtists: string[]
+  selectedArtists: string[],
 ) {
   return infiniteQueryOptions({
     queryKey: [

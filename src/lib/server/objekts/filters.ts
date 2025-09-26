@@ -32,7 +32,7 @@ export function withCollectionSort<T extends PgSelect>(qb: T, sort: ValidSort) {
  */
 export function withObjektIndexSort<T extends PgSelect>(
   qb: T,
-  sort: ValidSort
+  sort: ValidSort,
 ) {
   switch (sort) {
     case "newest":
@@ -112,7 +112,7 @@ export function withSelectedArtists(artists: string[] | undefined | null) {
     ? [
         inArray(
           collections.artist,
-          artists.map((a) => a.toLowerCase())
+          artists.map((a) => a.toLowerCase()),
         ),
       ]
     : [];

@@ -3,7 +3,7 @@ import { fetchProgressBreakdown } from "@/lib/server/progress";
 import { cacheHeaders } from "@/lib/server/cache";
 
 export const Route = createFileRoute(
-  "/api/progress/breakdown/$member/$address"
+  "/api/progress/breakdown/$member/$address",
 )({
   server: {
     handlers: {

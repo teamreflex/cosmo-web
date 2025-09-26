@@ -8,738 +8,738 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root'
-import { Route as TermsPrivacyRouteImport } from './routes/terms-privacy'
-import { Route as AdminRouteRouteImport } from './routes/admin/route'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as GravityIndexRouteImport } from './routes/gravity/index'
-import { Route as ObjektsStatsRouteImport } from './routes/objekts/stats'
-import { Route as ListIdRouteImport } from './routes/list/$id'
-import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
-import { Route as ApiFilterDataRouteImport } from './routes/api/filter-data'
-import { Route as AdminMetadataRouteImport } from './routes/admin/metadata'
-import { Route as AdminBandsRouteImport } from './routes/admin/bands'
-import { Route as profileAtChar123usernameChar125RouteImport } from './routes/(profile)/@{$username}'
-import { Route as profileAtChar123usernameChar125IndexRouteImport } from './routes/(profile)/@{$username}.index'
-import { Route as GravityArtistIdRouteImport } from './routes/gravity/$artist/$id'
-import { Route as ApiUserByAddressesRouteImport } from './routes/api/user/by-addresses'
-import { Route as ApiCronObjektStatsRouteImport } from './routes/api/cron.objekt-stats'
-import { Route as ApiCronGravityRouteImport } from './routes/api/cron.gravity'
-import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
-import { Route as profileAtChar123usernameChar125TradesRouteImport } from './routes/(profile)/@{$username}.trades'
-import { Route as profileAtChar123usernameChar125ProgressRouteImport } from './routes/(profile)/@{$username}.progress'
-import { Route as profileAtChar123usernameChar125ComoRouteImport } from './routes/(profile)/@{$username}.como'
-import { Route as ApiProgressLeaderboardMemberRouteImport } from './routes/api/progress/leaderboard.$member'
-import { Route as ApiObjektsBySlugSlugRouteImport } from './routes/api/objekts/by-slug.$slug'
-import { Route as ApiObjektListForUserIdentifierRouteImport } from './routes/api/objekt-list/for-user.$identifier'
-import { Route as ApiGravityPollIdVotesRouteImport } from './routes/api/gravity/$pollId.votes'
-import { Route as ApiCosmoQrAuthTicketRouteImport } from './routes/api/cosmo/qr-auth/ticket'
-import { Route as ApiCosmoQrAuthRecaptchaRouteImport } from './routes/api/cosmo/qr-auth/recaptcha'
-import { Route as profileAtChar123usernameChar125ListSlugRouteImport } from './routes/(profile)/@{$username}.list.$slug'
-import { Route as ApiUserByAddressAddressIndexRouteImport } from './routes/api/user/by-address/$address/index'
-import { Route as ApiObjektsMetadataSlugIndexRouteImport } from './routes/api/objekts/metadata/$slug/index'
-import { Route as ApiUserByAddressAddressStatsRouteImport } from './routes/api/user/by-address/$address/stats'
-import { Route as ApiUserByAddressAddressComoRouteImport } from './routes/api/user/by-address/$address/como'
-import { Route as ApiProgressBreakdownMemberAddressRouteImport } from './routes/api/progress/breakdown.$member.$address'
-import { Route as ApiObjektsMetadataSlugSerialRouteImport } from './routes/api/objekts/metadata/$slug/$serial'
-import { Route as ApiBffV3UsersSearchRouteImport } from './routes/api/bff/v3/users/search'
+import { Route as rootRouteImport } from "./routes/__root";
+import { Route as TermsPrivacyRouteImport } from "./routes/terms-privacy";
+import { Route as AdminRouteRouteImport } from "./routes/admin/route";
+import { Route as IndexRouteImport } from "./routes/index";
+import { Route as GravityIndexRouteImport } from "./routes/gravity/index";
+import { Route as ObjektsStatsRouteImport } from "./routes/objekts/stats";
+import { Route as ListIdRouteImport } from "./routes/list/$id";
+import { Route as AuthResetPasswordRouteImport } from "./routes/auth/reset-password";
+import { Route as ApiFilterDataRouteImport } from "./routes/api/filter-data";
+import { Route as AdminMetadataRouteImport } from "./routes/admin/metadata";
+import { Route as AdminBandsRouteImport } from "./routes/admin/bands";
+import { Route as profileAtChar123usernameChar125RouteImport } from "./routes/(profile)/@{$username}";
+import { Route as profileAtChar123usernameChar125IndexRouteImport } from "./routes/(profile)/@{$username}.index";
+import { Route as GravityArtistIdRouteImport } from "./routes/gravity/$artist/$id";
+import { Route as ApiUserByAddressesRouteImport } from "./routes/api/user/by-addresses";
+import { Route as ApiCronObjektStatsRouteImport } from "./routes/api/cron.objekt-stats";
+import { Route as ApiCronGravityRouteImport } from "./routes/api/cron.gravity";
+import { Route as ApiAuthSplatRouteImport } from "./routes/api/auth/$";
+import { Route as profileAtChar123usernameChar125TradesRouteImport } from "./routes/(profile)/@{$username}.trades";
+import { Route as profileAtChar123usernameChar125ProgressRouteImport } from "./routes/(profile)/@{$username}.progress";
+import { Route as profileAtChar123usernameChar125ComoRouteImport } from "./routes/(profile)/@{$username}.como";
+import { Route as ApiProgressLeaderboardMemberRouteImport } from "./routes/api/progress/leaderboard.$member";
+import { Route as ApiObjektsBySlugSlugRouteImport } from "./routes/api/objekts/by-slug.$slug";
+import { Route as ApiObjektListForUserIdentifierRouteImport } from "./routes/api/objekt-list/for-user.$identifier";
+import { Route as ApiGravityPollIdVotesRouteImport } from "./routes/api/gravity/$pollId.votes";
+import { Route as ApiCosmoQrAuthTicketRouteImport } from "./routes/api/cosmo/qr-auth/ticket";
+import { Route as ApiCosmoQrAuthRecaptchaRouteImport } from "./routes/api/cosmo/qr-auth/recaptcha";
+import { Route as profileAtChar123usernameChar125ListSlugRouteImport } from "./routes/(profile)/@{$username}.list.$slug";
+import { Route as ApiUserByAddressAddressIndexRouteImport } from "./routes/api/user/by-address/$address/index";
+import { Route as ApiObjektsMetadataSlugIndexRouteImport } from "./routes/api/objekts/metadata/$slug/index";
+import { Route as ApiUserByAddressAddressStatsRouteImport } from "./routes/api/user/by-address/$address/stats";
+import { Route as ApiUserByAddressAddressComoRouteImport } from "./routes/api/user/by-address/$address/como";
+import { Route as ApiProgressBreakdownMemberAddressRouteImport } from "./routes/api/progress/breakdown.$member.$address";
+import { Route as ApiObjektsMetadataSlugSerialRouteImport } from "./routes/api/objekts/metadata/$slug/$serial";
+import { Route as ApiBffV3UsersSearchRouteImport } from "./routes/api/bff/v3/users/search";
 
 const TermsPrivacyRoute = TermsPrivacyRouteImport.update({
-  id: '/terms-privacy',
-  path: '/terms-privacy',
+  id: "/terms-privacy",
+  path: "/terms-privacy",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const AdminRouteRoute = AdminRouteRouteImport.update({
-  id: '/admin',
-  path: '/admin',
+  id: "/admin",
+  path: "/admin",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+  id: "/",
+  path: "/",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const GravityIndexRoute = GravityIndexRouteImport.update({
-  id: '/gravity/',
-  path: '/gravity/',
+  id: "/gravity/",
+  path: "/gravity/",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const ObjektsStatsRoute = ObjektsStatsRouteImport.update({
-  id: '/objekts/stats',
-  path: '/objekts/stats',
+  id: "/objekts/stats",
+  path: "/objekts/stats",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const ListIdRoute = ListIdRouteImport.update({
-  id: '/list/$id',
-  path: '/list/$id',
+  id: "/list/$id",
+  path: "/list/$id",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
-  id: '/auth/reset-password',
-  path: '/auth/reset-password',
+  id: "/auth/reset-password",
+  path: "/auth/reset-password",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const ApiFilterDataRoute = ApiFilterDataRouteImport.update({
-  id: '/api/filter-data',
-  path: '/api/filter-data',
+  id: "/api/filter-data",
+  path: "/api/filter-data",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const AdminMetadataRoute = AdminMetadataRouteImport.update({
-  id: '/metadata',
-  path: '/metadata',
+  id: "/metadata",
+  path: "/metadata",
   getParentRoute: () => AdminRouteRoute,
-} as any)
+} as any);
 const AdminBandsRoute = AdminBandsRouteImport.update({
-  id: '/bands',
-  path: '/bands',
+  id: "/bands",
+  path: "/bands",
   getParentRoute: () => AdminRouteRoute,
-} as any)
+} as any);
 const profileAtChar123usernameChar125Route =
   profileAtChar123usernameChar125RouteImport.update({
-    id: '/(profile)/@{$username}',
-    path: '/@{$username}',
+    id: "/(profile)/@{$username}",
+    path: "/@{$username}",
     getParentRoute: () => rootRouteImport,
-  } as any)
+  } as any);
 const profileAtChar123usernameChar125IndexRoute =
   profileAtChar123usernameChar125IndexRouteImport.update({
-    id: '/',
-    path: '/',
+    id: "/",
+    path: "/",
     getParentRoute: () => profileAtChar123usernameChar125Route,
-  } as any)
+  } as any);
 const GravityArtistIdRoute = GravityArtistIdRouteImport.update({
-  id: '/gravity/$artist/$id',
-  path: '/gravity/$artist/$id',
+  id: "/gravity/$artist/$id",
+  path: "/gravity/$artist/$id",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const ApiUserByAddressesRoute = ApiUserByAddressesRouteImport.update({
-  id: '/api/user/by-addresses',
-  path: '/api/user/by-addresses',
+  id: "/api/user/by-addresses",
+  path: "/api/user/by-addresses",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const ApiCronObjektStatsRoute = ApiCronObjektStatsRouteImport.update({
-  id: '/api/cron/objekt-stats',
-  path: '/api/cron/objekt-stats',
+  id: "/api/cron/objekt-stats",
+  path: "/api/cron/objekt-stats",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const ApiCronGravityRoute = ApiCronGravityRouteImport.update({
-  id: '/api/cron/gravity',
-  path: '/api/cron/gravity',
+  id: "/api/cron/gravity",
+  path: "/api/cron/gravity",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
-  id: '/api/auth/$',
-  path: '/api/auth/$',
+  id: "/api/auth/$",
+  path: "/api/auth/$",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const profileAtChar123usernameChar125TradesRoute =
   profileAtChar123usernameChar125TradesRouteImport.update({
-    id: '/trades',
-    path: '/trades',
+    id: "/trades",
+    path: "/trades",
     getParentRoute: () => profileAtChar123usernameChar125Route,
-  } as any)
+  } as any);
 const profileAtChar123usernameChar125ProgressRoute =
   profileAtChar123usernameChar125ProgressRouteImport.update({
-    id: '/progress',
-    path: '/progress',
+    id: "/progress",
+    path: "/progress",
     getParentRoute: () => profileAtChar123usernameChar125Route,
-  } as any)
+  } as any);
 const profileAtChar123usernameChar125ComoRoute =
   profileAtChar123usernameChar125ComoRouteImport.update({
-    id: '/como',
-    path: '/como',
+    id: "/como",
+    path: "/como",
     getParentRoute: () => profileAtChar123usernameChar125Route,
-  } as any)
+  } as any);
 const ApiProgressLeaderboardMemberRoute =
   ApiProgressLeaderboardMemberRouteImport.update({
-    id: '/api/progress/leaderboard/$member',
-    path: '/api/progress/leaderboard/$member',
+    id: "/api/progress/leaderboard/$member",
+    path: "/api/progress/leaderboard/$member",
     getParentRoute: () => rootRouteImport,
-  } as any)
+  } as any);
 const ApiObjektsBySlugSlugRoute = ApiObjektsBySlugSlugRouteImport.update({
-  id: '/api/objekts/by-slug/$slug',
-  path: '/api/objekts/by-slug/$slug',
+  id: "/api/objekts/by-slug/$slug",
+  path: "/api/objekts/by-slug/$slug",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const ApiObjektListForUserIdentifierRoute =
   ApiObjektListForUserIdentifierRouteImport.update({
-    id: '/api/objekt-list/for-user/$identifier',
-    path: '/api/objekt-list/for-user/$identifier',
+    id: "/api/objekt-list/for-user/$identifier",
+    path: "/api/objekt-list/for-user/$identifier",
     getParentRoute: () => rootRouteImport,
-  } as any)
+  } as any);
 const ApiGravityPollIdVotesRoute = ApiGravityPollIdVotesRouteImport.update({
-  id: '/api/gravity/$pollId/votes',
-  path: '/api/gravity/$pollId/votes',
+  id: "/api/gravity/$pollId/votes",
+  path: "/api/gravity/$pollId/votes",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const ApiCosmoQrAuthTicketRoute = ApiCosmoQrAuthTicketRouteImport.update({
-  id: '/api/cosmo/qr-auth/ticket',
-  path: '/api/cosmo/qr-auth/ticket',
+  id: "/api/cosmo/qr-auth/ticket",
+  path: "/api/cosmo/qr-auth/ticket",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const ApiCosmoQrAuthRecaptchaRoute = ApiCosmoQrAuthRecaptchaRouteImport.update({
-  id: '/api/cosmo/qr-auth/recaptcha',
-  path: '/api/cosmo/qr-auth/recaptcha',
+  id: "/api/cosmo/qr-auth/recaptcha",
+  path: "/api/cosmo/qr-auth/recaptcha",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const profileAtChar123usernameChar125ListSlugRoute =
   profileAtChar123usernameChar125ListSlugRouteImport.update({
-    id: '/list/$slug',
-    path: '/list/$slug',
+    id: "/list/$slug",
+    path: "/list/$slug",
     getParentRoute: () => profileAtChar123usernameChar125Route,
-  } as any)
+  } as any);
 const ApiUserByAddressAddressIndexRoute =
   ApiUserByAddressAddressIndexRouteImport.update({
-    id: '/api/user/by-address/$address/',
-    path: '/api/user/by-address/$address/',
+    id: "/api/user/by-address/$address/",
+    path: "/api/user/by-address/$address/",
     getParentRoute: () => rootRouteImport,
-  } as any)
+  } as any);
 const ApiObjektsMetadataSlugIndexRoute =
   ApiObjektsMetadataSlugIndexRouteImport.update({
-    id: '/api/objekts/metadata/$slug/',
-    path: '/api/objekts/metadata/$slug/',
+    id: "/api/objekts/metadata/$slug/",
+    path: "/api/objekts/metadata/$slug/",
     getParentRoute: () => rootRouteImport,
-  } as any)
+  } as any);
 const ApiUserByAddressAddressStatsRoute =
   ApiUserByAddressAddressStatsRouteImport.update({
-    id: '/api/user/by-address/$address/stats',
-    path: '/api/user/by-address/$address/stats',
+    id: "/api/user/by-address/$address/stats",
+    path: "/api/user/by-address/$address/stats",
     getParentRoute: () => rootRouteImport,
-  } as any)
+  } as any);
 const ApiUserByAddressAddressComoRoute =
   ApiUserByAddressAddressComoRouteImport.update({
-    id: '/api/user/by-address/$address/como',
-    path: '/api/user/by-address/$address/como',
+    id: "/api/user/by-address/$address/como",
+    path: "/api/user/by-address/$address/como",
     getParentRoute: () => rootRouteImport,
-  } as any)
+  } as any);
 const ApiProgressBreakdownMemberAddressRoute =
   ApiProgressBreakdownMemberAddressRouteImport.update({
-    id: '/api/progress/breakdown/$member/$address',
-    path: '/api/progress/breakdown/$member/$address',
+    id: "/api/progress/breakdown/$member/$address",
+    path: "/api/progress/breakdown/$member/$address",
     getParentRoute: () => rootRouteImport,
-  } as any)
+  } as any);
 const ApiObjektsMetadataSlugSerialRoute =
   ApiObjektsMetadataSlugSerialRouteImport.update({
-    id: '/api/objekts/metadata/$slug/$serial',
-    path: '/api/objekts/metadata/$slug/$serial',
+    id: "/api/objekts/metadata/$slug/$serial",
+    path: "/api/objekts/metadata/$slug/$serial",
     getParentRoute: () => rootRouteImport,
-  } as any)
+  } as any);
 const ApiBffV3UsersSearchRoute = ApiBffV3UsersSearchRouteImport.update({
-  id: '/api/bff/v3/users/search',
-  path: '/api/bff/v3/users/search',
+  id: "/api/bff/v3/users/search",
+  path: "/api/bff/v3/users/search",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/admin': typeof AdminRouteRouteWithChildren
-  '/terms-privacy': typeof TermsPrivacyRoute
-  '/@{$username}': typeof profileAtChar123usernameChar125RouteWithChildren
-  '/admin/bands': typeof AdminBandsRoute
-  '/admin/metadata': typeof AdminMetadataRoute
-  '/api/filter-data': typeof ApiFilterDataRoute
-  '/auth/reset-password': typeof AuthResetPasswordRoute
-  '/list/$id': typeof ListIdRoute
-  '/objekts/stats': typeof ObjektsStatsRoute
-  '/gravity': typeof GravityIndexRoute
-  '/@{$username}/como': typeof profileAtChar123usernameChar125ComoRoute
-  '/@{$username}/progress': typeof profileAtChar123usernameChar125ProgressRoute
-  '/@{$username}/trades': typeof profileAtChar123usernameChar125TradesRoute
-  '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/cron/gravity': typeof ApiCronGravityRoute
-  '/api/cron/objekt-stats': typeof ApiCronObjektStatsRoute
-  '/api/user/by-addresses': typeof ApiUserByAddressesRoute
-  '/gravity/$artist/$id': typeof GravityArtistIdRoute
-  '/@{$username}/': typeof profileAtChar123usernameChar125IndexRoute
-  '/@{$username}/list/$slug': typeof profileAtChar123usernameChar125ListSlugRoute
-  '/api/cosmo/qr-auth/recaptcha': typeof ApiCosmoQrAuthRecaptchaRoute
-  '/api/cosmo/qr-auth/ticket': typeof ApiCosmoQrAuthTicketRoute
-  '/api/gravity/$pollId/votes': typeof ApiGravityPollIdVotesRoute
-  '/api/objekt-list/for-user/$identifier': typeof ApiObjektListForUserIdentifierRoute
-  '/api/objekts/by-slug/$slug': typeof ApiObjektsBySlugSlugRoute
-  '/api/progress/leaderboard/$member': typeof ApiProgressLeaderboardMemberRoute
-  '/api/bff/v3/users/search': typeof ApiBffV3UsersSearchRoute
-  '/api/objekts/metadata/$slug/$serial': typeof ApiObjektsMetadataSlugSerialRoute
-  '/api/progress/breakdown/$member/$address': typeof ApiProgressBreakdownMemberAddressRoute
-  '/api/user/by-address/$address/como': typeof ApiUserByAddressAddressComoRoute
-  '/api/user/by-address/$address/stats': typeof ApiUserByAddressAddressStatsRoute
-  '/api/objekts/metadata/$slug': typeof ApiObjektsMetadataSlugIndexRoute
-  '/api/user/by-address/$address': typeof ApiUserByAddressAddressIndexRoute
+  "/": typeof IndexRoute;
+  "/admin": typeof AdminRouteRouteWithChildren;
+  "/terms-privacy": typeof TermsPrivacyRoute;
+  "/@{$username}": typeof profileAtChar123usernameChar125RouteWithChildren;
+  "/admin/bands": typeof AdminBandsRoute;
+  "/admin/metadata": typeof AdminMetadataRoute;
+  "/api/filter-data": typeof ApiFilterDataRoute;
+  "/auth/reset-password": typeof AuthResetPasswordRoute;
+  "/list/$id": typeof ListIdRoute;
+  "/objekts/stats": typeof ObjektsStatsRoute;
+  "/gravity": typeof GravityIndexRoute;
+  "/@{$username}/como": typeof profileAtChar123usernameChar125ComoRoute;
+  "/@{$username}/progress": typeof profileAtChar123usernameChar125ProgressRoute;
+  "/@{$username}/trades": typeof profileAtChar123usernameChar125TradesRoute;
+  "/api/auth/$": typeof ApiAuthSplatRoute;
+  "/api/cron/gravity": typeof ApiCronGravityRoute;
+  "/api/cron/objekt-stats": typeof ApiCronObjektStatsRoute;
+  "/api/user/by-addresses": typeof ApiUserByAddressesRoute;
+  "/gravity/$artist/$id": typeof GravityArtistIdRoute;
+  "/@{$username}/": typeof profileAtChar123usernameChar125IndexRoute;
+  "/@{$username}/list/$slug": typeof profileAtChar123usernameChar125ListSlugRoute;
+  "/api/cosmo/qr-auth/recaptcha": typeof ApiCosmoQrAuthRecaptchaRoute;
+  "/api/cosmo/qr-auth/ticket": typeof ApiCosmoQrAuthTicketRoute;
+  "/api/gravity/$pollId/votes": typeof ApiGravityPollIdVotesRoute;
+  "/api/objekt-list/for-user/$identifier": typeof ApiObjektListForUserIdentifierRoute;
+  "/api/objekts/by-slug/$slug": typeof ApiObjektsBySlugSlugRoute;
+  "/api/progress/leaderboard/$member": typeof ApiProgressLeaderboardMemberRoute;
+  "/api/bff/v3/users/search": typeof ApiBffV3UsersSearchRoute;
+  "/api/objekts/metadata/$slug/$serial": typeof ApiObjektsMetadataSlugSerialRoute;
+  "/api/progress/breakdown/$member/$address": typeof ApiProgressBreakdownMemberAddressRoute;
+  "/api/user/by-address/$address/como": typeof ApiUserByAddressAddressComoRoute;
+  "/api/user/by-address/$address/stats": typeof ApiUserByAddressAddressStatsRoute;
+  "/api/objekts/metadata/$slug": typeof ApiObjektsMetadataSlugIndexRoute;
+  "/api/user/by-address/$address": typeof ApiUserByAddressAddressIndexRoute;
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/admin': typeof AdminRouteRouteWithChildren
-  '/terms-privacy': typeof TermsPrivacyRoute
-  '/admin/bands': typeof AdminBandsRoute
-  '/admin/metadata': typeof AdminMetadataRoute
-  '/api/filter-data': typeof ApiFilterDataRoute
-  '/auth/reset-password': typeof AuthResetPasswordRoute
-  '/list/$id': typeof ListIdRoute
-  '/objekts/stats': typeof ObjektsStatsRoute
-  '/gravity': typeof GravityIndexRoute
-  '/@{$username}/como': typeof profileAtChar123usernameChar125ComoRoute
-  '/@{$username}/progress': typeof profileAtChar123usernameChar125ProgressRoute
-  '/@{$username}/trades': typeof profileAtChar123usernameChar125TradesRoute
-  '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/cron/gravity': typeof ApiCronGravityRoute
-  '/api/cron/objekt-stats': typeof ApiCronObjektStatsRoute
-  '/api/user/by-addresses': typeof ApiUserByAddressesRoute
-  '/gravity/$artist/$id': typeof GravityArtistIdRoute
-  '/@{$username}': typeof profileAtChar123usernameChar125IndexRoute
-  '/@{$username}/list/$slug': typeof profileAtChar123usernameChar125ListSlugRoute
-  '/api/cosmo/qr-auth/recaptcha': typeof ApiCosmoQrAuthRecaptchaRoute
-  '/api/cosmo/qr-auth/ticket': typeof ApiCosmoQrAuthTicketRoute
-  '/api/gravity/$pollId/votes': typeof ApiGravityPollIdVotesRoute
-  '/api/objekt-list/for-user/$identifier': typeof ApiObjektListForUserIdentifierRoute
-  '/api/objekts/by-slug/$slug': typeof ApiObjektsBySlugSlugRoute
-  '/api/progress/leaderboard/$member': typeof ApiProgressLeaderboardMemberRoute
-  '/api/bff/v3/users/search': typeof ApiBffV3UsersSearchRoute
-  '/api/objekts/metadata/$slug/$serial': typeof ApiObjektsMetadataSlugSerialRoute
-  '/api/progress/breakdown/$member/$address': typeof ApiProgressBreakdownMemberAddressRoute
-  '/api/user/by-address/$address/como': typeof ApiUserByAddressAddressComoRoute
-  '/api/user/by-address/$address/stats': typeof ApiUserByAddressAddressStatsRoute
-  '/api/objekts/metadata/$slug': typeof ApiObjektsMetadataSlugIndexRoute
-  '/api/user/by-address/$address': typeof ApiUserByAddressAddressIndexRoute
+  "/": typeof IndexRoute;
+  "/admin": typeof AdminRouteRouteWithChildren;
+  "/terms-privacy": typeof TermsPrivacyRoute;
+  "/admin/bands": typeof AdminBandsRoute;
+  "/admin/metadata": typeof AdminMetadataRoute;
+  "/api/filter-data": typeof ApiFilterDataRoute;
+  "/auth/reset-password": typeof AuthResetPasswordRoute;
+  "/list/$id": typeof ListIdRoute;
+  "/objekts/stats": typeof ObjektsStatsRoute;
+  "/gravity": typeof GravityIndexRoute;
+  "/@{$username}/como": typeof profileAtChar123usernameChar125ComoRoute;
+  "/@{$username}/progress": typeof profileAtChar123usernameChar125ProgressRoute;
+  "/@{$username}/trades": typeof profileAtChar123usernameChar125TradesRoute;
+  "/api/auth/$": typeof ApiAuthSplatRoute;
+  "/api/cron/gravity": typeof ApiCronGravityRoute;
+  "/api/cron/objekt-stats": typeof ApiCronObjektStatsRoute;
+  "/api/user/by-addresses": typeof ApiUserByAddressesRoute;
+  "/gravity/$artist/$id": typeof GravityArtistIdRoute;
+  "/@{$username}": typeof profileAtChar123usernameChar125IndexRoute;
+  "/@{$username}/list/$slug": typeof profileAtChar123usernameChar125ListSlugRoute;
+  "/api/cosmo/qr-auth/recaptcha": typeof ApiCosmoQrAuthRecaptchaRoute;
+  "/api/cosmo/qr-auth/ticket": typeof ApiCosmoQrAuthTicketRoute;
+  "/api/gravity/$pollId/votes": typeof ApiGravityPollIdVotesRoute;
+  "/api/objekt-list/for-user/$identifier": typeof ApiObjektListForUserIdentifierRoute;
+  "/api/objekts/by-slug/$slug": typeof ApiObjektsBySlugSlugRoute;
+  "/api/progress/leaderboard/$member": typeof ApiProgressLeaderboardMemberRoute;
+  "/api/bff/v3/users/search": typeof ApiBffV3UsersSearchRoute;
+  "/api/objekts/metadata/$slug/$serial": typeof ApiObjektsMetadataSlugSerialRoute;
+  "/api/progress/breakdown/$member/$address": typeof ApiProgressBreakdownMemberAddressRoute;
+  "/api/user/by-address/$address/como": typeof ApiUserByAddressAddressComoRoute;
+  "/api/user/by-address/$address/stats": typeof ApiUserByAddressAddressStatsRoute;
+  "/api/objekts/metadata/$slug": typeof ApiObjektsMetadataSlugIndexRoute;
+  "/api/user/by-address/$address": typeof ApiUserByAddressAddressIndexRoute;
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/admin': typeof AdminRouteRouteWithChildren
-  '/terms-privacy': typeof TermsPrivacyRoute
-  '/(profile)/@{$username}': typeof profileAtChar123usernameChar125RouteWithChildren
-  '/admin/bands': typeof AdminBandsRoute
-  '/admin/metadata': typeof AdminMetadataRoute
-  '/api/filter-data': typeof ApiFilterDataRoute
-  '/auth/reset-password': typeof AuthResetPasswordRoute
-  '/list/$id': typeof ListIdRoute
-  '/objekts/stats': typeof ObjektsStatsRoute
-  '/gravity/': typeof GravityIndexRoute
-  '/(profile)/@{$username}/como': typeof profileAtChar123usernameChar125ComoRoute
-  '/(profile)/@{$username}/progress': typeof profileAtChar123usernameChar125ProgressRoute
-  '/(profile)/@{$username}/trades': typeof profileAtChar123usernameChar125TradesRoute
-  '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/cron/gravity': typeof ApiCronGravityRoute
-  '/api/cron/objekt-stats': typeof ApiCronObjektStatsRoute
-  '/api/user/by-addresses': typeof ApiUserByAddressesRoute
-  '/gravity/$artist/$id': typeof GravityArtistIdRoute
-  '/(profile)/@{$username}/': typeof profileAtChar123usernameChar125IndexRoute
-  '/(profile)/@{$username}/list/$slug': typeof profileAtChar123usernameChar125ListSlugRoute
-  '/api/cosmo/qr-auth/recaptcha': typeof ApiCosmoQrAuthRecaptchaRoute
-  '/api/cosmo/qr-auth/ticket': typeof ApiCosmoQrAuthTicketRoute
-  '/api/gravity/$pollId/votes': typeof ApiGravityPollIdVotesRoute
-  '/api/objekt-list/for-user/$identifier': typeof ApiObjektListForUserIdentifierRoute
-  '/api/objekts/by-slug/$slug': typeof ApiObjektsBySlugSlugRoute
-  '/api/progress/leaderboard/$member': typeof ApiProgressLeaderboardMemberRoute
-  '/api/bff/v3/users/search': typeof ApiBffV3UsersSearchRoute
-  '/api/objekts/metadata/$slug/$serial': typeof ApiObjektsMetadataSlugSerialRoute
-  '/api/progress/breakdown/$member/$address': typeof ApiProgressBreakdownMemberAddressRoute
-  '/api/user/by-address/$address/como': typeof ApiUserByAddressAddressComoRoute
-  '/api/user/by-address/$address/stats': typeof ApiUserByAddressAddressStatsRoute
-  '/api/objekts/metadata/$slug/': typeof ApiObjektsMetadataSlugIndexRoute
-  '/api/user/by-address/$address/': typeof ApiUserByAddressAddressIndexRoute
+  __root__: typeof rootRouteImport;
+  "/": typeof IndexRoute;
+  "/admin": typeof AdminRouteRouteWithChildren;
+  "/terms-privacy": typeof TermsPrivacyRoute;
+  "/(profile)/@{$username}": typeof profileAtChar123usernameChar125RouteWithChildren;
+  "/admin/bands": typeof AdminBandsRoute;
+  "/admin/metadata": typeof AdminMetadataRoute;
+  "/api/filter-data": typeof ApiFilterDataRoute;
+  "/auth/reset-password": typeof AuthResetPasswordRoute;
+  "/list/$id": typeof ListIdRoute;
+  "/objekts/stats": typeof ObjektsStatsRoute;
+  "/gravity/": typeof GravityIndexRoute;
+  "/(profile)/@{$username}/como": typeof profileAtChar123usernameChar125ComoRoute;
+  "/(profile)/@{$username}/progress": typeof profileAtChar123usernameChar125ProgressRoute;
+  "/(profile)/@{$username}/trades": typeof profileAtChar123usernameChar125TradesRoute;
+  "/api/auth/$": typeof ApiAuthSplatRoute;
+  "/api/cron/gravity": typeof ApiCronGravityRoute;
+  "/api/cron/objekt-stats": typeof ApiCronObjektStatsRoute;
+  "/api/user/by-addresses": typeof ApiUserByAddressesRoute;
+  "/gravity/$artist/$id": typeof GravityArtistIdRoute;
+  "/(profile)/@{$username}/": typeof profileAtChar123usernameChar125IndexRoute;
+  "/(profile)/@{$username}/list/$slug": typeof profileAtChar123usernameChar125ListSlugRoute;
+  "/api/cosmo/qr-auth/recaptcha": typeof ApiCosmoQrAuthRecaptchaRoute;
+  "/api/cosmo/qr-auth/ticket": typeof ApiCosmoQrAuthTicketRoute;
+  "/api/gravity/$pollId/votes": typeof ApiGravityPollIdVotesRoute;
+  "/api/objekt-list/for-user/$identifier": typeof ApiObjektListForUserIdentifierRoute;
+  "/api/objekts/by-slug/$slug": typeof ApiObjektsBySlugSlugRoute;
+  "/api/progress/leaderboard/$member": typeof ApiProgressLeaderboardMemberRoute;
+  "/api/bff/v3/users/search": typeof ApiBffV3UsersSearchRoute;
+  "/api/objekts/metadata/$slug/$serial": typeof ApiObjektsMetadataSlugSerialRoute;
+  "/api/progress/breakdown/$member/$address": typeof ApiProgressBreakdownMemberAddressRoute;
+  "/api/user/by-address/$address/como": typeof ApiUserByAddressAddressComoRoute;
+  "/api/user/by-address/$address/stats": typeof ApiUserByAddressAddressStatsRoute;
+  "/api/objekts/metadata/$slug/": typeof ApiObjektsMetadataSlugIndexRoute;
+  "/api/user/by-address/$address/": typeof ApiUserByAddressAddressIndexRoute;
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
+  fileRoutesByFullPath: FileRoutesByFullPath;
   fullPaths:
-    | '/'
-    | '/admin'
-    | '/terms-privacy'
-    | '/@{$username}'
-    | '/admin/bands'
-    | '/admin/metadata'
-    | '/api/filter-data'
-    | '/auth/reset-password'
-    | '/list/$id'
-    | '/objekts/stats'
-    | '/gravity'
-    | '/@{$username}/como'
-    | '/@{$username}/progress'
-    | '/@{$username}/trades'
-    | '/api/auth/$'
-    | '/api/cron/gravity'
-    | '/api/cron/objekt-stats'
-    | '/api/user/by-addresses'
-    | '/gravity/$artist/$id'
-    | '/@{$username}/'
-    | '/@{$username}/list/$slug'
-    | '/api/cosmo/qr-auth/recaptcha'
-    | '/api/cosmo/qr-auth/ticket'
-    | '/api/gravity/$pollId/votes'
-    | '/api/objekt-list/for-user/$identifier'
-    | '/api/objekts/by-slug/$slug'
-    | '/api/progress/leaderboard/$member'
-    | '/api/bff/v3/users/search'
-    | '/api/objekts/metadata/$slug/$serial'
-    | '/api/progress/breakdown/$member/$address'
-    | '/api/user/by-address/$address/como'
-    | '/api/user/by-address/$address/stats'
-    | '/api/objekts/metadata/$slug'
-    | '/api/user/by-address/$address'
-  fileRoutesByTo: FileRoutesByTo
+    | "/"
+    | "/admin"
+    | "/terms-privacy"
+    | "/@{$username}"
+    | "/admin/bands"
+    | "/admin/metadata"
+    | "/api/filter-data"
+    | "/auth/reset-password"
+    | "/list/$id"
+    | "/objekts/stats"
+    | "/gravity"
+    | "/@{$username}/como"
+    | "/@{$username}/progress"
+    | "/@{$username}/trades"
+    | "/api/auth/$"
+    | "/api/cron/gravity"
+    | "/api/cron/objekt-stats"
+    | "/api/user/by-addresses"
+    | "/gravity/$artist/$id"
+    | "/@{$username}/"
+    | "/@{$username}/list/$slug"
+    | "/api/cosmo/qr-auth/recaptcha"
+    | "/api/cosmo/qr-auth/ticket"
+    | "/api/gravity/$pollId/votes"
+    | "/api/objekt-list/for-user/$identifier"
+    | "/api/objekts/by-slug/$slug"
+    | "/api/progress/leaderboard/$member"
+    | "/api/bff/v3/users/search"
+    | "/api/objekts/metadata/$slug/$serial"
+    | "/api/progress/breakdown/$member/$address"
+    | "/api/user/by-address/$address/como"
+    | "/api/user/by-address/$address/stats"
+    | "/api/objekts/metadata/$slug"
+    | "/api/user/by-address/$address";
+  fileRoutesByTo: FileRoutesByTo;
   to:
-    | '/'
-    | '/admin'
-    | '/terms-privacy'
-    | '/admin/bands'
-    | '/admin/metadata'
-    | '/api/filter-data'
-    | '/auth/reset-password'
-    | '/list/$id'
-    | '/objekts/stats'
-    | '/gravity'
-    | '/@{$username}/como'
-    | '/@{$username}/progress'
-    | '/@{$username}/trades'
-    | '/api/auth/$'
-    | '/api/cron/gravity'
-    | '/api/cron/objekt-stats'
-    | '/api/user/by-addresses'
-    | '/gravity/$artist/$id'
-    | '/@{$username}'
-    | '/@{$username}/list/$slug'
-    | '/api/cosmo/qr-auth/recaptcha'
-    | '/api/cosmo/qr-auth/ticket'
-    | '/api/gravity/$pollId/votes'
-    | '/api/objekt-list/for-user/$identifier'
-    | '/api/objekts/by-slug/$slug'
-    | '/api/progress/leaderboard/$member'
-    | '/api/bff/v3/users/search'
-    | '/api/objekts/metadata/$slug/$serial'
-    | '/api/progress/breakdown/$member/$address'
-    | '/api/user/by-address/$address/como'
-    | '/api/user/by-address/$address/stats'
-    | '/api/objekts/metadata/$slug'
-    | '/api/user/by-address/$address'
+    | "/"
+    | "/admin"
+    | "/terms-privacy"
+    | "/admin/bands"
+    | "/admin/metadata"
+    | "/api/filter-data"
+    | "/auth/reset-password"
+    | "/list/$id"
+    | "/objekts/stats"
+    | "/gravity"
+    | "/@{$username}/como"
+    | "/@{$username}/progress"
+    | "/@{$username}/trades"
+    | "/api/auth/$"
+    | "/api/cron/gravity"
+    | "/api/cron/objekt-stats"
+    | "/api/user/by-addresses"
+    | "/gravity/$artist/$id"
+    | "/@{$username}"
+    | "/@{$username}/list/$slug"
+    | "/api/cosmo/qr-auth/recaptcha"
+    | "/api/cosmo/qr-auth/ticket"
+    | "/api/gravity/$pollId/votes"
+    | "/api/objekt-list/for-user/$identifier"
+    | "/api/objekts/by-slug/$slug"
+    | "/api/progress/leaderboard/$member"
+    | "/api/bff/v3/users/search"
+    | "/api/objekts/metadata/$slug/$serial"
+    | "/api/progress/breakdown/$member/$address"
+    | "/api/user/by-address/$address/como"
+    | "/api/user/by-address/$address/stats"
+    | "/api/objekts/metadata/$slug"
+    | "/api/user/by-address/$address";
   id:
-    | '__root__'
-    | '/'
-    | '/admin'
-    | '/terms-privacy'
-    | '/(profile)/@{$username}'
-    | '/admin/bands'
-    | '/admin/metadata'
-    | '/api/filter-data'
-    | '/auth/reset-password'
-    | '/list/$id'
-    | '/objekts/stats'
-    | '/gravity/'
-    | '/(profile)/@{$username}/como'
-    | '/(profile)/@{$username}/progress'
-    | '/(profile)/@{$username}/trades'
-    | '/api/auth/$'
-    | '/api/cron/gravity'
-    | '/api/cron/objekt-stats'
-    | '/api/user/by-addresses'
-    | '/gravity/$artist/$id'
-    | '/(profile)/@{$username}/'
-    | '/(profile)/@{$username}/list/$slug'
-    | '/api/cosmo/qr-auth/recaptcha'
-    | '/api/cosmo/qr-auth/ticket'
-    | '/api/gravity/$pollId/votes'
-    | '/api/objekt-list/for-user/$identifier'
-    | '/api/objekts/by-slug/$slug'
-    | '/api/progress/leaderboard/$member'
-    | '/api/bff/v3/users/search'
-    | '/api/objekts/metadata/$slug/$serial'
-    | '/api/progress/breakdown/$member/$address'
-    | '/api/user/by-address/$address/como'
-    | '/api/user/by-address/$address/stats'
-    | '/api/objekts/metadata/$slug/'
-    | '/api/user/by-address/$address/'
-  fileRoutesById: FileRoutesById
+    | "__root__"
+    | "/"
+    | "/admin"
+    | "/terms-privacy"
+    | "/(profile)/@{$username}"
+    | "/admin/bands"
+    | "/admin/metadata"
+    | "/api/filter-data"
+    | "/auth/reset-password"
+    | "/list/$id"
+    | "/objekts/stats"
+    | "/gravity/"
+    | "/(profile)/@{$username}/como"
+    | "/(profile)/@{$username}/progress"
+    | "/(profile)/@{$username}/trades"
+    | "/api/auth/$"
+    | "/api/cron/gravity"
+    | "/api/cron/objekt-stats"
+    | "/api/user/by-addresses"
+    | "/gravity/$artist/$id"
+    | "/(profile)/@{$username}/"
+    | "/(profile)/@{$username}/list/$slug"
+    | "/api/cosmo/qr-auth/recaptcha"
+    | "/api/cosmo/qr-auth/ticket"
+    | "/api/gravity/$pollId/votes"
+    | "/api/objekt-list/for-user/$identifier"
+    | "/api/objekts/by-slug/$slug"
+    | "/api/progress/leaderboard/$member"
+    | "/api/bff/v3/users/search"
+    | "/api/objekts/metadata/$slug/$serial"
+    | "/api/progress/breakdown/$member/$address"
+    | "/api/user/by-address/$address/como"
+    | "/api/user/by-address/$address/stats"
+    | "/api/objekts/metadata/$slug/"
+    | "/api/user/by-address/$address/";
+  fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  AdminRouteRoute: typeof AdminRouteRouteWithChildren
-  TermsPrivacyRoute: typeof TermsPrivacyRoute
-  profileAtChar123usernameChar125Route: typeof profileAtChar123usernameChar125RouteWithChildren
-  ApiFilterDataRoute: typeof ApiFilterDataRoute
-  AuthResetPasswordRoute: typeof AuthResetPasswordRoute
-  ListIdRoute: typeof ListIdRoute
-  ObjektsStatsRoute: typeof ObjektsStatsRoute
-  GravityIndexRoute: typeof GravityIndexRoute
-  ApiAuthSplatRoute: typeof ApiAuthSplatRoute
-  ApiCronGravityRoute: typeof ApiCronGravityRoute
-  ApiCronObjektStatsRoute: typeof ApiCronObjektStatsRoute
-  ApiUserByAddressesRoute: typeof ApiUserByAddressesRoute
-  GravityArtistIdRoute: typeof GravityArtistIdRoute
-  ApiCosmoQrAuthRecaptchaRoute: typeof ApiCosmoQrAuthRecaptchaRoute
-  ApiCosmoQrAuthTicketRoute: typeof ApiCosmoQrAuthTicketRoute
-  ApiGravityPollIdVotesRoute: typeof ApiGravityPollIdVotesRoute
-  ApiObjektListForUserIdentifierRoute: typeof ApiObjektListForUserIdentifierRoute
-  ApiObjektsBySlugSlugRoute: typeof ApiObjektsBySlugSlugRoute
-  ApiProgressLeaderboardMemberRoute: typeof ApiProgressLeaderboardMemberRoute
-  ApiBffV3UsersSearchRoute: typeof ApiBffV3UsersSearchRoute
-  ApiObjektsMetadataSlugSerialRoute: typeof ApiObjektsMetadataSlugSerialRoute
-  ApiProgressBreakdownMemberAddressRoute: typeof ApiProgressBreakdownMemberAddressRoute
-  ApiUserByAddressAddressComoRoute: typeof ApiUserByAddressAddressComoRoute
-  ApiUserByAddressAddressStatsRoute: typeof ApiUserByAddressAddressStatsRoute
-  ApiObjektsMetadataSlugIndexRoute: typeof ApiObjektsMetadataSlugIndexRoute
-  ApiUserByAddressAddressIndexRoute: typeof ApiUserByAddressAddressIndexRoute
+  IndexRoute: typeof IndexRoute;
+  AdminRouteRoute: typeof AdminRouteRouteWithChildren;
+  TermsPrivacyRoute: typeof TermsPrivacyRoute;
+  profileAtChar123usernameChar125Route: typeof profileAtChar123usernameChar125RouteWithChildren;
+  ApiFilterDataRoute: typeof ApiFilterDataRoute;
+  AuthResetPasswordRoute: typeof AuthResetPasswordRoute;
+  ListIdRoute: typeof ListIdRoute;
+  ObjektsStatsRoute: typeof ObjektsStatsRoute;
+  GravityIndexRoute: typeof GravityIndexRoute;
+  ApiAuthSplatRoute: typeof ApiAuthSplatRoute;
+  ApiCronGravityRoute: typeof ApiCronGravityRoute;
+  ApiCronObjektStatsRoute: typeof ApiCronObjektStatsRoute;
+  ApiUserByAddressesRoute: typeof ApiUserByAddressesRoute;
+  GravityArtistIdRoute: typeof GravityArtistIdRoute;
+  ApiCosmoQrAuthRecaptchaRoute: typeof ApiCosmoQrAuthRecaptchaRoute;
+  ApiCosmoQrAuthTicketRoute: typeof ApiCosmoQrAuthTicketRoute;
+  ApiGravityPollIdVotesRoute: typeof ApiGravityPollIdVotesRoute;
+  ApiObjektListForUserIdentifierRoute: typeof ApiObjektListForUserIdentifierRoute;
+  ApiObjektsBySlugSlugRoute: typeof ApiObjektsBySlugSlugRoute;
+  ApiProgressLeaderboardMemberRoute: typeof ApiProgressLeaderboardMemberRoute;
+  ApiBffV3UsersSearchRoute: typeof ApiBffV3UsersSearchRoute;
+  ApiObjektsMetadataSlugSerialRoute: typeof ApiObjektsMetadataSlugSerialRoute;
+  ApiProgressBreakdownMemberAddressRoute: typeof ApiProgressBreakdownMemberAddressRoute;
+  ApiUserByAddressAddressComoRoute: typeof ApiUserByAddressAddressComoRoute;
+  ApiUserByAddressAddressStatsRoute: typeof ApiUserByAddressAddressStatsRoute;
+  ApiObjektsMetadataSlugIndexRoute: typeof ApiObjektsMetadataSlugIndexRoute;
+  ApiUserByAddressAddressIndexRoute: typeof ApiUserByAddressAddressIndexRoute;
 }
 
-declare module '@tanstack/react-router' {
+declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
-    '/terms-privacy': {
-      id: '/terms-privacy'
-      path: '/terms-privacy'
-      fullPath: '/terms-privacy'
-      preLoaderRoute: typeof TermsPrivacyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/gravity/': {
-      id: '/gravity/'
-      path: '/gravity'
-      fullPath: '/gravity'
-      preLoaderRoute: typeof GravityIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/objekts/stats': {
-      id: '/objekts/stats'
-      path: '/objekts/stats'
-      fullPath: '/objekts/stats'
-      preLoaderRoute: typeof ObjektsStatsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/list/$id': {
-      id: '/list/$id'
-      path: '/list/$id'
-      fullPath: '/list/$id'
-      preLoaderRoute: typeof ListIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth/reset-password': {
-      id: '/auth/reset-password'
-      path: '/auth/reset-password'
-      fullPath: '/auth/reset-password'
-      preLoaderRoute: typeof AuthResetPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/filter-data': {
-      id: '/api/filter-data'
-      path: '/api/filter-data'
-      fullPath: '/api/filter-data'
-      preLoaderRoute: typeof ApiFilterDataRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/metadata': {
-      id: '/admin/metadata'
-      path: '/metadata'
-      fullPath: '/admin/metadata'
-      preLoaderRoute: typeof AdminMetadataRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/admin/bands': {
-      id: '/admin/bands'
-      path: '/bands'
-      fullPath: '/admin/bands'
-      preLoaderRoute: typeof AdminBandsRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/(profile)/@{$username}': {
-      id: '/(profile)/@{$username}'
-      path: '/@{$username}'
-      fullPath: '/@{$username}'
-      preLoaderRoute: typeof profileAtChar123usernameChar125RouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/(profile)/@{$username}/': {
-      id: '/(profile)/@{$username}/'
-      path: '/'
-      fullPath: '/@{$username}/'
-      preLoaderRoute: typeof profileAtChar123usernameChar125IndexRouteImport
-      parentRoute: typeof profileAtChar123usernameChar125Route
-    }
-    '/gravity/$artist/$id': {
-      id: '/gravity/$artist/$id'
-      path: '/gravity/$artist/$id'
-      fullPath: '/gravity/$artist/$id'
-      preLoaderRoute: typeof GravityArtistIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/user/by-addresses': {
-      id: '/api/user/by-addresses'
-      path: '/api/user/by-addresses'
-      fullPath: '/api/user/by-addresses'
-      preLoaderRoute: typeof ApiUserByAddressesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/cron/objekt-stats': {
-      id: '/api/cron/objekt-stats'
-      path: '/api/cron/objekt-stats'
-      fullPath: '/api/cron/objekt-stats'
-      preLoaderRoute: typeof ApiCronObjektStatsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/cron/gravity': {
-      id: '/api/cron/gravity'
-      path: '/api/cron/gravity'
-      fullPath: '/api/cron/gravity'
-      preLoaderRoute: typeof ApiCronGravityRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/auth/$': {
-      id: '/api/auth/$'
-      path: '/api/auth/$'
-      fullPath: '/api/auth/$'
-      preLoaderRoute: typeof ApiAuthSplatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/(profile)/@{$username}/trades': {
-      id: '/(profile)/@{$username}/trades'
-      path: '/trades'
-      fullPath: '/@{$username}/trades'
-      preLoaderRoute: typeof profileAtChar123usernameChar125TradesRouteImport
-      parentRoute: typeof profileAtChar123usernameChar125Route
-    }
-    '/(profile)/@{$username}/progress': {
-      id: '/(profile)/@{$username}/progress'
-      path: '/progress'
-      fullPath: '/@{$username}/progress'
-      preLoaderRoute: typeof profileAtChar123usernameChar125ProgressRouteImport
-      parentRoute: typeof profileAtChar123usernameChar125Route
-    }
-    '/(profile)/@{$username}/como': {
-      id: '/(profile)/@{$username}/como'
-      path: '/como'
-      fullPath: '/@{$username}/como'
-      preLoaderRoute: typeof profileAtChar123usernameChar125ComoRouteImport
-      parentRoute: typeof profileAtChar123usernameChar125Route
-    }
-    '/api/progress/leaderboard/$member': {
-      id: '/api/progress/leaderboard/$member'
-      path: '/api/progress/leaderboard/$member'
-      fullPath: '/api/progress/leaderboard/$member'
-      preLoaderRoute: typeof ApiProgressLeaderboardMemberRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/objekts/by-slug/$slug': {
-      id: '/api/objekts/by-slug/$slug'
-      path: '/api/objekts/by-slug/$slug'
-      fullPath: '/api/objekts/by-slug/$slug'
-      preLoaderRoute: typeof ApiObjektsBySlugSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/objekt-list/for-user/$identifier': {
-      id: '/api/objekt-list/for-user/$identifier'
-      path: '/api/objekt-list/for-user/$identifier'
-      fullPath: '/api/objekt-list/for-user/$identifier'
-      preLoaderRoute: typeof ApiObjektListForUserIdentifierRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/gravity/$pollId/votes': {
-      id: '/api/gravity/$pollId/votes'
-      path: '/api/gravity/$pollId/votes'
-      fullPath: '/api/gravity/$pollId/votes'
-      preLoaderRoute: typeof ApiGravityPollIdVotesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/cosmo/qr-auth/ticket': {
-      id: '/api/cosmo/qr-auth/ticket'
-      path: '/api/cosmo/qr-auth/ticket'
-      fullPath: '/api/cosmo/qr-auth/ticket'
-      preLoaderRoute: typeof ApiCosmoQrAuthTicketRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/cosmo/qr-auth/recaptcha': {
-      id: '/api/cosmo/qr-auth/recaptcha'
-      path: '/api/cosmo/qr-auth/recaptcha'
-      fullPath: '/api/cosmo/qr-auth/recaptcha'
-      preLoaderRoute: typeof ApiCosmoQrAuthRecaptchaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/(profile)/@{$username}/list/$slug': {
-      id: '/(profile)/@{$username}/list/$slug'
-      path: '/list/$slug'
-      fullPath: '/@{$username}/list/$slug'
-      preLoaderRoute: typeof profileAtChar123usernameChar125ListSlugRouteImport
-      parentRoute: typeof profileAtChar123usernameChar125Route
-    }
-    '/api/user/by-address/$address/': {
-      id: '/api/user/by-address/$address/'
-      path: '/api/user/by-address/$address'
-      fullPath: '/api/user/by-address/$address'
-      preLoaderRoute: typeof ApiUserByAddressAddressIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/objekts/metadata/$slug/': {
-      id: '/api/objekts/metadata/$slug/'
-      path: '/api/objekts/metadata/$slug'
-      fullPath: '/api/objekts/metadata/$slug'
-      preLoaderRoute: typeof ApiObjektsMetadataSlugIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/user/by-address/$address/stats': {
-      id: '/api/user/by-address/$address/stats'
-      path: '/api/user/by-address/$address/stats'
-      fullPath: '/api/user/by-address/$address/stats'
-      preLoaderRoute: typeof ApiUserByAddressAddressStatsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/user/by-address/$address/como': {
-      id: '/api/user/by-address/$address/como'
-      path: '/api/user/by-address/$address/como'
-      fullPath: '/api/user/by-address/$address/como'
-      preLoaderRoute: typeof ApiUserByAddressAddressComoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/progress/breakdown/$member/$address': {
-      id: '/api/progress/breakdown/$member/$address'
-      path: '/api/progress/breakdown/$member/$address'
-      fullPath: '/api/progress/breakdown/$member/$address'
-      preLoaderRoute: typeof ApiProgressBreakdownMemberAddressRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/objekts/metadata/$slug/$serial': {
-      id: '/api/objekts/metadata/$slug/$serial'
-      path: '/api/objekts/metadata/$slug/$serial'
-      fullPath: '/api/objekts/metadata/$slug/$serial'
-      preLoaderRoute: typeof ApiObjektsMetadataSlugSerialRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/bff/v3/users/search': {
-      id: '/api/bff/v3/users/search'
-      path: '/api/bff/v3/users/search'
-      fullPath: '/api/bff/v3/users/search'
-      preLoaderRoute: typeof ApiBffV3UsersSearchRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+    "/terms-privacy": {
+      id: "/terms-privacy";
+      path: "/terms-privacy";
+      fullPath: "/terms-privacy";
+      preLoaderRoute: typeof TermsPrivacyRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/admin": {
+      id: "/admin";
+      path: "/admin";
+      fullPath: "/admin";
+      preLoaderRoute: typeof AdminRouteRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/": {
+      id: "/";
+      path: "/";
+      fullPath: "/";
+      preLoaderRoute: typeof IndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/gravity/": {
+      id: "/gravity/";
+      path: "/gravity";
+      fullPath: "/gravity";
+      preLoaderRoute: typeof GravityIndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/objekts/stats": {
+      id: "/objekts/stats";
+      path: "/objekts/stats";
+      fullPath: "/objekts/stats";
+      preLoaderRoute: typeof ObjektsStatsRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/list/$id": {
+      id: "/list/$id";
+      path: "/list/$id";
+      fullPath: "/list/$id";
+      preLoaderRoute: typeof ListIdRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/auth/reset-password": {
+      id: "/auth/reset-password";
+      path: "/auth/reset-password";
+      fullPath: "/auth/reset-password";
+      preLoaderRoute: typeof AuthResetPasswordRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/api/filter-data": {
+      id: "/api/filter-data";
+      path: "/api/filter-data";
+      fullPath: "/api/filter-data";
+      preLoaderRoute: typeof ApiFilterDataRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/admin/metadata": {
+      id: "/admin/metadata";
+      path: "/metadata";
+      fullPath: "/admin/metadata";
+      preLoaderRoute: typeof AdminMetadataRouteImport;
+      parentRoute: typeof AdminRouteRoute;
+    };
+    "/admin/bands": {
+      id: "/admin/bands";
+      path: "/bands";
+      fullPath: "/admin/bands";
+      preLoaderRoute: typeof AdminBandsRouteImport;
+      parentRoute: typeof AdminRouteRoute;
+    };
+    "/(profile)/@{$username}": {
+      id: "/(profile)/@{$username}";
+      path: "/@{$username}";
+      fullPath: "/@{$username}";
+      preLoaderRoute: typeof profileAtChar123usernameChar125RouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/(profile)/@{$username}/": {
+      id: "/(profile)/@{$username}/";
+      path: "/";
+      fullPath: "/@{$username}/";
+      preLoaderRoute: typeof profileAtChar123usernameChar125IndexRouteImport;
+      parentRoute: typeof profileAtChar123usernameChar125Route;
+    };
+    "/gravity/$artist/$id": {
+      id: "/gravity/$artist/$id";
+      path: "/gravity/$artist/$id";
+      fullPath: "/gravity/$artist/$id";
+      preLoaderRoute: typeof GravityArtistIdRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/api/user/by-addresses": {
+      id: "/api/user/by-addresses";
+      path: "/api/user/by-addresses";
+      fullPath: "/api/user/by-addresses";
+      preLoaderRoute: typeof ApiUserByAddressesRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/api/cron/objekt-stats": {
+      id: "/api/cron/objekt-stats";
+      path: "/api/cron/objekt-stats";
+      fullPath: "/api/cron/objekt-stats";
+      preLoaderRoute: typeof ApiCronObjektStatsRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/api/cron/gravity": {
+      id: "/api/cron/gravity";
+      path: "/api/cron/gravity";
+      fullPath: "/api/cron/gravity";
+      preLoaderRoute: typeof ApiCronGravityRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/api/auth/$": {
+      id: "/api/auth/$";
+      path: "/api/auth/$";
+      fullPath: "/api/auth/$";
+      preLoaderRoute: typeof ApiAuthSplatRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/(profile)/@{$username}/trades": {
+      id: "/(profile)/@{$username}/trades";
+      path: "/trades";
+      fullPath: "/@{$username}/trades";
+      preLoaderRoute: typeof profileAtChar123usernameChar125TradesRouteImport;
+      parentRoute: typeof profileAtChar123usernameChar125Route;
+    };
+    "/(profile)/@{$username}/progress": {
+      id: "/(profile)/@{$username}/progress";
+      path: "/progress";
+      fullPath: "/@{$username}/progress";
+      preLoaderRoute: typeof profileAtChar123usernameChar125ProgressRouteImport;
+      parentRoute: typeof profileAtChar123usernameChar125Route;
+    };
+    "/(profile)/@{$username}/como": {
+      id: "/(profile)/@{$username}/como";
+      path: "/como";
+      fullPath: "/@{$username}/como";
+      preLoaderRoute: typeof profileAtChar123usernameChar125ComoRouteImport;
+      parentRoute: typeof profileAtChar123usernameChar125Route;
+    };
+    "/api/progress/leaderboard/$member": {
+      id: "/api/progress/leaderboard/$member";
+      path: "/api/progress/leaderboard/$member";
+      fullPath: "/api/progress/leaderboard/$member";
+      preLoaderRoute: typeof ApiProgressLeaderboardMemberRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/api/objekts/by-slug/$slug": {
+      id: "/api/objekts/by-slug/$slug";
+      path: "/api/objekts/by-slug/$slug";
+      fullPath: "/api/objekts/by-slug/$slug";
+      preLoaderRoute: typeof ApiObjektsBySlugSlugRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/api/objekt-list/for-user/$identifier": {
+      id: "/api/objekt-list/for-user/$identifier";
+      path: "/api/objekt-list/for-user/$identifier";
+      fullPath: "/api/objekt-list/for-user/$identifier";
+      preLoaderRoute: typeof ApiObjektListForUserIdentifierRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/api/gravity/$pollId/votes": {
+      id: "/api/gravity/$pollId/votes";
+      path: "/api/gravity/$pollId/votes";
+      fullPath: "/api/gravity/$pollId/votes";
+      preLoaderRoute: typeof ApiGravityPollIdVotesRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/api/cosmo/qr-auth/ticket": {
+      id: "/api/cosmo/qr-auth/ticket";
+      path: "/api/cosmo/qr-auth/ticket";
+      fullPath: "/api/cosmo/qr-auth/ticket";
+      preLoaderRoute: typeof ApiCosmoQrAuthTicketRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/api/cosmo/qr-auth/recaptcha": {
+      id: "/api/cosmo/qr-auth/recaptcha";
+      path: "/api/cosmo/qr-auth/recaptcha";
+      fullPath: "/api/cosmo/qr-auth/recaptcha";
+      preLoaderRoute: typeof ApiCosmoQrAuthRecaptchaRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/(profile)/@{$username}/list/$slug": {
+      id: "/(profile)/@{$username}/list/$slug";
+      path: "/list/$slug";
+      fullPath: "/@{$username}/list/$slug";
+      preLoaderRoute: typeof profileAtChar123usernameChar125ListSlugRouteImport;
+      parentRoute: typeof profileAtChar123usernameChar125Route;
+    };
+    "/api/user/by-address/$address/": {
+      id: "/api/user/by-address/$address/";
+      path: "/api/user/by-address/$address";
+      fullPath: "/api/user/by-address/$address";
+      preLoaderRoute: typeof ApiUserByAddressAddressIndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/api/objekts/metadata/$slug/": {
+      id: "/api/objekts/metadata/$slug/";
+      path: "/api/objekts/metadata/$slug";
+      fullPath: "/api/objekts/metadata/$slug";
+      preLoaderRoute: typeof ApiObjektsMetadataSlugIndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/api/user/by-address/$address/stats": {
+      id: "/api/user/by-address/$address/stats";
+      path: "/api/user/by-address/$address/stats";
+      fullPath: "/api/user/by-address/$address/stats";
+      preLoaderRoute: typeof ApiUserByAddressAddressStatsRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/api/user/by-address/$address/como": {
+      id: "/api/user/by-address/$address/como";
+      path: "/api/user/by-address/$address/como";
+      fullPath: "/api/user/by-address/$address/como";
+      preLoaderRoute: typeof ApiUserByAddressAddressComoRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/api/progress/breakdown/$member/$address": {
+      id: "/api/progress/breakdown/$member/$address";
+      path: "/api/progress/breakdown/$member/$address";
+      fullPath: "/api/progress/breakdown/$member/$address";
+      preLoaderRoute: typeof ApiProgressBreakdownMemberAddressRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/api/objekts/metadata/$slug/$serial": {
+      id: "/api/objekts/metadata/$slug/$serial";
+      path: "/api/objekts/metadata/$slug/$serial";
+      fullPath: "/api/objekts/metadata/$slug/$serial";
+      preLoaderRoute: typeof ApiObjektsMetadataSlugSerialRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/api/bff/v3/users/search": {
+      id: "/api/bff/v3/users/search";
+      path: "/api/bff/v3/users/search";
+      fullPath: "/api/bff/v3/users/search";
+      preLoaderRoute: typeof ApiBffV3UsersSearchRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
   }
 }
 
 interface AdminRouteRouteChildren {
-  AdminBandsRoute: typeof AdminBandsRoute
-  AdminMetadataRoute: typeof AdminMetadataRoute
+  AdminBandsRoute: typeof AdminBandsRoute;
+  AdminMetadataRoute: typeof AdminMetadataRoute;
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminBandsRoute: AdminBandsRoute,
   AdminMetadataRoute: AdminMetadataRoute,
-}
+};
 
 const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
   AdminRouteRouteChildren,
-)
+);
 
 interface profileAtChar123usernameChar125RouteChildren {
-  profileAtChar123usernameChar125ComoRoute: typeof profileAtChar123usernameChar125ComoRoute
-  profileAtChar123usernameChar125ProgressRoute: typeof profileAtChar123usernameChar125ProgressRoute
-  profileAtChar123usernameChar125TradesRoute: typeof profileAtChar123usernameChar125TradesRoute
-  profileAtChar123usernameChar125IndexRoute: typeof profileAtChar123usernameChar125IndexRoute
-  profileAtChar123usernameChar125ListSlugRoute: typeof profileAtChar123usernameChar125ListSlugRoute
+  profileAtChar123usernameChar125ComoRoute: typeof profileAtChar123usernameChar125ComoRoute;
+  profileAtChar123usernameChar125ProgressRoute: typeof profileAtChar123usernameChar125ProgressRoute;
+  profileAtChar123usernameChar125TradesRoute: typeof profileAtChar123usernameChar125TradesRoute;
+  profileAtChar123usernameChar125IndexRoute: typeof profileAtChar123usernameChar125IndexRoute;
+  profileAtChar123usernameChar125ListSlugRoute: typeof profileAtChar123usernameChar125ListSlugRoute;
 }
 
 const profileAtChar123usernameChar125RouteChildren: profileAtChar123usernameChar125RouteChildren =
@@ -754,12 +754,12 @@ const profileAtChar123usernameChar125RouteChildren: profileAtChar123usernameChar
       profileAtChar123usernameChar125IndexRoute,
     profileAtChar123usernameChar125ListSlugRoute:
       profileAtChar123usernameChar125ListSlugRoute,
-  }
+  };
 
 const profileAtChar123usernameChar125RouteWithChildren =
   profileAtChar123usernameChar125Route._addFileChildren(
     profileAtChar123usernameChar125RouteChildren,
-  )
+  );
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -791,16 +791,16 @@ const rootRouteChildren: RootRouteChildren = {
   ApiUserByAddressAddressStatsRoute: ApiUserByAddressAddressStatsRoute,
   ApiObjektsMetadataSlugIndexRoute: ApiObjektsMetadataSlugIndexRoute,
   ApiUserByAddressAddressIndexRoute: ApiUserByAddressAddressIndexRoute,
-}
+};
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
+  ._addFileTypes<FileRouteTypes>();
 
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
+import type { getRouter } from "./router.tsx";
+import type { createStart } from "@tanstack/react-start";
+declare module "@tanstack/react-start" {
   interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
+    ssr: true;
+    router: Awaited<ReturnType<typeof getRouter>>;
   }
 }

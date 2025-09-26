@@ -12,5 +12,5 @@ export const fetchLatestMetadata = createServerFn({ method: "GET" }).handler(
       },
       limit: 10,
     });
-  }
+  },
 );

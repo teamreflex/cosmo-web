@@ -20,7 +20,7 @@ export function TopOverlay({ objekt, objektLists }: TopOverlayProps) {
         "text-(--objekt-text-color) bg-(--objekt-background-color)",
         "grid grid-flow-col grid-cols-[1fr_min-content]",
         "top-0 rounded-br-lg sm:rounded-br-xl",
-        isHidden && "hidden"
+        isHidden && "hidden",
       )}
     >
       {/* buttons */}

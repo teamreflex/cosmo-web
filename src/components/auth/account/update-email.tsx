@@ -48,7 +48,7 @@ export default function UpdateEmail({ email }: Props) {
     mutation.mutate(data, {
       onSuccess: () => {
         toast.success(
-          "An email has been sent to verify your new email address."
+          "An email has been sent to verify your new email address.",
         );
         router.invalidate();
       },

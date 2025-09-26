@@ -12,14 +12,14 @@ export function useActiveObjekt() {
       slug:
         | string
         | undefined
-        | ((prev: string | undefined) => string | undefined)
+        | ((prev: string | undefined) => string | undefined),
     ) => {
       navigate({
         // @ts-ignore - TODO: fix
         search: (prev) => ({ ...prev, id: slug }),
       });
     },
-    [navigate, search]
+    [navigate, search],
   );
 
   const reset = useCallback(() => {

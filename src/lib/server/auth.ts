@@ -93,19 +93,20 @@ export const auth = betterAuth({
   databaseHooks: {
     account: {
       create: {
+        // eslint-disable-next-line @typescript-eslint/require-await
         async before(account) {
           const withEncryptedTokens = { ...account };
           if (account.accessToken) {
             const encryptedAccessToken = encryptToken(
               account.accessToken,
-              serverEnv.env.BETTER_AUTH_SECRET
+              serverEnv.env.BETTER_AUTH_SECRET,
             );
             withEncryptedTokens.accessToken = encryptedAccessToken;
           }
           if (account.refreshToken) {
             const encryptedRefreshToken = encryptToken(
               account.refreshToken,
-              serverEnv.env.BETTER_AUTH_SECRET
+              serverEnv.env.BETTER_AUTH_SECRET,
             );
             withEncryptedTokens.refreshToken = encryptedRefreshToken;
           }
@@ -136,12 +137,12 @@ export const auth = betterAuth({
           if (account.accessToken && existing.accessToken) {
             const decrypted = decryptToken(
               existing.accessToken,
-              serverEnv.env.BETTER_AUTH_SECRET
+              serverEnv.env.BETTER_AUTH_SECRET,
             );
             if (decrypted !== account.accessToken) {
               withEncryptedTokens.accessToken = encryptToken(
                 account.accessToken,
-                serverEnv.env.BETTER_AUTH_SECRET
+                serverEnv.env.BETTER_AUTH_SECRET,
               );
             }
           }
@@ -149,12 +150,12 @@ export const auth = betterAuth({
           if (account.refreshToken && existing.refreshToken) {
             const decrypted = decryptToken(
               existing.refreshToken,
-              serverEnv.env.BETTER_AUTH_SECRET
+              serverEnv.env.BETTER_AUTH_SECRET,
             );
             if (decrypted !== account.refreshToken) {
               withEncryptedTokens.refreshToken = encryptToken(
                 account.refreshToken,
-                serverEnv.env.BETTER_AUTH_SECRET
+                serverEnv.env.BETTER_AUTH_SECRET,
               );
             }
           }
@@ -171,6 +172,7 @@ export const auth = betterAuth({
    * Hooks to modify the context.
    */
   hooks: {
+    // eslint-disable-next-line @typescript-eslint/require-await
     before: createAuthMiddleware(async (ctx) => {
       /**
        * Override the internal adapter to return the session and user in one query.
@@ -341,7 +343,7 @@ function encryptToken(token: string, key: string) {
 
   // concatenate the iv, encrypted text and auth tag
   return Buffer.concat([iv, encryptedToken, cipher.getAuthTag()]).toString(
-    "base64"
+    "base64",
   );
 }
 
@@ -363,7 +365,7 @@ function decryptToken(encrypted: string, key: string) {
   decipher.setAuthTag(authTag);
 
   return Buffer.concat([decipher.update(text), decipher.final()]).toString(
-    "utf8"
+    "utf8",
   );
 }
 
@@ -374,7 +376,7 @@ export function toPublicUser(user: undefined): undefined;
 export function toPublicUser(user: ServerUser): PublicUser;
 export function toPublicUser(user?: ServerUser): PublicUser | undefined;
 export function toPublicUser(
-  user: ServerUser | undefined
+  user: ServerUser | undefined,
 ): PublicUser | undefined {
   if (!user) {
     return undefined;

@@ -194,7 +194,7 @@ export namespace Objekt {
  * Derives the slug from the season, member, and collectionNo.
  */
 function slugify(
-  params: Pick<Objekt.Collection, "season" | "member" | "collectionNo">
+  params: Pick<Objekt.Collection, "season" | "member" | "collectionNo">,
 ): string {
   const { season, member, collectionNo } = params;
   return (
@@ -220,7 +220,7 @@ type DerivedExtras = Pick<
  * Derives extra fields from the objekt.
  */
 function deriveExtras(
-  objekt: Omit<Objekt.Collection, "slug" | "artistName" | "onOffline">
+  objekt: Omit<Objekt.Collection, "slug" | "artistName" | "onOffline">,
 ): DerivedExtras {
   const slug = slugify({
     season: objekt.season,

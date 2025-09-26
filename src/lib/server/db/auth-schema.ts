@@ -1,13 +1,14 @@
 import {
-  pgTable,
-  text,
-  timestamp,
   boolean,
   index,
   integer,
+  pgTable,
+  text,
+  timestamp,
 } from "drizzle-orm/pg-core";
 import { citext } from "./columns";
-import { type CollectionDataSource, GRID_COLUMNS } from "@/lib/utils";
+import type { CollectionDataSource } from "@/lib/utils";
+import { GRID_COLUMNS } from "@/lib/utils";
 
 export const user = pgTable(
   "user",
@@ -37,7 +38,7 @@ export const user = pgTable(
     index("user_display_username_idx").on(t.displayUsername),
     index("user_discord_idx").on(t.discord),
     index("user_twitter_idx").on(t.twitter),
-  ]
+  ],
 );
 
 export const session = pgTable(
@@ -57,7 +58,7 @@ export const session = pgTable(
   (t) => [
     index("session_user_id_idx").on(t.userId),
     index("session_token_idx").on(t.token),
-  ]
+  ],
 );
 
 export const account = pgTable(
@@ -79,7 +80,7 @@ export const account = pgTable(
     createdAt: timestamp("created_at").notNull(),
     updatedAt: timestamp("updated_at").notNull(),
   },
-  (t) => [index("account_user_id_idx").on(t.userId)]
+  (t) => [index("account_user_id_idx").on(t.userId)],
 );
 
 export const verification = pgTable("verification", {

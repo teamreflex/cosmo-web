@@ -21,12 +21,6 @@ import { artistsQuery, selectedArtistsQuery } from "@/lib/queries/core";
 import { fetchGravities } from "@/lib/server/gravity";
 
 export const Route = createFileRoute("/gravity/")({
-  head: () => ({
-    meta: [seoTitle("Gravity")],
-  }),
-  component: RouteComponent,
-  pendingComponent: PendingComponent,
-  errorComponent: ErrorComponent,
   loader: async ({ context }) => {
     context.queryClient.prefetchQuery(gravitiesIndexQuery);
 
@@ -46,6 +40,12 @@ export const Route = createFileRoute("/gravity/")({
       toRender,
     };
   },
+  component: RouteComponent,
+  pendingComponent: PendingComponent,
+  errorComponent: ErrorComponent,
+  head: () => ({
+    meta: [seoTitle("Gravity")],
+  }),
 });
 
 function RouteComponent() {

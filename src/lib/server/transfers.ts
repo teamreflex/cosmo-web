@@ -48,7 +48,7 @@ export const fetchTransfers = createServerFn({ method: "GET" })
           [
             row.transfer.from.toLowerCase(),
             row.transfer.to.toLowerCase(),
-          ].includes(a.address.toLowerCase())
+          ].includes(a.address.toLowerCase()),
         )?.username,
       })),
     };
@@ -60,7 +60,7 @@ export const fetchTransfers = createServerFn({ method: "GET" })
 const fetchTransferRows = createServerOnlyFn(
   async (
     address: string,
-    params: z.infer<typeof transfersBackendSchema>
+    params: z.infer<typeof transfersBackendSchema>,
   ): Promise<TransferResult> => {
     const results = await indexer
       .select({
@@ -83,8 +83,8 @@ const fetchTransferRows = createServerOnlyFn(
             ...withSeason(params.season ?? []),
             ...withOnlineType(params.on_offline ?? []),
             ...withMember(params.member),
-          ]
-        )
+          ],
+        ),
       )
       .orderBy(desc(transfers.timestamp))
       .limit(PER_PAGE)
@@ -94,7 +94,7 @@ const fetchTransferRows = createServerOnlyFn(
       results,
       nextStartAfter: results.length === PER_PAGE ? params.page + 1 : undefined,
     };
-  }
+  },
 );
 
 /**
@@ -112,13 +112,13 @@ const withType = createServerOnlyFn((address: string, type: TransferType) => {
     case "received":
       return and(
         not(eq(transfers.from, Addresses.NULL)),
-        eq(transfers.to, address)
+        eq(transfers.to, address),
       );
     // address must be a sender to non-burn address
     case "sent":
       return and(
         not(inArray(transfers.to, [Addresses.NULL, Addresses.SPIN])),
-        eq(transfers.from, address)
+        eq(transfers.from, address),
       );
     // address must be a sender to the spin address
     case "spin":

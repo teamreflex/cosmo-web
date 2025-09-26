@@ -36,7 +36,7 @@ export default function MemberFilter({
             className={cn(
               "flex flex-row z-10 gap-2 p-1 xl:justify-center justify-items-start empty:hidden",
               artist.artistMembers.length > 5 &&
-                "overflow-x-scroll xl:no-scrollbar"
+                "overflow-x-scroll xl:no-scrollbar",
             )}
           >
             {showArtists && (
@@ -100,7 +100,7 @@ function MemberFilterButton({
               onClick={() => setActive(name)}
               className={cn(
                 "rounded-full drop-shadow-sm",
-                isActive && "ring-3 ring-(--member-color)"
+                isActive && "ring-3 ring-(--member-color)",
               )}
             >
               <MemberImage name={displayName} image={image} />

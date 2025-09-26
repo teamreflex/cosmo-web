@@ -1,14 +1,16 @@
-import type { Hex } from "viem";
 import {
   useBlockNumber,
   useClient,
   useReadContracts,
   useWatchContractEvent,
 } from "wagmi";
-import governorAbi from "@/abi/governor";
-import { Addresses } from "@/lib/utils";
 import { getContractEvents } from "viem/actions";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
+import { abstract } from "viem/chains";
+import { addMinutes, isAfter, isBefore, startOfHour } from "date-fns";
+import { useGravityVotes } from "../common";
+import type { GravityHookParams } from "../common";
 import type {
   UseBlockStatus,
   UseChainData,
@@ -17,11 +19,9 @@ import type {
   UseChainDataPending,
   UseChainDataSuccess,
 } from "./types";
-import { useEffect, useMemo, useState } from "react";
-import { abstract } from "viem/chains";
-import type { GravityHookParams } from "../common";
-import { useGravityVotes } from "../common";
-import { isAfter, isBefore, startOfHour, addMinutes } from "date-fns";
+import type { Hex } from "viem";
+import { Addresses } from "@/lib/utils";
+import governorAbi from "@/abi/governor";
 
 // chain to connect to
 const chainId = abstract.id;
@@ -93,23 +93,22 @@ function useEndBlock(
   params: GravityHookParams,
   startBlock: number | null,
   endDate: string,
-  now: Date
+  now: Date,
 ) {
   const queryClient = useQueryClient();
   const client = useClient({ chainId });
 
-  const queryKey = [
-    "gravity",
-    "end-block",
-    { tokenId: params.tokenId },
-    Number(params.pollId),
-  ];
-
   /**
    * Fetch the end block.
    */
-  const endQuery = useQuery({
-    queryKey,
+  const endQueryOptions = queryOptions({
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps
+    queryKey: [
+      "gravity",
+      "end-block",
+      { tokenId: params.tokenId },
+      Number(params.pollId),
+    ],
     queryFn: async () => {
       const events = await getContractEvents(client, {
         ...config,
@@ -122,12 +121,13 @@ function useEndBlock(
         strict: true,
       });
 
-      const event = events.find((event) => event.args.pollId === params.pollId);
+      const event = events.find((e) => e.args.pollId === params.pollId);
       return event ? Number(event.blockNumber) : null;
     },
-    enabled: client !== undefined && startBlock !== null,
+    enabled: startBlock !== null,
     staleTime: Infinity,
   });
+  const endQuery = useQuery(endQueryOptions);
 
   /**
    * Poll for the end block if the initial block is not found.
@@ -139,7 +139,10 @@ function useEndBlock(
     onLogs: (logs) => {
       const event = logs.find((log) => log.args.pollId === params.pollId);
       if (event) {
-        queryClient.setQueryData(queryKey, Number(event.blockNumber));
+        queryClient.setQueryData(
+          endQueryOptions.queryKey,
+          Number(event.blockNumber),
+        );
       }
     },
     enabled:
@@ -189,8 +192,6 @@ export function useChainData(params: UseChainDataOptions): UseChainData {
   const shouldPoll =
     // ensure all block statuses are ready
     blockStatus.isPending === false &&
-    // ensure start block is estimated
-    blockStatus.startBlock !== null &&
     // ensure end block is not found yet
     blockStatus.endBlock === null &&
     // ensure poll has ended
@@ -268,7 +269,7 @@ export interface VoteTimelineSegment {
  */
 export function useVotedEvents(
   pollId: number,
-  endDate: string
+  endDate: string,
 ): VoteTimelineSegment[] {
   const { data: votes } = useGravityVotes(pollId);
 
@@ -281,7 +282,7 @@ export function useVotedEvents(
     // Find the first vote timestamp and use endDate for range
     const voteTimes = votes.map((vote) => new Date(vote.createdAt));
     const earliestVoteTime = new Date(
-      Math.min(...voteTimes.map((t) => t.getTime()))
+      Math.min(...voteTimes.map((t) => t.getTime())),
     );
     const endTime = new Date(endDate);
 

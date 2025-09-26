@@ -39,7 +39,7 @@ export default function InsertBands() {
           };
         }
         return p;
-      })
+      }),
     );
   }
 
@@ -48,7 +48,7 @@ export default function InsertBands() {
     const result = bandUrlInputSchema.safeParse(data);
     if (result.success === false) {
       toast.error(
-        "Invalid format: Required format is 'collectionId :: bandImageUrl'"
+        "Invalid format: Required format is 'collectionId :: bandImageUrl'",
       );
       return;
     }

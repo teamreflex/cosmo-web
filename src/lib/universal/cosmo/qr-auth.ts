@@ -13,8 +13,8 @@ type TicketInvalid = {
   status: "invalid";
 };
 
-type LoadedTicket<Status extends string> = {
-  status: Status;
+type LoadedTicket<TStatus extends string> = {
+  status: TStatus;
   ticketRemainingMs: number;
   ticketOtpRemainingMs: number;
   profiles: {

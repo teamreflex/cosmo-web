@@ -10,7 +10,7 @@ import type { ValidArtist } from "@/lib/universal/cosmo/common";
  */
 export function mapLegacyObjekt(
   objekt: Objekt,
-  collection: Collection
+  collection: Collection,
 ): CosmoObjekt {
   return {
     ...collection,
@@ -27,7 +27,7 @@ export function mapLegacyObjekt(
     usedForGrid: false,
     nonTransferableReason: nonTransferableReason(
       collection.class,
-      objekt.transferable
+      objekt.transferable,
     ),
     // cannot currently be determined
     lenticularPairTokenId: null,
@@ -41,7 +41,7 @@ export function mapLegacyObjekt(
  */
 export function nonTransferableReason(
   className: string,
-  transferable: boolean
+  transferable: boolean,
 ): NonTransferableReason | undefined {
   if (className === "Welcome") {
     return "welcome-objekt";

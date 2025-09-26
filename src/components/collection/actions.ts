@@ -13,7 +13,7 @@ import { cosmoMiddleware } from "@/lib/server/middlewares";
  */
 export const toggleObjektLock = createServerFn({ method: "POST" })
   .inputValidator((data) =>
-    z.object({ tokenId: z.number(), lock: z.boolean() }).parse(data)
+    z.object({ tokenId: z.number(), lock: z.boolean() }).parse(data),
   )
   .middleware([cosmoMiddleware])
   .handler(async ({ data, context }) => {
@@ -39,8 +39,8 @@ export const toggleObjektLock = createServerFn({ method: "POST" })
       .where(
         and(
           eq(lockedObjekts.address, context.cosmo.address),
-          eq(lockedObjekts.tokenId, data.tokenId)
-        )
+          eq(lockedObjekts.tokenId, data.tokenId),
+        ),
       );
 
     return result.rowCount === 1;
@@ -55,7 +55,7 @@ export const pinObjekt = createServerFn({ method: "POST" })
       .object({
         tokenId: z.coerce.number(),
       })
-      .parse(data)
+      .parse(data),
   )
   .middleware([cosmoMiddleware])
   .handler(async ({ data, context }) => {
@@ -94,7 +94,7 @@ export const unpinObjekt = createServerFn({ method: "POST" })
       .object({
         tokenId: z.coerce.number(),
       })
-      .parse(data)
+      .parse(data),
   )
   .middleware([cosmoMiddleware])
   .handler(async ({ data, context }) => {
@@ -103,8 +103,8 @@ export const unpinObjekt = createServerFn({ method: "POST" })
       .where(
         and(
           eq(pins.tokenId, data.tokenId),
-          eq(pins.address, context.cosmo.address)
-        )
+          eq(pins.address, context.cosmo.address),
+        ),
       );
 
     clearTag(pinCacheKey(context.cosmo.username));

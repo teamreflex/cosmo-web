@@ -1,5 +1,5 @@
-import type { ValidArtist } from "@/lib/universal/cosmo/common";
 import { z } from "zod";
+import type { ValidArtist } from "@/lib/universal/cosmo/common";
 
 export type CosmoGravityType = "event-gravity" | "grand-gravity";
 export type CosmoPollType = "single-poll" | "combination-poll";
@@ -55,12 +55,12 @@ export type CosmoSinglePollVoteResult = {
   };
 };
 
-type CosmoPollCommon<PollType extends CosmoPollType> = {
+type CosmoPollCommon<TPollType extends CosmoPollType> = {
   id: number;
   artist: ValidArtist;
   pollIdOnChain: number;
   gravityId: number;
-  type: PollType;
+  type: TPollType;
   indexInGravity: number;
   title: string;
   imageUrl: string;

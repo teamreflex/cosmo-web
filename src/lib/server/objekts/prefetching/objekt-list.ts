@@ -32,7 +32,7 @@ export const fetchObjektListEntries = createServerFn({ method: "GET" })
   .inputValidator(
     objektListBackendSchema.extend({
       objektListId: z.uuid(),
-    })
+    }),
   )
   .handler(async ({ data }): Promise<FetchObjektListEntries> => {
     const entries = await db.query.objektListEntries.findMany({
@@ -71,8 +71,8 @@ export const fetchObjektListEntries = createServerFn({ method: "GET" })
             ...withSeason(data.season ?? []),
             ...withOnlineType(data.on_offline ?? []),
             ...withMember(data.member),
-          ]
-        )
+          ],
+        ),
       )
       .$dynamic();
     query = withObjektIndexSort(query, data.sort ?? "newest");
@@ -83,7 +83,7 @@ export const fetchObjektListEntries = createServerFn({ method: "GET" })
     const collectionList = entries
       .map((entry) => {
         const collection = flatCollections.find(
-          (c) => c.slug === entry.collectionId
+          (c) => c.slug === entry.collectionId,
         );
         if (!collection) return undefined;
         return {

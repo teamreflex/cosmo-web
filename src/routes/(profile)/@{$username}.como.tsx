@@ -21,7 +21,7 @@ export const Route = createFileRoute("/(profile)/@{$username}/como")({
     ]);
 
     await context.queryClient.ensureQueryData(
-      fetchObjektsWithComoQuery(target.cosmo.address)
+      fetchObjektsWithComoQuery(target.cosmo.address),
     );
 
     return { target, artists };
@@ -31,7 +31,7 @@ export const Route = createFileRoute("/(profile)/@{$username}/como")({
       seoTitle(
         loaderData?.target.user
           ? `${loaderData.target.user.username}'s COMO`
-          : `COMO`
+          : `COMO`,
       ),
     ],
   }),
@@ -40,7 +40,7 @@ export const Route = createFileRoute("/(profile)/@{$username}/como")({
 function RouteComponent() {
   const { target, artists } = Route.useLoaderData();
   const { data } = useSuspenseQuery(
-    fetchObjektsWithComoQuery(target.cosmo.address)
+    fetchObjektsWithComoQuery(target.cosmo.address),
   );
 
   const totals = artists.map((artist) => {
@@ -84,7 +84,7 @@ function RouteComponent() {
 function PendingComponent() {
   const cells = Array.from(
     { length: getCellCount(new Date()) },
-    (_, i) => i + 1
+    (_, i) => i + 1,
   );
 
   return (

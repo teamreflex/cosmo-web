@@ -18,7 +18,7 @@ export default function MetadataContent(props: Props) {
   const { data } = useSuspenseQuery(fetchObjektQuery(props.slug));
   const { serial } = useObjektSerial();
   const [tab, setTab] = useState<ObjektMetadataTab>(() =>
-    serial !== undefined ? "serials" : "metadata"
+    serial !== undefined ? "serials" : "metadata",
   );
 
   return (
@@ -31,7 +31,7 @@ export default function MetadataContent(props: Props) {
           // mobile
           "mt-2 mx-auto w-2/3 data-[tab=serials]:w-1/2",
           // desktop
-          "md:mt-0 md:h-[28rem] md:mx-0 md:w-auto md:data-[tab=serials]:w-auto"
+          "md:mt-0 md:h-[28rem] md:mx-0 md:w-auto md:data-[tab=serials]:w-auto",
         )}
       >
         <FlippableObjekt collection={data}>

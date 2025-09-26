@@ -57,7 +57,7 @@ export function ObjektSidebar({ collection, serial }: ObjektSidebarProps) {
           src={collection.bandImageUrl}
           className={cn(
             "absolute top-0 left-0 h-full w-full object-cover pointer-events-none opacity-0 transition-opacity",
-            bandLoaded && "opacity-100"
+            bandLoaded && "opacity-100",
           )}
           alt={`${collection.artist} band image`}
           onLoad={() => setBandLoaded(true)}
@@ -73,7 +73,7 @@ export function ObjektSidebar({ collection, serial }: ObjektSidebarProps) {
             "flex justify-center items-center gap-2 [writing-mode:vertical-lr] font-semibold text-(--objekt-text-color) select-none",
             useCustomBand &&
               "rounded-l-(--border-radius) w-full h-[89%] my-auto justify-between px-(--border-padding)",
-            useBackground && "bg-(--objekt-background-color)"
+            useBackground && "bg-(--objekt-background-color)",
           )}
           style={{
             "--sidebar-width": `${width}px`,
@@ -102,7 +102,7 @@ export function ObjektNewIndicator(props: PropsWithClassName<{}>) {
     <span
       className={cn(
         "px-2 py-[3px] h-fit w-fit bg-cosmo/80 text-white rounded-full text-xs font-semibold",
-        props.className
+        props.className,
       )}
     >
       New

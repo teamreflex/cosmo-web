@@ -60,7 +60,7 @@ export const Route = createFileRoute("/(profile)/@{$username}/list/$slug")({
 
     // fetch entries
     context.queryClient.prefetchInfiniteQuery(
-      objektListQuery(objektList.id, deps.searchParams, selected)
+      objektListQuery(objektList.id, deps.searchParams, selected),
     );
 
     const isAuthenticated = account?.user.id === objektList.userId;

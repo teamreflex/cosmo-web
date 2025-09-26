@@ -25,14 +25,14 @@ export default function ArtistChart({ artists, data }: Props) {
         color: artistColors[artist.id],
       },
     }),
-    {}
+    {},
   ) satisfies ChartConfig;
 
   // get all hours from data
   const hours = new Set(
     Object.values(data).flatMap((breakdown) =>
-      breakdown.map((b) => b.timestamp)
-    )
+      breakdown.map((b) => b.timestamp),
+    ),
   );
 
   const chartData = Array.from(hours).map((hour) => {

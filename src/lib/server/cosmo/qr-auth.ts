@@ -113,6 +113,6 @@ export async function certifyTicket(otp: number, ticket: string) {
       query: {
         tid: crypto.randomUUID(),
       },
-    }
+    },
   );
 }

@@ -51,7 +51,7 @@ export default function Blockchain(props: Props) {
         ? shouldDisplayLocked
         : shouldDisplayLocked && shouldDisplayPinned;
     },
-    [lockedObjekts, pins, usingFilters, props.showLocked]
+    [lockedObjekts, pins, usingFilters, props.showLocked],
   );
 
   /**
@@ -62,7 +62,7 @@ export default function Blockchain(props: Props) {
     query: userCollectionBlockchainQuery(
       props.targetCosmo.address,
       filters,
-      selectedIds
+      selectedIds,
     ),
     calculateTotal: (data) => {
       const total = data.pages[0]?.total ?? 0;

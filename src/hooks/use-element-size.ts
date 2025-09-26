@@ -9,7 +9,7 @@ type Size = {
 
 export const useElementSize = <T extends HTMLElement = HTMLDivElement>(): [
   RefObject<T | null>,
-  Size
+  Size,
 ] => {
   const ref = useRef<T>(null);
   const [size, setSize] = useState<Size>({

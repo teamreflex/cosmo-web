@@ -21,7 +21,7 @@ export const progressBreakdownQuery = (address: string, member: string) =>
 export const progressLeaderboardQuery = (
   member: string,
   onlineType: ValidOnlineType | undefined,
-  season: string | undefined
+  season: string | undefined,
 ) =>
   queryOptions({
     queryKey: ["progress-leaderboard", member, onlineType, season],

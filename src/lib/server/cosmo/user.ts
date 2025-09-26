@@ -1,10 +1,10 @@
+import { cosmo } from "../http";
+import { cosmoShopHeaders } from "./qr-auth";
 import type {
   CosmoByNicknameResult,
   CosmoSearchResult,
   CosmoShopUser,
 } from "@/lib/universal/cosmo/user";
-import { cosmo } from "../http";
-import { cosmoShopHeaders } from "./qr-auth";
 
 /**
  * Fetch a user from COSMO by nickname.
@@ -14,7 +14,7 @@ export async function fetchByNickname(nickname: string) {
     `/user/v1/by-nickname/${nickname}`,
     {
       retry: false,
-    }
+    },
   ).then((res) => res.profile);
 }
 

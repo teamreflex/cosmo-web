@@ -14,7 +14,7 @@ export const fetchObjektList = createServerFn({ method: "GET" })
     z.union([
       z.object({ id: z.string() }),
       z.object({ userId: z.string(), slug: z.string() }),
-    ])
+    ]),
   )
   .handler(async ({ data }) => {
     return await db.query.objektLists.findFirst({ where: data });
@@ -89,7 +89,7 @@ export const importObjektLists = createServerOnlyFn(
               name: `${name} 2`,
               slug: `${slug}-2`,
             };
-          })
+          }),
         )
         .returning();
 
@@ -116,5 +116,5 @@ export const importObjektLists = createServerOnlyFn(
       // insert entries
       await tx.insert(objektListEntries).values(entries);
     });
-  }
+  },
 );

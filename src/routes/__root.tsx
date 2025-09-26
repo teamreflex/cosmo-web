@@ -26,6 +26,13 @@ interface RouterContext {
 }
 
 export const Route = createRootRouteWithContext<RouterContext>()({
+  loader({ context }) {
+    context.queryClient.prefetchQuery(currentAccountQuery);
+    context.queryClient.prefetchQuery(systemStatusQuery);
+  },
+  component: RootComponent,
+  notFoundComponent: NotFoundComponent,
+  errorComponent: ErrorComponent,
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -77,13 +84,6 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       },
     ],
   }),
-  component: RootComponent,
-  notFoundComponent: NotFoundComponent,
-  errorComponent: ErrorComponent,
-  loader({ context }) {
-    context.queryClient.prefetchQuery(currentAccountQuery);
-    context.queryClient.prefetchQuery(systemStatusQuery);
-  },
 });
 
 function RootComponent() {

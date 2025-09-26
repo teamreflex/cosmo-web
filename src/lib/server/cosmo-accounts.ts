@@ -96,7 +96,7 @@ export const fetchFullAccount = createServerOnlyFn(
       // couldn't find any user
       return undefined;
     }
-  }
+  },
 );
 
 /**
@@ -123,7 +123,7 @@ export const linkAccount = createServerOnlyFn(
     }
 
     return result;
-  }
+  },
 );
 
 type PartialAccount = Omit<CosmoAccount, "id" | "cosmoId" | "userId">;
@@ -154,7 +154,7 @@ export const cacheAccounts = createServerOnlyFn(
         },
       })
       .returning();
-  }
+  },
 );
 
 /**
@@ -176,7 +176,7 @@ export const fetchKnownAddresses = createServerOnlyFn(
         username: true,
       },
     });
-  }
+  },
 );
 
 /**
@@ -185,7 +185,7 @@ export const fetchKnownAddresses = createServerOnlyFn(
 export function toPublicCosmo(cosmo: undefined): undefined;
 export function toPublicCosmo(cosmo: CosmoAccount): PublicCosmo;
 export function toPublicCosmo(
-  cosmo: CosmoAccount | undefined
+  cosmo: CosmoAccount | undefined,
 ): PublicCosmo | undefined {
   if (!cosmo) {
     return undefined;

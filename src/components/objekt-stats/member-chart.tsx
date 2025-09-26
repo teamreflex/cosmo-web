@@ -1,14 +1,14 @@
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import type { HourlyBreakdown } from "@/lib/universal/stats";
+import type { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
+import type { ChartConfig } from "@/components/ui/chart";
 import {
-  type ChartConfig,
   ChartContainer,
   ChartLegend,
   ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import type { HourlyBreakdown } from "@/lib/universal/stats";
-import type { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 
 type Props = {
   artists: CosmoArtistWithMembersBFF[];
@@ -28,14 +28,14 @@ export default function MemberChart({ artists, data, selectedMembers }: Props) {
         color: member.primaryColorHex,
       },
     }),
-    {}
+    {},
   ) satisfies ChartConfig;
 
   // get all hours from data
   const hours = new Set(
     Object.values(data).flatMap((breakdown) =>
-      breakdown.map((b) => b.timestamp)
-    )
+      breakdown.map((b) => b.timestamp),
+    ),
   );
 
   const chartData = Array.from(hours).map((hour) => {

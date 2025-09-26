@@ -43,7 +43,7 @@ function SystemStatusPopover() {
           className={cn(
             "h-8 w-9 flex justify-center items-center rounded-l-lg transition-colors",
             textStatus(processor.status),
-            bgStatus(processor.status)
+            bgStatus(processor.status),
           )}
         >
           <Activity className="w-5 h-5" />
@@ -57,7 +57,7 @@ function SystemStatusPopover() {
             <div
               className={cn(
                 "flex gap-1 items-center",
-                textStatus(processor.status)
+                textStatus(processor.status),
               )}
             >
               <span className="font-semibold">

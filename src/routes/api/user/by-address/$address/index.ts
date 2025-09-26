@@ -18,7 +18,7 @@ export const Route = createFileRoute("/api/user/by-address/$address/")({
         if (authKey !== env.AUTH_KEY) {
           return Response.json(
             { error: "invalid authorization" },
-            { status: 401 }
+            { status: 401 },
           );
         }
 
@@ -85,7 +85,7 @@ async function getObjektStats(address: string) {
       collections.season,
       collections.member,
       collections.artist,
-      collections.class
+      collections.class,
     );
 
   // transform stats into ArtistStats format
@@ -123,15 +123,18 @@ async function getObjektStats(address: string) {
   // convert the intermediate map format back to the desired final structure
   return Array.from(artistsMap.values()).map((processingStats) => ({
     artistName: processingStats.artistName,
-    seasons: Array.from(processingStats.seasons.entries()).map(
-      ([name, count]) => ({ name, count })
-    ),
-    members: Array.from(processingStats.members.entries()).map(
-      ([name, count]) => ({ name, count })
-    ),
-    classes: Array.from(processingStats.classes.entries()).map(
-      ([name, count]) => ({ name, count })
-    ),
+    seasons: Array.from(processingStats.seasons.entries()).map(([name, c]) => ({
+      name,
+      count: c,
+    })),
+    members: Array.from(processingStats.members.entries()).map(([name, c]) => ({
+      name,
+      count: c,
+    })),
+    classes: Array.from(processingStats.classes.entries()).map(([name, c]) => ({
+      name,
+      count: c,
+    })),
   })) satisfies ArtistStats[];
 }
 

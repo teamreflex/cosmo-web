@@ -25,7 +25,7 @@ export const Route = createFileRoute("/api/gravity/$pollId/votes")({
           .from(gravityPolls)
           .innerJoin(
             gravities,
-            eq(gravityPolls.cosmoGravityId, gravities.cosmoId)
+            eq(gravityPolls.cosmoGravityId, gravities.cosmoId),
           )
           .where(eq(gravityPolls.cosmoId, pollId))
           .limit(1);

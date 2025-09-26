@@ -28,7 +28,7 @@ export const fetchProgressBreakdown = createServerFn({ method: "GET" })
         member: z.string(),
         address: z.string(),
       })
-      .parse(data)
+      .parse(data),
   )
   .handler(async ({ data }) => {
     const [totals, progress] = await Promise.all([
@@ -46,7 +46,7 @@ export const fetchProgressBreakdown = createServerFn({ method: "GET" })
 
     const matrix = buildMatrix(
       Array.from(classes).filter((c) => !["Zero", "Welcome"].includes(c)),
-      Array.from(seasons)
+      Array.from(seasons),
     );
 
     return zipResults(matrix, totals, progress);
@@ -62,11 +62,11 @@ export const fetchProgressLeaderboard = createServerFn({ method: "GET" })
         member: z.string(),
         onlineType: z.preprocess(
           (v) => (v === "" ? null : v),
-          z.enum(validOnlineTypes).nullish().default(null)
+          z.enum(validOnlineTypes).nullish().default(null),
         ),
         season: z.string().nullish().default(null),
       })
-      .parse(data)
+      .parse(data),
   )
   .handler(async ({ data }) => {
     const [totals, leaderboard] = await Promise.all([
@@ -76,7 +76,7 @@ export const fetchProgressLeaderboard = createServerFn({ method: "GET" })
 
     // fetch profiles for each address
     const knownAddresses = await fetchKnownAddresses(
-      leaderboard.map((a) => a.owner)
+      leaderboard.map((a) => a.owner),
     );
 
     // map the nickname onto the results
@@ -121,7 +121,7 @@ export const fetchArtistStatsByAddress = createServerFn({ method: "GET" })
           collections.season,
           collections.member,
           collections.artist,
-          collections.class
+          collections.class,
         );
 
       // transform stats into ArtistStats format
@@ -147,14 +147,14 @@ export const fetchArtistStatsByAddress = createServerFn({ method: "GET" })
         const currentSeasonCount = artistStats.seasons.get(record.season) ?? 0;
         artistStats.seasons.set(
           record.season,
-          currentSeasonCount + record.count
+          currentSeasonCount + record.count,
         );
 
         // update member count
         const currentMemberCount = artistStats.members.get(record.member) ?? 0;
         artistStats.members.set(
           record.member,
-          currentMemberCount + record.count
+          currentMemberCount + record.count,
         );
 
         // update class count
@@ -167,15 +167,15 @@ export const fetchArtistStatsByAddress = createServerFn({ method: "GET" })
         (processingStats) => ({
           artistName: processingStats.artistName,
           seasons: Array.from(processingStats.seasons.entries()).map(
-            ([name, count]) => ({ name, count })
+            ([name, c]) => ({ name, count: c }),
           ),
           members: Array.from(processingStats.members.entries()).map(
-            ([name, count]) => ({ name, count })
+            ([name, c]) => ({ name, count: c }),
           ),
           classes: Array.from(processingStats.classes.entries()).map(
-            ([name, count]) => ({ name, count })
+            ([name, c]) => ({ name, count: c }),
           ),
-        })
+        }),
       );
 
       return finalStats;
@@ -207,13 +207,13 @@ export const fetchTotal = createServerOnlyFn(
           ...(onlineType !== null
             ? [eq(collections.onOffline, onlineType)]
             : []),
-          ...(season !== null ? [eq(collections.season, season)] : [])
-        )
+          ...(season !== null ? [eq(collections.season, season)] : []),
+        ),
       )
       .orderBy(desc(collections.createdAt));
 
     return result;
-  }
+  },
 );
 
 /**
@@ -230,7 +230,7 @@ function buildMatrix(classes: string[], seasons: string[]): SeasonMatrix[] {
         type,
         class: c,
       }));
-    })
+    }),
   );
 }
 
@@ -257,11 +257,11 @@ const fetchProgress = createServerOnlyFn(
           // only operate on objekts the address owns
           eq(objekts.owner, address),
           // only operate on objekts of the given member
-          eq(collections.member, member)
-        )
+          eq(collections.member, member),
+        ),
       )
       .orderBy(objekts.collectionId);
-  }
+  },
 );
 
 type PartialObjekt = Awaited<ReturnType<typeof fetchProgress>>;
@@ -273,21 +273,21 @@ const zipResults = createServerOnlyFn(
   (
     matrix: SeasonMatrix[],
     total: Collection[],
-    progress: PartialObjekt
+    progress: PartialObjekt,
   ): SeasonProgress[] => {
     return matrix.map((m) => {
       const type = m.type === "combined" ? undefined : m.type;
 
       const collectionsInScope = total.filter(
-        filterMatrix(m.class, m.season, type)
+        filterMatrix(m.class, m.season, type),
       );
       const ownedInScope = progress.filter(
-        filterMatrix(m.class, m.season, type)
+        filterMatrix(m.class, m.season, type),
       );
 
       // exclude unobtainable collections from total count
       const totalCollections = collectionsInScope.filter(
-        (c) => !unobtainables.includes(c.slug)
+        (c) => !unobtainables.includes(c.slug),
       ).length;
 
       // get unobtainable collections separately to be added in later
@@ -298,7 +298,7 @@ const zipResults = createServerOnlyFn(
           acc.unobtainableTotal += isUnobtainable ? 1 : 0;
           return acc;
         },
-        { progressTotal: 0, unobtainableTotal: 0 }
+        { progressTotal: 0, unobtainableTotal: 0 },
       );
 
       return {
@@ -313,7 +313,7 @@ const zipResults = createServerOnlyFn(
         })),
       };
     });
-  }
+  },
 );
 
 /**
@@ -323,13 +323,13 @@ const filterMatrix = createServerOnlyFn(
   <T extends { class: string; season: string; onOffline: string }>(
     matrixClass: string,
     matrixSeason: string,
-    matrixOnOffline?: string
+    matrixOnOffline?: string,
   ) => {
     return ({ class: className, season, onOffline }: T) =>
       className === matrixClass &&
       season === matrixSeason &&
       (matrixOnOffline ? onOffline === matrixOnOffline : true);
-  }
+  },
 );
 
 type FetchLeaderboard = {
@@ -363,9 +363,9 @@ const fetchLeaderboard = createServerOnlyFn(
             ...(onlineType !== null
               ? [eq(collections.onOffline, onlineType)]
               : []),
-            ...(season !== null ? [eq(collections.season, season)] : [])
-          )
-        )
+            ...(season !== null ? [eq(collections.season, season)] : []),
+          ),
+        ),
     );
 
     // cte 2: filter distinct owners
@@ -378,10 +378,10 @@ const fetchLeaderboard = createServerOnlyFn(
         .from(objekts)
         .innerJoin(
           filteredCollections,
-          eq(objekts.collectionId, filteredCollections.id)
+          eq(objekts.collectionId, filteredCollections.id),
         )
         // exclude @cosmo-spin
-        .where(not(eq(objekts.owner, Addresses.SPIN)))
+        .where(not(eq(objekts.owner, Addresses.SPIN))),
     );
 
     // final query: count distinct owners
@@ -395,5 +395,5 @@ const fetchLeaderboard = createServerOnlyFn(
       .groupBy(distinctOwners.owner)
       .orderBy(sql`count desc`)
       .limit(LEADERBOARD_COUNT);
-  }
+  },
 );

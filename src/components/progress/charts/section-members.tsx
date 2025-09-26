@@ -11,10 +11,13 @@ type Props = {
 export default function SectionMembers(props: Props) {
   const { getMember } = useArtists();
   const colorMap = useMemo(() => {
-    return props.data.reduce((acc, stat) => {
-      acc[stat.name] = getMember(stat.name)?.primaryColorHex ?? randomColor();
-      return acc;
-    }, {} as Record<string, string>);
+    return props.data.reduce(
+      (acc, stat) => {
+        acc[stat.name] = getMember(stat.name)?.primaryColorHex ?? randomColor();
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
   }, [props.data, getMember]);
 
   return (

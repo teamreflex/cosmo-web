@@ -17,7 +17,7 @@ export const authMiddleware = createMiddleware({ type: "function" }).server(
         session,
       },
     });
-  }
+  },
 );
 
 /**

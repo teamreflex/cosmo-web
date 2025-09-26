@@ -52,7 +52,7 @@ export const rescanObjektMetadata = createServerFn({ method: "POST" })
           headers: {
             "proxy-key": env.INDEXER_PROXY_KEY,
           },
-        }
+        },
       );
 
       return true;

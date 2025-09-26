@@ -34,7 +34,7 @@ export const fetchCurrentUser = createServerFn({ method: "GET" }).handler(
     }
 
     return toPublicUser(session.user);
-  }
+  },
 );
 
 /**
@@ -54,7 +54,7 @@ export const fetchFilterData = createServerFn({ method: "GET" }).handler(() =>
       seasons,
       classes,
     };
-  })
+  }),
 );
 
 /**
@@ -116,7 +116,7 @@ export const fetchCurrentAccount = createServerFn({ method: "GET" }).handler(
       user: toPublicUser(user),
       objektLists,
     };
-  }
+  },
 );
 
 /**
@@ -180,7 +180,7 @@ export const artistsQuery = queryOptions({
 export const fetchSelectedArtists = createServerFn({ method: "GET" }).handler(
   () => {
     return fetchCookie<string[]>("artists") ?? [];
-  }
+  },
 );
 
 /**

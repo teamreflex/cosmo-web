@@ -52,7 +52,8 @@ export default function ClassFilter(props: Props) {
           variant="outline"
           className={cn(
             "flex gap-2 items-center",
-            (props.classes?.length ?? 0) > 0 && "dark:border-cosmo border-cosmo"
+            (props.classes?.length ?? 0) > 0 &&
+              "dark:border-cosmo border-cosmo",
           )}
         >
           <span>Class</span>

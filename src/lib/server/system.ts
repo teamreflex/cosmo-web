@@ -85,7 +85,7 @@ export const fetchSystemStatus = createServerFn().handler(async () => {
           },
         },
       };
-    }
+    },
   );
 });
 

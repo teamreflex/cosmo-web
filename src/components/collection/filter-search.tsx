@@ -21,7 +21,7 @@ export default function FilterSearch() {
     <div
       className={cn(
         "placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input flex items-center gap-2 h-9 w-48 min-w-0 rounded-md border bg-transparent shadow-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
-        "focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-[3px]"
+        "focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-[3px]",
       )}
     >
       <input

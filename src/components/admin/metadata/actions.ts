@@ -16,7 +16,7 @@ export const saveMetadata = createServerFn({ method: "POST" })
       .object({
         rows: metadataObjectSchema.array(),
       })
-      .parse(data)
+      .parse(data),
   )
   .handler(async ({ data, context }) => {
     const result = await db
@@ -26,7 +26,7 @@ export const saveMetadata = createServerFn({ method: "POST" })
           collectionId: r.collectionId,
           description: r.description,
           contributor: context.cosmo.address,
-        }))
+        })),
       )
       .onConflictDoUpdate({
         target: objektMetadata.collectionId,

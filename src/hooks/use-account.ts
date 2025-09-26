@@ -11,7 +11,7 @@ export function useSessionUser() {
       if (result.error) {
         throw new Error(getAuthErrorMessage(result.error));
       }
-      return result.data?.user;
+      return result.data?.user ?? null;
     },
   });
 }

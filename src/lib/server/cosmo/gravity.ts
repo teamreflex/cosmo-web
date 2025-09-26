@@ -27,7 +27,7 @@ export async function fetchGravities(artist: ValidArtist) {
  */
 export async function fetchGravity(artist: ValidArtist, gravityId: number) {
   return await cosmo<{ gravity: CosmoGravity }>(
-    `/gravity/v3/${artist}/gravity/${gravityId}`
+    `/gravity/v3/${artist}/gravity/${gravityId}`,
   )
     .then((res) => res.gravity)
     .catch(() => null);
@@ -40,7 +40,7 @@ export async function fetchPoll(
   token: string,
   artist: ValidArtist,
   gravityId: number,
-  pollId: number
+  pollId: number,
 ) {
   return await cosmo<{ pollDetail: CosmoPollChoices }>(
     `/gravity/v3/${artist}/gravity/${gravityId}/polls/${pollId}`,
@@ -48,6 +48,6 @@ export async function fetchPoll(
       headers: {
         Authorization: `Bearer ${token}`,
       },
-    }
+    },
   ).then((res) => res.pollDetail);
 }

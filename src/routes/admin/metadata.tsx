@@ -5,9 +5,6 @@ import { fetchLatestMetadata } from "@/lib/server/objekts/metadata";
 import { seoTitle } from "@/lib/seo";
 
 export const Route = createFileRoute("/admin/metadata")({
-  head: () => ({
-    meta: [seoTitle("Objekt Metadata")],
-  }),
   beforeLoad: async () => {
     const user = await fetchCurrentUser();
     if (!user?.isAdmin) {
@@ -18,6 +15,9 @@ export const Route = createFileRoute("/admin/metadata")({
     const metadata = await fetchLatestMetadata();
     return { metadata };
   },
+  head: () => ({
+    meta: [seoTitle("Objekt Metadata")],
+  }),
   component: RouteComponent,
 });
 

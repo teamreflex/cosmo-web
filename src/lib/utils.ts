@@ -96,7 +96,9 @@ export const Addresses = {
  * Handles when the tracking script isn't loaded.
  */
 export function track(event: string) {
-  window.umami?.track(event)?.catch(() => void 0);
+  if (typeof umami !== 'undefined') {
+    umami.track(event)?.catch(() => void 0);
+  }
 }
 
 /**
@@ -124,7 +126,7 @@ export function randomColor(): string {
 export async function chunk<T>(
   arr: T[],
   chunkSize: number,
-  callback: (chunk: T[]) => Promise<void>
+  callback: (chunk: T[]) => Promise<void>,
 ) {
   for (let i = 0; i < arr.length; i += chunkSize) {
     await callback(arr.slice(i, i + chunkSize));

@@ -4,15 +4,15 @@ import InsertBands from "@/components/admin/bands/insert-bands";
 import { seoTitle } from "@/lib/seo";
 
 export const Route = createFileRoute("/admin/bands")({
-  head: () => ({
-    meta: [seoTitle("Objekt Bands")],
-  }),
   beforeLoad: async () => {
     const user = await fetchCurrentUser();
     if (!user?.isAdmin) {
       throw redirect({ to: "/" });
     }
   },
+  head: () => ({
+    meta: [seoTitle("Objekt Bands")],
+  }),
   component: RouteComponent,
 });
 

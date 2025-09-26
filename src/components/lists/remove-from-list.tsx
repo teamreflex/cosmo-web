@@ -19,7 +19,7 @@ export default function RemoveFromList({ id, collection, objektList }: Props) {
     mutationFn,
     onSuccess() {
       toast.success(
-        `Removed ${collection.collectionId} from ${objektList.name}`
+        `Removed ${collection.collectionId} from ${objektList.name}`,
       );
       queryClient.invalidateQueries({
         queryKey: ["objekt-list", objektList.id],

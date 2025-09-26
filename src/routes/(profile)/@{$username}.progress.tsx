@@ -50,7 +50,7 @@ export const Route = createFileRoute("/(profile)/@{$username}/progress")({
       seoTitle(
         loaderData?.target.user
           ? `${loaderData.target.user.username}'s Progress`
-          : `Progress`
+          : `Progress`,
       ),
     ],
   }),

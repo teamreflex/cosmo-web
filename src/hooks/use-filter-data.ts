@@ -6,7 +6,7 @@ export function useFilterData() {
   const { data } = useSuspenseQuery(filterDataQuery);
   const { getArtist, selectedIds } = useArtists();
 
-  const seasons = data.seasons
+  const seasonsData = data.seasons
     .map(({ artistId, seasons }) => {
       const artist = getArtist(artistId)!;
       return {
@@ -19,7 +19,7 @@ export function useFilterData() {
       return selectedIds.includes(artist.id);
     });
 
-  const classes = data.classes
+  const classesData = data.classes
     .map(({ artistId, classes }) => {
       const artist = getArtist(artistId)!;
       return {
@@ -34,8 +34,8 @@ export function useFilterData() {
 
   return {
     collections: data.collections,
-    seasons,
-    classes,
+    seasons: seasonsData,
+    classes: classesData,
   };
 }
 

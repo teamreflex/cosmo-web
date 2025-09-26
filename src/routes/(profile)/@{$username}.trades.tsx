@@ -30,7 +30,7 @@ export const Route = createFileRoute("/(profile)/@{$username}/trades")({
     ]);
 
     context.queryClient.prefetchInfiniteQuery(
-      transfersQuery(target.cosmo.address, deps.searchParams, selected)
+      transfersQuery(target.cosmo.address, deps.searchParams, selected),
     );
 
     return { artists, selected, cosmo: target.cosmo };
@@ -38,7 +38,7 @@ export const Route = createFileRoute("/(profile)/@{$username}/trades")({
   head: ({ loaderData }) => ({
     meta: [
       seoTitle(
-        loaderData?.cosmo ? `${loaderData.cosmo.username}'s Trades` : `Trades`
+        loaderData?.cosmo ? `${loaderData.cosmo.username}'s Trades` : `Trades`,
       ),
     ],
   }),

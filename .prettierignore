@@ -1,0 +1,4 @@
+.tanstack
+.vercel
+dist
+node_modules

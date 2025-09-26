@@ -6,7 +6,7 @@ const nameSchema = z
   .max(24, "Name cannot be longer than 24 characters")
   .refine(
     (value) => /^[a-zA-Z0-9 ]+$/.test(value),
-    "Name should only use alphanumeric characters"
+    "Name should only use alphanumeric characters",
   );
 
 export const createObjektListSchema = z.object({

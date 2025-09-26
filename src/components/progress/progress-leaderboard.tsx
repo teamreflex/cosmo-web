@@ -157,7 +157,7 @@ function SeasonSelect(props: SeasonSelectProps) {
         selectedIds.includes(artist.id) &&
         artist.artistMembers
           .map((m) => m.name.toLowerCase())
-          .includes(props.member.toLowerCase())
+          .includes(props.member.toLowerCase()),
     );
 
   return (

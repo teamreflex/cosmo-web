@@ -86,8 +86,8 @@ export const updateObjektList = createServerFn({ method: "POST" })
       .where(
         and(
           eq(objektLists.id, data.id),
-          eq(objektLists.userId, context.session.session.userId)
-        )
+          eq(objektLists.userId, context.session.session.userId),
+        ),
       )
       .returning();
 
@@ -126,8 +126,8 @@ export const deleteObjektList = createServerFn({ method: "POST" })
       .where(
         and(
           eq(objektLists.id, data.id),
-          eq(objektLists.userId, context.session.session.userId)
-        )
+          eq(objektLists.userId, context.session.session.userId),
+        ),
       );
 
     throw redirect({ to: "/" });
@@ -164,8 +164,8 @@ export const removeObjektFromList = createServerFn({ method: "POST" })
       .where(
         and(
           eq(objektListEntries.objektListId, data.objektListId),
-          eq(objektListEntries.id, data.objektListEntryId)
-        )
+          eq(objektListEntries.id, data.objektListEntryId),
+        ),
       );
 
     return result.rowCount === 1;
@@ -264,7 +264,7 @@ function formatMemberCollections(collections: CollectionSubset[]): string {
         const firstLetter = seasonText?.at(0) ?? "";
         const seasonPart = firstLetter.repeat(parseInt(seasonNum ?? "0", 10));
         return `${seasonPart}${c.collectionNo}`;
-      })
+      }),
     ),
   ]
     .sort()
@@ -277,7 +277,7 @@ function formatMemberCollections(collections: CollectionSubset[]): string {
 function format(
   collections: CollectionSubset[],
   entries: ObjektListEntry[],
-  artists: CosmoArtistWithMembersBFF[]
+  artists: CosmoArtistWithMembersBFF[],
 ): string[] {
   // create a map for quick collection lookup by slug
   const collectionsMap = new Map(collections.map((c) => [c.slug, c]));

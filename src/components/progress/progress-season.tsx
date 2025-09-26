@@ -12,11 +12,8 @@ export default function ProgressSeason({ season, classes }: Props) {
   const [selectedClass, setSelectedClass] = useState<SeasonProgress>();
 
   const total = classes.reduce((acc, progress) => acc + progress.total, 0);
-  let progress = classes.reduce((acc, progress) => acc + progress.progress, 0);
-  const unobtainable = classes.reduce(
-    (acc, progress) => acc + progress.unobtainable,
-    0
-  );
+  let progress = classes.reduce((acc, p) => acc + p.progress, 0);
+  const unobtainable = classes.reduce((acc, p) => acc + p.unobtainable, 0);
 
   // if the user has 100%, add their unobtainables in
   if (total === progress) {

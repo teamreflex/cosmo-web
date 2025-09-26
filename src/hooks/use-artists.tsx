@@ -29,13 +29,13 @@ type ProviderProps = {
 
 export function ArtistProvider({ children, artists, selected }: ProviderProps) {
   const artistMap = new Map(
-    artists.map((artist) => [artist.id.toLowerCase(), artist])
+    artists.map((artist) => [artist.id.toLowerCase(), artist]),
   );
 
   const memberMap = new Map(
     artists.flatMap((artist) =>
-      artist.artistMembers.map((member) => [member.name.toLowerCase(), member])
-    )
+      artist.artistMembers.map((member) => [member.name.toLowerCase(), member]),
+    ),
   );
 
   return (
@@ -66,7 +66,7 @@ export function useArtists() {
    */
   const getArtist = useCallback(
     (artistName: string) => ctx.artistMap.get(artistName.toLowerCase()),
-    [ctx.artistMap]
+    [ctx.artistMap],
   );
 
   /**
@@ -74,7 +74,7 @@ export function useArtists() {
    */
   const getMember = useCallback(
     (memberName: string) => ctx.memberMap.get(memberName.toLowerCase()),
-    [ctx.memberMap]
+    [ctx.memberMap],
   );
 
   /**

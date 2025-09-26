@@ -1,11 +1,11 @@
-import type { RefreshTokenResult } from "@/lib/universal/cosmo/auth";
 import { cosmo } from "../http";
+import type { RefreshTokenResult } from "@/lib/universal/cosmo/auth";
 
 /**
  * Refresh the given token.
  */
 export async function refresh(
-  refreshToken: string
+  refreshToken: string,
 ): Promise<RefreshTokenResult> {
   return await cosmo<{ credentials: RefreshTokenResult }>("/auth/v1/refresh", {
     method: "POST",

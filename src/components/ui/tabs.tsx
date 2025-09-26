@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Tabs as TabsPrimitive } from "radix-ui";
-import { cva, type VariantProps } from "class-variance-authority";
+import { cva } from "class-variance-authority";
+import type { VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const tabsListVariants = cva(
@@ -15,7 +16,7 @@ const tabsListVariants = cva(
     defaultVariants: {
       variant: "default",
     },
-  }
+  },
 );
 
 const tabsTriggerVariants = cva(
@@ -32,7 +33,7 @@ const tabsTriggerVariants = cva(
     defaultVariants: {
       variant: "default",
     },
-  }
+  },
 );
 
 type TabsContextValue = {
@@ -92,7 +93,7 @@ const TabsContent = React.forwardRef<
     ref={ref}
     className={cn(
       "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-      className
+      className,
     )}
     {...props}
   />

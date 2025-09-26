@@ -21,7 +21,7 @@ export const Route = createFileRoute("/api/objekts/by-slug/$slug")({
         if (!collection) {
           return Response.json(
             { message: `Collection not found` },
-            { status: 404 }
+            { status: 404 },
           );
         }
 

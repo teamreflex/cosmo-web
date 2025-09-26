@@ -26,5 +26,5 @@ export const indexer = drizzle(
       return { rows: [] };
     }
   },
-  { relations }
+  { relations },
 );

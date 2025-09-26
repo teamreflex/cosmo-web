@@ -7,10 +7,13 @@ type Props = {
 };
 
 export default function SectionClasses(props: Props) {
-  const colors = props.data.reduce((acc, curr) => {
-    acc[curr.name] = randomColor();
-    return acc;
-  }, {} as Record<string, string>);
+  const colors = props.data.reduce(
+    (acc, curr) => {
+      acc[curr.name] = randomColor();
+      return acc;
+    },
+    {} as Record<string, string>,
+  );
 
   return <ProgressSection data={props.data} title="Class" colors={colors} />;
 }

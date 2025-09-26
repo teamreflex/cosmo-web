@@ -9,6 +9,7 @@
     "start": "vite start",
     "lint": "eslint . --max-warnings 0",
     "typecheck": "tsc --pretty --noEmit",
+    "format": "prettier --write \"**/*.{ts,tsx}\"",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
     "db:upgrade": "drizzle-kit up",
@@ -71,6 +72,8 @@
     "@fontsource-variable/inter": "^5.2.8",
     "@tailwindcss/vite": "^4.1.13",
     "@tanstack/eslint-config": "^0.3.2",
+    "@tanstack/eslint-plugin-query": "^5.90.1",
+    "@tanstack/eslint-plugin-router": "^1.132.0",
     "@tanstack/react-query-devtools": "^5.90.2",
     "@types/node": "22.17.2",
     "@types/pg": "^8.15.5",
@@ -88,6 +91,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "pg": "^8.16.3",
     "postcss": "8.5.6",
+    "prettier": "^3.6.2",
     "tailwindcss": "^4.1.13",
     "typescript": "5.9.2",
     "typescript-eslint": "^8.44.1",
@@ -107,6 +111,9 @@
       "unrs-resolver",
       "utf-8-validate"
     ]
+  },
+  "prettier": {
+    "trailingComma": "all"
   },
   "packageManager": "pnpm@10.14.0"
 }

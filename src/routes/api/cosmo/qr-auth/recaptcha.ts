@@ -29,7 +29,7 @@ export const Route = createFileRoute("/api/cosmo/qr-auth/recaptcha")({
             {
               status: 401,
               headers,
-            }
+            },
           );
         }
 
@@ -49,7 +49,7 @@ export const Route = createFileRoute("/api/cosmo/qr-auth/recaptcha")({
             {
               status: 429,
               headers,
-            }
+            },
           );
         }
 
@@ -64,7 +64,7 @@ export const Route = createFileRoute("/api/cosmo/qr-auth/recaptcha")({
             {
               status: 500,
               headers,
-            }
+            },
           );
         }
 
@@ -78,7 +78,7 @@ export const Route = createFileRoute("/api/cosmo/qr-auth/recaptcha")({
             {
               status: 500,
               headers,
-            }
+            },
           );
         }
 

@@ -44,7 +44,7 @@ export default function OnlineFilter({ onOffline: value, onChange }: Props) {
           variant="outline"
           className={cn(
             "flex gap-2 items-center",
-            (value?.length ?? 0) > 0 && "dark:border-cosmo border-cosmo"
+            (value?.length ?? 0) > 0 && "dark:border-cosmo border-cosmo",
           )}
         >
           <span>Physical</span>

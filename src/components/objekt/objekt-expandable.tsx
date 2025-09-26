@@ -31,7 +31,7 @@ export default function ExpandableObjekt({
   const [isLoaded, setIsLoaded] = useState(false);
   const queryClient = useQueryClient();
   const isSelected = useObjektTransfer(
-    useShallow((state) => state.isSelected(Number(tokenId)))
+    useShallow((state) => state.isSelected(Number(tokenId))),
   );
 
   const { front } = getObjektImageUrls(collection);
@@ -56,7 +56,7 @@ export default function ExpandableObjekt({
           className={cn(
             "relative overflow-hidden rounded-lg md:rounded-xl lg:rounded-2xl touch-manipulation bg-secondary transition-colors ring-2 ring-transparent aspect-photocard drop-shadow-sm",
             isSelected && "ring-foreground",
-            className
+            className,
           )}
         >
           <img
@@ -67,7 +67,7 @@ export default function ExpandableObjekt({
               // populate the query cache so it doesn't re-fetch
               queryClient.setQueryData(
                 fetchObjektQuery(collection.slug).queryKey,
-                collection
+                collection,
               );
               // update the url
               setActive?.(collection.slug);
@@ -76,7 +76,7 @@ export default function ExpandableObjekt({
             }}
             className={cn(
               "transition-opacity w-full",
-              isLoaded === false && "opacity-0"
+              isLoaded === false && "opacity-0",
             )}
             src={front.display}
             width={291}

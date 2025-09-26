@@ -38,11 +38,10 @@ export const Route = createFileRoute("/list/$id")({
     }
 
     // kick off loading of objekt list entries
-    const selected = await context.queryClient.ensureQueryData(
-      selectedArtistsQuery
-    );
+    const selected =
+      await context.queryClient.ensureQueryData(selectedArtistsQuery);
     context.queryClient.prefetchInfiniteQuery(
-      objektListQuery(sanitizedId, deps.searchParams, selected)
+      objektListQuery(sanitizedId, deps.searchParams, selected),
     );
 
     // load required data

@@ -1,9 +1,9 @@
 import { AlertTriangle } from "lucide-react";
 import {
   Tooltip,
+  TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-  TooltipContent,
 } from "../ui/tooltip";
 
 type Props = {

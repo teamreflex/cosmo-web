@@ -206,7 +206,7 @@ function Notice({ children, className, enabled }: NoticeProps) {
       data-enabled={enabled}
       className={cn(
         "items-center justify-between px-4 text-xs font-semibold h-8 hidden data-[enabled=true]:flex",
-        className
+        className,
       )}
     >
       {children}

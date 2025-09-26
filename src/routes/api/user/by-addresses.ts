@@ -21,7 +21,7 @@ export const Route = createFileRoute("/api/user/by-addresses")({
         if (authKey !== env.AUTH_KEY) {
           return Response.json(
             { error: "invalid authorization" },
-            { status: 401 }
+            { status: 401 },
           );
         }
 
@@ -47,13 +47,13 @@ export const Route = createFileRoute("/api/user/by-addresses")({
           if (error instanceof z.ZodError) {
             return Response.json(
               { error: "validation error", details: error.issues },
-              { status: 422 }
+              { status: 422 },
             );
           }
 
           return Response.json(
             { error: "internal server error" },
-            { status: 500 }
+            { status: 500 },
           );
         }
       },

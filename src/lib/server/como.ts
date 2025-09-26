@@ -33,8 +33,8 @@ export const fetchObjektsWithComo = createServerFn({ method: "GET" })
         collections,
         and(
           eq(objekts.collectionId, collections.id),
-          inArray(collections.class, ["Special", "Premier"])
-        )
+          inArray(collections.class, ["Special", "Premier"]),
+        ),
       );
   });
 

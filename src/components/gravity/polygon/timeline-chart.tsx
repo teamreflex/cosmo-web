@@ -20,7 +20,7 @@ export default function TimelineChart(props: Props) {
 
   const totalRevealed = props.revealedVotes.reduce(
     (acc, vote) => acc + vote.comoAmount,
-    0
+    0,
   );
   const isComplete = props.totalComoUsed === totalRevealed;
 
@@ -133,7 +133,7 @@ function generateChartData(props: Props): ChartDataPoint[] {
   for (const vote of revealedVotes) {
     // calculate which segment this vote belongs to
     const segmentIndex = Math.floor(
-      (vote.blockNumber - minBlock) / BLOCK_SEGMENT_SIZE
+      (vote.blockNumber - minBlock) / BLOCK_SEGMENT_SIZE,
     );
     const start = minBlock + segmentIndex * BLOCK_SEGMENT_SIZE;
     const segment = segmentMap[start];

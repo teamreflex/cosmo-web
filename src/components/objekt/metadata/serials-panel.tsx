@@ -104,7 +104,7 @@ function Content(props: ContentProps) {
     queryKey: ["objekt-serial", props.slug, props.serial],
     queryFn: async () => {
       return await ofetch<{ result: SerialObjekt | null }>(
-        `/api/objekts/metadata/${props.slug}/${props.serial}`
+        `/api/objekts/metadata/${props.slug}/${props.serial}`,
       );
     },
     retry: 1,

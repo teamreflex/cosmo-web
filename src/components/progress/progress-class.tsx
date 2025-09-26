@@ -27,7 +27,7 @@ export default function ProgressClass({
     <div
       className={cn(
         "group min-h-26 relative flex flex-col justify-between rounded-lg border p-4 bg-gradient-to-br from-cosmo/7 to-cosmo/2 hover:bg-cosmo/4 transition-colors shadow-sm overflow-hidden",
-        isComplete ? "border-green-500/50" : "border-cosmo/50"
+        isComplete ? "border-green-500/50" : "border-cosmo/50",
       )}
       onClick={onExpand}
     >

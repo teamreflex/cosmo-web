@@ -16,7 +16,7 @@ export function useProgressFilters() {
     (
       input:
         | Partial<ProgressFilters>
-        | ((prev: ProgressFilters) => Partial<ProgressFilters>)
+        | ((prev: ProgressFilters) => Partial<ProgressFilters>),
     ) => {
       if (typeof input === "function") {
         input = input(searchParams);
@@ -30,7 +30,7 @@ export function useProgressFilters() {
         }),
       });
     },
-    [searchParams]
+    [searchParams],
   );
 
   /**
@@ -39,11 +39,11 @@ export function useProgressFilters() {
   const setFilter = useCallback(
     (
       key: keyof ProgressFilters,
-      value: ProgressFilters[keyof ProgressFilters]
+      value: ProgressFilters[keyof ProgressFilters],
     ) => {
       setFilters((prev) => ({ ...prev, [key]: value }));
     },
-    [setFilters]
+    [setFilters],
   );
 
   return {
@@ -57,9 +57,9 @@ export type ProgressFilters = z.infer<typeof progressFrontendSchema>;
 export type SetProgressFilters = (
   input:
     | Partial<ProgressFilters>
-    | ((prev: ProgressFilters) => Partial<ProgressFilters>)
+    | ((prev: ProgressFilters) => Partial<ProgressFilters>),
 ) => void;
 export type SetProgressFilter<TKey extends keyof ProgressFilters> = (
   key: TKey,
-  value: ProgressFilters[TKey]
+  value: ProgressFilters[TKey],
 ) => void;

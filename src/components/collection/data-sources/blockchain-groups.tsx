@@ -37,13 +37,13 @@ export default function BlockchainGroups(props: Props) {
     (group: BFFCollectionGroup) => {
       const tokenIds = group.objekts.map((objekt) => objekt.metadata.tokenId);
       const allLocked = tokenIds.every((tokenId) =>
-        lockedObjekts.includes(tokenId)
+        lockedObjekts.includes(tokenId),
       );
 
       // hide collection when all objekts are locked
       return props.showLocked ? true : !allLocked;
     },
-    [lockedObjekts, props.showLocked]
+    [lockedObjekts, props.showLocked],
   );
 
   /**
@@ -54,7 +54,7 @@ export default function BlockchainGroups(props: Props) {
     query: userCollectionBlockchainGroupsQuery(
       props.targetCosmo.address,
       filters,
-      selectedIds
+      selectedIds,
     ),
     calculateTotal: (data) => {
       const total = data.pages[0]?.collectionCount ?? 0;

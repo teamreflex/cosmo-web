@@ -19,6 +19,6 @@ export function useGridColumns() {
   return isDesktop
     ? isCurrent
       ? user.gridColumns
-      : target?.user?.gridColumns ?? user?.gridColumns ?? GRID_COLUMNS
+      : (target?.user?.gridColumns ?? user?.gridColumns ?? GRID_COLUMNS)
     : 3;
 }

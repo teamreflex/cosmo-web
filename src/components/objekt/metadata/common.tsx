@@ -11,7 +11,7 @@ export const fetchObjektQuery = (slug: string) => ({
   queryKey: ["collection-metadata", "objekt", slug],
   queryFn: async () => {
     return await ofetch<Objekt.Collection>(
-      `/api/objekts/by-slug/${slug}`
+      `/api/objekts/by-slug/${slug}`,
     ).catch((error: FetchError) => {
       if (error.status === 404) {
         throw new ObjektNotFoundError("Objekt not found");

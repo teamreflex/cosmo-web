@@ -15,7 +15,7 @@ export const remember = createServerOnlyFn(
   async <T>(
     key: string,
     ttl: number,
-    callback: () => Promise<T>
+    callback: () => Promise<T>,
   ): Promise<T> => {
     key = key.toLowerCase();
     const cached = await redis.get<T>(key);
@@ -30,7 +30,7 @@ export const remember = createServerOnlyFn(
     waitUntil(redis.set(key, fresh, { ex: ttl }));
 
     return fresh;
-  }
+  },
 );
 
 /**

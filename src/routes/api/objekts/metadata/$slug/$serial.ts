@@ -59,7 +59,10 @@ export const Route = createFileRoute("/api/objekts/metadata/$slug/$serial")({
         // fetch usernames for all addresses
         const knownAddresses = await fetchKnownAddresses(Array.from(addresses));
         const addressMap = new Map(
-          knownAddresses.map((acc) => [acc.address.toLowerCase(), acc.username])
+          knownAddresses.map((acc) => [
+            acc.address.toLowerCase(),
+            acc.username,
+          ]),
         );
 
         // map usernames to transfers
@@ -68,7 +71,7 @@ export const Route = createFileRoute("/api/objekts/metadata/$slug/$serial")({
             ...transfer,
             fromUsername: addressMap.get(transfer.from.toLowerCase()) ?? null,
             toUsername: addressMap.get(transfer.to.toLowerCase()) ?? null,
-          })
+          }),
         );
 
         const result = {
@@ -82,7 +85,7 @@ export const Route = createFileRoute("/api/objekts/metadata/$slug/$serial")({
           { result },
           {
             headers: cacheHeaders({ vercel: 60 * 60 * 4 }),
-          }
+          },
         );
       },
     },

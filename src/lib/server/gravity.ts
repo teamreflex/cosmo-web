@@ -28,7 +28,7 @@ export const fetchGravityDetails = createServerFn({ method: "GET" })
         artist: z.string(),
         id: z.number(),
       })
-      .parse(data)
+      .parse(data),
   )
   .handler(async ({ data }) => {
     // get artists
@@ -50,7 +50,7 @@ export const fetchGravityDetails = createServerFn({ method: "GET" })
     // we don't support combination polls yet
     if (info.pollType !== "single-poll") {
       throw new GravityNotSupportedError(
-        "Combination poll support is not available yet."
+        "Combination poll support is not available yet.",
       );
     }
 
@@ -91,7 +91,7 @@ export const fetchGravities = createServerFn({ method: "GET" }).handler(
       .from(gravities)
       .orderBy(desc(gravities.startDate));
     return Object.groupBy(data, (r) => r.artist);
-  }
+  },
 );
 
 /**
@@ -105,7 +105,7 @@ export const fetchPolygonGravity = createServerFn({ method: "GET" })
         artist: z.string(),
         id: z.number(),
       })
-      .parse(data)
+      .parse(data),
   )
   .handler(async ({ data }) => {
     // cache this server function response for 30 days
@@ -134,7 +134,7 @@ export const fetchPolygonGravity = createServerFn({ method: "GET" })
           accessToken,
           data.artist as ValidArtist,
           gravity.id,
-          gravityPoll.poll.id
+          gravityPoll.poll.id,
         );
 
         // prior to gravity 11, they used the cosmo poll ID on-chain instead of a separate ID
@@ -168,16 +168,19 @@ export const fetchPolygonGravity = createServerFn({ method: "GET" })
                 blockNumber: vote.blockNumber,
                 username: vote.cosmoAccount?.username,
                 hash: vote.hash,
-              } satisfies RevealedVote)
+              }) satisfies RevealedVote,
           )
           .sort((a, b) => b.comoAmount - a.comoAmount);
 
         // 6. aggregate como by candidate
-        const comoByCandidate = revealedVotes.reduce((acc, vote) => {
-          const candidateId = vote.candidateId.toString();
-          acc[candidateId] = (acc[candidateId] ?? 0) + vote.comoAmount;
-          return acc;
-        }, {} as Record<string, number>);
+        const comoByCandidate = revealedVotes.reduce(
+          (acc, vote) => {
+            const candidateId = vote.candidateId.toString();
+            acc[candidateId] = (acc[candidateId] ?? 0) + vote.comoAmount;
+            return acc;
+          },
+          {} as Record<string, number>,
+        );
 
         // 7. calculate total como used
         const totalComoUsed = revealedVotes.reduce((acc, vote) => {
@@ -185,7 +188,7 @@ export const fetchPolygonGravity = createServerFn({ method: "GET" })
         }, 0);
 
         return { poll, revealedVotes, comoByCandidate, totalComoUsed };
-      }
+      },
     );
   });
 
@@ -198,12 +201,12 @@ export const fetchCachedGravity = createServerOnlyFn(
       return await remember(
         `gravity:${artist}:${id}`,
         60 * 60 * 24 * 30, // 30 days
-        () => fetchGravity(artist, id)
+        () => fetchGravity(artist, id),
       );
     }
 
     return await fetchGravity(artist, id);
-  }
+  },
 );
 
 /**
@@ -218,7 +221,7 @@ export const fetchCachedPoll = createServerFn({ method: "GET" })
         pollId: z.number(),
         isPast: z.boolean().optional(),
       })
-      .parse(data)
+      .parse(data),
   )
   .handler(async ({ data }) => {
     const fn = async () => {
@@ -227,7 +230,7 @@ export const fetchCachedPoll = createServerFn({ method: "GET" })
         accessToken,
         data.artist as ValidArtist,
         data.gravityId,
-        data.pollId
+        data.pollId,
       );
     };
 
@@ -253,7 +256,7 @@ export const fetchCachedPoll = createServerFn({ method: "GET" })
       return await remember(
         `poll:${data.artist}:${data.gravityId}:${data.pollId}`,
         60 * 60 * 24 * 30, // 30 days
-        fn
+        fn,
       );
     }
 
@@ -276,7 +279,7 @@ export const fetchAbstractVotes = createServerOnlyFn(
       ...vote,
       amount: Number(vote.amount),
     }));
-  }
+  },
 );
 
 const ADDRESSES: Record<string, string> = {

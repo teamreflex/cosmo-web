@@ -75,7 +75,7 @@ function TimelineChartContent(props: Props) {
               if (payload[0] && payload[0].payload.timestamp) {
                 return format(
                   new Date(payload[0].payload.timestamp),
-                  "MMM d, h:mm a"
+                  "MMM d, h:mm a",
                 );
               }
               return "";

@@ -23,7 +23,7 @@ export const useSearchStore = create<SearchState>()(
         set((state) => {
           const current = state.recentLookups;
           const currentIndex = current.findIndex(
-            (l) => l.nickname.toLowerCase() === lookup.nickname.toLowerCase()
+            (l) => l.nickname.toLowerCase() === lookup.nickname.toLowerCase(),
           );
           if (currentIndex !== -1) {
             return state;
@@ -36,8 +36,8 @@ export const useSearchStore = create<SearchState>()(
     }),
     {
       name: "searches",
-    }
-  )
+    },
+  ),
 );
 
 /**

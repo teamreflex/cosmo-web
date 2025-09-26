@@ -14,7 +14,7 @@ export const Route = createFileRoute("/api/user/by-address/$address/como")({
         if (authKey !== env.AUTH_KEY) {
           return Response.json(
             { error: "invalid authorization" },
-            { status: 401 }
+            { status: 401 },
           );
         }
 
@@ -24,7 +24,7 @@ export const Route = createFileRoute("/api/user/by-address/$address/como")({
         // parse unix timestamp (supports both seconds and milliseconds)
         const timestamp = now ? parseInt(now) : new Date().getTime();
         const date = new Date(
-          timestamp < 10000000000 ? timestamp * 1000 : timestamp
+          timestamp < 10000000000 ? timestamp * 1000 : timestamp,
         );
 
         const objekts = await fetchObjektsWithComo({

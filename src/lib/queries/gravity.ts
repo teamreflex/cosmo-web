@@ -22,8 +22,12 @@ export const gravityPollDetailsQuery = (params: GravityPollDetailsParams) =>
     queryKey: [
       "gravity",
       "details",
-      { tokenId: Number(params.tokenId) },
-      Number(params.pollId),
+      {
+        artistName: params.artistName,
+        gravityId: params.gravityId,
+        tokenId: Number(params.tokenId),
+        pollId: params.pollId,
+      },
     ],
     queryFn: () =>
       fetchCachedPoll({

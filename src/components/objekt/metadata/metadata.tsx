@@ -40,7 +40,7 @@ export default function Metadata(props: Props) {
   function copyUrl() {
     const scheme = env.VITE_VERCEL_ENV === "development" ? "http" : "https";
     copy(
-      `${scheme}://${env.VITE_VERCEL_PROJECT_PRODUCTION_URL}/objekts?id=${props.objekt.slug}`
+      `${scheme}://${env.VITE_VERCEL_PROJECT_PRODUCTION_URL}/objekts?id=${props.objekt.slug}`,
     );
     toast.success("Objekt URL copied to clipboard");
   }

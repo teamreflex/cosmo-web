@@ -1,6 +1,6 @@
-import type { Stat } from "@/lib/universal/progress";
 import { useMemo } from "react";
-import { PieChart, Pie, Cell } from "recharts";
+import { Cell, Pie, PieChart } from "recharts";
+import type { Stat } from "@/lib/universal/progress";
 import {
   ChartContainer,
   ChartTooltip,

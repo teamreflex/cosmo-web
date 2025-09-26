@@ -18,7 +18,7 @@ export default function ProgressLeaderboardContent({
   season,
 }: Props) {
   const { data } = useSuspenseQuery(
-    progressLeaderboardQuery(member, onlineType, season)
+    progressLeaderboardQuery(member, onlineType, season),
   );
 
   return (

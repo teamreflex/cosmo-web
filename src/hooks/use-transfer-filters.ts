@@ -16,7 +16,7 @@ export function useTransferFilters() {
     (
       input:
         | Partial<TransferFilters>
-        | ((prev: TransferFilters) => Partial<TransferFilters>)
+        | ((prev: TransferFilters) => Partial<TransferFilters>),
     ) => {
       if (typeof input === "function") {
         input = input(searchParams);
@@ -30,7 +30,7 @@ export function useTransferFilters() {
         }),
       });
     },
-    [searchParams]
+    [searchParams],
   );
 
   /**
@@ -39,11 +39,11 @@ export function useTransferFilters() {
   const setFilter = useCallback(
     (
       key: keyof TransferFilters,
-      value: TransferFilters[keyof TransferFilters]
+      value: TransferFilters[keyof TransferFilters],
     ) => {
       setFilters((prev) => ({ ...prev, [key]: value }));
     },
-    [setFilters]
+    [setFilters],
   );
 
   return {
@@ -57,9 +57,9 @@ export type TransferFilters = z.infer<typeof transfersFrontendSchema>;
 export type SetTransferFilters = (
   input:
     | Partial<TransferFilters>
-    | ((prev: TransferFilters) => Partial<TransferFilters>)
+    | ((prev: TransferFilters) => Partial<TransferFilters>),
 ) => void;
 export type SetTransferFilter<TKey extends keyof TransferFilters> = (
   key: TKey,
-  value: TransferFilters[TKey]
+  value: TransferFilters[TKey],
 ) => void;

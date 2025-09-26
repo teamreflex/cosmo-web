@@ -12,7 +12,7 @@ type Props<
   TResponse,
   TItem,
   TError = DefaultError,
-  TQueryKey extends QueryKey = QueryKey
+  TQueryKey extends QueryKey = QueryKey,
 > = {
   children: (props: RenderProps<TItem>) => ReactElement;
   options: ObjektResponseOptions<TResponse, TItem, TError, TQueryKey>;
@@ -28,7 +28,7 @@ export default function LoaderRemote<
   TResponse,
   TItem,
   TError = DefaultError,
-  TQueryKey extends QueryKey = QueryKey
+  TQueryKey extends QueryKey = QueryKey,
 >({
   pins = [],
   hidePins = true,

@@ -40,8 +40,8 @@ export default function GroupedObjekt({
   const [open, setOpen] = useState(false);
   const hasSelected = useObjektTransfer(
     useShallow((state) =>
-      state.hasSelected(group.objekts.map((o) => o.metadata.tokenId))
-    )
+      state.hasSelected(group.objekts.map((o) => o.metadata.tokenId)),
+    ),
   );
 
   const subtitle = group.count === 1 ? "objekt" : "objekts";
@@ -146,7 +146,7 @@ function RootObjekt({
           }}
           className={cn(
             "relative overflow-hidden rounded-lg md:rounded-xl lg:rounded-2xl touch-manipulation bg-secondary transition-colors ring-2 ring-transparent aspect-photocard drop-shadow-sm",
-            hasSelected && "ring-foreground"
+            hasSelected && "ring-foreground",
           )}
         >
           <img
@@ -155,7 +155,7 @@ function RootObjekt({
             onClick={onClick}
             className={cn(
               "transition-opacity w-full",
-              isLoaded === false && "opacity-0"
+              isLoaded === false && "opacity-0",
             )}
             src={front.display}
             width={291}
@@ -173,7 +173,7 @@ function RootObjekt({
               // populate the query cache so it doesn't re-fetch
               queryClient.setQueryData(
                 fetchObjektQuery(collection.slug).queryKey,
-                collection
+                collection,
               );
 
               // open the dialog
@@ -201,7 +201,7 @@ function RootObjektOverlay({ count, hasNew, onClick }: RootObjektOverlayProps) {
         className={cn(
           "absolute bottom-0 left-0 isolate p-1 sm:p-2 rounded-tr-lg sm:rounded-tr-xl flex gap-2 group h-5 sm:h-9 w-5 sm:w-9 transition-all",
           "text-(--objekt-text-color) bg-(--objekt-background-color)",
-          isHidden && "hidden"
+          isHidden && "hidden",
         )}
       >
         <button

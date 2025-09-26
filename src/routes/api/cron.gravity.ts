@@ -36,7 +36,7 @@ export const Route = createFileRoute("/api/cron/gravity")({
 
         // process gravities for each artist in parallel
         await Promise.all(
-          artists.map((artist) => processGravities(token.accessToken, artist))
+          artists.map((artist) => processGravities(token.accessToken, artist)),
         );
 
         return new Response("ok");
@@ -50,7 +50,7 @@ export const Route = createFileRoute("/api/cron/gravity")({
  */
 async function processGravities(
   token: string,
-  artist: CosmoArtistWithMembersBFF
+  artist: CosmoArtistWithMembersBFF,
 ) {
   console.log(`loading gravities for ${artist.title}`);
 
@@ -62,7 +62,7 @@ async function processGravities(
   ].sort(
     (a, b) =>
       new Date(a.entireStartDate).getTime() -
-      new Date(b.entireStartDate).getTime()
+      new Date(b.entireStartDate).getTime(),
   );
 
   // get the currently stored gravities
@@ -75,7 +75,7 @@ async function processGravities(
 
   // find the ones that aren't stored
   const notStoredGravities = remoteGravities.filter(
-    (gravity) => !storedGravities.some((g) => g.cosmoId === gravity.id)
+    (gravity) => !storedGravities.some((g) => g.cosmoId === gravity.id),
   );
 
   // operate on chunks of 5 gravities at a time
@@ -83,8 +83,8 @@ async function processGravities(
     for (const gravity of chunked) {
       const polls = await Promise.all(
         gravity.polls.map(async (poll) =>
-          fetchPoll(token, artist.id, gravity.id, poll.id)
-        )
+          fetchPoll(token, artist.id, gravity.id, poll.id),
+        ),
       );
 
       // store data in a transaction
@@ -113,7 +113,7 @@ async function processGravities(
               cosmoId: poll.id,
               pollIdOnChain: poll.pollIdOnChain,
               title: cleanString(poll.title),
-            }))
+            })),
           );
 
           // store candidates
@@ -125,7 +125,7 @@ async function processGravities(
               // should probably handle combination polls
               title: "title" in choice ? choice.title : choice.id,
               image: choice.txImageUrl,
-            }))
+            })),
           );
           await tx.insert(gravityPollCandidates).values(candidates);
         })
@@ -138,7 +138,7 @@ async function processGravities(
   });
 
   console.log(
-    `processed ${notStoredGravities.length} gravities for ${artist.title}`
+    `processed ${notStoredGravities.length} gravities for ${artist.title}`,
   );
 }
 

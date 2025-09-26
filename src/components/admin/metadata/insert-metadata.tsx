@@ -39,7 +39,7 @@ export default function InsertMetadata() {
           };
         }
         return p;
-      })
+      }),
     );
   }
 
@@ -48,7 +48,7 @@ export default function InsertMetadata() {
     const result = metadataInputSchema.safeParse(data);
     if (result.success === false) {
       toast.error(
-        "Invalid format: Required format is 'collectionId :: description'"
+        "Invalid format: Required format is 'collectionId :: description'",
       );
       return;
     }

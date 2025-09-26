@@ -29,7 +29,7 @@ const map: Record<ValidSort, string> = {
 
 export default function SortFilter(props: Props) {
   const availableSorts = validSorts.filter((s) =>
-    props.serials ? true : !isSerialSort(s)
+    props.serials ? true : !isSerialSort(s),
   );
 
   function handleChange(newValue: string) {

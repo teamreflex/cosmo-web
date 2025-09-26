@@ -38,9 +38,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { env } from "@/lib/env/client";
 
-export const LinkCosmoContext = createContext({
+type LinkCosmoContextType = {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+};
+
+export const LinkCosmoContext = createContext<LinkCosmoContextType>({
   open: false,
-  setOpen: (open: boolean) => {},
+  setOpen: () => {},
 });
 
 type Props = {
@@ -147,7 +152,7 @@ type RenderQRProps = {
 function RenderTicket({ ticket, retry }: RenderQRProps) {
   // query the ticket when the QR code is loaded
   const { data, status, refetch } = useQuery({
-    queryKey: ["qr-auth", "ticket"],
+    queryKey: ["qr-auth", "ticket", ticket.ticket],
     queryFn: () =>
       ofetch<QueryTicket>("/api/cosmo/qr-auth/ticket", {
         query: {
@@ -221,7 +226,7 @@ function RenderQRCode({ ticket, retry }: RenderQRProps) {
         setIsExpired(true);
       }
     },
-    isExpired ? null : 1000
+    isExpired ? null : 1000,
   );
 
   return (
@@ -297,7 +302,7 @@ function OTP({ ticket }: OTPProps) {
           track("cosmo-link");
           toast.success("COSMO account linked!");
         },
-      }
+      },
     );
   }
 

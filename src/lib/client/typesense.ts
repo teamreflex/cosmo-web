@@ -45,7 +45,7 @@ export async function getTypesenseResults({
       },
       {
         cacheSearchResultsForSeconds: 60, // cache for 60 seconds
-      }
+      },
     );
 
   const hits = result.hits ?? [];

@@ -65,7 +65,7 @@ export default function ActionOverlay({
         "absolute top-0 left-0 p-1 sm:p-2 rounded-br-lg sm:rounded-br-xl items-center group h-5 sm:h-9 transition-all overflow-hidden",
         "text-(--objekt-text-color) bg-(--objekt-background-color)",
         "grid grid-flow-col grid-cols-[1fr_min-content]",
-        (showActions === false || isHidden) && "hidden"
+        (showActions === false || isHidden) && "hidden",
       )}
     >
       <div className="flex items-center gap-2">

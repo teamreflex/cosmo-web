@@ -48,8 +48,8 @@ export const Route = createFileRoute("/(profile)/@{$username}/")({
         userCollectionBlockchainGroupsQuery(
           target.cosmo.address,
           deps.searchParams,
-          selected
-        )
+          selected,
+        ),
       );
     } else {
       // if the user is a guest or is in blockchain mode, prefetch the objekts
@@ -57,8 +57,8 @@ export const Route = createFileRoute("/(profile)/@{$username}/")({
         userCollectionBlockchainQuery(
           target.cosmo.address,
           deps.searchParams,
-          selected
-        )
+          selected,
+        ),
       );
     }
 
@@ -69,7 +69,7 @@ export const Route = createFileRoute("/(profile)/@{$username}/")({
       seoTitle(
         loaderData?.target.user
           ? `${loaderData.target.user.username}'s Collection`
-          : `Collection`
+          : `Collection`,
       ),
     ],
   }),

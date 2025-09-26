@@ -58,7 +58,7 @@ export default function AbstractLiveChart(props: Props) {
       ? Math.round(
           ((chain.totalVotesCount - chain.remainingVotesCount) /
             chain.totalVotesCount) *
-            100
+            100,
         )
       : 0;
 

@@ -13,7 +13,7 @@ export const Route = createFileRoute("/api/cosmo/qr-auth/ticket")({
         if (!param) {
           return Response.json(
             { error: "ticket not provided" },
-            { status: 422 }
+            { status: 422 },
           );
         }
 
@@ -22,7 +22,7 @@ export const Route = createFileRoute("/api/cosmo/qr-auth/ticket")({
         } catch (err) {
           return Response.json(
             { error: "error querying ticket" },
-            { status: 500 }
+            { status: 500 },
           );
         }
 

@@ -46,7 +46,7 @@ export default function TransfersRenderer({ cosmo }: Props) {
         member: prev.member === member ? undefined : member,
       }));
     },
-    [setFilters]
+    [setFilters],
   );
 
   const setActiveArtist = useCallback(
@@ -56,7 +56,7 @@ export default function TransfersRenderer({ cosmo }: Props) {
         artist: prev.artist === artist ? undefined : (artist as ValidArtist),
       }));
     },
-    [setFilters]
+    [setFilters],
   );
 
   return (
@@ -107,14 +107,14 @@ type TransfersProps = {
 function Transfers({ address, filters }: TransfersProps) {
   const { selected } = route.useLoaderData();
   const query = useSuspenseInfiniteQuery(
-    transfersQuery(address, filters, selected)
+    transfersQuery(address, filters, selected),
   );
 
   const rows = query.data.pages
     .flatMap((p) => p.results)
     .filter(
       (row, index, self) =>
-        index === self.findIndex((r) => r.transfer.id === row.transfer.id)
+        index === self.findIndex((r) => r.transfer.id === row.transfer.id),
     );
 
   return (

@@ -27,7 +27,7 @@ export function useCosmoFilters() {
     (
       input:
         | Partial<CosmoFilters>
-        | ((prev: CosmoFilters) => Partial<CosmoFilters>)
+        | ((prev: CosmoFilters) => Partial<CosmoFilters>),
     ) => {
       if (typeof input === "function") {
         input = input(filters);
@@ -41,7 +41,7 @@ export function useCosmoFilters() {
         }),
       });
     },
-    [searchParams]
+    [searchParams],
   );
 
   /**
@@ -51,7 +51,7 @@ export function useCosmoFilters() {
     (key: keyof CosmoFilters, value: CosmoFilters[keyof CosmoFilters]) => {
       setFilters((prev) => ({ ...prev, [key]: value }));
     },
-    [setFilters]
+    [setFilters],
   );
 
   return {
@@ -63,11 +63,13 @@ export function useCosmoFilters() {
 
 export type CosmoFilters = z.infer<typeof cosmoSchema>;
 export type SetCosmoFilters = (
-  input: Partial<CosmoFilters> | ((prev: CosmoFilters) => Partial<CosmoFilters>)
+  input:
+    | Partial<CosmoFilters>
+    | ((prev: CosmoFilters) => Partial<CosmoFilters>),
 ) => void;
 export type SetCosmoFilter<TKey extends keyof CosmoFilters> = (
   key: TKey,
-  value: CosmoFilters[TKey]
+  value: CosmoFilters[TKey],
 ) => void;
 
 export type PropsWithFilters = {

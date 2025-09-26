@@ -1,4 +1,4 @@
-import { http, createConfig } from "wagmi";
+import { createConfig, http } from "wagmi";
 import { abstract } from "wagmi/chains";
 
 /**

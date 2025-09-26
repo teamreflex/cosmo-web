@@ -26,7 +26,7 @@ export const fetchObjektsBlockchain = createServerFn({ method: "GET" })
   .inputValidator(
     userCollectionBackendSchema.extend({
       address: z.string().min(1),
-    })
+    }),
   )
   .handler(async ({ data }) => {
     let query = indexer
@@ -48,8 +48,8 @@ export const fetchObjektsBlockchain = createServerFn({ method: "GET" })
             ...withCollections(data.collectionNo),
             ...withTransferable(data.transferable),
             ...withSelectedArtists(data.artists),
-          ]
-        )
+          ],
+        ),
       )
       .$dynamic();
     query = withCollectionSort(query, data.sort ?? "newest");
@@ -80,7 +80,7 @@ export const fetchObjektsBlockchain = createServerFn({ method: "GET" })
 const fetchCount = createServerOnlyFn(
   async (
     address: string,
-    filters: z.infer<typeof userCollectionBackendSchema>
+    filters: z.infer<typeof userCollectionBackendSchema>,
   ) => {
     const [results] = await indexer
       .select({ count: sql<number>`count(*)` })
@@ -98,10 +98,10 @@ const fetchCount = createServerOnlyFn(
             ...withCollections(filters.collectionNo),
             ...withTransferable(filters.transferable),
             ...withSelectedArtists(filters.artists),
-          ]
-        )
+          ],
+        ),
       );
 
     return results?.count ?? 0;
-  }
+  },
 );

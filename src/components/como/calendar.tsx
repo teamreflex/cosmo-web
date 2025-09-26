@@ -27,7 +27,7 @@ export default function ComoCalendar({ artists, transfers }: Props) {
   const offset = Array.from({ length: startOffset }, (_, i) => i + 1);
   const remainder = Array.from(
     { length: (7 - ((days.length + startOffset) % 7)) % 7 },
-    (_, i) => i + 1
+    (_, i) => i + 1,
   );
 
   const calendar = buildCalendar(now, transfers);
@@ -58,18 +58,23 @@ export default function ComoCalendar({ artists, transfers }: Props) {
             key={day}
             className={cn(
               "relative flex items-center flex-col gap-1 justify-center h-24 sm:h-20 bg-background/70 hover:bg-background/50 transition-colors",
-              now.getDate() === day && "border border-cosmo"
+              now.getDate() === day && "border border-cosmo",
             )}
           >
             <p className="absolute top-1 left-2 font-semibold text-sm">{day}</p>
 
-            {artists
-              .filter((a) => calendar[day]?.[a.contracts.Objekt.toLowerCase()])
-              .map((a) => (
+            {artists.map((a) => {
+              const contract = a.contracts.Objekt.toLowerCase();
+              const dayEntry = calendar[day]?.[contract];
+
+              if (!dayEntry) {
+                return null;
+              }
+
+              return (
                 <div className="contents" key={a.name}>
                   <div className="absolute top-1 right-1">
-                    {calendar[day]?.[a.contracts.Objekt.toLowerCase()].carried >
-                      0 && (
+                    {dayEntry.carried > 0 && (
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger>
@@ -80,11 +85,7 @@ export default function ComoCalendar({ artists, transfers }: Props) {
 
                             <div className="flex justify-center items-center gap-2">
                               <ArtistIcon artist={a.name} />
-                              <span>
-                                {calendar[day]?.[
-                                  a.contracts.Objekt.toLowerCase()
-                                ].carried ?? 0}
-                              </span>
+                              <span>{dayEntry.carried}</span>
                             </div>
                           </TooltipContent>
                         </Tooltip>
@@ -94,13 +95,11 @@ export default function ComoCalendar({ artists, transfers }: Props) {
 
                   <div className="flex items-center gap-2">
                     <ArtistIcon artist={a.name} />
-                    <span>
-                      {calendar[day]?.[a.contracts.Objekt.toLowerCase()]
-                        .count ?? 0}
-                    </span>
+                    <span>{dayEntry.count}</span>
                   </div>
                 </div>
-              ))}
+              );
+            })}
           </div>
         ))}
 

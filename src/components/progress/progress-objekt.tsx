@@ -17,7 +17,7 @@ export default function ProgressObjekt({ objekt }: Props) {
       collection={collection}
       className={cn(
         "rounded-md md:rounded-lg lg:rounded-lg",
-        objekt.obtained === false && "opacity-50"
+        objekt.obtained === false && "opacity-50",
       )}
     >
       {objekt.unobtainable && (

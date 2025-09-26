@@ -71,7 +71,7 @@ export function ArtistItem({ artist, isSelected }: ArtistItemProps) {
         onSuccess: (newSelected) => {
           queryClient.setQueryData(selectedArtistsQuery.queryKey, newSelected);
         },
-      }
+      },
     );
   }
 

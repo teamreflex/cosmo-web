@@ -13,7 +13,7 @@ export type ObjektResponseOptions<
   TResponse,
   TItem,
   TError = DefaultError,
-  TQueryKey extends QueryKey = QueryKey
+  TQueryKey extends QueryKey = QueryKey,
 > = {
   filtering: FilterType;
   query: UnusedSkipTokenInfiniteOptions<
@@ -36,7 +36,7 @@ export function objektOptions<
   TResponse,
   TItem,
   TError = DefaultError,
-  TQueryKey extends QueryKey = QueryKey
+  TQueryKey extends QueryKey = QueryKey,
 >(opts: ObjektResponseOptions<TResponse, TItem, TError, TQueryKey>) {
   return opts;
 }
@@ -48,7 +48,7 @@ export function useObjektResponse<
   TResponse,
   TItem,
   TError = DefaultError,
-  TQueryKey extends QueryKey = QueryKey
+  TQueryKey extends QueryKey = QueryKey,
 >(opts: ObjektResponseOptions<TResponse, TItem, TError, TQueryKey>) {
   const query = useSuspenseInfiniteQuery(opts.query);
 

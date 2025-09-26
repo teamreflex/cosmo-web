@@ -61,7 +61,7 @@ export const Route = createFileRoute("/api/objekts/metadata/$slug/")({
           } satisfies ObjektMetadata,
           {
             headers: cacheHeaders({ vercel: cacheTime }),
-          }
+          },
         );
       },
     },

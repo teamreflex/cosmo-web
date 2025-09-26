@@ -31,7 +31,7 @@ export const fetchObjektsBlockchainGroups = createServerFn({ method: "GET" })
   .inputValidator(
     userCollectionBackendSchema.extend({
       address: z.string().min(1),
-    })
+    }),
   )
   .handler(async ({ data }) => {
     const offset = (data.page - 1) * PER_PAGE;
@@ -98,8 +98,8 @@ export const fetchObjektsBlockchainGroups = createServerFn({ method: "GET" })
             ...withMember(data.member),
             ...withTransferable(data.transferable),
             ...withSelectedArtists(data.artists),
-          ]
-        )
+          ],
+        ),
       )
       .groupBy(
         collections.id,
@@ -117,7 +117,7 @@ export const fetchObjektsBlockchainGroups = createServerFn({ method: "GET" })
         collections.textColor,
         collections.comoAmount,
         collections.bandImageUrl,
-        collections.createdAt
+        collections.createdAt,
       )
       .$dynamic();
 
@@ -139,7 +139,7 @@ export const fetchObjektsBlockchainGroups = createServerFn({ method: "GET" })
             ...objekt,
             nonTransferableReason: nonTransferableReason(
               item.collection.class,
-              objekt.metadata.transferable
+              objekt.metadata.transferable,
             ),
           };
         });
@@ -173,5 +173,5 @@ const withObjektGroupSort = createServerOnlyFn(
       case "serialDesc":
         return qb.orderBy(desc(max(objekts.serial)), asc(collections.id));
     }
-  }
+  },
 );

@@ -12,7 +12,7 @@ export function useObjektSerial() {
       serial:
         | number
         | undefined
-        | ((prev: number | undefined) => number | undefined)
+        | ((prev: number | undefined) => number | undefined),
     ) => {
       if (typeof serial === "function") {
         serial = serial(search.serial ?? undefined);
@@ -23,7 +23,7 @@ export function useObjektSerial() {
         search: (prev) => ({ ...prev, serial }),
       });
     },
-    [navigate, search]
+    [navigate, search],
   );
 
   const reset = useCallback(() => {

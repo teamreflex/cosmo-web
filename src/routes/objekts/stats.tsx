@@ -10,12 +10,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Error } from "@/components/error-boundary";
 
 export const Route = createFileRoute("/objekts/stats")({
-  head: () => ({
-    meta: [seoTitle("Objekt Stats")],
-  }),
-  component: RouteComponent,
-  pendingComponent: PendingComponent,
-  errorComponent: ErrorComponent,
   loader: async ({ context }) => {
     context.queryClient.prefetchQuery(objektStatsQuery);
 
@@ -29,6 +23,12 @@ export const Route = createFileRoute("/objekts/stats")({
       selected,
     };
   },
+  component: RouteComponent,
+  pendingComponent: PendingComponent,
+  errorComponent: ErrorComponent,
+  head: () => ({
+    meta: [seoTitle("Objekt Stats")],
+  }),
 });
 
 function RouteComponent() {

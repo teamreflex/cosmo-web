@@ -123,7 +123,7 @@ export function MobileLinks(props: Props) {
             className={cn(
               "h-4 w-4 shrink-0 transition-all fill-transparent",
               (location.pathname === "/" || location.pathname === "/objekts") &&
-                "fill-white/50"
+                "fill-white/50",
             )}
           />
           <span>Objekts</span>
@@ -136,7 +136,7 @@ export function MobileLinks(props: Props) {
           <ChartColumnBig
             className={cn(
               "h-4 w-4 shrink-0 transition-all fill-transparent",
-              location.pathname === "/objekts/stats" && "fill-white/50"
+              location.pathname === "/objekts/stats" && "fill-white/50",
             )}
           />
           <span>Objekt Stats</span>
@@ -149,7 +149,7 @@ export function MobileLinks(props: Props) {
           <Vote
             className={cn(
               "h-4 w-4 shrink-0 transition-all fill-transparent",
-              location.pathname.startsWith("/gravity") && "fill-white/50"
+              location.pathname.startsWith("/gravity") && "fill-white/50",
             )}
           />
           <span>Gravity</span>
@@ -168,7 +168,7 @@ export function MobileLinks(props: Props) {
               className={cn(
                 "h-4 w-4 shrink-0 transition-all fill-transparent",
                 location.pathname === `/@${props.cosmo.username}` &&
-                  "fill-white/50"
+                  "fill-white/50",
               )}
             />
             <span>Collection</span>
@@ -217,7 +217,7 @@ function LinkButton(props: LinkButtonProps) {
             <props.icon
               className={cn(
                 "h-8 w-8 shrink-0 transition-all fill-transparent",
-                props.active && "fill-cosmo/50 dark:fill-foreground/50"
+                props.active && "fill-cosmo/50 dark:fill-foreground/50",
               )}
             />
           </Link>

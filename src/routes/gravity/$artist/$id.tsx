@@ -37,7 +37,7 @@ export const Route = createFileRoute("/gravity/$artist/$id")({
           tokenId: BigInt(artist.comoTokenId),
           gravityId: gravity.id,
           pollId: poll.id,
-        })
+        }),
       );
     }
 

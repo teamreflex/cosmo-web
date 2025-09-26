@@ -12,7 +12,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { citext, createdAt } from "./columns";
-import { user, session, account, verification } from "./auth-schema";
+import { account, session, user, verification } from "./auth-schema";
 import type {
   CosmoGravityType,
   CosmoPollType,
@@ -28,7 +28,7 @@ export const cosmoAccounts = pgTable(
     username: citext("username", { length: 24 }).notNull(),
     address: citext("address", { length: 42 }).notNull(),
     polygonAddress: citext("polygon_address", { length: 42 }).default(
-      sql`NULL`
+      sql`NULL`,
     ),
     userId: text("user_id").default(sql`NULL`),
   },
@@ -39,7 +39,7 @@ export const cosmoAccounts = pgTable(
     index("cosmo_account_username_idx").on(t.username),
     uniqueIndex("cosmo_account_username_address_idx").on(t.username, t.address),
     index("cosmo_account_user_id_idx").on(t.userId),
-  ]
+  ],
 );
 
 export const cosmoAccountChanges = pgTable(
@@ -55,7 +55,7 @@ export const cosmoAccountChanges = pgTable(
     index("cosmo_account_changes_address_idx").on(t.address),
     index("cosmo_account_changes_username_idx").on(t.username),
     index("cosmo_account_changes_created_at_idx").on(t.createdAt),
-  ]
+  ],
 );
 
 export const lockedObjekts = pgTable(
@@ -71,7 +71,7 @@ export const lockedObjekts = pgTable(
     index("locked_objekts_locked_idx").on(t.locked),
     index("address_locked_idx").on(t.address, t.locked),
     index("address_token_idx").on(t.address, t.tokenId),
-  ]
+  ],
 );
 
 export const pins = pgTable(
@@ -84,7 +84,7 @@ export const pins = pgTable(
   (t) => [
     index("pins_address_idx").on(t.address),
     index("pins_token_id_idx").on(t.tokenId),
-  ]
+  ],
 );
 
 export const objektMetadata = pgTable(
@@ -98,7 +98,7 @@ export const objektMetadata = pgTable(
   (t) => [
     index("objekt_metadata_collection_idx").on(t.collectionId),
     index("objekt_metadata_contributor_idx").on(t.contributor),
-  ]
+  ],
 );
 
 export const objektLists = pgTable(
@@ -118,7 +118,7 @@ export const objektLists = pgTable(
     index("objekt_lists_user_idx").on(t.userId),
     index("objekt_lists_slug_idx").on(t.slug),
     uniqueIndex("objekt_lists_user_slug_idx").on(t.userId, t.slug),
-  ]
+  ],
 );
 
 export const objektListEntries = pgTable(
@@ -133,7 +133,7 @@ export const objektListEntries = pgTable(
       }),
     collectionId: varchar("collection_id", { length: 36 }).notNull(), // slug: atom01-jinsoul-101z
   },
-  (t) => [index("objekt_list_entries_list_idx").on(t.objektListId)]
+  (t) => [index("objekt_list_entries_list_idx").on(t.objektListId)],
 );
 
 export const cosmoTokens = pgTable(
@@ -146,7 +146,7 @@ export const cosmoTokens = pgTable(
   (t) => [
     index("cosmo_tokens_access_token_idx").on(t.accessToken),
     index("cosmo_tokens_refresh_token_idx").on(t.refreshToken),
-  ]
+  ],
 );
 
 export const gravities = pgTable(
@@ -170,7 +170,7 @@ export const gravities = pgTable(
   (t) => [
     index("gravities_artist_idx").on(t.artist),
     index("gravities_cosmo_id_idx").on(t.cosmoId),
-  ]
+  ],
 );
 
 export const gravityPolls = pgTable(
@@ -186,7 +186,7 @@ export const gravityPolls = pgTable(
     index("gravity_polls_cosmo_gravity_id_idx").on(t.cosmoGravityId),
     index("gravity_polls_cosmo_id_idx").on(t.cosmoId),
     index("gravity_polls_poll_id_on_chain_idx").on(t.pollIdOnChain),
-  ]
+  ],
 );
 
 export const gravityPollCandidates = pgTable(
@@ -201,11 +201,11 @@ export const gravityPollCandidates = pgTable(
   },
   (t) => [
     index("gravity_poll_candidates_cosmo_gravity_poll_id_idx").on(
-      t.cosmoGravityPollId
+      t.cosmoGravityPollId,
     ),
     index("gravity_poll_candidates_candidate_id_idx").on(t.candidateId),
     index("gravity_poll_candidates_cosmo_id_idx").on(t.cosmoId),
-  ]
+  ],
 );
 
 export const polygonVotes = pgTable(
@@ -226,7 +226,7 @@ export const polygonVotes = pgTable(
     index("polygon_votes_address_idx").on(t.address),
     index("polygon_votes_poll_id_idx").on(t.pollId),
     index("polygon_votes_contract_poll_id_idx").on(t.contract, t.pollId),
-  ]
+  ],
 );
 
 export type CosmoAccount = typeof cosmoAccounts.$inferSelect;
@@ -252,7 +252,7 @@ export const lists = pgTable(
   (t) => [
     index("lists_address_idx").on(t.userAddress),
     index("lists_slug_idx").on(t.slug),
-  ]
+  ],
 );
 
 export const listEntries = pgTable(
@@ -266,7 +266,7 @@ export const listEntries = pgTable(
       }),
     collectionId: varchar("collection_id", { length: 36 }).notNull(), // slug: atom01-jinsoul-101z
   },
-  (t) => [index("list_entries_list_idx").on(t.listId)]
+  (t) => [index("list_entries_list_idx").on(t.listId)],
 );
 
 export type List = typeof lists.$inferSelect;

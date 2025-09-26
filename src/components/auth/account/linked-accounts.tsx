@@ -21,11 +21,11 @@ export default function LinkedAccounts() {
   const { data } = useListAccounts();
 
   const oauthAccounts = data.filter(
-    (account) => account.providerId !== "credential"
+    (account) => account.providerId !== "credential",
   );
   const linkableProviders = Object.keys(providers).filter(
     (providerId) =>
-      !oauthAccounts.map((account) => account.providerId).includes(providerId)
+      !oauthAccounts.map((account) => account.providerId).includes(providerId),
   );
 
   return (

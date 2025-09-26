@@ -39,8 +39,8 @@ export const fetchObjektsIndex = createServerFn({ method: "GET" })
             ...withMember(data.member),
             ...withCollections(data.collectionNo),
             ...withSelectedArtists(data.artists),
-          ]
-        )
+          ],
+        ),
       )
       .$dynamic();
     query = withObjektIndexSort(query, data.sort ?? "newest");

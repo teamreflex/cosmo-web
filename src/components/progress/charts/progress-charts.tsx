@@ -18,7 +18,7 @@ export default function ProgressCharts(props: Props) {
     if (filters.artist !== null) {
       return data.find(
         (stat) =>
-          stat.artistName.toLowerCase() === filters.artist?.toLowerCase()
+          stat.artistName.toLowerCase() === filters.artist?.toLowerCase(),
       );
     }
 
@@ -36,12 +36,12 @@ export default function ProgressCharts(props: Props) {
       for (const season of stat.seasons) {
         seasonMap.set(
           season.name,
-          (seasonMap.get(season.name) || 0) + season.count
+          (seasonMap.get(season.name) || 0) + season.count,
         );
       }
     }
     mergedStats.seasons = Array.from(seasonMap.entries()).map(
-      ([name, count]) => ({ name, count })
+      ([name, count]) => ({ name, count }),
     );
 
     // merge members
@@ -50,12 +50,12 @@ export default function ProgressCharts(props: Props) {
       for (const member of stat.members) {
         memberMap.set(
           member.name,
-          (memberMap.get(member.name) || 0) + member.count
+          (memberMap.get(member.name) || 0) + member.count,
         );
       }
     }
     mergedStats.members = Array.from(memberMap.entries()).map(
-      ([name, count]) => ({ name, count })
+      ([name, count]) => ({ name, count }),
     );
 
     // merge classes
@@ -66,7 +66,7 @@ export default function ProgressCharts(props: Props) {
       }
     }
     mergedStats.classes = Array.from(classMap.entries()).map(
-      ([name, count]) => ({ name, count })
+      ([name, count]) => ({ name, count }),
     );
 
     return mergedStats;

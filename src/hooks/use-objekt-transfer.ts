@@ -97,7 +97,7 @@ export const useObjektTransfer = create<ObjektTransferState>()((set, get) => ({
   select: (objekt) =>
     set((state) => {
       const existing = state.selected.find(
-        (p) => p.objekt.tokenId === objekt.tokenId
+        (p) => p.objekt.tokenId === objekt.tokenId,
       );
 
       if (!existing && state.selected.length >= MAX_SELECTIONS) {
@@ -109,7 +109,7 @@ export const useObjektTransfer = create<ObjektTransferState>()((set, get) => ({
         return {
           ...state,
           selected: state.selected.filter(
-            (p) => p.objekt.tokenId !== objekt.tokenId
+            (p) => p.objekt.tokenId !== objekt.tokenId,
           ),
         };
       }
@@ -153,14 +153,14 @@ export const useObjektTransfer = create<ObjektTransferState>()((set, get) => ({
   update: (selection) =>
     set((state) => {
       const existing = state.selected.find(
-        (p) => p.objekt.tokenId === selection.objekt.tokenId
+        (p) => p.objekt.tokenId === selection.objekt.tokenId,
       );
 
       if (existing) {
         return {
           ...state,
           selected: state.selected.map((p) =>
-            p.objekt.tokenId === selection.objekt.tokenId ? selection : p
+            p.objekt.tokenId === selection.objekt.tokenId ? selection : p,
           ),
         };
       }
@@ -193,7 +193,7 @@ export const useObjektTransfer = create<ObjektTransferState>()((set, get) => ({
       return {
         ...state,
         selected: state.selected.map((sel) =>
-          sel.objekt.tokenId === tokenId ? { ...sel, recipient: user } : sel
+          sel.objekt.tokenId === tokenId ? { ...sel, recipient: user } : sel,
         ),
       };
     }),
@@ -204,7 +204,7 @@ export const useObjektTransfer = create<ObjektTransferState>()((set, get) => ({
   remove: (tokenId) =>
     set((state) => {
       const selected = state.selected.filter(
-        (p) => p.objekt.tokenId !== tokenId
+        (p) => p.objekt.tokenId !== tokenId,
       );
 
       return {

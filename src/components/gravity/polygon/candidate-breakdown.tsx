@@ -16,7 +16,7 @@ export default function CandidateBreakdown(props: Props) {
 
   const totalComoUsed = candidates.reduce(
     (acc, candidate) => acc + candidate.comoUsed,
-    0
+    0,
   );
 
   return (

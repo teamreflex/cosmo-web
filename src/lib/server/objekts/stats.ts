@@ -66,13 +66,13 @@ async function getHourlyStats(since: Date, until: Date): Promise<RawStats[]> {
     .where(
       and(
         gte(objekts.mintedAt, since.toISOString()),
-        lt(objekts.mintedAt, until.toISOString())
-      )
+        lt(objekts.mintedAt, until.toISOString()),
+      ),
     )
     .groupBy(
       sql`date_trunc('hour', ${objekts.mintedAt})`,
       collections.member,
-      collections.artist
+      collections.artist,
     );
 
   return stats;
@@ -83,7 +83,7 @@ async function getHourlyStats(since: Date, until: Date): Promise<RawStats[]> {
  */
 async function getObjektCounts(
   since: Date,
-  until: Date
+  until: Date,
 ): Promise<{
   premierCount: number;
   scannedCount: number;
@@ -98,8 +98,8 @@ async function getObjektCounts(
     .where(
       and(
         gte(objekts.mintedAt, since.toISOString()),
-        lt(objekts.mintedAt, until.toISOString())
-      )
+        lt(objekts.mintedAt, until.toISOString()),
+      ),
     );
 
   return {
@@ -173,7 +173,7 @@ export const fetchObjektStats = createServerFn({ method: "GET" }).handler(() =>
       premierCount,
       scannedCount,
     };
-  })
+  }),
 );
 
 export const objektStatsQuery = queryOptions({
