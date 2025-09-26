@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
-    "start": "node .output/server/index.mjs",
+    "start": "vite start",
     "lint": "eslint . --max-warnings 0",
     "typecheck": "tsc --pretty --noEmit",
     "db:push": "drizzle-kit push",
@@ -34,16 +34,16 @@
     "@upstash/redis": "^1.35.4",
     "@vercel/functions": "^3.1.0",
     "babel-plugin-react-compiler": "19.1.0-rc.3",
-    "better-auth": "1.3.7",
+    "better-auth": "1.3.18",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
-    "drizzle-orm": "1.0.0-beta.1-578e9fd",
+    "drizzle-orm": "1.0.0-beta.1-f92627f",
     "input-otp": "^1.4.2",
     "jose": "^6.1.0",
     "lucide-react": "^0.544.0",
-    "motion": "^12.23.21",
+    "motion": "^12.23.22",
     "next-themes": "^0.4.6",
     "ofetch": "^1.4.1",
     "radix-ui": "^1.4.3",
@@ -61,7 +61,7 @@
     "usehooks-ts": "^3.1.1",
     "vaul": "^1.1.2",
     "viem": "^2.37.8",
-    "wagmi": "^2.17.4",
+    "wagmi": "^2.17.5",
     "zod": "^4.1.11",
     "zustand": "^5.0.8"
   },
@@ -74,13 +74,13 @@
     "@tanstack/react-query-devtools": "^5.90.2",
     "@types/node": "22.17.2",
     "@types/pg": "^8.15.5",
-    "@types/react": "19.1.12",
+    "@types/react": "19.1.13",
     "@types/react-dom": "19.1.9",
     "@types/umami": "^2.10.1",
     "@typescript-eslint/eslint-plugin": "^8.44.1",
     "@vitejs/plugin-react": "^5.0.3",
     "dotenv-cli": "^10.0.0",
-    "drizzle-kit": "1.0.0-beta.1-578e9fd",
+    "drizzle-kit": "1.0.0-beta.1-f92627f",
     "eslint": "9.36.0",
     "eslint-plugin-drizzle": "^0.2.3",
     "eslint-plugin-react-compiler": "19.1.0-rc.2",
@@ -96,24 +96,16 @@
   },
   "pnpm": {
     "overrides": {
-      "@types/react": "19.1.12",
+      "@types/react": "19.1.13",
       "@types/react-dom": "19.1.9"
     },
     "onlyBuiltDependencies": [
-      "@parcel/watcher",
-      "@sentry/cli",
       "@tailwindcss/oxide",
       "bufferutil",
       "esbuild",
       "keccak",
-      "oxc-resolver",
-      "sharp",
       "unrs-resolver",
       "utf-8-validate"
-    ],
-    "ignoredBuiltDependencies": [
-      "esbuild",
-      "unrs-resolver"
     ]
   },
   "packageManager": "pnpm@10.14.0"
