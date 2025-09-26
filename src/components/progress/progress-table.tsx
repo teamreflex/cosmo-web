@@ -1,5 +1,4 @@
 import { useSuspenseQueries } from "@tanstack/react-query";
-import { ofetch } from "ofetch";
 import {
   Select,
   SelectContent,
@@ -10,40 +9,27 @@ import {
 import ProgressSeason from "./progress-season";
 import ProgressLeaderboard from "./progress-leaderboard";
 import type { SeasonProgress } from "@/lib/universal/progress";
-import { baseUrl } from "@/lib/query-client";
+import type { ValidOnlineType } from "@/lib/universal/cosmo/common";
 import { filterDataQuery } from "@/lib/queries/core";
+import { progressBreakdownQuery } from "@/lib/queries/progress";
 
 type Props = {
   address: string;
   member: string;
+  onlineType: ValidOnlineType | undefined;
+  setOnlineType: (value: ValidOnlineType | undefined) => void;
 };
 
-export default function ProgressTable({ address, member }: Props) {
-  const [onlineType, setOnlineType] = useQueryState(
-    "filter",
-    parseAsStringEnum(["combined", "online", "offline"])
-  );
-
+export default function ProgressTable(props: Props) {
   const [progressQuery, seasonsQuery] = useSuspenseQueries({
     queries: [
-      // progress breakdown
-      {
-        queryKey: ["progress", address, member],
-        queryFn: async () => {
-          const url = new URL(
-            `/api/progress/breakdown/${member}/${address}`,
-            baseUrl()
-          );
-          return await ofetch<SeasonProgress[]>(url.toString());
-        },
-      },
-      // filter data
+      progressBreakdownQuery(props.address, props.member),
       filterDataQuery,
     ],
   });
 
   // used to invalidate the selected/expanded class
-  const key = `${member}:${onlineType ?? "combined"}`;
+  const key = `${props.member}:${props.onlineType ?? "combined"}`;
 
   /**
    * filter out any season-class combos that have no totals and group by season.
@@ -56,10 +42,10 @@ export default function ProgressTable({ address, member }: Props) {
       }
 
       // apply filter
-      if (progress.type === "combined" && onlineType === null) {
-        acc[progress.season].push(progress);
-      } else if (progress.type === onlineType) {
-        acc[progress.season].push(progress);
+      if (progress.type === "combined" && props.onlineType === undefined) {
+        acc[progress.season]?.push(progress);
+      } else if (progress.type === props.onlineType) {
+        acc[progress.season]?.push(progress);
       }
 
       return acc;
@@ -96,7 +82,7 @@ export default function ProgressTable({ address, member }: Props) {
         <div className="flex items-center justify-between w-full">
           <div className="flex flex-col md:flex-row md:items-center md:gap-2">
             <h1 className="text-2xl md:text-3xl font-cosmo uppercase">
-              {member}
+              {props.member}
             </h1>
             <p className="text-sm font-semibold">
               {progress}/{total} ({percentage}%)
@@ -105,12 +91,12 @@ export default function ProgressTable({ address, member }: Props) {
 
           <div className="flex gap-2 items-center">
             <ProgressLeaderboard
-              member={member}
+              member={props.member}
               seasons={seasonsQuery.data.seasons}
             />
             <FilterSelect
-              value={onlineType ?? "combined"}
-              update={setOnlineType}
+              value={props.onlineType}
+              update={props.setOnlineType}
             />
           </div>
         </div>
@@ -133,11 +119,11 @@ function FilterSelect({
   value,
   update,
 }: {
-  value: string;
-  update: (value: string | null) => void;
+  value: ValidOnlineType | undefined;
+  update: (value: ValidOnlineType | undefined) => void;
 }) {
-  function set(value: string) {
-    update(value === "combined" ? null : value);
+  function set(v: string) {
+    update(v === "combined" ? undefined : (v as ValidOnlineType));
   }
 
   return (

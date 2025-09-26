@@ -8,14 +8,14 @@ import { Skeleton } from "../ui/skeleton";
 import ProgressTable from "./progress-table";
 import type { PropsWithChildren } from "react";
 import type { ValidArtist } from "@/lib/universal/cosmo/common";
-import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
+import { useProgressFilters } from "@/hooks/use-progress-filters";
 
 type Props = PropsWithChildren<{
   address: string;
 }>;
 
 export default function ProgressRenderer(props: Props) {
-  const { filters, setFilters } = useCosmoFilters();
+  const { filters, setFilters, setFilter } = useProgressFilters();
 
   const setActiveMember = useCallback(
     (member: string) => {
@@ -66,6 +66,8 @@ export default function ProgressRenderer(props: Props) {
                 <ProgressTable
                   address={props.address}
                   member={filters.member}
+                  onlineType={filters.filter ?? undefined}
+                  setOnlineType={(value) => setFilter("filter", value)}
                 />
               </Suspense>
             ) : (

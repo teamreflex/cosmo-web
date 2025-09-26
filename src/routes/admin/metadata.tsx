@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import InsertMetadata from "@/components/admin/metadata/insert-metadata";
-import { getSession } from "@/lib/queries/core";
+import { fetchCurrentUser } from "@/lib/queries/core";
 import { fetchLatestMetadata } from "@/lib/server/objekts/metadata";
 import { seoTitle } from "@/lib/seo";
 
@@ -9,8 +9,8 @@ export const Route = createFileRoute("/admin/metadata")({
     meta: [seoTitle("Objekt Metadata")],
   }),
   beforeLoad: async () => {
-    const session = await getSession();
-    if (!session?.user.isAdmin) {
+    const user = await fetchCurrentUser();
+    if (!user?.isAdmin) {
       throw redirect({ to: "/" });
     }
   },

@@ -21,6 +21,7 @@ import ProgressLeaderboardContent, {
   LeaderboardSkeleton,
 } from "./progress-leaderboard-content";
 import type { FilterData } from "@/hooks/use-filter-data";
+import type { ValidOnlineType } from "@/lib/universal/cosmo/common";
 import {
   Sheet,
   SheetContent,
@@ -29,6 +30,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { useArtists } from "@/hooks/use-artists";
+import { useProgressFilters } from "@/hooks/use-progress-filters";
 
 type Props = {
   member: string;
@@ -36,22 +38,20 @@ type Props = {
 };
 
 export default function ProgressLeaderboard({ member, seasons }: Props) {
-  const [open, setOpen] = useQueryState("leaderboard", parseAsNullableBoolean);
-  const [onlineType, setOnlineType] = useQueryState(
-    "filter",
-    parseAsStringEnum(["combined", "online", "offline"])
-  );
-  const [season, setSeason] = useQueryState("season", parseAsString);
+  const { filters, setFilters, setFilter } = useProgressFilters();
+
+  const isOpen = filters.leaderboard === true;
 
   function toggle() {
-    setOpen((prev) => (prev === true ? null : true));
-    if (open) {
-      setSeason(null);
-    }
+    setFilters((prev) => ({
+      ...prev,
+      leaderboard: prev.leaderboard === true ? undefined : true,
+      season: prev.leaderboard === true ? undefined : prev.season,
+    }));
   }
 
   return (
-    <Sheet open={open === true} onOpenChange={() => toggle()}>
+    <Sheet open={isOpen} onOpenChange={() => toggle()}>
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -82,14 +82,14 @@ export default function ProgressLeaderboard({ member, seasons }: Props) {
           {/* filters */}
           <div className="flex items-center justify-center gap-2 pb-4 pt-2">
             <FilterSelect
-              value={onlineType ?? "combined"}
-              update={setOnlineType}
+              value={filters.filter ?? undefined}
+              update={(value) => setFilter("filter", value)}
             />
             <SeasonSelect
               seasons={seasons}
               member={member}
-              value={season ?? "all"}
-              update={setSeason}
+              value={filters.season ?? "all"}
+              update={(value) => setFilter("season", value)}
             />
           </div>
 
@@ -98,8 +98,8 @@ export default function ProgressLeaderboard({ member, seasons }: Props) {
           <Suspense fallback={<LeaderboardSkeleton />}>
             <ProgressLeaderboardContent
               member={member}
-              onlineType={onlineType}
-              season={season}
+              onlineType={filters.filter ?? undefined}
+              season={filters.season ?? undefined}
             />
           </Suspense>
         </div>
@@ -108,19 +108,16 @@ export default function ProgressLeaderboard({ member, seasons }: Props) {
   );
 }
 
-function FilterSelect({
-  value,
-  update,
-}: {
-  value: string;
-  update: (value: string | null) => void;
+function FilterSelect(props: {
+  value: ValidOnlineType | undefined;
+  update: (value: ValidOnlineType | undefined) => void;
 }) {
   function set(value: string) {
-    update(value === "combined" ? null : value);
+    props.update(value === "combined" ? undefined : (value as ValidOnlineType));
   }
 
   return (
-    <Select value={value} onValueChange={set}>
+    <Select value={props.value} onValueChange={set}>
       <SelectTrigger>
         <SelectValue placeholder="Sort" />
       </SelectTrigger>
@@ -137,17 +134,17 @@ type SeasonSelectProps = {
   seasons: FilterData["seasons"];
   member: string;
   value: string;
-  update: (value: string | null) => void;
+  update: (value: string | undefined) => void;
 };
 
-function SeasonSelect({ seasons, member, value, update }: SeasonSelectProps) {
+function SeasonSelect(props: SeasonSelectProps) {
   const { getArtist, selectedIds } = useArtists();
 
   function set(value: string) {
-    update(value === "all" ? null : value);
+    props.update(value === "all" ? undefined : value);
   }
 
-  const data = seasons
+  const data = props.seasons
     .map(({ artistId, seasons }) => {
       const artist = getArtist(artistId)!;
       return {
@@ -160,11 +157,11 @@ function SeasonSelect({ seasons, member, value, update }: SeasonSelectProps) {
         selectedIds.includes(artist.id) &&
         artist.artistMembers
           .map((m) => m.name.toLowerCase())
-          .includes(member.toLowerCase())
+          .includes(props.member.toLowerCase())
     );
 
   return (
-    <Select value={value} onValueChange={set}>
+    <Select value={props.value} onValueChange={set}>
       <SelectTrigger>
         <SelectValue placeholder="Sort" />
       </SelectTrigger>

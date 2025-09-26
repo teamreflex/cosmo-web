@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Ratelimit } from "@upstash/ratelimit";
 import { waitUntil } from "@vercel/functions";
 import { captureException } from "@sentry/tanstackstart-react";
-import { getSession } from "@/lib/queries/core";
+import { fetchCurrentUser } from "@/lib/queries/core";
 import { IP_HEADER } from "@/lib/server/auth";
 import { redis } from "@/lib/server/cache";
 import { getCorsHeaders } from "@/lib/server/cors";
@@ -19,11 +19,11 @@ export const Route = createFileRoute("/api/cosmo/qr-auth/recaptcha")({
        */
       GET: async ({ request }) => {
         const ip = request.headers.get(IP_HEADER) ?? undefined;
-        const session = await getSession();
+        const user = await fetchCurrentUser();
         const headers = getCorsHeaders(request);
 
         // auth check
-        if (!session) {
+        if (!user) {
           return Response.json(
             { error: "unauthorized" },
             {
@@ -34,7 +34,7 @@ export const Route = createFileRoute("/api/cosmo/qr-auth/recaptcha")({
         }
 
         // rate limit check
-        const identifier = `user:${session.session.userId}`;
+        const identifier = `user:${user.id}`;
         const { success, pending } = await ratelimit.limit(identifier, {
           ip,
         });

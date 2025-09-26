@@ -22,8 +22,8 @@ import * as artists from "@/artists";
 /**
  * Fetch the current session.
  */
-export const getSession = createServerFn({ method: "GET" }).handler(
-  async () => {
+export const fetchCurrentUser = createServerFn({ method: "GET" }).handler(
+  async (): Promise<PublicUser | null> => {
     const headers = getRequestHeaders();
     const session = await auth.api.getSession({
       headers: headers,
@@ -33,7 +33,7 @@ export const getSession = createServerFn({ method: "GET" }).handler(
       return null;
     }
 
-    return session;
+    return toPublicUser(session.user);
   }
 );
 

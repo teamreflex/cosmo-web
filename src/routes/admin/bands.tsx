@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { getSession } from "@/lib/queries/core";
+import { fetchCurrentUser } from "@/lib/queries/core";
 import InsertBands from "@/components/admin/bands/insert-bands";
 import { seoTitle } from "@/lib/seo";
 
@@ -8,8 +8,8 @@ export const Route = createFileRoute("/admin/bands")({
     meta: [seoTitle("Objekt Bands")],
   }),
   beforeLoad: async () => {
-    const session = await getSession();
-    if (!session?.user.isAdmin) {
+    const user = await fetchCurrentUser();
+    if (!user?.isAdmin) {
       throw redirect({ to: "/" });
     }
   },

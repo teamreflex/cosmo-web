@@ -1,15 +1,15 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { ofetch } from "ofetch";
 import { Link } from "@tanstack/react-router";
 import { Skeleton } from "../ui/skeleton";
-import type { Leaderboard, LeaderboardItem } from "@/lib/universal/progress";
-import { baseUrl } from "@/lib/query-client";
+import type { LeaderboardItem } from "@/lib/universal/progress";
+import type { ValidOnlineType } from "@/lib/universal/cosmo/common";
 import { ordinal } from "@/lib/utils";
+import { progressLeaderboardQuery } from "@/lib/queries/progress";
 
 type Props = {
   member: string;
-  onlineType: string | null;
-  season: string | null;
+  onlineType: ValidOnlineType | undefined;
+  season: string | undefined;
 };
 
 export default function ProgressLeaderboardContent({
@@ -17,23 +17,9 @@ export default function ProgressLeaderboardContent({
   onlineType,
   season,
 }: Props) {
-  const { data } = useSuspenseQuery({
-    queryKey: [
-      "progress-leaderboard",
-      member,
-      onlineType ?? "combined",
-      season || "all",
-    ],
-    queryFn: async () => {
-      const url = new URL(`/api/progress/leaderboard/${member}`, baseUrl());
-      return await ofetch<Leaderboard>(url.toString(), {
-        query: {
-          onlineType: onlineType ?? undefined,
-          season: season ?? undefined,
-        },
-      });
-    },
-  });
+  const { data } = useSuspenseQuery(
+    progressLeaderboardQuery(member, onlineType, season)
+  );
 
   return (
     <div className="flex flex-col gap-4 py-2">
@@ -56,6 +42,7 @@ type LeaderboardRowProps = {
   item: LeaderboardItem;
   rank: number;
 };
+
 function LeaderboardRow({ member, total, item, rank }: LeaderboardRowProps) {
   const progress = Math.floor((item.count / total) * 100);
 

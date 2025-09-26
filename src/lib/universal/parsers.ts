@@ -114,6 +114,25 @@ export const transfersBackendSchema = cosmoSchema
     type: z.enum(transferTypes).default("all"),
   });
 
+// progress frontend
+export const progressFrontendSchema = cosmoSchema
+  .pick({
+    member: true,
+    artist: true,
+  })
+  .extend({
+    season: z.string().nullish(),
+    filter: z.enum(validOnlineTypes).nullish(),
+    leaderboard: z.coerce.boolean().nullish(),
+  })
+  .partial();
+
+// progress leaderboard backend
+export const progressLeaderboardBackendSchema = z.object({
+  onlineType: z.enum(validOnlineTypes).nullish().default(null),
+  season: z.string().nullish().default(null),
+});
+
 /**
  * Ensures extra query params are removed and don't trigger queryKey changes.
  */
