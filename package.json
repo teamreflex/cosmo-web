@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
-    "start": "vite start",
+    "start": "node .output/server/index.mjs",
     "lint": "eslint . --max-warnings 0",
     "typecheck": "tsc --pretty --noEmit",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
@@ -26,9 +26,9 @@
     "@tanstack/react-devtools": "^0.7.0",
     "@tanstack/react-query": "^5.90.2",
     "@tanstack/react-router": "^1.132.7",
-    "@tanstack/react-router-devtools": "^1.132.7",
+    "@tanstack/react-router-devtools": "^1.132.11",
     "@tanstack/react-router-ssr-query": "^1.132.7",
-    "@tanstack/react-start": "^1.132.9",
+    "@tanstack/react-start": "^1.132.13",
     "@tanstack/react-virtual": "^3.13.12",
     "@tanstack/router-plugin": "^1.132.7",
     "@upstash/ratelimit": "^2.0.6",
@@ -46,6 +46,7 @@
     "lucide-react": "^0.544.0",
     "motion": "^12.23.22",
     "next-themes": "^0.4.6",
+    "nitro": "npm:nitro-nightly",
     "ofetch": "^1.4.1",
     "radix-ui": "^1.4.3",
     "react": "19.1.1",
@@ -77,7 +78,7 @@
     "@tanstack/react-query-devtools": "^5.90.2",
     "@types/node": "22.17.2",
     "@types/pg": "^8.15.5",
-    "@types/react": "19.1.13",
+    "@types/react": "19.1.14",
     "@types/react-dom": "19.1.9",
     "@types/umami": "^2.10.1",
     "@typescript-eslint/eslint-plugin": "^8.44.1",
@@ -100,10 +101,11 @@
   },
   "pnpm": {
     "overrides": {
-      "@types/react": "19.1.13",
+      "@types/react": "19.1.14",
       "@types/react-dom": "19.1.9"
     },
     "onlyBuiltDependencies": [
+      "@parcel/watcher",
       "@tailwindcss/oxide",
       "bufferutil",
       "esbuild",
