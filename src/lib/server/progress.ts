@@ -22,13 +22,11 @@ import { indexer } from "@/lib/server/db/indexer";
  * Fetch the progress breakdown for a given member and address.
  */
 export const fetchProgressBreakdown = createServerFn({ method: "GET" })
-  .inputValidator((data) =>
-    z
-      .object({
-        member: z.string(),
-        address: z.string(),
-      })
-      .parse(data),
+  .inputValidator(
+    z.object({
+      member: z.string(),
+      address: z.string(),
+    }),
   )
   .handler(async ({ data }) => {
     const [totals, progress] = await Promise.all([
@@ -56,17 +54,15 @@ export const fetchProgressBreakdown = createServerFn({ method: "GET" })
  * Fetch the progress leaderboard for a given member and filters.
  */
 export const fetchProgressLeaderboard = createServerFn({ method: "GET" })
-  .inputValidator((data) =>
-    z
-      .object({
-        member: z.string(),
-        onlineType: z.preprocess(
-          (v) => (v === "" ? null : v),
-          z.enum(validOnlineTypes).nullish().default(null),
-        ),
-        season: z.string().nullish().default(null),
-      })
-      .parse(data),
+  .inputValidator(
+    z.object({
+      member: z.string(),
+      onlineType: z.preprocess(
+        (v) => (v === "" ? null : v),
+        z.enum(validOnlineTypes).nullish().default(null),
+      ),
+      season: z.string().nullish().default(null),
+    }),
   )
   .handler(async ({ data }) => {
     const [totals, leaderboard] = await Promise.all([
@@ -102,84 +98,93 @@ export const fetchProgressLeaderboard = createServerFn({ method: "GET" })
  * Cached for 1 hour.
  */
 export const fetchArtistStatsByAddress = createServerFn({ method: "GET" })
-  .inputValidator((data) => z.string().parse(data))
+  .inputValidator(z.object({ address: z.string() }))
   .handler(async ({ data }) => {
-    return await remember(`progress-stats:${data}`, 60 * 60, async () => {
-      // query objekts grouped by season, member and artist in a single query
-      const stats = await indexer
-        .select({
-          season: collections.season,
-          member: collections.member,
-          artist: collections.artist,
-          class: collections.class,
-          count: count(),
-        })
-        .from(objekts)
-        .innerJoin(collections, eq(objekts.collectionId, collections.id))
-        .where(eq(objekts.owner, data.toLowerCase()))
-        .groupBy(
-          collections.season,
-          collections.member,
-          collections.artist,
-          collections.class,
-        );
+    return await remember(
+      `progress-stats:${data.address}`,
+      60 * 60,
+      async () => {
+        // query objekts grouped by season, member and artist in a single query
+        const stats = await indexer
+          .select({
+            season: collections.season,
+            member: collections.member,
+            artist: collections.artist,
+            class: collections.class,
+            count: count(),
+          })
+          .from(objekts)
+          .innerJoin(collections, eq(objekts.collectionId, collections.id))
+          .where(eq(objekts.owner, data.address.toLowerCase()))
+          .groupBy(
+            collections.season,
+            collections.member,
+            collections.artist,
+            collections.class,
+          );
 
-      // transform stats into ArtistStats format
-      const artistsMap = new Map<string, ProcessingArtistStats>();
+        // transform stats into ArtistStats format
+        const artistsMap = new Map<string, ProcessingArtistStats>();
 
-      // process each record in the stats results
-      for (const record of stats) {
-        const artistName = record.artist;
+        // process each record in the stats results
+        for (const record of stats) {
+          const artistName = record.artist;
 
-        // initialize artist record if it doesn't exist
-        if (!artistsMap.has(artistName)) {
-          artistsMap.set(artistName, {
-            artistName,
-            seasons: new Map<string, number>(),
-            members: new Map<string, number>(),
-            classes: new Map<string, number>(),
-          });
+          // initialize artist record if it doesn't exist
+          if (!artistsMap.has(artistName)) {
+            artistsMap.set(artistName, {
+              artistName,
+              seasons: new Map<string, number>(),
+              members: new Map<string, number>(),
+              classes: new Map<string, number>(),
+            });
+          }
+
+          const artistStats = artistsMap.get(artistName)!;
+
+          // update season count
+          const currentSeasonCount =
+            artistStats.seasons.get(record.season) ?? 0;
+          artistStats.seasons.set(
+            record.season,
+            currentSeasonCount + record.count,
+          );
+
+          // update member count
+          const currentMemberCount =
+            artistStats.members.get(record.member) ?? 0;
+          artistStats.members.set(
+            record.member,
+            currentMemberCount + record.count,
+          );
+
+          // update class count
+          const currentClassCount = artistStats.classes.get(record.class) ?? 0;
+          artistStats.classes.set(
+            record.class,
+            currentClassCount + record.count,
+          );
         }
 
-        const artistStats = artistsMap.get(artistName)!;
-
-        // update season count
-        const currentSeasonCount = artistStats.seasons.get(record.season) ?? 0;
-        artistStats.seasons.set(
-          record.season,
-          currentSeasonCount + record.count,
+        // convert the intermediate map format back to the desired final structure
+        const finalStats: ArtistStats[] = Array.from(artistsMap.values()).map(
+          (processingStats) => ({
+            artistName: processingStats.artistName,
+            seasons: Array.from(processingStats.seasons.entries()).map(
+              ([name, c]) => ({ name, count: c }),
+            ),
+            members: Array.from(processingStats.members.entries()).map(
+              ([name, c]) => ({ name, count: c }),
+            ),
+            classes: Array.from(processingStats.classes.entries()).map(
+              ([name, c]) => ({ name, count: c }),
+            ),
+          }),
         );
 
-        // update member count
-        const currentMemberCount = artistStats.members.get(record.member) ?? 0;
-        artistStats.members.set(
-          record.member,
-          currentMemberCount + record.count,
-        );
-
-        // update class count
-        const currentClassCount = artistStats.classes.get(record.class) ?? 0;
-        artistStats.classes.set(record.class, currentClassCount + record.count);
-      }
-
-      // convert the intermediate map format back to the desired final structure
-      const finalStats: ArtistStats[] = Array.from(artistsMap.values()).map(
-        (processingStats) => ({
-          artistName: processingStats.artistName,
-          seasons: Array.from(processingStats.seasons.entries()).map(
-            ([name, c]) => ({ name, count: c }),
-          ),
-          members: Array.from(processingStats.members.entries()).map(
-            ([name, c]) => ({ name, count: c }),
-          ),
-          classes: Array.from(processingStats.classes.entries()).map(
-            ([name, c]) => ({ name, count: c }),
-          ),
-        }),
-      );
-
-      return finalStats;
-    });
+        return finalStats;
+      },
+    );
   });
 
 type FetchTotal = {

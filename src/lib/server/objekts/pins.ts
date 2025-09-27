@@ -19,7 +19,7 @@ interface ObjektWithCollection extends Objekt {
  * Cached for 1 day.
  */
 export const fetchPins = createServerFn({ method: "GET" })
-  .inputValidator((data) => z.object({ username: z.string() }).parse(data))
+  .inputValidator(z.object({ username: z.string() }))
   .handler(async ({ data }): Promise<CosmoObjekt[]> => {
     const tag = pinCacheKey(data.username);
     const ttl = 60 * 60 * 24; // 1 day

@@ -7,15 +7,15 @@ import { fetchSelectedArtists } from "@/lib/queries/core";
  * Set the selected artists in a cookie.
  */
 export const setSelectedArtist = createServerFn({ method: "POST" })
-  .inputValidator((data) => z.string().parse(data))
+  .inputValidator(z.object({ artist: z.string() }))
   .handler(async ({ data }) => {
     const artists = await fetchSelectedArtists();
 
     let selected = [...artists];
-    if (artists.includes(data)) {
-      selected = artists.filter((a) => a !== data);
+    if (artists.includes(data.artist)) {
+      selected = artists.filter((a) => a !== data.artist);
     } else {
-      selected.push(data);
+      selected.push(data.artist);
     }
 
     putCookie({

@@ -66,7 +66,7 @@ export function ArtistItem({ artist, isSelected }: ArtistItemProps) {
 
   function handleSelect(artistId: string) {
     mutation.mutate(
-      { data: artistId },
+      { data: { artist: artistId } },
       {
         onSuccess: (newSelected) => {
           queryClient.setQueryData(selectedArtistsQuery.queryKey, newSelected);

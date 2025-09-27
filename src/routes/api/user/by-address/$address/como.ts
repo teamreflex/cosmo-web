@@ -28,7 +28,7 @@ export const Route = createFileRoute("/api/user/by-address/$address/como")({
         );
 
         const objekts = await fetchObjektsWithComo({
-          data: params.address,
+          data: { address: params.address },
         });
         const calendar = buildCalendar(date, objekts);
 

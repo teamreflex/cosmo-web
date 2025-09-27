@@ -133,7 +133,7 @@ export const currentAccountQuery = queryOptions({
  * Fetch the target account.
  */
 export const fetchTargetAccount = createServerFn({ method: "GET" })
-  .inputValidator((data) => z.object({ identifier: z.string() }).parse(data))
+  .inputValidator(z.object({ identifier: z.string() }))
   .handler(async ({ data }): Promise<FullAccount> => {
     const account = await fetchFullAccount(data.identifier);
     if (!account) {

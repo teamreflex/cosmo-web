@@ -60,7 +60,7 @@ async function getCalendar(address: string, now: string | null) {
   const date = new Date(timestamp < 10000000000 ? timestamp * 1000 : timestamp);
 
   const result = await fetchObjektsWithComo({
-    data: address,
+    data: { address },
   });
   return buildCalendar(date, result);
 }

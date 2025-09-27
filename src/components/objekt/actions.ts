@@ -16,7 +16,7 @@ import { env } from "@/lib/env/server";
  */
 export const updateObjektMetadata = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
-  .inputValidator((data) => metadataObjectSchema.parse(data))
+  .inputValidator(metadataObjectSchema)
   .handler(async ({ data, context }) => {
     const [result] = await db
       .insert(objektMetadata)
@@ -42,7 +42,7 @@ export const updateObjektMetadata = createServerFn({ method: "POST" })
  */
 export const rescanObjektMetadata = createServerFn({ method: "POST" })
   .middleware([authenticatedMiddleware])
-  .inputValidator((data) => z.object({ tokenId: z.string() }).parse(data))
+  .inputValidator(z.object({ tokenId: z.string() }))
   .handler(async ({ data }) => {
     try {
       await ofetch<{ message: string }>(

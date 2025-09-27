@@ -11,12 +11,10 @@ import { adminMiddleware } from "@/lib/server/middlewares";
  */
 export const saveMetadata = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
-  .inputValidator((data) =>
-    z
-      .object({
-        rows: metadataObjectSchema.array(),
-      })
-      .parse(data),
+  .inputValidator(
+    z.object({
+      rows: metadataObjectSchema.array(),
+    }),
   )
   .handler(async ({ data, context }) => {
     const result = await db

@@ -22,13 +22,11 @@ import type { ValidArtist } from "../universal/cosmo/common";
  * Fetch full gravity details.
  */
 export const fetchGravityDetails = createServerFn({ method: "GET" })
-  .inputValidator((data) =>
-    z
-      .object({
-        artist: z.string(),
-        id: z.number(),
-      })
-      .parse(data),
+  .inputValidator(
+    z.object({
+      artist: z.string(),
+      id: z.number(),
+    }),
   )
   .handler(async ({ data }) => {
     // get artists
@@ -99,13 +97,11 @@ export const fetchGravities = createServerFn({ method: "GET" }).handler(
  * Cached for 30 days.
  */
 export const fetchPolygonGravity = createServerFn({ method: "GET" })
-  .inputValidator((data) =>
-    z
-      .object({
-        artist: z.string(),
-        id: z.number(),
-      })
-      .parse(data),
+  .inputValidator(
+    z.object({
+      artist: z.string(),
+      id: z.number(),
+    }),
   )
   .handler(async ({ data }) => {
     // cache this server function response for 30 days
@@ -213,15 +209,13 @@ export const fetchCachedGravity = createServerOnlyFn(
  * Fetch a poll, and if it's in the past, cache it for 30 days.
  */
 export const fetchCachedPoll = createServerFn({ method: "GET" })
-  .inputValidator((data) =>
-    z
-      .object({
-        artist: z.string(),
-        gravityId: z.number(),
-        pollId: z.number(),
-        isPast: z.boolean().optional(),
-      })
-      .parse(data),
+  .inputValidator(
+    z.object({
+      artist: z.string(),
+      gravityId: z.number(),
+      pollId: z.number(),
+      isPast: z.boolean().optional(),
+    }),
   )
   .handler(async ({ data }) => {
     const fn = async () => {

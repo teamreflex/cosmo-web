@@ -9,7 +9,7 @@ import type { ValidOnlineType } from "../universal/cosmo/common";
 export const artistStatsQuery = (address: string) =>
   queryOptions({
     queryKey: ["artist-stats", address],
-    queryFn: () => fetchArtistStatsByAddress({ data: address }),
+    queryFn: () => fetchArtistStatsByAddress({ data: { address } }),
   });
 
 export const progressBreakdownQuery = (address: string, member: string) =>

@@ -15,7 +15,7 @@ import { settingsSchema } from "@/lib/universal/schema/auth";
  */
 export const updateSettings = createServerFn({ method: "POST" })
   .middleware([authenticatedMiddleware])
-  .inputValidator((data) => settingsSchema.parse(data))
+  .inputValidator(settingsSchema)
   .handler(async ({ data }) => {
     await auth.api.updateUser({
       headers: getRequestHeaders(),
@@ -31,7 +31,7 @@ export const updateSettings = createServerFn({ method: "POST" })
  */
 export const verifyCosmo = createServerFn({ method: "POST" })
   .middleware([authenticatedMiddleware])
-  .inputValidator((data) => verifyCosmoSchema.parse(data))
+  .inputValidator(verifyCosmoSchema)
   .handler(async ({ data, context }) => {
     // send the otp and ticket to the cosmo api
     try {

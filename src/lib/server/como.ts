@@ -13,7 +13,7 @@ import { fetchArtists } from "@/lib/queries/core";
  * Fetch incoming transfers for Special & Premier objekts for a given address
  */
 export const fetchObjektsWithComo = createServerFn({ method: "GET" })
-  .inputValidator((data) => z.string().parse(data))
+  .inputValidator(z.object({ address: z.string() }))
   .handler(async ({ data }): Promise<ObjektWithCollection[]> => {
     return await indexer
       .select({
@@ -28,7 +28,7 @@ export const fetchObjektsWithComo = createServerFn({ method: "GET" })
       `.mapWith(Number),
       })
       .from(objekts)
-      .where(eq(objekts.owner, data.toLowerCase()))
+      .where(eq(objekts.owner, data.address.toLowerCase()))
       .innerJoin(
         collections,
         and(
@@ -41,7 +41,7 @@ export const fetchObjektsWithComo = createServerFn({ method: "GET" })
 export const fetchObjektsWithComoQuery = (address: string) =>
   queryOptions({
     queryKey: ["como-calendar", address],
-    queryFn: () => fetchObjektsWithComo({ data: address }),
+    queryFn: () => fetchObjektsWithComo({ data: { address } }),
     staleTime: Infinity,
     refetchOnWindowFocus: false,
   });
@@ -50,14 +50,14 @@ export const fetchObjektsWithComoQuery = (address: string) =>
  * Fetch ERC20 token balances from Alchemy.
  * Cached for 15 minutes.
  */
-export const fetchTokenBalances = createServerFn({ method: "GET" })
-  .inputValidator((data) => z.string().parse(data))
+const fetchTokenBalances = createServerFn({ method: "GET" })
+  .inputValidator(z.object({ address: z.string() }))
   .handler(async ({ data }): Promise<ComoBalance[]> => {
-    return remember(`como-balances:${data}`, 60 * 15, async () => {
+    return remember(`como-balances:${data.address}`, 60 * 15, async () => {
       const artists = await fetchArtists();
       const balances = await indexer.query.comoBalances.findMany({
         where: {
-          owner: addr(data),
+          owner: addr(data.address),
         },
       });
 
@@ -66,7 +66,7 @@ export const fetchTokenBalances = createServerFn({ method: "GET" })
 
         return {
           id: artist.id,
-          owner: data,
+          owner: data.address,
           amount: balance ? balance.amount : 0,
         };
       });
@@ -76,6 +76,6 @@ export const fetchTokenBalances = createServerFn({ method: "GET" })
 export const tokenBalancesQuery = (address: string) =>
   queryOptions({
     queryKey: ["como-balances", address],
-    queryFn: () => fetchTokenBalances({ data: address }),
+    queryFn: () => fetchTokenBalances({ data: { address } }),
     refetchOnWindowFocus: false,
   });
