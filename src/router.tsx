@@ -20,7 +20,7 @@ export function getRouter() {
     routeTree,
     context: { queryClient },
     defaultPreload: "intent",
-    scrollRestoration: true,
+    // scrollRestoration: true,
     Wrap: (props: { children: ReactNode }) => {
       return <MediaQueryProvider>{props.children}</MediaQueryProvider>;
     },
