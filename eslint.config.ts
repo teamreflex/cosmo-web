@@ -30,7 +30,14 @@ export default defineConfig(
     },
   },
   {
-    ignores: ["node_modules", "dist", ".tanstack", ".vercel"],
+    ignores: [
+      "node_modules",
+      ".output",
+      "dist",
+      ".tanstack",
+      ".vercel",
+      "src/routeTree.gen.ts",
+    ],
     files: ["**/*.ts", "**/*.tsx"],
     rules: {
       "@typescript-eslint/array-type": "off",

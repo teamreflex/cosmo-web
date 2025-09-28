@@ -1,5 +1,6 @@
 {
   "include": ["**/*.ts", "**/*.tsx", "vite.config.mts"],
+  "exclude": [".output", "dist", ".tanstack", ".vercel"],
 
   "compilerOptions": {
     "target": "ESNext",

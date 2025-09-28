@@ -25,12 +25,12 @@
     "@tabler/icons-react": "^3.35.0",
     "@tanstack/react-devtools": "^0.7.0",
     "@tanstack/react-query": "^5.90.2",
-    "@tanstack/react-router": "^1.132.7",
-    "@tanstack/react-router-devtools": "^1.132.11",
-    "@tanstack/react-router-ssr-query": "^1.132.7",
-    "@tanstack/react-start": "^1.132.13",
+    "@tanstack/react-router": "^1.132.17",
+    "@tanstack/react-router-devtools": "^1.132.17",
+    "@tanstack/react-router-ssr-query": "^1.132.17",
+    "@tanstack/react-start": "^1.132.18",
     "@tanstack/react-virtual": "^3.13.12",
-    "@tanstack/router-plugin": "^1.132.7",
+    "@tanstack/router-plugin": "^1.132.17",
     "@upstash/ratelimit": "^2.0.6",
     "@upstash/redis": "^1.35.4",
     "@vercel/functions": "^3.1.0",
@@ -62,7 +62,7 @@
     "typesense": "^2.1.0",
     "usehooks-ts": "^3.1.1",
     "vaul": "^1.1.2",
-    "viem": "^2.37.8",
+    "viem": "^2.37.9",
     "wagmi": "^2.17.5",
     "zod": "^4.1.11",
     "zustand": "^5.0.8"
@@ -73,7 +73,7 @@
     "@fontsource-variable/inter": "^5.2.8",
     "@tailwindcss/vite": "^4.1.13",
     "@tanstack/eslint-config": "^0.3.2",
-    "@tanstack/eslint-plugin-query": "^5.90.2",
+    "@tanstack/eslint-plugin-query": "^5.91.0",
     "@tanstack/eslint-plugin-router": "^1.132.0",
     "@tanstack/react-query-devtools": "^5.90.2",
     "@types/node": "22.17.2",
@@ -93,6 +93,7 @@
     "pg": "^8.16.3",
     "postcss": "8.5.6",
     "prettier": "^3.6.2",
+    "prettier-plugin-tailwindcss": "^0.6.14",
     "tailwindcss": "^4.1.13",
     "typescript": "5.9.2",
     "typescript-eslint": "^8.44.1",
@@ -115,6 +116,10 @@
     ]
   },
   "prettier": {
+    "plugins": [
+      "prettier-plugin-tailwindcss"
+    ],
+    "tailwindStylesheet": "./src/styles/tailwind.css",
     "trailingComma": "all"
   },
   "packageManager": "pnpm@10.14.0"
