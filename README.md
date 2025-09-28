@@ -24,7 +24,7 @@ The [`main`](https://github.com/teamreflex/cosmo-web/blob/main) branch remains a
 
 ## Requirements
 
-- [Node.js](https://nodejs.org/en/) 22.x
+- [Node.js](https://nodejs.org/en/) 22.12+
 - [Blockchain indexer](https://github.com/teamreflex/cosmo-db) instance w/ Drizzle HTTP proxy
 - [Neon](https://neon.tech/) instance
 - [Upstash](https://upstash.com/) instance
@@ -48,7 +48,7 @@ pnpm dev
 
 ## Tooling
 
-- [Next 15](https://nextjs.org/)
+- [TanStack Start](https://tanstack.com/start/latest/docs/framework/react/overview)
 - [Tailwind v4](https://tailwindcss.com/)
 - [shadcn/ui](https://ui.shadcn.com/docs)
 - [Neon](https://neon.tech/)

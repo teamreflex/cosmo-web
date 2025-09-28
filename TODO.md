@@ -1,4 +1,3 @@
-- fix residual type errors from enabling noUncheckedArrayAccess
 - ensure env var split is working and server vars aren't leaking to client
 - optimize query preloading
 - strip dead code
