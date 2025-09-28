@@ -15,7 +15,7 @@ export default function GravityTimestamp({ date, className }: Props) {
   }, []);
 
   if (!mounted) {
-    return <Skeleton className="w-20 h-4 rounded-full" />;
+    return <Skeleton className="h-4 w-20 rounded-full" />;
   }
 
   const iso = date.toISOString();

@@ -46,17 +46,17 @@ function RouteComponent() {
 
   return (
     <main className="relative container flex flex-col py-2">
-      <div className="grid grid-rows-[auto_auto_min-content] grid-cols-2 md:grid-cols-3 gap-2 md:h-24">
+      <div className="grid grid-cols-2 grid-rows-[auto_auto_min-content] gap-2 md:h-24 md:grid-cols-3">
         {/* user block */}
-        <div className="row-span-2 md:row-span-3 flex flex-row gap-4">
-          <UserAvatar className="w-24 h-24" username={target.cosmo.username} />
+        <div className="row-span-2 flex flex-row gap-4 md:row-span-3">
+          <UserAvatar className="h-24 w-24" username={target.cosmo.username} />
 
           <div className="flex flex-row">
-            <div className="flex flex-col gap-2 justify-center h-24">
+            <div className="flex h-24 flex-col justify-center gap-2">
               <Link
                 to="/@{$username}"
                 params={{ username: target.cosmo.username }}
-                className="w-fit text-2xl leading-6 font-cosmo uppercase underline underline-offset-4 decoration-transparent hover:decoration-cosmo transition-colors"
+                className="w-fit font-cosmo text-2xl leading-6 uppercase underline decoration-transparent underline-offset-4 transition-colors hover:decoration-cosmo"
               >
                 {target.cosmo.username}
               </Link>
@@ -65,8 +65,8 @@ function RouteComponent() {
                 <Suspense
                   fallback={
                     <div className="flex items-center gap-2">
-                      <div className="h-[26px] w-16 rounded-lg bg-secondary border border-border animate-pulse" />
-                      <div className="h-[26px] w-16 rounded-lg bg-secondary border border-border animate-pulse" />
+                      <div className="h-[26px] w-16 animate-pulse rounded-lg border border-border bg-secondary" />
+                      <div className="h-[26px] w-16 animate-pulse rounded-lg border border-border bg-secondary" />
                     </div>
                   }
                 >
@@ -75,7 +75,7 @@ function RouteComponent() {
               </ErrorBoundary>
 
               {/* badges? */}
-              <div className="flex flex-row gap-2 h-5">
+              <div className="flex h-5 flex-row gap-2">
                 {target.verified && <CosmoVerifiedBadge />}
                 {isEqual(target.cosmo.address, Addresses.SPIN) && (
                   <ModhausBadge />
@@ -94,7 +94,7 @@ function RouteComponent() {
         </div>
 
         {/* profile-related buttons */}
-        <div className="row-start-3 md:row-start-auto col-span-3 md:col-span-2 flex flex-wrap gap-2 justify-center md:justify-end">
+        <div className="col-span-3 row-start-3 flex flex-wrap justify-center gap-2 md:col-span-2 md:row-start-auto md:justify-end">
           <CopyAddressButton address={target.cosmo.address} />
           <TradesButton cosmo={target.cosmo} />
           <ComoButton cosmo={target.cosmo} />
@@ -109,17 +109,17 @@ function RouteComponent() {
 
           {/* content gets portaled in */}
           <div
-            className="h-10 lg:h-8 flex items-center empty:hidden"
+            className="flex h-10 items-center empty:hidden lg:h-8"
             id="help"
           />
           <div
-            className="h-10 flex items-center lg:hidden"
+            className="flex h-10 items-center lg:hidden"
             id="filters-button"
           />
         </div>
 
         {/* objekt total, gets portaled in */}
-        <div className="flex col-start-3 row-start-2 md:row-start-3 h-6 place-self-end">
+        <div className="col-start-3 row-start-2 flex h-6 place-self-end md:row-start-3">
           <span id="objekt-total" />
         </div>
       </div>
@@ -132,15 +132,15 @@ function RouteComponent() {
 function PendingComponent() {
   return (
     <main className="relative container flex flex-col py-2">
-      <div className="grid grid-rows-[auto_auto_min-content] grid-cols-2 md:grid-cols-3 gap-2 md:h-24">
+      <div className="grid grid-cols-2 grid-rows-[auto_auto_min-content] gap-2 md:h-24 md:grid-cols-3">
         {/* user block */}
-        <div className="row-span-2 md:row-span-3 flex flex-row gap-4">
-          <Skeleton className="h-24 w-24 rounded-full aspect-square" />
+        <div className="row-span-2 flex flex-row gap-4 md:row-span-3">
+          <Skeleton className="aspect-square h-24 w-24 rounded-full" />
 
           <div className="flex flex-row">
-            <div className="flex flex-col gap-2 justify-center h-24">
+            <div className="flex h-24 flex-col justify-center gap-2">
               {/* username */}
-              <Skeleton className="rounded-full w-24 h-6 py-0.5" />
+              <Skeleton className="h-6 w-24 rounded-full py-0.5" />
 
               {/* como balance */}
               <div className="flex items-center gap-2">
@@ -149,33 +149,33 @@ function PendingComponent() {
               </div>
 
               {/* badges */}
-              <div className="flex flex-row gap-2 h-5">
-                <Skeleton className="h-4 w-4 aspect-square shrink-0 rounded" />
+              <div className="flex h-5 flex-row gap-2">
+                <Skeleton className="aspect-square h-4 w-4 shrink-0 rounded" />
               </div>
             </div>
           </div>
         </div>
 
         {/* profile-related buttons */}
-        <div className="row-start-3 md:row-start-auto col-span-3 md:col-span-2 flex flex-wrap gap-2 justify-center md:justify-end">
+        <div className="col-span-3 row-start-3 flex flex-wrap justify-center gap-2 md:col-span-2 md:row-start-auto md:justify-end">
           {/* copy address */}
-          <Skeleton className="rounded-full w-10 h-10 lg:w-[84px] lg:h-8 shrink-0" />
+          <Skeleton className="h-10 w-10 shrink-0 rounded-full lg:h-8 lg:w-[84px]" />
           {/* trades */}
-          <Skeleton className="rounded-full w-10 h-10 lg:w-[75px] lg:h-8 shrink-0" />
+          <Skeleton className="h-10 w-10 shrink-0 rounded-full lg:h-8 lg:w-[75px]" />
           {/* como */}
-          <Skeleton className="rounded-full w-10 h-10 lg:w-[75px] lg:h-8 shrink-0" />
+          <Skeleton className="h-10 w-10 shrink-0 rounded-full lg:h-8 lg:w-[75px]" />
           {/* progress */}
-          <Skeleton className="rounded-full w-10 h-10 lg:w-[88px] lg:h-8 shrink-0" />
+          <Skeleton className="h-10 w-10 shrink-0 rounded-full lg:h-8 lg:w-[88px]" />
           {/* lists */}
-          <Skeleton className="rounded-full w-10 h-10 lg:w-[63px] lg:h-8 shrink-0" />
+          <Skeleton className="h-10 w-10 shrink-0 rounded-full lg:h-8 lg:w-[63px]" />
           {/* help */}
-          <Skeleton className="rounded-full aspect-square h-10 lg:h-8 shrink-0" />
+          <Skeleton className="aspect-square h-10 shrink-0 rounded-full lg:h-8" />
           {/* filters */}
-          <Skeleton className="rounded-full flex w-10 h-10 lg:hidden lg:w-[89px] lg:h-8 shrink-0" />
+          <Skeleton className="flex h-10 w-10 shrink-0 rounded-full lg:hidden lg:h-8 lg:w-[89px]" />
         </div>
 
         {/* objekt total, gets portaled in */}
-        <div className="flex col-start-3 row-start-2 md:row-start-3 h-6 place-self-end">
+        <div className="col-start-3 row-start-2 flex h-6 place-self-end md:row-start-3">
           <span id="objekt-total" />
         </div>
       </div>
@@ -185,10 +185,10 @@ function PendingComponent() {
 
 function NotFoundComponent() {
   return (
-    <main className="container flex flex-col w-full gap-2 items-center justify-center py-12">
+    <main className="container flex w-full flex-col items-center justify-center gap-2 py-12">
       <CircleAlert className="h-24 w-24" />
       <p className="text-sm font-semibold">User not found</p>
-      <p className="text-sm text-center text-balance w-64">
+      <p className="w-64 text-center text-sm text-balance">
         User could not be found in {env.VITE_APP_NAME} or COSMO.
       </p>
     </main>

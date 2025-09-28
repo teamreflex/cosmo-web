@@ -68,7 +68,7 @@ export default function AbstractLiveChart(props: Props) {
 
   if (chain.status === "error") {
     return (
-      <div className="flex flex-col w-full gap-2">
+      <div className="flex w-full flex-col gap-2">
         <AlertTriangle className="size-12" />
         <p className="text-sm font-semibold">Error loading gravity</p>
       </div>
@@ -79,7 +79,7 @@ export default function AbstractLiveChart(props: Props) {
   const countedVotes = totalVotes - chain.remainingVotesCount;
 
   return (
-    <div className="flex flex-col w-full gap-2">
+    <div className="flex w-full flex-col gap-2">
       <TimelineChart
         endDate={poll.endDate}
         pollId={Number(poll.id)}

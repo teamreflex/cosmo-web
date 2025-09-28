@@ -59,7 +59,7 @@ export default function BlockchainGroups(props: Props) {
     calculateTotal: (data) => {
       const total = data.pages[0]?.collectionCount ?? 0;
       return (
-        <p className="font-semibold text-end">
+        <p className="text-end font-semibold">
           {total.toLocaleString("en")} types
         </p>
       );

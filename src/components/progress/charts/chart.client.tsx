@@ -46,7 +46,7 @@ export default function ProgressChart(props: Props) {
 
             return (
               <text
-                className="text-xs font-semibold pointer-events-none drop-shadow"
+                className="pointer-events-none text-xs font-semibold drop-shadow"
                 x={x}
                 y={y}
                 fill="white"
@@ -62,7 +62,7 @@ export default function ProgressChart(props: Props) {
               key={`cell-${index}`}
               fill={entry.color}
               stroke="none"
-              className="outline-hidden cursor-pointer transition-transform duration-200 hover:scale-110"
+              className="cursor-pointer outline-hidden transition-transform duration-200 hover:scale-110"
               style={{
                 transformOrigin: "50% 50%",
               }}

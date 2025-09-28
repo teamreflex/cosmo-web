@@ -12,7 +12,7 @@ export default function StateGuest() {
       <div className="hidden md:contents">
         <Hydrated
           fallback={
-            <div className="inline-flex items-center justify-center h-9 px-1">
+            <div className="inline-flex h-9 items-center justify-center px-1">
               <Moon className="size-8" />
             </div>
           }

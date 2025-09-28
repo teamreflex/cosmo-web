@@ -61,8 +61,8 @@ function LinkedAccountItem(props: LinkedAccountItemProps) {
 
   return (
     <div className="flex items-center gap-2">
-      <provider.icon className="w-4 h-4 shrink-0" />
-      <div className="flex items-center gap-2 text-sm grow">
+      <provider.icon className="h-4 w-4 shrink-0" />
+      <div className="flex grow items-center gap-2 text-sm">
         <span>{provider.label}</span>
         <span className="text-xs text-muted-foreground">
           {props.account.accountId}
@@ -78,7 +78,7 @@ function LinkedAccountItem(props: LinkedAccountItemProps) {
               disabled={status === "pending" || props.disabled}
             >
               {status === "pending" ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <Unlink />
               )}
@@ -102,8 +102,8 @@ function LinkNewAccount(props: LinkNewAccountProps) {
 
   return (
     <div className="flex items-center gap-2">
-      <provider.icon className="w-4 h-4 shrink-0" />
-      <div className="flex items-center gap-2 text-sm grow">
+      <provider.icon className="h-4 w-4 shrink-0" />
+      <div className="flex grow items-center gap-2 text-sm">
         <span>Link {provider.label}</span>
       </div>
       <Button
@@ -112,7 +112,7 @@ function LinkNewAccount(props: LinkNewAccountProps) {
         disabled={status === "pending"}
       >
         {status === "pending" ? (
-          <Loader2 className="w-4 h-4 animate-spin" />
+          <Loader2 className="h-4 w-4 animate-spin" />
         ) : (
           <Link />
         )}

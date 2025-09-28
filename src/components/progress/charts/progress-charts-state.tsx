@@ -5,7 +5,7 @@ import { ProgressSectionSkeleton } from "./progress-section";
 
 export function ProgressChartsSkeleton() {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
       <ProgressSectionSkeleton />
       <ProgressSectionSkeleton />
       <div className="col-span-full">
@@ -19,8 +19,8 @@ export function ProgressChartsError() {
   const { resetBoundary } = useErrorBoundary();
 
   return (
-    <div className="flex flex-col gap-2 items-center py-6 text-sm font-semibold">
-      <p className="font-semibold text-sm text-center">
+    <div className="flex flex-col items-center gap-2 py-6 text-sm font-semibold">
+      <p className="text-center text-sm font-semibold">
         Error fetching objekt stats
       </p>
 

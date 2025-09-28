@@ -51,9 +51,9 @@ export default function ClassFilter(props: Props) {
         <Button
           variant="outline"
           className={cn(
-            "flex gap-2 items-center",
+            "flex items-center gap-2",
             (props.classes?.length ?? 0) > 0 &&
-              "dark:border-cosmo border-cosmo",
+              "border-cosmo dark:border-cosmo",
           )}
         >
           <span>Class</span>
@@ -63,9 +63,9 @@ export default function ClassFilter(props: Props) {
       <DropdownMenuContent className="flex flex-row gap-2">
         {classes.map(({ artist: classArtist, classes: classNames }) => (
           <DropdownMenuGroup key={classArtist.id}>
-            <DropdownMenuLabel className="text-xs flex items-center gap-2">
+            <DropdownMenuLabel className="flex items-center gap-2 text-xs">
               <img
-                className="rounded-full aspect-square size-4"
+                className="aspect-square size-4 rounded-full"
                 src={classArtist.logoImageUrl}
                 alt={classArtist.title}
               />

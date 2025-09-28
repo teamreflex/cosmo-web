@@ -62,10 +62,10 @@ function PendingComponent() {
   return (
     <div className="flex flex-col">
       {/* FiltersContainer */}
-      <div className="flex flex-col gap-2 sm:pb-2 pb-1">
-        <div className="sm:flex gap-2 items-center flex-wrap justify-center hidden">
+      <div className="flex flex-col gap-2 pb-1 sm:pb-2">
+        <div className="hidden flex-wrap items-center justify-center gap-2 sm:flex">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="w-24 h-9" />
+            <Skeleton key={i} className="h-9 w-24" />
           ))}
         </div>
       </div>

@@ -100,7 +100,7 @@ function StartLink() {
         &quot;COSMO verified&quot; badge.
       </p>
 
-      <Button className="mt-2 w-fit mx-auto" onClick={() => setStarted(true)}>
+      <Button className="mx-auto mt-2 w-fit" onClick={() => setStarted(true)}>
         Start
       </Button>
     </div>
@@ -123,7 +123,7 @@ function GetRecaptcha() {
   const isRateLimited = error instanceof FetchError && error.statusCode === 429;
 
   return (
-    <div className="flex flex-col justify-center items-center">
+    <div className="flex flex-col items-center justify-center">
       {status === "pending" && <Loader2 className="h-8 w-8 animate-spin" />}
 
       {status === "error" && (
@@ -230,7 +230,7 @@ function RenderQRCode({ ticket, retry }: RenderQRProps) {
   );
 
   return (
-    <div className="flex flex-col gap-2 items-center justify-center">
+    <div className="flex flex-col items-center justify-center gap-2">
       <p className="text-sm">
         Scan the QR code with your mobile device to sign in.
       </p>
@@ -250,11 +250,11 @@ function RenderQRCode({ ticket, retry }: RenderQRProps) {
         </div>
       ) : (
         <div className="flex flex-col items-center gap-2">
-          <div className="p-4 bg-white h-56 w-56 rounded">
-            <QRCode value={qr} className="w-full h-full" />
+          <div className="h-56 w-56 rounded bg-white p-4">
+            <QRCode value={qr} className="h-full w-full" />
           </div>
 
-          <div className="text-sm flex gap-2 items-center">
+          <div className="flex items-center gap-2 text-sm">
             <span>Remaining</span>
             <span className="text-cosmo-text">
               {Math.floor(timeLeft / 60)}:
@@ -308,7 +308,7 @@ function OTP({ ticket }: OTPProps) {
 
   if (mutation.status === "error") {
     return (
-      <div className="flex flex-col gap-2 items-center justify-center">
+      <div className="flex flex-col items-center justify-center gap-2">
         <AlertTriangle className="size-12" />
         <p className="text-sm font-semibold">Error linking COSMO account</p>
       </div>
@@ -322,7 +322,7 @@ function OTP({ ticket }: OTPProps) {
         className="flex flex-col gap-4"
       >
         <div className="flex flex-col items-center gap-4">
-          <p className="text-sm text-center">
+          <p className="text-center text-sm">
             Enter the 2-digit code from COSMO
           </p>
 

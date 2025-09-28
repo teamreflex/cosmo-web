@@ -7,9 +7,9 @@ export function Error({ message }: { message: string }) {
   }
 
   return (
-    <div className="flex flex-col gap-2 items-center container py-12">
-      <HeartCrack className="w-24 h-24" />
-      <p className="font-semibold text-sm text-center">{message}</p>
+    <div className="container flex flex-col items-center gap-2 py-12">
+      <HeartCrack className="h-24 w-24" />
+      <p className="text-center text-sm font-semibold">{message}</p>
 
       <Button variant="outline" onClick={refresh}>
         <RefreshCcw className="mr-2" /> Try Again

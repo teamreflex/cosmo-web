@@ -37,7 +37,7 @@ export default function MemberSelect({ artists, value = [], onChange }: Props) {
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="flex gap-2 items-center">
+        <Button variant="outline" className="flex items-center gap-2">
           <span>Members</span>
           <ChevronDown className="h-4 w-4 opacity-50" />
         </Button>
@@ -56,7 +56,7 @@ export default function MemberSelect({ artists, value = [], onChange }: Props) {
               <img
                 src={artist.logoImageUrl}
                 alt={artist.title}
-                className="rounded-full size-4 shrink-0"
+                className="size-4 shrink-0 rounded-full"
               />
               <span
                 style={{

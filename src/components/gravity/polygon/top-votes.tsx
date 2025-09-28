@@ -10,7 +10,7 @@ type Props = {
 
 export default function TopVotes(props: Props) {
   return (
-    <div className="w-full flex flex-col gap-2">
+    <div className="flex w-full flex-col gap-2">
       <AnimatePresence initial={false}>
         {props.votes.map((vote) => (
           <motion.div
@@ -47,13 +47,13 @@ function Row(props: RowProps) {
   const nickname = props.vote.username ?? props.vote.voter.substring(0, 8);
 
   return (
-    <div className="w-full h-12 rounded-lg px-4 flex items-center transition-all bg-secondary/70 hover:bg-secondary">
+    <div className="flex h-12 w-full items-center rounded-lg bg-secondary/70 px-4 transition-all hover:bg-secondary">
       <div className="flex flex-col">
         <span className="text-sm font-semibold">{nickname}</span>
         <span className="text-xs">{props.candidate.content.title}</span>
       </div>
 
-      <span className="text-sm ml-auto">
+      <span className="ml-auto text-sm">
         {props.vote.comoAmount.toLocaleString()} COMO
       </span>
     </div>

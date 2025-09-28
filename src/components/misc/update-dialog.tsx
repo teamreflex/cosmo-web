@@ -34,10 +34,10 @@ export default function UpdateDialog() {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <button className="relative h-8 w-9 flex justify-center items-center rounded-r-md bg-cosmo-text/25 hover:bg-cosmo-text/40 transition-colors">
-          <Newspaper className="text-cosmo-text w-5 h-5" />
+        <button className="relative flex h-8 w-9 items-center justify-center rounded-r-md bg-cosmo-text/25 transition-colors hover:bg-cosmo-text/40">
+          <Newspaper className="h-5 w-5 text-cosmo-text" />
           {isNew && (
-            <span className="absolute top-0 right-0 rounded-full h-2 w-2 bg-red-500 animate-pulse" />
+            <span className="absolute top-0 right-0 h-2 w-2 animate-pulse rounded-full bg-red-500" />
           )}
         </button>
       </AlertDialogTrigger>
@@ -51,7 +51,7 @@ export default function UpdateDialog() {
           </VisuallyHidden>
         </AlertDialogHeader>
 
-        <div className="flex flex-col text-sm gap-2">
+        <div className="flex flex-col gap-2 text-sm">
           <Accordion type="single" collapsible>
             {updates.map((update) => (
               <AccordionItem key={update.date} value={update.date}>
@@ -59,7 +59,7 @@ export default function UpdateDialog() {
                   {format(update.date, "MMMM do y")}
                 </AccordionTrigger>
                 <AccordionContent>
-                  <ul className="list-disc list-inside">
+                  <ul className="list-inside list-disc">
                     {update.changes.map((change, i) => (
                       <li key={i}>{change}</li>
                     ))}

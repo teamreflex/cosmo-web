@@ -26,31 +26,31 @@ export default function ProgressClass({
   return (
     <div
       className={cn(
-        "group min-h-26 relative flex flex-col justify-between rounded-lg border p-4 bg-gradient-to-br from-cosmo/7 to-cosmo/2 hover:bg-cosmo/4 transition-colors shadow-sm overflow-hidden",
+        "group relative flex min-h-26 flex-col justify-between overflow-hidden rounded-lg border bg-gradient-to-br from-cosmo/7 to-cosmo/2 p-4 shadow-sm transition-colors hover:bg-cosmo/4",
         isComplete ? "border-green-500/50" : "border-cosmo/50",
       )}
       onClick={onExpand}
     >
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">{progress.class} Class</h3>
-        <Icon className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+        <Icon className="h-5 w-5 text-muted-foreground transition-colors group-hover:text-foreground" />
       </div>
 
       <div className="mt-4">
-        <div className="flex items-center justify-between mt-1">
+        <div className="mt-1 flex items-center justify-between">
           <div className="font-medium">
             {owned}/{progress.total} ({percentage}%)
           </div>
 
           {isComplete && (
-            <div className="text-xs px-2 py-0.5 bg-green-500/20 dark:text-green-300 text-foreground rounded-full">
+            <div className="rounded-full bg-green-500/20 px-2 py-0.5 text-xs text-foreground dark:text-green-300">
               Complete
             </div>
           )}
         </div>
       </div>
 
-      <div className="absolute bottom-0 left-0 right-0 h-1 bg-muted rounded-b-lg overflow-hidden">
+      <div className="absolute right-0 bottom-0 left-0 h-1 overflow-hidden rounded-b-lg bg-muted">
         <div
           className={cn("h-full", isComplete ? "bg-green-500" : "bg-cosmo")}
           style={{ width: `${width}%` }}

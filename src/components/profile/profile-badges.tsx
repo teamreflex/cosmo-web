@@ -20,14 +20,14 @@ export function CosmoVerifiedBadge() {
       <Tooltip>
         <TooltipTrigger>
           <img
-            className="rounded shrink-0 size-5 invert dark:invert-0"
+            className="size-5 shrink-0 rounded invert dark:invert-0"
             src="/cosmo.webp"
             alt="COSMO"
           />
         </TooltipTrigger>
         <TooltipContent side="bottom" align="start">
-          <div className="flex flex-row gap-2 items-center">
-            <Check className="w-4 h-4" />
+          <div className="flex flex-row items-center gap-2">
+            <Check className="h-4 w-4" />
             <span>COSMO is verified</span>
           </div>
         </TooltipContent>
@@ -66,7 +66,7 @@ export function DiscordBadge(props: { handle: string }) {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <button className="bg-discord text-white rounded size-5 flex items-center justify-center">
+          <button className="flex size-5 items-center justify-center rounded bg-discord text-white">
             <IconBrandDiscordFilled className="w-4" />
           </button>
         </TooltipTrigger>
@@ -90,7 +90,7 @@ export function TwitterBadge(props: { handle: string }) {
         <TooltipTrigger asChild>
           <Link
             to={href}
-            className="bg-twitter text-white rounded size-5 flex items-center justify-center"
+            className="flex size-5 items-center justify-center rounded bg-twitter text-white"
           >
             <IconBrandTwitterFilled className="w-4" />
           </Link>

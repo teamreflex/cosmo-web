@@ -81,10 +81,10 @@ export default function ProgressTable(props: Props) {
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="grid grid-flow-row sm:items-center gap-4">
-        <div className="flex items-center justify-between w-full">
+      <div className="grid grid-flow-row gap-4 sm:items-center">
+        <div className="flex w-full items-center justify-between">
           <div className="flex flex-col md:flex-row md:items-center md:gap-2">
-            <h1 className="text-2xl md:text-3xl font-cosmo uppercase">
+            <h1 className="font-cosmo text-2xl uppercase md:text-3xl">
               {props.member}
             </h1>
             <p className="text-sm font-semibold">
@@ -92,7 +92,7 @@ export default function ProgressTable(props: Props) {
             </p>
           </div>
 
-          <div className="flex gap-2 items-center">
+          <div className="flex items-center gap-2">
             <ProgressLeaderboard
               member={props.member}
               seasons={seasonsQuery.data.seasons}

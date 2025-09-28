@@ -61,7 +61,7 @@ export default function ResetPassword({ token }: Props) {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
-        className="w-full flex flex-col gap-2"
+        className="flex w-full flex-col gap-2"
       >
         <FormField
           control={form.control}
@@ -79,7 +79,7 @@ export default function ResetPassword({ token }: Props) {
 
         <Button type="submit" disabled={mutation.isPending}>
           <span>Reset Password</span>
-          {mutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+          {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
         </Button>
       </form>
     </Form>

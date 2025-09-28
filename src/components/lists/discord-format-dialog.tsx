@@ -79,7 +79,7 @@ export default function DiscordFormatDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="w-full flex flex-col gap-2">
+        <div className="flex w-full flex-col gap-2">
           <div className="grid grid-cols-2 gap-2">
             <div className="grid gap-1.5">
               <Label>Have</Label>
@@ -100,7 +100,7 @@ export default function DiscordFormatDialog({
             </div>
           </div>
 
-          <div className="w-full flex justify-center gap-2">
+          <div className="flex w-full justify-center gap-2">
             <Button
               onClick={generate}
               disabled={disabled || mutation.isPending}
@@ -123,7 +123,7 @@ export default function DiscordFormatDialog({
 
           {result !== undefined && (
             <ScrollArea className="max-h-60 rounded-lg border border-border">
-              <pre className="whitespace-pre-wrap font-mono text-sm p-2">
+              <pre className="p-2 font-mono text-sm whitespace-pre-wrap">
                 {result}
               </pre>
             </ScrollArea>

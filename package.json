@@ -120,6 +120,10 @@
       "prettier-plugin-tailwindcss"
     ],
     "tailwindStylesheet": "./src/styles/tailwind.css",
+    "tailwindFunctions": [
+      "cn",
+      "clsx"
+    ],
     "trailingComma": "all"
   },
   "packageManager": "pnpm@10.14.0"

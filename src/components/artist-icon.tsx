@@ -4,14 +4,14 @@ import type { ReactNode } from "react";
 
 const map: Record<ValidArtist, ReactNode> = {
   artms: (
-    <div className="ring-1 p-px rounded-full ring-teal-400 saturate-[.60]">
+    <div className="rounded-full p-px ring-1 ring-teal-400 saturate-[.60]">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"
         strokeWidth={1.5}
         stroke="currentColor"
-        className="w-[14px] h-[14px] text-teal-400 fill-teal-400"
+        className="h-[14px] w-[14px] fill-teal-400 text-teal-400"
       >
         <path
           strokeLinecap="round"
@@ -22,12 +22,12 @@ const map: Record<ValidArtist, ReactNode> = {
     </div>
   ),
   tripleS: (
-    <Sparkle className="ring-1 p-px w-4 h-4 rounded-full text-purple-300 fill-purple-300 ring-purple-300" />
+    <Sparkle className="h-4 w-4 rounded-full fill-purple-300 p-px text-purple-300 ring-1 ring-purple-300" />
   ),
   idntt: (
-    <div className="ring-1 p-px rounded-full ring-[#3b82f6]">
+    <div className="rounded-full p-px ring-1 ring-[#3b82f6]">
       <svg
-        className="w-[14px] h-[14px] text-[#3b82f6] fill-[#3b82f6]"
+        className="h-[14px] w-[14px] fill-[#3b82f6] text-[#3b82f6]"
         viewBox="0 0 100 100"
         xmlns="http://www.w3.org/2000/svg"
       >

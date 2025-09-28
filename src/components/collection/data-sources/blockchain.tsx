@@ -67,7 +67,7 @@ export default function Blockchain(props: Props) {
     calculateTotal: (data) => {
       const total = data.pages[0]?.total ?? 0;
       return (
-        <p className="font-semibold text-end">
+        <p className="text-end font-semibold">
           {total.toLocaleString("en")} total
         </p>
       );

@@ -56,7 +56,7 @@ export function ObjektSidebar({ collection, serial }: ObjektSidebarProps) {
         <img
           src={collection.bandImageUrl}
           className={cn(
-            "absolute top-0 left-0 h-full w-full object-cover pointer-events-none opacity-0 transition-opacity",
+            "pointer-events-none absolute top-0 left-0 h-full w-full object-cover opacity-0 transition-opacity",
             bandLoaded && "opacity-100",
           )}
           alt={`${collection.artist} band image`}
@@ -66,13 +66,13 @@ export function ObjektSidebar({ collection, serial }: ObjektSidebarProps) {
 
       <div
         ref={ref}
-        className="absolute flex items-center h-full w-[11%] top-0 right-0"
+        className="absolute top-0 right-0 flex h-full w-[11%] items-center"
       >
         <div
           className={cn(
-            "flex justify-center items-center gap-2 [writing-mode:vertical-lr] font-semibold text-(--objekt-text-color) select-none",
+            "flex items-center justify-center gap-2 font-semibold text-(--objekt-text-color) select-none [writing-mode:vertical-lr]",
             useCustomBand &&
-              "rounded-l-(--border-radius) w-full h-[89%] my-auto justify-between px-(--border-padding)",
+              "my-auto h-[89%] w-full justify-between rounded-l-(--border-radius) px-(--border-padding)",
             useBackground && "bg-(--objekt-background-color)",
           )}
           style={{
@@ -101,7 +101,7 @@ export function ObjektNewIndicator(props: PropsWithClassName<{}>) {
   return (
     <span
       className={cn(
-        "px-2 py-[3px] h-fit w-fit bg-cosmo/80 text-white rounded-full text-xs font-semibold",
+        "h-fit w-fit rounded-full bg-cosmo/80 px-2 py-[3px] text-xs font-semibold text-white",
         props.className,
       )}
     >

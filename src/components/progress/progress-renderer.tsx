@@ -50,8 +50,8 @@ export default function ProgressRenderer(props: Props) {
           <ErrorBoundary
             onReset={reset}
             fallbackRender={({ resetErrorBoundary }) => (
-              <div className="flex flex-col gap-2 items-center py-6 text-sm font-semibold">
-                <p className="font-semibold text-sm text-center">
+              <div className="flex flex-col items-center gap-2 py-6 text-sm font-semibold">
+                <p className="text-center text-sm font-semibold">
                   Error fetching progress
                 </p>
 
@@ -82,8 +82,8 @@ export default function ProgressRenderer(props: Props) {
 
 function ProgressTableSkeleton() {
   return (
-    <div className="grid grid-flow-row sm:items-center gap-4">
-      <div className="flex items-center justify-between w-full">
+    <div className="grid grid-flow-row gap-4 sm:items-center">
+      <div className="flex w-full items-center justify-between">
         {/* member name */}
         <Skeleton className="h-9 w-32" />
 
@@ -93,8 +93,8 @@ function ProgressTableSkeleton() {
 
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
-          <div className="flex flex-col sm:grid sm:grid-cols-3 gap-2">
-            <div className="flex items-center justify-between col-span-3">
+          <div className="flex flex-col gap-2 sm:grid sm:grid-cols-3">
+            <div className="col-span-3 flex items-center justify-between">
               {/* season */}
               <Skeleton className="h-7 w-24" />
 

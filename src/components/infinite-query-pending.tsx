@@ -29,12 +29,12 @@ export function InfiniteQueryNext({
           onClick={fetchNextPage}
           disabled={isFetchingNextPage}
         >
-          <ChevronDown className="animate-bounce h-12 w-12" />
+          <ChevronDown className="h-12 w-12 animate-bounce" />
         </InView>
       )}
 
       {/* fetching next page */}
-      {isFetchingNextPage && <Loader2 className="animate-spin h-12 w-12" />}
+      {isFetchingNextPage && <Loader2 className="h-12 w-12 animate-spin" />}
 
       {/* no more pages */}
       {status === "success" && !hasNextPage && <PawPrint className="h-6 w-6" />}

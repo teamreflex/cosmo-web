@@ -32,13 +32,13 @@ export default function HelpDialog() {
         <div className="flex flex-col gap-4 text-sm text-foreground/80">
           {/* search */}
           <div className="flex flex-col gap-1">
-            <h3 className="text-foreground text-lg font-semibold">Search</h3>
+            <h3 className="text-lg font-semibold text-foreground">Search</h3>
             <p>
               The search bar is case-insensitive, has typo tolerance and
               supports shortcuts.
             </p>
             <p>Shortcut examples:</p>
-            <ul className="list-disc list-inside">
+            <ul className="list-inside list-disc">
               <li>
                 Unit names: <code>oec</code>, <code>lovelution</code>,{" "}
                 <code>vv</code>. These will search for objekts from members in

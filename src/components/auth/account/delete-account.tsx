@@ -20,7 +20,7 @@ export default function DeleteAccount() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="destructive" className="w-fit">
-          <Trash2 className="w-4 h-4" />
+          <Trash2 className="h-4 w-4" />
           <span>Delete Account</span>
         </Button>
       </DialogTrigger>
@@ -48,7 +48,7 @@ export default function DeleteAccount() {
               >
                 <span>Send Email</span>
                 {status === "pending" && (
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin" />
                 )}
               </Button>
             </DialogFooter>
@@ -61,8 +61,8 @@ export default function DeleteAccount() {
 
 function Success(props: { onClose: () => void }) {
   return (
-    <div className="flex flex-col items-center justify-center h-full">
-      <MailCheck className="w-10 h-10" />
+    <div className="flex h-full flex-col items-center justify-center">
+      <MailCheck className="h-10 w-10" />
       <p className="text-sm font-semibold">
         Click the link in the email to confirm the deletion of your account.
       </p>

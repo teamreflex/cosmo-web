@@ -33,7 +33,7 @@ const statusConfig = {
   },
   live: {
     icon: (
-      <div className="aspect-square size-3 bg-red-500 rounded-full animate-pulse" />
+      <div className="aspect-square size-3 animate-pulse rounded-full bg-red-500" />
     ),
     text: "LIVE",
   },

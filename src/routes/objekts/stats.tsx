@@ -39,8 +39,8 @@ function RouteComponent() {
     <main className="container flex flex-col py-2">
       {/* header */}
       <div className="flex flex-col pb-4">
-        <h1 className="text-3xl font-cosmo uppercase">Stats</h1>
-        <p className="text-sm font-semibold text-muted-foreground -mt-2">
+        <h1 className="font-cosmo text-3xl uppercase">Stats</h1>
+        <p className="-mt-2 text-sm font-semibold text-muted-foreground">
           Statistics update every hour
         </p>
       </div>
@@ -99,15 +99,15 @@ function RouteComponent() {
         </div>
 
         {/* hourly breakdown charts */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {/* artist breakdown chart */}
           <div className="flex flex-col gap-2">
-            <div className="flex flex-row gap-2 items-end h-10">
+            <div className="flex h-10 flex-row items-end gap-2">
               <h2 className="text-xl font-semibold">Artist Breakdown</h2>
             </div>
 
             <Card>
-              <CardContent className="pl-0 pt-6">
+              <CardContent className="pt-6 pl-0">
                 <ArtistChart artists={artists} data={data.artistBreakdown} />
               </CardContent>
             </Card>
@@ -130,8 +130,8 @@ function PendingComponent() {
     <main className="container flex flex-col py-2">
       {/* header */}
       <div className="flex flex-col pb-4">
-        <h1 className="text-3xl font-cosmo uppercase">Stats</h1>
-        <p className="text-sm font-semibold text-muted-foreground -mt-2">
+        <h1 className="font-cosmo text-3xl uppercase">Stats</h1>
+        <p className="-mt-2 text-sm font-semibold text-muted-foreground">
           Statistics update every hour
         </p>
       </div>
@@ -147,7 +147,7 @@ function PendingComponent() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <Skeleton className="h-7 mb-1 w-20" />
+              <Skeleton className="mb-1 h-7 w-20" />
               <p className="text-xs text-muted-foreground">
                 Total objekts minted in last 24 hours
               </p>
@@ -161,7 +161,7 @@ function PendingComponent() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <Skeleton className="h-7 mb-1 w-20" />
+              <Skeleton className="mb-1 h-7 w-20" />
               <p className="text-xs text-muted-foreground">
                 Objekts scanned in last 24 hours
               </p>
@@ -175,7 +175,7 @@ function PendingComponent() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <Skeleton className="h-7 mb-1 w-7" />
+              <Skeleton className="mb-1 h-7 w-7" />
               <p className="text-xs text-muted-foreground">
                 Premier class objekts minted in last 24 hours (digital)
               </p>
@@ -184,10 +184,10 @@ function PendingComponent() {
         </div>
 
         {/* hourly breakdown charts */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {/* artist breakdown chart */}
           <div className="flex flex-col gap-2">
-            <div className="flex flex-row gap-2 items-end h-10">
+            <div className="flex h-10 flex-row items-end gap-2">
               <h2 className="text-xl font-semibold">Artist Breakdown</h2>
             </div>
             <Skeleton className="h-108.5" />
@@ -195,7 +195,7 @@ function PendingComponent() {
 
           {/* member breakdown chart */}
           <div className="flex flex-col gap-2">
-            <div className="flex flex-row gap-2 items-end justify-between">
+            <div className="flex flex-row items-end justify-between gap-2">
               <h2 className="text-xl font-semibold">Member Breakdown</h2>
               <Skeleton className="h-9 w-30" />
             </div>

@@ -89,14 +89,14 @@ function RouteComponent() {
       <UserStateProvider user={account?.user} cosmo={account?.cosmo}>
         <ArtistProvider artists={artists} selected={selected}>
           <ProfileProvider>
-            <div className="grid grid-cols-2 grid-rows-2 lg:grid-rows-1 lg:h-9">
+            <div className="grid grid-cols-2 grid-rows-2 lg:h-9 lg:grid-rows-1">
               <div className="flex items-center">
-                <h3 className="text-xl font-cosmo leading-none">
+                <h3 className="font-cosmo text-xl leading-none">
                   {objektList.name}
                 </h3>
               </div>
 
-              <div className="lg:flex flex-row items-center justify-end gap-2 row-span-2 lg:row-span-1 grid grid-rows-subgrid">
+              <div className="row-span-2 grid grid-rows-subgrid flex-row items-center justify-end gap-2 lg:row-span-1 lg:flex">
                 <span className="row-start-2 ml-auto" id="objekt-total" />
                 {isAuthenticated && (
                   <div className="flex items-center gap-2">
@@ -107,7 +107,7 @@ function RouteComponent() {
               </div>
 
               <div
-                className="h-10 flex items-center lg:hidden"
+                className="flex h-10 items-center lg:hidden"
                 id="filters-button"
               />
             </div>
@@ -127,18 +127,18 @@ function PendingComponent() {
   return (
     <main className="container flex flex-col py-2">
       {/* header */}
-      <div className="flex items-center h-9">
-        <Skeleton className="rounded-full w-32 h-6" />
+      <div className="flex h-9 items-center">
+        <Skeleton className="h-6 w-32 rounded-full" />
       </div>
 
       {/* content */}
       <div className="flex flex-col">
         {/* filters */}
-        <div className="transition-all flex sm:group-data-[show=false]:visible sm:group-data-[show=true]:visible sm:group-data-[show=false]:opacity-100 sm:group-data-[show=true]:opacity-100 group-data-[show=true]:pb-2 sm:pb-1 sm:group-data-[show=false]:h-12 sm:group-data-[show=true]:h-12 group-data-[show=false]:h-0 group-data-[show=false]:invisible group-data-[show=false]:opacity-0 group-data-[show=true]:h-36 gap-2 items-center flex-wrap justify-center">
+        <div className="flex flex-wrap items-center justify-center gap-2 transition-all group-data-[show=false]:invisible group-data-[show=false]:h-0 group-data-[show=false]:opacity-0 group-data-[show=true]:h-36 group-data-[show=true]:pb-2 sm:pb-1 sm:group-data-[show=false]:visible sm:group-data-[show=false]:h-12 sm:group-data-[show=false]:opacity-100 sm:group-data-[show=true]:visible sm:group-data-[show=true]:h-12 sm:group-data-[show=true]:opacity-100">
           {Array.from({ length: 7 }).map((_, i) => (
-            <Skeleton key={i} className="w-24 h-9" />
+            <Skeleton key={i} className="h-9 w-24" />
           ))}
-          <Skeleton className="w-[42px] h-[36px]" />
+          <Skeleton className="h-[36px] w-[42px]" />
         </div>
 
         <div className="flex flex-col">
@@ -151,7 +151,7 @@ function PendingComponent() {
 
 function NotFoundComponent() {
   return (
-    <main className="container flex flex-col w-full gap-2 items-center justify-center py-12">
+    <main className="container flex w-full flex-col items-center justify-center gap-2 py-12">
       <HeartCrack className="h-24 w-24" />
       <p className="text-sm font-semibold">Objekt list not found</p>
     </main>

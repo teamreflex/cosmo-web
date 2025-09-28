@@ -38,7 +38,7 @@ export default function HelpDialog() {
             </p>
 
             <span>
-              A <Sparkles className="inline-block text-yellow-600 h-5 w-5" />{" "}
+              A <Sparkles className="inline-block h-5 w-5 text-yellow-600" />{" "}
               icon denotes that a drop is scheduled to happen on a day that does
               not exist in the current month, and will instead be carried over
               to the next month.

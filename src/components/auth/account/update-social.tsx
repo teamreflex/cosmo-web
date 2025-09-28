@@ -59,7 +59,7 @@ export default function UpdateSocial(props: Props) {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
-        className="w-full flex flex-col gap-2"
+        className="flex w-full flex-col gap-2"
       >
         <FormField
           control={form.control}
@@ -93,7 +93,7 @@ function Submit(props: { isPending: boolean }) {
   return (
     <Button className="ml-auto w-fit" type="submit" disabled={props.isPending}>
       <span>Save</span>
-      {props.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+      {props.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
     </Button>
   );
 }

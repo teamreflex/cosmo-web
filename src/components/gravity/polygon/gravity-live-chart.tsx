@@ -18,7 +18,7 @@ export default function PolygonLiveChart({ artist, gravity }: Props) {
   const { data } = useSuspenseQuery(polygonGravityQuery(artist.id, gravity.id));
 
   return (
-    <div className="flex flex-col w-full gap-2">
+    <div className="flex w-full flex-col gap-2">
       <TimelineChart
         start={data.poll.startDate}
         end={data.poll.endDate}

@@ -41,7 +41,7 @@ export default function SignIn() {
           onClick={() => setOpen(true)}
           variant="link"
           size="icon"
-          className="drop-shadow-lg outline-hidden md:mx-2"
+          className="outline-hidden drop-shadow-lg md:mx-2"
           aria-label="Sign In"
         >
           <LogIn className="size-8 shrink-0 md:hidden" />
@@ -56,7 +56,7 @@ export default function SignIn() {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col gap-2 items-center">
+        <div className="flex flex-col items-center gap-2">
           {(() => {
             switch (state) {
               case "sign-in":
@@ -85,7 +85,7 @@ export default function SignIn() {
 
               <Separator />
 
-              <div className="flex flex-col lg:flex-row gap-2 items-center">
+              <div className="flex flex-col items-center gap-2 lg:flex-row">
                 <SignInWithDiscord />
                 <SignInWithTwitter />
               </div>
@@ -93,7 +93,7 @@ export default function SignIn() {
               <Link
                 to="/terms-privacy"
                 onClick={() => setOpen(false)}
-                className="text-xs text-muted-foreground underline pt-2"
+                className="pt-2 text-xs text-muted-foreground underline"
               >
                 Terms & Privacy
               </Link>
@@ -107,7 +107,7 @@ export default function SignIn() {
 
 function Separator() {
   return (
-    <div className="flex items-center justify-center gap-1 my-2">
+    <div className="my-2 flex items-center justify-center gap-1">
       <SeparatorLine />
       <span className="text-xs text-muted-foreground">or</span>
       <SeparatorLine />
@@ -116,5 +116,5 @@ function Separator() {
 }
 
 function SeparatorLine() {
-  return <div className="flex bg-border shrink-0 h-px w-24" />;
+  return <div className="flex h-px w-24 shrink-0 bg-border" />;
 }

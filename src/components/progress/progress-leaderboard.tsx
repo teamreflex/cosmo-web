@@ -68,19 +68,19 @@ export default function ProgressLeaderboard({ member, seasons }: Props) {
         </Tooltip>
       </TooltipProvider>
 
-      <SheetContent className="overflow-y-scroll outline-hidden gap-0">
+      <SheetContent className="gap-0 overflow-y-scroll outline-hidden">
         <SheetHeader className="pb-0">
-          <SheetTitle className="font-cosmo uppercase text-xl">
+          <SheetTitle className="font-cosmo text-xl uppercase">
             Leaderboard
           </SheetTitle>
-          <SheetDescription className="font-cosmo uppercase text-lg">
+          <SheetDescription className="font-cosmo text-lg uppercase">
             {member}
           </SheetDescription>
         </SheetHeader>
 
         <div className="flex flex-col px-3">
           {/* filters */}
-          <div className="flex items-center justify-center gap-2 pb-4 pt-2">
+          <div className="flex items-center justify-center gap-2 pt-2 pb-4">
             <FilterSelect
               value={filters.filter ?? undefined}
               update={(value) => setFilter("filter", value)}
@@ -170,9 +170,9 @@ function SeasonSelect(props: SeasonSelectProps) {
 
         {data.map(({ artist, seasons }) => (
           <SelectGroup key={artist.id}>
-            <SelectLabel className="text-xs flex items-center gap-2">
+            <SelectLabel className="flex items-center gap-2 text-xs">
               <img
-                className="rounded-full aspect-square size-4"
+                className="aspect-square size-4 rounded-full"
                 src={artist.logoImageUrl}
                 alt={artist.title}
               />

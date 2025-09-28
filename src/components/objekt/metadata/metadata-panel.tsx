@@ -30,10 +30,10 @@ export default function MetadataPanel(props: Props) {
 function Fallback() {
   return (
     <div className="flex grow flex-col justify-between gap-2 px-4">
-      <div className="flex flex-col gap-2 min-h-10 sm:h-full">
-        <Skeleton className="w-46 h-8 rounded-md mx-auto md:mx-0" />
-        <Skeleton className="w-full h-3 sm:h-5 rounded-full" />
-        <Skeleton className="w-2/3 h-3 sm:h-5 rounded-full" />
+      <div className="flex min-h-10 flex-col gap-2 sm:h-full">
+        <Skeleton className="mx-auto h-8 w-46 rounded-md md:mx-0" />
+        <Skeleton className="h-3 w-full rounded-full sm:h-5" />
+        <Skeleton className="h-3 w-2/3 rounded-full sm:h-5" />
       </div>
     </div>
   );

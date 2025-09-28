@@ -53,8 +53,8 @@ export default function SeasonFilter(props: Props) {
         <Button
           variant="outline"
           className={cn(
-            "flex gap-2 items-center",
-            value.length > 0 && "dark:border-cosmo border-cosmo",
+            "flex items-center gap-2",
+            value.length > 0 && "border-cosmo dark:border-cosmo",
           )}
         >
           <span>Season</span>
@@ -64,9 +64,9 @@ export default function SeasonFilter(props: Props) {
       <DropdownMenuContent className="flex flex-row gap-2">
         {seasons.map(({ artist, seasons: artistSeasons }) => (
           <DropdownMenuGroup key={artist.id}>
-            <DropdownMenuLabel className="text-xs flex items-center gap-2">
+            <DropdownMenuLabel className="flex items-center gap-2 text-xs">
               <img
-                className="rounded-full aspect-square size-4"
+                className="aspect-square size-4 rounded-full"
                 src={artist.logoImageUrl}
                 alt={artist.title}
               />

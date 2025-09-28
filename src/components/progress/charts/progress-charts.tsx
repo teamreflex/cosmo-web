@@ -77,7 +77,7 @@ export default function ProgressCharts(props: Props) {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
       <SectionClasses data={stats.classes} />
       <SectionSeasons data={stats.seasons} />
       <div className="col-span-full">

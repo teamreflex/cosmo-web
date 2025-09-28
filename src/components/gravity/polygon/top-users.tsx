@@ -89,7 +89,7 @@ export default function TopUsers(props: Props) {
   }, [props.votes, props.candidates]);
 
   return (
-    <div className="w-full flex flex-col gap-2">
+    <div className="flex w-full flex-col gap-2">
       <AnimatePresence initial={false}>
         {users.map((user) => (
           <motion.div
@@ -124,20 +124,20 @@ function Row({ user }: RowProps) {
   );
 
   return (
-    <div className="w-full h-12 rounded-lg px-4 flex items-center transition-all bg-secondary/70 hover:bg-secondary">
+    <div className="flex h-12 w-full items-center rounded-lg bg-secondary/70 px-4 transition-all hover:bg-secondary">
       <div className="flex flex-col">
         <span className="text-sm font-semibold">{nickname}</span>
         <span className="text-xs">{user.total.toLocaleString()} COMO</span>
       </div>
 
-      <span className="flex items-center ml-auto -space-x-3">
+      <span className="ml-auto flex items-center -space-x-3">
         {candidates.map((candidate) => (
           <TooltipProvider key={candidate.id}>
             <Tooltip>
               <TooltipTrigger>
                 <Avatar
                   key={candidate.title}
-                  className="size-8 ring ring-secondary rounded"
+                  className="size-8 rounded ring ring-secondary"
                 >
                   <AvatarFallback>{candidate.title.at(0)}</AvatarFallback>
                   <AvatarImage src={candidate.imageUrl} />

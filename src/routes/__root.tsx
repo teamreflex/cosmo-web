@@ -105,7 +105,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <head>
         <HeadContent />
       </head>
-      <body className="font-inter antialiased bg-background text-foreground overflow-y-scroll">
+      <body className="font-inter overflow-y-scroll bg-background text-foreground antialiased">
         <ThemeProvider attribute="class" defaultTheme="dark">
           <div className="relative flex min-h-dvh flex-col">
             <Navbar />
@@ -143,17 +143,17 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 
 function NotFoundComponent() {
   return (
-    <div className="flex flex-col justify-center items-center w-full gap-2 py-12">
-      <FileQuestion className="w-24 h-24" />
-      <p className="font-semibold text-sm text-center">Page not found</p>
+    <div className="flex w-full flex-col items-center justify-center gap-2 py-12">
+      <FileQuestion className="h-24 w-24" />
+      <p className="text-center text-sm font-semibold">Page not found</p>
     </div>
   );
 }
 
 function ErrorComponent() {
   return (
-    <main className="flex flex-col gap-1.5 items-center justify-center h-dvh w-full">
-      <h2 className="font-semibold text-lg">Something went wrong!</h2>
+    <main className="flex h-dvh w-full flex-col items-center justify-center gap-1.5">
+      <h2 className="text-lg font-semibold">Something went wrong!</h2>
       <p className="text-sm">
         This means COSMO is under maintenance, experiencing heavy traffic, or a
         bug in {env.VITE_APP_NAME} needs to be fixed.

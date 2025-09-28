@@ -33,13 +33,13 @@ export default function ComoCalendar({ artists, transfers }: Props) {
   const calendar = buildCalendar(now, transfers);
 
   return (
-    <div className="flex flex-col rounded-lg bg-secondary border border-secondary text-clip h-fit overflow-hidden">
+    <div className="flex h-fit flex-col overflow-hidden rounded-lg border border-secondary bg-secondary text-clip">
       {/* days of the week */}
       <div className="grid grid-cols-7 gap-px border-b border-secondary">
         {week.map((day) => (
           <div
             key={day}
-            className="flex items-center justify-center font-bold bg-background/80 py-2"
+            className="flex items-center justify-center bg-background/80 py-2 font-bold"
           >
             {day}
           </div>
@@ -57,11 +57,11 @@ export default function ComoCalendar({ artists, transfers }: Props) {
           <div
             key={day}
             className={cn(
-              "relative flex items-center flex-col gap-1 justify-center h-24 sm:h-20 bg-background/70 hover:bg-background/50 transition-colors",
+              "relative flex h-24 flex-col items-center justify-center gap-1 bg-background/70 transition-colors hover:bg-background/50 sm:h-20",
               now.getDate() === day && "border border-cosmo",
             )}
           >
-            <p className="absolute top-1 left-2 font-semibold text-sm">{day}</p>
+            <p className="absolute top-1 left-2 text-sm font-semibold">{day}</p>
 
             {artists.map((a) => {
               const contract = a.contracts.Objekt.toLowerCase();
@@ -78,12 +78,12 @@ export default function ComoCalendar({ artists, transfers }: Props) {
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger>
-                            <Sparkles className="text-yellow-600 h-5 w-5" />
+                            <Sparkles className="h-5 w-5 text-yellow-600" />
                           </TooltipTrigger>
                           <TooltipContent className="flex flex-col gap-1">
                             <p className="font-semibold">Carried over</p>
 
-                            <div className="flex justify-center items-center gap-2">
+                            <div className="flex items-center justify-center gap-2">
                               <ArtistIcon artist={a.name} />
                               <span>{dayEntry.carried}</span>
                             </div>

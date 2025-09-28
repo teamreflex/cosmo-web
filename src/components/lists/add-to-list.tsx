@@ -35,7 +35,7 @@ export default function AddToList({
       <DropdownMenuTrigger asChild>
         <button
           onClick={() => setOpen((state) => !state)}
-          className="hover:scale-110 transition-all flex items-center outline-hidden"
+          className="flex items-center outline-hidden transition-all hover:scale-110"
           aria-label={`Select list to add ${collectionId} to`}
         >
           <ListPlus className="h-3 w-3 sm:h-5 sm:w-5" />
@@ -46,7 +46,7 @@ export default function AddToList({
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           {lists.length === 0 && (
-            <DropdownMenuItem className="text-sm truncate group">
+            <DropdownMenuItem className="group truncate text-sm">
               0 lists available
             </DropdownMenuItem>
           )}
@@ -103,19 +103,19 @@ function ListItem({
   }
 
   return (
-    <DropdownMenuItem className="text-sm truncate group">
+    <DropdownMenuItem className="group truncate text-sm">
       <button
         type="button"
         onClick={handleClick}
         disabled={mutation.isPending}
-        className="w-full fex items-center justify-between"
+        className="fex w-full items-center justify-between"
         aria-label="Add objekt to list"
       >
         {list.name}
         {mutation.isPending ? (
           <Loader2 className="h-4 w-4 animate-spin" />
         ) : (
-          <Plus className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all" />
+          <Plus className="h-4 w-4 opacity-0 transition-all group-hover:opacity-100" />
         )}
       </button>
     </DropdownMenuItem>

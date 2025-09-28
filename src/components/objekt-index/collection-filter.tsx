@@ -43,7 +43,7 @@ export default function CollectionFilter(props: Props) {
           role="combobox"
           aria-expanded={open}
           className={cn(
-            "flex gap-2 items-center",
+            "flex items-center gap-2",
             (props.collections?.length ?? 0) > 0 && "border-cosmo",
           )}
         >

@@ -62,8 +62,8 @@ export default function ActionOverlay({
     <div
       data-hovering={hoverState !== undefined}
       className={cn(
-        "absolute top-0 left-0 p-1 sm:p-2 rounded-br-lg sm:rounded-br-xl items-center group h-5 sm:h-9 transition-all overflow-hidden",
-        "text-(--objekt-text-color) bg-(--objekt-background-color)",
+        "group absolute top-0 left-0 h-5 items-center overflow-hidden rounded-br-lg p-1 transition-all sm:h-9 sm:rounded-br-xl sm:p-2",
+        "bg-(--objekt-background-color) text-(--objekt-text-color)",
         "grid grid-flow-col grid-cols-[1fr_min-content]",
         (showActions === false || isHidden) && "hidden",
       )}
@@ -73,12 +73,12 @@ export default function ActionOverlay({
 
         {/* pinned (viewing other user) */}
         {isPin && isPinned && !authenticated && (
-          <Pin className="h-3 w-3 sm:h-5 sm:w-5 shrink-0" />
+          <Pin className="h-3 w-3 shrink-0 sm:h-5 sm:w-5" />
         )}
 
         {/* locked (viewing other user) */}
         {!usedForGrid && !isPin && isLocked && !authenticated && (
-          <Lock className="h-3 w-3 sm:h-5 sm:w-5 shrink-0" />
+          <Lock className="h-3 w-3 shrink-0 sm:h-5 sm:w-5" />
         )}
 
         {authenticated && (
@@ -124,7 +124,7 @@ export default function ActionOverlay({
             {token.nonTransferableReason === "not-transferable" && (
               <MailX
                 {...createHoverProps("not-transferable")}
-                className="h-3 w-3 sm:h-5 sm:w-5 shrink-0"
+                className="h-3 w-3 shrink-0 sm:h-5 sm:w-5"
               />
             )}
 
@@ -132,7 +132,7 @@ export default function ActionOverlay({
             {token.nonTransferableReason === "mint-pending" && (
               <DownloadCloud
                 {...createHoverProps("mint-pending")}
-                className="h-3 w-3 sm:h-5 sm:w-5 shrink-0"
+                className="h-3 w-3 shrink-0 sm:h-5 sm:w-5"
               />
             )}
 
@@ -141,7 +141,7 @@ export default function ActionOverlay({
               token.nonTransferableReason === "challenge-reward" && (
                 <PartyPopper
                   {...createHoverProps("challenge-reward")}
-                  className="h-3 w-3 sm:h-5 sm:w-5 shrink-0"
+                  className="h-3 w-3 shrink-0 sm:h-5 sm:w-5"
                 />
               )}
 
@@ -150,7 +150,7 @@ export default function ActionOverlay({
               token.nonTransferableReason === "welcome-objekt" && (
                 <MailX
                   {...createHoverProps("welcome-objekt")}
-                  className="h-3 w-3 sm:h-5 sm:w-5 shrink-0"
+                  className="h-3 w-3 shrink-0 sm:h-5 sm:w-5"
                 />
               )}
 
@@ -158,7 +158,7 @@ export default function ActionOverlay({
             {usedForGrid && (
               <Grid2X2
                 {...createHoverProps("used-for-grid")}
-                className="h-3 w-3 sm:h-5 sm:w-5 shrink-0"
+                className="h-3 w-3 shrink-0 sm:h-5 sm:w-5"
               />
             )}
 
@@ -166,7 +166,7 @@ export default function ActionOverlay({
             {token.lenticularPairTokenId !== 0 && (
               <Smartphone
                 {...createHoverProps("lenticular-objekt")}
-                className="h-3 w-3 sm:h-5 sm:w-5 shrink-0"
+                className="h-3 w-3 shrink-0 sm:h-5 sm:w-5"
               />
             )}
           </div>
@@ -174,7 +174,7 @@ export default function ActionOverlay({
       </div>
 
       {/* status text */}
-      <div className="text-xs whitespace-nowrap max-w-0 group-hover:max-w-48 overflow-hidden transition-all">
+      <div className="max-w-0 overflow-hidden text-xs whitespace-nowrap transition-all group-hover:max-w-48">
         {isPin ? (
           <OverlayStatus>Pinned</OverlayStatus>
         ) : (

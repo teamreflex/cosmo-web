@@ -61,8 +61,8 @@ function RouteComponent() {
       <main className="container flex flex-col py-2">
         {/* header */}
         <div className="flex flex-col pb-4">
-          <div className="flex items-center gap-2 justify-between">
-            <h1 className="text-3xl font-cosmo uppercase">Gravity</h1>
+          <div className="flex items-center justify-between gap-2">
+            <h1 className="font-cosmo text-3xl uppercase">Gravity</h1>
             <div id="gravity-status"></div>
           </div>
           <p className="text-sm font-semibold text-muted-foreground">
@@ -73,7 +73,7 @@ function RouteComponent() {
         {/* content */}
         <ErrorBoundary
           fallback={
-            <div className="flex flex-col gap-2 justify-center items-center py-4">
+            <div className="flex flex-col items-center justify-center gap-2 py-4">
               <AlertTriangle className="size-12" />
               <p className="text-sm font-semibold">
                 Failed to load live data. Please try again later.
@@ -101,8 +101,8 @@ function PendingComponent() {
     <main className="container flex flex-col py-2">
       {/* header */}
       <div className="flex flex-col pb-4">
-        <h1 className="text-3xl font-cosmo uppercase">Gravity</h1>
-        <Skeleton className="w-56 h-5 rounded-full" />
+        <h1 className="font-cosmo text-3xl uppercase">Gravity</h1>
+        <Skeleton className="h-5 w-56 rounded-full" />
       </div>
 
       {/* content */}
@@ -120,7 +120,7 @@ function ErrorComponent({ error }: ErrorComponentProps) {
 
 function NotFoundComponent() {
   return (
-    <main className="container flex flex-col w-full gap-2 items-center justify-center py-12">
+    <main className="container flex w-full flex-col items-center justify-center gap-2 py-12">
       <HeartCrack className="h-24 w-24" />
       <p className="text-sm font-semibold">Objekt list not found</p>
     </main>

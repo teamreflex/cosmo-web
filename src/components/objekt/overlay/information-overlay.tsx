@@ -30,20 +30,20 @@ export default function InformationOverlay({ collection, token }: Props) {
     <div
       data-open={open}
       className={cn(
-        "absolute isolate bottom-0 left-0 p-1 sm:p-2 rounded-tr-lg sm:rounded-tr-xl flex gap-2 group h-5 sm:h-9 w-5 sm:w-9 transition-all overflow-hidden",
-        "text-(--objekt-text-color) bg-(--objekt-background-color)",
-        "data-[open=true]:w-20 sm:data-[open=true]:w-32 data-[open=true]:h-32 sm:data-[open=true]:h-32",
+        "group absolute bottom-0 left-0 isolate flex h-5 w-5 gap-2 overflow-hidden rounded-tr-lg p-1 transition-all sm:h-9 sm:w-9 sm:rounded-tr-xl sm:p-2",
+        "bg-(--objekt-background-color) text-(--objekt-text-color)",
+        "data-[open=true]:h-32 data-[open=true]:w-20 sm:data-[open=true]:h-32 sm:data-[open=true]:w-32",
         isHidden && "hidden",
       )}
     >
       <button
-        className="z-50 hover:scale-110 transition-all flex items-center place-self-end"
+        className="z-50 flex items-center place-self-end transition-all hover:scale-110"
         onClick={() => setOpen((prev) => !prev)}
       >
         <Maximize2 className="h-3 w-3 sm:h-5 sm:w-5" />
       </button>
 
-      <div className="z-40 absolute flex flex-col gap-1 group-data-[open=false]:opacity-0 group-data-[open=true]:opacity-100 transition-all">
+      <div className="absolute z-40 flex flex-col gap-1 transition-all group-data-[open=false]:opacity-0 group-data-[open=true]:opacity-100">
         {user !== undefined && (
           <RescanMetadata collection={collection} token={token} />
         )}

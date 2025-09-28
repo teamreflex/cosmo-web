@@ -32,7 +32,7 @@ export default function HelpDialog() {
         <div className="flex flex-col gap-4 text-sm text-foreground/80">
           {/* progress */}
           <div className="flex flex-col gap-1">
-            <h3 className="text-foreground text-lg font-semibold">Progress</h3>
+            <h3 className="text-lg font-semibold text-foreground">Progress</h3>
             <p>
               View a seasonal breakdown of collection progress to 100%
               completion.
@@ -52,7 +52,7 @@ export default function HelpDialog() {
 
           {/* leaderboard */}
           <div className="flex flex-col gap-1">
-            <h3 className="text-foreground text-lg font-semibold">
+            <h3 className="text-lg font-semibold text-foreground">
               Leaderboard
             </h3>
             <p>

@@ -88,11 +88,11 @@ export default function IndexRenderer(props: Props) {
 
 function Title(props: { objektLists: ObjektList[] }) {
   return (
-    <div className="flex gap-2 items-center w-full pb-1">
-      <h1 className="text-2xl md:text-3xl font-cosmo uppercase">Objekts</h1>
+    <div className="flex w-full items-center gap-2 pb-1">
+      <h1 className="font-cosmo text-2xl uppercase md:text-3xl">Objekts</h1>
       <HelpDialog />
 
-      <div className="flex gap-2 items-center last:ml-auto">
+      <div className="flex items-center gap-2 last:ml-auto">
         <div className="min-w-24 text-right" id="objekt-total" />
 
         <Options objektLists={props.objektLists} />
@@ -111,7 +111,7 @@ function Options(props: { objektLists: ObjektList[] }) {
   }
 
   return (
-    <div className="flex gap-2 items-center">
+    <div className="flex items-center gap-2">
       <ListDropdown
         objektLists={props.objektLists}
         allowCreate={true}

@@ -36,18 +36,18 @@ export default function Links(props: Props) {
     <div className="flex grow justify-end lg:justify-center">
       <LinkCosmo>
         {/* desktop */}
-        <div className="lg:flex flex-row items-center gap-6 hidden">
+        <div className="hidden flex-row items-center gap-6 lg:flex">
           <DesktopLinks {...props} />
         </div>
 
         {/* mobile */}
-        <div className="lg:hidden flex flex-row gap-2 items-center">
+        <div className="flex flex-row items-center gap-2 lg:hidden">
           <NavbarSearch />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
-                className="drop-shadow-lg outline-hidden"
+                className="outline-hidden drop-shadow-lg"
                 aria-label="Menu"
               >
                 <Menu className="h-8 w-8 shrink-0" />
@@ -121,7 +121,7 @@ export function MobileLinks(props: Props) {
         <Link to="/" aria-label="Objekts">
           <IconCards
             className={cn(
-              "h-4 w-4 shrink-0 transition-all fill-transparent",
+              "h-4 w-4 shrink-0 fill-transparent transition-all",
               (location.pathname === "/" || location.pathname === "/objekts") &&
                 "fill-white/50",
             )}
@@ -135,7 +135,7 @@ export function MobileLinks(props: Props) {
         <Link to="/objekts/stats" aria-label="Objekt Stats">
           <ChartColumnBig
             className={cn(
-              "h-4 w-4 shrink-0 transition-all fill-transparent",
+              "h-4 w-4 shrink-0 fill-transparent transition-all",
               location.pathname === "/objekts/stats" && "fill-white/50",
             )}
           />
@@ -148,7 +148,7 @@ export function MobileLinks(props: Props) {
         <Link to="/gravity" aria-label="Gravity">
           <Vote
             className={cn(
-              "h-4 w-4 shrink-0 transition-all fill-transparent",
+              "h-4 w-4 shrink-0 fill-transparent transition-all",
               location.pathname.startsWith("/gravity") && "fill-white/50",
             )}
           />
@@ -166,7 +166,7 @@ export function MobileLinks(props: Props) {
           >
             <PackageOpen
               className={cn(
-                "h-4 w-4 shrink-0 transition-all fill-transparent",
+                "h-4 w-4 shrink-0 fill-transparent transition-all",
                 location.pathname === `/@${props.cosmo.username}` &&
                   "fill-white/50",
               )}
@@ -216,7 +216,7 @@ function LinkButton(props: LinkButtonProps) {
           >
             <props.icon
               className={cn(
-                "h-8 w-8 shrink-0 transition-all fill-transparent",
+                "h-8 w-8 shrink-0 fill-transparent transition-all",
                 props.active && "fill-cosmo/50 dark:fill-foreground/50",
               )}
             />

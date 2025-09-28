@@ -54,7 +54,7 @@ export default function ExpandableObjekt({
             "--objekt-text-color": collection.textColor,
           }}
           className={cn(
-            "relative overflow-hidden rounded-lg md:rounded-xl lg:rounded-2xl touch-manipulation bg-secondary transition-colors ring-2 ring-transparent aspect-photocard drop-shadow-sm",
+            "relative aspect-photocard touch-manipulation overflow-hidden rounded-lg bg-secondary ring-2 ring-transparent drop-shadow-sm transition-colors md:rounded-xl lg:rounded-2xl",
             isSelected && "ring-foreground",
             className,
           )}
@@ -75,7 +75,7 @@ export default function ExpandableObjekt({
               open();
             }}
             className={cn(
-              "transition-opacity w-full",
+              "w-full transition-opacity",
               isLoaded === false && "opacity-0",
             )}
             src={front.display}

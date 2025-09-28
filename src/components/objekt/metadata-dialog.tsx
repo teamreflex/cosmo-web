@@ -56,7 +56,7 @@ export default function MetadataDialog({
 
       {isDesktop ? (
         <Dialog open={open} onOpenChange={onOpenChange}>
-          <DialogContent className="min-w-[55rem] grid-cols-auto grid-flow-col p-0 gap-0 md:rounded-2xl outline-hidden">
+          <DialogContent className="grid-cols-auto min-w-[55rem] grid-flow-col gap-0 p-0 outline-hidden md:rounded-2xl">
             <VisuallyHidden>
               <DialogTitle>{slug}</DialogTitle>
               <DialogDescription>{slug}</DialogDescription>
@@ -66,7 +66,7 @@ export default function MetadataDialog({
         </Dialog>
       ) : (
         <Drawer open={open} onOpenChange={onOpenChange}>
-          <DrawerContent className="grid-cols-auto grid-flow-row p-0 gap-2 sm:gap-0 outline-hidden">
+          <DrawerContent className="grid-cols-auto grid-flow-row gap-2 p-0 outline-hidden sm:gap-0">
             <VisuallyHidden>
               <DrawerTitle>{slug}</DrawerTitle>
               <DrawerDescription>{slug}</DrawerDescription>
@@ -86,8 +86,8 @@ function ResponsiveContent(props: { slug: string }) {
         <ErrorBoundary FallbackComponent={MetadataDialogError} onReset={reset}>
           <Suspense
             fallback={
-              <div className="w-full h-[28rem] flex justify-center items-center">
-                <Loader2 className="animate-spin h-12 w-12" />
+              <div className="flex h-[28rem] w-full items-center justify-center">
+                <Loader2 className="h-12 w-12 animate-spin" />
               </div>
             }
           >

@@ -112,7 +112,7 @@ function ExpandableCard({
   return (
     <ExpandableCardContext.Provider value={contextValue}>
       <Card
-        className={cn("relative pb-0 gap-4 overflow-clip", className)}
+        className={cn("relative gap-4 overflow-clip pb-0", className)}
         {...props}
       >
         {children}
@@ -181,12 +181,12 @@ function ExpandableCardContent({
 
       {/* Built-in toggle button */}
       {isOverflowing && (
-        <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-black/25 to-transparent flex justify-center">
+        <div className="absolute right-0 bottom-0 left-0 flex h-8 justify-center bg-gradient-to-t from-black/25 to-transparent">
           <button
             data-expanded={isExpanded}
             onClick={toggleExpanded}
             className={cn(
-              "group flex items-center gap-2 text-xs text-background dark:text-foreground focus:outline-none w-full justify-center",
+              "group flex w-full items-center justify-center gap-2 text-xs text-background focus:outline-none dark:text-foreground",
             )}
           >
             <ChevronDown className="size-4 transition-transform group-data-[expanded=true]:rotate-180" />

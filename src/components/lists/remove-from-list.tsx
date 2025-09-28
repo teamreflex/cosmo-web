@@ -40,11 +40,11 @@ export default function RemoveFromList({ id, collection, objektList }: Props) {
     <button
       onClick={handleClick}
       disabled={mutation.isPending}
-      className="hover:scale-110 transition-all flex items-center outline-hidden"
+      className="flex items-center outline-hidden transition-all hover:scale-110"
       aria-label={`Remove ${collection.collectionId} from ${objektList.name}`}
     >
       {mutation.isPending ? (
-        <Loader2 className="h-3 w-3 sm:h-5 sm:w-5 animate-spin" />
+        <Loader2 className="h-3 w-3 animate-spin sm:h-5 sm:w-5" />
       ) : (
         <ListX className="h-3 w-3 sm:h-5 sm:w-5" />
       )}

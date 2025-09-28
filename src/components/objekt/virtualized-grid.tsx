@@ -61,7 +61,7 @@ export default function VirtualizedGrid<TItem>({
   return (
     <div className="w-full py-2" ref={containerRef}>
       <div
-        className="relative flex flex-col contain-paint will-change-transform"
+        className="relative flex flex-col will-change-transform contain-paint"
         style={{
           height: `${virtualizerRef.current.getTotalSize()}px`,
         }}
@@ -85,7 +85,7 @@ export default function VirtualizedGrid<TItem>({
               }}
               data-index={rowItem.index}
               ref={virtualizerRef.current.measureElement}
-              className="absolute top-0 left-0 w-full px-0.5 grid gap-4 grid-cols-3 md:grid-cols-[repeat(var(--grid-columns),_minmax(0,_1fr))]"
+              className="absolute top-0 left-0 grid w-full grid-cols-3 gap-4 px-0.5 md:grid-cols-[repeat(var(--grid-columns),_minmax(0,_1fr))]"
             >
               {row.map((objekt, index) => {
                 // render pin

@@ -25,17 +25,17 @@ export default function TimelineChart(props: Props) {
   const isComplete = props.totalComoUsed === totalRevealed;
 
   return (
-    <div className="flex flex-col gap-2 w-full bg-secondary rounded-md p-3 pb-0">
+    <div className="flex w-full flex-col gap-2 rounded-md bg-secondary p-3 pb-0">
       <div className="flex items-center justify-between text-sm">
         {isComplete ? (
           <div className="flex items-center gap-2">
             <span className="font-semibold">COMPLETE</span>
-            <CheckCircle className="w-4 h-4 text-green-500" />
+            <CheckCircle className="h-4 w-4 text-green-500" />
           </div>
         ) : (
           <div className="flex items-center gap-2">
             <span className="font-semibold">LIVE</span>
-            <span className="bg-red-500 rounded-full aspect-square shrink-0 w-2.5 animate-pulse" />
+            <span className="aspect-square w-2.5 shrink-0 animate-pulse rounded-full bg-red-500" />
           </div>
         )}
         <p className="text-xs">{props.totalComoUsed.toLocaleString()} COMO</p>

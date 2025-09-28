@@ -20,11 +20,11 @@ import {
 
 export default function Navbar() {
   return (
-    <nav className="sticky left-0 right-0 top-0 h-14 z-30">
+    <nav className="sticky top-0 right-0 left-0 z-30 h-14">
       <div className="glass">
-        <div className="flex w-full items-center h-14">
-          <div className="container lg:grid lg:grid-cols-3 flex items-center gap-2 text-sm text-foreground lg:gap-4 lg:py-6 pointer-events-auto">
-            <div className="flex gap-4 items-center">
+        <div className="flex h-14 w-full items-center">
+          <div className="pointer-events-auto container flex items-center gap-2 text-sm text-foreground lg:grid lg:grid-cols-3 lg:gap-4 lg:py-6">
+            <div className="flex items-center gap-4">
               <Logo className="h-10" />
               <div className="relative flex items-center">
                 <SystemStatus />
@@ -50,23 +50,23 @@ function NavbarFallback() {
     <Fragment>
       {/* desktop */}
       <div className="hidden lg:contents">
-        <div className="flex justify-center items-center gap-6">
-          <IconCards className="hidden lg:block size-8 shrink-0 fill-transparent" />
-          <ChartColumnBig className="hidden lg:block size-8 shrink-0 fill-transparent" />
-          <Vote className="hidden lg:block size-8 shrink-0 fill-transparent" />
-          <Search className="hidden lg:block size-8 shrink-0 fill-transparent" />
+        <div className="flex items-center justify-center gap-6">
+          <IconCards className="hidden size-8 shrink-0 fill-transparent lg:block" />
+          <ChartColumnBig className="hidden size-8 shrink-0 fill-transparent lg:block" />
+          <Vote className="hidden size-8 shrink-0 fill-transparent lg:block" />
+          <Search className="hidden size-8 shrink-0 fill-transparent lg:block" />
         </div>
 
         <div className="flex grow-0 items-center justify-end gap-2">
-          <Skeleton className="size-8 rounded-full shrink-0 aspect-square" />
+          <Skeleton className="aspect-square size-8 shrink-0 rounded-full" />
         </div>
       </div>
 
       {/* mobile */}
-      <div className="flex flex-row gap-2 lg:hidden items-center ml-auto">
-        <Search className="size-8 shrink-0 drop-shadow-lg fill-transparent" />
-        <Menu className=" size-8 shrink-0 drop-shadow-lg" />
-        <Skeleton className="size-8 rounded-full shrink-0 aspect-square" />
+      <div className="ml-auto flex flex-row items-center gap-2 lg:hidden">
+        <Search className="size-8 shrink-0 fill-transparent drop-shadow-lg" />
+        <Menu className="size-8 shrink-0 drop-shadow-lg" />
+        <Skeleton className="aspect-square size-8 shrink-0 rounded-full" />
       </div>
     </Fragment>
   );

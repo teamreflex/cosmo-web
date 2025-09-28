@@ -54,16 +54,16 @@ export default function Metadata(props: Props) {
       <Tabs
         value={props.tab}
         onValueChange={(value) => props.setTab(value as ObjektMetadataTab)}
-        className="flex flex-col h-full"
+        className="flex h-full flex-col"
         variant="underline"
       >
-        <TabsList className="w-fit mx-auto md:mx-0">
+        <TabsList className="mx-auto w-fit md:mx-0">
           <TabsTrigger value="metadata">Information</TabsTrigger>
           <TabsTrigger value="serials">Serials</TabsTrigger>
         </TabsList>
 
         {/* metadata */}
-        <TabsContent value="metadata" className="flex flex-col grow">
+        <TabsContent value="metadata" className="flex grow flex-col">
           {showForm ? (
             <EditMetadata
               slug={props.objekt.slug}
@@ -80,7 +80,7 @@ export default function Metadata(props: Props) {
             )
           )}
 
-          <div className="flex flex-row-reverse gap-2 items-center self-end mt-auto w-full">
+          <div className="mt-auto flex w-full flex-row-reverse items-center gap-2 self-end">
             <Button variant="secondary" size="sm" onClick={copyUrl}>
               <LinkIcon />
             </Button>
@@ -102,7 +102,7 @@ export default function Metadata(props: Props) {
             )}
 
             {!!data.metadata?.profile && (
-              <div className="flex items-center gap-1 text-xs mr-auto">
+              <div className="mr-auto flex items-center gap-1 text-xs">
                 <p>Sourced by:</p>
                 <Link
                   className="underline"
@@ -131,7 +131,7 @@ export default function Metadata(props: Props) {
         />
         <Pill label="Tradable" value={`${data.percentage}%`} />
         {isUnobtainable && (
-          <div className="flex items-center gap-1 rounded-full px-2 py-1 text-xs sm:text-sm bg-red-500">
+          <div className="flex items-center gap-1 rounded-full bg-red-500 px-2 py-1 text-xs sm:text-sm">
             <span className="font-semibold text-white">Unobtainable</span>
           </div>
         )}

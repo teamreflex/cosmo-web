@@ -13,14 +13,14 @@ export default function FiltersContainer({ children, isPortaled }: Props) {
 
   return (
     <div
-      className="flex flex-col gap-2 group lg:data-[show=false]:pb-2 data-[show=false]:pb-0"
+      className="group flex flex-col gap-2 data-[show=false]:pb-0 lg:data-[show=false]:pb-2"
       data-show={show}
     >
       <div className="flex flex-row items-center justify-center gap-2 lg:hidden">
         {!isPortaled && <div id="filters-button" />}
         <Portal to="#filters-button">
           <Button
-            className="rounded-full h-10"
+            className="h-10 rounded-full"
             variant="secondary"
             size="sm"
             onClick={() => setShow((prev) => !prev)}

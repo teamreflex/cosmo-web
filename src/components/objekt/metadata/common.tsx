@@ -35,9 +35,9 @@ export function MetadataDialogError({
       : "Error loading objekt";
 
   return (
-    <div className="p-4 flex flex-col gap-2 justify-center items-center">
-      <div className="flex gap-2 items-center">
-        <HeartCrack className="w-6 h-6" />
+    <div className="flex flex-col items-center justify-center gap-2 p-4">
+      <div className="flex items-center gap-2">
+        <HeartCrack className="h-6 w-6" />
         <span className="text-sm font-semibold">{message}</span>
       </div>
       <Button size="sm" variant="outline" onClick={resetErrorBoundary}>

@@ -65,7 +65,7 @@ export default function GroupedObjekt({
       />
 
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0" />
         <DialogPrimitive.Content>
           {/* hide the title and description */}
           <VisuallyHidden.Root>
@@ -78,9 +78,9 @@ export default function GroupedObjekt({
           </VisuallyHidden.Root>
 
           {/* content */}
-          <div className="fixed left-1/2 top-12 -translate-x-1/2 z-50 flex flex-col w-full max-w-[76rem] max-h-[calc(100dvh-3rem)] overflow-y-auto px-4.5 lg:px-2">
+          <div className="fixed top-12 left-1/2 z-50 flex max-h-[calc(100dvh-3rem)] w-full max-w-[76rem] -translate-x-1/2 flex-col overflow-y-auto px-4.5 lg:px-2">
             {/* title */}
-            <div className="grid grid-cols-[1fr_auto] grid-rows-2 grid-flow-col">
+            <div className="grid grid-flow-col grid-cols-[1fr_auto] grid-rows-2">
               <h2 className="text-2xl font-bold">
                 {group.collection.collectionId}
               </h2>
@@ -88,7 +88,7 @@ export default function GroupedObjekt({
                 {group.count} {subtitle}
               </p>
 
-              <DialogPrimitive.Close className="place-self-end opacity-70 transition-opacity hover:opacity-100 disabled:pointer-events-none outline-none data-[state=open]:bg-secondary data-[state=open]:text-muted-foreground">
+              <DialogPrimitive.Close className="place-self-end opacity-70 transition-opacity outline-none hover:opacity-100 disabled:pointer-events-none data-[state=open]:bg-secondary data-[state=open]:text-muted-foreground">
                 <X className="size-8" />
                 <span className="sr-only">Close</span>
               </DialogPrimitive.Close>
@@ -145,7 +145,7 @@ function RootObjekt({
             "--objekt-text-color": collection.textColor,
           }}
           className={cn(
-            "relative overflow-hidden rounded-lg md:rounded-xl lg:rounded-2xl touch-manipulation bg-secondary transition-colors ring-2 ring-transparent aspect-photocard drop-shadow-sm",
+            "relative aspect-photocard touch-manipulation overflow-hidden rounded-lg bg-secondary ring-2 ring-transparent drop-shadow-sm transition-colors md:rounded-xl lg:rounded-2xl",
             hasSelected && "ring-foreground",
           )}
         >
@@ -154,7 +154,7 @@ function RootObjekt({
             onLoad={() => setIsLoaded(true)}
             onClick={onClick}
             className={cn(
-              "transition-opacity w-full",
+              "w-full transition-opacity",
               isLoaded === false && "opacity-0",
             )}
             src={front.display}
@@ -199,22 +199,22 @@ function RootObjektOverlay({ count, hasNew, onClick }: RootObjektOverlayProps) {
     <div className="contents">
       <div
         className={cn(
-          "absolute bottom-0 left-0 isolate p-1 sm:p-2 rounded-tr-lg sm:rounded-tr-xl flex gap-2 group h-5 sm:h-9 w-5 sm:w-9 transition-all",
-          "text-(--objekt-text-color) bg-(--objekt-background-color)",
+          "group absolute bottom-0 left-0 isolate flex h-5 w-5 gap-2 rounded-tr-lg p-1 transition-all sm:h-9 sm:w-9 sm:rounded-tr-xl sm:p-2",
+          "bg-(--objekt-background-color) text-(--objekt-text-color)",
           isHidden && "hidden",
         )}
       >
         <button
-          className="z-50 hover:scale-110 transition-all flex items-center place-self-end"
+          className="z-50 flex items-center place-self-end transition-all hover:scale-110"
           onClick={onClick}
         >
           <Info className="h-3 w-3 sm:h-5 sm:w-5" />
         </button>
       </div>
 
-      <div className="absolute top-1 left-1 sm:top-2 sm:left-2 flex flex-row items-center gap-1">
+      <div className="absolute top-1 left-1 flex flex-row items-center gap-1 sm:top-2 sm:left-2">
         {count > 1 && (
-          <span className="px-2 py-px bg-black text-white rounded-full text-sm font-semibold">
+          <span className="rounded-full bg-black px-2 py-px text-sm font-semibold text-white">
             {count}
           </span>
         )}
@@ -252,7 +252,7 @@ function ObjektList({
   return (
     <div
       style={{ "--grid-columns": gridColumns }}
-      className="grid grid-cols-3 md:grid-cols-[repeat(var(--grid-columns),_minmax(0,_1fr))] gap-4 pb-2"
+      className="grid grid-cols-3 gap-4 pb-2 md:grid-cols-[repeat(var(--grid-columns),_minmax(0,_1fr))]"
     >
       {toRender.map((o) => {
         const objekt = Objekt.fromCollectionGroup({ objekt: o });

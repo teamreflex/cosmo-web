@@ -31,7 +31,7 @@ export default function AccountDialog({ open, onOpenChange, cosmo }: Props) {
         </DialogHeader>
 
         <div className="flex flex-col gap-2">
-          <Suspense fallback={<Skeleton className="w-full h-[211px]" />}>
+          <Suspense fallback={<Skeleton className="h-[211px] w-full" />}>
             <Profile />
           </Suspense>
 
@@ -40,8 +40,8 @@ export default function AccountDialog({ open, onOpenChange, cosmo }: Props) {
             <Suspense
               fallback={
                 <div className="flex flex-col gap-2">
-                  <Skeleton className="w-full h-9" />
-                  <Skeleton className="w-full h-9" />
+                  <Skeleton className="h-9 w-full" />
+                  <Skeleton className="h-9 w-full" />
                 </div>
               }
             >
@@ -59,7 +59,7 @@ export default function AccountDialog({ open, onOpenChange, cosmo }: Props) {
               ) : (
                 <div className="flex items-center gap-2">
                   <img
-                    className="rounded-full size-5 aspect-square"
+                    className="aspect-square size-5 rounded-full"
                     src="/cosmo.webp"
                     alt="COSMO"
                   />
@@ -83,7 +83,7 @@ function LinkCosmoButton() {
       <img
         src="/cosmo.webp"
         alt="COSMO"
-        className="rounded-full size-5 aspect-square"
+        className="aspect-square size-5 rounded-full"
       />
       <span>Link COSMO</span>
     </Button>

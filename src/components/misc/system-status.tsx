@@ -22,7 +22,7 @@ export default function SystemStatus() {
     <ErrorBoundary fallback={<ErrorFallback />}>
       <Suspense
         fallback={
-          <div className="h-8 w-9 rounded-l-md bg-secondary animate-pulse" />
+          <div className="h-8 w-9 animate-pulse rounded-l-md bg-secondary" />
         }
       >
         <SystemStatusPopover />
@@ -41,12 +41,12 @@ function SystemStatusPopover() {
       <PopoverTrigger asChild>
         <button
           className={cn(
-            "h-8 w-9 flex justify-center items-center rounded-l-lg transition-colors",
+            "flex h-8 w-9 items-center justify-center rounded-l-lg transition-colors",
             textStatus(processor.status),
             bgStatus(processor.status),
           )}
         >
-          <Activity className="w-5 h-5" />
+          <Activity className="h-5 w-5" />
         </button>
       </PopoverTrigger>
       <PopoverContent align="start" className="p-2">
@@ -56,7 +56,7 @@ function SystemStatusPopover() {
             <p className="text-sm font-semibold">Database</p>
             <div
               className={cn(
-                "flex gap-1 items-center",
+                "flex items-center gap-1",
                 textStatus(processor.status),
               )}
             >
@@ -78,9 +78,9 @@ function ErrorFallback() {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="flex gap-1 items-center text-cosmo-text">
-            <Activity className="w-5 h-5" />
-            <X className="w-4 h-4" />
+          <div className="flex items-center gap-1 text-cosmo-text">
+            <Activity className="h-5 w-5" />
+            <X className="h-4 w-4" />
           </div>
         </TooltipTrigger>
         <TooltipContent>Could not fetch system status</TooltipContent>

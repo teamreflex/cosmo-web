@@ -57,7 +57,7 @@ export default function UpdatePassword() {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
-        className="w-full flex flex-col gap-2"
+        className="flex w-full flex-col gap-2"
       >
         <FormField
           control={form.control}
@@ -92,7 +92,7 @@ export default function UpdatePassword() {
             type="submit"
             disabled={mutation.isPending || form.formState.isDirty === false}
           >
-            {mutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+            {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
             <span>Update</span>
           </Button>
         </div>

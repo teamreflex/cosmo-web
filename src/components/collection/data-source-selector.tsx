@@ -52,7 +52,7 @@ export function DataSourceSelector(props: Props) {
         defaultValue={props.defaultValue}
         onValueChange={props.onValueChange}
       >
-        <SelectTrigger className="w-36 **:data-desc:hidden **:data-label:hidden **:data-icon:size-5">
+        <SelectTrigger className="w-36 **:data-desc:hidden **:data-icon:size-5 **:data-label:hidden">
           <SelectValue placeholder="Data Source" />
         </SelectTrigger>
         <SelectContent
@@ -65,7 +65,7 @@ export function DataSourceSelector(props: Props) {
               <SelectItem
                 key={source.value}
                 value={source.value}
-                className="**:data-short-label:hidden **:data-icon:size-8"
+                className="**:data-icon:size-8 **:data-short-label:hidden"
               >
                 <div className="flex flex-row items-center gap-2">
                   {source.icon}
@@ -73,7 +73,7 @@ export function DataSourceSelector(props: Props) {
                     <span data-label>{source.label}</span>
                     <span data-short-label>{source.shortLabel}</span>
                     <span
-                      className="text-muted-foreground mt-1 block text-xs"
+                      className="mt-1 block text-xs text-muted-foreground"
                       data-desc
                     >
                       {source.subtitle}
@@ -116,7 +116,7 @@ function Content(props: { onClose: () => void }) {
             <AccordionTrigger className="py-2">{source.title}</AccordionTrigger>
             <AccordionContent className="flex flex-col gap-2">
               <p className="font-semibold">{source.description}</p>
-              <ul className="list-disc list-inside">
+              <ul className="list-inside list-disc">
                 {source.notes.map((text, j) => (
                   <li key={j}>{text}</li>
                 ))}

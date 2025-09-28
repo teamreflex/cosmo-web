@@ -128,7 +128,7 @@ export function UserSearch({
           )}
 
           {status === "success" && data.length === 0 && (
-            <div className="flex items-center justify-center text-sm font-semibold gap-2 py-2">
+            <div className="flex items-center justify-center gap-2 py-2 text-sm font-semibold">
               No users found
             </div>
           )}
@@ -205,7 +205,7 @@ function Notice({ children, className, enabled }: NoticeProps) {
     <div
       data-enabled={enabled}
       className={cn(
-        "items-center justify-between px-4 text-xs font-semibold h-8 hidden data-[enabled=true]:flex",
+        "hidden h-8 items-center justify-between px-4 text-xs font-semibold data-[enabled=true]:flex",
         className,
       )}
     >

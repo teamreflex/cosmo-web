@@ -31,7 +31,7 @@ export default function ProgressSeason({ season, classes }: Props) {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
-        <h3 className="text-xl font-cosmo uppercase">{season}</h3>
+        <h3 className="font-cosmo text-xl uppercase">{season}</h3>
         <p className="text-sm font-semibold">
           {progress}/{total} ({percentage}%)
         </p>
@@ -41,7 +41,7 @@ export default function ProgressSeason({ season, classes }: Props) {
         style={{
           "--class-count": classes.length.toString(),
         }}
-        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-[repeat(var(--class-count),_minmax(0,_1fr))] gap-2"
+        className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-[repeat(var(--class-count),_minmax(0,_1fr))]"
       >
         {classes.map((p) => (
           <ProgressClass

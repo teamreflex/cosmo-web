@@ -47,7 +47,7 @@ export default function SerialsPanel(props: Props) {
   }
 
   return (
-    <div className="flex flex-col gap-2 w-full">
+    <div className="flex w-full flex-col gap-2">
       <div className="flex flex-row gap-2">
         <Input
           type="number"
@@ -124,16 +124,16 @@ function Content(props: ContentProps) {
   const href = result.username ? `/@${result.username}` : `/@${result.address}`;
 
   return (
-    <div className="flex flex-col gap-2 w-full">
+    <div className="flex w-full flex-col gap-2">
       {/* owner */}
       <Link
         to={href}
-        className="group flex items-center gap-3 p-3 bg-secondary/50 rounded-lg hover:bg-secondary/60 transition-colors"
+        className="group flex items-center gap-3 rounded-lg bg-secondary/50 p-3 transition-colors hover:bg-secondary/60"
       >
         <img
           src="/profile.webp"
           alt="Profile"
-          className="rounded-full bg-cosmo-profile size-10 p-1"
+          className="size-10 rounded-full bg-cosmo-profile p-1"
         />
         <div className="flex flex-col">
           <span className="text-xs text-muted-foreground">Owner</span>
@@ -145,8 +145,8 @@ function Content(props: ContentProps) {
 
       {/* Transfers section */}
       {result.transfers.length > 0 && (
-        <div className="border rounded-lg overflow-hidden">
-          <div className="text-xs font-medium grid grid-cols-[2fr_2fr_2fr] gap-2 px-4 py-2 bg-secondary/30 border-b">
+        <div className="overflow-hidden rounded-lg border">
+          <div className="grid grid-cols-[2fr_2fr_2fr] gap-2 border-b bg-secondary/30 px-4 py-2 text-xs font-medium">
             <span>From</span>
             <span>To</span>
             <span className="text-right">Date</span>
@@ -177,14 +177,14 @@ function TransferItem({ transfer }: TransferItemProps) {
   });
 
   return (
-    <div className="text-xs items-center grid grid-cols-[2fr_2fr_2fr] gap-2 px-4 h-10 border-b last:border-b-0 hover:bg-secondary/20 transition-colors">
+    <div className="grid h-10 grid-cols-[2fr_2fr_2fr] items-center gap-2 border-b px-4 text-xs transition-colors last:border-b-0 hover:bg-secondary/20">
       <div className="flex items-center gap-2">
         {/* from cosmo */}
         {isEqual(transfer.from, Addresses.NULL) && (
           <img
             src="/cosmo.webp"
             alt="COSMO"
-            className="rounded-full size-5 shrink-0 aspect-square ring ring-accent"
+            className="aspect-square size-5 shrink-0 rounded-full ring ring-accent"
           />
         )}
 
@@ -198,7 +198,7 @@ function TransferItem({ transfer }: TransferItemProps) {
           <Link
             to="/@{$username}"
             params={{ username: transfer.fromUsername ?? transfer.from }}
-            className="hover:underline truncate"
+            className="truncate hover:underline"
           >
             {formatAddress(transfer.from, transfer.fromUsername)}
           </Link>
@@ -230,7 +230,7 @@ function TransferItem({ transfer }: TransferItemProps) {
       </div>
 
       {/* timestamp */}
-      <span className="text-right text-muted-foreground break-words">
+      <span className="text-right break-words text-muted-foreground">
         {timestamp}
       </span>
     </div>

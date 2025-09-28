@@ -77,8 +77,8 @@ export default function TransfersRenderer({ cosmo }: Props) {
             <ErrorBoundary
               onReset={reset}
               fallbackRender={({ resetErrorBoundary }) => (
-                <div className="flex flex-col gap-2 items-center w-full">
-                  <div className="flex flex-col gap-2 justify-center items-center py-12">
+                <div className="flex w-full flex-col items-center gap-2">
+                  <div className="flex flex-col items-center justify-center gap-2 py-12">
                     <HeartCrack className="h-12 w-12" />
                     <p>There was an error loading transfers</p>
                   </div>
@@ -119,7 +119,7 @@ function Transfers({ address, filters }: TransfersProps) {
 
   return (
     <div className="flex flex-col rounded-lg border border-accent text-sm">
-      <div className="items-center grid grid-cols-[3fr_2fr_2fr] gap-2 h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+      <div className="grid h-12 grid-cols-[3fr_2fr_2fr] items-center gap-2 px-4 text-left align-middle font-medium text-muted-foreground">
         <span>Objekt</span>
         <span>User</span>
         <span className="text-right">Date</span>
@@ -148,8 +148,8 @@ export function TransfersSkeleton() {
     <div className="relative">
       <SkeletonGradient />
 
-      <div className="realtive w-full flex flex-col rounded-lg border border-accent text-sm overflow-hidden">
-        <div className="items-center grid grid-cols-[3fr_2fr_2fr] gap-2 h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+      <div className="realtive flex w-full flex-col overflow-hidden rounded-lg border border-accent text-sm">
+        <div className="grid h-12 grid-cols-[3fr_2fr_2fr] items-center gap-2 px-4 text-left align-middle font-medium text-muted-foreground">
           <span>Objekt</span>
           <span>User</span>
           <span className="text-right">Date</span>
@@ -158,7 +158,7 @@ export function TransfersSkeleton() {
         {Array.from({ length: 10 }).map((_, i) => (
           <Skeleton
             key={i}
-            className="w-full rounded-none h-14 border-t border-accent"
+            className="h-14 w-full rounded-none border-t border-accent"
           />
         ))}
       </div>

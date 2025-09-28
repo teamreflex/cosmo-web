@@ -87,7 +87,7 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
             className="flex flex-col gap-4"
           >
             {/* theme */}
-            <div className="flex gap-2 items-center justify-between">
+            <div className="flex items-center justify-between gap-2">
               <div className="flex flex-col">
                 <h2 className="col-span-3 text-sm font-semibold">Theme</h2>
                 <p className="col-span-3 col-start-1 row-span-2 text-xs opacity-80">
@@ -117,12 +117,12 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <div className="flex gap-2 items-center justify-between">
+                    <div className="flex items-center justify-between gap-2">
                       <div className="flex flex-col">
                         <h2 className="col-span-3 text-sm font-semibold">
                           Objekt Columns
                         </h2>
-                        <p className="col-span-3 col-start-1 row-start-2 row-span-3 text-xs opacity-80">
+                        <p className="col-span-3 col-start-1 row-span-3 row-start-2 text-xs opacity-80">
                           Number of columns to use when displaying objekts.
                         </p>
                       </div>
@@ -157,12 +157,12 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <div className="flex gap-2 items-center justify-between">
+                    <div className="flex items-center justify-between gap-2">
                       <div className="flex flex-col">
                         <h2 className="col-span-3 text-sm font-semibold">
                           Collection Mode
                         </h2>
-                        <p className="col-span-3 col-start-1 row-start-2 row-span-3 text-xs opacity-80">
+                        <p className="col-span-3 col-start-1 row-span-3 row-start-2 text-xs opacity-80">
                           Mode to use when displaying your own collection.
                         </p>
                       </div>
@@ -188,7 +188,7 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
             disabled={mutation.isPending}
           >
             <span>Save</span>
-            {mutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+            {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
           </Button>
         </DialogFooter>
       </DialogContent>

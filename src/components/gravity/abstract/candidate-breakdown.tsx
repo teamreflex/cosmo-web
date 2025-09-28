@@ -19,7 +19,7 @@ export default function CandidateBreakdown(props: Props) {
     .sort((a, b) => b.comoUsed - a.comoUsed);
 
   return (
-    <div className="w-full flex flex-col gap-2">
+    <div className="flex w-full flex-col gap-2">
       {candidates.map((candidate) => (
         <motion.div
           key={candidate.content.choiceId}
@@ -57,26 +57,26 @@ function CandidateRow(props: CandidateRowProps) {
       : 0;
 
   return (
-    <div className="relative w-full h-16 rounded-lg px-4 flex items-center gap-4 transition-all bg-secondary/70 hover:bg-secondary overflow-clip">
+    <div className="relative flex h-16 w-full items-center gap-4 overflow-clip rounded-lg bg-secondary/70 px-4 transition-all hover:bg-secondary">
       <div
         className="absolute inset-0 bg-cosmo transition-all"
         style={{ width: `${percentage}%` }}
       />
 
-      <div className="relative rounded aspect-square h-2/3">
+      <div className="relative aspect-square h-2/3 rounded">
         <img
           src={props.content.content.imageUrl}
           alt={props.content.content.title}
-          className="absolute object-cover rounded"
+          className="absolute rounded object-cover"
         />
       </div>
 
-      <div className="relative w-full flex flex-col justify-center sm:flex-row sm:items-center">
+      <div className="relative flex w-full flex-col justify-center sm:flex-row sm:items-center">
         <span className="text-lg font-semibold">
           {props.content.content.title}
         </span>
         {props.liveStatus !== "voting" ? (
-          <span className="text-xs md:text-sm sm:ml-auto">
+          <span className="text-xs sm:ml-auto md:text-sm">
             {props.candidateComoUsed.toLocaleString()} COMO (
             {percentage.toFixed(2)}
             %)

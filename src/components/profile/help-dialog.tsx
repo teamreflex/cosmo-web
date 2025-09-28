@@ -70,19 +70,19 @@ export default function HelpDialog() {
             </p>
             <div className="flex flex-col gap-1 text-start">
               {/* locked */}
-              <div className="flex gap-2 items-center">
-                <div className="bg-[#FFDD00] text-black rounded-lg p-1 flex items-center justify-center w-fit">
+              <div className="flex items-center gap-2">
+                <div className="flex w-fit items-center justify-center rounded-lg bg-[#FFDD00] p-1 text-black">
                   <Lock className="h-5 w-5" />
                 </div>
-                <p className="font-semibold text-sm">Objekt has been locked</p>
+                <p className="text-sm font-semibold">Objekt has been locked</p>
               </div>
 
               {/* not transferable */}
-              <div className="flex gap-2 items-center">
-                <div className="bg-[#75FB4C] text-black rounded-lg p-1 flex items-center justify-center w-fit">
+              <div className="flex items-center gap-2">
+                <div className="flex w-fit items-center justify-center rounded-lg bg-[#75FB4C] p-1 text-black">
                   <MailX className="h-5 w-5" />
                 </div>
-                <p className="font-semibold text-sm">
+                <p className="text-sm font-semibold">
                   Objekt is not transferable
                 </p>
               </div>

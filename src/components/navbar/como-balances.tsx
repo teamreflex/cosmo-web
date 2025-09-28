@@ -49,8 +49,8 @@ export function ComoBalanceErrorFallback() {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="flex justify-between items-center rounded-lg cursor-default bg-secondary border border-border h-[26px] min-w-16 w-fit px-1.5 shadow-sm">
-            <X className="p-px w-4 h-4 text-cosmo-text" />
+          <div className="flex h-[26px] w-fit min-w-16 cursor-default items-center justify-between rounded-lg border border-border bg-secondary px-1.5 shadow-sm">
+            <X className="h-4 w-4 p-px text-cosmo-text" />
             <span className="pl-2 text-sm">COMO</span>
           </div>
         </TooltipTrigger>
@@ -73,7 +73,7 @@ function Balance({
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="flex justify-between items-center rounded-lg cursor-default bg-secondary border border-border h-[26px] min-w-16 w-fit px-1.5">
+          <div className="flex h-[26px] w-fit min-w-16 cursor-default items-center justify-between rounded-lg border border-border bg-secondary px-1.5">
             <ArtistIcon artist={artist.name} />
             <span className="pl-2 text-sm">
               {balance?.amount.toLocaleString() ?? "0"}

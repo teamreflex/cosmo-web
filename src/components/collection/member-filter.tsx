@@ -24,9 +24,9 @@ export default function MemberFilter({
   const { selected } = useArtists();
 
   return (
-    <div className="relative flex flex-col h-fit w-full">
-      <div className="absolute pointer-events-none z-20 top-0 left-0 h-full w-2 bg-linear-to-r from-background to-transparent" />
-      <div className="absolute pointer-events-none z-20 top-0 right-0 h-full w-2 bg-linear-to-l from-background to-transparent" />
+    <div className="relative flex h-fit w-full flex-col">
+      <div className="pointer-events-none absolute top-0 left-0 z-20 h-full w-2 bg-linear-to-r from-background to-transparent" />
+      <div className="pointer-events-none absolute top-0 right-0 z-20 h-full w-2 bg-linear-to-l from-background to-transparent" />
 
       {selected
         .sort((a, b) => b.comoTokenId - a.comoTokenId)
@@ -34,7 +34,7 @@ export default function MemberFilter({
           <div
             key={artist.name}
             className={cn(
-              "flex flex-row z-10 gap-2 p-1 xl:justify-center justify-items-start empty:hidden",
+              "z-10 flex flex-row justify-items-start gap-2 p-1 empty:hidden xl:justify-center",
               artist.artistMembers.length > 5 &&
                 "overflow-x-scroll xl:no-scrollbar",
             )}
@@ -91,7 +91,7 @@ function MemberFilterButton({
       style={{
         "--member-color": color,
       }}
-      className="flex flex-col justify-center items-center"
+      className="flex flex-col items-center justify-center"
     >
       <TooltipProvider>
         <Tooltip>
@@ -109,16 +109,16 @@ function MemberFilterButton({
           <TooltipContent side="bottom">{displayName}</TooltipContent>
         </Tooltip>
       </TooltipProvider>
-      <p className="md:hidden text-xs text-foreground">{displayName}</p>
+      <p className="text-xs text-foreground md:hidden">{displayName}</p>
     </div>
   );
 }
 
 function MemberImage({ name, image }: { name: string; image: string }) {
   return (
-    <div className="flex justify-center items-center relative h-10 w-10 bg-muted rounded-full overflow-hidden">
+    <div className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-muted">
       <span>{name.charAt(0)}</span>
-      <img className="absolute rounded-full size-10" src={image} alt={name} />
+      <img className="absolute size-10 rounded-full" src={image} alt={name} />
     </div>
   );
 }

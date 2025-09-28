@@ -61,7 +61,7 @@ function RouteComponent() {
         <Tabs defaultValue={toRender[0]?.id}>
           {/* header */}
           <div className="flex flex-row items-center justify-between">
-            <h1 className="text-3xl font-cosmo uppercase">Gravity</h1>
+            <h1 className="font-cosmo text-3xl uppercase">Gravity</h1>
 
             <TabsList>
               {toRender.map((artist) => (
@@ -71,7 +71,7 @@ function RouteComponent() {
                   className="gap-2"
                 >
                   <img
-                    className="rounded-full aspect-square shrink-0 size-5"
+                    className="aspect-square size-5 shrink-0 rounded-full"
                     src={artist.logoImageUrl}
                     alt={artist.title}
                   />
@@ -104,7 +104,7 @@ function ArtistTab({ artist, gravities }: ArtistTabProps) {
     <TabsContent
       key={artist.id}
       value={artist.id}
-      className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-2 data-[state=inactive]:hidden"
+      className="grid grid-cols-1 gap-2 data-[state=inactive]:hidden md:grid-cols-3 xl:grid-cols-4"
       forceMount
     >
       {gravities.map((gravity) => (
@@ -122,15 +122,15 @@ function GravityItem(props: { gravity: Gravity }) {
     <Link to={href} className="[content-visibility:auto]">
       <Card
         data-recent={isRecent}
-        className="relative aspect-square overflow-clip group data-[recent=true]:border-cosmo py-0"
+        className="group relative aspect-square overflow-clip py-0 data-[recent=true]:border-cosmo"
       >
         <img
           src={props.gravity.image}
           alt={props.gravity.title}
-          className="absolute object-cover grayscale group-data-[recent=true]:grayscale-0 group-hover:grayscale-0 transition-all duration-300"
+          className="absolute object-cover grayscale transition-all duration-300 group-hover:grayscale-0 group-data-[recent=true]:grayscale-0"
         />
-        <CardContent className="isolate h-full w-full flex gap-2 items-end justify-start bg-gradient-to-t from-black/80 from-5% via-black/20 via-20% to-black/0 px-0">
-          <div className="flex flex-row gap-2 items-center w-full p-2">
+        <CardContent className="isolate flex h-full w-full items-end justify-start gap-2 bg-gradient-to-t from-black/80 from-5% via-black/20 via-20% to-black/0 px-0">
+          <div className="flex w-full flex-row items-center gap-2 p-2">
             <CalendarDays className="size-4 shrink-0" />
             <GravityTimestamp
               className="text-sm font-semibold"
@@ -171,11 +171,11 @@ function PendingComponent() {
     <main className="container flex flex-col py-2">
       {/* header */}
       <div className="flex flex-row items-center justify-between">
-        <h1 className="text-3xl font-cosmo uppercase">Gravity</h1>
+        <h1 className="font-cosmo text-3xl uppercase">Gravity</h1>
         <Skeleton className="h-9 w-48 rounded-md" />
       </div>
 
-      <div className="relative grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-2 mt-2">
+      <div className="relative mt-2 grid grid-cols-1 gap-2 md:grid-cols-3 xl:grid-cols-4">
         <SkeletonGradient />
         {Array.from({ length: 12 }).map((_, index) => (
           <Skeleton

@@ -14,8 +14,8 @@ export default function ListOverlay({ id, collection, objektList }: Props) {
   return (
     <div
       className={cn(
-        "absolute top-0 left-0 p-1 sm:p-2 rounded-br-lg sm:rounded-br-xl items-center group h-5 sm:h-9 transition-all overflow-hidden",
-        "text-(--objekt-text-color) bg-(--objekt-background-color)",
+        "group absolute top-0 left-0 h-5 items-center overflow-hidden rounded-br-lg p-1 transition-all sm:h-9 sm:rounded-br-xl sm:p-2",
+        "bg-(--objekt-background-color) text-(--objekt-text-color)",
         "grid grid-flow-col grid-cols-[1fr_min-content]",
       )}
     >
@@ -30,7 +30,7 @@ export default function ListOverlay({ id, collection, objektList }: Props) {
       </div>
 
       {/* status text */}
-      <div className="text-xs whitespace-nowrap max-w-0 group-hover:max-w-[12rem] overflow-hidden transition-all">
+      <div className="max-w-0 overflow-hidden text-xs whitespace-nowrap transition-all group-hover:max-w-[12rem]">
         <OverlayStatus>Remove from List</OverlayStatus>
       </div>
     </div>

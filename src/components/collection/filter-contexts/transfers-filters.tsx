@@ -21,11 +21,11 @@ export function TransfersFilters(props: Props) {
   const { filters, setFilters } = useCosmoFilters();
 
   return (
-    <div className="flex gap-2 items-center flex-wrap justify-center lg:group-data-[show=false]:flex group-data-[show=false]:hidden">
+    <div className="flex flex-wrap items-center justify-center gap-2 group-data-[show=false]:hidden lg:group-data-[show=false]:flex">
       <ErrorBoundary
-        fallback={<Skeleton className="w-[100px] h-9 bg-destructive" />}
+        fallback={<Skeleton className="h-9 w-[100px] bg-destructive" />}
       >
-        <Suspense fallback={<Skeleton className="w-[100px] h-9" />}>
+        <Suspense fallback={<Skeleton className="h-9 w-[100px]" />}>
           <SeasonFilter
             seasons={filters.season}
             artist={filters.artist}
@@ -36,9 +36,9 @@ export function TransfersFilters(props: Props) {
 
       <OnlineFilter onOffline={filters.on_offline} onChange={setFilters} />
       <ErrorBoundary
-        fallback={<Skeleton className="w-[87px] h-9 bg-destructive" />}
+        fallback={<Skeleton className="h-9 w-[87px] bg-destructive" />}
       >
-        <Suspense fallback={<Skeleton className="w-[87px] h-9" />}>
+        <Suspense fallback={<Skeleton className="h-9 w-[87px]" />}>
           <ClassFilter
             classes={filters.class}
             artist={filters.artist}

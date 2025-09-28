@@ -12,12 +12,12 @@ type Props = {
 
 export default function AuthFallback({ message }: Props) {
   return (
-    <div className="flex grow-0 items-center justify-end gap-2 col-span-2">
+    <div className="col-span-2 flex grow-0 items-center justify-end gap-2">
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <div className="relative flex justify-center items-center py-1 px-2 rounded-xl bg-red-500/25 hover:bg-red-500/40 transition-colors">
-              <AlertTriangle className="text-red-500 w-6 h-6" />
+            <div className="relative flex items-center justify-center rounded-xl bg-red-500/25 px-2 py-1 transition-colors hover:bg-red-500/40">
+              <AlertTriangle className="h-6 w-6 text-red-500" />
             </div>
           </TooltipTrigger>
           <TooltipContent side="bottom" align="end">

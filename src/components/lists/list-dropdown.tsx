@@ -57,7 +57,7 @@ export default function ListDropdown({
             >
               <Link
                 to={createListUrl(list)}
-                className="w-full flex items-center justify-between"
+                className="flex w-full items-center justify-between"
               >
                 {list.name}
                 <ChevronRight className="h-4 w-4" />

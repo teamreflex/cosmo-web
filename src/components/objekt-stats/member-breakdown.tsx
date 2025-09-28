@@ -25,13 +25,13 @@ export default function MemberBreakdown({
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex flex-row gap-2 items-end justify-between">
+      <div className="flex flex-row items-end justify-between gap-2">
         <h2 className="text-xl font-semibold">Member Breakdown</h2>
         <MemberSelect artists={artists} value={checked} onChange={setChecked} />
       </div>
 
       <Card>
-        <CardContent className="pl-0 pt-6">
+        <CardContent className="pt-6 pl-0">
           {checked.length > 0 ? (
             <MemberChart
               artists={artists}
@@ -39,7 +39,7 @@ export default function MemberBreakdown({
               selectedMembers={checked}
             />
           ) : (
-            <div className="h-96 w-full flex items-center justify-center">
+            <div className="flex h-96 w-full items-center justify-center">
               <p className="text-sm font-semibold">No members selected</p>
             </div>
           )}

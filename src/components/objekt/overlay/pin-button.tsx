@@ -43,13 +43,13 @@ function PinButton(props: ButtonProps) {
 
   return (
     <button
-      className="hover:scale-110 transition-all flex items-center"
+      className="flex items-center transition-all hover:scale-110"
       disabled={mutation.isPending}
       aria-label={`Pin ${props.collectionId}`}
       onClick={handleClick}
     >
       {mutation.isPending ? (
-        <Loader2 className="h-3 w-3 sm:h-5 sm:w-5 animate-spin" />
+        <Loader2 className="h-3 w-3 animate-spin sm:h-5 sm:w-5" />
       ) : (
         <Pin className="h-3 w-3 sm:h-5 sm:w-5" />
       )}
@@ -75,13 +75,13 @@ function UnpinButton(props: ButtonProps) {
 
   return (
     <button
-      className="hover:scale-110 transition-all flex items-center"
+      className="flex items-center transition-all hover:scale-110"
       disabled={mutation.isPending}
       aria-label={`Unpin ${props.collectionId}`}
       onClick={handleClick}
     >
       {mutation.isPending ? (
-        <Loader2 className="h-3 w-3 sm:h-5 sm:w-5 animate-spin" />
+        <Loader2 className="h-3 w-3 animate-spin sm:h-5 sm:w-5" />
       ) : (
         <PinOff className="h-3 w-3 sm:h-5 sm:w-5" />
       )}

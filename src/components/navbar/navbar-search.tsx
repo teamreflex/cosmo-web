@@ -38,11 +38,11 @@ export default function NavbarSearch() {
         <Tooltip>
           <TooltipTrigger asChild>
             <button
-              className="drop-shadow-lg outline-hidden focus:outline-hidden"
+              className="outline-hidden drop-shadow-lg focus:outline-hidden"
               aria-label="Search for user"
               onClick={() => setOpen(true)}
             >
-              <Search className="h-8 w-8 shrink-0 transition-all fill-transparent" />
+              <Search className="h-8 w-8 shrink-0 fill-transparent transition-all" />
             </button>
           </TooltipTrigger>
           <TooltipContent>

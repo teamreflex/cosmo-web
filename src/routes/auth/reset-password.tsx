@@ -24,11 +24,11 @@ function RouteComponent() {
 
   return (
     <main className="container flex flex-col py-2">
-      <div className="flex gap-2 items-center w-full pb-1">
-        <h1 className="text-3xl font-cosmo uppercase">Reset Password</h1>
+      <div className="flex w-full items-center gap-2 pb-1">
+        <h1 className="font-cosmo text-3xl uppercase">Reset Password</h1>
       </div>
 
-      <div className="w-full md:w-1/2 mx-auto">
+      <div className="mx-auto w-full md:w-1/2">
         <ResetPassword token={token} />
       </div>
     </main>

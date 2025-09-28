@@ -7,7 +7,7 @@ export default function SkeletonGradient({ className }: Props) {
   return (
     <div
       className={cn(
-        "z-20 absolute top-0 w-full h-full bg-linear-to-b from-transparent to-75% to-background",
+        "absolute top-0 z-20 h-full w-full bg-linear-to-b from-transparent to-background to-75%",
         className,
       )}
     />

@@ -53,8 +53,8 @@ export default function ForgotPassword({ onCancel }: Props) {
 
   if (mutation.status === "success") {
     return (
-      <div className="flex flex-col gap-2 items-center">
-        <MailCheck className="w-10 h-10" />
+      <div className="flex flex-col items-center gap-2">
+        <MailCheck className="h-10 w-10" />
         <p className="text-sm font-semibold">
           We&apos;ve sent you an email to reset your password.
         </p>
@@ -66,7 +66,7 @@ export default function ForgotPassword({ onCancel }: Props) {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
-        className="w-full flex flex-col gap-2"
+        className="flex w-full flex-col gap-2"
       >
         <FormField
           control={form.control}
@@ -82,10 +82,10 @@ export default function ForgotPassword({ onCancel }: Props) {
           )}
         />
 
-        <div className="grid grid-cols-2 gap-2 items-center">
+        <div className="grid grid-cols-2 items-center gap-2">
           <Button type="submit" disabled={mutation.isPending}>
             <span>Send Reset Link</span>
-            {mutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+            {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
           </Button>
 
           <Button type="button" variant="secondary" onClick={onCancel}>

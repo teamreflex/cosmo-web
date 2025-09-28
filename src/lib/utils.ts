@@ -96,7 +96,7 @@ export const Addresses = {
  * Handles when the tracking script isn't loaded.
  */
 export function track(event: string) {
-  if (typeof umami !== 'undefined') {
+  if (typeof umami !== "undefined") {
     umami.track(event)?.catch(() => void 0);
   }
 }

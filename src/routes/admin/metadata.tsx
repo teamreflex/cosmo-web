@@ -31,7 +31,7 @@ function RouteComponent() {
       {/* latest metadata */}
       <div className="flex flex-col gap-2">
         <h1 className="text-lg font-semibold">Latest 10</h1>
-        <div className="flex flex-col text-sm border border-accent rounded-md">
+        <div className="flex flex-col rounded-md border border-accent text-sm">
           {metadata.map((row) => (
             <div
               key={row.id}

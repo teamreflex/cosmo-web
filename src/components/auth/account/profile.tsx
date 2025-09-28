@@ -46,7 +46,7 @@ export default function Profile() {
           {hasCredentialAccount ? (
             <UpdatePassword />
           ) : (
-            <div className="flex flex-col justify-center items-center">
+            <div className="flex flex-col items-center justify-center">
               <p className="text-sm">
                 You do not have a password currently set. Please use the{" "}
                 <span className="font-semibold">forgot password</span>{" "}

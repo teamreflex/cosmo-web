@@ -11,7 +11,7 @@ export const Route = createFileRoute("/terms-privacy")({
 
 function TermsPrivacy() {
   return (
-    <div className="container flex flex-col gap-2 max-w-3xl py-2">
+    <div className="container flex max-w-3xl flex-col gap-2 py-2">
       <Card>
         <CardHeader>
           <CardTitle>Terms & Privacy</CardTitle>

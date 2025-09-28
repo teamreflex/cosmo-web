@@ -39,12 +39,12 @@ function TimelineChartSkeleton({
   totalComoUsed,
 }: Pick<Props, "liveStatus" | "totalComoUsed">) {
   return (
-    <div className="flex flex-col gap-2 w-full bg-secondary rounded-md p-3 pb-0">
+    <div className="flex w-full flex-col gap-2 rounded-md bg-secondary p-3 pb-0">
       <div className="flex items-center justify-between text-sm">
         <GravityStatus liveStatus={liveStatus} />
         <p className="text-xs">{totalComoUsed.toLocaleString()} COMO</p>
       </div>
-      <div className="flex flex-col items-center justify-center h-40 p-2">
+      <div className="flex h-40 flex-col items-center justify-center p-2">
         <Loader2 className="size-8 animate-spin" />
       </div>
     </div>
@@ -55,7 +55,7 @@ function TimelineChartContent(props: Props) {
   const data = useVotedEvents(props.pollId, props.endDate);
 
   return (
-    <div className="flex flex-col gap-2 w-full bg-secondary rounded-md p-3 pb-0">
+    <div className="flex w-full flex-col gap-2 rounded-md bg-secondary p-3 pb-0">
       <div className="flex items-center justify-between text-sm">
         <GravityStatus liveStatus={props.liveStatus} />
         <p className="text-xs">{props.totalComoUsed.toLocaleString()} COMO</p>

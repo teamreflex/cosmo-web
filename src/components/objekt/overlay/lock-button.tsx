@@ -27,13 +27,13 @@ export default function LockObjekt({ tokenId, isLocked }: Props) {
 
   return (
     <button
-      className="hover:scale-110 transition-all flex items-center"
+      className="flex items-center transition-all hover:scale-110"
       disabled={mutation.isPending}
       aria-label={`${isLocked ? "unlock" : "lock"} this objekt`}
       onClick={toggle}
     >
       {mutation.isPending ? (
-        <Loader2 className="h-3 w-3 sm:h-5 sm:w-5 animate-spin" />
+        <Loader2 className="h-3 w-3 animate-spin sm:h-5 sm:w-5" />
       ) : isLocked ? (
         <Lock className="h-3 w-3 sm:h-5 sm:w-5" />
       ) : (

@@ -64,8 +64,8 @@ export default function SignUp({ onCancel }: Props) {
 
   if (mutation.status === "success") {
     return (
-      <div className="flex flex-col gap-2 items-center">
-        <CheckCircle className="w-10 h-10" />
+      <div className="flex flex-col items-center gap-2">
+        <CheckCircle className="h-10 w-10" />
         <p className="text-sm font-semibold">
           We&apos;ve sent you an email to verify your account.
         </p>
@@ -78,7 +78,7 @@ export default function SignUp({ onCancel }: Props) {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
-        className="w-full flex flex-col gap-2"
+        className="flex w-full flex-col gap-2"
       >
         <FormField
           control={form.control}
@@ -122,10 +122,10 @@ export default function SignUp({ onCancel }: Props) {
           )}
         />
 
-        <div className="grid grid-cols-2 gap-2 items-center">
+        <div className="grid grid-cols-2 items-center gap-2">
           <Button type="submit" disabled={mutation.isPending}>
             <span>Create Account</span>
-            {mutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+            {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
           </Button>
 
           <Button type="button" variant="secondary" onClick={onCancel}>

@@ -48,7 +48,7 @@ function LeaderboardRow({ member, total, item, rank }: LeaderboardRowProps) {
 
   return (
     <div className="flex flex-col">
-      <div className="flex flex-row justify-between items-center">
+      <div className="flex flex-row items-center justify-between">
         <span className="font-semibold">{ordinal(rank)}</span>
         <Link
           className="font-cosmo underline"
@@ -60,14 +60,14 @@ function LeaderboardRow({ member, total, item, rank }: LeaderboardRowProps) {
         </Link>
       </div>
 
-      <div className="relative h-4 w-full overflow-hidden rounded-full bg-primary dark:bg-secondary border border-primary dark:border-transparent">
-        <div className="z-20 absolute w-full h-full flex items-center justify-center">
+      <div className="relative h-4 w-full overflow-hidden rounded-full border border-primary bg-primary dark:border-transparent dark:bg-secondary">
+        <div className="absolute z-20 flex h-full w-full items-center justify-center">
           <p className="text-sm font-semibold text-cosmo mix-blend-overlay">
             {progress}%
           </p>
         </div>
         <div
-          className="z-10 h-full w-full flex-1 bg-secondary dark:bg-primary transition-all"
+          className="z-10 h-full w-full flex-1 bg-secondary transition-all dark:bg-primary"
           style={{ transform: `translateX(-${100 - (progress || 0)}%)` }}
         />
       </div>
@@ -80,7 +80,7 @@ export function LeaderboardSkeleton() {
     <div className="flex flex-col gap-4 py-2">
       {Array.from({ length: 25 }).map((_, i) => (
         <div className="flex flex-col" key={i}>
-          <div className="flex flex-row justify-between items-center h-6">
+          <div className="flex h-6 flex-row items-center justify-between">
             <Skeleton className="h-4 w-8" />
             <Skeleton className="h-4 w-16" />
           </div>

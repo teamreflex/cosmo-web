@@ -66,7 +66,7 @@ export default function CreateListDialog({ open, onOpenChange }: Props) {
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleSubmit)}
-            className="w-full flex flex-col gap-2"
+            className="flex w-full flex-col gap-2"
           >
             <FormField
               control={form.control}

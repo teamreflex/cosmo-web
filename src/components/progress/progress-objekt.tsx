@@ -21,7 +21,7 @@ export default function ProgressObjekt({ objekt }: Props) {
       )}
     >
       {objekt.unobtainable && (
-        <div className="absolute top-1 left-1 sm:top-2 sm:left-2 bg-black rounded-full p-1">
+        <div className="absolute top-1 left-1 rounded-full bg-black p-1 sm:top-2 sm:left-2">
           <Star className="size-4 fill-white text-white" />
         </div>
       )}

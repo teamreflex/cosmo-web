@@ -28,7 +28,7 @@ export default function ArtistSelectbox() {
           {selected.map((artist) => (
             <Avatar
               key={artist.id}
-              className="size-8 ring ring-accent rounded-full"
+              className="size-8 rounded-full ring ring-accent"
             >
               <AvatarFallback className="rounded-full">A</AvatarFallback>
               <AvatarImage src={artist.logoImageUrl} />
@@ -86,14 +86,14 @@ export function ArtistItem({ artist, isSelected }: ArtistItemProps) {
       className="min-w-40"
     >
       <img
-        className="rounded-full size-6 aspect-square"
+        className="aspect-square size-6 rounded-full"
         src={artist.logoImageUrl}
         alt={artist.title}
       />
 
       <span className="grow">{artist.title}</span>
 
-      <div className="flex items-center aspect-square justify-end">
+      <div className="flex aspect-square items-center justify-end">
         {mutation.isPending ? (
           <Loader2 className="size-5 animate-spin" />
         ) : isSelected ? (

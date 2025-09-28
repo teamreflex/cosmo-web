@@ -20,8 +20,8 @@ export default function FilterSearch() {
   return (
     <div
       className={cn(
-        "placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input flex items-center gap-2 h-9 w-48 min-w-0 rounded-md border bg-transparent shadow-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
-        "focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-[3px]",
+        "flex h-9 w-48 min-w-0 items-center gap-2 rounded-md border border-input bg-transparent shadow-xs transition-[color,box-shadow] outline-none selection:bg-primary selection:text-primary-foreground placeholder:text-muted-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30",
+        "focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50",
       )}
     >
       <input
@@ -29,12 +29,12 @@ export default function FilterSearch() {
         placeholder="Search..."
         value={search ?? ""}
         onChange={(e) => setQuery(e.currentTarget.value || undefined)}
-        className="pl-3 py-1 text-base md:text-sm h-full w-full grow outline-none"
+        className="h-full w-full grow py-1 pl-3 text-base outline-none md:text-sm"
         maxLength={32}
       />
 
       <button type="button" onClick={() => setQuery(undefined)}>
-        <X className="w-4 h-4 mr-3" />
+        <X className="mr-3 h-4 w-4" />
       </button>
     </div>
   );

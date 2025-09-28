@@ -33,7 +33,7 @@ export default function SendObjekt({ collection, token }: Props) {
   return (
     <button
       onClick={handleClick}
-      className="hover:scale-110 transition-all flex items-center"
+      className="flex items-center transition-all hover:scale-110"
     >
       <Send className="h-3 w-3 sm:h-5 sm:w-5" />
     </button>
