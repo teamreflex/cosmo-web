@@ -61,15 +61,5 @@ export function useFilters(opts?: DefaultOptions) {
  * Determine if the given filters are dirty.
  */
 export function filtersAreDirty(filters: CosmoFilters) {
-  return (
-    !filters.member ||
-    !filters.artist ||
-    filters.sort !== "newest" ||
-    (filters.class ?? []).length > 0 ||
-    (filters.season ?? []).length > 0 ||
-    (filters.on_offline ?? []).length > 0 ||
-    filters.transferable !== false ||
-    filters.gridable !== false ||
-    (filters.collectionNo ?? []).length > 0
-  );
+  return Object.keys(filters).length > 0;
 }
