@@ -108,10 +108,10 @@ function ListItem({
         type="button"
         onClick={handleClick}
         disabled={mutation.isPending}
-        className="fex w-full items-center justify-between"
+        className="flex w-full items-center justify-between"
         aria-label="Add objekt to list"
       >
-        {list.name}
+        <span>{list.name}</span>
         {mutation.isPending ? (
           <Loader2 className="h-4 w-4 animate-spin" />
         ) : (

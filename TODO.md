@@ -3,3 +3,11 @@
 - strip dead code
 - update documentation
 - move server code around so it's more isolated from RPC and queries
+- add proper favicon
+- fix progress index charts not loading
+- fix progress index suspense fallbacks overflowing the container
+- fix settings update not reflecting until refresh
+- fix objekt list create not invalidating cache
+- fix renaming objekt list not redirecting and invalidating cache
+- fix objekt list delete not redirecting
+- invalidate list query cache when adding or removing objekts
