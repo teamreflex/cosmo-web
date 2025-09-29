@@ -25,7 +25,7 @@ export default async function UserComoPage(props: Props) {
   const { cosmo } = await getTargetAccount(params.nickname);
   const objekts = await fetchObjektsWithComo(cosmo.address);
 
-  const artists = getArtistsWithMembers();
+  const artists = getArtistsWithMembers().filter((a) => a.id !== "idntt");
   const totals = artists.map((artist) => {
     const total = objekts
       .filter((t) => t.artistId === artist.id.toLowerCase())

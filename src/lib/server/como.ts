@@ -1,4 +1,4 @@
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, inArray, not, sql } from "drizzle-orm";
 import { indexer } from "./db/indexer";
 import { collections, objekts } from "./db/indexer/schema";
 import type { ComoBalance, ObjektWithCollection } from "@/lib/universal/como";
@@ -27,7 +27,11 @@ export async function fetchObjektsWithComo(
       `.mapWith(Number),
     })
     .from(objekts)
-    .where(eq(objekts.owner, addr))
+    .where(and(
+      eq(objekts.owner, addr),
+      // idntt doesn't have monthly como
+      not(eq(collections.artist, 'idntt'))
+    ))
     .innerJoin(
       collections,
       and(
