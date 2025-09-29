@@ -17,6 +17,9 @@ dist-ssr
 .output
 .vinxi
 
+# next
+.next/
+
 # production
 /build
 
