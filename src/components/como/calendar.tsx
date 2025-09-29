@@ -69,12 +69,11 @@ export default function ComoCalendar({ artists, transfers }: Props) {
             <p className="absolute top-1 left-2 font-semibold text-sm">{day}</p>
 
             {artists
-              .filter((a) => calendar[day]?.[a.contracts.Objekt.toLowerCase()])
+              .filter((a) => calendar[day]?.[a.id.toLowerCase()])
               .map((a) => (
                 <div className="contents" key={a.name}>
                   <div className="absolute top-1 right-1">
-                    {calendar[day]?.[a.contracts.Objekt.toLowerCase()].carried >
-                      0 && (
+                    {calendar[day]?.[a.id.toLowerCase()].carried > 0 && (
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger>
@@ -86,9 +85,8 @@ export default function ComoCalendar({ artists, transfers }: Props) {
                             <div className="flex justify-center items-center gap-2">
                               <ArtistIcon artist={a.name} />
                               <span>
-                                {calendar[day]?.[
-                                  a.contracts.Objekt.toLowerCase()
-                                ].carried ?? 0}
+                                {calendar[day]?.[a.id.toLowerCase()].carried ??
+                                  0}
                               </span>
                             </div>
                           </TooltipContent>
@@ -100,8 +98,7 @@ export default function ComoCalendar({ artists, transfers }: Props) {
                   <div className="flex items-center gap-2">
                     <ArtistIcon artist={a.name} />
                     <span>
-                      {calendar[day]?.[a.contracts.Objekt.toLowerCase()]
-                        .count ?? 0}
+                      {calendar[day]?.[a.id.toLowerCase()].count ?? 0}
                     </span>
                   </div>
                 </div>

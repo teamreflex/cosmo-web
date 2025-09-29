@@ -16,7 +16,7 @@ export async function fetchObjektsWithComo(
 
   return await indexer
     .select({
-      contract: collections.contract,
+      artistId: collections.artist,
       mintedAt: objekts.mintedAt,
       amount: sql<number>`
         case 
