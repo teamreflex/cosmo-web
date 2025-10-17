@@ -58,6 +58,7 @@ export type CosmoSinglePollVoteResult = {
 type CosmoPollCommon<PollType extends CosmoPollType> = {
   id: number;
   artist: ValidArtist;
+  artistId: ValidArtist;
   pollIdOnChain: number;
   gravityId: number;
   type: PollType;
@@ -67,6 +68,11 @@ type CosmoPollCommon<PollType extends CosmoPollType> = {
   startDate: string;
   endDate: string;
   revealDate: string;
+  titleKo: string;
+  titleEn: string;
+  titleJa: string;
+  titleZhCn: string;
+  titleZhTw: string;
 };
 
 export interface CosmoSinglePollFinalized

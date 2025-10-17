@@ -34,7 +34,7 @@ export async function fetchPolygonGravity(artist: ValidArtist, id: number) {
       const { accessToken } = await getProxiedToken();
 
       // 2. fetch gravity from cosmo
-      const gravity = await fetchGravity(artist, id);
+      const gravity = await fetchGravity(id);
       if (!gravity) {
         throw new GravityMissingError();
       }
@@ -111,11 +111,11 @@ export async function fetchCachedGravity(
     return await remember(
       `gravity:${artist}:${id}`,
       60 * 60 * 24 * 30, // 30 days
-      () => fetchGravity(artist, id)
+      () => fetchGravity(id)
     );
   }
 
-  return await fetchGravity(artist, id);
+  return await fetchGravity(id);
 }
 
 /**
