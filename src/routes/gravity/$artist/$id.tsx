@@ -122,7 +122,7 @@ function NotFoundComponent() {
   return (
     <main className="container flex w-full flex-col items-center justify-center gap-2 py-12">
       <HeartCrack className="h-24 w-24" />
-      <p className="text-sm font-semibold">Objekt list not found</p>
+      <p className="text-sm font-semibold">Gravity not found</p>
     </main>
   );
 }

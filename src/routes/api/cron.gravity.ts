@@ -54,7 +54,7 @@ async function processGravities(
 ) {
   console.log(`loading gravities for ${artist.title}`);
 
-  const list = await fetchGravities(artist.id);
+  const list = await fetchGravities(token, artist.id);
   const remoteGravities = [
     ...list.ongoing,
     ...list.upcoming,
