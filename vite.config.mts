@@ -5,28 +5,32 @@ import viteTsConfigPaths from "vite-tsconfig-paths";
 import tailwindcss from "@tailwindcss/vite";
 import { nitro } from "nitro/vite";
 
-const config = defineConfig({
-  server: {
-    port: 3000,
-  },
-  plugins: [
-    viteTsConfigPaths({
-      projects: ["./tsconfig.json"],
-    }),
-    tanstackStart(),
-    nitro({
-      config: {
-        compatibilityDate: "2025-10-11",
-        preset: "vercel",
-      },
-    }),
-    react({
-      babel: {
-        plugins: ["babel-plugin-react-compiler"],
-      },
-    }),
-    tailwindcss(),
-  ],
+const config = defineConfig(async (ctx) => {
+  const preset = ctx.mode === "production" ? "vercel" : "node";
+
+  return {
+    server: {
+      port: 3000,
+    },
+    plugins: [
+      viteTsConfigPaths({
+        projects: ["./tsconfig.json"],
+      }),
+      tanstackStart(),
+      nitro({
+        config: {
+          compatibilityDate: "2025-10-11",
+          preset,
+        },
+      }),
+      react({
+        babel: {
+          plugins: ["babel-plugin-react-compiler"],
+        },
+      }),
+      tailwindcss(),
+    ],
+  };
 });
 
 export default config;

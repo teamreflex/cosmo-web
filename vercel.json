@@ -1,6 +1,6 @@
 {
   "regions": ["sfo1"],
-  "buildCommand": "next build && pnpm db:migrate",
+  "buildCommand": "vite build && pnpm db:migrate",
   "crons": [
     {
       "path": "/api/cron/gravity",
