@@ -3,7 +3,6 @@
 - strip dead code
 - update documentation
 - move server code around so it's more isolated from RPC and queries
-- add proper favicon
 - fix progress index charts not loading
 - fix progress index suspense fallbacks overflowing the container
 - fix settings update not reflecting until refresh

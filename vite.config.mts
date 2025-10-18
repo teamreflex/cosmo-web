@@ -6,6 +6,9 @@ import tailwindcss from "@tailwindcss/vite";
 import { nitro } from "nitro/vite";
 
 const config = defineConfig(async (ctx) => {
+  await import("./src/lib/env/server");
+  await import("./src/lib/env/client");
+
   const preset = ctx.mode === "production" ? "vercel" : "node";
 
   return {
