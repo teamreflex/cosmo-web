@@ -1,4 +1,4 @@
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, inArray, not, sql } from "drizzle-orm";
 import { createServerFn } from "@tanstack/react-start";
 import z from "zod";
 import { queryOptions } from "@tanstack/react-query";
@@ -17,7 +17,7 @@ export const fetchObjektsWithComo = createServerFn({ method: "GET" })
   .handler(async ({ data }): Promise<ObjektWithCollection[]> => {
     return await indexer
       .select({
-        contract: collections.contract,
+        artistId: collections.artist,
         mintedAt: objekts.mintedAt,
         amount: sql<number>`
         case 
@@ -28,7 +28,13 @@ export const fetchObjektsWithComo = createServerFn({ method: "GET" })
       `.mapWith(Number),
       })
       .from(objekts)
-      .where(eq(objekts.owner, data.address.toLowerCase()))
+      .where(
+        and(
+          eq(objekts.owner, data.address.toLowerCase()),
+          // idntt doesn't have monthly como
+          not(eq(collections.artist, "idntt")),
+        ),
+      )
       .innerJoin(
         collections,
         and(

@@ -45,7 +45,7 @@ function RouteComponent() {
 
   const totals = artists.map((artist) => {
     const total = data
-      .filter((t) => t.contract === artist.contracts.Objekt.toLowerCase())
+      .filter((t) => t.artistId === artist.id.toLowerCase())
       .reduce((sum, objekt) => {
         return sum + objekt.amount;
       }, 0);

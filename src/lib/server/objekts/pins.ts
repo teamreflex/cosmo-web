@@ -6,9 +6,10 @@ import { indexer } from "../db/indexer";
 import { db } from "../db";
 import { cosmoAccounts, pins } from "../db/schema";
 import { remember } from "../cache";
+import type { Collection, Objekt } from "../db/indexer/schema";
 import type { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
 import type { ValidArtist } from "@/lib/universal/cosmo/common";
-import type { Collection, Objekt } from "../db/indexer/schema";
+import { isAddress } from "@/lib/utils";
 
 interface ObjektWithCollection extends Objekt {
   collection: Collection;
@@ -25,12 +26,16 @@ export const fetchPins = createServerFn({ method: "GET" })
     const ttl = 60 * 60 * 24; // 1 day
 
     return await remember(tag, ttl, async () => {
+      const column = isAddress(data.username)
+        ? cosmoAccounts.address
+        : cosmoAccounts.username;
+
       const rows = await db
         .select({ tokenId: pins.tokenId })
         .from(pins)
         .innerJoin(cosmoAccounts, eq(pins.address, cosmoAccounts.address))
         // decoding username from URL
-        .where(eq(cosmoAccounts.username, decodeURIComponent(data.username)))
+        .where(eq(column, decodeURIComponent(data.username)))
         .orderBy(desc(pins.id));
 
       if (rows.length === 0) return [];

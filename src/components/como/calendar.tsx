@@ -63,18 +63,13 @@ export default function ComoCalendar({ artists, transfers }: Props) {
           >
             <p className="absolute top-1 left-2 text-sm font-semibold">{day}</p>
 
-            {artists.map((a) => {
-              const contract = a.contracts.Objekt.toLowerCase();
-              const dayEntry = calendar[day]?.[contract];
-
-              if (!dayEntry) {
-                return null;
-              }
-
-              return (
+            {artists
+              .filter((a) => calendar[day]?.[a.id.toLowerCase()])
+              .map((a) => (
                 <div className="contents" key={a.name}>
                   <div className="absolute top-1 right-1">
-                    {dayEntry.carried > 0 && (
+                    {(calendar[day]?.[a.id.toLowerCase()]?.carried ?? 0) >
+                      0 && (
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger>
@@ -85,7 +80,10 @@ export default function ComoCalendar({ artists, transfers }: Props) {
 
                             <div className="flex items-center justify-center gap-2">
                               <ArtistIcon artist={a.name} />
-                              <span>{dayEntry.carried}</span>
+                              <span>
+                                {calendar[day]?.[a.id.toLowerCase()]?.carried ??
+                                  0}
+                              </span>
                             </div>
                           </TooltipContent>
                         </Tooltip>
@@ -95,11 +93,12 @@ export default function ComoCalendar({ artists, transfers }: Props) {
 
                   <div className="flex items-center gap-2">
                     <ArtistIcon artist={a.name} />
-                    <span>{dayEntry.count}</span>
+                    <span>
+                      {calendar[day]?.[a.id.toLowerCase()]?.count ?? 0}
+                    </span>
                   </div>
                 </div>
-              );
-            })}
+              ))}
           </div>
         ))}
 

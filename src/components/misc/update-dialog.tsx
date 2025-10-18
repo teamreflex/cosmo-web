@@ -79,10 +79,15 @@ export default function UpdateDialog() {
 
 const updates = [
   {
-    date: "2025-08-24",
+    date: "2025-09-30",
     changes: [
-      "Custom objekt borders/bands (idntt) are now supported.",
-      "These will be added into the system as we receive them. Until then, a default band will be used based on the objekt color settings.",
+      "Fixed: tripleS Atom02 3rd edition SCOs not being counted in COMO calendars.",
+    ],
+  },
+  {
+    date: "2025-09-24",
+    changes: [
+      "Fixed: Objekt pins not displaying when viewing a profile via blockchain address.",
     ],
   },
 ];

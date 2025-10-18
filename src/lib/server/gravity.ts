@@ -60,7 +60,7 @@ export const fetchGravityDetails = createServerFn({ method: "GET" })
     }
 
     // fetch the full gravity from cosmo or cache, depending on timing
-    const gravity = await fetchCachedGravity(artist.id, info.cosmoId, isPast);
+    const gravity = await fetchCachedGravity(info.cosmoId, isPast);
     if (!gravity) {
       throw notFound();
     }
@@ -115,7 +115,7 @@ export const fetchPolygonGravity = createServerFn({ method: "GET" })
         const { accessToken } = await getProxiedToken();
 
         // 2. fetch gravity from cosmo
-        const gravity = await fetchGravity(data.artist as ValidArtist, data.id);
+        const gravity = await fetchGravity(data.id);
         if (!gravity) {
           throw notFound();
         }
@@ -192,16 +192,16 @@ export const fetchPolygonGravity = createServerFn({ method: "GET" })
  * Fetch a gravity, and if it's in the past, cache it for 30 days.
  */
 export const fetchCachedGravity = createServerOnlyFn(
-  async (artist: ValidArtist, id: number, isPast: boolean) => {
+  async (id: number, isPast: boolean) => {
     if (isPast) {
       return await remember(
-        `gravity:${artist}:${id}`,
+        `gravity:${id}`,
         60 * 60 * 24 * 30, // 30 days
-        () => fetchGravity(artist, id),
+        () => fetchGravity(id),
       );
     }
 
-    return await fetchGravity(artist, id);
+    return await fetchGravity(id);
   },
 );
 

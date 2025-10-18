@@ -77,7 +77,10 @@ export const pinObjekt = createServerFn({ method: "POST" })
       throw new Error("Error pinning objekt");
     }
 
-    clearTag(pinCacheKey(context.cosmo.username));
+    await Promise.all([
+      clearTag(pinCacheKey(context.cosmo.username)),
+      clearTag(pinCacheKey(context.cosmo.address)),
+    ]);
     return normalizePin(objekt);
   });
 
@@ -101,6 +104,9 @@ export const unpinObjekt = createServerFn({ method: "POST" })
         ),
       );
 
-    clearTag(pinCacheKey(context.cosmo.username));
+    await Promise.all([
+      clearTag(pinCacheKey(context.cosmo.username)),
+      clearTag(pinCacheKey(context.cosmo.address)),
+    ]);
     return result.rowCount === 1;
   });

@@ -1,14 +1,14 @@
 import { getDaysInMonth } from "date-fns";
 
 export type ObjektWithCollection = {
-  contract: string;
+  artistId: string;
   mintedAt: string;
   amount: number;
 };
 
 type Calendar = {
   [day: number]: {
-    [contract: string]: {
+    [artistId: string]: {
       count: number;
       carried: number;
     };
@@ -34,14 +34,14 @@ export function buildCalendar(date: Date, objekts: ObjektWithCollection[]) {
     }
 
     // initialize contract
-    if (!calendar[day][objekt.contract]) {
-      calendar[day][objekt.contract] = {
+    if (!calendar[day][objekt.artistId]) {
+      calendar[day][objekt.artistId] = {
         count: 0,
         carried: 0,
       };
     }
     // increment count for day and contract
-    calendar[day][objekt.contract]!.count += objekt.amount;
+    calendar[day][objekt.artistId]!.count += objekt.amount;
 
     // carry over drops from non-existent days to the last day of the month
     if (!currentDays.includes(day)) {
@@ -49,15 +49,15 @@ export function buildCalendar(date: Date, objekts: ObjektWithCollection[]) {
         calendar[lastDayOfMonth] = {};
       }
 
-      if (!calendar[lastDayOfMonth][objekt.contract]) {
-        calendar[lastDayOfMonth][objekt.contract] = {
+      if (!calendar[lastDayOfMonth][objekt.artistId]) {
+        calendar[lastDayOfMonth][objekt.artistId] = {
           count: 0,
           carried: 0,
         };
       }
 
-      calendar[lastDayOfMonth][objekt.contract]!.carried += objekt.amount;
-      calendar[lastDayOfMonth][objekt.contract]!.count += objekt.amount;
+      calendar[lastDayOfMonth][objekt.artistId]!.carried += objekt.amount;
+      calendar[lastDayOfMonth][objekt.artistId]!.count += objekt.amount;
     }
   }
 

@@ -72,4 +72,6 @@ export const unobtainables = [
   "divine01-sullin-312z",
   "divine01-seoah-312z",
   "divine01-jiyeon-312z",
+  // love poison streaming event
+  "divine01-haseul-331z",
 ];
