@@ -1,5 +1,7 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "regions": ["sfo1"],
+  "framework": "nitro",
   "buildCommand": "vite build && pnpm db:migrate",
   "crons": [
     {

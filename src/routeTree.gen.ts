@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermsPrivacyRouteImport } from './routes/terms-privacy'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ObjektsIndexRouteImport } from './routes/objekts/index'
 import { Route as GravityIndexRouteImport } from './routes/gravity/index'
 import { Route as ObjektsStatsRouteImport } from './routes/objekts/stats'
 import { Route as ListIdRouteImport } from './routes/list/$id'
@@ -57,6 +58,11 @@ const AdminRouteRoute = AdminRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ObjektsIndexRoute = ObjektsIndexRouteImport.update({
+  id: '/objekts/',
+  path: '/objekts/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GravityIndexRoute = GravityIndexRouteImport.update({
@@ -241,6 +247,7 @@ export interface FileRoutesByFullPath {
   '/list/$id': typeof ListIdRoute
   '/objekts/stats': typeof ObjektsStatsRoute
   '/gravity': typeof GravityIndexRoute
+  '/objekts': typeof ObjektsIndexRoute
   '/@{$username}/como': typeof profileAtChar123usernameChar125ComoRoute
   '/@{$username}/progress': typeof profileAtChar123usernameChar125ProgressRoute
   '/@{$username}/trades': typeof profileAtChar123usernameChar125TradesRoute
@@ -276,6 +283,7 @@ export interface FileRoutesByTo {
   '/list/$id': typeof ListIdRoute
   '/objekts/stats': typeof ObjektsStatsRoute
   '/gravity': typeof GravityIndexRoute
+  '/objekts': typeof ObjektsIndexRoute
   '/@{$username}/como': typeof profileAtChar123usernameChar125ComoRoute
   '/@{$username}/progress': typeof profileAtChar123usernameChar125ProgressRoute
   '/@{$username}/trades': typeof profileAtChar123usernameChar125TradesRoute
@@ -313,6 +321,7 @@ export interface FileRoutesById {
   '/list/$id': typeof ListIdRoute
   '/objekts/stats': typeof ObjektsStatsRoute
   '/gravity/': typeof GravityIndexRoute
+  '/objekts/': typeof ObjektsIndexRoute
   '/(profile)/@{$username}/como': typeof profileAtChar123usernameChar125ComoRoute
   '/(profile)/@{$username}/progress': typeof profileAtChar123usernameChar125ProgressRoute
   '/(profile)/@{$username}/trades': typeof profileAtChar123usernameChar125TradesRoute
@@ -351,6 +360,7 @@ export interface FileRouteTypes {
     | '/list/$id'
     | '/objekts/stats'
     | '/gravity'
+    | '/objekts'
     | '/@{$username}/como'
     | '/@{$username}/progress'
     | '/@{$username}/trades'
@@ -386,6 +396,7 @@ export interface FileRouteTypes {
     | '/list/$id'
     | '/objekts/stats'
     | '/gravity'
+    | '/objekts'
     | '/@{$username}/como'
     | '/@{$username}/progress'
     | '/@{$username}/trades'
@@ -422,6 +433,7 @@ export interface FileRouteTypes {
     | '/list/$id'
     | '/objekts/stats'
     | '/gravity/'
+    | '/objekts/'
     | '/(profile)/@{$username}/como'
     | '/(profile)/@{$username}/progress'
     | '/(profile)/@{$username}/trades'
@@ -457,6 +469,7 @@ export interface RootRouteChildren {
   ListIdRoute: typeof ListIdRoute
   ObjektsStatsRoute: typeof ObjektsStatsRoute
   GravityIndexRoute: typeof GravityIndexRoute
+  ObjektsIndexRoute: typeof ObjektsIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiCronGravityRoute: typeof ApiCronGravityRoute
   ApiCronObjektStatsRoute: typeof ApiCronObjektStatsRoute
@@ -498,6 +511,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/objekts/': {
+      id: '/objekts/'
+      path: '/objekts'
+      fullPath: '/objekts'
+      preLoaderRoute: typeof ObjektsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/gravity/': {
@@ -772,6 +792,7 @@ const rootRouteChildren: RootRouteChildren = {
   ListIdRoute: ListIdRoute,
   ObjektsStatsRoute: ObjektsStatsRoute,
   GravityIndexRoute: GravityIndexRoute,
+  ObjektsIndexRoute: ObjektsIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiCronGravityRoute: ApiCronGravityRoute,
   ApiCronObjektStatsRoute: ApiCronObjektStatsRoute,

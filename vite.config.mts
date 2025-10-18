@@ -19,7 +19,7 @@ const config = defineConfig(async (ctx) => {
       tanstackStart(),
       nitro({
         config: {
-          compatibilityDate: "2025-10-11",
+          compatibilityDate: "2025-10-19",
           preset,
         },
       }),
