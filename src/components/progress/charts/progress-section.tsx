@@ -6,7 +6,6 @@ import {
   ExpandableCardHeader,
   ExpandableCardTitle,
 } from "@/components/ui/expandable-card";
-import { Skeleton } from "@/components/ui/skeleton";
 
 type Props = {
   title: string;

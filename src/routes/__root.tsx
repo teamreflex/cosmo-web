@@ -71,6 +71,12 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     ],
     links: [
       {
+        rel: "preload",
+        href: "/HalvarBreit-Bd.woff2",
+        as: "font",
+        type: "font/woff2",
+      },
+      {
         rel: "stylesheet",
         href: appCss,
       },
