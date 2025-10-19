@@ -15,7 +15,7 @@ export default function ProgressCharts(props: Props) {
   const { data } = useSuspenseQuery(artistStatsQuery(props.address));
   const { filters } = useProgressFilters();
   const stats = useMemo(() => {
-    if (filters.artist !== null) {
+    if (filters.artist) {
       return data.find(
         (stat) =>
           stat.artistName.toLowerCase() === filters.artist?.toLowerCase(),

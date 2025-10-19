@@ -49,12 +49,3 @@ export default function ProgressSection(props: Props) {
     </div>
   );
 }
-
-export function ProgressSectionSkeleton() {
-  return (
-    <div className="grid w-full grid-cols-2 justify-center gap-2">
-      <Skeleton className="h-64 rounded-xl" />
-      <Skeleton className="aspect-square size-64 rounded-full" />
-    </div>
-  );
-}

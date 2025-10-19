@@ -1,16 +1,16 @@
 import { useErrorBoundary } from "react-error-boundary";
 import { RefreshCcw } from "lucide-react";
 import { Button } from "../../ui/button";
-import { ProgressSectionSkeleton } from "./progress-section";
+import { Skeleton } from "@/components/ui/skeleton";
+import SkeletonGradient from "@/components/skeleton/skeleton-overlay";
 
 export function ProgressChartsSkeleton() {
   return (
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-      <ProgressSectionSkeleton />
-      <ProgressSectionSkeleton />
-      <div className="col-span-full">
-        <ProgressSectionSkeleton />
-      </div>
+    <div className="relative grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <SkeletonGradient />
+      <Skeleton className="h-32 w-full rounded-xl" />
+      <Skeleton className="h-32 w-full rounded-xl" />
+      <Skeleton className="col-span-full h-64 w-full rounded-xl" />
     </div>
   );
 }
