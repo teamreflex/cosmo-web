@@ -15,7 +15,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { systemStatusQuery } from "@/lib/server/system";
+import { systemStatusQuery } from "@/lib/queries/system";
 
 export default function SystemStatus() {
   return (

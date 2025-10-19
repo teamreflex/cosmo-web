@@ -159,13 +159,14 @@ export const cacheAccounts = createServerOnlyFn(
 
 /**
  * Fetch all known addresses from the database.
+ * Returns a Map with lowercase addresses as keys for O(1) lookups.
  */
 export const fetchKnownAddresses = createServerOnlyFn(
   async (addresses: string[]) => {
-    if (addresses.length === 0) return [];
+    if (addresses.length === 0) return new Map();
 
     // fetch known profiles
-    return await db.query.cosmoAccounts.findMany({
+    const results = await db.query.cosmoAccounts.findMany({
       where: {
         address: {
           in: addresses,
@@ -176,6 +177,9 @@ export const fetchKnownAddresses = createServerOnlyFn(
         username: true,
       },
     });
+
+    // convert to Map for O(1) lookups
+    return new Map(results.map((a) => [a.address.toLowerCase(), a]));
   },
 );
 

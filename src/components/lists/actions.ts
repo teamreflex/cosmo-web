@@ -53,6 +53,10 @@ export const createObjektList = createServerFn({ method: "POST" })
       })
       .returning();
 
+    if (!result) {
+      throw new Error("Failed to create list");
+    }
+
     return result;
   });
 

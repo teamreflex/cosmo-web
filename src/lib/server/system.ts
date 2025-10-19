@@ -1,6 +1,5 @@
 import { ofetch } from "ofetch";
 import { createServerFn } from "@tanstack/react-start";
-import { queryOptions } from "@tanstack/react-query";
 import { abstract } from "./http";
 import { remember } from "./cache";
 import type { RPCResponse } from "./alchemy";
@@ -87,12 +86,4 @@ export const fetchSystemStatus = createServerFn().handler(async () => {
       };
     },
   );
-});
-
-export const systemStatusQuery = queryOptions({
-  queryKey: ["system-status"],
-  queryFn: fetchSystemStatus,
-  refetchOnWindowFocus: false,
-  refetchOnMount: false,
-  refetchOnReconnect: false,
 });

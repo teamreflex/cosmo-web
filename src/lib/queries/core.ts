@@ -147,14 +147,16 @@ export const fetchTargetAccount = createServerFn({ method: "GET" })
 /**
  * Fetch the target account.
  */
-export const targetAccountQuery = (identifier: string) =>
-  queryOptions({
-    queryKey: ["target-account", identifier],
-    queryFn: () => fetchTargetAccount({ data: { identifier } }),
+export const targetAccountQuery = (identifier: string) => {
+  const lower = identifier.toLowerCase();
+  return queryOptions({
+    queryKey: ["target-account", lower],
+    queryFn: () => fetchTargetAccount({ data: { identifier: lower } }),
     staleTime: Infinity,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
   });
+};
 
 /**
  * Fetch the artists.

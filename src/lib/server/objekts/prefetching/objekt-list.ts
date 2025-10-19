@@ -80,11 +80,12 @@ export const fetchObjektListEntries = createServerFn({ method: "GET" })
 
     const result = await query;
     const flatCollections = result.map((c) => c.collections);
+
+    const collectionMap = new Map(flatCollections.map((c) => [c.slug, c]));
+
     const collectionList = entries
       .map((entry) => {
-        const collection = flatCollections.find(
-          (c) => c.slug === entry.collectionId,
-        );
+        const collection = collectionMap.get(entry.collectionId);
         if (!collection) return undefined;
         return {
           ...collection,

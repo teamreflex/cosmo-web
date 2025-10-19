@@ -4,7 +4,8 @@ import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useServerFn } from "@tanstack/react-start";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
 import {
   Form,
   FormControl,
@@ -33,6 +34,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { currentAccountQuery } from "@/lib/queries/core";
 
 type Props = {
   open: boolean;
@@ -42,6 +44,8 @@ type Props = {
 
 export default function SettingsDialog({ open, onOpenChange, user }: Props) {
   const { theme, setTheme } = useTheme();
+  const queryClient = useQueryClient();
+  const router = useRouter();
   const mutationFn = useServerFn(updateSettings);
   const mutation = useMutation({
     mutationFn,
@@ -59,9 +63,13 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
     await mutation.mutateAsync(
       { data },
       {
-        onSuccess() {
+        async onSuccess() {
           toast.success("Settings updated.");
           onOpenChange(false);
+          await queryClient.invalidateQueries({
+            queryKey: currentAccountQuery.queryKey,
+          });
+          await router.invalidate();
         },
         onError() {
           toast.error("Error updating settings.");

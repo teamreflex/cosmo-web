@@ -18,7 +18,7 @@ import Navbar from "@/components/navbar/navbar";
 import TailwindIndicator from "@/components/tailwind-indicator";
 import { env } from "@/lib/env/client";
 import { currentAccountQuery } from "@/lib/queries/core";
-import { systemStatusQuery } from "@/lib/server/system";
+import { systemStatusQuery } from "@/lib/queries/system";
 import { Button } from "@/components/ui/button";
 
 interface RouterContext {
@@ -102,7 +102,6 @@ export const Route = createRootRouteWithContext<RouterContext>()({
               src: env.VITE_UMAMI_SCRIPT_URL,
               async: true,
               "data-website-id": env.VITE_UMAMI_ID,
-              strategy: "afterInteractive",
             },
           ]
         : []),

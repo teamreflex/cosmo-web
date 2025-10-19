@@ -37,20 +37,21 @@ export const fetchTransfers = createServerFn({ method: "GET" })
       // can't send to yourself, so filter out the current address
       .filter((a) => a !== data.address.toLowerCase());
 
-    const knownAddresses = await fetchKnownAddresses(addresses);
+    const addressMap = await fetchKnownAddresses(addresses);
 
     return {
       ...aggregate,
       // map the nickname onto the results and apply spin flags
-      results: aggregate.results.map((row) => ({
-        ...row,
-        username: knownAddresses.find((a) =>
-          [
-            row.transfer.from.toLowerCase(),
-            row.transfer.to.toLowerCase(),
-          ].includes(a.address.toLowerCase()),
-        )?.username,
-      })),
+      results: aggregate.results.map((row) => {
+        const fromAddress = row.transfer.from.toLowerCase();
+        const toAddress = row.transfer.to.toLowerCase();
+        return {
+          ...row,
+          username:
+            addressMap.get(fromAddress)?.username ??
+            addressMap.get(toAddress)?.username,
+        };
+      }),
     };
   });
 

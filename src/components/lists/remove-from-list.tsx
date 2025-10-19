@@ -22,7 +22,9 @@ export default function RemoveFromList({ id, collection, objektList }: Props) {
         `Removed ${collection.collectionId} from ${objektList.name}`,
       );
       queryClient.invalidateQueries({
-        queryKey: ["objekt-list", objektList.id],
+        predicate: (query) =>
+          query.queryKey[0] === "objekt-list" &&
+          query.queryKey[1] === objektList.id,
       });
     },
   });

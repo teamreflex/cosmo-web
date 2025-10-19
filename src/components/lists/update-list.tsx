@@ -4,7 +4,7 @@ import { useForm, useFormState } from "react-hook-form";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Form,
   FormControl,
@@ -26,6 +26,8 @@ import { Button } from "../ui/button";
 import { updateObjektList } from "./actions";
 import type z from "zod";
 import type { ObjektList } from "@/lib/server/db/schema";
+import { useUserState } from "@/hooks/use-user-state";
+import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
 
 type Props = {
   objektList: ObjektList;
@@ -33,11 +35,23 @@ type Props = {
 
 export default function UpdateList({ objektList }: Props) {
   const [open, setOpen] = useState(false);
+  const { cosmo } = useUserState();
+  const queryClient = useQueryClient();
   const mutationFn = useServerFn(updateObjektList);
   const mutation = useMutation({
     mutationFn,
     onSuccess: () => {
       toast.success("Objekt list updated");
+      // invalidate current account query to update list name in user's lists
+      queryClient.invalidateQueries({
+        queryKey: currentAccountQuery.queryKey,
+      });
+      // invalidate target account queries to update list name on profile pages
+      if (cosmo) {
+        queryClient.invalidateQueries({
+          queryKey: targetAccountQuery(cosmo.username).queryKey,
+        });
+      }
       setOpen(false);
     },
   });

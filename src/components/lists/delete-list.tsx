@@ -1,6 +1,6 @@
 import { Loader2, Trash } from "lucide-react";
 import { toast } from "sonner";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Button } from "../ui/button";
 import { deleteObjektList } from "./actions";
@@ -17,17 +17,48 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
+import { useProfileContext } from "@/hooks/use-profile";
 
 type Props = {
   objektList: ObjektList;
 };
 
 export default function DeleteList({ objektList }: Props) {
+  const target = useProfileContext((ctx) => ctx.target);
+  const queryClient = useQueryClient();
   const mutationFn = useServerFn(deleteObjektList);
   const mutation = useMutation({
     mutationFn,
     onSuccess: () => {
       toast.success("Objekt list deleted");
+
+      // remove list from current account query
+      queryClient.setQueryData(currentAccountQuery.queryKey, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          objektLists: old.objektLists.filter(
+            (list) => list.id !== objektList.id,
+          ),
+        };
+      });
+
+      // remove list from target account query if it exists
+      if (target?.cosmo?.username) {
+        queryClient.setQueryData(
+          targetAccountQuery(target.cosmo.username).queryKey,
+          (old) => {
+            if (!old) return old;
+            return {
+              ...old,
+              objektLists: old.objektLists.filter(
+                (list) => list.id !== objektList.id,
+              ),
+            };
+          },
+        );
+      }
     },
   });
 

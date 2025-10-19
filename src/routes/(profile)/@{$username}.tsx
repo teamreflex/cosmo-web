@@ -100,6 +100,7 @@ function RouteComponent() {
           <ComoButton cosmo={target.cosmo} />
           <ProgressButton cosmo={target.cosmo} />
           <ListDropdown
+            username={target.cosmo.username}
             objektLists={target.objektLists}
             allowCreate={isAuthenticated}
             createListUrl={(list) =>

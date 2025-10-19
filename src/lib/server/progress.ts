@@ -3,7 +3,7 @@ import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
 import z from "zod";
 import { unobtainables } from "../unobtainables";
 import { validOnlineTypes } from "../universal/cosmo/common";
-import { Addresses, isEqual } from "../utils";
+import { Addresses } from "../utils";
 import { remember } from "./cache";
 import { fetchKnownAddresses } from "./cosmo-accounts";
 import type { ValidOnlineType } from "../universal/cosmo/common";
@@ -71,13 +71,13 @@ export const fetchProgressLeaderboard = createServerFn({ method: "GET" })
     ]);
 
     // fetch profiles for each address
-    const knownAddresses = await fetchKnownAddresses(
+    const addressMap = await fetchKnownAddresses(
       leaderboard.map((a) => a.owner),
     );
 
     // map the nickname onto the results
     const results = leaderboard.map((row) => {
-      const known = knownAddresses.find((a) => isEqual(a.address, row.owner));
+      const known = addressMap.get(row.owner.toLowerCase());
 
       return {
         count: row.count,

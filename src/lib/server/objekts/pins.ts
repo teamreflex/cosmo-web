@@ -57,11 +57,12 @@ export const fetchPins = createServerFn({ method: "GET" })
       }
 
       const mapped = results.map(normalizePin);
+      const tokenIdIndexMap = new Map(tokenIds.map((id, index) => [id, index]));
 
       // sort by pin order
       return mapped.sort((a, b) => {
-        const indexA = tokenIds.findIndex((item) => item === Number(a.tokenId));
-        const indexB = tokenIds.findIndex((item) => item === Number(b.tokenId));
+        const indexA = tokenIdIndexMap.get(Number(a.tokenId)) ?? Infinity;
+        const indexB = tokenIdIndexMap.get(Number(b.tokenId)) ?? Infinity;
         return indexA - indexB;
       });
     });

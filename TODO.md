@@ -1,12 +1,9 @@
 - ensure env var split is working and server vars aren't leaking to client
-- optimize query preloading
-- strip dead code
 - update documentation
 - move server code around so it's more isolated from RPC and queries
 - fix progress index charts not loading
 - fix progress index suspense fallbacks overflowing the container
-- fix settings update not reflecting until refresh
-- fix objekt list create not invalidating cache
-- fix renaming objekt list not redirecting and invalidating cache
-- fix objekt list delete not redirecting
-- invalidate list query cache when adding or removing objekts
+
+- wait for start fix: https://github.com/TanStack/router/issues/5372
+  - objekt list update
+  - objekt list delete

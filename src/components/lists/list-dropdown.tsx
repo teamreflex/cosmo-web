@@ -19,24 +19,25 @@ type Props = {
   objektLists: ObjektList[];
   allowCreate: boolean;
   createListUrl: (list: ObjektList) => string;
+  username?: string;
 };
 
-export default function ListDropdown({
-  objektLists,
-  allowCreate,
-  createListUrl,
-}: Props) {
+export default function ListDropdown(props: Props) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [compareOpen, setCompareOpen] = useState(false);
 
   return (
     <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
-      <CreateListDialog open={createOpen} onOpenChange={setCreateOpen} />
+      <CreateListDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        username={props.username}
+      />
       <DiscordFormatDialog
         open={compareOpen}
         onOpenChange={setCompareOpen}
-        objektLists={objektLists}
+        objektLists={props.objektLists}
       />
 
       <DropdownMenuTrigger asChild>
@@ -49,14 +50,14 @@ export default function ListDropdown({
         <DropdownMenuLabel>Objekt Lists</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          {objektLists.map((list) => (
+          {props.objektLists.map((list) => (
             <DropdownMenuItem
               key={list.id}
               className="text-sm"
               onClick={() => setDropdownOpen(false)}
             >
               <Link
-                to={createListUrl(list)}
+                to={props.createListUrl(list)}
                 className="flex w-full items-center justify-between"
               >
                 {list.name}
@@ -64,11 +65,11 @@ export default function ListDropdown({
               </Link>
             </DropdownMenuItem>
           ))}
-          {objektLists.length === 0 && (
+          {props.objektLists.length === 0 && (
             <DropdownMenuItem className="text-sm">0 lists</DropdownMenuItem>
           )}
 
-          {allowCreate && (
+          {props.allowCreate && (
             <div className="contents">
               <DropdownMenuSeparator />
 

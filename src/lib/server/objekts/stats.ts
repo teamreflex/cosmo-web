@@ -1,6 +1,5 @@
 import { and, eq, gte, lt, sql } from "drizzle-orm";
 import { createServerFn } from "@tanstack/react-start";
-import { queryOptions } from "@tanstack/react-query";
 import { collections, objekts } from "../db/indexer/schema";
 import { indexer } from "../db/indexer";
 import { remember } from "../cache";
@@ -175,8 +174,3 @@ export const fetchObjektStats = createServerFn({ method: "GET" }).handler(() =>
     };
   }),
 );
-
-export const objektStatsQuery = queryOptions({
-  queryKey: ["objekt-stats"],
-  queryFn: fetchObjektStats,
-});

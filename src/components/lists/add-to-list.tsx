@@ -87,7 +87,10 @@ function ListItem({
     mutationFn,
     onSuccess() {
       toast.success(`Added ${collectionId} to ${list.name}`);
-      queryClient.removeQueries({ queryKey: ["objekt-list", list.slug] });
+      queryClient.invalidateQueries({
+        predicate: (query) =>
+          query.queryKey[0] === "objekt-list" && query.queryKey[1] === list.id,
+      });
       onDone();
     },
   });

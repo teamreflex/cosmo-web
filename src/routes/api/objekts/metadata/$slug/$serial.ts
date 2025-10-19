@@ -57,25 +57,21 @@ export const Route = createFileRoute("/api/objekts/metadata/$slug/$serial")({
         }
 
         // fetch usernames for all addresses
-        const knownAddresses = await fetchKnownAddresses(Array.from(addresses));
-        const addressMap = new Map(
-          knownAddresses.map((acc) => [
-            acc.address.toLowerCase(),
-            acc.username,
-          ]),
-        );
+        const addressMap = await fetchKnownAddresses(Array.from(addresses));
 
         // map usernames to transfers
         const transfers: SerialTransfer[] = objekt.transfers.map(
           (transfer) => ({
             ...transfer,
-            fromUsername: addressMap.get(transfer.from.toLowerCase()) ?? null,
-            toUsername: addressMap.get(transfer.to.toLowerCase()) ?? null,
+            fromUsername:
+              addressMap.get(transfer.from.toLowerCase())?.username ?? null,
+            toUsername:
+              addressMap.get(transfer.to.toLowerCase())?.username ?? null,
           }),
         );
 
         const result = {
-          username: addressMap.get(objekt.owner) ?? null,
+          username: addressMap.get(objekt.owner)?.username ?? null,
           address: objekt.owner,
           serial: objekt.serial,
           transfers,

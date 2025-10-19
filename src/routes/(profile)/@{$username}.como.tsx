@@ -4,7 +4,7 @@ import CurrentMonth from "@/components/como/current-month";
 import { Error } from "@/components/error-boundary";
 import { seoTitle } from "@/lib/seo";
 import { artistsQuery, targetAccountQuery } from "@/lib/queries/core";
-import { fetchObjektsWithComoQuery } from "@/lib/server/como";
+import { fetchObjektsWithComoQuery } from "@/lib/queries/como";
 import ArtistIcon from "@/components/artist-icon";
 import ComoCalendar from "@/components/como/calendar";
 import Portal from "@/components/portal";

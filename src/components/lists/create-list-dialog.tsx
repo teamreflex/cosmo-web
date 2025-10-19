@@ -2,7 +2,7 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useForm, useFormState } from "react-hook-form";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Button } from "../ui/button";
 import {
@@ -25,21 +25,45 @@ import {
 import { createObjektList } from "./actions";
 import type z from "zod";
 import { track } from "@/lib/utils";
+import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
 
 type Props = {
   open: boolean;
   onOpenChange: (state: boolean) => void;
+  username?: string;
 };
 
-export default function CreateListDialog({ open, onOpenChange }: Props) {
+export default function CreateListDialog(props: Props) {
+  const queryClient = useQueryClient();
   const mutationFn = useServerFn(createObjektList);
   const mutation = useMutation({
     mutationFn,
-    onSuccess: () => {
-      // TODO: insert into cache
+    onSuccess: (result) => {
       track("create-list");
       toast.success("Objekt list created!");
-      onOpenChange(false);
+      // insert new list into current account query
+      queryClient.setQueryData(currentAccountQuery.queryKey, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          objektLists: [...old.objektLists, result],
+        };
+      });
+
+      // insert new list into target account query if it exists
+      if (props.username) {
+        queryClient.setQueryData(
+          targetAccountQuery(props.username).queryKey,
+          (old) => {
+            if (!old) return old;
+            return {
+              ...old,
+              objektLists: [...old.objektLists, result],
+            };
+          },
+        );
+      }
+      props.onOpenChange(false);
     },
   });
 
@@ -55,7 +79,7 @@ export default function CreateListDialog({ open, onOpenChange }: Props) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={props.open} onOpenChange={props.onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Create Objekt List</DialogTitle>

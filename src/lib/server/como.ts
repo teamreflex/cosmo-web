@@ -1,7 +1,6 @@
 import { and, eq, inArray, not, sql } from "drizzle-orm";
 import { createServerFn } from "@tanstack/react-start";
 import z from "zod";
-import { queryOptions } from "@tanstack/react-query";
 import { addr } from "../utils";
 import { indexer } from "./db/indexer";
 import { collections, objekts } from "./db/indexer/schema";
@@ -44,19 +43,11 @@ export const fetchObjektsWithComo = createServerFn({ method: "GET" })
       );
   });
 
-export const fetchObjektsWithComoQuery = (address: string) =>
-  queryOptions({
-    queryKey: ["como-calendar", address],
-    queryFn: () => fetchObjektsWithComo({ data: { address } }),
-    staleTime: Infinity,
-    refetchOnWindowFocus: false,
-  });
-
 /**
  * Fetch ERC20 token balances from Alchemy.
  * Cached for 15 minutes.
  */
-const fetchTokenBalances = createServerFn({ method: "GET" })
+export const fetchTokenBalances = createServerFn({ method: "GET" })
   .inputValidator(z.object({ address: z.string() }))
   .handler(async ({ data }): Promise<ComoBalance[]> => {
     return remember(`como-balances:${data.address}`, 60 * 15, async () => {
@@ -77,11 +68,4 @@ const fetchTokenBalances = createServerFn({ method: "GET" })
         };
       });
     });
-  });
-
-export const tokenBalancesQuery = (address: string) =>
-  queryOptions({
-    queryKey: ["como-balances", address],
-    queryFn: () => fetchTokenBalances({ data: { address } }),
-    refetchOnWindowFocus: false,
   });
