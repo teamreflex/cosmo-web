@@ -14,6 +14,7 @@ import { gravityPollDetailsQuery } from "@/lib/queries/gravity";
 import DynamicLiveChart from "@/components/gravity/dynamic-live-chart";
 
 export const Route = createFileRoute("/gravity/$artist/$id")({
+  staleTime: Infinity,
   component: RouteComponent,
   pendingComponent: PendingComponent,
   errorComponent: ErrorComponent,

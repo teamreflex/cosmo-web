@@ -10,12 +10,18 @@ export const artistStatsQuery = (address: string) =>
   queryOptions({
     queryKey: ["artist-stats", address],
     queryFn: () => fetchArtistStatsByAddress({ data: { address } }),
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
 export const progressBreakdownQuery = (address: string, member: string) =>
   queryOptions({
     queryKey: ["progress-breakdown", address, member],
     queryFn: () => fetchProgressBreakdown({ data: { address, member } }),
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
 export const progressLeaderboardQuery = (
@@ -27,4 +33,7 @@ export const progressLeaderboardQuery = (
     queryKey: ["progress-leaderboard", member, onlineType, season],
     queryFn: () =>
       fetchProgressLeaderboard({ data: { member, onlineType, season } }),
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });

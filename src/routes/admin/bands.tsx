@@ -1,12 +1,13 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { fetchCurrentUser } from "@/lib/queries/core";
+import { currentAccountQuery } from "@/lib/queries/core";
 import InsertBands from "@/components/admin/bands/insert-bands";
 import { seoTitle } from "@/lib/seo";
 
 export const Route = createFileRoute("/admin/bands")({
-  beforeLoad: async () => {
-    const user = await fetchCurrentUser();
-    if (!user?.isAdmin) {
+  staleTime: Infinity,
+  beforeLoad: async ({ context }) => {
+    const user = await context.queryClient.ensureQueryData(currentAccountQuery);
+    if (!user?.user.isAdmin) {
       throw redirect({ to: "/" });
     }
   },

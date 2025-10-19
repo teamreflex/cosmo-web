@@ -65,6 +65,7 @@ export const filterDataQuery = queryOptions({
   queryFn: fetchFilterData,
   staleTime: Infinity,
   refetchOnWindowFocus: false,
+  refetchOnMount: false,
 });
 
 type GetAccount = {
@@ -127,6 +128,7 @@ export const currentAccountQuery = queryOptions({
   queryFn: fetchCurrentAccount,
   staleTime: Infinity,
   refetchOnWindowFocus: false,
+  refetchOnMount: false,
 });
 
 /**
@@ -151,6 +153,7 @@ export const targetAccountQuery = (identifier: string) =>
     queryFn: () => fetchTargetAccount({ data: { identifier } }),
     staleTime: Infinity,
     refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
 /**
@@ -172,6 +175,7 @@ export const artistsQuery = queryOptions({
   queryFn: fetchArtists,
   staleTime: Infinity,
   refetchOnWindowFocus: false,
+  refetchOnMount: false,
 });
 
 /**
@@ -191,4 +195,5 @@ export const selectedArtistsQuery = queryOptions({
   queryFn: fetchSelectedArtists,
   staleTime: Infinity,
   refetchOnWindowFocus: false,
+  refetchOnMount: false,
 });

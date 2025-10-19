@@ -22,6 +22,7 @@ import { objektListFrontendSchema } from "@/lib/universal/parsers";
 import { objektListQuery } from "@/lib/queries/objekt-queries";
 
 export const Route = createFileRoute("/(profile)/@{$username}/list/$slug")({
+  staleTime: 1000 * 60 * 15, // 15 minutes
   component: RouteComponent,
   pendingComponent: PendingComponent,
   errorComponent: ErrorComponent,

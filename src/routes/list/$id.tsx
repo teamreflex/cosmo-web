@@ -22,6 +22,7 @@ import ListRenderer from "@/components/lists/list-renderer";
 import { sanitizeUuid } from "@/lib/utils";
 
 export const Route = createFileRoute("/list/$id")({
+  staleTime: 1000 * 60 * 15, // 15 minutes
   component: RouteComponent,
   pendingComponent: PendingComponent,
   notFoundComponent: NotFoundComponent,

@@ -26,6 +26,7 @@ interface RouterContext {
 }
 
 export const Route = createRootRouteWithContext<RouterContext>()({
+  staleTime: Infinity,
   loader({ context }) {
     context.queryClient.prefetchQuery(currentAccountQuery);
     context.queryClient.prefetchQuery(systemStatusQuery);
