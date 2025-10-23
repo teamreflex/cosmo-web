@@ -102,7 +102,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     ],
     scripts: [
       // umami analytics
-      ...(env.VITE_UMAMI_ID !== "dev"
+      ...(env.VITE_UMAMI_ID && env.VITE_UMAMI_SCRIPT_URL
         ? [
             {
               src: env.VITE_UMAMI_SCRIPT_URL,
@@ -124,10 +124,12 @@ function RootComponent() {
 }
 
 function RootDocument({ children }: { children: React.ReactNode }) {
-  preconnect(new URL(env.VITE_SENTRY_DSN).origin);
   preconnect("https://imagedelivery.net");
   preconnect("https://resources.cosmo.fans");
   preconnect("https://static.cosmo.fans");
+  if (env.VITE_SENTRY_DSN) {
+    preconnect(new URL(env.VITE_SENTRY_DSN).origin);
+  }
 
   return (
     <html lang="en" suppressHydrationWarning>
