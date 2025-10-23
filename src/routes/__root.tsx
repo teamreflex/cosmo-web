@@ -75,6 +75,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
         href: "/HalvarBreit-Bd.woff2",
         as: "font",
         type: "font/woff2",
+        crossOrigin: "anonymous",
       },
       {
         rel: "stylesheet",

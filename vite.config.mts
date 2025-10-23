@@ -5,11 +5,9 @@ import viteTsConfigPaths from "vite-tsconfig-paths";
 import tailwindcss from "@tailwindcss/vite";
 import { nitro } from "nitro/vite";
 
-const config = defineConfig(async (ctx) => {
+const config = defineConfig(async () => {
   await import("./src/lib/env/server");
   await import("./src/lib/env/client");
-
-  const preset = ctx.mode === "production" ? "vercel" : "node";
 
   return {
     server: {
@@ -23,7 +21,7 @@ const config = defineConfig(async (ctx) => {
       nitro({
         config: {
           compatibilityDate: "2025-10-19",
-          preset,
+          preset: "vercel",
         },
       }),
       react({

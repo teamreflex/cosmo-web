@@ -4,9 +4,9 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "dev": "dotenv -e .env.local -- vite dev",
-    "build": "vite build",
-    "start": "node .output/server/index.mjs",
+    "dev": "pnpm run env -- vite dev",
+    "build": "pnpm run env -- vite build",
+    "start": "pnpm run env -- node .output/server/index.mjs",
     "test": "vitest",
     "lint": "eslint . --max-warnings 0",
     "typecheck": "tsc --pretty --noEmit",
@@ -14,8 +14,9 @@
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
     "db:upgrade": "drizzle-kit up",
-    "db:migrate": "dotenv -e .env.local -- drizzle-kit migrate",
-    "auth:generate": "dotenv -e .env.local -- pnpm dlx @better-auth/cli generate --output src/lib/server/db/auth-schema.ts --y"
+    "db:migrate": "pnpm run env -- drizzle-kit migrate",
+    "auth:generate": "pnpm run env -- pnpm dlx @better-auth/cli generate --output src/lib/server/db/auth-schema.ts --y",
+    "env": "dotenv -e .env.local"
   },
   "dependencies": {
     "@aws-sdk/client-ses": "^3.914.0",
