@@ -74,4 +74,10 @@ export const unobtainables = [
   "divine01-jiyeon-312z",
   // love poison streaming event
   "divine01-haseul-331z",
+  // can you entertain streaming event
+  "divine01-kimlip-337z",
+  // ring of chaos streaming event
+  "divine01-jinsoul-338z",
+  // choerry solo streaming event
+  "divine01-choerry-339z",
 ];
