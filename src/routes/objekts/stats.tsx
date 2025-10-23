@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { seoTitle } from "@/lib/seo";
 import { artistsQuery, selectedArtistsQuery } from "@/lib/queries/core";
 import { objektStatsQuery } from "@/lib/queries/stats";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +7,7 @@ import ArtistChart from "@/components/objekt-stats/artist-chart";
 import MemberBreakdown from "@/components/objekt-stats/member-breakdown";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Error } from "@/components/error-boundary";
+import { defineHead } from "@/lib/meta";
 
 export const Route = createFileRoute("/objekts/stats")({
   loader: async ({ context }) => {
@@ -26,9 +26,8 @@ export const Route = createFileRoute("/objekts/stats")({
   component: RouteComponent,
   pendingComponent: PendingComponent,
   errorComponent: ErrorComponent,
-  head: () => ({
-    meta: [seoTitle("Objekt Stats")],
-  }),
+  head: () =>
+    defineHead({ title: "Objekt Stats", canonical: "/objekts/stats" }),
 });
 
 function RouteComponent() {

@@ -3,7 +3,6 @@ import { userCollectionFrontendSchema } from "@/lib/universal/parsers";
 import { Skeleton } from "@/components/ui/skeleton";
 import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
 import { Error } from "@/components/error-boundary";
-import { seoTitle } from "@/lib/seo";
 import {
   artistsQuery,
   currentAccountQuery,
@@ -21,6 +20,7 @@ import {
   userCollectionBlockchainGroupsQuery,
   userCollectionBlockchainQuery,
 } from "@/lib/queries/objekt-queries";
+import { defineHead } from "@/lib/meta";
 
 export const Route = createFileRoute("/(profile)/@{$username}/")({
   validateSearch: userCollectionFrontendSchema,
@@ -64,15 +64,13 @@ export const Route = createFileRoute("/(profile)/@{$username}/")({
 
     return { artists, selected, account, target, pins };
   },
-  head: ({ loaderData }) => ({
-    meta: [
-      seoTitle(
-        loaderData?.target.user
-          ? `${loaderData.target.user.username}'s Collection`
-          : `Collection`,
-      ),
-    ],
-  }),
+  head: ({ loaderData }) =>
+    defineHead({
+      title: loaderData?.target.user
+        ? `${loaderData.target.user.username}'s Collection`
+        : "Collection",
+      canonical: `/@${loaderData?.target.user?.username}`,
+    }),
 });
 
 function RouteComponent() {

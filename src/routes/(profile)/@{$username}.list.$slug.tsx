@@ -3,7 +3,6 @@ import { HeartCrack } from "lucide-react";
 import { Error } from "@/components/error-boundary";
 import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
-import { seoTitle } from "@/lib/seo";
 import {
   artistsQuery,
   currentAccountQuery,
@@ -20,6 +19,7 @@ import DeleteList from "@/components/lists/delete-list";
 import ListRenderer from "@/components/lists/list-renderer";
 import { objektListFrontendSchema } from "@/lib/universal/parsers";
 import { objektListQuery } from "@/lib/queries/objekt-queries";
+import { defineHead } from "@/lib/meta";
 
 export const Route = createFileRoute("/(profile)/@{$username}/list/$slug")({
   staleTime: 1000 * 60 * 15, // 15 minutes
@@ -77,9 +77,11 @@ export const Route = createFileRoute("/(profile)/@{$username}/list/$slug")({
       objektList,
     };
   },
-  head: ({ loaderData }) => ({
-    meta: [seoTitle(loaderData?.objektList.name ?? `Objekt List`)],
-  }),
+  head: ({ loaderData }) =>
+    defineHead({
+      title: loaderData?.objektList.name ?? "Objekt List",
+      canonical: `/@${loaderData?.target.user?.username}/list/${loaderData?.objektList.id}`,
+    }),
 });
 
 function RouteComponent() {

@@ -14,11 +14,11 @@ import { ArtistProvider } from "@/hooks/use-artists";
 import { ProfileProvider } from "@/hooks/use-profile";
 import IndexRenderer from "@/components/objekt-index/index-renderer";
 import { objektIndexFrontendSchema } from "@/lib/universal/parsers";
-import { seoTitle } from "@/lib/seo";
 import {
   objektIndexBlockchainQuery,
   objektIndexTypesenseQuery,
 } from "@/lib/queries/objekt-queries";
+import { defineHead } from "@/lib/meta";
 
 export const Route = createFileRoute("/")({
   validateSearch: objektIndexFrontendSchema,
@@ -55,9 +55,7 @@ export const Route = createFileRoute("/")({
 
     return { artists };
   },
-  head: () => ({
-    meta: [seoTitle("Objekts")],
-  }),
+  head: () => defineHead({ title: "Objekts", canonical: "/" }),
 });
 
 function RouteComponent() {

@@ -7,11 +7,11 @@ import GravitySkeleton from "@/components/gravity/gravity-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import GravityProvider from "@/components/gravity/gravity-provider";
 import { fetchGravityDetails } from "@/lib/server/gravity";
-import { seoTitle } from "@/lib/seo";
 import { GravityNotSupportedError } from "@/lib/universal/gravity";
 import { Error } from "@/components/error-boundary";
 import { gravityPollDetailsQuery } from "@/lib/queries/gravity";
 import DynamicLiveChart from "@/components/gravity/dynamic-live-chart";
+import { defineHead } from "@/lib/meta";
 
 export const Route = createFileRoute("/gravity/$artist/$id")({
   staleTime: Infinity,
@@ -49,9 +49,11 @@ export const Route = createFileRoute("/gravity/$artist/$id")({
 
     return { artist, gravity, isPolygon, pollId: poll.id };
   },
-  head: ({ loaderData }) => ({
-    meta: [seoTitle(loaderData?.gravity.title ?? `Gravity`)],
-  }),
+  head: ({ loaderData }) =>
+    defineHead({
+      title: loaderData?.gravity.title ?? "Gravity",
+      canonical: `/gravity/${loaderData?.artist}/${loaderData?.gravity.id}`,
+    }),
 });
 
 function RouteComponent() {

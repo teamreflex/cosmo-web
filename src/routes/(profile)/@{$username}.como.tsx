@@ -2,13 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import CurrentMonth from "@/components/como/current-month";
 import { Error } from "@/components/error-boundary";
-import { seoTitle } from "@/lib/seo";
 import { artistsQuery, targetAccountQuery } from "@/lib/queries/core";
 import { fetchObjektsWithComoQuery } from "@/lib/queries/como";
 import ArtistIcon from "@/components/artist-icon";
 import ComoCalendar from "@/components/como/calendar";
 import Portal from "@/components/portal";
 import HelpDialog from "@/components/como/help-dialog";
+import { defineHead } from "@/lib/meta";
 
 export const Route = createFileRoute("/(profile)/@{$username}/como")({
   component: RouteComponent,
@@ -26,15 +26,13 @@ export const Route = createFileRoute("/(profile)/@{$username}/como")({
 
     return { target, artists };
   },
-  head: ({ loaderData }) => ({
-    meta: [
-      seoTitle(
-        loaderData?.target.user
-          ? `${loaderData.target.user.username}'s COMO`
-          : `COMO`,
-      ),
-    ],
-  }),
+  head: ({ loaderData }) =>
+    defineHead({
+      title: loaderData?.target.user
+        ? `${loaderData.target.user.username}'s COMO`
+        : "COMO",
+      canonical: `/@${loaderData?.target.user?.username}/como`,
+    }),
 });
 
 function RouteComponent() {

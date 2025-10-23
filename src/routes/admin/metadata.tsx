@@ -2,7 +2,7 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import InsertMetadata from "@/components/admin/metadata/insert-metadata";
 import { currentAccountQuery } from "@/lib/queries/core";
 import { fetchLatestMetadata } from "@/lib/server/objekts/metadata";
-import { seoTitle } from "@/lib/seo";
+import { defineHead } from "@/lib/meta";
 
 export const Route = createFileRoute("/admin/metadata")({
   staleTime: Infinity,
@@ -16,9 +16,8 @@ export const Route = createFileRoute("/admin/metadata")({
     const metadata = await fetchLatestMetadata();
     return { metadata };
   },
-  head: () => ({
-    meta: [seoTitle("Objekt Metadata")],
-  }),
+  head: () =>
+    defineHead({ title: "Objekt Metadata", canonical: "/admin/metadata" }),
   component: RouteComponent,
 });
 

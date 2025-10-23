@@ -5,7 +5,6 @@ import TransfersRenderer, {
 } from "@/components/transfers/transfers-renderer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { transfersFrontendSchema } from "@/lib/universal/parsers";
-import { seoTitle } from "@/lib/seo";
 import {
   artistsQuery,
   filterDataQuery,
@@ -14,6 +13,7 @@ import {
 } from "@/lib/queries/core";
 import { ArtistProvider } from "@/hooks/use-artists";
 import { transfersQuery } from "@/lib/queries/objekt-queries";
+import { defineHead } from "@/lib/meta";
 
 export const Route = createFileRoute("/(profile)/@{$username}/trades")({
   component: RouteComponent,
@@ -35,13 +35,13 @@ export const Route = createFileRoute("/(profile)/@{$username}/trades")({
 
     return { artists, selected, cosmo: target.cosmo };
   },
-  head: ({ loaderData }) => ({
-    meta: [
-      seoTitle(
-        loaderData?.cosmo ? `${loaderData.cosmo.username}'s Trades` : `Trades`,
-      ),
-    ],
-  }),
+  head: ({ loaderData }) =>
+    defineHead({
+      title: loaderData?.cosmo
+        ? `${loaderData.cosmo.username}'s Trades`
+        : "Trades",
+      canonical: `/@${loaderData?.cosmo.username}/trades`,
+    }),
 });
 
 function RouteComponent() {

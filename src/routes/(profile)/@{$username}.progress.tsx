@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { ErrorBoundary } from "react-error-boundary";
 import { Suspense } from "react";
 import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
-import { seoTitle } from "@/lib/seo";
 import {
   artistsQuery,
   currentAccountQuery,
@@ -23,6 +22,7 @@ import ProgressCharts from "@/components/progress/charts/progress-charts";
 import Portal from "@/components/portal";
 import HelpDialog from "@/components/progress/help-dialog";
 import { artistStatsQuery } from "@/lib/queries/progress";
+import { defineHead } from "@/lib/meta";
 
 export const Route = createFileRoute("/(profile)/@{$username}/progress")({
   component: RouteComponent,
@@ -45,15 +45,13 @@ export const Route = createFileRoute("/(profile)/@{$username}/progress")({
 
     return { artists, selected, target, account };
   },
-  head: ({ loaderData }) => ({
-    meta: [
-      seoTitle(
-        loaderData?.target.user
-          ? `${loaderData.target.user.username}'s Progress`
-          : `Progress`,
-      ),
-    ],
-  }),
+  head: ({ loaderData }) =>
+    defineHead({
+      title: loaderData?.target.user
+        ? `${loaderData.target.user.username}'s Progress`
+        : "Progress",
+      canonical: `/@${loaderData?.target.user?.username}/progress`,
+    }),
 });
 
 function RouteComponent() {

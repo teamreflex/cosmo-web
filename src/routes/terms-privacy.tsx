@@ -1,11 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { seoTitle } from "@/lib/seo";
+import { defineHead } from "@/lib/meta";
 
 export const Route = createFileRoute("/terms-privacy")({
-  head: () => ({
-    meta: [seoTitle("Terms & Privacy")],
-  }),
+  head: () =>
+    defineHead({ title: "Terms & Privacy", canonical: "/terms-privacy" }),
   component: TermsPrivacy,
 });
 

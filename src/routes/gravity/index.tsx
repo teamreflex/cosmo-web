@@ -7,7 +7,6 @@ import type { Gravity } from "@/lib/server/db/schema";
 import type { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
 import type { CosmoGravityType } from "@/lib/universal/cosmo/gravity";
 import type { PropsWithClassName } from "@/lib/utils";
-import { seoTitle } from "@/lib/seo";
 import { Skeleton } from "@/components/ui/skeleton";
 import SkeletonGradient from "@/components/skeleton/skeleton-overlay";
 import { Error } from "@/components/error-boundary";
@@ -19,6 +18,7 @@ import GravityTimestamp from "@/components/gravity/timestamp";
 import { Badge } from "@/components/ui/badge";
 import { artistsQuery, selectedArtistsQuery } from "@/lib/queries/core";
 import { fetchGravities } from "@/lib/server/gravity";
+import { defineHead } from "@/lib/meta";
 
 export const Route = createFileRoute("/gravity/")({
   loader: async ({ context }) => {
@@ -43,9 +43,7 @@ export const Route = createFileRoute("/gravity/")({
   component: RouteComponent,
   pendingComponent: PendingComponent,
   errorComponent: ErrorComponent,
-  head: () => ({
-    meta: [seoTitle("Gravity")],
-  }),
+  head: () => defineHead({ title: "Gravity", canonical: "/gravity" }),
 });
 
 function RouteComponent() {

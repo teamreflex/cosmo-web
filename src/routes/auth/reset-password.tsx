@@ -1,6 +1,7 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { z } from "zod";
 import ResetPassword from "@/components/auth/reset-password";
+import { defineHead } from "@/lib/meta";
 
 export const Route = createFileRoute("/auth/reset-password")({
   validateSearch: z.object({
@@ -17,6 +18,8 @@ export const Route = createFileRoute("/auth/reset-password")({
     };
   },
   component: RouteComponent,
+  head: () =>
+    defineHead({ title: "Reset Password", canonical: "/auth/reset-password" }),
 });
 
 function RouteComponent() {
