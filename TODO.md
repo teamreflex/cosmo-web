@@ -2,6 +2,7 @@
 - update documentation
 - move server code around so it's more isolated from RPC and queries
 
+- re-add sentry once SDK is updated
 - wait for start fix: https://github.com/TanStack/router/issues/5372
   - objekt list update
   - objekt list delete
