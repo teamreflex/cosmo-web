@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { ScrollArea } from "../ui/scroll-area";
-import { addObjektToList } from "./actions";
+import { $addObjektToList } from "./actions";
 import type { ObjektList } from "@/lib/server/db/schema";
 import type { MouseEvent } from "react";
 
@@ -82,7 +82,7 @@ function ListItem({
   onDone,
 }: ListItemProps) {
   const queryClient = useQueryClient();
-  const mutationFn = useServerFn(addObjektToList);
+  const mutationFn = useServerFn($addObjektToList);
   const mutation = useMutation({
     mutationFn,
     onSuccess() {

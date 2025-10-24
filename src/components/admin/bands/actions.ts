@@ -7,7 +7,7 @@ import { env } from "@/lib/env/server";
 /**
  * Update collections with band URLs.
  */
-export const saveBandUrls = createServerFn({ method: "POST" })
+export const $saveBandUrls = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
   .inputValidator(bandUrlRowSchema.array())
   .handler(async ({ data }) => {

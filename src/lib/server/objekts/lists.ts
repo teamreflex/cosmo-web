@@ -9,7 +9,7 @@ import { sanitizeUuid } from "@/lib/utils";
 /**
  * Fetch a single objekt list.
  */
-export const fetchObjektList = createServerFn({ method: "GET" })
+export const $fetchObjektList = createServerFn({ method: "GET" })
   .inputValidator(
     z.union([
       z.object({ id: z.string() }),
@@ -23,7 +23,7 @@ export const fetchObjektList = createServerFn({ method: "GET" })
 /**
  * Fetch a single objekt list with the user.
  */
-export const getObjektListWithUser = createServerFn({ method: "GET" })
+export const $getObjektListWithUser = createServerFn({ method: "GET" })
   .inputValidator(z.object({ id: z.string() }))
   .handler(async ({ data }) => {
     const sanitized = sanitizeUuid(data.id);

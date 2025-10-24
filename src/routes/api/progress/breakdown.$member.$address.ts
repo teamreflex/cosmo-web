@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { fetchProgressBreakdown } from "@/lib/server/progress";
+import { $fetchProgressBreakdown } from "@/lib/server/progress";
 import { cacheHeaders } from "@/lib/server/cache";
 
 export const Route = createFileRoute(
@@ -13,7 +13,7 @@ export const Route = createFileRoute(
        * Cached for 1 hour.
        */
       GET: async ({ params }) => {
-        const results = await fetchProgressBreakdown({
+        const results = await $fetchProgressBreakdown({
           data: {
             member: params.member,
             address: params.address,

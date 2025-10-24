@@ -28,7 +28,7 @@ type FetchObjektListEntries = {
 /**
  * Fetch objekts from the indexer with given filters.
  */
-export const fetchObjektListEntries = createServerFn({ method: "GET" })
+export const $fetchObjektListEntries = createServerFn({ method: "GET" })
   .inputValidator(
     objektListBackendSchema.extend({
       objektListId: z.uuid(),

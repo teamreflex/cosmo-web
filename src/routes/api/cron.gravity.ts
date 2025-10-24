@@ -12,7 +12,7 @@ import {
 } from "@/lib/server/db/schema";
 import { getProxiedToken } from "@/lib/server/handlers/withProxiedToken";
 import { chunk } from "@/lib/utils";
-import { fetchArtists } from "@/lib/queries/core";
+import { $fetchArtists } from "@/lib/queries/core";
 
 export const Route = createFileRoute("/api/cron/gravity")({
   server: {
@@ -29,7 +29,7 @@ export const Route = createFileRoute("/api/cron/gravity")({
         }
 
         // fetch all artists
-        const artists = await fetchArtists();
+        const artists = await $fetchArtists();
 
         // get a proxied token
         const token = await getProxiedToken();

@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Button } from "../ui/button";
-import { deleteObjektList } from "./actions";
+import { $deleteObjektList } from "./actions";
 import type { MouseEvent } from "react";
 import type { ObjektList } from "@/lib/server/db/schema";
 import {
@@ -27,7 +27,7 @@ type Props = {
 export default function DeleteList({ objektList }: Props) {
   const target = useProfileContext((ctx) => ctx.target);
   const queryClient = useQueryClient();
-  const mutationFn = useServerFn(deleteObjektList);
+  const mutationFn = useServerFn($deleteObjektList);
   const mutation = useMutation({
     mutationFn,
     onSuccess: () => {

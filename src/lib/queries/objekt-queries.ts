@@ -7,14 +7,14 @@ import type {
 } from "@/lib/universal/parsers";
 import type z from "zod";
 import { getTypesenseResults } from "@/lib/client/typesense";
-import { fetchObjektsIndex } from "@/lib/server/objekts/prefetching/objekt-index";
+import { $fetchObjektsIndex } from "@/lib/server/objekts/prefetching/objekt-index";
 import {
   PER_PAGE as BLOCKCHAIN_GROUPS_PER_PAGE,
-  fetchObjektsBlockchainGroups,
+  $fetchObjektsBlockchainGroups,
 } from "@/lib/server/objekts/prefetching/objekt-blockchain-groups";
-import { fetchObjektsBlockchain } from "@/lib/server/objekts/prefetching/objekt-blockchain";
-import { fetchObjektListEntries } from "@/lib/server/objekts/prefetching/objekt-list";
-import { fetchTransfers } from "@/lib/server/transfers";
+import { $fetchObjektsBlockchain } from "@/lib/server/objekts/prefetching/objekt-blockchain";
+import { $fetchObjektListEntries } from "@/lib/server/objekts/prefetching/objekt-list";
+import { $fetchTransfers } from "@/lib/server/transfers";
 import { normalizeFilters } from "@/lib/universal/parsers";
 
 /**
@@ -73,7 +73,7 @@ export function objektIndexBlockchainQuery(
       },
     ],
     queryFn: ({ pageParam = 0 }) => {
-      return fetchObjektsIndex({
+      return $fetchObjektsIndex({
         data: {
           ...searchParams,
           page: pageParam,
@@ -107,7 +107,7 @@ export function userCollectionBlockchainGroupsQuery(
       },
     ],
     queryFn: ({ pageParam = 1 }) => {
-      return fetchObjektsBlockchainGroups({
+      return $fetchObjektsBlockchainGroups({
         data: {
           ...searchParams,
           address,
@@ -145,7 +145,7 @@ export function userCollectionBlockchainQuery(
       },
     ],
     queryFn: ({ pageParam = 0 }) => {
-      return fetchObjektsBlockchain({
+      return $fetchObjektsBlockchain({
         data: {
           ...searchParams,
           address,
@@ -179,7 +179,7 @@ export function objektListQuery(
       },
     ],
     queryFn: ({ pageParam = 0 }) => {
-      return fetchObjektListEntries({
+      return $fetchObjektListEntries({
         data: {
           ...searchParams,
           objektListId,
@@ -214,7 +214,7 @@ export function transfersQuery(
       },
     ],
     queryFn: ({ pageParam = 0 }) => {
-      return fetchTransfers({
+      return $fetchTransfers({
         data: {
           ...searchParams,
           address,

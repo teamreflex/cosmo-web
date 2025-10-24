@@ -23,7 +23,7 @@ import {
   DialogTrigger,
 } from "../ui/dialog";
 import { Button } from "../ui/button";
-import { updateObjektList } from "./actions";
+import { $updateObjektList } from "./actions";
 import type z from "zod";
 import type { ObjektList } from "@/lib/server/db/schema";
 import { useUserState } from "@/hooks/use-user-state";
@@ -37,7 +37,7 @@ export default function UpdateList({ objektList }: Props) {
   const [open, setOpen] = useState(false);
   const { cosmo } = useUserState();
   const queryClient = useQueryClient();
-  const mutationFn = useServerFn(updateObjektList);
+  const mutationFn = useServerFn($updateObjektList);
   const mutation = useMutation({
     mutationFn,
     onSuccess: () => {

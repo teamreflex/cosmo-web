@@ -21,7 +21,7 @@ import { indexer } from "@/lib/server/db/indexer";
 /**
  * Fetch the progress breakdown for a given member and address.
  */
-export const fetchProgressBreakdown = createServerFn({ method: "GET" })
+export const $fetchProgressBreakdown = createServerFn({ method: "GET" })
   .inputValidator(
     z.object({
       member: z.string(),
@@ -53,7 +53,7 @@ export const fetchProgressBreakdown = createServerFn({ method: "GET" })
 /**
  * Fetch the progress leaderboard for a given member and filters.
  */
-export const fetchProgressLeaderboard = createServerFn({ method: "GET" })
+export const $fetchProgressLeaderboard = createServerFn({ method: "GET" })
   .inputValidator(
     z.object({
       member: z.string(),
@@ -97,7 +97,7 @@ export const fetchProgressLeaderboard = createServerFn({ method: "GET" })
  * Get objekts stats grouped by artist for a given address
  * Cached for 1 hour.
  */
-export const fetchArtistStatsByAddress = createServerFn({ method: "GET" })
+export const $fetchArtistStatsByAddress = createServerFn({ method: "GET" })
   .inputValidator(z.object({ address: z.string() }))
   .handler(async ({ data }) => {
     return await remember(

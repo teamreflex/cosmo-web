@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { fetchProgressLeaderboard } from "@/lib/server/progress";
+import { $fetchProgressLeaderboard } from "@/lib/server/progress";
 import { cacheHeaders } from "@/lib/server/cache";
 import { progressLeaderboardBackendSchema } from "@/lib/universal/parsers";
 
@@ -17,7 +17,7 @@ export const Route = createFileRoute("/api/progress/leaderboard/$member")({
         const url = new URL(request.url);
         const searchParams = url.searchParams;
 
-        const results = await fetchProgressLeaderboard({
+        const results = await $fetchProgressLeaderboard({
           data: {
             member: params.member,
             onlineType: searchParams.get("filter"),

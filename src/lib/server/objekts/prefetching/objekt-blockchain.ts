@@ -22,7 +22,7 @@ const PER_PAGE = 60;
 /**
  * Fetch a user's objekts from the indexer with given filters.
  */
-export const fetchObjektsBlockchain = createServerFn({ method: "GET" })
+export const $fetchObjektsBlockchain = createServerFn({ method: "GET" })
   .inputValidator(
     userCollectionBackendSchema.extend({
       address: z.string().min(1),

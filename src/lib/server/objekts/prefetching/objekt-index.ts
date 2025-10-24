@@ -20,7 +20,7 @@ const LIMIT = 60;
 /**
  * Fetch objekts from the indexer with given filters.
  */
-export const fetchObjektsIndex = createServerFn({ method: "GET" })
+export const $fetchObjektsIndex = createServerFn({ method: "GET" })
   .inputValidator(objektIndexBackendSchema)
   .handler(async ({ data }) => {
     let query = indexer

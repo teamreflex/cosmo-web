@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { setSelectedArtist } from "./actions";
+import { $setSelectedArtist } from "./actions";
 import type { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
 import { useArtists } from "@/hooks/use-artists";
 import { selectedArtistsQuery } from "@/lib/queries/core";
@@ -58,7 +58,7 @@ type ArtistItemProps = {
 
 export function ArtistItem({ artist, isSelected }: ArtistItemProps) {
   const queryClient = useQueryClient();
-  const mutationFn = useServerFn(setSelectedArtist);
+  const mutationFn = useServerFn($setSelectedArtist);
   const mutation = useMutation({
     mutationKey: ["set-selected-artist", artist.id],
     mutationFn,

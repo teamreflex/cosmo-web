@@ -13,7 +13,7 @@ import {
   FormItem,
   FormMessage,
 } from "../ui/form";
-import { updateSettings } from "./actions";
+import { $updateSettings } from "./actions";
 import type { PublicUser } from "@/lib/universal/auth";
 import type { z } from "zod";
 import { settingsSchema } from "@/lib/universal/schema/auth";
@@ -46,7 +46,7 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
   const { theme, setTheme } = useTheme();
   const queryClient = useQueryClient();
   const router = useRouter();
-  const mutationFn = useServerFn(updateSettings);
+  const mutationFn = useServerFn($updateSettings);
   const mutation = useMutation({
     mutationFn,
   });

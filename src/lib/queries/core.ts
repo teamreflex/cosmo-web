@@ -22,7 +22,7 @@ import * as artists from "@/artists";
 /**
  * Fetch the current session.
  */
-export const fetchCurrentUser = createServerFn({ method: "GET" }).handler(
+export const $fetchCurrentUser = createServerFn({ method: "GET" }).handler(
   async (): Promise<PublicUser | null> => {
     const headers = getRequestHeaders();
     const session = await auth.api.getSession({
@@ -41,7 +41,7 @@ export const fetchCurrentUser = createServerFn({ method: "GET" }).handler(
  * Fetch all unique collections, seasons, and classes.
  * Cached for 4 hours.
  */
-export const fetchFilterData = createServerFn({ method: "GET" }).handler(() =>
+export const $fetchFilterData = createServerFn({ method: "GET" }).handler(() =>
   remember("filter-data", 60 * 60 * 4, async () => {
     const [uniqueCollections, seasons, classes] = await Promise.all([
       fetchUniqueCollections(),
@@ -62,7 +62,7 @@ export const fetchFilterData = createServerFn({ method: "GET" }).handler(() =>
  */
 export const filterDataQuery = queryOptions({
   queryKey: ["filter-data"],
-  queryFn: fetchFilterData,
+  queryFn: $fetchFilterData,
   staleTime: Infinity,
   refetchOnWindowFocus: false,
   refetchOnMount: false,
@@ -77,7 +77,7 @@ type GetAccount = {
 /**
  * Fetch current user account.
  */
-export const fetchCurrentAccount = createServerFn({ method: "GET" }).handler(
+export const $fetchCurrentAccount = createServerFn({ method: "GET" }).handler(
   async (): Promise<GetAccount | null> => {
     const session = await auth.api.getSession({
       headers: getRequestHeaders(),
@@ -125,7 +125,7 @@ export const fetchCurrentAccount = createServerFn({ method: "GET" }).handler(
  */
 export const currentAccountQuery = queryOptions({
   queryKey: ["current-account"],
-  queryFn: fetchCurrentAccount,
+  queryFn: $fetchCurrentAccount,
   staleTime: Infinity,
   refetchOnWindowFocus: false,
   refetchOnMount: false,
@@ -134,7 +134,7 @@ export const currentAccountQuery = queryOptions({
 /**
  * Fetch the target account.
  */
-export const fetchTargetAccount = createServerFn({ method: "GET" })
+export const $fetchTargetAccount = createServerFn({ method: "GET" })
   .inputValidator(z.object({ identifier: z.string() }))
   .handler(async ({ data }): Promise<FullAccount> => {
     const account = await fetchFullAccount(data.identifier);
@@ -151,7 +151,7 @@ export const targetAccountQuery = (identifier: string) => {
   const lower = identifier.toLowerCase();
   return queryOptions({
     queryKey: ["target-account", lower],
-    queryFn: () => fetchTargetAccount({ data: { identifier: lower } }),
+    queryFn: () => $fetchTargetAccount({ data: { identifier: lower } }),
     staleTime: Infinity,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
@@ -161,7 +161,7 @@ export const targetAccountQuery = (identifier: string) => {
 /**
  * Fetch the artists.
  */
-export const fetchArtists = createServerFn({ method: "GET" }).handler(() => {
+export const $fetchArtists = createServerFn({ method: "GET" }).handler(() => {
   return [
     artists.tripleS,
     artists.ARTMS,
@@ -174,7 +174,7 @@ export const fetchArtists = createServerFn({ method: "GET" }).handler(() => {
  */
 export const artistsQuery = queryOptions({
   queryKey: ["artists"],
-  queryFn: fetchArtists,
+  queryFn: $fetchArtists,
   staleTime: Infinity,
   refetchOnWindowFocus: false,
   refetchOnMount: false,
@@ -183,7 +183,7 @@ export const artistsQuery = queryOptions({
 /**
  * Fetch the selected artists.
  */
-export const fetchSelectedArtists = createServerFn({ method: "GET" }).handler(
+export const $fetchSelectedArtists = createServerFn({ method: "GET" }).handler(
   () => {
     return fetchCookie<string[]>("artists") ?? [];
   },
@@ -194,7 +194,7 @@ export const fetchSelectedArtists = createServerFn({ method: "GET" }).handler(
  */
 export const selectedArtistsQuery = queryOptions({
   queryKey: ["selected-artists"],
-  queryFn: fetchSelectedArtists,
+  queryFn: $fetchSelectedArtists,
   staleTime: Infinity,
   refetchOnWindowFocus: false,
   refetchOnMount: false,

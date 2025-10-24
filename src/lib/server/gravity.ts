@@ -7,7 +7,7 @@ import { setResponseHeaders } from "@tanstack/react-start/server";
 import { findPoll } from "../client/gravity/util";
 import { GravityNotSupportedError } from "../universal/gravity";
 import { isEqual } from "../utils";
-import { fetchArtists } from "../queries/core";
+import { $fetchArtists } from "../queries/core";
 import { db } from "./db";
 import { fetchGravity, fetchPoll } from "./cosmo/gravity";
 import { getProxiedToken } from "./handlers/withProxiedToken";
@@ -21,7 +21,7 @@ import type { ValidArtist } from "../universal/cosmo/common";
 /**
  * Fetch full gravity details.
  */
-export const fetchGravityDetails = createServerFn({ method: "GET" })
+export const $fetchGravityDetails = createServerFn({ method: "GET" })
   .inputValidator(
     z.object({
       artist: z.string(),
@@ -30,7 +30,7 @@ export const fetchGravityDetails = createServerFn({ method: "GET" })
   )
   .handler(async ({ data }) => {
     // get artists
-    const artists = await fetchArtists();
+    const artists = await $fetchArtists();
 
     // perform quick lookup from database
     const info = await db.query.gravities.findFirst({
@@ -82,7 +82,7 @@ export const fetchGravityDetails = createServerFn({ method: "GET" })
 /**
  * Fetch all gravities and group them by artist.
  */
-export const fetchGravities = createServerFn({ method: "GET" }).handler(
+export const $fetchGravities = createServerFn({ method: "GET" }).handler(
   async () => {
     const data = await db
       .select()
@@ -96,7 +96,7 @@ export const fetchGravities = createServerFn({ method: "GET" }).handler(
  * Fetch historical data for a Polygon gravity.
  * Cached for 30 days.
  */
-export const fetchPolygonGravity = createServerFn({ method: "GET" })
+export const $fetchPolygonGravity = createServerFn({ method: "GET" })
   .inputValidator(
     z.object({
       artist: z.string(),
@@ -208,7 +208,7 @@ export const fetchCachedGravity = createServerOnlyFn(
 /**
  * Fetch a poll, and if it's in the past, cache it for 30 days.
  */
-export const fetchCachedPoll = createServerFn({ method: "GET" })
+export const $fetchCachedPoll = createServerFn({ method: "GET" })
   .inputValidator(
     z.object({
       artist: z.string(),

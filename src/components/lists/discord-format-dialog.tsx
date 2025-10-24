@@ -21,7 +21,7 @@ import {
 } from "../ui/select";
 import { Button } from "../ui/button";
 import { ScrollArea } from "../ui/scroll-area";
-import { generateDiscordList } from "./actions";
+import { $generateDiscordList } from "./actions";
 import type { ObjektList } from "@/lib/server/db/schema";
 
 type Props = {
@@ -35,7 +35,7 @@ export default function DiscordFormatDialog({
   onOpenChange,
   objektLists,
 }: Props) {
-  const mutationFn = useServerFn(generateDiscordList);
+  const mutationFn = useServerFn($generateDiscordList);
   const mutation = useMutation({
     mutationFn,
     onSuccess: (data) => {

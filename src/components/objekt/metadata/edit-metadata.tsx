@@ -12,7 +12,7 @@ import {
   FormItem,
   FormMessage,
 } from "../../ui/form";
-import { updateObjektMetadata } from "../actions";
+import { $updateObjektMetadata } from "../actions";
 import type { z } from "zod";
 import type { ObjektMetadata } from "@/lib/universal/objekts";
 import { metadataObjectSchema } from "@/lib/universal/schema/admin";
@@ -25,7 +25,7 @@ type Props = {
 
 export default function EditMetadata(props: Props) {
   const queryClient = useQueryClient();
-  const mutationFn = useServerFn(updateObjektMetadata);
+  const mutationFn = useServerFn($updateObjektMetadata);
   const mutation = useMutation({
     mutationFn,
     onSuccess: () => {

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation } from "@tanstack/react-query";
-import { saveMetadata } from "./actions";
+import { $saveMetadata } from "./actions";
 import type { MetadataRow } from "@/lib/universal/schema/admin";
 import { metadataInputSchema } from "@/lib/universal/schema/admin";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,7 @@ export default function InsertMetadata() {
   const [rows, setRows] = useState<MetadataRow[]>([
     { collectionId: "", description: "" },
   ]);
-  const mutationFn = useServerFn(saveMetadata);
+  const mutationFn = useServerFn($saveMetadata);
   const mutation = useMutation({
     mutationFn,
     onSuccess: (data) => {

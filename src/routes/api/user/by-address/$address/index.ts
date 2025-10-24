@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { count, eq } from "drizzle-orm";
 import { env } from "@/lib/env/server";
-import { fetchObjektsWithComo } from "@/lib/server/como";
+import { $fetchObjektsWithComo } from "@/lib/server/como";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import { collections, objekts } from "@/lib/server/db/indexer/schema";
@@ -59,7 +59,7 @@ async function getCalendar(address: string, now: string | null) {
   const timestamp = now ? parseInt(now) : new Date().getTime();
   const date = new Date(timestamp < 10000000000 ? timestamp * 1000 : timestamp);
 
-  const result = await fetchObjektsWithComo({
+  const result = await $fetchObjektsWithComo({
     data: { address },
   });
   return buildCalendar(date, result);

@@ -17,7 +17,11 @@ import type { QueryClient } from "@tanstack/react-query";
 import Navbar from "@/components/navbar/navbar";
 import TailwindIndicator from "@/components/tailwind-indicator";
 import { env } from "@/lib/env/client";
-import { currentAccountQuery } from "@/lib/queries/core";
+import {
+  artistsQuery,
+  currentAccountQuery,
+  selectedArtistsQuery,
+} from "@/lib/queries/core";
 import { systemStatusQuery } from "@/lib/queries/system";
 import { Button } from "@/components/ui/button";
 
@@ -30,6 +34,8 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   loader({ context }) {
     context.queryClient.prefetchQuery(currentAccountQuery);
     context.queryClient.prefetchQuery(systemStatusQuery);
+    context.queryClient.prefetchQuery(selectedArtistsQuery);
+    context.queryClient.prefetchQuery(artistsQuery);
   },
   component: RootComponent,
   notFoundComponent: NotFoundComponent,

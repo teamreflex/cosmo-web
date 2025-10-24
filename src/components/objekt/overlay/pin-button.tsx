@@ -2,7 +2,7 @@ import { Loader2, Pin, PinOff } from "lucide-react";
 import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { pinObjekt, unpinObjekt } from "@/components/collection/actions";
+import { $pinObjekt, $unpinObjekt } from "@/components/collection/actions";
 import { track } from "@/lib/utils";
 import { useProfileContext } from "@/hooks/use-profile";
 
@@ -27,7 +27,7 @@ type ButtonProps = {
 
 function PinButton(props: ButtonProps) {
   const addPin = useProfileContext((ctx) => ctx.addPin);
-  const mutationFn = useServerFn(pinObjekt);
+  const mutationFn = useServerFn($pinObjekt);
   const mutation = useMutation({
     mutationFn,
     onSuccess: (data) => {
@@ -59,7 +59,7 @@ function PinButton(props: ButtonProps) {
 
 function UnpinButton(props: ButtonProps) {
   const removePin = useProfileContext((ctx) => ctx.removePin);
-  const mutationFn = useServerFn(unpinObjekt);
+  const mutationFn = useServerFn($unpinObjekt);
   const mutation = useMutation({
     mutationFn,
     onSuccess: () => {

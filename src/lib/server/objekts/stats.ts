@@ -157,7 +157,7 @@ function processRawStats(rawStats: RawStats[], referenceHours: string[]) {
  * Get the stats for the fixed 24-hour window.
  * Cached for 2 hours, but a cron job flushes the cache every hour.
  */
-export const fetchObjektStats = createServerFn({ method: "GET" }).handler(() =>
+export const $fetchObjektStats = createServerFn({ method: "GET" }).handler(() =>
   remember(`objekt-stats`, 60 * 60 * 2, async (): Promise<ObjektStats> => {
     const { start, end } = get24HourWindow();
     const hourlyTimestamps = timestamps();

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { env } from "@/lib/env/server";
-import { fetchObjektsWithComo } from "@/lib/server/como";
+import { $fetchObjektsWithComo } from "@/lib/server/como";
 import { buildCalendar } from "@/lib/universal/como";
 
 export const Route = createFileRoute("/api/user/by-address/$address/como")({
@@ -27,7 +27,7 @@ export const Route = createFileRoute("/api/user/by-address/$address/como")({
           timestamp < 10000000000 ? timestamp * 1000 : timestamp,
         );
 
-        const objekts = await fetchObjektsWithComo({
+        const objekts = await $fetchObjektsWithComo({
           data: { address: params.address },
         });
         const calendar = buildCalendar(date, objekts);

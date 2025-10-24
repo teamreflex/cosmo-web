@@ -19,7 +19,7 @@ interface ObjektWithCollection extends Objekt {
  * Fetch all pins for the given user.
  * Cached for 1 day.
  */
-export const fetchPins = createServerFn({ method: "GET" })
+export const $fetchPins = createServerFn({ method: "GET" })
   .inputValidator(z.object({ username: z.string() }))
   .handler(async ({ data }): Promise<CosmoObjekt[]> => {
     const tag = pinCacheKey(data.username);

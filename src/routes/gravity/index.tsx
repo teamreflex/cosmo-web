@@ -17,7 +17,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import GravityTimestamp from "@/components/gravity/timestamp";
 import { Badge } from "@/components/ui/badge";
 import { artistsQuery, selectedArtistsQuery } from "@/lib/queries/core";
-import { fetchGravities } from "@/lib/server/gravity";
+import { $fetchGravities } from "@/lib/server/gravity";
 import { defineHead } from "@/lib/meta";
 
 export const Route = createFileRoute("/gravity/")({
@@ -50,7 +50,7 @@ function RouteComponent() {
   const { artists, selected, toRender } = Route.useLoaderData();
   const { data: gravities } = useSuspenseQuery({
     ...gravitiesIndexQuery,
-    queryFn: useServerFn(fetchGravities),
+    queryFn: useServerFn($fetchGravities),
   });
 
   return (

@@ -6,7 +6,7 @@ import type { ErrorComponentProps } from "@tanstack/react-router";
 import GravitySkeleton from "@/components/gravity/gravity-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import GravityProvider from "@/components/gravity/gravity-provider";
-import { fetchGravityDetails } from "@/lib/server/gravity";
+import { $fetchGravityDetails } from "@/lib/server/gravity";
 import { GravityNotSupportedError } from "@/lib/universal/gravity";
 import { Error } from "@/components/error-boundary";
 import { gravityPollDetailsQuery } from "@/lib/queries/gravity";
@@ -21,7 +21,7 @@ export const Route = createFileRoute("/gravity/$artist/$id")({
   notFoundComponent: NotFoundComponent,
   loader: async ({ context, params }) => {
     // fetch everything in one round trip
-    const { artist, gravity, poll, isPolygon } = await fetchGravityDetails({
+    const { artist, gravity, poll, isPolygon } = await $fetchGravityDetails({
       data: {
         artist: params.artist,
         id: Number(params.id),

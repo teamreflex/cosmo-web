@@ -9,7 +9,7 @@ import { adminMiddleware } from "@/lib/server/middlewares";
 /**
  * Bulk inserts objekt metadata.
  */
-export const saveMetadata = createServerFn({ method: "POST" })
+export const $saveMetadata = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
   .inputValidator(
     z.object({

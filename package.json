@@ -19,7 +19,7 @@
     "env": "dotenv -e .env.local"
   },
   "dependencies": {
-    "@aws-sdk/client-ses": "^3.914.0",
+    "@aws-sdk/client-ses": "^3.916.0",
     "@hookform/resolvers": "^5.2.2",
     "@neondatabase/serverless": "^1.0.2",
     "@sentry/tanstackstart-react": "^10.21.0",
@@ -27,12 +27,12 @@
     "@tabler/icons-react": "^3.35.0",
     "@tanstack/react-devtools": "^0.7.7",
     "@tanstack/react-query": "^5.90.5",
-    "@tanstack/react-router": "^1.133.22",
-    "@tanstack/react-router-devtools": "^1.133.22",
-    "@tanstack/react-router-ssr-query": "^1.133.22",
-    "@tanstack/react-start": "^1.133.22",
+    "@tanstack/react-router": "^1.133.25",
+    "@tanstack/react-router-devtools": "^1.133.25",
+    "@tanstack/react-router-ssr-query": "^1.133.25",
+    "@tanstack/react-start": "^1.133.26",
     "@tanstack/react-virtual": "^3.13.12",
-    "@tanstack/router-plugin": "^1.133.22",
+    "@tanstack/router-plugin": "^1.133.25",
     "@upstash/ratelimit": "^2.0.6",
     "@upstash/redis": "^1.35.6",
     "@vercel/functions": "^3.1.4",
@@ -64,7 +64,7 @@
     "typesense": "^2.1.0",
     "usehooks-ts": "^3.1.1",
     "vaul": "^1.1.2",
-    "viem": "^2.38.3",
+    "viem": "^2.38.4",
     "wagmi": "^2.18.2",
     "zod": "^4.1.12",
     "zustand": "^5.0.8"
@@ -101,7 +101,7 @@
     "typescript-eslint": "^8.46.2",
     "vite": "^7.1.12",
     "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^4.0.1"
+    "vitest": "^4.0.2"
   },
   "pnpm": {
     "overrides": {

@@ -2,7 +2,7 @@ import { ListX, Loader2 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
-import { removeObjektFromList } from "./actions";
+import { $removeObjektFromList } from "./actions";
 import type { ObjektList } from "@/lib/server/db/schema";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 
@@ -14,7 +14,7 @@ type Props = {
 
 export default function RemoveFromList({ id, collection, objektList }: Props) {
   const queryClient = useQueryClient();
-  const mutationFn = useServerFn(removeObjektFromList);
+  const mutationFn = useServerFn($removeObjektFromList);
   const mutation = useMutation({
     mutationFn,
     onSuccess() {

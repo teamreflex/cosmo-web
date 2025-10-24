@@ -10,7 +10,7 @@ import {
   selectedArtistsQuery,
   targetAccountQuery,
 } from "@/lib/queries/core";
-import { fetchObjektList } from "@/lib/server/objekts/lists";
+import { $fetchObjektList } from "@/lib/server/objekts/lists";
 import { UserStateProvider } from "@/hooks/use-user-state";
 import { ArtistProvider } from "@/hooks/use-artists";
 import { ProfileProvider } from "@/hooks/use-profile";
@@ -45,7 +45,7 @@ export const Route = createFileRoute("/(profile)/@{$username}/list/$slug")({
     }
 
     // find objekt list
-    const objektList = await fetchObjektList({
+    const objektList = await $fetchObjektList({
       data: {
         userId: target.user.id,
         slug: params.slug,

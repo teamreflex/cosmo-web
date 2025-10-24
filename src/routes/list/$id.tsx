@@ -10,7 +10,7 @@ import {
   filterDataQuery,
   selectedArtistsQuery,
 } from "@/lib/queries/core";
-import { getObjektListWithUser } from "@/lib/server/objekts/lists";
+import { $getObjektListWithUser } from "@/lib/server/objekts/lists";
 import { objektListQuery } from "@/lib/queries/objekt-queries";
 import { UserStateProvider } from "@/hooks/use-user-state";
 import { ArtistProvider } from "@/hooks/use-artists";
@@ -49,7 +49,7 @@ export const Route = createFileRoute("/list/$id")({
     const [artists, account, objektListWithUser] = await Promise.all([
       context.queryClient.ensureQueryData(artistsQuery),
       context.queryClient.ensureQueryData(currentAccountQuery),
-      getObjektListWithUser({ data: { id: sanitizedId } }),
+      $getObjektListWithUser({ data: { id: sanitizedId } }),
     ]);
 
     if (!objektListWithUser) {

@@ -13,7 +13,7 @@ import { settingsSchema } from "@/lib/universal/schema/auth";
 /**
  * Updates the user's settings.
  */
-export const updateSettings = createServerFn({ method: "POST" })
+export const $updateSettings = createServerFn({ method: "POST" })
   .middleware([authenticatedMiddleware])
   .inputValidator(settingsSchema)
   .handler(async ({ data }) => {
@@ -29,7 +29,7 @@ export const updateSettings = createServerFn({ method: "POST" })
 /**
  * Verify the user's COSMO account.
  */
-export const verifyCosmo = createServerFn({ method: "POST" })
+export const $verifyCosmo = createServerFn({ method: "POST" })
   .middleware([authenticatedMiddleware])
   .inputValidator(verifyCosmoSchema)
   .handler(async ({ data, context }) => {

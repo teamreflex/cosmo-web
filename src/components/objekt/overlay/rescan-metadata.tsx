@@ -2,7 +2,7 @@ import { toast } from "sonner";
 import { RefreshCcw } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { rescanObjektMetadata } from "../actions";
+import { $rescanObjektMetadata } from "../actions";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 
 type Props = {
@@ -11,7 +11,7 @@ type Props = {
 };
 
 export default function RescanMetadata({ collection, token }: Props) {
-  const mutationFn = useServerFn(rescanObjektMetadata);
+  const mutationFn = useServerFn($rescanObjektMetadata);
   const mutation = useMutation({
     mutationFn,
     onSuccess() {

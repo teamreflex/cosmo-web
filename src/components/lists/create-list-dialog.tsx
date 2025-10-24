@@ -22,7 +22,7 @@ import {
   FormLabel,
   FormMessage,
 } from "../ui/form";
-import { createObjektList } from "./actions";
+import { $createObjektList } from "./actions";
 import type z from "zod";
 import { track } from "@/lib/utils";
 import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
@@ -35,7 +35,7 @@ type Props = {
 
 export default function CreateListDialog(props: Props) {
   const queryClient = useQueryClient();
-  const mutationFn = useServerFn(createObjektList);
+  const mutationFn = useServerFn($createObjektList);
   const mutation = useMutation({
     mutationFn,
     onSuccess: (result) => {

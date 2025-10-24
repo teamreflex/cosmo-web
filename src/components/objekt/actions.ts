@@ -14,7 +14,7 @@ import { env } from "@/lib/env/server";
 /**
  * Update an objekt's metadata.
  */
-export const updateObjektMetadata = createServerFn({ method: "POST" })
+export const $updateObjektMetadata = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
   .inputValidator(metadataObjectSchema)
   .handler(async ({ data, context }) => {
@@ -40,7 +40,7 @@ export const updateObjektMetadata = createServerFn({ method: "POST" })
 /**
  * Rescan an objekt's metadata.
  */
-export const rescanObjektMetadata = createServerFn({ method: "POST" })
+export const $rescanObjektMetadata = createServerFn({ method: "POST" })
   .middleware([authenticatedMiddleware])
   .inputValidator(z.object({ tokenId: z.string() }))
   .handler(async ({ data }) => {

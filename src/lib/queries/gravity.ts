@@ -1,13 +1,13 @@
 import { queryOptions } from "@tanstack/react-query";
 import {
-  fetchCachedPoll,
-  fetchGravities,
-  fetchPolygonGravity,
+  $fetchCachedPoll,
+  $fetchGravities,
+  $fetchPolygonGravity,
 } from "../server/gravity";
 
 export const gravitiesIndexQuery = queryOptions({
   queryKey: ["gravities"],
-  queryFn: fetchGravities,
+  queryFn: $fetchGravities,
 });
 
 export type GravityPollDetailsParams = {
@@ -30,7 +30,7 @@ export const gravityPollDetailsQuery = (params: GravityPollDetailsParams) =>
       },
     ],
     queryFn: () =>
-      fetchCachedPoll({
+      $fetchCachedPoll({
         data: {
           artist: params.artistName,
           gravityId: params.gravityId,
@@ -46,7 +46,7 @@ export const polygonGravityQuery = (artist: string, id: number) =>
   queryOptions({
     queryKey: ["gravity", "polygon", artist, id],
     queryFn: () =>
-      fetchPolygonGravity({
+      $fetchPolygonGravity({
         data: {
           artist,
           id,

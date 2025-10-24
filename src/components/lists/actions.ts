@@ -1,5 +1,5 @@
 import { and, eq } from "drizzle-orm";
-import { createServerFn } from "@tanstack/react-start";
+import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
 import { redirect } from "@tanstack/react-router";
 import {
   addObjektToListSchema,
@@ -12,12 +12,12 @@ import {
 import type { Collection } from "@/lib/server/db/indexer/schema";
 import type { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import type { ObjektListEntry } from "@/lib/server/db/schema";
-import { fetchObjektList } from "@/lib/server/objekts/lists";
+import { $fetchObjektList } from "@/lib/server/objekts/lists";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import { objektListEntries, objektLists } from "@/lib/server/db/schema";
 import { authenticatedMiddleware } from "@/lib/server/middlewares";
-import { fetchArtists } from "@/lib/queries/core";
+import { $fetchArtists } from "@/lib/queries/core";
 
 function createSlug(name: string) {
   return name.trim().toLowerCase().replace(/ /g, "-");
@@ -26,14 +26,14 @@ function createSlug(name: string) {
 /**
  * Create a new objekt list.
  */
-export const createObjektList = createServerFn({ method: "POST" })
+export const $createObjektList = createServerFn({ method: "POST" })
   .inputValidator(createObjektListSchema)
   .middleware([authenticatedMiddleware])
   .handler(async ({ data, context }) => {
     const slug = createSlug(data.name);
 
     // check if the slug has already been used
-    const list = await fetchObjektList({
+    const list = await $fetchObjektList({
       data: {
         userId: context.session.session.userId,
         slug,
@@ -63,7 +63,7 @@ export const createObjektList = createServerFn({ method: "POST" })
 /**
  * Update an objekt list.
  */
-export const updateObjektList = createServerFn({ method: "POST" })
+export const $updateObjektList = createServerFn({ method: "POST" })
   .inputValidator(updateObjektListSchema)
   .middleware([authenticatedMiddleware])
   .handler(async ({ data, context }) => {
@@ -121,7 +121,7 @@ export const updateObjektList = createServerFn({ method: "POST" })
 /**
  * Delete an objekt list.
  */
-export const deleteObjektList = createServerFn({ method: "POST" })
+export const $deleteObjektList = createServerFn({ method: "POST" })
   .inputValidator(deleteObjektListSchema)
   .middleware([authenticatedMiddleware])
   .handler(async ({ data, context }) => {
@@ -140,7 +140,7 @@ export const deleteObjektList = createServerFn({ method: "POST" })
 /**
  * Add an objekt to a list
  */
-export const addObjektToList = createServerFn({ method: "POST" })
+export const $addObjektToList = createServerFn({ method: "POST" })
   .inputValidator(addObjektToListSchema)
   .middleware([authenticatedMiddleware])
   .handler(async ({ data, context }) => {
@@ -157,7 +157,7 @@ export const addObjektToList = createServerFn({ method: "POST" })
 /**
  * Remove an objekt from a list
  */
-export const removeObjektFromList = createServerFn({ method: "POST" })
+export const $removeObjektFromList = createServerFn({ method: "POST" })
   .inputValidator(removeObjektFromListSchema)
   .middleware([authenticatedMiddleware])
   .handler(async ({ data, context }) => {
@@ -178,7 +178,7 @@ export const removeObjektFromList = createServerFn({ method: "POST" })
 /**
  * Generate a Discord have/want list.
  */
-export const generateDiscordList = createServerFn({ method: "POST" })
+export const $generateDiscordList = createServerFn({ method: "POST" })
   .inputValidator(generateDiscordListSchema)
   .middleware([authenticatedMiddleware])
   .handler(async ({ data, context }) => {
@@ -228,7 +228,7 @@ export const generateDiscordList = createServerFn({ method: "POST" })
     });
 
     // get artists for member ordering
-    const artists = await fetchArtists();
+    const artists = await $fetchArtists();
 
     // map into discord format
     const haveCollections = format(collections, have.entries, artists);
@@ -327,15 +327,15 @@ function format(
 /**
  * Assert the user owns the list.
  */
-async function assertUserOwnsList(id: string, userId: string) {
-  const list = await db.query.objektLists.findFirst({
-    where: {
-      id,
-      userId,
-    },
-  });
+const assertUserOwnsList = createServerOnlyFn(
+  async (id: string, userId: string) => {
+    const count = await db.$count(
+      objektLists,
+      and(eq(objektLists.id, id), eq(objektLists.userId, userId)),
+    );
 
-  if (!list) {
-    throw new Error("You do not have access to this list");
-  }
-}
+    if (count === 0) {
+      throw new Error("You do not have access to this list");
+    }
+  },
+);

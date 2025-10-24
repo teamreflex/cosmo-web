@@ -6,12 +6,12 @@ import { indexer } from "./db/indexer";
 import { collections, objekts } from "./db/indexer/schema";
 import { remember } from "./cache";
 import type { ComoBalance, ObjektWithCollection } from "@/lib/universal/como";
-import { fetchArtists } from "@/lib/queries/core";
+import { $fetchArtists } from "@/lib/queries/core";
 
 /**
  * Fetch incoming transfers for Special & Premier objekts for a given address
  */
-export const fetchObjektsWithComo = createServerFn({ method: "GET" })
+export const $fetchObjektsWithComo = createServerFn({ method: "GET" })
   .inputValidator(z.object({ address: z.string() }))
   .handler(async ({ data }): Promise<ObjektWithCollection[]> => {
     return await indexer
@@ -47,11 +47,11 @@ export const fetchObjektsWithComo = createServerFn({ method: "GET" })
  * Fetch ERC20 token balances from Alchemy.
  * Cached for 15 minutes.
  */
-export const fetchTokenBalances = createServerFn({ method: "GET" })
+export const $fetchTokenBalances = createServerFn({ method: "GET" })
   .inputValidator(z.object({ address: z.string() }))
   .handler(async ({ data }): Promise<ComoBalance[]> => {
     return remember(`como-balances:${data.address}`, 60 * 15, async () => {
-      const artists = await fetchArtists();
+      const artists = await $fetchArtists();
       const balances = await indexer.query.comoBalances.findMany({
         where: {
           owner: addr(data.address),

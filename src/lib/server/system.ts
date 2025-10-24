@@ -61,7 +61,7 @@ type FinalSystemStatus = {
  * - over 1800 but within 3600 blocks / 60 minutes: degraded
  * - more than 3600 blocks / 60 minutes: down
  */
-export const fetchSystemStatus = createServerFn().handler(async () => {
+export const $fetchSystemStatus = createServerFn().handler(async () => {
   return await remember(
     `system-status`,
     60,

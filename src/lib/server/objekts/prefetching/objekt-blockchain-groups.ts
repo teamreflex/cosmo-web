@@ -27,7 +27,7 @@ export const PER_PAGE = 30;
 /**
  * Fetch a user's collection groups from the indexer with given filters.
  */
-export const fetchObjektsBlockchainGroups = createServerFn({ method: "GET" })
+export const $fetchObjektsBlockchainGroups = createServerFn({ method: "GET" })
   .inputValidator(
     userCollectionBackendSchema.extend({
       address: z.string().min(1),

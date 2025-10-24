@@ -3,7 +3,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation } from "@tanstack/react-query";
-import { saveBandUrls } from "./actions";
+import { $saveBandUrls } from "./actions";
 import type { BandUrlRow } from "@/lib/universal/schema/admin";
 import { bandUrlInputSchema } from "@/lib/universal/schema/admin";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,7 @@ export default function InsertBands() {
   const [items, setItems] = useState<BandUrlRow[]>([
     { slug: "", bandImageUrl: "" },
   ]);
-  const mutationFn = useServerFn(saveBandUrls);
+  const mutationFn = useServerFn($saveBandUrls);
   const mutation = useMutation({
     mutationFn,
     onSuccess: () => {

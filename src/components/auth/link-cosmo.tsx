@@ -23,7 +23,7 @@ import {
   FormItem,
   FormMessage,
 } from "../ui/form";
-import { verifyCosmo } from "./actions";
+import { $verifyCosmo } from "./actions";
 import type { ReactNode } from "react";
 import type { z } from "zod";
 import type { AuthTicket, QueryTicket } from "@/lib/universal/cosmo/qr-auth";
@@ -273,7 +273,7 @@ type OTPProps = {
 
 function OTP({ ticket }: OTPProps) {
   const ctx = useContext(LinkCosmoContext);
-  const mutationFn = useServerFn(verifyCosmo);
+  const mutationFn = useServerFn($verifyCosmo);
   const mutation = useMutation({
     mutationFn,
     onSuccess() {
