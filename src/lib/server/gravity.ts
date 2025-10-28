@@ -34,7 +34,7 @@ export async function fetchPolygonGravity(artist: ValidArtist, id: number) {
       const { accessToken } = await getProxiedToken();
 
       // 2. fetch gravity from cosmo
-      const gravity = await fetchGravity(id);
+      const gravity = await fetchGravity(id, accessToken);
       if (!gravity) {
         throw new GravityMissingError();
       }
@@ -77,17 +77,20 @@ export async function fetchPolygonGravity(artist: ValidArtist, id: number) {
               blockNumber: vote.blockNumber,
               username: vote.cosmoAccount?.username,
               hash: vote.hash,
-            } satisfies RevealedVote)
+            }) satisfies RevealedVote
         )
         .filter((vote) => vote.candidateId !== null)
         .sort((a, b) => b.comoAmount - a.comoAmount);
 
       // 6. aggregate como by candidate
-      const comoByCandidate = revealedVotes.reduce((acc, vote) => {
-        const id = vote.candidateId.toString();
-        acc[id] = (acc[id] ?? 0) + vote.comoAmount;
-        return acc;
-      }, {} as Record<string, number>);
+      const comoByCandidate = revealedVotes.reduce(
+        (acc, vote) => {
+          const id = vote.candidateId.toString();
+          acc[id] = (acc[id] ?? 0) + vote.comoAmount;
+          return acc;
+        },
+        {} as Record<string, number>
+      );
 
       // 7. calculate total como used
       const totalComoUsed = revealedVotes.reduce((acc, vote) => {
@@ -107,15 +110,20 @@ export async function fetchCachedGravity(
   id: number,
   isPast: boolean
 ) {
+  async function _gravity(id: number) {
+    const { accessToken } = await getProxiedToken();
+    return await fetchGravity(id, accessToken);
+  }
+
   if (isPast) {
     return await remember(
       `gravity:${artist}:${id}`,
       60 * 60 * 24 * 30, // 30 days
-      () => fetchGravity(id)
+      () => _gravity(id)
     );
   }
 
-  return await fetchGravity(id);
+  return await _gravity(id);
 }
 
 /**
