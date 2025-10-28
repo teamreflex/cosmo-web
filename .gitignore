@@ -11,11 +11,9 @@
 # tanstack
 dist
 dist-ssr
-.env
 .nitro
 .tanstack
 .output
-.vinxi
 
 # next
 .next/
@@ -34,7 +32,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
-.env*.local
+.env.*
 .env
 
 # vercel
