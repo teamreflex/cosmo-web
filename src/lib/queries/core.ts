@@ -3,10 +3,10 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeaders } from "@tanstack/react-start/server";
 import { notFound } from "@tanstack/react-router";
 import { z } from "zod";
+import { $fetchArtists } from "../server/artists";
 import type { PublicUser } from "@/lib/universal/auth";
 import type { FullAccount, PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import type { ObjektList } from "@/lib/server/db/schema";
-import type { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import {
   fetchUniqueClasses,
   fetchUniqueCollections,
@@ -17,7 +17,6 @@ import { db } from "@/lib/server/db";
 import { auth, toPublicUser } from "@/lib/server/auth";
 import { fetchFullAccount, toPublicCosmo } from "@/lib/server/cosmo-accounts";
 import { fetchCookie } from "@/lib/server/cookies";
-import * as artists from "@/artists";
 
 /**
  * Fetch the current session.
@@ -157,17 +156,6 @@ export const targetAccountQuery = (identifier: string) => {
     refetchOnMount: false,
   });
 };
-
-/**
- * Fetch the artists.
- */
-export const $fetchArtists = createServerFn({ method: "GET" }).handler(() => {
-  return [
-    artists.tripleS,
-    artists.ARTMS,
-    artists.idntt,
-  ] satisfies CosmoArtistWithMembersBFF[];
-});
 
 /**
  * Fetch the artists.

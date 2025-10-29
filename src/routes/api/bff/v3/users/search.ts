@@ -6,7 +6,7 @@ import { cacheAccounts } from "@/lib/server/cosmo-accounts";
 import { search } from "@/lib/server/cosmo/user";
 import { db } from "@/lib/server/db";
 import { cosmoAccounts } from "@/lib/server/db/schema";
-import { getProxiedToken } from "@/lib/server/handlers/withProxiedToken";
+import { getProxiedToken } from "@/lib/server/proxied-token";
 
 export const Route = createFileRoute("/api/bff/v3/users/search")({
   server: {

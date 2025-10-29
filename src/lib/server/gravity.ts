@@ -7,16 +7,16 @@ import { setResponseHeaders } from "@tanstack/react-start/server";
 import { findPoll } from "../client/gravity/util";
 import { GravityNotSupportedError } from "../universal/gravity";
 import { isEqual } from "../utils";
-import { $fetchArtists } from "../queries/core";
 import { db } from "./db";
 import { fetchGravity, fetchPoll } from "./cosmo/gravity";
-import { getProxiedToken } from "./handlers/withProxiedToken";
+import { getProxiedToken } from "./proxied-token";
 import { cacheHeaders, remember } from "./cache";
 import { indexer } from "./db/indexer";
 import { gravities } from "./db/schema";
 import type { GravityVote } from "../universal/gravity";
 import type { RevealedVote } from "../client/gravity/polygon/types";
 import type { ValidArtist } from "../universal/cosmo/common";
+import { $fetchArtists } from "@/lib/server/artists";
 
 /**
  * Fetch full gravity details.

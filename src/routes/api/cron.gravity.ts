@@ -10,9 +10,9 @@ import {
   gravityPollCandidates,
   gravityPolls,
 } from "@/lib/server/db/schema";
-import { getProxiedToken } from "@/lib/server/handlers/withProxiedToken";
+import { getProxiedToken } from "@/lib/server/proxied-token";
 import { chunk } from "@/lib/utils";
-import { $fetchArtists } from "@/lib/queries/core";
+import { $fetchArtists } from "@/lib/server/artists";
 
 export const Route = createFileRoute("/api/cron/gravity")({
   server: {

@@ -2,8 +2,7 @@ import { ofetch } from "ofetch";
 import { createServerFn } from "@tanstack/react-start";
 import { abstract } from "./http";
 import { remember } from "./cache";
-import type { RPCResponse } from "./alchemy";
-import type { SystemStatus } from "../universal/system";
+import type { RPCResponse, SystemStatus } from "../universal/system";
 import { env } from "@/lib/env/server";
 
 type Status = {

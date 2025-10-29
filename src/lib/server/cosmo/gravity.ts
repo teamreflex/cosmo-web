@@ -1,3 +1,4 @@
+import { createServerOnlyFn } from "@tanstack/react-start";
 import { cosmo } from "../http";
 import type {
   CosmoGravity,
@@ -18,43 +19,49 @@ type CosmoGravityList = {
  * Fetch the list of gravities for the given artist.
  * Not cached due to COMO updates.
  */
-export async function fetchGravities(token: string, artistId: ValidArtist) {
-  return await cosmo<CosmoGravityList>(`/bff/v3/gravities`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    query: {
-      artistId,
-    },
-  });
-}
+export const fetchGravities = createServerOnlyFn(
+  async (token: string, artistId: ValidArtist) => {
+    return await cosmo<CosmoGravityList>(`/bff/v3/gravities`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      query: {
+        artistId,
+      },
+    });
+  },
+);
 
 /**
  * Fetch a single gravity.
  */
-export async function fetchGravity(artistId: ValidArtist, gravityId: number) {
-  return await cosmo<{ gravity: CosmoGravity }>(
-    `/gravity/v3/${artistId}/gravity/${gravityId}`,
-  )
-    .then((res) => res.gravity)
-    .catch(() => null);
-}
+export const fetchGravity = createServerOnlyFn(
+  async (artistId: ValidArtist, gravityId: number) => {
+    return await cosmo<{ gravity: CosmoGravity }>(
+      `/gravity/v3/${artistId}/gravity/${gravityId}`,
+    )
+      .then((res) => res.gravity)
+      .catch(() => null);
+  },
+);
 
 /**
  * Fetch the poll fields.
  */
-export async function fetchPoll(
-  token: string,
-  artist: ValidArtist,
-  gravityId: number,
-  pollId: number,
-) {
-  return await cosmo<{ pollDetail: CosmoPollChoices }>(
-    `/gravity/v3/${artist}/gravity/${gravityId}/polls/${pollId}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
+export const fetchPoll = createServerOnlyFn(
+  async (
+    token: string,
+    artist: ValidArtist,
+    gravityId: number,
+    pollId: number,
+  ) => {
+    return await cosmo<{ pollDetail: CosmoPollChoices }>(
+      `/gravity/v3/${artist}/gravity/${gravityId}/polls/${pollId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       },
-    },
-  ).then((res) => res.pollDetail);
-}
+    ).then((res) => res.pollDetail);
+  },
+);

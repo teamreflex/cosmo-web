@@ -1,3 +1,4 @@
+import { createServerOnlyFn } from "@tanstack/react-start";
 import { cosmo } from "../http";
 import { cosmoShopHeaders } from "./qr-auth";
 import type {
@@ -9,19 +10,19 @@ import type {
 /**
  * Fetch a user from COSMO by nickname.
  */
-export async function fetchByNickname(nickname: string) {
+export const fetchByNickname = createServerOnlyFn(async (nickname: string) => {
   return await cosmo<CosmoByNicknameResult>(
     `/user/v1/by-nickname/${nickname}`,
     {
       retry: false,
     },
   ).then((res) => res.profile);
-}
+});
 
 /**
  * Fetch the current user via webshop cookie.
  */
-export async function user(cookie: string) {
+export const user = createServerOnlyFn(async (cookie: string) => {
   return await cosmo<CosmoShopUser>("/bff/v1/users/me", {
     baseURL: "https://shop.cosmo.fans",
     headers: {
@@ -32,20 +33,22 @@ export async function user(cookie: string) {
       tid: crypto.randomUUID(),
     },
   });
-}
+});
 
 /**
  * Search for the given user.
  */
-export async function search(token: string, term: string) {
-  return await cosmo<CosmoSearchResult>("/bff/v3/users/search", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    query: {
-      nickname: term,
-      skip: 0,
-      take: 100,
-    },
-  });
-}
+export const search = createServerOnlyFn(
+  async (token: string, term: string) => {
+    return await cosmo<CosmoSearchResult>("/bff/v3/users/search", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      query: {
+        nickname: term,
+        skip: 0,
+        take: 100,
+      },
+    });
+  },
+);
