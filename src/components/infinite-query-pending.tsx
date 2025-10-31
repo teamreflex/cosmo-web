@@ -1,5 +1,5 @@
 import { ChevronDown, Loader2, PawPrint } from "lucide-react";
-import { InView } from "react-intersection-observer";
+import { useOnInView } from "react-intersection-observer";
 import type { QueryStatus } from "@tanstack/react-query";
 
 type Props = {
@@ -15,22 +15,21 @@ export function InfiniteQueryNext({
   isFetchingNextPage,
   fetchNextPage,
 }: Props) {
-  function onInView(inView: boolean) {
+  const inViewRef = useOnInView((inView) => {
     if (inView) fetchNextPage();
-  }
+  });
 
   return (
     <div className="flex justify-center py-6">
       {/* ready to fetch next page */}
       {status === "success" && hasNextPage && !isFetchingNextPage && (
-        <InView
-          as="button"
-          onChange={onInView}
+        <button
+          ref={inViewRef}
           onClick={fetchNextPage}
           disabled={isFetchingNextPage}
         >
           <ChevronDown className="h-12 w-12 animate-bounce" />
-        </InView>
+        </button>
       )}
 
       {/* fetching next page */}
