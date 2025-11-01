@@ -5,7 +5,7 @@ import {
 } from "better-auth/client/plugins";
 import type { auth } from "../server/auth";
 import { baseUrl } from "@/lib/utils";
-import * as m from "@/i18n/messages";
+import { m } from "@/i18n/messages";
 
 /**
  * Better Auth client instance.

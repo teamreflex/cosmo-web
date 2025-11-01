@@ -4,6 +4,7 @@
 - `pnpm lint` - Run ESLint
 - `pnpm typecheck` - Run TypeScript type checking
 - `pnpm format` - Run Prettier formatting
+- `pnpm inlang:compile` - Compile Paraglide JS i18n messages
 
 ## Database
 
@@ -52,14 +53,15 @@ The project uses Tailwind v4, so always use v4 conventions rather than v3. This 
 
 ### Tech Stack
 
-- **Framework**: TanStack Start (Router + Query)
-- **UI**: React 19, Tailwind v4, shadcn/ui components
-- **Database**:
+- Framework: TanStack Start (Router + Query)
+- UI: React 19, Tailwind v4, shadcn/ui components
+- Database:
   - Neon PostgreSQL (main app database)
   - Blockchain indexer database (objekts, transfers, votes)
   - Drizzle ORM with relational queries
-- **Authentication**: Better Auth with Discord/Twitter OAuth
-- **Search**: Typesense for fuzzy objekt metadata search
+- Authentication: Better Auth with Discord/Twitter OAuth
+- Search: Typesense for fuzzy objekt metadata search
+- i18n: Paraglide JS
 
 ### Project Structure
 
@@ -72,6 +74,7 @@ The project uses Tailwind v4, so always use v4 conventions rather than v3. This 
   - `universal/` - Shared types and Zod schemas
   - `queries/` - Server functions and associated TanStack Query options
 - `src/hooks/` - Custom React hooks
+- `src/i18n/` - Paraglide JS translation strings
 - `drizzle/` - Database migrations
 
 ### Key Architecture Patterns

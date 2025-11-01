@@ -9,7 +9,7 @@ import SkeletonGradient from "../skeleton/skeleton-overlay";
 import type { ValidArtist } from "@/lib/universal/cosmo/common";
 import type { ReactNode } from "react";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
-import * as m from "@/i18n/messages";
+import { m } from "@/i18n/messages";
 
 type Props = {
   children: ReactNode;

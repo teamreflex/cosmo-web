@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn, isEqual } from "@/lib/utils";
 import { useFilterData } from "@/hooks/use-filter-data";
-import * as m from "@/i18n/messages";
+import { m } from "@/i18n/messages";
 
 type Props = {
   classes: CosmoFilters["class"];

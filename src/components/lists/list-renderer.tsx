@@ -13,7 +13,7 @@ import { useGridColumns } from "@/hooks/use-grid-columns";
 import { objektListQuery } from "@/lib/queries/objekt-queries";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { useArtists } from "@/hooks/use-artists";
-import * as m from "@/i18n/messages";
+import { m } from "@/i18n/messages";
 
 type Props = {
   objektList: ObjektList;
@@ -34,7 +34,9 @@ export default function ListRenderer(props: Props) {
     calculateTotal: (data) => {
       const total = data.pages[0]?.total ?? 0;
       return (
-        <p className="font-semibold">{total.toLocaleString("en")} {m.common_total()}</p>
+        <p className="font-semibold">
+          {total.toLocaleString("en")} {m.common_total()}
+        </p>
       );
     },
     getItems: (data) => data.pages.flatMap((page) => page.objekts),
