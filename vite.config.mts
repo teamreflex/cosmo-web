@@ -18,11 +18,7 @@ const config = defineConfig(async () => {
       viteTsConfigPaths({
         projects: ["./tsconfig.json"],
       }),
-      tanstackStart({
-        server: {
-          entry: "./src/server.ts",
-        },
-      }),
+      tanstackStart(),
       nitro({
         config: {
           compatibilityDate: "2025-10-19",
@@ -39,7 +35,7 @@ const config = defineConfig(async () => {
         outdir: "./src/i18n",
         outputStructure: "message-modules",
         cookieName: "PARAGLIDE_LOCALE",
-        strategy: ["cookie", "baseLocale", "preferredLanguage"],
+        strategy: ["cookie", "preferredLanguage", "baseLocale"],
       }),
       tailwindcss(),
     ],
