@@ -10,13 +10,24 @@ import type { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
 import type { ObjektWithCollection } from "@/lib/universal/como";
 import { buildCalendar, getDays } from "@/lib/universal/como";
 import { cn } from "@/lib/utils";
+import { m } from "@/i18n/messages";
 
 type Props = {
   artists: CosmoArtistBFF[];
   transfers: ObjektWithCollection[];
 };
 
-const week = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+function getWeek() {
+  return [
+    m.como_calendar_mon(),
+    m.como_calendar_tue(),
+    m.como_calendar_wed(),
+    m.como_calendar_thu(),
+    m.como_calendar_fri(),
+    m.como_calendar_sat(),
+    m.como_calendar_sun(),
+  ];
+}
 
 export default function ComoCalendar({ artists, transfers }: Props) {
   // run date functions in client
@@ -31,6 +42,7 @@ export default function ComoCalendar({ artists, transfers }: Props) {
   );
 
   const calendar = buildCalendar(now, transfers);
+  const week = getWeek();
 
   return (
     <div className="flex h-fit flex-col overflow-hidden rounded-lg border border-secondary bg-secondary text-clip">
@@ -76,7 +88,7 @@ export default function ComoCalendar({ artists, transfers }: Props) {
                             <Sparkles className="h-5 w-5 text-yellow-600" />
                           </TooltipTrigger>
                           <TooltipContent className="flex flex-col gap-1">
-                            <p className="font-semibold">Carried over</p>
+                            <p className="font-semibold">{m.como_carried_over()}</p>
 
                             <div className="flex items-center justify-center gap-2">
                               <ArtistIcon artist={a.name} />

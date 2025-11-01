@@ -11,6 +11,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { useVotedEvents } from "@/lib/client/gravity/abstract/hooks";
+import { m } from "@/i18n/messages";
 
 type Props = {
   pollId: number;
@@ -101,12 +102,18 @@ function TimelineChartContent(props: Props) {
 
 const chartConfig = {
   tooltip: {
-    label: "Stats",
+    get label() {
+      return m.stats_header();
+    },
   },
   voteCount: {
-    label: "Votes",
+    get label() {
+      return m.chart_votes();
+    },
   },
   totalTokenAmount: {
-    label: "COMO Used",
+    get label() {
+      return m.chart_como_used();
+    },
   },
 } satisfies ChartConfig;

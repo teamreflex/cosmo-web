@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { env } from "@/lib/env/client";
 import { cn } from "@/lib/utils";
+import { m } from "@/i18n/messages";
 
 type Props = {
   className?: string;
@@ -30,11 +31,8 @@ export default function Logo({ className }: Props) {
           <AlertDialogTitle>{env.VITE_APP_NAME}</AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div className="flex flex-col gap-2">
-              <p>
-                {env.VITE_APP_NAME} is platform for exploring objekts &
-                gravities from Cosmo: the Gate.
-              </p>
-              <p>Source code can be found below.</p>
+              <p>{m.logo_description({ appName: env.VITE_APP_NAME })}</p>
+              <p>{m.logo_source_code()}</p>
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>

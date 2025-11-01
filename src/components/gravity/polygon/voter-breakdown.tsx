@@ -3,6 +3,7 @@ import TopUsers from "./top-users";
 import type { RevealedVote } from "@/lib/client/gravity/polygon/types";
 import type { PollSelectedContentImage } from "@/lib/universal/cosmo/gravity";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { m } from "@/i18n/messages";
 
 type Props = {
   tokenId: number;
@@ -17,8 +18,8 @@ export default function VoterBreakdown(props: Props) {
   return (
     <Tabs defaultValue="top-votes">
       <TabsList>
-        <TabsTrigger value="top-votes">Top Votes</TabsTrigger>
-        <TabsTrigger value="top-users">Top Users</TabsTrigger>
+        <TabsTrigger value="top-votes">{m.gravity_top_votes()}</TabsTrigger>
+        <TabsTrigger value="top-users">{m.gravity_top_users()}</TabsTrigger>
       </TabsList>
 
       <TabsContent value="top-votes">

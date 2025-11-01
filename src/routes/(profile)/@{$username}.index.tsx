@@ -21,6 +21,7 @@ import {
   userCollectionBlockchainQuery,
 } from "@/lib/queries/objekt-queries";
 import { defineHead } from "@/lib/meta";
+import { m } from "@/i18n/messages";
 
 export const Route = createFileRoute("/(profile)/@{$username}/")({
   validateSearch: userCollectionFrontendSchema,
@@ -67,8 +68,8 @@ export const Route = createFileRoute("/(profile)/@{$username}/")({
   head: ({ loaderData }) =>
     defineHead({
       title: loaderData?.target.user
-        ? `${loaderData.target.user.username}'s Collection`
-        : "Collection",
+        ? `${loaderData.target.user.username}'s ${m.collection_title()}`
+        : m.collection_title(),
       canonical: `/@${loaderData?.target.user?.username}`,
     }),
 });
@@ -113,5 +114,5 @@ function PendingComponent() {
 }
 
 function ErrorComponent() {
-  return <Error message="Could not load user" />;
+  return <Error message={m.error_loading_user()} />;
 }

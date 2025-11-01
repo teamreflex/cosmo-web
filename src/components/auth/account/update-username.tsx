@@ -19,6 +19,7 @@ import {
   useFormField,
 } from "@/components/ui/form";
 import { updateUsernameSchema } from "@/lib/universal/schema/auth";
+import { m } from "@/i18n/messages";
 
 type Props = {
   username: string;
@@ -48,7 +49,7 @@ export default function UpdateUsername({ username }: Props) {
   function handleSubmit(data: z.infer<typeof updateUsernameSchema>) {
     mutation.mutate(data, {
       onSuccess: () => {
-        toast.success("Your username has been updated.");
+        toast.success(m.auth_username_updated());
         router.invalidate();
       },
       onError: (error) => {
@@ -75,7 +76,7 @@ export default function UpdateUsername({ username }: Props) {
                 </div>
               </FormControl>
               <FormDescription>
-                Not <span className="italic">currently</span> shown anywhere.
+                {m.settings_username_description()}
               </FormDescription>
               <FormMessage />
             </FormItem>

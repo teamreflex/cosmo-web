@@ -14,6 +14,7 @@ import {
 import { ArtistProvider } from "@/hooks/use-artists";
 import { transfersQuery } from "@/lib/queries/objekt-queries";
 import { defineHead } from "@/lib/meta";
+import { m } from "@/i18n/messages";
 
 export const Route = createFileRoute("/(profile)/@{$username}/trades")({
   component: RouteComponent,
@@ -38,8 +39,8 @@ export const Route = createFileRoute("/(profile)/@{$username}/trades")({
   head: ({ loaderData }) =>
     defineHead({
       title: loaderData?.cosmo
-        ? `${loaderData.cosmo.username}'s Trades`
-        : "Trades",
+        ? `${loaderData.cosmo.username}'s ${m.trades_title()}`
+        : m.trades_title(),
       canonical: `/@${loaderData?.cosmo.username}/trades`,
     }),
 });

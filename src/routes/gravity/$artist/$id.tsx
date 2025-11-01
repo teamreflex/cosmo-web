@@ -12,6 +12,7 @@ import { Error } from "@/components/error-boundary";
 import { gravityPollDetailsQuery } from "@/lib/queries/gravity";
 import DynamicLiveChart from "@/components/gravity/dynamic-live-chart";
 import { defineHead } from "@/lib/meta";
+import { m } from "@/i18n/messages";
 
 export const Route = createFileRoute("/gravity/$artist/$id")({
   staleTime: Infinity,
@@ -51,7 +52,7 @@ export const Route = createFileRoute("/gravity/$artist/$id")({
   },
   head: ({ loaderData }) =>
     defineHead({
-      title: loaderData?.gravity.title ?? "Gravity",
+      title: loaderData?.gravity.title ?? m.gravity_header(),
       canonical: `/gravity/${loaderData?.artist}/${loaderData?.gravity.id}`,
     }),
 });
@@ -65,7 +66,9 @@ function RouteComponent() {
         {/* header */}
         <div className="flex flex-col pb-4">
           <div className="flex items-center justify-between gap-2">
-            <h1 className="font-cosmo text-3xl uppercase">Gravity</h1>
+            <h1 className="font-cosmo text-3xl uppercase">
+              {m.gravity_header()}
+            </h1>
             <div id="gravity-status"></div>
           </div>
           <p className="text-sm font-semibold text-muted-foreground">
@@ -78,9 +81,7 @@ function RouteComponent() {
           fallback={
             <div className="flex flex-col items-center justify-center gap-2 py-4">
               <AlertTriangle className="size-12" />
-              <p className="text-sm font-semibold">
-                Failed to load live data. Please try again later.
-              </p>
+              <p className="text-sm font-semibold">{m.gravity_failed_load()}</p>
             </div>
           }
         >
@@ -104,7 +105,7 @@ function PendingComponent() {
     <main className="container flex flex-col py-2">
       {/* header */}
       <div className="flex flex-col pb-4">
-        <h1 className="font-cosmo text-3xl uppercase">Gravity</h1>
+        <h1 className="font-cosmo text-3xl uppercase">{m.gravity_header()}</h1>
         <Skeleton className="h-5 w-56 rounded-full" />
       </div>
 
@@ -116,16 +117,16 @@ function PendingComponent() {
 
 function ErrorComponent({ error }: ErrorComponentProps) {
   if (error.name === GravityNotSupportedError.name) {
-    return <Error message="Combination poll support is not available yet." />;
+    return <Error message={m.gravity_combination_not_supported()} />;
   }
-  return <Error message="Could not load gravity" />;
+  return <Error message={m.gravity_error_loading_details()} />;
 }
 
 function NotFoundComponent() {
   return (
     <main className="container flex w-full flex-col items-center justify-center gap-2 py-12">
       <HeartCrack className="h-24 w-24" />
-      <p className="text-sm font-semibold">Gravity not found</p>
+      <p className="text-sm font-semibold">{m.gravity_not_found()}</p>
     </main>
   );
 }

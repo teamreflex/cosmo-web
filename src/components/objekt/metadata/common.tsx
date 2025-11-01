@@ -4,6 +4,7 @@ import { Button } from "../../ui/button";
 import { ObjektNotFoundError } from "../common";
 import type { FetchError } from "ofetch";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
+import { m } from "@/i18n/messages";
 
 export type ObjektMetadataTab = "metadata" | "serials";
 
@@ -31,8 +32,8 @@ export function MetadataDialogError({
 }) {
   const message =
     error instanceof ObjektNotFoundError
-      ? "Objekt not found"
-      : "Error loading objekt";
+      ? m.error_objekt_not_found()
+      : m.error_loading_objekt();
 
   return (
     <div className="flex flex-col items-center justify-center gap-2 p-4">
@@ -41,7 +42,7 @@ export function MetadataDialogError({
         <span className="text-sm font-semibold">{message}</span>
       </div>
       <Button size="sm" variant="outline" onClick={resetErrorBoundary}>
-        <RefreshCcw className="mr-2" /> Retry
+        <RefreshCcw className="mr-2" /> {m.common_retry()}
       </Button>
     </div>
   );

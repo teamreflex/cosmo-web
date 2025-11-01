@@ -17,6 +17,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import Navbar from "@/components/navbar/navbar";
 import TailwindIndicator from "@/components/tailwind-indicator";
 import { env } from "@/lib/env/client";
+import { m } from "@/i18n/messages";
 import {
   artistsQuery,
   currentAccountQuery,
@@ -24,6 +25,7 @@ import {
 } from "@/lib/queries/core";
 import { systemStatusQuery } from "@/lib/queries/system";
 import { Button } from "@/components/ui/button";
+import { getLocale } from "@/i18n/runtime";
 
 interface RouterContext {
   queryClient: QueryClient;
@@ -139,7 +141,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={getLocale()} suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
@@ -183,7 +185,9 @@ function NotFoundComponent() {
   return (
     <div className="flex w-full flex-col items-center justify-center gap-2 py-12">
       <FileQuestion className="h-24 w-24" />
-      <p className="text-center text-sm font-semibold">Page not found</p>
+      <p className="text-center text-sm font-semibold">
+        {m.error_page_not_found()}
+      </p>
     </div>
   );
 }
@@ -191,14 +195,13 @@ function NotFoundComponent() {
 function ErrorComponent() {
   return (
     <main className="flex h-dvh w-full flex-col items-center justify-center gap-1.5">
-      <h2 className="text-lg font-semibold">Something went wrong!</h2>
+      <h2 className="text-lg font-semibold">{m.error_something_wrong()}</h2>
       <p className="text-sm">
-        This means COSMO is under maintenance, experiencing heavy traffic, or a
-        bug in {env.VITE_APP_NAME} needs to be fixed.
+        {m.error_something_wrong_description({ appName: env.VITE_APP_NAME })}
       </p>
       <Button variant="outline" onClick={() => window.location.reload()}>
         <RefreshCcw className="mr-2" />
-        <span>Reload</span>
+        <span>{m.error_reload()}</span>
       </Button>
     </main>
   );

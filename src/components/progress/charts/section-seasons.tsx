@@ -1,6 +1,7 @@
 import ProgressSection from "./progress-section";
 import type { Stat } from "@/lib/universal/progress";
 import { randomColor } from "@/lib/utils";
+import { m } from "@/i18n/messages";
 
 type Props = {
   data: Stat[];
@@ -15,7 +16,7 @@ export default function SectionSeasons(props: Props) {
     {} as Record<string, string>,
   );
 
-  return <ProgressSection data={props.data} colors={colors} title="Seasons" />;
+  return <ProgressSection data={props.data} colors={colors} title={m.progress_chart_seasons()} />;
 }
 
 const colorMap: Record<string, string> = {

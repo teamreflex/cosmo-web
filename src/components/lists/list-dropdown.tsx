@@ -14,6 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { m } from "@/i18n/messages";
 
 type Props = {
   objektLists: ObjektList[];
@@ -43,11 +44,11 @@ export default function ListDropdown(props: Props) {
       <DropdownMenuTrigger asChild>
         <Button variant="secondary" size="profile" data-profile>
           <List className="h-5 w-5" />
-          <span className="hidden sm:block">Lists</span>
+          <span className="hidden sm:block">{m.list_lists()}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuLabel>Objekt Lists</DropdownMenuLabel>
+        <DropdownMenuLabel>{m.objekt_list()}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           {props.objektLists.map((list) => (
@@ -66,7 +67,7 @@ export default function ListDropdown(props: Props) {
             </DropdownMenuItem>
           ))}
           {props.objektLists.length === 0 && (
-            <DropdownMenuItem className="text-sm">0 lists</DropdownMenuItem>
+            <DropdownMenuItem className="text-sm">{m.list_zero_lists()}</DropdownMenuItem>
           )}
 
           {props.allowCreate && (
@@ -75,11 +76,11 @@ export default function ListDropdown(props: Props) {
 
               <DropdownMenuItem onClick={() => setCreateOpen(true)}>
                 <PlusCircle className="h-4 w-4" />
-                <span className="font-semibold">Create New</span>
+                <span className="font-semibold">{m.list_create_new()}</span>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setCompareOpen(true)}>
                 <LetterText className="h-4 w-4" />
-                <span className="font-semibold">Discord Format</span>
+                <span className="font-semibold">{m.list_discord_format()}</span>
               </DropdownMenuItem>
             </div>
           )}

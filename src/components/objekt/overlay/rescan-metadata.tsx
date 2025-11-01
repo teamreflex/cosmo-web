@@ -4,6 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { $rescanObjektMetadata } from "../actions";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
+import { m } from "@/i18n/messages";
 
 type Props = {
   collection: Objekt.Collection;
@@ -15,13 +16,19 @@ export default function RescanMetadata({ collection, token }: Props) {
   const mutation = useMutation({
     mutationFn,
     onSuccess() {
-      toast.success("Objekt updated!", {
-        description: `${collection.collectionId} #${token.serial} has been updated from COSMO.`,
+      toast.success(m.objekt_rescan_success(), {
+        description: m.objekt_rescan_success_desc({ 
+          collectionId: collection.collectionId, 
+          serial: token.serial.toString() 
+        }),
       });
     },
     onError() {
-      toast.error("Error", {
-        description: `There was an error updating ${collection.collectionId} #${token.serial} from COSMO, please try again later.`,
+      toast.error(m.objekt_rescan_error(), {
+        description: m.objekt_rescan_error_desc({ 
+          collectionId: collection.collectionId, 
+          serial: token.serial.toString() 
+        }),
       });
     },
   });
@@ -37,7 +44,7 @@ export default function RescanMetadata({ collection, token }: Props) {
       className="group/button flex items-center gap-1 text-xs underline"
     >
       <RefreshCcw className="size-3 group-disabled/button:animate-spin" />
-      <span>Rescan</span>
+      <span>{m.objekt_info_rescan()}</span>
     </button>
   );
 }

@@ -19,6 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { artistsQuery, selectedArtistsQuery } from "@/lib/queries/core";
 import { $fetchGravities } from "@/lib/server/gravity";
 import { defineHead } from "@/lib/meta";
+import { m } from "@/i18n/messages";
 
 export const Route = createFileRoute("/gravity/")({
   loader: async ({ context }) => {
@@ -43,7 +44,7 @@ export const Route = createFileRoute("/gravity/")({
   component: RouteComponent,
   pendingComponent: PendingComponent,
   errorComponent: ErrorComponent,
-  head: () => defineHead({ title: "Gravity", canonical: "/gravity" }),
+  head: () => defineHead({ title: m.gravity_header(), canonical: "/gravity" }),
 });
 
 function RouteComponent() {
@@ -59,7 +60,7 @@ function RouteComponent() {
         <Tabs defaultValue={toRender[0]?.id}>
           {/* header */}
           <div className="flex flex-row items-center justify-between">
-            <h1 className="font-cosmo text-3xl uppercase">Gravity</h1>
+            <h1 className="font-cosmo text-3xl uppercase">{m.gravity_header()}</h1>
 
             <TabsList>
               {toRender.map((artist) => (
@@ -150,13 +151,13 @@ function GravityBadge(props: PropsWithClassName<{ type: CosmoGravityType }>) {
     case "event-gravity":
       return (
         <Badge className={props.className} variant="event-gravity">
-          Event
+          {m.gravity_badge_event()}
         </Badge>
       );
     case "grand-gravity":
       return (
         <Badge className={props.className} variant="grand-gravity">
-          Grand
+          {m.gravity_badge_grand()}
         </Badge>
       );
     default:
@@ -169,7 +170,7 @@ function PendingComponent() {
     <main className="container flex flex-col py-2">
       {/* header */}
       <div className="flex flex-row items-center justify-between">
-        <h1 className="font-cosmo text-3xl uppercase">Gravity</h1>
+        <h1 className="font-cosmo text-3xl uppercase">{m.gravity_header()}</h1>
         <Skeleton className="h-9 w-48 rounded-md" />
       </div>
 
@@ -187,5 +188,5 @@ function PendingComponent() {
 }
 
 function ErrorComponent() {
-  return <Error message="Error loading gravities" />;
+  return <Error message={m.gravity_error_loading()} />;
 }

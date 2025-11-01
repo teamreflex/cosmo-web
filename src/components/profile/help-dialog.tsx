@@ -12,10 +12,9 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { env } from "@/lib/env/client";
+import { m } from "@/i18n/messages";
 
 export default function HelpDialog() {
-  const str = env.VITE_APP_NAME.toLowerCase().match(/^[aeiou]/i) ? "an" : "a";
-
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
@@ -26,55 +25,49 @@ export default function HelpDialog() {
       <AlertDialogContent>
         <VisuallyHidden>
           <AlertDialogHeader>
-            <AlertDialogTitle>Help: Profile</AlertDialogTitle>
+            <AlertDialogTitle>{m.help_profile_title()}</AlertDialogTitle>
             <AlertDialogDescription>
-              Help information for profiles
+              {m.help_profile_description()}
             </AlertDialogDescription>
           </AlertDialogHeader>
         </VisuallyHidden>
         <div className="flex flex-col gap-4">
           {/* grid/column size */}
           <div className="flex flex-col gap-1 text-sm text-foreground/80">
-            <h3 className="text-lg font-semibold text-foreground">Grid Size</h3>
-            <p>
-              The number of columns to use when displaying objekts can be
-              updated in your settings panel.
-            </p>
-            <p>Mobile will always use the default of 3 columns.</p>
+            <h3 className="text-lg font-semibold text-foreground">
+              {m.profile_help_grid_size_title()}
+            </h3>
+            <p>{m.profile_help_grid_size_desc_1()}</p>
+            <p>{m.profile_help_grid_size_desc_2()}</p>
           </div>
 
           {/* objekt locking */}
           <div className="flex flex-col gap-1 text-sm text-foreground/80">
             <h3 className="text-lg font-semibold text-foreground">
-              Objekt Locking
+              {m.profile_help_locking_title()}
             </h3>
+            <p>{m.profile_help_locking_desc_1()}</p>
             <p>
-              Locking an objekt hides the send button, allowing you to mark
-              anything you don&apos;t want to accidentally send or to indicate
-              to other people that it is not up for trade.
-            </p>
-            <p>
-              This is {str} {env.VITE_APP_NAME} feature and{" "}
-              <b>does not prevent trading within the COSMO app</b>.
+              {m.profile_help_locking_desc_2({ appName: env.VITE_APP_NAME })}{" "}
+              <b>{m.profile_help_locking_desc_emphasis()}</b>.
             </p>
           </div>
 
           {/* indicators */}
           <div className="flex flex-col gap-1 text-sm text-foreground/80">
             <h3 className="text-lg font-semibold text-foreground">
-              Indicators
+              {m.profile_help_indicators_title()}
             </h3>
-            <p>
-              Different indicators in the top left denote different statuses of
-              an objekt.
-            </p>
+            <p>{m.profile_help_indicators_description()}</p>
             <div className="flex flex-col gap-1 text-start">
               {/* locked */}
               <div className="flex items-center gap-2">
                 <div className="flex w-fit items-center justify-center rounded-lg bg-[#FFDD00] p-1 text-black">
                   <Lock className="h-5 w-5" />
                 </div>
-                <p className="text-sm font-semibold">Objekt has been locked</p>
+                <p className="text-sm font-semibold">
+                  {m.profile_help_locked()}
+                </p>
               </div>
 
               {/* not transferable */}
@@ -83,7 +76,7 @@ export default function HelpDialog() {
                   <MailX className="h-5 w-5" />
                 </div>
                 <p className="text-sm font-semibold">
-                  Objekt is not transferable
+                  {m.profile_help_not_transferable()}
                 </p>
               </div>
             </div>
@@ -91,7 +84,7 @@ export default function HelpDialog() {
         </div>
 
         <AlertDialogFooter>
-          <AlertDialogAction>Continue</AlertDialogAction>
+          <AlertDialogAction>{m.common_continue()}</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

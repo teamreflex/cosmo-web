@@ -17,6 +17,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { m } from "@/i18n/messages";
 
 export default function UpdatePassword() {
   const router = useRouter();
@@ -44,7 +45,7 @@ export default function UpdatePassword() {
   function handleSubmit(data: z.infer<typeof updatePasswordSchema>) {
     mutation.mutate(data, {
       onSuccess: () => {
-        toast.success("Your password has been updated.");
+        toast.success(m.auth_password_updated());
         router.invalidate();
       },
       onError: (error) => {
@@ -64,9 +65,9 @@ export default function UpdatePassword() {
           name="currentPassword"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Current Password</FormLabel>
+              <FormLabel>{m.auth_current_password()}</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="********" {...field} />
+                <Input type="password" placeholder={m.form_password_placeholder()} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -78,9 +79,9 @@ export default function UpdatePassword() {
           name="newPassword"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>New Password</FormLabel>
+              <FormLabel>{m.auth_new_password()}</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="********" {...field} />
+                <Input type="password" placeholder={m.form_password_placeholder()} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -93,7 +94,7 @@ export default function UpdatePassword() {
             disabled={mutation.isPending || form.formState.isDirty === false}
           >
             {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-            <span>Update</span>
+            <span>{m.common_update()}</span>
           </Button>
         </div>
       </form>

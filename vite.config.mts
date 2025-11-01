@@ -4,6 +4,7 @@ import react from "@vitejs/plugin-react";
 import viteTsConfigPaths from "vite-tsconfig-paths";
 import tailwindcss from "@tailwindcss/vite";
 import { nitro } from "nitro/vite";
+import { paraglideVitePlugin } from "@inlang/paraglide-js";
 
 const config = defineConfig(async () => {
   await import("./src/lib/env/server");
@@ -17,7 +18,11 @@ const config = defineConfig(async () => {
       viteTsConfigPaths({
         projects: ["./tsconfig.json"],
       }),
-      tanstackStart(),
+      tanstackStart({
+        server: {
+          entry: "./src/server.ts",
+        },
+      }),
       nitro({
         config: {
           compatibilityDate: "2025-10-19",
@@ -28,6 +33,13 @@ const config = defineConfig(async () => {
         babel: {
           plugins: ["babel-plugin-react-compiler"],
         },
+      }),
+      paraglideVitePlugin({
+        project: "./project.inlang",
+        outdir: "./src/i18n",
+        outputStructure: "message-modules",
+        cookieName: "PARAGLIDE_LOCALE",
+        strategy: ["cookie", "baseLocale", "preferredLanguage"],
       }),
       tailwindcss(),
     ],

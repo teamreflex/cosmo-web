@@ -3,6 +3,7 @@ import { IconBrandTwitterFilled } from "@tabler/icons-react";
 import { Button } from "../ui/button";
 import { authClient } from "@/lib/client/auth";
 import { track } from "@/lib/utils";
+import { m } from "@/i18n/messages";
 
 export default function SignInWithTwitter() {
   const [isPending, startTransition] = useTransition();
@@ -28,7 +29,7 @@ export default function SignInWithTwitter() {
       disabled={isPending}
     >
       <IconBrandTwitterFilled className="size-5" />
-      <span>Sign in with Twitter</span>
+      <span>{m.auth_sign_in_with_twitter()}</span>
     </Button>
   );
 }

@@ -3,6 +3,7 @@ import ProgressSection from "./progress-section";
 import type { Stat } from "@/lib/universal/progress";
 import { useArtists } from "@/hooks/use-artists";
 import { randomColor } from "@/lib/utils";
+import { m } from "@/i18n/messages";
 
 type Props = {
   data: Stat[];
@@ -21,6 +22,6 @@ export default function SectionMembers(props: Props) {
   }, [props.data, getMember]);
 
   return (
-    <ProgressSection data={props.data} colors={colorMap} title="Members" />
+    <ProgressSection data={props.data} colors={colorMap} title={m.progress_chart_members()} />
   );
 }

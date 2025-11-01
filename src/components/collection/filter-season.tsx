@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn, isEqual } from "@/lib/utils";
 import { useFilterData } from "@/hooks/use-filter-data";
+import * as m from "@/i18n/messages";
 
 type Props = {
   seasons: CosmoFilters["season"];
@@ -57,7 +58,7 @@ export default function SeasonFilter(props: Props) {
             value.length > 0 && "border-cosmo dark:border-cosmo",
           )}
         >
-          <span>Season</span>
+          <span>{m.common_season()}</span>
           <ChevronDown className="h-4 w-4 opacity-50" />
         </Button>
       </DropdownMenuTrigger>

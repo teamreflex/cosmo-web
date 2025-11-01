@@ -28,6 +28,7 @@ import type z from "zod";
 import type { ObjektList } from "@/lib/server/db/schema";
 import { useUserState } from "@/hooks/use-user-state";
 import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
+import { m } from "@/i18n/messages";
 
 type Props = {
   objektList: ObjektList;
@@ -41,7 +42,7 @@ export default function UpdateList({ objektList }: Props) {
   const mutation = useMutation({
     mutationFn,
     onSuccess: () => {
-      toast.success("Objekt list updated");
+      toast.success(m.toast_list_updated());
       // invalidate current account query to update list name in user's lists
       queryClient.invalidateQueries({
         queryKey: currentAccountQuery.queryKey,
@@ -79,7 +80,7 @@ export default function UpdateList({ objektList }: Props) {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Update Objekt List</DialogTitle>
+          <DialogTitle>{m.list_update()}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form
@@ -91,10 +92,10 @@ export default function UpdateList({ objektList }: Props) {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel>{m.list_name()}</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Want To Trade"
+                      placeholder={m.list_name_placeholder()}
                       data-1p-ignore
                       {...field}
                     />
@@ -117,7 +118,7 @@ function SubmitButton() {
 
   return (
     <Button type="submit" disabled={isSubmitting}>
-      <span>Save</span>
+      <span>{m.common_save()}</span>
       {isSubmitting && <Loader2 className="animate-spin" />}
     </Button>
   );

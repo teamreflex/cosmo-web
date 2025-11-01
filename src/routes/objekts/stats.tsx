@@ -8,6 +8,7 @@ import MemberBreakdown from "@/components/objekt-stats/member-breakdown";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Error } from "@/components/error-boundary";
 import { defineHead } from "@/lib/meta";
+import { m } from "@/i18n/messages";
 
 export const Route = createFileRoute("/objekts/stats")({
   loader: async ({ context }) => {
@@ -27,7 +28,7 @@ export const Route = createFileRoute("/objekts/stats")({
   pendingComponent: PendingComponent,
   errorComponent: ErrorComponent,
   head: () =>
-    defineHead({ title: "Objekt Stats", canonical: "/objekts/stats" }),
+    defineHead({ title: m.stats_header(), canonical: "/objekts/stats" }),
 });
 
 function RouteComponent() {
@@ -38,9 +39,9 @@ function RouteComponent() {
     <main className="container flex flex-col py-2">
       {/* header */}
       <div className="flex flex-col pb-4">
-        <h1 className="font-cosmo text-3xl uppercase">Stats</h1>
+        <h1 className="font-cosmo text-3xl uppercase">{m.stats_header()}</h1>
         <p className="-mt-2 text-sm font-semibold text-muted-foreground">
-          Statistics update every hour
+          {m.stats_update_frequency()}
         </p>
       </div>
 
@@ -51,7 +52,7 @@ function RouteComponent() {
           <Card className="min-h-36">
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle className="text-sm font-semibold">
-                Total Objekts
+                {m.stats_total_objekts()}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -59,7 +60,7 @@ function RouteComponent() {
                 {data.totalCount.toLocaleString()}
               </div>
               <p className="text-xs text-muted-foreground">
-                Total objekts minted in last 24 hours
+                {m.stats_total_objekts_desc()}
               </p>
             </CardContent>
           </Card>
@@ -67,7 +68,7 @@ function RouteComponent() {
           <Card className="min-h-36">
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle className="text-sm font-semibold">
-                Scanned Objekts
+                {m.stats_scanned_objekts()}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -75,7 +76,7 @@ function RouteComponent() {
                 {data.scannedCount.toLocaleString()}
               </div>
               <p className="text-xs text-muted-foreground">
-                Objekts scanned in last 24 hours
+                {m.stats_scanned_objekts_desc()}
               </p>
             </CardContent>
           </Card>
@@ -83,7 +84,7 @@ function RouteComponent() {
           <Card className="min-h-36">
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle className="text-sm font-semibold">
-                Premier Objekts
+                {m.stats_premier_objekts()}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -91,7 +92,7 @@ function RouteComponent() {
                 {data.premierCount.toLocaleString()}
               </div>
               <p className="text-xs text-muted-foreground">
-                Premier class objekts minted in last 24 hours (digital)
+                {m.stats_premier_objekts_desc()}
               </p>
             </CardContent>
           </Card>
@@ -102,7 +103,7 @@ function RouteComponent() {
           {/* artist breakdown chart */}
           <div className="flex flex-col gap-2">
             <div className="flex h-10 flex-row items-end gap-2">
-              <h2 className="text-xl font-semibold">Artist Breakdown</h2>
+              <h2 className="text-xl font-semibold">{m.stats_artist_breakdown()}</h2>
             </div>
 
             <Card>
@@ -129,9 +130,9 @@ function PendingComponent() {
     <main className="container flex flex-col py-2">
       {/* header */}
       <div className="flex flex-col pb-4">
-        <h1 className="font-cosmo text-3xl uppercase">Stats</h1>
+        <h1 className="font-cosmo text-3xl uppercase">{m.stats_header()}</h1>
         <p className="-mt-2 text-sm font-semibold text-muted-foreground">
-          Statistics update every hour
+          {m.stats_update_frequency()}
         </p>
       </div>
 
@@ -142,13 +143,13 @@ function PendingComponent() {
           <Card className="min-h-36">
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle className="text-sm font-semibold">
-                Total Objekts
+                {m.stats_total_objekts()}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <Skeleton className="mb-1 h-7 w-20" />
               <p className="text-xs text-muted-foreground">
-                Total objekts minted in last 24 hours
+                {m.stats_total_objekts_desc()}
               </p>
             </CardContent>
           </Card>
@@ -156,13 +157,13 @@ function PendingComponent() {
           <Card className="min-h-36">
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle className="text-sm font-semibold">
-                Scanned Objekts
+                {m.stats_scanned_objekts()}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <Skeleton className="mb-1 h-7 w-20" />
               <p className="text-xs text-muted-foreground">
-                Objekts scanned in last 24 hours
+                {m.stats_scanned_objekts_desc()}
               </p>
             </CardContent>
           </Card>
@@ -170,13 +171,13 @@ function PendingComponent() {
           <Card className="min-h-36">
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle className="text-sm font-semibold">
-                Premier Objekts
+                {m.stats_premier_objekts()}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <Skeleton className="mb-1 h-7 w-7" />
               <p className="text-xs text-muted-foreground">
-                Premier class objekts minted in last 24 hours (digital)
+                {m.stats_premier_objekts_desc()}
               </p>
             </CardContent>
           </Card>
@@ -187,7 +188,7 @@ function PendingComponent() {
           {/* artist breakdown chart */}
           <div className="flex flex-col gap-2">
             <div className="flex h-10 flex-row items-end gap-2">
-              <h2 className="text-xl font-semibold">Artist Breakdown</h2>
+              <h2 className="text-xl font-semibold">{m.stats_artist_breakdown()}</h2>
             </div>
             <Skeleton className="h-108.5" />
           </div>
@@ -195,7 +196,7 @@ function PendingComponent() {
           {/* member breakdown chart */}
           <div className="flex flex-col gap-2">
             <div className="flex flex-row items-end justify-between gap-2">
-              <h2 className="text-xl font-semibold">Member Breakdown</h2>
+              <h2 className="text-xl font-semibold">{m.stats_member_breakdown()}</h2>
               <Skeleton className="h-9 w-30" />
             </div>
             <Skeleton className="h-108.5" />
@@ -207,5 +208,5 @@ function PendingComponent() {
 }
 
 function ErrorComponent() {
-  return <Error message="Could not load objekt stats" />;
+  return <Error message={m.stats_error_loading()} />;
 }

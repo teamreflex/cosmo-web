@@ -35,6 +35,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { currentAccountQuery } from "@/lib/queries/core";
+import { m } from "@/i18n/messages";
+import { getLocale, setLocale } from "@/i18n/runtime";
 
 type Props = {
   open: boolean;
@@ -51,6 +53,8 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
     mutationFn,
   });
 
+  const locale = getLocale();
+
   const form = useForm<z.infer<typeof settingsSchema>>({
     resolver: standardSchemaResolver(settingsSchema),
     defaultValues: {
@@ -64,7 +68,7 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
       { data },
       {
         async onSuccess() {
-          toast.success("Settings updated.");
+          toast.success(m.auth_settings_updated());
           onOpenChange(false);
           await queryClient.invalidateQueries({
             queryKey: currentAccountQuery.queryKey,
@@ -72,7 +76,7 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
           await router.invalidate();
         },
         onError() {
-          toast.error("Error updating settings.");
+          toast.error(m.toast_metadata_update_failed());
         },
       },
     );
@@ -82,10 +86,8 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-xl">
         <DialogHeader>
-          <DialogTitle>General Settings</DialogTitle>
-          <DialogDescription>
-            Adjust any site-wide settings here.
-          </DialogDescription>
+          <DialogTitle>{m.settings_title()}</DialogTitle>
+          <DialogDescription>{m.settings_description()}</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
@@ -94,12 +96,44 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
             onSubmit={form.handleSubmit(handleSubmit)}
             className="flex flex-col gap-4"
           >
+            {/* language */}
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex flex-col">
+                <h2 className="col-span-3 text-sm font-semibold">
+                  {m.settings_language()}
+                </h2>
+                <p className="col-span-3 col-start-1 row-span-2 text-xs opacity-80">
+                  {m.settings_language_description()}
+                </p>
+              </div>
+
+              <Select
+                name="language"
+                defaultValue={locale}
+                onValueChange={(value) => setLocale(value as typeof locale)}
+              >
+                <SelectTrigger className="w-36">
+                  <SelectValue placeholder={m.settings_language()} />
+                </SelectTrigger>
+                <SelectContent align="end">
+                  <SelectItem value="en">
+                    {m.settings_language_english()}
+                  </SelectItem>
+                  <SelectItem value="ko">
+                    {m.settings_language_korean()}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* theme */}
             <div className="flex items-center justify-between gap-2">
               <div className="flex flex-col">
-                <h2 className="col-span-3 text-sm font-semibold">Theme</h2>
+                <h2 className="col-span-3 text-sm font-semibold">
+                  {m.settings_theme()}
+                </h2>
                 <p className="col-span-3 col-start-1 row-span-2 text-xs opacity-80">
-                  Theme of the site.
+                  {m.settings_theme_description()}
                 </p>
               </div>
 
@@ -109,11 +143,15 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
                 onValueChange={(value) => setTheme(value)}
               >
                 <SelectTrigger className="w-36">
-                  <SelectValue placeholder="Theme" />
+                  <SelectValue placeholder={m.settings_theme()} />
                 </SelectTrigger>
                 <SelectContent align="end">
-                  <SelectItem value="dark">Dark</SelectItem>
-                  <SelectItem value="light">Light</SelectItem>
+                  <SelectItem value="dark">
+                    {m.settings_theme_dark()}
+                  </SelectItem>
+                  <SelectItem value="light">
+                    {m.settings_theme_light()}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -128,10 +166,10 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex flex-col">
                         <h2 className="col-span-3 text-sm font-semibold">
-                          Objekt Columns
+                          {m.settings_objekt_columns()}
                         </h2>
                         <p className="col-span-3 col-start-1 row-span-3 row-start-2 text-xs opacity-80">
-                          Number of columns to use when displaying objekts.
+                          {m.settings_objekt_columns_description()}
                         </p>
                       </div>
 
@@ -141,14 +179,26 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
                         defaultValue={field.value.toString()}
                       >
                         <SelectTrigger className="w-36">
-                          <SelectValue placeholder="Columns" />
+                          <SelectValue
+                            placeholder={m.settings_objekt_columns()}
+                          />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="4">4 Columns</SelectItem>
-                          <SelectItem value="5">5 Columns</SelectItem>
-                          <SelectItem value="6">6 Columns</SelectItem>
-                          <SelectItem value="7">7 Columns</SelectItem>
-                          <SelectItem value="8">8 Columns</SelectItem>
+                          <SelectItem value="4">
+                            {m.settings_columns_count({ count: "4" })}
+                          </SelectItem>
+                          <SelectItem value="5">
+                            {m.settings_columns_count({ count: "5" })}
+                          </SelectItem>
+                          <SelectItem value="6">
+                            {m.settings_columns_count({ count: "6" })}
+                          </SelectItem>
+                          <SelectItem value="7">
+                            {m.settings_columns_count({ count: "7" })}
+                          </SelectItem>
+                          <SelectItem value="8">
+                            {m.settings_columns_count({ count: "8" })}
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -168,10 +218,10 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex flex-col">
                         <h2 className="col-span-3 text-sm font-semibold">
-                          Collection Mode
+                          {m.settings_collection_mode()}
                         </h2>
                         <p className="col-span-3 col-start-1 row-span-3 row-start-2 text-xs opacity-80">
-                          Mode to use when displaying your own collection.
+                          {m.settings_collection_mode_description()}
                         </p>
                       </div>
 
@@ -195,7 +245,7 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
             type="submit"
             disabled={mutation.isPending}
           >
-            <span>Save</span>
+            <span>{m.common_save()}</span>
             {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
           </Button>
         </DialogFooter>

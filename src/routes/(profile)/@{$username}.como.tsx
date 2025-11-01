@@ -9,6 +9,7 @@ import ComoCalendar from "@/components/como/calendar";
 import Portal from "@/components/portal";
 import HelpDialog from "@/components/como/help-dialog";
 import { defineHead } from "@/lib/meta";
+import { m } from "@/i18n/messages";
 
 export const Route = createFileRoute("/(profile)/@{$username}/como")({
   component: RouteComponent,
@@ -29,8 +30,8 @@ export const Route = createFileRoute("/(profile)/@{$username}/como")({
   head: ({ loaderData }) =>
     defineHead({
       title: loaderData?.target.user
-        ? `${loaderData.target.user.username}'s COMO`
-        : "COMO",
+        ? `${loaderData.target.user.username}'s ${m.common_como()}`
+        : m.common_como(),
       canonical: `/@${loaderData?.target.user?.username}/como`,
     }),
 });
@@ -93,25 +94,25 @@ function PendingComponent() {
         {/* days of the week */}
         <div className="grid grid-cols-7 gap-px border-b border-secondary">
           <div className="flex items-center justify-center bg-background/80 py-2 font-bold">
-            Mon
+            {m.como_calendar_mon()}
           </div>
           <div className="flex items-center justify-center bg-background/80 py-2 font-bold">
-            Tue
+            {m.como_calendar_tue()}
           </div>
           <div className="flex items-center justify-center bg-background/80 py-2 font-bold">
-            Wed
+            {m.como_calendar_wed()}
           </div>
           <div className="flex items-center justify-center bg-background/80 py-2 font-bold">
-            Thu
+            {m.como_calendar_thu()}
           </div>
           <div className="flex items-center justify-center bg-background/80 py-2 font-bold">
-            Fri
+            {m.como_calendar_fri()}
           </div>
           <div className="flex items-center justify-center bg-background/80 py-2 font-bold">
-            Sat
+            {m.como_calendar_sat()}
           </div>
           <div className="flex items-center justify-center bg-background/80 py-2 font-bold">
-            Sun
+            {m.como_calendar_sun()}
           </div>
         </div>
 
@@ -130,7 +131,7 @@ function PendingComponent() {
 }
 
 function ErrorComponent() {
-  return <Error message="Could not load COMO calendar" />;
+  return <Error message={m.como_error_loading()} />;
 }
 
 /**

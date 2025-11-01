@@ -25,6 +25,7 @@ import type { PublicUser } from "@/lib/universal/auth";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useArtists } from "@/hooks/use-artists";
+import { m } from "@/i18n/messages";
 
 type Props = {
   signedIn: boolean;
@@ -48,13 +49,13 @@ export default function Links(props: Props) {
             <DropdownMenuTrigger asChild>
               <button
                 className="outline-hidden drop-shadow-lg"
-                aria-label="Menu"
+                aria-label={m.common_menu()}
               >
                 <Menu className="h-8 w-8 shrink-0" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuLabel>Menu</DropdownMenuLabel>
+              <DropdownMenuLabel>{m.common_menu()}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <MobileLinks {...props} />
             </DropdownMenuContent>
@@ -79,21 +80,21 @@ function DesktopLinks(props: LinksProps) {
         href="/"
         active={location.pathname === "/" || location.pathname === "/objekts"}
         icon={IconCards}
-        name="Objekts"
+        name={m.objekts_header()}
       />
 
       <LinkButton
         href="/objekts/stats"
         active={location.pathname === "/objekts/stats"}
         icon={ChartColumnBig}
-        name="Objekt Stats"
+        name={m.nav_objekt_stats()}
       />
 
       <LinkButton
         href="/gravity"
         active={location.pathname.startsWith("/gravity")}
         icon={Vote}
-        name="Gravity"
+        name={m.gravity_header()}
       />
 
       {props.cosmo && (
@@ -101,7 +102,7 @@ function DesktopLinks(props: LinksProps) {
           href={`/@${props.cosmo.username}`}
           active={location.pathname.startsWith(`/@${props.cosmo.username}`)}
           icon={PackageOpen}
-          name="Collection"
+          name={m.collection_title()}
         />
       )}
 
@@ -118,7 +119,7 @@ export function MobileLinks(props: Props) {
     <div className="contents">
       {/* objekt index */}
       <DropdownMenuItem asChild>
-        <Link to="/" aria-label="Objekts">
+        <Link to="/" aria-label={m.objekts_header()}>
           <IconCards
             className={cn(
               "h-4 w-4 shrink-0 fill-transparent transition-all",
@@ -126,33 +127,33 @@ export function MobileLinks(props: Props) {
                 "fill-white/50",
             )}
           />
-          <span>Objekts</span>
+          <span>{m.objekts_header()}</span>
         </Link>
       </DropdownMenuItem>
 
       {/* objekt stats */}
       <DropdownMenuItem asChild>
-        <Link to="/objekts/stats" aria-label="Objekt Stats">
+        <Link to="/objekts/stats" aria-label={m.nav_objekt_stats()}>
           <ChartColumnBig
             className={cn(
               "h-4 w-4 shrink-0 fill-transparent transition-all",
               location.pathname === "/objekts/stats" && "fill-white/50",
             )}
           />
-          <span>Objekt Stats</span>
+          <span>{m.nav_objekt_stats()}</span>
         </Link>
       </DropdownMenuItem>
 
       {/* gravity */}
       <DropdownMenuItem asChild>
-        <Link to="/gravity" aria-label="Gravity">
+        <Link to="/gravity" aria-label={m.gravity_header()}>
           <Vote
             className={cn(
               "h-4 w-4 shrink-0 fill-transparent transition-all",
               location.pathname.startsWith("/gravity") && "fill-white/50",
             )}
           />
-          <span>Gravity</span>
+          <span>{m.gravity_header()}</span>
         </Link>
       </DropdownMenuItem>
 
@@ -162,7 +163,7 @@ export function MobileLinks(props: Props) {
           <Link
             to="/@{$username}"
             params={{ username: props.cosmo.username }}
-            aria-label="Collection"
+            aria-label={m.collection_title()}
           >
             <PackageOpen
               className={cn(
@@ -171,7 +172,7 @@ export function MobileLinks(props: Props) {
                   "fill-white/50",
               )}
             />
-            <span>Collection</span>
+            <span>{m.collection_title()}</span>
           </Link>
         </DropdownMenuItem>
       )}

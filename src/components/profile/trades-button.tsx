@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Send } from "lucide-react";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import { Button } from "@/components/ui/button";
+import { m } from "@/i18n/messages";
 
 type Props = {
   cosmo: PublicCosmo;
@@ -15,7 +16,7 @@ export default function TradesButton({ cosmo }: Props) {
         params={{ username: cosmo.isAddress ? cosmo.address : cosmo.username }}
       >
         <Send className="h-5 w-5" />
-        <span>Trades</span>
+        <span>{m.trades_title()}</span>
       </Link>
     </Button>
   );

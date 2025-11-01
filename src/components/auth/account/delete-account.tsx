@@ -11,6 +11,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useDeleteAccount } from "@/hooks/use-account";
+import { m } from "@/i18n/messages";
 
 export default function DeleteAccount() {
   const [open, setOpen] = useState(false);
@@ -21,7 +22,7 @@ export default function DeleteAccount() {
       <DialogTrigger asChild>
         <Button variant="destructive" className="w-fit">
           <Trash2 className="h-4 w-4" />
-          <span>Delete Account</span>
+          <span>{m.delete_account_title()}</span>
         </Button>
       </DialogTrigger>
       <DialogContent>
@@ -30,23 +31,21 @@ export default function DeleteAccount() {
         ) : (
           <div className="contents">
             <DialogHeader>
-              <DialogTitle>Are you absolutely sure?</DialogTitle>
+              <DialogTitle>{m.delete_account_confirm_title()}</DialogTitle>
               <DialogDescription>
-                This will delete all data associated with your account and
-                cannot be undone. You will be sent a verification email to
-                confirm deletion.
+                {m.delete_account_confirm_description()}
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
               <Button variant="secondary" onClick={() => setOpen(false)}>
-                Cancel
+                {m.common_cancel()}
               </Button>
               <Button
                 variant="destructive"
                 disabled={status === "pending"}
                 onClick={() => mutate()}
               >
-                <span>Send Email</span>
+                <span>{m.delete_account_send_email()}</span>
                 {status === "pending" && (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 )}
@@ -64,16 +63,15 @@ function Success(props: { onClose: () => void }) {
     <div className="flex h-full flex-col items-center justify-center">
       <MailCheck className="h-10 w-10" />
       <p className="text-sm font-semibold">
-        Click the link in the email to confirm the deletion of your account.
+        {m.delete_account_success_title()}
       </p>
       <p className="text-sm text-muted-foreground">
-        Your account will not be deleted until the link in the verification
-        email is clicked.
+        {m.delete_account_success_description()}
       </p>
 
       <DialogFooter className="mt-4">
         <Button variant="secondary" onClick={props.onClose}>
-          Close
+          {m.common_close()}
         </Button>
       </DialogFooter>
     </div>

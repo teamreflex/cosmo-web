@@ -11,6 +11,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { m } from "@/i18n/messages";
 
 export default function HelpDialog() {
   return (
@@ -24,34 +25,30 @@ export default function HelpDialog() {
         <AlertDialogHeader>
           <VisuallyHidden>
             <AlertDialogDescription>
-              Help information for COMO caldenar
+              {m.help_como_description()}
             </AlertDialogDescription>
           </VisuallyHidden>
-          <AlertDialogTitle>COMO Calendar</AlertDialogTitle>
+          <AlertDialogTitle>{m.help_como_title()}</AlertDialogTitle>
         </AlertDialogHeader>
 
         <div className="flex flex-col gap-4 text-sm text-muted-foreground">
           <div className="flex flex-col gap-1">
             <p>
-              Dates and times of your daily COMO drops may not perfectly align
-              with COSMO due to timezones and batches.
+              {m.help_como_timezone()}
             </p>
 
             <span>
               A <Sparkles className="inline-block h-5 w-5 text-yellow-600" />{" "}
-              icon denotes that a drop is scheduled to happen on a day that does
-              not exist in the current month, and will instead be carried over
-              to the next month.
+              {m.help_como_sparkles()}
             </span>
 
             <p>
-              For example, COMO scheduled to drop on May 31st, will drop in June
-              on the 30th.
+              {m.help_como_example()}
             </p>
           </div>
         </div>
         <AlertDialogFooter>
-          <AlertDialogAction>Continue</AlertDialogAction>
+          <AlertDialogAction>{m.common_continue()}</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

@@ -1,6 +1,7 @@
 import { X } from "lucide-react";
 import { getRouteApi } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
+import { m } from "@/i18n/messages";
 
 const route = getRouteApi("/");
 
@@ -26,7 +27,7 @@ export default function FilterSearch() {
     >
       <input
         type="text"
-        placeholder="Search..."
+        placeholder={m.common_search_placeholder()}
         value={search ?? ""}
         onChange={(e) => setQuery(e.currentTarget.value || undefined)}
         className="h-full w-full grow py-1 pl-3 text-base outline-none md:text-sm"

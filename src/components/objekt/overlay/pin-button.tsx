@@ -5,6 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { $pinObjekt, $unpinObjekt } from "@/components/collection/actions";
 import { track } from "@/lib/utils";
 import { useProfileContext } from "@/hooks/use-profile";
+import { m } from "@/i18n/messages";
 
 type Props = {
   collectionId: string;
@@ -33,7 +34,7 @@ function PinButton(props: ButtonProps) {
     onSuccess: (data) => {
       track("pin-objekt");
       addPin(data);
-      toast.success(`Pinned ${props.collectionId}`);
+      toast.success(m.toast_pinned({ collectionId: props.collectionId }));
     },
   });
 
@@ -45,7 +46,7 @@ function PinButton(props: ButtonProps) {
     <button
       className="flex items-center transition-all hover:scale-110"
       disabled={mutation.isPending}
-      aria-label={`Pin ${props.collectionId}`}
+      aria-label={m.objekt_overlay_pin_aria({ collectionId: props.collectionId })}
       onClick={handleClick}
     >
       {mutation.isPending ? (
@@ -65,7 +66,7 @@ function UnpinButton(props: ButtonProps) {
     onSuccess: () => {
       track("unpin-objekt");
       removePin(props.tokenId);
-      toast.success(`Unpinned ${props.collectionId}`);
+      toast.success(m.toast_unpinned({ collectionId: props.collectionId }));
     },
   });
 
@@ -77,7 +78,7 @@ function UnpinButton(props: ButtonProps) {
     <button
       className="flex items-center transition-all hover:scale-110"
       disabled={mutation.isPending}
-      aria-label={`Unpin ${props.collectionId}`}
+      aria-label={m.objekt_overlay_unpin_aria({ collectionId: props.collectionId })}
       onClick={handleClick}
     >
       {mutation.isPending ? (

@@ -2,6 +2,7 @@ import { IconRotate360 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import type { AggregatedTransfer } from "@/lib/universal/transfers";
 import { Addresses } from "@/lib/utils";
+import { m } from "@/i18n/messages";
 
 type Props = {
   row: AggregatedTransfer;
@@ -24,7 +25,7 @@ export default function TransferRow({ row, address }: Props) {
   return (
     <div className="grid h-14 grid-cols-[3fr_2fr_2fr] items-center gap-2 border-t border-accent px-4 text-xs transition-colors hover:bg-secondary/40 sm:text-sm">
       <div className="flex flex-col">
-        <span>{row.collection?.collectionId ?? "Unknown"}</span>
+        <span>{row.collection?.collectionId ?? m.transfer_unknown()}</span>
         <span className="text-xs">#{serial}</span>
       </div>
       <User row={row} isReceiver={isReceiver} />
@@ -46,7 +47,7 @@ function User({ row, isReceiver }: UserProps) {
         <IconRotate360 className="size-8" />
         <div className="flex flex-col">
           <TransferAction isReceiver={isReceiver} />
-          <span>COSMO Spin</span>
+          <span>{m.transfer_cosmo_spin()}</span>
         </div>
       </div>
     );
@@ -58,12 +59,12 @@ function User({ row, isReceiver }: UserProps) {
       <div className="flex items-center gap-2">
         <img
           src="/cosmo.webp"
-          alt="COSMO"
+          alt={m.common_cosmo()}
           className="aspect-square size-7 rounded-full ring ring-accent"
         />
         <div className="flex flex-col">
           <TransferAction isReceiver={true} />
-          <span>COSMO</span>
+          <span>{m.common_cosmo()}</span>
         </div>
       </div>
     );
@@ -75,7 +76,7 @@ function User({ row, isReceiver }: UserProps) {
     <div className="flex items-center gap-2">
       <img
         src="/profile.webp"
-        alt="Cosmo"
+        alt={m.common_cosmo()}
         className="aspect-square size-7 rounded-full bg-cosmo-profile p-1"
       />
       <div className="flex flex-col">
@@ -98,7 +99,7 @@ function TransferAction({ isReceiver }: { isReceiver: boolean }) {
       data-receiver={isReceiver}
       className="w-fit rounded-full bg-[#8ebdd1] px-1.5 py-px text-xs text-foreground data-[receiver=true]:bg-[#D5B7E2]"
     >
-      <span className="drop-shadow">{isReceiver ? "From" : "To"}</span>
+      <span className="drop-shadow">{isReceiver ? m.transfer_from() : m.transfer_to()}</span>
     </div>
   );
 }

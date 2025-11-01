@@ -26,6 +26,7 @@ import { $createObjektList } from "./actions";
 import type z from "zod";
 import { track } from "@/lib/utils";
 import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
+import { m } from "@/i18n/messages";
 
 type Props = {
   open: boolean;
@@ -40,7 +41,7 @@ export default function CreateListDialog(props: Props) {
     mutationFn,
     onSuccess: (result) => {
       track("create-list");
-      toast.success("Objekt list created!");
+      toast.success(m.toast_list_created());
       // insert new list into current account query
       queryClient.setQueryData(currentAccountQuery.queryKey, (old) => {
         if (!old) return old;
@@ -82,9 +83,9 @@ export default function CreateListDialog(props: Props) {
     <Dialog open={props.open} onOpenChange={props.onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Create Objekt List</DialogTitle>
+          <DialogTitle>{m.list_create()}</DialogTitle>
           <DialogDescription>
-            You can add objekts to the list later.
+            {m.list_create_description()}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -97,10 +98,10 @@ export default function CreateListDialog(props: Props) {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel>{m.list_name()}</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Want To Trade"
+                      placeholder={m.list_name_placeholder()}
                       data-1p-ignore
                       {...field}
                     />
@@ -123,7 +124,7 @@ function SubmitButton() {
 
   return (
     <Button type="submit" disabled={isSubmitting}>
-      <span>Create</span>
+      <span>{m.common_create()}</span>
       {isSubmitting && <Loader2 className="animate-spin" />}
     </Button>
   );

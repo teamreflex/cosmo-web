@@ -27,6 +27,7 @@ import { Button } from "../ui/button";
 import type { ReactNode } from "react";
 import type { CollectionDataSource } from "@/lib/utils";
 import { Addresses, isEqual } from "@/lib/utils";
+import { m } from "@/i18n/messages";
 import { env } from "@/lib/env/client";
 
 type Props = {
@@ -39,6 +40,7 @@ type Props = {
 
 export function DataSourceSelector(props: Props) {
   const [helpOpen, setHelpOpen] = useState(false);
+  const sources = getSources();
 
   function onHelpClose() {
     setHelpOpen(false);
@@ -53,7 +55,7 @@ export function DataSourceSelector(props: Props) {
         onValueChange={props.onValueChange}
       >
         <SelectTrigger className="w-36 **:data-desc:hidden **:data-icon:size-5 **:data-label:hidden">
-          <SelectValue placeholder="Data Source" />
+          <SelectValue placeholder={m.data_source_title()} />
         </SelectTrigger>
         <SelectContent
           align="end"
@@ -89,7 +91,7 @@ export function DataSourceSelector(props: Props) {
             <Button variant="link" size="xs" onClick={() => setHelpOpen(true)}>
               <div className="flex flex-row items-center gap-2 text-xs">
                 <CircleHelp className="size-4" />
-                <span>What is this?</span>
+                <span>{m.data_source_what_is_this()}</span>
               </div>
             </Button>
           </div>
@@ -101,12 +103,13 @@ export function DataSourceSelector(props: Props) {
 }
 
 function Content(props: { onClose: () => void }) {
+  const sources = getSources();
   return (
     <AlertDialogContent>
       <AlertDialogHeader>
-        <AlertDialogTitle>Objekt Data Source</AlertDialogTitle>
+        <AlertDialogTitle>{m.data_source_title()}</AlertDialogTitle>
         <AlertDialogDescription>
-          {env.VITE_APP_NAME} can display collections in different ways.
+          {m.data_source_description({ appName: env.VITE_APP_NAME })}
         </AlertDialogDescription>
       </AlertDialogHeader>
 
@@ -127,7 +130,7 @@ function Content(props: { onClose: () => void }) {
       </Accordion>
 
       <AlertDialogFooter>
-        <AlertDialogAction onClick={props.onClose}>Continue</AlertDialogAction>
+        <AlertDialogAction onClick={props.onClose}>{m.common_continue()}</AlertDialogAction>
       </AlertDialogFooter>
     </AlertDialogContent>
   );
@@ -145,51 +148,52 @@ type Source = {
   isAvailable: (address?: string) => boolean;
 };
 
-const sources: Source[] = [
-  {
-    title: "Abstract Blockchain - Collection Groups",
-    subtitle: "Collection groups with extra filters",
-    label: "Abstract - Collection Groups",
-    shortLabel: "Groups",
-    icon: <AbstractIcon />,
-    value: "blockchain-groups",
-    description: "Replicates COSMO collection groups.",
-    notes: [
-      "Always available on any profile.",
-      "Supports sorting by serial number.",
-      "Does not support filtering by gridable.",
-      "Objekt statuses such as event/welcome reward, gridded, mint pending, etc. are not supported.",
-      "Transferable status may not be reliable.",
-    ],
-    /**
-     * prevent collection groups being used on the spin account.
-     * the SQL query to pull this off needs optimization.
-     */
-    isAvailable: (address) => {
-      return address !== undefined ? !isEqual(address, Addresses.SPIN) : true;
+function getSources(): Source[] {
+  return [
+    {
+      title: m.data_source_blockchain_groups_title(),
+      subtitle: m.data_source_blockchain_groups_subtitle(),
+      label: m.data_source_blockchain_groups_label(),
+      shortLabel: m.data_source_blockchain_groups_short(),
+      icon: <AbstractIcon />,
+      value: "blockchain-groups",
+      description: m.data_source_blockchain_groups_desc(),
+      notes: [
+        m.data_source_blockchain_groups_note_1(),
+        m.data_source_blockchain_groups_note_2(),
+        m.data_source_blockchain_groups_note_3(),
+        m.data_source_blockchain_groups_note_4(),
+        m.data_source_blockchain_groups_note_5(),
+      ],
+      /**
+       * prevent collection groups being used on the spin account.
+       * the SQL query to pull this off needs optimization.
+       */
+      isAvailable: (address) => {
+        return address !== undefined ? !isEqual(address, Addresses.SPIN) : true;
+      },
     },
-  },
-  {
-    title: "Abstract Blockchain - All Objekts",
-    subtitle: "View all individual objekts",
-    label: "Abstract - All Objekts",
-    shortLabel: "Abstract",
-    icon: <AbstractIcon />,
-    value: "blockchain",
-    description:
-      "Displays all objekts, including duplicates, with filter limitations.",
-    notes: [
-      "The same viewing format as COSMO prior to its collection groups update.",
-      "Has the same filter features & limitations as the Abstract - All Objekts source.",
-    ],
-    isAvailable: () => true,
-  },
-];
+    {
+      title: m.data_source_blockchain_title(),
+      subtitle: m.data_source_blockchain_subtitle(),
+      label: m.data_source_blockchain_label(),
+      shortLabel: m.data_source_blockchain_short(),
+      icon: <AbstractIcon />,
+      value: "blockchain",
+      description: m.data_source_blockchain_desc(),
+      notes: [
+        m.data_source_blockchain_note_1(),
+        m.data_source_blockchain_note_2(),
+      ],
+      isAvailable: () => true,
+    },
+  ];
+}
 
 function AbstractIcon() {
   return (
     <div className="relative size-6 rounded-full bg-abstract" data-icon>
-      <img src="/abstract.svg" alt="Abstract" className="absolute" />
+      <img src="/abstract.svg" alt={m.data_source_blockchain_short()} className="absolute" />
     </div>
   );
 }

@@ -23,6 +23,7 @@ import { Button } from "../ui/button";
 import { ScrollArea } from "../ui/scroll-area";
 import { $generateDiscordList } from "./actions";
 import type { ObjektList } from "@/lib/server/db/schema";
+import { m } from "@/i18n/messages";
 
 type Props = {
   open: boolean;
@@ -51,7 +52,7 @@ export default function DiscordFormatDialog({
 
   function generate() {
     if (disabled) {
-      toast.error("Please select both lists.");
+      toast.error(m.toast_select_both_lists());
       return;
     }
 
@@ -65,24 +66,23 @@ export default function DiscordFormatDialog({
 
   function copy() {
     copyToClipboard(result ?? "");
-    toast.success("Copied to clipboard!");
+    toast.success(m.toast_copied_clipboard());
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Format Lists for Discord</DialogTitle>
+          <DialogTitle>{m.list_discord_format_title()}</DialogTitle>
           <DialogDescription>
-            Select one list as your <strong>have</strong>, and another as your{" "}
-            <strong>want</strong>, for easy copying into <i>#objekt-trade</i>.
+            {m.list_discord_format_description()}
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex w-full flex-col gap-2">
           <div className="grid grid-cols-2 gap-2">
             <div className="grid gap-1.5">
-              <Label>Have</Label>
+              <Label>{m.list_discord_have()}</Label>
               <SelectList
                 objektLists={objektLists}
                 value={haveId}
@@ -91,7 +91,7 @@ export default function DiscordFormatDialog({
             </div>
 
             <div className="grid gap-1.5">
-              <Label>Want</Label>
+              <Label>{m.list_discord_want()}</Label>
               <SelectList
                 objektLists={objektLists}
                 value={wantId}
@@ -105,7 +105,7 @@ export default function DiscordFormatDialog({
               onClick={generate}
               disabled={disabled || mutation.isPending}
             >
-              <span>Generate</span>
+              <span>{m.common_generate()}</span>
               {mutation.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
@@ -115,7 +115,7 @@ export default function DiscordFormatDialog({
 
             {result && (
               <Button onClick={copy}>
-                <span>Copy</span>
+                <span>{m.common_copy()}</span>
                 <Copy className="h-4 w-4" />
               </Button>
             )}
@@ -144,7 +144,7 @@ function SelectList({ objektLists, value, onSelect }: SelectListProps) {
   return (
     <Select value={value} onValueChange={onSelect}>
       <SelectTrigger className="w-full">
-        <SelectValue placeholder="Objekt List" />
+        <SelectValue placeholder={m.objekt_list()} />
       </SelectTrigger>
       <SelectContent>
         {objektLists.map((list) => (

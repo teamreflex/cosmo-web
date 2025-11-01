@@ -5,6 +5,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
+import { m } from "@/i18n/messages";
 
 type Props = {
   message?: string;
@@ -21,7 +22,7 @@ export default function AuthFallback({ message }: Props) {
             </div>
           </TooltipTrigger>
           <TooltipContent side="bottom" align="end">
-            {message ?? "Error loading user"}
+            {message ?? m.error_loading_user()}
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

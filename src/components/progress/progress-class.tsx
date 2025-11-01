@@ -1,6 +1,7 @@
 import { Expand, Shrink } from "lucide-react";
 import type { SeasonProgress } from "@/lib/universal/progress";
 import { cn } from "@/lib/utils";
+import { m } from "@/i18n/messages";
 
 type Props = {
   progress: SeasonProgress;
@@ -32,7 +33,7 @@ export default function ProgressClass({
       onClick={onExpand}
     >
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">{progress.class} Class</h3>
+        <h3 className="text-lg font-semibold">{m.progress_class({ class: progress.class })}</h3>
         <Icon className="h-5 w-5 text-muted-foreground transition-colors group-hover:text-foreground" />
       </div>
 
@@ -44,7 +45,7 @@ export default function ProgressClass({
 
           {isComplete && (
             <div className="rounded-full bg-green-500/20 px-2 py-0.5 text-xs text-foreground dark:text-green-300">
-              Complete
+              {m.progress_complete()}
             </div>
           )}
         </div>

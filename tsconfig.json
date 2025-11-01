@@ -17,6 +17,9 @@
     "isolatedModules": true,
     "resolveJsonModule": true,
 
+    // for paraglide
+    "allowJs": true,
+
     /* Linting */
     "skipLibCheck": true,
     "strict": true,

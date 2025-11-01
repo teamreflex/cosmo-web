@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { useObjektTransfer } from "@/hooks/use-objekt-transfer";
 import { useArtists } from "@/hooks/use-artists";
+import { m } from "@/i18n/messages";
 
 type Props = {
   collection: Objekt.Collection;
@@ -16,7 +17,7 @@ export default function SendObjekt({ collection, token }: Props) {
   function handleClick() {
     const artist = getArtist(collection.artist);
     if (!artist) {
-      toast.error("Artist not found");
+      toast.error(m.toast_artist_not_found());
       return;
     }
 

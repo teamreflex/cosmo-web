@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { systemStatusQuery } from "@/lib/queries/system";
+import { m } from "@/i18n/messages";
 
 export default function SystemStatus() {
   return (
@@ -53,7 +54,7 @@ function SystemStatusPopover() {
         {/* processor */}
         <div className="flex flex-col">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold">Database</p>
+            <p className="text-sm font-semibold">{m.system_database()}</p>
             <div
               className={cn(
                 "flex items-center gap-1",
@@ -83,7 +84,7 @@ function ErrorFallback() {
             <X className="h-4 w-4" />
           </div>
         </TooltipTrigger>
-        <TooltipContent>Could not fetch system status</TooltipContent>
+        <TooltipContent>{m.system_status_fetch_error()}</TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );
@@ -112,7 +113,7 @@ function bgStatus(status: SystemStatusType) {
 // };
 
 const processorText = {
-  normal: "Database is up to date",
-  degraded: "Database is ~1 hour behind",
-  down: "Database is over 1 hour behind",
+  normal: m.system_status_normal(),
+  degraded: m.system_status_degraded(),
+  down: m.system_status_down(),
 };

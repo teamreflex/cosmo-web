@@ -10,6 +10,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { m } from "@/i18n/messages";
 
 /**
  * User has verified their COSMO account
@@ -22,13 +23,13 @@ export function CosmoVerifiedBadge() {
           <img
             className="size-5 shrink-0 rounded invert dark:invert-0"
             src="/cosmo.webp"
-            alt="COSMO"
+            alt={m.common_cosmo()}
           />
         </TooltipTrigger>
         <TooltipContent side="bottom" align="start">
           <div className="flex flex-row items-center gap-2">
             <Check className="h-4 w-4" />
-            <span>COSMO is verified</span>
+            <span>{m.profile_badge_cosmo_verified()}</span>
           </div>
         </TooltipContent>
       </Tooltip>
@@ -47,11 +48,11 @@ export function ModhausBadge() {
           <img
             className="size-5 invert dark:invert-0"
             src="/modhaus.png"
-            alt="Modhaus"
+            alt={m.profile_badge_modhaus_alt()}
           />
         </TooltipTrigger>
         <TooltipContent side="bottom" align="start">
-          <span>Official Modhaus account</span>
+          <span>{m.profile_badge_modhaus()}</span>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

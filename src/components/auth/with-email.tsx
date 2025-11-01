@@ -19,6 +19,7 @@ import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { signInSchema } from "@/lib/universal/schema/auth";
 import { track } from "@/lib/utils";
 import { currentAccountQuery } from "@/lib/queries/core";
+import { m } from "@/i18n/messages";
 
 type Props = {
   onForgotPassword: () => void;
@@ -79,12 +80,12 @@ export default function WithEmail(props: Props) {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>{m.form_email()}</FormLabel>
               <FormControl>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="me@example.com"
+                  placeholder={m.form_email_placeholder()}
                   {...field}
                 />
               </FormControl>
@@ -98,12 +99,12 @@ export default function WithEmail(props: Props) {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>{m.common_password()}</FormLabel>
               <FormControl>
                 <Input
                   id="password"
                   type="password"
-                  placeholder="********"
+                  placeholder={m.form_password_placeholder()}
                   {...field}
                 />
               </FormControl>
@@ -114,7 +115,7 @@ export default function WithEmail(props: Props) {
 
         <div className="grid grid-cols-2 items-center gap-2">
           <Button type="submit" disabled={mutation.isPending}>
-            <span>Sign In</span>
+            <span>{m.auth_sign_in()}</span>
             {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
           </Button>
 
@@ -123,7 +124,7 @@ export default function WithEmail(props: Props) {
             variant="secondary"
             onClick={props.onForgotPassword}
           >
-            <span>Forgot Password</span>
+            <span>{m.auth_forgot_password()}</span>
           </Button>
         </div>
       </form>

@@ -1,5 +1,6 @@
 import type { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { Toggle } from "@/components/ui/toggle";
+import { m } from "@/i18n/messages";
 
 type Props = {
   transferable: CosmoFilters["transferable"];
@@ -21,9 +22,9 @@ export default function TransferableFilter(props: Props) {
       variant="outline"
       pressed={pressed}
       onPressedChange={handleChange}
-      aria-label="Toggle transferable"
+      aria-label={m.filter_toggle_transferable()}
     >
-      Transferable
+      {m.filter_transferable_label()}
     </Toggle>
   );
 }

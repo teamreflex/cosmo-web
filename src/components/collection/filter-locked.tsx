@@ -1,4 +1,5 @@
 import { Toggle } from "@/components/ui/toggle";
+import { m } from "@/i18n/messages";
 
 type Props = {
   showLocked: boolean;
@@ -6,7 +7,7 @@ type Props = {
 };
 
 export default function LockedFilter({ showLocked, setShowLocked }: Props) {
-  const state = showLocked ? "Showing" : "Hiding";
+  const state = showLocked ? m.filter_locked_showing() : m.filter_locked_hiding();
 
   return (
     <Toggle
@@ -14,9 +15,9 @@ export default function LockedFilter({ showLocked, setShowLocked }: Props) {
       className="w-36 data-[state=on]:border-cosmo"
       pressed={showLocked}
       onPressedChange={(v) => setShowLocked(v ? undefined : false)}
-      aria-label="Toggle locked"
+      aria-label={m.filter_toggle_locked()}
     >
-      {state} Locked
+      {state} {m.common_locked()}
     </Toggle>
   );
 }

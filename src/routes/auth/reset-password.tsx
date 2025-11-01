@@ -2,6 +2,7 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { z } from "zod";
 import ResetPassword from "@/components/auth/reset-password";
 import { defineHead } from "@/lib/meta";
+import { m } from "@/i18n/messages";
 
 export const Route = createFileRoute("/auth/reset-password")({
   validateSearch: z.object({
@@ -28,7 +29,7 @@ function RouteComponent() {
   return (
     <main className="container flex flex-col py-2">
       <div className="flex w-full items-center gap-2 pb-1">
-        <h1 className="font-cosmo text-3xl uppercase">Reset Password</h1>
+        <h1 className="font-cosmo text-3xl uppercase">{m.auth_reset_password()}</h1>
       </div>
 
       <div className="mx-auto w-full md:w-1/2">

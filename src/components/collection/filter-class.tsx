@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn, isEqual } from "@/lib/utils";
 import { useFilterData } from "@/hooks/use-filter-data";
+import * as m from "@/i18n/messages";
 
 type Props = {
   classes: CosmoFilters["class"];
@@ -56,7 +57,7 @@ export default function ClassFilter(props: Props) {
               "border-cosmo dark:border-cosmo",
           )}
         >
-          <span>Class</span>
+          <span>{m.common_class()}</span>
           <ChevronDown className="h-4 w-4 opacity-50" />
         </Button>
       </DropdownMenuTrigger>

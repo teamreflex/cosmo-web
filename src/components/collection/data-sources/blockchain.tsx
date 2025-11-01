@@ -15,6 +15,7 @@ import { useArtists } from "@/hooks/use-artists";
 import { useAuthenticated } from "@/hooks/use-authenticated";
 import { useGridColumns } from "@/hooks/use-grid-columns";
 import { userCollectionBlockchainQuery } from "@/lib/queries/objekt-queries";
+import { m } from "@/i18n/messages";
 
 type Props = {
   gridColumns: number;
@@ -68,7 +69,7 @@ export default function Blockchain(props: Props) {
       const total = data.pages[0]?.total ?? 0;
       return (
         <p className="text-end font-semibold">
-          {total.toLocaleString("en")} total
+          {total.toLocaleString("en")} {m.blockchain_total()}
         </p>
       );
     },

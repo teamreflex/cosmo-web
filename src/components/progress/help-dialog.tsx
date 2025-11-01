@@ -11,6 +11,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { m } from "@/i18n/messages";
 
 export default function HelpDialog() {
   return (
@@ -23,54 +24,35 @@ export default function HelpDialog() {
       <AlertDialogContent>
         <VisuallyHidden>
           <AlertDialogHeader>
-            <AlertDialogTitle>Help: Progress</AlertDialogTitle>
+            <AlertDialogTitle>{m.progress_title()}</AlertDialogTitle>
             <AlertDialogDescription>
-              Help information for progress pages
+              {m.progress_title()}
             </AlertDialogDescription>
           </AlertDialogHeader>
         </VisuallyHidden>
         <div className="flex flex-col gap-4 text-sm text-foreground/80">
           {/* progress */}
           <div className="flex flex-col gap-1">
-            <h3 className="text-lg font-semibold text-foreground">Progress</h3>
-            <p>
-              View a seasonal breakdown of collection progress to 100%
-              completion.
-            </p>
-            <p>
-              Each member can be further broken down into just physical (A) or
-              digital (Z) collections, instead of combined.
-            </p>
-            <p>
-              Unobtainable objekts such as those from limited time events, do
-              not count towards reaching 100%. If you have 100% for a
-              season/class and own an unobtainable, it will be shown and your
-              percentage will go over 100%.
-            </p>
-            <p>Progress breakdowns are updated every hour.</p>
+            <h3 className="text-lg font-semibold text-foreground">{m.progress_title()}</h3>
+            <p>{m.progress_help_progress_desc_1()}</p>
+            <p>{m.progress_help_progress_desc_2()}</p>
+            <p>{m.progress_help_progress_desc_3()}</p>
+            <p>{m.progress_help_progress_desc_4()}</p>
           </div>
 
           {/* leaderboard */}
           <div className="flex flex-col gap-1">
             <h3 className="text-lg font-semibold text-foreground">
-              Leaderboard
+              {m.progress_leaderboard()}
             </h3>
-            <p>
-              Leaderboards display the top 25 users for the given member, which
-              is based on the total number of unique collections the user has,
-              not the total number of objekts they own.
-            </p>
-            <p>
-              Leaderboard percentages completely exclude unobtainable objekts,
-              so your progress percentage may differ from your leaderboard
-              percentage.
-            </p>
-            <p>Progress percentages are recalculated every hour.</p>
-            <p>Any rank ties are random and may change upon refresh.</p>
+            <p>{m.progress_help_leaderboard_desc_1()}</p>
+            <p>{m.progress_help_leaderboard_desc_2()}</p>
+            <p>{m.progress_help_leaderboard_desc_3()}</p>
+            <p>{m.progress_help_leaderboard_desc_4()}</p>
           </div>
         </div>
         <AlertDialogFooter>
-          <AlertDialogAction>Continue</AlertDialogAction>
+          <AlertDialogAction>{m.common_continue()}</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

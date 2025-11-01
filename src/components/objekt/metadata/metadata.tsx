@@ -18,6 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { env } from "@/lib/env/client";
 import { unobtainables } from "@/lib/unobtainables";
 import { useUserState } from "@/hooks/use-user-state";
+import { m } from "@/i18n/messages";
 
 type Props = {
   objekt: Objekt.Collection;
@@ -42,7 +43,7 @@ export default function Metadata(props: Props) {
     copy(
       `${scheme}://${env.VITE_VERCEL_PROJECT_PRODUCTION_URL}/objekts?id=${props.objekt.slug}`,
     );
-    toast.success("Objekt URL copied to clipboard");
+    toast.success(m.toast_objekt_url_copied());
   }
 
   const { front } = getObjektImageUrls(props.objekt);
@@ -58,8 +59,8 @@ export default function Metadata(props: Props) {
         variant="underline"
       >
         <TabsList className="mx-auto w-fit md:mx-0">
-          <TabsTrigger value="metadata">Information</TabsTrigger>
-          <TabsTrigger value="serials">Serials</TabsTrigger>
+          <TabsTrigger value="metadata">{m.objekt_metadata_information()}</TabsTrigger>
+          <TabsTrigger value="serials">{m.objekt_metadata_serials()}</TabsTrigger>
         </TabsList>
 
         {/* metadata */}
@@ -97,13 +98,13 @@ export default function Metadata(props: Props) {
                 size="sm"
                 onClick={() => setShowForm((prev) => !prev)}
               >
-                {showForm ? "Cancel" : "Edit Metadata"}
+                {showForm ? m.common_cancel() : m.objekt_metadata_edit()}
               </Button>
             )}
 
             {!!data.metadata?.profile && (
               <div className="mr-auto flex items-center gap-1 text-xs">
-                <p>Sourced by:</p>
+                <p>{m.objekt_metadata_sourced_by()}</p>
                 <Link
                   className="underline"
                   to="/@{$username}"
@@ -125,14 +126,14 @@ export default function Metadata(props: Props) {
       <Portal to="#attribute-panel">
         <Pill
           label={
-            props.objekt.onOffline === "online" ? "Copies" : "Scanned Copies"
+            props.objekt.onOffline === "online" ? m.objekt_metadata_copies() : m.objekt_metadata_scanned_copies()
           }
           value={total}
         />
-        <Pill label="Tradable" value={`${data.percentage}%`} />
+        <Pill label={m.objekt_metadata_tradable()} value={`${data.percentage}%`} />
         {isUnobtainable && (
           <div className="flex items-center gap-1 rounded-full bg-red-500 px-2 py-1 text-xs sm:text-sm">
-            <span className="font-semibold text-white">Unobtainable</span>
+            <span className="font-semibold text-white">{m.objekt_metadata_unobtainable()}</span>
           </div>
         )}
       </Portal>

@@ -9,6 +9,7 @@ import SkeletonGradient from "../skeleton/skeleton-overlay";
 import type { ValidArtist } from "@/lib/universal/cosmo/common";
 import type { ReactNode } from "react";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
+import * as m from "@/i18n/messages";
 
 type Props = {
   children: ReactNode;
@@ -59,11 +60,11 @@ export default function FilteredObjektDisplay({
                   <div className="flex items-center gap-2">
                     <HeartCrack className="h-6 w-6" />
                     <p className="text-sm font-semibold">
-                      Error loading objekts
+                      {m.error_loading_objekts()}
                     </p>
                   </div>
                   <Button variant="outline" onClick={resetErrorBoundary}>
-                    <RefreshCcw className="mr-2" /> Retry
+                    <RefreshCcw className="mr-2" /> {m.common_retry()}
                   </Button>
                 </div>
               )}

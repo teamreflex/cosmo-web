@@ -17,6 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { m } from "@/i18n/messages";
 
 type UserDropdownProps = {
   user: PublicUser;
@@ -72,7 +73,7 @@ export default function UserDropdown({
           className="cursor-pointer"
         >
           <UserCog className="h-4 w-4" />
-          <span>Account</span>
+          <span>{m.common_account()}</span>
         </DropdownMenuItem>
 
         <DropdownMenuItem
@@ -80,13 +81,13 @@ export default function UserDropdown({
           className="cursor-pointer"
         >
           <Wrench className="h-4 w-4" />
-          <span>Settings</span>
+          <span>{m.user_dropdown_settings()}</span>
         </DropdownMenuItem>
 
         <DropdownMenuItem className="cursor-pointer" asChild>
           <a href="https://discord.gg/A72VRX8FgK" target="_blank">
             <IconBrandDiscord className="h-4 w-4" />
-            <span>Discord</span>
+            <span>{m.common_discord()}</span>
           </a>
         </DropdownMenuItem>
 
@@ -96,7 +97,7 @@ export default function UserDropdown({
             <DropdownMenuItem className="cursor-pointer" asChild>
               <Link to="/admin">
                 <ShieldAlert className="h-4 w-4" />
-                <span>Admin</span>
+                <span>{m.common_admin()}</span>
               </Link>
             </DropdownMenuItem>
           </div>
@@ -108,7 +109,7 @@ export default function UserDropdown({
           className="cursor-pointer"
         >
           <LogOut className="h-4 w-4" />
-          <span>Sign Out</span>
+          <span>{m.user_dropdown_sign_out()}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -2,6 +2,7 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { currentAccountQuery } from "@/lib/queries/core";
 import InsertBands from "@/components/admin/bands/insert-bands";
 import { defineHead } from "@/lib/meta";
+import { m } from "@/i18n/messages";
 
 export const Route = createFileRoute("/admin/bands")({
   staleTime: Infinity,
@@ -11,7 +12,7 @@ export const Route = createFileRoute("/admin/bands")({
       throw redirect({ to: "/" });
     }
   },
-  head: () => defineHead({ title: "Objekt Bands", canonical: "/admin/bands" }),
+  head: () => defineHead({ title: m.admin_bands_title(), canonical: "/admin/bands" }),
   component: RouteComponent,
 });
 

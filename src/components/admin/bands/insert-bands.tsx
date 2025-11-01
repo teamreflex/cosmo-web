@@ -8,6 +8,7 @@ import type { BandUrlRow } from "@/lib/universal/schema/admin";
 import { bandUrlInputSchema } from "@/lib/universal/schema/admin";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { m } from "@/i18n/messages";
 
 export default function InsertBands() {
   const [items, setItems] = useState<BandUrlRow[]>([
@@ -17,11 +18,11 @@ export default function InsertBands() {
   const mutation = useMutation({
     mutationFn,
     onSuccess: () => {
-      toast.success(`${items.length} objekt bands updated`);
+      toast.success(m.admin_bands_updated({ count: items.length }));
       setItems([{ slug: "", bandImageUrl: "" }]);
     },
     onError: () => {
-      toast.error("An unknown error occurred");
+      toast.error(m.error_unknown());
     },
   });
 
@@ -47,9 +48,7 @@ export default function InsertBands() {
     const data = await navigator.clipboard.readText();
     const result = bandUrlInputSchema.safeParse(data);
     if (result.success === false) {
-      toast.error(
-        "Invalid format: Required format is 'collectionId :: bandImageUrl'",
-      );
+      toast.error(m.admin_bands_invalid_format());
       return;
     }
 
@@ -74,12 +73,12 @@ export default function InsertBands() {
     <div className="flex flex-col gap-2">
       {/* header */}
       <div className="flex items-center gap-2">
-        <h1 className="text-lg font-semibold">Insert Bands</h1>
+        <h1 className="text-lg font-semibold">{m.admin_insert_bands()}</h1>
         <Button size="xs" onClick={addRow}>
-          <Plus className="size-4" /> <span>Add Row</span>
+          <Plus className="size-4" /> <span>{m.admin_add_row()}</span>
         </Button>
         <Button size="xs" onClick={onPaste}>
-          <Clipboard className="size-4" /> <span>Fill</span>
+          <Clipboard className="size-4" /> <span>{m.admin_fill()}</span>
         </Button>
         <Button
           variant="cosmo"
@@ -92,7 +91,7 @@ export default function InsertBands() {
           ) : (
             <HardDriveUpload className="size-4" />
           )}{" "}
-          <span>Save</span>
+          <span>{m.common_save()}</span>
         </Button>
       </div>
 
@@ -102,14 +101,14 @@ export default function InsertBands() {
           <div key={index} className="grid grid-cols-[20%_70%_auto] gap-2">
             <Input
               id="slug"
-              placeholder="atom01-heejin-101z..."
+              placeholder={m.admin_collection_id_placeholder()}
               value={row.slug}
               onChange={(e) => update(index, "slug", e.currentTarget.value)}
             />
 
             <Input
               id="bandImageUrl"
-              placeholder="https://resources.cosmo.fans/..."
+              placeholder={m.admin_band_url_placeholder()}
               value={row.bandImageUrl}
               onChange={(e) =>
                 update(index, "bandImageUrl", e.currentTarget.value)

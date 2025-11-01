@@ -4,6 +4,7 @@ import MemberSelect from "./member-select";
 import type { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import type { HourlyBreakdown } from "@/lib/universal/stats";
 import { Card, CardContent } from "@/components/ui/card";
+import { m } from "@/i18n/messages";
 
 type Props = {
   artists: CosmoArtistWithMembersBFF[];
@@ -20,13 +21,13 @@ export default function MemberBreakdown({
   const [checked, setChecked] = useState(() => {
     const artist =
       artists.find((a) => selectedArtists.includes(a.id)) ?? artists[0];
-    return artist?.artistMembers.map((m) => m.name) ?? [];
+    return artist?.artistMembers.map((member) => member.name) ?? [];
   });
 
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-row items-end justify-between gap-2">
-        <h2 className="text-xl font-semibold">Member Breakdown</h2>
+        <h2 className="text-xl font-semibold">{m.stats_member_breakdown()}</h2>
         <MemberSelect artists={artists} value={checked} onChange={setChecked} />
       </div>
 
@@ -40,7 +41,7 @@ export default function MemberBreakdown({
             />
           ) : (
             <div className="flex h-96 w-full items-center justify-center">
-              <p className="text-sm font-semibold">No members selected</p>
+              <p className="text-sm font-semibold">{m.objekt_stats_no_members()}</p>
             </div>
           )}
         </CardContent>

@@ -13,6 +13,7 @@ import type { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useFilterData } from "@/hooks/use-filter-data";
+import { m } from "@/i18n/messages";
 
 type Props = {
   collections: CosmoFilters["collectionNo"];
@@ -47,15 +48,15 @@ export default function CollectionFilter(props: Props) {
             (props.collections?.length ?? 0) > 0 && "border-cosmo",
           )}
         >
-          <span>Collections</span>
+          <span>{m.filter_collections()}</span>
           <ChevronDown className="h-4 w-4 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-36 p-0">
         <Command>
-          <CommandInput placeholder="Search..." />
+          <CommandInput placeholder={m.common_search_placeholder()} />
           <CommandList>
-            <CommandEmpty>No collection found.</CommandEmpty>
+            <CommandEmpty>{m.filter_collections_none()}</CommandEmpty>
             <CommandGroup>
               {collections.map((collection) => (
                 <CommandItem

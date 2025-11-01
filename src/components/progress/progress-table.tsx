@@ -12,6 +12,7 @@ import type { SeasonProgress } from "@/lib/universal/progress";
 import type { ValidOnlineType } from "@/lib/universal/cosmo/common";
 import { filterDataQuery } from "@/lib/queries/core";
 import { progressBreakdownQuery } from "@/lib/queries/progress";
+import { m } from "@/i18n/messages";
 
 type Props = {
   address: string;
@@ -132,12 +133,12 @@ function FilterSelect({
   return (
     <Select value={value} onValueChange={set}>
       <SelectTrigger className="w-32">
-        <SelectValue placeholder="Sort" />
+        <SelectValue placeholder={m.filter_sort()} />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="combined">Combined</SelectItem>
-        <SelectItem value="offline">Physical</SelectItem>
-        <SelectItem value="online">Digital</SelectItem>
+        <SelectItem value="combined">{m.progress_filter_combined()}</SelectItem>
+        <SelectItem value="offline">{m.filter_online_physical()}</SelectItem>
+        <SelectItem value="online">{m.filter_online_digital()}</SelectItem>
       </SelectContent>
     </Select>
   );

@@ -16,6 +16,7 @@ import AddToList from "@/components/lists/add-to-list";
 import useOverlayHover from "@/hooks/use-overlay-hover";
 import PinObjekt from "@/components/objekt/overlay/pin-button";
 import { useObjektOverlay } from "@/store";
+import { m } from "@/i18n/messages";
 
 type Props = {
   collection: Objekt.Collection;
@@ -176,41 +177,41 @@ export default function ActionOverlay({
       {/* status text */}
       <div className="max-w-0 overflow-hidden text-xs whitespace-nowrap transition-all group-hover:max-w-48">
         {isPin ? (
-          <OverlayStatus>Pinned</OverlayStatus>
+          <OverlayStatus>{m.objekt_overlay_pinned()}</OverlayStatus>
         ) : (
           <div className="contents">
             {hoverState === "send" && authenticated && (
-              <OverlayStatus>Send</OverlayStatus>
+              <OverlayStatus>{m.objekt_overlay_send()}</OverlayStatus>
             )}
             {hoverState === "list" && authenticated && (
-              <OverlayStatus>Add to List</OverlayStatus>
+              <OverlayStatus>{m.objekt_overlay_add_to_list()}</OverlayStatus>
             )}
             {hoverState === "lock" && (
-              <OverlayStatus>{isLocked ? "Unlock" : "Lock"}</OverlayStatus>
+              <OverlayStatus>{isLocked ? m.objekt_overlay_unlock() : m.objekt_overlay_lock()}</OverlayStatus>
             )}
             {hoverState === "pin" && (
-              <OverlayStatus>{isPinned ? "Unpin" : "Pin"}</OverlayStatus>
+              <OverlayStatus>{isPinned ? m.objekt_overlay_unpin() : m.objekt_overlay_pin()}</OverlayStatus>
             )}
             {token.nonTransferableReason === "not-transferable" && (
-              <OverlayStatus>Not transferable</OverlayStatus>
+              <OverlayStatus>{m.objekt_overlay_not_transferable()}</OverlayStatus>
             )}
             {token.nonTransferableReason === "mint-pending" && (
-              <OverlayStatus>Mint pending</OverlayStatus>
+              <OverlayStatus>{m.objekt_overlay_mint_pending()}</OverlayStatus>
             )}
             {!usedForGrid &&
               token.nonTransferableReason === "challenge-reward" && (
-                <OverlayStatus>Event reward</OverlayStatus>
+                <OverlayStatus>{m.objekt_overlay_event_reward()}</OverlayStatus>
               )}
             {!isSendable &&
               token.nonTransferableReason === "welcome-objekt" && (
-                <OverlayStatus>Welcome reward</OverlayStatus>
+                <OverlayStatus>{m.objekt_overlay_welcome_reward()}</OverlayStatus>
               )}
-            {usedForGrid && <OverlayStatus>Used for grid</OverlayStatus>}
+            {usedForGrid && <OverlayStatus>{m.objekt_overlay_used_for_grid()}</OverlayStatus>}
             {token.lenticularPairTokenId !== 0 && (
-              <OverlayStatus>Lenticular pair</OverlayStatus>
+              <OverlayStatus>{m.objekt_overlay_lenticular_pair()}</OverlayStatus>
             )}
             {hoverState === undefined && !token.nonTransferableReason && (
-              <OverlayStatus>{isLocked ? "Locked" : "Unlocked"}</OverlayStatus>
+              <OverlayStatus>{isLocked ? m.common_locked() : m.objekt_overlay_unlocked()}</OverlayStatus>
             )}
           </div>
         )}

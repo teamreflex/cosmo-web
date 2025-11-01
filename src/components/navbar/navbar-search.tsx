@@ -10,6 +10,7 @@ import {
 } from "../ui/tooltip";
 import type { CosmoPublicUser } from "@/lib/universal/cosmo/user";
 import { useSearchStore } from "@/store";
+import { m } from "@/i18n/messages";
 
 export default function NavbarSearch() {
   const recent = useSearchStore((state) => state.recentLookups);
@@ -39,14 +40,14 @@ export default function NavbarSearch() {
           <TooltipTrigger asChild>
             <button
               className="outline-hidden drop-shadow-lg focus:outline-hidden"
-              aria-label="Search for user"
+              aria-label={m.navbar_search_user()}
               onClick={() => setOpen(true)}
             >
               <Search className="h-8 w-8 shrink-0 fill-transparent transition-all" />
             </button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>User Search</p>
+            <p>{m.common_user_search()}</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

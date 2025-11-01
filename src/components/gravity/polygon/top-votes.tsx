@@ -2,6 +2,7 @@ import * as motion from "motion/react-client";
 import { AnimatePresence } from "motion/react";
 import type { RevealedVote } from "@/lib/client/gravity/polygon/types";
 import type { PollSelectedContentImage } from "@/lib/universal/cosmo/gravity";
+import { m } from "@/i18n/messages";
 
 type Props = {
   votes: RevealedVote[];
@@ -54,7 +55,7 @@ function Row(props: RowProps) {
       </div>
 
       <span className="ml-auto text-sm">
-        {props.vote.comoAmount.toLocaleString()} COMO
+        {props.vote.comoAmount.toLocaleString()} {m.common_como()}
       </span>
     </div>
   );

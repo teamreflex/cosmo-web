@@ -9,6 +9,7 @@ import ProgressTable from "./progress-table";
 import type { PropsWithChildren } from "react";
 import type { ValidArtist } from "@/lib/universal/cosmo/common";
 import { useProgressFilters } from "@/hooks/use-progress-filters";
+import { m } from "@/i18n/messages";
 
 type Props = PropsWithChildren<{
   address: string;
@@ -52,11 +53,11 @@ export default function ProgressRenderer(props: Props) {
             fallbackRender={({ resetErrorBoundary }) => (
               <div className="flex flex-col items-center gap-2 py-6 text-sm font-semibold">
                 <p className="text-center text-sm font-semibold">
-                  Error fetching progress
+                  {m.progress_error_fetching()}
                 </p>
 
                 <Button variant="outline" onClick={resetErrorBoundary}>
-                  <RefreshCcw className="mr-2" /> Try Again
+                  <RefreshCcw className="mr-2" /> {m.error_try_again()}
                 </Button>
               </div>
             )}

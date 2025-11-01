@@ -19,6 +19,7 @@ import type { z } from "zod";
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { signUpSchema } from "@/lib/universal/schema/auth";
 import { track } from "@/lib/utils";
+import { m } from "@/i18n/messages";
 
 type Props = {
   onCancel: () => void;
@@ -67,9 +68,9 @@ export default function SignUp({ onCancel }: Props) {
       <div className="flex flex-col items-center gap-2">
         <CheckCircle className="h-10 w-10" />
         <p className="text-sm font-semibold">
-          We&apos;ve sent you an email to verify your account.
+          {m.auth_verification_email_sent()}
         </p>
-        <p className="text-sm font-semibold">Signing in...</p>
+        <p className="text-sm font-semibold">{m.auth_signing_in()}</p>
       </div>
     );
   }
@@ -85,9 +86,9 @@ export default function SignUp({ onCancel }: Props) {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>{m.form_email()}</FormLabel>
               <FormControl>
-                <Input type="email" placeholder="me@example.com" {...field} />
+                <Input type="email" placeholder={m.form_email_placeholder()} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -99,9 +100,9 @@ export default function SignUp({ onCancel }: Props) {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>{m.common_password()}</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="********" {...field} />
+                <Input type="password" placeholder={m.form_password_placeholder()} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -113,7 +114,7 @@ export default function SignUp({ onCancel }: Props) {
           name="username"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Username</FormLabel>
+              <FormLabel>{m.common_username()}</FormLabel>
               <FormControl>
                 <Input type="text" placeholder={placeholder} {...field} />
               </FormControl>
@@ -124,12 +125,12 @@ export default function SignUp({ onCancel }: Props) {
 
         <div className="grid grid-cols-2 items-center gap-2">
           <Button type="submit" disabled={mutation.isPending}>
-            <span>Create Account</span>
+            <span>{m.auth_create_account()}</span>
             {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
           </Button>
 
           <Button type="button" variant="secondary" onClick={onCancel}>
-            <span>Cancel</span>
+            <span>{m.common_cancel()}</span>
           </Button>
         </div>
       </form>

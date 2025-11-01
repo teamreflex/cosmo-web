@@ -18,6 +18,7 @@ import {
   FormMessage,
   useFormField,
 } from "@/components/ui/form";
+import { m } from "@/i18n/messages";
 
 type Props = {
   email: string;
@@ -48,7 +49,7 @@ export default function UpdateEmail({ email }: Props) {
     mutation.mutate(data, {
       onSuccess: () => {
         toast.success(
-          "An email has been sent to verify your new email address.",
+          m.auth_email_verification_sent(),
         );
         router.invalidate();
       },
@@ -71,14 +72,13 @@ export default function UpdateEmail({ email }: Props) {
             <FormItem>
               <FormControl>
                 <div className="flex items-center gap-2">
-                  <Input type="email" placeholder="me@example.com" {...field} />
+                  <Input type="email" placeholder={m.form_email_placeholder()} {...field} />
 
                   <Submit isPending={mutation.isPending} />
                 </div>
               </FormControl>
               <FormDescription>
-                If changing email address, you will be sent a verification
-                email.
+                {m.settings_email_change_description()}
               </FormDescription>
               <FormMessage />
             </FormItem>

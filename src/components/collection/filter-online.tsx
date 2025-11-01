@@ -11,11 +11,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { validOnlineTypes } from "@/lib/universal/cosmo/common";
 import { cn } from "@/lib/utils";
+import { m } from "@/i18n/messages";
 
-const map: Record<ValidOnlineType, string> = {
-  online: "Digital",
-  offline: "Physical",
-};
+function getOnlineTypeMap(): Record<ValidOnlineType, string> {
+  return {
+    online: m.filter_online_digital(),
+    offline: m.filter_online_physical(),
+  };
+}
 
 type Props = {
   onOffline: CosmoFilters["on_offline"];
@@ -24,6 +27,7 @@ type Props = {
 
 export default function OnlineFilter({ onOffline: value, onChange }: Props) {
   const [open, setOpen] = useState(false);
+  const map = getOnlineTypeMap();
 
   function handleChange(property: ValidOnlineType, checked: boolean) {
     onChange(() => {
@@ -47,7 +51,7 @@ export default function OnlineFilter({ onOffline: value, onChange }: Props) {
             (value?.length ?? 0) > 0 && "border-cosmo dark:border-cosmo",
           )}
         >
-          <span>Physical</span>
+          <span>{m.filter_online_physical()}</span>
           <ChevronDown className="h-4 w-4 opacity-50" />
         </Button>
       </DropdownMenuTrigger>

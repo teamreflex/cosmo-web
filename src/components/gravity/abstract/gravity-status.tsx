@@ -1,5 +1,6 @@
 import { Activity, CircleCheckBig, Loader2 } from "lucide-react";
 import type { LiveStatus } from "@/lib/client/gravity/abstract/types";
+import { m } from "@/i18n/messages";
 
 type StatusProps = {
   liveStatus: LiveStatus;
@@ -10,6 +11,7 @@ export default function GravityStatus({
   liveStatus,
   isRefreshing = false,
 }: StatusProps) {
+  const statusConfig = getStatusConfig();
   const config = statusConfig[liveStatus];
 
   return (
@@ -26,19 +28,21 @@ export default function GravityStatus({
   );
 }
 
-const statusConfig = {
-  voting: {
-    icon: <Activity className="size-5 text-cosmo" />,
-    text: "VOTING",
-  },
-  live: {
-    icon: (
-      <div className="aspect-square size-3 animate-pulse rounded-full bg-red-500" />
-    ),
-    text: "LIVE",
-  },
-  finalized: {
-    icon: <CircleCheckBig className="size-4 text-green-500" />,
-    text: "COMPLETE",
-  },
-} as const;
+function getStatusConfig() {
+  return {
+    voting: {
+      icon: <Activity className="size-5 text-cosmo" />,
+      text: m.gravity_status_voting(),
+    },
+    live: {
+      icon: (
+        <div className="aspect-square size-3 animate-pulse rounded-full bg-red-500" />
+      ),
+      text: m.gravity_status_live(),
+    },
+    finalized: {
+      icon: <CircleCheckBig className="size-4 text-green-500" />,
+      text: m.gravity_status_complete(),
+    },
+  } as const;
+}

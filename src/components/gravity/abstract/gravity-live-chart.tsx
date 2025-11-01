@@ -14,6 +14,7 @@ import {
 } from "@/lib/client/gravity/abstract/hooks";
 import { useGravityPoll } from "@/lib/client/gravity/common";
 import Portal from "@/components/portal";
+import { m } from "@/i18n/messages";
 
 export type Props = {
   artist: CosmoArtistBFF;
@@ -70,7 +71,7 @@ export default function AbstractLiveChart(props: Props) {
     return (
       <div className="flex w-full flex-col gap-2">
         <AlertTriangle className="size-12" />
-        <p className="text-sm font-semibold">Error loading gravity</p>
+        <p className="text-sm font-semibold">{m.gravity_error_loading()}</p>
       </div>
     );
   }
@@ -97,7 +98,7 @@ export default function AbstractLiveChart(props: Props) {
 
       <Portal to="#gravity-status">
         <div className="flex flex-col items-end text-xs font-semibold">
-          <p>Votes Counted</p>
+          <p>{m.gravity_votes_counted()}</p>
           <p>
             {countedVotes.toLocaleString()}/{totalVotes.toLocaleString()} (
             {percentageCounted}%)

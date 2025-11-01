@@ -8,6 +8,7 @@ import type { MetadataRow } from "@/lib/universal/schema/admin";
 import { metadataInputSchema } from "@/lib/universal/schema/admin";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { m } from "@/i18n/messages";
 
 export default function InsertMetadata() {
   const [rows, setRows] = useState<MetadataRow[]>([
@@ -17,11 +18,11 @@ export default function InsertMetadata() {
   const mutation = useMutation({
     mutationFn,
     onSuccess: (data) => {
-      toast.success(`${data} objekt metadata rows updated`);
+      toast.success(m.admin_metadata_rows_updated({ count: data }));
       setRows([]);
     },
     onError: () => {
-      toast.error("An unknown error occurred");
+      toast.error(m.error_unknown());
     },
   });
 
@@ -48,7 +49,7 @@ export default function InsertMetadata() {
     const result = metadataInputSchema.safeParse(data);
     if (result.success === false) {
       toast.error(
-        "Invalid format: Required format is 'collectionId :: description'",
+        m.admin_invalid_format(),
       );
       return;
     }
@@ -74,12 +75,12 @@ export default function InsertMetadata() {
     <div className="flex flex-col gap-2">
       {/* header */}
       <div className="flex items-center gap-2">
-        <h1 className="text-lg font-semibold">Insert Metadata</h1>
+        <h1 className="text-lg font-semibold">{m.admin_insert_metadata()}</h1>
         <Button size="xs" onClick={addRow}>
-          <Plus className="size-4" /> <span>Add Row</span>
+          <Plus className="size-4" /> <span>{m.admin_add_row()}</span>
         </Button>
         <Button size="xs" onClick={onPaste}>
-          <Clipboard className="size-4" /> <span>Fill</span>
+          <Clipboard className="size-4" /> <span>{m.admin_fill()}</span>
         </Button>
         <Button
           variant="cosmo"
@@ -92,7 +93,7 @@ export default function InsertMetadata() {
           ) : (
             <HardDriveUpload className="size-4" />
           )}{" "}
-          <span>Save</span>
+          <span>{m.common_save()}</span>
         </Button>
       </div>
 
@@ -102,7 +103,7 @@ export default function InsertMetadata() {
           <div key={index} className="grid grid-cols-[20%_70%_auto] gap-2">
             <Input
               id="collectionId"
-              placeholder="atom01-heejin-101z..."
+              placeholder={m.admin_collection_id_placeholder()}
               value={row.collectionId}
               onChange={(e) =>
                 update(index, "collectionId", e.currentTarget.value)
@@ -111,7 +112,7 @@ export default function InsertMetadata() {
 
             <Input
               id="description"
-              placeholder="Purchased from COSMO..."
+              placeholder={m.admin_description_placeholder()}
               value={row.description}
               onChange={(e) =>
                 update(index, "description", e.currentTarget.value)

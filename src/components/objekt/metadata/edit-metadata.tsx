@@ -16,6 +16,7 @@ import { $updateObjektMetadata } from "../actions";
 import type { z } from "zod";
 import type { ObjektMetadata } from "@/lib/universal/objekts";
 import { metadataObjectSchema } from "@/lib/universal/schema/admin";
+import { m } from "@/i18n/messages";
 
 type Props = {
   slug: string;
@@ -32,11 +33,11 @@ export default function EditMetadata(props: Props) {
       queryClient.invalidateQueries({
         queryKey: ["collection-metadata", "metadata", props.slug],
       });
-      toast.success("Metadata updated.");
+      toast.success(m.toast_metadata_updated());
       props.onClose();
     },
     onError: () => {
-      toast.error("Failed to update metadata");
+      toast.error(m.toast_metadata_update_failed());
     },
   });
 
@@ -77,7 +78,7 @@ export default function EditMetadata(props: Props) {
           type="submit"
           disabled={mutation.isPending}
         >
-          {mutation.isPending ? "Saving..." : "Save"}
+          {mutation.isPending ? m.common_saving() : m.common_save()}
         </Button>
       </form>
     </Form>

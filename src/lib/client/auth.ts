@@ -5,6 +5,7 @@ import {
 } from "better-auth/client/plugins";
 import type { auth } from "../server/auth";
 import { baseUrl } from "@/lib/utils";
+import * as m from "@/i18n/messages";
 
 /**
  * Better Auth client instance.
@@ -13,11 +14,6 @@ export const authClient = createAuthClient({
   baseURL: baseUrl(),
   plugins: [usernameClient(), inferAdditionalFields<typeof auth>()],
 });
-
-const authErrorMessages: Record<string, string> = {
-  USERNAME_IS_ALREADY_TAKEN: "Username is already taken.",
-  USER_ALREADY_EXISTS: "Email is already in use.",
-};
 
 type ErrorInput = {
   code?: string | undefined;
@@ -29,11 +25,14 @@ type ErrorInput = {
  */
 export function getAuthErrorMessage(error: ErrorInput) {
   if (error.code) {
-    return (
-      authErrorMessages[error.code] ??
-      error.message ??
-      "An unknown error occurred."
-    );
+    switch (error.code) {
+      case "USERNAME_IS_ALREADY_TAKEN":
+        return m.auth_error_username_taken();
+      case "USER_ALREADY_EXISTS":
+        return m.auth_error_email_exists();
+      default:
+        return error.message ?? m.auth_error_unknown();
+    }
   }
-  return error.message ?? "An unknown error occurred.";
+  return error.message ?? m.auth_error_unknown();
 }

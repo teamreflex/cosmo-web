@@ -25,6 +25,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { cn, isAddress } from "@/lib/utils";
+import { m } from "@/i18n/messages";
 
 type Props = PropsWithChildren<{
   placeholder?: string;
@@ -102,20 +103,20 @@ export function UserSearch({
       >
         <VisuallyHidden>
           <DialogHeader>
-            <DialogTitle>User Search</DialogTitle>
-            <DialogDescription>Search for a user...</DialogDescription>
+            <DialogTitle>{m.common_user_search()}</DialogTitle>
+            <DialogDescription>{m.user_search_placeholder()}</DialogDescription>
           </DialogHeader>
         </VisuallyHidden>
 
         <Notice className="bg-red-600" enabled={status === "error"}>
-          <p>Search error, try again soon</p>
+          <p>{m.user_search_error()}</p>
         </Notice>
 
         <CommandInput
           autoFocus={true}
           className="touch-manipulation"
           name="query"
-          placeholder={placeholder ?? "Search for a user..."}
+          placeholder={placeholder ?? m.user_search_placeholder()}
           value={query}
           onValueChange={setQuery}
         />
@@ -129,11 +130,11 @@ export function UserSearch({
 
           {status === "success" && data.length === 0 && (
             <div className="flex items-center justify-center gap-2 py-2 text-sm font-semibold">
-              No users found
+              {m.user_search_no_results()}
             </div>
           )}
 
-          <CommandGroup heading="Results">
+          <CommandGroup heading={m.user_search_results()}>
             {queryIsAddress && (
               <CommandItem
                 onSelect={() => selectAddress(debouncedQuery)}
@@ -159,7 +160,7 @@ export function UserSearch({
           </CommandGroup>
 
           {recentUsers.length > 0 && (
-            <CommandGroup heading="Recent">
+            <CommandGroup heading={m.user_search_recent()}>
               {recentUsers.map((user) => (
                 <CommandItem
                   key={user.address}

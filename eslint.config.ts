@@ -13,6 +13,17 @@ const compat = new FlatCompat({
 });
 
 export default defineConfig(
+  {
+    ignores: [
+      "node_modules",
+      ".output",
+      "dist",
+      ".tanstack",
+      ".vercel",
+      "src/routeTree.gen.ts",
+      "src/i18n/**/*.js",
+    ],
+  },
   eslint.configs.recommended,
   tseslint.configs.recommended,
   tanstackConfig,
@@ -30,14 +41,6 @@ export default defineConfig(
     },
   },
   {
-    ignores: [
-      "node_modules",
-      ".output",
-      "dist",
-      ".tanstack",
-      ".vercel",
-      "src/routeTree.gen.ts",
-    ],
     files: ["**/*.ts", "**/*.tsx"],
     rules: {
       "@typescript-eslint/array-type": "off",

@@ -6,6 +6,7 @@ import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { useObjektOverlay } from "@/store";
 import { cn } from "@/lib/utils";
 import { useUserState } from "@/hooks/use-user-state";
+import { m } from "@/i18n/messages";
 
 type Props = {
   collection: Objekt.Collection;
@@ -49,12 +50,12 @@ export default function InformationOverlay({ collection, token }: Props) {
         )}
 
         <div className="flex flex-col text-xs">
-          <span className="font-semibold">Token ID</span>
+          <span className="font-semibold">{m.objekt_info_token_id()}</span>
           <span>{token.tokenId}</span>
         </div>
 
         <div className="flex flex-col text-xs">
-          <span className="font-semibold">Received</span>
+          <span className="font-semibold">{m.common_received()}</span>
           <span>{formatted}</span>
         </div>
       </div>

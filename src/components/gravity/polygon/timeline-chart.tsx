@@ -7,6 +7,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { m } from "@/i18n/messages";
 
 type Props = {
   totalComoUsed: number;
@@ -29,12 +30,12 @@ export default function TimelineChart(props: Props) {
       <div className="flex items-center justify-between text-sm">
         {isComplete ? (
           <div className="flex items-center gap-2">
-            <span className="font-semibold">COMPLETE</span>
+            <span className="font-semibold">{m.gravity_status_complete()}</span>
             <CheckCircle className="h-4 w-4 text-green-500" />
           </div>
         ) : (
           <div className="flex items-center gap-2">
-            <span className="font-semibold">LIVE</span>
+            <span className="font-semibold">{m.gravity_status_live()}</span>
             <span className="aspect-square w-2.5 shrink-0 animate-pulse rounded-full bg-red-500" />
           </div>
         )}
@@ -148,12 +149,18 @@ function generateChartData(props: Props): ChartDataPoint[] {
 
 const chartConfig = {
   tooltip: {
-    label: "Stats",
+    get label() {
+      return m.stats_header();
+    },
   },
   voteCount: {
-    label: "Votes",
+    get label() {
+      return m.chart_votes();
+    },
   },
   comoAmount: {
-    label: "COMO Used",
+    get label() {
+      return m.chart_como_used();
+    },
   },
 } satisfies ChartConfig;

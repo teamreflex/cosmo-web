@@ -21,6 +21,7 @@ import type { TransferFilters } from "@/hooks/use-transfer-filters";
 import type { TransferType } from "@/lib/universal/transfers";
 import { transfersQuery } from "@/lib/queries/objekt-queries";
 import { useTransferFilters } from "@/hooks/use-transfer-filters";
+import { m } from "@/i18n/messages";
 
 const route = getRouteApi("/(profile)/@{$username}/trades");
 
@@ -80,10 +81,10 @@ export default function TransfersRenderer({ cosmo }: Props) {
                 <div className="flex w-full flex-col items-center gap-2">
                   <div className="flex flex-col items-center justify-center gap-2 py-12">
                     <HeartCrack className="h-12 w-12" />
-                    <p>There was an error loading transfers</p>
+                    <p>{m.transfer_error_loading()}</p>
                   </div>
                   <Button variant="outline" onClick={resetErrorBoundary}>
-                    <RefreshCcw className="mr-2" /> Retry
+                    <RefreshCcw className="mr-2" /> {m.common_retry()}
                   </Button>
                 </div>
               )}
@@ -120,9 +121,9 @@ function Transfers({ address, filters }: TransfersProps) {
   return (
     <div className="flex flex-col rounded-lg border border-accent text-sm">
       <div className="grid h-12 grid-cols-[3fr_2fr_2fr] items-center gap-2 px-4 text-left align-middle font-medium text-muted-foreground">
-        <span>Objekt</span>
-        <span>User</span>
-        <span className="text-right">Date</span>
+        <span>{m.transfer_objekt_header()}</span>
+        <span>{m.transfer_user_header()}</span>
+        <span className="text-right">{m.transfer_date_header()}</span>
       </div>
 
       <div className="flex flex-col">
@@ -150,9 +151,9 @@ export function TransfersSkeleton() {
 
       <div className="realtive flex w-full flex-col overflow-hidden rounded-lg border border-accent text-sm">
         <div className="grid h-12 grid-cols-[3fr_2fr_2fr] items-center gap-2 px-4 text-left align-middle font-medium text-muted-foreground">
-          <span>Objekt</span>
-          <span>User</span>
-          <span className="text-right">Date</span>
+          <span>{m.transfer_objekt_header()}</span>
+          <span>{m.transfer_user_header()}</span>
+          <span className="text-right">{m.transfer_date_header()}</span>
         </div>
 
         {Array.from({ length: 10 }).map((_, i) => (

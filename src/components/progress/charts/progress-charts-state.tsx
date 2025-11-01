@@ -3,6 +3,7 @@ import { RefreshCcw } from "lucide-react";
 import { Button } from "../../ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import SkeletonGradient from "@/components/skeleton/skeleton-overlay";
+import { m } from "@/i18n/messages";
 
 export function ProgressChartsSkeleton() {
   return (
@@ -21,11 +22,11 @@ export function ProgressChartsError() {
   return (
     <div className="flex flex-col items-center gap-2 py-6 text-sm font-semibold">
       <p className="text-center text-sm font-semibold">
-        Error fetching objekt stats
+        {m.progress_error_fetching_stats()}
       </p>
 
       <Button variant="outline" onClick={resetBoundary}>
-        <RefreshCcw className="mr-2" /> Try Again
+        <RefreshCcw className="mr-2" /> {m.error_try_again()}
       </Button>
     </div>
   );

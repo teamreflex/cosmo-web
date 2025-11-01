@@ -9,6 +9,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { m } from "@/i18n/messages";
 
 export default function Profile() {
   const { data: accounts } = useListAccounts();
@@ -25,7 +26,7 @@ export default function Profile() {
     <Accordion type="single" collapsible>
       {/* username */}
       <AccordionItem value="username">
-        <AccordionTrigger>Username</AccordionTrigger>
+        <AccordionTrigger>{m.common_username()}</AccordionTrigger>
         <AccordionContent>
           <UpdateUsername username={user.displayUsername ?? ""} />
         </AccordionContent>
@@ -33,7 +34,7 @@ export default function Profile() {
 
       {/* email */}
       <AccordionItem value="email">
-        <AccordionTrigger>Email Address</AccordionTrigger>
+        <AccordionTrigger>{m.account_profile_email()}</AccordionTrigger>
         <AccordionContent>
           <UpdateEmail email={user.email} />
         </AccordionContent>
@@ -41,16 +42,16 @@ export default function Profile() {
 
       {/* password */}
       <AccordionItem value="password">
-        <AccordionTrigger>Password</AccordionTrigger>
+        <AccordionTrigger>{m.common_password()}</AccordionTrigger>
         <AccordionContent>
           {hasCredentialAccount ? (
             <UpdatePassword />
           ) : (
             <div className="flex flex-col items-center justify-center">
               <p className="text-sm">
-                You do not have a password currently set. Please use the{" "}
-                <span className="font-semibold">forgot password</span>{" "}
-                functionality to set one.
+                {m.account_profile_no_password()}{" "}
+                <span className="font-semibold">{m.account_profile_forgot_password()}</span>{" "}
+                {m.account_profile_set_password()}
               </p>
             </div>
           )}
@@ -59,7 +60,7 @@ export default function Profile() {
 
       {/* social */}
       <AccordionItem value="social">
-        <AccordionTrigger>Social</AccordionTrigger>
+        <AccordionTrigger>{m.account_profile_social()}</AccordionTrigger>
         <AccordionContent>
           <UpdateSocial showSocials={user.showSocials ?? false} />
         </AccordionContent>

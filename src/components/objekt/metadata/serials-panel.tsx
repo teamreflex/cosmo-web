@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Addresses, isEqual } from "@/lib/utils";
 import { useObjektSerial } from "@/hooks/use-objekt-serial";
+import { m } from "@/i18n/messages";
 
 type Props = {
   slug: string;
@@ -51,7 +52,7 @@ export default function SerialsPanel(props: Props) {
       <div className="flex flex-row gap-2">
         <Input
           type="number"
-          placeholder="Select a serial..."
+          placeholder={m.objekt_serials_placeholder()}
           value={serial ?? ""}
           onChange={(e) => handleChange(e.target.value)}
           className="flex-1"
@@ -115,7 +116,7 @@ function Content(props: ContentProps) {
       <div className="flex flex-col items-center justify-center py-4">
         <HeartCrack className="size-8" />
         <span className="text-sm font-medium">
-          Serial #{props.serial.toString().padStart(5, "0")} does not exist
+          {m.objekt_serials_not_exist({ serial: props.serial.toString().padStart(5, "0") })}
         </span>
       </div>
     );
@@ -132,11 +133,11 @@ function Content(props: ContentProps) {
       >
         <img
           src="/profile.webp"
-          alt="Profile"
+          alt={m.objekt_serials_profile_alt()}
           className="size-10 rounded-full bg-cosmo-profile p-1"
         />
         <div className="flex flex-col">
-          <span className="text-xs text-muted-foreground">Owner</span>
+          <span className="text-xs text-muted-foreground">{m.objekt_serials_owner()}</span>
           <span className="font-medium group-hover:underline">
             {result.username ?? result.address.substring(0, 8) + "..."}
           </span>
@@ -147,9 +148,9 @@ function Content(props: ContentProps) {
       {result.transfers.length > 0 && (
         <div className="overflow-hidden rounded-lg border">
           <div className="grid grid-cols-[2fr_2fr_2fr] gap-2 border-b bg-secondary/30 px-4 py-2 text-xs font-medium">
-            <span>From</span>
-            <span>To</span>
-            <span className="text-right">Date</span>
+            <span>{m.transfer_from()}</span>
+            <span>{m.transfer_to()}</span>
+            <span className="text-right">{m.transfer_date_header()}</span>
           </div>
           <div className="md:max-h-36 md:overflow-y-auto">
             {result.transfers.map((transfer) => (
@@ -183,7 +184,7 @@ function TransferItem({ transfer }: TransferItemProps) {
         {isEqual(transfer.from, Addresses.NULL) && (
           <img
             src="/cosmo.webp"
-            alt="COSMO"
+            alt={m.common_cosmo()}
             className="aspect-square size-5 shrink-0 rounded-full ring ring-accent"
           />
         )}
@@ -192,7 +193,7 @@ function TransferItem({ transfer }: TransferItemProps) {
         {isEqual(transfer.from, Addresses.SPIN) ? (
           <div className="flex items-center gap-1">
             <IconRotate360 className="size-4" />
-            <span className="truncate">COSMO Spin</span>
+            <span className="truncate">{m.transfer_cosmo_spin()}</span>
           </div>
         ) : !isEqual(transfer.from, Addresses.NULL) ? (
           <Link
@@ -214,7 +215,7 @@ function TransferItem({ transfer }: TransferItemProps) {
         {isEqual(transfer.to, Addresses.SPIN) ? (
           <div className="flex items-center gap-1">
             <IconRotate360 className="size-4" />
-            <span className="truncate">COSMO Spin</span>
+            <span className="truncate">{m.transfer_cosmo_spin()}</span>
           </div>
         ) : !isEqual(transfer.to, Addresses.NULL) ? (
           <Link
@@ -239,11 +240,11 @@ function TransferItem({ transfer }: TransferItemProps) {
 
 function formatAddress(address: string, username: string | null) {
   if (isEqual(address, Addresses.NULL)) {
-    return "COSMO";
+    return m.common_cosmo();
   }
 
   if (isEqual(address, Addresses.SPIN)) {
-    return "COSMO Spin";
+    return m.transfer_cosmo_spin();
   }
 
   if (username) {

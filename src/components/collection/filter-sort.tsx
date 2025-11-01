@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { validSorts } from "@/lib/universal/cosmo/common";
+import { m } from "@/i18n/messages";
 
 type Props = {
   sort: CosmoFilters["sort"];
@@ -18,19 +19,22 @@ type Props = {
   setDataSource?: (dataSource: CollectionDataSource) => void;
 };
 
-const map: Record<ValidSort, string> = {
-  newest: "Newest",
-  oldest: "Oldest",
-  noAscending: "Lowest No.",
-  noDescending: "Highest No.",
-  serialAsc: "Lowest Serial",
-  serialDesc: "Highest Serial",
-};
+function getSortMap(): Record<ValidSort, string> {
+  return {
+    newest: m.filter_sort_newest(),
+    oldest: m.filter_sort_oldest(),
+    noAscending: m.filter_sort_no_ascending(),
+    noDescending: m.filter_sort_no_descending(),
+    serialAsc: m.filter_sort_serial_asc(),
+    serialDesc: m.filter_sort_serial_desc(),
+  };
+}
 
 export default function SortFilter(props: Props) {
   const availableSorts = validSorts.filter((s) =>
     props.serials ? true : !isSerialSort(s),
   );
+  const map = getSortMap();
 
   function handleChange(newValue: string) {
     const newSort = newValue as ValidSort;
@@ -48,7 +52,7 @@ export default function SortFilter(props: Props) {
   return (
     <Select value={props.sort ?? "newest"} onValueChange={handleChange}>
       <SelectTrigger className="w-32">
-        <SelectValue placeholder="Sort" />
+        <SelectValue placeholder={m.filter_sort()} />
       </SelectTrigger>
       <SelectContent>
         {availableSorts.map((sort) => (

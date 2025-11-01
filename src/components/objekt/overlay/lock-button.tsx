@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { $toggleObjektLock } from "@/components/collection/actions";
 import { track } from "@/lib/utils";
 import { useProfileContext } from "@/hooks/use-profile";
+import { m } from "@/i18n/messages";
 
 type Props = {
   tokenId: number;
@@ -29,7 +30,7 @@ export default function LockObjekt({ tokenId, isLocked }: Props) {
     <button
       className="flex items-center transition-all hover:scale-110"
       disabled={mutation.isPending}
-      aria-label={`${isLocked ? "unlock" : "lock"} this objekt`}
+      aria-label={isLocked ? m.objekt_overlay_unlock_aria() : m.objekt_overlay_lock_aria()}
       onClick={toggle}
     >
       {mutation.isPending ? (

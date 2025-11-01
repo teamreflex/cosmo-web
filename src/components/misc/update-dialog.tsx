@@ -19,6 +19,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { env } from "@/lib/env/client";
+import { m } from "@/i18n/messages";
 
 export default function UpdateDialog() {
   const isNew = useMemo(() => {
@@ -43,10 +44,10 @@ export default function UpdateDialog() {
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{env.VITE_APP_NAME} Updates</AlertDialogTitle>
+          <AlertDialogTitle>{m.updates_title({ appName: env.VITE_APP_NAME })}</AlertDialogTitle>
           <VisuallyHidden>
             <AlertDialogDescription>
-              {env.VITE_APP_NAME} Updates
+              {m.updates_title({ appName: env.VITE_APP_NAME })}
             </AlertDialogDescription>
           </VisuallyHidden>
         </AlertDialogHeader>
@@ -70,7 +71,7 @@ export default function UpdateDialog() {
           </Accordion>
         </div>
         <AlertDialogFooter>
-          <AlertDialogAction>Continue</AlertDialogAction>
+          <AlertDialogAction>{m.common_continue()}</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

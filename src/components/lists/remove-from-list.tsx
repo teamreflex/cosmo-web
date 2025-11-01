@@ -5,6 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { $removeObjektFromList } from "./actions";
 import type { ObjektList } from "@/lib/server/db/schema";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
+import { m } from "@/i18n/messages";
 
 type Props = {
   id: string;
@@ -19,7 +20,10 @@ export default function RemoveFromList({ id, collection, objektList }: Props) {
     mutationFn,
     onSuccess() {
       toast.success(
-        `Removed ${collection.collectionId} from ${objektList.name}`,
+        m.toast_removed_from_list({
+          collectionId: collection.collectionId,
+          listName: objektList.name,
+        }),
       );
       queryClient.invalidateQueries({
         predicate: (query) =>
@@ -43,7 +47,10 @@ export default function RemoveFromList({ id, collection, objektList }: Props) {
       onClick={handleClick}
       disabled={mutation.isPending}
       className="flex items-center outline-hidden transition-all hover:scale-110"
-      aria-label={`Remove ${collection.collectionId} from ${objektList.name}`}
+      aria-label={m.list_remove_from_list({
+        collectionId: collection.collectionId,
+        listName: objektList.name,
+      })}
     >
       {mutation.isPending ? (
         <Loader2 className="h-3 w-3 animate-spin sm:h-5 sm:w-5" />

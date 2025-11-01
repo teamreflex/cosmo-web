@@ -17,6 +17,7 @@ import {
 import type { z } from "zod";
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { resetPasswordSchema } from "@/lib/universal/schema/auth";
+import { m } from "@/i18n/messages";
 
 type Props = {
   token: string;
@@ -48,7 +49,7 @@ export default function ResetPassword({ token }: Props) {
   function handleSubmit(data: z.infer<typeof resetPasswordSchema>) {
     mutation.mutate(data, {
       onSuccess: () => {
-        toast.success("Password reset successfully, please sign in again.");
+        toast.success(m.auth_password_reset_success());
         navigate({ to: "/" });
       },
       onError: (error) => {
@@ -68,9 +69,9 @@ export default function ResetPassword({ token }: Props) {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>New Password</FormLabel>
+              <FormLabel>{m.auth_new_password()}</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="********" {...field} />
+                <Input type="password" placeholder={m.form_password_placeholder()} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -78,7 +79,7 @@ export default function ResetPassword({ token }: Props) {
         />
 
         <Button type="submit" disabled={mutation.isPending}>
-          <span>Reset Password</span>
+          <span>{m.auth_reset_password()}</span>
           {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
         </Button>
       </form>

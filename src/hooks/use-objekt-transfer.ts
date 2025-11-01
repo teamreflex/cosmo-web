@@ -1,6 +1,7 @@
 import { toast } from "sonner";
 import { create } from "zustand";
 import type { CosmoPublicUser } from "@/lib/universal/cosmo/user";
+import { m } from "@/i18n/messages";
 
 const MAX_SELECTIONS = 10;
 
@@ -101,7 +102,7 @@ export const useObjektTransfer = create<ObjektTransferState>()((set, get) => ({
       );
 
       if (!existing && state.selected.length >= MAX_SELECTIONS) {
-        toast.info(`Only ${MAX_SELECTIONS} objekts can be selected`);
+        toast.info(m.toast_max_selections({ count: MAX_SELECTIONS.toString() }));
         return state;
       }
 

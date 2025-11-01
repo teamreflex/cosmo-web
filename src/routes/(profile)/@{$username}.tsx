@@ -19,6 +19,7 @@ import {
 } from "@/components/profile/profile-badges";
 import { Skeleton } from "@/components/ui/skeleton";
 import { env } from "@/lib/env/client";
+import { m } from "@/i18n/messages";
 import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
 import ListDropdown from "@/components/lists/list-dropdown";
 
@@ -188,9 +189,9 @@ function NotFoundComponent() {
   return (
     <main className="container flex w-full flex-col items-center justify-center gap-2 py-12">
       <CircleAlert className="h-24 w-24" />
-      <p className="text-sm font-semibold">User not found</p>
+      <p className="text-sm font-semibold">{m.error_not_found_title()}</p>
       <p className="w-64 text-center text-sm text-balance">
-        User could not be found in {env.VITE_APP_NAME} or COSMO.
+        {m.error_not_found_description({ appName: env.VITE_APP_NAME })}
       </p>
     </main>
   );

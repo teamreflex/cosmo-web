@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
 import { useProfileContext } from "@/hooks/use-profile";
+import { m } from "@/i18n/messages";
 
 type Props = {
   objektList: ObjektList;
@@ -31,7 +32,7 @@ export default function DeleteList({ objektList }: Props) {
   const mutation = useMutation({
     mutationFn,
     onSuccess: () => {
-      toast.success("Objekt list deleted");
+      toast.success(m.toast_list_deleted());
 
       // remove list from current account query
       queryClient.setQueryData(currentAccountQuery.queryKey, (old) => {
@@ -80,19 +81,19 @@ export default function DeleteList({ objektList }: Props) {
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+          <AlertDialogTitle>{m.list_delete_confirm()}</AlertDialogTitle>
           <AlertDialogDescription>
-            This will permanently delete <b>{objektList.name}</b>.
+            {m.list_delete_confirm_description({ listName: objektList.name })}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>{m.common_cancel()}</AlertDialogCancel>
           <AlertDialogAction
             type="button"
             onClick={handleClick}
             disabled={mutation.isPending}
           >
-            <span>Delete</span>
+            <span>{m.common_delete()}</span>
             {mutation.isPending && <Loader2 className="animate-spin" />}
           </AlertDialogAction>
         </AlertDialogFooter>

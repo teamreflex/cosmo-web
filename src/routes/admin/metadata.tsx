@@ -3,6 +3,7 @@ import InsertMetadata from "@/components/admin/metadata/insert-metadata";
 import { currentAccountQuery } from "@/lib/queries/core";
 import { $fetchLatestMetadata } from "@/lib/server/objekts/metadata";
 import { defineHead } from "@/lib/meta";
+import { m } from "@/i18n/messages";
 
 export const Route = createFileRoute("/admin/metadata")({
   staleTime: Infinity,
@@ -17,7 +18,7 @@ export const Route = createFileRoute("/admin/metadata")({
     return { metadata };
   },
   head: () =>
-    defineHead({ title: "Objekt Metadata", canonical: "/admin/metadata" }),
+    defineHead({ title: m.admin_metadata_title(), canonical: "/admin/metadata" }),
   component: RouteComponent,
 });
 
@@ -30,7 +31,7 @@ function RouteComponent() {
 
       {/* latest metadata */}
       <div className="flex flex-col gap-2">
-        <h1 className="text-lg font-semibold">Latest 10</h1>
+        <h1 className="text-lg font-semibold">{m.admin_metadata_latest()}</h1>
         <div className="flex flex-col rounded-md border border-accent text-sm">
           {metadata.map((row) => (
             <div

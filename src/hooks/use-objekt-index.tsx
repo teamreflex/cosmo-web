@@ -8,6 +8,7 @@ import {
   objektIndexBlockchainQuery,
   objektIndexTypesenseQuery,
 } from "@/lib/queries/objekt-queries";
+import * as m from "@/i18n/messages";
 
 const route = getRouteApi("/");
 
@@ -34,7 +35,7 @@ export function useObjektIndex() {
       calculateTotal: (data) => {
         const total = data.pages[0]?.total ?? 0;
         return (
-          <p className="font-semibold">{total.toLocaleString("en")} total</p>
+          <p className="font-semibold">{total.toLocaleString("en")} {m.common_total()}</p>
         );
       },
       getItems: (data) => data.pages.flatMap((page) => page.objekts),
@@ -48,7 +49,7 @@ export function useObjektIndex() {
     calculateTotal: (data) => {
       const total = data.pages[0]?.total ?? 0;
       return (
-        <p className="font-semibold">{total.toLocaleString("en")} total</p>
+        <p className="font-semibold">{total.toLocaleString("en")} {m.common_total()}</p>
       );
     },
     getItems: (data) => data.pages.flatMap((page) => page.objekts),

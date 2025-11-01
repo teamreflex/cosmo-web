@@ -6,6 +6,7 @@ import type { Objekt } from "@/lib/universal/objekt-conversion";
 import type { PropsWithClassName } from "@/lib/utils";
 import { useElementSize } from "@/hooks/use-element-size";
 import { cn } from "@/lib/utils";
+import { m } from "@/i18n/messages";
 
 type ObjektSidebarProps = {
   collection: Objekt.Collection;
@@ -59,7 +60,7 @@ export function ObjektSidebar({ collection, serial }: ObjektSidebarProps) {
             "pointer-events-none absolute top-0 left-0 h-full w-full object-cover opacity-0 transition-opacity",
             bandLoaded && "opacity-100",
           )}
-          alt={`${collection.artist} band image`}
+          alt={m.objekt_band_image({ artist: collection.artist })}
           onLoad={() => setBandLoaded(true)}
         />
       )}
@@ -105,7 +106,7 @@ export function ObjektNewIndicator(props: PropsWithClassName<{}>) {
         props.className,
       )}
     >
-      New
+      {m.common_new()}
     </span>
   );
 }
@@ -155,15 +156,15 @@ export function getEdition(collectionNo: string): string {
   const collection = parseInt(collectionNo);
 
   if (collection >= 101 && collection <= 108) {
-    return "1st";
+    return m.objekt_edition_1st();
   }
   if (collection >= 109 && collection <= 116) {
-    return "2nd";
+    return m.objekt_edition_2nd();
   }
   if (collection >= 117 && collection <= 120) {
-    return "3rd";
+    return m.objekt_edition_3rd();
   }
-  return "Unknown";
+  return m.common_unknown();
 }
 
 export class ObjektNotFoundError extends Error {

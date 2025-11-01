@@ -17,6 +17,7 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/ui/form";
+import { m } from "@/i18n/messages";
 
 type Props = {
   showSocials: boolean;
@@ -46,7 +47,7 @@ export default function UpdateSocial(props: Props) {
   function handleSubmit(data: z.infer<typeof updateSocialsSchema>) {
     mutation.mutate(data, {
       onSuccess: () => {
-        toast.success("Settings updated.");
+        toast.success(m.auth_settings_updated());
         router.invalidate();
       },
       onError: (error) => {
@@ -67,10 +68,9 @@ export default function UpdateSocial(props: Props) {
           render={({ field }) => (
             <FormItem className="flex flex-row items-center justify-between">
               <div className="space-y-0.5">
-                <FormLabel>Show Socials</FormLabel>
+                <FormLabel>{m.settings_show_socials()}</FormLabel>
                 <FormDescription>
-                  When enabled, any social accounts you sign-in with will be
-                  displayed on your profile.
+                  {m.settings_show_socials_description()}
                 </FormDescription>
               </div>
               <FormControl>
@@ -92,7 +92,7 @@ export default function UpdateSocial(props: Props) {
 function Submit(props: { isPending: boolean }) {
   return (
     <Button className="ml-auto w-fit" type="submit" disabled={props.isPending}>
-      <span>Save</span>
+      <span>{m.common_save()}</span>
       {props.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
     </Button>
   );

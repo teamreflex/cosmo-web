@@ -16,6 +16,7 @@ import { ScrollArea } from "../ui/scroll-area";
 import { $addObjektToList } from "./actions";
 import type { ObjektList } from "@/lib/server/db/schema";
 import type { MouseEvent } from "react";
+import { m } from "@/i18n/messages";
 
 type AddToListProps = {
   collectionId: string;
@@ -36,7 +37,7 @@ export default function AddToList({
         <button
           onClick={() => setOpen((state) => !state)}
           className="flex items-center outline-hidden transition-all hover:scale-110"
-          aria-label={`Select list to add ${collectionId} to`}
+          aria-label={m.list_select_to_add({ collectionId })}
         >
           <ListPlus className="h-3 w-3 sm:h-5 sm:w-5" />
         </button>
@@ -47,7 +48,7 @@ export default function AddToList({
         <DropdownMenuGroup>
           {lists.length === 0 && (
             <DropdownMenuItem className="group truncate text-sm">
-              0 lists available
+              {m.list_zero_lists_available()}
             </DropdownMenuItem>
           )}
 
@@ -86,7 +87,7 @@ function ListItem({
   const mutation = useMutation({
     mutationFn,
     onSuccess() {
-      toast.success(`Added ${collectionId} to ${list.name}`);
+      toast.success(m.toast_added_to_list({ collectionId, listName: list.name }));
       queryClient.invalidateQueries({
         predicate: (query) =>
           query.queryKey[0] === "objekt-list" && query.queryKey[1] === list.id,
@@ -112,7 +113,7 @@ function ListItem({
         onClick={handleClick}
         disabled={mutation.isPending}
         className="flex w-full items-center justify-between"
-        aria-label="Add objekt to list"
+        aria-label={m.list_add_to_list()}
       >
         <span>{list.name}</span>
         {mutation.isPending ? (

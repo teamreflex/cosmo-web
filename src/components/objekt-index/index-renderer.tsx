@@ -15,6 +15,7 @@ import { useGridColumns } from "@/hooks/use-grid-columns";
 import { useUserState } from "@/hooks/use-user-state";
 import { useObjektIndex } from "@/hooks/use-objekt-index";
 import { useActiveObjekt } from "@/hooks/use-active-objekt";
+import { m } from "@/i18n/messages";
 
 type Props = {
   objektLists: ObjektList[];
@@ -89,7 +90,9 @@ export default function IndexRenderer(props: Props) {
 function Title(props: { objektLists: ObjektList[] }) {
   return (
     <div className="flex w-full items-center gap-2 pb-1">
-      <h1 className="font-cosmo text-2xl uppercase md:text-3xl">Objekts</h1>
+      <h1 className="font-cosmo text-2xl uppercase md:text-3xl">
+        {m.objekts_header()}
+      </h1>
       <HelpDialog />
 
       <div className="flex items-center gap-2 last:ml-auto">

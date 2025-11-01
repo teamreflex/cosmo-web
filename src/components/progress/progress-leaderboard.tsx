@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/sheet";
 import { useArtists } from "@/hooks/use-artists";
 import { useProgressFilters } from "@/hooks/use-progress-filters";
+import { m } from "@/i18n/messages";
 
 type Props = {
   member: string;
@@ -64,14 +65,14 @@ export default function ProgressLeaderboard({ member, seasons }: Props) {
               <Trophy className="h-5 w-5" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="left">Leaderboard</TooltipContent>
+          <TooltipContent side="left">{m.progress_leaderboard()}</TooltipContent>
         </Tooltip>
       </TooltipProvider>
 
       <SheetContent className="gap-0 overflow-y-scroll outline-hidden">
         <SheetHeader className="pb-0">
           <SheetTitle className="font-cosmo text-xl uppercase">
-            Leaderboard
+            {m.progress_leaderboard()}
           </SheetTitle>
           <SheetDescription className="font-cosmo text-lg uppercase">
             {member}
@@ -119,12 +120,12 @@ function FilterSelect(props: {
   return (
     <Select value={props.value} onValueChange={set}>
       <SelectTrigger>
-        <SelectValue placeholder="Sort" />
+        <SelectValue placeholder={m.filter_sort()} />
       </SelectTrigger>
       <SelectContent className="outline-hidden">
-        <SelectItem value="combined">Combined</SelectItem>
-        <SelectItem value="offline">Physical</SelectItem>
-        <SelectItem value="online">Digital</SelectItem>
+        <SelectItem value="combined">{m.progress_filter_combined()}</SelectItem>
+        <SelectItem value="offline">{m.filter_online_physical()}</SelectItem>
+        <SelectItem value="online">{m.filter_online_digital()}</SelectItem>
       </SelectContent>
     </Select>
   );
@@ -156,17 +157,17 @@ function SeasonSelect(props: SeasonSelectProps) {
       ({ artist }) =>
         selectedIds.includes(artist.id) &&
         artist.artistMembers
-          .map((m) => m.name.toLowerCase())
+          .map((member) => member.name.toLowerCase())
           .includes(props.member.toLowerCase()),
     );
 
   return (
     <Select value={props.value} onValueChange={set}>
       <SelectTrigger>
-        <SelectValue placeholder="Sort" />
+        <SelectValue placeholder={m.filter_sort()} />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="all">All</SelectItem>
+        <SelectItem value="all">{m.filter_type_all()}</SelectItem>
 
         {data.map(({ artist, seasons }) => (
           <SelectGroup key={artist.id}>

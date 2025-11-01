@@ -13,6 +13,7 @@ import { useArtists } from "@/hooks/use-artists";
 import { useAuthenticated } from "@/hooks/use-authenticated";
 import { useGridColumns } from "@/hooks/use-grid-columns";
 import { userCollectionBlockchainGroupsQuery } from "@/lib/queries/objekt-queries";
+import { m } from "@/i18n/messages";
 
 type Props = {
   gridColumns: number;
@@ -60,7 +61,7 @@ export default function BlockchainGroups(props: Props) {
       const total = data.pages[0]?.collectionCount ?? 0;
       return (
         <p className="text-end font-semibold">
-          {total.toLocaleString("en")} types
+          {total.toLocaleString("en")} {m.blockchain_types()}
         </p>
       );
     },

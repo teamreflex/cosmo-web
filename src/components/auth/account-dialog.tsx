@@ -14,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { m } from "@/i18n/messages";
 
 type Props = {
   open: boolean;
@@ -26,8 +27,8 @@ export default function AccountDialog({ open, onOpenChange, cosmo }: Props) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-xl">
         <DialogHeader>
-          <DialogTitle>Account</DialogTitle>
-          <DialogDescription>Manage your account here.</DialogDescription>
+          <DialogTitle>{m.common_account()}</DialogTitle>
+          <DialogDescription>{m.account_description()}</DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-col gap-2">
@@ -36,7 +37,7 @@ export default function AccountDialog({ open, onOpenChange, cosmo }: Props) {
           </Suspense>
 
           <div className="flex flex-col">
-            <h3 className="text-lg font-semibold">Sign In</h3>
+            <h3 className="text-lg font-semibold">{m.auth_sign_in()}</h3>
             <Suspense
               fallback={
                 <div className="flex flex-col gap-2">
@@ -61,7 +62,7 @@ export default function AccountDialog({ open, onOpenChange, cosmo }: Props) {
                   <img
                     className="aspect-square size-5 rounded-full"
                     src="/cosmo.webp"
-                    alt="COSMO"
+                    alt={m.common_cosmo()}
                   />
                   <p className="text-sm">{cosmo.username}</p>
                 </div>
@@ -82,10 +83,10 @@ function LinkCosmoButton() {
     <Button variant="cosmo" onClick={() => ctx.setOpen(true)}>
       <img
         src="/cosmo.webp"
-        alt="COSMO"
+        alt={m.common_cosmo()}
         className="aspect-square size-5 rounded-full"
       />
-      <span>Link COSMO</span>
+      <span>{m.link_cosmo_title()}</span>
     </Button>
   );
 }

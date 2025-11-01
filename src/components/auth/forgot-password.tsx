@@ -16,6 +16,7 @@ import {
 import type { z } from "zod";
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { forgotPasswordSchema } from "@/lib/universal/schema/auth";
+import { m } from "@/i18n/messages";
 
 type Props = {
   onCancel: () => void;
@@ -56,7 +57,7 @@ export default function ForgotPassword({ onCancel }: Props) {
       <div className="flex flex-col items-center gap-2">
         <MailCheck className="h-10 w-10" />
         <p className="text-sm font-semibold">
-          We&apos;ve sent you an email to reset your password.
+          {m.auth_password_reset_email_sent()}
         </p>
       </div>
     );
@@ -73,9 +74,9 @@ export default function ForgotPassword({ onCancel }: Props) {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>{m.form_email()}</FormLabel>
               <FormControl>
-                <Input type="email" placeholder="me@example.com" {...field} />
+                <Input type="email" placeholder={m.form_email_placeholder()} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -84,12 +85,12 @@ export default function ForgotPassword({ onCancel }: Props) {
 
         <div className="grid grid-cols-2 items-center gap-2">
           <Button type="submit" disabled={mutation.isPending}>
-            <span>Send Reset Link</span>
+            <span>{m.auth_send_reset_link()}</span>
             {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
           </Button>
 
           <Button type="button" variant="secondary" onClick={onCancel}>
-            <span>Cancel</span>
+            <span>{m.common_cancel()}</span>
           </Button>
         </div>
       </form>

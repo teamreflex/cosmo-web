@@ -16,6 +16,7 @@ import SignInWithTwitter from "./with-twitter";
 import SignUp from "./sign-up";
 import ForgotPassword from "./forgot-password";
 import { env } from "@/lib/env/client";
+import { m } from "@/i18n/messages";
 
 type State = "sign-in" | "sign-up" | "forgot-password";
 
@@ -42,17 +43,17 @@ export default function SignIn() {
           variant="link"
           size="icon"
           className="outline-hidden drop-shadow-lg md:mx-2"
-          aria-label="Sign In"
+          aria-label={m.auth_sign_in()}
         >
           <LogIn className="size-8 shrink-0 md:hidden" />
-          <span className="hidden md:contents">Sign In</span>
+          <span className="hidden md:contents">{m.auth_sign_in()}</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="w-full">
         <DialogHeader>
-          <DialogTitle>Sign In</DialogTitle>
+          <DialogTitle>{m.auth_sign_in()}</DialogTitle>
           <DialogDescription>
-            Sign in to your {env.VITE_APP_NAME} account
+            {m.auth_sign_in_description({ appName: env.VITE_APP_NAME })}
           </DialogDescription>
         </DialogHeader>
 
@@ -80,7 +81,7 @@ export default function SignIn() {
               <Separator />
 
               <Button variant="link" onClick={() => setState("sign-up")}>
-                <span>Create an account</span>
+                <span>{m.auth_create_account()}</span>
               </Button>
 
               <Separator />
@@ -95,7 +96,7 @@ export default function SignIn() {
                 onClick={() => setOpen(false)}
                 className="pt-2 text-xs text-muted-foreground underline"
               >
-                Terms & Privacy
+                {m.terms_title()}
               </Link>
             </div>
           )}
@@ -109,7 +110,7 @@ function Separator() {
   return (
     <div className="my-2 flex items-center justify-center gap-1">
       <SeparatorLine />
-      <span className="text-xs text-muted-foreground">or</span>
+      <span className="text-xs text-muted-foreground">{m.common_or()}</span>
       <SeparatorLine />
     </div>
   );

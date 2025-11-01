@@ -12,33 +12,37 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { env } from "@/lib/env/client";
+import { m } from "@/i18n/messages";
 
-export const items = [
-  {
-    title: "Home",
-    url: "/admin",
-    icon: Home,
-  },
-  {
-    title: "Objekt Metadata",
-    url: "/admin/metadata",
-    icon: HardDriveUpload,
-  },
-  {
-    title: "Objekt Bands",
-    url: "/admin/bands",
-    icon: PanelRight,
-  },
-];
+export function getItems() {
+  return [
+    {
+      title: m.admin_home(),
+      url: "/admin",
+      icon: Home,
+    },
+    {
+      title: m.admin_metadata_title(),
+      url: "/admin/metadata",
+      icon: HardDriveUpload,
+    },
+    {
+      title: m.admin_bands_title(),
+      url: "/admin/bands",
+      icon: PanelRight,
+    },
+  ];
+}
 
 export function AdminSidebar() {
   const location = useLocation();
+  const items = getItems();
 
   return (
     <Sidebar className="mt-14">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>{env.VITE_APP_NAME} Admin</SidebarGroupLabel>
+          <SidebarGroupLabel>{m.admin_title({ appName: env.VITE_APP_NAME })}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (

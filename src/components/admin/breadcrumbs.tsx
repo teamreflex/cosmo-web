@@ -1,5 +1,5 @@
 import { useLocation } from "@tanstack/react-router";
-import { items } from "./sidebar";
+import { getItems } from "./sidebar";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -8,17 +8,18 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { m } from "@/i18n/messages";
 
 export default function AdminBreadcrumbs() {
   const location = useLocation();
-
+  const items = getItems();
   const match = items.find((i) => i.url === location.pathname);
 
   return (
     <Breadcrumb>
       <BreadcrumbList>
         <BreadcrumbItem className="hidden md:block">
-          <BreadcrumbLink href="/admin">Admin</BreadcrumbLink>
+          <BreadcrumbLink href="/admin">{m.common_admin()}</BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator className="hidden md:block" />
         {match !== undefined && (

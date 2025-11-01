@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/input-otp";
 import { Button } from "@/components/ui/button";
 import { env } from "@/lib/env/client";
+import { m } from "@/i18n/messages";
 
 type LinkCosmoContextType = {
   open: boolean;
@@ -61,9 +62,9 @@ export default function LinkCosmo({ children }: Props) {
         {children}
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Link COSMO</DialogTitle>
+            <DialogTitle>{m.link_cosmo_title()}</DialogTitle>
             <DialogDescription>
-              Link your COSMO account to your {env.VITE_APP_NAME} account.
+              {m.link_cosmo_description({ appName: env.VITE_APP_NAME })}
             </DialogDescription>
           </DialogHeader>
 
@@ -84,24 +85,20 @@ function StartLink() {
   return (
     <div className="flex flex-col gap-2 text-sm text-muted-foreground">
       <p>
-        Signing into your COSMO account will link it to your {env.VITE_APP_NAME}{" "}
-        account, verifying ownership of the COSMO ID and wallet address.
+        {m.link_cosmo_sign_in_info({ appName: env.VITE_APP_NAME })}
       </p>
       <p>
-        This allows you to pin and lock objekts. Any previously created objekt
-        lists will be imported upon account link.
+        {m.link_cosmo_features()}
       </p>
       <p>
-        {env.VITE_APP_NAME} does not store anything about your account other
-        than the ID and wallet address, which are used to display profiles.
+        {m.link_cosmo_privacy({ appName: env.VITE_APP_NAME })}
       </p>
       <p>
-        Once linked, the account cannot be unlinked and your profile will have a
-        &quot;COSMO verified&quot; badge.
+        {m.link_cosmo_permanent()}
       </p>
 
       <Button className="mx-auto mt-2 w-fit" onClick={() => setStarted(true)}>
-        Start
+        {m.common_start()}
       </Button>
     </div>
   );
@@ -130,11 +127,11 @@ function GetRecaptcha() {
         <div className="flex flex-col gap-2">
           <p className="text-sm font-semibold">
             {isRateLimited
-              ? "There may be too many attempts at once. Please try again later."
-              : "Error getting QR code. Please try again later."}
+              ? m.link_cosmo_rate_limit()
+              : m.link_cosmo_error_qr()}
           </p>
           <Button variant="secondary" size="sm" onClick={() => refetch()}>
-            Try again
+            {m.common_try_again()}
           </Button>
         </div>
       )}
@@ -170,9 +167,9 @@ function RenderTicket({ ticket, retry }: RenderQRProps) {
   if (status === "error") {
     return (
       <div className="flex flex-col items-center gap-2">
-        <p className="text-sm font-semibold">Error checking OTP status</p>
+        <p className="text-sm font-semibold">{m.link_cosmo_error_otp_status()}</p>
         <Button variant="secondary" size="sm" onClick={() => refetch()}>
-          Try again
+          {m.common_try_again()}
         </Button>
       </div>
     );
@@ -187,9 +184,9 @@ function RenderTicket({ ticket, retry }: RenderQRProps) {
   if (data.status === "invalid") {
     return (
       <div className="flex flex-col items-center gap-2">
-        <p className="text-sm font-semibold">The login attempt has expired.</p>
+        <p className="text-sm font-semibold">{m.link_cosmo_expired()}</p>
         <Button variant="cosmo" size="sm" onClick={retry}>
-          Try again
+          {m.common_try_again()}
         </Button>
       </div>
     );
@@ -232,20 +229,20 @@ function RenderQRCode({ ticket, retry }: RenderQRProps) {
   return (
     <div className="flex flex-col items-center justify-center gap-2">
       <p className="text-sm">
-        Scan the QR code with your mobile device to sign in.
+        {m.link_cosmo_scan_qr()}
       </p>
 
       <Button className="inline-flex lg:hidden" variant="link" asChild>
         <a href={qr} target="_blank">
-          <span>Mobile: Open COSMO</span>
+          <span>{m.link_cosmo_mobile_open()}</span>
         </a>
       </Button>
 
       {isExpired ? (
         <div className="flex flex-col items-center gap-2">
-          <p className="text-sm font-semibold">The QR code has expired.</p>
+          <p className="text-sm font-semibold">{m.link_cosmo_qr_expired()}</p>
           <Button variant="cosmo" size="sm" onClick={retry}>
-            Try again
+            {m.common_try_again()}
           </Button>
         </div>
       ) : (
@@ -255,7 +252,7 @@ function RenderQRCode({ ticket, retry }: RenderQRProps) {
           </div>
 
           <div className="flex items-center gap-2 text-sm">
-            <span>Remaining</span>
+            <span>{m.link_cosmo_remaining()}</span>
             <span className="text-cosmo-text">
               {Math.floor(timeLeft / 60)}:
               {(timeLeft % 60).toString().padStart(2, "0")}
@@ -278,11 +275,11 @@ function OTP({ ticket }: OTPProps) {
     mutationFn,
     onSuccess() {
       track("cosmo-link");
-      toast.success("COSMO account linked!");
+      toast.success(m.link_cosmo_success());
       ctx.setOpen(false);
     },
     onError() {
-      toast.error("Error linking COSMO account");
+      toast.error(m.link_cosmo_error_linking());
     },
   });
 
@@ -300,7 +297,7 @@ function OTP({ ticket }: OTPProps) {
       {
         onSuccess: () => {
           track("cosmo-link");
-          toast.success("COSMO account linked!");
+          toast.success(m.link_cosmo_success());
         },
       },
     );
@@ -310,7 +307,7 @@ function OTP({ ticket }: OTPProps) {
     return (
       <div className="flex flex-col items-center justify-center gap-2">
         <AlertTriangle className="size-12" />
-        <p className="text-sm font-semibold">Error linking COSMO account</p>
+        <p className="text-sm font-semibold">{m.link_cosmo_error_linking()}</p>
       </div>
     );
   }
@@ -323,7 +320,7 @@ function OTP({ ticket }: OTPProps) {
       >
         <div className="flex flex-col items-center gap-4">
           <p className="text-center text-sm">
-            Enter the 2-digit code from COSMO
+            {m.link_cosmo_enter_code()}
           </p>
 
           <FormField
@@ -352,7 +349,7 @@ function OTP({ ticket }: OTPProps) {
         </div>
 
         <Button type="submit" disabled={mutation.isPending}>
-          <span>Submit</span>
+          <span>{m.common_submit()}</span>
           {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
         </Button>
       </form>

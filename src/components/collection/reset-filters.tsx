@@ -6,6 +6,7 @@ import {
   TooltipTrigger,
 } from "../ui/tooltip";
 import type { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
+import { m } from "@/i18n/messages";
 import { Button } from "@/components/ui/button";
 import { filtersAreDirty } from "@/hooks/use-filters";
 
@@ -39,7 +40,7 @@ export default function ResetFilters(props: Props) {
             <RotateCcw />
           </Button>
         </TooltipTrigger>
-        <TooltipContent>Reset Filters</TooltipContent>
+        <TooltipContent>{m.filter_reset()}</TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );

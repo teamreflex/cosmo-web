@@ -11,6 +11,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { m } from "@/i18n/messages";
 
 export default function HelpDialog() {
   return (
@@ -23,45 +24,41 @@ export default function HelpDialog() {
       <AlertDialogContent>
         <VisuallyHidden>
           <AlertDialogHeader>
-            <AlertDialogTitle>Help: Objekts</AlertDialogTitle>
+            <AlertDialogTitle>{m.help_objekts_title()}</AlertDialogTitle>
             <AlertDialogDescription>
-              Help information for the objekt index
+              {m.help_objekts_description()}
             </AlertDialogDescription>
           </AlertDialogHeader>
         </VisuallyHidden>
         <div className="flex flex-col gap-4 text-sm text-foreground/80">
           {/* search */}
           <div className="flex flex-col gap-1">
-            <h3 className="text-lg font-semibold text-foreground">Search</h3>
+            <h3 className="text-lg font-semibold text-foreground">{m.help_objekts_search_title()}</h3>
             <p>
-              The search bar is case-insensitive, has typo tolerance and
-              supports shortcuts.
+              {m.help_objekts_search_desc()}
             </p>
-            <p>Shortcut examples:</p>
+            <p>{m.help_objekts_search_examples()}</p>
             <ul className="list-inside list-disc">
               <li>
-                Unit names: <code>oec</code>, <code>lovelution</code>,{" "}
-                <code>vv</code>. These will search for objekts from members in
-                the unit.
+                {m.help_objekts_search_unit_names()}
               </li>
               <li>
-                S numbers: <code>s15</code> will return Xinyu objekts.
+                {m.help_objekts_search_s_numbers()}
               </li>
               <li>
-                Nicknames: <code>soda</code> will return DaHyun objekts.
+                {m.help_objekts_search_nicknames()}
               </li>
               <li>
-                Collections: <code>a213z</code> will return Atom 213Z objekts.
+                {m.help_objekts_search_collections()}
               </li>
             </ul>
             <p>
-              Searching via description is also available: <code>cherry</code>{" "}
-              will return objekts from the 2025 Cherry Blossom event.
+              {m.help_objekts_search_description()}
             </p>
           </div>
         </div>
         <AlertDialogFooter>
-          <AlertDialogAction>Continue</AlertDialogAction>
+          <AlertDialogAction>{m.common_continue()}</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

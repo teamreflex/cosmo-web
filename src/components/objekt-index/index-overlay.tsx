@@ -4,6 +4,7 @@ import type { IndexedObjekt } from "@/lib/universal/objekts";
 import type { ObjektList } from "@/lib/server/db/schema";
 import { useObjektOverlay } from "@/store";
 import { cn } from "@/lib/utils";
+import { m } from "@/i18n/messages";
 
 type TopOverlayProps = {
   objekt: IndexedObjekt;
@@ -35,7 +36,7 @@ export function TopOverlay({ objekt, objektLists }: TopOverlayProps) {
 
       {/* status text */}
       <div className="max-w-0 overflow-hidden text-xs whitespace-nowrap transition-all group-hover:max-w-[12rem]">
-        <OverlayStatus>Add to List</OverlayStatus>
+        <OverlayStatus>{m.objekt_overlay_add_to_list()}</OverlayStatus>
       </div>
     </div>
   );

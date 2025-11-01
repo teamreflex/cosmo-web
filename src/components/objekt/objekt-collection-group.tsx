@@ -20,6 +20,7 @@ import { useProfileContext } from "@/hooks/use-profile";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
 import { useObjektOverlay } from "@/store";
+import { m } from "@/i18n/messages";
 
 interface Props {
   group: BFFCollectionGroup;
@@ -44,7 +45,7 @@ export default function GroupedObjekt({
     ),
   );
 
-  const subtitle = group.count === 1 ? "objekt" : "objekts";
+  const subtitle = group.count === 1 ? m.objekt_group_objekt() : m.objekt_group_objekts();
   const collection = Objekt.fromCollectionGroup({
     collection: group.collection,
   });
@@ -73,7 +74,7 @@ export default function GroupedObjekt({
               {group.collection.collectionId}
             </DialogPrimitive.Title>
             <DialogPrimitive.Description>
-              Select an objekt
+              {m.objekt_group_select()}
             </DialogPrimitive.Description>
           </VisuallyHidden.Root>
 
@@ -90,7 +91,7 @@ export default function GroupedObjekt({
 
               <DialogPrimitive.Close className="place-self-end opacity-70 transition-opacity outline-none hover:opacity-100 disabled:pointer-events-none data-[state=open]:bg-secondary data-[state=open]:text-muted-foreground">
                 <X className="size-8" />
-                <span className="sr-only">Close</span>
+                <span className="sr-only">{m.common_close()}</span>
               </DialogPrimitive.Close>
             </div>
 

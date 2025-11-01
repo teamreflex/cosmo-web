@@ -19,6 +19,7 @@ import {
   objektIndexTypesenseQuery,
 } from "@/lib/queries/objekt-queries";
 import { defineHead } from "@/lib/meta";
+import { m } from "@/i18n/messages";
 
 export const Route = createFileRoute("/")({
   validateSearch: objektIndexFrontendSchema,
@@ -78,7 +79,7 @@ function RouteComponent() {
 }
 
 function ErrorComponent() {
-  return <Error message="Could not load objekts" />;
+  return <Error message={m.error_could_not_load_objekts()} />;
 }
 
 function PendingComponent() {
@@ -89,7 +90,7 @@ function PendingComponent() {
         <div className="flex w-full items-center gap-2 pb-1">
           <div className="flex h-9 items-center gap-2">
             <h1 className="font-cosmo text-2xl uppercase md:text-3xl">
-              Objekts
+              {m.objekts_header()}
             </h1>
           </div>
         </div>

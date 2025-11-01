@@ -23,6 +23,7 @@ import Portal from "@/components/portal";
 import HelpDialog from "@/components/progress/help-dialog";
 import { artistStatsQuery } from "@/lib/queries/progress";
 import { defineHead } from "@/lib/meta";
+import { m } from "@/i18n/messages";
 
 export const Route = createFileRoute("/(profile)/@{$username}/progress")({
   component: RouteComponent,
@@ -48,8 +49,8 @@ export const Route = createFileRoute("/(profile)/@{$username}/progress")({
   head: ({ loaderData }) =>
     defineHead({
       title: loaderData?.target.user
-        ? `${loaderData.target.user.username}'s Progress`
-        : "Progress",
+        ? `${loaderData.target.user.username}'s ${m.progress_title()}`
+        : m.progress_title(),
       canonical: `/@${loaderData?.target.user?.username}/progress`,
     }),
 });

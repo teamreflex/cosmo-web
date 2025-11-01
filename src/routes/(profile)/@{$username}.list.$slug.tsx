@@ -20,6 +20,7 @@ import ListRenderer from "@/components/lists/list-renderer";
 import { objektListFrontendSchema } from "@/lib/universal/parsers";
 import { objektListQuery } from "@/lib/queries/objekt-queries";
 import { defineHead } from "@/lib/meta";
+import { m } from "@/i18n/messages";
 
 export const Route = createFileRoute("/(profile)/@{$username}/list/$slug")({
   staleTime: 1000 * 60 * 15, // 15 minutes
@@ -79,7 +80,7 @@ export const Route = createFileRoute("/(profile)/@{$username}/list/$slug")({
   },
   head: ({ loaderData }) =>
     defineHead({
-      title: loaderData?.objektList.name ?? "Objekt List",
+      title: loaderData?.objektList.name ?? m.objekt_list(),
       canonical: `/@${loaderData?.target.user?.username}/list/${loaderData?.objektList.id}`,
     }),
 });
@@ -146,14 +147,14 @@ function PendingComponent() {
 }
 
 function ErrorComponent() {
-  return <Error message="Could not load objekt list" />;
+  return <Error message={m.list_error_loading()} />;
 }
 
 function NotFoundComponent() {
   return (
     <main className="container flex w-full flex-col items-center justify-center gap-2 py-12">
       <HeartCrack className="h-24 w-24" />
-      <p className="text-sm font-semibold">Objekt list not found</p>
+      <p className="text-sm font-semibold">{m.list_not_found()}</p>
     </main>
   );
 }
