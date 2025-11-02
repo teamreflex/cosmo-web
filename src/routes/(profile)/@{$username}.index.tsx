@@ -67,8 +67,8 @@ export const Route = createFileRoute("/(profile)/@{$username}/")({
   },
   head: ({ loaderData }) =>
     defineHead({
-      title: loaderData?.target.user
-        ? `${loaderData.target.user.username}'s ${m.collection_title()}`
+      title: loaderData?.target.user?.username
+        ? m.collection_title_with_username({ username: loaderData.target.user.username })
         : m.collection_title(),
       canonical: `/@${loaderData?.target.user?.username}`,
     }),

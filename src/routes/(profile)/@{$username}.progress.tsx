@@ -48,8 +48,8 @@ export const Route = createFileRoute("/(profile)/@{$username}/progress")({
   },
   head: ({ loaderData }) =>
     defineHead({
-      title: loaderData?.target.user
-        ? `${loaderData.target.user.username}'s ${m.progress_title()}`
+      title: loaderData?.target.user?.username
+        ? m.progress_title_with_username({ username: loaderData.target.user.username })
         : m.progress_title(),
       canonical: `/@${loaderData?.target.user?.username}/progress`,
     }),

@@ -29,8 +29,10 @@ export const Route = createFileRoute("/(profile)/@{$username}/como")({
   },
   head: ({ loaderData }) =>
     defineHead({
-      title: loaderData?.target.user
-        ? `${loaderData.target.user.username}'s ${m.common_como()}`
+      title: loaderData?.target.user?.username
+        ? m.como_title_with_username({
+            username: loaderData.target.user.username,
+          })
         : m.common_como(),
       canonical: `/@${loaderData?.target.user?.username}/como`,
     }),

@@ -325,6 +325,7 @@
   "como_calendar_sun": "Sun",
   "como_carried_over": "Carried over",
   "como_error_loading": "Could not load COMO calendar",
+  "como_title_with_username": "{username}'s COMO",
 
   "_comment_objekt_stats": "Objekt stats strings",
   "objekt_stats_no_members": "No members selected",
@@ -333,6 +334,7 @@
   "progress_class": "{class} Class",
   "progress_complete": "Complete",
   "progress_title": "Progress",
+  "progress_title_with_username": "{username}'s Progress",
   "progress_help_progress_desc_1": "View a seasonal breakdown of collection progress to 100% completion.",
   "progress_help_progress_desc_2": "Each member can be further broken down into just physical (A) or digital (Z) collections, instead of combined.",
   "progress_help_progress_desc_3": "Unobtainable objekts such as those from limited time events, do not count towards reaching 100%. If you have 100% for a season/class and own an unobtainable, it will be shown and your percentage will go over 100%.",
@@ -474,9 +476,11 @@
 
   "_comment_trades": "Trades page strings",
   "trades_title": "Trades",
+  "trades_title_with_username": "{username}'s Trades",
 
   "_comment_collection": "Collection page strings",
   "collection_title": "Collection",
+  "collection_title_with_username": "{username}'s Collection",
 
   "_comment_routes": "Route titles",
   "route_title_page_not_found": "Page Not Found",

@@ -325,6 +325,7 @@
   "como_calendar_sun": "일",
   "como_carried_over": "이월됨",
   "como_error_loading": "코모 캘린더를 불러올 수 없습니다",
+  "como_title_with_username": "{username}의 코모",
 
   "_comment_objekt_stats": "Objekt stats strings",
   "objekt_stats_no_members": "선택된 멤버가 없습니다",
@@ -333,6 +334,7 @@
   "progress_class": "{class} 클래스",
   "progress_complete": "완료",
   "progress_title": "진행도",
+  "progress_title_with_username": "{username}의 진행도",
   "progress_help_progress_desc_1": "시즌별 컬렉션 진행도를 100% 완료까지 확인합니다.",
   "progress_help_progress_desc_2": "각 멤버는 결합된 것이 아닌 피지컬(A) 또는 디지털(Z) 컬렉션만으로 세분화할 수 있습니다.",
   "progress_help_progress_desc_3": "기간 한정 이벤트와 같은 획득 불가능한 오브젝트는 100% 달성에 포함되지 않습니다. 시즌/클래스에서 100%를 달성하고 획득 불가능한 것을 소유하고 있다면 표시되며 백분율이 100%를 초과합니다.",
@@ -474,9 +476,11 @@
 
   "_comment_trades": "Trades page strings",
   "trades_title": "교환",
+  "trades_title_with_username": "{username}의 교환",
 
   "_comment_collection": "Collection page strings",
   "collection_title": "컬렉션",
+  "collection_title_with_username": "{username}의 컬렉션",
 
   "_comment_routes": "Route titles",
   "route_title_page_not_found": "페이지를 찾을 수 없습니다",

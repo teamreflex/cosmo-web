@@ -39,7 +39,7 @@ export const Route = createFileRoute("/(profile)/@{$username}/trades")({
   head: ({ loaderData }) =>
     defineHead({
       title: loaderData?.cosmo
-        ? `${loaderData.cosmo.username}'s ${m.trades_title()}`
+        ? m.trades_title_with_username({ username: loaderData.cosmo.username })
         : m.trades_title(),
       canonical: `/@${loaderData?.cosmo.username}/trades`,
     }),
