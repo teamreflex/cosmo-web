@@ -2,8 +2,6 @@ import baseConfig from "@apollo/eslint/base";
 import { defineConfig } from "eslint/config";
 import tseslint from "typescript-eslint";
 
-const baseDirectory = __dirname;
-
 export default defineConfig(
   {
     ignores: [
@@ -19,7 +17,7 @@ export default defineConfig(
       parser: tseslint.parser,
       parserOptions: {
         projectService: true,
-        tsconfigRootDir: baseDirectory,
+        tsconfigRootDir: __dirname,
       },
     },
   },

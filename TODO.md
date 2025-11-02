@@ -18,8 +18,9 @@
 
 ## typesense
 
-- migrate import server into monorepo
+- tidy up
 
 ## monorepo
 
 - setup docker for non-web services in dev
+- extract drizzle schemas into a database package
