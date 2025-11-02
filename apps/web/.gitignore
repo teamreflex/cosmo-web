@@ -8,6 +8,16 @@
 # testing
 /coverage
 
+# tanstack
+dist
+dist-ssr
+.nitro
+.tanstack
+.output
+
+# production
+/build
+
 # misc
 .DS_Store
 *.pem
@@ -22,8 +32,17 @@ yarn-error.log*
 .env.*
 .env
 
+# vercel
+.vercel
+
 # typescript
 *.tsbuildinfo
+
+# Sentry Config File
+.sentryclirc
+
+# Sentry Config File
+.env.sentry-build-plugin
 
 # Turborepo
 .turbo
