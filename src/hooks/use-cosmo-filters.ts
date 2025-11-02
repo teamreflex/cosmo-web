@@ -3,6 +3,9 @@ import { useCallback, useMemo } from "react";
 import type z from "zod";
 import { cosmoSchema } from "@/lib/universal/parsers";
 
+/**
+ * Manages objekt-related filters.
+ */
 export function useCosmoFilters() {
   const navigate = useNavigate();
   const searchParams = useSearch({
@@ -34,11 +37,12 @@ export function useCosmoFilters() {
       }
 
       navigate({
-        // @ts-ignore - TODO: fix
+        // @ts-ignore - this hook is used on different routes so we can't reliably type this
         search: (prev) => ({
           ...prev,
           ...input,
         }),
+        replace: true,
       });
     },
     [searchParams],

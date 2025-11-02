@@ -15,6 +15,7 @@ export default function FilterSearch() {
         ...prev,
         search: query,
       }),
+      replace: true,
     });
   }
 

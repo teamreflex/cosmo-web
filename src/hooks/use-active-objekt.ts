@@ -3,20 +3,18 @@ import { useCallback } from "react";
 
 const route = getRouteApi("/");
 
+/**
+ * Manages the objekt slug when opening the metadata dialog.
+ */
 export function useActiveObjekt() {
   const navigate = route.useNavigate();
   const search = route.useSearch();
 
   const setActiveObjekt = useCallback(
-    (
-      slug:
-        | string
-        | undefined
-        | ((prev: string | undefined) => string | undefined),
-    ) => {
+    (slug: string | undefined) => {
       navigate({
-        // @ts-ignore - TODO: fix
         search: (prev) => ({ ...prev, id: slug }),
+        replace: true,
       });
     },
     [navigate, search],

@@ -1,6 +1,9 @@
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useCallback } from "react";
 
+/**
+ * Manages the objekt serial from within the metadata dialog.
+ */
 export function useObjektSerial() {
   const navigate = useNavigate();
   const search = useSearch({
@@ -19,8 +22,9 @@ export function useObjektSerial() {
       }
 
       navigate({
-        // @ts-ignore - TODO: fix
+        // @ts-ignore - this hook is used on different routes so we can't reliably type this
         search: (prev) => ({ ...prev, serial }),
+        replace: true,
       });
     },
     [navigate, search],

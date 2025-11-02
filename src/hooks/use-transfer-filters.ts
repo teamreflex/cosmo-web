@@ -23,11 +23,11 @@ export function useTransferFilters() {
       }
 
       navigate({
-        // @ts-ignore - TODO: fix
         search: (prev) => ({
           ...prev,
           ...input,
         }),
+        replace: true,
       });
     },
     [searchParams],

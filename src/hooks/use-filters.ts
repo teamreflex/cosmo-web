@@ -1,18 +1,21 @@
 import { useCallback, useState } from "react";
-import { useNavigate, useSearch } from "@tanstack/react-router";
+import { getRouteApi } from "@tanstack/react-router";
 import { defaultFilters, useCosmoFilters } from "./use-cosmo-filters";
 import type { CosmoFilters } from "./use-cosmo-filters";
 import type { CollectionDataSource } from "@/lib/utils";
+
+const route = getRouteApi("/(profile)/@{$username}/");
 
 type DefaultOptions = {
   dataSource?: CollectionDataSource;
 };
 
+/**
+ * Combined objekt-related filters with profile-related filters.
+ */
 export function useFilters(opts?: DefaultOptions) {
-  const searchParams = useSearch({
-    strict: false,
-  });
-  const navigate = useNavigate();
+  const searchParams = route.useSearch();
+  const navigate = route.useNavigate();
 
   // setup cosmo filters
   const { filters, setFilters } = useCosmoFilters();
@@ -32,11 +35,11 @@ export function useFilters(opts?: DefaultOptions) {
   const setShowLocked = useCallback(
     (state: boolean | undefined) => {
       navigate({
-        // @ts-ignore - TODO: fix
         search: (prev) => ({
           ...prev,
           locked: state,
         }),
+        replace: true,
       });
     },
     [searchParams],
