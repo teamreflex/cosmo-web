@@ -23,7 +23,7 @@ import { m } from "@/i18n/messages";
 import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
 import ListDropdown from "@/components/lists/list-dropdown";
 
-export const Route = createFileRoute("/(profile)/@{$username}")({
+export const Route = createFileRoute("/@{$username}")({
   component: RouteComponent,
   pendingComponent: PendingComponent,
   notFoundComponent: NotFoundComponent,

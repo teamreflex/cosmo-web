@@ -11,32 +11,32 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermsPrivacyRouteImport } from './routes/terms-privacy'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
+import { Route as AtChar123usernameChar125RouteRouteImport } from './routes/@{$username}/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ObjektsIndexRouteImport } from './routes/objekts/index'
 import { Route as GravityIndexRouteImport } from './routes/gravity/index'
+import { Route as AtChar123usernameChar125IndexRouteImport } from './routes/@{$username}/index'
 import { Route as ObjektsStatsRouteImport } from './routes/objekts/stats'
 import { Route as ListIdRouteImport } from './routes/list/$id'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
 import { Route as ApiFilterDataRouteImport } from './routes/api/filter-data'
 import { Route as AdminMetadataRouteImport } from './routes/admin/metadata'
 import { Route as AdminBandsRouteImport } from './routes/admin/bands'
-import { Route as profileAtChar123usernameChar125RouteImport } from './routes/(profile)/@{$username}'
-import { Route as profileAtChar123usernameChar125IndexRouteImport } from './routes/(profile)/@{$username}.index'
+import { Route as AtChar123usernameChar125TradesRouteImport } from './routes/@{$username}/trades'
+import { Route as AtChar123usernameChar125ProgressRouteImport } from './routes/@{$username}/progress'
+import { Route as AtChar123usernameChar125ComoRouteImport } from './routes/@{$username}/como'
 import { Route as GravityArtistIdRouteImport } from './routes/gravity/$artist/$id'
 import { Route as ApiUserByAddressesRouteImport } from './routes/api/user/by-addresses'
 import { Route as ApiCronObjektStatsRouteImport } from './routes/api/cron.objekt-stats'
 import { Route as ApiCronGravityRouteImport } from './routes/api/cron.gravity'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
-import { Route as profileAtChar123usernameChar125TradesRouteImport } from './routes/(profile)/@{$username}.trades'
-import { Route as profileAtChar123usernameChar125ProgressRouteImport } from './routes/(profile)/@{$username}.progress'
-import { Route as profileAtChar123usernameChar125ComoRouteImport } from './routes/(profile)/@{$username}.como'
+import { Route as AtChar123usernameChar125ListSlugRouteImport } from './routes/@{$username}/list.$slug'
 import { Route as ApiProgressLeaderboardMemberRouteImport } from './routes/api/progress/leaderboard.$member'
 import { Route as ApiObjektsBySlugSlugRouteImport } from './routes/api/objekts/by-slug.$slug'
 import { Route as ApiObjektListForUserIdentifierRouteImport } from './routes/api/objekt-list/for-user.$identifier'
 import { Route as ApiGravityPollIdVotesRouteImport } from './routes/api/gravity/$pollId.votes'
 import { Route as ApiCosmoQrAuthTicketRouteImport } from './routes/api/cosmo/qr-auth/ticket'
 import { Route as ApiCosmoQrAuthRecaptchaRouteImport } from './routes/api/cosmo/qr-auth/recaptcha'
-import { Route as profileAtChar123usernameChar125ListSlugRouteImport } from './routes/(profile)/@{$username}.list.$slug'
 import { Route as ApiUserByAddressAddressIndexRouteImport } from './routes/api/user/by-address/$address/index'
 import { Route as ApiObjektsMetadataSlugIndexRouteImport } from './routes/api/objekts/metadata/$slug/index'
 import { Route as ApiUserByAddressAddressStatsRouteImport } from './routes/api/user/by-address/$address/stats'
@@ -55,6 +55,12 @@ const AdminRouteRoute = AdminRouteRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AtChar123usernameChar125RouteRoute =
+  AtChar123usernameChar125RouteRouteImport.update({
+    id: '/@{$username}',
+    path: '/@{$username}',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -70,6 +76,12 @@ const GravityIndexRoute = GravityIndexRouteImport.update({
   path: '/gravity/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AtChar123usernameChar125IndexRoute =
+  AtChar123usernameChar125IndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AtChar123usernameChar125RouteRoute,
+  } as any)
 const ObjektsStatsRoute = ObjektsStatsRouteImport.update({
   id: '/objekts/stats',
   path: '/objekts/stats',
@@ -100,17 +112,23 @@ const AdminBandsRoute = AdminBandsRouteImport.update({
   path: '/bands',
   getParentRoute: () => AdminRouteRoute,
 } as any)
-const profileAtChar123usernameChar125Route =
-  profileAtChar123usernameChar125RouteImport.update({
-    id: '/(profile)/@{$username}',
-    path: '/@{$username}',
-    getParentRoute: () => rootRouteImport,
+const AtChar123usernameChar125TradesRoute =
+  AtChar123usernameChar125TradesRouteImport.update({
+    id: '/trades',
+    path: '/trades',
+    getParentRoute: () => AtChar123usernameChar125RouteRoute,
   } as any)
-const profileAtChar123usernameChar125IndexRoute =
-  profileAtChar123usernameChar125IndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => profileAtChar123usernameChar125Route,
+const AtChar123usernameChar125ProgressRoute =
+  AtChar123usernameChar125ProgressRouteImport.update({
+    id: '/progress',
+    path: '/progress',
+    getParentRoute: () => AtChar123usernameChar125RouteRoute,
+  } as any)
+const AtChar123usernameChar125ComoRoute =
+  AtChar123usernameChar125ComoRouteImport.update({
+    id: '/como',
+    path: '/como',
+    getParentRoute: () => AtChar123usernameChar125RouteRoute,
   } as any)
 const GravityArtistIdRoute = GravityArtistIdRouteImport.update({
   id: '/gravity/$artist/$id',
@@ -137,23 +155,11 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
-const profileAtChar123usernameChar125TradesRoute =
-  profileAtChar123usernameChar125TradesRouteImport.update({
-    id: '/trades',
-    path: '/trades',
-    getParentRoute: () => profileAtChar123usernameChar125Route,
-  } as any)
-const profileAtChar123usernameChar125ProgressRoute =
-  profileAtChar123usernameChar125ProgressRouteImport.update({
-    id: '/progress',
-    path: '/progress',
-    getParentRoute: () => profileAtChar123usernameChar125Route,
-  } as any)
-const profileAtChar123usernameChar125ComoRoute =
-  profileAtChar123usernameChar125ComoRouteImport.update({
-    id: '/como',
-    path: '/como',
-    getParentRoute: () => profileAtChar123usernameChar125Route,
+const AtChar123usernameChar125ListSlugRoute =
+  AtChar123usernameChar125ListSlugRouteImport.update({
+    id: '/list/$slug',
+    path: '/list/$slug',
+    getParentRoute: () => AtChar123usernameChar125RouteRoute,
   } as any)
 const ApiProgressLeaderboardMemberRoute =
   ApiProgressLeaderboardMemberRouteImport.update({
@@ -187,12 +193,6 @@ const ApiCosmoQrAuthRecaptchaRoute = ApiCosmoQrAuthRecaptchaRouteImport.update({
   path: '/api/cosmo/qr-auth/recaptcha',
   getParentRoute: () => rootRouteImport,
 } as any)
-const profileAtChar123usernameChar125ListSlugRoute =
-  profileAtChar123usernameChar125ListSlugRouteImport.update({
-    id: '/list/$slug',
-    path: '/list/$slug',
-    getParentRoute: () => profileAtChar123usernameChar125Route,
-  } as any)
 const ApiUserByAddressAddressIndexRoute =
   ApiUserByAddressAddressIndexRouteImport.update({
     id: '/api/user/by-address/$address/',
@@ -237,27 +237,27 @@ const ApiBffV3UsersSearchRoute = ApiBffV3UsersSearchRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/@{$username}': typeof AtChar123usernameChar125RouteRouteWithChildren
   '/admin': typeof AdminRouteRouteWithChildren
   '/terms-privacy': typeof TermsPrivacyRoute
-  '/@{$username}': typeof profileAtChar123usernameChar125RouteWithChildren
+  '/@{$username}/como': typeof AtChar123usernameChar125ComoRoute
+  '/@{$username}/progress': typeof AtChar123usernameChar125ProgressRoute
+  '/@{$username}/trades': typeof AtChar123usernameChar125TradesRoute
   '/admin/bands': typeof AdminBandsRoute
   '/admin/metadata': typeof AdminMetadataRoute
   '/api/filter-data': typeof ApiFilterDataRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/list/$id': typeof ListIdRoute
   '/objekts/stats': typeof ObjektsStatsRoute
+  '/@{$username}/': typeof AtChar123usernameChar125IndexRoute
   '/gravity': typeof GravityIndexRoute
   '/objekts': typeof ObjektsIndexRoute
-  '/@{$username}/como': typeof profileAtChar123usernameChar125ComoRoute
-  '/@{$username}/progress': typeof profileAtChar123usernameChar125ProgressRoute
-  '/@{$username}/trades': typeof profileAtChar123usernameChar125TradesRoute
+  '/@{$username}/list/$slug': typeof AtChar123usernameChar125ListSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/gravity': typeof ApiCronGravityRoute
   '/api/cron/objekt-stats': typeof ApiCronObjektStatsRoute
   '/api/user/by-addresses': typeof ApiUserByAddressesRoute
   '/gravity/$artist/$id': typeof GravityArtistIdRoute
-  '/@{$username}/': typeof profileAtChar123usernameChar125IndexRoute
-  '/@{$username}/list/$slug': typeof profileAtChar123usernameChar125ListSlugRoute
   '/api/cosmo/qr-auth/recaptcha': typeof ApiCosmoQrAuthRecaptchaRoute
   '/api/cosmo/qr-auth/ticket': typeof ApiCosmoQrAuthTicketRoute
   '/api/gravity/$pollId/votes': typeof ApiGravityPollIdVotesRoute
@@ -276,24 +276,24 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
   '/terms-privacy': typeof TermsPrivacyRoute
+  '/@{$username}/como': typeof AtChar123usernameChar125ComoRoute
+  '/@{$username}/progress': typeof AtChar123usernameChar125ProgressRoute
+  '/@{$username}/trades': typeof AtChar123usernameChar125TradesRoute
   '/admin/bands': typeof AdminBandsRoute
   '/admin/metadata': typeof AdminMetadataRoute
   '/api/filter-data': typeof ApiFilterDataRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/list/$id': typeof ListIdRoute
   '/objekts/stats': typeof ObjektsStatsRoute
+  '/@{$username}': typeof AtChar123usernameChar125IndexRoute
   '/gravity': typeof GravityIndexRoute
   '/objekts': typeof ObjektsIndexRoute
-  '/@{$username}/como': typeof profileAtChar123usernameChar125ComoRoute
-  '/@{$username}/progress': typeof profileAtChar123usernameChar125ProgressRoute
-  '/@{$username}/trades': typeof profileAtChar123usernameChar125TradesRoute
+  '/@{$username}/list/$slug': typeof AtChar123usernameChar125ListSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/gravity': typeof ApiCronGravityRoute
   '/api/cron/objekt-stats': typeof ApiCronObjektStatsRoute
   '/api/user/by-addresses': typeof ApiUserByAddressesRoute
   '/gravity/$artist/$id': typeof GravityArtistIdRoute
-  '/@{$username}': typeof profileAtChar123usernameChar125IndexRoute
-  '/@{$username}/list/$slug': typeof profileAtChar123usernameChar125ListSlugRoute
   '/api/cosmo/qr-auth/recaptcha': typeof ApiCosmoQrAuthRecaptchaRoute
   '/api/cosmo/qr-auth/ticket': typeof ApiCosmoQrAuthTicketRoute
   '/api/gravity/$pollId/votes': typeof ApiGravityPollIdVotesRoute
@@ -311,27 +311,27 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/@{$username}': typeof AtChar123usernameChar125RouteRouteWithChildren
   '/admin': typeof AdminRouteRouteWithChildren
   '/terms-privacy': typeof TermsPrivacyRoute
-  '/(profile)/@{$username}': typeof profileAtChar123usernameChar125RouteWithChildren
+  '/@{$username}/como': typeof AtChar123usernameChar125ComoRoute
+  '/@{$username}/progress': typeof AtChar123usernameChar125ProgressRoute
+  '/@{$username}/trades': typeof AtChar123usernameChar125TradesRoute
   '/admin/bands': typeof AdminBandsRoute
   '/admin/metadata': typeof AdminMetadataRoute
   '/api/filter-data': typeof ApiFilterDataRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/list/$id': typeof ListIdRoute
   '/objekts/stats': typeof ObjektsStatsRoute
+  '/@{$username}/': typeof AtChar123usernameChar125IndexRoute
   '/gravity/': typeof GravityIndexRoute
   '/objekts/': typeof ObjektsIndexRoute
-  '/(profile)/@{$username}/como': typeof profileAtChar123usernameChar125ComoRoute
-  '/(profile)/@{$username}/progress': typeof profileAtChar123usernameChar125ProgressRoute
-  '/(profile)/@{$username}/trades': typeof profileAtChar123usernameChar125TradesRoute
+  '/@{$username}/list/$slug': typeof AtChar123usernameChar125ListSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/gravity': typeof ApiCronGravityRoute
   '/api/cron/objekt-stats': typeof ApiCronObjektStatsRoute
   '/api/user/by-addresses': typeof ApiUserByAddressesRoute
   '/gravity/$artist/$id': typeof GravityArtistIdRoute
-  '/(profile)/@{$username}/': typeof profileAtChar123usernameChar125IndexRoute
-  '/(profile)/@{$username}/list/$slug': typeof profileAtChar123usernameChar125ListSlugRoute
   '/api/cosmo/qr-auth/recaptcha': typeof ApiCosmoQrAuthRecaptchaRoute
   '/api/cosmo/qr-auth/ticket': typeof ApiCosmoQrAuthTicketRoute
   '/api/gravity/$pollId/votes': typeof ApiGravityPollIdVotesRoute
@@ -350,27 +350,27 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/@{$username}'
     | '/admin'
     | '/terms-privacy'
-    | '/@{$username}'
+    | '/@{$username}/como'
+    | '/@{$username}/progress'
+    | '/@{$username}/trades'
     | '/admin/bands'
     | '/admin/metadata'
     | '/api/filter-data'
     | '/auth/reset-password'
     | '/list/$id'
     | '/objekts/stats'
+    | '/@{$username}/'
     | '/gravity'
     | '/objekts'
-    | '/@{$username}/como'
-    | '/@{$username}/progress'
-    | '/@{$username}/trades'
+    | '/@{$username}/list/$slug'
     | '/api/auth/$'
     | '/api/cron/gravity'
     | '/api/cron/objekt-stats'
     | '/api/user/by-addresses'
     | '/gravity/$artist/$id'
-    | '/@{$username}/'
-    | '/@{$username}/list/$slug'
     | '/api/cosmo/qr-auth/recaptcha'
     | '/api/cosmo/qr-auth/ticket'
     | '/api/gravity/$pollId/votes'
@@ -389,24 +389,24 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/terms-privacy'
+    | '/@{$username}/como'
+    | '/@{$username}/progress'
+    | '/@{$username}/trades'
     | '/admin/bands'
     | '/admin/metadata'
     | '/api/filter-data'
     | '/auth/reset-password'
     | '/list/$id'
     | '/objekts/stats'
+    | '/@{$username}'
     | '/gravity'
     | '/objekts'
-    | '/@{$username}/como'
-    | '/@{$username}/progress'
-    | '/@{$username}/trades'
+    | '/@{$username}/list/$slug'
     | '/api/auth/$'
     | '/api/cron/gravity'
     | '/api/cron/objekt-stats'
     | '/api/user/by-addresses'
     | '/gravity/$artist/$id'
-    | '/@{$username}'
-    | '/@{$username}/list/$slug'
     | '/api/cosmo/qr-auth/recaptcha'
     | '/api/cosmo/qr-auth/ticket'
     | '/api/gravity/$pollId/votes'
@@ -423,27 +423,27 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/@{$username}'
     | '/admin'
     | '/terms-privacy'
-    | '/(profile)/@{$username}'
+    | '/@{$username}/como'
+    | '/@{$username}/progress'
+    | '/@{$username}/trades'
     | '/admin/bands'
     | '/admin/metadata'
     | '/api/filter-data'
     | '/auth/reset-password'
     | '/list/$id'
     | '/objekts/stats'
+    | '/@{$username}/'
     | '/gravity/'
     | '/objekts/'
-    | '/(profile)/@{$username}/como'
-    | '/(profile)/@{$username}/progress'
-    | '/(profile)/@{$username}/trades'
+    | '/@{$username}/list/$slug'
     | '/api/auth/$'
     | '/api/cron/gravity'
     | '/api/cron/objekt-stats'
     | '/api/user/by-addresses'
     | '/gravity/$artist/$id'
-    | '/(profile)/@{$username}/'
-    | '/(profile)/@{$username}/list/$slug'
     | '/api/cosmo/qr-auth/recaptcha'
     | '/api/cosmo/qr-auth/ticket'
     | '/api/gravity/$pollId/votes'
@@ -461,9 +461,9 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AtChar123usernameChar125RouteRoute: typeof AtChar123usernameChar125RouteRouteWithChildren
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
   TermsPrivacyRoute: typeof TermsPrivacyRoute
-  profileAtChar123usernameChar125Route: typeof profileAtChar123usernameChar125RouteWithChildren
   ApiFilterDataRoute: typeof ApiFilterDataRoute
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   ListIdRoute: typeof ListIdRoute
@@ -506,6 +506,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/@{$username}': {
+      id: '/@{$username}'
+      path: '/@{$username}'
+      fullPath: '/@{$username}'
+      preLoaderRoute: typeof AtChar123usernameChar125RouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -526,6 +533,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/gravity'
       preLoaderRoute: typeof GravityIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/@{$username}/': {
+      id: '/@{$username}/'
+      path: '/'
+      fullPath: '/@{$username}/'
+      preLoaderRoute: typeof AtChar123usernameChar125IndexRouteImport
+      parentRoute: typeof AtChar123usernameChar125RouteRoute
     }
     '/objekts/stats': {
       id: '/objekts/stats'
@@ -569,19 +583,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminBandsRouteImport
       parentRoute: typeof AdminRouteRoute
     }
-    '/(profile)/@{$username}': {
-      id: '/(profile)/@{$username}'
-      path: '/@{$username}'
-      fullPath: '/@{$username}'
-      preLoaderRoute: typeof profileAtChar123usernameChar125RouteImport
-      parentRoute: typeof rootRouteImport
+    '/@{$username}/trades': {
+      id: '/@{$username}/trades'
+      path: '/trades'
+      fullPath: '/@{$username}/trades'
+      preLoaderRoute: typeof AtChar123usernameChar125TradesRouteImport
+      parentRoute: typeof AtChar123usernameChar125RouteRoute
     }
-    '/(profile)/@{$username}/': {
-      id: '/(profile)/@{$username}/'
-      path: '/'
-      fullPath: '/@{$username}/'
-      preLoaderRoute: typeof profileAtChar123usernameChar125IndexRouteImport
-      parentRoute: typeof profileAtChar123usernameChar125Route
+    '/@{$username}/progress': {
+      id: '/@{$username}/progress'
+      path: '/progress'
+      fullPath: '/@{$username}/progress'
+      preLoaderRoute: typeof AtChar123usernameChar125ProgressRouteImport
+      parentRoute: typeof AtChar123usernameChar125RouteRoute
+    }
+    '/@{$username}/como': {
+      id: '/@{$username}/como'
+      path: '/como'
+      fullPath: '/@{$username}/como'
+      preLoaderRoute: typeof AtChar123usernameChar125ComoRouteImport
+      parentRoute: typeof AtChar123usernameChar125RouteRoute
     }
     '/gravity/$artist/$id': {
       id: '/gravity/$artist/$id'
@@ -618,26 +639,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/(profile)/@{$username}/trades': {
-      id: '/(profile)/@{$username}/trades'
-      path: '/trades'
-      fullPath: '/@{$username}/trades'
-      preLoaderRoute: typeof profileAtChar123usernameChar125TradesRouteImport
-      parentRoute: typeof profileAtChar123usernameChar125Route
-    }
-    '/(profile)/@{$username}/progress': {
-      id: '/(profile)/@{$username}/progress'
-      path: '/progress'
-      fullPath: '/@{$username}/progress'
-      preLoaderRoute: typeof profileAtChar123usernameChar125ProgressRouteImport
-      parentRoute: typeof profileAtChar123usernameChar125Route
-    }
-    '/(profile)/@{$username}/como': {
-      id: '/(profile)/@{$username}/como'
-      path: '/como'
-      fullPath: '/@{$username}/como'
-      preLoaderRoute: typeof profileAtChar123usernameChar125ComoRouteImport
-      parentRoute: typeof profileAtChar123usernameChar125Route
+    '/@{$username}/list/$slug': {
+      id: '/@{$username}/list/$slug'
+      path: '/list/$slug'
+      fullPath: '/@{$username}/list/$slug'
+      preLoaderRoute: typeof AtChar123usernameChar125ListSlugRouteImport
+      parentRoute: typeof AtChar123usernameChar125RouteRoute
     }
     '/api/progress/leaderboard/$member': {
       id: '/api/progress/leaderboard/$member'
@@ -680,13 +687,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/cosmo/qr-auth/recaptcha'
       preLoaderRoute: typeof ApiCosmoQrAuthRecaptchaRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/(profile)/@{$username}/list/$slug': {
-      id: '/(profile)/@{$username}/list/$slug'
-      path: '/list/$slug'
-      fullPath: '/@{$username}/list/$slug'
-      preLoaderRoute: typeof profileAtChar123usernameChar125ListSlugRouteImport
-      parentRoute: typeof profileAtChar123usernameChar125Route
     }
     '/api/user/by-address/$address/': {
       id: '/api/user/by-address/$address/'
@@ -740,6 +740,30 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AtChar123usernameChar125RouteRouteChildren {
+  AtChar123usernameChar125ComoRoute: typeof AtChar123usernameChar125ComoRoute
+  AtChar123usernameChar125ProgressRoute: typeof AtChar123usernameChar125ProgressRoute
+  AtChar123usernameChar125TradesRoute: typeof AtChar123usernameChar125TradesRoute
+  AtChar123usernameChar125IndexRoute: typeof AtChar123usernameChar125IndexRoute
+  AtChar123usernameChar125ListSlugRoute: typeof AtChar123usernameChar125ListSlugRoute
+}
+
+const AtChar123usernameChar125RouteRouteChildren: AtChar123usernameChar125RouteRouteChildren =
+  {
+    AtChar123usernameChar125ComoRoute: AtChar123usernameChar125ComoRoute,
+    AtChar123usernameChar125ProgressRoute:
+      AtChar123usernameChar125ProgressRoute,
+    AtChar123usernameChar125TradesRoute: AtChar123usernameChar125TradesRoute,
+    AtChar123usernameChar125IndexRoute: AtChar123usernameChar125IndexRoute,
+    AtChar123usernameChar125ListSlugRoute:
+      AtChar123usernameChar125ListSlugRoute,
+  }
+
+const AtChar123usernameChar125RouteRouteWithChildren =
+  AtChar123usernameChar125RouteRoute._addFileChildren(
+    AtChar123usernameChar125RouteRouteChildren,
+  )
+
 interface AdminRouteRouteChildren {
   AdminBandsRoute: typeof AdminBandsRoute
   AdminMetadataRoute: typeof AdminMetadataRoute
@@ -754,39 +778,12 @@ const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
   AdminRouteRouteChildren,
 )
 
-interface profileAtChar123usernameChar125RouteChildren {
-  profileAtChar123usernameChar125ComoRoute: typeof profileAtChar123usernameChar125ComoRoute
-  profileAtChar123usernameChar125ProgressRoute: typeof profileAtChar123usernameChar125ProgressRoute
-  profileAtChar123usernameChar125TradesRoute: typeof profileAtChar123usernameChar125TradesRoute
-  profileAtChar123usernameChar125IndexRoute: typeof profileAtChar123usernameChar125IndexRoute
-  profileAtChar123usernameChar125ListSlugRoute: typeof profileAtChar123usernameChar125ListSlugRoute
-}
-
-const profileAtChar123usernameChar125RouteChildren: profileAtChar123usernameChar125RouteChildren =
-  {
-    profileAtChar123usernameChar125ComoRoute:
-      profileAtChar123usernameChar125ComoRoute,
-    profileAtChar123usernameChar125ProgressRoute:
-      profileAtChar123usernameChar125ProgressRoute,
-    profileAtChar123usernameChar125TradesRoute:
-      profileAtChar123usernameChar125TradesRoute,
-    profileAtChar123usernameChar125IndexRoute:
-      profileAtChar123usernameChar125IndexRoute,
-    profileAtChar123usernameChar125ListSlugRoute:
-      profileAtChar123usernameChar125ListSlugRoute,
-  }
-
-const profileAtChar123usernameChar125RouteWithChildren =
-  profileAtChar123usernameChar125Route._addFileChildren(
-    profileAtChar123usernameChar125RouteChildren,
-  )
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AtChar123usernameChar125RouteRoute:
+    AtChar123usernameChar125RouteRouteWithChildren,
   AdminRouteRoute: AdminRouteRouteWithChildren,
   TermsPrivacyRoute: TermsPrivacyRoute,
-  profileAtChar123usernameChar125Route:
-    profileAtChar123usernameChar125RouteWithChildren,
   ApiFilterDataRoute: ApiFilterDataRoute,
   AuthResetPasswordRoute: AuthResetPasswordRoute,
   ListIdRoute: ListIdRoute,

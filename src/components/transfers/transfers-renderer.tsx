@@ -23,7 +23,7 @@ import { transfersQuery } from "@/lib/queries/objekt-queries";
 import { useTransferFilters } from "@/hooks/use-transfer-filters";
 import { m } from "@/i18n/messages";
 
-const route = getRouteApi("/(profile)/@{$username}/trades");
+const route = getRouteApi("/@{$username}/trades");
 
 type Props = {
   cosmo: PublicCosmo;

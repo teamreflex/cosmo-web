@@ -23,7 +23,7 @@ import {
 import { defineHead } from "@/lib/meta";
 import { m } from "@/i18n/messages";
 
-export const Route = createFileRoute("/(profile)/@{$username}/")({
+export const Route = createFileRoute("/@{$username}/")({
   validateSearch: userCollectionFrontendSchema,
   loaderDeps: ({ search }) => ({ searchParams: search }),
   component: RouteComponent,

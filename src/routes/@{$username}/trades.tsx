@@ -16,7 +16,7 @@ import { transfersQuery } from "@/lib/queries/objekt-queries";
 import { defineHead } from "@/lib/meta";
 import { m } from "@/i18n/messages";
 
-export const Route = createFileRoute("/(profile)/@{$username}/trades")({
+export const Route = createFileRoute("/@{$username}/trades")({
   component: RouteComponent,
   pendingComponent: PendingComponent,
   validateSearch: transfersFrontendSchema,

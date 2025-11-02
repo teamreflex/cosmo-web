@@ -3,7 +3,7 @@ import { getRouteApi } from "@tanstack/react-router";
 import type z from "zod";
 import type { progressFrontendSchema } from "@/lib/universal/parsers";
 
-const route = getRouteApi("/(profile)/@{$username}/progress");
+const route = getRouteApi("/@{$username}/progress");
 
 export function useProgressFilters() {
   const navigate = route.useNavigate();

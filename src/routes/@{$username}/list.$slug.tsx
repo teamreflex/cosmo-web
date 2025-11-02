@@ -22,7 +22,7 @@ import { objektListQuery } from "@/lib/queries/objekt-queries";
 import { defineHead } from "@/lib/meta";
 import { m } from "@/i18n/messages";
 
-export const Route = createFileRoute("/(profile)/@{$username}/list/$slug")({
+export const Route = createFileRoute("/@{$username}/list/$slug")({
   staleTime: 1000 * 60 * 15, // 15 minutes
   component: RouteComponent,
   pendingComponent: PendingComponent,

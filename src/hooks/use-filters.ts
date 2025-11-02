@@ -4,7 +4,7 @@ import { defaultFilters, useCosmoFilters } from "./use-cosmo-filters";
 import type { CosmoFilters } from "./use-cosmo-filters";
 import type { CollectionDataSource } from "@/lib/utils";
 
-const route = getRouteApi("/(profile)/@{$username}/");
+const route = getRouteApi("/@{$username}/");
 
 type DefaultOptions = {
   dataSource?: CollectionDataSource;

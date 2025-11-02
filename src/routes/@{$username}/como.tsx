@@ -11,7 +11,7 @@ import HelpDialog from "@/components/como/help-dialog";
 import { defineHead } from "@/lib/meta";
 import { m } from "@/i18n/messages";
 
-export const Route = createFileRoute("/(profile)/@{$username}/como")({
+export const Route = createFileRoute("/@{$username}/como")({
   component: RouteComponent,
   pendingComponent: PendingComponent,
   errorComponent: ErrorComponent,

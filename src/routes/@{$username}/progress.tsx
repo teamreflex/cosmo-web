@@ -25,7 +25,7 @@ import { artistStatsQuery } from "@/lib/queries/progress";
 import { defineHead } from "@/lib/meta";
 import { m } from "@/i18n/messages";
 
-export const Route = createFileRoute("/(profile)/@{$username}/progress")({
+export const Route = createFileRoute("/@{$username}/progress")({
   component: RouteComponent,
   pendingComponent: PendingComponent,
   validateSearch: progressFrontendSchema,
