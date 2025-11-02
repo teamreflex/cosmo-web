@@ -1,12 +1,10 @@
 {
   "extends": "@apollo/typescript/tsconfig.base.json",
 
-  "include": ["src/**/*.ts"],
-  "exclude": ["node_modules"],
+  "include": ["src/**/*.ts", "eslint.config.ts"],
+  "exclude": ["node_modules", ".turbo", "lib"],
 
   "compilerOptions": {
-    "outDir": "lib",
-    "rootDir": "src",
     "module": "NodeNext",
     "target": "ES2022",
     "strict": true,

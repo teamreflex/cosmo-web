@@ -1,4 +1,4 @@
-# cosmo-web (Apollo)
+# Apollo
 
 A platform for exploring objekts & gravities from [MODHAUS](https://www.mod-haus.com/)' **[Cosmo: the Gate](https://play.google.com/store/apps/details?id=com.modhaus.cosmo)** app via blockchain data.
 
@@ -25,7 +25,6 @@ The [`main`](https://github.com/teamreflex/cosmo-web/blob/main) branch remains a
 ## Requirements
 
 - [Node.js](https://nodejs.org/en/) 22.12+
-- [Blockchain indexer](https://github.com/teamreflex/cosmo-db) instance w/ Drizzle HTTP proxy
 - [Neon](https://neon.tech/) instance
 - [Upstash](https://upstash.com/) instance
 - [Typesense](https://typesense.org/) instance
@@ -42,8 +41,8 @@ git clone git@github.com:teamreflex/cosmo-web.git
 cd cosmo-web
 pnpm install
 cp .env.example .env.local
-pnpm db:migrate
-pnpm dev
+turbo db:migrate
+turbo dev
 ```
 
 ## Tooling
@@ -53,6 +52,7 @@ pnpm dev
 - [shadcn/ui](https://ui.shadcn.com/docs)
 - [Neon](https://neon.tech/)
 - [Drizzle ORM](https://orm.drizzle.team/)
+- [Subsquid](https://subsquid.io/)
 
 ## License
 

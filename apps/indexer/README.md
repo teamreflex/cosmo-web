@@ -1,18 +1,6 @@
-# cosmo-db
+# indexer
 
 A [Subsquid](https://subsquid.io/) indexer for ARTMS and tripleS NFTs.
-
-**NOTE:** On April 18th 2025, COSMO was migrated from the Polygon blockchain over to Abstract. The last snapshot of the project using Polygon can be found on the [`checkpoint/polygon`](https://github.com/teamreflex/cosmo-db/tree/checkpoint/polygon) branch. `main` contains the latest version running on Abstract.
-
-## Setup
-
-```bash
-$ git clone git@github.com:teamreflex/cosmo-db.git
-$ cd cosmo-db
-$ pnpm i
-$ cp .env.example .env
-$ docker compose up -d
-```
 
 ## Service Configuration
 
@@ -46,15 +34,3 @@ HTTP server that exposes the database for use with [Drizzle ORM's HTTP proxy](ht
 ## Tooling
 
 - [Subsquid](https://subsquid.io/)
-- [Bun](https://bun.sh/)
-- [Hono](https://hono.dev/)
-
-## License
-
-Licensed under the [MIT license](https://github.com/teamreflex/cosmo-db/blob/main/LICENSE.md).
-
-## Contact
-
-- **Email**: kyle at reflex.lol
-- **Discord**: kairunz
-- **Cosmo ID**: Kairu

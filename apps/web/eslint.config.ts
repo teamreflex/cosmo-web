@@ -16,8 +16,10 @@ export default defineConfig(
   {
     ignores: [
       "node_modules",
+      ".turbo",
       ".output",
       "dist",
+      ".nitro",
       ".tanstack",
       ".vercel",
       "src/routeTree.gen.ts",

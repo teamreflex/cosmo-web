@@ -1,8 +1,19 @@
 {
   "extends": "@apollo/typescript/tsconfig.base.json",
 
-  "include": ["**/*.ts", "**/*.tsx", "vite.config.mts"],
-  "exclude": [".output", "dist", ".tanstack", "apps/web/.vercel"],
+  "include": ["**/*.ts", "**/*.tsx", "vite.config.mts", "eslint.config.ts"],
+  "exclude": [
+    "node_modules",
+    ".turbo",
+    ".output",
+    "dist",
+    ".nitro",
+    ".tanstack",
+    ".vercel",
+    "project.inlang",
+    "src/i18n/**/*.js",
+    "src/routeTree.gen.ts"
+  ],
 
   "compilerOptions": {
     "jsx": "react-jsx",

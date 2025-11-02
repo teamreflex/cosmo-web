@@ -4,9 +4,9 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "build": "rm -rf lib/ && tsc",
-    "lint": "eslint ./src --max-warnings 0",
-    "lint:fix": "eslint ./src --fix",
+    "build": "rm -rf lib/ && tsc -p tsconfig.build.json",
+    "lint": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix",
     "typecheck": "tsc --pretty --noEmit",
     "format": "prettier --write \"**/*.{ts,tsx}\""
   },

@@ -22,13 +22,13 @@ export async function rescanMetadata(c: Context) {
       [tokenId],
     );
 
-    // token id doesn't exist
-    if (result.rows.length === 0) {
+    const objekt = result.rows[0];
+
+    // token doesn't exist
+    if (!objekt) {
       await client.query("ROLLBACK");
       return c.json({ error: "Objekt not found" }, 404);
     }
-
-    const objekt = result.rows[0];
 
     try {
       // fetch metadata from cosmo

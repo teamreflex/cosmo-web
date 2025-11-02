@@ -1,6 +1,6 @@
 import type { Context } from "hono";
 import { writePool } from "../db";
-import z from "zod";
+import { z, ZodError } from "zod";
 
 const schema = z.object({
   items: z
@@ -18,9 +18,9 @@ export async function setBand(c: Context) {
     const body = await c.req.json();
     var { items } = schema.parse(body);
   } catch (e) {
-    if (e instanceof z.ZodError) {
+    if (e instanceof ZodError) {
       return c.json(
-        { error: e.errors.map((error) => error.message).join(", ") },
+        { error: e.issues.map((issue) => issue.message).join(", ") },
         422,
       );
     }
@@ -36,7 +36,7 @@ export async function setBand(c: Context) {
   try {
     // make placeholders for the query
     const updateValues = items
-      .map((item, index) => `($${index * 2 + 1}, $${index * 2 + 2})`)
+      .map((_, index) => `($${index * 2 + 1}, $${index * 2 + 2})`)
       .join(", ");
 
     // make params for the query (bandImageUrl, slug) for each item
