@@ -1,0 +1,29 @@
+{
+  "name": "@apollo/util",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "lint": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "tsc --pretty --noEmit",
+    "format": "prettier --write \"**/*.{ts,tsx}\""
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "devDependencies": {
+    "@apollo/eslint": "workspace:*",
+    "@apollo/typescript": "workspace:*",
+    "@eslint/eslintrc": "^3.3.1",
+    "@eslint/js": "^9.39.0",
+    "eslint": "9.39.0",
+    "prettier": "^3.6.2",
+    "turbo": "^2.6.0",
+    "typescript": "5.9.3",
+    "typescript-eslint": "^8.46.2"
+  }
+}

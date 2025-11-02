@@ -1,7 +1,7 @@
 import { IconRotate360 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
+import { Addresses } from "@apollo/util";
 import type { AggregatedTransfer } from "@/lib/universal/transfers";
-import { Addresses } from "@/lib/utils";
 import { m } from "@/i18n/messages";
 
 type Props = {

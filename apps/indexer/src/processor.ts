@@ -1,19 +1,21 @@
 import {
-  BlockHeader,
-  DataHandlerContext,
+  type BlockHeader,
+  type DataHandlerContext,
   EvmBatchProcessor,
-  EvmBatchProcessorFields,
-  Log as _Log,
-  Transaction as _Transaction,
+  type EvmBatchProcessorFields,
+  type Log as _Log,
+  type Transaction as _Transaction,
 } from "@subsquid/evm-processor";
 import * as ABI_OBJEKT from "./abi/objekt";
 import * as ABI_COMO from "./abi/como";
 import * as ABI_GRAVITY from "./abi/gravity";
 import { env } from "./env/processor";
-import { Addresses, COSMO_START_BLOCK } from "./constants";
+import { Addresses } from "@apollo/util";
+
+const COSMO_START_BLOCK = 6363806;
 
 console.log(
-  `[processor] Starting processor with objekts ${env.ENABLE_OBJEKTS} and gravity ${env.ENABLE_GRAVITY}`
+  `[processor] Starting processor with objekts ${env.ENABLE_OBJEKTS} and gravity ${env.ENABLE_GRAVITY}`,
 );
 
 const processor = new EvmBatchProcessor()

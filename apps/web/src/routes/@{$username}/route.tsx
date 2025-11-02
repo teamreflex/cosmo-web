@@ -2,6 +2,7 @@ import { Link, Outlet, createFileRoute } from "@tanstack/react-router";
 import { CircleAlert } from "lucide-react";
 import { ErrorBoundary } from "react-error-boundary";
 import { Suspense } from "react";
+import { Addresses, isEqual } from "@apollo/util";
 import CopyAddressButton from "@/components/profile/copy-address-button";
 import TradesButton from "@/components/profile/trades-button";
 import ComoButton from "@/components/profile/como-button";
@@ -10,7 +11,6 @@ import UserAvatar from "@/components/profile/user-avatar";
 import UserBalances, {
   ComoBalanceErrorFallback,
 } from "@/components/navbar/como-balances";
-import { Addresses, isEqual } from "@/lib/utils";
 import {
   CosmoVerifiedBadge,
   DiscordBadge,

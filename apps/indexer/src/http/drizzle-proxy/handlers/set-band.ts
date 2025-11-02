@@ -1,4 +1,4 @@
-import { Context } from "hono";
+import type { Context } from "hono";
 import { writePool } from "../db";
 import z from "zod";
 
@@ -21,7 +21,7 @@ export async function setBand(c: Context) {
     if (e instanceof z.ZodError) {
       return c.json(
         { error: e.errors.map((error) => error.message).join(", ") },
-        422
+        422,
       );
     }
 
@@ -48,7 +48,7 @@ export async function setBand(c: Context) {
        SET band_image_url = updates.band_image_url 
        FROM (VALUES ${updateValues}) AS updates(band_image_url, slug) 
        WHERE collection.slug = updates.slug`,
-      params
+      params,
     );
 
     return c.json({ message: "Band image url(s) updated" }, 200);

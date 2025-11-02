@@ -1,9 +1,9 @@
 import { and, count, desc, eq, not, notInArray, sql } from "drizzle-orm";
 import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
 import z from "zod";
+import { Addresses } from "@apollo/util";
 import { unobtainables } from "../unobtainables";
 import { validOnlineTypes } from "../universal/cosmo/common";
-import { Addresses } from "../utils";
 import { remember } from "./cache";
 import { fetchKnownAddresses } from "./cosmo-accounts";
 import type { ValidOnlineType } from "../universal/cosmo/common";

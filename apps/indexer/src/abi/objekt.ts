@@ -14,7 +14,7 @@ export const events = {
       owner: indexed(p.address),
       approved: indexed(p.address),
       tokenId: indexed(p.uint256),
-    }
+    },
   ),
   ApprovalForAll: event(
     "0x17307eab39ab6107e8899845ad3d59bd9653f200f220920489ca2b5937696c31",
@@ -23,12 +23,12 @@ export const events = {
       owner: indexed(p.address),
       operator: indexed(p.address),
       approved: p.bool,
-    }
+    },
   ),
   Initialized: event(
     "0xc7f505b2f371ae2175ee4913f4499e1f2633a7b5936321eed1cdaeb6115181d2",
     "Initialized(uint64)",
-    { version: p.uint64 }
+    { version: p.uint64 },
   ),
   RoleAdminChanged: event(
     "0xbd79b86ffe0ab8e8776151514217cd7cacd52c909f66475c3af44e129f0b00ff",
@@ -37,7 +37,7 @@ export const events = {
       role: indexed(p.bytes32),
       previousAdminRole: indexed(p.bytes32),
       newAdminRole: indexed(p.bytes32),
-    }
+    },
   ),
   RoleGranted: event(
     "0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d",
@@ -46,7 +46,7 @@ export const events = {
       role: indexed(p.bytes32),
       account: indexed(p.address),
       sender: indexed(p.address),
-    }
+    },
   ),
   RoleRevoked: event(
     "0xf6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b",
@@ -55,7 +55,7 @@ export const events = {
       role: indexed(p.bytes32),
       account: indexed(p.address),
       sender: indexed(p.address),
-    }
+    },
   ),
   Transfer: event(
     "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
@@ -64,12 +64,12 @@ export const events = {
       from: indexed(p.address),
       to: indexed(p.address),
       tokenId: indexed(p.uint256),
-    }
+    },
   ),
   Upgraded: event(
     "0xbc7cd75a20ee27fd9adebab32041f755214dbc6bffa90cc0225b39da2e5c2d3b",
     "Upgraded(address)",
-    { implementation: indexed(p.address) }
+    { implementation: indexed(p.address) },
   ),
 };
 
@@ -78,38 +78,38 @@ export const functions = {
     "0xa217fddf",
     "DEFAULT_ADMIN_ROLE()",
     {},
-    p.bytes32
+    p.bytes32,
   ),
   ERROR_BLACKLISTED_MSG_SENDER: viewFun(
     "0x1111d78f",
     "ERROR_BLACKLISTED_MSG_SENDER()",
     {},
-    p.string
+    p.string,
   ),
   ERROR_CANNOT_TRANSFER_EXTERNALLY: viewFun(
     "0xf304e990",
     "ERROR_CANNOT_TRANSFER_EXTERNALLY()",
     {},
-    p.string
+    p.string,
   ),
   ERROR_INVALID_TOKEN_ID_RANGE: viewFun(
     "0xeab6fab3",
     "ERROR_INVALID_TOKEN_ID_RANGE()",
     {},
-    p.string
+    p.string,
   ),
   ERROR_NON_TRANSFERABLE_OBJEKT: viewFun(
     "0x8a2969c8",
     "ERROR_NON_TRANSFERABLE_OBJEKT()",
     {},
-    p.string
+    p.string,
   ),
   ERROR_NOT_ADMIN: viewFun("0x944565e2", "ERROR_NOT_ADMIN()", {}, p.string),
   ERROR_NOT_AUTHORIZED_APPROVAL: viewFun(
     "0xd5a40857",
     "ERROR_NOT_AUTHORIZED_APPROVAL()",
     {},
-    p.string
+    p.string,
   ),
   ERROR_NOT_MINTER: viewFun("0x459c035e", "ERROR_NOT_MINTER()", {}, p.string),
   ERROR_ONLY_OWNER: viewFun("0x41f1162d", "ERROR_ONLY_OWNER()", {}, p.string),
@@ -117,7 +117,7 @@ export const functions = {
     "0x1abd34e2",
     "ERROR_SENDER_NOT_ADMIN()",
     {},
-    p.string
+    p.string,
   ),
   MINTER_ROLE: viewFun("0xd5391393", "MINTER_ROLE()", {}, p.bytes32),
   OPERATOR_ROLE: viewFun("0xf5b541a6", "OPERATOR_ROLE()", {}, p.bytes32),
@@ -125,13 +125,13 @@ export const functions = {
     "0xad3cb1cc",
     "UPGRADE_INTERFACE_VERSION()",
     {},
-    p.string
+    p.string,
   ),
   approvalWhitelists: viewFun(
     "0x419e583d",
     "approvalWhitelists(address)",
     { _0: p.address },
-    p.bool
+    p.bool,
   ),
   approve: fun("0x095ea7b3", "approve(address,uint256)", {
     to: p.address,
@@ -141,31 +141,31 @@ export const functions = {
     "0x70a08231",
     "balanceOf(address)",
     { owner: p.address },
-    p.uint256
+    p.uint256,
   ),
   batchUpdateObjektTransferability: fun(
     "0xbf62c2e8",
     "batchUpdateObjektTransferability(uint256[],bool)",
-    { tokenIds: p.array(p.uint256), transferable: p.bool }
+    { tokenIds: p.array(p.uint256), transferable: p.bool },
   ),
   blacklists: viewFun(
     "0x16c02129",
     "blacklists(address)",
     { _0: p.address },
-    p.bool
+    p.bool,
   ),
   burn: fun("0x42966c68", "burn(uint256)", { tokenId: p.uint256 }),
   getApproved: viewFun(
     "0x081812fc",
     "getApproved(uint256)",
     { tokenId: p.uint256 },
-    p.address
+    p.address,
   ),
   getRoleAdmin: viewFun(
     "0x248a9ca3",
     "getRoleAdmin(bytes32)",
     { role: p.bytes32 },
-    p.bytes32
+    p.bytes32,
   ),
   grantRole: fun("0x2f2ff15d", "grantRole(bytes32,address)", {
     role: p.bytes32,
@@ -175,20 +175,20 @@ export const functions = {
     "0x91d14854",
     "hasRole(bytes32,address)",
     { role: p.bytes32, account: p.address },
-    p.bool
+    p.bool,
   ),
   initialize: fun("0xf62d1888", "initialize(string)", { baseURI_: p.string }),
   isApprovedForAll: viewFun(
     "0xe985e9c5",
     "isApprovedForAll(address,address)",
     { owner: p.address, operator: p.address },
-    p.bool
+    p.bool,
   ),
   isObjektTransferable: viewFun(
     "0xb2c03a50",
     "isObjektTransferable(uint256)",
     { _0: p.uint256 },
-    p.bool
+    p.bool,
   ),
   mint: fun("0xd1a1beb4", "mint(address,uint256,bool)", {
     to: p.address,
@@ -206,7 +206,7 @@ export const functions = {
     "0x6352211e",
     "ownerOf(uint256)",
     { tokenId: p.uint256 },
-    p.address
+    p.address,
   ),
   proxiableUUID: viewFun("0x52d1902d", "proxiableUUID()", {}, p.bytes32),
   renounceRole: fun("0x36568abe", "renounceRole(bytes32,address)", {
@@ -220,12 +220,12 @@ export const functions = {
   "safeTransferFrom(address,address,uint256)": fun(
     "0x42842e0e",
     "safeTransferFrom(address,address,uint256)",
-    { from: p.address, to: p.address, tokenId: p.uint256 }
+    { from: p.address, to: p.address, tokenId: p.uint256 },
   ),
   "safeTransferFrom(address,address,uint256,bytes)": fun(
     "0xb88d4fde",
     "safeTransferFrom(address,address,uint256,bytes)",
-    { from: p.address, to: p.address, tokenId: p.uint256, data: p.bytes }
+    { from: p.address, to: p.address, tokenId: p.uint256, data: p.bytes },
   ),
   setApprovalForAll: fun("0xa22cb465", "setApprovalForAll(address,bool)", {
     operator: p.address,
@@ -234,7 +234,7 @@ export const functions = {
   setApprovalWhitelist: fun(
     "0xca0429e0",
     "setApprovalWhitelist(address,bool)",
-    { addr: p.address, isWhitelisted: p.bool }
+    { addr: p.address, isWhitelisted: p.bool },
   ),
   setBaseURI: fun("0x55f804b3", "setBaseURI(string)", {
     _newBaseURI: p.string,
@@ -247,26 +247,26 @@ export const functions = {
     "0x01ffc9a7",
     "supportsInterface(bytes4)",
     { interfaceId: p.bytes4 },
-    p.bool
+    p.bool,
   ),
   symbol: viewFun("0x95d89b41", "symbol()", {}, p.string),
   tokenByIndex: viewFun(
     "0x4f6ccce7",
     "tokenByIndex(uint256)",
     { index: p.uint256 },
-    p.uint256
+    p.uint256,
   ),
   tokenOfOwnerByIndex: viewFun(
     "0x2f745c59",
     "tokenOfOwnerByIndex(address,uint256)",
     { owner: p.address, index: p.uint256 },
-    p.uint256
+    p.uint256,
   ),
   tokenURI: viewFun(
     "0xc87b56dd",
     "tokenURI(uint256)",
     { tokenId: p.uint256 },
-    p.string
+    p.string,
   ),
   totalSupply: viewFun("0x18160ddd", "totalSupply()", {}, p.uint256),
   transferFrom: fun("0x23b872dd", "transferFrom(address,address,uint256)", {
@@ -359,7 +359,7 @@ export class Contract extends ContractBase {
 
   isApprovedForAll(
     owner: IsApprovedForAllParams["owner"],
-    operator: IsApprovedForAllParams["operator"]
+    operator: IsApprovedForAllParams["operator"],
   ) {
     return this.eth_call(functions.isApprovedForAll, { owner, operator });
   }
@@ -394,7 +394,7 @@ export class Contract extends ContractBase {
 
   tokenOfOwnerByIndex(
     owner: TokenOfOwnerByIndexParams["owner"],
-    index: TokenOfOwnerByIndexParams["index"]
+    index: TokenOfOwnerByIndexParams["index"],
   ) {
     return this.eth_call(functions.tokenOfOwnerByIndex, { owner, index });
   }

@@ -9,12 +9,12 @@ import { ChevronDown, ChevronUp, HeartCrack } from "lucide-react";
 import { IconRotate360 } from "@tabler/icons-react";
 import { useDebounceValue } from "usehooks-ts";
 import { Link } from "@tanstack/react-router";
+import { Addresses, isEqual } from "@apollo/util";
 import { MetadataDialogError } from "./common";
 import type { SerialObjekt, SerialTransfer } from "@/lib/universal/objekts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Addresses, isEqual } from "@/lib/utils";
 import { useObjektSerial } from "@/hooks/use-objekt-serial";
 import { m } from "@/i18n/messages";
 

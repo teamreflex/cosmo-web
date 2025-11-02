@@ -14,12 +14,12 @@ export const events = {
       account: indexed(p.address),
       operator: indexed(p.address),
       approved: p.bool,
-    }
+    },
   ),
   Initialized: event(
     "0xc7f505b2f371ae2175ee4913f4499e1f2633a7b5936321eed1cdaeb6115181d2",
     "Initialized(uint64)",
-    { version: p.uint64 }
+    { version: p.uint64 },
   ),
   RoleAdminChanged: event(
     "0xbd79b86ffe0ab8e8776151514217cd7cacd52c909f66475c3af44e129f0b00ff",
@@ -28,7 +28,7 @@ export const events = {
       role: indexed(p.bytes32),
       previousAdminRole: indexed(p.bytes32),
       newAdminRole: indexed(p.bytes32),
-    }
+    },
   ),
   RoleGranted: event(
     "0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d",
@@ -37,7 +37,7 @@ export const events = {
       role: indexed(p.bytes32),
       account: indexed(p.address),
       sender: indexed(p.address),
-    }
+    },
   ),
   RoleRevoked: event(
     "0xf6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b",
@@ -46,7 +46,7 @@ export const events = {
       role: indexed(p.bytes32),
       account: indexed(p.address),
       sender: indexed(p.address),
-    }
+    },
   ),
   TransferBatch: event(
     "0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb",
@@ -57,7 +57,7 @@ export const events = {
       to: indexed(p.address),
       ids: p.array(p.uint256),
       values: p.array(p.uint256),
-    }
+    },
   ),
   TransferSingle: event(
     "0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62",
@@ -68,17 +68,17 @@ export const events = {
       to: indexed(p.address),
       id: p.uint256,
       value: p.uint256,
-    }
+    },
   ),
   URI: event(
     "0x6bb7ff708619ba0610cba295a58592e0451dee2622938c8755667688daf3529b",
     "URI(string,uint256)",
-    { value: p.string, id: indexed(p.uint256) }
+    { value: p.string, id: indexed(p.uint256) },
   ),
   Upgraded: event(
     "0xbc7cd75a20ee27fd9adebab32041f755214dbc6bffa90cc0225b39da2e5c2d3b",
     "Upgraded(address)",
-    { implementation: indexed(p.address) }
+    { implementation: indexed(p.address) },
   ),
 };
 
@@ -87,31 +87,31 @@ export const functions = {
     "0xa217fddf",
     "DEFAULT_ADMIN_ROLE()",
     {},
-    p.bytes32
+    p.bytes32,
   ),
   ERROR_ALREADY_WHITELISTED: viewFun(
     "0x4b691084",
     "ERROR_ALREADY_WHITELISTED()",
     {},
-    p.string
+    p.string,
   ),
   ERROR_TO_ADDRESS_NOT_IN_WHITELIST: viewFun(
     "0xc120e7ca",
     "ERROR_TO_ADDRESS_NOT_IN_WHITELIST()",
     {},
-    p.string
+    p.string,
   ),
   ERROR_WHITELIST_ALREADY_REMOVED: viewFun(
     "0xa5813f57",
     "ERROR_WHITELIST_ALREADY_REMOVED()",
     {},
-    p.string
+    p.string,
   ),
   ERROR_WHITELIST_NOT_INITIALIZED: viewFun(
     "0xf1af1e75",
     "ERROR_WHITELIST_NOT_INITIALIZED()",
     {},
-    p.string
+    p.string,
   ),
   MANAGER_ROLE: viewFun("0xec87621c", "MANAGER_ROLE()", {}, p.bytes32),
   MINTER_ROLE: viewFun("0xd5391393", "MINTER_ROLE()", {}, p.bytes32),
@@ -120,7 +120,7 @@ export const functions = {
     "0xad3cb1cc",
     "UPGRADE_INTERFACE_VERSION()",
     {},
-    p.string
+    p.string,
   ),
   addWhitelist: fun("0x3e0b892a", "addWhitelist(uint256,address)", {
     id: p.uint256,
@@ -130,13 +130,13 @@ export const functions = {
     "0x00fdd58e",
     "balanceOf(address,uint256)",
     { account: p.address, id: p.uint256 },
-    p.uint256
+    p.uint256,
   ),
   balanceOfBatch: viewFun(
     "0x4e1273f4",
     "balanceOfBatch(address[],uint256[])",
     { accounts: p.array(p.address), ids: p.array(p.uint256) },
-    p.array(p.uint256)
+    p.array(p.uint256),
   ),
   burn: fun("0xf5298aca", "burn(address,uint256,uint256)", {
     account: p.address,
@@ -147,7 +147,7 @@ export const functions = {
     "0x248a9ca3",
     "getRoleAdmin(bytes32)",
     { role: p.bytes32 },
-    p.bytes32
+    p.bytes32,
   ),
   grantRole: fun("0x2f2ff15d", "grantRole(bytes32,address)", {
     role: p.bytes32,
@@ -157,14 +157,14 @@ export const functions = {
     "0x91d14854",
     "hasRole(bytes32,address)",
     { role: p.bytes32, account: p.address },
-    p.bool
+    p.bool,
   ),
   initialize: fun("0xf62d1888", "initialize(string)", { uri: p.string }),
   isApprovedForAll: viewFun(
     "0xe985e9c5",
     "isApprovedForAll(address,address)",
     { account: p.address, operator: p.address },
-    p.bool
+    p.bool,
   ),
   mint: fun("0x731133e9", "mint(address,uint256,uint256,bytes)", {
     to: p.address,
@@ -200,7 +200,7 @@ export const functions = {
       ids: p.array(p.uint256),
       values: p.array(p.uint256),
       data: p.bytes,
-    }
+    },
   ),
   safeTransferFrom: fun(
     "0xf242432a",
@@ -211,7 +211,7 @@ export const functions = {
       id: p.uint256,
       value: p.uint256,
       data: p.bytes,
-    }
+    },
   ),
   setApprovalForAll: fun("0xa22cb465", "setApprovalForAll(address,bool)", {
     operator: p.address,
@@ -226,7 +226,7 @@ export const functions = {
     "0x01ffc9a7",
     "supportsInterface(bytes4)",
     { interfaceId: p.bytes4 },
-    p.bool
+    p.bool,
   ),
   upgradeToAndCall: fun("0x4f1ef286", "upgradeToAndCall(address,bytes)", {
     newImplementation: p.address,
@@ -237,7 +237,7 @@ export const functions = {
     "0xfe4d5add",
     "whitelists(uint256)",
     { _0: p.uint256 },
-    p.bool
+    p.bool,
   ),
 };
 
@@ -284,7 +284,7 @@ export class Contract extends ContractBase {
 
   balanceOfBatch(
     accounts: BalanceOfBatchParams["accounts"],
-    ids: BalanceOfBatchParams["ids"]
+    ids: BalanceOfBatchParams["ids"],
   ) {
     return this.eth_call(functions.balanceOfBatch, { accounts, ids });
   }
@@ -299,7 +299,7 @@ export class Contract extends ContractBase {
 
   isApprovedForAll(
     account: IsApprovedForAllParams["account"],
-    operator: IsApprovedForAllParams["operator"]
+    operator: IsApprovedForAllParams["operator"],
   ) {
     return this.eth_call(functions.isApprovedForAll, { account, operator });
   }

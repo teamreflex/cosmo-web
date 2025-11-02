@@ -4,13 +4,15 @@ import tseslint from "typescript-eslint";
 
 export default defineConfig(
   {
-    ignores: ["node_modules", "lib", "src/model/generated/**"],
+    ignores: ["node_modules"],
   },
   {
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
-        projectService: true,
+        projectService: {
+          allowDefaultProject: ["*.ts"],
+        },
         tsconfigRootDir: import.meta.dirname,
       },
     },

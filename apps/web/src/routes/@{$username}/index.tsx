@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Addresses, isEqual } from "@apollo/util";
 import { userCollectionFrontendSchema } from "@/lib/universal/parsers";
 import { Skeleton } from "@/components/ui/skeleton";
 import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
@@ -15,7 +16,6 @@ import { ArtistProvider } from "@/hooks/use-artists";
 import { ProfileProvider } from "@/hooks/use-profile";
 import ProfileRenderer from "@/components/profile/profile-renderer";
 import { pinsQuery } from "@/lib/queries/profile";
-import { Addresses, isEqual } from "@/lib/utils";
 import {
   userCollectionBlockchainGroupsQuery,
   userCollectionBlockchainQuery,

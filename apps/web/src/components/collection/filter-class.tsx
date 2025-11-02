@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
+import { isEqual } from "@apollo/util";
 import type { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
 import type { ValidArtist } from "@/lib/universal/cosmo/common";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { cn, isEqual } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { useFilterData } from "@/hooks/use-filter-data";
 import { m } from "@/i18n/messages";
 

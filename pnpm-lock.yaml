@@ -27,6 +27,9 @@ importers:
 
   apps/indexer:
     dependencies:
+      '@apollo/util':
+        specifier: workspace:*
+        version: link:../../packages/util
       '@subsquid/evm-abi':
         specifier: ^0.3.1
         version: 0.3.1
@@ -109,9 +112,15 @@ importers:
       typescript:
         specifier: 5.9.3
         version: 5.9.3
+      typescript-eslint:
+        specifier: ^8.46.2
+        version: 8.46.2(eslint@9.39.0(jiti@2.6.1))(typescript@5.9.3)
 
   apps/web:
     dependencies:
+      '@apollo/util':
+        specifier: workspace:*
+        version: link:../../packages/util
       '@aws-sdk/client-ses':
         specifier: ^3.922.0
         version: 3.922.0
@@ -394,6 +403,36 @@ importers:
         version: 8.46.2(eslint@9.39.0(jiti@2.6.1))(typescript@5.9.3)
 
   packages/typescript: {}
+
+  packages/util:
+    devDependencies:
+      '@apollo/eslint':
+        specifier: workspace:*
+        version: link:../eslint
+      '@apollo/typescript':
+        specifier: workspace:*
+        version: link:../typescript
+      '@eslint/eslintrc':
+        specifier: ^3.3.1
+        version: 3.3.1
+      '@eslint/js':
+        specifier: ^9.39.0
+        version: 9.39.0
+      eslint:
+        specifier: 9.39.0
+        version: 9.39.0(jiti@2.6.1)
+      prettier:
+        specifier: ^3.6.2
+        version: 3.6.2
+      turbo:
+        specifier: ^2.6.0
+        version: 2.6.0
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+      typescript-eslint:
+        specifier: ^8.46.2
+        version: 8.46.2(eslint@9.39.0(jiti@2.6.1))(typescript@5.9.3)
 
 packages:
 

@@ -1,7 +1,8 @@
 import { sql } from "drizzle-orm";
 import { FetchError } from "ofetch";
 import { createServerOnlyFn } from "@tanstack/react-start";
-import { GRID_COLUMNS, isAddress } from "../utils";
+import { isAddress } from "@apollo/util";
+import { GRID_COLUMNS } from "../utils";
 import { db } from "./db";
 import { cosmoAccounts } from "./db/schema";
 import { fetchByNickname } from "./cosmo/user";

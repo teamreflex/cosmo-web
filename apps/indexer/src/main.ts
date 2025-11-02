@@ -1,23 +1,23 @@
-import { processor, ProcessorContext } from "./processor";
+import { processor, type ProcessorContext } from "./processor";
 import {
-  ComoBalanceEvent,
-  TransferabilityUpdate,
-  VoteEvent,
+  type ComoBalanceEvent,
+  type TransferabilityUpdate,
+  type VoteEvent,
   parseBlocks,
 } from "./parser";
-import { MetadataV1, fetchMetadata } from "./cosmo";
-import { Collection, ComoBalance, Objekt, Transfer, Vote } from "./model";
-import { addr, chunk } from "./util";
-import { TypeormDatabase, Store } from "@subsquid/typeorm-store";
+import { type MetadataV1, fetchMetadata } from "./cosmo";
+import { Collection, ComoBalance, Objekt, type Transfer, Vote } from "./model";
+import { addr, chunk } from "@apollo/util";
+import { TypeormDatabase, type Store } from "@subsquid/typeorm-store";
 import { randomUUID } from "crypto";
 import { env } from "./env/processor";
-import { Addresses } from "./constants";
+import { Addresses } from "@apollo/util";
 
 const db = new TypeormDatabase({ supportHotBlocks: true });
 
 processor.run(db, async (ctx) => {
   const { transfers, transferability, comoBalanceUpdates, votes } = parseBlocks(
-    ctx.blocks
+    ctx.blocks,
   );
 
   if (env.ENABLE_OBJEKTS) {
@@ -32,16 +32,16 @@ processor.run(db, async (ctx) => {
       const objektBatch = new Map<string, Objekt>();
 
       const metadataBatch = await Promise.allSettled(
-        chunk.map((e) => fetchMetadata(e.tokenId))
+        chunk.map((e) => fetchMetadata(e.tokenId)),
       );
 
       // iterate over each objekt metadata request
       for (let j = 0; j < metadataBatch.length; j++) {
         const request = metadataBatch[j];
-        const currentTransfer = chunk[j];
-        if (request.status === "rejected") {
+        const transfer = chunk[j];
+        if (!transfer || !request || request.status === "rejected") {
           ctx.log.error(
-            `Unable to fetch metadata for token ${currentTransfer.tokenId}`
+            `Unable to fetch metadata for token ${transfer?.tokenId ?? "unknown"}`,
           );
           continue;
         }
@@ -51,7 +51,7 @@ processor.run(db, async (ctx) => {
           ctx,
           request.value,
           collectionBatch,
-          currentTransfer
+          transfer,
         );
         collectionBatch.set(collection.slug, collection);
 
@@ -60,15 +60,15 @@ processor.run(db, async (ctx) => {
           ctx,
           request.value,
           objektBatch,
-          currentTransfer
+          transfer,
         );
         objekt.collection = collection;
         objektBatch.set(objekt.id, objekt);
 
         // handle transfer
-        currentTransfer.objekt = objekt;
-        currentTransfer.collection = collection;
-        transferBatch.push(currentTransfer);
+        transfer.objekt = objekt;
+        transfer.collection = collection;
+        transferBatch.push(transfer);
       }
 
       // upsert collections
@@ -90,57 +90,59 @@ processor.run(db, async (ctx) => {
     // process transferability updates separately from transfers
     if (transferability.length > 0) {
       ctx.log.info(
-        `Handling ${transferability.length} transferability updates`
+        `Handling ${transferability.length} transferability updates`,
       );
       await handleTransferabilityUpdates(ctx, transferability);
     }
   }
 
   if (env.ENABLE_GRAVITY) {
+    // #region votes
     const voteBatch: Vote[] = [];
 
     if (votes.length > 0) {
       ctx.log.info(`Processing ${votes.length} gravity votes`);
     }
 
-    // handle vote creation
-    for (let i = 0; i < votes.length; i++) {
-      const vote = await handleVoteCreation(votes[i]);
+    for (const event of votes) {
+      const vote = await handleVoteCreation(event);
       voteBatch.push(vote);
     }
 
     if (voteBatch.length > 0) {
       await ctx.store.upsert(voteBatch);
     }
+    // #endregion
 
+    // #region como balance updates
     if (comoBalanceUpdates.length > 0) {
       ctx.log.info(
-        `Processing ${comoBalanceUpdates.length} COMO balance updates`
+        `Processing ${comoBalanceUpdates.length} COMO balance updates`,
       );
     }
 
-    // handle como balance updates
     await chunk(comoBalanceUpdates, 2000, async (chunk) => {
       const comoBalanceBatch = new Map<string, ComoBalance>();
-      for (let i = 0; i < chunk.length; i++) {
+      for (const event of chunk) {
         const balances = await handleComoBalanceUpdate(
           ctx,
           comoBalanceBatch,
-          chunk[i]
+          event,
         );
 
-        balances.forEach((balance) => {
+        for (const balance of balances) {
           comoBalanceBatch.set(
             balanceKey({ owner: balance.owner, tokenId: balance.tokenId }),
-            balance
+            balance,
           );
-        });
+        }
       }
 
       if (comoBalanceBatch.size > 0) {
         await ctx.store.upsert(Array.from(comoBalanceBatch.values()));
       }
     });
+    // #endregion
   }
 });
 
@@ -151,7 +153,7 @@ async function handleCollection(
   ctx: ProcessorContext<Store>,
   metadata: MetadataV1,
   buffer: Map<string, Collection>,
-  transfer: Transfer
+  transfer: Transfer,
 ) {
   const slug = metadata.objekt.collectionId
     .toLowerCase()
@@ -189,7 +191,7 @@ async function handleCollection(
   // set and/or update metadata
   collection.season = metadata.objekt.season;
   collection.member = metadata.objekt.member;
-  collection.artist = metadata.objekt.artists[0].toLowerCase();
+  collection.artist = metadata.objekt.artists[0]!.toLowerCase();
   collection.collectionNo = metadata.objekt.collectionNo;
   collection.class = metadata.objekt.class;
   collection.comoAmount = metadata.objekt.comoAmount;
@@ -213,7 +215,7 @@ async function handleObjekt(
   ctx: ProcessorContext<Store>,
   metadata: MetadataV1,
   buffer: Map<string, Objekt>,
-  transfer: Transfer
+  transfer: Transfer,
 ) {
   // fetch out of buffer
   let objekt = buffer.get(transfer.tokenId);
@@ -250,7 +252,7 @@ async function handleObjekt(
  */
 async function handleTransferabilityUpdates(
   ctx: ProcessorContext<Store>,
-  updates: TransferabilityUpdate[]
+  updates: TransferabilityUpdate[],
 ) {
   const batch = new Map<string, Objekt>();
   for (const update of updates) {
@@ -260,7 +262,7 @@ async function handleTransferabilityUpdates(
       batch.set(objekt.id, objekt);
     } else {
       ctx.log.error(
-        `Unable to find objekt ${update.tokenId} for transferability update`
+        `Unable to find objekt ${update.tokenId} for transferability update`,
       );
     }
   }
@@ -277,7 +279,7 @@ const EXCLUDE = Object.values(Addresses);
 async function handleComoBalanceUpdate(
   ctx: ProcessorContext<Store>,
   buffer: Map<string, ComoBalance>,
-  event: ComoBalanceEvent
+  event: ComoBalanceEvent,
 ) {
   const toUpdate: ComoBalance[] = [];
 
@@ -312,7 +314,7 @@ async function getBalance(
   ctx: ProcessorContext<Store>,
   buffer: Map<string, ComoBalance>,
   owner: string,
-  tokenId: number
+  tokenId: number,
 ) {
   let balance = buffer.get(balanceKey({ owner, tokenId }));
 

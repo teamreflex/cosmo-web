@@ -6,10 +6,12 @@
   "scripts": {
     "build": "rm -rf lib/ && tsc",
     "lint": "eslint ./src --max-warnings 0",
+    "lint:fix": "eslint ./src --fix",
     "typecheck": "tsc --pretty --noEmit",
     "format": "prettier --write \"**/*.{ts,tsx}\""
   },
   "dependencies": {
+    "@apollo/util": "workspace:*",
     "@subsquid/evm-abi": "^0.3.1",
     "@subsquid/evm-codec": "^0.3.0",
     "@subsquid/evm-processor": "^1.27.3",
@@ -38,6 +40,7 @@
     "eslint": "9.39.0",
     "prettier": "^3.6.2",
     "turbo": "^2.6.0",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "typescript-eslint": "^8.46.2"
   }
 }

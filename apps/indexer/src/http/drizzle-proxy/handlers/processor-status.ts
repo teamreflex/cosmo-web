@@ -1,4 +1,4 @@
-import { Context } from "hono";
+import type { Context } from "hono";
 import { env } from "../env";
 import { writePool } from "../db";
 
@@ -7,7 +7,7 @@ export async function processorStatus(c: Context) {
 
   try {
     const result = await client.query<Status>(
-      "select * from squid_processor.status"
+      "select * from squid_processor.status",
     );
 
     if (result.rows.length > 0) {

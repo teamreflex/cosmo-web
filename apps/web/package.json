@@ -9,6 +9,7 @@
     "start": "pnpm run env -- node .output/server/index.mjs",
     "test": "vitest",
     "lint": "eslint ./src --max-warnings 0",
+    "lint:fix": "eslint ./src --fix",
     "typecheck": "tsc --pretty --noEmit",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "db:push": "drizzle-kit push",
@@ -20,6 +21,7 @@
     "inlang:compile": "pnpm dlx @inlang/paraglide-js compile --project ./project.inlang --outdir ./src/i18n"
   },
   "dependencies": {
+    "@apollo/util": "workspace:*",
     "@aws-sdk/client-ses": "^3.922.0",
     "@hookform/resolvers": "^5.2.2",
     "@neondatabase/serverless": "^1.0.2",

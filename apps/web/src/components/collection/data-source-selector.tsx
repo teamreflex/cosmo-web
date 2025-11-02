@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { CircleHelp } from "lucide-react";
+import { Addresses, isEqual } from "@apollo/util";
 import {
   Select,
   SelectContent,
@@ -26,7 +27,6 @@ import {
 import { Button } from "../ui/button";
 import type { ReactNode } from "react";
 import type { CollectionDataSource } from "@/lib/utils";
-import { Addresses, isEqual } from "@/lib/utils";
 import { m } from "@/i18n/messages";
 import { env } from "@/lib/env/client";
 

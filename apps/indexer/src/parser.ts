@@ -1,11 +1,11 @@
 import { Transfer } from "./model";
-import { Fields, Log, Transaction } from "./processor";
-import { addr } from "./util";
-import { BlockData } from "@subsquid/evm-processor";
+import type { Fields, Log, Transaction } from "./processor";
+import { addr } from "@apollo/util";
+import type { BlockData } from "@subsquid/evm-processor";
 import * as ABI_OBJEKT from "./abi/objekt";
 import * as ABI_COMO from "./abi/como";
 import * as ABI_GRAVITY from "./abi/gravity";
-import { Addresses } from "./constants";
+import { Addresses } from "@apollo/util";
 import { randomUUID } from "crypto";
 
 const transferability = ABI_OBJEKT.functions.batchUpdateObjektTransferability;
@@ -39,7 +39,7 @@ export function parseBlocks(blocks: BlockData<Fields>[]) {
         (tx) =>
           !!tx.to &&
           Addresses.OBJEKT === addr(tx.to) &&
-          tx.sighash === transferability.sighash
+          tx.sighash === transferability.sighash,
       )
       .flatMap(parseTransferabilityUpdate)
       .filter((e) => e !== undefined),
@@ -97,7 +97,7 @@ export type TransferabilityUpdate = {
  * Parse an event into an objekt update.
  */
 export function parseTransferabilityUpdate(
-  tx: Transaction
+  tx: Transaction,
 ): TransferabilityUpdate[] {
   try {
     const { tokenIds, transferable } = transferability.decode(tx.input);
@@ -146,12 +146,17 @@ export function parseComoBalanceEvents(log: Log): ComoBalanceEvent[] {
         const events: ComoBalanceEvent[] = [];
 
         for (let i = 0; i < event.ids.length; i++) {
+          const value = event.values[i];
+          if (!value) {
+            continue;
+          }
+
           events.push({
             hash: log.transactionHash,
             from: addr(event.from),
             to: addr(event.to),
             tokenId: Number(event.ids[i]),
-            value: event.values[i],
+            value,
             timestamp: log.block.timestamp,
           });
         }
@@ -167,6 +172,7 @@ export function parseComoBalanceEvents(log: Log): ComoBalanceEvent[] {
 }
 
 export type VoteEvent = {
+  hash: string;
   id: string;
   from: string;
   timestamp: number;
@@ -183,6 +189,7 @@ export function parseVote(log: Log): VoteEvent | undefined {
     const event = ABI_GRAVITY.events.Voted.decode(log);
 
     return {
+      hash: log.transactionHash,
       id: log.id,
       from: addr(event.voter),
       timestamp: log.block.timestamp,

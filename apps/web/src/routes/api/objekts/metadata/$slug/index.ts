@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { eq, sql } from "drizzle-orm";
+import { Addresses, addr } from "@apollo/util";
 import type { ObjektMetadata } from "@/lib/universal/objekts";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import { collections, objekts } from "@/lib/server/db/indexer/schema";
-import { Addresses, addr } from "@/lib/utils";
 import { cacheHeaders } from "@/lib/server/cache";
 
 export const Route = createFileRoute("/api/objekts/metadata/$slug/")({

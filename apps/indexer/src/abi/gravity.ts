@@ -10,7 +10,7 @@ export const events = {
   EIP712DomainChanged: event(
     "0x0a6387c9ea3628b88a633bb4f3b151770f70085117a15f9bf3787cda53f13d31",
     "EIP712DomainChanged()",
-    {}
+    {},
   ),
   Finalized: event(
     "0x069cb9cf3066619f9a83be465993a22843ea7baba731ac97ac208899985dc007",
@@ -19,17 +19,17 @@ export const events = {
       tokenId: indexed(p.uint256),
       pollId: indexed(p.uint256),
       burned: p.uint256,
-    }
+    },
   ),
   Initialized: event(
     "0xc7f505b2f371ae2175ee4913f4499e1f2633a7b5936321eed1cdaeb6115181d2",
     "Initialized(uint64)",
-    { version: p.uint64 }
+    { version: p.uint64 },
   ),
   PollCreated: event(
     "0x79fb617314647013123901234cea859ab2df200423a4048a35d9cf59437a9b64",
     "PollCreated(uint256,uint256)",
-    { tokenId: p.uint256, pollId: p.uint256 }
+    { tokenId: p.uint256, pollId: p.uint256 },
   ),
   Revealed: event(
     "0xa02957988806bd9d30dcd2845b047aa4f45bede519fbd15ebafe428505b0900f",
@@ -39,7 +39,7 @@ export const events = {
       pollId: indexed(p.uint256),
       revealedVotes: p.uint256,
       remainingVotes: p.uint256,
-    }
+    },
   ),
   RoleAdminChanged: event(
     "0xbd79b86ffe0ab8e8776151514217cd7cacd52c909f66475c3af44e129f0b00ff",
@@ -48,7 +48,7 @@ export const events = {
       role: indexed(p.bytes32),
       previousAdminRole: indexed(p.bytes32),
       newAdminRole: indexed(p.bytes32),
-    }
+    },
   ),
   RoleGranted: event(
     "0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d",
@@ -57,7 +57,7 @@ export const events = {
       role: indexed(p.bytes32),
       account: indexed(p.address),
       sender: indexed(p.address),
-    }
+    },
   ),
   RoleRevoked: event(
     "0xf6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b",
@@ -66,12 +66,12 @@ export const events = {
       role: indexed(p.bytes32),
       account: indexed(p.address),
       sender: indexed(p.address),
-    }
+    },
   ),
   Upgraded: event(
     "0xbc7cd75a20ee27fd9adebab32041f755214dbc6bffa90cc0225b39da2e5c2d3b",
     "Upgraded(address)",
-    { implementation: indexed(p.address) }
+    { implementation: indexed(p.address) },
   ),
   Voted: event(
     "0x0f066129e5902e103e22209fff5d12a79f07dc9ef7c78fe10ff64c741a20c8ec",
@@ -82,7 +82,7 @@ export const events = {
       voter: p.address,
       tokenAmount: p.uint256,
       hash: p.bytes32,
-    }
+    },
   ),
 };
 
@@ -91,141 +91,141 @@ export const functions = {
     "0xa217fddf",
     "DEFAULT_ADMIN_ROLE()",
     {},
-    p.bytes32
+    p.bytes32,
   ),
   ERROR_ALL_VOTES_REVEALED: viewFun(
     "0x46d04869",
     "ERROR_ALL_VOTES_REVEALED()",
     {},
-    p.string
+    p.string,
   ),
   ERROR_EMPTY_CALLDATA: viewFun(
     "0xfdaff161",
     "ERROR_EMPTY_CALLDATA()",
     {},
-    p.string
+    p.string,
   ),
   ERROR_INSUFFICIENT_TOKEN_AMOUNT: viewFun(
     "0x61871ac4",
     "ERROR_INSUFFICIENT_TOKEN_AMOUNT()",
     {},
-    p.string
+    p.string,
   ),
   ERROR_INVALID_CANDIDATES_LENGTH: viewFun(
     "0x31a869a5",
     "ERROR_INVALID_CANDIDATES_LENGTH()",
     {},
-    p.string
+    p.string,
   ),
   ERROR_INVALID_DATA_LENGTH: viewFun(
     "0x5ee958b2",
     "ERROR_INVALID_DATA_LENGTH()",
     {},
-    p.string
+    p.string,
   ),
   ERROR_INVALID_DUE: viewFun("0x074a485c", "ERROR_INVALID_DUE()", {}, p.string),
   ERROR_INVALID_FROM_ADDRESS: viewFun(
     "0xd807d5fd",
     "ERROR_INVALID_FROM_ADDRESS()",
     {},
-    p.string
+    p.string,
   ),
   ERROR_INVALID_MINIMUM_TOKEN: viewFun(
     "0xf8f9a91a",
     "ERROR_INVALID_MINIMUM_TOKEN()",
     {},
-    p.string
+    p.string,
   ),
   ERROR_INVALID_OFFSET: viewFun(
     "0xe8a39056",
     "ERROR_INVALID_OFFSET()",
     {},
-    p.string
+    p.string,
   ),
   ERROR_INVALID_REVEAL_DATA: viewFun(
     "0x63d32a89",
     "ERROR_INVALID_REVEAL_DATA()",
     {},
-    p.string
+    p.string,
   ),
   ERROR_INVALID_START_AT: viewFun(
     "0xf055304e",
     "ERROR_INVALID_START_AT()",
     {},
-    p.string
+    p.string,
   ),
   ERROR_INVALID_TOKEN_UNIT: viewFun(
     "0xd66a493e",
     "ERROR_INVALID_TOKEN_UNIT()",
     {},
-    p.string
+    p.string,
   ),
   ERROR_INVALID_VOTE_SIGNER_ADDRESS: viewFun(
     "0x23cc8ac8",
     "ERROR_INVALID_VOTE_SIGNER_ADDRESS()",
     {},
-    p.string
+    p.string,
   ),
   ERROR_INVALID_VOTE_UNIT: viewFun(
     "0x7c69a472",
     "ERROR_INVALID_VOTE_UNIT()",
     {},
-    p.string
+    p.string,
   ),
   ERROR_NOT_ALL_VOTES_REVEALED: viewFun(
     "0xb762c542",
     "ERROR_NOT_ALL_VOTES_REVEALED()",
     {},
-    p.string
+    p.string,
   ),
   ERROR_NOT_IN_PROGRESS: viewFun(
     "0x22b207ff",
     "ERROR_NOT_IN_PROGRESS()",
     {},
-    p.string
+    p.string,
   ),
   ERROR_POLL_ALREADY_EXISTS: viewFun(
     "0x7803e191",
     "ERROR_POLL_ALREADY_EXISTS()",
     {},
-    p.string
+    p.string,
   ),
   ERROR_POLL_ALREADY_FINALIZED: viewFun(
     "0xdcf470c7",
     "ERROR_POLL_ALREADY_FINALIZED()",
     {},
-    p.string
+    p.string,
   ),
   ERROR_POLL_NOT_EXISTS: viewFun(
     "0xcb219983",
     "ERROR_POLL_NOT_EXISTS()",
     {},
-    p.string
+    p.string,
   ),
   ERROR_VOTE_HASH_CANNOT_BE_REPLAYED: viewFun(
     "0xe303a43e",
     "ERROR_VOTE_HASH_CANNOT_BE_REPLAYED()",
     {},
-    p.string
+    p.string,
   ),
   ERROR_VOTE_SIGNER_INVALID_SIGNATURE: viewFun(
     "0x80bba5c2",
     "ERROR_VOTE_SIGNER_INVALID_SIGNATURE()",
     {},
-    p.string
+    p.string,
   ),
   OPERATOR_ROLE: viewFun("0xf5b541a6", "OPERATOR_ROLE()", {}, p.bytes32),
   UPGRADE_INTERFACE_VERSION: viewFun(
     "0xad3cb1cc",
     "UPGRADE_INTERFACE_VERSION()",
     {},
-    p.string
+    p.string,
   ),
   candidates: viewFun(
     "0x7de14242",
     "candidates(uint256,uint256)",
     { tokenId: p.uint256, pollId: p.uint256 },
-    p.array(p.string)
+    p.array(p.string),
   ),
   createPoll: fun(
     "0x9612e586",
@@ -239,7 +239,7 @@ export const functions = {
       due_: p.uint256,
       minimumToken_: p.uint256,
       voteUnit_: p.uint256,
-    }
+    },
   ),
   eip712Domain: viewFun(
     "0x84b0196e",
@@ -253,7 +253,7 @@ export const functions = {
       verifyingContract: p.address,
       salt: p.bytes32,
       extensions: p.array(p.uint256),
-    }
+    },
   ),
   finalize: fun("0xb6013cef", "finalize(uint256,uint256)", {
     tokenId: p.uint256,
@@ -263,7 +263,7 @@ export const functions = {
     "0x248a9ca3",
     "getRoleAdmin(bytes32)",
     { role: p.bytes32 },
-    p.bytes32
+    p.bytes32,
   ),
   grantRole: fun("0x2f2ff15d", "grantRole(bytes32,address)", {
     role: p.bytes32,
@@ -273,7 +273,7 @@ export const functions = {
     "0x91d14854",
     "hasRole(bytes32,address)",
     { role: p.bytes32, account: p.address },
-    p.bool
+    p.bool,
   ),
   initialize: fun("0x485cc955", "initialize(address,address)", {
     tokenAddress: p.address,
@@ -289,7 +289,7 @@ export const functions = {
       values: p.array(p.uint256),
       data: p.bytes,
     },
-    p.bytes4
+    p.bytes4,
   ),
   onERC1155Received: fun(
     "0xf23a6e61",
@@ -301,14 +301,14 @@ export const functions = {
       amount: p.uint256,
       data: p.bytes,
     },
-    p.bytes4
+    p.bytes4,
   ),
   proxiableUUID: viewFun("0x52d1902d", "proxiableUUID()", {}, p.bytes32),
   remainingVotesCount: viewFun(
     "0xe25afda5",
     "remainingVotesCount(uint256,uint256)",
     { tokenId: p.uint256, pollId: p.uint256 },
-    p.uint256
+    p.uint256,
   ),
   renounceRole: fun("0x36568abe", "renounceRole(bytes32,address)", {
     role: p.bytes32,
@@ -322,7 +322,7 @@ export const functions = {
       pollId: p.uint256,
       data: p.array(p.struct({ votedCandidateId: p.uint256, salt: p.bytes32 })),
       offset: p.uint256,
-    }
+    },
   ),
   revokeRole: fun("0xd547741f", "revokeRole(bytes32,address)", {
     role: p.bytes32,
@@ -335,13 +335,13 @@ export const functions = {
     "0x01ffc9a7",
     "supportsInterface(bytes4)",
     { interfaceId: p.bytes4 },
-    p.bool
+    p.bool,
   ),
   totalVotesCount: viewFun(
     "0xf65f9a7d",
     "totalVotesCount(uint256,uint256)",
     { tokenId: p.uint256, pollId: p.uint256 },
-    p.uint256
+    p.uint256,
   ),
   upgradeToAndCall: fun("0x4f1ef286", "upgradeToAndCall(address,bytes)", {
     newImplementation: p.address,
@@ -351,13 +351,13 @@ export const functions = {
     "0x525e70f6",
     "voteSignerAddress()",
     {},
-    p.address
+    p.address,
   ),
   votesPerCandidates: viewFun(
     "0x28833187",
     "votesPerCandidates(uint256,uint256)",
     { tokenId: p.uint256, pollId: p.uint256 },
-    p.array(p.uint256)
+    p.array(p.uint256),
   ),
 };
 
@@ -460,7 +460,7 @@ export class Contract extends ContractBase {
 
   candidates(
     tokenId: CandidatesParams["tokenId"],
-    pollId: CandidatesParams["pollId"]
+    pollId: CandidatesParams["pollId"],
   ) {
     return this.eth_call(functions.candidates, { tokenId, pollId });
   }
@@ -483,7 +483,7 @@ export class Contract extends ContractBase {
 
   remainingVotesCount(
     tokenId: RemainingVotesCountParams["tokenId"],
-    pollId: RemainingVotesCountParams["pollId"]
+    pollId: RemainingVotesCountParams["pollId"],
   ) {
     return this.eth_call(functions.remainingVotesCount, { tokenId, pollId });
   }
@@ -494,7 +494,7 @@ export class Contract extends ContractBase {
 
   totalVotesCount(
     tokenId: TotalVotesCountParams["tokenId"],
-    pollId: TotalVotesCountParams["pollId"]
+    pollId: TotalVotesCountParams["pollId"],
   ) {
     return this.eth_call(functions.totalVotesCount, { tokenId, pollId });
   }
@@ -505,7 +505,7 @@ export class Contract extends ContractBase {
 
   votesPerCandidates(
     tokenId: VotesPerCandidatesParams["tokenId"],
-    pollId: VotesPerCandidatesParams["pollId"]
+    pollId: VotesPerCandidatesParams["pollId"],
   ) {
     return this.eth_call(functions.votesPerCandidates, { tokenId, pollId });
   }

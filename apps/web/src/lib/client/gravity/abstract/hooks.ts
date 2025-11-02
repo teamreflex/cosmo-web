@@ -9,6 +9,7 @@ import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { abstract } from "viem/chains";
 import { addMinutes, isAfter, isBefore, startOfHour } from "date-fns";
+import { Addresses } from "@apollo/util";
 import { useGravityVotes } from "../common";
 import type { GravityHookParams } from "../common";
 import type {
@@ -20,7 +21,6 @@ import type {
   UseChainDataSuccess,
 } from "./types";
 import type { Hex } from "viem";
-import { Addresses } from "@/lib/utils";
 import governorAbi from "@/abi/governor";
 
 // chain to connect to

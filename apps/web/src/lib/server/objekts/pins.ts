@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { desc, eq } from "drizzle-orm";
 import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
 import z from "zod";
+import { isAddress } from "@apollo/util";
 import { indexer } from "../db/indexer";
 import { db } from "../db";
 import { cosmoAccounts, pins } from "../db/schema";
@@ -9,7 +10,6 @@ import { remember } from "../cache";
 import type { Collection, Objekt } from "../db/indexer/schema";
 import type { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
 import type { ValidArtist } from "@/lib/universal/cosmo/common";
-import { isAddress } from "@/lib/utils";
 
 interface ObjektWithCollection extends Objekt {
   collection: Collection;

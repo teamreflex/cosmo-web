@@ -46,7 +46,7 @@ export async function fetchMetadataV1(tokenId: string) {
     {
       retry: 6,
       retryDelay: 750, // 750ms backoff
-    }
+    },
   );
 }
 
@@ -70,7 +70,7 @@ export async function fetchMetadataV3(tokenId: string) {
     {
       retry: 2,
       retryDelay: 500, // 500ms backoff
-    }
+    },
   );
 }
 
@@ -119,7 +119,7 @@ export function normalizeV3(metadata: MetadataV3, tokenId: string): MetadataV1 {
  * Get a trait from the metadata attributes array.
  */
 function getTrait(metadata: MetadataV3, tokenId: string, trait: string) {
-  const attr = metadata.attributes.find((attr, i, arr) => {
+  const attr = metadata.attributes.find((attr, _, arr) => {
     // special case for unit objekts
     if (
       trait === "Member" &&
@@ -132,7 +132,7 @@ function getTrait(metadata: MetadataV3, tokenId: string, trait: string) {
   });
   if (!attr) {
     throw new Error(
-      `[normalizeV3] Trait ${trait} not found for token ${tokenId}`
+      `[normalizeV3] Trait ${trait} not found for token ${tokenId}`,
     );
   }
   return attr.value;

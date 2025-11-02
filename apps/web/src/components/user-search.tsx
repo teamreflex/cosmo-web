@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { ofetch } from "ofetch";
 import { useDebounceValue } from "usehooks-ts";
+import { isAddress } from "@apollo/util";
 import {
   DialogClose,
   DialogDescription,
@@ -24,7 +25,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { cn, isAddress } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { m } from "@/i18n/messages";
 
 type Props = PropsWithChildren<{

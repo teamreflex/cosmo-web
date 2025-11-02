@@ -1,3 +1,4 @@
+import { Addresses, isEqual } from "@apollo/util";
 import FiltersContainer from "../collection/filters-container";
 import Portal from "../portal";
 import Blockchain from "../collection/data-sources/blockchain";
@@ -8,7 +9,6 @@ import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import { useFilters } from "@/hooks/use-filters";
 import { useGridColumns } from "@/hooks/use-grid-columns";
 import { useUserState } from "@/hooks/use-user-state";
-import { Addresses, isEqual } from "@/lib/utils";
 
 type Props = {
   targetCosmo: PublicCosmo;

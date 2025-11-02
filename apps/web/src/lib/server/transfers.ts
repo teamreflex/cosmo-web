@@ -1,6 +1,6 @@
 import { and, desc, eq, inArray, not, or, sql } from "drizzle-orm";
 import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
-import { Addresses, isEqual } from "../utils";
+import { Addresses, isEqual } from "@apollo/util";
 import { indexer } from "./db/indexer";
 import { collections, objekts, transfers } from "./db/indexer/schema";
 import { fetchKnownAddresses } from "./cosmo-accounts";

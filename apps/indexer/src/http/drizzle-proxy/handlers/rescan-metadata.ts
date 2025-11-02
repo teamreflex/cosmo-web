@@ -1,4 +1,4 @@
-import { Context } from "hono";
+import type { Context } from "hono";
 import { writePool } from "../db";
 import { fetchMetadata } from "../../../cosmo";
 
@@ -19,7 +19,7 @@ export async function rescanMetadata(c: Context) {
     // fetch existing objekt row
     const result = await client.query<ObjektRow>(
       "select id, serial, collection_id from objekt where id = $1",
-      [tokenId]
+      [tokenId],
     );
 
     // token id doesn't exist
@@ -37,7 +37,7 @@ export async function rescanMetadata(c: Context) {
       // update objekt table
       await client.query(
         "update objekt set transferable = $1, serial = $2 where id = $3",
-        [metadata.objekt.transferable, metadata.objekt.objektNo, objekt.id]
+        [metadata.objekt.transferable, metadata.objekt.objektNo, objekt.id],
       );
 
       // update collection table
@@ -50,7 +50,7 @@ export async function rescanMetadata(c: Context) {
           metadata.objekt.backgroundColor,
           metadata.objekt.textColor,
           objekt.collection_id,
-        ]
+        ],
       );
 
       // commit transaction

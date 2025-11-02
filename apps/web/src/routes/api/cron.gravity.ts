@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { eq } from "drizzle-orm";
+import { chunk } from "@apollo/util";
 import type { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import { env } from "@/lib/env/server";
 import { fetchGravities, fetchPoll } from "@/lib/server/cosmo/gravity";
@@ -11,7 +12,6 @@ import {
   gravityPolls,
 } from "@/lib/server/db/schema";
 import { getProxiedToken } from "@/lib/server/proxied-token";
-import { chunk } from "@/lib/utils";
 import { $fetchArtists } from "@/lib/server/artists";
 
 export const Route = createFileRoute("/api/cron/gravity")({
