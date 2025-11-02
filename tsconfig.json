@@ -1,3 +1,0 @@
-{
-  "extends": "@apollo/typescript/tsconfig.base.json"
-}
