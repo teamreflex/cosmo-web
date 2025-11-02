@@ -1,0 +1,26 @@
+{
+  "extends": "@apollo/typescript/tsconfig.base.json",
+
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules"],
+
+  "compilerOptions": {
+    "outDir": "lib",
+    "rootDir": "src",
+    "module": "NodeNext",
+    "target": "ES2022",
+    "strict": true,
+    "declaration": false,
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "moduleResolution": "NodeNext",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  }
+}
