@@ -4,7 +4,7 @@
   "tasks": {
     "build": {
       "cache": true,
-      "outputs": ["dist/**"],
+      "outputs": [".vercel/output/**"],
       "env": [
         "DATABASE_URL",
         "INDEXER_PROXY_KEY",

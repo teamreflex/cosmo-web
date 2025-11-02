@@ -12,6 +12,9 @@ importers:
 
   .:
     devDependencies:
+      '@apollo/typescript':
+        specifier: workspace:*
+        version: link:packages/typescript
       dotenv-cli:
         specifier: ^11.0.0
         version: 11.0.0
