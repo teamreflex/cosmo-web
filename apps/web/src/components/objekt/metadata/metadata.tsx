@@ -59,8 +59,12 @@ export default function Metadata(props: Props) {
         variant="underline"
       >
         <TabsList className="mx-auto w-fit md:mx-0">
-          <TabsTrigger value="metadata">{m.objekt_metadata_information()}</TabsTrigger>
-          <TabsTrigger value="serials">{m.objekt_metadata_serials()}</TabsTrigger>
+          <TabsTrigger value="metadata">
+            {m.objekt_metadata_information()}
+          </TabsTrigger>
+          <TabsTrigger value="serials">
+            {m.objekt_metadata_serials()}
+          </TabsTrigger>
         </TabsList>
 
         {/* metadata */}
@@ -126,14 +130,21 @@ export default function Metadata(props: Props) {
       <Portal to="#attribute-panel">
         <Pill
           label={
-            props.objekt.onOffline === "online" ? m.objekt_metadata_copies() : m.objekt_metadata_scanned_copies()
+            props.objekt.onOffline === "online"
+              ? m.objekt_metadata_copies()
+              : m.objekt_metadata_scanned_copies()
           }
           value={total}
         />
-        <Pill label={m.objekt_metadata_tradable()} value={`${data.percentage}%`} />
+        <Pill
+          label={m.objekt_metadata_tradable()}
+          value={`${data.percentage}%`}
+        />
         {isUnobtainable && (
           <div className="flex items-center gap-1 rounded-full bg-red-500 px-2 py-1 text-xs sm:text-sm">
-            <span className="font-semibold text-white">{m.objekt_metadata_unobtainable()}</span>
+            <span className="font-semibold text-white">
+              {m.objekt_metadata_unobtainable()}
+            </span>
           </div>
         )}
       </Portal>

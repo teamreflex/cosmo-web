@@ -45,7 +45,8 @@ export default function GroupedObjekt({
     ),
   );
 
-  const subtitle = group.count === 1 ? m.objekt_group_objekt() : m.objekt_group_objekts();
+  const subtitle =
+    group.count === 1 ? m.objekt_group_objekt() : m.objekt_group_objekts();
   const collection = Objekt.fromCollectionGroup({
     collection: group.collection,
   });

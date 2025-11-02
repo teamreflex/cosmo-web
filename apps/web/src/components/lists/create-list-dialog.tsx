@@ -84,9 +84,7 @@ export default function CreateListDialog(props: Props) {
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>{m.list_create()}</DialogTitle>
-          <DialogDescription>
-            {m.list_create_description()}
-          </DialogDescription>
+          <DialogDescription>{m.list_create_description()}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form

@@ -67,7 +67,9 @@ export default function ListDropdown(props: Props) {
             </DropdownMenuItem>
           ))}
           {props.objektLists.length === 0 && (
-            <DropdownMenuItem className="text-sm">{m.list_zero_lists()}</DropdownMenuItem>
+            <DropdownMenuItem className="text-sm">
+              {m.list_zero_lists()}
+            </DropdownMenuItem>
           )}
 
           {props.allowCreate && (

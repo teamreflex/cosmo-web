@@ -187,13 +187,19 @@ export default function ActionOverlay({
               <OverlayStatus>{m.objekt_overlay_add_to_list()}</OverlayStatus>
             )}
             {hoverState === "lock" && (
-              <OverlayStatus>{isLocked ? m.objekt_overlay_unlock() : m.objekt_overlay_lock()}</OverlayStatus>
+              <OverlayStatus>
+                {isLocked ? m.objekt_overlay_unlock() : m.objekt_overlay_lock()}
+              </OverlayStatus>
             )}
             {hoverState === "pin" && (
-              <OverlayStatus>{isPinned ? m.objekt_overlay_unpin() : m.objekt_overlay_pin()}</OverlayStatus>
+              <OverlayStatus>
+                {isPinned ? m.objekt_overlay_unpin() : m.objekt_overlay_pin()}
+              </OverlayStatus>
             )}
             {token.nonTransferableReason === "not-transferable" && (
-              <OverlayStatus>{m.objekt_overlay_not_transferable()}</OverlayStatus>
+              <OverlayStatus>
+                {m.objekt_overlay_not_transferable()}
+              </OverlayStatus>
             )}
             {token.nonTransferableReason === "mint-pending" && (
               <OverlayStatus>{m.objekt_overlay_mint_pending()}</OverlayStatus>
@@ -204,14 +210,22 @@ export default function ActionOverlay({
               )}
             {!isSendable &&
               token.nonTransferableReason === "welcome-objekt" && (
-                <OverlayStatus>{m.objekt_overlay_welcome_reward()}</OverlayStatus>
+                <OverlayStatus>
+                  {m.objekt_overlay_welcome_reward()}
+                </OverlayStatus>
               )}
-            {usedForGrid && <OverlayStatus>{m.objekt_overlay_used_for_grid()}</OverlayStatus>}
+            {usedForGrid && (
+              <OverlayStatus>{m.objekt_overlay_used_for_grid()}</OverlayStatus>
+            )}
             {token.lenticularPairTokenId !== 0 && (
-              <OverlayStatus>{m.objekt_overlay_lenticular_pair()}</OverlayStatus>
+              <OverlayStatus>
+                {m.objekt_overlay_lenticular_pair()}
+              </OverlayStatus>
             )}
             {hoverState === undefined && !token.nonTransferableReason && (
-              <OverlayStatus>{isLocked ? m.common_locked() : m.objekt_overlay_unlocked()}</OverlayStatus>
+              <OverlayStatus>
+                {isLocked ? m.common_locked() : m.objekt_overlay_unlocked()}
+              </OverlayStatus>
             )}
           </div>
         )}

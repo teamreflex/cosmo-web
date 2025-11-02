@@ -18,7 +18,10 @@ export const Route = createFileRoute("/admin/metadata")({
     return { metadata };
   },
   head: () =>
-    defineHead({ title: m.admin_metadata_title(), canonical: "/admin/metadata" }),
+    defineHead({
+      title: m.admin_metadata_title(),
+      canonical: "/admin/metadata",
+    }),
   component: RouteComponent,
 });
 

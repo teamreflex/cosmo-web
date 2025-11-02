@@ -33,18 +33,14 @@ export default function HelpDialog() {
 
         <div className="flex flex-col gap-4 text-sm text-muted-foreground">
           <div className="flex flex-col gap-1">
-            <p>
-              {m.help_como_timezone()}
-            </p>
+            <p>{m.help_como_timezone()}</p>
 
             <span>
               A <Sparkles className="inline-block h-5 w-5 text-yellow-600" />{" "}
               {m.help_como_sparkles()}
             </span>
 
-            <p>
-              {m.help_como_example()}
-            </p>
+            <p>{m.help_como_example()}</p>
           </div>
         </div>
         <AlertDialogFooter>

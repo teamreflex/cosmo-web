@@ -67,7 +67,11 @@ export default function UpdatePassword() {
             <FormItem>
               <FormLabel>{m.auth_current_password()}</FormLabel>
               <FormControl>
-                <Input type="password" placeholder={m.form_password_placeholder()} {...field} />
+                <Input
+                  type="password"
+                  placeholder={m.form_password_placeholder()}
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -81,7 +85,11 @@ export default function UpdatePassword() {
             <FormItem>
               <FormLabel>{m.auth_new_password()}</FormLabel>
               <FormControl>
-                <Input type="password" placeholder={m.form_password_placeholder()} {...field} />
+                <Input
+                  type="password"
+                  placeholder={m.form_password_placeholder()}
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

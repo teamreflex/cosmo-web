@@ -44,7 +44,9 @@ export default function UpdateDialog() {
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{m.updates_title({ appName: env.VITE_APP_NAME })}</AlertDialogTitle>
+          <AlertDialogTitle>
+            {m.updates_title({ appName: env.VITE_APP_NAME })}
+          </AlertDialogTitle>
           <VisuallyHidden>
             <AlertDialogDescription>
               {m.updates_title({ appName: env.VITE_APP_NAME })}

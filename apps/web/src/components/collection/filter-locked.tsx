@@ -7,7 +7,9 @@ type Props = {
 };
 
 export default function LockedFilter({ showLocked, setShowLocked }: Props) {
-  const state = showLocked ? m.filter_locked_showing() : m.filter_locked_hiding();
+  const state = showLocked
+    ? m.filter_locked_showing()
+    : m.filter_locked_hiding();
 
   return (
     <Toggle

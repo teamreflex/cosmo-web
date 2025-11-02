@@ -19,10 +19,16 @@ export default function AttributePanel({ objekt }: Props) {
       <Pill label={m.objekt_attribute_member()} value={objekt.member} />
       <Pill label={m.objekt_attribute_season()} value={objekt.season} />
       <Pill label={m.common_class()} value={objekt.class} />
-      {objekt.class === "First" && <Pill label={m.objekt_attribute_edition()} value={edition} />}
+      {objekt.class === "First" && (
+        <Pill label={m.objekt_attribute_edition()} value={edition} />
+      )}
       <Pill
         label={m.common_type()}
-        value={objekt.onOffline === "online" ? m.filter_online_digital() : m.filter_online_physical()}
+        value={
+          objekt.onOffline === "online"
+            ? m.filter_online_digital()
+            : m.filter_online_physical()
+        }
       />
     </div>
   );

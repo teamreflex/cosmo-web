@@ -88,7 +88,9 @@ export default function ComoCalendar({ artists, transfers }: Props) {
                             <Sparkles className="h-5 w-5 text-yellow-600" />
                           </TooltipTrigger>
                           <TooltipContent className="flex flex-col gap-1">
-                            <p className="font-semibold">{m.como_carried_over()}</p>
+                            <p className="font-semibold">
+                              {m.como_carried_over()}
+                            </p>
 
                             <div className="flex items-center justify-center gap-2">
                               <ArtistIcon artist={a.name} />

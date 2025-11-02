@@ -103,7 +103,9 @@ function RouteComponent() {
           {/* artist breakdown chart */}
           <div className="flex flex-col gap-2">
             <div className="flex h-10 flex-row items-end gap-2">
-              <h2 className="text-xl font-semibold">{m.stats_artist_breakdown()}</h2>
+              <h2 className="text-xl font-semibold">
+                {m.stats_artist_breakdown()}
+              </h2>
             </div>
 
             <Card>
@@ -188,7 +190,9 @@ function PendingComponent() {
           {/* artist breakdown chart */}
           <div className="flex flex-col gap-2">
             <div className="flex h-10 flex-row items-end gap-2">
-              <h2 className="text-xl font-semibold">{m.stats_artist_breakdown()}</h2>
+              <h2 className="text-xl font-semibold">
+                {m.stats_artist_breakdown()}
+              </h2>
             </div>
             <Skeleton className="h-108.5" />
           </div>
@@ -196,7 +200,9 @@ function PendingComponent() {
           {/* member breakdown chart */}
           <div className="flex flex-col gap-2">
             <div className="flex flex-row items-end justify-between gap-2">
-              <h2 className="text-xl font-semibold">{m.stats_member_breakdown()}</h2>
+              <h2 className="text-xl font-semibold">
+                {m.stats_member_breakdown()}
+              </h2>
               <Skeleton className="h-9 w-30" />
             </div>
             <Skeleton className="h-108.5" />

@@ -48,9 +48,7 @@ export default function InsertMetadata() {
     const data = await navigator.clipboard.readText();
     const result = metadataInputSchema.safeParse(data);
     if (result.success === false) {
-      toast.error(
-        m.admin_invalid_format(),
-      );
+      toast.error(m.admin_invalid_format());
       return;
     }
 

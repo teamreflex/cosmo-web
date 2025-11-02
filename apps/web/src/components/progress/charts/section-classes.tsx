@@ -16,5 +16,11 @@ export default function SectionClasses(props: Props) {
     {} as Record<string, string>,
   );
 
-  return <ProgressSection data={props.data} title={m.common_class()} colors={colors} />;
+  return (
+    <ProgressSection
+      data={props.data}
+      title={m.common_class()}
+      colors={colors}
+    />
+  );
 }

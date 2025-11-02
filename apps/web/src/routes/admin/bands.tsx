@@ -12,7 +12,8 @@ export const Route = createFileRoute("/admin/bands")({
       throw redirect({ to: "/" });
     }
   },
-  head: () => defineHead({ title: m.admin_bands_title(), canonical: "/admin/bands" }),
+  head: () =>
+    defineHead({ title: m.admin_bands_title(), canonical: "/admin/bands" }),
   component: RouteComponent,
 });
 

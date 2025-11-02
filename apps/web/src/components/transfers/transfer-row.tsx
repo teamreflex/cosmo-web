@@ -99,7 +99,9 @@ function TransferAction({ isReceiver }: { isReceiver: boolean }) {
       data-receiver={isReceiver}
       className="w-fit rounded-full bg-[#8ebdd1] px-1.5 py-px text-xs text-foreground data-[receiver=true]:bg-[#D5B7E2]"
     >
-      <span className="drop-shadow">{isReceiver ? m.transfer_from() : m.transfer_to()}</span>
+      <span className="drop-shadow">
+        {isReceiver ? m.transfer_from() : m.transfer_to()}
+      </span>
     </div>
   );
 }

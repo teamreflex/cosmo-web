@@ -84,18 +84,10 @@ function StartLink() {
 
   return (
     <div className="flex flex-col gap-2 text-sm text-muted-foreground">
-      <p>
-        {m.link_cosmo_sign_in_info({ appName: env.VITE_APP_NAME })}
-      </p>
-      <p>
-        {m.link_cosmo_features()}
-      </p>
-      <p>
-        {m.link_cosmo_privacy({ appName: env.VITE_APP_NAME })}
-      </p>
-      <p>
-        {m.link_cosmo_permanent()}
-      </p>
+      <p>{m.link_cosmo_sign_in_info({ appName: env.VITE_APP_NAME })}</p>
+      <p>{m.link_cosmo_features()}</p>
+      <p>{m.link_cosmo_privacy({ appName: env.VITE_APP_NAME })}</p>
+      <p>{m.link_cosmo_permanent()}</p>
 
       <Button className="mx-auto mt-2 w-fit" onClick={() => setStarted(true)}>
         {m.common_start()}
@@ -167,7 +159,9 @@ function RenderTicket({ ticket, retry }: RenderQRProps) {
   if (status === "error") {
     return (
       <div className="flex flex-col items-center gap-2">
-        <p className="text-sm font-semibold">{m.link_cosmo_error_otp_status()}</p>
+        <p className="text-sm font-semibold">
+          {m.link_cosmo_error_otp_status()}
+        </p>
         <Button variant="secondary" size="sm" onClick={() => refetch()}>
           {m.common_try_again()}
         </Button>
@@ -228,9 +222,7 @@ function RenderQRCode({ ticket, retry }: RenderQRProps) {
 
   return (
     <div className="flex flex-col items-center justify-center gap-2">
-      <p className="text-sm">
-        {m.link_cosmo_scan_qr()}
-      </p>
+      <p className="text-sm">{m.link_cosmo_scan_qr()}</p>
 
       <Button className="inline-flex lg:hidden" variant="link" asChild>
         <a href={qr} target="_blank">
@@ -319,9 +311,7 @@ function OTP({ ticket }: OTPProps) {
         className="flex flex-col gap-4"
       >
         <div className="flex flex-col items-center gap-4">
-          <p className="text-center text-sm">
-            {m.link_cosmo_enter_code()}
-          </p>
+          <p className="text-center text-sm">{m.link_cosmo_enter_code()}</p>
 
           <FormField
             control={form.control}

@@ -18,16 +18,10 @@ function TermsPrivacy() {
         </CardHeader>
         <CardContent className="flex flex-col gap-4 text-sm">
           <ul className="list-inside list-disc space-y-2">
-            <li>
-              {m.terms_email_usage()}
-            </li>
-            <li>
-              {m.terms_email_receive()}
-            </li>
+            <li>{m.terms_email_usage()}</li>
+            <li>{m.terms_email_receive()}</li>
             <li>{m.terms_delete_account()}</li>
-            <li>
-              {m.terms_cosmo_linking()}
-            </li>
+            <li>{m.terms_cosmo_linking()}</li>
             <li>
               {m.terms_source_code()}{" "}
               <a

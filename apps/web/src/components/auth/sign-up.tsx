@@ -88,7 +88,11 @@ export default function SignUp({ onCancel }: Props) {
             <FormItem>
               <FormLabel>{m.form_email()}</FormLabel>
               <FormControl>
-                <Input type="email" placeholder={m.form_email_placeholder()} {...field} />
+                <Input
+                  type="email"
+                  placeholder={m.form_email_placeholder()}
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -102,7 +106,11 @@ export default function SignUp({ onCancel }: Props) {
             <FormItem>
               <FormLabel>{m.common_password()}</FormLabel>
               <FormControl>
-                <Input type="password" placeholder={m.form_password_placeholder()} {...field} />
+                <Input
+                  type="password"
+                  placeholder={m.form_password_placeholder()}
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

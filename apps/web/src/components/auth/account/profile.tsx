@@ -50,7 +50,9 @@ export default function Profile() {
             <div className="flex flex-col items-center justify-center">
               <p className="text-sm">
                 {m.account_profile_no_password()}{" "}
-                <span className="font-semibold">{m.account_profile_forgot_password()}</span>{" "}
+                <span className="font-semibold">
+                  {m.account_profile_forgot_password()}
+                </span>{" "}
                 {m.account_profile_set_password()}
               </p>
             </div>

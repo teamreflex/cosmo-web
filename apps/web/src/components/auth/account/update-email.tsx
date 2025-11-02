@@ -48,9 +48,7 @@ export default function UpdateEmail({ email }: Props) {
   function handleSubmit(data: z.infer<typeof updateEmailSchema>) {
     mutation.mutate(data, {
       onSuccess: () => {
-        toast.success(
-          m.auth_email_verification_sent(),
-        );
+        toast.success(m.auth_email_verification_sent());
         router.invalidate();
       },
       onError: (error) => {
@@ -72,7 +70,11 @@ export default function UpdateEmail({ email }: Props) {
             <FormItem>
               <FormControl>
                 <div className="flex items-center gap-2">
-                  <Input type="email" placeholder={m.form_email_placeholder()} {...field} />
+                  <Input
+                    type="email"
+                    placeholder={m.form_email_placeholder()}
+                    {...field}
+                  />
 
                   <Submit isPending={mutation.isPending} />
                 </div>

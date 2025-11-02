@@ -46,7 +46,9 @@ function PinButton(props: ButtonProps) {
     <button
       className="flex items-center transition-all hover:scale-110"
       disabled={mutation.isPending}
-      aria-label={m.objekt_overlay_pin_aria({ collectionId: props.collectionId })}
+      aria-label={m.objekt_overlay_pin_aria({
+        collectionId: props.collectionId,
+      })}
       onClick={handleClick}
     >
       {mutation.isPending ? (
@@ -78,7 +80,9 @@ function UnpinButton(props: ButtonProps) {
     <button
       className="flex items-center transition-all hover:scale-110"
       disabled={mutation.isPending}
-      aria-label={m.objekt_overlay_unpin_aria({ collectionId: props.collectionId })}
+      aria-label={m.objekt_overlay_unpin_aria({
+        collectionId: props.collectionId,
+      })}
       onClick={handleClick}
     >
       {mutation.isPending ? (

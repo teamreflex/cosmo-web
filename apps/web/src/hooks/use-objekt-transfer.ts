@@ -102,7 +102,9 @@ export const useObjektTransfer = create<ObjektTransferState>()((set, get) => ({
       );
 
       if (!existing && state.selected.length >= MAX_SELECTIONS) {
-        toast.info(m.toast_max_selections({ count: MAX_SELECTIONS.toString() }));
+        toast.info(
+          m.toast_max_selections({ count: MAX_SELECTIONS.toString() }),
+        );
         return state;
       }
 

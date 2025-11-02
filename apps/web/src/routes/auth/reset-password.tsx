@@ -29,7 +29,9 @@ function RouteComponent() {
   return (
     <main className="container flex flex-col py-2">
       <div className="flex w-full items-center gap-2 pb-1">
-        <h1 className="font-cosmo text-3xl uppercase">{m.auth_reset_password()}</h1>
+        <h1 className="font-cosmo text-3xl uppercase">
+          {m.auth_reset_password()}
+        </h1>
       </div>
 
       <div className="mx-auto w-full md:w-1/2">

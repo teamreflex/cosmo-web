@@ -130,7 +130,9 @@ function Content(props: { onClose: () => void }) {
       </Accordion>
 
       <AlertDialogFooter>
-        <AlertDialogAction onClick={props.onClose}>{m.common_continue()}</AlertDialogAction>
+        <AlertDialogAction onClick={props.onClose}>
+          {m.common_continue()}
+        </AlertDialogAction>
       </AlertDialogFooter>
     </AlertDialogContent>
   );
@@ -193,7 +195,11 @@ function getSources(): Source[] {
 function AbstractIcon() {
   return (
     <div className="relative size-6 rounded-full bg-abstract" data-icon>
-      <img src="/abstract.svg" alt={m.data_source_blockchain_short()} className="absolute" />
+      <img
+        src="/abstract.svg"
+        alt={m.data_source_blockchain_short()}
+        className="absolute"
+      />
     </div>
   );
 }

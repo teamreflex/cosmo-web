@@ -60,7 +60,9 @@ function RouteComponent() {
         <Tabs defaultValue={toRender[0]?.id}>
           {/* header */}
           <div className="flex flex-row items-center justify-between">
-            <h1 className="font-cosmo text-3xl uppercase">{m.gravity_header()}</h1>
+            <h1 className="font-cosmo text-3xl uppercase">
+              {m.gravity_header()}
+            </h1>
 
             <TabsList>
               {toRender.map((artist) => (

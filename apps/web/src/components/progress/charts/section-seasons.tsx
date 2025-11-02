@@ -16,7 +16,13 @@ export default function SectionSeasons(props: Props) {
     {} as Record<string, string>,
   );
 
-  return <ProgressSection data={props.data} colors={colors} title={m.progress_chart_seasons()} />;
+  return (
+    <ProgressSection
+      data={props.data}
+      colors={colors}
+      title={m.progress_chart_seasons()}
+    />
+  );
 }
 
 const colorMap: Record<string, string> = {

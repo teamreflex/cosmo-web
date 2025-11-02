@@ -33,28 +33,18 @@ export default function HelpDialog() {
         <div className="flex flex-col gap-4 text-sm text-foreground/80">
           {/* search */}
           <div className="flex flex-col gap-1">
-            <h3 className="text-lg font-semibold text-foreground">{m.help_objekts_search_title()}</h3>
-            <p>
-              {m.help_objekts_search_desc()}
-            </p>
+            <h3 className="text-lg font-semibold text-foreground">
+              {m.help_objekts_search_title()}
+            </h3>
+            <p>{m.help_objekts_search_desc()}</p>
             <p>{m.help_objekts_search_examples()}</p>
             <ul className="list-inside list-disc">
-              <li>
-                {m.help_objekts_search_unit_names()}
-              </li>
-              <li>
-                {m.help_objekts_search_s_numbers()}
-              </li>
-              <li>
-                {m.help_objekts_search_nicknames()}
-              </li>
-              <li>
-                {m.help_objekts_search_collections()}
-              </li>
+              <li>{m.help_objekts_search_unit_names()}</li>
+              <li>{m.help_objekts_search_s_numbers()}</li>
+              <li>{m.help_objekts_search_nicknames()}</li>
+              <li>{m.help_objekts_search_collections()}</li>
             </ul>
-            <p>
-              {m.help_objekts_search_description()}
-            </p>
+            <p>{m.help_objekts_search_description()}</p>
           </div>
         </div>
         <AlertDialogFooter>

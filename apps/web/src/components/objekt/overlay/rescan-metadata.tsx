@@ -17,17 +17,17 @@ export default function RescanMetadata({ collection, token }: Props) {
     mutationFn,
     onSuccess() {
       toast.success(m.objekt_rescan_success(), {
-        description: m.objekt_rescan_success_desc({ 
-          collectionId: collection.collectionId, 
-          serial: token.serial.toString() 
+        description: m.objekt_rescan_success_desc({
+          collectionId: collection.collectionId,
+          serial: token.serial.toString(),
         }),
       });
     },
     onError() {
       toast.error(m.objekt_rescan_error(), {
-        description: m.objekt_rescan_error_desc({ 
-          collectionId: collection.collectionId, 
-          serial: token.serial.toString() 
+        description: m.objekt_rescan_error_desc({
+          collectionId: collection.collectionId,
+          serial: token.serial.toString(),
         }),
       });
     },

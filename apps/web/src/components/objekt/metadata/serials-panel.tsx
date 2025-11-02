@@ -116,7 +116,9 @@ function Content(props: ContentProps) {
       <div className="flex flex-col items-center justify-center py-4">
         <HeartCrack className="size-8" />
         <span className="text-sm font-medium">
-          {m.objekt_serials_not_exist({ serial: props.serial.toString().padStart(5, "0") })}
+          {m.objekt_serials_not_exist({
+            serial: props.serial.toString().padStart(5, "0"),
+          })}
         </span>
       </div>
     );
@@ -137,7 +139,9 @@ function Content(props: ContentProps) {
           className="size-10 rounded-full bg-cosmo-profile p-1"
         />
         <div className="flex flex-col">
-          <span className="text-xs text-muted-foreground">{m.objekt_serials_owner()}</span>
+          <span className="text-xs text-muted-foreground">
+            {m.objekt_serials_owner()}
+          </span>
           <span className="font-medium group-hover:underline">
             {result.username ?? result.address.substring(0, 8) + "..."}
           </span>

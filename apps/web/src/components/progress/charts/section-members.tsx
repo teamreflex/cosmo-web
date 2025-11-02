@@ -22,6 +22,10 @@ export default function SectionMembers(props: Props) {
   }, [props.data, getMember]);
 
   return (
-    <ProgressSection data={props.data} colors={colorMap} title={m.progress_chart_members()} />
+    <ProgressSection
+      data={props.data}
+      colors={colorMap}
+      title={m.progress_chart_members()}
+    />
   );
 }

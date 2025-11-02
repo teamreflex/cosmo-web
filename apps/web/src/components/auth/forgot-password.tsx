@@ -76,7 +76,11 @@ export default function ForgotPassword({ onCancel }: Props) {
             <FormItem>
               <FormLabel>{m.form_email()}</FormLabel>
               <FormControl>
-                <Input type="email" placeholder={m.form_email_placeholder()} {...field} />
+                <Input
+                  type="email"
+                  placeholder={m.form_email_placeholder()}
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

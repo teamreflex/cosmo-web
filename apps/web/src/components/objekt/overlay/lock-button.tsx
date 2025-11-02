@@ -30,7 +30,9 @@ export default function LockObjekt({ tokenId, isLocked }: Props) {
     <button
       className="flex items-center transition-all hover:scale-110"
       disabled={mutation.isPending}
-      aria-label={isLocked ? m.objekt_overlay_unlock_aria() : m.objekt_overlay_lock_aria()}
+      aria-label={
+        isLocked ? m.objekt_overlay_unlock_aria() : m.objekt_overlay_lock_aria()
+      }
       onClick={toggle}
     >
       {mutation.isPending ? (

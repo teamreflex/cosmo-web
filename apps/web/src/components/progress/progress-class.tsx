@@ -33,7 +33,9 @@ export default function ProgressClass({
       onClick={onExpand}
     >
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">{m.progress_class({ class: progress.class })}</h3>
+        <h3 className="text-lg font-semibold">
+          {m.progress_class({ class: progress.class })}
+        </h3>
         <Icon className="h-5 w-5 text-muted-foreground transition-colors group-hover:text-foreground" />
       </div>
 

@@ -87,7 +87,9 @@ function ListItem({
   const mutation = useMutation({
     mutationFn,
     onSuccess() {
-      toast.success(m.toast_added_to_list({ collectionId, listName: list.name }));
+      toast.success(
+        m.toast_added_to_list({ collectionId, listName: list.name }),
+      );
       queryClient.invalidateQueries({
         predicate: (query) =>
           query.queryKey[0] === "objekt-list" && query.queryKey[1] === list.id,

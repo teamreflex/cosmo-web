@@ -41,7 +41,9 @@ export default function MemberBreakdown({
             />
           ) : (
             <div className="flex h-96 w-full items-center justify-center">
-              <p className="text-sm font-semibold">{m.objekt_stats_no_members()}</p>
+              <p className="text-sm font-semibold">
+                {m.objekt_stats_no_members()}
+              </p>
             </div>
           )}
         </CardContent>

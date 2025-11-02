@@ -33,7 +33,9 @@ export default function HelpDialog() {
         <div className="flex flex-col gap-4 text-sm text-foreground/80">
           {/* progress */}
           <div className="flex flex-col gap-1">
-            <h3 className="text-lg font-semibold text-foreground">{m.progress_title()}</h3>
+            <h3 className="text-lg font-semibold text-foreground">
+              {m.progress_title()}
+            </h3>
             <p>{m.progress_help_progress_desc_1()}</p>
             <p>{m.progress_help_progress_desc_2()}</p>
             <p>{m.progress_help_progress_desc_3()}</p>

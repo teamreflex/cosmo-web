@@ -87,7 +87,9 @@ function LinkedAccountItem(props: LinkedAccountItemProps) {
               )}
             </Button>
           </TooltipTrigger>
-          <TooltipContent>{m.linked_accounts_unlink({ provider: provider.label })}</TooltipContent>
+          <TooltipContent>
+            {m.linked_accounts_unlink({ provider: provider.label })}
+          </TooltipContent>
         </Tooltip>
       </TooltipProvider>
     </div>

@@ -42,7 +42,9 @@ export function AdminSidebar() {
     <Sidebar className="mt-14">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>{m.admin_title({ appName: env.VITE_APP_NAME })}</SidebarGroupLabel>
+          <SidebarGroupLabel>
+            {m.admin_title({ appName: env.VITE_APP_NAME })}
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (

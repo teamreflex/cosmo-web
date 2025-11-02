@@ -65,7 +65,9 @@ export default function ProgressLeaderboard({ member, seasons }: Props) {
               <Trophy className="h-5 w-5" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="left">{m.progress_leaderboard()}</TooltipContent>
+          <TooltipContent side="left">
+            {m.progress_leaderboard()}
+          </TooltipContent>
         </Tooltip>
       </TooltipProvider>
 
