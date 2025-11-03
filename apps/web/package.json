@@ -17,7 +17,7 @@
     "db:upgrade": "drizzle-kit up",
     "db:migrate": "pnpm run env -- drizzle-kit migrate",
     "auth:generate": "pnpm run env -- pnpm dlx @better-auth/cli generate --output src/lib/server/db/auth-schema.ts --y",
-    "env": "dotenv -e ../../.env.local",
+    "env": "dotenv -e ../../.env -e ../../.env.local",
     "i18n": "pnpm dlx @inlang/paraglide-js compile --project ./project.inlang --outdir ./src/i18n"
   },
   "dependencies": {

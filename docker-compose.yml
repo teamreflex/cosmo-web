@@ -1,0 +1,82 @@
+# for development purposes, don't use this for production
+services:
+  # postgres for the indexer
+  postgres:
+    restart: on-failure
+    image: postgres:18-alpine
+    ports:
+      - "${INDEXER_DB_PORT}:5432"
+    environment:
+      - POSTGRES_DB=${INDEXER_DB_NAME}
+      - POSTGRES_PORT=${INDEXER_DB_PORT}
+      - POSTGRES_USER=${INDEXER_DB_USER}
+      - POSTGRES_PASSWORD=${INDEXER_DB_PASSWORD}
+    healthcheck:
+      test: "pg_isready -d ${INDEXER_DB_NAME} -U ${INDEXER_DB_USER}"
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  # indexer processor
+  processor:
+    build:
+      context: apps/indexer
+      dockerfile: Dockerfile
+    restart: on-failure
+    environment:
+      - FORCE_PRETTY_LOGGER=${INDEXER_FORCE_PRETTY_LOGGER}
+      - RPC_ENDPOINT=${INDEXER_RPC_ENDPOINT}
+      - RPC_RATE_LIMIT=${INDEXER_RPC_RATE_LIMIT}
+      - RPC_FINALITY=${INDEXER_RPC_FINALITY}
+      - SQD_ENDPOINT=${INDEXER_SQD_ENDPOINT}
+      - DB_HOST=${INDEXER_DB_HOST}
+      - DB_PORT=${INDEXER_DB_PORT}
+      - DB_NAME=${INDEXER_DB_NAME}
+      - DB_USER=${INDEXER_DB_USER}
+      - DB_PASS=${INDEXER_DB_PASSWORD}
+      - DB_READ_USER=${INDEXER_DB_READ_USER}
+      - DB_READ_PASS=${INDEXER_DB_READ_PASSWORD}
+      - ENABLE_OBJEKTS=${INDEXER_ENABLE_OBJEKTS}
+      - ENABLE_GRAVITY=${INDEXER_ENABLE_GRAVITY}
+      - COSMO_PARALLEL_COUNT=${INDEXER_COSMO_PARALLEL_COUNT}
+    command: ["sqd", "process:prod"]
+    depends_on:
+      - postgres
+
+  # typesense instance
+  typesense:
+    image: typesense/typesense:28.0
+    restart: on-failure
+    environment:
+      - TYPESENSE_API_KEY
+      - TYPESENSE_INTERNAL_PORT=${TYPESENSE_INTERNAL_PORT}
+      - TYPESENSE_ENABLE_CORS=${TYPESENSE_ENABLE_CORS:-false}
+      - TYPESENSE_CORS_DOMAINS=${TYPESENSE_CORS_DOMAINS:-*}
+    volumes:
+      - ./typesense-data:/data
+    command: "--data-dir /data --api-key=${TYPESENSE_API_KEY} --api-port=${TYPESENSE_INTERNAL_PORT} --enable-leader-election=false"
+
+  # typesense import server
+  import-server:
+    build:
+      context: apps/typesense-import
+      dockerfile: Dockerfile
+    restart: on-failure
+    environment:
+      - TYPESENSE_API_KEY=${TYPESENSE_API_KEY}
+      - TYPESENSE_HOST=${TYPESENSE_HOST}
+      - TYPESENSE_PORT=${TYPESENSE_INTERNAL_PORT}
+      - TYPESENSE_PROTOCOL=${TYPESENSE_PROTOCOL}
+      - LOOP_INTERVAL=${TYPESENSE_IMPORT_LOOP_INTERVAL}
+      - DB_INDEXER=${TYPESENSE_IMPORT_DB_INDEXER}
+      - DB_INDEXER_KEY=${TYPESENSE_IMPORT_DB_INDEXER_KEY}
+      - DB_METADATA=${TYPESENSE_IMPORT_DB_METADATA}
+    depends_on:
+      - typesense
+
+volumes:
+  postgres-data:
+  typesense-data:

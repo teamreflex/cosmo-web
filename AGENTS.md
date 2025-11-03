@@ -19,6 +19,7 @@ This is a Turborepo monorepo for the Apollo project.
 - You can append a turbo command with `--filter <package>` to run the command for only one app/package.
   - For example, typecheck only the web app: `turbo typecheck --filter web`, or only the util package: `turbo typecheck --filter @apollo/util`
 - Turbo handles dependency management and parallel execution
+- By default Turborepo will run in TUI mode. Use the `--ui stream` flag to disable this and get the outputs from all packages as a single stream.
 
 ### Workflow
 

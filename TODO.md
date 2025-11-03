@@ -25,6 +25,4 @@
 
 ## monorepo
 
-- setup dockerfiles for each service for railway deployment
-- setup docker for non-web services in dev
 - extract drizzle schemas into a database package
