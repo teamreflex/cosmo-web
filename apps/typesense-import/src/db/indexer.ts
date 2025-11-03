@@ -1,17 +1,12 @@
 import { drizzle } from "drizzle-orm/pg-proxy";
 import { ofetch } from "ofetch";
-import { defineRelations } from "drizzle-orm";
-import * as schema from "./schema";
+import { relations } from "@apollo/database/indexer/relations";
 import { Effect, Redacted } from "effect";
-import { getConfig } from "../../config";
+import { getConfig } from "../config";
 
 export class Indexer extends Effect.Service<Indexer>()("app/Indexer", {
   effect: Effect.gen(function* () {
     const config = yield* getConfig;
-
-    const relations = defineRelations(schema, (r) => ({
-      collections: {},
-    }));
 
     return drizzle(
       async (sql, params, method) => {
@@ -29,7 +24,7 @@ export class Indexer extends Effect.Service<Indexer>()("app/Indexer", {
                 params,
                 method,
               }),
-            }
+            },
           );
 
           return { rows };
@@ -38,7 +33,7 @@ export class Indexer extends Effect.Service<Indexer>()("app/Indexer", {
           return { rows: [] };
         }
       },
-      { relations }
+      { relations },
     );
   }),
   dependencies: [],

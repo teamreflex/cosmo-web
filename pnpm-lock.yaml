@@ -118,6 +118,9 @@ importers:
 
   apps/typesense-import:
     dependencies:
+      '@apollo/database':
+        specifier: workspace:*
+        version: link:../../packages/database
       '@effect/platform':
         specifier: ^0.92.1
         version: 0.92.1(effect@3.18.4)
