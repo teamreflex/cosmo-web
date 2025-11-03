@@ -2,10 +2,6 @@
 /lib
 /builds
 
-/**Versions.json
-
-# IDE files
-/.idea
-
 .env
 .env.*
+!.env.example
