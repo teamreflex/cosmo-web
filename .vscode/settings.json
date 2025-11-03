@@ -1,5 +1,5 @@
 {
-  "tailwindCSS.experimental.configFile": "./src/styles/tailwind.css",
+  "tailwindCSS.experimental.configFile": "./apps/web/src/styles/tailwind.css",
   "typescript.tsdk": "node_modules/typescript/lib",
   "eslint.useFlatConfig": true,
   "files.watcherExclude": {
