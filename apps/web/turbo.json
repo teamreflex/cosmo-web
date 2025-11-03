@@ -1,0 +1,61 @@
+{
+  "$schema": "https://turborepo.com/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "cache": true,
+      "outputs": [".vercel/output/**"],
+      "env": [
+        "DATABASE_URL",
+        "INDEXER_PROXY_KEY",
+        "INDEXER_PROXY_URL",
+        "AUTH_KEY",
+        "CRON_SECRET",
+        "ALCHEMY_KEY",
+        "BETTER_AUTH_SECRET",
+        "DISCORD_CLIENT_ID",
+        "DISCORD_CLIENT_SECRET",
+        "TWITTER_CLIENT_ID",
+        "TWITTER_CLIENT_SECRET",
+        "MAIL_SES_REGION",
+        "MAIL_SES_FROM",
+        "MAIL_SES_ACCESS_KEY",
+        "MAIL_SES_SECRET_KEY",
+        "COSMO_RECAPTCHA_KEY",
+        "BROWSERLESS_API_KEY",
+        "BROWSERLESS_BASE_URL",
+        "KV_REST_API_URL",
+        "KV_REST_API_TOKEN"
+      ]
+    },
+    "dev": {
+      "persistent": true,
+      "cache": false
+    },
+    "typecheck": {
+      "cache": true
+    },
+    "lint": {
+      "cache": true
+    },
+    "lint:fix": {
+      "cache": false
+    },
+    "format": {
+      "cache": true
+    },
+    "db:generate": {
+      "cache": false
+    },
+    "db:migrate": {
+      "cache": false
+    },
+    "inlang:compile": {
+      "cache": false
+    },
+    "test": {
+      "persistent": true,
+      "cache": false
+    }
+  }
+}

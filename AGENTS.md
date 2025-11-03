@@ -1,95 +1,45 @@
+This is a Turborepo monorepo for the Apollo project.
+
 ## Development
 
-- `pnpm dev` - Start development server with Turbopack
-- `pnpm lint` - Run ESLint
-- `pnpm typecheck` - Run TypeScript type checking
-- `pnpm format` - Run Prettier formatting
-- `pnpm inlang:compile` - Compile Paraglide JS i18n messages
+### Core Commands
 
-## Database
+- **Development**: `turbo dev` - Start development server
+- **Build**: `turbo build` - Build the entire monorepo
+- **Lint**: `turbo lint` - Run linting across all packages
+- **Lint Fix**: `turbo lint:fix` - Fix lint issues automatically
+- **Format**: `turbo format` - Format code across all packages
+- **Type Check**: `turbo typecheck` - TypeScript type checking for all packages
+- **Test**: `turbo test` - Run tests across all packages
 
-- `pnpm db:generate` - Generate migration files
-- `pnpm db:migrate` - Run migrations
-- `pnpm auth:generate` - Generate Better Auth schema
+- This is a Turborepo monorepo - **never run package commands with `pnpm` or `npm` directly**
+- Use `turbo <command>` to run commands across packages
+- You can append a turbo command with `--filter <package>` to run the command for only one app/package.
+  - For example, typecheck only the web app: `turbo typecheck --filter web`, or only the util package: `turbo typecheck --filter @apollo/util`
+- Turbo handles dependency management and parallel execution
 
-The project contains three Postgres database connections:
+### Workflow
 
-- `import { db } from "@/lib/server/db"`
-  - general Neon Postgres HTTP connection for entities: cosmoAccounts, lockedObjekts, objektLists, objektListEntries, objektMetadata, pins, cosmoTokens, gravities, gravityPolls, gravityPollCandidates, polygonVotes, user, session, acocunt, verification
-- `import { dbi } from "@/lib/server/db/interactive"`
-  - same Neon Postgres connection but over websockets. only use this when needing to use transactions.
-- `import { indexer } from "@/lib/server/db/indexer"`
-  - Postgres connection for querying the blockchain indexer for objekt data.
-  - entities are: collections, objekts, transfers, comoBalances, votes
-
-When fetching from the database, if the query is simple, use the relational API v2:
-
-```ts
-const profile = await db.query.cosmoAccounts.findFirst({
-  where: {
-    username: "username",
-  },
-  with: {
-    lists: true,
-  },
-});
-```
-
-Otherwise, use the query builder:
-
-```ts
-const cosmo = await db
-  .select()
-  .from(cosmoAccounts)
-  .leftJoin(objektLists, eq(profiles.userId, lists.userId))
-  .where(eq(cosmoAccounts.username, "username"));
-```
-
-## Frontend
-
-The project uses Tailwind v4, so always use v4 conventions rather than v3. This includes things like supporting inline CSS variable usage such as `bg-(--my-var)` vs. `bg-[var(--my-var)]`.
-
-## Architecture Overview
-
-### Tech Stack
-
-- Framework: TanStack Start (Router + Query)
-- UI: React 19, Tailwind v4, shadcn/ui components
-- Database:
-  - Neon PostgreSQL (main app database)
-  - Blockchain indexer database (objekts, transfers, votes)
-  - Drizzle ORM with relational queries
-- Authentication: Better Auth with Discord/Twitter OAuth
-- Search: Typesense for fuzzy objekt metadata search
-- i18n: Paraglide JS
+- Linting and type checking is sufficent, you do not need to run the build or dev commands to test your work.
+- Do not use `npx` or `pnpm dlx` to run linting, typechecking etc. Always use the Turborepo commands.
+- When dealing with new packages, always check `package.json` to see if it has already been installed.
 
 ### Project Structure
 
-- `src/routes/` - TanStack Router pages and API routes
-- `src/components/` - Reusable React components
-- `src/lib/` - Core business logic
-  - `env/` - Environment variables for per client/server environment
-  - `client/` - Client-only utilities
-  - `server/` - Server-side logic (database, API calls)
-  - `universal/` - Shared types and Zod schemas
-  - `queries/` - Server functions and associated TanStack Query options
-- `src/hooks/` - Custom React hooks
-- `src/i18n/` - Paraglide JS translation strings
-- `drizzle/` - Database migrations
+#### Apps
 
-### Key Architecture Patterns
+- **`apps/web`**: Core Tanstack Start web app
+- **`apps/indexer`**: Subsquid blockchain indexer for cataloging Modhaus objekt collections
 
-1. **Data Fetching**: Route loaders with server functions, prefetched into query cache as appropriate
-2. **Database Access**: Three separate connections:
-   - `db` - Main Neon database (HTTP)
-   - `dbi` - Interactive Neon connection (WebSocket for transactions)
-   - `indexer` - Blockchain indexer database
-3. **Error Handling**: Consistent use of Error Boundaries with Suspense
-4. **URL State**: Type-safe with TanStack Router search params parsing per route
+#### Packages
+
+- **`packages/eslint`**: Base ESLint config
+- **`packages/typescript`**: Base tsconfig.json file
+- **`packages/util`**: Miscellaneous utility functions shared across packages
 
 ## Project Context
 
-This is a blockchain explorer for MODHAUS' Cosmo app objekts and gravities. The platform tracks digital collectibles (objekts) and voting systems (gravities) on the blockchain.
+Apollo is a blockchain explorer for MODHAUS' Cosmo app objekts and gravities. The platform tracks digital collectibles (objekts) and voting systems (gravities) on the blockchain.
 
 A `collection` represents a type of objekt. Certain properties on a collection are:
 

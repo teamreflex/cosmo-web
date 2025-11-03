@@ -1,14 +1,8 @@
-# cosmo-web (Apollo)
+# Apollo
 
 A platform for exploring objekts & gravities from [MODHAUS](https://www.mod-haus.com/)' **[Cosmo: the Gate](https://play.google.com/store/apps/details?id=com.modhaus.cosmo)** app via blockchain data.
 
 **Apollo is not affiliated with, endorsed by or supported by MODHAUS or its artists.**
-
-## Note
-
-On April 18th 2025, MODHAUS migrated COSMO over to a new blockchain and a new authentication provider, with encryption that prevents tampering with the sign-in process. This `refactor/abstract` branch is a stripped down version of the platform with almost all COSMO connectivity removed.
-
-The [`main`](https://github.com/teamreflex/cosmo-web/blob/main) branch remains as the final Polygon-compatible version before the migration occurred. It will not work with the current version of the COSMO API.
 
 ## Features
 
@@ -25,7 +19,6 @@ The [`main`](https://github.com/teamreflex/cosmo-web/blob/main) branch remains a
 ## Requirements
 
 - [Node.js](https://nodejs.org/en/) 22.12+
-- [Blockchain indexer](https://github.com/teamreflex/cosmo-db) instance w/ Drizzle HTTP proxy
 - [Neon](https://neon.tech/) instance
 - [Upstash](https://upstash.com/) instance
 - [Typesense](https://typesense.org/) instance
@@ -42,17 +35,20 @@ git clone git@github.com:teamreflex/cosmo-web.git
 cd cosmo-web
 pnpm install
 cp .env.example .env.local
-pnpm db:migrate
-pnpm dev
+turbo db:migrate
+turbo dev
 ```
 
 ## Tooling
 
+- [Turborepo](https://turborepo.com/)
 - [TanStack Start](https://tanstack.com/start/latest/docs/framework/react/overview)
 - [Tailwind v4](https://tailwindcss.com/)
 - [shadcn/ui](https://ui.shadcn.com/docs)
 - [Neon](https://neon.tech/)
 - [Drizzle ORM](https://orm.drizzle.team/)
+- [Subsquid](https://subsquid.io/)
+- [Typesense](https://typesense.org/) instance
 
 ## License
 
