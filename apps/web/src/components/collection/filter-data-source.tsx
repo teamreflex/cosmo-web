@@ -1,6 +1,6 @@
 import { DataSourceSelector } from "./data-source-selector";
 import type { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
-import type { CollectionDataSource } from "@/lib/utils";
+import type { CollectionDataSource } from "@apollo/util";
 import type { Dispatch, SetStateAction } from "react";
 import { useProfileContext } from "@/hooks/use-profile";
 

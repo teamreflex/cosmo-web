@@ -1,6 +1,6 @@
 import { drizzle } from "drizzle-orm/pg-proxy";
 import { ofetch } from "ofetch";
-import { relations } from "./relations";
+import { relations } from "@apollo/database/indexer/relations";
 import { env } from "@/lib/env/server";
 
 export const indexer = drizzle(

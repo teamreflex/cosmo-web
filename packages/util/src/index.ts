@@ -44,3 +44,18 @@ export async function chunk<T>(
     await callback(chunk);
   }
 }
+
+/**
+ * Default grid columns
+ */
+export const GRID_COLUMNS = 5;
+
+/**
+ * Collection data source.
+ */
+export const collectionDataSources = [
+  "blockchain",
+  "blockchain-groups",
+] as const;
+export type CollectionDataSource = (typeof collectionDataSources)[number];
+export type FilterType = "remote" | "local";

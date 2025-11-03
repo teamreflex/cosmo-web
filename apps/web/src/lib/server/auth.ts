@@ -6,6 +6,8 @@ import { parseSessionOutput, parseUserOutput } from "better-auth/db";
 import { username } from "better-auth/plugins/username";
 import { eq } from "drizzle-orm";
 import { reactStartCookies } from "better-auth/react-start";
+import { GRID_COLUMNS } from "@apollo/util";
+import * as authSchema from "@apollo/database/auth";
 import {
   sendAccountDeletionEmail,
   sendEmailChangeVerification,
@@ -14,12 +16,11 @@ import {
 } from "./mail";
 import { cosmoAccounts } from "./db/schema";
 import { db } from "./db";
+import type { CollectionDataSource } from "@apollo/util";
 import type { PublicUser } from "../universal/auth";
-import type { CollectionDataSource } from "@/lib/utils";
 import * as serverEnv from "@/lib/env/server";
 import * as clientEnv from "@/lib/env/client";
-import { GRID_COLUMNS, baseUrl } from "@/lib/utils";
-import * as authSchema from "@/lib/server/db/auth-schema";
+import { baseUrl } from "@/lib/utils";
 
 export const IP_HEADER = "x-vercel-forwarded-for";
 

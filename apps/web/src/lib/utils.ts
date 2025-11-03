@@ -45,21 +45,6 @@ export function sanitizeUuid(uuid: string): string | null {
 }
 
 /**
- * default grid columns
- */
-export const GRID_COLUMNS = 5;
-
-/**
- * Collection data source.
- */
-export const collectionDataSources = [
-  "blockchain",
-  "blockchain-groups",
-] as const;
-export type CollectionDataSource = (typeof collectionDataSources)[number];
-export type FilterType = "remote" | "local";
-
-/**
  * Track an event with Umami.
  * Handles when the tracking script isn't loaded.
  */

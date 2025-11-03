@@ -1,6 +1,6 @@
 import type { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
 import type { ValidSort } from "@/lib/universal/cosmo/common";
-import type { CollectionDataSource } from "@/lib/utils";
+import type { CollectionDataSource } from "@apollo/util";
 import {
   Select,
   SelectContent,

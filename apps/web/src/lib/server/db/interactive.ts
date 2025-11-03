@@ -1,5 +1,5 @@
 import { drizzle } from "drizzle-orm/neon-serverless";
-import { relations } from "./relations";
+import { relations } from "@apollo/database/web/relations";
 import { env } from "@/lib/env/server";
 
 // create the connection (transaction support)

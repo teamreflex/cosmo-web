@@ -16,7 +16,7 @@
     "db:generate": "drizzle-kit generate",
     "db:upgrade": "drizzle-kit up",
     "db:migrate": "pnpm run env -- drizzle-kit migrate",
-    "auth:generate": "pnpm run env -- pnpm dlx @better-auth/cli generate --output src/lib/server/db/auth-schema.ts --y",
+    "auth:generate": "pnpm run env -- pnpm dlx @better-auth/cli generate --output ../../packages/database/src/auth.ts --y",
     "env": "dotenv -e ../../.env -e ../../.env.local",
     "i18n": "pnpm dlx @inlang/paraglide-js compile --project ./project.inlang --outdir ./src/i18n"
   },
@@ -74,6 +74,7 @@
     "zustand": "^5.0.8"
   },
   "devDependencies": {
+    "@apollo/database": "workspace:*",
     "@apollo/eslint": "workspace:*",
     "@apollo/typescript": "workspace:*",
     "@eslint/eslintrc": "^3.3.1",

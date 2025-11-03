@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { getRouteApi } from "@tanstack/react-router";
 import { defaultFilters, useCosmoFilters } from "./use-cosmo-filters";
 import type { CosmoFilters } from "./use-cosmo-filters";
-import type { CollectionDataSource } from "@/lib/utils";
+import type { CollectionDataSource } from "@apollo/util";
 
 const route = getRouteApi("/@{$username}/");
 

@@ -1,0 +1,33 @@
+{
+  "name": "@apollo/database",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "lint": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "tsc --pretty --noEmit",
+    "format": "prettier --write \"**/*.{ts,tsx}\""
+  },
+  "exports": {
+    "./web/*": "./src/web/*.ts",
+    "./indexer/*": "./src/indexer/*.ts",
+    "./auth": "./src/auth.ts",
+    "./custom": "./src/custom.ts"
+  },
+  "dependencies": {
+    "@apollo/util": "workspace:*",
+    "drizzle-orm": "1.0.0-beta.1-ac4ce44"
+  },
+  "devDependencies": {
+    "@apollo/eslint": "workspace:*",
+    "@apollo/typescript": "workspace:*",
+    "@eslint/eslintrc": "^3.3.1",
+    "@eslint/js": "^9.39.0",
+    "eslint": "9.39.0",
+    "prettier": "^3.6.2",
+    "turbo": "^2.6.0",
+    "typescript": "5.9.3",
+    "typescript-eslint": "^8.46.2"
+  }
+}

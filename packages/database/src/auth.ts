@@ -6,9 +6,8 @@ import {
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
-import { citext } from "./columns";
-import type { CollectionDataSource } from "@/lib/utils";
-import { GRID_COLUMNS } from "@/lib/utils";
+import { citext } from "./custom";
+import { GRID_COLUMNS, type CollectionDataSource } from "@apollo/util";
 
 export const user = pgTable(
   "user",

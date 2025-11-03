@@ -9,7 +9,7 @@ import SortFilter from "../filter-sort";
 import FilterDataSource from "../filter-data-source";
 import ResetFilters from "../reset-filters";
 import type { Dispatch, SetStateAction } from "react";
-import type { CollectionDataSource } from "@/lib/utils";
+import type { CollectionDataSource } from "@apollo/util";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 

@@ -26,7 +26,7 @@ import {
 } from "../ui/accordion";
 import { Button } from "../ui/button";
 import type { ReactNode } from "react";
-import type { CollectionDataSource } from "@/lib/utils";
+import type { CollectionDataSource } from "@apollo/util";
 import { m } from "@/i18n/messages";
 import { env } from "@/lib/env/client";
 

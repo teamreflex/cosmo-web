@@ -1,4 +1,4 @@
-import type { CollectionDataSource } from "../utils";
+import type { CollectionDataSource } from "@apollo/util";
 
 export type PublicUser = {
   id: string;
