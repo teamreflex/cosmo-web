@@ -1,6 +1,6 @@
 ## Development
 
-- `turbo inlang:compile` - Compile Paraglide JS i18n messages
+- `turbo i18n` - Compile Paraglide JS i18n messages
 
 ## Database
 

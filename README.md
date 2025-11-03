@@ -16,6 +16,15 @@ A platform for exploring objekts & gravities from [MODHAUS](https://www.mod-haus
 - Collection completion leaderboards
 - View historical and live gravity results
 
+## Project
+
+- `apps/web`: Core Tanstack Start web app deployed at [apollo.cafe](https://apollo.cafe)
+- `apps/indexer`: Subsquid blockchain indexer for cataloging Modhaus objekt collections
+- `apps/typesense-import`: Sync new objekt collections to the Typesense database
+- `packages/eslint`: Shared ESLint config
+- `packages/typescript`: Shared tsconfig.json file
+- `packages/util`: Shared utility functions
+
 ## Requirements
 
 - [Node.js](https://nodejs.org/en/) 22.12+
@@ -35,6 +44,7 @@ git clone git@github.com:teamreflex/cosmo-web.git
 cd cosmo-web
 pnpm install
 cp .env.example .env.local
+turbo i18n
 turbo db:migrate
 turbo dev
 ```
@@ -45,10 +55,9 @@ turbo dev
 - [TanStack Start](https://tanstack.com/start/latest/docs/framework/react/overview)
 - [Tailwind v4](https://tailwindcss.com/)
 - [shadcn/ui](https://ui.shadcn.com/docs)
-- [Neon](https://neon.tech/)
 - [Drizzle ORM](https://orm.drizzle.team/)
 - [Subsquid](https://subsquid.io/)
-- [Typesense](https://typesense.org/) instance
+- [Typesense](https://typesense.org/)
 
 ## License
 

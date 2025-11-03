@@ -4,13 +4,15 @@ This is a Turborepo monorepo for the Apollo project.
 
 ### Core Commands
 
-- **Development**: `turbo dev` - Start development server
-- **Build**: `turbo build` - Build the entire monorepo
-- **Lint**: `turbo lint` - Run linting across all packages
-- **Lint Fix**: `turbo lint:fix` - Fix lint issues automatically
-- **Format**: `turbo format` - Format code across all packages
-- **Type Check**: `turbo typecheck` - TypeScript type checking for all packages
-- **Test**: `turbo test` - Run tests across all packages
+- `turbo dev` - Start development server
+- `turbo build` - Build the entire monorepo
+- `turbo lint` - Run linting across all packages
+- `turbo lint:fix` - Fix lint issues automatically
+- `turbo format` - Format code across all packages
+- `turbo typecheck` - TypeScript type checking for all packages
+- `turbo test` - Run tests across all packages
+
+### Turborepo
 
 - This is a Turborepo monorepo - **never run package commands with `pnpm` or `npm` directly**
 - Use `turbo <command>` to run commands across packages
@@ -21,21 +23,21 @@ This is a Turborepo monorepo for the Apollo project.
 ### Workflow
 
 - Linting and type checking is sufficent, you do not need to run the build or dev commands to test your work.
-- Do not use `npx` or `pnpm dlx` to run linting, typechecking etc. Always use the Turborepo commands.
 - When dealing with new packages, always check `package.json` to see if it has already been installed.
 
 ### Project Structure
 
 #### Apps
 
-- **`apps/web`**: Core Tanstack Start web app
-- **`apps/indexer`**: Subsquid blockchain indexer for cataloging Modhaus objekt collections
+- `apps/web`: Core Tanstack Start web app
+- `apps/indexer`: Subsquid blockchain indexer for cataloging Modhaus objekt collections
+- `apps/typesense-import`: Sync new objekt collections to the Typesense database
 
 #### Packages
 
-- **`packages/eslint`**: Base ESLint config
-- **`packages/typescript`**: Base tsconfig.json file
-- **`packages/util`**: Miscellaneous utility functions shared across packages
+- `packages/eslint`: Shared ESLint config
+- `packages/typescript`: Shared tsconfig.json file
+- `packages/util`: Shared utility functions
 
 ## Project Context
 

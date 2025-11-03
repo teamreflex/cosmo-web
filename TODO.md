@@ -7,6 +7,9 @@
 - wait for start fix: https://github.com/TanStack/router/issues/5372
   - objekt list update
   - objekt list delete
+- do something with the grid detection code
+- migrate to planetscale once new plans drop
+- fix drawer issues & iOS 26 quirks
 
 ## indexer
 
@@ -22,5 +25,6 @@
 
 ## monorepo
 
+- setup dockerfiles for each service for railway deployment
 - setup docker for non-web services in dev
 - extract drizzle schemas into a database package

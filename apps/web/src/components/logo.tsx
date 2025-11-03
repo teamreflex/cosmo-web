@@ -19,6 +19,8 @@ type Props = {
 };
 
 export default function Logo({ className }: Props) {
+  const commitHash = env.VITE_VERCEL_GIT_COMMIT_SHA.slice(0, 7);
+
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
@@ -28,7 +30,10 @@ export default function Logo({ className }: Props) {
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{env.VITE_APP_NAME}</AlertDialogTitle>
+          <AlertDialogTitle>
+            {env.VITE_APP_NAME}{" "}
+            <span className="text-xs text-muted-foreground">{commitHash}</span>
+          </AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div className="flex flex-col gap-2">
               <p>{m.logo_description({ appName: env.VITE_APP_NAME })}</p>

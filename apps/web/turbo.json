@@ -50,7 +50,7 @@
     "db:migrate": {
       "cache": false
     },
-    "inlang:compile": {
+    "i18n": {
       "cache": false
     },
     "test": {
