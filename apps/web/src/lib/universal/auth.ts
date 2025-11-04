@@ -12,4 +12,4 @@ export type PublicUser = {
     twitter: string | undefined;
   };
   showSocials: boolean;
-};
+} & { __brand: "PublicUser" };

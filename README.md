@@ -21,6 +21,7 @@ A platform for exploring objekts & gravities from [MODHAUS](https://www.mod-haus
 - `apps/web`: Core Tanstack Start web app deployed at [apollo.cafe](https://apollo.cafe)
 - `apps/indexer`: Subsquid blockchain indexer for cataloging Modhaus objekt collections
 - `apps/typesense-import`: Sync new objekt collections to the Typesense database
+- `packages/database`: Drizzle schemas for the web app and indexer databases
 - `packages/eslint`: Shared ESLint config
 - `packages/typescript`: Shared tsconfig.json file
 - `packages/util`: Shared utility functions

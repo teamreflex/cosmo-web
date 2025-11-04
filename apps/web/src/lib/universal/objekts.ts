@@ -1,5 +1,6 @@
+import type { PublicCosmo } from "./cosmo-accounts";
 import type { Collection, Transfer } from "@/lib/server/db/indexer/schema";
-import type { CosmoAccount, ObjektMetadataEntry } from "@/lib/server/db/schema";
+import type { ObjektMetadataEntry } from "@/lib/server/db/schema";
 import type {
   CosmoObjekt,
   ObjektBaseFields,
@@ -18,7 +19,7 @@ export type ObjektResponse<T extends LegacyObjekt> = {
 
 // metadata
 interface ObjektInformation extends ObjektMetadataEntry {
-  profile?: Pick<CosmoAccount, "username"> | null;
+  profile?: Pick<PublicCosmo, "username"> | null;
 }
 export type ObjektMetadata = {
   total: number;

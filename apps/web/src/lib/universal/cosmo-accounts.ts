@@ -5,7 +5,7 @@ export type PublicCosmo = {
   username: string;
   address: string;
   isAddress: boolean;
-};
+} & { __brand: "PublicCosmo" };
 
 export type PublicAccount = {
   user: PublicUser;

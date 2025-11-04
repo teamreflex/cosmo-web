@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 import { FetchError } from "ofetch";
 import { createServerOnlyFn } from "@tanstack/react-start";
-import { GRID_COLUMNS, isAddress } from "@apollo/util";
+import { isAddress } from "@apollo/util";
 import { db } from "./db";
 import { cosmoAccounts } from "./db/schema";
 import { fetchByNickname } from "./cosmo/user";
@@ -50,23 +50,17 @@ export const fetchFullAccount = createServerOnlyFn(
     if (identifierIsAddress) {
       return {
         cosmo: {
-          username: identifier.substring(0, 6),
-          address: identifier,
+          ...toPublicCosmo({
+            id: 0,
+            cosmoId: null,
+            polygonAddress: null,
+            userId: null,
+            username: identifier.substring(0, 6),
+            address: identifier,
+          }),
           isAddress: true,
-        },
-        user: {
-          id: crypto.randomUUID(),
-          username: undefined,
-          image: undefined,
-          isAdmin: false,
-          gridColumns: GRID_COLUMNS,
-          collectionMode: "blockchain",
-          social: {
-            discord: undefined,
-            twitter: undefined,
-          },
-          showSocials: false,
-        },
+        } satisfies PublicCosmo,
+        user: undefined,
         lockedObjekts: [],
         pins: [],
         objektLists: [],
@@ -199,5 +193,5 @@ export function toPublicCosmo(
     username: cosmo.username,
     address: cosmo.address,
     isAddress: false,
-  };
+  } as PublicCosmo;
 }

@@ -396,5 +396,5 @@ export function toPublicUser(
       twitter: user.twitter ?? undefined,
     },
     showSocials: user.showSocials ?? false,
-  };
+  } as PublicUser;
 }
