@@ -29,3 +29,4 @@ COPY --from=builder /squid/db db
 ADD commands.json .
 RUN echo -e "loglevel=silent\\nupdate-notifier=false" > /squid/.npmrc
 RUN npm i -g @subsquid/commands && mv $(which squid-commands) /usr/local/bin/sqd
+CMD ["sqd", "process:prod"]
