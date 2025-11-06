@@ -30,9 +30,8 @@ export const env = createEnv({
     COSMO_RECAPTCHA_KEY: z.string().min(1),
     BROWSERLESS_API_KEY: z.string().min(1),
     BROWSERLESS_BASE_URL: z.string().min(1),
-    // upstash redis
+    // redis
     REDIS_URL: z.string().min(1),
-    REDIS_PASSWORD: z.string().min(1),
   },
   runtimeEnv: {
     DATABASE_URL: process.env.DATABASE_URL,
@@ -53,7 +52,6 @@ export const env = createEnv({
     BROWSERLESS_API_KEY: process.env.BROWSERLESS_API_KEY,
     BROWSERLESS_BASE_URL: process.env.BROWSERLESS_BASE_URL,
     REDIS_URL: process.env.REDIS_URL,
-    REDIS_PASSWORD: process.env.REDIS_PASSWORD,
   },
   emptyStringAsUndefined: true,
 });

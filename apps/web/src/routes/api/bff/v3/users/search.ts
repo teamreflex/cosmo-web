@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { like } from "drizzle-orm";
-import { waitUntil } from "@vercel/functions";
 import type { CosmoSearchResult } from "@/lib/universal/cosmo/user";
 import { cacheAccounts } from "@/lib/server/cosmo-accounts";
 import { search } from "@/lib/server/cosmo/user";
@@ -28,9 +27,9 @@ export const Route = createFileRoute("/api/bff/v3/users/search")({
           return Response.json(await queryDatabase(query));
         }
 
-        // take the results and insert any new profiles after the response is sent
+        // take the results and insert any new profiles
         if (results.results.length > 0) {
-          waitUntil(cacheResults(results, query));
+          await cacheResults(results, query);
         }
 
         // return results

@@ -27,6 +27,7 @@ services:
       dockerfile: Dockerfile
     restart: on-failure
     environment:
+      - DB_NAME=${INDEXER_DB_NAME}
       - FORCE_PRETTY_LOGGER=${INDEXER_FORCE_PRETTY_LOGGER}
       - RPC_ENDPOINT=${INDEXER_RPC_ENDPOINT}
       - RPC_RATE_LIMIT=${INDEXER_RPC_RATE_LIMIT}
