@@ -5,6 +5,7 @@
   "license": "MIT",
   "scripts": {
     "build": "rm -rf lib/ && tsc -p tsconfig.build.json",
+    "start": "sqd process:prod",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --pretty --noEmit",
