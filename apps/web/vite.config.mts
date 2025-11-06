@@ -7,8 +7,8 @@ import { nitro } from "nitro/vite";
 import { paraglideVitePlugin } from "@inlang/paraglide-js";
 
 const config = defineConfig(async () => {
-  await import("./src/lib/env/server");
   await import("./src/lib/env/client");
+  const { env } = await import("./src/lib/env/server");
 
   return {
     server: {
@@ -23,6 +23,12 @@ const config = defineConfig(async () => {
         config: {
           compatibilityDate: "2025-10-19",
           preset: "node-server",
+          storage: {
+            cache: {
+              driver: "redis",
+              url: env.REDIS_URL,
+            },
+          },
         },
       }),
       react({

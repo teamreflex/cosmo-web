@@ -5,7 +5,6 @@ import type { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
 import { env } from "@/lib/env/server";
 import { fetchGravities, fetchPoll } from "@/lib/server/cosmo/gravity";
 import { db } from "@/lib/server/db";
-import { dbi } from "@/lib/server/db/interactive";
 import {
   gravities,
   gravityPollCandidates,
@@ -88,7 +87,7 @@ async function processGravities(
       );
 
       // store data in a transaction
-      await dbi
+      await db
         .transaction(async (tx) => {
           // store gravity
           await tx
