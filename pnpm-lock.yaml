@@ -85,6 +85,9 @@ importers:
       '@eslint/js':
         specifier: ^9.39.0
         version: 9.39.0
+      '@subsquid/commands':
+        specifier: ^2.3.1
+        version: 2.3.1
       '@subsquid/evm-typegen':
         specifier: ^4.4.0
         version: 4.4.0
@@ -3572,6 +3575,10 @@ packages:
 
   '@subsquid/big-decimal@1.0.0':
     resolution: {integrity: sha512-/wyZEYC4Mlcm7jQWGhZnCvYpIosRmDSlNbv9SJBphE88aaFe8bOxl4sYwM/olzJgCn4Ir45nBsPU0ebF1+nXog==}
+
+  '@subsquid/commands@2.3.1':
+    resolution: {integrity: sha512-KV3PVO0daLV3+zB0A8iYdEAdTlm4pdOPhTuHT8oZoY/8o9uMYae+5iIUZs76ko6M/ELXgaX47L4+QizdPKCJlg==}
+    hasBin: true
 
   '@subsquid/evm-abi@0.2.4':
     resolution: {integrity: sha512-mGVBuc07nfTP/WRq3dqm697FCLBQ5cDTutNrxnXI21+vu6/0PYS+50xv6AUTp5LqTzEWTR1dsSUVZ0FD7Ew3lw==}
@@ -12706,6 +12713,14 @@ snapshots:
   '@subsquid/big-decimal@1.0.0':
     dependencies:
       big.js: 6.2.2
+
+  '@subsquid/commands@2.3.1':
+    dependencies:
+      '@subsquid/logger': 1.4.0
+      '@subsquid/util-internal': 3.2.0
+      '@subsquid/util-internal-config': 2.2.2
+      glob: 10.4.5
+      supports-color: 8.1.1
 
   '@subsquid/evm-abi@0.2.4':
     dependencies:
