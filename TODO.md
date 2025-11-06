@@ -1,3 +1,7 @@
+## monorepo
+
+remove root vercel.json once done with refactor
+
 ## web
 
 - ensure env var split is working and server vars aren't leaking to client
