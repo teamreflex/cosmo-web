@@ -13,5 +13,10 @@
       "path": "/api/cron/objekt-stats",
       "schedule": "0 * * * *"
     }
-  ]
+  ],
+  "git": {
+    "deploymentEnabled": {
+      "refactor/tanstack-start": false
+    }
+  }
 }
