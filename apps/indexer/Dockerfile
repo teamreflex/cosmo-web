@@ -1,29 +1,37 @@
-FROM node:22-alpine AS node
-FROM node AS node-with-gyp
+FROM node:22-alpine AS base
 RUN apk add g++ make python3
-RUN npm install -g pnpm 
+RUN corepack enable pnpm
 
-FROM node-with-gyp AS builder
-WORKDIR /squid
-ADD package.json .
-ADD db db
-RUN pnpm install
-ADD tsconfig.json .
-ADD src src
-RUN pnpm run build
+FROM base AS pruner
+WORKDIR /app
+RUN pnpm add -g turbo
+COPY . .
+RUN turbo prune indexer --docker
 
-FROM node-with-gyp AS deps
-WORKDIR /squid
-ADD package.json .
-RUN pnpm install --prod
+FROM base AS builder
+WORKDIR /app
+# copy lockfile and workspace files
+COPY --from=pruner /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
+COPY --from=pruner /app/out/pnpm-workspace.yaml ./pnpm-workspace.yaml
+# copy pruned workspace
+COPY --from=pruner /app/out/json/ .
+# install dependencies
+RUN pnpm install --frozen-lockfile
+# copy source files
+COPY --from=pruner /app/out/full/ .
+# build the app
+RUN pnpm --filter indexer run build
 
-FROM node AS squid
+FROM base AS runner
 WORKDIR /squid
-COPY --from=deps /squid/package.json .
-COPY --from=deps /squid/node_modules node_modules
-COPY --from=builder /squid/lib lib
-COPY --from=builder /squid/db db
-ADD commands.json .
+# copy built application
+COPY --from=builder /app/apps/indexer/lib ./lib
+COPY --from=builder /app/apps/indexer/db ./db
+COPY --from=builder /app/apps/indexer/package.json ./package.json
+COPY --from=builder /app/apps/indexer/commands.json ./commands.json
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/packages ./packages
+# setup squid commands
 RUN echo -e "loglevel=silent\\nupdate-notifier=false" > /squid/.npmrc
 RUN npm i -g @subsquid/commands && mv $(which squid-commands) /usr/local/bin/sqd
 CMD ["sqd", "process:prod"]
