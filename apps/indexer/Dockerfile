@@ -4,8 +4,7 @@ RUN corepack enable pnpm
 
 FROM base AS pruner
 WORKDIR /app
-RUN pnpm setup
-RUN pnpm add -g turbo
+RUN npm install -g turbo
 COPY . .
 RUN turbo prune indexer --docker
 
