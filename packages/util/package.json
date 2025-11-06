@@ -19,11 +19,11 @@
     "@apollo/eslint": "workspace:*",
     "@apollo/typescript": "workspace:*",
     "@eslint/eslintrc": "^3.3.1",
-    "@eslint/js": "^9.39.0",
-    "eslint": "9.39.0",
+    "@eslint/js": "^9.39.1",
+    "eslint": "9.39.1",
     "prettier": "^3.6.2",
     "turbo": "^2.6.0",
     "typescript": "5.9.3",
-    "typescript-eslint": "^8.46.2"
+    "typescript-eslint": "^8.46.3"
   }
 }

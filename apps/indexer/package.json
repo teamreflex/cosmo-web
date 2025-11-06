@@ -32,17 +32,17 @@
     "@apollo/eslint": "workspace:*",
     "@apollo/typescript": "workspace:*",
     "@eslint/eslintrc": "^3.3.1",
-    "@eslint/js": "^9.39.0",
+    "@eslint/js": "^9.39.1",
     "@subsquid/commands": "^2.3.1",
     "@subsquid/evm-typegen": "^4.4.0",
     "@subsquid/squid-gen-evm": "^2.0.0",
     "@subsquid/typeorm-codegen": "^2.0.2",
     "@types/node": "22.17.2",
     "@types/pg": "^8.15.6",
-    "eslint": "9.39.0",
+    "eslint": "9.39.1",
     "prettier": "^3.6.2",
     "turbo": "^2.6.0",
     "typescript": "5.9.3",
-    "typescript-eslint": "^8.46.2"
+    "typescript-eslint": "^8.46.3"
   }
 }

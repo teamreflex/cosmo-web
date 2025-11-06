@@ -2,6 +2,7 @@
 
 - [ ] remove root vercel.json once done with refactor
 - [ ] dev - setup pgbouncer for the pg server so HMR doesn't exhaust connections
+- [ ] dev - update start script to conditionally boot docker services based on env
 
 ## web
 
