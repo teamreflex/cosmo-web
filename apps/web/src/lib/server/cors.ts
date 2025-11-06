@@ -12,7 +12,7 @@ export function getCorsHeaders(req: Request): Headers {
   ]);
 
   const origin = req.headers.get("Origin");
-  if (origin === env.VITE_VERCEL_PROJECT_PRODUCTION_URL) {
+  if (origin === env.VITE_BASE_URL) {
     headers.set("Access-Control-Allow-Origin", origin);
     headers.set("Access-Control-Allow-Credentials", "true");
   }

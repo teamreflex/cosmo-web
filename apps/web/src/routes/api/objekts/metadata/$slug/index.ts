@@ -60,7 +60,7 @@ export const Route = createFileRoute("/api/objekts/metadata/$slug/")({
             percentage: collection.percentage,
           } satisfies ObjektMetadata,
           {
-            headers: cacheHeaders({ vercel: cacheTime }),
+            headers: cacheHeaders({ cdn: cacheTime }),
           },
         );
       },

@@ -22,7 +22,7 @@ const config = defineConfig(async () => {
       nitro({
         config: {
           compatibilityDate: "2025-10-19",
-          preset: "vercel",
+          preset: "node-server",
         },
       }),
       react({

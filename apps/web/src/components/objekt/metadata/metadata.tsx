@@ -39,10 +39,8 @@ export default function Metadata(props: Props) {
   });
 
   function copyUrl() {
-    const scheme = env.VITE_VERCEL_ENV === "development" ? "http" : "https";
-    copy(
-      `${scheme}://${env.VITE_VERCEL_PROJECT_PRODUCTION_URL}/objekts?id=${props.objekt.slug}`,
-    );
+    const scheme = env.VITE_APP_ENV === "development" ? "http" : "https";
+    copy(`${scheme}://${env.VITE_BASE_URL}/objekts?id=${props.objekt.slug}`);
     toast.success(m.toast_objekt_url_copied());
   }
 

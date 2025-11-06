@@ -7,11 +7,11 @@ export const env = createEnv({
     // info for rebranding the app
     VITE_APP_NAME: z.string().min(1),
     // url of the app
-    VITE_VERCEL_PROJECT_PRODUCTION_URL: z.string().min(1),
+    VITE_BASE_URL: z.string().min(1),
     // environment type
-    VITE_VERCEL_ENV: z.enum(["preview", "development", "production"]),
+    VITE_APP_ENV: z.enum(["preview", "development", "production"]),
     // git hash
-    VITE_VERCEL_GIT_COMMIT_SHA: z.string().min(1),
+    VITE_COMMIT_SHA: z.string().min(1),
     // umami analytics
     VITE_UMAMI_ID: z.string().optional(),
     VITE_UMAMI_SCRIPT_URL: z.url().optional(),

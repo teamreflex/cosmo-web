@@ -7,7 +7,7 @@ import type {
   StyleHTMLAttributes,
 } from "react";
 
-const base = `https://${env.VITE_VERCEL_PROJECT_PRODUCTION_URL}`;
+const base = `https://${env.VITE_BASE_URL}`;
 const titleTemplate = (title: string) =>
   [title, env.VITE_APP_NAME].filter(Boolean).join(" · ");
 

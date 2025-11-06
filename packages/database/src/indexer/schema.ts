@@ -3,14 +3,23 @@ import {
   boolean,
   integer,
   numeric,
+  pgSchema,
   pgTable,
   serial,
+  text,
   timestamp,
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
 
-// indexes are managed by the indexer
+// subsquid metadata
+export const subsquidSchema = pgSchema("squid_processor");
+export const subsquidStatus = subsquidSchema.table("status", {
+  id: integer("id").notNull(),
+  height: integer("height").notNull(),
+  hash: text("hash"),
+  nonce: integer("nonce"),
+});
 
 export const collections = pgTable("collection", {
   id: uuid("id").primaryKey(),

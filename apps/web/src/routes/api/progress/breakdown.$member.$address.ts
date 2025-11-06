@@ -21,7 +21,7 @@ export const Route = createFileRoute(
         });
 
         return Response.json(results, {
-          headers: cacheHeaders({ vercel: 60 * 60 }),
+          headers: cacheHeaders({ cdn: 60 * 60 }),
         });
       },
     },

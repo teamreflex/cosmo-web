@@ -3,11 +3,10 @@ import { z } from "zod";
 
 export const env = createEnv({
   server: {
-    // neon database
-    DATABASE_URL: z.string().min(1),
-    // indexer db http proxy
-    INDEXER_PROXY_KEY: z.string().min(1),
-    INDEXER_PROXY_URL: z.string().min(1),
+    // postgres database
+    DATABASE_URL: z.url(),
+    // indexer database
+    INDEXER_DATABASE_URL: z.url(),
     // auth key
     AUTH_KEY: z.string().min(1),
     // cron secret
@@ -32,13 +31,12 @@ export const env = createEnv({
     BROWSERLESS_API_KEY: z.string().min(1),
     BROWSERLESS_BASE_URL: z.string().min(1),
     // upstash redis
-    KV_REST_API_URL: z.string().min(1),
-    KV_REST_API_TOKEN: z.string().min(1),
+    REDIS_URL: z.string().min(1),
+    REDIS_PASSWORD: z.string().min(1),
   },
   runtimeEnv: {
     DATABASE_URL: process.env.DATABASE_URL,
-    INDEXER_PROXY_KEY: process.env.INDEXER_PROXY_KEY,
-    INDEXER_PROXY_URL: process.env.INDEXER_PROXY_URL,
+    INDEXER_DATABASE_URL: process.env.INDEXER_DATABASE_URL,
     AUTH_KEY: process.env.AUTH_KEY,
     CRON_SECRET: process.env.CRON_SECRET,
     ALCHEMY_KEY: process.env.ALCHEMY_KEY,
@@ -54,8 +52,8 @@ export const env = createEnv({
     COSMO_RECAPTCHA_KEY: process.env.COSMO_RECAPTCHA_KEY,
     BROWSERLESS_API_KEY: process.env.BROWSERLESS_API_KEY,
     BROWSERLESS_BASE_URL: process.env.BROWSERLESS_BASE_URL,
-    KV_REST_API_URL: process.env.KV_REST_API_URL,
-    KV_REST_API_TOKEN: process.env.KV_REST_API_TOKEN,
+    REDIS_URL: process.env.REDIS_URL,
+    REDIS_PASSWORD: process.env.REDIS_PASSWORD,
   },
   emptyStringAsUndefined: true,
 });

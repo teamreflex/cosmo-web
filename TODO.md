@@ -8,21 +8,16 @@
   - objekt list update
   - objekt list delete
 - do something with the grid detection code
-- migrate to planetscale once new plans drop
 - fix drawer issues & iOS 26 quirks
+- refactor any vercel exclusive code
+- refactor caching: https://nitro.build/guide/storage
+- refactor cron jobs: https://nitro.build/guide/tasks#scheduled-tasks
+- test railway deployment
 
 ## indexer
 
-- settle on database strategy:
-  - migrate to planetscale
-  - self-host w/ pgbouncer
-  - self-host with drizzle-proxy
-- extract the set-band, process-status and rescan-metadata handlers into a separate service
+- extract the set-band, process-status and rescan-metadata handlers into the web app
 
 ## typesense
 
 - tidy up
-
-## monorepo
-
-- extract drizzle schemas into a database package

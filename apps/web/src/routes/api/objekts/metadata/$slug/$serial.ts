@@ -80,7 +80,7 @@ export const Route = createFileRoute("/api/objekts/metadata/$slug/$serial")({
         return Response.json(
           { result },
           {
-            headers: cacheHeaders({ vercel: 60 * 60 * 4 }),
+            headers: cacheHeaders({ cdn: 60 * 60 * 4 }),
           },
         );
       },

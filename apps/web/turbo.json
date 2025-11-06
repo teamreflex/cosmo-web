@@ -4,11 +4,10 @@
   "tasks": {
     "build": {
       "cache": true,
-      "outputs": [".vercel/output/**"],
+      "outputs": [".output/**"],
       "env": [
         "DATABASE_URL",
-        "INDEXER_PROXY_KEY",
-        "INDEXER_PROXY_URL",
+        "INDEXER_DATABASE_URL",
         "AUTH_KEY",
         "CRON_SECRET",
         "ALCHEMY_KEY",
@@ -24,8 +23,8 @@
         "COSMO_RECAPTCHA_KEY",
         "BROWSERLESS_API_KEY",
         "BROWSERLESS_BASE_URL",
-        "KV_REST_API_URL",
-        "KV_REST_API_TOKEN"
+        "REDIS_URL",
+        "REDIS_PASSWORD"
       ]
     },
     "dev": {

@@ -15,8 +15,8 @@ export type PropsWithClassName<T> = T & { className?: string };
  * Get the base URL for the app.
  */
 export function baseUrl() {
-  const scheme = env.VITE_VERCEL_ENV === "development" ? "http" : "https";
-  return `${scheme}://${env.VITE_VERCEL_PROJECT_PRODUCTION_URL}`;
+  const scheme = env.VITE_APP_ENV === "development" ? "http" : "https";
+  return `${scheme}://${env.VITE_BASE_URL}`;
 }
 
 /**

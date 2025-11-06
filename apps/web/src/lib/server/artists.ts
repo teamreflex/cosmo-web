@@ -16,7 +16,7 @@ const cacheKey = "artists";
  */
 export const $fetchArtists = createServerFn({ method: "GET" }).handler(
   async (): Promise<CosmoArtistWithMembersBFF[]> => {
-    setResponseHeaders(cacheHeaders({ vercel: 60 * 60 }));
+    setResponseHeaders(cacheHeaders({ cdn: 60 * 60 }));
 
     return await remember(cacheKey, 60 * 24, async () => {
       const { accessToken } = await getProxiedToken();

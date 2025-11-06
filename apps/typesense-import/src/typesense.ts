@@ -7,13 +7,7 @@ export class Typesense extends Effect.Service<Typesense>()("app/Typesense", {
     const config = yield* getConfig;
 
     return new Client({
-      nodes: [
-        {
-          host: config.TYPESENSE_HOST,
-          port: config.TYPESENSE_PORT,
-          protocol: config.TYPESENSE_PROTOCOL,
-        },
-      ],
+      nodes: [{ url: config.TYPESENSE_URL }],
       apiKey: Redacted.value(config.TYPESENSE_API_KEY),
       numRetries: 1,
       connectionTimeoutSeconds: 10,

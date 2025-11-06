@@ -27,7 +27,7 @@ export const Route = createFileRoute("/api/objekts/by-slug/$slug")({
 
         const common = Objekt.fromIndexer(collection);
         return Response.json(common, {
-          headers: cacheHeaders({ vercel: 60 * 60 * 24 }),
+          headers: cacheHeaders({ cdn: 60 * 60 * 24 }),
         });
       },
     },
