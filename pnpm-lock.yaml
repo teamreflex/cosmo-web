@@ -238,7 +238,7 @@ importers:
         version: 1.134.13(@tanstack/query-core@5.90.7)(@tanstack/react-query@5.90.7(react@19.2.0))(@tanstack/react-router@1.134.13(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(@tanstack/router-core@1.134.13)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@tanstack/react-start':
         specifier: ^1.134.13
-        version: 1.134.14(crossws@0.4.1(srvx@0.9.5))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(vite@7.2.2(@types/node@22.17.2)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.1))
+        version: 1.134.14(crossws@0.4.1(srvx@0.8.16))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(vite@7.2.2(@types/node@22.17.2)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.1))
       '@tanstack/react-virtual':
         specifier: ^3.13.12
         version: 3.13.12(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -285,8 +285,8 @@ importers:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       nitro:
-        specifier: npm:nitro-nightly@latest
-        version: nitro-nightly@3.0.1-20251107-104441-121cb7ef(chokidar@4.0.3)(drizzle-orm@1.0.0-beta.1-ac4ce44(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(pg@8.16.3))(idb-keyval@6.2.2)(ioredis@5.8.2)(vite@7.2.2(@types/node@22.17.2)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.1))
+        specifier: 3.0.1-alpha.0
+        version: 3.0.1-alpha.0(chokidar@4.0.3)(drizzle-orm@1.0.0-beta.1-ac4ce44(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(pg@8.16.3))(idb-keyval@6.2.2)(ioredis@5.8.2)(vite@7.2.2(@types/node@22.17.2)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.1))
       ofetch:
         specifier: ^1.5.1
         version: 1.5.1
@@ -6119,8 +6119,8 @@ packages:
       crossws:
         optional: true
 
-  h3@2.0.1-rc.5:
-    resolution: {integrity: sha512-qkohAzCab0nLzXNm78tBjZDvtKMTmtygS8BJLT3VPczAQofdqlFXDPkXdLMJN4r05+xqneG8snZJ0HgkERCZTg==}
+  h3@2.0.1-rc.2:
+    resolution: {integrity: sha512-2vS7OETzPDzGQxmmcs6ttu7p0NW25zAdkPXYOr43dn4GZf81uUljJvupa158mcpUGpsQUqIy4O4THWUQT1yVeA==}
     engines: {node: '>=20.11.1'}
     peerDependencies:
       crossws: ^0.4.1
@@ -6752,8 +6752,8 @@ packages:
   nf3@0.1.5:
     resolution: {integrity: sha512-kb6KFkGzOx1ux95s8kSJF17D/j2hgkWn7/gW6qgLYEZYY6a3eJH463zqb/H/gZLNgQAdGd7FpLkdfbSrXncqhw==}
 
-  nitro-nightly@3.0.1-20251107-104441-121cb7ef:
-    resolution: {integrity: sha512-Pv7mFhnzlPjgj7n0FVJjT7w3Cay7EL3QUb1JkP/Xr8KQf5OBqNFDcQDMvrTVI3VTZcBotoHzu6FO4L1m9S2+DA==}
+  nitro@3.0.1-alpha.0:
+    resolution: {integrity: sha512-lR3RplfXBOZXNlFQf9AJkqFVFhg5/CNbpBijM0dSYhGymb+FthJSdL6crmXVg518h2NVOd40rehhGZaf9ijW9w==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
     peerDependencies:
@@ -6844,9 +6844,6 @@ packages:
 
   ofetch@1.5.1:
     resolution: {integrity: sha512-2W4oUZlVaqAPAil6FUg/difl6YhqhUR7x2eZY4bQCko22UXg3hptq9KLQdqFClV+Wu85UX7hNtdGTngi/1BxcA==}
-
-  ofetch@2.0.0-alpha.3:
-    resolution: {integrity: sha512-zpYTCs2byOuft65vI3z43Dd6iSdFbOZZLb9/d21aCpx2rGastVU9dOCv0lu4ykc1Ur1anAYjDi3SUvR0vq50JA==}
 
   ohash@2.0.11:
     resolution: {integrity: sha512-RdR9FQrFwNBNXAr4GixM8YaRZRJ5PUWbKYbE5eOsrwAjJW0q2REGcf79oYPsLyskQCZG1PLN+S/K1V00joZAoQ==}
@@ -7388,6 +7385,10 @@ packages:
     resolution: {integrity: sha512-dYqgNSZbDwkaJ2ceRd9ojCGjBq+mOm9LmtXnAnEGyHhN/5R7iDW2TRw3h+o/jCFxus3P2LfWIIiwowAjANm7IA==}
     engines: {node: '>= 0.4'}
 
+  rendu@0.0.6:
+    resolution: {integrity: sha512-nZ512Dw0MxKiIYfCVv8DPe6ig4m0Qt3FOYBJEXrammjIYBBPuHaudc0AGfYx+iyOw2q0itAtPywiVZXtTFCsig==}
+    hasBin: true
+
   require-directory@2.1.1:
     resolution: {integrity: sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q==}
     engines: {node: '>=0.10.0'}
@@ -7600,11 +7601,6 @@ packages:
 
   srvx@0.8.16:
     resolution: {integrity: sha512-hmcGW4CgroeSmzgF1Ihwgl+Ths0JqAJ7HwjP2X7e3JzY7u4IydLMcdnlqGQiQGUswz+PO9oh/KtCpOISIvs9QQ==}
-    engines: {node: '>=20.16.0'}
-    hasBin: true
-
-  srvx@0.9.5:
-    resolution: {integrity: sha512-nQsA2c8q3XwbSn6kTxVQjz0zS096rV+Be2pzJwrYEAdtnYszLw4MTy8JWJjz1XEGBZwP0qW51SUIX3WdjdRemQ==}
     engines: {node: '>=20.16.0'}
     hasBin: true
 
@@ -7957,8 +7953,8 @@ packages:
     resolution: {integrity: sha512-QEg3HPMll0o3t2ourKwOeUAZ159Kn9mx5pnzHRQO8+Wixmh88YdZRiIwat0iNzNNXn0yoEtXJqFpyW7eM8BV7g==}
     engines: {node: '>=20.18.1'}
 
-  unenv@2.0.0-rc.24:
-    resolution: {integrity: sha512-i7qRCmY42zmCwnYlh9H2SvLEypEFGye5iRmEMKjcGi7zk9UquigRjFtTLz0TYqr0ZGLZhaMHl/foy1bZR+Cwlw==}
+  unenv@2.0.0-rc.21:
+    resolution: {integrity: sha512-Wj7/AMtE9MRnAXa6Su3Lk0LNCfqDYgfwVjwRFVum9U7wsto1imuHqk4kTm7Jni+5A0Hn7dttL6O/zjvUvoo+8A==}
 
   unpipe@1.0.0:
     resolution: {integrity: sha512-pjy2bYhSsufwWlKwPc+l3cN7+wuJlK6uz0YdJEOlQDbl6jo/YlPi4mb8agUkVC8BF7V8NuzeyPNqRksA3hztKQ==}
@@ -8033,8 +8029,8 @@ packages:
       uploadthing:
         optional: true
 
-  unstorage@2.0.0-alpha.4:
-    resolution: {integrity: sha512-ywXZMZRfrvmO1giJeMTCw6VUn0ALYxVl8pFqJPStiyQUvgJImejtAHrKvXPj4QGJAoS/iLGcVGF6ljN/lkh1bw==}
+  unstorage@2.0.0-alpha.3:
+    resolution: {integrity: sha512-BeoqISVh8jxqnPseHH7/92twe2VkQztrudXg8RFZVbXb4ckkFdpLk1LnNvsUndDltyodBMVxgI6V7JcbJYt2VQ==}
     peerDependencies:
       '@azure/app-configuration': ^1.8.0
       '@azure/cosmos': ^4.2.0
@@ -8057,7 +8053,7 @@ packages:
       ioredis: ^5.4.2
       lru-cache: ^11.2.2
       mongodb: ^6.20.0
-      ofetch: '*'
+      ofetch: ^1.4.1
       uploadthing: ^7.4.4
     peerDependenciesMeta:
       '@azure/app-configuration':
@@ -13347,27 +13343,27 @@ snapshots:
       tiny-invariant: 1.3.3
       tiny-warning: 1.0.3
 
-  '@tanstack/react-start-server@1.134.13(crossws@0.4.1(srvx@0.9.5))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
+  '@tanstack/react-start-server@1.134.13(crossws@0.4.1(srvx@0.8.16))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
     dependencies:
       '@tanstack/history': 1.133.28
       '@tanstack/react-router': 1.134.13(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@tanstack/router-core': 1.134.13
       '@tanstack/start-client-core': 1.134.13
-      '@tanstack/start-server-core': 1.134.13(crossws@0.4.1(srvx@0.9.5))
+      '@tanstack/start-server-core': 1.134.13(crossws@0.4.1(srvx@0.8.16))
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
     transitivePeerDependencies:
       - crossws
 
-  '@tanstack/react-start@1.134.14(crossws@0.4.1(srvx@0.9.5))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(vite@7.2.2(@types/node@22.17.2)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.1))':
+  '@tanstack/react-start@1.134.14(crossws@0.4.1(srvx@0.8.16))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(vite@7.2.2(@types/node@22.17.2)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.1))':
     dependencies:
       '@tanstack/react-router': 1.134.13(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@tanstack/react-start-client': 1.134.13(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
-      '@tanstack/react-start-server': 1.134.13(crossws@0.4.1(srvx@0.9.5))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@tanstack/react-start-server': 1.134.13(crossws@0.4.1(srvx@0.8.16))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@tanstack/router-utils': 1.133.19
       '@tanstack/start-client-core': 1.134.13
-      '@tanstack/start-plugin-core': 1.134.14(@tanstack/react-router@1.134.13(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(crossws@0.4.1(srvx@0.9.5))(vite@7.2.2(@types/node@22.17.2)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.1))
-      '@tanstack/start-server-core': 1.134.13(crossws@0.4.1(srvx@0.9.5))
+      '@tanstack/start-plugin-core': 1.134.14(@tanstack/react-router@1.134.13(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(crossws@0.4.1(srvx@0.8.16))(vite@7.2.2(@types/node@22.17.2)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.1))
+      '@tanstack/start-server-core': 1.134.13(crossws@0.4.1(srvx@0.8.16))
       pathe: 2.0.3
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
@@ -13502,7 +13498,7 @@ snapshots:
       tiny-invariant: 1.3.3
       tiny-warning: 1.0.3
 
-  '@tanstack/start-plugin-core@1.134.14(@tanstack/react-router@1.134.13(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(crossws@0.4.1(srvx@0.9.5))(vite@7.2.2(@types/node@22.17.2)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.1))':
+  '@tanstack/start-plugin-core@1.134.14(@tanstack/react-router@1.134.13(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(crossws@0.4.1(srvx@0.8.16))(vite@7.2.2(@types/node@22.17.2)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.1))':
     dependencies:
       '@babel/code-frame': 7.26.2
       '@babel/core': 7.28.5
@@ -13514,7 +13510,7 @@ snapshots:
       '@tanstack/router-utils': 1.133.19
       '@tanstack/server-functions-plugin': 1.134.5(vite@7.2.2(@types/node@22.17.2)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.1))
       '@tanstack/start-client-core': 1.134.13
-      '@tanstack/start-server-core': 1.134.13(crossws@0.4.1(srvx@0.9.5))
+      '@tanstack/start-server-core': 1.134.13(crossws@0.4.1(srvx@0.8.16))
       babel-dead-code-elimination: 1.0.10
       cheerio: 1.1.2
       exsolve: 1.0.7
@@ -13534,13 +13530,13 @@ snapshots:
       - vite-plugin-solid
       - webpack
 
-  '@tanstack/start-server-core@1.134.13(crossws@0.4.1(srvx@0.9.5))':
+  '@tanstack/start-server-core@1.134.13(crossws@0.4.1(srvx@0.8.16))':
     dependencies:
       '@tanstack/history': 1.133.28
       '@tanstack/router-core': 1.134.13
       '@tanstack/start-client-core': 1.134.13
       '@tanstack/start-storage-context': 1.134.13
-      h3-v2: h3@2.0.0-beta.4(crossws@0.4.1(srvx@0.9.5))
+      h3-v2: h3@2.0.0-beta.4(crossws@0.4.1(srvx@0.8.16))
       seroval: 1.3.2
       tiny-invariant: 1.3.3
     transitivePeerDependencies:
@@ -15071,9 +15067,9 @@ snapshots:
     dependencies:
       uncrypto: 0.1.3
 
-  crossws@0.4.1(srvx@0.9.5):
+  crossws@0.4.1(srvx@0.8.16):
     optionalDependencies:
-      srvx: 0.9.5
+      srvx: 0.8.16
 
   crypt@0.0.2: {}
 
@@ -16020,21 +16016,23 @@ snapshots:
       ufo: 1.6.1
       uncrypto: 0.1.3
 
-  h3@2.0.0-beta.4(crossws@0.4.1(srvx@0.9.5)):
+  h3@2.0.0-beta.4(crossws@0.4.1(srvx@0.8.16)):
     dependencies:
       cookie-es: 2.0.0
       fetchdts: 0.1.7
       rou3: 0.7.10
       srvx: 0.8.16
     optionalDependencies:
-      crossws: 0.4.1(srvx@0.9.5)
+      crossws: 0.4.1(srvx@0.8.16)
 
-  h3@2.0.1-rc.5(crossws@0.4.1(srvx@0.9.5)):
+  h3@2.0.1-rc.2(crossws@0.4.1(srvx@0.8.16)):
     dependencies:
+      cookie-es: 2.0.0
+      fetchdts: 0.1.7
       rou3: 0.7.10
-      srvx: 0.9.5
+      srvx: 0.8.16
     optionalDependencies:
-      crossws: 0.4.1(srvx@0.9.5)
+      crossws: 0.4.1(srvx@0.8.16)
 
   has-bigints@1.1.0: {}
 
@@ -16593,22 +16591,25 @@ snapshots:
 
   nf3@0.1.5: {}
 
-  nitro-nightly@3.0.1-20251107-104441-121cb7ef(chokidar@4.0.3)(drizzle-orm@1.0.0-beta.1-ac4ce44(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(pg@8.16.3))(idb-keyval@6.2.2)(ioredis@5.8.2)(vite@7.2.2(@types/node@22.17.2)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.1)):
+  nitro@3.0.1-alpha.0(chokidar@4.0.3)(drizzle-orm@1.0.0-beta.1-ac4ce44(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(pg@8.16.3))(idb-keyval@6.2.2)(ioredis@5.8.2)(vite@7.2.2(@types/node@22.17.2)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.1)):
     dependencies:
       consola: 3.4.2
-      crossws: 0.4.1(srvx@0.9.5)
+      cookie-es: 2.0.0
+      crossws: 0.4.1(srvx@0.8.16)
       db0: 0.3.4(drizzle-orm@1.0.0-beta.1-ac4ce44(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(pg@8.16.3))
       esbuild: 0.25.12
-      h3: 2.0.1-rc.5(crossws@0.4.1(srvx@0.9.5))
+      fetchdts: 0.1.7
+      h3: 2.0.1-rc.2(crossws@0.4.1(srvx@0.8.16))
       jiti: 2.6.1
       nf3: 0.1.5
-      ofetch: 2.0.0-alpha.3
+      ofetch: 1.5.1
       ohash: 2.0.11
+      rendu: 0.0.6
       rollup: 4.52.5
-      srvx: 0.9.5
+      srvx: 0.8.16
       undici: 7.16.0
-      unenv: 2.0.0-rc.24
-      unstorage: 2.0.0-alpha.4(chokidar@4.0.3)(db0@0.3.4(drizzle-orm@1.0.0-beta.1-ac4ce44(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(pg@8.16.3)))(idb-keyval@6.2.2)(ioredis@5.8.2)(ofetch@2.0.0-alpha.3)
+      unenv: 2.0.0-rc.21
+      unstorage: 2.0.0-alpha.3(chokidar@4.0.3)(db0@0.3.4(drizzle-orm@1.0.0-beta.1-ac4ce44(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(pg@8.16.3)))(idb-keyval@6.2.2)(ioredis@5.8.2)(ofetch@1.5.1)
     optionalDependencies:
       vite: 7.2.2(@types/node@22.17.2)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.1)
     transitivePeerDependencies:
@@ -16708,8 +16709,6 @@ snapshots:
       destr: 2.0.5
       node-fetch-native: 1.6.7
       ufo: 1.6.1
-
-  ofetch@2.0.0-alpha.3: {}
 
   ohash@2.0.11: {}
 
@@ -17286,6 +17285,11 @@ snapshots:
       gopd: 1.2.0
       set-function-name: 2.0.2
 
+  rendu@0.0.6:
+    dependencies:
+      cookie-es: 2.0.0
+      srvx: 0.8.16
+
   require-directory@2.1.1: {}
 
   require-in-the-middle@7.5.2:
@@ -17542,8 +17546,6 @@ snapshots:
       kysely: 0.27.6
 
   srvx@0.8.16: {}
-
-  srvx@0.9.5: {}
 
   stable-hash-x@0.2.0: {}
 
@@ -17830,9 +17832,13 @@ snapshots:
 
   undici@7.16.0: {}
 
-  unenv@2.0.0-rc.24:
+  unenv@2.0.0-rc.21:
     dependencies:
+      defu: 6.1.4
+      exsolve: 1.0.7
+      ohash: 2.0.11
       pathe: 2.0.3
+      ufo: 1.6.1
 
   unpipe@1.0.0: {}
 
@@ -17882,13 +17888,13 @@ snapshots:
       idb-keyval: 6.2.2
       ioredis: 5.8.2
 
-  unstorage@2.0.0-alpha.4(chokidar@4.0.3)(db0@0.3.4(drizzle-orm@1.0.0-beta.1-ac4ce44(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(pg@8.16.3)))(idb-keyval@6.2.2)(ioredis@5.8.2)(ofetch@2.0.0-alpha.3):
+  unstorage@2.0.0-alpha.3(chokidar@4.0.3)(db0@0.3.4(drizzle-orm@1.0.0-beta.1-ac4ce44(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(pg@8.16.3)))(idb-keyval@6.2.2)(ioredis@5.8.2)(ofetch@1.5.1):
     optionalDependencies:
       chokidar: 4.0.3
       db0: 0.3.4(drizzle-orm@1.0.0-beta.1-ac4ce44(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(pg@8.16.3))
       idb-keyval: 6.2.2
       ioredis: 5.8.2
-      ofetch: 2.0.0-alpha.3
+      ofetch: 1.5.1
 
   upath@2.0.1: {}
 
