@@ -86,6 +86,23 @@ services:
     networks:
       - apollo-network
 
+  # valkey (redis-compatible)
+  valkey:
+    image: valkey/valkey:8-alpine
+    restart: on-failure
+    ports:
+      - "6379:6379"
+    command: valkey-server --save 60 1 --loglevel warning
+    volumes:
+      - valkey-data:/data
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - apollo-network
+
   # indexer processor
   processor:
     build:
@@ -171,3 +188,4 @@ volumes:
   postgres-web-data:
   postgres-indexer-data:
   typesense-data:
+  valkey-data:

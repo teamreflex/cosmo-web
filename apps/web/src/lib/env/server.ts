@@ -7,6 +7,8 @@ export const env = createEnv({
     DATABASE_URL: z.url(),
     // indexer database
     INDEXER_DATABASE_URL: z.url(),
+    // redis
+    REDIS_URL: z.url(),
     // auth key
     AUTH_KEY: z.string().min(1),
     // cron secret
@@ -30,12 +32,11 @@ export const env = createEnv({
     COSMO_RECAPTCHA_KEY: z.string().min(1),
     BROWSERLESS_API_KEY: z.string().min(1),
     BROWSERLESS_BASE_URL: z.string().min(1),
-    // redis
-    REDIS_URL: z.string().min(1),
   },
   runtimeEnv: {
     DATABASE_URL: process.env.DATABASE_URL,
     INDEXER_DATABASE_URL: process.env.INDEXER_DATABASE_URL,
+    REDIS_URL: process.env.REDIS_URL,
     AUTH_KEY: process.env.AUTH_KEY,
     CRON_SECRET: process.env.CRON_SECRET,
     ALCHEMY_KEY: process.env.ALCHEMY_KEY,
@@ -51,7 +52,6 @@ export const env = createEnv({
     COSMO_RECAPTCHA_KEY: process.env.COSMO_RECAPTCHA_KEY,
     BROWSERLESS_API_KEY: process.env.BROWSERLESS_API_KEY,
     BROWSERLESS_BASE_URL: process.env.BROWSERLESS_BASE_URL,
-    REDIS_URL: process.env.REDIS_URL,
   },
   emptyStringAsUndefined: true,
 });
