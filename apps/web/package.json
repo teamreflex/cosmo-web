@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "pnpm run env -- vite dev",
     "build": "pnpm run env -- vite build",
+    "build:prod": "pnpm run i18n && pnpm run typecheck && vite build",
     "start": "pnpm run env -- node .output/server/index.mjs",
     "test": "vitest",
     "lint": "eslint . --max-warnings 0",
