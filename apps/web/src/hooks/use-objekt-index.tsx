@@ -14,24 +14,25 @@ const route = getRouteApi("/");
 
 /**
  * Handles switching between the blockchain and Typesense APIs.
+ * TODO: fix debouncing
  */
 export function useObjektIndex() {
   const searchParams = route.useSearch();
-  const [debouncedSearch] = useDebounceValue(searchParams.search, 500);
+  const [debouncedParams] = useDebounceValue(searchParams, 500);
   const { selectedIds } = useArtists();
 
   // track when a user searches for an objekt
   useEffect(() => {
-    if (debouncedSearch && debouncedSearch.length > 0) {
+    if (debouncedParams.search && debouncedParams.search.length > 0) {
       track("objekt-search");
     }
-  }, [debouncedSearch]);
+  }, [debouncedParams]);
 
   // if no search, use the default API
-  if (!debouncedSearch) {
+  if (!debouncedParams.search) {
     return objektOptions({
       filtering: "remote",
-      query: objektIndexBlockchainQuery(searchParams, selectedIds),
+      query: objektIndexBlockchainQuery(debouncedParams, selectedIds),
       calculateTotal: (data) => {
         const total = data.pages[0]?.total ?? 0;
         return (
@@ -47,7 +48,7 @@ export function useObjektIndex() {
   // otherwise, use the typesense API
   return objektOptions({
     filtering: "remote",
-    query: objektIndexTypesenseQuery(searchParams, selectedIds),
+    query: objektIndexTypesenseQuery(debouncedParams, selectedIds),
     calculateTotal: (data) => {
       const total = data.pages[0]?.total ?? 0;
       return (
