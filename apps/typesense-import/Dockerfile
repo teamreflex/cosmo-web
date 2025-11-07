@@ -11,11 +11,11 @@ COPY --from=pruner /app/out/pnpm-workspace.yaml ./pnpm-workspace.yaml
 # copy pruned workspace
 COPY --from=pruner /app/out/json/ .
 # install dependencies
-RUN bun install --frozen-lockfile
+RUN pnpm install --frozen-lockfile
 # copy source files
 COPY --from=pruner /app/out/full/ .
 # build the app
-RUN bun --filter typesense-import build
+RUN pnpm --filter typesense-import build
 
 FROM oven/bun:1.3-slim AS runner
 WORKDIR /app
@@ -25,4 +25,4 @@ COPY --from=builder /app/apps/typesense-import/dist ./dist
 COPY --from=builder /app/apps/typesense-import/package.json ./package.json
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/packages ./packages
-CMD ["bun", "start"]
+CMD ["pnpm", "--filter", "typesense-import", "start"]
