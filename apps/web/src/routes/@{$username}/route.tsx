@@ -28,10 +28,14 @@ export const Route = createFileRoute("/@{$username}")({
   pendingComponent: PendingComponent,
   notFoundComponent: NotFoundComponent,
   loader: async ({ context, params }) => {
+    const now = performance.now();
     const [account, target] = await Promise.all([
       context.queryClient.ensureQueryData(currentAccountQuery),
       context.queryClient.ensureQueryData(targetAccountQuery(params.username)),
     ]);
+
+    const end = performance.now();
+    console.log(`user collection layout loader took ${end - now}ms`);
 
     const isAuthenticated = account?.cosmo?.address === target.cosmo.address;
 
