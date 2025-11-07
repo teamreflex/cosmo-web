@@ -15,7 +15,7 @@ RUN bun install
 # copy source files
 COPY --from=pruner /app/out/full/ .
 # build the app with bun
-RUN cd apps/typesense-import && bun run build
+RUN bun --filter typesense-import build
 
 FROM oven/bun:1.3-slim AS runner
 WORKDIR /app
