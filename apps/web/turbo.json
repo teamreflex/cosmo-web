@@ -9,7 +9,6 @@
         "DATABASE_URL",
         "INDEXER_DATABASE_URL",
         "AUTH_KEY",
-        "CRON_SECRET",
         "ALCHEMY_KEY",
         "BETTER_AUTH_SECRET",
         "DISCORD_CLIENT_ID",

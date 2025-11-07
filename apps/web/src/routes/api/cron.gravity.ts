@@ -3,7 +3,6 @@ import { eq } from "drizzle-orm";
 import { chunk } from "@apollo/util";
 import { fetchGravities, fetchPoll } from "@apollo/cosmo/server/gravity";
 import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
-import { env } from "@/lib/env/server";
 import { db } from "@/lib/server/db";
 import {
   gravities,
@@ -19,13 +18,11 @@ export const Route = createFileRoute("/api/cron/gravity")({
       /**
        * Search for a user by nickname.
        */
-      GET: async ({ request }) => {
-        const authHeader = request.headers.get("authorization");
-        if (authHeader !== `Bearer ${env.CRON_SECRET}`) {
-          return new Response("unauthorized", {
-            status: 401,
-          });
-        }
+      GET: async () => {
+        // TODO: extract into a separate service
+        return new Response("unauthorized", {
+          status: 401,
+        });
 
         // fetch all artists
         const artists = await $fetchArtists();

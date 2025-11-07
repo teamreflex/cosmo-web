@@ -11,8 +11,6 @@ export const env = createEnv({
     REDIS_URL: z.url(),
     // auth key
     AUTH_KEY: z.string().min(1),
-    // cron secret
-    CRON_SECRET: z.string().min(1),
     // alchemy api key
     ALCHEMY_KEY: z.string().min(1),
     // better auth
@@ -38,7 +36,6 @@ export const env = createEnv({
     INDEXER_DATABASE_URL: process.env.INDEXER_DATABASE_URL,
     REDIS_URL: process.env.REDIS_URL,
     AUTH_KEY: process.env.AUTH_KEY,
-    CRON_SECRET: process.env.CRON_SECRET,
     ALCHEMY_KEY: process.env.ALCHEMY_KEY,
     BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
     DISCORD_CLIENT_ID: process.env.DISCORD_CLIENT_ID,

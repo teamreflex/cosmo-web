@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { env } from "@/lib/env/server";
 import { clearTag } from "@/lib/server/cache";
 
 export const Route = createFileRoute("/api/cron/objekt-stats")({
@@ -8,13 +7,11 @@ export const Route = createFileRoute("/api/cron/objekt-stats")({
       /**
        * Flush the objekt stats cache.
        */
-      GET: async ({ request }) => {
-        const authHeader = request.headers.get("authorization");
-        if (authHeader !== `Bearer ${env.CRON_SECRET}`) {
-          return new Response("unauthorized", {
-            status: 401,
-          });
-        }
+      GET: async () => {
+        // TODO: extract into a separate service
+        return new Response("unauthorized", {
+          status: 401,
+        });
 
         // flush the cache tag
         await clearTag("objekt-stats");
