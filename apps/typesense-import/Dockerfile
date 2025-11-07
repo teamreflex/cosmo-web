@@ -5,21 +5,17 @@ RUN bunx turbo prune typesense-import --docker
 
 FROM oven/bun:1.3-slim AS builder
 WORKDIR /app
-# install pnpm
-RUN apt-get update && apt-get install -y curl && \
-    curl -fsSL https://get.pnpm.io/install.sh | sh - && \
-    mv /root/.local/share/pnpm/pnpm /usr/local/bin/pnpm
 # copy lockfile and workspace files
 COPY --from=pruner /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 COPY --from=pruner /app/out/pnpm-workspace.yaml ./pnpm-workspace.yaml
 # copy pruned workspace
 COPY --from=pruner /app/out/json/ .
-# install dependencies
-RUN pnpm install --frozen-lockfile
+# install dependencies with bun
+RUN bun install
 # copy source files
 COPY --from=pruner /app/out/full/ .
-# build the app using turbo (which will use bun)
-RUN bunx turbo build --filter typesense-import
+# build the app with bun
+RUN cd apps/typesense-import && bun run build
 
 FROM oven/bun:1.3-slim AS runner
 WORKDIR /app
