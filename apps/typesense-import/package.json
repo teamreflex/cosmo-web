@@ -2,6 +2,7 @@
   "name": "typesense-import",
   "version": "1.0.0",
   "scripts": {
+    "dev": "dotenv -e ../../.env -e ../../.env.local -- bun run --bun --watch ./src/main.ts",
     "build": "bun build ./src/main.ts --outdir ./dist --target bun",
     "start": "bun run dist/main.js",
     "lint": "eslint . --max-warnings 0",
@@ -12,6 +13,7 @@
   "license": "MIT",
   "dependencies": {
     "@apollo/database": "workspace:*",
+    "@effect/cluster": "^0.52.0",
     "@effect/platform": "^0.93.0",
     "@effect/platform-bun": "^0.83.0",
     "drizzle-orm": "1.0.0-beta.1-ac4ce44",
