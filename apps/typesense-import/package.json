@@ -2,6 +2,8 @@
   "name": "typesense-import",
   "version": "1.0.0",
   "scripts": {
+    "build": "bun build ./src/main.ts --outdir ./dist --target bun",
+    "start": "bun run dist/main.js",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --pretty --noEmit",

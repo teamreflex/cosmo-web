@@ -4,7 +4,10 @@
   "tasks": {
     "build": {
       "cache": true,
-      "outputs": ["build/**"]
+      "outputs": ["dist/**"]
+    },
+    "start": {
+      "cache": false
     },
     "typecheck": {
       "cache": true

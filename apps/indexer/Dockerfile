@@ -33,5 +33,4 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/packages ./packages
 # setup squid commands
 RUN echo -e "loglevel=silent\\nupdate-notifier=false" > /squid/.npmrc
-RUN npm i -g @subsquid/commands && mv $(which squid-commands) /usr/local/bin/sqd
-CMD ["sqd", "process:prod"]
+CMD ["pnpm", "--filter", "indexer", "start"]

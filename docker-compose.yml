@@ -1,83 +1,173 @@
 # for development purposes, don't use this for production
 services:
-  # postgres for the indexer
-  postgres:
+  # postgres for the web app (persistent user data)
+  postgres-web:
     restart: on-failure
-    image: postgres:18-alpine
-    ports:
-      - "${INDEXER_DB_PORT}:5432"
+    image: postgres:17.6-alpine
     environment:
-      - POSTGRES_DB=${INDEXER_DB_NAME}
-      - POSTGRES_PORT=${INDEXER_DB_PORT}
-      - POSTGRES_USER=${INDEXER_DB_USER}
-      - POSTGRES_PASSWORD=${INDEXER_DB_PASSWORD}
+      - POSTGRES_DB=web
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
     healthcheck:
-      test: "pg_isready -d ${INDEXER_DB_NAME} -U ${INDEXER_DB_USER}"
+      test: "pg_isready -d web -U postgres"
       interval: 30s
       timeout: 60s
       retries: 5
       start_period: 80s
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - postgres-web-data:/var/lib/postgresql/data
+    networks:
+      - apollo-network
+
+  # pgbouncer for web app (HMR-safe)
+  pgbouncer-web:
+    image: pgbouncer/pgbouncer:latest
+    restart: on-failure
+    ports:
+      - "5433:5432"
+    environment:
+      - DATABASES_HOST=postgres-web
+      - DATABASES_PORT=5432
+      - DATABASES_USER=postgres
+      - DATABASES_PASSWORD=postgres
+      - DATABASES_DBNAME=web
+      - PGBOUNCER_POOL_MODE=transaction
+      - PGBOUNCER_MAX_CLIENT_CONN=1000
+      - PGBOUNCER_DEFAULT_POOL_SIZE=25
+      - PGBOUNCER_MIN_POOL_SIZE=5
+      - PGBOUNCER_RESERVE_POOL_SIZE=5
+      - PGBOUNCER_RESERVE_POOL_TIMEOUT=3
+    depends_on:
+      postgres-web:
+        condition: service_healthy
+    networks:
+      - apollo-network
+
+  # postgres for the indexer (ephemeral blockchain data)
+  postgres-indexer:
+    restart: on-failure
+    image: postgres:17.6-alpine
+    environment:
+      - POSTGRES_DB=indexer
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    healthcheck:
+      test: "pg_isready -d indexer -U postgres"
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s
+    volumes:
+      - postgres-indexer-data:/var/lib/postgresql/data
+    networks:
+      - apollo-network
+
+  # pgbouncer for indexer
+  pgbouncer-indexer:
+    image: pgbouncer/pgbouncer:latest
+    restart: on-failure
+    ports:
+      - "5432:5432"
+    environment:
+      - DATABASES_HOST=postgres-indexer
+      - DATABASES_PORT=5432
+      - DATABASES_USER=postgres
+      - DATABASES_PASSWORD=postgres
+      - DATABASES_DBNAME=indexer
+      - PGBOUNCER_POOL_MODE=transaction
+      - PGBOUNCER_MAX_CLIENT_CONN=1000
+      - PGBOUNCER_DEFAULT_POOL_SIZE=25
+      - PGBOUNCER_MIN_POOL_SIZE=5
+      - PGBOUNCER_RESERVE_POOL_SIZE=5
+      - PGBOUNCER_RESERVE_POOL_TIMEOUT=3
+    depends_on:
+      postgres-indexer:
+        condition: service_healthy
+    networks:
+      - apollo-network
 
   # indexer processor
   processor:
     build:
-      context: apps/indexer
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/indexer/Dockerfile
     restart: on-failure
     environment:
-      - DB_NAME=${INDEXER_DB_NAME}
       - FORCE_PRETTY_LOGGER=${INDEXER_FORCE_PRETTY_LOGGER}
       - RPC_ENDPOINT=${INDEXER_RPC_ENDPOINT}
       - RPC_RATE_LIMIT=${INDEXER_RPC_RATE_LIMIT}
       - RPC_FINALITY=${INDEXER_RPC_FINALITY}
       - SQD_ENDPOINT=${INDEXER_SQD_ENDPOINT}
-      - DB_HOST=${INDEXER_DB_HOST}
-      - DB_PORT=${INDEXER_DB_PORT}
-      - DB_NAME=${INDEXER_DB_NAME}
-      - DB_USER=${INDEXER_DB_USER}
-      - DB_PASS=${INDEXER_DB_PASSWORD}
-      - DB_READ_USER=${INDEXER_DB_READ_USER}
-      - DB_READ_PASS=${INDEXER_DB_READ_PASSWORD}
+      - DB_HOST=pgbouncer-indexer
+      - DB_PORT=5432
+      - DB_NAME=indexer
+      - DB_USER=postgres
+      - DB_PASS=postgres
       - ENABLE_OBJEKTS=${INDEXER_ENABLE_OBJEKTS}
       - ENABLE_GRAVITY=${INDEXER_ENABLE_GRAVITY}
       - COSMO_PARALLEL_COUNT=${INDEXER_COSMO_PARALLEL_COUNT}
     command: ["sqd", "process:prod"]
     depends_on:
-      - postgres
+      pgbouncer-indexer:
+        condition: service_started
+    networks:
+      - apollo-network
 
   # typesense instance
   typesense:
     image: typesense/typesense:28.0
     restart: on-failure
+    ports:
+      - "8108:8108"
     environment:
-      - TYPESENSE_API_KEY
-      - TYPESENSE_INTERNAL_PORT=${TYPESENSE_INTERNAL_PORT}
-      - TYPESENSE_ENABLE_CORS=${TYPESENSE_ENABLE_CORS:-false}
-      - TYPESENSE_CORS_DOMAINS=${TYPESENSE_CORS_DOMAINS:-*}
+      - TYPESENSE_ENABLE_CORS=true
+      - TYPESENSE_CORS_DOMAINS=http://localhost:3000,http://localhost:5173
     volumes:
-      - ./typesense-data:/data
-    command: "--data-dir /data --api-key=${TYPESENSE_API_KEY} --api-port=${TYPESENSE_INTERNAL_PORT} --enable-leader-election=false"
+      - typesense-data:/data
+    command: "--data-dir /data --api-key=dev-local-key-do-not-use-in-production --api-port=8108 --enable-leader-election=false"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8108/health",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - apollo-network
 
   # typesense import server
   import-server:
     build:
-      context: apps/typesense-import
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/typesense-import/Dockerfile
     restart: on-failure
     environment:
-      - TYPESENSE_API_KEY=${TYPESENSE_API_KEY}
-      - TYPESENSE_HOST=${TYPESENSE_HOST}
-      - TYPESENSE_PORT=${TYPESENSE_INTERNAL_PORT}
-      - TYPESENSE_PROTOCOL=${TYPESENSE_PROTOCOL}
+      - TYPESENSE_API_KEY=dev-local-key-do-not-use-in-production
+      - TYPESENSE_HOST=typesense
+      - TYPESENSE_PORT=8108
+      - TYPESENSE_PROTOCOL=http
       - LOOP_INTERVAL=${TYPESENSE_IMPORT_LOOP_INTERVAL}
-      - DB_INDEXER=${TYPESENSE_IMPORT_DB_INDEXER}
-      - DB_INDEXER_KEY=${TYPESENSE_IMPORT_DB_INDEXER_KEY}
-      - DB_METADATA=${TYPESENSE_IMPORT_DB_METADATA}
+      - DB_INDEXER=postgresql://postgres:postgres@pgbouncer-indexer:5432/indexer
+      - DB_METADATA=postgresql://postgres:postgres@pgbouncer-web:5432/web
     depends_on:
-      - typesense
+      typesense:
+        condition: service_healthy
+    networks:
+      - apollo-network
+
+networks:
+  apollo-network:
+    name: apollo-network
+    driver: bridge
 
 volumes:
-  postgres-data:
+  postgres-web-data:
+  postgres-indexer-data:
   typesense-data:
