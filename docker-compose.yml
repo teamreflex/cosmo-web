@@ -4,6 +4,8 @@ services:
   postgres-web:
     restart: on-failure
     image: postgres:17.6-alpine
+    ports:
+      - "5435:5432"
     environment:
       - POSTGRES_DB=web
       - POSTGRES_USER=postgres
@@ -47,6 +49,8 @@ services:
   postgres-indexer:
     restart: on-failure
     image: postgres:17.6-alpine
+    ports:
+      - "5434:5432"
     environment:
       - POSTGRES_DB=indexer
       - POSTGRES_USER=postgres
