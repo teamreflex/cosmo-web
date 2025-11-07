@@ -43,7 +43,7 @@ export default function VirtualizedGrid<TItem>({
   gridColumns,
 }: Props<TItem>) {
   // virtualization
-  const [containerRef, { width }] = useElementSize();
+  const [containerRef, { width }] = useElementSize({ axis: "width" });
   const virtualizer = useWindowVirtualizer({
     count: rows.length,
     overscan: 3,
@@ -53,6 +53,8 @@ export default function VirtualizedGrid<TItem>({
     },
     scrollMargin: containerRef.current?.offsetTop ?? 0,
   });
+
+  console.log({ width });
 
   // fixes react compiler issue: https://github.com/TanStack/virtual/issues/743
   const virtualizerRef = useRef(virtualizer);
@@ -85,7 +87,7 @@ export default function VirtualizedGrid<TItem>({
               }}
               data-index={rowItem.index}
               ref={virtualizerRef.current.measureElement}
-              className="absolute top-0 left-0 grid w-full grid-cols-3 gap-4 px-0.5 md:grid-cols-[repeat(var(--grid-columns),_minmax(0,_1fr))]"
+              className="absolute top-0 left-0 grid w-full grid-cols-3 gap-4 px-0.5 md:grid-cols-[repeat(var(--grid-columns),minmax(0,1fr))]"
             >
               {row.map((objekt, index) => {
                 // render pin

@@ -28,18 +28,9 @@ export default function ExpandableObjekt({
   priority = false,
   className,
 }: Props) {
-  const [isLoaded, setIsLoaded] = useState(false);
-  const queryClient = useQueryClient();
   const isSelected = useObjektTransfer(
     useShallow((state) => state.isSelected(Number(tokenId))),
   );
-
-  const { front } = getObjektImageUrls(collection);
-
-  function prefetch() {
-    const img = new Image();
-    img.src = front.download;
-  }
 
   return (
     <MetadataDialog
@@ -59,36 +50,64 @@ export default function ExpandableObjekt({
             className,
           )}
         >
-          <img
-            role="button"
-            onMouseOver={prefetch}
-            onLoad={() => setIsLoaded(true)}
-            onClick={() => {
-              // populate the query cache so it doesn't re-fetch
-              queryClient.setQueryData(
-                fetchObjektQuery(collection.slug).queryKey,
-                collection,
-              );
-              // update the url
-              setActive?.(collection.slug);
-              // open the dialog
-              open();
-            }}
-            className={cn(
-              "w-full transition-opacity",
-              isLoaded === false && "opacity-0",
-            )}
-            src={front.display}
-            width={291}
-            height={450}
-            alt={collection.collectionId}
-            decoding="async"
-            fetchPriority={priority ? "high" : "auto"}
+          <FrontImage
+            collection={collection}
+            open={open}
+            setActive={setActive}
+            priority={priority}
           />
 
           {children}
         </div>
       )}
     </MetadataDialog>
+  );
+}
+
+type FrontImageProps = {
+  collection: Objekt.Collection;
+  open: () => void;
+  setActive?: (slug: string | undefined) => void;
+  priority?: boolean;
+};
+
+function FrontImage(props: FrontImageProps) {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const queryClient = useQueryClient();
+
+  const { front } = getObjektImageUrls(props.collection);
+
+  function prefetch() {
+    const img = new Image();
+    img.src = front.download;
+  }
+
+  return (
+    <img
+      role="button"
+      onMouseOver={prefetch}
+      onLoad={() => setIsLoaded(true)}
+      onClick={() => {
+        // populate the query cache so it doesn't re-fetch
+        queryClient.setQueryData(
+          fetchObjektQuery(props.collection.slug).queryKey,
+          props.collection,
+        );
+        // update the url
+        props.setActive?.(props.collection.slug);
+        // open the dialog
+        props.open();
+      }}
+      className={cn(
+        "w-full transition-opacity",
+        isLoaded === false && "opacity-0",
+      )}
+      src={front.display}
+      width={291}
+      height={450}
+      alt={props.collection.collectionId}
+      decoding="async"
+      fetchPriority={props.priority ? "high" : "auto"}
+    />
   );
 }

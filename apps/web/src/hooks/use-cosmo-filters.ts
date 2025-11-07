@@ -1,5 +1,4 @@
 import { useNavigate, useSearch } from "@tanstack/react-router";
-import { useCallback, useMemo } from "react";
 import type z from "zod";
 import { cosmoSchema } from "@/lib/universal/parsers";
 
@@ -8,55 +7,48 @@ import { cosmoSchema } from "@/lib/universal/parsers";
  */
 export function useCosmoFilters() {
   const navigate = useNavigate();
-  const searchParams = useSearch({
+  const filters = useSearch({
     strict: false,
+    select: (search) => {
+      const parsed = cosmoSchema.safeParse(search);
+      if (!parsed.success) {
+        return defaultFilters;
+      }
+      return parsed.data;
+    },
   });
-
-  /**
-   * Parses the search params into a CosmoFilters object.
-   */
-  const filters = useMemo((): CosmoFilters => {
-    const parsed = cosmoSchema.safeParse(searchParams);
-    if (!parsed.success) {
-      return defaultFilters;
-    }
-    return parsed.data;
-  }, [searchParams]);
 
   /**
    * Sets multiple filters at once and commits to the URL.
    */
-  const setFilters = useCallback(
-    (
-      input:
-        | Partial<CosmoFilters>
-        | ((prev: CosmoFilters) => Partial<CosmoFilters>),
-    ) => {
-      if (typeof input === "function") {
-        input = input(filters);
-      }
+  const setFilters = (
+    input:
+      | Partial<CosmoFilters>
+      | ((prev: CosmoFilters) => Partial<CosmoFilters>),
+  ) => {
+    if (typeof input === "function") {
+      input = input(filters);
+    }
 
-      navigate({
-        // @ts-ignore - this hook is used on different routes so we can't reliably type this
-        search: (prev) => ({
-          ...prev,
-          ...input,
-        }),
-        replace: true,
-      });
-    },
-    [searchParams],
-  );
+    navigate({
+      // @ts-ignore - this hook is used on different routes so we can't reliably type this
+      search: (prev) => ({
+        ...prev,
+        ...input,
+      }),
+      replace: true,
+    });
+  };
 
   /**
    * Sets a single filter.
    */
-  const setFilter = useCallback(
-    (key: keyof CosmoFilters, value: CosmoFilters[keyof CosmoFilters]) => {
-      setFilters((prev) => ({ ...prev, [key]: value }));
-    },
-    [setFilters],
-  );
+  const setFilter = (
+    key: keyof CosmoFilters,
+    value: CosmoFilters[keyof CosmoFilters],
+  ) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+  };
 
   return {
     filters,
@@ -89,4 +81,5 @@ export const defaultFilters = {
   member: undefined,
   artist: undefined,
   collectionNo: [],
+  transferable: undefined,
 } satisfies CosmoFilters;

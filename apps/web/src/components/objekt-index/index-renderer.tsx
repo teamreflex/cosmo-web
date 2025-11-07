@@ -1,3 +1,4 @@
+import { memo } from "react";
 import ListDropdown from "../lists/list-dropdown";
 import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
 import FiltersContainer from "../collection/filters-container";
@@ -71,12 +72,7 @@ export default function IndexRenderer(props: Props) {
         </LoaderRemote>
       </FilteredObjektDisplay>
 
-      {/**
-       * if there's a slug in the url, open an expandable objekt dialog.
-       * serverActiveObjekt is populated on first load from the server
-       * using activeObjekt here results in two dialogs being open at once
-       * TODO: rethink this due to new behavior
-       */}
+      {/* if there's a slug in the url, open an expandable objekt dialog */}
       {/* {activeObjekt !== undefined && (
         <RoutedExpandableObjekt
           slug={activeObjekt}
@@ -130,7 +126,11 @@ type OverlayProps = {
   objektLists: ObjektList[];
 };
 
-function Overlay({ objekt, authenticated, objektLists }: OverlayProps) {
+const Overlay = memo(function Overlay({
+  objekt,
+  authenticated,
+  objektLists,
+}: OverlayProps) {
   const collection = Objekt.fromIndexer(objekt);
 
   return (
@@ -141,4 +141,5 @@ function Overlay({ objekt, authenticated, objektLists }: OverlayProps) {
       )}
     </div>
   );
-}
+});
+Overlay.displayName = "Overlay";

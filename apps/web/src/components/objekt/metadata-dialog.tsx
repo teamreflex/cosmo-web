@@ -39,7 +39,7 @@ export default function MetadataDialog({
   onClose,
 }: Props) {
   const isDesktop = useMediaQuery();
-  const [open, setOpen] = useState(isActive);
+  const [open, setOpen] = useState(() => isActive);
   const { reset } = useObjektSerial();
 
   function onOpenChange(state: boolean) {

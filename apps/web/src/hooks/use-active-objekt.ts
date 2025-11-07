@@ -1,5 +1,4 @@
 import { getRouteApi } from "@tanstack/react-router";
-import { useCallback } from "react";
 
 const route = getRouteApi("/");
 
@@ -8,21 +7,20 @@ const route = getRouteApi("/");
  */
 export function useActiveObjekt() {
   const navigate = route.useNavigate();
-  const search = route.useSearch();
+  const id = route.useSearch({
+    select: (search) => search.id ?? undefined,
+  });
 
-  const setActiveObjekt = useCallback(
-    (slug: string | undefined) => {
-      navigate({
-        search: (prev) => ({ ...prev, id: slug }),
-        replace: true,
-      });
-    },
-    [navigate, search],
-  );
+  const setActiveObjekt = (slug: string | undefined) => {
+    navigate({
+      search: (prev) => ({ ...prev, id: slug }),
+      replace: true,
+    });
+  };
 
-  const reset = useCallback(() => {
+  const reset = () => {
     setActiveObjekt(undefined);
-  }, [setActiveObjekt]);
+  };
 
-  return { activeObjekt: search.id ?? undefined, setActiveObjekt, reset };
+  return { activeObjekt: id, setActiveObjekt, reset };
 }
