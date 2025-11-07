@@ -42,11 +42,8 @@ type CacheHeaders = {
  * Default cache headers for API responses, in order of priority.
  */
 export function cacheHeaders({ cdn }: CacheHeaders) {
-  return new Headers([
-    ["Cache-Control", "public, max-age=30"],
-    [
-      "Cloudflare-CDN-Cache-Control",
-      `max-age=${cdn}, stale-while-revalidate=30`,
-    ],
-  ]);
+  return {
+    "Cache-Control": "public, max-age=30",
+    "CDN-Cache-Control": `public, max-age=${cdn}, stale-while-revalidate=30`,
+  };
 }

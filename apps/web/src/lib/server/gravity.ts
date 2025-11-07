@@ -105,7 +105,7 @@ export const $fetchPolygonGravity = createServerFn({ method: "GET" })
   )
   .handler(async ({ data }) => {
     // cache this server function response for 30 days
-    setResponseHeaders(cacheHeaders({ cdn: 60 * 60 * 24 * 30 })); // 30 days
+    setResponseHeaders(new Headers(cacheHeaders({ cdn: 60 * 60 * 24 * 30 }))); // 30 days
 
     return await remember(
       `gravity-polygon:${data.artist}:${data.id}`,
