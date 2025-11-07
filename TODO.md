@@ -22,7 +22,7 @@
 ## indexer
 
 - [x] confirm deployment on railway works
-- [ ] import db from digitalocean box
+- [x] import db from digitalocean box
 - [ ] extract the set-band, process-status and rescan-metadata handlers into the web app
 
 ## typesense importer
