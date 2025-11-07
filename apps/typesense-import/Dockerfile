@@ -14,8 +14,8 @@ COPY --from=pruner /app/out/json/ .
 RUN bun install
 # copy source files
 COPY --from=pruner /app/out/full/ .
-# build the app with bun
-RUN bun --filter typesense-import build
+# build the app with bun directly (running from root where node_modules exists)
+RUN cd /app && bun build ./apps/typesense-import/src/main.ts --outdir ./apps/typesense-import/dist --target bun
 
 FROM oven/bun:1.3-slim AS runner
 WORKDIR /app
