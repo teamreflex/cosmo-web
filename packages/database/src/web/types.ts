@@ -13,8 +13,10 @@ import type {
   objektLists,
 } from "./schema";
 
-export type CosmoGravityType = "event-gravity" | "grand-gravity";
-export type CosmoPollType = "single-poll" | "combination-poll";
+export type {
+  CosmoGravityType,
+  CosmoPollType,
+} from "@apollo/cosmo/types/gravity";
 
 export type CosmoAccount = typeof cosmoAccounts.$inferSelect;
 export type CosmoAccountChange = typeof cosmoAccountChanges.$inferSelect;

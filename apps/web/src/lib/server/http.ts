@@ -1,5 +1,5 @@
 import { ofetch } from "ofetch";
-import { COSMO_ENDPOINT } from "../universal/cosmo/common";
+import { COSMO_ENDPOINT } from "@apollo/cosmo/types/common";
 import { env } from "@/lib/env/server";
 
 /**

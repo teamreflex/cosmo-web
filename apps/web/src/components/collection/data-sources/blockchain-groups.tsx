@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import type { BFFCollectionGroup } from "@/lib/universal/cosmo/objekts";
+import type { BFFCollectionGroup } from "@apollo/cosmo/types/objekts";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import FilteredObjektDisplay from "@/components/objekt/filtered-objekt-display";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";

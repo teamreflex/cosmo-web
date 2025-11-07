@@ -3,11 +3,11 @@ import { AlertTriangle } from "lucide-react";
 import GravitySkeleton from "../gravity-skeleton";
 import CandidateBreakdown from "./candidate-breakdown";
 import TimelineChart from "./timeline-chart";
-import type { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
+import type { CosmoArtistBFF } from "@apollo/cosmo/types/artists";
 import type {
   CosmoOngoingGravity,
   CosmoPastGravity,
-} from "@/lib/universal/cosmo/gravity";
+} from "@apollo/cosmo/types/gravity";
 import {
   useChainData,
   useCurrentDate,

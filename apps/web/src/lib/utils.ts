@@ -3,7 +3,7 @@ import { twMerge } from "tailwind-merge";
 import { z } from "zod";
 import { env } from "./env/client";
 import type { ClassValue } from "clsx";
-import type { ValidArtist } from "./universal/cosmo/common";
+import type { ValidArtist } from "@apollo/cosmo/types/common";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

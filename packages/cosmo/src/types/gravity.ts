@@ -1,11 +1,8 @@
 import { z } from "zod";
-import type { ValidArtist } from "@/lib/universal/cosmo/common";
-import type {
-  CosmoGravityType,
-  CosmoPollType,
-} from "@apollo/database/web/types";
+import type { ValidArtist } from "./common";
 
-export type { CosmoGravityType, CosmoPollType };
+export type CosmoGravityType = "event-gravity" | "grand-gravity";
+export type CosmoPollType = "single-poll" | "combination-poll";
 
 export type CosmoBodySpacing = {
   type: "spacing";

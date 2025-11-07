@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { validArtists, validOnlineTypes, validSorts } from "./cosmo/common";
+import { validArtists, validOnlineTypes, validSorts } from "@apollo/cosmo/types/common";
 import { transferTypes } from "./transfers";
 
 /**

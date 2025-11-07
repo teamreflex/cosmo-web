@@ -10,7 +10,7 @@ import {
 } from "../ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { $setSelectedArtist } from "./actions";
-import type { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
+import type { CosmoArtistBFF } from "@apollo/cosmo/types/artists";
 import { useArtists } from "@/hooks/use-artists";
 import { selectedArtistsQuery } from "@/lib/queries/core";
 

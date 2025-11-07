@@ -21,6 +21,8 @@
     "i18n": "pnpm dlx @inlang/paraglide-js compile --project ./project.inlang --outdir ./src/i18n"
   },
   "dependencies": {
+    "@apollo/cosmo": "workspace:*",
+    "@apollo/database": "workspace:*",
     "@apollo/util": "workspace:*",
     "@aws-sdk/client-ses": "^3.925.0",
     "@fontsource-variable/dm-sans": "^5.2.8",
@@ -71,7 +73,6 @@
     "zustand": "^5.0.8"
   },
   "devDependencies": {
-    "@apollo/database": "workspace:*",
     "@apollo/eslint": "workspace:*",
     "@apollo/typescript": "workspace:*",
     "@eslint/eslintrc": "^3.3.1",

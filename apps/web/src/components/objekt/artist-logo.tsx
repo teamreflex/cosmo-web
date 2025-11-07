@@ -1,5 +1,5 @@
 import type { ComponentType } from "react";
-import type { ValidArtist } from "@/lib/universal/cosmo/common";
+import type { ValidArtist } from "@apollo/cosmo/types/common";
 
 type Props = {
   artist: ValidArtist;

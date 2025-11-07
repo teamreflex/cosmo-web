@@ -1,0 +1,14 @@
+{
+  "extends": "@apollo/typescript/tsconfig.base.json",
+  "include": ["src/**/*.ts", "eslint.config.ts"],
+  "exclude": ["node_modules", ".turbo"],
+
+  "compilerOptions": {
+    "baseUrl": ".",
+    "lib": ["ESNext"],
+    "types": ["node"],
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  }
+}

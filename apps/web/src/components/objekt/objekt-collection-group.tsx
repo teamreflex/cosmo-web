@@ -14,7 +14,7 @@ import {
 import type {
   BFFCollectionGroup,
   BFFCollectionGroupObjekt,
-} from "@/lib/universal/cosmo/objekts";
+} from "@apollo/cosmo/types/objekts";
 import { useObjektTransfer } from "@/hooks/use-objekt-transfer";
 import { useProfileContext } from "@/hooks/use-profile";
 import { Objekt } from "@/lib/universal/objekt-conversion";

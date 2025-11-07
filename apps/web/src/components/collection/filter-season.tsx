@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { isEqual } from "@apollo/util";
 import type { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
-import type { ValidArtist } from "@/lib/universal/cosmo/common";
+import type { ValidArtist } from "@apollo/cosmo/types/common";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,

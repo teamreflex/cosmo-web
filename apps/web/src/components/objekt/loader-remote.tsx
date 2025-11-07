@@ -4,7 +4,7 @@ import { InfiniteQueryNext } from "../infinite-query-pending";
 import type { DefaultError, QueryKey } from "@tanstack/react-query";
 import type { ReactElement } from "react";
 import type { ObjektRowItem } from "./virtualized-grid";
-import type { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
+import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
 import type { ObjektResponseOptions } from "@/hooks/use-objekt-response";
 import { useObjektResponse } from "@/hooks/use-objekt-response";
 

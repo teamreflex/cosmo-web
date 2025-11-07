@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { LegacyOverlay } from "./common-legacy";
-import type { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
+import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import { useProfileContext } from "@/hooks/use-profile";
 import { objektOptions } from "@/hooks/use-objekt-response";

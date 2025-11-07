@@ -2,7 +2,7 @@ import { createStore, useStore } from "zustand";
 import { createContext, useContext, useRef } from "react";
 import { useShallow } from "zustand/react/shallow";
 import type { PropsWithChildren } from "react";
-import type { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
+import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
 import type { ObjektList } from "@/lib/server/db/schema";
 import type { PublicAccount } from "@/lib/universal/cosmo-accounts";
 

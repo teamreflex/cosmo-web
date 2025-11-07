@@ -191,6 +191,12 @@ importers:
 
   apps/web:
     dependencies:
+      '@apollo/cosmo':
+        specifier: workspace:*
+        version: link:../../packages/cosmo
+      '@apollo/database':
+        specifier: workspace:*
+        version: link:../../packages/database
       '@apollo/util':
         specifier: workspace:*
         version: link:../../packages/util
@@ -336,9 +342,6 @@ importers:
         specifier: ^5.0.8
         version: 5.0.8(@types/react@19.2.2)(react@19.2.0)(use-sync-external-store@1.4.0(react@19.2.0))
     devDependencies:
-      '@apollo/database':
-        specifier: workspace:*
-        version: link:../../packages/database
       '@apollo/eslint':
         specifier: workspace:*
         version: link:../../packages/eslint
@@ -445,8 +448,51 @@ importers:
         specifier: ^4.0.7
         version: 4.0.7(@types/debug@4.1.12)(@types/node@22.17.2)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.1)
 
+  packages/cosmo:
+    dependencies:
+      ofetch:
+        specifier: ^1.5.1
+        version: 1.5.1
+      zod:
+        specifier: ^3.24.1
+        version: 3.25.76
+    devDependencies:
+      '@apollo/eslint':
+        specifier: workspace:*
+        version: link:../eslint
+      '@apollo/typescript':
+        specifier: workspace:*
+        version: link:../typescript
+      '@eslint/eslintrc':
+        specifier: ^3.3.1
+        version: 3.3.1
+      '@eslint/js':
+        specifier: ^9.39.1
+        version: 9.39.1
+      '@types/node':
+        specifier: ^22.10.5
+        version: 22.17.2
+      eslint:
+        specifier: 9.39.1
+        version: 9.39.1(jiti@2.6.1)
+      prettier:
+        specifier: ^3.6.2
+        version: 3.6.2
+      turbo:
+        specifier: ^2.6.0
+        version: 2.6.0
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+      typescript-eslint:
+        specifier: ^8.46.3
+        version: 8.46.3(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
+
   packages/database:
     dependencies:
+      '@apollo/cosmo':
+        specifier: workspace:*
+        version: link:../cosmo
       '@apollo/util':
         specifier: workspace:*
         version: link:../util

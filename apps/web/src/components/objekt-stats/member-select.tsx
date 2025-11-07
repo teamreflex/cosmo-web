@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { ScrollArea } from "../ui/scroll-area";
-import type { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
+import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,

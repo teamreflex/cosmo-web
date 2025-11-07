@@ -15,7 +15,7 @@ import MemberFilter from "../collection/member-filter";
 import SkeletonGradient from "../skeleton/skeleton-overlay";
 import { TransfersFilters } from "../collection/filter-contexts/transfers-filters";
 import TransferRow from "./transfer-row";
-import type { ValidArtist } from "@/lib/universal/cosmo/common";
+import type { ValidArtist } from "@apollo/cosmo/types/common";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import type { TransferFilters } from "@/hooks/use-transfer-filters";
 import type { TransferType } from "@/lib/universal/transfers";

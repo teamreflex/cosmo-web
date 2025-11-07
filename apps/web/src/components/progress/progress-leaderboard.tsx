@@ -21,7 +21,7 @@ import ProgressLeaderboardContent, {
   LeaderboardSkeleton,
 } from "./progress-leaderboard-content";
 import type { FilterData } from "@/hooks/use-filter-data";
-import type { ValidOnlineType } from "@/lib/universal/cosmo/common";
+import type { ValidOnlineType } from "@apollo/cosmo/types/common";
 import {
   Sheet,
   SheetContent,

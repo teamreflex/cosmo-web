@@ -1,6 +1,6 @@
 import { createServerOnlyFn } from "@tanstack/react-start";
+import { refresh } from "@apollo/cosmo/server/auth";
 import { validateExpiry } from "./jwt";
-import { refresh } from "./cosmo/auth";
 import { db } from "./db";
 import { cosmoTokens } from "./db/schema";
 import type { CosmoToken } from "./db/schema";

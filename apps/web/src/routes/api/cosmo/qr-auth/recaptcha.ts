@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { captureException } from "@sentry/tanstackstart-react";
-import { $fetchCurrentUser } from "@/lib/queries/core";
-import { getCorsHeaders } from "@/lib/server/cors";
 import {
   exchangeLoginTicket,
   getRecaptchaToken,
-} from "@/lib/server/cosmo/qr-auth";
+} from "@apollo/cosmo/server/qr-auth";
+import { $fetchCurrentUser } from "@/lib/queries/core";
+import { getCorsHeaders } from "@/lib/server/cors";
+import { env } from "@/lib/env/server";
 
 export const Route = createFileRoute("/api/cosmo/qr-auth/recaptcha")({
   server: {
@@ -30,7 +31,13 @@ export const Route = createFileRoute("/api/cosmo/qr-auth/recaptcha")({
 
         // use browserless to get the recaptcha token
         try {
-          var recaptcha = await getRecaptchaToken();
+          var recaptcha = await getRecaptchaToken({
+            recaptchaKey: env.COSMO_RECAPTCHA_KEY,
+            browserless: {
+              baseUrl: env.BROWSERLESS_BASE_URL,
+              apiKey: env.BROWSERLESS_API_KEY,
+            },
+          });
         } catch (err) {
           captureException(err);
           console.error("[getRecaptchaToken] error:", err);

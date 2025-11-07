@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
+import {  validOnlineTypes } from "@apollo/cosmo/types/common";
+import type {ValidOnlineType} from "@apollo/cosmo/types/common";
 import type { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
-import type { ValidOnlineType } from "@/lib/universal/cosmo/common";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -9,7 +10,6 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { validOnlineTypes } from "@/lib/universal/cosmo/common";
 import { cn } from "@/lib/utils";
 import { m } from "@/i18n/messages";
 

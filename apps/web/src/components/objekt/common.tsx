@@ -1,7 +1,7 @@
 import { Fragment, useState } from "react";
 import ArtistLogo from "./artist-logo";
 import type { PropsWithChildren } from "react";
-import type { NonTransferableReason } from "@/lib/universal/cosmo/objekts";
+import type { NonTransferableReason } from "@apollo/cosmo/types/objekts";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import type { PropsWithClassName } from "@/lib/utils";
 import { useElementSize } from "@/hooks/use-element-size";

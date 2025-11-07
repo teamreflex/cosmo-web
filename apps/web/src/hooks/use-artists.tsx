@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import type {
   CosmoArtistWithMembersBFF,
   CosmoMemberBFF,
-} from "@/lib/universal/cosmo/artists";
+} from "@apollo/cosmo/types/artists";
 
 type ContextProps = {
   // cosmo artist data

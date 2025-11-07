@@ -3,7 +3,7 @@ import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { LegacyOverlay } from "../collection/data-sources/common-legacy";
 import ExpandableObjekt from "./objekt-expandable";
 import type { ReactElement } from "react";
-import type { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
+import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import { useElementSize } from "@/hooks/use-element-size";
 

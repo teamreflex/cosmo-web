@@ -5,8 +5,8 @@ import VoterBreakdown from "./voter-breakdown";
 import type {
   CosmoOngoingGravity,
   CosmoPastGravity,
-} from "@/lib/universal/cosmo/gravity";
-import type { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
+} from "@apollo/cosmo/types/gravity";
+import type { CosmoArtistBFF } from "@apollo/cosmo/types/artists";
 import { polygonGravityQuery } from "@/lib/queries/gravity";
 
 export type Props = {

@@ -8,8 +8,8 @@ import { db } from "../db";
 import { cosmoAccounts, pins } from "../db/schema";
 import { remember } from "../cache";
 import type { Collection, Objekt } from "../db/indexer/schema";
-import type { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
-import type { ValidArtist } from "@/lib/universal/cosmo/common";
+import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
+import type { ValidArtist } from "@apollo/cosmo/types/common";
 
 interface ObjektWithCollection extends Objekt {
   collection: Collection;

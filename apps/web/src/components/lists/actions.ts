@@ -10,7 +10,7 @@ import {
   updateObjektListSchema,
 } from "../../lib/universal/schema/objekt-list";
 import type { Collection } from "@/lib/server/db/indexer/schema";
-import type { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
+import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
 import type { ObjektListEntry } from "@/lib/server/db/schema";
 import { $fetchObjektList } from "@/lib/server/objekts/lists";
 import { db } from "@/lib/server/db";

@@ -5,17 +5,17 @@ import z from "zod";
 import { isBefore } from "date-fns";
 import { setResponseHeaders } from "@tanstack/react-start/server";
 import { isEqual } from "@apollo/util";
+import { fetchGravity, fetchPoll } from "@apollo/cosmo/server/gravity";
 import { findPoll } from "../client/gravity/util";
 import { GravityNotSupportedError } from "../universal/gravity";
 import { db } from "./db";
-import { fetchGravity, fetchPoll } from "./cosmo/gravity";
 import { getProxiedToken } from "./proxied-token";
 import { cacheHeaders, remember } from "./cache";
 import { indexer } from "./db/indexer";
 import { gravities } from "./db/schema";
 import type { GravityVote } from "../universal/gravity";
 import type { RevealedVote } from "../client/gravity/polygon/types";
-import type { ValidArtist } from "../universal/cosmo/common";
+import type { ValidArtist } from "@apollo/cosmo/types/common";
 import { $fetchArtists } from "@/lib/server/artists";
 
 /**

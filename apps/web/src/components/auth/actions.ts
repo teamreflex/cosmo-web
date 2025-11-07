@@ -1,10 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
 import { redirect } from "@tanstack/react-router";
 import { getRequestHeaders } from "@tanstack/react-start/server";
+import { certifyTicket } from "@apollo/cosmo/server/qr-auth";
+import { user } from "@apollo/cosmo/server/user";
 import { authenticatedMiddleware } from "@/lib/server/middlewares";
 import { auth } from "@/lib/server/auth";
-import { certifyTicket } from "@/lib/server/cosmo/qr-auth";
-import { user } from "@/lib/server/cosmo/user";
 import { linkAccount } from "@/lib/server/cosmo-accounts";
 import { importObjektLists } from "@/lib/server/objekts/lists";
 import { verifyCosmoSchema } from "@/lib/universal/schema/cosmo";

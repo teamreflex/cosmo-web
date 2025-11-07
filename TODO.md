@@ -15,8 +15,7 @@
   - [ ] objekt list delete
 - [ ] do something with the grid detection code
 - [ ] fix drawer issues & iOS 26 quirks
-- [ ] refactor caching: https://nitro.build/guide/storage
-- [ ] refactor cron jobs: https://nitro.build/guide/tasks#scheduled-tasks
+- [ ] refactor cron jobs
 - [ ] confirm deployment on railway works
 - [ ] import db from neon
 
@@ -34,8 +33,13 @@
 ### db migrations
 
 ```bash
+# no compression
 pg_dump "postgresql://" --no-owner --no-privileges -F c -f db.dump
 pg_restore -d "postgresql://" --no-owner --no-privileges -v db.dump
+
+# compression and parallel
+pg_dump "postgresql://" --no-owner --no-privileges -F d -j 4 -f dump_directory/
+pg_restore -d "postgresql://" --no-owner --no-privileges -j 4 -v dump_directory/
 ```
 
 ```sql

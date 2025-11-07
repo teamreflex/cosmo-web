@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { like } from "drizzle-orm";
-import type { CosmoSearchResult } from "@/lib/universal/cosmo/user";
+import { search } from "@apollo/cosmo/server/user";
+import type { CosmoSearchResult } from "@apollo/cosmo/types/user";
 import { cacheAccounts } from "@/lib/server/cosmo-accounts";
-import { search } from "@/lib/server/cosmo/user";
 import { db } from "@/lib/server/db";
 import { cosmoAccounts } from "@/lib/server/db/schema";
 import { getProxiedToken } from "@/lib/server/proxied-token";

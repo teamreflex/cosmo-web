@@ -9,6 +9,7 @@ import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useServerFn } from "@tanstack/react-start";
+import {   generateQrCode } from "@apollo/cosmo/types/qr-auth";
 import {
   Dialog,
   DialogContent,
@@ -24,10 +25,9 @@ import {
   FormMessage,
 } from "../ui/form";
 import { $verifyCosmo } from "./actions";
+import type {AuthTicket, QueryTicket} from "@apollo/cosmo/types/qr-auth";
 import type { ReactNode } from "react";
 import type { z } from "zod";
-import type { AuthTicket, QueryTicket } from "@/lib/universal/cosmo/qr-auth";
-import { generateQrCode } from "@/lib/universal/cosmo/qr-auth";
 import { verifyCosmoSchema } from "@/lib/universal/schema/cosmo";
 import { track } from "@/lib/utils";
 import {

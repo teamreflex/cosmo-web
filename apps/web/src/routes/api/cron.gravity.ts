@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { eq } from "drizzle-orm";
 import { chunk } from "@apollo/util";
-import type { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
+import { fetchGravities, fetchPoll } from "@apollo/cosmo/server/gravity";
+import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
 import { env } from "@/lib/env/server";
-import { fetchGravities, fetchPoll } from "@/lib/server/cosmo/gravity";
 import { db } from "@/lib/server/db";
 import {
   gravities,

@@ -6,7 +6,7 @@ import MemberFilter from "../collection/member-filter";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
 import SkeletonGradient from "../skeleton/skeleton-overlay";
-import type { ValidArtist } from "@/lib/universal/cosmo/common";
+import type { ValidArtist } from "@apollo/cosmo/types/common";
 import type { ReactNode } from "react";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { m } from "@/i18n/messages";

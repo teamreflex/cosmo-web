@@ -4,7 +4,7 @@ import type {
   ValidArtist,
   ValidOnlineType,
   ValidSort,
-} from "@/lib/universal/cosmo/common";
+} from "@apollo/cosmo/types/common";
 import type { PgSelect } from "drizzle-orm/pg-core";
 
 /**

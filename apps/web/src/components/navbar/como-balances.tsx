@@ -7,7 +7,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
-import type { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
+import type { CosmoArtistBFF } from "@apollo/cosmo/types/artists";
 import type { ComoBalance } from "@/lib/universal/como";
 import { artistsQuery, selectedArtistsQuery } from "@/lib/queries/core";
 import { tokenBalancesQuery } from "@/lib/queries/como";
