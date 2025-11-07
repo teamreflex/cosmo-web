@@ -10,12 +10,12 @@ COPY --from=pruner /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 COPY --from=pruner /app/out/pnpm-workspace.yaml ./pnpm-workspace.yaml
 # copy pruned workspace
 COPY --from=pruner /app/out/json/ .
-# install dependencies with bun
+# install dependencies
 RUN bun install
 # copy source files
 COPY --from=pruner /app/out/full/ .
-# build the app with bun directly (running from root where node_modules exists)
-RUN cd /app && bun build ./apps/typesense-import/src/main.ts --outdir ./apps/typesense-import/dist --target bun
+# build the app
+RUN bun --filter typesense-import build
 
 FROM oven/bun:1.3-slim AS runner
 WORKDIR /app
@@ -25,5 +25,4 @@ COPY --from=builder /app/apps/typesense-import/dist ./dist
 COPY --from=builder /app/apps/typesense-import/package.json ./package.json
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/packages ./packages
-# run with bun directly
-CMD ["bun", "run", "--bun", "dist/main.js"]
+CMD ["bun", "start"]

@@ -286,7 +286,7 @@ importers:
         version: 0.4.6(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       nitro:
         specifier: npm:nitro-nightly@latest
-        version: nitro-nightly@3.0.1-20251107-000224-0e58602b(chokidar@4.0.3)(drizzle-orm@1.0.0-beta.1-ac4ce44(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(pg@8.16.3))(idb-keyval@6.2.2)(ioredis@5.8.2)(vite@7.2.2(@types/node@22.17.2)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.1))
+        version: nitro-nightly@3.0.1-20251107-104441-121cb7ef(chokidar@4.0.3)(drizzle-orm@1.0.0-beta.1-ac4ce44(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(pg@8.16.3))(idb-keyval@6.2.2)(ioredis@5.8.2)(vite@7.2.2(@types/node@22.17.2)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.1))
       ofetch:
         specifier: ^1.5.1
         version: 1.5.1
@@ -6752,8 +6752,8 @@ packages:
   nf3@0.1.5:
     resolution: {integrity: sha512-kb6KFkGzOx1ux95s8kSJF17D/j2hgkWn7/gW6qgLYEZYY6a3eJH463zqb/H/gZLNgQAdGd7FpLkdfbSrXncqhw==}
 
-  nitro-nightly@3.0.1-20251107-000224-0e58602b:
-    resolution: {integrity: sha512-s9BE+4LTXDDsKi2jbMqTxYhLZxhV53fcNDm7biSc3cvf3MAlifWvDUiYzYyAZhOgIhAhi56MzQQBHFFq4T/+yg==}
+  nitro-nightly@3.0.1-20251107-104441-121cb7ef:
+    resolution: {integrity: sha512-Pv7mFhnzlPjgj7n0FVJjT7w3Cay7EL3QUb1JkP/Xr8KQf5OBqNFDcQDMvrTVI3VTZcBotoHzu6FO4L1m9S2+DA==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
     peerDependencies:
@@ -16593,7 +16593,7 @@ snapshots:
 
   nf3@0.1.5: {}
 
-  nitro-nightly@3.0.1-20251107-000224-0e58602b(chokidar@4.0.3)(drizzle-orm@1.0.0-beta.1-ac4ce44(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(pg@8.16.3))(idb-keyval@6.2.2)(ioredis@5.8.2)(vite@7.2.2(@types/node@22.17.2)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.1)):
+  nitro-nightly@3.0.1-20251107-104441-121cb7ef(chokidar@4.0.3)(drizzle-orm@1.0.0-beta.1-ac4ce44(@opentelemetry/api@1.9.0)(@types/pg@8.15.6)(pg@8.16.3))(idb-keyval@6.2.2)(ioredis@5.8.2)(vite@7.2.2(@types/node@22.17.2)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.1)):
     dependencies:
       consola: 3.4.2
       crossws: 0.4.1(srvx@0.9.5)

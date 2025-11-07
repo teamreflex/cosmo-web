@@ -4,7 +4,7 @@
   "scripts": {
     "dev": "dotenv -e ../../.env -e ../../.env.local -- bun run --bun --watch ./src/main.ts",
     "build": "bun build ./src/main.ts --outdir ./dist --target bun",
-    "start": "bun run dist/main.js",
+    "start": "bun run --bun dist/main.js",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --pretty --noEmit",

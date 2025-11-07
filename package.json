@@ -16,6 +16,10 @@
     "turbo": "^2.6.0",
     "typescript": "^5.9.3"
   },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "packageManager": "pnpm@10.20.0",
   "engines": {
     "node": ">=22"
