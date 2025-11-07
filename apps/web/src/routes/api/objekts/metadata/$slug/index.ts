@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { eq, sql } from "drizzle-orm";
 import { Addresses, addr } from "@apollo/util";
+import { json } from "@tanstack/react-start";
 import type { ObjektMetadata } from "@/lib/universal/objekts";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
@@ -52,7 +53,7 @@ export const Route = createFileRoute("/api/objekts/metadata/$slug/")({
           cacheTime = 60 * 60 * 12;
         }
 
-        return Response.json(
+        return json(
           {
             metadata,
             total: collection.total,
