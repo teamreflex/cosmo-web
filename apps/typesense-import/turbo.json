@@ -2,11 +2,6 @@
   "$schema": "https://turborepo.com/schema.json",
   "extends": ["//"],
   "tasks": {
-    "dev": {
-      "with": ["//#services"],
-      "persistent": true,
-      "cache": false
-    },
     "build": {
       "cache": true,
       "outputs": ["dist/**"]
