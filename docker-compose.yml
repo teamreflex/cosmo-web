@@ -26,7 +26,7 @@ services:
     image: pgbouncer/pgbouncer:latest
     restart: on-failure
     ports:
-      - "5433:5432"
+      - "5433:6432"
     environment:
       - DATABASES_HOST=postgres-web
       - DATABASES_PORT=5432
@@ -71,7 +71,7 @@ services:
     image: pgbouncer/pgbouncer:latest
     restart: on-failure
     ports:
-      - "5432:5432"
+      - "5432:6432"
     environment:
       - DATABASES_HOST=postgres-indexer
       - DATABASES_PORT=5432
