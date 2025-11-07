@@ -20,8 +20,10 @@ const config = defineConfig(async () => {
       }),
       tanstackStart(),
       nitro({
-        compatibilityDate: "2025-10-19",
-        preset: "node-server",
+        config: {
+          compatibilityDate: "2025-10-19",
+          preset: "node-server",
+        },
       }),
       react({
         babel: {
