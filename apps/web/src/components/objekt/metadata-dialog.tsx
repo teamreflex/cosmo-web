@@ -1,6 +1,6 @@
 import { Loader2 } from "lucide-react";
 import { QueryErrorResetBoundary } from "@tanstack/react-query";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import VisuallyHidden from "../ui/visually-hidden";
 import MetadataContent from "./metadata/metadata-content";
@@ -35,12 +35,18 @@ type Props = {
 export default function MetadataDialog({
   slug,
   children,
-  isActive = false,
+  isActive,
   onClose,
 }: Props) {
   const isDesktop = useMediaQuery();
-  const [open, setOpen] = useState(() => isActive);
+  const [open, setOpen] = useState(() => isActive ?? false);
   const { reset } = useObjektSerial();
+
+  useEffect(() => {
+    if (isActive !== undefined) {
+      setOpen(isActive);
+    }
+  }, [isActive]);
 
   function onOpenChange(state: boolean) {
     setOpen(state);

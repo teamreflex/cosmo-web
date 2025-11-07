@@ -1,8 +1,8 @@
 ## monorepo
 
 - [ ] remove root vercel.json once done with refactor
-- [ ] dev - setup pgbouncer for the pg server so HMR doesn't exhaust connections
-- [ ] dev - update start script to conditionally boot docker services based on env
+- [x] dev - setup pgbouncer for the pg server so HMR doesn't exhaust connections
+- [x] dev - update start script to conditionally boot docker services based on env
 
 ## web
 
@@ -16,8 +16,9 @@
 - [ ] do something with the grid detection code
 - [ ] fix drawer issues & iOS 26 quirks
 - [ ] refactor cron jobs
-- [ ] confirm deployment on railway works
+- [x] confirm deployment on railway works
 - [ ] import db from neon
+- [ ] fix flicker with RoutedExpandableObjekt
 
 ## indexer
 
@@ -28,7 +29,7 @@
 ## typesense importer
 
 - [ ] tidy up
-- [ ] confirm deployment on railway works
+- [x] confirm deployment on railway works
 
 ### db migrations
 

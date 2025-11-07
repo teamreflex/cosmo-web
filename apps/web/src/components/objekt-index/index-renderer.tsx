@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useEffect, useState } from "react";
 import ListDropdown from "../lists/list-dropdown";
 import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
 import FiltersContainer from "../collection/filters-container";
@@ -8,6 +8,7 @@ import { Objekt } from "../../lib/universal/objekt-conversion";
 import VirtualizedGrid from "../objekt/virtualized-grid";
 import LoaderRemote from "../objekt/loader-remote";
 import ObjektIndexFilters from "../collection/filter-contexts/objekt-index-filters";
+import RoutedExpandableObjekt from "../objekt/objekt-routed";
 import { TopOverlay } from "./index-overlay";
 import HelpDialog from "./help-dialog";
 import type { IndexedObjekt } from "@/lib/universal/objekts";
@@ -26,7 +27,15 @@ export default function IndexRenderer(props: Props) {
   const { user } = useUserState();
   const gridColumns = useGridColumns();
   const options = useObjektIndex();
-  const { setActiveObjekt } = useActiveObjekt();
+  const { activeObjekt, setActiveObjekt } = useActiveObjekt();
+  const [dialogSlug, setDialogSlug] = useState(activeObjekt);
+  const isDialogActive = activeObjekt !== undefined;
+
+  useEffect(() => {
+    if (activeObjekt !== undefined) {
+      setDialogSlug(activeObjekt);
+    }
+  }, [activeObjekt]);
 
   const authenticated = user !== undefined;
 
@@ -73,12 +82,13 @@ export default function IndexRenderer(props: Props) {
       </FilteredObjektDisplay>
 
       {/* if there's a slug in the url, open an expandable objekt dialog */}
-      {/* {activeObjekt !== undefined && (
+      {dialogSlug !== undefined && (
         <RoutedExpandableObjekt
-          slug={activeObjekt}
+          slug={dialogSlug}
+          isActive={isDialogActive}
           setActive={setActiveObjekt}
         />
-      )} */}
+      )}
     </div>
   );
 }

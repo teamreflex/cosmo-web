@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "pnpm run env -- vite dev",
     "build": "pnpm run env -- vite build",
-    "build:prod": "pnpm run i18n && pnpm run typecheck && vite build",
+    "build:prod": "pnpm run i18n && pnpm run typecheck && vite build --mode production",
+    "preview": "pnpm run build && pnpm run start",
     "start": "pnpm run env -- node .output/server/index.mjs",
     "test": "vitest",
     "lint": "eslint . --max-warnings 0",
@@ -80,6 +81,7 @@
     "@eslint/js": "^9.39.1",
     "@inlang/paraglide-js": "2.4.0",
     "@tailwindcss/vite": "^4.1.17",
+    "@tanstack/devtools-vite": "^0.3.11",
     "@tanstack/eslint-config": "^0.3.2",
     "@tanstack/eslint-plugin-query": "^5.91.2",
     "@tanstack/eslint-plugin-router": "^1.133.19",

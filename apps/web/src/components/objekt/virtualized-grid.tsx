@@ -54,8 +54,6 @@ export default function VirtualizedGrid<TItem>({
     scrollMargin: containerRef.current?.offsetTop ?? 0,
   });
 
-  console.log({ width });
-
   // fixes react compiler issue: https://github.com/TanStack/virtual/issues/743
   const virtualizerRef = useRef(virtualizer);
   const virtualList = virtualizerRef.current.getVirtualItems();

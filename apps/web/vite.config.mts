@@ -1,4 +1,5 @@
 import { defineConfig } from "vite";
+import { devtools } from "@tanstack/devtools-vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import react from "@vitejs/plugin-react";
 import viteTsConfigPaths from "vite-tsconfig-paths";
@@ -18,6 +19,9 @@ const config = defineConfig(async () => {
       external: ["pg"],
     },
     plugins: [
+      devtools({
+        removeDevtoolsOnBuild: true,
+      }),
       viteTsConfigPaths({
         projects: ["./tsconfig.json"],
       }),

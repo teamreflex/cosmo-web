@@ -93,10 +93,14 @@ function FrontImage(props: FrontImageProps) {
           fetchObjektQuery(props.collection.slug).queryKey,
           props.collection,
         );
-        // update the url
-        props.setActive?.(props.collection.slug);
-        // open the dialog
-        props.open();
+
+        if (props.setActive) {
+          // URL routing mode: update URL, let RoutedExpandableObjekt handle dialog
+          props.setActive(props.collection.slug);
+        } else {
+          // Local dialog mode: directly open dialog
+          props.open();
+        }
       }}
       className={cn(
         "w-full transition-opacity",
