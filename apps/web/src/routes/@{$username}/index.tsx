@@ -30,7 +30,6 @@ export const Route = createFileRoute("/@{$username}/")({
   pendingComponent: PendingComponent,
   errorComponent: ErrorComponent,
   loader: async ({ context, params, deps }) => {
-    const now = performance.now();
     context.queryClient.prefetchQuery(filterDataQuery);
 
     const [artists, selected, account, target, pins] = await Promise.all([
@@ -40,9 +39,6 @@ export const Route = createFileRoute("/@{$username}/")({
       context.queryClient.ensureQueryData(targetAccountQuery(params.username)),
       context.queryClient.ensureQueryData(pinsQuery(params.username)),
     ]);
-
-    const end = performance.now();
-    console.log(`user collection loader took ${end - now}ms`);
 
     // if the user is in collection groups mode, prefetch the collection groups
     if (

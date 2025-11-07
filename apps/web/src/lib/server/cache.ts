@@ -43,7 +43,7 @@ type CacheHeaders = {
  */
 export function cacheHeaders({ cdn }: CacheHeaders) {
   return new Headers([
-    ["Cache-Control", "max-age=30"],
+    ["Cache-Control", "public, max-age=30"],
     [
       "Cloudflare-CDN-Cache-Control",
       `max-age=${cdn}, stale-while-revalidate=30`,

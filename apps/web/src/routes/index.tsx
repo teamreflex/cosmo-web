@@ -28,7 +28,6 @@ export const Route = createFileRoute("/")({
   pendingComponent: PendingComponent,
   loaderDeps: ({ search }) => ({ searchParams: search }),
   loader: async ({ context, deps }) => {
-    const now = performance.now();
     // prefetch filter data
     context.queryClient.prefetchQuery(filterDataQuery);
 
@@ -54,9 +53,6 @@ export const Route = createFileRoute("/")({
 
     // fetch slower required data
     await context.queryClient.ensureQueryData(currentAccountQuery);
-
-    const end = performance.now();
-    console.log(`objekt index loader took ${end - now}ms`);
 
     return { artists };
   },
