@@ -22,6 +22,7 @@ import { defineHead } from "@/lib/meta";
 import { m } from "@/i18n/messages";
 
 export const Route = createFileRoute("/")({
+  staleTime: 1000 * 60 * 15, // 15 minutes
   validateSearch: objektIndexFrontendSchema,
   component: RouteComponent,
   errorComponent: ErrorComponent,

@@ -1,4 +1,4 @@
-import { memo, useEffect, useState } from "react";
+import { memo } from "react";
 import ListDropdown from "../lists/list-dropdown";
 import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
 import FiltersContainer from "../collection/filters-container";
@@ -28,14 +28,6 @@ export default function IndexRenderer(props: Props) {
   const gridColumns = useGridColumns();
   const options = useObjektIndex();
   const { activeObjekt, setActiveObjekt } = useActiveObjekt();
-  const [dialogSlug, setDialogSlug] = useState(activeObjekt);
-  const isDialogActive = activeObjekt !== undefined;
-
-  useEffect(() => {
-    if (activeObjekt !== undefined) {
-      setDialogSlug(activeObjekt);
-    }
-  }, [activeObjekt]);
 
   const authenticated = user !== undefined;
 
@@ -82,10 +74,9 @@ export default function IndexRenderer(props: Props) {
       </FilteredObjektDisplay>
 
       {/* if there's a slug in the url, open an expandable objekt dialog */}
-      {dialogSlug !== undefined && (
+      {activeObjekt !== undefined && (
         <RoutedExpandableObjekt
-          slug={dialogSlug}
-          isActive={isDialogActive}
+          slug={activeObjekt}
           setActive={setActiveObjekt}
         />
       )}
