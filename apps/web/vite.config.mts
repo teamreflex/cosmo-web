@@ -14,6 +14,9 @@ const config = defineConfig(async () => {
     server: {
       port: 3000,
     },
+    ssr: {
+      external: ["pg"],
+    },
     plugins: [
       viteTsConfigPaths({
         projects: ["./tsconfig.json"],

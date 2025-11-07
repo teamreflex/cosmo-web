@@ -26,6 +26,11 @@
         "REDIS_PASSWORD"
       ]
     },
+    "start": {
+      "with": ["//#services"],
+      "persistent": true,
+      "cache": false
+    },
     "dev": {
       "with": ["//#services"],
       "persistent": true,
