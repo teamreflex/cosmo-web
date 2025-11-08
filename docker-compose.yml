@@ -39,6 +39,12 @@ services:
       - PGBOUNCER_MIN_POOL_SIZE=5
       - PGBOUNCER_RESERVE_POOL_SIZE=5
       - PGBOUNCER_RESERVE_POOL_TIMEOUT=3
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 6432 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
     depends_on:
       postgres-web:
         condition: service_healthy
@@ -84,6 +90,12 @@ services:
       - PGBOUNCER_MIN_POOL_SIZE=5
       - PGBOUNCER_RESERVE_POOL_SIZE=5
       - PGBOUNCER_RESERVE_POOL_TIMEOUT=3
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 6432 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
     depends_on:
       postgres-indexer:
         condition: service_healthy
@@ -169,10 +181,14 @@ services:
       - TYPESENSE_PORT=8108
       - TYPESENSE_PROTOCOL=http
       - LOOP_INTERVAL=${TYPESENSE_IMPORT_LOOP_INTERVAL}
-      - DB_INDEXER=postgresql://postgres:postgres@pgbouncer-indexer:5432/indexer
-      - DB_METADATA=postgresql://postgres:postgres@pgbouncer-web:5432/web
+      - INDEXER_DATABASE_URL=postgresql://postgres:postgres@pgbouncer-indexer:5432/indexer
+      - WEB_DATABASE_URL=postgresql://postgres:postgres@pgbouncer-web:5432/web
     depends_on:
       typesense:
+        condition: service_healthy
+      pgbouncer-indexer:
+        condition: service_healthy
+      pgbouncer-web:
         condition: service_healthy
     networks:
       - apollo-network
