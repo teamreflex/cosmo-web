@@ -21,7 +21,6 @@ export const Route = createFileRoute("/gravity/$artist/$id")({
   errorComponent: ErrorComponent,
   notFoundComponent: NotFoundComponent,
   loader: async ({ context, params }) => {
-    const now = performance.now();
     // fetch everything in one round trip
     const { artist, gravity, poll, isPolygon } = await $fetchGravityDetails({
       data: {
@@ -48,9 +47,6 @@ export const Route = createFileRoute("/gravity/$artist/$id")({
      * polygon: no prefetching as it's a lot of data,
      * just let the client fetch from CDN
      */
-
-    const end = performance.now();
-    console.log(`Time taken: ${end - now} milliseconds`);
 
     return { artist, gravity, isPolygon, pollId: poll.id };
   },
