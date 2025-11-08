@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { getObjektImageUrls } from "./common";
 import { fetchObjektQuery } from "./metadata/common";
-import MetadataDialog from "./metadata-dialog";
+import MetadataDialog, { useMetadataDialog } from "./metadata-dialog";
 import type { PropsWithChildren } from "react";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { useObjektTransfer } from "@/hooks/use-objekt-transfer";
@@ -38,35 +38,31 @@ export default function ExpandableObjekt({
       isActive={false}
       onClose={() => setActive?.(undefined)}
     >
-      {({ open }) => (
-        <div
-          style={{
-            "--objekt-background-color": collection.backgroundColor,
-            "--objekt-text-color": collection.textColor,
-          }}
-          className={cn(
-            "relative aspect-photocard touch-manipulation overflow-hidden rounded-lg bg-secondary ring-2 ring-transparent drop-shadow-sm transition-colors md:rounded-xl lg:rounded-2xl",
-            isSelected && "ring-foreground",
-            className,
-          )}
-        >
-          <FrontImage
-            collection={collection}
-            open={open}
-            setActive={setActive}
-            priority={priority}
-          />
+      <div
+        style={{
+          "--objekt-background-color": collection.backgroundColor,
+          "--objekt-text-color": collection.textColor,
+        }}
+        className={cn(
+          "relative aspect-photocard touch-manipulation overflow-hidden rounded-lg bg-secondary ring-2 ring-transparent drop-shadow-sm transition-colors md:rounded-xl lg:rounded-2xl",
+          isSelected && "ring-foreground",
+          className,
+        )}
+      >
+        <FrontImage
+          collection={collection}
+          setActive={setActive}
+          priority={priority}
+        />
 
-          {children}
-        </div>
-      )}
+        {children}
+      </div>
     </MetadataDialog>
   );
 }
 
 type FrontImageProps = {
   collection: Objekt.Collection;
-  open: () => void;
   setActive?: (slug: string | undefined) => void;
   priority?: boolean;
 };
@@ -74,6 +70,7 @@ type FrontImageProps = {
 function FrontImage(props: FrontImageProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const queryClient = useQueryClient();
+  const { open } = useMetadataDialog();
 
   const { front } = getObjektImageUrls(props.collection);
 
@@ -99,7 +96,7 @@ function FrontImage(props: FrontImageProps) {
           props.setActive(props.collection.slug);
         } else {
           // Local dialog mode: directly open dialog
-          props.open();
+          open();
         }
       }}
       className={cn(

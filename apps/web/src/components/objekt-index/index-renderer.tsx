@@ -1,17 +1,11 @@
-import { memo } from "react";
 import ListDropdown from "../lists/list-dropdown";
 import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
 import FiltersContainer from "../collection/filters-container";
-import { ObjektSidebar } from "../objekt/common";
-import ExpandableObjekt from "../objekt/objekt-expandable";
-import { Objekt } from "../../lib/universal/objekt-conversion";
-import VirtualizedGrid from "../objekt/virtualized-grid";
-import LoaderRemote from "../objekt/loader-remote";
+import VirtualizedObjektGrid from "../objekt/virtualized-objekt-grid";
 import ObjektIndexFilters from "../collection/filter-contexts/objekt-index-filters";
 import RoutedExpandableObjekt from "../objekt/objekt-routed";
-import { TopOverlay } from "./index-overlay";
 import HelpDialog from "./help-dialog";
-import type { IndexedObjekt } from "@/lib/universal/objekts";
+import { IndexGridItem } from "./index-grid-item";
 import type { ObjektList } from "@/lib/server/db/schema";
 import { useGridColumns } from "@/hooks/use-grid-columns";
 import { useUserState } from "@/hooks/use-user-state";
@@ -40,37 +34,19 @@ export default function IndexRenderer(props: Props) {
       </FiltersContainer>
 
       <FilteredObjektDisplay gridColumns={gridColumns}>
-        <LoaderRemote
+        <VirtualizedObjektGrid
           options={options}
           gridColumns={gridColumns}
+          getObjektId={(objekt) => objekt.id}
+          authenticated={authenticated}
+          ItemComponent={IndexGridItem}
+          itemComponentProps={{
+            authenticated,
+            objektLists: props.objektLists,
+            setActiveObjekt,
+          }}
           showTotal
-          searchable
-        >
-          {({ rows }) => (
-            <VirtualizedGrid
-              rows={rows}
-              getObjektId={(objekt) => objekt.id}
-              authenticated={authenticated}
-              gridColumns={gridColumns}
-            >
-              {({ item }) => {
-                const collection = Objekt.fromIndexer(item);
-                return (
-                  <ExpandableObjekt
-                    collection={collection}
-                    setActive={setActiveObjekt}
-                  >
-                    <Overlay
-                      objekt={item}
-                      authenticated={authenticated}
-                      objektLists={props.objektLists}
-                    />
-                  </ExpandableObjekt>
-                );
-              }}
-            </VirtualizedGrid>
-          )}
-        </LoaderRemote>
+        />
       </FilteredObjektDisplay>
 
       {/* if there's a slug in the url, open an expandable objekt dialog */}
@@ -120,27 +96,3 @@ function Options(props: { objektLists: ObjektList[] }) {
     </div>
   );
 }
-
-type OverlayProps = {
-  objekt: IndexedObjekt;
-  authenticated: boolean;
-  objektLists: ObjektList[];
-};
-
-const Overlay = memo(function Overlay({
-  objekt,
-  authenticated,
-  objektLists,
-}: OverlayProps) {
-  const collection = Objekt.fromIndexer(objekt);
-
-  return (
-    <div className="contents">
-      <ObjektSidebar collection={collection} />
-      {authenticated && (
-        <TopOverlay objekt={objekt} objektLists={objektLists} />
-      )}
-    </div>
-  );
-});
-Overlay.displayName = "Overlay";

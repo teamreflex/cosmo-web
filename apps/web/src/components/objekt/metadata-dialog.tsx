@@ -1,6 +1,6 @@
 import { Loader2 } from "lucide-react";
 import { QueryErrorResetBoundary } from "@tanstack/react-query";
-import { Suspense, useState } from "react";
+import { Suspense, createContext, useContext, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import VisuallyHidden from "../ui/visually-hidden";
 import MetadataContent from "./metadata/metadata-content";
@@ -21,13 +21,23 @@ import {
 } from "@/components/ui/dialog";
 import { useObjektSerial } from "@/hooks/use-objekt-serial";
 
-type RenderProps = {
+const MetadataDialogContext = createContext<{
   open: () => void;
-};
+} | null>(null);
+
+export function useMetadataDialog() {
+  const ctx = useContext(MetadataDialogContext);
+  if (!ctx) {
+    throw new Error(
+      "useMetadataDialog must be used within MetadataDialog component",
+    );
+  }
+  return ctx;
+}
 
 type Props = {
   slug: string;
-  children?: (props: RenderProps) => ReactNode;
+  children?: ReactNode;
   isActive?: boolean;
   onClose?: () => void;
 };
@@ -51,8 +61,8 @@ export default function MetadataDialog({
   }
 
   return (
-    <div>
-      {children?.({ open: () => setOpen(true) })}
+    <MetadataDialogContext.Provider value={{ open: () => setOpen(true) }}>
+      {children}
 
       {isDesktop ? (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -75,7 +85,7 @@ export default function MetadataDialog({
           </DrawerContent>
         </Drawer>
       )}
-    </div>
+    </MetadataDialogContext.Provider>
   );
 }
 
