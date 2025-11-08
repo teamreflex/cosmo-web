@@ -1,6 +1,5 @@
 import { BunContext, BunRuntime } from "@effect/platform-bun";
-import { Duration, Layer, Schedule } from "effect";
-import * as Effect from "effect/Effect";
+import { Duration, Effect, Layer, Schedule } from "effect";
 import { getEdition, getShortCode } from "./collections";
 import { getConfig } from "./config";
 import { Indexer } from "./db/indexer";

@@ -31,6 +31,7 @@ export const Route = createFileRoute("/@{$username}/progress")({
   validateSearch: progressFrontendSchema,
   loaderDeps: ({ search }) => ({ searchParams: search }),
   loader: async ({ context, params }) => {
+    const now = performance.now();
     context.queryClient.prefetchQuery(filterDataQuery);
 
     const [artists, selected, target, account] = await Promise.all([
@@ -41,6 +42,8 @@ export const Route = createFileRoute("/@{$username}/progress")({
     ]);
 
     context.queryClient.prefetchQuery(artistStatsQuery(target.cosmo.address));
+    const end = performance.now();
+    console.log(`Time taken: ${end - now} milliseconds`);
 
     return { artists, selected, target, account };
   },

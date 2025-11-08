@@ -28,6 +28,7 @@ export const Route = createFileRoute("/@{$username}/")({
   pendingComponent: PendingComponent,
   errorComponent: ErrorComponent,
   loader: async ({ context, params, deps, parentMatchPromise }) => {
+    const now = performance.now();
     context.queryClient.prefetchQuery(filterDataQuery);
 
     const [layoutData, artists, selected, pins] = await Promise.all([
@@ -65,6 +66,9 @@ export const Route = createFileRoute("/@{$username}/")({
         ),
       );
     }
+
+    const end = performance.now();
+    console.log(`Time taken: ${end - now} milliseconds`);
 
     return { artists, selected, account, target, pins };
   },

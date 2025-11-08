@@ -15,6 +15,7 @@ export const Route = createFileRoute("/@{$username}/como")({
   pendingComponent: PendingComponent,
   errorComponent: ErrorComponent,
   loader: async ({ context, params }) => {
+    const now = performance.now();
     const [target, artists] = await Promise.all([
       context.queryClient.ensureQueryData(targetAccountQuery(params.username)),
       context.queryClient.ensureQueryData(artistsQuery),
@@ -23,6 +24,9 @@ export const Route = createFileRoute("/@{$username}/como")({
     const data = await context.queryClient.ensureQueryData(
       fetchObjektsWithComoQuery(target.cosmo.address),
     );
+
+    const end = performance.now();
+    console.log(`Time taken: ${end - now} milliseconds`);
 
     return { username: target.cosmo.username, artists, data };
   },

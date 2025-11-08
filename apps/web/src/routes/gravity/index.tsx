@@ -20,6 +20,7 @@ import { m } from "@/i18n/messages";
 
 export const Route = createFileRoute("/gravity/")({
   loader: async ({ context }) => {
+    const now = performance.now();
     const [artists, selected, gravities] = await Promise.all([
       context.queryClient.ensureQueryData(artistsQuery),
       context.queryClient.ensureQueryData(selectedArtistsQuery),
@@ -30,6 +31,9 @@ export const Route = createFileRoute("/gravity/")({
       selected.length > 0
         ? artists.filter((a) => selected.includes(a.id))
         : artists;
+
+    const end = performance.now();
+    console.log(`Time taken: ${end - now} milliseconds`);
 
     return {
       artists,

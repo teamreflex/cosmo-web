@@ -11,11 +11,15 @@ import { m } from "@/i18n/messages";
 
 export const Route = createFileRoute("/objekts/stats")({
   loader: async ({ context }) => {
+    const now = performance.now();
     const [artists, selected, data] = await Promise.all([
       context.queryClient.ensureQueryData(artistsQuery),
       context.queryClient.ensureQueryData(selectedArtistsQuery),
       context.queryClient.ensureQueryData(objektStatsQuery),
     ]);
+
+    const end = performance.now();
+    console.log(`Time taken: ${end - now} milliseconds`);
 
     return {
       artists,

@@ -28,6 +28,8 @@ export const Route = createFileRoute("/")({
   pendingComponent: PendingComponent,
   loaderDeps: ({ search }) => ({ searchParams: search }),
   loader: async ({ context, deps }) => {
+    const now = performance.now();
+
     // prefetch filter data
     context.queryClient.prefetchQuery(filterDataQuery);
 
@@ -51,6 +53,9 @@ export const Route = createFileRoute("/")({
         objektIndexBlockchainQuery(deps.searchParams, selected),
       );
     }
+
+    const end = performance.now();
+    console.log(`Time taken: ${end - now} milliseconds`);
 
     return { account, artists, selected };
   },
