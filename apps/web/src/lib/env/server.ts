@@ -30,6 +30,8 @@ export const env = createEnv({
     COSMO_RECAPTCHA_KEY: z.string().min(1),
     BROWSERLESS_API_KEY: z.string().min(1),
     BROWSERLESS_BASE_URL: z.string().min(1),
+    // typesense - internal endpoint
+    INTERNAL_TYPESENSE_URL: z.string().min(1),
   },
   runtimeEnv: {
     DATABASE_URL: process.env.DATABASE_URL,
@@ -49,6 +51,7 @@ export const env = createEnv({
     COSMO_RECAPTCHA_KEY: process.env.COSMO_RECAPTCHA_KEY,
     BROWSERLESS_API_KEY: process.env.BROWSERLESS_API_KEY,
     BROWSERLESS_BASE_URL: process.env.BROWSERLESS_BASE_URL,
+    INTERNAL_TYPESENSE_URL: process.env.INTERNAL_TYPESENSE_URL,
   },
   emptyStringAsUndefined: true,
 });

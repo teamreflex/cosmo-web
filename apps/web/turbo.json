@@ -23,7 +23,7 @@
         "BROWSERLESS_API_KEY",
         "BROWSERLESS_BASE_URL",
         "REDIS_URL",
-        "REDIS_PASSWORD"
+        "INTERNAL_TYPESENSE_URL"
       ]
     },
     "start": {
