@@ -20,15 +20,6 @@ export const Route = createFileRoute("/api/objekts/metadata/$slug/")({
           fetchCollectionMetadata(params.slug),
         ]);
 
-        if (!metadata) {
-          return Response.json({
-            metadata: undefined,
-            total: collection.total,
-            transferable: collection.transferable,
-            percentage: collection.percentage,
-          } satisfies ObjektMetadata);
-        }
-
         const timestamp = collection.createdAt.getTime();
         const now = new Date().getTime();
         const hourInMs = 1000 * 60 * 60;
