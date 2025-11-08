@@ -5,9 +5,9 @@
   "license": "MIT",
   "scripts": {
     "env": "bun run --bun --env-file ../../.env --env-file ../../.env.local",
-    "dev": "bun run env -- vite dev",
-    "build": "bun run env -- vite build",
-    "build:prod": "bun run i18n && bun run typecheck && vite build --mode production",
+    "dev": "bun run env -- bun run --bun vite dev",
+    "build": "bun run env -- bun run --bun vite build",
+    "build:prod": "bun run --bun i18n && bun run --bun typecheck && bun run --bun vite build --mode production",
     "preview": "bun run build && bun run start",
     "start": "bun run --bun .output/server/index.mjs",
     "test": "vitest",
