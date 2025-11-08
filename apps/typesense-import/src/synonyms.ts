@@ -133,6 +133,35 @@ export const units: Record<string, SynonymList> = {
       "ChaeWon",
     ],
   },
+  alphie: {
+    units: ["Alphie"],
+    members: [
+      "YooYeon",
+      "Nien",
+      "JiYeon",
+      "Kotone",
+      "ShiOn",
+      "Lynn",
+      "ChaeWon",
+      "HaYeon",
+    ],
+  },
+  moon: {
+    units: ["moon"],
+    members: ["Kaede", "SoHyun", "Lynn", "ShiOn", "Sullin", "JiYeon"],
+  },
+  sun: {
+    units: ["sun"],
+    members: ["HyeRin", "ChaeYeon", "YooYeon", "Xinyu", "Mayu", "ChaeWon"],
+  },
+  neptune: {
+    units: ["neptune"],
+    members: ["SeoYeon", "NaKyoung", "DaHyun", "Kotone", "Nien", "SeoAh"],
+  },
+  zenith: {
+    units: ["zenith"],
+    members: ["JiWoo", "SooMin", "YuBin", "YeonJi", "JooBin", "HaYeon"],
+  },
 };
 
 export const classes: Record<string, string[]> = {
@@ -142,6 +171,8 @@ export const classes: Record<string, string[]> = {
   wco: ["Welcome"],
   zco: ["Zero"],
   pco: ["Premier"],
+  bco: ["Basic"],
+  eco: ["Event"],
 };
 
 export const misc: Record<string, string[]> = {
