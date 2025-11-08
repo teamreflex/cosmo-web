@@ -2,7 +2,6 @@ import { useCallback } from "react";
 import { BlockchainGroupsGridItem } from "./blockchain-groups-grid-item";
 import type { BFFCollectionGroup } from "@apollo/cosmo/types/objekts";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
-import FilteredObjektDisplay from "@/components/objekt/filtered-objekt-display";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { filtersAreDirty } from "@/hooks/use-filters";
 import { objektOptions } from "@/hooks/use-objekt-response";
@@ -68,22 +67,20 @@ export default function BlockchainGroups(props: Props) {
   });
 
   return (
-    <FilteredObjektDisplay gridColumns={gridColumns}>
-      <VirtualizedObjektGrid
-        options={options}
-        gridColumns={gridColumns}
-        getObjektId={(item) => item.collection.collectionId}
-        authenticated={authenticated}
-        ItemComponent={BlockchainGroupsGridItem}
-        itemComponentProps={{
-          gridColumns: props.gridColumns,
-          showLocked: props.showLocked,
-        }}
-        pins={pins}
-        hidePins={usingFilters}
-        shouldRender={shouldRender}
-        showTotal
-      />
-    </FilteredObjektDisplay>
+    <VirtualizedObjektGrid
+      options={options}
+      gridColumns={gridColumns}
+      getObjektId={(item) => item.collection.collectionId}
+      authenticated={authenticated}
+      ItemComponent={BlockchainGroupsGridItem}
+      itemComponentProps={{
+        gridColumns: props.gridColumns,
+        showLocked: props.showLocked,
+      }}
+      pins={pins}
+      hidePins={usingFilters}
+      shouldRender={shouldRender}
+      showTotal
+    />
   );
 }

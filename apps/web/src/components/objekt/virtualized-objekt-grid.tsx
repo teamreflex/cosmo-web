@@ -1,16 +1,23 @@
-import { useMemo, useRef } from "react";
+import { Suspense, useMemo, useRef } from "react";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
+import { QueryErrorResetBoundary } from "@tanstack/react-query";
+import { ErrorBoundary } from "react-error-boundary";
+import { HeartCrack, RefreshCcw } from "lucide-react";
 import Portal from "../portal";
 import { InfiniteQueryNext } from "../infinite-query-pending";
 import { LegacyOverlay } from "../collection/data-sources/common-legacy";
+import { Button } from "../ui/button";
+import SkeletonGradient from "../skeleton/skeleton-overlay";
+import { Skeleton } from "../ui/skeleton";
 import ExpandableObjekt from "./objekt-expandable";
-import type { ComponentType } from "react";
 import type { DefaultError, QueryKey } from "@tanstack/react-query";
+import type { ComponentType } from "react";
 import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
 import type { ObjektResponseOptions } from "@/hooks/use-objekt-response";
 import { useObjektResponse } from "@/hooks/use-objekt-response";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import { useElementSize } from "@/hooks/use-element-size";
+import { m } from "@/i18n/messages";
 
 const GAP = 16;
 const ASPECT_RATIO = 8.5 / 5.5;
@@ -55,6 +62,32 @@ type Props<
 };
 
 export default function VirtualizedObjektGrid<
+  TResponse,
+  TItem,
+  TItemProps extends Record<string, unknown> = Record<string, never>,
+  TError = DefaultError,
+  TQueryKey extends QueryKey = QueryKey,
+>(props: Props<TResponse, TItem, TItemProps, TError, TQueryKey>) {
+  return (
+    <div className="flex w-full flex-col items-center">
+      <QueryErrorResetBoundary>
+        {({ reset }) => (
+          <ErrorBoundary onReset={reset} FallbackComponent={ObjektGridError}>
+            <Suspense
+              fallback={<ObjektGridSkeleton gridColumns={props.gridColumns} />}
+            >
+              <ObjektGrid {...props} />
+            </Suspense>
+          </ErrorBoundary>
+        )}
+      </QueryErrorResetBoundary>
+
+      <div id="pagination" />
+    </div>
+  );
+}
+
+function ObjektGrid<
   TResponse,
   TItem,
   TItemProps extends Record<string, unknown> = Record<string, never>,
@@ -193,5 +226,36 @@ export default function VirtualizedObjektGrid<
         />
       </Portal>
     </>
+  );
+}
+
+export function ObjektGridSkeleton(props: { gridColumns: number }) {
+  return (
+    <div
+      style={{ "--grid-columns": props.gridColumns }}
+      className="relative grid w-full grid-cols-3 gap-4 py-2 md:grid-cols-[repeat(var(--grid-columns),_minmax(0,_1fr))]"
+    >
+      <SkeletonGradient />
+      {Array.from({ length: props.gridColumns * 3 }).map((_, i) => (
+        <Skeleton
+          key={i}
+          className="z-10 aspect-photocard w-full rounded-lg md:rounded-xl lg:rounded-2xl"
+        />
+      ))}
+    </div>
+  );
+}
+
+function ObjektGridError(props: { resetErrorBoundary: () => void }) {
+  return (
+    <div className="flex w-full flex-col items-center gap-2 py-12">
+      <div className="flex items-center gap-2">
+        <HeartCrack className="h-6 w-6" />
+        <p className="text-sm font-semibold">{m.error_loading_objekts()}</p>
+      </div>
+      <Button variant="outline" onClick={props.resetErrorBoundary}>
+        <RefreshCcw className="mr-2" /> {m.common_retry()}
+      </Button>
+    </div>
   );
 }

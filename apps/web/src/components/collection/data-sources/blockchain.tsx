@@ -4,7 +4,6 @@ import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import { useProfileContext } from "@/hooks/use-profile";
 import { objektOptions } from "@/hooks/use-objekt-response";
-import FilteredObjektDisplay from "@/components/objekt/filtered-objekt-display";
 import { filtersAreDirty } from "@/hooks/use-filters";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import VirtualizedObjektGrid from "@/components/objekt/virtualized-objekt-grid";
@@ -74,19 +73,17 @@ export default function Blockchain(props: Props) {
   });
 
   return (
-    <FilteredObjektDisplay gridColumns={gridColumns}>
-      <VirtualizedObjektGrid
-        options={options}
-        gridColumns={gridColumns}
-        getObjektId={(item) => item.tokenId}
-        authenticated={authenticated}
-        ItemComponent={BlockchainGridItem}
-        itemComponentProps={{ authenticated }}
-        pins={pins}
-        hidePins={usingFilters}
-        shouldRender={shouldRender}
-        showTotal
-      />
-    </FilteredObjektDisplay>
+    <VirtualizedObjektGrid
+      options={options}
+      gridColumns={gridColumns}
+      getObjektId={(item) => item.tokenId}
+      authenticated={authenticated}
+      ItemComponent={BlockchainGridItem}
+      itemComponentProps={{ authenticated }}
+      pins={pins}
+      hidePins={usingFilters}
+      shouldRender={shouldRender}
+      showTotal
+    />
   );
 }

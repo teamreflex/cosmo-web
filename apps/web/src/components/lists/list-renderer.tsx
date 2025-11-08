@@ -1,5 +1,5 @@
 import FiltersContainer from "../collection/filters-container";
-import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
+import CosmoMemberFilter from "../objekt/cosmo-member-filter";
 import VirtualizedObjektGrid from "../objekt/virtualized-objekt-grid";
 import ObjektIndexFilters from "../collection/filter-contexts/objekt-index-filters";
 import { ListGridItem } from "./list-grid-item";
@@ -44,20 +44,19 @@ export default function ListRenderer(props: Props) {
         <ObjektIndexFilters />
       </FiltersContainer>
 
-      <FilteredObjektDisplay gridColumns={gridColumns}>
-        <VirtualizedObjektGrid
-          options={options}
-          gridColumns={gridColumns}
-          getObjektId={(objekt) => objekt.id}
-          authenticated={props.authenticated}
-          ItemComponent={ListGridItem}
-          itemComponentProps={{
-            authenticated: props.authenticated,
-            objektList: props.objektList,
-          }}
-          showTotal
-        />
-      </FilteredObjektDisplay>
+      <CosmoMemberFilter />
+      <VirtualizedObjektGrid
+        options={options}
+        gridColumns={gridColumns}
+        getObjektId={(objekt) => objekt.id}
+        authenticated={props.authenticated}
+        ItemComponent={ListGridItem}
+        itemComponentProps={{
+          authenticated: props.authenticated,
+          objektList: props.objektList,
+        }}
+        showTotal
+      />
     </div>
   );
 }

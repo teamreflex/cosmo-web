@@ -4,6 +4,7 @@ import Portal from "../portal";
 import Blockchain from "../collection/data-sources/blockchain";
 import BlockchainGroups from "../collection/data-sources/blockchain-groups";
 import CollectionFilters from "../collection/filter-contexts/collection-filters";
+import CosmoMemberFilter from "../objekt/cosmo-member-filter";
 import HelpDialog from "./help-dialog";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import { useFilters } from "@/hooks/use-filters";
@@ -38,6 +39,8 @@ export default function ProfileRenderer({ targetCosmo }: Props) {
           setShowLocked={setShowLocked}
         />
       </FiltersContainer>
+
+      <CosmoMemberFilter />
 
       {/* display */}
       {(() => {

@@ -1,5 +1,5 @@
 import ListDropdown from "../lists/list-dropdown";
-import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
+import CosmoMemberFilter from "../objekt/cosmo-member-filter";
 import FiltersContainer from "../collection/filters-container";
 import VirtualizedObjektGrid from "../objekt/virtualized-objekt-grid";
 import ObjektIndexFilters from "../collection/filter-contexts/objekt-index-filters";
@@ -33,21 +33,20 @@ export default function IndexRenderer(props: Props) {
         <ObjektIndexFilters search />
       </FiltersContainer>
 
-      <FilteredObjektDisplay gridColumns={gridColumns}>
-        <VirtualizedObjektGrid
-          options={options}
-          gridColumns={gridColumns}
-          getObjektId={(objekt) => objekt.id}
-          authenticated={authenticated}
-          ItemComponent={IndexGridItem}
-          itemComponentProps={{
-            authenticated,
-            objektLists: props.objektLists,
-            setActiveObjekt,
-          }}
-          showTotal
-        />
-      </FilteredObjektDisplay>
+      <CosmoMemberFilter />
+      <VirtualizedObjektGrid
+        options={options}
+        gridColumns={gridColumns}
+        getObjektId={(objekt) => objekt.id}
+        authenticated={authenticated}
+        ItemComponent={IndexGridItem}
+        itemComponentProps={{
+          authenticated,
+          objektLists: props.objektLists,
+          setActiveObjekt,
+        }}
+        showTotal
+      />
 
       {/* if there's a slug in the url, open an expandable objekt dialog */}
       {activeObjekt !== undefined && (
