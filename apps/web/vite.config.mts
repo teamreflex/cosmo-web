@@ -15,9 +15,6 @@ const config = defineConfig(async () => {
     server: {
       port: 3000,
     },
-    ssr: {
-      external: ["pg"],
-    },
     plugins: [
       devtools({
         removeDevtoolsOnBuild: true,
@@ -29,7 +26,7 @@ const config = defineConfig(async () => {
       nitro({
         config: {
           compatibilityDate: "2025-10-19",
-          preset: "node-server",
+          preset: "bun",
         },
       }),
       react({

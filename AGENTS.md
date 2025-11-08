@@ -14,7 +14,7 @@ This is a Turborepo monorepo for the Apollo project.
 
 ### Turborepo
 
-- This is a Turborepo monorepo - **never run package commands with `pnpm` or `npm` directly**
+- This is a Turborepo monorepo - **never run package commands with `bun`, `pnpm` or `npm` directly**
 - Use `turbo <command>` to run commands across packages
 - You can append a turbo command with `--filter <package>` to run the command for only one app/package.
   - For example, typecheck only the web app: `turbo typecheck --filter web`, or only the util package: `turbo typecheck --filter @apollo/util`

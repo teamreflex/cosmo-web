@@ -1,8 +1,8 @@
-import Redis from "ioredis";
+import { RedisClient } from "bun";
 import { createServerOnlyFn } from "@tanstack/react-start";
 import { env } from "@/lib/env/server";
 
-export const redis = new Redis(env.REDIS_URL);
+export const redis = new RedisClient(env.REDIS_URL);
 
 /**
  * Get an item from the cache, or store the default value.

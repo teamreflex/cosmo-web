@@ -1,4 +1,4 @@
-import { drizzle } from "drizzle-orm/node-postgres";
+import { drizzle } from "drizzle-orm/bun-sql";
 import { relations } from "@apollo/database/web/relations";
 import { Effect, Redacted } from "effect";
 import { getConfig } from "../config";

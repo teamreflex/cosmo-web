@@ -131,18 +131,16 @@ services:
       - RPC_RATE_LIMIT=${INDEXER_RPC_RATE_LIMIT}
       - RPC_FINALITY=${INDEXER_RPC_FINALITY}
       - SQD_ENDPOINT=${INDEXER_SQD_ENDPOINT}
-      - DB_HOST=pgbouncer-indexer
-      - DB_PORT=5432
+      - DB_URL=postgresql://postgres:postgres@postgres-indexer:5432/indexer
       - DB_NAME=indexer
-      - DB_USER=postgres
-      - DB_PASS=postgres
+      - DB_READ_USER=postgres
+      - DB_READ_PASS=postgres
       - ENABLE_OBJEKTS=${INDEXER_ENABLE_OBJEKTS}
       - ENABLE_GRAVITY=${INDEXER_ENABLE_GRAVITY}
       - COSMO_PARALLEL_COUNT=${INDEXER_COSMO_PARALLEL_COUNT}
-    command: ["sqd", "process:prod"]
     depends_on:
       pgbouncer-indexer:
-        condition: service_started
+        condition: service_healthy
     networks:
       - apollo-network
 
@@ -177,12 +175,10 @@ services:
     restart: on-failure
     environment:
       - TYPESENSE_API_KEY=dev-local-key-do-not-use-in-production
-      - TYPESENSE_HOST=typesense
-      - TYPESENSE_PORT=8108
-      - TYPESENSE_PROTOCOL=http
+      - TYPESENSE_URL=http://typesense:8108
       - LOOP_INTERVAL=${TYPESENSE_IMPORT_LOOP_INTERVAL}
-      - INDEXER_DATABASE_URL=postgresql://postgres:postgres@pgbouncer-indexer:5432/indexer
-      - WEB_DATABASE_URL=postgresql://postgres:postgres@pgbouncer-web:5432/web
+      - INDEXER_DATABASE_URL=postgresql://postgres:postgres@pgbouncer-indexer:6432/indexer
+      - WEB_DATABASE_URL=postgresql://postgres:postgres@pgbouncer-web:6432/web
     depends_on:
       typesense:
         condition: service_healthy

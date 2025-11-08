@@ -10,7 +10,7 @@ import { Collection, ComoBalance, Objekt, type Transfer, Vote } from "./model";
 import { addr, chunk } from "@apollo/util";
 import { TypeormDatabase, type Store } from "@subsquid/typeorm-store";
 import { randomUUID } from "crypto";
-import { env } from "./env/processor";
+import { env } from "./env";
 import { Addresses } from "@apollo/util";
 
 const db = new TypeormDatabase({ supportHotBlocks: true });

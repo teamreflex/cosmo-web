@@ -19,7 +19,6 @@ import { Route as AtChar123usernameChar125IndexRouteImport } from './routes/@{$u
 import { Route as ObjektsStatsRouteImport } from './routes/objekts/stats'
 import { Route as ListIdRouteImport } from './routes/list/$id'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
-import { Route as ApiFilterDataRouteImport } from './routes/api/filter-data'
 import { Route as AdminMetadataRouteImport } from './routes/admin/metadata'
 import { Route as AdminBandsRouteImport } from './routes/admin/bands'
 import { Route as AtChar123usernameChar125TradesRouteImport } from './routes/@{$username}/trades'
@@ -95,11 +94,6 @@ const ListIdRoute = ListIdRouteImport.update({
 const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
   id: '/auth/reset-password',
   path: '/auth/reset-password',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiFilterDataRoute = ApiFilterDataRouteImport.update({
-  id: '/api/filter-data',
-  path: '/api/filter-data',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminMetadataRoute = AdminMetadataRouteImport.update({
@@ -245,7 +239,6 @@ export interface FileRoutesByFullPath {
   '/@{$username}/trades': typeof AtChar123usernameChar125TradesRoute
   '/admin/bands': typeof AdminBandsRoute
   '/admin/metadata': typeof AdminMetadataRoute
-  '/api/filter-data': typeof ApiFilterDataRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/list/$id': typeof ListIdRoute
   '/objekts/stats': typeof ObjektsStatsRoute
@@ -281,7 +274,6 @@ export interface FileRoutesByTo {
   '/@{$username}/trades': typeof AtChar123usernameChar125TradesRoute
   '/admin/bands': typeof AdminBandsRoute
   '/admin/metadata': typeof AdminMetadataRoute
-  '/api/filter-data': typeof ApiFilterDataRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/list/$id': typeof ListIdRoute
   '/objekts/stats': typeof ObjektsStatsRoute
@@ -319,7 +311,6 @@ export interface FileRoutesById {
   '/@{$username}/trades': typeof AtChar123usernameChar125TradesRoute
   '/admin/bands': typeof AdminBandsRoute
   '/admin/metadata': typeof AdminMetadataRoute
-  '/api/filter-data': typeof ApiFilterDataRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/list/$id': typeof ListIdRoute
   '/objekts/stats': typeof ObjektsStatsRoute
@@ -358,7 +349,6 @@ export interface FileRouteTypes {
     | '/@{$username}/trades'
     | '/admin/bands'
     | '/admin/metadata'
-    | '/api/filter-data'
     | '/auth/reset-password'
     | '/list/$id'
     | '/objekts/stats'
@@ -394,7 +384,6 @@ export interface FileRouteTypes {
     | '/@{$username}/trades'
     | '/admin/bands'
     | '/admin/metadata'
-    | '/api/filter-data'
     | '/auth/reset-password'
     | '/list/$id'
     | '/objekts/stats'
@@ -431,7 +420,6 @@ export interface FileRouteTypes {
     | '/@{$username}/trades'
     | '/admin/bands'
     | '/admin/metadata'
-    | '/api/filter-data'
     | '/auth/reset-password'
     | '/list/$id'
     | '/objekts/stats'
@@ -464,7 +452,6 @@ export interface RootRouteChildren {
   AtChar123usernameChar125RouteRoute: typeof AtChar123usernameChar125RouteRouteWithChildren
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
   TermsPrivacyRoute: typeof TermsPrivacyRoute
-  ApiFilterDataRoute: typeof ApiFilterDataRoute
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   ListIdRoute: typeof ListIdRoute
   ObjektsStatsRoute: typeof ObjektsStatsRoute
@@ -560,13 +547,6 @@ declare module '@tanstack/react-router' {
       path: '/auth/reset-password'
       fullPath: '/auth/reset-password'
       preLoaderRoute: typeof AuthResetPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/filter-data': {
-      id: '/api/filter-data'
-      path: '/api/filter-data'
-      fullPath: '/api/filter-data'
-      preLoaderRoute: typeof ApiFilterDataRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/metadata': {
@@ -784,7 +764,6 @@ const rootRouteChildren: RootRouteChildren = {
     AtChar123usernameChar125RouteRouteWithChildren,
   AdminRouteRoute: AdminRouteRouteWithChildren,
   TermsPrivacyRoute: TermsPrivacyRoute,
-  ApiFilterDataRoute: ApiFilterDataRoute,
   AuthResetPasswordRoute: AuthResetPasswordRoute,
   ListIdRoute: ListIdRoute,
   ObjektsStatsRoute: ObjektsStatsRoute,

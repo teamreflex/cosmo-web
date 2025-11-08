@@ -22,8 +22,11 @@
     "@subsquid/util-internal": "^3.2.0",
     "dotenv": "^17.2.3",
     "ethers": "^6.15.0",
+    "glob": "^11.0.3",
     "hono": "^4.10.4",
+    "lru-cache": "^11.2.2",
     "ofetch": "^1.5.1",
+    "path-scurry": "^2.0.1",
     "pg": "^8.16.3",
     "typeorm": "^0.3.27",
     "zod": "^4.1.12"
