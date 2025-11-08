@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useSuspenseQuery } from "@tanstack/react-query";
 import CurrentMonth from "@/components/como/current-month";
 import { Error } from "@/components/error-boundary";
 import { artistsQuery, targetAccountQuery } from "@/lib/queries/core";
@@ -21,28 +20,25 @@ export const Route = createFileRoute("/@{$username}/como")({
       context.queryClient.ensureQueryData(artistsQuery),
     ]);
 
-    await context.queryClient.ensureQueryData(
+    const data = await context.queryClient.ensureQueryData(
       fetchObjektsWithComoQuery(target.cosmo.address),
     );
 
-    return { target, artists };
+    return { username: target.cosmo.username, artists, data };
   },
   head: ({ loaderData }) =>
     defineHead({
-      title: loaderData?.target.user?.username
+      title: loaderData?.username
         ? m.como_title_with_username({
-            username: loaderData.target.user.username,
+            username: loaderData.username,
           })
         : m.common_como(),
-      canonical: `/@${loaderData?.target.user?.username}/como`,
+      canonical: `/@${loaderData?.username}/como`,
     }),
 });
 
 function RouteComponent() {
-  const { target, artists } = Route.useLoaderData();
-  const { data } = useSuspenseQuery(
-    fetchObjektsWithComoQuery(target.cosmo.address),
-  );
+  const { artists, data } = Route.useLoaderData();
 
   const totals = artists.map((artist) => {
     const total = data

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, notFound } from "@tanstack/react-router";
 import { Addresses, isEqual } from "@apollo/util";
 import { userCollectionFrontendSchema } from "@/lib/universal/parsers";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -6,10 +6,8 @@ import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
 import { Error } from "@/components/error-boundary";
 import {
   artistsQuery,
-  currentAccountQuery,
   filterDataQuery,
   selectedArtistsQuery,
-  targetAccountQuery,
 } from "@/lib/queries/core";
 import { UserStateProvider } from "@/hooks/use-user-state";
 import { ArtistProvider } from "@/hooks/use-artists";
@@ -29,16 +27,21 @@ export const Route = createFileRoute("/@{$username}/")({
   component: RouteComponent,
   pendingComponent: PendingComponent,
   errorComponent: ErrorComponent,
-  loader: async ({ context, params, deps }) => {
+  loader: async ({ context, params, deps, parentMatchPromise }) => {
     context.queryClient.prefetchQuery(filterDataQuery);
 
-    const [artists, selected, account, target, pins] = await Promise.all([
+    const [layoutData, artists, selected, pins] = await Promise.all([
+      parentMatchPromise.then((parent) => parent.loaderData),
       context.queryClient.ensureQueryData(artistsQuery),
       context.queryClient.ensureQueryData(selectedArtistsQuery),
-      context.queryClient.ensureQueryData(currentAccountQuery),
-      context.queryClient.ensureQueryData(targetAccountQuery(params.username)),
       context.queryClient.ensureQueryData(pinsQuery(params.username)),
     ]);
+
+    if (!layoutData) {
+      throw notFound();
+    }
+
+    const { account, target } = layoutData;
 
     // if the user is in collection groups mode, prefetch the collection groups
     if (
@@ -67,12 +70,12 @@ export const Route = createFileRoute("/@{$username}/")({
   },
   head: ({ loaderData }) =>
     defineHead({
-      title: loaderData?.target.user?.username
+      title: loaderData?.target.cosmo.username
         ? m.collection_title_with_username({
-            username: loaderData.target.user.username,
+            username: loaderData.target.cosmo.username,
           })
         : m.collection_title(),
-      canonical: `/@${loaderData?.target.user?.username}`,
+      canonical: `/@${loaderData?.target.cosmo.username}`,
     }),
 });
 

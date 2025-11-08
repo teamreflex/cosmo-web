@@ -1,8 +1,6 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { isFuture } from "date-fns";
 import { CalendarDays } from "lucide-react";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import type { Gravity } from "@/lib/server/db/schema";
 import type { CosmoArtistBFF } from "@apollo/cosmo/types/artists";
 import type { CosmoGravityType } from "@apollo/cosmo/types/gravity";
@@ -17,17 +15,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import GravityTimestamp from "@/components/gravity/timestamp";
 import { Badge } from "@/components/ui/badge";
 import { artistsQuery, selectedArtistsQuery } from "@/lib/queries/core";
-import { $fetchGravities } from "@/lib/server/gravity";
 import { defineHead } from "@/lib/meta";
 import { m } from "@/i18n/messages";
 
 export const Route = createFileRoute("/gravity/")({
   loader: async ({ context }) => {
-    context.queryClient.prefetchQuery(gravitiesIndexQuery);
-
-    const [artists, selected] = await Promise.all([
+    const [artists, selected, gravities] = await Promise.all([
       context.queryClient.ensureQueryData(artistsQuery),
       context.queryClient.ensureQueryData(selectedArtistsQuery),
+      context.queryClient.ensureQueryData(gravitiesIndexQuery),
     ]);
 
     const toRender =
@@ -39,8 +35,10 @@ export const Route = createFileRoute("/gravity/")({
       artists,
       selected,
       toRender,
+      gravities,
     };
   },
+  staleTime: 1000 * 60 * 15, // 15 minutes
   component: RouteComponent,
   pendingComponent: PendingComponent,
   errorComponent: ErrorComponent,
@@ -48,11 +46,7 @@ export const Route = createFileRoute("/gravity/")({
 });
 
 function RouteComponent() {
-  const { artists, selected, toRender } = Route.useLoaderData();
-  const { data: gravities } = useSuspenseQuery({
-    ...gravitiesIndexQuery,
-    queryFn: useServerFn($fetchGravities),
-  });
+  const { artists, selected, toRender, gravities } = Route.useLoaderData();
 
   return (
     <ArtistProvider artists={artists} selected={selected}>
@@ -120,7 +114,7 @@ function GravityItem(props: { gravity: Gravity }) {
   const isRecent = isFuture(props.gravity.endDate);
 
   return (
-    <Link to={href} className="[content-visibility:auto]">
+    <Link to={href} className="[content-visibility:auto]" preload={false}>
       <Card
         data-recent={isRecent}
         className="group relative aspect-square overflow-clip py-0 data-[recent=true]:border-cosmo"

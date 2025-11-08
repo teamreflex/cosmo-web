@@ -36,6 +36,7 @@ export const Route = createFileRoute("/@{$username}")({
     const isAuthenticated = account?.cosmo?.address === target.cosmo.address;
 
     return {
+      account,
       target,
       isAuthenticated,
     };

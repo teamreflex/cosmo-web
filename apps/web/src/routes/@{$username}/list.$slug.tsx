@@ -81,7 +81,7 @@ export const Route = createFileRoute("/@{$username}/list/$slug")({
   head: ({ loaderData }) =>
     defineHead({
       title: loaderData?.objektList.name ?? m.objekt_list(),
-      canonical: `/@${loaderData?.target.user?.username}/list/${loaderData?.objektList.id}`,
+      canonical: `/@${loaderData?.target.cosmo.username}/list/${loaderData?.objektList.id}`,
     }),
 });
 
