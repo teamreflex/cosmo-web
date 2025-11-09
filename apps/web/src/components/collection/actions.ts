@@ -68,7 +68,7 @@ export const $pinObjekt = createServerFn({ method: "POST" })
       // fetch objekt
       indexer.query.objekts.findFirst({
         where: {
-          id: data.tokenId,
+          id: data.tokenId.toString(),
         },
         with: {
           collection: true,

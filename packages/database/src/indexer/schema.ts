@@ -5,7 +5,6 @@ import {
   numeric,
   pgSchema,
   pgTable,
-  serial,
   text,
   timestamp,
   uuid,
@@ -46,7 +45,7 @@ export const collections = pgTable("collection", {
 });
 
 export const objekts = pgTable("objekt", {
-  id: serial("id").primaryKey(),
+  id: varchar("id").primaryKey(),
   owner: varchar("owner", { length: 42 }).notNull(),
   mintedAt: timestamp("minted_at", { mode: "string" }).notNull(),
   receivedAt: timestamp("received_at", { mode: "string" }).notNull(),
