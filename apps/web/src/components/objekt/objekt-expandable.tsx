@@ -35,7 +35,7 @@ export default function ExpandableObjekt({
   return (
     <MetadataDialog
       slug={collection.slug}
-      isActive={false}
+      defaultOpen={false}
       onClose={() => setActive?.(undefined)}
     >
       <div

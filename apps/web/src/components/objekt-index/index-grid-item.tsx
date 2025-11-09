@@ -5,6 +5,7 @@ import { TopOverlay } from "./index-overlay";
 import type { IndexedObjekt } from "@/lib/universal/objekts";
 import type { ObjektList } from "@/lib/server/db/schema";
 import { Objekt } from "@/lib/universal/objekt-conversion";
+import { useActiveObjekt } from "@/hooks/use-active-objekt";
 
 type Props = {
   item: IndexedObjekt;
@@ -12,7 +13,6 @@ type Props = {
   priority: boolean;
   authenticated: boolean;
   objektLists: ObjektList[];
-  setActiveObjekt: (slug: string | undefined) => void;
 };
 
 export function IndexGridItem({
@@ -20,9 +20,9 @@ export function IndexGridItem({
   priority,
   authenticated,
   objektLists,
-  setActiveObjekt,
 }: Props) {
   const collection = useMemo(() => Objekt.fromIndexer(item), [item]);
+  const { setActiveObjekt } = useActiveObjekt();
 
   return (
     <ExpandableObjekt

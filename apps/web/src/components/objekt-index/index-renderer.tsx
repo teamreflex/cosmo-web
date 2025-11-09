@@ -10,7 +10,6 @@ import type { ObjektList } from "@/lib/server/db/schema";
 import { useGridColumns } from "@/hooks/use-grid-columns";
 import { useUserState } from "@/hooks/use-user-state";
 import { useObjektIndex } from "@/hooks/use-objekt-index";
-import { useActiveObjekt } from "@/hooks/use-active-objekt";
 import { m } from "@/i18n/messages";
 
 type Props = {
@@ -21,7 +20,6 @@ export default function IndexRenderer(props: Props) {
   const { user } = useUserState();
   const gridColumns = useGridColumns();
   const options = useObjektIndex();
-  const { activeObjekt, setActiveObjekt } = useActiveObjekt();
 
   const authenticated = user !== undefined;
 
@@ -43,18 +41,12 @@ export default function IndexRenderer(props: Props) {
         itemComponentProps={{
           authenticated,
           objektLists: props.objektLists,
-          setActiveObjekt,
         }}
         showTotal
       />
 
       {/* if there's a slug in the url, open an expandable objekt dialog */}
-      {activeObjekt !== undefined && (
-        <RoutedExpandableObjekt
-          slug={activeObjekt}
-          setActive={setActiveObjekt}
-        />
-      )}
+      <RoutedExpandableObjekt />
     </div>
   );
 }

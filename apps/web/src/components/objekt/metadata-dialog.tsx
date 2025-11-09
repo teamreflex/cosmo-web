@@ -38,18 +38,18 @@ export function useMetadataDialog() {
 type Props = {
   slug: string;
   children?: ReactNode;
-  isActive?: boolean;
+  defaultOpen?: boolean;
   onClose?: () => void;
 };
 
 export default function MetadataDialog({
   slug,
   children,
-  isActive = false,
+  defaultOpen = false,
   onClose,
 }: Props) {
   const isDesktop = useMediaQuery();
-  const [open, setOpen] = useState(() => isActive);
+  const [open, setOpen] = useState(() => defaultOpen);
   const { reset } = useObjektSerial();
 
   function onOpenChange(state: boolean) {
@@ -66,7 +66,7 @@ export default function MetadataDialog({
 
       {isDesktop ? (
         <Dialog open={open} onOpenChange={onOpenChange}>
-          <DialogContent className="grid-cols-auto min-w-[55rem] grid-flow-col gap-0 p-0 outline-hidden md:rounded-2xl">
+          <DialogContent className="grid-cols-auto min-w-220 grid-flow-col gap-0 p-0 outline-hidden md:rounded-2xl">
             <VisuallyHidden>
               <DialogTitle>{slug}</DialogTitle>
               <DialogDescription>{slug}</DialogDescription>
@@ -96,7 +96,7 @@ function ResponsiveContent(props: { slug: string }) {
         <ErrorBoundary FallbackComponent={MetadataDialogError} onReset={reset}>
           <Suspense
             fallback={
-              <div className="flex h-[28rem] w-full items-center justify-center">
+              <div className="flex h-112 w-full items-center justify-center">
                 <Loader2 className="h-12 w-12 animate-spin" />
               </div>
             }

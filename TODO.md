@@ -8,7 +8,7 @@
 
 - [ ] ensure env var split is working and server vars aren't leaking to client
 - [ ] move server code around so it's more isolated from RPC and queries
-- [ ] fix RoutedExpandableObjekt on objekt index
+- [x] fix RoutedExpandableObjekt on objekt index
 - [ ] re-add sentry once SDK is updated
 - [ ] wait for start fix: https://github.com/TanStack/router/issues/5372
   - [ ] objekt list update
@@ -17,8 +17,8 @@
 - [ ] fix drawer issues & iOS 26 quirks
 - [ ] refactor cron jobs
 - [x] confirm deployment on railway works
-- [ ] import db from neon
-- [ ] fix flicker with RoutedExpandableObjekt
+- [x] import db from neon
+- [x] fix flicker with RoutedExpandableObjekt
 - [ ] test self-hosted browserless
 
 ## indexer
@@ -30,6 +30,10 @@
 ## typesense importer
 
 - [x] confirm deployment on railway works
+
+## typesense
+
+- [ ] fix CORS config
 
 ### db migrations
 
@@ -53,3 +57,14 @@ GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA drizzle TO postgres;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO postgres;
 ALTER DEFAULT PRIVILEGES IN SCHEMA drizzle GRANT ALL ON TABLES TO postgres;
 ```
+
+### production checklist
+
+- [ ] bring indexer up to date
+- [ ] create maintenance branch
+- [ ] promote maintenance branch to prod in vercel
+- [ ] dump prod neon db
+- [ ] restore neon db to railway
+- [ ] switch search.apollo.cafe to railway typesense service
+- [ ] test prod web service using railway domain
+- [ ] switch apollo.cafe to railway web service
