@@ -23,24 +23,26 @@ services:
 
   # pgbouncer for web app (HMR-safe)
   pgbouncer-web:
-    image: pgbouncer/pgbouncer:latest
+    image: edoburu/pgbouncer:latest
     restart: on-failure
     ports:
-      - "5433:6432"
+      - "5433:5432"
     environment:
-      - DATABASES_HOST=postgres-web
-      - DATABASES_PORT=5432
-      - DATABASES_USER=postgres
-      - DATABASES_PASSWORD=postgres
-      - DATABASES_DBNAME=web
-      - PGBOUNCER_POOL_MODE=transaction
-      - PGBOUNCER_MAX_CLIENT_CONN=1000
-      - PGBOUNCER_DEFAULT_POOL_SIZE=25
-      - PGBOUNCER_MIN_POOL_SIZE=5
-      - PGBOUNCER_RESERVE_POOL_SIZE=5
-      - PGBOUNCER_RESERVE_POOL_TIMEOUT=3
+      - DB_HOST=postgres-web
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=web
+      - POOL_MODE=transaction
+      - MAX_CLIENT_CONN=1000
+      - DEFAULT_POOL_SIZE=25
+      - MIN_POOL_SIZE=5
+      - RESERVE_POOL_SIZE=5
+      - RESERVE_POOL_TIMEOUT=3
+      - MAX_PREPARED_STATEMENTS=200
+      - AUTH_TYPE=scram-sha-256
     healthcheck:
-      test: ["CMD-SHELL", "nc -z 127.0.0.1 6432 || exit 1"]
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 5432 || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -74,24 +76,26 @@ services:
 
   # pgbouncer for indexer
   pgbouncer-indexer:
-    image: pgbouncer/pgbouncer:latest
+    image: edoburu/pgbouncer:latest
     restart: on-failure
     ports:
-      - "5432:6432"
+      - "5432:5432"
     environment:
-      - DATABASES_HOST=postgres-indexer
-      - DATABASES_PORT=5432
-      - DATABASES_USER=postgres
-      - DATABASES_PASSWORD=postgres
-      - DATABASES_DBNAME=indexer
-      - PGBOUNCER_POOL_MODE=transaction
-      - PGBOUNCER_MAX_CLIENT_CONN=1000
-      - PGBOUNCER_DEFAULT_POOL_SIZE=25
-      - PGBOUNCER_MIN_POOL_SIZE=5
-      - PGBOUNCER_RESERVE_POOL_SIZE=5
-      - PGBOUNCER_RESERVE_POOL_TIMEOUT=3
+      - DB_HOST=postgres-indexer
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=indexer
+      - POOL_MODE=transaction
+      - MAX_CLIENT_CONN=1000
+      - DEFAULT_POOL_SIZE=25
+      - MIN_POOL_SIZE=5
+      - RESERVE_POOL_SIZE=5
+      - RESERVE_POOL_TIMEOUT=3
+      - MAX_PREPARED_STATEMENTS=200
+      - AUTH_TYPE=scram-sha-256
     healthcheck:
-      test: ["CMD-SHELL", "nc -z 127.0.0.1 6432 || exit 1"]
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 5432 || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5

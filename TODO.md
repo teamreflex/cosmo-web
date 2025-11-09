@@ -19,6 +19,7 @@
 - [x] confirm deployment on railway works
 - [ ] import db from neon
 - [ ] fix flicker with RoutedExpandableObjekt
+- [ ] test self-hosted browserless
 
 ## indexer
 
@@ -28,7 +29,6 @@
 
 ## typesense importer
 
-- [ ] tidy up
 - [x] confirm deployment on railway works
 
 ### db migrations
