@@ -43,7 +43,6 @@ type CacheHeaders = {
  */
 export function cacheHeaders({ cdn }: CacheHeaders) {
   return {
-    "Cache-Control": "public, max-age=30",
-    "CDN-Cache-Control": `public, s-maxage=${cdn}, stale-while-revalidate=30`,
+    "Cache-Control": `public, max-age=30, s-maxage=${cdn}, stale-while-revalidate=30`,
   };
 }
