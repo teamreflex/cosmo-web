@@ -1,6 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
+import { sql } from "drizzle-orm";
+import { collections } from "@apollo/database/indexer/schema";
 import { adminMiddleware } from "@/lib/server/middlewares";
 import { bandUrlRowSchema } from "@/lib/universal/schema/admin";
+import { indexer } from "@/lib/server/db/indexer";
 
 /**
  * Update collections with band URLs.
@@ -8,17 +11,19 @@ import { bandUrlRowSchema } from "@/lib/universal/schema/admin";
 export const $saveBandUrls = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
   .inputValidator(bandUrlRowSchema.array())
-  .handler(() => {
-    // TODO: re-implement this
-    // await ofetch<{ message: string }>(`${env.INDEXER_PROXY_URL}/set-band`, {
-    //   method: "POST",
-    //   headers: {
-    //     "proxy-key": env.INDEXER_PROXY_KEY,
-    //   },
-    //   body: {
-    //     items: data,
-    //   },
-    // });
+  .handler(async ({ data }) => {
+    if (data.length === 0) return true;
+
+    const values = data
+      .map((item) => sql`(${item.slug}, ${item.bandImageUrl})`)
+      .reduce((acc, curr) => sql`${acc}, ${curr}`);
+
+    await indexer.execute(sql`
+      UPDATE ${collections}
+      SET ${collections.bandImageUrl} = data.band_image_url
+      FROM (VALUES ${values}) AS data(slug, band_image_url)
+      WHERE ${collections.slug} = data.slug
+    `);
 
     return true;
   });
