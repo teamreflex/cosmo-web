@@ -12,12 +12,15 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@apollo/cosmo": "workspace:*",
     "@apollo/database": "workspace:*",
+    "@apollo/util": "workspace:*",
     "@effect/cluster": "^0.52.8",
     "@effect/platform": "^0.93.0",
     "@effect/platform-bun": "^0.83.0",
     "drizzle-orm": "1.0.0-beta.1-ac4ce44",
-    "effect": "^3.19.3"
+    "effect": "^3.19.3",
+    "jose": "^6.1.1"
   },
   "devDependencies": {
     "@apollo/eslint": "workspace:*",

@@ -1,6 +1,6 @@
 import { createServerOnlyFn } from "@tanstack/react-start";
+import { decodeJwt } from "jose";
 import { refresh } from "@apollo/cosmo/server/auth";
-import { validateExpiry } from "./jwt";
 import { db } from "./db";
 import { cosmoTokens } from "./db/schema";
 import type { CosmoToken } from "./db/schema";
@@ -55,6 +55,18 @@ export const getProxiedToken = createServerOnlyFn(
     return latestToken;
   },
 );
+
+/**
+ * Validate JWT expiry by checking the exp claim.
+ */
+function validateExpiry(token: string): boolean {
+  try {
+    const claims = decodeJwt(token);
+    return claims.exp !== undefined && claims.exp > Date.now() / 1000;
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Base class for all token errors.

@@ -1,7 +1,7 @@
 import type {
   CosmoObjektMetadataV1,
   CosmoObjektMetadataV3,
-} from "@/types/metadata";
+} from "../types/metadata";
 import { ofetch } from "ofetch";
 
 /**

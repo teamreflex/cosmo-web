@@ -53,12 +53,15 @@
       "name": "schedules",
       "version": "1.0.0",
       "dependencies": {
+        "@apollo/cosmo": "workspace:*",
         "@apollo/database": "workspace:*",
+        "@apollo/util": "workspace:*",
         "@effect/cluster": "^0.52.8",
         "@effect/platform": "^0.93.0",
         "@effect/platform-bun": "^0.83.0",
         "drizzle-orm": "1.0.0-beta.1-ac4ce44",
         "effect": "^3.19.3",
+        "jose": "^6.1.1",
       },
       "devDependencies": {
         "@apollo/eslint": "workspace:*",
@@ -135,7 +138,6 @@
         "date-fns": "^4.1.0",
         "drizzle-orm": "1.0.0-beta.1-ac4ce44",
         "input-otp": "^1.4.2",
-        "jose": "^6.1.1",
         "lucide-react": "^0.553.0",
         "motion": "^12.23.24",
         "next-themes": "^0.4.6",
