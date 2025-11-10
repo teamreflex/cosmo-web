@@ -10,12 +10,12 @@
 - [ ] move server code around so it's more isolated from RPC and queries
 - [x] fix RoutedExpandableObjekt on objekt index
 - [ ] re-add sentry once SDK is updated
-- [ ] wait for start fix: https://github.com/TanStack/router/issues/5372
-  - [ ] objekt list update
-  - [ ] objekt list delete
+- [x] wait for start fix: https://github.com/TanStack/router/issues/5372
+  - [x] objekt list update
+  - [x] objekt list delete
 - [ ] do something with the grid detection code
 - [ ] fix drawer issues & iOS 26 quirks
-- [ ] refactor cron jobs
+- [x] refactor cron jobs
 - [x] confirm deployment on railway works
 - [x] import db from neon
 - [x] fix flicker with RoutedExpandableObjekt
@@ -25,7 +25,7 @@
 
 - [x] confirm deployment on railway works
 - [x] import db from digitalocean box
-- [ ] extract the set-band, process-status and rescan-metadata handlers into the web app
+- [x] extract the set-band, process-status and rescan-metadata handlers into the web app
 
 ## typesense importer
 

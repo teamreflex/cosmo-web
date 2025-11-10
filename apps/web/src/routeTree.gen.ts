@@ -26,7 +26,6 @@ import { Route as AtChar123usernameChar125ProgressRouteImport } from './routes/@
 import { Route as AtChar123usernameChar125ComoRouteImport } from './routes/@{$username}/como'
 import { Route as GravityArtistIdRouteImport } from './routes/gravity/$artist/$id'
 import { Route as ApiUserByAddressesRouteImport } from './routes/api/user/by-addresses'
-import { Route as ApiCronGravityRouteImport } from './routes/api/cron.gravity'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AtChar123usernameChar125ListSlugRouteImport } from './routes/@{$username}/list.$slug'
 import { Route as ApiProgressLeaderboardMemberRouteImport } from './routes/api/progress/leaderboard.$member'
@@ -133,11 +132,6 @@ const ApiUserByAddressesRoute = ApiUserByAddressesRouteImport.update({
   path: '/api/user/by-addresses',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiCronGravityRoute = ApiCronGravityRouteImport.update({
-  id: '/api/cron/gravity',
-  path: '/api/cron/gravity',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -241,7 +235,6 @@ export interface FileRoutesByFullPath {
   '/objekts': typeof ObjektsIndexRoute
   '/@{$username}/list/$slug': typeof AtChar123usernameChar125ListSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/cron/gravity': typeof ApiCronGravityRoute
   '/api/user/by-addresses': typeof ApiUserByAddressesRoute
   '/gravity/$artist/$id': typeof GravityArtistIdRoute
   '/api/cosmo/qr-auth/recaptcha': typeof ApiCosmoQrAuthRecaptchaRoute
@@ -275,7 +268,6 @@ export interface FileRoutesByTo {
   '/objekts': typeof ObjektsIndexRoute
   '/@{$username}/list/$slug': typeof AtChar123usernameChar125ListSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/cron/gravity': typeof ApiCronGravityRoute
   '/api/user/by-addresses': typeof ApiUserByAddressesRoute
   '/gravity/$artist/$id': typeof GravityArtistIdRoute
   '/api/cosmo/qr-auth/recaptcha': typeof ApiCosmoQrAuthRecaptchaRoute
@@ -311,7 +303,6 @@ export interface FileRoutesById {
   '/objekts/': typeof ObjektsIndexRoute
   '/@{$username}/list/$slug': typeof AtChar123usernameChar125ListSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/cron/gravity': typeof ApiCronGravityRoute
   '/api/user/by-addresses': typeof ApiUserByAddressesRoute
   '/gravity/$artist/$id': typeof GravityArtistIdRoute
   '/api/cosmo/qr-auth/recaptcha': typeof ApiCosmoQrAuthRecaptchaRoute
@@ -348,7 +339,6 @@ export interface FileRouteTypes {
     | '/objekts'
     | '/@{$username}/list/$slug'
     | '/api/auth/$'
-    | '/api/cron/gravity'
     | '/api/user/by-addresses'
     | '/gravity/$artist/$id'
     | '/api/cosmo/qr-auth/recaptcha'
@@ -382,7 +372,6 @@ export interface FileRouteTypes {
     | '/objekts'
     | '/@{$username}/list/$slug'
     | '/api/auth/$'
-    | '/api/cron/gravity'
     | '/api/user/by-addresses'
     | '/gravity/$artist/$id'
     | '/api/cosmo/qr-auth/recaptcha'
@@ -417,7 +406,6 @@ export interface FileRouteTypes {
     | '/objekts/'
     | '/@{$username}/list/$slug'
     | '/api/auth/$'
-    | '/api/cron/gravity'
     | '/api/user/by-addresses'
     | '/gravity/$artist/$id'
     | '/api/cosmo/qr-auth/recaptcha'
@@ -446,7 +434,6 @@ export interface RootRouteChildren {
   GravityIndexRoute: typeof GravityIndexRoute
   ObjektsIndexRoute: typeof ObjektsIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
-  ApiCronGravityRoute: typeof ApiCronGravityRoute
   ApiUserByAddressesRoute: typeof ApiUserByAddressesRoute
   GravityArtistIdRoute: typeof GravityArtistIdRoute
   ApiCosmoQrAuthRecaptchaRoute: typeof ApiCosmoQrAuthRecaptchaRoute
@@ -583,13 +570,6 @@ declare module '@tanstack/react-router' {
       path: '/api/user/by-addresses'
       fullPath: '/api/user/by-addresses'
       preLoaderRoute: typeof ApiUserByAddressesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/cron/gravity': {
-      id: '/api/cron/gravity'
-      path: '/api/cron/gravity'
-      fullPath: '/api/cron/gravity'
-      preLoaderRoute: typeof ApiCronGravityRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/auth/$': {
@@ -750,7 +730,6 @@ const rootRouteChildren: RootRouteChildren = {
   GravityIndexRoute: GravityIndexRoute,
   ObjektsIndexRoute: ObjektsIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
-  ApiCronGravityRoute: ApiCronGravityRoute,
   ApiUserByAddressesRoute: ApiUserByAddressesRoute,
   GravityArtistIdRoute: GravityArtistIdRoute,
   ApiCosmoQrAuthRecaptchaRoute: ApiCosmoQrAuthRecaptchaRoute,
@@ -773,10 +752,11 @@ export const routeTree = rootRouteImport
   ._addFileTypes<FileRouteTypes>()
 
 import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
+import type { startInstance } from './start.ts'
 declare module '@tanstack/react-start' {
   interface Register {
     ssr: true
     router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
   }
 }
