@@ -13,11 +13,11 @@
   "license": "MIT",
   "dependencies": {
     "@apollo/database": "workspace:*",
-    "@effect/cluster": "^0.52.6",
+    "@effect/cluster": "^0.52.8",
     "@effect/platform": "^0.93.0",
     "@effect/platform-bun": "^0.83.0",
     "drizzle-orm": "1.0.0-beta.1-ac4ce44",
-    "effect": "^3.19.2",
+    "effect": "^3.19.3",
     "typesense": "^2.1.0"
   },
   "devDependencies": {

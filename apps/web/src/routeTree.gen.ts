@@ -26,7 +26,6 @@ import { Route as AtChar123usernameChar125ProgressRouteImport } from './routes/@
 import { Route as AtChar123usernameChar125ComoRouteImport } from './routes/@{$username}/como'
 import { Route as GravityArtistIdRouteImport } from './routes/gravity/$artist/$id'
 import { Route as ApiUserByAddressesRouteImport } from './routes/api/user/by-addresses'
-import { Route as ApiCronObjektStatsRouteImport } from './routes/api/cron.objekt-stats'
 import { Route as ApiCronGravityRouteImport } from './routes/api/cron.gravity'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AtChar123usernameChar125ListSlugRouteImport } from './routes/@{$username}/list.$slug'
@@ -132,11 +131,6 @@ const GravityArtistIdRoute = GravityArtistIdRouteImport.update({
 const ApiUserByAddressesRoute = ApiUserByAddressesRouteImport.update({
   id: '/api/user/by-addresses',
   path: '/api/user/by-addresses',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiCronObjektStatsRoute = ApiCronObjektStatsRouteImport.update({
-  id: '/api/cron/objekt-stats',
-  path: '/api/cron/objekt-stats',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiCronGravityRoute = ApiCronGravityRouteImport.update({
@@ -248,7 +242,6 @@ export interface FileRoutesByFullPath {
   '/@{$username}/list/$slug': typeof AtChar123usernameChar125ListSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/gravity': typeof ApiCronGravityRoute
-  '/api/cron/objekt-stats': typeof ApiCronObjektStatsRoute
   '/api/user/by-addresses': typeof ApiUserByAddressesRoute
   '/gravity/$artist/$id': typeof GravityArtistIdRoute
   '/api/cosmo/qr-auth/recaptcha': typeof ApiCosmoQrAuthRecaptchaRoute
@@ -283,7 +276,6 @@ export interface FileRoutesByTo {
   '/@{$username}/list/$slug': typeof AtChar123usernameChar125ListSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/gravity': typeof ApiCronGravityRoute
-  '/api/cron/objekt-stats': typeof ApiCronObjektStatsRoute
   '/api/user/by-addresses': typeof ApiUserByAddressesRoute
   '/gravity/$artist/$id': typeof GravityArtistIdRoute
   '/api/cosmo/qr-auth/recaptcha': typeof ApiCosmoQrAuthRecaptchaRoute
@@ -320,7 +312,6 @@ export interface FileRoutesById {
   '/@{$username}/list/$slug': typeof AtChar123usernameChar125ListSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/cron/gravity': typeof ApiCronGravityRoute
-  '/api/cron/objekt-stats': typeof ApiCronObjektStatsRoute
   '/api/user/by-addresses': typeof ApiUserByAddressesRoute
   '/gravity/$artist/$id': typeof GravityArtistIdRoute
   '/api/cosmo/qr-auth/recaptcha': typeof ApiCosmoQrAuthRecaptchaRoute
@@ -358,7 +349,6 @@ export interface FileRouteTypes {
     | '/@{$username}/list/$slug'
     | '/api/auth/$'
     | '/api/cron/gravity'
-    | '/api/cron/objekt-stats'
     | '/api/user/by-addresses'
     | '/gravity/$artist/$id'
     | '/api/cosmo/qr-auth/recaptcha'
@@ -393,7 +383,6 @@ export interface FileRouteTypes {
     | '/@{$username}/list/$slug'
     | '/api/auth/$'
     | '/api/cron/gravity'
-    | '/api/cron/objekt-stats'
     | '/api/user/by-addresses'
     | '/gravity/$artist/$id'
     | '/api/cosmo/qr-auth/recaptcha'
@@ -429,7 +418,6 @@ export interface FileRouteTypes {
     | '/@{$username}/list/$slug'
     | '/api/auth/$'
     | '/api/cron/gravity'
-    | '/api/cron/objekt-stats'
     | '/api/user/by-addresses'
     | '/gravity/$artist/$id'
     | '/api/cosmo/qr-auth/recaptcha'
@@ -459,7 +447,6 @@ export interface RootRouteChildren {
   ObjektsIndexRoute: typeof ObjektsIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiCronGravityRoute: typeof ApiCronGravityRoute
-  ApiCronObjektStatsRoute: typeof ApiCronObjektStatsRoute
   ApiUserByAddressesRoute: typeof ApiUserByAddressesRoute
   GravityArtistIdRoute: typeof GravityArtistIdRoute
   ApiCosmoQrAuthRecaptchaRoute: typeof ApiCosmoQrAuthRecaptchaRoute
@@ -596,13 +583,6 @@ declare module '@tanstack/react-router' {
       path: '/api/user/by-addresses'
       fullPath: '/api/user/by-addresses'
       preLoaderRoute: typeof ApiUserByAddressesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/cron/objekt-stats': {
-      id: '/api/cron/objekt-stats'
-      path: '/api/cron/objekt-stats'
-      fullPath: '/api/cron/objekt-stats'
-      preLoaderRoute: typeof ApiCronObjektStatsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/cron/gravity': {
@@ -771,7 +751,6 @@ const rootRouteChildren: RootRouteChildren = {
   ObjektsIndexRoute: ObjektsIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiCronGravityRoute: ApiCronGravityRoute,
-  ApiCronObjektStatsRoute: ApiCronObjektStatsRoute,
   ApiUserByAddressesRoute: ApiUserByAddressesRoute,
   GravityArtistIdRoute: GravityArtistIdRoute,
   ApiCosmoQrAuthRecaptchaRoute: ApiCosmoQrAuthRecaptchaRoute,
