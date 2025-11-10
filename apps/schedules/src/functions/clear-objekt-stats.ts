@@ -1,6 +1,6 @@
 import { Redis } from "@/redis";
 import { Effect } from "effect";
-import type { ScheduledTask } from "../schedules";
+import type { ScheduledTask } from "../task";
 
 /**
  * Clear the objekt stats cache.

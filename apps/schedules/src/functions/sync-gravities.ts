@@ -11,7 +11,7 @@ import {
 } from "@apollo/database/web/schema";
 import { DatabaseWeb } from "@/db";
 import { ProxiedToken } from "@/proxied-token";
-import type { ScheduledTask } from "../schedules";
+import type { ScheduledTask } from "../task";
 
 /**
  * Sync gravities from COSMO API to database.
