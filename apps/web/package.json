@@ -99,7 +99,6 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "prettier": "^3.6.2",
     "prettier-plugin-tailwindcss": "^0.7.1",
-    "rollup-plugin-visualizer": "^6.0.5",
     "tailwindcss": "^4.1.17",
     "turbo": "^2.6.1",
     "typescript": "5.9.3",

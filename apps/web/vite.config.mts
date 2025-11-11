@@ -6,7 +6,6 @@ import viteTsConfigPaths from "vite-tsconfig-paths";
 import tailwindcss from "@tailwindcss/vite";
 import { nitro } from "nitro/vite";
 import { paraglideVitePlugin } from "@inlang/paraglide-js";
-import { visualizer } from "rollup-plugin-visualizer";
 
 const config = defineConfig(async () => {
   await import("./src/lib/env/client");
@@ -43,12 +42,6 @@ const config = defineConfig(async () => {
         strategy: ["cookie", "preferredLanguage", "baseLocale"],
       }),
       tailwindcss(),
-      visualizer({
-        filename: "./dist/stats.html",
-        open: false,
-        gzipSize: true,
-        brotliSize: true,
-      }),
     ],
   };
 });
