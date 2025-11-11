@@ -4,13 +4,13 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "env": "bun run --bun --env-file ../../.env --env-file ../../.env.local",
+    "env": "bun run --bun --env-file=../../.env --env-file=../../.env.local",
     "dev": "bun run env -- bun run --bun vite dev",
     "build": "bun run env -- bun run --bun vite build",
     "build:prod": "bun run --bun i18n && bun run --bun typecheck && bun run --bun vite build --mode production",
-    "preview": "bun run build && bun run start",
+    "preview": "bun run build && bun run env -- bun run start",
     "start": "bun run --bun .output/server/index.mjs",
-    "test": "vitest",
+    "test": "bun test",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --pretty --noEmit",
@@ -91,14 +91,12 @@
     "@types/umami": "^2.10.1",
     "@typescript-eslint/eslint-plugin": "^8.46.4",
     "@vitejs/plugin-react": "^5.1.0",
-    "dotenv-cli": "^11.0.0",
     "drizzle-kit": "1.0.0-beta.1-ac4ce44",
     "eslint": "9.39.1",
     "eslint-plugin-drizzle": "^0.2.3",
     "eslint-plugin-react-compiler": "19.1.0-rc.2",
     "eslint-plugin-react-google-translate": "^0.1.1",
     "eslint-plugin-react-hooks": "^7.0.1",
-    "postcss": "8.5.6",
     "prettier": "^3.6.2",
     "prettier-plugin-tailwindcss": "^0.7.1",
     "tailwindcss": "^4.1.17",
@@ -106,8 +104,7 @@
     "typescript": "5.9.3",
     "typescript-eslint": "^8.46.4",
     "vite": "^7.2.2",
-    "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^4.0.8"
+    "vite-tsconfig-paths": "^5.1.4"
   },
   "prettier": {
     "plugins": [

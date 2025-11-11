@@ -2,7 +2,7 @@
   "name": "schedules",
   "version": "1.0.0",
   "scripts": {
-    "dev": "dotenv -e ../../.env -e ../../.env.local -- bun run --bun --watch ./src/main.ts",
+    "dev": "bun run --bun --watch --env-file=../../.env --env-file=../../.env.local ./src/main.ts",
     "build": "bun build ./src/main.ts --outdir ./dist --target bun",
     "start": "bun run --bun dist/main.js",
     "lint": "eslint . --max-warnings 0",
