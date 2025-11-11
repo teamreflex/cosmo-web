@@ -1,10 +1,11 @@
 import * as React from "react";
 import {
-  ResponsiveContainer,
-  Tooltip,
   Legend,
-  type LegendProps,
+  
+  ResponsiveContainer,
+  Tooltip
 } from "recharts";
+import type {LegendProps} from "recharts";
 
 import { cn } from "@/lib/utils";
 

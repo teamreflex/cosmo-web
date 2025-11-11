@@ -1,5 +1,5 @@
 {
-  "extends": "@apollo/typescript/tsconfig.base.json",
+  "extends": "@apollo/typescript/tsconfig.bun.json",
   "include": ["src/**/*.ts", "eslint.config.ts"],
   "exclude": ["node_modules", ".turbo"],
 

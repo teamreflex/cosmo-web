@@ -193,6 +193,23 @@ services:
     networks:
       - apollo-network
 
+  # cron jobs
+  schedules:
+    build:
+      context: .
+      dockerfile: apps/schedules/Dockerfile
+    restart: on-failure
+    environment:
+      - WEB_DATABASE_URL=postgresql://postgres:postgres@pgbouncer-web:6432/web
+      - REDIS_URL=redis://valkey:6379
+    depends_on:
+      pgbouncer-web:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+    networks:
+      - apollo-network
+
 networks:
   apollo-network:
     name: apollo-network

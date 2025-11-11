@@ -1,42 +1,32 @@
 {
-  "extends": "@apollo/typescript/tsconfig.base.json",
+  "extends": "@apollo/typescript/tsconfig.bun.json",
 
   "compilerOptions": {
-    "strict": true,
-    "exactOptionalPropertyTypes": true,
-    "moduleDetection": "force",
+    // Effect-TS build requirements
     "composite": true,
-    "downlevelIteration": true,
-    "resolveJsonModule": true,
-    "esModuleInterop": false,
     "declaration": true,
-    "skipLibCheck": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "incremental": true,
+
+    // Effect-TS specific
+    "exactOptionalPropertyTypes": true,
+    "downlevelIteration": true,
+    "esModuleInterop": false,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "moduleResolution": "NodeNext",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "types": [],
-    "isolatedModules": true,
-    "sourceMap": true,
-    "declarationMap": true,
     "noImplicitReturns": false,
-    "noUnusedLocals": true,
     "noUnusedParameters": false,
-    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": false,
     "noEmitOnError": false,
     "noErrorTruncation": false,
-    "allowJs": false,
-    "checkJs": false,
     "forceConsistentCasingInFileNames": true,
-    "noImplicitAny": true,
-    "noImplicitThis": true,
-    "noUncheckedIndexedAccess": false,
-    "strictNullChecks": true,
-    "baseUrl": ".",
-    "target": "ES2022",
-    "module": "NodeNext",
-    "incremental": true,
     "removeComments": false,
-    "plugins": [{ "name": "@effect/language-service" }]
+    "plugins": [{ "name": "@effect/language-service" }],
+
+    // Path aliases
+    "baseUrl": "."
   }
 }

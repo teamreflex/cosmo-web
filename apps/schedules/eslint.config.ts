@@ -5,7 +5,7 @@ import tseslint from "typescript-eslint";
 
 export default defineConfig(
   {
-    ignores: ["node_modules", ".turbo", "build"],
+    ignores: ["node_modules", ".turbo", "build", "dist"],
   },
   {
     languageOptions: {
