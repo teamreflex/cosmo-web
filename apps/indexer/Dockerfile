@@ -21,13 +21,14 @@ RUN cd apps/indexer && rm -rf lib/ && npx tsc -p tsconfig.build.json
 
 # stage 4: run with node
 FROM node:22-alpine AS runner
-WORKDIR /app
+WORKDIR /app/apps/indexer
 ENV NODE_ENV=production
 COPY --from=builder /app/apps/indexer/lib ./lib
 COPY --from=builder /app/apps/indexer/db ./db
 COPY --from=builder /app/apps/indexer/package.json ./package.json
 COPY --from=builder /app/apps/indexer/commands.json ./commands.json
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/packages ./packages
+COPY --from=builder /app/apps/indexer/node_modules ./node_modules
+COPY --from=builder /app/node_modules/.bun /app/node_modules/.bun
+COPY --from=builder /app/packages /app/packages
 RUN npm install -g @subsquid/commands && mv $(which squid-commands) /usr/local/bin/sqd
 CMD ["sqd", "process:prod"]
