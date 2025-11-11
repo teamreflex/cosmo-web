@@ -31,7 +31,7 @@ export default function Logo({ className }: Props) {
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>
-            {env.VITE_APP_NAME}{" "}
+            {env.VITE_APP_NAME} <span className="text-xs">ver.</span>{" "}
             <span className="text-xs text-muted-foreground">{commitHash}</span>
           </AlertDialogTitle>
           <AlertDialogDescription asChild>
