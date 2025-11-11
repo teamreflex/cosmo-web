@@ -16,14 +16,11 @@ export const cosmo = ofetch.create({
 });
 
 /**
- * HTTP RPC client for Abstract via Alchemy.
+ * HTTP RPC client for the Abstract RPC.
  */
 export const abstract = ofetch.create({
-  baseURL: "https://abstract-mainnet.g.alchemy.com/v2",
+  baseURL: env.ABSTRACT_RPC,
   method: "POST",
-  headers: {
-    Authorization: `Bearer ${env.ALCHEMY_KEY}`,
-  },
   retry: 2,
   retryDelay: 500, // 500ms
 });

@@ -33,7 +33,6 @@ A platform for exploring objekts & gravities from [MODHAUS](https://www.mod-haus
 - [Postgres](https://www.postgresql.org/)
 - [Redis](https://redis.io/) or [Valkey](https://valkey.io/)
 - [Typesense](https://typesense.org/)
-- [Alchemy](https://www.alchemy.com/) API key
 - [AWS SES](https://aws.amazon.com/ses/) credentials
 - [Discord OAuth](https://discord.com/developers/docs/topics/oauth2) credentials
 - [Twitter OAuth](https://docs.x.com/resources/fundamentals/authentication/oauth-2-0/overview) credentials

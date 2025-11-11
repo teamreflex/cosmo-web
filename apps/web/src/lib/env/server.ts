@@ -11,8 +11,8 @@ export const env = createEnv({
     REDIS_URL: z.url(),
     // auth key
     AUTH_KEY: z.string().min(1),
-    // alchemy api key
-    ALCHEMY_KEY: z.string().min(1),
+    // abstract rpc endpoint
+    ABSTRACT_RPC: z.url(),
     // better auth
     BETTER_AUTH_SECRET: z.string().min(1),
     // discord oauth
@@ -38,7 +38,7 @@ export const env = createEnv({
     INDEXER_DATABASE_URL: process.env.INDEXER_DATABASE_URL,
     REDIS_URL: process.env.REDIS_URL,
     AUTH_KEY: process.env.AUTH_KEY,
-    ALCHEMY_KEY: process.env.ALCHEMY_KEY,
+    ABSTRACT_RPC: process.env.ABSTRACT_RPC,
     BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
     DISCORD_CLIENT_ID: process.env.DISCORD_CLIENT_ID,
     DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET,

@@ -14,7 +14,7 @@ const fetchProcessorHeight = createServerOnlyFn(async () => {
 });
 
 /**
- * Fetch the current block height from the Alchemy API.
+ * Fetch the current block height from the Abstract RPC.
  */
 const fetchChainStatus = createServerOnlyFn(async () => {
   const blockNumber = await abstract<RPCResponse>("/", {
@@ -22,6 +22,7 @@ const fetchChainStatus = createServerOnlyFn(async () => {
       id: 1,
       jsonrpc: "2.0",
       method: "eth_blockNumber",
+      params: [],
     },
   });
 

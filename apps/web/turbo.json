@@ -9,7 +9,7 @@
         "DATABASE_URL",
         "INDEXER_DATABASE_URL",
         "AUTH_KEY",
-        "ALCHEMY_KEY",
+        "ABSTRACT_RPC",
         "BETTER_AUTH_SECRET",
         "DISCORD_CLIENT_ID",
         "DISCORD_CLIENT_SECRET",
