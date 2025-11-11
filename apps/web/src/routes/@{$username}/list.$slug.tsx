@@ -73,7 +73,6 @@ export const Route = createFileRoute("/@{$username}/list/$slug")({
       target: targetAccount,
       targetObjektLists: objektLists,
       artists,
-      selected,
       isAuthenticated,
       objektList,
     };
@@ -91,14 +90,13 @@ function RouteComponent() {
     target,
     targetObjektLists,
     artists,
-    selected,
     isAuthenticated,
     objektList,
   } = Route.useLoaderData();
 
   return (
     <UserStateProvider {...account}>
-      <ArtistProvider artists={artists} selected={selected}>
+      <ArtistProvider artists={artists}>
         <ProfileProvider target={target} objektLists={targetObjektLists}>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h3 className="font-cosmo text-xl">{objektList.name}</h3>

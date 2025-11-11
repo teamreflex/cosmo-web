@@ -33,7 +33,6 @@ export const Route = createFileRoute("/gravity/")({
 
     return {
       artists,
-      selected,
       toRender,
       gravities,
     };
@@ -46,10 +45,10 @@ export const Route = createFileRoute("/gravity/")({
 });
 
 function RouteComponent() {
-  const { artists, selected, toRender, gravities } = Route.useLoaderData();
+  const { artists, toRender, gravities } = Route.useLoaderData();
 
   return (
-    <ArtistProvider artists={artists} selected={selected}>
+    <ArtistProvider artists={artists}>
       <main className="container flex flex-col py-2">
         <Tabs defaultValue={toRender[0]?.id}>
           {/* header */}

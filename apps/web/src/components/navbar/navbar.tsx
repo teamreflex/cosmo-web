@@ -12,11 +12,7 @@ import AuthFallback from "../auth/auth-fallback";
 import { Skeleton } from "../ui/skeleton";
 import Links from "./links";
 import { ArtistProvider } from "@/hooks/use-artists";
-import {
-  artistsQuery,
-  currentAccountQuery,
-  selectedArtistsQuery,
-} from "@/lib/queries/core";
+import { artistsQuery, currentAccountQuery } from "@/lib/queries/core";
 
 export default function Navbar() {
   return (
@@ -73,13 +69,12 @@ function NavbarFallback() {
 }
 
 function AuthState() {
-  const [{ data: account }, { data: artists }, { data: selected }] =
-    useSuspenseQueries({
-      queries: [currentAccountQuery, artistsQuery, selectedArtistsQuery],
-    });
+  const [{ data: account }, { data: artists }] = useSuspenseQueries({
+    queries: [currentAccountQuery, artistsQuery],
+  });
 
   return (
-    <ArtistProvider artists={artists} selected={selected}>
+    <ArtistProvider artists={artists}>
       <Links signedIn={account !== null} cosmo={account?.cosmo} />
       <div className="flex grow-0 items-center justify-end gap-2">
         {!account ? (

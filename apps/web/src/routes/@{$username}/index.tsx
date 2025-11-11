@@ -66,7 +66,7 @@ export const Route = createFileRoute("/@{$username}/")({
       );
     }
 
-    return { artists, selected, account, target, pins };
+    return { artists, account, target, pins };
   },
   head: ({ loaderData }) =>
     defineHead({
@@ -80,11 +80,11 @@ export const Route = createFileRoute("/@{$username}/")({
 });
 
 function RouteComponent() {
-  const { artists, selected, account, target, pins } = Route.useLoaderData();
+  const { artists, account, target, pins } = Route.useLoaderData();
 
   return (
     <UserStateProvider {...account}>
-      <ArtistProvider artists={artists} selected={selected}>
+      <ArtistProvider artists={artists}>
         <ProfileProvider
           target={target}
           pins={target.user ? pins : []}

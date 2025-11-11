@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { validArtists, validOnlineTypes, validSorts } from "@apollo/cosmo/types/common";
+import {
+  validArtists,
+  validOnlineTypes,
+  validSorts,
+} from "@apollo/cosmo/types/common";
 import { transferTypes } from "./transfers";
 
 /**
@@ -112,6 +116,7 @@ export const transfersBackendSchema = cosmoSchema
     address: z.string(),
     page: z.coerce.number().default(0),
     type: z.enum(transferTypes).default("all"),
+    artists: z.string().array().default([]),
   });
 
 // progress frontend

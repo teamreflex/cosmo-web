@@ -10,6 +10,7 @@ import {
   withMember,
   withOnlineType,
   withSeason,
+  withSelectedArtists,
 } from "./objekts/filters";
 import type z from "zod";
 import type { TransferResult, TransferType } from "../universal/transfers";
@@ -84,6 +85,7 @@ const fetchTransferRows = createServerOnlyFn(
             ...withSeason(params.season ?? []),
             ...withOnlineType(params.on_offline ?? []),
             ...withMember(params.member),
+            ...withSelectedArtists(params.artists),
           ],
         ),
       )

@@ -52,18 +52,18 @@ export const Route = createFileRoute("/")({
       );
     }
 
-    return { account, artists, selected };
+    return { account, artists };
   },
   head: () => defineHead({ title: "Objekts", canonical: "/" }),
 });
 
 function RouteComponent() {
-  const { account, artists, selected } = Route.useLoaderData();
+  const { account, artists } = Route.useLoaderData();
 
   return (
     <main className="container flex flex-col py-2">
       <UserStateProvider user={account?.user} cosmo={account?.cosmo}>
-        <ArtistProvider artists={artists} selected={selected}>
+        <ArtistProvider artists={artists}>
           <ProfileProvider objektLists={account?.objektLists ?? []}>
             <IndexRenderer objektLists={account?.objektLists ?? []} />
           </ProfileProvider>

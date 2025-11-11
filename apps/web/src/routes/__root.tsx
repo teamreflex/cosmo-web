@@ -31,11 +31,12 @@ interface RouterContext {
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   staleTime: Infinity,
-  loader({ context }) {
+  loader: async ({ context }) => {
     context.queryClient.prefetchQuery(currentAccountQuery);
     context.queryClient.prefetchQuery(systemStatusQuery);
-    context.queryClient.prefetchQuery(selectedArtistsQuery);
     context.queryClient.prefetchQuery(artistsQuery);
+
+    await context.queryClient.ensureQueryData(selectedArtistsQuery);
   },
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
