@@ -26,7 +26,14 @@ export default defineConfig(
       "src/i18n/**/*.js",
     ],
   },
-  tanstackConfig,
+  // remove @typescript-eslint from tanstack/javascript config
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  tanstackConfig.map((config: any) => {
+    if (config.name === "tanstack/javascript") {
+      delete config.plugins["@typescript-eslint"];
+    }
+    return config;
+  }),
   ...tanstackQuery.configs["flat/recommended"],
   ...tanstackRouter.configs["flat/recommended"],
   ...compat.plugins("eslint-plugin-react-compiler"),

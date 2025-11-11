@@ -1,10 +1,10 @@
 import { createContext, use, useCallback } from "react";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import type {
   CosmoArtistWithMembersBFF,
   CosmoMemberBFF,
 } from "@apollo/cosmo/types/artists";
-import { useSuspenseQuery } from "@tanstack/react-query";
 import { selectedArtistsQuery } from "@/lib/queries/core";
 
 type ContextProps = {
