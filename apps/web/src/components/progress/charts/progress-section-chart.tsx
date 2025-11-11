@@ -14,7 +14,7 @@ type Props = {
   colors: Record<string, string>;
 };
 
-export default function ProgressChart(props: Props) {
+export default function ProgressSectionChart(props: Props) {
   const data = useMemo(() => {
     const total = props.data.reduce((sum, entry) => sum + entry.count, 0);
 

@@ -1,4 +1,3 @@
-import ProgressChart from "./chart.client";
 import type { Stat } from "@/lib/universal/progress";
 import {
   ExpandableCard,
@@ -6,6 +5,7 @@ import {
   ExpandableCardHeader,
   ExpandableCardTitle,
 } from "@/components/ui/expandable-card";
+import ProgressSectionChart from "./progress-section-chart";
 
 type Props = {
   title: string;
@@ -43,7 +43,7 @@ export default function ProgressSection(props: Props) {
       </div>
 
       <div className="flex items-start justify-center">
-        <ProgressChart data={sorted} colors={props.colors} />
+        <ProgressSectionChart data={sorted} colors={props.colors} />
       </div>
     </div>
   );
