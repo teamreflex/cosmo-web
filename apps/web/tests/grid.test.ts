@@ -31,6 +31,7 @@ function createCollection(
     comoAmount: 10,
     onOffline: "online",
     bandImageUrl: null,
+    frontMedia: null,
   };
 }
 
