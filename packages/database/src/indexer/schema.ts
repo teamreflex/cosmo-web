@@ -42,6 +42,7 @@ export const collections = pgTable("collection", {
     .notNull()
     .$type<"online" | "offline">(),
   bandImageUrl: varchar("band_image_url", { length: 255 }),
+  frontMedia: varchar("front_media", { length: 255 }),
 });
 
 export const objekts = pgTable("objekt", {

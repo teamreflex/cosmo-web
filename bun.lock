@@ -14,6 +14,7 @@
       "name": "indexer",
       "version": "1.0.0",
       "dependencies": {
+        "@apollo/cosmo": "workspace:*",
         "@apollo/util": "workspace:*",
         "@subsquid/evm-abi": "^0.3.1",
         "@subsquid/evm-codec": "^0.3.0",

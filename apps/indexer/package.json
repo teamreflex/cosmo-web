@@ -12,6 +12,7 @@
     "format": "prettier --write \"**/*.{ts,tsx}\""
   },
   "dependencies": {
+    "@apollo/cosmo": "workspace:*",
     "@apollo/util": "workspace:*",
     "@subsquid/evm-abi": "^0.3.1",
     "@subsquid/evm-codec": "^0.3.0",
