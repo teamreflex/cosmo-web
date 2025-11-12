@@ -1,0 +1,41 @@
+{
+  "extends": "@apollo/typescript/tsconfig.bun.json",
+
+  "include": ["src/**/*.ts", "eslint.config.ts"],
+  "exclude": ["node_modules", ".turbo", "dist"],
+
+  "compilerOptions": {
+    // Effect-TS build requirements
+    "noEmit": false,
+    "outDir": "dist",
+    "allowImportingTsExtensions": false,
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "incremental": true,
+
+    // Effect-TS specific
+    "exactOptionalPropertyTypes": true,
+    "downlevelIteration": true,
+    "esModuleInterop": false,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": [],
+    "noImplicitReturns": false,
+    "noUnusedParameters": false,
+    "noUncheckedIndexedAccess": false,
+    "noEmitOnError": false,
+    "noErrorTruncation": false,
+    "forceConsistentCasingInFileNames": true,
+    "removeComments": false,
+    "plugins": [{ "name": "@effect/language-service" }],
+
+    // Path aliases
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  }
+}

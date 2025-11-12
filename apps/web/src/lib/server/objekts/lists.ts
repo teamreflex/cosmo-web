@@ -2,7 +2,6 @@ import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
 import z from "zod";
 import { redirect } from "@tanstack/react-router";
 import { db } from "../db";
-import { dbi } from "../db/interactive";
 import { objektListEntries, objektLists } from "../db/schema";
 import { sanitizeUuid } from "@/lib/utils";
 
@@ -72,7 +71,7 @@ export const importObjektLists = createServerOnlyFn(
       return;
     }
 
-    await dbi.transaction(async (tx) => {
+    await db.transaction(async (tx) => {
       // insert the lists
       const result = await tx
         .insert(objektLists)

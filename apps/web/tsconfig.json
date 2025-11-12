@@ -1,5 +1,5 @@
 {
-  "extends": "@apollo/typescript/tsconfig.base.json",
+  "extends": "@apollo/typescript/tsconfig.bun.json",
 
   "include": ["**/*.ts", "**/*.tsx", "vite.config.mts", "eslint.config.ts"],
   "exclude": [

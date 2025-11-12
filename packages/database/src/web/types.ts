@@ -1,6 +1,4 @@
 import type {
-  lists,
-  listEntries,
   objektMetadata,
   cosmoAccounts,
   cosmoAccountChanges,
@@ -13,8 +11,10 @@ import type {
   objektLists,
 } from "./schema";
 
-export type CosmoGravityType = "event-gravity" | "grand-gravity";
-export type CosmoPollType = "single-poll" | "combination-poll";
+export type {
+  CosmoGravityType,
+  CosmoPollType,
+} from "@apollo/cosmo/types/gravity";
 
 export type CosmoAccount = typeof cosmoAccounts.$inferSelect;
 export type CosmoAccountChange = typeof cosmoAccountChanges.$inferSelect;
@@ -26,9 +26,3 @@ export type Gravity = typeof gravities.$inferSelect;
 export type GravityPoll = typeof gravityPolls.$inferSelect;
 export type GravityPollCandidate = typeof gravityPollCandidates.$inferSelect;
 export type ObjektMetadataEntry = typeof objektMetadata.$inferSelect;
-
-// legacy
-export type List = typeof lists.$inferSelect;
-export type ListEntry = typeof listEntries.$inferSelect;
-export type CreateList = typeof lists.$inferInsert;
-export type UpdateList = typeof lists.$inferInsert;

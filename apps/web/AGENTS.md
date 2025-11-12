@@ -6,12 +6,10 @@
 
 - `turbo db:generate` - Generate migration files
 
-The project contains three Postgres database connections:
+The project contains two Postgres database connections:
 
 - `import { db } from "@/lib/server/db"`
   - general Neon Postgres HTTP connection for entities: cosmoAccounts, lockedObjekts, objektLists, objektListEntries, objektMetadata, pins, cosmoTokens, gravities, gravityPolls, gravityPollCandidates, polygonVotes, user, session, acocunt, verification
-- `import { dbi } from "@/lib/server/db/interactive"`
-  - same Neon Postgres connection but over websockets. only use this when needing to use transactions.
 - `import { indexer } from "@/lib/server/db/indexer"`
   - Postgres connection for querying the blockchain indexer for objekt data.
   - entities are: collections, objekts, transfers, comoBalances, votes
@@ -74,9 +72,8 @@ The project uses Tailwind v4, so always use v4 conventions rather than v3. This 
 ### Architecture Patterns
 
 1. **Data Fetching**: Route loaders with server functions, prefetched into query cache as appropriate
-2. **Database Access**: Three separate connections:
+2. **Database Access**: Two separate connections:
    - `db` - Main Neon database (HTTP)
-   - `dbi` - Interactive Neon connection (WebSocket for transactions)
    - `indexer` - Blockchain indexer database
 3. **Error Handling**: Consistent use of Error Boundaries with Suspense
 4. **URL State**: Type-safe with TanStack Router search params parsing per route

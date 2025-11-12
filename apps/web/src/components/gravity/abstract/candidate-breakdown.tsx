@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import type { LiveStatus } from "@/lib/client/gravity/abstract/types";
-import type { PollSelectedContentImage } from "@/lib/universal/cosmo/gravity";
+import type { PollSelectedContentImage } from "@apollo/cosmo/types/gravity";
 
 type Props = {
   content: PollSelectedContentImage[];

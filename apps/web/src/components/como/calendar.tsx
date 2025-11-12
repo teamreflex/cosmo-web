@@ -6,7 +6,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
-import type { CosmoArtistBFF } from "@/lib/universal/cosmo/artists";
+import type { CosmoArtistBFF } from "@apollo/cosmo/types/artists";
 import type { ObjektWithCollection } from "@/lib/universal/como";
 import { buildCalendar, getDays } from "@/lib/universal/como";
 import { cn } from "@/lib/utils";

@@ -5,7 +5,6 @@ import {
 import { ErrorBoundary } from "react-error-boundary";
 import { HeartCrack, RefreshCcw } from "lucide-react";
 import { Suspense, useCallback } from "react";
-import { getRouteApi } from "@tanstack/react-router";
 import { Skeleton } from "../ui/skeleton";
 import { Button } from "../ui/button";
 import Portal from "../portal";
@@ -15,15 +14,14 @@ import MemberFilter from "../collection/member-filter";
 import SkeletonGradient from "../skeleton/skeleton-overlay";
 import { TransfersFilters } from "../collection/filter-contexts/transfers-filters";
 import TransferRow from "./transfer-row";
-import type { ValidArtist } from "@/lib/universal/cosmo/common";
+import type { ValidArtist } from "@apollo/cosmo/types/common";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import type { TransferFilters } from "@/hooks/use-transfer-filters";
 import type { TransferType } from "@/lib/universal/transfers";
 import { transfersQuery } from "@/lib/queries/objekt-queries";
 import { useTransferFilters } from "@/hooks/use-transfer-filters";
 import { m } from "@/i18n/messages";
-
-const route = getRouteApi("/@{$username}/trades");
+import { useArtists } from "@/hooks/use-artists";
 
 type Props = {
   cosmo: PublicCosmo;
@@ -106,9 +104,9 @@ type TransfersProps = {
 };
 
 function Transfers({ address, filters }: TransfersProps) {
-  const { selected } = route.useLoaderData();
+  const { selectedIds } = useArtists();
   const query = useSuspenseInfiniteQuery(
-    transfersQuery(address, filters, selected),
+    transfersQuery(address, filters, selectedIds),
   );
 
   const rows = query.data.pages

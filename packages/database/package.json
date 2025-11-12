@@ -16,6 +16,7 @@
     "./custom": "./src/custom.ts"
   },
   "dependencies": {
+    "@apollo/cosmo": "workspace:*",
     "@apollo/util": "workspace:*",
     "drizzle-orm": "1.0.0-beta.1-ac4ce44"
   },
@@ -23,11 +24,11 @@
     "@apollo/eslint": "workspace:*",
     "@apollo/typescript": "workspace:*",
     "@eslint/eslintrc": "^3.3.1",
-    "@eslint/js": "^9.39.0",
-    "eslint": "9.39.0",
+    "@eslint/js": "^9.39.1",
+    "eslint": "9.39.1",
     "prettier": "^3.6.2",
-    "turbo": "^2.6.0",
+    "turbo": "^2.6.1",
     "typescript": "5.9.3",
-    "typescript-eslint": "^8.46.2"
+    "typescript-eslint": "^8.46.4"
   }
 }

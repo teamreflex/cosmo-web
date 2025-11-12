@@ -1,4 +1,3 @@
-import { FileSystem, Path } from "@effect/platform";
 import { Effect, Ref } from "effect";
 
 export class Timestamp {
@@ -11,24 +10,6 @@ export class Timestamp {
   }
 }
 
-/**
- * Initialize the lastCreatedAt file
- */
-const initializeLastCreatedAt = Effect.gen(function* () {
-  const path = yield* Path.Path;
-  const fs = yield* FileSystem.FileSystem;
-
-  const lastCreatedAtPath = path.join(__dirname, "../lastCreatedAt.txt");
-  const fileExists = yield* fs.exists(lastCreatedAtPath);
-  if (fileExists) {
-    const lastCreatedAt = yield* fs.readFileString(lastCreatedAtPath);
-    return lastCreatedAt;
-  }
-
-  return null;
-});
-
-export const initializeTimestamp = initializeLastCreatedAt.pipe(
-  Effect.andThen(Ref.make),
+export const initializeTimestamp = Ref.make<string | null>(null).pipe(
   Effect.andThen((value) => new Timestamp(value)),
 );

@@ -1,9 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { setResponseHeaders } from "@tanstack/react-start/server";
+import { fetchArtist, fetchArtists } from "@apollo/cosmo/server/artists";
 import { cacheHeaders, clearTag, remember } from "./cache";
 import { getProxiedToken } from "./proxied-token";
-import { fetchArtist, fetchArtists } from "./cosmo/artists";
-import type { CosmoArtistWithMembersBFF } from "../universal/cosmo/artists";
+import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
 
 const cacheKey = "artists";
 
@@ -16,7 +16,7 @@ const cacheKey = "artists";
  */
 export const $fetchArtists = createServerFn({ method: "GET" }).handler(
   async (): Promise<CosmoArtistWithMembersBFF[]> => {
-    setResponseHeaders(cacheHeaders({ vercel: 60 * 60 }));
+    setResponseHeaders(new Headers(cacheHeaders({ cdn: 60 * 60 })));
 
     return await remember(cacheKey, 60 * 24, async () => {
       const { accessToken } = await getProxiedToken();

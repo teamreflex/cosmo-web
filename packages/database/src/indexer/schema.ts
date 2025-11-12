@@ -3,14 +3,22 @@ import {
   boolean,
   integer,
   numeric,
+  pgSchema,
   pgTable,
-  serial,
+  text,
   timestamp,
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
 
-// indexes are managed by the indexer
+// subsquid metadata
+export const subsquidSchema = pgSchema("squid_processor");
+export const subsquidStatus = subsquidSchema.table("status", {
+  id: integer("id").notNull(),
+  height: integer("height").notNull(),
+  hash: text("hash"),
+  nonce: integer("nonce"),
+});
 
 export const collections = pgTable("collection", {
   id: uuid("id").primaryKey(),
@@ -34,10 +42,11 @@ export const collections = pgTable("collection", {
     .notNull()
     .$type<"online" | "offline">(),
   bandImageUrl: varchar("band_image_url", { length: 255 }),
+  frontMedia: varchar("front_media", { length: 255 }),
 });
 
 export const objekts = pgTable("objekt", {
-  id: serial("id").primaryKey(),
+  id: varchar("id").primaryKey(),
   owner: varchar("owner", { length: 42 }).notNull(),
   mintedAt: timestamp("minted_at", { mode: "string" }).notNull(),
   receivedAt: timestamp("received_at", { mode: "string" }).notNull(),

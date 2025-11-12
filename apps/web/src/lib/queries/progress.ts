@@ -4,7 +4,7 @@ import {
   $fetchProgressBreakdown,
   $fetchProgressLeaderboard,
 } from "../server/progress";
-import type { ValidOnlineType } from "../universal/cosmo/common";
+import type { ValidOnlineType } from "@apollo/cosmo/types/common";
 
 export const artistStatsQuery = (address: string) =>
   queryOptions({

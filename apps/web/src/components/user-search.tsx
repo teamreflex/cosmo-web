@@ -16,7 +16,7 @@ import type { RecentUser } from "@/store";
 import type {
   CosmoPublicUser,
   CosmoSearchResult,
-} from "@/lib/universal/cosmo/user";
+} from "@apollo/cosmo/types/user";
 import type { PropsWithChildren } from "react";
 import {
   CommandDialog,

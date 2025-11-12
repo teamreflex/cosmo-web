@@ -1,6 +1,6 @@
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import type { HourlyBreakdown } from "@/lib/universal/stats";
-import type { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
+import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
 import type { ChartConfig } from "@/components/ui/chart";
 import {
   ChartContainer,

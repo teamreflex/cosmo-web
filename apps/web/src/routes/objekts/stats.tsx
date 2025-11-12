@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useSuspenseQuery } from "@tanstack/react-query";
 import { artistsQuery, selectedArtistsQuery } from "@/lib/queries/core";
 import { objektStatsQuery } from "@/lib/queries/stats";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,16 +11,16 @@ import { m } from "@/i18n/messages";
 
 export const Route = createFileRoute("/objekts/stats")({
   loader: async ({ context }) => {
-    context.queryClient.prefetchQuery(objektStatsQuery);
-
-    const [artists, selected] = await Promise.all([
+    const [artists, selected, data] = await Promise.all([
       context.queryClient.ensureQueryData(artistsQuery),
       context.queryClient.ensureQueryData(selectedArtistsQuery),
+      context.queryClient.ensureQueryData(objektStatsQuery),
     ]);
 
     return {
       artists,
       selected,
+      data,
     };
   },
   component: RouteComponent,
@@ -32,8 +31,7 @@ export const Route = createFileRoute("/objekts/stats")({
 });
 
 function RouteComponent() {
-  const { artists, selected } = Route.useLoaderData();
-  const { data } = useSuspenseQuery(objektStatsQuery);
+  const { artists, selected, data } = Route.useLoaderData();
 
   return (
     <main className="container flex flex-col py-2">

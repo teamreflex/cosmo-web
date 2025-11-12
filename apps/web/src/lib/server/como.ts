@@ -44,7 +44,7 @@ export const $fetchObjektsWithComo = createServerFn({ method: "GET" })
   });
 
 /**
- * Fetch ERC20 token balances from Alchemy.
+ * Fetch ERC20 token balances from the indexer database.
  * Cached for 15 minutes.
  */
 export const $fetchTokenBalances = createServerFn({ method: "GET" })

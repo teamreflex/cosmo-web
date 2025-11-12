@@ -1,5 +1,4 @@
 import { getCookie, setCookie } from "@tanstack/react-start/server";
-import { generateCookiePayload } from "./jwt";
 
 type CookieKey = "artists";
 
@@ -32,4 +31,17 @@ export function putCookie({ key, value, maxAge }: SetCookie) {
     ...generateCookiePayload(),
     ...(maxAge ? { maxAge } : {}),
   });
+}
+
+/**
+ * Generate the payload for a cookie.
+ */
+function generateCookiePayload() {
+  return {
+    path: "/",
+    maxAge: 60 * 60 * 24 * 30, // 30 days
+    sameSite: true,
+    httpOnly: true,
+    secure: true,
+  };
 }

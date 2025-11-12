@@ -1,5 +1,6 @@
+import { validSorts } from "@apollo/cosmo/types/common";
+import type { ValidSort } from "@apollo/cosmo/types/common";
 import type { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
-import type { ValidSort } from "@/lib/universal/cosmo/common";
 import type { CollectionDataSource } from "@apollo/util";
 import {
   Select,
@@ -8,7 +9,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { validSorts } from "@/lib/universal/cosmo/common";
 import { m } from "@/i18n/messages";
 
 type Props = {
@@ -19,22 +19,14 @@ type Props = {
   setDataSource?: (dataSource: CollectionDataSource) => void;
 };
 
-function getSortMap(): Record<ValidSort, string> {
-  return {
-    newest: m.filter_sort_newest(),
-    oldest: m.filter_sort_oldest(),
-    noAscending: m.filter_sort_no_ascending(),
-    noDescending: m.filter_sort_no_descending(),
-    serialAsc: m.filter_sort_serial_asc(),
-    serialDesc: m.filter_sort_serial_desc(),
-  };
-}
-
 export default function SortFilter(props: Props) {
-  const availableSorts = validSorts.filter((s) =>
-    props.serials ? true : !isSerialSort(s),
-  );
-  const map = getSortMap();
+  const value = props.sort ?? "newest";
+  const availableSorts = validSorts
+    .filter((s) => (props.serials ? true : !isSerialSort(s)))
+    .map((sort) => ({
+      value: sort,
+      label: map[sort],
+    }));
 
   function handleChange(newValue: string) {
     const newSort = newValue as ValidSort;
@@ -50,14 +42,14 @@ export default function SortFilter(props: Props) {
   }
 
   return (
-    <Select value={props.sort ?? "newest"} onValueChange={handleChange}>
+    <Select value={value} onValueChange={handleChange}>
       <SelectTrigger className="w-32">
         <SelectValue placeholder={m.filter_sort()} />
       </SelectTrigger>
       <SelectContent>
         {availableSorts.map((sort) => (
-          <SelectItem key={sort} value={sort}>
-            <span>{map[sort]}</span>
+          <SelectItem key={sort.value} value={sort.value}>
+            {sort.label}
           </SelectItem>
         ))}
       </SelectContent>
@@ -71,3 +63,12 @@ export default function SortFilter(props: Props) {
 function isSerialSort(sort: ValidSort) {
   return sort.startsWith("serial");
 }
+
+const map = {
+  newest: m.filter_sort_newest(),
+  oldest: m.filter_sort_oldest(),
+  noAscending: m.filter_sort_no_ascending(),
+  noDescending: m.filter_sort_no_descending(),
+  serialAsc: m.filter_sort_serial_asc(),
+  serialDesc: m.filter_sort_serial_desc(),
+} as const;

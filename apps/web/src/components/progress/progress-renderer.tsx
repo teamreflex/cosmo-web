@@ -7,7 +7,7 @@ import MemberFilter from "../collection/member-filter";
 import { Skeleton } from "../ui/skeleton";
 import ProgressTable from "./progress-table";
 import type { PropsWithChildren } from "react";
-import type { ValidArtist } from "@/lib/universal/cosmo/common";
+import type { ValidArtist } from "@apollo/cosmo/types/common";
 import { useProgressFilters } from "@/hooks/use-progress-filters";
 import { m } from "@/i18n/messages";
 

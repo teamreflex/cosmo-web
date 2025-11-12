@@ -3,7 +3,7 @@ import { Info, X } from "lucide-react";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useShallow } from "zustand/react/shallow";
-import MetadataDialog from "./metadata-dialog";
+import MetadataDialog, { useMetadataDialog } from "./metadata-dialog";
 import { fetchObjektQuery } from "./metadata/common";
 import StaticObjekt from "./objekt-static";
 import {
@@ -14,7 +14,7 @@ import {
 import type {
   BFFCollectionGroup,
   BFFCollectionGroupObjekt,
-} from "@/lib/universal/cosmo/objekts";
+} from "@apollo/cosmo/types/objekts";
 import { useObjektTransfer } from "@/hooks/use-objekt-transfer";
 import { useProfileContext } from "@/hooks/use-profile";
 import { Objekt } from "@/lib/universal/objekt-conversion";
@@ -128,7 +128,6 @@ function RootObjekt({
   priority = false,
 }: RootObjektProps) {
   const [isLoaded, setIsLoaded] = useState(false);
-  const queryClient = useQueryClient();
 
   const { front } = getObjektImageUrls(collection);
 
@@ -139,63 +138,69 @@ function RootObjekt({
 
   return (
     <MetadataDialog slug={collection.slug}>
-      {({ open }) => (
-        <div
-          role="button"
-          style={{
-            "--objekt-background-color": collection.backgroundColor,
-            "--objekt-text-color": collection.textColor,
-          }}
+      <div
+        role="button"
+        style={{
+          "--objekt-background-color": collection.backgroundColor,
+          "--objekt-text-color": collection.textColor,
+        }}
+        className={cn(
+          "relative aspect-photocard touch-manipulation overflow-hidden rounded-lg bg-secondary ring-2 ring-transparent drop-shadow-sm transition-colors md:rounded-xl lg:rounded-2xl",
+          hasSelected && "ring-foreground",
+        )}
+      >
+        <img
+          onMouseOver={prefetch}
+          onLoad={() => setIsLoaded(true)}
+          onClick={onClick}
           className={cn(
-            "relative aspect-photocard touch-manipulation overflow-hidden rounded-lg bg-secondary ring-2 ring-transparent drop-shadow-sm transition-colors md:rounded-xl lg:rounded-2xl",
-            hasSelected && "ring-foreground",
+            "w-full transition-opacity",
+            isLoaded === false && "opacity-0",
           )}
-        >
-          <img
-            onMouseOver={prefetch}
-            onLoad={() => setIsLoaded(true)}
-            onClick={onClick}
-            className={cn(
-              "w-full transition-opacity",
-              isLoaded === false && "opacity-0",
-            )}
-            src={front.display}
-            width={291}
-            height={450}
-            alt={collection.collectionId}
-            decoding="async"
-            fetchPriority={priority ? "high" : "auto"}
-          />
+          src={front.display}
+          width={291}
+          height={450}
+          alt={collection.collectionId}
+          decoding="async"
+          fetchPriority={priority ? "high" : "auto"}
+        />
 
-          <ObjektSidebar collection={collection} />
-          <RootObjektOverlay
-            count={count}
-            hasNew={hasNew}
-            onClick={() => {
-              // populate the query cache so it doesn't re-fetch
-              queryClient.setQueryData(
-                fetchObjektQuery(collection.slug).queryKey,
-                collection,
-              );
-
-              // open the dialog
-              open();
-            }}
-          />
-        </div>
-      )}
+        <ObjektSidebar collection={collection} />
+        <RootObjektOverlay
+          collection={collection}
+          count={count}
+          hasNew={hasNew}
+        />
+      </div>
     </MetadataDialog>
   );
 }
 
 type RootObjektOverlayProps = {
+  collection: Objekt.Collection;
   count: number;
   hasNew: boolean;
-  onClick: () => void;
 };
 
-function RootObjektOverlay({ count, hasNew, onClick }: RootObjektOverlayProps) {
+function RootObjektOverlay({
+  collection,
+  count,
+  hasNew,
+}: RootObjektOverlayProps) {
   const isHidden = useObjektOverlay((state) => state.isHidden);
+  const { open } = useMetadataDialog();
+  const queryClient = useQueryClient();
+
+  function handleClick() {
+    // populate the query cache so it doesn't re-fetch
+    queryClient.setQueryData(
+      fetchObjektQuery(collection.slug).queryKey,
+      collection,
+    );
+
+    // open the dialog
+    open();
+  }
 
   return (
     <div className="contents">
@@ -208,7 +213,7 @@ function RootObjektOverlay({ count, hasNew, onClick }: RootObjektOverlayProps) {
       >
         <button
           className="z-50 flex items-center place-self-end transition-all hover:scale-110"
-          onClick={onClick}
+          onClick={handleClick}
         >
           <Info className="h-3 w-3 sm:h-5 sm:w-5" />
         </button>

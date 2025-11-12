@@ -53,5 +53,5 @@ export default defineConfig(
       // allow var instead of enforcing let/const
       "no-var": "off",
     },
-  }
+  },
 );

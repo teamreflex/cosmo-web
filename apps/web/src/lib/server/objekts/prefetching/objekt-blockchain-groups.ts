@@ -13,13 +13,13 @@ import {
   withTransferable,
 } from "../filters";
 import { nonTransferableReason } from "./common";
-import type { ValidSort } from "@/lib/universal/cosmo/common";
+import type { ValidSort } from "@apollo/cosmo/types/common";
 import type { PgSelect } from "drizzle-orm/pg-core";
 import type {
   BFFCollectionGroup,
   BFFCollectionGroupObjekt,
   BFFCollectionGroupResponse,
-} from "@/lib/universal/cosmo/objekts";
+} from "@apollo/cosmo/types/objekts";
 import { userCollectionBackendSchema } from "@/lib/universal/parsers";
 
 export const PER_PAGE = 30;

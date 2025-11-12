@@ -1,10 +1,9 @@
 import { Fragment, useState } from "react";
 import ArtistLogo from "./artist-logo";
-import type { PropsWithChildren } from "react";
-import type { NonTransferableReason } from "@/lib/universal/cosmo/objekts";
+import type { CSSProperties, PropsWithChildren } from "react";
+import type { NonTransferableReason } from "@apollo/cosmo/types/objekts";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import type { PropsWithClassName } from "@/lib/utils";
-import { useElementSize } from "@/hooks/use-element-size";
 import { cn } from "@/lib/utils";
 import { m } from "@/i18n/messages";
 
@@ -25,10 +24,12 @@ type SidebarTextProps = PropsWithChildren<{
 function SidebarText(props: SidebarTextProps) {
   return (
     <span
-      style={{
-        "--font-ratio": fontSizeConfig[props.type],
-      }}
-      className="text-[calc(var(--sidebar-width)*var(--font-ratio))]/[var(--sidebar-width)]"
+      style={
+        {
+          fontSize: `${fontSizeConfig[props.type] * 100}cqw`,
+          lineHeight: "100cqw",
+        } as CSSProperties
+      }
     >
       {props.children}
     </span>
@@ -37,7 +38,6 @@ function SidebarText(props: SidebarTextProps) {
 
 export function ObjektSidebar({ collection, serial }: ObjektSidebarProps) {
   const [bandLoaded, setBandLoaded] = useState(false);
-  const [ref, { width }] = useElementSize();
 
   const paddedSerial =
     serial === 0 ? "00000" : serial?.toString().padStart(5, "0");
@@ -65,22 +65,14 @@ export function ObjektSidebar({ collection, serial }: ObjektSidebarProps) {
         />
       )}
 
-      <div
-        ref={ref}
-        className="absolute top-0 right-0 flex h-full w-[11%] items-center"
-      >
+      <div className="@container absolute top-0 right-0 flex h-full w-[11%] items-center">
         <div
           className={cn(
             "flex items-center justify-center gap-2 font-semibold text-(--objekt-text-color) select-none [writing-mode:vertical-lr]",
             useCustomBand &&
-              "my-auto h-[89%] w-full justify-between rounded-l-(--border-radius) px-(--border-padding)",
+              "my-auto h-[89%] w-full justify-between rounded-l-[35cqw] px-[50cqw]",
             useBackground && "bg-(--objekt-background-color)",
           )}
-          style={{
-            "--sidebar-width": `${width}px`,
-            "--border-radius": `${width * 0.35}px`,
-            "--border-padding": `${width * 0.5}px`,
-          }}
         >
           {useCustomBand && (
             <SidebarText type="name">{collection.member}</SidebarText>

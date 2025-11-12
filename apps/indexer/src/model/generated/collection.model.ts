@@ -56,6 +56,9 @@ export class Collection {
   @Column("text", { nullable: false })
   frontImage!: string;
 
+  @Column({ type: "varchar", length: 255, nullable: true })
+  frontMedia!: string | null;
+
   @Column("text", { nullable: false })
   backImage!: string;
 

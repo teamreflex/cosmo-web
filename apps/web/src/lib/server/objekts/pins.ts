@@ -8,8 +8,8 @@ import { db } from "../db";
 import { cosmoAccounts, pins } from "../db/schema";
 import { remember } from "../cache";
 import type { Collection, Objekt } from "../db/indexer/schema";
-import type { CosmoObjekt } from "@/lib/universal/cosmo/objekts";
-import type { ValidArtist } from "@/lib/universal/cosmo/common";
+import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
+import type { ValidArtist } from "@apollo/cosmo/types/common";
 
 interface ObjektWithCollection extends Objekt {
   collection: Collection;
@@ -40,7 +40,7 @@ export const $fetchPins = createServerFn({ method: "GET" })
 
       if (rows.length === 0) return [];
 
-      const tokenIds = rows.map((row) => row.tokenId);
+      const tokenIds = rows.map((row) => row.tokenId.toString());
       try {
         var results = await indexer.query.objekts.findMany({
           where: {
@@ -61,8 +61,8 @@ export const $fetchPins = createServerFn({ method: "GET" })
 
       // sort by pin order
       return mapped.sort((a, b) => {
-        const indexA = tokenIdIndexMap.get(Number(a.tokenId)) ?? Infinity;
-        const indexB = tokenIdIndexMap.get(Number(b.tokenId)) ?? Infinity;
+        const indexA = tokenIdIndexMap.get(a.tokenId) ?? Infinity;
+        const indexB = tokenIdIndexMap.get(b.tokenId) ?? Infinity;
         return indexA - indexB;
       });
     });

@@ -19,7 +19,6 @@ import { Route as AtChar123usernameChar125IndexRouteImport } from './routes/@{$u
 import { Route as ObjektsStatsRouteImport } from './routes/objekts/stats'
 import { Route as ListIdRouteImport } from './routes/list/$id'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
-import { Route as ApiFilterDataRouteImport } from './routes/api/filter-data'
 import { Route as AdminMetadataRouteImport } from './routes/admin/metadata'
 import { Route as AdminBandsRouteImport } from './routes/admin/bands'
 import { Route as AtChar123usernameChar125TradesRouteImport } from './routes/@{$username}/trades'
@@ -27,8 +26,6 @@ import { Route as AtChar123usernameChar125ProgressRouteImport } from './routes/@
 import { Route as AtChar123usernameChar125ComoRouteImport } from './routes/@{$username}/como'
 import { Route as GravityArtistIdRouteImport } from './routes/gravity/$artist/$id'
 import { Route as ApiUserByAddressesRouteImport } from './routes/api/user/by-addresses'
-import { Route as ApiCronObjektStatsRouteImport } from './routes/api/cron.objekt-stats'
-import { Route as ApiCronGravityRouteImport } from './routes/api/cron.gravity'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AtChar123usernameChar125ListSlugRouteImport } from './routes/@{$username}/list.$slug'
 import { Route as ApiProgressLeaderboardMemberRouteImport } from './routes/api/progress/leaderboard.$member'
@@ -97,11 +94,6 @@ const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
   path: '/auth/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiFilterDataRoute = ApiFilterDataRouteImport.update({
-  id: '/api/filter-data',
-  path: '/api/filter-data',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AdminMetadataRoute = AdminMetadataRouteImport.update({
   id: '/metadata',
   path: '/metadata',
@@ -138,16 +130,6 @@ const GravityArtistIdRoute = GravityArtistIdRouteImport.update({
 const ApiUserByAddressesRoute = ApiUserByAddressesRouteImport.update({
   id: '/api/user/by-addresses',
   path: '/api/user/by-addresses',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiCronObjektStatsRoute = ApiCronObjektStatsRouteImport.update({
-  id: '/api/cron/objekt-stats',
-  path: '/api/cron/objekt-stats',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiCronGravityRoute = ApiCronGravityRouteImport.update({
-  id: '/api/cron/gravity',
-  path: '/api/cron/gravity',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
@@ -245,7 +227,6 @@ export interface FileRoutesByFullPath {
   '/@{$username}/trades': typeof AtChar123usernameChar125TradesRoute
   '/admin/bands': typeof AdminBandsRoute
   '/admin/metadata': typeof AdminMetadataRoute
-  '/api/filter-data': typeof ApiFilterDataRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/list/$id': typeof ListIdRoute
   '/objekts/stats': typeof ObjektsStatsRoute
@@ -254,8 +235,6 @@ export interface FileRoutesByFullPath {
   '/objekts': typeof ObjektsIndexRoute
   '/@{$username}/list/$slug': typeof AtChar123usernameChar125ListSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/cron/gravity': typeof ApiCronGravityRoute
-  '/api/cron/objekt-stats': typeof ApiCronObjektStatsRoute
   '/api/user/by-addresses': typeof ApiUserByAddressesRoute
   '/gravity/$artist/$id': typeof GravityArtistIdRoute
   '/api/cosmo/qr-auth/recaptcha': typeof ApiCosmoQrAuthRecaptchaRoute
@@ -281,7 +260,6 @@ export interface FileRoutesByTo {
   '/@{$username}/trades': typeof AtChar123usernameChar125TradesRoute
   '/admin/bands': typeof AdminBandsRoute
   '/admin/metadata': typeof AdminMetadataRoute
-  '/api/filter-data': typeof ApiFilterDataRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/list/$id': typeof ListIdRoute
   '/objekts/stats': typeof ObjektsStatsRoute
@@ -290,8 +268,6 @@ export interface FileRoutesByTo {
   '/objekts': typeof ObjektsIndexRoute
   '/@{$username}/list/$slug': typeof AtChar123usernameChar125ListSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/cron/gravity': typeof ApiCronGravityRoute
-  '/api/cron/objekt-stats': typeof ApiCronObjektStatsRoute
   '/api/user/by-addresses': typeof ApiUserByAddressesRoute
   '/gravity/$artist/$id': typeof GravityArtistIdRoute
   '/api/cosmo/qr-auth/recaptcha': typeof ApiCosmoQrAuthRecaptchaRoute
@@ -319,7 +295,6 @@ export interface FileRoutesById {
   '/@{$username}/trades': typeof AtChar123usernameChar125TradesRoute
   '/admin/bands': typeof AdminBandsRoute
   '/admin/metadata': typeof AdminMetadataRoute
-  '/api/filter-data': typeof ApiFilterDataRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/list/$id': typeof ListIdRoute
   '/objekts/stats': typeof ObjektsStatsRoute
@@ -328,8 +303,6 @@ export interface FileRoutesById {
   '/objekts/': typeof ObjektsIndexRoute
   '/@{$username}/list/$slug': typeof AtChar123usernameChar125ListSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/cron/gravity': typeof ApiCronGravityRoute
-  '/api/cron/objekt-stats': typeof ApiCronObjektStatsRoute
   '/api/user/by-addresses': typeof ApiUserByAddressesRoute
   '/gravity/$artist/$id': typeof GravityArtistIdRoute
   '/api/cosmo/qr-auth/recaptcha': typeof ApiCosmoQrAuthRecaptchaRoute
@@ -358,7 +331,6 @@ export interface FileRouteTypes {
     | '/@{$username}/trades'
     | '/admin/bands'
     | '/admin/metadata'
-    | '/api/filter-data'
     | '/auth/reset-password'
     | '/list/$id'
     | '/objekts/stats'
@@ -367,8 +339,6 @@ export interface FileRouteTypes {
     | '/objekts'
     | '/@{$username}/list/$slug'
     | '/api/auth/$'
-    | '/api/cron/gravity'
-    | '/api/cron/objekt-stats'
     | '/api/user/by-addresses'
     | '/gravity/$artist/$id'
     | '/api/cosmo/qr-auth/recaptcha'
@@ -394,7 +364,6 @@ export interface FileRouteTypes {
     | '/@{$username}/trades'
     | '/admin/bands'
     | '/admin/metadata'
-    | '/api/filter-data'
     | '/auth/reset-password'
     | '/list/$id'
     | '/objekts/stats'
@@ -403,8 +372,6 @@ export interface FileRouteTypes {
     | '/objekts'
     | '/@{$username}/list/$slug'
     | '/api/auth/$'
-    | '/api/cron/gravity'
-    | '/api/cron/objekt-stats'
     | '/api/user/by-addresses'
     | '/gravity/$artist/$id'
     | '/api/cosmo/qr-auth/recaptcha'
@@ -431,7 +398,6 @@ export interface FileRouteTypes {
     | '/@{$username}/trades'
     | '/admin/bands'
     | '/admin/metadata'
-    | '/api/filter-data'
     | '/auth/reset-password'
     | '/list/$id'
     | '/objekts/stats'
@@ -440,8 +406,6 @@ export interface FileRouteTypes {
     | '/objekts/'
     | '/@{$username}/list/$slug'
     | '/api/auth/$'
-    | '/api/cron/gravity'
-    | '/api/cron/objekt-stats'
     | '/api/user/by-addresses'
     | '/gravity/$artist/$id'
     | '/api/cosmo/qr-auth/recaptcha'
@@ -464,15 +428,12 @@ export interface RootRouteChildren {
   AtChar123usernameChar125RouteRoute: typeof AtChar123usernameChar125RouteRouteWithChildren
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
   TermsPrivacyRoute: typeof TermsPrivacyRoute
-  ApiFilterDataRoute: typeof ApiFilterDataRoute
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   ListIdRoute: typeof ListIdRoute
   ObjektsStatsRoute: typeof ObjektsStatsRoute
   GravityIndexRoute: typeof GravityIndexRoute
   ObjektsIndexRoute: typeof ObjektsIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
-  ApiCronGravityRoute: typeof ApiCronGravityRoute
-  ApiCronObjektStatsRoute: typeof ApiCronObjektStatsRoute
   ApiUserByAddressesRoute: typeof ApiUserByAddressesRoute
   GravityArtistIdRoute: typeof GravityArtistIdRoute
   ApiCosmoQrAuthRecaptchaRoute: typeof ApiCosmoQrAuthRecaptchaRoute
@@ -562,13 +523,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/filter-data': {
-      id: '/api/filter-data'
-      path: '/api/filter-data'
-      fullPath: '/api/filter-data'
-      preLoaderRoute: typeof ApiFilterDataRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/admin/metadata': {
       id: '/admin/metadata'
       path: '/metadata'
@@ -616,20 +570,6 @@ declare module '@tanstack/react-router' {
       path: '/api/user/by-addresses'
       fullPath: '/api/user/by-addresses'
       preLoaderRoute: typeof ApiUserByAddressesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/cron/objekt-stats': {
-      id: '/api/cron/objekt-stats'
-      path: '/api/cron/objekt-stats'
-      fullPath: '/api/cron/objekt-stats'
-      preLoaderRoute: typeof ApiCronObjektStatsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/cron/gravity': {
-      id: '/api/cron/gravity'
-      path: '/api/cron/gravity'
-      fullPath: '/api/cron/gravity'
-      preLoaderRoute: typeof ApiCronGravityRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/auth/$': {
@@ -784,15 +724,12 @@ const rootRouteChildren: RootRouteChildren = {
     AtChar123usernameChar125RouteRouteWithChildren,
   AdminRouteRoute: AdminRouteRouteWithChildren,
   TermsPrivacyRoute: TermsPrivacyRoute,
-  ApiFilterDataRoute: ApiFilterDataRoute,
   AuthResetPasswordRoute: AuthResetPasswordRoute,
   ListIdRoute: ListIdRoute,
   ObjektsStatsRoute: ObjektsStatsRoute,
   GravityIndexRoute: GravityIndexRoute,
   ObjektsIndexRoute: ObjektsIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
-  ApiCronGravityRoute: ApiCronGravityRoute,
-  ApiCronObjektStatsRoute: ApiCronObjektStatsRoute,
   ApiUserByAddressesRoute: ApiUserByAddressesRoute,
   GravityArtistIdRoute: GravityArtistIdRoute,
   ApiCosmoQrAuthRecaptchaRoute: ApiCosmoQrAuthRecaptchaRoute,
@@ -815,10 +752,11 @@ export const routeTree = rootRouteImport
   ._addFileTypes<FileRouteTypes>()
 
 import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
+import type { startInstance } from './start.ts'
 declare module '@tanstack/react-start' {
   interface Register {
     ssr: true
     router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
   }
 }

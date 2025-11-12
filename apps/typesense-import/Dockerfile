@@ -1,13 +1,21 @@
-FROM oven/bun:1.3-slim
+FROM oven/bun:1.3.1-slim AS pruner
+WORKDIR /app
+COPY . .
+RUN bunx turbo@2.6.1 prune typesense-import --docker
 
-WORKDIR /usr/src/app
+FROM oven/bun:1.3.1-slim AS builder
+WORKDIR /app
+COPY --from=pruner /app/out/bun.lock ./bun.lock
+COPY --from=pruner /app/out/json/ .
+RUN bun install --frozen-lockfile
+COPY --from=pruner /app/out/full/ .
+RUN bun run --filter typesense-import build
 
-COPY package.json ./
-RUN bun install
-COPY src src
-
+FROM oven/bun:1.3.1-slim AS runner
+WORKDIR /app
 ENV NODE_ENV production
-
-RUN bun build ./src/main.ts --outdir ./dist --target bun
-RUN mv ./dist/main.js ./dist/import-server.js
-CMD ["bun", "run", "dist/import-server.js"]
+COPY --from=builder /app/apps/typesense-import/dist ./dist
+COPY --from=builder /app/apps/typesense-import/package.json ./package.json
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/packages ./packages
+CMD ["bun", "run", "--bun", "--filter", "typesense-import", "start"]

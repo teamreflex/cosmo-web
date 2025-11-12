@@ -4,7 +4,7 @@ import type { ObjektMetadataEntry } from "@/lib/server/db/schema";
 import type {
   CosmoObjekt,
   ObjektBaseFields,
-} from "@/lib/universal/cosmo/objekts";
+} from "@apollo/cosmo/types/objekts";
 
 // alias the indexer type
 export type IndexedObjekt = Collection;

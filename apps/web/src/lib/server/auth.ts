@@ -22,7 +22,7 @@ import * as serverEnv from "@/lib/env/server";
 import * as clientEnv from "@/lib/env/client";
 import { baseUrl } from "@/lib/utils";
 
-export const IP_HEADER = "x-vercel-forwarded-for";
+export const IP_HEADER = "cf-connecting-ip";
 
 /**
  * Better Auth server instance.

@@ -1,4 +1,5 @@
 import { SearchClient } from "typesense";
+import { getTypesenseUrl } from "../universal/typesense";
 import type { CosmoFilters } from "@/hooks/use-cosmo-filters";
 import type { IndexedObjekt, ObjektResponse } from "../universal/objekts";
 import { env } from "@/lib/env/client";
@@ -6,7 +7,7 @@ import { env } from "@/lib/env/client";
 const PER_PAGE = 30;
 
 const typesense = new SearchClient({
-  nodes: [{ url: env.VITE_TYPESENSE_URL }],
+  nodes: [{ url: getTypesenseUrl() }],
   apiKey: env.VITE_TYPESENSE_KEY,
   numRetries: 2,
   connectionTimeoutSeconds: 5,

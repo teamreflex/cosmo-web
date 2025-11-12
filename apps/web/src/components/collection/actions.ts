@@ -18,13 +18,16 @@ export const $toggleObjektLock = createServerFn({ method: "POST" })
     // lock the objekt
     if (data.lock) {
       try {
-        const result = await db.insert(lockedObjekts).values({
-          address: context.cosmo.address,
-          tokenId: data.tokenId,
-          locked: true,
-        });
+        await db
+          .insert(lockedObjekts)
+          .values({
+            address: context.cosmo.address,
+            tokenId: data.tokenId,
+            locked: true,
+          })
+          .returning();
 
-        return result.rowCount === 1;
+        return true;
       } catch (error) {
         console.error(error);
         return false;
@@ -32,7 +35,7 @@ export const $toggleObjektLock = createServerFn({ method: "POST" })
     }
 
     // unlock
-    const result = await db
+    await db
       .delete(lockedObjekts)
       .where(
         and(
@@ -41,7 +44,7 @@ export const $toggleObjektLock = createServerFn({ method: "POST" })
         ),
       );
 
-    return result.rowCount === 1;
+    return true;
   });
 
 /**
@@ -56,7 +59,7 @@ export const $pinObjekt = createServerFn({ method: "POST" })
   .middleware([cosmoMiddleware])
   .handler(async ({ data, context }) => {
     // perform both operations in parallel
-    const [pin, objekt] = await Promise.all([
+    const [, objekt] = await Promise.all([
       // insert pin
       db.insert(pins).values({
         tokenId: data.tokenId,
@@ -65,7 +68,7 @@ export const $pinObjekt = createServerFn({ method: "POST" })
       // fetch objekt
       indexer.query.objekts.findFirst({
         where: {
-          id: data.tokenId,
+          id: data.tokenId.toString(),
         },
         with: {
           collection: true,
@@ -73,7 +76,7 @@ export const $pinObjekt = createServerFn({ method: "POST" })
       }),
     ]);
 
-    if (pin.rowCount !== 1 || objekt === undefined) {
+    if (objekt === undefined) {
       throw new Error("Error pinning objekt");
     }
 
@@ -95,7 +98,7 @@ export const $unpinObjekt = createServerFn({ method: "POST" })
   )
   .middleware([cosmoMiddleware])
   .handler(async ({ data, context }) => {
-    const result = await db
+    await db
       .delete(pins)
       .where(
         and(
@@ -108,5 +111,5 @@ export const $unpinObjekt = createServerFn({ method: "POST" })
       clearTag(pinCacheKey(context.cosmo.username)),
       clearTag(pinCacheKey(context.cosmo.address)),
     ]);
-    return result.rowCount === 1;
+    return true;
   });

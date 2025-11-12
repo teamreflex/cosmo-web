@@ -12,6 +12,7 @@ type Collection @entity {
   class: String! @index
   thumbnailImage: String!
   frontImage: String!
+  frontMedia: String
   backImage: String!
   backgroundColor: String!
   textColor: String!

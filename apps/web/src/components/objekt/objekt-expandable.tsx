@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { getObjektImageUrls } from "./common";
 import { fetchObjektQuery } from "./metadata/common";
-import MetadataDialog from "./metadata-dialog";
+import MetadataDialog, { useMetadataDialog } from "./metadata-dialog";
 import type { PropsWithChildren } from "react";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { useObjektTransfer } from "@/hooks/use-objekt-transfer";
@@ -28,13 +28,51 @@ export default function ExpandableObjekt({
   priority = false,
   className,
 }: Props) {
-  const [isLoaded, setIsLoaded] = useState(false);
-  const queryClient = useQueryClient();
   const isSelected = useObjektTransfer(
     useShallow((state) => state.isSelected(Number(tokenId))),
   );
 
-  const { front } = getObjektImageUrls(collection);
+  return (
+    <MetadataDialog
+      slug={collection.slug}
+      defaultOpen={false}
+      onClose={() => setActive?.(undefined)}
+    >
+      <div
+        style={{
+          "--objekt-background-color": collection.backgroundColor,
+          "--objekt-text-color": collection.textColor,
+        }}
+        className={cn(
+          "relative aspect-photocard touch-manipulation overflow-hidden rounded-lg bg-secondary ring-2 ring-transparent drop-shadow-sm transition-colors md:rounded-xl lg:rounded-2xl",
+          isSelected && "ring-foreground",
+          className,
+        )}
+      >
+        <FrontImage
+          collection={collection}
+          setActive={setActive}
+          priority={priority}
+        />
+
+        {children}
+      </div>
+    </MetadataDialog>
+  );
+}
+
+type FrontImageProps = {
+  collection: Objekt.Collection;
+  setActive?: (slug: string | undefined) => void;
+  priority?: boolean;
+};
+
+function FrontImage(props: FrontImageProps) {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const queryClient = useQueryClient();
+  const { open } = useMetadataDialog();
+
+  const { front } = getObjektImageUrls(props.collection);
 
   function prefetch() {
     const img = new Image();
@@ -42,53 +80,35 @@ export default function ExpandableObjekt({
   }
 
   return (
-    <MetadataDialog
-      slug={collection.slug}
-      isActive={false}
-      onClose={() => setActive?.(undefined)}
-    >
-      {({ open }) => (
-        <div
-          style={{
-            "--objekt-background-color": collection.backgroundColor,
-            "--objekt-text-color": collection.textColor,
-          }}
-          className={cn(
-            "relative aspect-photocard touch-manipulation overflow-hidden rounded-lg bg-secondary ring-2 ring-transparent drop-shadow-sm transition-colors md:rounded-xl lg:rounded-2xl",
-            isSelected && "ring-foreground",
-            className,
-          )}
-        >
-          <img
-            role="button"
-            onMouseOver={prefetch}
-            onLoad={() => setIsLoaded(true)}
-            onClick={() => {
-              // populate the query cache so it doesn't re-fetch
-              queryClient.setQueryData(
-                fetchObjektQuery(collection.slug).queryKey,
-                collection,
-              );
-              // update the url
-              setActive?.(collection.slug);
-              // open the dialog
-              open();
-            }}
-            className={cn(
-              "w-full transition-opacity",
-              isLoaded === false && "opacity-0",
-            )}
-            src={front.display}
-            width={291}
-            height={450}
-            alt={collection.collectionId}
-            decoding="async"
-            fetchPriority={priority ? "high" : "auto"}
-          />
+    <img
+      role="button"
+      onMouseOver={prefetch}
+      onLoad={() => setIsLoaded(true)}
+      onClick={() => {
+        // populate the query cache so it doesn't re-fetch
+        queryClient.setQueryData(
+          fetchObjektQuery(props.collection.slug).queryKey,
+          props.collection,
+        );
 
-          {children}
-        </div>
+        if (props.setActive) {
+          // URL routing mode: update URL, let RoutedExpandableObjekt handle dialog
+          props.setActive(props.collection.slug);
+        } else {
+          // Local dialog mode: directly open dialog
+          open();
+        }
+      }}
+      className={cn(
+        "w-full transition-opacity",
+        isLoaded === false && "opacity-0",
       )}
-    </MetadataDialog>
+      src={front.display}
+      width={291}
+      height={450}
+      alt={props.collection.collectionId}
+      decoding="async"
+      fetchPriority={props.priority ? "high" : "auto"}
+    />
   );
 }

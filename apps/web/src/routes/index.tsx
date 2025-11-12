@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useSuspenseQueries } from "@tanstack/react-query";
 import { Error } from "@/components/error-boundary";
 import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -22,6 +21,7 @@ import { defineHead } from "@/lib/meta";
 import { m } from "@/i18n/messages";
 
 export const Route = createFileRoute("/")({
+  staleTime: 1000 * 60 * 15, // 15 minutes
   validateSearch: objektIndexFrontendSchema,
   component: RouteComponent,
   errorComponent: ErrorComponent,
@@ -31,8 +31,9 @@ export const Route = createFileRoute("/")({
     // prefetch filter data
     context.queryClient.prefetchQuery(filterDataQuery);
 
-    // load quick required data
-    const [artists, selected] = await Promise.all([
+    // load required data
+    const [account, artists, selected] = await Promise.all([
+      context.queryClient.ensureQueryData(currentAccountQuery),
       context.queryClient.ensureQueryData(artistsQuery),
       context.queryClient.ensureQueryData(selectedArtistsQuery),
     ]);
@@ -51,26 +52,20 @@ export const Route = createFileRoute("/")({
       );
     }
 
-    // fetch slower required data
-    await context.queryClient.ensureQueryData(currentAccountQuery);
-
-    return { artists };
+    return { account, artists };
   },
   head: () => defineHead({ title: "Objekts", canonical: "/" }),
 });
 
 function RouteComponent() {
-  const { artists } = Route.useLoaderData();
-  const [account, selected] = useSuspenseQueries({
-    queries: [currentAccountQuery, selectedArtistsQuery],
-  });
+  const { account, artists } = Route.useLoaderData();
 
   return (
     <main className="container flex flex-col py-2">
-      <UserStateProvider user={account.data?.user} cosmo={account.data?.cosmo}>
-        <ArtistProvider artists={artists} selected={selected.data}>
-          <ProfileProvider objektLists={account.data?.objektLists ?? []}>
-            <IndexRenderer objektLists={account.data?.objektLists ?? []} />
+      <UserStateProvider user={account?.user} cosmo={account?.cosmo}>
+        <ArtistProvider artists={artists}>
+          <ProfileProvider objektLists={account?.objektLists ?? []}>
+            <IndexRenderer objektLists={account?.objektLists ?? []} />
           </ProfileProvider>
         </ArtistProvider>
       </UserStateProvider>

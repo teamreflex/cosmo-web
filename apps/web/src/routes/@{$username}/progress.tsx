@@ -6,7 +6,6 @@ import {
   artistsQuery,
   currentAccountQuery,
   filterDataQuery,
-  selectedArtistsQuery,
   targetAccountQuery,
 } from "@/lib/queries/core";
 import { progressFrontendSchema } from "@/lib/universal/parsers";
@@ -33,37 +32,34 @@ export const Route = createFileRoute("/@{$username}/progress")({
   loader: async ({ context, params }) => {
     context.queryClient.prefetchQuery(filterDataQuery);
 
-    // TODO: prefetch leaderboard based on search params
-
-    const [artists, selected, target, account] = await Promise.all([
+    const [artists, target, account] = await Promise.all([
       context.queryClient.ensureQueryData(artistsQuery),
-      context.queryClient.ensureQueryData(selectedArtistsQuery),
       context.queryClient.ensureQueryData(targetAccountQuery(params.username)),
       context.queryClient.ensureQueryData(currentAccountQuery),
     ]);
 
     context.queryClient.prefetchQuery(artistStatsQuery(target.cosmo.address));
 
-    return { artists, selected, target, account };
+    return { artists, target, account };
   },
   head: ({ loaderData }) =>
     defineHead({
-      title: loaderData?.target.user?.username
+      title: loaderData?.target.cosmo.username
         ? m.progress_title_with_username({
-            username: loaderData.target.user.username,
+            username: loaderData.target.cosmo.username,
           })
         : m.progress_title(),
-      canonical: `/@${loaderData?.target.user?.username}/progress`,
+      canonical: `/@${loaderData?.target.cosmo.username}/progress`,
     }),
 });
 
 function RouteComponent() {
-  const { artists, selected, target, account } = Route.useLoaderData();
+  const { artists, target, account } = Route.useLoaderData();
 
   return (
     <section className="flex flex-col">
       <UserStateProvider user={account?.user} cosmo={account?.cosmo}>
-        <ArtistProvider artists={artists} selected={selected}>
+        <ArtistProvider artists={artists}>
           <ProfileProvider target={target}>
             <ProgressRenderer address={target.cosmo.address}>
               <ErrorBoundary fallback={<ProgressChartsError />}>

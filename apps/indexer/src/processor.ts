@@ -9,7 +9,7 @@ import {
 import * as ABI_OBJEKT from "./abi/objekt";
 import * as ABI_COMO from "./abi/como";
 import * as ABI_GRAVITY from "./abi/gravity";
-import { env } from "./env/processor";
+import { env } from "./env";
 import { Addresses } from "@apollo/util";
 
 const COSMO_START_BLOCK = 6363806;

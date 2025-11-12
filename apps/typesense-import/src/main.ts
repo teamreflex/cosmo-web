@@ -1,7 +1,5 @@
-import { FileSystem, Path } from "@effect/platform";
 import { BunContext, BunRuntime } from "@effect/platform-bun";
-import { Duration, Layer, Schedule } from "effect";
-import * as Effect from "effect/Effect";
+import { Duration, Effect, Layer, Schedule } from "effect";
 import { getEdition, getShortCode } from "./collections";
 import { getConfig } from "./config";
 import { Indexer } from "./db/indexer";
@@ -53,12 +51,6 @@ const main = Effect.gen(function* () {
     // update the timestamp
     const newTimestamp = collections[collections.length - 1].createdAt;
     yield* timestamp.set(newTimestamp);
-
-    // write to file
-    const path = yield* Path.Path;
-    const fs = yield* FileSystem.FileSystem;
-    const lastCreatedAtPath = path.join(__dirname, "../lastCreatedAt.txt");
-    yield* fs.writeFileString(lastCreatedAtPath, newTimestamp);
 
     // for each collection, fetch the metadata
     const slugs = collections.map((c) => c.slug);

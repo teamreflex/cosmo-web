@@ -3,7 +3,7 @@ import type {
   CosmoPollChoices,
   CosmoPollFinalized,
   CosmoPollUpcoming,
-} from "@/lib/universal/cosmo/gravity";
+} from "@apollo/cosmo/types/gravity";
 
 type PollStatus = "upcoming" | "ongoing" | "finalized" | "counting";
 

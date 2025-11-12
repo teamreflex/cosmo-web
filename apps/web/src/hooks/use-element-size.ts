@@ -2,15 +2,23 @@ import { useCallback, useRef, useState } from "react";
 import { useIsomorphicLayoutEffect } from "usehooks-ts";
 import type { RefObject } from "react";
 
+type Axis = "width" | "height" | "both";
+
+type Options = {
+  axis?: Axis;
+};
+
 type Size = {
   width: number;
   height: number;
 };
 
-export const useElementSize = <T extends HTMLElement = HTMLDivElement>(): [
-  RefObject<T | null>,
-  Size,
-] => {
+export const useElementSize = <T extends HTMLElement = HTMLDivElement>(
+  options?: Options,
+): [RefObject<T | null>, Size] => {
+  const axis: Axis = options?.axis ?? "both";
+  const trackWidth = axis !== "height";
+  const trackHeight = axis !== "width";
   const ref = useRef<T>(null);
   const [size, setSize] = useState<Size>({
     width: 0,
@@ -21,9 +29,18 @@ export const useElementSize = <T extends HTMLElement = HTMLDivElement>(): [
     const element = ref.current;
     if (element) {
       const { width, height } = element.getBoundingClientRect();
-      setSize({ width, height });
+      setSize((previous) => {
+        const nextWidth = trackWidth ? width : previous.width;
+        const nextHeight = trackHeight ? height : previous.height;
+
+        if (previous.width === nextWidth && previous.height === nextHeight) {
+          return previous;
+        }
+
+        return { width: nextWidth, height: nextHeight };
+      });
     }
-  }, []);
+  }, [trackHeight, trackWidth]);
 
   useIsomorphicLayoutEffect(() => {
     updateSize();
@@ -41,7 +58,7 @@ export const useElementSize = <T extends HTMLElement = HTMLDivElement>(): [
         resizeObserver.unobserve(ref.current);
       }
     };
-  }, [updateSize]);
+  }, [trackHeight, trackWidth, updateSize]);
 
   return [ref, size];
 };

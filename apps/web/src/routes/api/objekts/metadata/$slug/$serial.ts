@@ -12,10 +12,15 @@ export const Route = createFileRoute("/api/objekts/metadata/$slug/$serial")({
        * Cached for 4 hours.
        */
       GET: async ({ params }) => {
+        const headers = cacheHeaders({ cdn: 60 * 60 * 4 });
+
         // validate serial
         const serial = parseInt(params.serial);
         if (isNaN(serial)) {
-          return Response.json({ message: "Invalid serial" }, { status: 422 });
+          return Response.json(
+            { message: "Invalid serial" },
+            { status: 422, headers },
+          );
         }
 
         // fetch objekt with transfers
@@ -40,12 +45,12 @@ export const Route = createFileRoute("/api/objekts/metadata/$slug/$serial")({
         });
 
         if (!collection) {
-          return Response.json({ result: null });
+          return Response.json({ result: null }, { headers });
         }
 
         const objekt = collection.objekts[0];
         if (!objekt) {
-          return Response.json({ result: null });
+          return Response.json({ result: null }, { headers });
         }
 
         // collect all unique addresses from transfers and owner
@@ -77,12 +82,7 @@ export const Route = createFileRoute("/api/objekts/metadata/$slug/$serial")({
           transfers,
         } satisfies SerialObjekt;
 
-        return Response.json(
-          { result },
-          {
-            headers: cacheHeaders({ vercel: 60 * 60 * 4 }),
-          },
-        );
+        return Response.json({ result }, { headers });
       },
     },
   },

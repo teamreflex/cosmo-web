@@ -219,6 +219,7 @@ export function transfersQuery(
           ...searchParams,
           address,
           page: pageParam,
+          artists: selectedArtists,
         },
       });
     },

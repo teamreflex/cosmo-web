@@ -1,58 +1,35 @@
-import { ofetch } from "ofetch";
-import { createServerFn } from "@tanstack/react-start";
+import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
+import { subsquidStatus } from "@apollo/database/indexer/schema";
 import { abstract } from "./http";
 import { remember } from "./cache";
+import { indexer } from "./db/indexer";
 import type { RPCResponse, SystemStatus } from "../universal/system";
-import { env } from "@/lib/env/server";
-
-type Status = {
-  height: number;
-  hash: string;
-};
 
 /**
  * Fetch the current block height from the indexer.
  */
-async function fetchProcessorHeight() {
-  const result = await ofetch<Status>(`${env.INDEXER_PROXY_URL}/status`, {
-    headers: {
-      "proxy-key": env.INDEXER_PROXY_KEY,
-    },
-  });
-
-  return result.height;
-}
-
-type ChainStatus = {
-  blockHeight: number;
-};
+const fetchProcessorHeight = createServerOnlyFn(async () => {
+  const [result] = await indexer.select().from(subsquidStatus).limit(1);
+  return result?.height ?? 0;
+});
 
 /**
- * Fetch the current block height from the Alchemy API.
+ * Fetch the current block height from the Abstract RPC.
  */
-async function fetchChainStatus(): Promise<ChainStatus> {
+const fetchChainStatus = createServerOnlyFn(async () => {
   const blockNumber = await abstract<RPCResponse>("/", {
     body: {
       id: 1,
       jsonrpc: "2.0",
       method: "eth_blockNumber",
+      params: [],
     },
   });
 
   return {
     blockHeight: parseInt(blockNumber.result),
   };
-}
-
-type FinalSystemStatus = {
-  processor: {
-    status: SystemStatus;
-    height: {
-      processor: number;
-      chain: number;
-    };
-  };
-};
+});
 
 /**
  * Calculate status for indexer height.
@@ -61,28 +38,25 @@ type FinalSystemStatus = {
  * - more than 3600 blocks / 60 minutes: down
  */
 export const $fetchSystemStatus = createServerFn().handler(async () => {
-  return await remember(
-    `system-status`,
-    60,
-    async (): Promise<FinalSystemStatus> => {
-      const [{ blockHeight }, processorHeight] = await Promise.all([
-        fetchChainStatus(),
-        fetchProcessorHeight(),
-      ]);
+  return await remember(`system-status`, 60, async () => {
+    const [{ blockHeight }, processorHeight] = await Promise.all([
+      fetchChainStatus(),
+      fetchProcessorHeight(),
+    ]);
 
-      // calculate processor status
-      const diff = blockHeight - processorHeight;
-      const status = diff < 1800 ? "normal" : diff < 3600 ? "degraded" : "down";
+    // calculate processor status
+    const diff = blockHeight - processorHeight;
+    const status: SystemStatus =
+      diff < 1800 ? "normal" : diff < 3600 ? "degraded" : "down";
 
-      return {
-        processor: {
-          status,
-          height: {
-            processor: processorHeight,
-            chain: blockHeight,
-          },
+    return {
+      processor: {
+        status,
+        height: {
+          processor: processorHeight,
+          chain: blockHeight,
         },
-      };
-    },
-  );
+      },
+    };
+  });
 });

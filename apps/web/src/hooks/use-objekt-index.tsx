@@ -1,4 +1,3 @@
-import { useDebounceValue } from "usehooks-ts";
 import { useEffect } from "react";
 import { getRouteApi } from "@tanstack/react-router";
 import { useArtists } from "./use-artists";
@@ -16,19 +15,29 @@ const route = getRouteApi("/");
  * Handles switching between the blockchain and Typesense APIs.
  */
 export function useObjektIndex() {
-  const searchParams = route.useSearch();
-  const [debouncedSearch] = useDebounceValue(searchParams.search, 500);
+  const searchParams = route.useSearch({
+    select: (search) => ({
+      sort: search.sort,
+      season: search.season,
+      class: search.class,
+      on_offline: search.on_offline,
+      member: search.member,
+      artist: search.artist,
+      collectionNo: search.collectionNo,
+      search: search.search,
+    }),
+  });
   const { selectedIds } = useArtists();
 
   // track when a user searches for an objekt
   useEffect(() => {
-    if (debouncedSearch && debouncedSearch.length > 0) {
+    if (searchParams.search && searchParams.search.length > 0) {
       track("objekt-search");
     }
-  }, [debouncedSearch]);
+  }, [searchParams]);
 
   // if no search, use the default API
-  if (!debouncedSearch) {
+  if (!searchParams.search) {
     return objektOptions({
       filtering: "remote",
       query: objektIndexBlockchainQuery(searchParams, selectedIds),

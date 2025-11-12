@@ -1,21 +1,19 @@
 {
-  "extends": "@apollo/typescript/tsconfig.base.json",
+  "extends": "@apollo/typescript/tsconfig.node.json",
 
   "include": ["src/**/*.ts", "eslint.config.ts"],
   "exclude": ["node_modules", ".turbo", "lib"],
 
   "compilerOptions": {
-    "module": "NodeNext",
-    "target": "ES2022",
-    "strict": true,
-    "declaration": false,
-    "sourceMap": true,
-    "esModuleInterop": true,
+    // TypeORM decorators
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "skipLibCheck": true,
-    "resolveJsonModule": true,
-    "moduleResolution": "NodeNext",
+
+    // Build output
+    "declaration": false,
+    "sourceMap": true,
+
+    // Path aliases
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]

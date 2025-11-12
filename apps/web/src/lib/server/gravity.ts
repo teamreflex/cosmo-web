@@ -5,17 +5,17 @@ import z from "zod";
 import { isBefore } from "date-fns";
 import { setResponseHeaders } from "@tanstack/react-start/server";
 import { isEqual } from "@apollo/util";
+import { fetchGravity, fetchPoll } from "@apollo/cosmo/server/gravity";
 import { findPoll } from "../client/gravity/util";
 import { GravityNotSupportedError } from "../universal/gravity";
 import { db } from "./db";
-import { fetchGravity, fetchPoll } from "./cosmo/gravity";
 import { getProxiedToken } from "./proxied-token";
 import { cacheHeaders, remember } from "./cache";
 import { indexer } from "./db/indexer";
 import { gravities } from "./db/schema";
 import type { GravityVote } from "../universal/gravity";
 import type { RevealedVote } from "../client/gravity/polygon/types";
-import type { ValidArtist } from "../universal/cosmo/common";
+import type { ValidArtist } from "@apollo/cosmo/types/common";
 import { $fetchArtists } from "@/lib/server/artists";
 
 /**
@@ -105,7 +105,7 @@ export const $fetchPolygonGravity = createServerFn({ method: "GET" })
   )
   .handler(async ({ data }) => {
     // cache this server function response for 30 days
-    setResponseHeaders(cacheHeaders({ vercel: 60 * 60 * 24 * 30 })); // 30 days
+    setResponseHeaders(new Headers(cacheHeaders({ cdn: 60 * 60 * 24 * 30 }))); // 30 days
 
     return await remember(
       `gravity-polygon:${data.artist}:${data.id}`,

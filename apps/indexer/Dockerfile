@@ -1,31 +1,34 @@
-FROM node:22-alpine AS node
-FROM node AS node-with-gyp
-RUN apk add g++ make python3
-RUN npm install -g pnpm 
+# stage 1: prune workspace with bun
+FROM oven/bun:1.3.1-slim AS pruner
+WORKDIR /app
+COPY . .
+RUN bunx turbo@2.6.1 prune indexer --docker
 
-FROM node-with-gyp AS builder
-WORKDIR /squid
-ADD package.json .
-ADD pnpm-lock.yaml .
-ADD db db
-RUN pnpm install --frozen-lockfile
-ADD tsconfig.json .
-ADD src src
-RUN pnpm run build
+# stage 2: install dependencies with bun
+FROM oven/bun:1.3.1-slim AS installer
+WORKDIR /app
+COPY --from=pruner /app/out/bun.lock ./bun.lock
+COPY --from=pruner /app/out/json/ .
+RUN bun install --frozen-lockfile
+COPY --from=pruner /app/out/full/ .
 
-FROM node-with-gyp AS deps
-WORKDIR /squid
-ADD package.json .
-ADD pnpm-lock.yaml .
-RUN pnpm install --frozen-lockfile --prod
+# stage 3: build with node
+FROM node:22-alpine AS builder
+WORKDIR /app
+COPY --from=installer /app .
+# this should be kept in sync with the build script in package.json
+RUN cd apps/indexer && rm -rf lib/ && npx tsc -p tsconfig.build.json
 
-FROM node AS squid
-WORKDIR /squid
-COPY --from=deps /squid/package.json .
-COPY --from=deps /squid/pnpm-lock.yaml .
-COPY --from=deps /squid/node_modules node_modules
-COPY --from=builder /squid/lib lib
-COPY --from=builder /squid/db db
-ADD commands.json .
-RUN echo -e "loglevel=silent\\nupdate-notifier=false" > /squid/.npmrc
-RUN npm i -g @subsquid/commands && mv $(which squid-commands) /usr/local/bin/sqd
+# stage 4: run with node
+FROM node:22-alpine AS runner
+WORKDIR /app/apps/indexer
+ENV NODE_ENV=production
+COPY --from=builder /app/apps/indexer/lib ./lib
+COPY --from=builder /app/apps/indexer/db ./db
+COPY --from=builder /app/apps/indexer/package.json ./package.json
+COPY --from=builder /app/apps/indexer/commands.json ./commands.json
+COPY --from=builder /app/apps/indexer/node_modules ./node_modules
+COPY --from=builder /app/node_modules/.bun /app/node_modules/.bun
+COPY --from=builder /app/packages /app/packages
+RUN npm install -g @subsquid/commands && mv $(which squid-commands) /usr/local/bin/sqd
+CMD ["sqd", "process:prod"]

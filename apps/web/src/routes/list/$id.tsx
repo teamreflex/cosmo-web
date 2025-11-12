@@ -74,7 +74,6 @@ export const Route = createFileRoute("/list/$id")({
       account,
       isAuthenticated,
       artists,
-      selected,
     };
   },
   head: ({ loaderData }) =>
@@ -85,13 +84,13 @@ export const Route = createFileRoute("/list/$id")({
 });
 
 function RouteComponent() {
-  const { account, artists, selected, isAuthenticated, objektList } =
+  const { account, artists, isAuthenticated, objektList } =
     Route.useLoaderData();
 
   return (
     <main className="container flex flex-col py-2">
       <UserStateProvider user={account?.user} cosmo={account?.cosmo}>
-        <ArtistProvider artists={artists} selected={selected}>
+        <ArtistProvider artists={artists}>
           <ProfileProvider>
             <div className="grid grid-cols-2 grid-rows-2 lg:h-9 lg:grid-rows-1">
               <div className="flex items-center">

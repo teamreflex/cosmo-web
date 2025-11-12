@@ -1,22 +1,32 @@
 import { X } from "lucide-react";
 import { getRouteApi } from "@tanstack/react-router";
+import { useState } from "react";
+import { useDebounceCallback } from "usehooks-ts";
 import { cn } from "@/lib/utils";
 import { m } from "@/i18n/messages";
 
 const route = getRouteApi("/");
 
 export default function FilterSearch() {
-  const { search } = route.useSearch();
+  const search = route.useSearch({
+    select: (params) => params.search,
+  });
+  const [query, setQuery] = useState(() => search ?? undefined);
   const navigate = route.useNavigate();
 
-  function setQuery(query: string | undefined) {
+  const setDebounced = useDebounceCallback((term: string | undefined) => {
     navigate({
       search: (prev) => ({
         ...prev,
-        search: query,
+        search: term,
       }),
       replace: true,
     });
+  }, 500);
+
+  function set(term: string | undefined) {
+    setQuery(term);
+    setDebounced(term);
   }
 
   return (
@@ -29,13 +39,13 @@ export default function FilterSearch() {
       <input
         type="text"
         placeholder={m.common_search_placeholder()}
-        value={search ?? ""}
-        onChange={(e) => setQuery(e.currentTarget.value || undefined)}
+        value={query ?? ""}
+        onChange={(e) => set(e.currentTarget.value || undefined)}
         className="h-full w-full grow py-1 pl-3 text-base outline-none md:text-sm"
         maxLength={32}
       />
 
-      <button type="button" onClick={() => setQuery(undefined)}>
+      <button type="button" onClick={() => set(undefined)}>
         <X className="mr-3 h-4 w-4" />
       </button>
     </div>

@@ -8,10 +8,7 @@ import { preconnect } from "react-dom";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "sonner";
 import React from "react";
-import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import { TanStackDevtools } from "@tanstack/react-devtools";
 import { FileQuestion, RefreshCcw } from "lucide-react";
-import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import appCss from "../styles/tailwind.css?url";
 import type { QueryClient } from "@tanstack/react-query";
 import Navbar from "@/components/navbar/navbar";
@@ -26,6 +23,7 @@ import {
 import { systemStatusQuery } from "@/lib/queries/system";
 import { Button } from "@/components/ui/button";
 import { getLocale } from "@/i18n/runtime";
+import Devtools from "@/components/devtools";
 
 interface RouterContext {
   queryClient: QueryClient;
@@ -33,11 +31,12 @@ interface RouterContext {
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   staleTime: Infinity,
-  loader({ context }) {
+  loader: async ({ context }) => {
     context.queryClient.prefetchQuery(currentAccountQuery);
     context.queryClient.prefetchQuery(systemStatusQuery);
-    context.queryClient.prefetchQuery(selectedArtistsQuery);
     context.queryClient.prefetchQuery(artistsQuery);
+
+    await context.queryClient.ensureQueryData(selectedArtistsQuery);
   },
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
@@ -160,21 +159,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           <TailwindIndicator />
         </ThemeProvider>
 
-        <TanStackDevtools
-          config={{
-            position: "bottom-right",
-          }}
-          plugins={[
-            {
-              name: "Tanstack Router",
-              render: <TanStackRouterDevtoolsPanel />,
-            },
-            {
-              name: "Tanstack Query",
-              render: <ReactQueryDevtoolsPanel />,
-            },
-          ]}
-        />
+        <Devtools />
         <Scripts />
       </body>
     </html>

@@ -9,7 +9,7 @@ import {
 import ProgressSeason from "./progress-season";
 import ProgressLeaderboard from "./progress-leaderboard";
 import type { SeasonProgress } from "@/lib/universal/progress";
-import type { ValidOnlineType } from "@/lib/universal/cosmo/common";
+import type { ValidOnlineType } from "@apollo/cosmo/types/common";
 import { filterDataQuery } from "@/lib/queries/core";
 import { progressBreakdownQuery } from "@/lib/queries/progress";
 import { m } from "@/i18n/messages";

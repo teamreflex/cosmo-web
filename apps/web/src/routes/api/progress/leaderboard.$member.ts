@@ -26,7 +26,7 @@ export const Route = createFileRoute("/api/progress/leaderboard/$member")({
         });
 
         return Response.json(results, {
-          headers: cacheHeaders({ vercel: 60 * 60 }),
+          headers: cacheHeaders({ cdn: 60 * 60 }),
         });
       },
     },

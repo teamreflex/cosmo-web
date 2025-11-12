@@ -1,15 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Ratelimit } from "@upstash/ratelimit";
-import { waitUntil } from "@vercel/functions";
 import { captureException } from "@sentry/tanstackstart-react";
-import { $fetchCurrentUser } from "@/lib/queries/core";
-import { IP_HEADER } from "@/lib/server/auth";
-import { redis } from "@/lib/server/cache";
-import { getCorsHeaders } from "@/lib/server/cors";
 import {
   exchangeLoginTicket,
   getRecaptchaToken,
-} from "@/lib/server/cosmo/qr-auth";
+} from "@apollo/cosmo/server/qr-auth";
+import { $fetchCurrentUser } from "@/lib/queries/core";
+import { getCorsHeaders } from "@/lib/server/cors";
+import { env } from "@/lib/env/server";
 
 export const Route = createFileRoute("/api/cosmo/qr-auth/recaptcha")({
   server: {
@@ -18,7 +15,6 @@ export const Route = createFileRoute("/api/cosmo/qr-auth/recaptcha")({
        * Use a headless browser to get the reCAPTCHA token, then exchange it for a login ticket.
        */
       GET: async ({ request }) => {
-        const ip = request.headers.get(IP_HEADER) ?? undefined;
         const user = await $fetchCurrentUser();
         const headers = getCorsHeaders(request);
 
@@ -33,29 +29,15 @@ export const Route = createFileRoute("/api/cosmo/qr-auth/recaptcha")({
           );
         }
 
-        // rate limit check
-        const identifier = `user:${user.id}`;
-        const { success, pending } = await ratelimit.limit(identifier, {
-          ip,
-        });
-
-        // don't stop execution until analytics are done
-        waitUntil(pending);
-
-        // rate limit exceeded
-        if (!success) {
-          return Response.json(
-            { error: "rate limit exceeded" },
-            {
-              status: 429,
-              headers,
-            },
-          );
-        }
-
         // use browserless to get the recaptcha token
         try {
-          var recaptcha = await getRecaptchaToken();
+          var recaptcha = await getRecaptchaToken({
+            recaptchaKey: env.COSMO_RECAPTCHA_KEY,
+            browserless: {
+              baseUrl: env.BROWSERLESS_BASE_URL,
+              apiKey: env.BROWSERLESS_API_KEY,
+            },
+          });
         } catch (err) {
           captureException(err);
           console.error("[getRecaptchaToken] error:", err);
@@ -100,14 +82,4 @@ export const Route = createFileRoute("/api/cosmo/qr-auth/recaptcha")({
       },
     },
   },
-});
-
-/**
- * Upstash ratelimiter ensuring that the same IP address can only make 1 request per 5 minutes.
- */
-const ratelimit = new Ratelimit({
-  redis,
-  limiter: Ratelimit.fixedWindow(1, "5 m"),
-  analytics: true,
-  prefix: "rl:recaptcha",
 });

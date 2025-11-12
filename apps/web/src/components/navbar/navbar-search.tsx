@@ -8,7 +8,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
-import type { CosmoPublicUser } from "@/lib/universal/cosmo/user";
+import type { CosmoPublicUser } from "@apollo/cosmo/types/user";
 import { useSearchStore } from "@/store";
 import { m } from "@/i18n/messages";
 

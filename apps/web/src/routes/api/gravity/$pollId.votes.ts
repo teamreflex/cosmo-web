@@ -38,7 +38,7 @@ export const Route = createFileRoute("/api/gravity/$pollId/votes")({
         const cacheTime = isPast(gravity.endDate) ? 60 * 60 * 24 * 30 : 60 * 10; // 30 days if past, 10 minutes if not
 
         return Response.json(votes, {
-          headers: cacheHeaders({ vercel: cacheTime }),
+          headers: cacheHeaders({ cdn: cacheTime }),
         });
       },
     },

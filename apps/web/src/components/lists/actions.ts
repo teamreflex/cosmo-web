@@ -10,7 +10,7 @@ import {
   updateObjektListSchema,
 } from "../../lib/universal/schema/objekt-list";
 import type { Collection } from "@/lib/server/db/indexer/schema";
-import type { CosmoArtistWithMembersBFF } from "@/lib/universal/cosmo/artists";
+import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
 import type { ObjektListEntry } from "@/lib/server/db/schema";
 import { $fetchObjektList } from "@/lib/server/objekts/lists";
 import { db } from "@/lib/server/db";
@@ -146,12 +146,12 @@ export const $addObjektToList = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertUserOwnsList(data.objektListId, context.session.session.userId);
 
-    const result = await db.insert(objektListEntries).values({
+    await db.insert(objektListEntries).values({
       objektListId: data.objektListId,
       collectionId: data.collectionSlug,
     });
 
-    return result.rowCount === 1;
+    return true;
   });
 
 /**
@@ -163,7 +163,7 @@ export const $removeObjektFromList = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertUserOwnsList(data.objektListId, context.session.session.userId);
 
-    const result = await db
+    await db
       .delete(objektListEntries)
       .where(
         and(
@@ -172,7 +172,7 @@ export const $removeObjektFromList = createServerFn({ method: "POST" })
         ),
       );
 
-    return result.rowCount === 1;
+    return true;
   });
 
 /**

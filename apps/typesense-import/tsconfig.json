@@ -2,7 +2,7 @@
   "extends": "./tsconfig.base.json",
   "include": ["eslint.config.ts"],
   "compilerOptions": {
-    "types": ["node"]
+    "types": ["bun"]
   },
   "references": [{ "path": "tsconfig.src.json" }]
 }

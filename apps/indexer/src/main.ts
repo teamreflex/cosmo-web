@@ -5,13 +5,14 @@ import {
   type VoteEvent,
   parseBlocks,
 } from "./parser";
-import { type MetadataV1, fetchMetadata } from "./cosmo";
 import { Collection, ComoBalance, Objekt, type Transfer, Vote } from "./model";
 import { addr, chunk } from "@apollo/util";
 import { TypeormDatabase, type Store } from "@subsquid/typeorm-store";
 import { randomUUID } from "crypto";
-import { env } from "./env/processor";
+import { env } from "./env";
 import { Addresses } from "@apollo/util";
+import { fetchMetadataV1 } from "@apollo/cosmo/server/metadata";
+import type { CosmoObjektMetadataV1 } from "@apollo/cosmo/types/metadata";
 
 const db = new TypeormDatabase({ supportHotBlocks: true });
 
@@ -32,7 +33,7 @@ processor.run(db, async (ctx) => {
       const objektBatch = new Map<string, Objekt>();
 
       const metadataBatch = await Promise.allSettled(
-        chunk.map((e) => fetchMetadata(e.tokenId)),
+        chunk.map((e) => fetchMetadataV1(e.tokenId)),
       );
 
       // iterate over each objekt metadata request
@@ -151,7 +152,7 @@ processor.run(db, async (ctx) => {
  */
 async function handleCollection(
   ctx: ProcessorContext<Store>,
-  metadata: MetadataV1,
+  metadata: CosmoObjektMetadataV1,
   buffer: Map<string, Collection>,
   transfer: Transfer,
 ) {
@@ -213,7 +214,7 @@ async function handleCollection(
  */
 async function handleObjekt(
   ctx: ProcessorContext<Store>,
-  metadata: MetadataV1,
+  metadata: CosmoObjektMetadataV1,
   buffer: Map<string, Objekt>,
   transfer: Transfer,
 ) {

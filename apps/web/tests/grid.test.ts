@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "bun:test";
 import {
   buildCollectionLookupMap,
   calculateGrids,
@@ -31,6 +31,7 @@ function createCollection(
     comoAmount: 10,
     onOffline: "online",
     bandImageUrl: null,
+    frontMedia: null,
   };
 }
 

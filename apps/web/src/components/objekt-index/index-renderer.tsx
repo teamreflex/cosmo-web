@@ -1,20 +1,15 @@
 import ListDropdown from "../lists/list-dropdown";
-import FilteredObjektDisplay from "../objekt/filtered-objekt-display";
+import CosmoMemberFilter from "../objekt/cosmo-member-filter";
 import FiltersContainer from "../collection/filters-container";
-import { ObjektSidebar } from "../objekt/common";
-import ExpandableObjekt from "../objekt/objekt-expandable";
-import { Objekt } from "../../lib/universal/objekt-conversion";
-import VirtualizedGrid from "../objekt/virtualized-grid";
-import LoaderRemote from "../objekt/loader-remote";
+import VirtualizedObjektGrid from "../objekt/virtualized-objekt-grid";
 import ObjektIndexFilters from "../collection/filter-contexts/objekt-index-filters";
-import { TopOverlay } from "./index-overlay";
+import RoutedExpandableObjekt from "../objekt/objekt-routed";
 import HelpDialog from "./help-dialog";
-import type { IndexedObjekt } from "@/lib/universal/objekts";
+import { IndexGridItem } from "./index-grid-item";
 import type { ObjektList } from "@/lib/server/db/schema";
 import { useGridColumns } from "@/hooks/use-grid-columns";
 import { useUserState } from "@/hooks/use-user-state";
 import { useObjektIndex } from "@/hooks/use-objekt-index";
-import { useActiveObjekt } from "@/hooks/use-active-objekt";
 import { m } from "@/i18n/messages";
 
 type Props = {
@@ -25,7 +20,6 @@ export default function IndexRenderer(props: Props) {
   const { user } = useUserState();
   const gridColumns = useGridColumns();
   const options = useObjektIndex();
-  const { setActiveObjekt } = useActiveObjekt();
 
   const authenticated = user !== undefined;
 
@@ -37,52 +31,22 @@ export default function IndexRenderer(props: Props) {
         <ObjektIndexFilters search />
       </FiltersContainer>
 
-      <FilteredObjektDisplay gridColumns={gridColumns}>
-        <LoaderRemote
-          options={options}
-          gridColumns={gridColumns}
-          showTotal
-          searchable
-        >
-          {({ rows }) => (
-            <VirtualizedGrid
-              rows={rows}
-              getObjektId={(objekt) => objekt.id}
-              authenticated={authenticated}
-              gridColumns={gridColumns}
-            >
-              {({ item }) => {
-                const collection = Objekt.fromIndexer(item);
-                return (
-                  <ExpandableObjekt
-                    collection={collection}
-                    setActive={setActiveObjekt}
-                  >
-                    <Overlay
-                      objekt={item}
-                      authenticated={authenticated}
-                      objektLists={props.objektLists}
-                    />
-                  </ExpandableObjekt>
-                );
-              }}
-            </VirtualizedGrid>
-          )}
-        </LoaderRemote>
-      </FilteredObjektDisplay>
+      <CosmoMemberFilter />
+      <VirtualizedObjektGrid
+        options={options}
+        gridColumns={gridColumns}
+        getObjektId={(objekt) => objekt.id}
+        authenticated={authenticated}
+        ItemComponent={IndexGridItem}
+        itemComponentProps={{
+          authenticated,
+          objektLists: props.objektLists,
+        }}
+        showTotal
+      />
 
-      {/**
-       * if there's a slug in the url, open an expandable objekt dialog.
-       * serverActiveObjekt is populated on first load from the server
-       * using activeObjekt here results in two dialogs being open at once
-       * TODO: rethink this due to new behavior
-       */}
-      {/* {activeObjekt !== undefined && (
-        <RoutedExpandableObjekt
-          slug={activeObjekt}
-          setActive={setActiveObjekt}
-        />
-      )} */}
+      {/* if there's a slug in the url, open an expandable objekt dialog */}
+      <RoutedExpandableObjekt />
     </div>
   );
 }
@@ -120,25 +84,6 @@ function Options(props: { objektLists: ObjektList[] }) {
         allowCreate={true}
         createListUrl={createListUrl}
       />
-    </div>
-  );
-}
-
-type OverlayProps = {
-  objekt: IndexedObjekt;
-  authenticated: boolean;
-  objektLists: ObjektList[];
-};
-
-function Overlay({ objekt, authenticated, objektLists }: OverlayProps) {
-  const collection = Objekt.fromIndexer(objekt);
-
-  return (
-    <div className="contents">
-      <ObjektSidebar collection={collection} />
-      {authenticated && (
-        <TopOverlay objekt={objekt} objektLists={objektLists} />
-      )}
     </div>
   );
 }

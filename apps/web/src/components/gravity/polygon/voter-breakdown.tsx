@@ -1,7 +1,7 @@
 import TopVotes from "./top-votes";
 import TopUsers from "./top-users";
 import type { RevealedVote } from "@/lib/client/gravity/polygon/types";
-import type { PollSelectedContentImage } from "@/lib/universal/cosmo/gravity";
+import type { PollSelectedContentImage } from "@apollo/cosmo/types/gravity";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { m } from "@/i18n/messages";
 

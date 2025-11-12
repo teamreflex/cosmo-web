@@ -1,6 +1,6 @@
 import { toast } from "sonner";
 import { create } from "zustand";
-import type { CosmoPublicUser } from "@/lib/universal/cosmo/user";
+import type { CosmoPublicUser } from "@apollo/cosmo/types/user";
 import { m } from "@/i18n/messages";
 
 const MAX_SELECTIONS = 10;

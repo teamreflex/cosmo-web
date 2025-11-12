@@ -21,6 +21,7 @@ A platform for exploring objekts & gravities from [MODHAUS](https://www.mod-haus
 - `apps/web`: Core Tanstack Start web app deployed at [apollo.cafe](https://apollo.cafe)
 - `apps/indexer`: Subsquid blockchain indexer for cataloging Modhaus objekt collections
 - `apps/typesense-import`: Sync new objekt collections to the Typesense database
+- `packages/cosmo`: Types and requests for the COSMO API
 - `packages/database`: Drizzle schemas for the web app and indexer databases
 - `packages/eslint`: Shared ESLint config
 - `packages/typescript`: Shared tsconfig.json file
@@ -28,22 +29,22 @@ A platform for exploring objekts & gravities from [MODHAUS](https://www.mod-haus
 
 ## Requirements
 
-- [Node.js](https://nodejs.org/en/) 22.12+
-- [Neon](https://neon.tech/) instance
-- [Upstash](https://upstash.com/) instance
-- [Typesense](https://typesense.org/) instance
-- [Alchemy](https://www.alchemy.com/) API key
+- [Bun](https://bun.sh/) 1.3+
+- [Postgres](https://www.postgresql.org/)
+- [Redis](https://redis.io/) or [Valkey](https://valkey.io/)
+- [Typesense](https://typesense.org/)
 - [AWS SES](https://aws.amazon.com/ses/) credentials
 - [Discord OAuth](https://discord.com/developers/docs/topics/oauth2) credentials
 - [Twitter OAuth](https://docs.x.com/resources/fundamentals/authentication/oauth-2-0/overview) credentials
 - [Browserless](https://www.browserless.io/) credentials
+- [Docker](https://www.docker.com/) (local development)
 
 ## Setup
 
 ```bash
 git clone git@github.com:teamreflex/cosmo-web.git
 cd cosmo-web
-pnpm install
+bun install
 cp .env.example .env.local
 turbo i18n
 turbo db:migrate
@@ -52,6 +53,7 @@ turbo dev
 
 ## Tooling
 
+- [Bun](https://bun.sh/)
 - [Turborepo](https://turborepo.com/)
 - [TanStack Start](https://tanstack.com/start/latest/docs/framework/react/overview)
 - [Tailwind v4](https://tailwindcss.com/)

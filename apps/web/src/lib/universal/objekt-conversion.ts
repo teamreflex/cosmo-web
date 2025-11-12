@@ -1,11 +1,11 @@
-import type { ValidArtist } from "@/lib/universal/cosmo/common";
+import type { ValidArtist } from "@apollo/cosmo/types/common";
 import type {
   BFFCollectionGroupCollection,
   BFFCollectionGroupObjekt,
   CosmoObjekt,
   NonTransferableReason,
   ScannedObjekt,
-} from "@/lib/universal/cosmo/objekts";
+} from "@apollo/cosmo/types/objekts";
 import type { IndexedObjekt } from "@/lib/universal/objekts";
 
 export namespace Objekt {

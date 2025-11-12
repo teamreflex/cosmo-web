@@ -46,11 +46,11 @@ export const Route = createFileRoute("/@{$username}/trades")({
 });
 
 function RouteComponent() {
-  const { artists, selected, cosmo } = Route.useLoaderData();
+  const { artists, cosmo } = Route.useLoaderData();
 
   return (
     <section className="flex flex-col">
-      <ArtistProvider artists={artists} selected={selected}>
+      <ArtistProvider artists={artists}>
         <TransfersRenderer cosmo={cosmo} />
       </ArtistProvider>
 

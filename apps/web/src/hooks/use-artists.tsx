@@ -1,33 +1,32 @@
 import { createContext, use, useCallback } from "react";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import type {
   CosmoArtistWithMembersBFF,
   CosmoMemberBFF,
-} from "@/lib/universal/cosmo/artists";
+} from "@apollo/cosmo/types/artists";
+import { selectedArtistsQuery } from "@/lib/queries/core";
 
 type ContextProps = {
   // cosmo artist data
   artists: CosmoArtistWithMembersBFF[];
   artistMap: Map<string, CosmoArtistWithMembersBFF>;
   memberMap: Map<string, CosmoMemberBFF>;
-  // user selected artist data
-  selected: string[];
 };
 
 const ArtistContext = createContext<ContextProps>({
   artists: [],
   artistMap: new Map(),
   memberMap: new Map(),
-  selected: [],
 });
 
 type ProviderProps = {
   children: ReactNode;
   artists: CosmoArtistWithMembersBFF[];
-  selected: string[];
 };
 
-export function ArtistProvider({ children, artists, selected }: ProviderProps) {
+// static data that doesn't change
+export function ArtistProvider({ children, artists }: ProviderProps) {
   const artistMap = new Map(
     artists.map((artist) => [artist.id.toLowerCase(), artist]),
   );
@@ -44,7 +43,6 @@ export function ArtistProvider({ children, artists, selected }: ProviderProps) {
         artists,
         artistMap,
         memberMap,
-        selected,
       }}
     >
       {children}
@@ -60,6 +58,8 @@ export function ArtistProvider({ children, artists, selected }: ProviderProps) {
  */
 export function useArtists() {
   const ctx = use(ArtistContext);
+  // should *always* exist, so no suspending
+  const { data } = useSuspenseQuery(selectedArtistsQuery);
 
   /**
    * Get an artist by name
@@ -81,8 +81,8 @@ export function useArtists() {
    * Get the selected artists (or all if no selection)
    */
   const selected =
-    ctx.selected.length > 0
-      ? ctx.artists.filter((a) => ctx.selected.includes(a.id))
+    data.length > 0
+      ? ctx.artists.filter((a) => data.includes(a.id))
       : ctx.artists;
 
   return {
@@ -90,6 +90,6 @@ export function useArtists() {
     getArtist,
     getMember,
     selected,
-    selectedIds: ctx.selected,
+    selectedIds: data,
   };
 }

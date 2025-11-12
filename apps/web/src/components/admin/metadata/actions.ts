@@ -32,7 +32,8 @@ export const $saveMetadata = createServerFn({ method: "POST" })
           description: sql.raw(`excluded.${objektMetadata.description.name}`),
           contributor: context.cosmo.address,
         },
-      });
+      })
+      .returning();
 
-    return result.rowCount;
+    return result.length;
   });
