@@ -1,7 +1,7 @@
 FROM oven/bun:1.3.1-slim AS pruner
 WORKDIR /app
 COPY . .
-RUN bunx turbo prune typesense-import --docker
+RUN bunx turbo@2.6.1 prune typesense-import --docker
 
 FROM oven/bun:1.3.1-slim AS builder
 WORKDIR /app
