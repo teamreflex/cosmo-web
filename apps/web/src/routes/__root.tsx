@@ -5,7 +5,6 @@ import {
   createRootRouteWithContext,
 } from "@tanstack/react-router";
 import { preconnect } from "react-dom";
-import { ThemeProvider } from "next-themes";
 import { Toaster } from "sonner";
 import React from "react";
 import { FileQuestion, RefreshCcw } from "lucide-react";
@@ -24,6 +23,7 @@ import { systemStatusQuery } from "@/lib/queries/system";
 import { Button } from "@/components/ui/button";
 import { getLocale } from "@/i18n/runtime";
 import Devtools from "@/components/devtools";
+import { ThemeProvider } from "@/components/theme-provider";
 
 interface RouterContext {
   queryClient: QueryClient;
@@ -145,7 +145,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body className="font-inter overflow-y-scroll bg-background text-foreground antialiased">
-        <ThemeProvider attribute="class" defaultTheme="dark">
+        <ThemeProvider defaultTheme="dark">
           <div className="relative flex min-h-dvh flex-col">
             <Navbar />
 

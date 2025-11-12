@@ -1,4 +1,3 @@
-import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -13,7 +12,9 @@ import {
   FormItem,
   FormMessage,
 } from "../ui/form";
+import { useTheme } from "../theme-provider";
 import { $updateSettings } from "./actions";
+import type { Theme } from "../theme-provider";
 import type { PublicUser } from "@/lib/universal/auth";
 import type { z } from "zod";
 import { settingsSchema } from "@/lib/universal/schema/auth";
@@ -140,7 +141,7 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
               <Select
                 name="theme"
                 defaultValue={theme}
-                onValueChange={(value) => setTheme(value)}
+                onValueChange={(value) => setTheme(value as Theme)}
               >
                 <SelectTrigger className="w-36">
                   <SelectValue placeholder={m.settings_theme()} />

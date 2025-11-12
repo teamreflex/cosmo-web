@@ -61,7 +61,7 @@ export const $fetchFilterData = createServerFn({ method: "GET" }).handler(() =>
  */
 export const filterDataQuery = queryOptions({
   queryKey: ["filter-data"],
-  queryFn: $fetchFilterData,
+  queryFn: ({ signal }) => $fetchFilterData({ signal }),
   staleTime: Infinity,
   refetchOnWindowFocus: false,
   refetchOnMount: false,
@@ -124,7 +124,7 @@ export const $fetchCurrentAccount = createServerFn({ method: "GET" }).handler(
  */
 export const currentAccountQuery = queryOptions({
   queryKey: ["current-account"],
-  queryFn: $fetchCurrentAccount,
+  queryFn: ({ signal }) => $fetchCurrentAccount({ signal }),
   staleTime: Infinity,
   refetchOnWindowFocus: false,
   refetchOnMount: false,
@@ -150,7 +150,8 @@ export const targetAccountQuery = (identifier: string) => {
   const lower = identifier.toLowerCase();
   return queryOptions({
     queryKey: ["target-account", lower],
-    queryFn: () => $fetchTargetAccount({ data: { identifier: lower } }),
+    queryFn: ({ signal }) =>
+      $fetchTargetAccount({ signal, data: { identifier: lower } }),
     staleTime: Infinity,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
@@ -162,7 +163,7 @@ export const targetAccountQuery = (identifier: string) => {
  */
 export const artistsQuery = queryOptions({
   queryKey: ["artists"],
-  queryFn: $fetchArtists,
+  queryFn: ({ signal }) => $fetchArtists({ signal }),
   staleTime: Infinity,
   refetchOnWindowFocus: false,
   refetchOnMount: false,
@@ -182,7 +183,7 @@ export const $fetchSelectedArtists = createServerFn({ method: "GET" }).handler(
  */
 export const selectedArtistsQuery = queryOptions({
   queryKey: ["selected-artists"],
-  queryFn: $fetchSelectedArtists,
+  queryFn: () => $fetchSelectedArtists(),
   staleTime: Infinity,
   refetchOnWindowFocus: false,
   refetchOnMount: false,

@@ -13,10 +13,7 @@ import { ArtistProvider } from "@/hooks/use-artists";
 import { ProfileProvider } from "@/hooks/use-profile";
 import IndexRenderer from "@/components/objekt-index/index-renderer";
 import { objektIndexFrontendSchema } from "@/lib/universal/parsers";
-import {
-  objektIndexBlockchainQuery,
-  objektIndexTypesenseQuery,
-} from "@/lib/queries/objekt-queries";
+import { objektIndexBlockchainQuery } from "@/lib/queries/objekt-queries";
 import { defineHead } from "@/lib/meta";
 import { m } from "@/i18n/messages";
 
@@ -39,13 +36,7 @@ export const Route = createFileRoute("/")({
     ]);
 
     // prefetch objekts
-    const searchTerm = deps.searchParams.search ?? "";
-    if (searchTerm) {
-      // prefetch typesense
-      context.queryClient.prefetchInfiniteQuery(
-        objektIndexTypesenseQuery(deps.searchParams, selected),
-      );
-    } else {
+    if (!deps.searchParams.search) {
       // prefetch blockchain
       context.queryClient.prefetchInfiniteQuery(
         objektIndexBlockchainQuery(deps.searchParams, selected),

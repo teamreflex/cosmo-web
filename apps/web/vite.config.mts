@@ -7,43 +7,38 @@ import tailwindcss from "@tailwindcss/vite";
 import { nitro } from "nitro/vite";
 import { paraglideVitePlugin } from "@inlang/paraglide-js";
 
-const config = defineConfig(async () => {
-  await import("./src/lib/env/client");
-  await import("./src/lib/env/server");
+import "./src/lib/env/client";
+import "./src/lib/env/server";
 
-  return {
-    server: {
-      port: 3000,
-    },
-    plugins: [
-      devtools({
-        removeDevtoolsOnBuild: true,
-      }),
-      viteTsConfigPaths({
-        projects: ["./tsconfig.json"],
-      }),
-      tanstackStart(),
-      nitro({
-        config: {
-          compatibilityDate: "2025-11-11",
-          preset: "bun",
-        },
-      }),
-      react({
-        babel: {
-          plugins: ["babel-plugin-react-compiler"],
-        },
-      }),
-      paraglideVitePlugin({
-        project: "./project.inlang",
-        outdir: "./src/i18n",
-        outputStructure: "message-modules",
-        cookieName: "PARAGLIDE_LOCALE",
-        strategy: ["cookie", "preferredLanguage", "baseLocale"],
-      }),
-      tailwindcss(),
-    ],
-  };
+export default defineConfig({
+  server: {
+    port: 3000,
+  },
+  nitro: {
+    preset: "bun",
+    compatibilityDate: "2025-11-11",
+  },
+  plugins: [
+    devtools({
+      removeDevtoolsOnBuild: true,
+    }),
+    viteTsConfigPaths({
+      projects: ["./tsconfig.json"],
+    }),
+    tanstackStart(),
+    nitro(),
+    react({
+      babel: {
+        plugins: ["babel-plugin-react-compiler"],
+      },
+    }),
+    paraglideVitePlugin({
+      project: "./project.inlang",
+      outdir: "./src/i18n",
+      outputStructure: "message-modules",
+      cookieName: "PARAGLIDE_LOCALE",
+      strategy: ["cookie", "preferredLanguage", "baseLocale"],
+    }),
+    tailwindcss(),
+  ],
 });
-
-export default config;

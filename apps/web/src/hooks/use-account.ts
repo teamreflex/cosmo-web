@@ -6,8 +6,12 @@ export type Provider = "twitter" | "discord";
 export function useSessionUser() {
   return useSuspenseQuery({
     queryKey: ["session"],
-    queryFn: async () => {
-      const result = await authClient.getSession();
+    queryFn: async ({ signal }) => {
+      const result = await authClient.getSession({
+        fetchOptions: {
+          signal,
+        },
+      });
       if (result.error) {
         throw new Error(getAuthErrorMessage(result.error));
       }
@@ -19,8 +23,12 @@ export function useSessionUser() {
 export function useListAccounts() {
   return useSuspenseQuery({
     queryKey: ["accounts"],
-    queryFn: async () => {
-      const result = await authClient.listAccounts();
+    queryFn: async ({ signal }) => {
+      const result = await authClient.listAccounts({
+        fetchOptions: {
+          signal,
+        },
+      });
       if (result.error) {
         throw new Error(getAuthErrorMessage(result.error));
       }

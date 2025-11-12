@@ -28,6 +28,8 @@ export function getRouter() {
   setupRouterSsrQueryIntegration({
     router,
     queryClient,
+    handleRedirects: true,
+    wrapQueryClient: true,
   });
 
   return router;

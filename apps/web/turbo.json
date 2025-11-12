@@ -36,6 +36,11 @@
       "persistent": true,
       "cache": false
     },
+    "preview": {
+      "with": ["//#services"],
+      "persistent": true,
+      "cache": false
+    },
     "typecheck": {
       "cache": true
     },

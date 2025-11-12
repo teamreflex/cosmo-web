@@ -20,6 +20,9 @@
 - [x] import db from neon
 - [x] fix flicker with RoutedExpandableObjekt
 - [ ] test self-hosted browserless
+- [ ] fix paraglide middleware
+- [ ] fix sort filter flicker
+- [ ] fix nitro 3 alpha 1 issue
 
 ## indexer
 

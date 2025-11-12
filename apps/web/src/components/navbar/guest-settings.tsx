@@ -1,6 +1,6 @@
 import { Languages, Moon, Sun } from "lucide-react";
-import { useTheme } from "next-themes";
-import { useTransition } from "react";
+import { useTheme } from "../theme-provider";
+import type { Theme } from "../theme-provider";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,21 +30,15 @@ export default function GuestSettings() {
 
 function ThemeSubmenu() {
   const { theme, setTheme } = useTheme();
-  const [isPending, startTransition] = useTransition();
-
-  function handleThemeChange(value: string) {
-    startTransition(() => {
-      setTheme(value);
-    });
-  }
 
   return (
     <DropdownMenuSub>
-      <DropdownMenuSubTrigger disabled={isPending}>
-        {m.settings_theme()}
-      </DropdownMenuSubTrigger>
+      <DropdownMenuSubTrigger>{m.settings_theme()}</DropdownMenuSubTrigger>
       <DropdownMenuSubContent>
-        <DropdownMenuRadioGroup value={theme} onValueChange={handleThemeChange}>
+        <DropdownMenuRadioGroup
+          value={theme}
+          onValueChange={(value) => setTheme(value as Theme)}
+        >
           <DropdownMenuRadioItem value="dark">
             <Moon className="size-4 shrink-0" />
             <span>{m.settings_theme_dark()}</span>

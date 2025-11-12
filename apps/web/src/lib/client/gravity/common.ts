@@ -18,9 +18,11 @@ export const gravityVotesKey = (pollId: number) => ["gravity", "votes", pollId];
 export function useGravityVotes(pollId: number) {
   return useSuspenseQuery({
     queryKey: gravityVotesKey(pollId),
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
       const url = new URL(`/api/gravity/${pollId}/votes`, baseUrl());
-      return await ofetch<GravityVote[]>(url.toString());
+      return await ofetch<GravityVote[]>(url.toString(), {
+        signal,
+      });
     },
     refetchOnWindowFocus: false,
     staleTime: Infinity,

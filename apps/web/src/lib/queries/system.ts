@@ -3,7 +3,7 @@ import { $fetchSystemStatus } from "@/lib/server/system";
 
 export const systemStatusQuery = queryOptions({
   queryKey: ["system-status"],
-  queryFn: $fetchSystemStatus,
+  queryFn: ({ signal }) => $fetchSystemStatus({ signal }),
   refetchOnWindowFocus: false,
   refetchOnMount: false,
   refetchOnReconnect: false,

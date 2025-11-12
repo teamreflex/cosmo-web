@@ -1,5 +1,5 @@
-import { useTheme } from "next-themes";
 import { Toaster as Sonner } from "sonner";
+import { useTheme } from "../theme-provider";
 import type { CSSProperties } from "react";
 import type { ToasterProps } from "sonner";
 

@@ -72,8 +72,9 @@ export function objektIndexBlockchainQuery(
         artists: selectedArtists,
       },
     ],
-    queryFn: ({ pageParam = 0 }) => {
+    queryFn: ({ signal, pageParam = 0 }) => {
       return $fetchObjektsIndex({
+        signal,
         data: {
           ...searchParams,
           page: pageParam,
@@ -106,8 +107,9 @@ export function userCollectionBlockchainGroupsQuery(
         artists: selectedArtists,
       },
     ],
-    queryFn: ({ pageParam = 1 }) => {
+    queryFn: ({ signal, pageParam = 1 }) => {
       return $fetchObjektsBlockchainGroups({
+        signal,
         data: {
           ...searchParams,
           address,
@@ -144,8 +146,9 @@ export function userCollectionBlockchainQuery(
         artists: selectedArtists,
       },
     ],
-    queryFn: ({ pageParam = 0 }) => {
+    queryFn: ({ signal, pageParam = 0 }) => {
       return $fetchObjektsBlockchain({
+        signal,
         data: {
           ...searchParams,
           address,
@@ -178,8 +181,9 @@ export function objektListQuery(
         artists: selectedArtists,
       },
     ],
-    queryFn: ({ pageParam = 0 }) => {
+    queryFn: ({ signal, pageParam = 0 }) => {
       return $fetchObjektListEntries({
+        signal,
         data: {
           ...searchParams,
           objektListId,
@@ -213,8 +217,9 @@ export function transfersQuery(
         artists: selectedArtists,
       },
     ],
-    queryFn: ({ pageParam = 0 }) => {
+    queryFn: ({ signal, pageParam = 0 }) => {
       return $fetchTransfers({
+        signal,
         data: {
           ...searchParams,
           address,

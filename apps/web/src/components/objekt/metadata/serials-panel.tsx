@@ -103,11 +103,13 @@ function Content(props: ContentProps) {
     data: { result },
   } = useSuspenseQuery({
     queryKey: ["objekt-serial", props.slug, props.serial],
-    queryFn: async () => {
-      return await ofetch<{ result: SerialObjekt | null }>(
+    queryFn: ({ signal }) =>
+      ofetch<{ result: SerialObjekt | null }>(
         `/api/objekts/metadata/${props.slug}/${props.serial}`,
-      );
-    },
+        {
+          signal,
+        },
+      ),
     retry: 1,
   });
 

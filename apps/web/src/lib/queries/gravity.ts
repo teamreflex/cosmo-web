@@ -29,8 +29,9 @@ export const gravityPollDetailsQuery = (params: GravityPollDetailsParams) =>
         pollId: params.pollId,
       },
     ],
-    queryFn: () =>
+    queryFn: ({ signal }) =>
       $fetchCachedPoll({
+        signal,
         data: {
           artist: params.artistName,
           gravityId: params.gravityId,
@@ -45,8 +46,9 @@ export const gravityPollDetailsQuery = (params: GravityPollDetailsParams) =>
 export const polygonGravityQuery = (artist: string, id: number) =>
   queryOptions({
     queryKey: ["gravity", "polygon", artist, id],
-    queryFn: () =>
+    queryFn: ({ signal }) =>
       $fetchPolygonGravity({
+        signal,
         data: {
           artist,
           id,
