@@ -54,6 +54,7 @@
     "react-error-boundary": "^6.0.0",
     "react-hook-form": "^7.63.0",
     "react-intersection-observer": "^9.16.0",
+    "react-player": "^3.3.3",
     "react-qr-code": "^2.0.18",
     "recharts": "^2.15.4",
     "require-in-the-middle": "^7.5.2",

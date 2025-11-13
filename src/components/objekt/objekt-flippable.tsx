@@ -2,7 +2,7 @@ import { Fragment, type PropsWithChildren, useState } from "react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
-import { PauseCircle, PlayCircle } from "lucide-react";
+import ReactPlayer from "react-player";
 
 type Props = PropsWithChildren<{
   collection: Objekt.Collection;
@@ -89,44 +89,20 @@ type FrontVideoProps = PropsWithChildren<{
  * Motion class objekts have videos.
  */
 function FrontVideo(props: FrontVideoProps) {
-  const [playing, setPlaying] = useState(true);
-
-  function handleClick(event: React.MouseEvent<HTMLButtonElement>) {
-    event.stopPropagation();
-    setPlaying((prev) => !prev);
-  }
-
   return (
     <Fragment>
-      {playing ? (
-        <video
-          className="absolute overflow-hidden rounded-2xl"
-          src={props.videoSrc}
-          autoPlay
-          loop
-        />
-      ) : (
-        <Image src={props.imageSrc} fill={true} alt={props.alt} unoptimized />
-      )}
-
+      <ReactPlayer
+        className="absolute overflow-hidden rounded-2xl"
+        style={{ width: "100%", height: "auto", aspectRatio: "5.5 / 8.5" }}
+        src={props.videoSrc}
+        preload="auto"
+        playsInline={true}
+        loop={true}
+        muted={true}
+        autoPlay={true}
+        controls={false}
+      />
       {props.children}
-      <div
-        className={cn(
-          "group absolute bottom-0 left-0 isolate flex h-7 w-7 gap-2 rounded-tr-lg rounded-bl-2xl p-1 transition-all sm:h-9 sm:w-9 sm:rounded-tr-xl sm:rounded-bl-xl sm:p-2",
-          "bg-(--objekt-background-color) text-(--objekt-text-color)"
-        )}
-      >
-        <button
-          className="z-50 flex items-center place-self-end transition-all hover:scale-110 focus:outline-none"
-          onClick={handleClick}
-        >
-          {playing ? (
-            <PauseCircle className="h-5 w-5" />
-          ) : (
-            <PlayCircle className="h-5 w-5" />
-          )}
-        </button>
-      </div>
     </Fragment>
   );
 }
