@@ -25,6 +25,7 @@ export namespace Objekt {
     backgroundColor: string;
     textColor: string;
     bandImageUrl: string | null;
+    frontMedia: string | null;
     // derived from metadata
     slug: string;
     artistName: string;
@@ -66,6 +67,7 @@ export namespace Objekt {
       backgroundColor: objekt.backgroundColor,
       textColor: objekt.textColor,
       bandImageUrl: objekt.bandImageUrl,
+      frontMedia: objekt.frontMedia,
     };
 
     return { ...collection, ...deriveExtras(collection) };
@@ -87,6 +89,7 @@ export namespace Objekt {
       backgroundColor: objekt.backgroundColor,
       textColor: objekt.textColor,
       bandImageUrl: objekt.bandImageUrl,
+      frontMedia: objekt.frontMedia,
     };
 
     return {
@@ -138,6 +141,7 @@ export namespace Objekt {
         backgroundColor: opts.collection.backgroundColor,
         textColor: opts.collection.textColor,
         bandImageUrl: opts.collection.bandImageUrl,
+        frontMedia: opts.collection.frontMedia,
       };
       collection = { ...base, ...deriveExtras(base) };
     }
@@ -184,6 +188,7 @@ export namespace Objekt {
       backgroundColor: objekt.backgroundColor,
       textColor: objekt.textColor,
       bandImageUrl: null,
+      frontMedia: null,
     };
 
     return { ...collection, ...deriveExtras(collection) };

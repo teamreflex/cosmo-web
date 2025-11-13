@@ -147,13 +147,13 @@ export function getObjektImageUrls(opts: {
 export function getEdition(collectionNo: string): string {
   const collection = parseInt(collectionNo);
 
-  if (collection >= 101 && collection <= 108) {
+  if ((collection >= 101 && collection <= 108) || collection === 501) {
     return m.objekt_edition_1st();
   }
-  if (collection >= 109 && collection <= 116) {
+  if ((collection >= 109 && collection <= 116) || collection === 502) {
     return m.objekt_edition_2nd();
   }
-  if (collection >= 117 && collection <= 120) {
+  if ((collection >= 117 && collection <= 120) || collection === 503) {
     return m.objekt_edition_3rd();
   }
   return m.common_unknown();

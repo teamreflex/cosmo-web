@@ -55,6 +55,7 @@ export const $fetchObjektsBlockchainGroups = createServerFn({ method: "GET" })
           textColor: collections.textColor,
           comoAmount: collections.comoAmount,
           bandImageUrl: collections.bandImageUrl,
+          frontMedia: collections.frontMedia,
           transferableByDefault: sql<boolean>`true`,
           gridableByDefault: sql<boolean>`false`,
           createdAt: collections.createdAt,
@@ -117,6 +118,7 @@ export const $fetchObjektsBlockchainGroups = createServerFn({ method: "GET" })
         collections.textColor,
         collections.comoAmount,
         collections.bandImageUrl,
+        collections.frontMedia,
         collections.createdAt,
       )
       .$dynamic();
