@@ -76,6 +76,9 @@ export default function UpdateDialog() {
 const updates = [
   {
     date: "2025-11-13",
-    changes: ["Added basic support for Motion class objekts."],
+    changes: [
+      "Added basic support for Motion class objekts.",
+      "Updated objekt download button with options to save front image, back image, and video.",
+    ],
   },
 ];
