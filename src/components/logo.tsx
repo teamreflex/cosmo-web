@@ -1,17 +1,4 @@
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { env } from "@/env";
 import Link from "next/link";
-import { Check, Github } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -20,40 +7,9 @@ type Props = {
 
 export default function Logo({ className }: Props) {
   return (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <button className={cn("h-full", className)}>
-          <LogoSVG />
-        </button>
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{env.NEXT_PUBLIC_APP_NAME}</AlertDialogTitle>
-          <AlertDialogDescription asChild>
-            <div className="flex flex-col gap-2">
-              <p>
-                {env.NEXT_PUBLIC_APP_NAME} is platform for exploring objekts &
-                gravities from Cosmo: the Gate.
-              </p>
-              <p>Source code can be found below.</p>
-            </div>
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter className="sm:justify-between">
-          <AlertDialogCancel asChild>
-            <Link
-              href="https://github.com/teamreflex/cosmo-web"
-              target="_blank"
-            >
-              <Github />
-            </Link>
-          </AlertDialogCancel>
-          <AlertDialogAction>
-            <Check />
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <Link href="/" className={cn("h-full", className)}>
+      <LogoSVG />
+    </Link>
   );
 }
 
