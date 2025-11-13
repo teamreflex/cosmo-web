@@ -28,13 +28,13 @@ export default function FlippableObjekt({ children, collection }: Props) {
       data-flipped={flipped}
       onClick={() => setFlipped((prev) => !prev)}
       className={cn(
-        "relative aspect-photocard w-full transform-gpu touch-manipulation rounded-2xl bg-secondary object-contain transition-transform duration-500 transform-3d data-[flipped=true]:rotate-y-180",
+        "relative aspect-photocard w-full transform-gpu touch-manipulation rounded-2xl object-contain transition-transform duration-500 transform-3d focus:outline-none data-[flipped=true]:rotate-y-180",
         !flipped && "will-change-transform",
       )}
     >
       {/* front */}
       <div className="absolute inset-0 backface-hidden">
-        {collection.frontMedia !== null ? (
+        {collection.frontMedia ? (
           <FrontVideo
             imageSrc={collection.frontImage}
             videoSrc={collection.frontMedia}
@@ -90,6 +90,7 @@ type FrontVideoProps = PropsWithChildren<{
 function FrontVideo(props: FrontVideoProps) {
   return (
     <Fragment>
+      <div className="absolute inset-0 h-full w-full animate-pulse rounded-2xl bg-secondary" />
       <ReactPlayer
         className="absolute overflow-hidden rounded-2xl"
         style={{ width: "100%", height: "auto", aspectRatio: "5.5 / 8.5" }}

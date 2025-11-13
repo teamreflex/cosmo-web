@@ -22,8 +22,7 @@
         "COSMO_RECAPTCHA_KEY",
         "BROWSERLESS_API_KEY",
         "BROWSERLESS_BASE_URL",
-        "REDIS_URL",
-        "INTERNAL_TYPESENSE_URL"
+        "REDIS_URL"
       ]
     },
     "start": {
