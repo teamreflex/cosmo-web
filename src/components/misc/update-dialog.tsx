@@ -75,15 +75,7 @@ export default function UpdateDialog() {
 
 const updates = [
   {
-    date: "2025-09-30",
-    changes: [
-      "Fixed: tripleS Atom02 3rd edition SCOs not being counted in COMO calendars.",
-    ],
-  },
-  {
-    date: "2025-09-24",
-    changes: [
-      "Fixed: Objekt pins not displaying when viewing a profile via blockchain address.",
-    ],
+    date: "2025-11-13",
+    changes: ["Added basic support for Motion class objekts."],
   },
 ];

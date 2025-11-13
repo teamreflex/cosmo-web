@@ -8,6 +8,7 @@ type Props = {
 
 export default function AttributePanel({ objekt }: Props) {
   const edition = getEdition(objekt.collectionNo);
+  const hasEdition = ["First", "Motion"].includes(objekt.class);
 
   return (
     <div
@@ -18,7 +19,7 @@ export default function AttributePanel({ objekt }: Props) {
       <Pill label="Member" value={objekt.member} />
       <Pill label="Season" value={objekt.season} />
       <Pill label="Class" value={objekt.class} />
-      {objekt.class === "First" && <Pill label="Edition" value={edition} />}
+      {hasEdition && <Pill label="Edition" value={edition} />}
       <Pill
         label="Type"
         value={objekt.onOffline === "online" ? "Digital" : "Physical"}

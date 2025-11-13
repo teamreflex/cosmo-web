@@ -20,6 +20,7 @@ export type ObjektBaseFields = {
   objektNo: number;
   transferable: boolean;
   bandImageUrl: string | null;
+  frontMedia: string | null;
 };
 
 interface OwnedObjektCommonFields extends ObjektBaseFields {
@@ -93,6 +94,7 @@ export type BFFCollectionGroupCollection = {
   createdAt: string;
   updatedAt: string;
   bandImageUrl: string | null;
+  frontMedia: string | null;
 };
 
 export type BFFCollectionGroupObjekt = {
