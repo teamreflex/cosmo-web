@@ -14,7 +14,7 @@
   "dependencies": {
     "@apollo/database": "workspace:*",
     "@effect/cluster": "^0.52.9",
-    "@effect/platform": "^0.93.1",
+    "@effect/platform": "^0.93.2",
     "@effect/platform-bun": "^0.83.0",
     "drizzle-orm": "1.0.0-beta.1-ac4ce44",
     "effect": "^3.19.3",
@@ -25,7 +25,7 @@
     "@apollo/typescript": "workspace:*",
     "@effect/build-utils": "^0.8.9",
     "@effect/eslint-plugin": "^0.3.2",
-    "@effect/language-service": "^0.55.3",
+    "@effect/language-service": "^0.55.5",
     "@eslint/compat": "1.4.1",
     "@eslint/eslintrc": "3.3.1",
     "@eslint/js": "9.39.1",
