@@ -1,5 +1,5 @@
 import { BunContext, BunRuntime } from "@effect/platform-bun";
-import { Duration, Effect, Layer, Schedule } from "effect";
+import { Duration, Effect, Layer, Ref, Schedule } from "effect";
 import { getEdition, getShortCode } from "./collections";
 import { getConfig } from "./config";
 import { Indexer } from "./db/indexer";
@@ -10,12 +10,11 @@ import {
   setupTypesenseCollection,
   setupTypesenseSynonyms,
 } from "./setup";
-import { initializeTimestamp } from "./timestamp-state";
 import { Typesense } from "./typesense";
 
 const main = Effect.gen(function* () {
   const config = yield* getConfig;
-  const timestamp = yield* initializeTimestamp;
+  const timestamp = yield* Ref.make<number | null>(null);
 
   // perform initial setup
   yield* setupTypesenseApiKey;
@@ -24,8 +23,12 @@ const main = Effect.gen(function* () {
 
   // start the import loop
   yield* Effect.gen(function* () {
-    const currentTimestamp = yield* timestamp.get;
-    yield* Effect.logInfo(`Fetching collections from ${currentTimestamp}`);
+    const startTime = Date.now();
+
+    const current = yield* Ref.get(timestamp);
+    yield* Effect.logInfo(
+      `Fetching collections from ${current === null ? "the start" : new Date(current).toISOString()}`,
+    );
 
     const indexer = yield* Indexer;
     const metadata = yield* Metadata;
@@ -34,7 +37,7 @@ const main = Effect.gen(function* () {
       return await indexer.query.collections.findMany({
         where: {
           createdAt: {
-            gt: currentTimestamp ?? undefined,
+            gt: current ? new Date(current).toISOString() : undefined,
           },
         },
         orderBy: {
@@ -45,12 +48,14 @@ const main = Effect.gen(function* () {
 
     yield* Effect.logInfo(`Found ${collections.length} collections`);
     if (collections.length === 0) {
+      // set the timestamp to the start time so nothing is missed
+      yield* Ref.set(timestamp, startTime);
       return void 0;
     }
 
     // update the timestamp
     const newTimestamp = collections[collections.length - 1].createdAt;
-    yield* timestamp.set(newTimestamp);
+    yield* Ref.set(timestamp, new Date(newTimestamp).getTime());
 
     // for each collection, fetch the metadata
     const slugs = collections.map((c) => c.slug);
