@@ -18,4 +18,4 @@ COPY --from=builder /app/apps/schedules/dist ./dist
 COPY --from=builder /app/apps/schedules/package.json ./package.json
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/packages ./packages
-CMD ["bun", "run", "--bun", "--filter", "schedules", "start"]
+CMD ["bun", "run", "--bun", "./apps/schedules/dist/main.js"]

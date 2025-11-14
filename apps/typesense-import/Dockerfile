@@ -18,4 +18,4 @@ COPY --from=builder /app/apps/typesense-import/dist ./dist
 COPY --from=builder /app/apps/typesense-import/package.json ./package.json
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/packages ./packages
-CMD ["bun", "run", "--bun", "--filter", "typesense-import", "start"]
+CMD ["bun", "run", "--bun", "./apps/typesense-import/dist/main.js"]
