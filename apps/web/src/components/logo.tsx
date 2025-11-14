@@ -1,58 +1,15 @@
-import { Check, Github } from "lucide-react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { env } from "@/lib/env/client";
+import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
-import { m } from "@/i18n/messages";
 
 type Props = {
   className?: string;
 };
 
 export default function Logo({ className }: Props) {
-  const commitHash = env.VITE_COMMIT_SHA.slice(0, 7);
-
   return (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <button className={cn("h-full", className)}>
-          <LogoSVG />
-        </button>
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>
-            {env.VITE_APP_NAME} <span className="text-xs">ver.</span>{" "}
-            <span className="text-xs text-muted-foreground">{commitHash}</span>
-          </AlertDialogTitle>
-          <AlertDialogDescription asChild>
-            <div className="flex flex-col gap-2">
-              <p>{m.logo_description({ appName: env.VITE_APP_NAME })}</p>
-              <p>{m.logo_source_code()}</p>
-            </div>
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter className="sm:justify-between">
-          <AlertDialogCancel asChild>
-            <a href="https://github.com/teamreflex/cosmo-web" target="_blank">
-              <Github />
-            </a>
-          </AlertDialogCancel>
-          <AlertDialogAction>
-            <Check />
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <Link to="/" className={cn("h-full", className)}>
+      <LogoSVG />
+    </Link>
   );
 }
 
@@ -69,7 +26,7 @@ export function LogoSVG({ className, themed = true }: LogoSVGProps) {
       xmlns="http://www.w3.org/2000/svg"
       viewBox="125 275 750 450"
       xmlSpace="preserve"
-      className={cn("aspect-750/450 h-full", className)}
+      className={cn("group aspect-750/450 h-full", className)}
     >
       <switch>
         <g>
@@ -97,10 +54,37 @@ export function LogoSVG({ className, themed = true }: LogoSVGProps) {
           />
 
           {/* eyes */}
-          <path
-            className={cn("fill-[#000000]", themed && "fill-background")}
-            d="M551 482.56c12.59 0 22.8-10.21 22.8-22.8V441.7c0-12.59-10.21-22.8-22.8-22.8s-22.8 10.21-22.8 22.8v18.06c0 12.59 10.21 22.8 22.8 22.8zM447.17 482.56c12.59 0 22.8-10.21 22.8-22.8V441.7c0-12.59-10.21-22.8-22.8-22.8s-22.8 10.21-22.8 22.8v18.06c0 12.59 10.21 22.8 22.8 22.8z"
-          />
+          <defs>
+            <clipPath id="eye-clip">
+              <rect
+                x="420"
+                y="418"
+                width="160"
+                height="65"
+                className="group-hover:animate-[blink_0.15s_ease-in-out]"
+              />
+            </clipPath>
+          </defs>
+          <g clipPath="url(#eye-clip)">
+            <path
+              className={cn("fill-[#000000]", themed && "fill-background")}
+              d="M551 482.56c12.59 0 22.8-10.21 22.8-22.8V441.7c0-12.59-10.21-22.8-22.8-22.8s-22.8 10.21-22.8 22.8v18.06c0 12.59 10.21 22.8 22.8 22.8zM447.17 482.56c12.59 0 22.8-10.21 22.8-22.8V441.7c0-12.59-10.21-22.8-22.8-22.8s-22.8 10.21-22.8 22.8v18.06c0 12.59 10.21 22.8 22.8 22.8z"
+            />
+          </g>
+          <style>
+            {`
+              @keyframes blink {
+                0%, 100% { 
+                  height: 65px;
+                  y: 418px;
+                }
+                50% { 
+                  height: 0px;
+                  y: 450px;
+                }
+              }
+            `}
+          </style>
         </g>
       </switch>
     </svg>

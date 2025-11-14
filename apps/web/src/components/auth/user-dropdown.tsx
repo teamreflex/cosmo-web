@@ -1,9 +1,10 @@
-import { LogOut, ShieldAlert, UserCog, Wrench } from "lucide-react";
+import { Info, LogOut, ShieldAlert, UserCog, Wrench } from "lucide-react";
 import { useState } from "react";
 import { IconBrandDiscord } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import { ArtistItem } from "../navbar/artist-selectbox";
 import UserAvatar from "../profile/user-avatar";
+import AboutDialog from "../navbar/about";
 import SettingsDialog from "./settings-dialog";
 import AccountDialog from "./account-dialog";
 import type { PublicUser } from "@/lib/universal/auth";
@@ -34,6 +35,7 @@ export default function UserDropdown({
   const { selectedIds } = useArtists();
   const [openSettings, setOpenSettings] = useState(false);
   const [openAccount, setOpenAccount] = useState(false);
+  const [openAbout, setOpenAbout] = useState(false);
 
   return (
     <DropdownMenu>
@@ -47,6 +49,7 @@ export default function UserDropdown({
         onOpenChange={setOpenAccount}
         cosmo={cosmo}
       />
+      <AboutDialog open={openAbout} onOpenChange={setOpenAbout} />
 
       <DropdownMenuTrigger className="group outline-hidden">
         <UserAvatar
@@ -84,13 +87,6 @@ export default function UserDropdown({
           <span>{m.user_dropdown_settings()}</span>
         </DropdownMenuItem>
 
-        <DropdownMenuItem className="cursor-pointer" asChild>
-          <a href="https://discord.gg/A72VRX8FgK" target="_blank">
-            <IconBrandDiscord className="h-4 w-4" />
-            <span>{m.common_discord()}</span>
-          </a>
-        </DropdownMenuItem>
-
         {user.isAdmin && (
           <div className="contents">
             <DropdownMenuSeparator />
@@ -102,6 +98,23 @@ export default function UserDropdown({
             </DropdownMenuItem>
           </div>
         )}
+
+        <DropdownMenuSeparator />
+
+        <DropdownMenuItem
+          onClick={() => setOpenAbout(true)}
+          className="cursor-pointer"
+        >
+          <Info className="h-4 w-4" />
+          <span>{m.logo_about()}</span>
+        </DropdownMenuItem>
+
+        <DropdownMenuItem className="cursor-pointer" asChild>
+          <a href="https://discord.gg/A72VRX8FgK" target="_blank">
+            <IconBrandDiscord className="h-4 w-4" />
+            <span>{m.common_discord()}</span>
+          </a>
+        </DropdownMenuItem>
 
         <DropdownMenuSeparator />
         <DropdownMenuItem

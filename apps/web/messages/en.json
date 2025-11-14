@@ -486,6 +486,7 @@
   "route_title_page_not_found": "Page Not Found",
 
   "_comment_logo": "Logo strings",
+  "logo_about": "About",
   "logo_description": "{appName} is platform for exploring objekts & gravities from Cosmo: the Gate.",
   "logo_source_code": "Source code can be found below."
 }
