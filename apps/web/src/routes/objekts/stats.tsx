@@ -8,17 +8,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Error } from "@/components/error-boundary";
 import { defineHead } from "@/lib/meta";
 import { m } from "@/i18n/messages";
+import { useArtists } from "@/hooks/use-artists";
 
 export const Route = createFileRoute("/objekts/stats")({
   loader: async ({ context }) => {
-    const [artists, selected, data] = await Promise.all([
-      context.queryClient.ensureQueryData(artistsQuery),
+    const [selected, data] = await Promise.all([
       context.queryClient.ensureQueryData(selectedArtistsQuery),
       context.queryClient.ensureQueryData(objektStatsQuery),
+      context.queryClient.ensureQueryData(artistsQuery),
     ]);
 
     return {
-      artists,
       selected,
       data,
     };
@@ -31,7 +31,8 @@ export const Route = createFileRoute("/objekts/stats")({
 });
 
 function RouteComponent() {
-  const { artists, selected, data } = Route.useLoaderData();
+  const { selected, data } = Route.useLoaderData();
+  const { artistList } = useArtists();
 
   return (
     <main className="container flex flex-col py-2">
@@ -108,7 +109,7 @@ function RouteComponent() {
 
             <Card>
               <CardContent className="pt-6 pl-0">
-                <ArtistChart artists={artists} data={data.artistBreakdown} />
+                <ArtistChart artists={artistList} data={data.artistBreakdown} />
               </CardContent>
             </Card>
           </div>
@@ -116,7 +117,7 @@ function RouteComponent() {
           {/* member breakdown chart */}
           <MemberBreakdown
             selectedArtists={selected}
-            artists={artists}
+            artists={artistList}
             data={data.memberBreakdown}
           />
         </div>

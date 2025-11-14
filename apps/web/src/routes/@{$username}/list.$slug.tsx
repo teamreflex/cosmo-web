@@ -12,7 +12,6 @@ import {
 } from "@/lib/queries/core";
 import { $fetchObjektList } from "@/lib/server/objekts/lists";
 import { UserStateProvider } from "@/hooks/use-user-state";
-import { ArtistProvider } from "@/hooks/use-artists";
 import { ProfileProvider } from "@/hooks/use-profile";
 import UpdateList from "@/components/lists/update-list";
 import DeleteList from "@/components/lists/delete-list";
@@ -33,11 +32,11 @@ export const Route = createFileRoute("/@{$username}/list/$slug")({
   loader: async ({ context, params, deps }) => {
     context.queryClient.prefetchQuery(filterDataQuery);
 
-    const [artists, selected, account, target] = await Promise.all([
-      context.queryClient.ensureQueryData(artistsQuery),
-      context.queryClient.ensureQueryData(selectedArtistsQuery),
+    const [account, target, selected] = await Promise.all([
       context.queryClient.ensureQueryData(currentAccountQuery),
       context.queryClient.ensureQueryData(targetAccountQuery(params.username)),
+      context.queryClient.ensureQueryData(selectedArtistsQuery),
+      context.queryClient.ensureQueryData(artistsQuery),
     ]);
 
     // user not found
@@ -72,7 +71,6 @@ export const Route = createFileRoute("/@{$username}/list/$slug")({
       account,
       target: targetAccount,
       targetObjektLists: objektLists,
-      artists,
       isAuthenticated,
       objektList,
     };
@@ -85,36 +83,25 @@ export const Route = createFileRoute("/@{$username}/list/$slug")({
 });
 
 function RouteComponent() {
-  const {
-    account,
-    target,
-    targetObjektLists,
-    artists,
-    isAuthenticated,
-    objektList,
-  } = Route.useLoaderData();
+  const { account, target, targetObjektLists, isAuthenticated, objektList } =
+    Route.useLoaderData();
 
   return (
     <UserStateProvider {...account}>
-      <ArtistProvider artists={artists}>
-        <ProfileProvider target={target} objektLists={targetObjektLists}>
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h3 className="font-cosmo text-xl">{objektList.name}</h3>
+      <ProfileProvider target={target} objektLists={targetObjektLists}>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h3 className="font-cosmo text-xl">{objektList.name}</h3>
 
-            {isAuthenticated && (
-              <div className="flex items-center gap-2">
-                <UpdateList objektList={objektList} />
-                <DeleteList objektList={objektList} />
-              </div>
-            )}
-          </div>
+          {isAuthenticated && (
+            <div className="flex items-center gap-2">
+              <UpdateList objektList={objektList} />
+              <DeleteList objektList={objektList} />
+            </div>
+          )}
+        </div>
 
-          <ListRenderer
-            objektList={objektList}
-            authenticated={isAuthenticated}
-          />
-        </ProfileProvider>
-      </ArtistProvider>
+        <ListRenderer objektList={objektList} authenticated={isAuthenticated} />
+      </ProfileProvider>
     </UserStateProvider>
   );
 }

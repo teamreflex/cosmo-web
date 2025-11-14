@@ -9,7 +9,6 @@ import {
   selectedArtistsQuery,
 } from "@/lib/queries/core";
 import { UserStateProvider } from "@/hooks/use-user-state";
-import { ArtistProvider } from "@/hooks/use-artists";
 import { ProfileProvider } from "@/hooks/use-profile";
 import IndexRenderer from "@/components/objekt-index/index-renderer";
 import { objektIndexFrontendSchema } from "@/lib/universal/parsers";
@@ -29,10 +28,10 @@ export const Route = createFileRoute("/")({
     context.queryClient.prefetchQuery(filterDataQuery);
 
     // load required data
-    const [account, artists, selected] = await Promise.all([
+    const [account, selected] = await Promise.all([
       context.queryClient.ensureQueryData(currentAccountQuery),
-      context.queryClient.ensureQueryData(artistsQuery),
       context.queryClient.ensureQueryData(selectedArtistsQuery),
+      context.queryClient.ensureQueryData(artistsQuery),
     ]);
 
     // prefetch objekts
@@ -43,22 +42,20 @@ export const Route = createFileRoute("/")({
       );
     }
 
-    return { account, artists };
+    return { account };
   },
   head: () => defineHead({ title: "Objekts", canonical: "/" }),
 });
 
 function RouteComponent() {
-  const { account, artists } = Route.useLoaderData();
+  const { account } = Route.useLoaderData();
 
   return (
     <main className="container flex flex-col py-2">
       <UserStateProvider user={account?.user} cosmo={account?.cosmo}>
-        <ArtistProvider artists={artists}>
-          <ProfileProvider objektLists={account?.objektLists ?? []}>
-            <IndexRenderer objektLists={account?.objektLists ?? []} />
-          </ProfileProvider>
-        </ArtistProvider>
+        <ProfileProvider objektLists={account?.objektLists ?? []}>
+          <IndexRenderer objektLists={account?.objektLists ?? []} />
+        </ProfileProvider>
       </UserStateProvider>
     </main>
   );

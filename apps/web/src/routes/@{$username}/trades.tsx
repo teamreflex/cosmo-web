@@ -11,7 +11,6 @@ import {
   selectedArtistsQuery,
   targetAccountQuery,
 } from "@/lib/queries/core";
-import { ArtistProvider } from "@/hooks/use-artists";
 import { transfersQuery } from "@/lib/queries/objekt-queries";
 import { defineHead } from "@/lib/meta";
 import { m } from "@/i18n/messages";
@@ -24,17 +23,17 @@ export const Route = createFileRoute("/@{$username}/trades")({
   loader: async ({ context, params, deps }) => {
     context.queryClient.prefetchQuery(filterDataQuery);
 
-    const [artists, selected, target] = await Promise.all([
-      context.queryClient.ensureQueryData(artistsQuery),
-      context.queryClient.ensureQueryData(selectedArtistsQuery),
+    const [target, selected] = await Promise.all([
       context.queryClient.ensureQueryData(targetAccountQuery(params.username)),
+      context.queryClient.ensureQueryData(selectedArtistsQuery),
+      context.queryClient.ensureQueryData(artistsQuery),
     ]);
 
     context.queryClient.prefetchInfiniteQuery(
       transfersQuery(target.cosmo.address, deps.searchParams, selected),
     );
 
-    return { artists, selected, cosmo: target.cosmo };
+    return { selected, cosmo: target.cosmo };
   },
   head: ({ loaderData }) =>
     defineHead({
@@ -46,13 +45,11 @@ export const Route = createFileRoute("/@{$username}/trades")({
 });
 
 function RouteComponent() {
-  const { artists, cosmo } = Route.useLoaderData();
+  const { cosmo } = Route.useLoaderData();
 
   return (
     <section className="flex flex-col">
-      <ArtistProvider artists={artists}>
-        <TransfersRenderer cosmo={cosmo} />
-      </ArtistProvider>
+      <TransfersRenderer cosmo={cosmo} />
 
       <div id="pagination" />
     </section>

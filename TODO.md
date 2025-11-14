@@ -36,7 +36,7 @@
 
 ## typesense
 
-- [ ] fix CORS config
+- [x] fix CORS config
 
 ### db migrations
 

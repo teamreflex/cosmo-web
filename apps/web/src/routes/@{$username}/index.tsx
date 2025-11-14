@@ -10,7 +10,6 @@ import {
   selectedArtistsQuery,
 } from "@/lib/queries/core";
 import { UserStateProvider } from "@/hooks/use-user-state";
-import { ArtistProvider } from "@/hooks/use-artists";
 import { ProfileProvider } from "@/hooks/use-profile";
 import ProfileRenderer from "@/components/profile/profile-renderer";
 import { pinsQuery } from "@/lib/queries/profile";
@@ -30,11 +29,11 @@ export const Route = createFileRoute("/@{$username}/")({
   loader: async ({ context, params, deps, parentMatchPromise }) => {
     context.queryClient.prefetchQuery(filterDataQuery);
 
-    const [layoutData, artists, selected, pins] = await Promise.all([
+    const [layoutData, pins, selected] = await Promise.all([
       parentMatchPromise.then((parent) => parent.loaderData),
-      context.queryClient.ensureQueryData(artistsQuery),
-      context.queryClient.ensureQueryData(selectedArtistsQuery),
       context.queryClient.ensureQueryData(pinsQuery(params.username)),
+      context.queryClient.ensureQueryData(selectedArtistsQuery),
+      context.queryClient.ensureQueryData(artistsQuery),
     ]);
 
     if (!layoutData) {
@@ -66,7 +65,7 @@ export const Route = createFileRoute("/@{$username}/")({
       );
     }
 
-    return { artists, account, target, pins };
+    return { account, target, pins };
   },
   head: ({ loaderData }) =>
     defineHead({
@@ -80,22 +79,20 @@ export const Route = createFileRoute("/@{$username}/")({
 });
 
 function RouteComponent() {
-  const { artists, account, target, pins } = Route.useLoaderData();
+  const { account, target, pins } = Route.useLoaderData();
 
   return (
     <UserStateProvider {...account}>
-      <ArtistProvider artists={artists}>
-        <ProfileProvider
-          target={target}
-          pins={target.user ? pins : []}
-          lockedObjekts={target.user ? target.lockedObjekts : []}
-          objektLists={target.objektLists}
-        >
-          <section className="flex flex-col">
-            <ProfileRenderer targetCosmo={target.cosmo} />
-          </section>
-        </ProfileProvider>
-      </ArtistProvider>
+      <ProfileProvider
+        target={target}
+        pins={target.user ? pins : []}
+        lockedObjekts={target.user ? target.lockedObjekts : []}
+        objektLists={target.objektLists}
+      >
+        <section className="flex flex-col">
+          <ProfileRenderer targetCosmo={target.cosmo} />
+        </section>
+      </ProfileProvider>
     </UserStateProvider>
   );
 }

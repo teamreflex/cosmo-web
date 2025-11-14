@@ -3,7 +3,6 @@ import { setResponseHeaders } from "@tanstack/react-start/server";
 import { fetchArtist, fetchArtists } from "@apollo/cosmo/server/artists";
 import { cacheHeaders, clearTag, remember } from "./cache";
 import { getProxiedToken } from "./proxied-token";
-import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
 
 const cacheKey = "artists";
 
@@ -15,15 +14,29 @@ const cacheKey = "artists";
  * - Redis: 24 hours
  */
 export const $fetchArtists = createServerFn({ method: "GET" }).handler(
-  async (): Promise<CosmoArtistWithMembersBFF[]> => {
+  async () => {
     setResponseHeaders(new Headers(cacheHeaders({ cdn: 60 * 60 })));
 
     return await remember(cacheKey, 60 * 24, async () => {
       const { accessToken } = await getProxiedToken();
       const artists = await fetchArtists(accessToken);
-      return await Promise.all(
+      const withMembers = await Promise.all(
         artists.map((artist) => fetchArtist(accessToken, artist.name)),
       );
+      const artistMap = new Map(
+        withMembers.map((artist) => [artist.id.toLowerCase(), artist]),
+      );
+
+      const memberMap = new Map(
+        withMembers.flatMap((artist) =>
+          artist.artistMembers.map((member) => [
+            member.name.toLowerCase(),
+            member,
+          ]),
+        ),
+      );
+
+      return { artists: artistMap, members: memberMap };
     });
   },
 );

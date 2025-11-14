@@ -13,7 +13,6 @@ import {
 import { $getObjektListWithUser } from "@/lib/server/objekts/lists";
 import { objektListQuery } from "@/lib/queries/objekt-queries";
 import { UserStateProvider } from "@/hooks/use-user-state";
-import { ArtistProvider } from "@/hooks/use-artists";
 import { ProfileProvider } from "@/hooks/use-profile";
 import UpdateList from "@/components/lists/update-list";
 import DeleteList from "@/components/lists/delete-list";
@@ -47,10 +46,10 @@ export const Route = createFileRoute("/list/$id")({
     );
 
     // load required data
-    const [artists, account, objektListWithUser] = await Promise.all([
-      context.queryClient.ensureQueryData(artistsQuery),
-      context.queryClient.ensureQueryData(currentAccountQuery),
+    const [objektListWithUser, account] = await Promise.all([
       $getObjektListWithUser({ data: { id: sanitizedId } }),
+      context.queryClient.ensureQueryData(currentAccountQuery),
+      context.queryClient.ensureQueryData(artistsQuery),
     ]);
 
     if (!objektListWithUser) {
@@ -73,7 +72,6 @@ export const Route = createFileRoute("/list/$id")({
       objektList,
       account,
       isAuthenticated,
-      artists,
     };
   },
   head: ({ loaderData }) =>
@@ -84,43 +82,40 @@ export const Route = createFileRoute("/list/$id")({
 });
 
 function RouteComponent() {
-  const { account, artists, isAuthenticated, objektList } =
-    Route.useLoaderData();
+  const { account, isAuthenticated, objektList } = Route.useLoaderData();
 
   return (
     <main className="container flex flex-col py-2">
       <UserStateProvider user={account?.user} cosmo={account?.cosmo}>
-        <ArtistProvider artists={artists}>
-          <ProfileProvider>
-            <div className="grid grid-cols-2 grid-rows-2 lg:h-9 lg:grid-rows-1">
-              <div className="flex items-center">
-                <h3 className="font-cosmo text-xl leading-none">
-                  {objektList.name}
-                </h3>
-              </div>
-
-              <div className="row-span-2 grid grid-rows-subgrid flex-row items-center justify-end gap-2 lg:row-span-1 lg:flex">
-                <span className="row-start-2 ml-auto" id="objekt-total" />
-                {isAuthenticated && (
-                  <div className="flex items-center gap-2">
-                    <UpdateList objektList={objektList} />
-                    <DeleteList objektList={objektList} />
-                  </div>
-                )}
-              </div>
-
-              <div
-                className="flex h-10 items-center lg:hidden"
-                id="filters-button"
-              />
+        <ProfileProvider>
+          <div className="grid grid-cols-2 grid-rows-2 lg:h-9 lg:grid-rows-1">
+            <div className="flex items-center">
+              <h3 className="font-cosmo text-xl leading-none">
+                {objektList.name}
+              </h3>
             </div>
 
-            <ListRenderer
-              authenticated={isAuthenticated}
-              objektList={objektList}
+            <div className="row-span-2 grid grid-rows-subgrid flex-row items-center justify-end gap-2 lg:row-span-1 lg:flex">
+              <span className="row-start-2 ml-auto" id="objekt-total" />
+              {isAuthenticated && (
+                <div className="flex items-center gap-2">
+                  <UpdateList objektList={objektList} />
+                  <DeleteList objektList={objektList} />
+                </div>
+              )}
+            </div>
+
+            <div
+              className="flex h-10 items-center lg:hidden"
+              id="filters-button"
             />
-          </ProfileProvider>
-        </ArtistProvider>
+          </div>
+
+          <ListRenderer
+            authenticated={isAuthenticated}
+            objektList={objektList}
+          />
+        </ProfileProvider>
       </UserStateProvider>
     </main>
   );

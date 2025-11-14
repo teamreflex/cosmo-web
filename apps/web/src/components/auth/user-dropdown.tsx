@@ -31,7 +31,7 @@ export default function UserDropdown({
   cosmo,
   onSignOut,
 }: UserDropdownProps) {
-  const { artists } = useArtists();
+  const { artistList } = useArtists();
   const { selectedIds } = useArtists();
   const [openSettings, setOpenSettings] = useState(false);
   const [openAccount, setOpenAccount] = useState(false);
@@ -59,7 +59,7 @@ export default function UserDropdown({
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuGroup>
-          {artists
+          {artistList
             .sort((a, b) => a.comoTokenId - b.comoTokenId)
             .map((artist) => (
               <ArtistItem

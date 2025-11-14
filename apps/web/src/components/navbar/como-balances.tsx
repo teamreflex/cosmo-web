@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-import { useSuspenseQueries } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import ArtistIcon from "../artist-icon";
 import {
   Tooltip,
@@ -9,31 +9,22 @@ import {
 } from "../ui/tooltip";
 import type { CosmoArtistBFF } from "@apollo/cosmo/types/artists";
 import type { ComoBalance } from "@/lib/universal/como";
-import { artistsQuery, selectedArtistsQuery } from "@/lib/queries/core";
 import { tokenBalancesQuery } from "@/lib/queries/como";
+import { useArtists } from "@/hooks/use-artists";
 
 type Props = {
   address: string;
 };
 
 export default function UserBalances(props: Props) {
-  const [{ data: selectedArtists }, { data: artists }, { data: balances }] =
-    useSuspenseQueries({
-      queries: [
-        selectedArtistsQuery,
-        artistsQuery,
-        tokenBalancesQuery(props.address),
-      ],
-    });
-
-  const filteredArtists =
-    selectedArtists.length > 0
-      ? artists.filter((artist) => selectedArtists.includes(artist.id))
-      : artists;
+  const { selected } = useArtists();
+  const { data: balances } = useSuspenseQuery(
+    tokenBalancesQuery(props.address),
+  );
 
   return (
     <div className="flex flex-row gap-2">
-      {filteredArtists.map((artist) => (
+      {selected.map((artist) => (
         <Balance
           key={artist.name}
           artist={artist}

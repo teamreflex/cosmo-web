@@ -9,7 +9,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import SkeletonGradient from "@/components/skeleton/skeleton-overlay";
 import { Error } from "@/components/error-boundary";
 import { gravitiesIndexQuery } from "@/lib/queries/gravity";
-import { ArtistProvider } from "@/hooks/use-artists";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import GravityTimestamp from "@/components/gravity/timestamp";
@@ -20,19 +19,20 @@ import { m } from "@/i18n/messages";
 
 export const Route = createFileRoute("/gravity/")({
   loader: async ({ context }) => {
-    const [artists, selected, gravities] = await Promise.all([
+    const [{ artists }, selected, gravities] = await Promise.all([
       context.queryClient.ensureQueryData(artistsQuery),
       context.queryClient.ensureQueryData(selectedArtistsQuery),
       context.queryClient.ensureQueryData(gravitiesIndexQuery),
     ]);
 
+    const artistList = Array.from(artists.values());
+
     const toRender =
       selected.length > 0
-        ? artists.filter((a) => selected.includes(a.id))
-        : artists;
+        ? artistList.filter((a) => selected.includes(a.id))
+        : artistList;
 
     return {
-      artists,
       toRender,
       gravities,
     };
@@ -45,46 +45,40 @@ export const Route = createFileRoute("/gravity/")({
 });
 
 function RouteComponent() {
-  const { artists, toRender, gravities } = Route.useLoaderData();
+  const { toRender, gravities } = Route.useLoaderData();
 
   return (
-    <ArtistProvider artists={artists}>
-      <main className="container flex flex-col py-2">
-        <Tabs defaultValue={toRender[0]?.id}>
-          {/* header */}
-          <div className="flex flex-row items-center justify-between">
-            <h1 className="font-cosmo text-3xl uppercase">
-              {m.gravity_header()}
-            </h1>
+    <main className="container flex flex-col py-2">
+      <Tabs defaultValue={toRender[0]?.id}>
+        {/* header */}
+        <div className="flex flex-row items-center justify-between">
+          <h1 className="font-cosmo text-3xl uppercase">
+            {m.gravity_header()}
+          </h1>
 
-            <TabsList>
-              {toRender.map((artist) => (
-                <TabsTrigger
-                  key={artist.id}
-                  value={artist.id}
-                  className="gap-2"
-                >
-                  <img
-                    className="aspect-square size-5 shrink-0 rounded-full"
-                    src={artist.logoImageUrl}
-                    alt={artist.title}
-                  />
-                  {artist.title}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </div>
+          <TabsList>
+            {toRender.map((artist) => (
+              <TabsTrigger key={artist.id} value={artist.id} className="gap-2">
+                <img
+                  className="aspect-square size-5 shrink-0 rounded-full"
+                  src={artist.logoImageUrl}
+                  alt={artist.title}
+                />
+                {artist.title}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
 
-          {toRender.map((artist) => (
-            <ArtistTab
-              key={artist.id}
-              artist={artist}
-              gravities={gravities[artist.id] ?? []}
-            />
-          ))}
-        </Tabs>
-      </main>
-    </ArtistProvider>
+        {toRender.map((artist) => (
+          <ArtistTab
+            key={artist.id}
+            artist={artist}
+            gravities={gravities[artist.id] ?? []}
+          />
+        ))}
+      </Tabs>
+    </main>
   );
 }
 

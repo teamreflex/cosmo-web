@@ -2,7 +2,7 @@ import { Fragment, Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { IconCards } from "@tabler/icons-react";
 import { ChartColumnBig, Menu, Search, Vote } from "lucide-react";
-import { useSuspenseQueries } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import Logo from "../logo";
 import UpdateDialog from "../misc/update-dialog";
 import SystemStatus from "../misc/system-status";
@@ -11,8 +11,7 @@ import StateAuthenticated from "../auth/state-authenticated";
 import AuthFallback from "../auth/auth-fallback";
 import { Skeleton } from "../ui/skeleton";
 import Links from "./links";
-import { ArtistProvider } from "@/hooks/use-artists";
-import { artistsQuery, currentAccountQuery } from "@/lib/queries/core";
+import { currentAccountQuery } from "@/lib/queries/core";
 
 export default function Navbar() {
   return (
@@ -69,20 +68,18 @@ function NavbarFallback() {
 }
 
 function AuthState() {
-  const [{ data: account }, { data: artists }] = useSuspenseQueries({
-    queries: [currentAccountQuery, artistsQuery],
-  });
+  const { data } = useSuspenseQuery(currentAccountQuery);
 
   return (
-    <ArtistProvider artists={artists}>
-      <Links signedIn={account !== null} cosmo={account?.cosmo} />
+    <>
+      <Links signedIn={data !== null} cosmo={data?.cosmo} />
       <div className="flex grow-0 items-center justify-end gap-2">
-        {!account ? (
+        {!data ? (
           <StateGuest />
         ) : (
-          <StateAuthenticated user={account.user} cosmo={account.cosmo} />
+          <StateAuthenticated user={data.user} cosmo={data.cosmo} />
         )}
       </div>
-    </ArtistProvider>
+    </>
   );
 }

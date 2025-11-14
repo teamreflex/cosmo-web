@@ -51,14 +51,14 @@ export const $fetchTokenBalances = createServerFn({ method: "GET" })
   .inputValidator(z.object({ address: z.string() }))
   .handler(async ({ data }): Promise<ComoBalance[]> => {
     return remember(`como-balances:${data.address}`, 60 * 15, async () => {
-      const artists = await $fetchArtists();
+      const { artists } = await $fetchArtists();
       const balances = await indexer.query.comoBalances.findMany({
         where: {
           owner: addr(data.address),
         },
       });
 
-      return artists.map((artist) => {
+      return Array.from(artists.values()).map((artist) => {
         const balance = balances.find((b) => b.tokenId === artist.comoTokenId);
 
         return {

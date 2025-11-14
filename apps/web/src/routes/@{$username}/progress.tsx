@@ -10,7 +10,6 @@ import {
 } from "@/lib/queries/core";
 import { progressFrontendSchema } from "@/lib/universal/parsers";
 import { UserStateProvider } from "@/hooks/use-user-state";
-import { ArtistProvider } from "@/hooks/use-artists";
 import { ProfileProvider } from "@/hooks/use-profile";
 import ProgressRenderer from "@/components/progress/progress-renderer";
 import {
@@ -32,15 +31,15 @@ export const Route = createFileRoute("/@{$username}/progress")({
   loader: async ({ context, params }) => {
     context.queryClient.prefetchQuery(filterDataQuery);
 
-    const [artists, target, account] = await Promise.all([
-      context.queryClient.ensureQueryData(artistsQuery),
+    const [target, account] = await Promise.all([
       context.queryClient.ensureQueryData(targetAccountQuery(params.username)),
       context.queryClient.ensureQueryData(currentAccountQuery),
+      context.queryClient.ensureQueryData(artistsQuery),
     ]);
 
     context.queryClient.prefetchQuery(artistStatsQuery(target.cosmo.address));
 
-    return { artists, target, account };
+    return { target, account };
   },
   head: ({ loaderData }) =>
     defineHead({
@@ -54,25 +53,23 @@ export const Route = createFileRoute("/@{$username}/progress")({
 });
 
 function RouteComponent() {
-  const { artists, target, account } = Route.useLoaderData();
+  const { target, account } = Route.useLoaderData();
 
   return (
     <section className="flex flex-col">
       <UserStateProvider user={account?.user} cosmo={account?.cosmo}>
-        <ArtistProvider artists={artists}>
-          <ProfileProvider target={target}>
-            <ProgressRenderer address={target.cosmo.address}>
-              <ErrorBoundary fallback={<ProgressChartsError />}>
-                <Suspense fallback={<ProgressChartsSkeleton />}>
-                  <ProgressCharts address={target.cosmo.address} />
-                </Suspense>
-              </ErrorBoundary>
-            </ProgressRenderer>
-            <Portal to="#help">
-              <HelpDialog />
-            </Portal>
-          </ProfileProvider>
-        </ArtistProvider>
+        <ProfileProvider target={target}>
+          <ProgressRenderer address={target.cosmo.address}>
+            <ErrorBoundary fallback={<ProgressChartsError />}>
+              <Suspense fallback={<ProgressChartsSkeleton />}>
+                <ProgressCharts address={target.cosmo.address} />
+              </Suspense>
+            </ErrorBoundary>
+          </ProgressRenderer>
+          <Portal to="#help">
+            <HelpDialog />
+          </Portal>
+        </ProfileProvider>
       </UserStateProvider>
     </section>
   );

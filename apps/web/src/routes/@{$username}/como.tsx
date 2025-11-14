@@ -9,13 +9,14 @@ import Portal from "@/components/portal";
 import HelpDialog from "@/components/como/help-dialog";
 import { defineHead } from "@/lib/meta";
 import { m } from "@/i18n/messages";
+import { useArtists } from "@/hooks/use-artists";
 
 export const Route = createFileRoute("/@{$username}/como")({
   component: RouteComponent,
   pendingComponent: PendingComponent,
   errorComponent: ErrorComponent,
   loader: async ({ context, params }) => {
-    const [target, artists] = await Promise.all([
+    const [target] = await Promise.all([
       context.queryClient.ensureQueryData(targetAccountQuery(params.username)),
       context.queryClient.ensureQueryData(artistsQuery),
     ]);
@@ -24,7 +25,7 @@ export const Route = createFileRoute("/@{$username}/como")({
       fetchObjektsWithComoQuery(target.cosmo.address),
     );
 
-    return { username: target.cosmo.username, artists, data };
+    return { username: target.cosmo.username, data };
   },
   head: ({ loaderData }) =>
     defineHead({
@@ -38,9 +39,10 @@ export const Route = createFileRoute("/@{$username}/como")({
 });
 
 function RouteComponent() {
-  const { artists, data } = Route.useLoaderData();
+  const { data } = Route.useLoaderData();
+  const { artistList } = useArtists();
 
-  const totals = artists.map((artist) => {
+  const totals = artistList.map((artist) => {
     const total = data
       .filter((t) => t.artistId === artist.id.toLowerCase())
       .reduce((sum, objekt) => {
@@ -69,7 +71,7 @@ function RouteComponent() {
         </div>
       </div>
 
-      <ComoCalendar artists={artists} transfers={data} />
+      <ComoCalendar artists={artistList} transfers={data} />
 
       <Portal to="#help">
         <HelpDialog />

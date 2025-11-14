@@ -113,7 +113,7 @@ function DesktopLinks(props: LinksProps) {
 
 export function MobileLinks(props: Props) {
   const location = useLocation();
-  const { artists, selectedIds } = useArtists();
+  const { artistList, selectedIds } = useArtists();
 
   return (
     <div className="contents">
@@ -181,7 +181,7 @@ export function MobileLinks(props: Props) {
         <div className="contents">
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            {artists
+            {artistList
               .sort((a, b) => a.comoTokenId - b.comoTokenId)
               .map((artist) => (
                 <ArtistItem

@@ -4,7 +4,6 @@ import { desc } from "drizzle-orm";
 import z from "zod";
 import { isBefore } from "date-fns";
 import { setResponseHeaders } from "@tanstack/react-start/server";
-import { isEqual } from "@apollo/util";
 import { fetchGravity, fetchPoll } from "@apollo/cosmo/server/gravity";
 import { findPoll } from "../client/gravity/util";
 import { GravityNotSupportedError } from "../universal/gravity";
@@ -30,7 +29,7 @@ export const $fetchGravityDetails = createServerFn({ method: "GET" })
   )
   .handler(async ({ data }) => {
     // get artists
-    const artists = await $fetchArtists();
+    const { artists } = await $fetchArtists();
 
     // perform quick lookup from database
     const info = await db.query.gravities.findFirst({
@@ -54,7 +53,7 @@ export const $fetchGravityDetails = createServerFn({ method: "GET" })
 
     const isPast = isBefore(info.endDate, Date.now());
     const isPolygon = isBefore(info.endDate, "2025-04-18");
-    const artist = artists.find((a) => isEqual(a.id, data.artist));
+    const artist = artists.get(data.artist.toLowerCase());
     if (!artist) {
       throw notFound();
     }

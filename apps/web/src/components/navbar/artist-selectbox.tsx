@@ -16,7 +16,7 @@ import { selectedArtistsQuery } from "@/lib/queries/core";
 
 export default function ArtistSelectbox() {
   const id = useId();
-  const { artists, selected, selectedIds } = useArtists();
+  const { artistList, selected, selectedIds } = useArtists();
 
   return (
     <DropdownMenu>
@@ -37,7 +37,7 @@ export default function ArtistSelectbox() {
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        {artists
+        {artistList
           .sort((a, b) => a.comoTokenId - b.comoTokenId)
           .map((artist) => (
             <ArtistItem
