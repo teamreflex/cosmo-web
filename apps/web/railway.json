@@ -14,7 +14,7 @@
   "deploy": {
     "runtime": "V2",
     "numReplicas": 1,
-    "startCommand": "bun --filter web start",
+    "startCommand": "bun run --bun ./apps/web/main.ts",
     "limitOverride": {
       "containers": {
         "cpu": 3,

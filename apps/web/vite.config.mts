@@ -4,7 +4,6 @@ import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import react from "@vitejs/plugin-react";
 import viteTsConfigPaths from "vite-tsconfig-paths";
 import tailwindcss from "@tailwindcss/vite";
-import { nitro } from "nitro/vite";
 import { paraglideVitePlugin } from "@inlang/paraglide-js";
 
 import "./src/lib/env/client";
@@ -14,10 +13,6 @@ export default defineConfig({
   server: {
     port: 3000,
   },
-  nitro: {
-    preset: "bun",
-    compatibilityDate: "2025-11-11",
-  },
   plugins: [
     devtools({
       removeDevtoolsOnBuild: true,
@@ -26,7 +21,6 @@ export default defineConfig({
       projects: ["./tsconfig.json"],
     }),
     tanstackStart(),
-    nitro(),
     react({
       babel: {
         plugins: ["babel-plugin-react-compiler"],
