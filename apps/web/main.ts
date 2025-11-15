@@ -31,23 +31,24 @@
  *   - Default: true
  *   - Set to "false" to disable ETag support
  *
- * ASSET_PRELOAD_ENABLE_GZIP (boolean)
- *   - Enable Gzip compression for eligible assets
+ * ASSET_PRELOAD_ENABLE_COMPRESSION (boolean)
+ *   - Enable compression (Gzip and Brotli) for eligible assets
  *   - Default: true
- *   - Set to "false" to disable Gzip compression
+ *   - Set to "false" to disable all compression
  *
- * ASSET_PRELOAD_GZIP_MIN_SIZE (number)
- *   - Minimum file size in bytes required for Gzip compression
+ * ASSET_PRELOAD_COMPRESSION_MIN_SIZE (number)
+ *   - Minimum file size in bytes required for compression
  *   - Files smaller than this will not be compressed
  *   - Default: 1024 (1KB)
  *
- * ASSET_PRELOAD_GZIP_MIME_TYPES (string)
- *   - Comma-separated list of MIME types eligible for Gzip compression
+ * ASSET_PRELOAD_COMPRESSION_MIME_TYPES (string)
+ *   - Comma-separated list of MIME types eligible for compression
  *   - Supports partial matching for types ending with "/"
  *   - Default: text/,application/javascript,application/json,application/xml,image/svg+xml
  */
 
 import path from "node:path";
+import { brotliCompressSync } from "node:zlib";
 
 // Configuration
 const SERVER_PORT = Number(process.env.PORT ?? 3000);
@@ -76,6 +77,17 @@ const log = {
   },
 };
 
+/**
+ * Add basic security headers to response
+ * CSP should be handled in the TanStack Start handler
+ */
+function addSecurityHeaders(headers: Record<string, string>): void {
+  headers["X-Content-Type-Options"] = "nosniff";
+  headers["X-Frame-Options"] = "DENY";
+  headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+  headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains";
+}
+
 // Preloading configuration from environment variables
 const MAX_PRELOAD_BYTES = Number(
   process.env.ASSET_PRELOAD_MAX_SIZE ?? 5 * 1024 * 1024, // 5MB default
@@ -102,12 +114,14 @@ const VERBOSE = process.env.ASSET_PRELOAD_VERBOSE_LOGGING === "true";
 const ENABLE_ETAG =
   (process.env.ASSET_PRELOAD_ENABLE_ETAG ?? "true") === "true";
 
-// Optional Gzip feature
-const ENABLE_GZIP =
-  (process.env.ASSET_PRELOAD_ENABLE_GZIP ?? "true") === "true";
-const GZIP_MIN_BYTES = Number(process.env.ASSET_PRELOAD_GZIP_MIN_SIZE ?? 1024); // 1KB
-const GZIP_TYPES = (
-  process.env.ASSET_PRELOAD_GZIP_MIME_TYPES ??
+// Optional compression feature (Gzip and Brotli)
+const ENABLE_COMPRESSION =
+  (process.env.ASSET_PRELOAD_ENABLE_COMPRESSION ?? "true") === "true";
+const COMPRESSION_MIN_BYTES = Number(
+  process.env.ASSET_PRELOAD_COMPRESSION_MIN_SIZE ?? 1024,
+); // 1KB
+const COMPRESSION_MIME_TYPES = (
+  process.env.ASSET_PRELOAD_COMPRESSION_MIME_TYPES ??
   "text/,application/javascript,application/json,application/xml,image/svg+xml"
 )
   .split(",")
@@ -144,11 +158,12 @@ interface AssetMetadata {
 }
 
 /**
- * In-memory asset with ETag and Gzip support
+ * In-memory asset with ETag and compression support (Gzip and Brotli)
  */
 interface InMemoryAsset {
   raw: Uint8Array;
   gz?: Uint8Array;
+  br?: Uint8Array;
   etag?: string;
   type: string;
   immutable: boolean;
@@ -189,30 +204,53 @@ function isFileEligibleForPreloading(relativePath: string): boolean {
  * Check if a MIME type is compressible
  */
 function isMimeTypeCompressible(mimeType: string): boolean {
-  return GZIP_TYPES.some((type) =>
+  return COMPRESSION_MIME_TYPES.some((type) =>
     type.endsWith("/") ? mimeType.startsWith(type) : mimeType === type,
   );
 }
 
 /**
- * Conditionally compress data based on size and MIME type
+ * Compress data with Gzip using Bun's native implementation
  */
-function compressDataIfAppropriate(
+function compressWithGzip(
   data: Uint8Array,
   mimeType: string,
 ): Uint8Array | undefined {
-  if (!ENABLE_GZIP) return undefined;
-  if (data.byteLength < GZIP_MIN_BYTES) return undefined;
+  if (!ENABLE_COMPRESSION) return undefined;
+  if (data.byteLength < COMPRESSION_MIN_BYTES) return undefined;
   if (!isMimeTypeCompressible(mimeType)) return undefined;
   try {
     return Bun.gzipSync(data.buffer as ArrayBuffer);
-  } catch {
+  } catch (error) {
+    log.warning(
+      `Failed to gzip compress data (${data.byteLength} bytes): ${String(error)}`,
+    );
     return undefined;
   }
 }
 
 /**
- * Create response handler function with ETag and Gzip support
+ * Compress data with Brotli (better compression than Gzip)
+ */
+function compressWithBrotli(
+  data: Uint8Array,
+  mimeType: string,
+): Uint8Array | undefined {
+  if (!ENABLE_COMPRESSION) return undefined;
+  if (data.byteLength < COMPRESSION_MIN_BYTES) return undefined;
+  if (!isMimeTypeCompressible(mimeType)) return undefined;
+  try {
+    return brotliCompressSync(data);
+  } catch (error) {
+    log.warning(
+      `Failed to brotli compress data (${data.byteLength} bytes): ${String(error)}`,
+    );
+    return undefined;
+  }
+}
+
+/**
+ * Create response handler function with ETag and compression support
  */
 function createResponseHandler(
   asset: InMemoryAsset,
@@ -225,31 +263,48 @@ function createResponseHandler(
         : "public, max-age=3600",
     };
 
+    // Add security headers
+    addSecurityHeaders(headers);
+
     if (ENABLE_ETAG && asset.etag) {
       const ifNone = req.headers.get("if-none-match");
       if (ifNone && ifNone === asset.etag) {
+        const etagHeaders: Record<string, string> = { ETag: asset.etag };
+        addSecurityHeaders(etagHeaders);
         return new Response(null, {
           status: 304,
-          headers: { ETag: asset.etag },
+          headers: etagHeaders,
         });
       }
       headers.ETag = asset.etag;
     }
 
-    if (
-      ENABLE_GZIP &&
-      asset.gz &&
-      req.headers.get("accept-encoding")?.includes("gzip")
-    ) {
+    const acceptEncoding = req.headers.get("accept-encoding") || "";
+
+    // Prefer Brotli over Gzip (better compression)
+    if (ENABLE_COMPRESSION && asset.br && acceptEncoding.includes("br")) {
+      headers["Content-Encoding"] = "br";
+      headers["Content-Length"] = String(asset.br.byteLength);
+      return new Response(asset.br.buffer as ArrayBuffer, {
+        status: 200,
+        headers,
+      });
+    }
+
+    if (ENABLE_COMPRESSION && asset.gz && acceptEncoding.includes("gzip")) {
       headers["Content-Encoding"] = "gzip";
       headers["Content-Length"] = String(asset.gz.byteLength);
-      const gzCopy = new Uint8Array(asset.gz);
-      return new Response(gzCopy, { status: 200, headers });
+      return new Response(asset.gz.buffer as ArrayBuffer, {
+        status: 200,
+        headers,
+      });
     }
 
     headers["Content-Length"] = String(asset.raw.byteLength);
-    const rawCopy = new Uint8Array(asset.raw);
-    return new Response(rawCopy, { status: 200, headers });
+    return new Response(asset.raw.buffer as ArrayBuffer, {
+      status: 200,
+      headers,
+    });
   };
 }
 
@@ -323,13 +378,15 @@ async function initializeStaticRoutes(
         const withinSizeLimit = file.size <= MAX_PRELOAD_BYTES;
 
         if (matchesPattern && withinSizeLimit) {
-          // Preload small files into memory with ETag and Gzip support
+          // Preload small files into memory with ETag and compression support
           const bytes = new Uint8Array(await file.arrayBuffer());
-          const gz = compressDataIfAppropriate(bytes, metadata.type);
+          const gz = compressWithGzip(bytes, metadata.type);
+          const br = compressWithBrotli(bytes, metadata.type);
           const etag = ENABLE_ETAG ? computeEtag(bytes) : undefined;
           const asset: InMemoryAsset = {
             raw: bytes,
             gz,
+            br,
             etag,
             type: metadata.type,
             immutable: true,
@@ -337,8 +394,12 @@ async function initializeStaticRoutes(
           };
           routes[route] = createResponseHandler(asset);
 
+          // Calculate actual memory usage (raw + compressed versions)
+          const actualMemoryUsage =
+            bytes.byteLength + (gz?.byteLength ?? 0) + (br?.byteLength ?? 0);
+
           loaded.push({ ...metadata, size: bytes.byteLength });
-          totalPreloadedBytes += bytes.byteLength;
+          totalPreloadedBytes += actualMemoryUsage;
         } else {
           // Serve large or filtered files on-demand
           routes[route] = () => {
@@ -354,8 +415,15 @@ async function initializeStaticRoutes(
           skipped.push(metadata);
         }
       } catch (error: unknown) {
-        if (error instanceof Error && error.name !== "EISDIR") {
-          log.error(`Failed to load ${filepath}: ${error.message}`);
+        // Skip directories silently, log other errors
+        const errorCode =
+          error && typeof error === "object" && "code" in error
+            ? error.code
+            : null;
+        if (errorCode !== "EISDIR") {
+          log.error(
+            `Failed to load ${filepath}: ${error instanceof Error ? error.message : String(error)}`,
+          );
         }
       }
     }
@@ -427,38 +495,6 @@ async function initializeStaticRoutes(
       }
     }
 
-    // Show detailed verbose info if enabled
-    if (VERBOSE) {
-      if (loaded.length > 0 || skipped.length > 0) {
-        const allFiles = [...loaded, ...skipped].sort((a, b) =>
-          a.route.localeCompare(b.route),
-        );
-        console.log("\n📊 Detailed file information:");
-        console.log(
-          "Status       │ Path                            │ MIME Type                    │ Reason",
-        );
-        allFiles.forEach((file) => {
-          const isPreloaded = loaded.includes(file);
-          const status = isPreloaded ? "MEMORY" : "ON-DEMAND";
-          const reason =
-            !isPreloaded && file.size > MAX_PRELOAD_BYTES
-              ? "too large"
-              : !isPreloaded
-                ? "filtered"
-                : "preloaded";
-          const route =
-            file.route.length > 30
-              ? file.route.substring(0, 27) + "..."
-              : file.route;
-          console.log(
-            `${status.padEnd(12)} │ ${route.padEnd(30)} │ ${file.type.padEnd(28)} │ ${reason.padEnd(10)}`,
-          );
-        });
-      } else {
-        console.log("\n📊 No files found to display");
-      }
-    }
-
     // Log summary after the file list
     console.log(); // Empty line for separation
     if (loaded.length > 0) {
@@ -489,8 +525,6 @@ async function initializeStaticRoutes(
  * Initialize the server
  */
 async function initializeServer() {
-  log.header("Starting Production Server");
-
   // Load TanStack Start server handler
   let handler: { fetch: (request: Request) => Response | Promise<Response> };
   try {
@@ -505,13 +539,43 @@ async function initializeServer() {
   }
 
   // Build static routes with intelligent preloading
-  const { routes } = await initializeStaticRoutes(CLIENT_DIRECTORY);
+  const { routes, loaded, skipped } =
+    await initializeStaticRoutes(CLIENT_DIRECTORY);
+  const serverStartTime = Date.now();
 
   // Create Bun server
   const server = Bun.serve({
     port: SERVER_PORT,
 
     routes: {
+      // Health check endpoint
+      "/health": () => {
+        const headers: Record<string, string> = {
+          "Content-Type": "application/json",
+        };
+        addSecurityHeaders(headers);
+
+        const healthData = {
+          status: "healthy",
+          uptime: Math.floor((Date.now() - serverStartTime) / 1000),
+          assets: {
+            preloaded: loaded.length,
+            onDemand: skipped.length,
+            total: loaded.length + skipped.length,
+          },
+          memory: {
+            rss: process.memoryUsage().rss,
+            heapUsed: process.memoryUsage().heapUsed,
+            heapTotal: process.memoryUsage().heapTotal,
+          },
+        };
+
+        return new Response(JSON.stringify(healthData, null, 2), {
+          status: 200,
+          headers,
+        });
+      },
+
       // Serve static assets (preloaded or on-demand)
       ...routes,
 
@@ -536,10 +600,35 @@ async function initializeServer() {
   });
 
   log.success(`Server listening on http://localhost:${String(server.port)}`);
+
+  return server;
 }
 
 // Initialize the server
-initializeServer().catch((error: unknown) => {
-  log.error(`Failed to start server: ${String(error)}`);
-  process.exit(1);
-});
+initializeServer()
+  .then((server) => {
+    // Graceful shutdown handler
+    const shutdown = (signal: string) => {
+      log.info(`\nReceived ${signal}, starting graceful shutdown...`);
+
+      try {
+        // Stop accepting new connections
+        server.stop();
+        log.success("Server stopped successfully");
+
+        // Exit cleanly
+        process.exit(0);
+      } catch (error) {
+        log.error(`Error during shutdown: ${String(error)}`);
+        process.exit(1);
+      }
+    };
+
+    // Register shutdown handlers
+    process.on("SIGTERM", () => shutdown("SIGTERM"));
+    process.on("SIGINT", () => shutdown("SIGINT"));
+  })
+  .catch((error: unknown) => {
+    log.error(`Failed to start server: ${String(error)}`);
+    process.exit(1);
+  });
