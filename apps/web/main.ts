@@ -51,8 +51,11 @@ import path from "node:path";
 
 // Configuration
 const SERVER_PORT = Number(process.env.PORT ?? 3000);
-const CLIENT_DIRECTORY = "./dist/client";
-const SERVER_ENTRY_POINT = "./dist/server/server.mjs";
+const CLIENT_DIRECTORY = path.join(import.meta.dir, "./dist/client");
+const SERVER_ENTRY_POINT = path.join(
+  import.meta.dir,
+  "./dist/server/server.mjs",
+);
 
 // Logging utilities for professional output
 const log = {
