@@ -1,15 +1,37 @@
-## Development
+## Architecture
 
-- `turbo i18n` - Compile Paraglide JS i18n messages
+### Tooling
+
+- Framework: TanStack Start (Router + Query)
+- UI: React 19, Tailwind v4, shadcn/ui components
+- Database: Drizzle ORM + Bun SQL (Postgres), Redis
+- Authentication: Better Auth with Discord/Twitter OAuth
+- Search: Typesense for fuzzy objekt metadata search
+- i18n: Paraglide JS
+
+### Project Structure
+
+- `src/routes/` - TanStack Router pages and API routes
+- `src/components/` - Reusable React components
+- `src/lib/` - Core business logic
+  - `env/` - Environment variables for per client/server environment
+  - `client/` - Client-only utilities
+  - `server/` - Server-side logic (database, API calls)
+  - `universal/` - Shared types and Zod schemas
+  - `queries/` - Server functions and associated TanStack Query options
+- `src/hooks/` - Custom React hooks
+- `src/styles/` - Tailwind and general styling config
+- `messages/` - Paraglide JS translation strings
+- `drizzle/` - Database migrations
 
 ## Database
 
 - `turbo db:generate` - Generate migration files
 
-The project contains two Postgres database connections:
+The project uses Drizzle ORM and the Bun SQL Postgres driver, with two connections:
 
 - `import { db } from "@/lib/server/db"`
-  - general Neon Postgres HTTP connection for entities: cosmoAccounts, lockedObjekts, objektLists, objektListEntries, objektMetadata, pins, cosmoTokens, gravities, gravityPolls, gravityPollCandidates, polygonVotes, user, session, acocunt, verification
+  - Postgres connection for general user data
 - `import { indexer } from "@/lib/server/db/indexer"`
   - Postgres connection for querying the blockchain indexer for objekt data.
   - entities are: collections, objekts, transfers, comoBalances, votes
@@ -27,7 +49,7 @@ const profile = await db.query.cosmoAccounts.findFirst({
 });
 ```
 
-Otherwise, use the query builder:
+For more complex queries such as multiple joins or aggregations, use the query builder:
 
 ```ts
 const cosmo = await db
@@ -37,43 +59,15 @@ const cosmo = await db
   .where(eq(cosmoAccounts.username, "username"));
 ```
 
-## Frontend
+## Tailwind
 
-The project uses Tailwind v4, so always use v4 conventions rather than v3. This includes things like supporting inline CSS variable usage such as `bg-(--my-var)` vs. `bg-[var(--my-var)]`.
+The project uses Tailwind v4, so always use v4 conventions rather than v3. This includes things like:
 
-## Architecture Overview
+- supporting inline CSS variable usage such as `bg-(--my-var)` vs. `bg-[var(--my-var)]`
+- using CSS configuration in `styles/tailwind.css` rather than `tailwind.config.js`
+- `oklch` colors instead of `hsl`
 
-### Tech Stack
+## Translations
 
-- Framework: TanStack Start (Router + Query)
-- UI: React 19, Tailwind v4, shadcn/ui components
-- Database:
-  - Neon PostgreSQL (main app database)
-  - Blockchain indexer database (objekts, transfers, votes)
-  - Drizzle ORM with relational queries
-- Authentication: Better Auth with Discord/Twitter OAuth
-- Search: Typesense for fuzzy objekt metadata search
-- i18n: Paraglide JS
-
-### Project Structure
-
-- `src/routes/` - TanStack Router pages and API routes
-- `src/components/` - Reusable React components
-- `src/lib/` - Core business logic
-  - `env/` - Environment variables for per client/server environment
-  - `client/` - Client-only utilities
-  - `server/` - Server-side logic (database, API calls)
-  - `universal/` - Shared types and Zod schemas
-  - `queries/` - Server functions and associated TanStack Query options
-- `src/hooks/` - Custom React hooks
-- `src/i18n/` - Paraglide JS translation strings
-- `drizzle/` - Database migrations
-
-### Architecture Patterns
-
-1. **Data Fetching**: Route loaders with server functions, prefetched into query cache as appropriate
-2. **Database Access**: Two separate connections:
-   - `db` - Main Neon database (HTTP)
-   - `indexer` - Blockchain indexer database
-3. **Error Handling**: Consistent use of Error Boundaries with Suspense
-4. **URL State**: Type-safe with TanStack Router search params parsing per route
+- when writing new components that include strings, always use the i18n system and create new strings for all languages in `messages/`
+- use `turbo i18n` to compile messages into .js modules for use with the `m()` helper.

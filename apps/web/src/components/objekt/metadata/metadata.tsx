@@ -2,7 +2,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { ofetch } from "ofetch";
 import { useState } from "react";
 import { useCopyToClipboard } from "usehooks-ts";
-import { ImageDown, LinkIcon } from "lucide-react";
+import { CloudDownload, Film, ImageIcon, LinkIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "@tanstack/react-router";
 import { Button } from "../../ui/button";
@@ -19,6 +19,12 @@ import { env } from "@/lib/env/client";
 import { unobtainables } from "@/lib/unobtainables";
 import { useUserState } from "@/hooks/use-user-state";
 import { m } from "@/i18n/messages";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type Props = {
   objekt: Objekt.Collection;
@@ -46,7 +52,7 @@ export default function Metadata(props: Props) {
     toast.success(m.toast_objekt_url_copied());
   }
 
-  const { front } = getObjektImageUrls(props.objekt);
+  const { front, back } = getObjektImageUrls(props.objekt);
   const isUnobtainable = unobtainables.includes(props.objekt.slug);
   const total = Number(data.total).toLocaleString();
 
@@ -90,11 +96,39 @@ export default function Metadata(props: Props) {
               <LinkIcon />
             </Button>
 
-            <Button variant="secondary" size="sm" asChild>
-              <a href={front.download} target="_blank">
-                <ImageDown />
-              </a>
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="focus:outline-none"
+                >
+                  <CloudDownload />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent side="top" align="end">
+                <DropdownMenuItem asChild>
+                  <a href={front.download} target="_blank">
+                    <ImageIcon />
+                    <span>{m.objekt_metadata_save_front_image()}</span>
+                  </a>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <a href={back.download} target="_blank">
+                    <ImageIcon />
+                    <span>{m.objekt_metadata_save_back_image()}</span>
+                  </a>
+                </DropdownMenuItem>
+                {props.objekt.frontMedia && (
+                  <DropdownMenuItem asChild>
+                    <a href={props.objekt.frontMedia} target="_blank">
+                      <Film />
+                      <span>{m.objekt_metadata_save_video()}</span>
+                    </a>
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             {user?.isAdmin === true && (
               <Button

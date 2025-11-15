@@ -23,6 +23,8 @@
 - [ ] fix paraglide middleware
 - [ ] fix sort filter flicker
 - [ ] fix nitro 3 alpha 1 issue
+- [ ] fix layout shift in profile layout
+- [ ] load test?
 
 ## indexer
 
@@ -63,11 +65,14 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA drizzle GRANT ALL ON TABLES TO postgres;
 
 ### production checklist
 
-- [ ] bring indexer up to date
+- [x] bring indexer up to date
 - [ ] create maintenance branch
 - [ ] promote maintenance branch to prod in vercel
 - [ ] dump prod neon db
 - [ ] restore neon db to railway
 - [ ] switch search.apollo.cafe to railway typesense service
-- [ ] test prod web service using railway domain
-- [ ] switch apollo.cafe to railway web service
+- [ ] update typesense settings in railway:
+  - [ ] public URL to search.apollo.cafe
+  - [ ] CORS domain to https://apollo.cafe
+- [ ] update web app domain to apollo.cafe in railway
+- [ ] switch apollo.cafe to railway web service in cloudflare
