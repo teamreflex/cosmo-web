@@ -25,7 +25,7 @@ export const Route = createFileRoute("/gravity/")({
       context.queryClient.ensureQueryData(gravitiesIndexQuery),
     ]);
 
-    const artistList = Array.from(artists.values());
+    const artistList = Object.values(artists);
 
     const toRender =
       selected.length > 0

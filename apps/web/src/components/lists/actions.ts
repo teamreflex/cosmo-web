@@ -229,7 +229,7 @@ export const $generateDiscordList = createServerFn({ method: "POST" })
 
     // get artists for member ordering
     const { artists } = await $fetchArtists();
-    const artistsArray = Array.from(artists.values());
+    const artistsArray = Object.values(artists);
 
     // map into discord format
     const haveCollections = format(collections, have.entries, artistsArray);

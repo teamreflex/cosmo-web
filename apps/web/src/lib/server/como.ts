@@ -58,7 +58,7 @@ export const $fetchTokenBalances = createServerFn({ method: "GET" })
         },
       });
 
-      return Array.from(artists.values()).map((artist) => {
+      return Object.values(artists).map((artist) => {
         const balance = balances.find((b) => b.tokenId === artist.comoTokenId);
 
         return {

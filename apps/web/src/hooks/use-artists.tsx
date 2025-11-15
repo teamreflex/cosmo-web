@@ -19,20 +19,20 @@ export function useArtists() {
    * Get an artist by name
    */
   function getArtist(artistName: string) {
-    return artists.get(artistName.toLowerCase());
+    return artists[artistName.toLowerCase()];
   }
 
   /**
    * Get a member by name
    */
   function getMember(memberName: string) {
-    return members.get(memberName.toLowerCase());
+    return members[memberName.toLowerCase()];
   }
 
   /**
    * Get artists in array form.
    */
-  const artistList = Array.from(artists.values());
+  const artistList = Object.values(artists);
 
   /**
    * Get the selected artists (or all if no selection)

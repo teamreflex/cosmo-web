@@ -53,7 +53,7 @@ export const $fetchGravityDetails = createServerFn({ method: "GET" })
 
     const isPast = isBefore(info.endDate, Date.now());
     const isPolygon = isBefore(info.endDate, "2025-04-18");
-    const artist = artists.get(data.artist.toLowerCase());
+    const artist = artists[data.artist.toLowerCase()];
     if (!artist) {
       throw notFound();
     }
