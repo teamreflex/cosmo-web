@@ -20,6 +20,7 @@ export function getRouter() {
     routeTree,
     context: { queryClient },
     defaultPreload: "intent",
+    defaultPendingMs: 250,
     Wrap: (props: { children: ReactNode }) => {
       return <MediaQueryProvider>{props.children}</MediaQueryProvider>;
     },

@@ -135,6 +135,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   preconnect("https://imagedelivery.net");
   preconnect("https://resources.cosmo.fans");
   preconnect("https://static.cosmo.fans");
+  preconnect("https://cdn.apollo.cafe");
   if (env.VITE_SENTRY_DSN) {
     preconnect(new URL(env.VITE_SENTRY_DSN).origin);
   }
@@ -144,7 +145,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <head>
         <HeadContent />
       </head>
-      <body className="font-inter overflow-y-scroll bg-background text-foreground antialiased">
+      <body className="overflow-y-scroll bg-background text-foreground antialiased">
         <ThemeProvider defaultTheme="dark">
           <div className="relative flex min-h-dvh flex-col">
             <Navbar />
