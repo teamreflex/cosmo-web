@@ -51,11 +51,8 @@ import path from "node:path";
 
 // Configuration
 const SERVER_PORT = Number(process.env.PORT ?? 3000);
-const CLIENT_DIRECTORY = path.join(import.meta.dir, "./dist/client");
-const SERVER_ENTRY_POINT = path.join(
-  import.meta.dir,
-  "./dist/server/server.mjs",
-);
+const CLIENT_DIRECTORY = "./dist/client";
+const SERVER_ENTRY_POINT = "./dist/server/server.mjs";
 
 // Logging utilities for professional output
 const log = {
@@ -494,7 +491,9 @@ async function initializeServer() {
   // Load TanStack Start server handler
   let handler: { fetch: (request: Request) => Response | Promise<Response> };
   try {
-    const serverModule = (await import(SERVER_ENTRY_POINT)) as {
+    const serverModule = (await import(
+      path.join(import.meta.dir, SERVER_ENTRY_POINT)
+    )) as {
       default: { fetch: (request: Request) => Response | Promise<Response> };
     };
     handler = serverModule.default;
@@ -505,7 +504,9 @@ async function initializeServer() {
   }
 
   // Build static routes with intelligent preloading
-  const { routes } = await initializeStaticRoutes(CLIENT_DIRECTORY);
+  const { routes } = await initializeStaticRoutes(
+    path.join(import.meta.dir, CLIENT_DIRECTORY),
+  );
 
   // Create Bun server
   const server = Bun.serve({
