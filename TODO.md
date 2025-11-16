@@ -21,7 +21,7 @@
 - [x] fix flicker with RoutedExpandableObjekt
 - [ ] test self-hosted browserless
 - [ ] fix paraglide middleware
-- [ ] fix sort filter flicker
+- [x] fix sort filter flicker
 - [x] fix layout shift in profile layout
 - [ ] load test?
 

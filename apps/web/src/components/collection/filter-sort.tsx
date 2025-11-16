@@ -44,7 +44,11 @@ export default function SortFilter(props: Props) {
   return (
     <Select value={value} onValueChange={handleChange}>
       <SelectTrigger className="w-32">
-        <SelectValue placeholder={m.filter_sort()} />
+        <SelectValue placeholder={m.filter_sort()}>
+          {/* this fixes the value only displaying after hydration
+              https://github.com/radix-ui/primitives/issues/3431 */}
+          {map[value]}
+        </SelectValue>
       </SelectTrigger>
       <SelectContent>
         {availableSorts.map((sort) => (
