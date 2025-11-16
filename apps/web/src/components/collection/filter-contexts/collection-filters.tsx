@@ -42,9 +42,9 @@ export default function CollectionFilters({
       />
 
       <ErrorBoundary
-        fallback={<Skeleton className="h-9 w-[100px] bg-destructive" />}
+        fallback={<Skeleton className="h-9 w-[97px] bg-destructive" />}
       >
-        <Suspense fallback={<Skeleton className="h-9 w-[100px]" />}>
+        <Suspense fallback={<Skeleton className="h-9 w-[97px]" />}>
           <SeasonFilter
             seasons={filters.season}
             artist={filters.artist}
@@ -56,9 +56,9 @@ export default function CollectionFilters({
       <OnlineFilter onOffline={filters.on_offline} onChange={setFilters} />
 
       <ErrorBoundary
-        fallback={<Skeleton className="h-9 w-[87px] bg-destructive" />}
+        fallback={<Skeleton className="h-9 w-[85px] bg-destructive" />}
       >
-        <Suspense fallback={<Skeleton className="h-9 w-[87px]" />}>
+        <Suspense fallback={<Skeleton className="h-9 w-[85px]" />}>
           <ClassFilter
             classes={filters.class}
             artist={filters.artist}

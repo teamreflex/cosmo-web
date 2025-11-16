@@ -26,7 +26,6 @@ import ListDropdown from "@/components/lists/list-dropdown";
 
 export const Route = createFileRoute("/@{$username}")({
   component: RouteComponent,
-  pendingComponent: PendingComponent,
   notFoundComponent: NotFoundComponent,
   loader: ({ context, params }) => {
     context.queryClient.prefetchQuery(currentAccountQuery);
@@ -132,55 +131,53 @@ function ProfileLayoutContent() {
 
 function PendingComponent() {
   return (
-    <main className="relative container flex flex-col py-2">
-      <div className="grid grid-cols-2 grid-rows-[auto_auto_min-content] gap-2 md:h-24 md:grid-cols-3">
-        {/* user block */}
-        <div className="row-span-2 flex flex-row gap-4 md:row-span-3">
-          <Skeleton className="aspect-square h-24 w-24 rounded-full" />
+    <div className="grid grid-cols-2 grid-rows-[auto_auto_min-content] gap-2 md:h-24 md:grid-cols-3">
+      {/* user block */}
+      <div className="row-span-2 flex flex-row gap-4 md:row-span-3">
+        <Skeleton className="aspect-square h-24 w-24 rounded-full" />
 
-          <div className="flex flex-row">
-            <div className="flex h-24 flex-col justify-center gap-2">
-              {/* username */}
-              <Skeleton className="h-6 w-24 rounded-full py-0.5" />
+        <div className="flex flex-row">
+          <div className="flex h-24 flex-col justify-center gap-2">
+            {/* username */}
+            <Skeleton className="h-6 w-24 rounded-full py-0.5" />
 
-              {/* como balance */}
-              <div className="flex items-center gap-2">
-                <Skeleton className="h-[26px] w-16 rounded-lg" />
-                <Skeleton className="h-[26px] w-16 rounded-lg" />
-              </div>
+            {/* como balance */}
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-[26px] w-16 rounded-lg" />
+              <Skeleton className="h-[26px] w-16 rounded-lg" />
+            </div>
 
-              {/* badges */}
-              <div className="flex h-5 flex-row gap-2">
-                <Skeleton className="aspect-square h-4 w-4 shrink-0 rounded" />
-              </div>
+            {/* badges */}
+            <div className="flex h-5 flex-row gap-2">
+              <Skeleton className="aspect-square h-4 w-4 shrink-0 rounded" />
             </div>
           </div>
         </div>
-
-        {/* profile-related buttons */}
-        <div className="col-span-3 row-start-3 flex flex-wrap justify-center gap-2 md:col-span-2 md:row-start-auto md:justify-end">
-          {/* copy address */}
-          <Skeleton className="h-10 w-10 shrink-0 rounded-full lg:h-8 lg:w-[84px]" />
-          {/* trades */}
-          <Skeleton className="h-10 w-10 shrink-0 rounded-full lg:h-8 lg:w-[75px]" />
-          {/* como */}
-          <Skeleton className="h-10 w-10 shrink-0 rounded-full lg:h-8 lg:w-[75px]" />
-          {/* progress */}
-          <Skeleton className="h-10 w-10 shrink-0 rounded-full lg:h-8 lg:w-[88px]" />
-          {/* lists */}
-          <Skeleton className="h-10 w-10 shrink-0 rounded-full lg:h-8 lg:w-[63px]" />
-          {/* help */}
-          <Skeleton className="aspect-square h-10 shrink-0 rounded-full lg:h-8" />
-          {/* filters */}
-          <Skeleton className="flex h-10 w-10 shrink-0 rounded-full lg:hidden lg:h-8 lg:w-[89px]" />
-        </div>
-
-        {/* objekt total, gets portaled in */}
-        <div className="col-start-3 row-start-2 flex h-6 place-self-end md:row-start-3">
-          <span id="objekt-total" />
-        </div>
       </div>
-    </main>
+
+      {/* profile-related buttons */}
+      <div className="col-span-3 row-start-3 flex flex-wrap justify-center gap-2 md:col-span-2 md:row-start-auto md:justify-end">
+        {/* copy address */}
+        <Skeleton className="h-10 w-10 shrink-0 rounded-full lg:h-8 lg:w-[84px]" />
+        {/* trades */}
+        <Skeleton className="h-10 w-10 shrink-0 rounded-full lg:h-8 lg:w-[75px]" />
+        {/* como */}
+        <Skeleton className="h-10 w-10 shrink-0 rounded-full lg:h-8 lg:w-[75px]" />
+        {/* progress */}
+        <Skeleton className="h-10 w-10 shrink-0 rounded-full lg:h-8 lg:w-[88px]" />
+        {/* lists */}
+        <Skeleton className="h-10 w-10 shrink-0 rounded-full lg:h-8 lg:w-[63px]" />
+        {/* help */}
+        <Skeleton className="aspect-square h-10 shrink-0 rounded-full lg:h-8" />
+        {/* filters */}
+        <Skeleton className="flex h-10 w-10 shrink-0 rounded-full lg:hidden lg:h-8 lg:w-[89px]" />
+      </div>
+
+      {/* objekt total, gets portaled in */}
+      <div className="col-start-3 row-start-2 flex h-6 place-self-end md:row-start-3">
+        <span id="objekt-total" />
+      </div>
+    </div>
   );
 }
 

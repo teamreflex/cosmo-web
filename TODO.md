@@ -22,7 +22,7 @@
 - [ ] test self-hosted browserless
 - [ ] fix paraglide middleware
 - [ ] fix sort filter flicker
-- [ ] fix layout shift in profile layout
+- [x] fix layout shift in profile layout
 - [ ] load test?
 
 ## indexer
