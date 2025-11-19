@@ -20,7 +20,7 @@
 - [x] import db from neon
 - [x] fix flicker with RoutedExpandableObjekt
 - [ ] test self-hosted browserless
-- [ ] fix paraglide middleware
+- [x] fix paraglide middleware
 - [x] fix sort filter flicker
 - [x] fix layout shift in profile layout
 - [ ] load test?

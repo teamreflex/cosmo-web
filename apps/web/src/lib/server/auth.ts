@@ -240,6 +240,10 @@ export const auth = betterAuth({
   },
   advanced: {
     cookiePrefix: "apollo",
+    useSecureCookies: true,
+    defaultCookieAttributes: {
+      sameSite: "strict",
+    },
   },
   user: {
     changeEmail: {
