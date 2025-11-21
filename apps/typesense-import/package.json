@@ -13,11 +13,11 @@
   "license": "MIT",
   "dependencies": {
     "@apollo/database": "workspace:*",
-    "@effect/cluster": "^0.52.9",
-    "@effect/platform": "^0.93.2",
-    "@effect/platform-bun": "^0.83.0",
+    "@effect/cluster": "^0.53.3",
+    "@effect/platform": "^0.93.3",
+    "@effect/platform-bun": "^0.84.0",
     "drizzle-orm": "1.0.0-beta.1-ac4ce44",
-    "effect": "^3.19.3",
+    "effect": "^3.19.6",
     "typesense": "^2.1.0"
   },
   "devDependencies": {
@@ -25,16 +25,16 @@
     "@apollo/typescript": "workspace:*",
     "@effect/build-utils": "^0.8.9",
     "@effect/eslint-plugin": "^0.3.2",
-    "@effect/language-service": "^0.55.5",
-    "@eslint/compat": "1.4.1",
+    "@effect/language-service": "^0.56.0",
+    "@eslint/compat": "2.0.0",
     "@eslint/eslintrc": "3.3.1",
     "@eslint/js": "9.39.1",
     "@types/bun": "^1.3.2",
-    "@typescript-eslint/eslint-plugin": "^8.46.4",
-    "@typescript-eslint/parser": "^8.46.4",
+    "@typescript-eslint/eslint-plugin": "^8.47.0",
+    "@typescript-eslint/parser": "^8.47.0",
     "eslint": "^9.39.1",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.46.4"
+    "typescript-eslint": "^8.47.0"
   },
   "effect": {
     "generateExports": {
