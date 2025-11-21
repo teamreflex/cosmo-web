@@ -20,6 +20,7 @@ export const Route = createFileRoute("/api/cosmo/qr-auth/ticket")({
         try {
           var ticket = await queryTicket(param);
         } catch (err) {
+          console.error("[queryTicket] error:", err);
           return Response.json(
             { error: "error querying ticket" },
             { status: 500 },

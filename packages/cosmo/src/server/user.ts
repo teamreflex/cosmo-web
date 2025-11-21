@@ -1,5 +1,4 @@
-import { cosmo } from "./http";
-import { cosmoShopHeaders } from "./qr-auth";
+import { cosmo, cosmoShop } from "./http";
 import type {
   CosmoByNicknameResult,
   CosmoSearchResult,
@@ -10,19 +9,20 @@ import type {
  * Fetch a user from COSMO by nickname.
  */
 export async function fetchByNickname(nickname: string) {
-  return await cosmo<CosmoByNicknameResult>(`/user/v1/by-nickname/${nickname}`, {
-    retry: false,
-  }).then((res: CosmoByNicknameResult) => res.profile);
+  return await cosmo<CosmoByNicknameResult>(
+    `/user/v1/by-nickname/${nickname}`,
+    {
+      retry: false,
+    },
+  ).then((res: CosmoByNicknameResult) => res.profile);
 }
 
 /**
  * Fetch the current user via webshop cookie.
  */
-export async function user(cookie: string) {
-  return await cosmo<CosmoShopUser>("/bff/v1/users/me", {
-    baseURL: "https://shop.cosmo.fans",
+export async function userWebshop(cookie: string) {
+  return await cosmoShop<CosmoShopUser>("/bff/v1/users/me", {
     headers: {
-      ...cosmoShopHeaders,
       Cookie: `user-session=${cookie}`,
     },
     query: {

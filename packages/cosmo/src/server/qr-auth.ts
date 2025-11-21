@@ -1,121 +1,102 @@
-import { cosmo } from "./http";
-import {
-  createBrowserlessClient,
-  type BrowserlessConfig,
-} from "./browserless";
+import { cosmoShop, cosmoShopHeaders } from "./http";
 import type { AuthTicket, QueryTicket } from "../types/qr-auth";
+import puppeteer from "puppeteer-core";
 
 export interface QrAuthConfig {
   recaptchaKey: string;
-  browserless: BrowserlessConfig;
+  endpoint: string;
 }
-
-/**
- * Headers to use when interacting with the webshop.
- */
-export const cosmoShopHeaders = {
-  Host: "shop.cosmo.fans",
-  Origin: "https://shop.cosmo.fans",
-};
-
-type RecaptchaResult = {
-  data: {
-    getToken: {
-      value: string;
-    } | null;
-  };
-};
 
 /**
  * Use a headless browser to get the reCAPTCHA token.
  */
 export async function getRecaptchaToken(config: QrAuthConfig) {
-  const browserless = createBrowserlessClient(config.browserless);
-
-  const bql = `
-mutation COSMORecaptchaToken {
-  goto(url: "https://shop.cosmo.fans/ko/login/landing", waitUntil: networkIdle, timeout: 7500) {
-    status
-  }
-  getToken: evaluate(
-    content: """
-    (async () => {
-    	 const lib = window.grecaptcha;
-      return await new Promise((resolve, reject) => {
-        lib.ready(() => {
-          lib.execute('${config.recaptchaKey}', {
-             action: "login",
-           })
-           .then(resolve)
-           .catch(reject);
-        });
-      });
-    })()
-    """
-    timeout: 1000
-  ) {
-    value
-  }
-}
-`;
-
-  const result = await browserless<RecaptchaResult>("/", {
-    method: "POST",
-    body: JSON.stringify({
-      query: bql,
-      operationName: "COSMORecaptchaToken",
-    }),
+  const browser = await puppeteer.connect({
+    browserWSEndpoint: config.endpoint,
   });
 
-  if (!result.data.getToken) {
-    console.error("Failed to get reCAPTCHA token", result);
-    throw new Error("Failed to get reCAPTCHA token");
-  }
+  try {
+    const page = await browser.newPage();
+    await page.goto("https://shop.cosmo.fans/en/login/landing", {
+      referer: cosmoShopHeaders.Host,
+    });
 
-  return result.data.getToken.value;
+    // wait for grecaptcha to be ready before trying to use it
+    // @ts-expect-error - window is available in browser context
+    await page.waitForFunction(() => typeof window.grecaptcha !== "undefined", {
+      timeout: 10000,
+    });
+
+    const value = await page.evaluate(async (key) => {
+      // @ts-expect-error - window is available in browser context
+      const lib = window.grecaptcha;
+      return await new Promise((resolve, reject) => {
+        lib.ready(() => {
+          lib
+            .execute(key, {
+              action: "login",
+            })
+            .then(resolve)
+            .catch(reject);
+        });
+      });
+    }, config.recaptchaKey);
+
+    return value as string;
+  } catch (error) {
+    console.error("Failed to get reCAPTCHA token", error);
+    throw new Error("Failed to get reCAPTCHA token");
+  } finally {
+    if (browser) {
+      await browser.close();
+    }
+  }
 }
 
 /**
  * Exchange a Google reCAPTCHA token for a login ticket.
  */
 export async function exchangeLoginTicket(recaptchaToken: string) {
-  return await cosmo<AuthTicket>(`/bff/v1/users/auth/login/native/qr/ticket`, {
-    method: "POST",
-    headers: cosmoShopHeaders,
-    body: {
-      recaptcha: {
-        action: "login",
-        token: recaptchaToken,
+  return await cosmoShop<AuthTicket>(
+    `/bff/v1/users/auth/login/native/qr/ticket`,
+    {
+      method: "POST",
+      body: {
+        recaptcha: {
+          action: "login",
+          token: recaptchaToken,
+        },
+      },
+      query: {
+        tid: crypto.randomUUID(),
       },
     },
-    query: {
-      tid: crypto.randomUUID(),
-    },
-  });
+  );
 }
 
 /**
  * Query the ticket status.
  */
 export async function queryTicket(ticket: string) {
-  return await cosmo<QueryTicket>(`/bff/v1/users/auth/login/native/qr/ticket`, {
-    headers: cosmoShopHeaders,
-    query: {
-      tid: crypto.randomUUID(),
-      ticket,
+  return await cosmoShop<QueryTicket>(
+    `/bff/v1/users/auth/login/native/qr/ticket`,
+    {
+      query: {
+        tid: crypto.randomUUID(),
+        ticket,
+      },
     },
-  });
+  );
 }
 
 /**
  * Certify the ticket.
  */
 export async function certifyTicket(otp: number, ticket: string) {
-  return await cosmo.raw<void>(
+  return await cosmoShop.raw<void>(
     `/bff/v1/users/auth/login/native/qr/ticket/certify`,
     {
       method: "POST",
-      headers: cosmoShopHeaders,
       body: {
         otp,
         ticket,

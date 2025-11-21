@@ -1,6 +1,6 @@
 import { z } from "zod";
 
 export const verifyCosmoSchema = z.object({
-  otp: z.coerce.number<number>(),
+  otp: z.number(),
   ticket: z.string(),
 });

@@ -1,8 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
-import { redirect } from "@tanstack/react-router";
 import { getRequestHeaders } from "@tanstack/react-start/server";
 import { certifyTicket } from "@apollo/cosmo/server/qr-auth";
-import { user } from "@apollo/cosmo/server/user";
+import { userWebshop } from "@apollo/cosmo/server/user";
 import { authenticatedMiddleware } from "@/lib/server/middlewares";
 import { auth } from "@/lib/server/auth";
 import { linkAccount } from "@/lib/server/cosmo-accounts";
@@ -60,7 +59,7 @@ export const $verifyCosmo = createServerFn({ method: "POST" })
 
     // get user info from cosmo
     try {
-      var cosmoUser = await user(session);
+      var cosmoUser = await userWebshop(session);
     } catch (err) {
       throw new Error("Error getting user from COSMO");
     }
@@ -76,9 +75,4 @@ export const $verifyCosmo = createServerFn({ method: "POST" })
 
     // import any existing objekt lists
     await importObjektLists(context.session.user.id, account.address);
-
-    throw redirect({
-      to: "/@{$username}",
-      params: { username: account.username },
-    });
   });

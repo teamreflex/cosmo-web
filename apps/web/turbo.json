@@ -29,8 +29,7 @@
         "MAIL_SES_ACCESS_KEY",
         "MAIL_SES_SECRET_KEY",
         "COSMO_RECAPTCHA_KEY",
-        "BROWSERLESS_API_KEY",
-        "BROWSERLESS_BASE_URL",
+        "CDP_ENDPOINT",
         "REDIS_URL"
       ]
     },

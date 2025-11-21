@@ -1,11 +1,11 @@
-import { Suspense, use } from "react";
+import { Suspense } from "react";
 import { Separator } from "../ui/separator";
 import { Skeleton } from "../ui/skeleton";
 import { Button } from "../ui/button";
 import LinkedAccounts from "./account/linked-accounts";
 import Profile from "./account/profile";
 import DeleteAccount from "./account/delete-account";
-import LinkCosmo, { LinkCosmoContext } from "./link-cosmo";
+import LinkCosmo, { useLinkCosmo } from "./link-cosmo";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import {
   Dialog,
@@ -77,7 +77,7 @@ export default function AccountDialog({ open, onOpenChange, cosmo }: Props) {
 }
 
 function LinkCosmoButton() {
-  const ctx = use(LinkCosmoContext);
+  const ctx = useLinkCosmo();
 
   return (
     <Button variant="cosmo" onClick={() => ctx.setOpen(true)}>

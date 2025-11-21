@@ -210,6 +210,19 @@ services:
     networks:
       - apollo-network
 
+  # browserless.io
+  browserless:
+    image: ghcr.io/browserless/chromium:latest
+    restart: on-failure
+    ports:
+      - "5000:3000"
+    environment:
+      - CONCURRENT=5
+      - TOKEN=browserless-token
+      - ENABLE_CORS=false
+    networks:
+      - apollo-network
+
 networks:
   apollo-network:
     name: apollo-network

@@ -3,7 +3,7 @@
 # check if we should run dev services
 if [ "${DEV_SERVICES}" = "true" ]; then
   # always start both databases and valkey (web app needs all three)
-  SERVICES="postgres-web pgbouncer-web postgres-indexer pgbouncer-indexer valkey"
+  SERVICES="postgres-web pgbouncer-web postgres-indexer pgbouncer-indexer valkey browserless"
 
   # conditionally add services based on flags
   if [ "${DEV_TYPESENSE}" = "true" ]; then

@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, CheckCircle, Loader2 } from "lucide-react";
 import { FetchError, ofetch } from "ofetch";
 import { createContext, useContext, useState } from "react";
@@ -9,7 +9,8 @@ import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useServerFn } from "@tanstack/react-start";
-import {   generateQrCode } from "@apollo/cosmo/types/qr-auth";
+import { generateQrCode } from "@apollo/cosmo/types/qr-auth";
+import { useRouter } from "@tanstack/react-router";
 import {
   Dialog,
   DialogContent,
@@ -25,7 +26,7 @@ import {
   FormMessage,
 } from "../ui/form";
 import { $verifyCosmo } from "./actions";
-import type {AuthTicket, QueryTicket} from "@apollo/cosmo/types/qr-auth";
+import type { AuthTicket, QueryTicket } from "@apollo/cosmo/types/qr-auth";
 import type { ReactNode } from "react";
 import type { z } from "zod";
 import { verifyCosmoSchema } from "@/lib/universal/schema/cosmo";
@@ -38,13 +39,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { env } from "@/lib/env/client";
 import { m } from "@/i18n/messages";
+import { currentAccountQuery } from "@/lib/queries/core";
 
 type LinkCosmoContextType = {
   open: boolean;
   setOpen: (open: boolean) => void;
 };
 
-export const LinkCosmoContext = createContext<LinkCosmoContextType>({
+const LinkCosmoContext = createContext<LinkCosmoContextType>({
   open: false,
   setOpen: () => {},
 });
@@ -265,15 +267,9 @@ function OTP({ ticket }: OTPProps) {
   const mutationFn = useServerFn($verifyCosmo);
   const mutation = useMutation({
     mutationFn,
-    onSuccess() {
-      track("cosmo-link");
-      toast.success(m.link_cosmo_success());
-      ctx.setOpen(false);
-    },
-    onError() {
-      toast.error(m.link_cosmo_error_linking());
-    },
   });
+  const router = useRouter();
+  const queryClient = useQueryClient();
 
   const form = useForm<z.infer<typeof verifyCosmoSchema>>({
     resolver: standardSchemaResolver(verifyCosmoSchema),
@@ -287,9 +283,19 @@ function OTP({ ticket }: OTPProps) {
     await mutation.mutateAsync(
       { data },
       {
-        onSuccess: () => {
+        onSuccess: async () => {
           track("cosmo-link");
           toast.success(m.link_cosmo_success());
+
+          await router.invalidate();
+          await queryClient.invalidateQueries({
+            queryKey: currentAccountQuery.queryKey,
+          });
+
+          ctx.setOpen(false);
+        },
+        onError() {
+          toast.error(m.link_cosmo_error_linking());
         },
       },
     );
@@ -320,7 +326,9 @@ function OTP({ ticket }: OTPProps) {
               <FormItem>
                 <FormControl>
                   <InputOTP
-                    value={field.value.toString()}
+                    // the form field doesn't recognise that the value starts as undefined
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+                    value={field.value?.toString()}
                     onChange={(value) => field.onChange(Number(value))}
                     maxLength={2}
                     pattern={REGEXP_ONLY_DIGITS}
@@ -345,4 +353,8 @@ function OTP({ ticket }: OTPProps) {
       </form>
     </Form>
   );
+}
+
+export function useLinkCosmo() {
+  return useContext(LinkCosmoContext);
 }

@@ -33,10 +33,7 @@ export const Route = createFileRoute("/api/cosmo/qr-auth/recaptcha")({
         try {
           var recaptcha = await getRecaptchaToken({
             recaptchaKey: env.COSMO_RECAPTCHA_KEY,
-            browserless: {
-              baseUrl: env.BROWSERLESS_BASE_URL,
-              apiKey: env.BROWSERLESS_API_KEY,
-            },
+            endpoint: env.CDP_ENDPOINT,
           });
         } catch (err) {
           captureException(err);
