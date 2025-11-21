@@ -78,6 +78,8 @@ export const unobtainables = [
   "divine01-kimlip-337z",
   // ring of chaos streaming event
   "divine01-jinsoul-338z",
-  // choerry solo streaming event
+  // pressure streaming event
   "divine01-choerry-339z",
+  // savior streaming event
+  "divine01-heejin-340z",
 ];
