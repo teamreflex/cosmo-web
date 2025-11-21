@@ -1,4 +1,4 @@
-import { browserless, cosmo } from "../http";
+import { browserless, cosmoShop } from "../http";
 import type { AuthTicket, QueryTicket } from "@/lib/universal/cosmo/qr-auth";
 import { env } from "@/env";
 
@@ -69,43 +69,46 @@ export async function getRecaptchaToken() {
  * Exchange a Google reCAPTCHA token for a login ticket.
  */
 export async function exchangeLoginTicket(recaptchaToken: string) {
-  return await cosmo<AuthTicket>(`/bff/v1/users/auth/login/native/qr/ticket`, {
-    method: "POST",
-    headers: cosmoShopHeaders,
-    body: {
-      recaptcha: {
-        action: "login",
-        token: recaptchaToken,
+  return await cosmoShop<AuthTicket>(
+    `/bff/v1/users/auth/login/native/qr/ticket`,
+    {
+      method: "POST",
+      body: {
+        recaptcha: {
+          action: "login",
+          token: recaptchaToken,
+        },
       },
-    },
-    query: {
-      tid: crypto.randomUUID(),
-    },
-  });
+      query: {
+        tid: crypto.randomUUID(),
+      },
+    }
+  );
 }
 
 /**
  * Query the ticket status.
  */
 export async function queryTicket(ticket: string) {
-  return await cosmo<QueryTicket>(`/bff/v1/users/auth/login/native/qr/ticket`, {
-    headers: cosmoShopHeaders,
-    query: {
-      tid: crypto.randomUUID(),
-      ticket,
-    },
-  });
+  return await cosmoShop<QueryTicket>(
+    `/bff/v1/users/auth/login/native/qr/ticket`,
+    {
+      query: {
+        tid: crypto.randomUUID(),
+        ticket,
+      },
+    }
+  );
 }
 
 /**
  * Certify the ticket.
  */
 export async function certifyTicket(otp: number, ticket: string) {
-  return await cosmo.raw<void>(
+  return await cosmoShop.raw<void>(
     `/bff/v1/users/auth/login/native/qr/ticket/certify`,
     {
       method: "POST",
-      headers: cosmoShopHeaders,
       body: {
         otp,
         ticket,

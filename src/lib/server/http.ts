@@ -16,6 +16,21 @@ export const cosmo = ofetch.create({
 });
 
 /**
+ * HTTP client for the web shop.
+ */
+export const cosmoShop = ofetch.create({
+  baseURL: "https://shop.cosmo.fans",
+  retry: 2,
+  retryDelay: 500, // 500ms
+  timeout: 1000 * 10, // 10s
+  headers: {
+    "User-Agent": "apollo.cafe (github.com/teamreflex/cosmo-web)",
+    Host: "shop.cosmo.fans",
+    Origin: "https://shop.cosmo.fans",
+  },
+});
+
+/**
  * HTTP RPC client for Abstract via Alchemy.
  */
 export const abstract = ofetch.create({

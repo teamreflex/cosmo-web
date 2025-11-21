@@ -6,12 +6,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Separator } from "../ui/separator";
-import { Suspense, use } from "react";
+import { Suspense } from "react";
 import { Skeleton } from "../ui/skeleton";
 import LinkedAccounts from "./account/linked-accounts";
 import Profile from "./account/profile";
 import DeleteAccount from "./account/delete-account";
-import LinkCosmo, { LinkCosmoContext } from "./link-cosmo";
+import LinkCosmo, { useLinkCosmo } from "./link-cosmo";
 import { Button } from "../ui/button";
 import Image from "next/image";
 import CosmoLogo from "@/assets/cosmo.webp";
@@ -80,7 +80,7 @@ export default function AccountDialog({ open, onOpenChange, cosmo }: Props) {
 }
 
 function LinkCosmoButton() {
-  const ctx = use(LinkCosmoContext);
+  const ctx = useLinkCosmo();
 
   return (
     <Button variant="cosmo" onClick={() => ctx.setOpen(true)}>

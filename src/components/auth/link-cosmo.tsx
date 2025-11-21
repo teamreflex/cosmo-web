@@ -43,7 +43,7 @@ import {
 } from "../ui/form";
 import type { z } from "zod";
 
-export const LinkCosmoContext = createContext({
+const LinkCosmoContext = createContext({
   open: false,
   setOpen: (open: boolean) => {},
 });
@@ -349,4 +349,8 @@ function OTP({ ticket }: OTPProps) {
       </form>
     </Form>
   );
+}
+
+export function useLinkCosmo() {
+  return useContext(LinkCosmoContext);
 }
