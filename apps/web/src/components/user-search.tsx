@@ -115,7 +115,7 @@ export function UserSearch({
 
         <CommandInput
           autoFocus={true}
-          className="touch-manipulation"
+          className="touch-manipulation text-[16px]"
           name="query"
           placeholder={placeholder ?? m.user_search_placeholder()}
           value={query}
