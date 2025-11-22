@@ -45,6 +45,9 @@
  *   - Comma-separated list of MIME types eligible for compression
  *   - Supports partial matching for types ending with "/"
  *   - Default: text/,application/javascript,application/json,application/xml,image/svg+xml
+ *
+ * Note: Dynamic responses (HTML pages, API routes) use gzip compression only.
+ * Static assets use both gzip and brotli (pre-compressed at startup).
  */
 
 import path from "node:path";
@@ -114,7 +117,7 @@ const VERBOSE = process.env.ASSET_PRELOAD_VERBOSE_LOGGING === "true";
 const ENABLE_ETAG =
   (process.env.ASSET_PRELOAD_ENABLE_ETAG ?? "true") === "true";
 
-// Optional compression feature (Gzip and Brotli)
+// Optional compression feature (Gzip and Brotli for static assets)
 const ENABLE_COMPRESSION =
   (process.env.ASSET_PRELOAD_ENABLE_COMPRESSION ?? "true") === "true";
 const COMPRESSION_MIN_BYTES = Number(
@@ -496,7 +499,6 @@ async function initializeStaticRoutes(
     }
 
     // Log summary after the file list
-    console.log(); // Empty line for separation
     if (loaded.length > 0) {
       log.success(
         `Preloaded ${String(loaded.length)} files (${(totalPreloadedBytes / 1024 / 1024).toFixed(2)} MB) into memory`,
@@ -519,6 +521,77 @@ async function initializeStaticRoutes(
   }
 
   return { routes, loaded, skipped };
+}
+
+/**
+ * Wrap a response with compression if appropriate
+ * Uses gzip only for dynamic content (much faster than brotli)
+ */
+async function compressResponse(
+  response: Response,
+  acceptEncoding: string,
+): Promise<Response> {
+  // Skip compression for certain status codes
+  if (
+    response.status === 204 || // No Content
+    response.status === 304 || // Not Modified
+    response.status < 200 || // Informational
+    response.status >= 300 // Redirects and errors with small bodies
+  ) {
+    return response;
+  }
+
+  // Skip if already compressed
+  if (response.headers.get("content-encoding")) {
+    return response;
+  }
+
+  // Check content type
+  const contentType = response.headers.get("content-type") || "";
+  if (!isMimeTypeCompressible(contentType)) {
+    return response;
+  }
+
+  // Get response body
+  const body = await response.arrayBuffer();
+  const bytes = new Uint8Array(body);
+
+  // Skip if too small
+  if (bytes.byteLength < COMPRESSION_MIN_BYTES) {
+    // Body already consumed, must create new response with original bytes
+    return new Response(bytes.buffer, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: response.headers,
+    });
+  }
+
+  // Clone headers
+  const headers = new Headers(response.headers);
+
+  // Use gzip only for dynamic responses (brotli is too slow, adds ~100ms)
+  // For static assets, brotli is pre-compressed at startup with no runtime cost
+  if (acceptEncoding.includes("gzip")) {
+    const compressed = compressWithGzip(bytes, contentType);
+    if (compressed) {
+      headers.set("Content-Encoding", "gzip");
+      headers.set("Content-Length", String(compressed.byteLength));
+      headers.delete("Content-Range"); // Remove range headers if present
+      return new Response(compressed.buffer as ArrayBuffer, {
+        status: response.status,
+        statusText: response.statusText,
+        headers,
+      });
+    }
+  }
+
+  // Return original bytes if compression failed or not supported
+  // Body already consumed, must create new response
+  return new Response(bytes.buffer, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: response.headers,
+  });
 }
 
 /**
@@ -580,9 +653,11 @@ async function initializeServer() {
       ...routes,
 
       // Fallback to TanStack Start handler for all other routes
-      "/*": (req: Request) => {
+      "/*": async (req: Request) => {
         try {
-          return handler.fetch(req);
+          const response = await handler.fetch(req);
+          const acceptEncoding = req.headers.get("accept-encoding") || "";
+          return compressResponse(response, acceptEncoding);
         } catch (error) {
           log.error(`Server handler error: ${String(error)}`);
           return new Response("Internal Server Error", { status: 500 });
