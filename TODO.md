@@ -19,7 +19,7 @@
 - [x] confirm deployment on railway works
 - [x] import db from neon
 - [x] fix flicker with RoutedExpandableObjekt
-- [ ] test self-hosted browserless
+- [x] test self-hosted browserless
 - [x] fix paraglide middleware
 - [x] fix sort filter flicker
 - [x] fix layout shift in profile layout

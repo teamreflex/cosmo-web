@@ -36,7 +36,6 @@ A platform for exploring objekts & gravities from [MODHAUS](https://www.mod-haus
 - [AWS SES](https://aws.amazon.com/ses/) credentials
 - [Discord OAuth](https://discord.com/developers/docs/topics/oauth2) credentials
 - [Twitter OAuth](https://docs.x.com/resources/fundamentals/authentication/oauth-2-0/overview) credentials
-- [Browserless](https://www.browserless.io/) credentials
 - [Docker](https://www.docker.com/) (local development)
 
 ## Setup

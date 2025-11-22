@@ -24,13 +24,15 @@ export default function UserBalances(props: Props) {
 
   return (
     <div className="flex flex-row gap-2">
-      {selected.map((artist) => (
-        <Balance
-          key={artist.name}
-          artist={artist}
-          balance={balances.find((b) => b.id === artist.id)}
-        />
-      ))}
+      {selected
+        .sort((a, b) => a.comoTokenId - b.comoTokenId)
+        .map((artist) => (
+          <Balance
+            key={artist.name}
+            artist={artist}
+            balance={balances.find((b) => b.id === artist.id)}
+          />
+        ))}
     </div>
   );
 }

@@ -78,7 +78,7 @@ function RouteComponent() {
 function PendingComponent() {
   return (
     <div className="flex flex-col">
-      <MemberFilterSkeleton artists={false} />
+      <MemberFilterSkeleton />
     </div>
   );
 }
