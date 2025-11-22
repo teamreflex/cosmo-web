@@ -1,6 +1,7 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { isFuture } from "date-fns";
 import { CalendarDays } from "lucide-react";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import type { Gravity } from "@/lib/server/db/schema";
 import type { CosmoArtistBFF } from "@apollo/cosmo/types/artists";
 import type { CosmoGravityType } from "@apollo/cosmo/types/gravity";
@@ -19,22 +20,15 @@ import { m } from "@/i18n/messages";
 
 export const Route = createFileRoute("/gravity/")({
   loader: async ({ context }) => {
-    const [{ artists }, selected, gravities] = await Promise.all([
+    const [{ artists }, gravities] = await Promise.all([
       context.queryClient.ensureQueryData(artistsQuery),
-      context.queryClient.ensureQueryData(selectedArtistsQuery),
       context.queryClient.ensureQueryData(gravitiesIndexQuery),
+      context.queryClient.ensureQueryData(selectedArtistsQuery),
     ]);
 
-    const artistList = Object.values(artists);
-
-    const toRender =
-      selected.length > 0
-        ? artistList.filter((a) => selected.includes(a.id))
-        : artistList;
-
     return {
-      toRender,
       gravities,
+      artists,
     };
   },
   staleTime: 1000 * 60 * 15, // 15 minutes
@@ -45,11 +39,21 @@ export const Route = createFileRoute("/gravity/")({
 });
 
 function RouteComponent() {
-  const { toRender, gravities } = Route.useLoaderData();
+  const { data: selected, dataUpdatedAt } =
+    useSuspenseQuery(selectedArtistsQuery);
+  const { gravities, artists } = Route.useLoaderData();
+
+  const artistList = Object.values(artists).sort(
+    (a, b) => a.comoTokenId - b.comoTokenId,
+  );
+  const toRender =
+    selected.length > 0
+      ? artistList.filter((a) => selected.includes(a.id))
+      : artistList;
 
   return (
     <main className="container flex flex-col py-2">
-      <Tabs defaultValue={toRender[0]?.id}>
+      <Tabs defaultValue={toRender[0]?.id} key={dataUpdatedAt}>
         {/* header */}
         <div className="flex flex-row items-center justify-between">
           <h1 className="font-cosmo text-3xl uppercase">
