@@ -190,7 +190,7 @@ function ArtistPopoverContent(props: ArtistPopoverContentProps) {
       align="center"
       side="bottom"
       onPointerDownOutside={handlePointerDownOutside}
-      className="no-scrollbar flex w-fit max-w-[95vw] items-center justify-items-start gap-2 overflow-x-scroll rounded-lg bg-(--artist-color/0.15) px-2 py-1 backdrop-blur-[30px] backdrop-brightness-[1.3] backdrop-saturate-160 xl:justify-center"
+      className="no-scrollbar flex w-fit max-w-[95vw] items-center justify-items-start gap-2 overflow-x-scroll rounded-lg border-transparent bg-(--artist-color/0.15) px-2 py-1 backdrop-blur-[30px] backdrop-brightness-[1.3] backdrop-saturate-160 xl:justify-center"
     >
       {props.showArtists === true && (
         <MemberFilterButton
@@ -254,7 +254,11 @@ function MemberFilterButton({
       >
         <MemberImage name={name} image={image} />
       </button>
-      {useLabel && <span className="text-xs mix-blend-exclusion">{name}</span>}
+      {useLabel && (
+        <span className="text-xs mix-blend-exclusion drop-shadow-lg">
+          {name}
+        </span>
+      )}
     </div>
   );
 }

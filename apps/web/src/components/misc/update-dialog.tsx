@@ -82,15 +82,12 @@ export default function UpdateDialog() {
 
 const updates = [
   {
-    date: "2025-09-30",
+    date: "2025-12-25",
     changes: [
-      "Fixed: tripleS Atom02 3rd edition SCOs not being counted in COMO calendars.",
-    ],
-  },
-  {
-    date: "2025-09-24",
-    changes: [
-      "Fixed: Objekt pins not displaying when viewing a profile via blockchain address.",
+      "Migrated to a new framework which should be faster and more responsive.",
+      "Added translations with preliminary support for Korean.",
+      "Updated the design of the artist/member filter to better accomodate additional artists.",
+      "Moved the about dialog to the user dropdown, now the logo links to the objekts page.",
     ],
   },
 ];
