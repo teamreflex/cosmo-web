@@ -255,7 +255,7 @@ function MemberFilterButton({
         <MemberImage name={name} image={image} />
       </button>
       {useLabel && (
-        <span className="text-xs mix-blend-exclusion drop-shadow-lg">
+        <span className="text-xs text-white [text-shadow:0_0_10px_rgb(0_0_0/60%),0_0_2px_rgb(0_0_0/80%),0_1px_2px_rgb(0_0_0/100%)]">
           {name}
         </span>
       )}
