@@ -1,11 +1,11 @@
 # stage 1: prune workspace with bun
-FROM oven/bun:1.3.2-slim AS pruner
+FROM oven/bun:1.3.3-slim AS pruner
 WORKDIR /app
 COPY . .
 RUN bunx turbo@2.6.1 prune indexer --docker
 
 # stage 2: install dependencies with bun
-FROM oven/bun:1.3.2-slim AS installer
+FROM oven/bun:1.3.3-slim AS installer
 WORKDIR /app
 COPY --from=pruner /app/out/bun.lock ./bun.lock
 COPY --from=pruner /app/out/json/ .

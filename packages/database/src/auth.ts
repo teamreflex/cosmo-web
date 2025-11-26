@@ -1,10 +1,10 @@
 import {
-  boolean,
-  index,
-  integer,
   pgTable,
   text,
   timestamp,
+  boolean,
+  integer,
+  index,
 } from "drizzle-orm/pg-core";
 import { citext } from "./custom";
 import { GRID_COLUMNS, type CollectionDataSource } from "@apollo/util";
@@ -15,14 +15,16 @@ export const user = pgTable(
     id: text("id").primaryKey(),
     name: text("name").notNull(),
     email: text("email").notNull().unique(),
-    emailVerified: boolean("email_verified").notNull(),
+    emailVerified: boolean("email_verified").default(false).notNull(),
     image: text("image"),
     createdAt: timestamp("created_at").notNull(),
-    updatedAt: timestamp("updated_at").notNull(),
+    updatedAt: timestamp("updated_at")
+      .$onUpdate(() => new Date())
+      .notNull(),
     // custom fields
-    isAdmin: boolean("is_admin").notNull().default(false),
     username: citext("username").unique(),
-    displayUsername: citext("display_name"),
+    displayUsername: citext("display_username"),
+    isAdmin: boolean("is_admin").notNull().default(false),
     gridColumns: integer("grid_columns").notNull().default(GRID_COLUMNS),
     collectionMode: text("collection_mode")
       .notNull()
@@ -47,17 +49,16 @@ export const session = pgTable(
     expiresAt: timestamp("expires_at").notNull(),
     token: text("token").notNull().unique(),
     createdAt: timestamp("created_at").notNull(),
-    updatedAt: timestamp("updated_at").notNull(),
+    updatedAt: timestamp("updated_at")
+      .$onUpdate(() => new Date())
+      .notNull(),
     ipAddress: text("ip_address"),
     userAgent: text("user_agent"),
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
   },
-  (t) => [
-    index("session_user_id_idx").on(t.userId),
-    index("session_token_idx").on(t.token),
-  ],
+  (t) => [index("session_userId_idx").on(t.userId)],
 );
 
 export const account = pgTable(
@@ -77,16 +78,24 @@ export const account = pgTable(
     scope: text("scope"),
     password: text("password"),
     createdAt: timestamp("created_at").notNull(),
-    updatedAt: timestamp("updated_at").notNull(),
+    updatedAt: timestamp("updated_at")
+      .$onUpdate(() => new Date())
+      .notNull(),
   },
-  (t) => [index("account_user_id_idx").on(t.userId)],
+  (t) => [index("account_userId_idx").on(t.userId)],
 );
 
-export const verification = pgTable("verification", {
-  id: text("id").primaryKey(),
-  identifier: text("identifier").notNull(),
-  value: text("value").notNull(),
-  expiresAt: timestamp("expires_at").notNull(),
-  createdAt: timestamp("created_at"),
-  updatedAt: timestamp("updated_at"),
-});
+export const verification = pgTable(
+  "verification",
+  {
+    id: text("id").primaryKey(),
+    identifier: text("identifier").notNull(),
+    value: text("value").notNull(),
+    expiresAt: timestamp("expires_at").notNull(),
+    createdAt: timestamp("created_at").notNull(),
+    updatedAt: timestamp("updated_at")
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (t) => [index("verification_identifier_idx").on(t.identifier)],
+);

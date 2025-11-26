@@ -25,7 +25,7 @@ type Props = {
 export default function ForgotPassword({ onCancel }: Props) {
   const mutation = useMutation({
     mutationFn: async (data: z.infer<typeof forgotPasswordSchema>) => {
-      const result = await authClient.forgetPassword({
+      const result = await authClient.requestPasswordReset({
         email: data.email,
         redirectTo: "/auth/reset-password",
       });

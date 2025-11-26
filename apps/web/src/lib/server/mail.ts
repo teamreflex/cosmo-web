@@ -20,38 +20,6 @@ type EmailProps = {
 };
 
 /**
- * Send a verification email to the user upon changing email address.
- */
-export async function sendEmailChangeVerification({ to, url }: EmailProps) {
-  await ses.sendEmail({
-    Source: MAIL_SENDER,
-    Destination: {
-      ToAddresses: [to],
-    },
-    Message: {
-      Body: {
-        Html: {
-          Charset: "UTF-8",
-          Data: `
-  <html>
-    <body>
-      <p>Click the link below to verify your ${clientEnv.VITE_APP_NAME} email address.</p>
-      <a href="${url}">${url}</a>
-      <br />
-      <p>Replies to this address are not monitored.</p>
-    </body>
-  </html>`,
-        },
-      },
-      Subject: {
-        Charset: "UTF-8",
-        Data: `Verify your ${clientEnv.VITE_APP_NAME} email`,
-      },
-    },
-  });
-}
-
-/**
  * Send a verification email to the user.
  */
 export async function sendVerificationEmail({ to, url }: EmailProps) {
@@ -69,8 +37,6 @@ export async function sendVerificationEmail({ to, url }: EmailProps) {
     <body>
       <p>Click the link below to verify your ${clientEnv.VITE_APP_NAME} email address.</p>
       <a href="${url}">${url}</a>
-      <br />
-      <p>If you did not request this verification, please ignore this email.</p>
       <br />
       <p>Replies to this address are not monitored.</p>
     </body>

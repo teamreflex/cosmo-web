@@ -1,16 +1,15 @@
 import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
-import { betterAuth } from "better-auth";
+import { betterAuth } from "better-auth/minimal";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { username } from "better-auth/plugins/username";
 import { createAuthMiddleware } from "better-auth/api";
 import { parseSessionOutput, parseUserOutput } from "better-auth/db";
-import { username } from "better-auth/plugins/username";
 import { eq } from "drizzle-orm";
-import { reactStartCookies } from "better-auth/react-start";
+import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { GRID_COLUMNS } from "@apollo/util";
 import * as authSchema from "@apollo/database/auth";
 import {
   sendAccountDeletionEmail,
-  sendEmailChangeVerification,
   sendPasswordResetEmail,
   sendVerificationEmail,
 } from "./mail";
@@ -28,6 +27,7 @@ export const IP_HEADER = "cf-connecting-ip";
  * Better Auth server instance.
  */
 export const auth = betterAuth({
+  telemetry: { enabled: false },
   appName: clientEnv.env.VITE_APP_NAME,
   secret: serverEnv.env.BETTER_AUTH_SECRET,
   baseUrl: baseUrl(),
@@ -43,7 +43,7 @@ export const auth = betterAuth({
         return /^[a-zA-Z0-9]+$/.test(str);
       },
     }),
-    reactStartCookies(),
+    tanstackStartCookies(),
   ],
 
   /**
@@ -214,6 +214,7 @@ export const auth = betterAuth({
       }
     }),
   },
+
   socialProviders: {
     discord: {
       enabled: true,
@@ -248,13 +249,6 @@ export const auth = betterAuth({
   user: {
     changeEmail: {
       enabled: true,
-      sendChangeEmailVerification: async ({ newEmail, url, token }) => {
-        await sendEmailChangeVerification({
-          to: newEmail,
-          url: url,
-          token: token,
-        });
-      },
     },
     deleteUser: {
       enabled: true,

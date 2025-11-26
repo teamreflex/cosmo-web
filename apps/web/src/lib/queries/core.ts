@@ -1,6 +1,9 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
-import { getRequestHeaders } from "@tanstack/react-start/server";
+import {
+  getRequestHeaders,
+  setResponseHeader,
+} from "@tanstack/react-start/server";
 import { notFound } from "@tanstack/react-router";
 import { z } from "zod";
 import { $fetchArtists } from "../server/artists";
@@ -80,15 +83,22 @@ export const $fetchCurrentAccount = createServerFn({ method: "GET" }).handler(
   async (): Promise<GetAccount | null> => {
     const session = await auth.api.getSession({
       headers: getRequestHeaders(),
+      returnHeaders: true,
     });
 
     // not signed in
-    if (!session) {
+    if (!session.response) {
       return null;
     }
 
+    // forward Set-Cookie headers to the client
+    const cookies = session.headers.getSetCookie();
+    if (cookies?.length) {
+      setResponseHeader("Set-Cookie", cookies);
+    }
+
     const result = await db.query.user.findFirst({
-      where: { id: session.session.userId },
+      where: { id: session.response.session.userId },
       with: {
         cosmoAccount: true,
         objektLists: true,

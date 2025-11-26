@@ -1,9 +1,9 @@
-FROM oven/bun:1.3.2-slim AS pruner
+FROM oven/bun:1.3.3-slim AS pruner
 WORKDIR /app
 COPY . .
 RUN bunx turbo@2.6.1 prune schedules --docker
 
-FROM oven/bun:1.3.2-slim AS builder
+FROM oven/bun:1.3.3-slim AS builder
 WORKDIR /app
 COPY --from=pruner /app/out/bun.lock ./bun.lock
 COPY --from=pruner /app/out/json/ .
@@ -11,7 +11,7 @@ RUN bun install --frozen-lockfile
 COPY --from=pruner /app/out/full/ .
 RUN bun run --filter schedules build
 
-FROM oven/bun:1.3.2-slim AS runner
+FROM oven/bun:1.3.3-slim AS runner
 WORKDIR /app
 ENV NODE_ENV production
 COPY --from=builder /app/apps/schedules/dist ./dist
