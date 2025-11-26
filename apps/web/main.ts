@@ -524,13 +524,13 @@ async function initializeStaticRoutes(
 }
 
 /**
- * Wrap a response with compression if appropriate
- * Uses gzip only for dynamic content (much faster than brotli)
+ * Wrap a response with streaming compression if appropriate
+ * Uses CompressionStream for gzip (streaming, no buffering required)
  */
-async function compressResponse(
+function compressResponse(
   response: Response,
   acceptEncoding: string,
-): Promise<Response> {
+): Response {
   // Skip compression for certain status codes
   if (
     response.status === 204 || // No Content
@@ -552,46 +552,35 @@ async function compressResponse(
     return response;
   }
 
-  // Get response body
-  const body = await response.arrayBuffer();
-  const bytes = new Uint8Array(body);
+  // Check if gzip is accepted
+  if (!acceptEncoding.includes("gzip")) {
+    return response;
+  }
 
-  // Skip if too small
-  if (bytes.byteLength < COMPRESSION_MIN_BYTES) {
-    // Body already consumed, must create new response with original bytes
-    return new Response(bytes.buffer, {
+  // Skip small responses if Content-Length is known
+  const contentLength = response.headers.get("content-length");
+  if (contentLength && parseInt(contentLength, 10) < COMPRESSION_MIN_BYTES) {
+    return response;
+  }
+
+  // Skip if no body to compress
+  if (!response.body) {
+    return response;
+  }
+
+  // Use streaming compression
+  const headers = new Headers(response.headers);
+  headers.set("Content-Encoding", "gzip");
+  headers.delete("Content-Length"); // Unknown after compression
+
+  return new Response(
+    response.body.pipeThrough(new CompressionStream("gzip")),
+    {
       status: response.status,
       statusText: response.statusText,
-      headers: response.headers,
-    });
-  }
-
-  // Clone headers
-  const headers = new Headers(response.headers);
-
-  // Use gzip only for dynamic responses (brotli is too slow, adds ~100ms)
-  // For static assets, brotli is pre-compressed at startup with no runtime cost
-  if (acceptEncoding.includes("gzip")) {
-    const compressed = compressWithGzip(bytes, contentType);
-    if (compressed) {
-      headers.set("Content-Encoding", "gzip");
-      headers.set("Content-Length", String(compressed.byteLength));
-      headers.delete("Content-Range"); // Remove range headers if present
-      return new Response(compressed.buffer as ArrayBuffer, {
-        status: response.status,
-        statusText: response.statusText,
-        headers,
-      });
-    }
-  }
-
-  // Return original bytes if compression failed or not supported
-  // Body already consumed, must create new response
-  return new Response(bytes.buffer, {
-    status: response.status,
-    statusText: response.statusText,
-    headers: response.headers,
-  });
+      headers,
+    },
+  );
 }
 
 /**
