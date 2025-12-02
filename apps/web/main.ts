@@ -146,9 +146,9 @@ function convertGlobToRegExp(globPattern: string): RegExp {
 /**
  * Compute ETag for a given data buffer
  */
-function computeEtag(data: Uint8Array): string {
+function computeEtag(data: Uint8Array<ArrayBuffer>): string {
   const hash = Bun.hash(data);
-  return `W/"${hash.toString(16)}-${data.byteLength.toString()}"`;
+  return `"${hash.toString(16)}-${data.byteLength}"`;
 }
 
 /**
@@ -164,9 +164,9 @@ interface AssetMetadata {
  * In-memory asset with ETag and compression support (Gzip and Brotli)
  */
 interface InMemoryAsset {
-  raw: Uint8Array;
-  gz?: Uint8Array;
-  br?: Uint8Array;
+  raw: Uint8Array<ArrayBuffer>;
+  gz?: Uint8Array<ArrayBuffer>;
+  br?: Uint8Array<ArrayBuffer>;
   etag?: string;
   type: string;
   immutable: boolean;
@@ -204,6 +204,38 @@ function isFileEligibleForPreloading(relativePath: string): boolean {
 }
 
 /**
+ * Check if an encoding is accepted based on Accept-Encoding header
+ * Handles quality values (e.g., "br;q=0" means don't send brotli)
+ */
+function isEncodingAccepted(acceptEncoding: string, encoding: string): boolean {
+  // Fast path: check if encoding is present at all
+  if (!acceptEncoding.includes(encoding)) {
+    return false;
+  }
+
+  // Fast path: if no quality values for this encoding, it's accepted
+  // Check for patterns like "br;q=" which indicate a quality value
+  if (!acceptEncoding.includes(`${encoding};q=`)) {
+    return true;
+  }
+
+  // Slow path: parse quality values
+  const parts = acceptEncoding.split(",").map((p) => p.trim());
+  for (const part of parts) {
+    const [enc, ...params] = part.split(";").map((s) => s.trim());
+    if (enc === encoding) {
+      const qParam = params.find((p) => p.startsWith("q="));
+      if (qParam) {
+        const q = parseFloat(qParam.slice(2));
+        return q > 0;
+      }
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
  * Check if a MIME type is compressible
  */
 function isMimeTypeCompressible(mimeType: string): boolean {
@@ -216,14 +248,14 @@ function isMimeTypeCompressible(mimeType: string): boolean {
  * Compress data with Gzip using Bun's native implementation
  */
 function compressWithGzip(
-  data: Uint8Array,
+  data: Uint8Array<ArrayBuffer>,
   mimeType: string,
-): Uint8Array | undefined {
+): Uint8Array<ArrayBuffer> | undefined {
   if (!ENABLE_COMPRESSION) return undefined;
   if (data.byteLength < COMPRESSION_MIN_BYTES) return undefined;
   if (!isMimeTypeCompressible(mimeType)) return undefined;
   try {
-    return Bun.gzipSync(data.buffer as ArrayBuffer);
+    return Bun.gzipSync(data);
   } catch (error) {
     log.warning(
       `Failed to gzip compress data (${data.byteLength} bytes): ${String(error)}`,
@@ -236,14 +268,14 @@ function compressWithGzip(
  * Compress data with Brotli (better compression than Gzip)
  */
 function compressWithBrotli(
-  data: Uint8Array,
+  data: Uint8Array<ArrayBuffer>,
   mimeType: string,
-): Uint8Array | undefined {
+): Uint8Array<ArrayBuffer> | undefined {
   if (!ENABLE_COMPRESSION) return undefined;
   if (data.byteLength < COMPRESSION_MIN_BYTES) return undefined;
   if (!isMimeTypeCompressible(mimeType)) return undefined;
   try {
-    return brotliCompressSync(data);
+    return new Uint8Array(brotliCompressSync(data));
   } catch (error) {
     log.warning(
       `Failed to brotli compress data (${data.byteLength} bytes): ${String(error)}`,
@@ -264,6 +296,7 @@ function createResponseHandler(
       "Cache-Control": asset.immutable
         ? "public, max-age=31536000, immutable"
         : "public, max-age=3600",
+      Vary: "Accept-Encoding",
     };
 
     // Add security headers
@@ -271,7 +304,10 @@ function createResponseHandler(
 
     if (ENABLE_ETAG && asset.etag) {
       const ifNone = req.headers.get("if-none-match");
-      if (ifNone && ifNone === asset.etag) {
+      if (
+        ifNone &&
+        ifNone.split(",").some((e) => e.trim() === asset.etag)
+      ) {
         const etagHeaders: Record<string, string> = { ETag: asset.etag };
         addSecurityHeaders(etagHeaders);
         return new Response(null, {
@@ -285,26 +321,26 @@ function createResponseHandler(
     const acceptEncoding = req.headers.get("accept-encoding") || "";
 
     // Prefer Brotli over Gzip (better compression)
-    if (ENABLE_COMPRESSION && asset.br && acceptEncoding.includes("br")) {
+    if (ENABLE_COMPRESSION && asset.br && isEncodingAccepted(acceptEncoding, "br")) {
       headers["Content-Encoding"] = "br";
       headers["Content-Length"] = String(asset.br.byteLength);
-      return new Response(asset.br.buffer as ArrayBuffer, {
+      return new Response(asset.br.buffer, {
         status: 200,
         headers,
       });
     }
 
-    if (ENABLE_COMPRESSION && asset.gz && acceptEncoding.includes("gzip")) {
+    if (ENABLE_COMPRESSION && asset.gz && isEncodingAccepted(acceptEncoding, "gzip")) {
       headers["Content-Encoding"] = "gzip";
       headers["Content-Length"] = String(asset.gz.byteLength);
-      return new Response(asset.gz.buffer as ArrayBuffer, {
+      return new Response(asset.gz.buffer, {
         status: 200,
         headers,
       });
     }
 
     headers["Content-Length"] = String(asset.raw.byteLength);
-    return new Response(asset.raw.buffer as ArrayBuffer, {
+    return new Response(asset.raw.buffer, {
       status: 200,
       headers,
     });
@@ -355,6 +391,16 @@ async function initializeStaticRoutes(
 
   let totalPreloadedBytes = 0;
 
+  // Collect files to process
+  interface FileToProcess {
+    filepath: string;
+    route: string;
+    metadata: AssetMetadata;
+    shouldPreload: boolean;
+  }
+
+  const filesToProcess: FileToProcess[] = [];
+
   try {
     const glob = createCompositeGlobPattern();
     for await (const relativePath of glob.scan({ cwd: clientDirectory })) {
@@ -380,43 +426,12 @@ async function initializeStaticRoutes(
         const matchesPattern = isFileEligibleForPreloading(relativePath);
         const withinSizeLimit = file.size <= MAX_PRELOAD_BYTES;
 
-        if (matchesPattern && withinSizeLimit) {
-          // Preload small files into memory with ETag and compression support
-          const bytes = new Uint8Array(await file.arrayBuffer());
-          const gz = compressWithGzip(bytes, metadata.type);
-          const br = compressWithBrotli(bytes, metadata.type);
-          const etag = ENABLE_ETAG ? computeEtag(bytes) : undefined;
-          const asset: InMemoryAsset = {
-            raw: bytes,
-            gz,
-            br,
-            etag,
-            type: metadata.type,
-            immutable: true,
-            size: bytes.byteLength,
-          };
-          routes[route] = createResponseHandler(asset);
-
-          // Calculate actual memory usage (raw + compressed versions)
-          const actualMemoryUsage =
-            bytes.byteLength + (gz?.byteLength ?? 0) + (br?.byteLength ?? 0);
-
-          loaded.push({ ...metadata, size: bytes.byteLength });
-          totalPreloadedBytes += actualMemoryUsage;
-        } else {
-          // Serve large or filtered files on-demand
-          routes[route] = () => {
-            const fileOnDemand = Bun.file(filepath);
-            return new Response(fileOnDemand, {
-              headers: {
-                "Content-Type": metadata.type,
-                "Cache-Control": "public, max-age=3600",
-              },
-            });
-          };
-
-          skipped.push(metadata);
-        }
+        filesToProcess.push({
+          filepath,
+          route,
+          metadata,
+          shouldPreload: matchesPattern && withinSizeLimit,
+        });
       } catch (error: unknown) {
         // Skip directories silently, log other errors
         const errorCode =
@@ -429,6 +444,59 @@ async function initializeStaticRoutes(
           );
         }
       }
+    }
+
+    // Process files to preload in parallel
+    const preloadFiles = filesToProcess.filter((f) => f.shouldPreload);
+    const skipFiles = filesToProcess.filter((f) => !f.shouldPreload);
+
+    // Read and compress files in parallel
+    const preloadResults = await Promise.all(
+      preloadFiles.map(async ({ filepath, route, metadata }) => {
+        const file = Bun.file(filepath);
+        const bytes = new Uint8Array(await file.arrayBuffer());
+        const gz = compressWithGzip(bytes, metadata.type);
+        const br = compressWithBrotli(bytes, metadata.type);
+        const etag = ENABLE_ETAG ? computeEtag(bytes) : undefined;
+
+        const asset: InMemoryAsset = {
+          raw: bytes,
+          gz,
+          br,
+          etag,
+          type: metadata.type,
+          immutable: true,
+          size: bytes.byteLength,
+        };
+
+        const actualMemoryUsage =
+          bytes.byteLength + (gz?.byteLength ?? 0) + (br?.byteLength ?? 0);
+
+        return { route, asset, metadata, actualMemoryUsage };
+      }),
+    );
+
+    // Build routes from preload results
+    for (const { route, asset, metadata, actualMemoryUsage } of preloadResults) {
+      routes[route] = createResponseHandler(asset);
+      loaded.push({ ...metadata, size: asset.size });
+      totalPreloadedBytes += actualMemoryUsage;
+    }
+
+    // Build routes for on-demand files
+    for (const { filepath, route, metadata } of skipFiles) {
+      const headers: Record<string, string> = {
+        "Content-Type": metadata.type,
+        "Cache-Control": "public, max-age=3600",
+      };
+      addSecurityHeaders(headers);
+
+      routes[route] = () => {
+        const fileOnDemand = Bun.file(filepath);
+        return new Response(fileOnDemand, { headers });
+      };
+
+      skipped.push(metadata);
     }
 
     // Show detailed file overview only when verbose mode is enabled
@@ -626,9 +694,9 @@ async function initializeServer() {
             total: loaded.length + skipped.length,
           },
           memory: {
-            rss: process.memoryUsage().rss,
-            heapUsed: process.memoryUsage().heapUsed,
-            heapTotal: process.memoryUsage().heapTotal,
+            rss: `${(process.memoryUsage().rss / 1024 / 1024).toFixed(2)} MB`,
+            heapUsed: `${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)} MB`,
+            heapTotal: `${(process.memoryUsage().heapTotal / 1024 / 1024).toFixed(2)} MB`,
           },
         };
 
