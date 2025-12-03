@@ -12,14 +12,15 @@
  * ASSET_PRELOAD_INCLUDE_PATTERNS (string)
  *   - Comma-separated list of glob patterns for files to include
  *   - If specified, only matching files are eligible for preloading
- *   - Patterns are matched against filenames only, not full paths
- *   - Example: ASSET_PRELOAD_INCLUDE_PATTERNS="*.js,*.css,*.woff2"
+ *   - Patterns are matched against relative paths (e.g., "assets/main.js")
+ *   - Use **\/ prefix for recursive matching across subdirectories
+ *   - Example: ASSET_PRELOAD_INCLUDE_PATTERNS="**\/*.js,**\/*.css,**\/*.woff2"
  *
  * ASSET_PRELOAD_EXCLUDE_PATTERNS (string)
  *   - Comma-separated list of glob patterns for files to exclude
  *   - Applied after include patterns
- *   - Patterns are matched against filenames only, not full paths
- *   - Example: ASSET_PRELOAD_EXCLUDE_PATTERNS="*.map,*.txt"
+ *   - Patterns are matched against relative paths (e.g., "assets/main.js")
+ *   - Example: ASSET_PRELOAD_EXCLUDE_PATTERNS="**\/*.map,**\/*.txt"
  *
  * ASSET_PRELOAD_VERBOSE_LOGGING (boolean)
  *   - Enable detailed logging of loaded and skipped files
@@ -124,7 +125,7 @@ const COMPRESSION_MIN_BYTES = Number(
   process.env.ASSET_PRELOAD_COMPRESSION_MIN_SIZE ?? 1024,
 ); // 1KB
 const COMPRESSION_MIME_TYPES = (
-  process.env.ASSET_PRELOAD_COMPRESSION_MIME_TYPES ??
+  process.env.ASSET_PRELOAD_COMPRESSION_MIME_TYPES ||
   "text/,application/javascript,application/json,application/xml,image/svg+xml"
 )
   .split(",")
@@ -186,17 +187,18 @@ interface PreloadResult {
  * Check if a file is eligible for preloading based on configured patterns
  */
 function isFileEligibleForPreloading(relativePath: string): boolean {
-  const fileName = relativePath.split(/[/\\]/).pop() ?? relativePath;
+  // Normalize path separators to forward slashes for consistent matching
+  const normalizedPath = relativePath.split(/[/\\]/).join("/");
 
   // If include patterns are specified, file must match at least one
   if (INCLUDE_PATTERNS.length > 0) {
-    if (!INCLUDE_PATTERNS.some((pattern) => pattern.test(fileName))) {
+    if (!INCLUDE_PATTERNS.some((pattern) => pattern.test(normalizedPath))) {
       return false;
     }
   }
 
   // If exclude patterns are specified, file must not match any
-  if (EXCLUDE_PATTERNS.some((pattern) => pattern.test(fileName))) {
+  if (EXCLUDE_PATTERNS.some((pattern) => pattern.test(normalizedPath))) {
     return false;
   }
 
@@ -304,10 +306,7 @@ function createResponseHandler(
 
     if (ENABLE_ETAG && asset.etag) {
       const ifNone = req.headers.get("if-none-match");
-      if (
-        ifNone &&
-        ifNone.split(",").some((e) => e.trim() === asset.etag)
-      ) {
+      if (ifNone && ifNone.split(",").some((e) => e.trim() === asset.etag)) {
         const etagHeaders: Record<string, string> = { ETag: asset.etag };
         addSecurityHeaders(etagHeaders);
         return new Response(null, {
@@ -321,7 +320,11 @@ function createResponseHandler(
     const acceptEncoding = req.headers.get("accept-encoding") || "";
 
     // Prefer Brotli over Gzip (better compression)
-    if (ENABLE_COMPRESSION && asset.br && isEncodingAccepted(acceptEncoding, "br")) {
+    if (
+      ENABLE_COMPRESSION &&
+      asset.br &&
+      isEncodingAccepted(acceptEncoding, "br")
+    ) {
       headers["Content-Encoding"] = "br";
       headers["Content-Length"] = String(asset.br.byteLength);
       return new Response(asset.br.buffer, {
@@ -330,7 +333,11 @@ function createResponseHandler(
       });
     }
 
-    if (ENABLE_COMPRESSION && asset.gz && isEncodingAccepted(acceptEncoding, "gzip")) {
+    if (
+      ENABLE_COMPRESSION &&
+      asset.gz &&
+      isEncodingAccepted(acceptEncoding, "gzip")
+    ) {
       headers["Content-Encoding"] = "gzip";
       headers["Content-Length"] = String(asset.gz.byteLength);
       return new Response(asset.gz.buffer, {
@@ -348,17 +355,10 @@ function createResponseHandler(
 }
 
 /**
- * Create composite glob pattern from include patterns
+ * Glob pattern for scanning all files
+ * Filtering is handled separately by isFileEligibleForPreloading()
  */
-function createCompositeGlobPattern(): Bun.Glob {
-  const raw = (process.env.ASSET_PRELOAD_INCLUDE_PATTERNS ?? "")
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
-  if (raw.length === 0) return new Bun.Glob("**/*");
-  if (raw.length === 1) return new Bun.Glob(raw[0]!);
-  return new Bun.Glob(`{${raw.join(",")}}`);
-}
+const FILE_SCAN_GLOB = new Bun.Glob("**/*");
 
 /**
  * Initialize static routes with intelligent preloading strategy
@@ -374,16 +374,16 @@ async function initializeStaticRoutes(
 
   log.info(`Loading static assets from ${clientDirectory}...`);
   if (VERBOSE) {
-    console.log(
+    log.info(
       `Max preload size: ${(MAX_PRELOAD_BYTES / 1024 / 1024).toFixed(2)} MB`,
     );
     if (INCLUDE_PATTERNS.length > 0) {
-      console.log(
+      log.info(
         `Include patterns: ${process.env.ASSET_PRELOAD_INCLUDE_PATTERNS ?? ""}`,
       );
     }
     if (EXCLUDE_PATTERNS.length > 0) {
-      console.log(
+      log.info(
         `Exclude patterns: ${process.env.ASSET_PRELOAD_EXCLUDE_PATTERNS ?? ""}`,
       );
     }
@@ -402,8 +402,9 @@ async function initializeStaticRoutes(
   const filesToProcess: FileToProcess[] = [];
 
   try {
-    const glob = createCompositeGlobPattern();
-    for await (const relativePath of glob.scan({ cwd: clientDirectory })) {
+    for await (const relativePath of FILE_SCAN_GLOB.scan({
+      cwd: clientDirectory,
+    })) {
       const filepath = path.join(clientDirectory, relativePath);
       const route = `/${relativePath.split(path.sep).join(path.posix.sep)}`;
 
@@ -477,7 +478,12 @@ async function initializeStaticRoutes(
     );
 
     // Build routes from preload results
-    for (const { route, asset, metadata, actualMemoryUsage } of preloadResults) {
+    for (const {
+      route,
+      asset,
+      metadata,
+      actualMemoryUsage,
+    } of preloadResults) {
       routes[route] = createResponseHandler(asset);
       loaded.push({ ...metadata, size: asset.size });
       totalPreloadedBytes += actualMemoryUsage;
