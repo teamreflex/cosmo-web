@@ -93,7 +93,7 @@ export const $fetchCurrentAccount = createServerFn({ method: "GET" }).handler(
 
     // forward Set-Cookie headers to the client
     const cookies = session.headers.getSetCookie();
-    if (cookies?.length) {
+    if (cookies.length) {
       setResponseHeader("Set-Cookie", cookies);
     }
 

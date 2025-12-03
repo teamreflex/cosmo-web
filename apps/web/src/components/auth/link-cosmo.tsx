@@ -326,8 +326,6 @@ function OTP({ ticket }: OTPProps) {
               <FormItem>
                 <FormControl>
                   <InputOTP
-                    // the form field doesn't recognise that the value starts as undefined
-                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                     value={field.value?.toString()}
                     onChange={(value) => field.onChange(Number(value))}
                     maxLength={2}

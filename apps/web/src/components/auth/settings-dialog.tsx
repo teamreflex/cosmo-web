@@ -177,7 +177,7 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
                       <Select
                         name="gridColumns"
                         onValueChange={field.onChange}
-                        defaultValue={field.value.toString()}
+                        defaultValue={field.value?.toString()}
                       >
                         <SelectTrigger className="w-36">
                           <SelectValue

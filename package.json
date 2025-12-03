@@ -13,7 +13,7 @@
   "devDependencies": {
     "@socketsecurity/bun-security-scanner": "^1.1.1",
     "dotenv-cli": "^11.0.0",
-    "prettier": "^3.6.2",
+    "prettier": "^3.7.3",
     "turbo": "^2.6.1",
     "typescript": "^5.9.3"
   },
@@ -29,8 +29,8 @@
     "trailingComma": "all"
   },
   "overrides": {
-    "@types/react": "19.2.2",
-    "@types/react-dom": "19.2.2",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
     "viem": "^2.39.0",
     "abitype": "^1.1.0"
   }
