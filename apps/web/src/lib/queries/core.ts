@@ -10,6 +10,7 @@ import { $fetchArtists } from "../server/artists";
 import type { PublicUser } from "@/lib/universal/auth";
 import type { FullAccount, PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import type { ObjektList } from "@/lib/server/db/schema";
+import type { CosmoMemberBFF } from "@apollo/cosmo/types/artists";
 import {
   fetchUniqueClasses,
   fetchUniqueCollections,
@@ -174,6 +175,19 @@ export const targetAccountQuery = (identifier: string) => {
 export const artistsQuery = queryOptions({
   queryKey: ["artists"],
   queryFn: ({ signal }) => $fetchArtists({ signal }),
+  select: (data) => {
+    const memberMap: Record<string, CosmoMemberBFF> = {};
+    for (const artist of Object.values(data.artists)) {
+      for (const member of artist.artistMembers) {
+        memberMap[member.name.toLowerCase()] = member;
+      }
+    }
+
+    return {
+      artists: data.artists,
+      members: memberMap,
+    };
+  },
   staleTime: Infinity,
   refetchOnWindowFocus: false,
   refetchOnMount: false,

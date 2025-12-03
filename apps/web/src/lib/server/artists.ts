@@ -3,10 +3,7 @@ import { setResponseHeaders } from "@tanstack/react-start/server";
 import { fetchArtist, fetchArtists } from "@apollo/cosmo/server/artists";
 import { cacheHeaders, clearTag, remember } from "./cache";
 import { getProxiedToken } from "./proxied-token";
-import type {
-  CosmoArtistWithMembersBFF,
-  CosmoMemberBFF,
-} from "@apollo/cosmo/types/artists";
+import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
 
 const cacheKey = "artists";
 
@@ -32,14 +29,7 @@ export const $fetchArtists = createServerFn({ method: "GET" }).handler(
         artistMap[artist.id.toLowerCase()] = artist;
       });
 
-      const memberMap: Record<string, CosmoMemberBFF> = {};
-      withMembers.forEach((artist) => {
-        artist.artistMembers.forEach((member) => {
-          memberMap[member.name.toLowerCase()] = member;
-        });
-      });
-
-      return { artists: artistMap, members: memberMap };
+      return { artists: artistMap };
     });
   },
 );
