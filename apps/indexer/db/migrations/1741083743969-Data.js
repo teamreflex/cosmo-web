@@ -18,6 +18,6 @@ module.exports = class Data1741083743969 {
     );
 
     // drop the cosmo-spin index
-    await db.query(`DROP INDEX "public"."IDX_objekts_spin"`);
+    await db.query(`DROP INDEX "public"."IDX_objekts_spin_initial"`);
   }
 };
