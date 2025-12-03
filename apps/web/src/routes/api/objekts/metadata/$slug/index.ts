@@ -15,7 +15,6 @@ export const Route = createFileRoute("/api/objekts/metadata/$slug/")({
        * Fetches metadata about a collection.
        */
       GET: async ({ params }) => {
-        const perfNow = performance.now();
         const [collection, metadata] = await Promise.all([
           fetchCollection(params.slug),
           fetchCollectionMetadata(params.slug),
@@ -43,9 +42,6 @@ export const Route = createFileRoute("/api/objekts/metadata/$slug/")({
         } else {
           cacheTime = 60 * 60 * 12;
         }
-
-        const perfEnd = performance.now();
-        console.log(`[API] metadata endpoint took ${perfEnd - perfNow}ms`);
 
         return Response.json(
           {

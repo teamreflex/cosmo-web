@@ -14,14 +14,14 @@ export class DatabaseWeb extends Effect.Service<DatabaseWeb>()(
       const url = new URL(Redacted.value(env.webDatabaseUrl));
       url.searchParams.set("application_name", "Schedules");
 
-      const sql = new SQL({
+      const client = new SQL({
         url: url.toString(),
         max: 2, // only need 1-2 connections for single-threaded app
         idleTimeout: 60, // close idle connections after 1 minute
         maxLifetime: 3600, // recycle connections every hour
         connectionTimeout: 30, // timeout for establishing new connections
       });
-      return drizzle(sql, { relations });
+      return drizzle({ client, relations });
     }),
     dependencies: [Env.Default],
   },

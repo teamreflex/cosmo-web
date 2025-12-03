@@ -7,7 +7,7 @@ import { env } from "@/lib/env/server";
 const url = new URL(env.DATABASE_URL);
 url.searchParams.set("application_name", "apollo.cafe");
 
-const sql = new SQL({
+const client = new SQL({
   url: url.toString(),
   max: 20, // handle concurrent traffic with headroom
   idleTimeout: 30, // close idle connections quickly
@@ -15,4 +15,4 @@ const sql = new SQL({
   connectionTimeout: 10, // fail fast if DB is overloaded
 });
 
-export const db = drizzle(sql, { relations });
+export const db = drizzle({ client, relations });
