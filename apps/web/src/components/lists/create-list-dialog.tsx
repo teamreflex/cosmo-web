@@ -23,7 +23,7 @@ import {
   FormMessage,
 } from "../ui/form";
 import { $createObjektList } from "./actions";
-import type z from "zod";
+import type { z } from "zod";
 import { track } from "@/lib/utils";
 import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
 import { m } from "@/i18n/messages";

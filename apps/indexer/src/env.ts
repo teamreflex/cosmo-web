@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod";
 
 const envSchema = z.object({
   RPC_RATE_LIMIT: z.coerce.number().positive().default(2),

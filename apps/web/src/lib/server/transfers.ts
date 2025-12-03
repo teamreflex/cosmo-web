@@ -12,7 +12,7 @@ import {
   withSeason,
   withSelectedArtists,
 } from "./objekts/filters";
-import type z from "zod";
+import type { z } from "zod";
 import type { TransferResult, TransferType } from "../universal/transfers";
 import { transfersBackendSchema } from "@/lib/universal/parsers";
 

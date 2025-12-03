@@ -1,6 +1,6 @@
 import { and, eq, inArray, not, sql } from "drizzle-orm";
 import { createServerFn } from "@tanstack/react-start";
-import z from "zod";
+import * as z from "zod";
 import { addr } from "@apollo/util";
 import { indexer } from "./db/indexer";
 import { collections, objekts } from "./db/indexer/schema";

@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { getRouteApi } from "@tanstack/react-router";
-import type z from "zod";
+import type { z } from "zod";
 import type { transfersFrontendSchema } from "@/lib/universal/parsers";
 
 const route = getRouteApi("/@{$username}/trades");

@@ -1,6 +1,6 @@
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { z } from "zod";
+import * as z from "zod";
 import { env } from "./env/client";
 import type { ClassValue } from "clsx";
 import type { ValidArtist } from "@apollo/cosmo/types/common";

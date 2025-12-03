@@ -1,7 +1,7 @@
 import { notFound } from "@tanstack/react-router";
 import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
 import { desc } from "drizzle-orm";
-import z from "zod";
+import * as z from "zod";
 import { isBefore } from "date-fns";
 import { setResponseHeaders } from "@tanstack/react-start/server";
 import { fetchGravity, fetchPoll } from "@apollo/cosmo/server/gravity";

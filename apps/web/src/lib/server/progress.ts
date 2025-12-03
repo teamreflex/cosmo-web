@@ -1,12 +1,12 @@
 import { and, count, desc, eq, not, notInArray, sql } from "drizzle-orm";
 import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
-import z from "zod";
+import * as z from "zod";
 import { Addresses } from "@apollo/util";
-import {  validOnlineTypes } from "@apollo/cosmo/types/common";
+import { validOnlineTypes } from "@apollo/cosmo/types/common";
 import { unobtainables } from "../unobtainables";
 import { remember } from "./cache";
 import { fetchKnownAddresses } from "./cosmo-accounts";
-import type {ValidOnlineType} from "@apollo/cosmo/types/common";
+import type { ValidOnlineType } from "@apollo/cosmo/types/common";
 import type {
   ArtistStats,
   LeaderboardItem,

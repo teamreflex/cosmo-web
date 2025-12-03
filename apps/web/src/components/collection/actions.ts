@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod";
 import { and, eq } from "drizzle-orm";
 import { createServerFn } from "@tanstack/react-start";
 import { db } from "@/lib/server/db";

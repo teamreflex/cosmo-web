@@ -5,7 +5,7 @@ import type {
   transfersFrontendSchema,
   userCollectionFrontendSchema,
 } from "@/lib/universal/parsers";
-import type z from "zod";
+import type { z } from "zod";
 import { getTypesenseResults } from "@/lib/client/typesense";
 import { $fetchObjektsIndex } from "@/lib/server/objekts/prefetching/objekt-index";
 import {

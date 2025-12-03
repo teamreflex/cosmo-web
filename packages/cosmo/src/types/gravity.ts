@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod";
 import type { ValidArtist } from "./common";
 
 export type CosmoGravityType = "event-gravity" | "grand-gravity";
@@ -75,8 +75,7 @@ type CosmoPollCommon<TPollType extends CosmoPollType> = {
   titleZhTw: string;
 };
 
-export interface CosmoSinglePollFinalized
-  extends CosmoPollCommon<"single-poll"> {
+export interface CosmoSinglePollFinalized extends CosmoPollCommon<"single-poll"> {
   finalized: true;
   result: {
     totalComoUsed: number;
@@ -100,8 +99,7 @@ export type CosmoCombinationPollVoteResult = {
   votedSlots: CosmoCombinationPollVoteSlot[];
 };
 
-export interface CosmoCombinationPollFinalized
-  extends CosmoPollCommon<"combination-poll"> {
+export interface CosmoCombinationPollFinalized extends CosmoPollCommon<"combination-poll"> {
   finalized: true;
   result: {
     totalComoUsed: number;
@@ -109,8 +107,7 @@ export interface CosmoCombinationPollFinalized
   };
 }
 
-interface CosmoCombinationPollUpcoming
-  extends CosmoPollCommon<"combination-poll"> {
+interface CosmoCombinationPollUpcoming extends CosmoPollCommon<"combination-poll"> {
   finalized: false;
 }
 

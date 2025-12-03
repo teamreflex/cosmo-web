@@ -24,7 +24,7 @@ import {
 } from "../ui/dialog";
 import { Button } from "../ui/button";
 import { $updateObjektList } from "./actions";
-import type z from "zod";
+import type { z } from "zod";
 import type { ObjektList } from "@/lib/server/db/schema";
 import { useUserState } from "@/hooks/use-user-state";
 import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";

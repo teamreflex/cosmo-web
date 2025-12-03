@@ -1,5 +1,5 @@
 import { and, asc, desc, eq, max, sql } from "drizzle-orm";
-import { z } from "zod";
+import * as z from "zod";
 import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
 import { collections, objekts } from "../../db/indexer/schema";
 import { indexer } from "../../db/indexer";

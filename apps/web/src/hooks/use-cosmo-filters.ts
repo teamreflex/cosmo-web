@@ -1,5 +1,5 @@
 import { useNavigate, useSearch } from "@tanstack/react-router";
-import type z from "zod";
+import type { z } from "zod";
 import { cosmoSchema } from "@/lib/universal/parsers";
 
 /**

@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod";
 
 export const metadataObjectSchema = z.object({
   collectionId: z.string().min(1),

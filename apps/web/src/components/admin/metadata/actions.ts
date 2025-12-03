@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { z } from "zod";
+import * as z from "zod";
 import { createServerFn } from "@tanstack/react-start";
 import { db } from "@/lib/server/db";
 import { objektMetadata } from "@/lib/server/db/schema";

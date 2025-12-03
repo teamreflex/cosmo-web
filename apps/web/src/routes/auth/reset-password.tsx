@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { z } from "zod";
+import * as z from "zod";
 import ResetPassword from "@/components/auth/reset-password";
 import { defineHead } from "@/lib/meta";
 import { m } from "@/i18n/messages";

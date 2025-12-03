@@ -1,5 +1,5 @@
 import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
-import z from "zod";
+import * as z from "zod";
 import { redirect } from "@tanstack/react-router";
 import { db } from "../db";
 import { objektListEntries, objektLists } from "../db/schema";

@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { desc, eq } from "drizzle-orm";
 import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
-import z from "zod";
+import * as z from "zod";
 import { isAddress } from "@apollo/util";
 import { indexer } from "../db/indexer";
 import { db } from "../db";

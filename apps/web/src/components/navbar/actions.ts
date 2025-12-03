@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import z from "zod";
+import * as z from "zod";
 import { putCookie } from "@/lib/server/cookies";
 import { $fetchSelectedArtists } from "@/lib/queries/core";
 

@@ -5,7 +5,7 @@ import {
   setResponseHeader,
 } from "@tanstack/react-start/server";
 import { notFound } from "@tanstack/react-router";
-import { z } from "zod";
+import * as z from "zod";
 import { $fetchArtists } from "../server/artists";
 import type { PublicUser } from "@/lib/universal/auth";
 import type { FullAccount, PublicCosmo } from "@/lib/universal/cosmo-accounts";
