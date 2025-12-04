@@ -1,7 +1,7 @@
 FROM oven/bun:1.3.3-slim AS pruner
 WORKDIR /app
 COPY . .
-RUN bunx turbo@2.6.1 prune schedules --docker
+RUN bunx turbo@2.6.2 prune schedules --docker
 
 FROM oven/bun:1.3.3-slim AS builder
 WORKDIR /app
