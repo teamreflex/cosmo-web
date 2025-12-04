@@ -18,7 +18,7 @@
     "@effect/cluster": "^0.55.0",
     "@effect/platform": "^0.93.6",
     "@effect/platform-bun": "^0.86.0",
-    "drizzle-orm": "^1.0.0-beta.1-ac4ce44",
+    "drizzle-orm": "1.0.0-beta.1-ac4ce44",
     "effect": "^3.19.8",
     "jose": "^6.1.3"
   },
