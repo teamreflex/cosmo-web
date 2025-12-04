@@ -326,7 +326,7 @@ function OTP({ ticket }: OTPProps) {
               <FormItem>
                 <FormControl>
                   <InputOTP
-                    value={field.value?.toString()}
+                    value={field.value.toString()}
                     onChange={(value) => field.onChange(Number(value))}
                     maxLength={2}
                     pattern={REGEXP_ONLY_DIGITS}

@@ -12,14 +12,14 @@ export class Metadata extends Effect.Service<Metadata>()("app/Metadata", {
     const url = new URL(Redacted.value(config.WEB_DATABASE_URL));
     url.searchParams.set("application_name", "Importer");
 
-    const sql = new SQL({
+    const client = new SQL({
       url: url.toString(),
       max: 2, // only need 1-2 connections for single-threaded app
       idleTimeout: 60, // close idle connections after 1 minute
       maxLifetime: 3600, // recycle connections every hour
       connectionTimeout: 30, // timeout for establishing new connections
     });
-    return drizzle(sql, { relations });
+    return drizzle({ client, relations });
   }),
   dependencies: [],
 }) {}

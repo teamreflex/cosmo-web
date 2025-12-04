@@ -66,6 +66,9 @@
     "db:migrate": {
       "cache": false
     },
+    "db:upgrade": {
+      "cache": false
+    },
     "i18n": {
       "cache": false
     },
