@@ -27,7 +27,7 @@
     "@apollo/typescript": "workspace:*",
     "@effect/build-utils": "^0.8.9",
     "@effect/eslint-plugin": "^0.3.2",
-    "@effect/language-service": "^0.58.4",
+    "@effect/language-service": "^0.59.0",
     "@eslint/compat": "2.0.0",
     "@eslint/eslintrc": "3.3.3",
     "@eslint/js": "9.39.1",

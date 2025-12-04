@@ -13,6 +13,9 @@ export default defineConfig({
   server: {
     port: 3000,
   },
+  ssr: {
+    external: ["bun"],
+  },
   plugins: [
     devtools({
       removeDevtoolsOnBuild: true,
