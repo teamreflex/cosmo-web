@@ -293,11 +293,26 @@ function createResponseHandler(
   asset: InMemoryAsset,
 ): (req: Request) => Response {
   return (req: Request) => {
+    const method = req.method.toUpperCase();
+    if (method !== "GET" && method !== "HEAD") {
+      const errorHeaders: Record<string, string> = {
+        Allow: "GET, HEAD",
+        "Content-Type": "text/plain",
+      };
+      addSecurityHeaders(errorHeaders);
+      return new Response("Method Not Allowed", {
+        status: 405,
+        headers: errorHeaders,
+      });
+    }
+
+    const isHeadRequest = method === "HEAD";
+
     const headers: Record<string, string> = {
       "Content-Type": asset.type,
       "Cache-Control": asset.immutable
-        ? "public, max-age=31536000, immutable"
-        : "public, max-age=3600",
+        ? "public, max-age=31536000, immutable, no-transform"
+        : "public, max-age=3600, no-transform",
       Vary: "Accept-Encoding",
     };
 
@@ -307,7 +322,10 @@ function createResponseHandler(
     if (ENABLE_ETAG && asset.etag) {
       const ifNone = req.headers.get("if-none-match");
       if (ifNone && ifNone.split(",").some((e) => e.trim() === asset.etag)) {
-        const etagHeaders: Record<string, string> = { ETag: asset.etag };
+        const etagHeaders: Record<string, string> = {
+          ETag: asset.etag,
+          Vary: "Accept-Encoding",
+        };
         addSecurityHeaders(etagHeaders);
         return new Response(null, {
           status: 304,
@@ -327,7 +345,7 @@ function createResponseHandler(
     ) {
       headers["Content-Encoding"] = "br";
       headers["Content-Length"] = String(asset.br.byteLength);
-      return new Response(asset.br.buffer, {
+      return new Response(isHeadRequest ? null : asset.br.buffer, {
         status: 200,
         headers,
       });
@@ -340,14 +358,14 @@ function createResponseHandler(
     ) {
       headers["Content-Encoding"] = "gzip";
       headers["Content-Length"] = String(asset.gz.byteLength);
-      return new Response(asset.gz.buffer, {
+      return new Response(isHeadRequest ? null : asset.gz.buffer, {
         status: 200,
         headers,
       });
     }
 
     headers["Content-Length"] = String(asset.raw.byteLength);
-    return new Response(asset.raw.buffer, {
+    return new Response(isHeadRequest ? null : asset.raw.buffer, {
       status: 200,
       headers,
     });
@@ -493,13 +511,29 @@ async function initializeStaticRoutes(
     for (const { filepath, route, metadata } of skipFiles) {
       const headers: Record<string, string> = {
         "Content-Type": metadata.type,
-        "Cache-Control": "public, max-age=3600",
+        "Cache-Control": "public, max-age=3600, no-transform",
+        Vary: "Accept-Encoding",
       };
       addSecurityHeaders(headers);
 
-      routes[route] = () => {
+      routes[route] = (req: Request) => {
+        const method = req.method.toUpperCase();
+        if (method !== "GET" && method !== "HEAD") {
+          const errorHeaders: Record<string, string> = {
+            Allow: "GET, HEAD",
+            "Content-Type": "text/plain",
+          };
+          addSecurityHeaders(errorHeaders);
+          return new Response("Method Not Allowed", {
+            status: 405,
+            headers: errorHeaders,
+          });
+        }
+
         const fileOnDemand = Bun.file(filepath);
-        return new Response(fileOnDemand, { headers });
+        return new Response(method === "HEAD" ? null : fileOnDemand, {
+          headers,
+        });
       };
 
       skipped.push(metadata);
@@ -601,10 +635,41 @@ async function initializeStaticRoutes(
  * Wrap a response with streaming compression if appropriate
  * Uses CompressionStream for gzip (streaming, no buffering required)
  */
-function compressResponse(
-  response: Response,
-  acceptEncoding: string,
-): Response {
+function ensureNoTransform(headers: Headers): void {
+  const cacheControl = headers.get("Cache-Control");
+  if (cacheControl) {
+    if (!/no-transform/i.test(cacheControl)) {
+      headers.set("Cache-Control", `${cacheControl}, no-transform`);
+    }
+    return;
+  }
+  headers.set("Cache-Control", "no-transform");
+}
+
+function compressResponse(response: Response, req: Request): Response {
+  const acceptEncoding = req.headers.get("accept-encoding") || "";
+  const viaCloudflare =
+    req.headers.has("cf-connecting-ip") ||
+    req.headers.has("cf-ray") ||
+    req.headers.has("cf-visitor");
+
+  const headers = new Headers(response.headers);
+  headers.append("Vary", "Accept-Encoding");
+
+  const respond = (body: BodyInit | null) =>
+    new Response(body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers,
+    });
+
+  const isRedirect = response.status >= 300 && response.status < 400;
+  if (isRedirect) {
+    return respond(response.body);
+  }
+
+  ensureNoTransform(headers);
+
   // Skip compression for certain status codes
   if (
     response.status === 204 || // No Content
@@ -612,49 +677,45 @@ function compressResponse(
     response.status < 200 || // Informational
     response.status >= 300 // Redirects and errors with small bodies
   ) {
-    return response;
+    return respond(response.body);
   }
 
   // Skip if already compressed
   if (response.headers.get("content-encoding")) {
-    return response;
+    return respond(response.body);
   }
 
   // Check content type
   const contentType = response.headers.get("content-type") || "";
   if (!isMimeTypeCompressible(contentType)) {
-    return response;
+    return respond(response.body);
   }
 
   // Check if gzip is accepted
-  if (!acceptEncoding.includes("gzip")) {
-    return response;
-  }
-
   // Skip small responses if Content-Length is known
   const contentLength = response.headers.get("content-length");
   if (contentLength && parseInt(contentLength, 10) < COMPRESSION_MIN_BYTES) {
-    return response;
+    return respond(response.body);
   }
 
   // Skip if no body to compress
   if (!response.body) {
-    return response;
+    return respond(response.body);
   }
 
-  // Use streaming compression
-  const headers = new Headers(response.headers);
+  // let cloudflare handle compression to avoid double work
+  if (viaCloudflare) {
+    return respond(response.body);
+  }
+
+  if (!isEncodingAccepted(acceptEncoding, "gzip")) {
+    return respond(response.body);
+  }
+
   headers.set("Content-Encoding", "gzip");
   headers.delete("Content-Length"); // Unknown after compression
 
-  return new Response(
-    response.body.pipeThrough(new CompressionStream("gzip")),
-    {
-      status: response.status,
-      statusText: response.statusText,
-      headers,
-    },
-  );
+  return respond(response.body.pipeThrough(new CompressionStream("gzip")));
 }
 
 /**
@@ -719,8 +780,7 @@ async function initializeServer() {
       "/*": async (req: Request) => {
         try {
           const response = await handler.fetch(req);
-          const acceptEncoding = req.headers.get("accept-encoding") || "";
-          return compressResponse(response, acceptEncoding);
+          return compressResponse(response, req);
         } catch (error) {
           log.error(`Server handler error: ${String(error)}`);
           return new Response("Internal Server Error", { status: 500 });

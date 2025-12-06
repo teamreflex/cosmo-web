@@ -29,10 +29,10 @@
     "@aws-sdk/client-ses": "^3.943.0",
     "@fontsource-variable/dm-sans": "^5.2.8",
     "@hookform/resolvers": "^5.2.2",
-    "@sentry/tanstackstart-react": "^10.28.0",
+    "@sentry/tanstackstart-react": "^10.29.0",
     "@t3-oss/env-core": "^0.13.8",
     "@tabler/icons-react": "^3.35.0",
-    "@tanstack/react-query": "^5.90.11",
+    "@tanstack/react-query": "^5.90.12",
     "@tanstack/react-router": "^1.139.14",
     "@tanstack/react-router-ssr-query": "^1.139.14",
     "@tanstack/react-start": "^1.139.14",
@@ -99,11 +99,10 @@
     "prettier": "^3.7.4",
     "prettier-plugin-tailwindcss": "^0.7.2",
     "tailwindcss": "^4.1.17",
-    "turbo": "^2.6.2",
+    "turbo": "^2.6.3",
     "typescript": "5.9.3",
     "typescript-eslint": "^8.48.1",
-    "vite": "^8.0.0-beta.0",
-    "vite-tsconfig-paths": "^5.1.4"
+    "vite": "^8.0.0-beta.0"
   },
   "prettier": {
     "plugins": [
