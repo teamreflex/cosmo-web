@@ -1,6 +1,7 @@
 import { RedisClient } from "bun";
 import { createServerOnlyFn } from "@tanstack/react-start";
 import { env } from "@/lib/env/server";
+import { recordTiming, timed } from "./timing";
 
 export const redis = new RedisClient(env.REDIS_URL);
 
@@ -14,13 +15,16 @@ export const remember = createServerOnlyFn(
     callback: () => Promise<T>,
   ): Promise<T> => {
     key = key.toLowerCase();
+
+    const cacheStart = performance.now();
     const cached = await redis.get(key);
+    recordTiming(`cache-get:${key}`, performance.now() - cacheStart);
 
     if (cached !== null) {
       return JSON.parse(cached) as T;
     }
 
-    const fresh = await callback();
+    const fresh = await timed(`cache-miss:${key}`, callback);
     redis.setex(key, ttl, JSON.stringify(fresh));
 
     return fresh;

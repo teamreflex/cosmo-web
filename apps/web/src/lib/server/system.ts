@@ -3,32 +3,37 @@ import { subsquidStatus } from "@apollo/database/indexer/schema";
 import { abstract } from "./http";
 import { remember } from "./cache";
 import { indexer } from "./db/indexer";
+import { timed } from "./timing";
 import type { RPCResponse, SystemStatus } from "../universal/system";
 
 /**
  * Fetch the current block height from the indexer.
  */
 const fetchProcessorHeight = createServerOnlyFn(async () => {
-  const [result] = await indexer.select().from(subsquidStatus).limit(1);
-  return result?.height ?? 0;
+  return timed("fetchSystemStatus:fetchProcessorHeight", async () => {
+    const [result] = await indexer.select().from(subsquidStatus).limit(1);
+    return result?.height ?? 0;
+  });
 });
 
 /**
  * Fetch the current block height from the Abstract RPC.
  */
 const fetchChainStatus = createServerOnlyFn(async () => {
-  const blockNumber = await abstract<RPCResponse>("/", {
-    body: {
-      id: 1,
-      jsonrpc: "2.0",
-      method: "eth_blockNumber",
-      params: [],
-    },
-  });
+  return timed("fetchSystemStatus:fetchChainStatus", async () => {
+    const blockNumber = await abstract<RPCResponse>("/", {
+      body: {
+        id: 1,
+        jsonrpc: "2.0",
+        method: "eth_blockNumber",
+        params: [],
+      },
+    });
 
-  return {
-    blockHeight: parseInt(blockNumber.result),
-  };
+    return {
+      blockHeight: parseInt(blockNumber.result),
+    };
+  });
 });
 
 /**

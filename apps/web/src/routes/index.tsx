@@ -15,6 +15,7 @@ import { objektIndexFrontendSchema } from "@/lib/universal/parsers";
 import { objektIndexBlockchainQuery } from "@/lib/queries/objekt-queries";
 import { defineHead } from "@/lib/meta";
 import { m } from "@/i18n/messages";
+import { recordTiming } from "@/lib/server/timing";
 
 export const Route = createFileRoute("/")({
   staleTime: 1000 * 60 * 15, // 15 minutes
@@ -24,23 +25,30 @@ export const Route = createFileRoute("/")({
   pendingComponent: PendingComponent,
   loaderDeps: ({ search }) => ({ searchParams: search }),
   loader: async ({ context, deps }) => {
+    const loaderStart = performance.now();
+
     // prefetch filter data
     context.queryClient.prefetchQuery(filterDataQuery);
 
-    // load required data
-    const [account, selected] = await Promise.all([
-      context.queryClient.ensureQueryData(currentAccountQuery),
-      context.queryClient.ensureQueryData(selectedArtistsQuery),
-      context.queryClient.ensureQueryData(artistsQuery),
-    ]);
+    // reads from cookie, fast
+    const selected =
+      await context.queryClient.ensureQueryData(selectedArtistsQuery);
 
-    // prefetch objekts
+    // kick off objekt index query
     if (!deps.searchParams.search) {
       // prefetch blockchain
       context.queryClient.prefetchInfiniteQuery(
         objektIndexBlockchainQuery(deps.searchParams, selected),
       );
     }
+
+    // load required data
+    const [account] = await Promise.all([
+      context.queryClient.ensureQueryData(currentAccountQuery),
+      context.queryClient.ensureQueryData(artistsQuery),
+    ]);
+
+    recordTiming("index-loader-total", performance.now() - loaderStart);
 
     return { account };
   },

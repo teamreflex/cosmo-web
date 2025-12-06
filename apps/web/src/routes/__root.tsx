@@ -19,11 +19,12 @@ import {
   currentAccountQuery,
   selectedArtistsQuery,
 } from "@/lib/queries/core";
-import { systemStatusQuery } from "@/lib/queries/system";
 import { Button } from "@/components/ui/button";
 import { getLocale } from "@/i18n/runtime";
 import Devtools from "@/components/devtools";
 import { ThemeProvider } from "@/components/theme-provider";
+import { recordTiming } from "@/lib/server/timing";
+import { systemStatusQuery } from "@/lib/queries/system";
 
 interface RouterContext {
   queryClient: QueryClient;
@@ -32,11 +33,14 @@ interface RouterContext {
 export const Route = createRootRouteWithContext<RouterContext>()({
   staleTime: Infinity,
   loader: async ({ context }) => {
+    const loaderStart = performance.now();
+
     context.queryClient.prefetchQuery(currentAccountQuery);
     context.queryClient.prefetchQuery(systemStatusQuery);
     context.queryClient.prefetchQuery(artistsQuery);
-
     await context.queryClient.ensureQueryData(selectedArtistsQuery);
+
+    recordTiming("root-loader-total", performance.now() - loaderStart);
   },
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
