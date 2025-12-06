@@ -74,17 +74,26 @@ function isMimeTypeCompressible(mimeType: string): boolean {
   );
 }
 
-// Bun supports zstd, br, gzip via CompressionStream
-type BunCompressionFormat = "zstd" | "br" | "gzip";
+// Bun's CompressionStream format
+type BunCompressionFormat = "zstd" | "brotli" | "gzip";
+
+// HTTP Accept-Encoding / Content-Encoding values
+type HttpEncoding = "zstd" | "br" | "gzip";
+
+// Map HTTP encoding names to Bun CompressionStream format
+const HTTP_TO_BUN: Record<HttpEncoding, BunCompressionFormat> = {
+  zstd: "zstd",
+  br: "brotli",
+  gzip: "gzip",
+};
 
 /**
  * Select best compression encoding from Accept-Encoding header
  * Priority: zstd > br > gzip > none
+ * Returns the HTTP encoding name (for Content-Encoding header)
  */
-function selectBestEncoding(
-  acceptEncoding: string,
-): BunCompressionFormat | null {
-  const SUPPORTED: BunCompressionFormat[] = ["zstd", "br", "gzip"];
+function selectBestEncoding(acceptEncoding: string): HttpEncoding | null {
+  const SUPPORTED: HttpEncoding[] = ["zstd", "br", "gzip"];
   const encodings = acceptEncoding
     .split(",")
     .map((value) => {
@@ -113,7 +122,7 @@ function selectBestEncoding(
     }
   }
 
-  let best: BunCompressionFormat | null = null;
+  let best: HttpEncoding | null = null;
   let bestQ = 0;
 
   for (const encoding of SUPPORTED) {
@@ -169,10 +178,12 @@ function createStaticHandler(
           return new Response(null, { headers });
         }
 
-        // Bun's CompressionStream supports zstd, br, gzip
+        // Bun's CompressionStream supports zstd, brotli, gzip
         const stream = file
           .stream()
-          .pipeThrough(new CompressionStream(encoding as CompressionFormat));
+          .pipeThrough(
+            new CompressionStream(HTTP_TO_BUN[encoding] as CompressionFormat),
+          );
         return new Response(stream, { headers });
       }
     }
@@ -280,7 +291,7 @@ function compressResponse(response: Response, req: Request): Response {
     return respond(response.body);
   }
 
-  // Compress (Bun's CompressionStream supports zstd, br, gzip)
+  // Compress (Bun's CompressionStream supports zstd, brotli, gzip)
   // Note: We can't skip small responses since streams lack Content-Length
   ensureNoTransform(headers);
   headers.set("Content-Encoding", encoding);
@@ -288,7 +299,7 @@ function compressResponse(response: Response, req: Request): Response {
 
   return respond(
     response.body.pipeThrough(
-      new CompressionStream(encoding as CompressionFormat),
+      new CompressionStream(HTTP_TO_BUN[encoding] as CompressionFormat),
     ),
   );
 }
