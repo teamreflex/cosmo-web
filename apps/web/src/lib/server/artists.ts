@@ -18,7 +18,7 @@ export const $fetchArtists = createServerFn({ method: "GET" }).handler(
   async () => {
     setResponseHeaders(new Headers(cacheHeaders({ cdn: 60 * 60 })));
 
-    return await remember(cacheKey, 60 * 24, async () => {
+    return await remember(cacheKey, 60 * 60 * 24, async () => {
       const { accessToken } = await getProxiedToken();
       const artists = await fetchArtists(accessToken);
       const withMembers = await Promise.all(

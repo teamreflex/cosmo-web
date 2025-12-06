@@ -20,6 +20,7 @@ import type { PublicUser } from "../universal/auth";
 import * as serverEnv from "@/lib/env/server";
 import * as clientEnv from "@/lib/env/client";
 import { baseUrl } from "@/lib/utils";
+import { redis } from "./cache";
 
 export const IP_HEADER = "cf-connecting-ip";
 
@@ -45,6 +46,37 @@ export const auth = betterAuth({
     }),
     tanstackStartCookies(),
   ],
+
+  secondaryStorage: {
+    get: async (key) => {
+      return await redis.get(key);
+    },
+    set: async (key, value, ttl) => {
+      if (ttl) {
+        await redis.setex(key, ttl, value);
+      } else {
+        await redis.set(key, value);
+      }
+    },
+    delete: async (key) => {
+      await redis.del(key);
+    },
+  },
+
+  /**
+   * Enable session caching in cookies.
+   */
+  session: {
+    cookieCache: {
+      enabled: true,
+      maxAge: 60 * 5, // 5 minutes
+      refreshCache: {
+        updateAge: 60, // refresh 60 seconds before expiry
+      },
+      strategy: "compact",
+      version: "1",
+    },
+  },
 
   /**
    * Ensure IP address logging uses the correct header.

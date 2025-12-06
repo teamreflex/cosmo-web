@@ -38,7 +38,7 @@ const fetchChainStatus = createServerOnlyFn(async () => {
  * - more than 3600 blocks / 60 minutes: down
  */
 export const $fetchSystemStatus = createServerFn().handler(async () => {
-  return await remember(`system-status`, 60, async () => {
+  return await remember(`system-status`, 60 * 5, async () => {
     const [{ blockHeight }, processorHeight] = await Promise.all([
       fetchChainStatus(),
       fetchProcessorHeight(),
