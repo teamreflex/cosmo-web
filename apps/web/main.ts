@@ -354,21 +354,39 @@ async function initializeServer() {
         try {
           const start = performance.now();
           const response = await handler.fetch(req);
-          const duration = performance.now() - start;
+          const headersReady = performance.now() - start;
 
-          // Log timing for document requests (not assets/api)
+          // Check if this is a document request
           const url = new URL(req.url);
           const isDocument =
             !url.pathname.startsWith("/api/") &&
             !url.pathname.includes(".") &&
             req.headers.get("accept")?.includes("text/html");
-          if (isDocument) {
+
+          if (isDocument && response.body) {
+            // Buffer the streaming response to measure full render time
+            const body = await response.arrayBuffer();
+            const fullRender = performance.now() - start;
+            const size = (body.byteLength / 1024).toFixed(1);
+
             console.log(
-              `[timing] ssr-total: ${duration.toFixed(1)}ms (${url.pathname})`,
+              `[timing] ssr-headers: ${headersReady.toFixed(1)}ms, ssr-body: ${fullRender.toFixed(1)}ms, size: ${size}KB (${url.pathname})`,
             );
+
+            // Create new response with buffered body
+            const bufferedResponse = new Response(body, {
+              status: response.status,
+              statusText: response.statusText,
+              headers: response.headers,
+            });
+
+            if (ENABLE_DYNAMIC_COMPRESSION) {
+              return compressResponse(bufferedResponse, req);
+            }
+            return applySecurityHeadersToResponse(bufferedResponse);
           }
 
-          // Compress dynamic responses if enabled
+          // Non-document requests (API, etc.)
           if (ENABLE_DYNAMIC_COMPRESSION) {
             return compressResponse(response, req);
           }
