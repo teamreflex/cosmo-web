@@ -352,7 +352,21 @@ async function initializeServer() {
       // Fallback to TanStack Start
       "/*": async (req: Request) => {
         try {
+          const start = performance.now();
           const response = await handler.fetch(req);
+          const duration = performance.now() - start;
+
+          // Log timing for document requests (not assets/api)
+          const url = new URL(req.url);
+          const isDocument =
+            !url.pathname.startsWith("/api/") &&
+            !url.pathname.includes(".") &&
+            req.headers.get("accept")?.includes("text/html");
+          if (isDocument) {
+            console.log(
+              `[timing] ssr-total: ${duration.toFixed(1)}ms (${url.pathname})`,
+            );
+          }
 
           // Compress dynamic responses if enabled
           if (ENABLE_DYNAMIC_COMPRESSION) {
