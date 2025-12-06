@@ -1,5 +1,4 @@
 import {
-  useBlockNumber,
   useClient,
   useReadContracts,
   useWatchContractEvent,
@@ -25,8 +24,6 @@ import governorAbi from "@/abi/governor";
 
 // chain to connect to
 const chainId = abstract.id;
-// abstract's average block time
-const AVG_BLOCK_TIME = 1.028;
 // polling interval in ms
 const POLLING_INTERVAL = 2500;
 
@@ -56,32 +53,26 @@ export function useCurrentDate() {
 }
 
 /**
- * Fetch the start block for a given poll.
+ * Get the start block from the first vote in the poll.
+ * Returns null if there are no votes yet.
  */
-function useStartBlock(startDate: string) {
-  const { data: currentBlock } = useBlockNumber({
-    watch: false,
-    cacheTime: Infinity,
-    query: {
-      enabled: (query) => query.state.data === undefined,
-    },
-  });
+function useStartBlock(pollId: number) {
+  const { data: votes } = useGravityVotes(pollId);
 
-  /**
-   * Estimate the start block based on average block time.
-   * Generally gets within ~15 minutes, so substract 2k blocks to be safe.
-   */
   const startBlock = useMemo(() => {
-    if (!currentBlock) {
+    if (votes.length === 0) {
       return null;
     }
 
-    const startTimestamp = new Date(startDate).getTime();
-    const diff = (Date.now() - startTimestamp) / 1000;
-    const blocksSinceStart = Math.floor(diff / AVG_BLOCK_TIME);
-    const estimatedStartBlock = Number(currentBlock) - blocksSinceStart;
-    return estimatedStartBlock - 2000;
-  }, [currentBlock, startDate]);
+    // Find the vote with the lowest block number
+    const firstVote = votes.reduce((min, vote) =>
+      vote.blockNumber < min.blockNumber ? vote : min,
+    );
+
+    // Return the block number of the first vote
+    // Subtract a small buffer to ensure we don't miss the event
+    return firstVote.blockNumber - 10;
+  }, [votes]);
 
   return startBlock;
 }
@@ -163,12 +154,11 @@ function useEndBlock(
  * Find the start and finalized blocks for a given poll.
  */
 function useBlockStatus({
-  startDate,
   endDate,
   now,
   ...params
 }: UseChainDataOptions): UseBlockStatus {
-  const startBlock = useStartBlock(startDate);
+  const startBlock = useStartBlock(Number(params.pollId));
   const endQuery = useEndBlock(params, startBlock, endDate, now);
 
   if (startBlock === null || endQuery.isPending) {

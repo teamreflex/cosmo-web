@@ -86,4 +86,6 @@ export const votes = pgTable("vote", {
   contract: varchar("contract", { length: 42 }).notNull(),
   pollId: integer("poll_id").notNull(),
   amount: bigint("amount", { mode: "number" }).notNull(),
+  blockNumber: integer("block_number").notNull(),
+  hash: text("hash").notNull(),
 });
