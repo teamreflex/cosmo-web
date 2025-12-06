@@ -36,4 +36,11 @@ export class Vote {
     nullable: false,
   })
   amount!: bigint;
+
+  @Index()
+  @Column("int4", { nullable: true })
+  blockNumber!: number;
+
+  @Column("text", { nullable: true })
+  hash!: string;
 }

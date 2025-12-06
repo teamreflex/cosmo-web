@@ -95,25 +95,6 @@ processor.run(db, async (ctx) => {
       );
       await handleTransferabilityUpdates(ctx, transferability);
     }
-  }
-
-  if (env.ENABLE_GRAVITY) {
-    // #region votes
-    const voteBatch: Vote[] = [];
-
-    if (votes.length > 0) {
-      ctx.log.info(`Processing ${votes.length} gravity votes`);
-    }
-
-    for (const event of votes) {
-      const vote = await handleVoteCreation(event);
-      voteBatch.push(vote);
-    }
-
-    if (voteBatch.length > 0) {
-      await ctx.store.upsert(voteBatch);
-    }
-    // #endregion
 
     // #region como balance updates
     if (comoBalanceUpdates.length > 0) {
@@ -143,6 +124,25 @@ processor.run(db, async (ctx) => {
         await ctx.store.upsert(Array.from(comoBalanceBatch.values()));
       }
     });
+    // #endregion
+  }
+
+  if (env.ENABLE_GRAVITY) {
+    // #region votes
+    const voteBatch: Vote[] = [];
+
+    if (votes.length > 0) {
+      ctx.log.info(`Processing ${votes.length} gravity votes`);
+    }
+
+    for (const event of votes) {
+      const vote = await handleVoteCreation(event);
+      voteBatch.push(vote);
+    }
+
+    if (voteBatch.length > 0) {
+      await ctx.store.upsert(voteBatch);
+    }
     // #endregion
   }
 });
@@ -350,5 +350,7 @@ async function handleVoteCreation(event: VoteEvent) {
     contract: event.contract,
     pollId: event.pollId,
     amount: event.tokenAmount,
+    blockNumber: event.blockNumber,
+    hash: event.hash,
   });
 }

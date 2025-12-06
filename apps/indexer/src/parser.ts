@@ -179,6 +179,7 @@ export type VoteEvent = {
   contract: string;
   pollId: number;
   tokenAmount: bigint;
+  blockNumber: number;
 };
 
 /**
@@ -196,6 +197,7 @@ export function parseVote(log: Log): VoteEvent | undefined {
       contract: addr(log.address),
       pollId: Number(event.pollId),
       tokenAmount: event.tokenAmount,
+      blockNumber: log.block.height,
     };
   } catch (err) {
     return undefined;
