@@ -7,7 +7,6 @@ import {
 import { notFound } from "@tanstack/react-router";
 import * as z from "zod";
 import { $fetchArtists } from "../server/artists";
-import { timed } from "@/lib/server/timing";
 import type { PublicUser } from "@/lib/universal/auth";
 import type { FullAccount, PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import type { ObjektList } from "@/lib/server/db/schema";
@@ -83,12 +82,10 @@ type GetAccount = {
  */
 export const $fetchCurrentAccount = createServerFn({ method: "GET" }).handler(
   async (): Promise<GetAccount | null> => {
-    const session = await timed("fetchCurrentAccount:getSession", () =>
-      auth.api.getSession({
-        headers: getRequestHeaders(),
-        returnHeaders: true,
-      }),
-    );
+    const session = await auth.api.getSession({
+      headers: getRequestHeaders(),
+      returnHeaders: true,
+    });
 
     // not signed in
     if (!session.response) {
@@ -101,16 +98,13 @@ export const $fetchCurrentAccount = createServerFn({ method: "GET" }).handler(
       setResponseHeader("Set-Cookie", cookies);
     }
 
-    const userId = session.response.session.userId;
-    const result = await timed("fetchCurrentAccount:findUser", () =>
-      db.query.user.findFirst({
-        where: { id: userId },
-        with: {
-          cosmoAccount: true,
-          objektLists: true,
-        },
-      }),
-    );
+    const result = await db.query.user.findFirst({
+      where: { id: session.response.session.userId },
+      with: {
+        cosmoAccount: true,
+        objektLists: true,
+      },
+    });
 
     // broken user account
     if (!result) {
