@@ -8,8 +8,8 @@
  *   - Default: false (Cloudflare handles compression)
  *   - Set to "true" to compress dynamic responses at the origin
  *
- * Note: Static assets are streamed from disk with best available compression
- * (zstd > br > gzip). Cloudflare caches responses, Vite hashes filenames.
+ * Note: Static assets are streamed from disk with gzip compression.
+ * Cloudflare caches responses, Vite hashes filenames.
  */
 
 import path from "node:path";
@@ -74,66 +74,22 @@ function isMimeTypeCompressible(mimeType: string): boolean {
   );
 }
 
-// Bun's CompressionStream format
-type BunCompressionFormat = "zstd" | "brotli" | "gzip";
-
-// HTTP Accept-Encoding / Content-Encoding values
-type HttpEncoding = "zstd" | "br" | "gzip";
-
-// Map HTTP encoding names to Bun CompressionStream format
-const HTTP_TO_BUN: Record<HttpEncoding, BunCompressionFormat> = {
-  zstd: "zstd",
-  br: "brotli",
-  gzip: "gzip",
-};
-
 /**
- * Select best compression encoding from Accept-Encoding header
- * Priority: zstd > br > gzip > none
- * Returns the HTTP encoding name (for Content-Encoding header)
+ * Check if gzip is accepted in Accept-Encoding header
  */
-function selectBestEncoding(acceptEncoding: string): HttpEncoding | null {
-  const SUPPORTED: HttpEncoding[] = ["zstd", "br", "gzip"];
-  const encodings = acceptEncoding
-    .split(",")
-    .map((value) => {
-      const [namePart = "", ...params] = value.trim().split(";");
-      const name = namePart.trim().toLowerCase();
-      const qParam = params.find((p) => p.trim().startsWith("q="));
-      const parsedQ = qParam ? parseFloat(qParam.trim().slice(2)) : 1;
-      const q =
-        Number.isFinite(parsedQ) && parsedQ >= 0 ? Math.min(parsedQ, 1) : 0;
-      return { name, q };
-    })
-    .filter((entry) => entry.name.length > 0);
-
-  let wildcardQ: number | null = null;
-  const qualityByName = new Map<string, number>();
+function acceptsGzip(acceptEncoding: string): boolean {
+  const encodings = acceptEncoding.split(",").map((e) => {
+    const [name, ...params] = e.trim().split(";");
+    const qParam = params.find((p) => p.trim().startsWith("q="));
+    const q = qParam ? parseFloat(qParam.trim().slice(2)) : 1;
+    return { name: name?.trim().toLowerCase(), q };
+  });
 
   for (const { name, q } of encodings) {
     if (q <= 0) continue;
-    if (name === "*") {
-      wildcardQ = Math.max(wildcardQ ?? 0, q);
-      continue;
-    }
-    const current = qualityByName.get(name) ?? 0;
-    if (q > current) {
-      qualityByName.set(name, q);
-    }
+    if (name === "gzip" || name === "*") return true;
   }
-
-  let best: HttpEncoding | null = null;
-  let bestQ = 0;
-
-  for (const encoding of SUPPORTED) {
-    const q = qualityByName.get(encoding) ?? wildcardQ ?? 0;
-    if (q > bestQ) {
-      best = encoding;
-      bestQ = q;
-    }
-  }
-
-  return bestQ > 0 ? best : null;
+  return false;
 }
 
 /**
@@ -162,34 +118,26 @@ function createStaticHandler(
     addSecurityHeaders(headers);
 
     const file = Bun.file(filepath);
-    const isHead = method === "HEAD";
 
-    // Check if we should compress
+    if (method === "HEAD") {
+      return new Response(null, { headers });
+    }
+
+    // Compress with gzip if supported
     if (isMimeTypeCompressible(mimeType)) {
       const acceptEncoding = req.headers.get("accept-encoding") || "";
-      const encoding = selectBestEncoding(acceptEncoding);
 
-      if (encoding) {
-        headers.set("Content-Encoding", encoding);
+      if (acceptsGzip(acceptEncoding)) {
+        headers.set("Content-Encoding", "gzip");
         ensureNoTransform(headers);
         headers.delete("Content-Length");
 
-        if (isHead) {
-          return new Response(null, { headers });
-        }
-
-        // Bun's CompressionStream supports zstd, brotli, gzip
-        const stream = file
-          .stream()
-          .pipeThrough(
-            new CompressionStream(HTTP_TO_BUN[encoding] as CompressionFormat),
-          );
+        const stream = file.stream().pipeThrough(new CompressionStream("gzip"));
         return new Response(stream, { headers });
       }
     }
 
-    // No compression
-    return new Response(isHead ? null : file, { headers });
+    return new Response(file, { headers });
   };
 }
 
@@ -234,28 +182,16 @@ function ensureNoTransform(headers: Headers): void {
 }
 
 /**
- * Apply security headers to an existing response
- */
-function applySecurityHeadersToResponse(response: Response): Response {
-  const headers = new Headers(response.headers);
-  addSecurityHeaders(headers);
-
-  return new Response(response.body, {
-    status: response.status,
-    statusText: response.statusText,
-    headers,
-  });
-}
-
-/**
- * Optionally compress dynamic responses
+ * Optionally compress dynamic responses with gzip.
+ * Note: Only gzip is used because Bun's brotli/zstd CompressionStream
+ * implementations buffer the entire response, breaking SSR streaming.
  */
 function compressResponse(response: Response, req: Request): Response {
   const headers = new Headers(response.headers);
   headers.append("Vary", "Accept-Encoding");
   addSecurityHeaders(headers);
 
-  const respond = (body: BodyInit | null) =>
+  const respond = (body: RequestInit["body"] | null) =>
     new Response(body, {
       status: response.status,
       statusText: response.statusText,
@@ -279,29 +215,18 @@ function compressResponse(response: Response, req: Request): Response {
     return respond(response.body);
   }
 
-  // Skip if no body
-  if (!response.body) {
-    return respond(response.body);
-  }
-
-  // Select best encoding
+  // Skip if no body or gzip not accepted
   const acceptEncoding = req.headers.get("accept-encoding") || "";
-  const encoding = selectBestEncoding(acceptEncoding);
-  if (!encoding) {
+  if (!response.body || !acceptsGzip(acceptEncoding)) {
     return respond(response.body);
   }
 
-  // Compress (Bun's CompressionStream supports zstd, brotli, gzip)
-  // Note: We can't skip small responses since streams lack Content-Length
+  // Compress with gzip (the only encoding that streams properly in Bun)
   ensureNoTransform(headers);
-  headers.set("Content-Encoding", encoding);
+  headers.set("Content-Encoding", "gzip");
   headers.delete("Content-Length");
 
-  return respond(
-    response.body.pipeThrough(
-      new CompressionStream(HTTP_TO_BUN[encoding] as CompressionFormat),
-    ),
-  );
+  return respond(response.body.pipeThrough(new CompressionStream("gzip")));
 }
 
 type FetchHandler = {
@@ -352,28 +277,13 @@ async function initializeServer() {
       // Fallback to TanStack Start
       "/*": async (req: Request) => {
         try {
-          const start = performance.now();
           const response = await handler.fetch(req);
-          const duration = performance.now() - start;
-
-          // Log timing for document requests
-          const url = new URL(req.url);
-          const isDocument =
-            !url.pathname.startsWith("/api/") &&
-            !url.pathname.includes(".") &&
-            req.headers.get("accept")?.includes("text/html");
-
-          if (isDocument) {
-            console.log(
-              `[timing] ssr ttfb: ${duration.toFixed(1)}ms (${url.pathname})`,
-            );
-          }
 
           if (ENABLE_DYNAMIC_COMPRESSION) {
             return compressResponse(response, req);
           }
 
-          return applySecurityHeadersToResponse(response);
+          return response;
         } catch (error) {
           log.error(`Handler error: ${String(error)}`);
           const headers = new Headers({

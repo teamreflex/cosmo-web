@@ -1,6 +1,8 @@
 {
   "extends": "@apollo/typescript/tsconfig.bun.json",
 
+  "references": [{ "path": "./tsconfig.bun.json" }],
+
   "include": ["**/*.ts", "**/*.tsx", "vite.config.mts", "eslint.config.ts"],
   "exclude": [
     "node_modules",
@@ -12,7 +14,8 @@
     ".vercel",
     "project.inlang",
     "src/i18n/**/*.js",
-    "src/routeTree.gen.ts"
+    "src/routeTree.gen.ts",
+    "main.ts"
   ],
 
   "compilerOptions": {

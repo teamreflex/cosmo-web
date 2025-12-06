@@ -15,12 +15,12 @@ import {
 } from "./mail";
 import { cosmoAccounts } from "./db/schema";
 import { db } from "./db";
+import { redis } from "./cache";
 import type { CollectionDataSource } from "@apollo/util";
 import type { PublicUser } from "../universal/auth";
 import * as serverEnv from "@/lib/env/server";
 import * as clientEnv from "@/lib/env/client";
 import { baseUrl } from "@/lib/utils";
-import { redis } from "./cache";
 
 export const IP_HEADER = "cf-connecting-ip";
 

@@ -10,7 +10,6 @@ url.searchParams.set("application_name", "apollo.cafe");
 const client = new SQL({
   url: url.toString(),
   max: 20, // handle concurrent traffic with headroom
-  idleTimeout: 30, // close idle connections quickly
   maxLifetime: 3600, // recycle connections every hour to prevent memory accumulation
   connectionTimeout: 10, // fail fast if DB is overloaded
 });
