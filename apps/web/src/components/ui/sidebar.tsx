@@ -1,3 +1,4 @@
+import { useEffectEvent } from "react";
 import * as React from "react";
 import { Slot as Slot } from "radix-ui";
 import { cva } from "class-variance-authority";
@@ -90,21 +91,22 @@ function SidebarProvider({
       : setOpen((state) => !state);
   }, [isDesktop, setOpen, setOpenMobile]);
 
+  // Keyboard shortcut handler - always sees latest toggleSidebar
+  const handleKeyDown = useEffectEvent((event: KeyboardEvent) => {
+    if (
+      event.key === SIDEBAR_KEYBOARD_SHORTCUT &&
+      (event.metaKey || event.ctrlKey)
+    ) {
+      event.preventDefault();
+      toggleSidebar();
+    }
+  });
+
   // Adds a keyboard shortcut to toggle the sidebar.
   React.useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (
-        event.key === SIDEBAR_KEYBOARD_SHORTCUT &&
-        (event.metaKey || event.ctrlKey)
-      ) {
-        event.preventDefault();
-        toggleSidebar();
-      }
-    };
-
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [toggleSidebar]);
+  }, []);
 
   // We add a state so that we can do data-state="expanded" or "collapsed".
   // This makes it easier to style the sidebar with Tailwind classes.

@@ -2,8 +2,8 @@ import { ScriptOnce } from "@tanstack/react-router";
 import {
   createContext,
   use,
-  useCallback,
   useEffect,
+  useEffectEvent,
   useMemo,
   useState,
 } from "react";
@@ -45,7 +45,7 @@ export function ThemeProvider({
         : null) || defaultTheme,
   );
 
-  const handleMediaQuery = useCallback(
+  const handleMediaQuery = useEffectEvent(
     (e: MediaQueryListEvent | MediaQueryList) => {
       if (theme !== "system") return;
       const root = window.document.documentElement;
@@ -55,7 +55,6 @@ export function ThemeProvider({
         root.classList.add(targetTheme);
       }
     },
-    [theme],
   );
 
   // Listen for system preference changes
@@ -66,7 +65,7 @@ export function ThemeProvider({
     handleMediaQuery(media);
 
     return () => media.removeEventListener("change", handleMediaQuery);
-  }, [handleMediaQuery]);
+  }, []);
 
   useEffect(() => {
     const root = window.document.documentElement;

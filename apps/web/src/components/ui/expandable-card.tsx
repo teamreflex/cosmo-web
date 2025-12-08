@@ -5,6 +5,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useEffectEvent,
   useRef,
   useState,
 } from "react";
@@ -21,8 +22,9 @@ import type { ComponentProps, RefObject } from "react";
 import { cn } from "@/lib/utils";
 
 interface ExpandableCardProps extends ComponentProps<typeof Card> {}
-interface ExpandableCardContentProps
-  extends ComponentProps<typeof CardContent> {}
+interface ExpandableCardContentProps extends ComponentProps<
+  typeof CardContent
+> {}
 interface ExpandableCardContextType {
   isExpanded: boolean;
   isOverflowing: boolean;
@@ -93,12 +95,14 @@ function ExpandableCard({
     };
   }, [measureOverflow, children]);
 
+  // Resize handler - always sees latest measureOverflow
+  const handleResize = useEffectEvent(() => measureOverflow());
+
   // re-measure on window resize
   useEffect(() => {
-    const handleResize = () => measureOverflow();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, [measureOverflow]);
+  }, []);
 
   const contextValue: ExpandableCardContextType = {
     isExpanded,
