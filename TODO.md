@@ -14,7 +14,7 @@
   - [x] objekt list update
   - [x] objekt list delete
 - [ ] do something with the grid detection code
-- [ ] fix drawer issues & iOS 26 quirks
+- [x] fix drawer issues & iOS 26 quirks
 - [x] refactor cron jobs
 - [x] confirm deployment on railway works
 - [x] import db from neon

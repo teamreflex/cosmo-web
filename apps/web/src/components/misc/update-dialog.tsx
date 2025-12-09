@@ -88,6 +88,8 @@ const updates = [
       "Added translations with preliminary support for Korean.",
       "Updated the design of the artist/member filter to better accomodate additional artists.",
       "Moved the about dialog to the user dropdown, now the logo links to the objekts page.",
+      "Fixed jank objekt popups on mobile, including drag-to-close not working.",
+      "Fixed past gravity events showing as live instead of completed.",
     ],
   },
 ];
