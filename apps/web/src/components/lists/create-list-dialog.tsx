@@ -4,6 +4,7 @@ import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useForm, useFormState } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { useRouter } from "@tanstack/react-router";
 import { Button } from "../ui/button";
 import {
   Dialog,
@@ -35,6 +36,7 @@ type Props = {
 };
 
 export default function CreateListDialog(props: Props) {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const mutationFn = useServerFn($createObjektList);
   const mutation = useMutation({
@@ -64,6 +66,15 @@ export default function CreateListDialog(props: Props) {
           },
         );
       }
+
+      // refresh the loader
+      router.invalidate({
+        filter: (route) =>
+          route.routeId === "/" ||
+          (props.username !== undefined &&
+            route.pathname === `/@${props.username}`),
+      });
+
       props.onOpenChange(false);
     },
   });

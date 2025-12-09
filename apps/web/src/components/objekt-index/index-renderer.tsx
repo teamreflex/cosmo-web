@@ -1,9 +1,12 @@
-import ListDropdown from "../lists/list-dropdown";
+import { Suspense } from "react";
+import { List } from "lucide-react";
 import CosmoMemberFilter from "../objekt/cosmo-member-filter";
 import FiltersContainer from "../collection/filters-container";
 import VirtualizedObjektGrid from "../objekt/virtualized-objekt-grid";
 import ObjektIndexFilters from "../collection/filter-contexts/objekt-index-filters";
 import RoutedExpandableObjekt from "../objekt/objekt-routed";
+import IndexListDropdown from "../lists/index-list-dropdown";
+import { Button } from "../ui/button";
 import HelpDialog from "./help-dialog";
 import { IndexGridItem } from "./index-grid-item";
 import type { ObjektList } from "@/lib/server/db/schema";
@@ -25,7 +28,7 @@ export default function IndexRenderer(props: Props) {
 
   return (
     <div className="flex flex-col">
-      <Title objektLists={props.objektLists} />
+      <Title />
 
       <FiltersContainer>
         <ObjektIndexFilters search />
@@ -51,7 +54,7 @@ export default function IndexRenderer(props: Props) {
   );
 }
 
-function Title(props: { objektLists: ObjektList[] }) {
+function Title() {
   return (
     <div className="flex w-full items-center gap-2 pb-1">
       <h1 className="font-cosmo text-2xl uppercase md:text-3xl">
@@ -62,28 +65,24 @@ function Title(props: { objektLists: ObjektList[] }) {
       <div className="flex items-center gap-2 last:ml-auto">
         <div className="min-w-24 text-right" id="objekt-total" />
 
-        <Options objektLists={props.objektLists} />
+        <div className="flex items-center gap-2">
+          <Suspense
+            fallback={
+              <Button
+                className="animate-pulse"
+                variant="secondary"
+                size="profile"
+                data-profile
+              >
+                <List className="h-5 w-5" />
+                <span className="hidden sm:block">{m.list_lists()}</span>
+              </Button>
+            }
+          >
+            <IndexListDropdown />
+          </Suspense>
+        </div>
       </div>
-    </div>
-  );
-}
-
-function Options(props: { objektLists: ObjektList[] }) {
-  const { user, cosmo } = useUserState();
-
-  if (!user) return null;
-
-  function createListUrl(list: ObjektList) {
-    return cosmo ? `/@${cosmo.username}/list/${list.slug}` : `/list/${list.id}`;
-  }
-
-  return (
-    <div className="flex items-center gap-2">
-      <ListDropdown
-        objektLists={props.objektLists}
-        allowCreate={true}
-        createListUrl={createListUrl}
-      />
     </div>
   );
 }

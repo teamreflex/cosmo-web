@@ -2,6 +2,7 @@ import { Loader2, Trash } from "lucide-react";
 import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { useRouter } from "@tanstack/react-router";
 import { Button } from "../ui/button";
 import { $deleteObjektList } from "./actions";
 import type { MouseEvent } from "react";
@@ -26,7 +27,9 @@ type Props = {
 };
 
 export default function DeleteList({ objektList }: Props) {
+  const router = useRouter();
   const target = useProfileContext((ctx) => ctx.target);
+  const removeObjektList = useProfileContext((state) => state.removeObjektList);
   const queryClient = useQueryClient();
   const mutationFn = useServerFn($deleteObjektList);
   const mutation = useMutation({
@@ -47,6 +50,7 @@ export default function DeleteList({ objektList }: Props) {
 
       // remove list from target account query if it exists
       if (target?.cosmo?.username) {
+        removeObjektList(objektList.id);
         queryClient.setQueryData(
           targetAccountQuery(target.cosmo.username).queryKey,
           (old) => {
@@ -60,6 +64,14 @@ export default function DeleteList({ objektList }: Props) {
           },
         );
       }
+
+      // refresh the loader
+      router.invalidate({
+        filter: (route) =>
+          route.routeId === "/" ||
+          (target?.cosmo?.username !== undefined &&
+            route.pathname === `/@${target.cosmo.username}`),
+      });
     },
   });
 

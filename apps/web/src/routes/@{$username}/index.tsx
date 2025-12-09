@@ -11,7 +11,6 @@ import {
   selectedArtistsQuery,
   targetAccountQuery,
 } from "@/lib/queries/core";
-import { UserStateProvider } from "@/hooks/use-user-state";
 import { ProfileProvider } from "@/hooks/use-profile";
 import ProfileRenderer from "@/components/profile/profile-renderer";
 import { pinsQuery } from "@/lib/queries/profile";
@@ -62,7 +61,7 @@ export const Route = createFileRoute("/@{$username}/")({
       );
     }
 
-    return { account, target, pins };
+    return { target, pins };
   },
   head: ({ loaderData }) =>
     defineHead({
@@ -76,21 +75,20 @@ export const Route = createFileRoute("/@{$username}/")({
 });
 
 function RouteComponent() {
-  const { account, target, pins } = Route.useLoaderData();
+  const { target, pins } = Route.useLoaderData();
 
   return (
-    <UserStateProvider {...account}>
-      <ProfileProvider
-        target={target}
-        pins={target.user ? pins : []}
-        lockedObjekts={target.user ? target.lockedObjekts : []}
-        objektLists={target.objektLists}
-      >
-        <section className="flex flex-col">
-          <ProfileRenderer targetCosmo={target.cosmo} />
-        </section>
-      </ProfileProvider>
-    </UserStateProvider>
+    <ProfileProvider
+      key={target.cosmo.address}
+      target={target}
+      pins={target.user ? pins : []}
+      lockedObjekts={target.user ? target.lockedObjekts : []}
+      objektLists={target.objektLists}
+    >
+      <section className="flex flex-col">
+        <ProfileRenderer targetCosmo={target.cosmo} />
+      </section>
+    </ProfileProvider>
   );
 }
 

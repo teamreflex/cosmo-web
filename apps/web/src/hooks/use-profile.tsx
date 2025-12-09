@@ -19,6 +19,8 @@ interface ProfileState extends ProfileProps {
   toggleLock: (tokenId: number) => void;
   addPin: (objekt: CosmoObjekt) => void;
   removePin: (tokenId: number) => void;
+  addObjektList: (list: ObjektList) => void;
+  removeObjektList: (listId: string) => void;
 }
 
 type ProfileStore = ReturnType<typeof createProfileStore>;
@@ -62,6 +64,24 @@ const createProfileStore = (initProps?: Partial<ProfileProps>) => {
       set((state) => ({
         ...state,
         pins: state.pins.filter((p) => p.tokenId !== tokenId.toString()),
+      })),
+
+    /**
+     * Add an objekt list
+     */
+    addObjektList: (list: ObjektList) =>
+      set((state) => ({
+        ...state,
+        objektLists: [...state.objektLists, list],
+      })),
+
+    /**
+     * Remove an objekt list
+     */
+    removeObjektList: (listId: string) =>
+      set((state) => ({
+        ...state,
+        objektLists: state.objektLists.filter((l) => l.id !== listId),
       })),
   }));
 };
