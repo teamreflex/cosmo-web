@@ -5,6 +5,7 @@ export const env = createEnv({
   server: {
     // postgres database
     DATABASE_URL: z.url(),
+    DATABASE_URL_UNPOOLED: z.url(),
     // indexer database
     INDEXER_DATABASE_URL: z.url(),
     // redis
@@ -32,6 +33,7 @@ export const env = createEnv({
   },
   runtimeEnv: {
     DATABASE_URL: process.env.DATABASE_URL,
+    DATABASE_URL_UNPOOLED: process.env.DATABASE_URL_UNPOOLED,
     INDEXER_DATABASE_URL: process.env.INDEXER_DATABASE_URL,
     REDIS_URL: process.env.REDIS_URL,
     AUTH_KEY: process.env.AUTH_KEY,

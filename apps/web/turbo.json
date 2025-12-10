@@ -9,6 +9,7 @@
         "PORT",
         "ENABLE_DYNAMIC_COMPRESSION",
         "DATABASE_URL",
+        "DATABASE_URL_UNPOOLED",
         "INDEXER_DATABASE_URL",
         "AUTH_KEY",
         "ABSTRACT_RPC",

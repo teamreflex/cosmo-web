@@ -29,7 +29,7 @@ A platform for exploring objekts & gravities from [MODHAUS](https://www.mod-haus
 
 ## Requirements
 
-- [Bun](https://bun.sh/) 1.3+
+- [Bun](https://bun.sh/) 1.3.3+
 - [Postgres](https://www.postgresql.org/)
 - [Redis](https://redis.io/) or [Valkey](https://valkey.io/)
 - [Typesense](https://typesense.org/)
