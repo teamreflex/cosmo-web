@@ -1,4 +1,4 @@
-FROM oven/bun:1.3.3-alpine as base
+FROM oven/bun:1.3.3-alpine AS base
 
 FROM base AS pruner
 WORKDIR /app
@@ -9,7 +9,8 @@ FROM base AS builder
 WORKDIR /app
 COPY --from=pruner /app/out/bun.lock ./bun.lock
 COPY --from=pruner /app/out/json/ .
-RUN bun install --frozen-lockfile
+# TODO: fix --frozen-lockfile
+RUN bun install
 COPY --from=pruner /app/out/full/ .
 RUN bun run --filter typesense-import build
 

@@ -20,6 +20,7 @@ import type { CollectionDataSource } from "@apollo/util";
 import type { PublicUser } from "../universal/auth";
 import * as serverEnv from "@/lib/env/server";
 import * as clientEnv from "@/lib/env/client";
+import { baseUrl } from "@/lib/utils";
 
 export const IP_HEADER = "cf-connecting-ip";
 
@@ -30,6 +31,8 @@ export const auth = betterAuth({
   telemetry: { enabled: false },
   appName: clientEnv.env.VITE_APP_NAME,
   secret: serverEnv.env.BETTER_AUTH_SECRET,
+  baseUrl: baseUrl(),
+  trustedOrigins: [baseUrl()],
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: authSchema,
