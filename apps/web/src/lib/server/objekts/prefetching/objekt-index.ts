@@ -1,4 +1,4 @@
-import { and, sql } from "drizzle-orm";
+import { and } from "drizzle-orm";
 import { createServerFn } from "@tanstack/react-start";
 import {
   withArtist,
@@ -23,37 +23,34 @@ const LIMIT = 60;
 export const $fetchObjektsIndex = createServerFn({ method: "GET" })
   .inputValidator(objektIndexBackendSchema)
   .handler(async ({ data }) => {
-    let query = indexer
-      .select({
-        count: sql<number>`count(*) OVER() AS count`,
-        collections,
-      })
-      .from(collections)
-      .where(
-        and(
-          ...[
-            ...withArtist(data.artist),
-            ...withClass(data.class ?? []),
-            ...withSeason(data.season ?? []),
-            ...withOnlineType(data.on_offline ?? []),
-            ...withMember(data.member),
-            ...withCollections(data.collectionNo),
-            ...withSelectedArtists(data.artists),
-          ],
-        ),
-      )
-      .$dynamic();
+    // build the where clause
+    const where = and(
+      ...[
+        ...withArtist(data.artist),
+        ...withClass(data.class ?? []),
+        ...withSeason(data.season ?? []),
+        ...withOnlineType(data.on_offline ?? []),
+        ...withMember(data.member),
+        ...withCollections(data.collectionNo),
+        ...withSelectedArtists(data.artists),
+      ],
+    );
+
+    // build the query
+    let query = indexer.select().from(collections).where(where).$dynamic();
     query = withObjektIndexSort(query, data.sort ?? "newest");
     query = query.limit(LIMIT).offset(data.page * LIMIT);
 
-    const result = await query;
+    const [collectionList, total] = await Promise.all([
+      query,
+      indexer.$count(collections, where),
+    ]);
 
-    const collectionList = result.map((c) => c.collections);
     const hasNext = collectionList.length === LIMIT;
     const nextStartAfter = hasNext ? data.page + 1 : undefined;
 
     return {
-      total: Number(result[0]?.count ?? 0),
+      total: Number(total),
       hasNext,
       nextStartAfter,
       objekts: collectionList,

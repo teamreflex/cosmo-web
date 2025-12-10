@@ -3,7 +3,8 @@ FROM oven/bun:1.3.3-alpine AS base
 FROM base AS pruner
 WORKDIR /app
 COPY . .
-RUN bunx turbo@2.6.3 prune schedules --docker
+RUN bun install -g turbo@2.6.3
+RUN turbo prune schedules --docker
 
 FROM base AS builder
 WORKDIR /app

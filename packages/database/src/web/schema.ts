@@ -33,7 +33,6 @@ export const cosmoAccounts = pgTable(
     uniqueIndex("cosmo_account_address_idx").on(t.address),
     index("cosmo_account_polygon_address_idx").on(t.polygonAddress),
     index("cosmo_account_cosmo_id_idx").on(t.cosmoId),
-    index("cosmo_account_username_idx").on(t.username),
     uniqueIndex("cosmo_account_username_address_idx").on(t.username, t.address),
     index("cosmo_account_user_id_idx").on(t.userId),
   ],
@@ -64,7 +63,6 @@ export const lockedObjekts = pgTable(
     locked: boolean("locked").notNull(),
   },
   (t) => [
-    index("locked_objekts_address_idx").on(t.address),
     index("locked_objekts_locked_idx").on(t.locked),
     index("address_locked_idx").on(t.address, t.locked),
     index("address_token_idx").on(t.address, t.tokenId),
@@ -98,7 +96,6 @@ export const objektLists = pgTable(
     slug: citext("slug", { length: 24 }).notNull(),
   },
   (t) => [
-    index("objekt_lists_user_idx").on(t.userId),
     index("objekt_lists_slug_idx").on(t.slug),
     uniqueIndex("objekt_lists_user_slug_idx").on(t.userId, t.slug),
   ],
