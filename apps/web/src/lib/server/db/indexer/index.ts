@@ -9,9 +9,7 @@ url.searchParams.set("application_name", "apollo.cafe");
 
 const client = new SQL({
   url: url.toString(),
-  max: 20, // handle concurrent traffic with headroom
-  maxLifetime: 3600, // recycle connections every hour to prevent memory accumulation
-  connectionTimeout: 10, // fail fast if DB is overloaded
+  max: 25, // handle concurrent traffic with headroom
 });
 
 export const indexer = drizzle({ client, relations });
