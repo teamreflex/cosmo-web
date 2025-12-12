@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "license": "MIT",
+  "engines": {
+    "bun": ">=1.3.3"
+  },
   "scripts": {
     "env": "bun run --bun --env-file=../../.env --env-file=../../.env.local",
     "dev": "bun run env -- bunx --bun vite",

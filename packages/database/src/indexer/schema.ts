@@ -23,7 +23,10 @@ export const subsquidStatus = subsquidSchema.table("status", {
 export const collections = pgTable("collection", {
   id: uuid("id").primaryKey(),
   contract: varchar("contract", { length: 42 }).notNull(),
-  createdAt: timestamp("created_at", { mode: "string" }).notNull(),
+  createdAt: timestamp("created_at", {
+    mode: "string",
+    withTimezone: true,
+  }).notNull(),
   slug: varchar("slug", { length: 255 }).notNull(),
   collectionId: varchar("collection_id", { length: 255 }).notNull(),
   season: varchar("season", { length: 32 }).notNull(),
@@ -48,8 +51,14 @@ export const collections = pgTable("collection", {
 export const objekts = pgTable("objekt", {
   id: varchar("id").primaryKey(),
   owner: varchar("owner", { length: 42 }).notNull(),
-  mintedAt: timestamp("minted_at", { mode: "string" }).notNull(),
-  receivedAt: timestamp("received_at", { mode: "string" }).notNull(),
+  mintedAt: timestamp("minted_at", {
+    mode: "string",
+    withTimezone: true,
+  }).notNull(),
+  receivedAt: timestamp("received_at", {
+    mode: "string",
+    withTimezone: true,
+  }).notNull(),
   serial: integer("serial").notNull(),
   transferable: boolean("transferable").notNull(),
   collectionId: varchar("collection_id", { length: 36 })
@@ -62,7 +71,10 @@ export const transfers = pgTable("transfer", {
   hash: varchar("hash", { length: 255 }).notNull(),
   from: varchar("from", { length: 42 }).notNull(),
   to: varchar("to", { length: 42 }).notNull(),
-  timestamp: timestamp("timestamp", { mode: "string" }).notNull(),
+  timestamp: timestamp("timestamp", {
+    mode: "string",
+    withTimezone: true,
+  }).notNull(),
   tokenId: integer("token_id").notNull(),
   objektId: varchar("objekt_id", { length: 12 })
     .notNull()
@@ -82,7 +94,10 @@ export const comoBalances = pgTable("como_balance", {
 export const votes = pgTable("vote", {
   id: uuid("id").primaryKey(),
   from: varchar("from", { length: 42 }).notNull(),
-  createdAt: timestamp("created_at", { mode: "string" }).notNull(),
+  createdAt: timestamp("created_at", {
+    mode: "string",
+    withTimezone: true,
+  }).notNull(),
   contract: varchar("contract", { length: 42 }).notNull(),
   pollId: integer("poll_id").notNull(),
   amount: bigint("amount", { mode: "number" }).notNull(),
