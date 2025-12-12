@@ -15,7 +15,6 @@ import {
 } from "./mail";
 import { cosmoAccounts } from "./db/schema";
 import { db } from "./db";
-import { redis } from "./cache";
 import type { CollectionDataSource } from "@apollo/util";
 import type { PublicUser } from "../universal/auth";
 import * as serverEnv from "@/lib/env/server";
@@ -47,22 +46,6 @@ export const auth = betterAuth({
     }),
     tanstackStartCookies(),
   ],
-
-  secondaryStorage: {
-    get: async (key) => {
-      return await redis.get(key);
-    },
-    set: async (key, value, ttl) => {
-      if (ttl) {
-        await redis.setex(key, ttl, value);
-      } else {
-        await redis.set(key, value);
-      }
-    },
-    delete: async (key) => {
-      await redis.del(key);
-    },
-  },
 
   /**
    * Enable session caching in cookies.
