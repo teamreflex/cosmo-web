@@ -41,8 +41,7 @@ export default function WithEmail(props: Props) {
         throw new Error(getAuthErrorMessage(result.error));
       }
 
-      await router.invalidate();
-      await router.navigate({ to: "/" });
+      return result.data;
     },
   });
 
@@ -56,11 +55,13 @@ export default function WithEmail(props: Props) {
 
   function handleSubmit(data: z.infer<typeof signInSchema>) {
     mutation.mutate(data, {
-      onSuccess: () => {
+      onSuccess: async () => {
         track("sign-in");
-        queryClient.invalidateQueries({
+        await queryClient.invalidateQueries({
           queryKey: currentAccountQuery.queryKey,
         });
+        await router.invalidate();
+        await router.navigate({ to: "/" });
         props.onSuccess();
       },
       onError: (error) => {
