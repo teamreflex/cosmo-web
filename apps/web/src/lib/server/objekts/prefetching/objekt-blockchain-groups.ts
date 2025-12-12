@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, max, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, max, sql } from "drizzle-orm";
 import * as z from "zod";
 import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
 import { collections, objekts } from "../../db/indexer/schema";
@@ -17,7 +17,6 @@ import type { ValidSort } from "@apollo/cosmo/types/common";
 import type { PgSelect } from "drizzle-orm/pg-core";
 import type {
   BFFCollectionGroup,
-  BFFCollectionGroupObjekt,
   BFFCollectionGroupResponse,
 } from "@apollo/cosmo/types/objekts";
 import { userCollectionBackendSchema } from "@/lib/universal/parsers";
@@ -35,18 +34,70 @@ export const $fetchObjektsBlockchainGroups = createServerFn({ method: "GET" })
   )
   .handler(async ({ data }) => {
     const offset = (data.page - 1) * PER_PAGE;
+    const sort = data.sort ?? "newest";
 
-    // main query with pagination and filters
-    let query = indexer
+    // build common filters
+    const filters = and(
+      eq(objekts.owner, data.address.toLowerCase()),
+      ...[
+        ...withArtist(data.artist),
+        ...withClass(data.class ?? []),
+        ...withSeason(data.season ?? []),
+        ...withOnlineType(data.on_offline ?? []),
+        ...withMember(data.member),
+        ...withTransferable(data.transferable),
+        ...withSelectedArtists(data.artists),
+      ],
+    );
+
+    // 1. fetch collection count and IDs in parallel
+    let idsQuery = indexer
       .select({
-        collection: {
+        collectionId: collections.id,
+        newestReceivedAt: max(objekts.receivedAt),
+        maxSerial: max(objekts.serial),
+        collectionNo: collections.collectionNo,
+      })
+      .from(objekts)
+      .innerJoin(collections, eq(objekts.collectionId, collections.id))
+      .where(filters)
+      .groupBy(collections.id, collections.collectionNo)
+      .$dynamic();
+
+    idsQuery = withObjektGroupSort(idsQuery, sort);
+    idsQuery = idsQuery.limit(PER_PAGE).offset(offset);
+
+    const [countResult, idsResult] = await Promise.all([
+      indexer
+        .select({
+          count: sql<number>`count(distinct ${collections.id})`.mapWith(Number),
+        })
+        .from(objekts)
+        .innerJoin(collections, eq(objekts.collectionId, collections.id))
+        .where(filters),
+      idsQuery,
+    ]);
+
+    const totalCount = countResult[0]?.count ?? 0;
+
+    if (idsResult.length === 0) {
+      return { collectionCount: 0, collections: [] };
+    }
+
+    const collectionIds = idsResult.map((r) => r.collectionId);
+
+    // 2. fetch collections and objekts separately in parallel
+    const [collectionsResult, objektsResult] = await Promise.all([
+      // 2a. fetch collections
+      indexer
+        .select({
+          id: collections.id,
           collectionId: collections.collectionId,
           season: collections.season,
           collectionNo: collections.collectionNo,
           class: collections.class,
           member: collections.member,
-          artistMember: sql<null>`null`,
-          artistName: collections.artist,
+          artist: collections.artist,
           thumbnailImage: collections.thumbnailImage,
           frontImage: collections.frontImage,
           backImage: collections.backImage,
@@ -56,103 +107,106 @@ export const $fetchObjektsBlockchainGroups = createServerFn({ method: "GET" })
           comoAmount: collections.comoAmount,
           bandImageUrl: collections.bandImageUrl,
           frontMedia: collections.frontMedia,
-          transferableByDefault: sql<boolean>`true`,
-          gridableByDefault: sql<boolean>`false`,
           createdAt: collections.createdAt,
-          updatedAt: collections.createdAt, // using createdAt as a fallback
+        })
+        .from(collections)
+        .where(inArray(collections.id, collectionIds)),
+
+      // 2b. fetch objekts
+      indexer
+        .select({
+          collectionId: objekts.collectionId,
+          collectionSlug: collections.collectionId,
+          id: objekts.id,
+          serial: objekts.serial,
+          transferable: objekts.transferable,
+          owner: objekts.owner,
+          mintedAt: objekts.mintedAt,
+          receivedAt: objekts.receivedAt,
+        })
+        .from(objekts)
+        .innerJoin(collections, eq(objekts.collectionId, collections.id))
+        .where(
+          and(
+            eq(objekts.owner, data.address.toLowerCase()),
+            inArray(objekts.collectionId, collectionIds),
+          ),
+        ),
+    ]);
+
+    // 3. build the response in JS
+    const collectionsMap = new Map(collectionsResult.map((c) => [c.id, c]));
+
+    // 4. group objekts by collection
+    const objektsByCollection = new Map<string, typeof objektsResult>();
+    for (const obj of objektsResult) {
+      const list = objektsByCollection.get(obj.collectionId) ?? [];
+      list.push(obj);
+      objektsByCollection.set(obj.collectionId, list);
+    }
+
+    // 5. build result in original sort order
+    const resultCollections: BFFCollectionGroup[] = [];
+    for (const colId of collectionIds) {
+      const col = collectionsMap.get(colId);
+      if (!col) continue;
+
+      const colObjekts = objektsByCollection.get(colId) ?? [];
+      const mapped = colObjekts.map((obj) => ({
+        metadata: {
+          collectionId: obj.collectionSlug,
+          objektNo: obj.serial,
+          tokenId: Number(obj.id),
+          transferable: obj.transferable,
         },
-        // use a window function to get the total count without pagination
-        totalCount: sql<number>`count(*) over()`.mapWith(Number),
-        // calculate the newest receivedAt date for sorting
-        newestReceivedAt: max(objekts.receivedAt),
-        objekts: sql<BFFCollectionGroupObjekt[]>`array_agg(
-      jsonb_build_object(
-        'metadata', jsonb_build_object(
-          'collectionId', ${collections.collectionId},
-          'objektNo', ${objekts.serial}::int,
-          'tokenId', ${objekts.id}::int,
-          'transferable', ${objekts.transferable}
+        inventory: {
+          objektId: Number(obj.id),
+          owner: obj.owner,
+          status: "minted" as const,
+          usedForGrid: false,
+          lenticularPairTokenId: 0,
+          mintedAt: obj.mintedAt,
+          acquiredAt: obj.receivedAt,
+          updatedAt: obj.receivedAt,
+        },
+        nonTransferableReason: nonTransferableReason(
+          col.class,
+          obj.transferable,
         ),
-        'inventory', jsonb_build_object(
-          'objektId', ${objekts.id},
-          'owner', ${objekts.owner},
-          'status', 'minted',
-          'usedForGrid', false,
-          'lenticularPairTokenId', 0,
-          'mintedAt', ${objekts.mintedAt},
-          'acquiredAt', ${objekts.receivedAt},
-          'updatedAt', ${objekts.receivedAt}
-        )
-      )
-    )`,
-      })
-      .from(collections)
-      .innerJoin(objekts, eq(collections.id, objekts.collectionId))
-      .where(
-        and(
-          eq(objekts.owner, data.address.toLowerCase()),
-          ...[
-            ...withArtist(data.artist),
-            ...withClass(data.class ?? []),
-            ...withSeason(data.season ?? []),
-            ...withOnlineType(data.on_offline ?? []),
-            ...withMember(data.member),
-            ...withTransferable(data.transferable),
-            ...withSelectedArtists(data.artists),
-          ],
-        ),
-      )
-      .groupBy(
-        collections.id,
-        collections.collectionId,
-        collections.season,
-        collections.collectionNo,
-        collections.class,
-        collections.member,
-        collections.artist,
-        collections.thumbnailImage,
-        collections.frontImage,
-        collections.backImage,
-        collections.accentColor,
-        collections.backgroundColor,
-        collections.textColor,
-        collections.comoAmount,
-        collections.bandImageUrl,
-        collections.frontMedia,
-        collections.createdAt,
-      )
-      .$dynamic();
+      }));
 
-    query = withObjektGroupSort(query, data.sort ?? "newest");
-    query = query.limit(PER_PAGE).offset(offset);
+      resultCollections.push({
+        collection: {
+          collectionId: col.collectionId,
+          season: col.season,
+          collectionNo: col.collectionNo,
+          class: col.class,
+          member: col.member,
+          // @ts-expect-error - can't pull artistMember from the indexer
+          artistMember: null,
+          artistName: col.artist,
+          thumbnailImage: col.thumbnailImage,
+          frontImage: col.frontImage,
+          backImage: col.backImage,
+          accentColor: col.accentColor,
+          backgroundColor: col.backgroundColor,
+          textColor: col.textColor,
+          comoAmount: col.comoAmount,
+          bandImageUrl: col.bandImageUrl,
+          frontMedia: col.frontMedia,
+          transferableByDefault: true,
+          gridableByDefault: false,
+          createdAt: col.createdAt,
+          updatedAt: col.createdAt,
+        },
+        count: mapped.length,
+        objekts: mapped,
+      });
+    }
 
-    const result = await query;
-
-    // pull total collection count off the first row
-    const totalCount = result[0]?.totalCount ?? 0;
-
-    // format the response to match the required structure
     return {
       collectionCount: totalCount,
-      collections: result.map((item): BFFCollectionGroup => {
-        const mapped = item.objekts.map((objekt) => {
-          // apply the non-transferable reason to each objekt
-          return {
-            ...objekt,
-            nonTransferableReason: nonTransferableReason(
-              item.collection.class,
-              objekt.metadata.transferable,
-            ),
-          };
-        });
-
-        return {
-          // @ts-expect-error - can't pull artistMember from the indexer
-          collection: item.collection,
-          count: mapped.length,
-          objekts: mapped,
-        };
-      }),
+      collections: resultCollections,
     } satisfies BFFCollectionGroupResponse;
   });
 

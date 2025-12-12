@@ -28,7 +28,6 @@ import { Route as GravityArtistIdRouteImport } from './routes/gravity/$artist/$i
 import { Route as ApiUserByAddressesRouteImport } from './routes/api/user/by-addresses'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AtChar123usernameChar125ListSlugRouteImport } from './routes/@{$username}/list.$slug'
-import { Route as ApiProgressLeaderboardMemberRouteImport } from './routes/api/progress/leaderboard.$member'
 import { Route as ApiObjektsBySlugSlugRouteImport } from './routes/api/objekts/by-slug.$slug'
 import { Route as ApiObjektListForUserIdentifierRouteImport } from './routes/api/objekt-list/for-user.$identifier'
 import { Route as ApiGravityPollIdVotesRouteImport } from './routes/api/gravity/$pollId.votes'
@@ -38,7 +37,6 @@ import { Route as ApiUserByAddressAddressIndexRouteImport } from './routes/api/u
 import { Route as ApiObjektsMetadataSlugIndexRouteImport } from './routes/api/objekts/metadata/$slug/index'
 import { Route as ApiUserByAddressAddressStatsRouteImport } from './routes/api/user/by-address/$address/stats'
 import { Route as ApiUserByAddressAddressComoRouteImport } from './routes/api/user/by-address/$address/como'
-import { Route as ApiProgressBreakdownMemberAddressRouteImport } from './routes/api/progress/breakdown.$member.$address'
 import { Route as ApiObjektsMetadataSlugSerialRouteImport } from './routes/api/objekts/metadata/$slug/$serial'
 import { Route as ApiBffV3UsersSearchRouteImport } from './routes/api/bff/v3/users/search'
 
@@ -143,12 +141,6 @@ const AtChar123usernameChar125ListSlugRoute =
     path: '/list/$slug',
     getParentRoute: () => AtChar123usernameChar125RouteRoute,
   } as any)
-const ApiProgressLeaderboardMemberRoute =
-  ApiProgressLeaderboardMemberRouteImport.update({
-    id: '/api/progress/leaderboard/$member',
-    path: '/api/progress/leaderboard/$member',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const ApiObjektsBySlugSlugRoute = ApiObjektsBySlugSlugRouteImport.update({
   id: '/api/objekts/by-slug/$slug',
   path: '/api/objekts/by-slug/$slug',
@@ -199,12 +191,6 @@ const ApiUserByAddressAddressComoRoute =
     path: '/api/user/by-address/$address/como',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiProgressBreakdownMemberAddressRoute =
-  ApiProgressBreakdownMemberAddressRouteImport.update({
-    id: '/api/progress/breakdown/$member/$address',
-    path: '/api/progress/breakdown/$member/$address',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const ApiObjektsMetadataSlugSerialRoute =
   ApiObjektsMetadataSlugSerialRouteImport.update({
     id: '/api/objekts/metadata/$slug/$serial',
@@ -242,10 +228,8 @@ export interface FileRoutesByFullPath {
   '/api/gravity/$pollId/votes': typeof ApiGravityPollIdVotesRoute
   '/api/objekt-list/for-user/$identifier': typeof ApiObjektListForUserIdentifierRoute
   '/api/objekts/by-slug/$slug': typeof ApiObjektsBySlugSlugRoute
-  '/api/progress/leaderboard/$member': typeof ApiProgressLeaderboardMemberRoute
   '/api/bff/v3/users/search': typeof ApiBffV3UsersSearchRoute
   '/api/objekts/metadata/$slug/$serial': typeof ApiObjektsMetadataSlugSerialRoute
-  '/api/progress/breakdown/$member/$address': typeof ApiProgressBreakdownMemberAddressRoute
   '/api/user/by-address/$address/como': typeof ApiUserByAddressAddressComoRoute
   '/api/user/by-address/$address/stats': typeof ApiUserByAddressAddressStatsRoute
   '/api/objekts/metadata/$slug': typeof ApiObjektsMetadataSlugIndexRoute
@@ -275,10 +259,8 @@ export interface FileRoutesByTo {
   '/api/gravity/$pollId/votes': typeof ApiGravityPollIdVotesRoute
   '/api/objekt-list/for-user/$identifier': typeof ApiObjektListForUserIdentifierRoute
   '/api/objekts/by-slug/$slug': typeof ApiObjektsBySlugSlugRoute
-  '/api/progress/leaderboard/$member': typeof ApiProgressLeaderboardMemberRoute
   '/api/bff/v3/users/search': typeof ApiBffV3UsersSearchRoute
   '/api/objekts/metadata/$slug/$serial': typeof ApiObjektsMetadataSlugSerialRoute
-  '/api/progress/breakdown/$member/$address': typeof ApiProgressBreakdownMemberAddressRoute
   '/api/user/by-address/$address/como': typeof ApiUserByAddressAddressComoRoute
   '/api/user/by-address/$address/stats': typeof ApiUserByAddressAddressStatsRoute
   '/api/objekts/metadata/$slug': typeof ApiObjektsMetadataSlugIndexRoute
@@ -310,10 +292,8 @@ export interface FileRoutesById {
   '/api/gravity/$pollId/votes': typeof ApiGravityPollIdVotesRoute
   '/api/objekt-list/for-user/$identifier': typeof ApiObjektListForUserIdentifierRoute
   '/api/objekts/by-slug/$slug': typeof ApiObjektsBySlugSlugRoute
-  '/api/progress/leaderboard/$member': typeof ApiProgressLeaderboardMemberRoute
   '/api/bff/v3/users/search': typeof ApiBffV3UsersSearchRoute
   '/api/objekts/metadata/$slug/$serial': typeof ApiObjektsMetadataSlugSerialRoute
-  '/api/progress/breakdown/$member/$address': typeof ApiProgressBreakdownMemberAddressRoute
   '/api/user/by-address/$address/como': typeof ApiUserByAddressAddressComoRoute
   '/api/user/by-address/$address/stats': typeof ApiUserByAddressAddressStatsRoute
   '/api/objekts/metadata/$slug/': typeof ApiObjektsMetadataSlugIndexRoute
@@ -346,10 +326,8 @@ export interface FileRouteTypes {
     | '/api/gravity/$pollId/votes'
     | '/api/objekt-list/for-user/$identifier'
     | '/api/objekts/by-slug/$slug'
-    | '/api/progress/leaderboard/$member'
     | '/api/bff/v3/users/search'
     | '/api/objekts/metadata/$slug/$serial'
-    | '/api/progress/breakdown/$member/$address'
     | '/api/user/by-address/$address/como'
     | '/api/user/by-address/$address/stats'
     | '/api/objekts/metadata/$slug'
@@ -379,10 +357,8 @@ export interface FileRouteTypes {
     | '/api/gravity/$pollId/votes'
     | '/api/objekt-list/for-user/$identifier'
     | '/api/objekts/by-slug/$slug'
-    | '/api/progress/leaderboard/$member'
     | '/api/bff/v3/users/search'
     | '/api/objekts/metadata/$slug/$serial'
-    | '/api/progress/breakdown/$member/$address'
     | '/api/user/by-address/$address/como'
     | '/api/user/by-address/$address/stats'
     | '/api/objekts/metadata/$slug'
@@ -413,10 +389,8 @@ export interface FileRouteTypes {
     | '/api/gravity/$pollId/votes'
     | '/api/objekt-list/for-user/$identifier'
     | '/api/objekts/by-slug/$slug'
-    | '/api/progress/leaderboard/$member'
     | '/api/bff/v3/users/search'
     | '/api/objekts/metadata/$slug/$serial'
-    | '/api/progress/breakdown/$member/$address'
     | '/api/user/by-address/$address/como'
     | '/api/user/by-address/$address/stats'
     | '/api/objekts/metadata/$slug/'
@@ -441,10 +415,8 @@ export interface RootRouteChildren {
   ApiGravityPollIdVotesRoute: typeof ApiGravityPollIdVotesRoute
   ApiObjektListForUserIdentifierRoute: typeof ApiObjektListForUserIdentifierRoute
   ApiObjektsBySlugSlugRoute: typeof ApiObjektsBySlugSlugRoute
-  ApiProgressLeaderboardMemberRoute: typeof ApiProgressLeaderboardMemberRoute
   ApiBffV3UsersSearchRoute: typeof ApiBffV3UsersSearchRoute
   ApiObjektsMetadataSlugSerialRoute: typeof ApiObjektsMetadataSlugSerialRoute
-  ApiProgressBreakdownMemberAddressRoute: typeof ApiProgressBreakdownMemberAddressRoute
   ApiUserByAddressAddressComoRoute: typeof ApiUserByAddressAddressComoRoute
   ApiUserByAddressAddressStatsRoute: typeof ApiUserByAddressAddressStatsRoute
   ApiObjektsMetadataSlugIndexRoute: typeof ApiObjektsMetadataSlugIndexRoute
@@ -586,13 +558,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AtChar123usernameChar125ListSlugRouteImport
       parentRoute: typeof AtChar123usernameChar125RouteRoute
     }
-    '/api/progress/leaderboard/$member': {
-      id: '/api/progress/leaderboard/$member'
-      path: '/api/progress/leaderboard/$member'
-      fullPath: '/api/progress/leaderboard/$member'
-      preLoaderRoute: typeof ApiProgressLeaderboardMemberRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/objekts/by-slug/$slug': {
       id: '/api/objekts/by-slug/$slug'
       path: '/api/objekts/by-slug/$slug'
@@ -654,13 +619,6 @@ declare module '@tanstack/react-router' {
       path: '/api/user/by-address/$address/como'
       fullPath: '/api/user/by-address/$address/como'
       preLoaderRoute: typeof ApiUserByAddressAddressComoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/progress/breakdown/$member/$address': {
-      id: '/api/progress/breakdown/$member/$address'
-      path: '/api/progress/breakdown/$member/$address'
-      fullPath: '/api/progress/breakdown/$member/$address'
-      preLoaderRoute: typeof ApiProgressBreakdownMemberAddressRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/objekts/metadata/$slug/$serial': {
@@ -737,11 +695,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiGravityPollIdVotesRoute: ApiGravityPollIdVotesRoute,
   ApiObjektListForUserIdentifierRoute: ApiObjektListForUserIdentifierRoute,
   ApiObjektsBySlugSlugRoute: ApiObjektsBySlugSlugRoute,
-  ApiProgressLeaderboardMemberRoute: ApiProgressLeaderboardMemberRoute,
   ApiBffV3UsersSearchRoute: ApiBffV3UsersSearchRoute,
   ApiObjektsMetadataSlugSerialRoute: ApiObjektsMetadataSlugSerialRoute,
-  ApiProgressBreakdownMemberAddressRoute:
-    ApiProgressBreakdownMemberAddressRoute,
   ApiUserByAddressAddressComoRoute: ApiUserByAddressAddressComoRoute,
   ApiUserByAddressAddressStatsRoute: ApiUserByAddressAddressStatsRoute,
   ApiObjektsMetadataSlugIndexRoute: ApiObjektsMetadataSlugIndexRoute,

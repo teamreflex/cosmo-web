@@ -3,5 +3,8 @@ import { $fetchObjektStats } from "@/lib/server/objekts/stats";
 
 export const objektStatsQuery = queryOptions({
   queryKey: ["objekt-stats"],
-  queryFn: $fetchObjektStats,
+  queryFn: ({ signal }) => $fetchObjektStats({ signal }),
+  staleTime: Infinity,
+  refetchOnWindowFocus: false,
+  refetchOnMount: false,
 });
