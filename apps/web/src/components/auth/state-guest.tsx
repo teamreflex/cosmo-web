@@ -1,4 +1,4 @@
-import { Languages } from "lucide-react";
+import { IconLanguage } from "@tabler/icons-react";
 import GuestSettings from "../navbar/guest-settings";
 import ArtistSelectbox from "../navbar/artist-selectbox";
 import SignIn from "./sign-in";
@@ -11,7 +11,7 @@ export default function StateGuest() {
 
       <div className="hidden md:contents">
         <Hydrated
-          fallback={<Languages className="size-6 shrink-0 drop-shadow-lg" />}
+          fallback={<IconLanguage className="size-6 shrink-0 drop-shadow-lg" />}
         >
           <GuestSettings />
         </Hydrated>

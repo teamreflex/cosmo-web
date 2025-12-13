@@ -5,8 +5,7 @@ import {
 import { ErrorBoundary } from "react-error-boundary";
 import { Suspense } from "react";
 import { ofetch } from "ofetch";
-import { ChevronDown, ChevronUp, HeartCrack } from "lucide-react";
-import { IconRotate360 } from "@tabler/icons-react";
+import { IconChevronDown, IconChevronUp, IconHeartBroken, IconRotate360  } from "@tabler/icons-react";
 import { useDebounceValue } from "usehooks-ts";
 import { Link } from "@tanstack/react-router";
 import { Addresses, isEqual } from "@apollo/util";
@@ -59,10 +58,10 @@ export default function SerialsPanel(props: Props) {
         />
 
         <Button variant="outline" size="icon" onClick={handleNext}>
-          <ChevronUp />
+          <IconChevronUp />
         </Button>
         <Button variant="outline" size="icon" onClick={handlePrevious}>
-          <ChevronDown />
+          <IconChevronDown />
         </Button>
       </div>
 
@@ -116,7 +115,7 @@ function Content(props: ContentProps) {
   if (!result) {
     return (
       <div className="flex flex-col items-center justify-center py-4">
-        <HeartCrack className="size-8" />
+        <IconHeartBroken className="size-8" />
         <span className="text-sm font-medium">
           {m.objekt_serials_not_exist({
             serial: props.serial.toString().padStart(5, "0"),

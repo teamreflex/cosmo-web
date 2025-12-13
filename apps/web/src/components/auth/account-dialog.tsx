@@ -25,7 +25,7 @@ type Props = {
 export default function AccountDialog({ open, onOpenChange, cosmo }: Props) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl">
+      <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>{m.common_account()}</DialogTitle>
           <DialogDescription>{m.account_description()}</DialogDescription>

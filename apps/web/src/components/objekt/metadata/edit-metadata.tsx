@@ -1,17 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { Button } from "../../ui/button";
 import { Textarea } from "../../ui/textarea";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "../../ui/form";
+import { Field, FieldError } from "../../ui/field";
 import { $updateObjektMetadata } from "../actions";
 import type { z } from "zod";
 import type { ObjektMetadata } from "@/lib/universal/objekts";
@@ -54,33 +48,33 @@ export default function EditMetadata(props: Props) {
   }
 
   return (
-    <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(handleSubmit)}
-        className="flex flex-col gap-2"
-      >
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormControl>
-                <Textarea rows={3} {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+    <form
+      onSubmit={form.handleSubmit(handleSubmit)}
+      className="flex flex-col gap-2"
+    >
+      <Controller
+        control={form.control}
+        name="description"
+        render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid}>
+            <Textarea
+              rows={3}
+              aria-invalid={fieldState.invalid}
+              {...field}
+            />
+            <FieldError errors={[fieldState.error]} />
+          </Field>
+        )}
+      />
 
-        <Button
-          variant="secondary"
-          size="sm"
-          type="submit"
-          disabled={mutation.isPending}
-        >
-          {mutation.isPending ? m.common_saving() : m.common_save()}
-        </Button>
-      </form>
-    </Form>
+      <Button
+        variant="secondary"
+        size="sm"
+        type="submit"
+        disabled={mutation.isPending}
+      >
+        {mutation.isPending ? m.common_saving() : m.common_save()}
+      </Button>
+    </form>
   );
 }

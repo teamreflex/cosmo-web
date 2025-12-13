@@ -2,22 +2,17 @@ import { toast } from "sonner";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useMutation } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { useForm } from "react-hook-form";
-import { Loader2, Save } from "lucide-react";
+import { Controller, useForm } from "react-hook-form";
+import { IconDeviceFloppy, IconLoader2 } from "@tabler/icons-react";
 import { useRouter } from "@tanstack/react-router";
 import type { z } from "zod";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
+import { Field, FieldDescription, FieldError } from "@/components/ui/field";
 import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormMessage,
-  useFormField,
-} from "@/components/ui/form";
+  InputGroup,
+  InputGroupButton,
+  InputGroupInput,
+} from "@/components/ui/input-group";
 import { updateUsernameSchema } from "@/lib/universal/schema/auth";
 import { m } from "@/i18n/messages";
 
@@ -59,45 +54,42 @@ export default function UpdateUsername({ username }: Props) {
   }
 
   return (
-    <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(handleSubmit)}
-        className="flex w-full flex-col gap-2"
-      >
-        <FormField
-          control={form.control}
-          name="username"
-          render={({ field }) => (
-            <FormItem>
-              <FormControl>
-                <div className="flex items-center gap-2">
-                  <Input placeholder={placeholder} {...field} />
-                  <Submit isPending={mutation.isPending} />
-                </div>
-              </FormControl>
-              <FormDescription>
-                {m.settings_username_description()}
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </form>
-    </Form>
-  );
-}
-
-function Submit(props: { isPending: boolean }) {
-  const field = useFormField();
-
-  return (
-    <Button type="submit" disabled={props.isPending || field.isDirty === false}>
-      {props.isPending ? (
-        <Loader2 className="h-4 w-4 animate-spin" />
-      ) : (
-        <Save className="h-4 w-4" />
-      )}
-    </Button>
+    <form
+      onSubmit={form.handleSubmit(handleSubmit)}
+      className="flex w-full flex-col gap-2 p-1"
+    >
+      <Controller
+        control={form.control}
+        name="username"
+        render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid}>
+            <InputGroup>
+              <InputGroupInput
+                placeholder={placeholder}
+                aria-invalid={fieldState.invalid}
+                {...field}
+              />
+              <InputGroupButton
+                type="submit"
+                disabled={
+                  mutation.isPending || form.formState.isDirty === false
+                }
+              >
+                {mutation.isPending ? (
+                  <IconLoader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <IconDeviceFloppy className="h-4 w-4" />
+                )}
+              </InputGroupButton>
+            </InputGroup>
+            <FieldDescription>
+              {m.settings_username_description()}
+            </FieldDescription>
+            <FieldError errors={[fieldState.error]} />
+          </Field>
+        )}
+      />
+    </form>
   );
 }
 

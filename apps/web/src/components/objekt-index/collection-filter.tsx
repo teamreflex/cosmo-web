@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, ChevronDown } from "lucide-react";
+import { IconCheck, IconChevronDown } from "@tabler/icons-react";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import {
   Command,
@@ -49,7 +49,7 @@ export default function CollectionFilter(props: Props) {
           )}
         >
           <span>{m.filter_collections()}</span>
-          <ChevronDown className="h-4 w-4 opacity-50" />
+          <IconChevronDown className="h-4 w-4 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-36 p-0">
@@ -66,7 +66,7 @@ export default function CollectionFilter(props: Props) {
                   onSelect={handleSelect}
                 >
                   {collection}
-                  <Check
+                  <IconCheck
                     className={cn(
                       "ml-auto",
                       props.collections?.includes(collection)

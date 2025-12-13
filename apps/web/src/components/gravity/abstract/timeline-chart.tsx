@@ -1,7 +1,7 @@
 import { Bar, BarChart } from "recharts";
 import { format } from "date-fns";
 import { Suspense } from "react";
-import { Loader2 } from "lucide-react";
+import { IconLoader2 } from "@tabler/icons-react";
 import GravityStatus from "./gravity-status";
 import type { LiveStatus } from "@/lib/client/gravity/abstract/types";
 import type { ChartConfig } from "@/components/ui/chart";
@@ -46,7 +46,7 @@ function TimelineChartSkeleton({
         <p className="text-xs">{totalComoUsed.toLocaleString()} COMO</p>
       </div>
       <div className="flex h-40 flex-col items-center justify-center p-2">
-        <Loader2 className="size-8 animate-spin" />
+        <IconLoader2 className="size-8 animate-spin" />
       </div>
     </div>
   );

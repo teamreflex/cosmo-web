@@ -1,5 +1,5 @@
 import { useId } from "react";
-import { Check, Loader2 } from "lucide-react";
+import { IconCheck, IconLoader2 } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -36,7 +36,7 @@ export default function ArtistSelectbox() {
           ))}
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="w-fit">
         {artistList
           .sort((a, b) => a.comoTokenId - b.comoTokenId)
           .map((artist) => (
@@ -95,9 +95,9 @@ export function ArtistItem({ artist, isSelected }: ArtistItemProps) {
 
       <div className="flex aspect-square items-center justify-end">
         {mutation.isPending ? (
-          <Loader2 className="size-5 animate-spin" />
+          <IconLoader2 className="size-5 animate-spin" />
         ) : isSelected ? (
-          <Check className="size-5" />
+          <IconCheck className="size-5" />
         ) : (
           <div className="size-5" />
         )}

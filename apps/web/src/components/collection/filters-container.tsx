@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { SlidersHorizontal } from "lucide-react";
+import { IconAdjustmentsHorizontal } from "@tabler/icons-react";
 import Portal from "../portal";
 import { Button } from "../ui/button";
 import type { PropsWithChildren } from "react";
@@ -25,7 +25,7 @@ export default function FiltersContainer({ children, isPortaled }: Props) {
             size="sm"
             onClick={() => setShow((prev) => !prev)}
           >
-            <SlidersHorizontal />
+            <IconAdjustmentsHorizontal />
             <span>Filters</span>
           </Button>
         </Portal>

@@ -1,4 +1,4 @@
-import { Languages, Moon, Sun } from "lucide-react";
+import { IconLanguage, IconMoon, IconSun } from "@tabler/icons-react";
 import { useTheme } from "../theme-provider";
 import type { Theme } from "../theme-provider";
 import {
@@ -18,9 +18,9 @@ export default function GuestSettings() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Languages className="size-6 shrink-0 drop-shadow-lg hover:cursor-pointer" />
+        <IconLanguage className="size-6 shrink-0 drop-shadow-lg hover:cursor-pointer" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="w-fit">
         <ThemeSubmenu />
         <LanguageSubmenu />
       </DropdownMenuContent>
@@ -40,11 +40,11 @@ function ThemeSubmenu() {
           onValueChange={(value) => setTheme(value as Theme)}
         >
           <DropdownMenuRadioItem value="dark">
-            <Moon className="size-4 shrink-0" />
+            <IconMoon className="size-4 shrink-0" />
             <span>{m.settings_theme_dark()}</span>
           </DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="light">
-            <Sun className="size-4 shrink-0" />
+            <IconSun className="size-4 shrink-0" />
             <span>{m.settings_theme_light()}</span>
           </DropdownMenuRadioItem>
         </DropdownMenuRadioGroup>

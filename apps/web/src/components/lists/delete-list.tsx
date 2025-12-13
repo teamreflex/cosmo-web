@@ -1,4 +1,4 @@
-import { Loader2, Trash } from "lucide-react";
+import { IconLoader2, IconTrash } from "@tabler/icons-react";
 import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -88,7 +88,7 @@ export default function DeleteList({ objektList }: Props) {
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <Button variant="destructive" size="icon" className="rounded-full">
-          <Trash />
+          <IconTrash />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
@@ -106,7 +106,7 @@ export default function DeleteList({ objektList }: Props) {
             disabled={mutation.isPending}
           >
             <span>{m.common_delete()}</span>
-            {mutation.isPending && <Loader2 className="animate-spin" />}
+            {mutation.isPending && <IconLoader2 className="animate-spin" />}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

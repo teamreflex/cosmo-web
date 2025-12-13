@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { AlertTriangle } from "lucide-react";
+import { IconAlertTriangle } from "@tabler/icons-react";
 import GravitySkeleton from "../gravity-skeleton";
 import CandidateBreakdown from "./candidate-breakdown";
 import TimelineChart from "./timeline-chart";
@@ -70,7 +70,7 @@ export default function AbstractLiveChart(props: Props) {
   if (chain.status === "error") {
     return (
       <div className="flex w-full flex-col gap-2">
-        <AlertTriangle className="size-12" />
+        <IconAlertTriangle className="size-12" />
         <p className="text-sm font-semibold">{m.gravity_error_loading()}</p>
       </div>
     );

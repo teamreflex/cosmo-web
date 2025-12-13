@@ -1,7 +1,6 @@
 import { Fragment, Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { IconCards } from "@tabler/icons-react";
-import { ChartColumnBig, Menu, Search, Vote } from "lucide-react";
+import { IconArchive, IconCards, IconChartBar, IconMenu2, IconSearch } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import Logo from "../logo";
 import UpdateDialog from "../misc/update-dialog";
@@ -47,9 +46,9 @@ function NavbarFallback() {
       <div className="hidden lg:contents">
         <div className="flex items-center justify-center gap-6">
           <IconCards className="hidden size-8 shrink-0 fill-transparent lg:block" />
-          <ChartColumnBig className="hidden size-8 shrink-0 fill-transparent lg:block" />
-          <Vote className="hidden size-8 shrink-0 fill-transparent lg:block" />
-          <Search className="hidden size-8 shrink-0 fill-transparent lg:block" />
+          <IconChartBar className="hidden size-8 shrink-0 fill-transparent lg:block" />
+          <IconArchive className="hidden size-8 shrink-0 fill-transparent lg:block" />
+          <IconSearch className="hidden size-8 shrink-0 fill-transparent lg:block" />
         </div>
 
         <div className="flex grow-0 items-center justify-end gap-2">
@@ -59,8 +58,8 @@ function NavbarFallback() {
 
       {/* mobile */}
       <div className="ml-auto flex flex-row items-center gap-2 lg:hidden">
-        <Search className="size-8 shrink-0 fill-transparent drop-shadow-lg" />
-        <Menu className="size-8 shrink-0 drop-shadow-lg" />
+        <IconSearch className="size-8 shrink-0 fill-transparent drop-shadow-lg" />
+        <IconMenu2 className="size-8 shrink-0 drop-shadow-lg" />
         <Skeleton className="aspect-square size-8 shrink-0 rounded-full" />
       </div>
     </Fragment>

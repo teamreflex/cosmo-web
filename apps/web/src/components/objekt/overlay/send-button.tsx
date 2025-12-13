@@ -1,4 +1,4 @@
-import { Send } from "lucide-react";
+import { IconSend } from "@tabler/icons-react";
 import { toast } from "sonner";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { useObjektTransfer } from "@/hooks/use-objekt-transfer";
@@ -36,7 +36,7 @@ export default function SendObjekt({ collection, token }: Props) {
       onClick={handleClick}
       className="flex items-center transition-all hover:scale-110"
     >
-      <Send className="h-3 w-3 sm:h-5 sm:w-5" />
+      <IconSend className="h-3 w-3 sm:h-5 sm:w-5" />
     </button>
   );
 }

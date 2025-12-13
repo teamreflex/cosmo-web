@@ -1,5 +1,4 @@
-import { HelpCircle } from "lucide-react";
-import VisuallyHidden from "../ui/visually-hidden";
+import { IconHelp } from "@tabler/icons-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,18 +17,14 @@ export default function HelpDialog() {
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <Button className="rounded-full" variant="secondary" size="profile">
-          <HelpCircle className="h-5 w-5" />
+          <IconHelp className="h-5 w-5" />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
-        <VisuallyHidden>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{m.progress_title()}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {m.progress_title()}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-        </VisuallyHidden>
+        <AlertDialogHeader className="sr-only">
+          <AlertDialogTitle>{m.progress_title()}</AlertDialogTitle>
+          <AlertDialogDescription>{m.progress_title()}</AlertDialogDescription>
+        </AlertDialogHeader>
         <div className="flex flex-col gap-4 text-sm text-foreground/80">
           {/* progress */}
           <div className="flex flex-col gap-1">

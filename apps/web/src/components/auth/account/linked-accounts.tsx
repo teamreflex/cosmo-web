@@ -1,8 +1,11 @@
 import {
   IconBrandDiscordFilled,
   IconBrandTwitterFilled,
+  IconLink,
+  IconLoader2,
+  IconUnlink,
 } from "@tabler/icons-react";
-import { Link, Loader2, Unlink } from "lucide-react";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import type { LinkedAccount, Provider } from "@/hooks/use-account";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,14 +15,14 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
+  listAccountsQuery,
   useLinkAccount,
-  useListAccounts,
   useUnlinkAccount,
 } from "@/hooks/use-account";
 import { m } from "@/i18n/messages";
 
 export default function LinkedAccounts() {
-  const { data } = useListAccounts();
+  const { data } = useSuspenseQuery(listAccountsQuery);
 
   const oauthAccounts = data.filter(
     (account) => account.providerId !== "credential",
@@ -81,9 +84,9 @@ function LinkedAccountItem(props: LinkedAccountItemProps) {
               disabled={status === "pending" || props.disabled}
             >
               {status === "pending" ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <IconLoader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <Unlink />
+                <IconUnlink />
               )}
             </Button>
           </TooltipTrigger>
@@ -118,9 +121,9 @@ function LinkNewAccount(props: LinkNewAccountProps) {
         disabled={status === "pending"}
       >
         {status === "pending" ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
+          <IconLoader2 className="h-4 w-4 animate-spin" />
         ) : (
-          <Link />
+          <IconLink />
         )}
       </Button>
     </div>

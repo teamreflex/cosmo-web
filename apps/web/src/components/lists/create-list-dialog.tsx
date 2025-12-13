@@ -1,7 +1,7 @@
-import { Loader2 } from "lucide-react";
+import { IconLoader2 } from "@tabler/icons-react";
 import { toast } from "sonner";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { useForm, useFormState } from "react-hook-form";
+import { Controller, FormProvider, useForm, useFormState } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useRouter } from "@tanstack/react-router";
@@ -15,14 +15,7 @@ import {
 } from "../ui/dialog";
 import { Input } from "../ui/input";
 import { createObjektListSchema } from "../../lib/universal/schema/objekt-list";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "../ui/form";
+import { Field, FieldError, FieldLabel } from "../ui/field";
 import { $createObjektList } from "./actions";
 import type { z } from "zod";
 import { track } from "@/lib/utils";
@@ -97,32 +90,32 @@ export default function CreateListDialog(props: Props) {
           <DialogTitle>{m.list_create()}</DialogTitle>
           <DialogDescription>{m.list_create_description()}</DialogDescription>
         </DialogHeader>
-        <Form {...form}>
+        <FormProvider {...form}>
           <form
             onSubmit={form.handleSubmit(handleSubmit)}
             className="flex w-full flex-col gap-2"
           >
-            <FormField
+            <Controller
               control={form.control}
               name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{m.list_name()}</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={m.list_name_placeholder()}
-                      data-1p-ignore
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="name">{m.list_name()}</FieldLabel>
+                  <Input
+                    id="name"
+                    placeholder={m.list_name_placeholder()}
+                    data-1p-ignore
+                    aria-invalid={fieldState.invalid}
+                    {...field}
+                  />
+                  <FieldError errors={[fieldState.error]} />
+                </Field>
               )}
             />
 
             <SubmitButton />
           </form>
-        </Form>
+        </FormProvider>
       </DialogContent>
     </Dialog>
   );
@@ -134,7 +127,7 @@ function SubmitButton() {
   return (
     <Button type="submit" disabled={isSubmitting}>
       <span>{m.common_create()}</span>
-      {isSubmitting && <Loader2 className="animate-spin" />}
+      {isSubmitting && <IconLoader2 className="animate-spin" />}
     </Button>
   );
 }

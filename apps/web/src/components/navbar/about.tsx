@@ -1,4 +1,4 @@
-import { Check, Github } from "lucide-react";
+import { IconBrandGithub, IconCheck } from "@tabler/icons-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,11 +38,11 @@ export default function AboutDialog({ open, onOpenChange }: Props) {
         <AlertDialogFooter className="sm:justify-between">
           <AlertDialogCancel asChild>
             <a href="https://github.com/teamreflex/cosmo-web" target="_blank">
-              <Github />
+              <IconBrandGithub />
             </a>
           </AlertDialogCancel>
           <AlertDialogAction>
-            <Check />
+            <IconCheck />
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

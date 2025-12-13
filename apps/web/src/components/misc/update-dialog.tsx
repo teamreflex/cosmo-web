@@ -1,4 +1,4 @@
-import { Newspaper } from "lucide-react";
+import { IconNews } from "@tabler/icons-react";
 import { addDays, format, isWithinInterval, subDays } from "date-fns";
 import { useMemo } from "react";
 import {
@@ -11,7 +11,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
-import VisuallyHidden from "../ui/visually-hidden";
 import {
   Accordion,
   AccordionContent,
@@ -36,7 +35,7 @@ export default function UpdateDialog() {
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <button className="relative flex h-8 w-9 items-center justify-center rounded-r-md bg-cosmo-text/25 transition-colors hover:bg-cosmo-text/40">
-          <Newspaper className="h-5 w-5 text-cosmo-text" />
+          <IconNews className="h-5 w-5 text-cosmo-text" />
           {isNew && (
             <span className="absolute top-0 right-0 h-2 w-2 animate-pulse rounded-full bg-red-500" />
           )}
@@ -47,11 +46,9 @@ export default function UpdateDialog() {
           <AlertDialogTitle>
             {m.updates_title({ appName: env.VITE_APP_NAME })}
           </AlertDialogTitle>
-          <VisuallyHidden>
-            <AlertDialogDescription>
-              {m.updates_title({ appName: env.VITE_APP_NAME })}
-            </AlertDialogDescription>
-          </VisuallyHidden>
+          <AlertDialogDescription className="sr-only">
+            {m.updates_title({ appName: env.VITE_APP_NAME })}
+          </AlertDialogDescription>
         </AlertDialogHeader>
 
         <div className="flex flex-col gap-2 text-sm">
@@ -86,7 +83,8 @@ const updates = [
     changes: [
       "Migrated to a new framework which should be faster and more responsive.",
       "Added translations with preliminary support for Korean.",
-      "Updated the design of the artist/member filter to better accomodate additional artists.",
+      "Updated the design of the artist/member filter to better accomodate more artists.",
+      "Additional design tweaks and improvements.",
       "Moved the about dialog to the user dropdown, now the logo links to the objekts page.",
       "Fixed jank objekt popups on mobile, including drag-to-close not working.",
       "Fixed past gravity events showing as live instead of completed.",

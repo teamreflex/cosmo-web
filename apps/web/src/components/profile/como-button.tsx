@@ -1,4 +1,4 @@
-import { CalendarRange } from "lucide-react";
+import { IconCalendarStats } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,7 @@ export default function ComoButton({ cosmo }: Props) {
         to="/@{$username}/como"
         params={{ username: cosmo.isAddress ? cosmo.address : cosmo.username }}
       >
-        <CalendarRange className="h-5 w-5" />
+        <IconCalendarStats className="h-5 w-5" />
         <span>{m.common_como()}</span>
       </Link>
     </Button>

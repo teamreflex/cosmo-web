@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { LogIn } from "lucide-react";
+import { IconLogin } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "../ui/button";
 import {
@@ -45,7 +45,7 @@ export default function SignIn() {
           className="outline-hidden drop-shadow-lg md:mx-2"
           aria-label={m.auth_sign_in()}
         >
-          <LogIn className="size-8 shrink-0 md:hidden" />
+          <IconLogin className="size-8 shrink-0 md:hidden" />
           <span className="hidden md:contents">{m.auth_sign_in()}</span>
         </Button>
       </DialogTrigger>

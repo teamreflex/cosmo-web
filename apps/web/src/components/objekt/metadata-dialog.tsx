@@ -1,8 +1,7 @@
-import { Loader2 } from "lucide-react";
+import { IconLoader2 } from "@tabler/icons-react";
 import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import { Suspense, createContext, useContext, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import VisuallyHidden from "../ui/visually-hidden";
 import MetadataContent from "./metadata/metadata-content";
 import { MetadataDialogError } from "./metadata/common";
 import type { ReactNode } from "react";
@@ -67,20 +66,20 @@ export default function MetadataDialog({
       {isDesktop ? (
         <Dialog open={open} onOpenChange={onOpenChange}>
           <DialogContent className="grid-cols-auto min-w-220 grid-flow-col gap-0 p-0 outline-hidden md:rounded-2xl">
-            <VisuallyHidden>
+            <div className="sr-only">
               <DialogTitle>{slug}</DialogTitle>
               <DialogDescription>{slug}</DialogDescription>
-            </VisuallyHidden>
+            </div>
             <ResponsiveContent slug={slug} />
           </DialogContent>
         </Dialog>
       ) : (
         <Drawer open={open} onOpenChange={onOpenChange}>
           <DrawerContent className="grid-cols-auto grid-flow-row gap-2 p-0 outline-hidden sm:gap-0">
-            <VisuallyHidden>
+            <div className="sr-only">
               <DrawerTitle>{slug}</DrawerTitle>
               <DrawerDescription>{slug}</DrawerDescription>
-            </VisuallyHidden>
+            </div>
             <ResponsiveContent slug={slug} />
           </DrawerContent>
         </Drawer>
@@ -97,7 +96,7 @@ function ResponsiveContent(props: { slug: string }) {
           <Suspense
             fallback={
               <div className="flex h-112 w-full items-center justify-center">
-                <Loader2 className="h-12 w-12 animate-spin" />
+                <IconLoader2 className="h-12 w-12 animate-spin" />
               </div>
             }
           >

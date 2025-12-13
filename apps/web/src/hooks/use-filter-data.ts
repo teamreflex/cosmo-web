@@ -17,7 +17,8 @@ export function useFilterData() {
     .filter(({ artist }) => {
       if (selectedIds.length === 0) return true;
       return selectedIds.includes(artist.id);
-    });
+    })
+    .sort((a, b) => a.artist.comoTokenId - b.artist.comoTokenId);
 
   const classesData = data.classes
     .map(({ artistId, classes }) => {
@@ -30,7 +31,8 @@ export function useFilterData() {
     .filter(({ artist }) => {
       if (selectedIds.length === 0) return true;
       return selectedIds.includes(artist.id);
-    });
+    })
+    .sort((a, b) => a.artist.comoTokenId - b.artist.comoTokenId);
 
   return {
     collections: data.collections,

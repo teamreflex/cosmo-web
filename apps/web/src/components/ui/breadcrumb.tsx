@@ -1,13 +1,16 @@
 import * as React from "react";
 import { Slot } from "radix-ui";
-import { ChevronRight, MoreHorizontal } from "lucide-react";
-
+import { IconChevronRight, IconDots } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
-import { m } from "@/i18n/messages";
 
-function Breadcrumb({ ...props }: React.ComponentProps<"nav">) {
+function Breadcrumb({ className, ...props }: React.ComponentProps<"nav">) {
   return (
-    <nav aria-label={m.navbar_breadcrumb()} data-slot="breadcrumb" {...props} />
+    <nav
+      aria-label="breadcrumb"
+      data-slot="breadcrumb"
+      className={cn(className)}
+      {...props}
+    />
   );
 }
 
@@ -16,7 +19,7 @@ function BreadcrumbList({ className, ...props }: React.ComponentProps<"ol">) {
     <ol
       data-slot="breadcrumb-list"
       className={cn(
-        "flex flex-wrap items-center gap-1.5 text-sm break-words text-muted-foreground sm:gap-2.5",
+        "flex flex-wrap items-center gap-1.5 text-sm wrap-break-word text-muted-foreground sm:gap-2.5",
         className,
       )}
       {...props}
@@ -78,7 +81,7 @@ function BreadcrumbSeparator({
       className={cn("[&>svg]:size-3.5", className)}
       {...props}
     >
-      {children ?? <ChevronRight />}
+      {children ?? <IconChevronRight />}
     </li>
   );
 }
@@ -92,10 +95,13 @@ function BreadcrumbEllipsis({
       data-slot="breadcrumb-ellipsis"
       role="presentation"
       aria-hidden="true"
-      className={cn("flex size-9 items-center justify-center", className)}
+      className={cn(
+        "flex size-5 items-center justify-center [&>svg]:size-4",
+        className,
+      )}
       {...props}
     >
-      <MoreHorizontal className="size-4" />
+      <IconDots />
       <span className="sr-only">More</span>
     </span>
   );

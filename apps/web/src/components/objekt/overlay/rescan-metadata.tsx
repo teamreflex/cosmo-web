@@ -1,5 +1,5 @@
 import { toast } from "sonner";
-import { RefreshCcw } from "lucide-react";
+import { IconRefresh } from "@tabler/icons-react";
 import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { $rescanObjektMetadata } from "../actions";
@@ -43,7 +43,7 @@ export default function RescanMetadata({ collection, token }: Props) {
       disabled={mutation.isPending}
       className="group/button flex items-center gap-1 text-xs underline"
     >
-      <RefreshCcw className="size-3 group-disabled/button:animate-spin" />
+      <IconRefresh className="size-3 group-disabled/button:animate-spin" />
       <span>{m.objekt_info_rescan()}</span>
     </button>
   );

@@ -1,6 +1,14 @@
+"use client";
+
 import { Toaster as Sonner } from "sonner";
+import {
+  IconAlertOctagon,
+  IconAlertTriangle,
+  IconCircleCheck,
+  IconInfoCircle,
+  IconLoader,
+} from "@tabler/icons-react";
 import { useTheme } from "../theme-provider";
-import type { CSSProperties } from "react";
 import type { ToasterProps } from "sonner";
 
 const Toaster = ({ ...props }: ToasterProps) => {
@@ -10,13 +18,26 @@ const Toaster = ({ ...props }: ToasterProps) => {
     <Sonner
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
+      icons={{
+        success: <IconCircleCheck className="size-4" />,
+        info: <IconInfoCircle className="size-4" />,
+        warning: <IconAlertTriangle className="size-4" />,
+        error: <IconAlertOctagon className="size-4" />,
+        loading: <IconLoader className="size-4 animate-spin" />,
+      }}
       style={
         {
           "--normal-bg": "var(--popover)",
           "--normal-text": "var(--popover-foreground)",
           "--normal-border": "var(--border)",
-        } as CSSProperties
+          "--border-radius": "var(--radius)",
+        } as React.CSSProperties
       }
+      toastOptions={{
+        classNames: {
+          toast: "cn-toast",
+        },
+      }}
       {...props}
     />
   );

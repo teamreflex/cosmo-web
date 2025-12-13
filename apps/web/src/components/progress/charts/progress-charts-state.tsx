@@ -1,5 +1,5 @@
 import { useErrorBoundary } from "react-error-boundary";
-import { RefreshCcw } from "lucide-react";
+import { IconRefresh } from "@tabler/icons-react";
 import { Button } from "../../ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import SkeletonGradient from "@/components/skeleton/skeleton-overlay";
@@ -26,7 +26,7 @@ export function ProgressChartsError() {
       </p>
 
       <Button variant="outline" onClick={resetBoundary}>
-        <RefreshCcw className="mr-2" /> {m.error_try_again()}
+        <IconRefresh className="mr-2" /> {m.error_try_again()}
       </Button>
     </div>
   );

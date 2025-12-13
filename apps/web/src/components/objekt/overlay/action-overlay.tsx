@@ -1,12 +1,12 @@
 import {
-  DownloadCloud,
-  Grid2X2,
-  Lock,
-  MailX,
-  PartyPopper,
-  Pin,
-  Smartphone,
-} from "lucide-react";
+  IconCloudDownload,
+  IconConfetti,
+  IconDevices,
+  IconGrid4x4,
+  IconLock,
+  IconMailOff,
+  IconPin,
+} from "@tabler/icons-react";
 import LockObjekt from "./lock-button";
 import OverlayStatus from "./overlay-status";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
@@ -74,12 +74,12 @@ export default function ActionOverlay({
 
         {/* pinned (viewing other user) */}
         {isPin && isPinned && !authenticated && (
-          <Pin className="h-3 w-3 shrink-0 sm:h-5 sm:w-5" />
+          <IconPin className="h-3 w-3 shrink-0 sm:h-5 sm:w-5" />
         )}
 
         {/* locked (viewing other user) */}
         {!usedForGrid && !isPin && isLocked && !authenticated && (
-          <Lock className="h-3 w-3 shrink-0 sm:h-5 sm:w-5" />
+          <IconLock className="h-3 w-3 shrink-0 sm:h-5 sm:w-5" />
         )}
 
         {authenticated && (
@@ -123,7 +123,7 @@ export default function ActionOverlay({
           <div className="contents">
             {/* generic non-transferable */}
             {token.nonTransferableReason === "not-transferable" && (
-              <MailX
+              <IconMailOff
                 {...createHoverProps("not-transferable")}
                 className="h-3 w-3 shrink-0 sm:h-5 sm:w-5"
               />
@@ -131,7 +131,7 @@ export default function ActionOverlay({
 
             {/* mint pending */}
             {token.nonTransferableReason === "mint-pending" && (
-              <DownloadCloud
+              <IconCloudDownload
                 {...createHoverProps("mint-pending")}
                 className="h-3 w-3 shrink-0 sm:h-5 sm:w-5"
               />
@@ -140,7 +140,7 @@ export default function ActionOverlay({
             {/* event reward */}
             {!usedForGrid &&
               token.nonTransferableReason === "challenge-reward" && (
-                <PartyPopper
+                <IconConfetti
                   {...createHoverProps("challenge-reward")}
                   className="h-3 w-3 shrink-0 sm:h-5 sm:w-5"
                 />
@@ -149,7 +149,7 @@ export default function ActionOverlay({
             {/* welcome reward */}
             {!isSendable &&
               token.nonTransferableReason === "welcome-objekt" && (
-                <MailX
+                <IconMailOff
                   {...createHoverProps("welcome-objekt")}
                   className="h-3 w-3 shrink-0 sm:h-5 sm:w-5"
                 />
@@ -157,7 +157,7 @@ export default function ActionOverlay({
 
             {/* used for grid */}
             {usedForGrid && (
-              <Grid2X2
+              <IconGrid4x4
                 {...createHoverProps("used-for-grid")}
                 className="h-3 w-3 shrink-0 sm:h-5 sm:w-5"
               />
@@ -165,7 +165,7 @@ export default function ActionOverlay({
 
             {/* used in lenticular, for some reason the nonTransferableReason isn't used here */}
             {token.lenticularPairTokenId !== 0 && (
-              <Smartphone
+              <IconDevices
                 {...createHoverProps("lenticular-objekt")}
                 className="h-3 w-3 shrink-0 sm:h-5 sm:w-5"
               />

@@ -2,7 +2,7 @@ import { Suspense, useMemo, useRef } from "react";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import { ErrorBoundary } from "react-error-boundary";
-import { HeartCrack, RefreshCcw } from "lucide-react";
+import { IconHeartBroken, IconRefresh } from "@tabler/icons-react";
 import Portal from "../portal";
 import { InfiniteQueryNext } from "../infinite-query-pending";
 import { LegacyOverlay } from "../collection/data-sources/common-legacy";
@@ -250,11 +250,11 @@ function ObjektGridError(props: { resetErrorBoundary: () => void }) {
   return (
     <div className="flex w-full flex-col items-center gap-2 py-12">
       <div className="flex items-center gap-2">
-        <HeartCrack className="h-6 w-6" />
+        <IconHeartBroken className="h-6 w-6" />
         <p className="text-sm font-semibold">{m.error_loading_objekts()}</p>
       </div>
       <Button variant="outline" onClick={props.resetErrorBoundary}>
-        <RefreshCcw className="mr-2" /> {m.common_retry()}
+        <IconRefresh className="mr-2" /> {m.common_retry()}
       </Button>
     </div>
   );

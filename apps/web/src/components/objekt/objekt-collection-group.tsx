@@ -1,5 +1,5 @@
 import { Dialog as DialogPrimitive, VisuallyHidden } from "radix-ui";
-import { Info, X } from "lucide-react";
+import { IconInfoCircle, IconX } from "@tabler/icons-react";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useShallow } from "zustand/react/shallow";
@@ -67,7 +67,7 @@ export default function GroupedObjekt({
       />
 
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0" />
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/10 backdrop-blur-sm data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0" />
         <DialogPrimitive.Content>
           {/* hide the title and description */}
           <VisuallyHidden.Root>
@@ -80,7 +80,7 @@ export default function GroupedObjekt({
           </VisuallyHidden.Root>
 
           {/* content */}
-          <div className="fixed top-12 left-1/2 z-50 flex max-h-[calc(100dvh-3rem)] w-full max-w-[76rem] -translate-x-1/2 flex-col overflow-y-auto px-4.5 lg:px-2">
+          <div className="fixed top-12 left-1/2 z-50 flex max-h-[calc(100dvh-3rem)] w-full max-w-304 -translate-x-1/2 flex-col overflow-y-auto px-4.5 lg:px-2">
             {/* title */}
             <div className="grid grid-flow-col grid-cols-[1fr_auto] grid-rows-2">
               <h2 className="text-2xl font-bold">
@@ -91,7 +91,7 @@ export default function GroupedObjekt({
               </p>
 
               <DialogPrimitive.Close className="place-self-end opacity-70 transition-opacity outline-none hover:opacity-100 disabled:pointer-events-none data-[state=open]:bg-secondary data-[state=open]:text-muted-foreground">
-                <X className="size-8" />
+                <IconX className="size-8" />
                 <span className="sr-only">{m.common_close()}</span>
               </DialogPrimitive.Close>
             </div>
@@ -215,7 +215,7 @@ function RootObjektOverlay({
           className="z-50 flex items-center place-self-end transition-all hover:scale-110"
           onClick={handleClick}
         >
-          <Info className="h-3 w-3 sm:h-5 sm:w-5" />
+          <IconInfoCircle className="h-3 w-3 sm:h-5 sm:w-5" />
         </button>
       </div>
 

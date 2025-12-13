@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { IconChevronDown } from "@tabler/icons-react";
 import { ScrollArea } from "../ui/scroll-area";
 import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
 import {
@@ -39,10 +39,10 @@ export default function MemberSelect({ artists, value = [], onChange }: Props) {
       <DropdownMenuTrigger asChild>
         <Button variant="outline" className="flex items-center gap-2">
           <span>Members</span>
-          <ChevronDown className="h-4 w-4 opacity-50" />
+          <IconChevronDown className="h-4 w-4 opacity-50" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-36" align="end">
+      <DropdownMenuContent className="w-40" align="end">
         <ScrollArea className="h-62">
           {artists.map((artist) => (
             <DropdownMenuItem

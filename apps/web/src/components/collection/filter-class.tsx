@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { IconChevronDown } from "@tabler/icons-react";
 import { isEqual } from "@apollo/util";
 import type { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
 import type { ValidArtist } from "@apollo/cosmo/types/common";
@@ -59,10 +59,10 @@ export default function ClassFilter(props: Props) {
           )}
         >
           <span>{m.common_class()}</span>
-          <ChevronDown className="h-4 w-4 opacity-50" />
+          <IconChevronDown className="h-4 w-4 opacity-50" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="flex flex-row gap-2">
+      <DropdownMenuContent className="flex w-fit flex-row gap-2">
         {classes.map(({ artist: classArtist, classes: classNames }) => (
           <DropdownMenuGroup key={classArtist.id}>
             <DropdownMenuLabel className="flex items-center gap-2 text-xs">

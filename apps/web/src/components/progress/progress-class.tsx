@@ -1,4 +1,4 @@
-import { Expand, Shrink } from "lucide-react";
+import { IconArrowsMaximize, IconArrowsMinimize } from "@tabler/icons-react";
 import type { SeasonProgress } from "@/lib/universal/progress";
 import { cn } from "@/lib/utils";
 import { m } from "@/i18n/messages";
@@ -22,7 +22,7 @@ export default function ProgressClass({
   const percentage = Math.floor((owned / progress.total) * 100);
   const isComplete = percentage >= 100;
   const width = Math.min(percentage, 100);
-  const Icon = isSelected ? Shrink : Expand;
+  const Icon = isSelected ? IconArrowsMinimize : IconArrowsMaximize;
 
   return (
     <div

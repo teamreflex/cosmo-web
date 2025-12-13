@@ -1,17 +1,12 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { IconLoader2 } from "@tabler/icons-react";
 import { ofetch } from "ofetch";
 import { useDebounceValue } from "usehooks-ts";
 import { isAddress } from "@apollo/util";
-import {
-  DialogClose,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "./ui/dialog";
+import { DialogClose } from "./ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import VisuallyHidden from "./ui/visually-hidden";
+import { Command } from "./ui/command";
 import type { RecentUser } from "@/store";
 import type {
   CosmoPublicUser,
@@ -49,7 +44,7 @@ export function UserSearch({
   const queryIsAddress = isAddress(debouncedQuery);
   const enableQuery = debouncedQuery.length > 0 && queryIsAddress === false;
 
-  const { status, data } = useQuery({
+  const { status, data, dataUpdatedAt } = useQuery({
     queryKey: ["user-search", debouncedQuery],
     queryFn: async () => {
       return await ofetch<CosmoSearchResult>(`/api/bff/v3/users/search`, {
@@ -63,7 +58,8 @@ export function UserSearch({
     retry: false,
   });
 
-  const showClose = status !== "error";
+  const showResults =
+    queryIsAddress || (status === "success" && dataUpdatedAt > 0);
 
   // filter out recent users who exist in the search results
   const recentUsers = data
@@ -100,81 +96,83 @@ export function UserSearch({
       <CommandDialog
         open={open}
         onOpenChange={onOpenChange}
-        showClose={showClose}
+        showCloseButton={false}
+        title={m.common_user_search()}
+        description={m.user_search_placeholder()}
       >
-        <VisuallyHidden>
-          <DialogHeader>
-            <DialogTitle>{m.common_user_search()}</DialogTitle>
-            <DialogDescription>{m.user_search_placeholder()}</DialogDescription>
-          </DialogHeader>
-        </VisuallyHidden>
+        <Command>
+          <Notice
+            className="bg-destructive/10 text-destructive"
+            enabled={status === "error"}
+          >
+            <p>{m.user_search_error()}</p>
+          </Notice>
 
-        <Notice className="bg-red-600" enabled={status === "error"}>
-          <p>{m.user_search_error()}</p>
-        </Notice>
+          <CommandInput
+            autoFocus={true}
+            className="touch-manipulation text-[16px]"
+            name="query"
+            placeholder={placeholder ?? m.user_search_placeholder()}
+            value={query}
+            onValueChange={setQuery}
+          />
 
-        <CommandInput
-          autoFocus={true}
-          className="touch-manipulation text-[16px]"
-          name="query"
-          placeholder={placeholder ?? m.user_search_placeholder()}
-          value={query}
-          onValueChange={setQuery}
-        />
-
-        <CommandList>
-          {status === "pending" && enableQuery && (
-            <div className="flex items-center justify-center py-2">
-              <Loader2 className="h-8 w-8 animate-spin" />
-            </div>
-          )}
-
-          {status === "success" && data.length === 0 && (
-            <div className="flex items-center justify-center gap-2 py-2 text-sm font-semibold">
-              {m.user_search_no_results()}
-            </div>
-          )}
-
-          <CommandGroup heading={m.user_search_results()}>
-            {queryIsAddress && (
-              <CommandItem
-                onSelect={() => selectAddress(debouncedQuery)}
-                className="cursor-pointer"
-              >
-                {debouncedQuery}
-              </CommandItem>
+          <CommandList>
+            {status === "pending" && enableQuery && (
+              <div className="flex items-center justify-center py-2">
+                <IconLoader2 className="h-8 w-8 animate-spin" />
+              </div>
             )}
 
-            {status === "success" &&
-              data.length > 0 &&
-              data.map((user) => (
-                <CommandItem
-                  key={user.address}
-                  onSelect={() => selectResult(user)}
-                  className="cursor-pointer gap-2"
-                  value={user.nickname}
-                >
-                  <UserAvatar nickname={user.nickname} />
-                  <span>{user.nickname}</span>
-                </CommandItem>
-              ))}
-          </CommandGroup>
+            {status === "success" && data.length === 0 && (
+              <div className="flex items-center justify-center gap-2 py-2 text-sm font-semibold">
+                {m.user_search_no_results()}
+              </div>
+            )}
 
-          {recentUsers.length > 0 && (
-            <CommandGroup heading={m.user_search_recent()}>
-              {recentUsers.map((user) => (
-                <CommandItem
-                  key={user.address}
-                  className="cursor-pointer"
-                  onSelect={() => selectRecent(user)}
-                  value={user.nickname}
-                >
-                  {user.nickname}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          )}
-        </CommandList>
+            {showResults && (
+              <CommandGroup heading={m.user_search_results()}>
+                {queryIsAddress && (
+                  <CommandItem
+                    onSelect={() => selectAddress(debouncedQuery)}
+                    className="cursor-pointer"
+                  >
+                    {debouncedQuery}
+                  </CommandItem>
+                )}
+
+                {status === "success" &&
+                  data.length > 0 &&
+                  data.map((user) => (
+                    <CommandItem
+                      key={user.address}
+                      onSelect={() => selectResult(user)}
+                      className="cursor-pointer gap-2"
+                      value={user.nickname}
+                    >
+                      <UserAvatar nickname={user.nickname} />
+                      <span>{user.nickname}</span>
+                    </CommandItem>
+                  ))}
+              </CommandGroup>
+            )}
+
+            {recentUsers.length > 0 && (
+              <CommandGroup heading={m.user_search_recent()}>
+                {recentUsers.map((user) => (
+                  <CommandItem
+                    key={user.address}
+                    className="cursor-pointer"
+                    onSelect={() => selectRecent(user)}
+                    value={user.nickname}
+                  >
+                    {user.nickname}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
+          </CommandList>
+        </Command>
       </CommandDialog>
     </div>
   );
@@ -207,7 +205,7 @@ function Notice({ children, className, enabled }: NoticeProps) {
     <div
       data-enabled={enabled}
       className={cn(
-        "hidden h-8 items-center justify-between px-4 text-xs font-semibold data-[enabled=true]:flex",
+        "-m-1 mb-1 hidden h-8 items-center justify-between px-4 text-xs font-semibold data-[enabled=true]:flex",
         className,
       )}
     >

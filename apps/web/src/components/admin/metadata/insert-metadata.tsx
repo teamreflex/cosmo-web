@@ -1,4 +1,4 @@
-import { Clipboard, HardDriveUpload, Loader2, Plus, Trash } from "lucide-react";
+import { IconClipboard, IconLoader2, IconPlus, IconTrash, IconUpload } from "@tabler/icons-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
@@ -75,10 +75,10 @@ export default function InsertMetadata() {
       <div className="flex items-center gap-2">
         <h1 className="text-lg font-semibold">{m.admin_insert_metadata()}</h1>
         <Button size="xs" onClick={addRow}>
-          <Plus className="size-4" /> <span>{m.admin_add_row()}</span>
+          <IconPlus className="size-4" /> <span>{m.admin_add_row()}</span>
         </Button>
         <Button size="xs" onClick={onPaste}>
-          <Clipboard className="size-4" /> <span>{m.admin_fill()}</span>
+          <IconClipboard className="size-4" /> <span>{m.admin_fill()}</span>
         </Button>
         <Button
           variant="cosmo"
@@ -87,9 +87,9 @@ export default function InsertMetadata() {
           disabled={mutation.isPending || !hasRows}
         >
           {mutation.isPending ? (
-            <Loader2 className="size-4 animate-spin" />
+            <IconLoader2 className="size-4 animate-spin" />
           ) : (
-            <HardDriveUpload className="size-4" />
+            <IconUpload className="size-4" />
           )}{" "}
           <span>{m.common_save()}</span>
         </Button>
@@ -118,7 +118,7 @@ export default function InsertMetadata() {
             />
 
             <Button variant="destructive" onClick={() => removeRow(index)}>
-              <Trash />
+              <IconTrash />
             </Button>
           </div>
         ))}

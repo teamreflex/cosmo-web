@@ -2,7 +2,12 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { ofetch } from "ofetch";
 import { useState } from "react";
 import { useCopyToClipboard } from "usehooks-ts";
-import { CloudDownload, Film, ImageIcon, LinkIcon } from "lucide-react";
+import {
+  IconCloudDownload,
+  IconLink,
+  IconMovie,
+  IconPhoto,
+} from "@tabler/icons-react";
 import { toast } from "sonner";
 import { Link } from "@tanstack/react-router";
 import { Button } from "../../ui/button";
@@ -62,9 +67,8 @@ export default function Metadata(props: Props) {
         value={props.tab}
         onValueChange={(value) => props.setTab(value as ObjektMetadataTab)}
         className="flex h-full flex-col"
-        variant="underline"
       >
-        <TabsList className="mx-auto w-fit md:mx-0">
+        <TabsList variant="line" className="mx-auto w-fit md:mx-0">
           <TabsTrigger value="metadata">
             {m.objekt_metadata_information()}
           </TabsTrigger>
@@ -93,7 +97,7 @@ export default function Metadata(props: Props) {
 
           <div className="mt-auto flex w-full flex-row-reverse items-center gap-2 self-end">
             <Button variant="secondary" size="sm" onClick={copyUrl}>
-              <LinkIcon />
+              <IconLink />
             </Button>
 
             <DropdownMenu>
@@ -103,26 +107,26 @@ export default function Metadata(props: Props) {
                   size="sm"
                   className="focus:outline-none"
                 >
-                  <CloudDownload />
+                  <IconCloudDownload />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent side="top" align="end">
+              <DropdownMenuContent side="top" align="end" className="w-fit">
                 <DropdownMenuItem asChild>
                   <a href={front.download} target="_blank">
-                    <ImageIcon />
+                    <IconPhoto />
                     <span>{m.objekt_metadata_save_front_image()}</span>
                   </a>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <a href={back.download} target="_blank">
-                    <ImageIcon />
+                    <IconPhoto />
                     <span>{m.objekt_metadata_save_back_image()}</span>
                   </a>
                 </DropdownMenuItem>
                 {props.objekt.frontMedia && (
                   <DropdownMenuItem asChild>
                     <a href={props.objekt.frontMedia} target="_blank">
-                      <Film />
+                      <IconMovie />
                       <span>{m.objekt_metadata_save_video()}</span>
                     </a>
                   </DropdownMenuItem>

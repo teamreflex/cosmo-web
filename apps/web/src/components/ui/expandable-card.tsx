@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { ChevronDown } from "lucide-react";
+import { IconChevronDown } from "@tabler/icons-react";
 import {
   createContext,
   useCallback,
@@ -193,7 +193,7 @@ function ExpandableCardContent({
               "group flex w-full items-center justify-center gap-2 text-xs text-background focus:outline-none dark:text-foreground",
             )}
           >
-            <ChevronDown className="size-4 transition-transform group-data-[expanded=true]:rotate-180" />
+            <IconChevronDown className="size-4 transition-transform group-data-[expanded=true]:rotate-180" />
           </button>
         </div>
       )}

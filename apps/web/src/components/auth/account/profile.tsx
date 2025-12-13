@@ -1,8 +1,9 @@
+import { useSuspenseQueries } from "@tanstack/react-query";
 import UpdateUsername from "./update-username";
 import UpdateEmail from "./update-email";
 import UpdatePassword from "./update-password";
 import UpdateSocial from "./update-social";
-import { useListAccounts, useSessionUser } from "@/hooks/use-account";
+import { listAccountsQuery, sessionQuery } from "@/hooks/use-account";
 import {
   Accordion,
   AccordionContent,
@@ -12,8 +13,9 @@ import {
 import { m } from "@/i18n/messages";
 
 export default function Profile() {
-  const { data: accounts } = useListAccounts();
-  const { data: user } = useSessionUser();
+  const [{ data: accounts }, { data: user }] = useSuspenseQueries({
+    queries: [listAccountsQuery, sessionQuery],
+  });
 
   if (!user) {
     return null;

@@ -1,4 +1,4 @@
-import { CheckCircle } from "lucide-react";
+import { IconCircleCheck } from "@tabler/icons-react";
 import { Bar, BarChart } from "recharts";
 import type { RevealedVote } from "@/lib/client/gravity/polygon/types";
 import type { ChartConfig } from "@/components/ui/chart";
@@ -31,7 +31,7 @@ export default function TimelineChart(props: Props) {
         {isComplete ? (
           <div className="flex items-center gap-2">
             <span className="font-semibold">{m.gravity_status_complete()}</span>
-            <CheckCircle className="h-4 w-4 text-green-500" />
+            <IconCircleCheck className="h-4 w-4 text-green-500" />
           </div>
         ) : (
           <div className="flex items-center gap-2">

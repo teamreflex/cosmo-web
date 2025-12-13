@@ -1,7 +1,7 @@
 import { Suspense, useCallback } from "react";
 import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import { ErrorBoundary } from "react-error-boundary";
-import { RefreshCcw } from "lucide-react";
+import { IconRefresh } from "@tabler/icons-react";
 import { Button } from "../ui/button";
 import MemberFilter from "../collection/member-filter";
 import { Skeleton } from "../ui/skeleton";
@@ -57,7 +57,7 @@ export default function ProgressRenderer(props: Props) {
                 </p>
 
                 <Button variant="outline" onClick={resetErrorBoundary}>
-                  <RefreshCcw className="mr-2" /> {m.error_try_again()}
+                  <IconRefresh className="mr-2" /> {m.error_try_again()}
                 </Button>
               </div>
             )}

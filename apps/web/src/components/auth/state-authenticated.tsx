@@ -1,4 +1,4 @@
-import { Loader2 } from "lucide-react";
+import { IconLoader2 } from "@tabler/icons-react";
 import { useLocation, useRouter } from "@tanstack/react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import UserDropdown from "./user-dropdown";
@@ -26,7 +26,7 @@ export default function StateAuthenticated({ user, cosmo }: Props) {
   });
 
   if (mutation.isPending) {
-    return <Loader2 className="animate-spin" />;
+    return <IconLoader2 className="animate-spin" />;
   }
 
   return (

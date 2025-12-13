@@ -1,12 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, CheckCircle, Loader2 } from "lucide-react";
+import {
+  IconAlertTriangle,
+  IconCircleCheck,
+  IconLoader2,
+} from "@tabler/icons-react";
 import { FetchError, ofetch } from "ofetch";
 import { createContext, useContext, useState } from "react";
 import QRCode from "react-qr-code";
 import { toast } from "sonner";
 import { useInterval } from "usehooks-ts";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useServerFn } from "@tanstack/react-start";
 import { generateQrCode } from "@apollo/cosmo/types/qr-auth";
@@ -18,13 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "../ui/form";
+import { Field, FieldError } from "../ui/field";
 import { $verifyCosmo } from "./actions";
 import type { AuthTicket, QueryTicket } from "@apollo/cosmo/types/qr-auth";
 import type { ReactNode } from "react";
@@ -115,7 +113,7 @@ function GetRecaptcha() {
 
   return (
     <div className="flex flex-col items-center justify-center">
-      {status === "pending" && <Loader2 className="h-8 w-8 animate-spin" />}
+      {status === "pending" && <IconLoader2 className="h-8 w-8 animate-spin" />}
 
       {status === "error" && (
         <div className="flex flex-col gap-2">
@@ -196,7 +194,7 @@ function RenderTicket({ ticket, retry }: RenderQRProps) {
   // login success
   return (
     <div className="flex items-center justify-center">
-      <CheckCircle className="h-8 w-8" />
+      <IconCircleCheck className="h-8 w-8" />
     </div>
   );
 }
@@ -304,52 +302,49 @@ function OTP({ ticket }: OTPProps) {
   if (mutation.status === "error") {
     return (
       <div className="flex flex-col items-center justify-center gap-2">
-        <AlertTriangle className="size-12" />
+        <IconAlertTriangle className="size-12" />
         <p className="text-sm font-semibold">{m.link_cosmo_error_linking()}</p>
       </div>
     );
   }
 
   return (
-    <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(handleSubmit)}
-        className="flex flex-col gap-4"
-      >
-        <div className="flex flex-col items-center gap-4">
-          <p className="text-center text-sm">{m.link_cosmo_enter_code()}</p>
+    <form
+      onSubmit={form.handleSubmit(handleSubmit)}
+      className="flex flex-col gap-4"
+    >
+      <div className="flex flex-col items-center gap-4">
+        <p className="text-center text-sm">{m.link_cosmo_enter_code()}</p>
 
-          <FormField
-            control={form.control}
-            name="otp"
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <InputOTP
-                    value={field.value.toString()}
-                    onChange={(value) => field.onChange(Number(value))}
-                    maxLength={2}
-                    pattern={REGEXP_ONLY_DIGITS}
-                    autoFocus
-                  >
-                    <InputOTPGroup>
-                      <InputOTPSlot index={0} />
-                      <InputOTPSlot index={1} />
-                    </InputOTPGroup>
-                  </InputOTP>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+        <Controller
+          control={form.control}
+          name="otp"
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <InputOTP
+                value={field.value.toString()}
+                onChange={(value) => field.onChange(Number(value))}
+                maxLength={2}
+                pattern={REGEXP_ONLY_DIGITS}
+                autoFocus
+                aria-invalid={fieldState.invalid}
+              >
+                <InputOTPGroup>
+                  <InputOTPSlot index={0} />
+                  <InputOTPSlot index={1} />
+                </InputOTPGroup>
+              </InputOTP>
+              <FieldError errors={[fieldState.error]} />
+            </Field>
+          )}
+        />
+      </div>
 
-        <Button type="submit" disabled={mutation.isPending}>
-          <span>{m.common_submit()}</span>
-          {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-        </Button>
-      </form>
-    </Form>
+      <Button type="submit" disabled={mutation.isPending}>
+        <span>{m.common_submit()}</span>
+        {mutation.isPending && <IconLoader2 className="h-4 w-4 animate-spin" />}
+      </Button>
+    </form>
   );
 }
 

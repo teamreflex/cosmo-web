@@ -1,22 +1,15 @@
 import { toast } from "sonner";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useMutation } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
-import { Loader2 } from "lucide-react";
+import { Controller, useForm } from "react-hook-form";
+import { IconLoader2 } from "@tabler/icons-react";
 import { useRouter } from "@tanstack/react-router";
 import type { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { updatePasswordSchema } from "@/lib/universal/schema/auth";
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { m } from "@/i18n/messages";
 
 export default function UpdatePassword() {
@@ -55,57 +48,61 @@ export default function UpdatePassword() {
   }
 
   return (
-    <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(handleSubmit)}
-        className="flex w-full flex-col gap-2"
-      >
-        <FormField
-          control={form.control}
-          name="currentPassword"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{m.auth_current_password()}</FormLabel>
-              <FormControl>
-                <Input
-                  type="password"
-                  placeholder={m.form_password_placeholder()}
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+    <form
+      onSubmit={form.handleSubmit(handleSubmit)}
+      className="flex w-full flex-col gap-2 p-1"
+    >
+      <Controller
+        control={form.control}
+        name="currentPassword"
+        render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid}>
+            <FieldLabel htmlFor="currentPassword">
+              {m.auth_current_password()}
+            </FieldLabel>
+            <Input
+              id="currentPassword"
+              type="password"
+              placeholder={m.form_password_placeholder()}
+              aria-invalid={fieldState.invalid}
+              {...field}
+            />
+            <FieldError errors={[fieldState.error]} />
+          </Field>
+        )}
+      />
 
-        <FormField
-          control={form.control}
-          name="newPassword"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{m.auth_new_password()}</FormLabel>
-              <FormControl>
-                <Input
-                  type="password"
-                  placeholder={m.form_password_placeholder()}
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      <Controller
+        control={form.control}
+        name="newPassword"
+        render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid}>
+            <FieldLabel htmlFor="newPassword">
+              {m.auth_new_password()}
+            </FieldLabel>
+            <Input
+              id="newPassword"
+              type="password"
+              placeholder={m.form_password_placeholder()}
+              aria-invalid={fieldState.invalid}
+              {...field}
+            />
+            <FieldError errors={[fieldState.error]} />
+          </Field>
+        )}
+      />
 
-        <div className="flex justify-end">
-          <Button
-            type="submit"
-            disabled={mutation.isPending || form.formState.isDirty === false}
-          >
-            {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-            <span>{m.common_update()}</span>
-          </Button>
-        </div>
-      </form>
-    </Form>
+      <div className="flex justify-end">
+        <Button
+          type="submit"
+          disabled={mutation.isPending || form.formState.isDirty === false}
+        >
+          {mutation.isPending && (
+            <IconLoader2 className="h-4 w-4 animate-spin" />
+          )}
+          <span>{m.common_update()}</span>
+        </Button>
+      </div>
+    </form>
   );
 }

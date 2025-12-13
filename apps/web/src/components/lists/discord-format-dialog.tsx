@@ -1,4 +1,4 @@
-import { CloudDownload, Copy, Loader2 } from "lucide-react";
+import { IconCloudDownload, IconCopy, IconLoader2 } from "@tabler/icons-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useCopyToClipboard } from "usehooks-ts";
@@ -107,16 +107,16 @@ export default function DiscordFormatDialog({
             >
               <span>{m.common_generate()}</span>
               {mutation.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <IconLoader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <CloudDownload className="h-4 w-4" />
+                <IconCloudDownload className="h-4 w-4" />
               )}
             </Button>
 
             {result && (
               <Button onClick={copy}>
                 <span>{m.common_copy()}</span>
-                <Copy className="h-4 w-4" />
+                <IconCopy className="h-4 w-4" />
               </Button>
             )}
           </div>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CircleHelp } from "lucide-react";
+import { IconHelpCircle } from "@tabler/icons-react";
 import { Addresses, isEqual } from "@apollo/util";
 import {
   Select,
@@ -90,7 +90,7 @@ export function DataSourceSelector(props: Props) {
           <div className="flex w-full justify-center">
             <Button variant="link" size="xs" onClick={() => setHelpOpen(true)}>
               <div className="flex flex-row items-center gap-2 text-xs">
-                <CircleHelp className="size-4" />
+                <IconHelpCircle className="size-4" />
                 <span>{m.data_source_what_is_this()}</span>
               </div>
             </Button>

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ErrorBoundary } from "react-error-boundary";
-import { AlertTriangle, HeartCrack } from "lucide-react";
+import { IconAlertTriangle, IconHeartBroken } from "@tabler/icons-react";
 import { Suspense } from "react";
 import type { ErrorComponentProps } from "@tanstack/react-router";
 import GravitySkeleton from "@/components/gravity/gravity-skeleton";
@@ -80,7 +80,7 @@ function RouteComponent() {
         <ErrorBoundary
           fallback={
             <div className="flex flex-col items-center justify-center gap-2 py-4">
-              <AlertTriangle className="size-12" />
+              <IconAlertTriangle className="size-12" />
               <p className="text-sm font-semibold">{m.gravity_failed_load()}</p>
             </div>
           }
@@ -125,7 +125,7 @@ function ErrorComponent({ error }: ErrorComponentProps) {
 function NotFoundComponent() {
   return (
     <main className="container flex w-full flex-col items-center justify-center gap-2 py-12">
-      <HeartCrack className="h-24 w-24" />
+      <IconHeartBroken className="h-24 w-24" />
       <p className="text-sm font-semibold">{m.gravity_not_found()}</p>
     </main>
   );

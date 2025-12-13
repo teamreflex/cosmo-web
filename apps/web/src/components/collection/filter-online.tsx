@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { IconChevronDown } from "@tabler/icons-react";
 import {  validOnlineTypes } from "@apollo/cosmo/types/common";
 import type {ValidOnlineType} from "@apollo/cosmo/types/common";
 import type { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
@@ -52,7 +52,7 @@ export default function OnlineFilter({ onOffline: value, onChange }: Props) {
           )}
         >
           <span>{m.filter_online_physical()}</span>
-          <ChevronDown className="h-4 w-4 opacity-50" />
+          <IconChevronDown className="h-4 w-4 opacity-50" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-36">

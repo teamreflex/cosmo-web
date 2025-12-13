@@ -1,6 +1,5 @@
-import { HelpCircle, Sparkles } from "lucide-react";
+import { IconHelp, IconSparkles } from "@tabler/icons-react";
 import { Button } from "../ui/button";
-import VisuallyHidden from "../ui/visually-hidden";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,16 +17,14 @@ export default function HelpDialog() {
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <Button variant="secondary" size="profile">
-          <HelpCircle className="h-5 w-5" />
+          <IconHelp className="h-5 w-5" />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <VisuallyHidden>
-            <AlertDialogDescription>
-              {m.help_como_description()}
-            </AlertDialogDescription>
-          </VisuallyHidden>
+          <AlertDialogDescription className="sr-only">
+            {m.help_como_description()}
+          </AlertDialogDescription>
           <AlertDialogTitle>{m.help_como_title()}</AlertDialogTitle>
         </AlertDialogHeader>
 
@@ -36,7 +33,7 @@ export default function HelpDialog() {
             <p>{m.help_como_timezone()}</p>
 
             <span>
-              A <Sparkles className="inline-block h-5 w-5 text-yellow-600" />{" "}
+              A <IconSparkles className="inline-block h-5 w-5 text-yellow-600" />{" "}
               {m.help_como_sparkles()}
             </span>
 

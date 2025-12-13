@@ -1,6 +1,11 @@
-import { HardDriveUpload, Home, PanelRight } from "lucide-react";
+import {
+  IconHome,
+  IconLayoutSidebarRight,
+  IconUpload,
+} from "@tabler/icons-react";
 
 import { Link, useLocation } from "@tanstack/react-router";
+import type { PropsWithClassName } from "@/lib/utils";
 import {
   Sidebar,
   SidebarContent,
@@ -19,27 +24,29 @@ export function getItems() {
     {
       title: m.admin_home(),
       url: "/admin",
-      icon: Home,
+      icon: IconHome,
     },
     {
       title: m.admin_metadata_title(),
       url: "/admin/metadata",
-      icon: HardDriveUpload,
+      icon: IconUpload,
     },
     {
       title: m.admin_bands_title(),
       url: "/admin/bands",
-      icon: PanelRight,
+      icon: IconLayoutSidebarRight,
     },
   ];
 }
 
-export function AdminSidebar() {
+type Props = PropsWithClassName<{}>;
+
+export function AdminSidebar({ className }: Props) {
   const location = useLocation();
   const items = getItems();
 
   return (
-    <Sidebar className="mt-14">
+    <Sidebar variant="inset" className={className}>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>

@@ -1,4 +1,4 @@
-import { Activity, CircleCheckBig, Loader2 } from "lucide-react";
+import { IconActivity, IconCircleCheck, IconLoader2 } from "@tabler/icons-react";
 import type { LiveStatus } from "@/lib/client/gravity/abstract/types";
 import { m } from "@/i18n/messages";
 
@@ -18,7 +18,7 @@ export default function GravityStatus({
     <div className="flex items-center gap-2">
       <span>
         {isRefreshing ? (
-          <Loader2 className="size-4 animate-spin" />
+          <IconLoader2 className="size-4 animate-spin" />
         ) : (
           config.icon
         )}
@@ -31,7 +31,7 @@ export default function GravityStatus({
 function getStatusConfig() {
   return {
     voting: {
-      icon: <Activity className="size-5 text-cosmo" />,
+      icon: <IconActivity className="size-5 text-cosmo" />,
       text: m.gravity_status_voting(),
     },
     live: {
@@ -41,7 +41,7 @@ function getStatusConfig() {
       text: m.gravity_status_live(),
     },
     finalized: {
-      icon: <CircleCheckBig className="size-4 text-green-500" />,
+      icon: <IconCircleCheck className="size-4 text-green-500" />,
       text: m.gravity_status_complete(),
     },
   } as const;

@@ -1,4 +1,4 @@
-import { X } from "lucide-react";
+import { IconX } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import ArtistIcon from "../artist-icon";
 import {
@@ -43,7 +43,7 @@ export function ComoBalanceErrorFallback() {
       <Tooltip>
         <TooltipTrigger asChild>
           <div className="flex h-[26px] w-fit min-w-16 cursor-default items-center justify-between rounded-lg border border-border bg-secondary px-1.5 shadow-sm">
-            <X className="h-4 w-4 p-px text-cosmo-text" />
+            <IconX className="h-4 w-4 p-px text-cosmo-text" />
             <span className="pl-2 text-sm">COMO</span>
           </div>
         </TooltipTrigger>

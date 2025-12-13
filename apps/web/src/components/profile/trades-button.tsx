@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Send } from "lucide-react";
+import { IconSend } from "@tabler/icons-react";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import { Button } from "@/components/ui/button";
 import { m } from "@/i18n/messages";
@@ -15,7 +15,7 @@ export default function TradesButton({ cosmo }: Props) {
         to="/@{$username}/trades"
         params={{ username: cosmo.isAddress ? cosmo.address : cosmo.username }}
       >
-        <Send className="h-5 w-5" />
+        <IconSend className="h-5 w-5" />
         <span>{m.trades_title()}</span>
       </Link>
     </Button>

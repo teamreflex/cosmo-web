@@ -1,4 +1,4 @@
-import { ListPlus, Loader2, Plus } from "lucide-react";
+import { IconLoader2, IconPlaylistAdd, IconPlus } from "@tabler/icons-react";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -39,10 +39,10 @@ export default function AddToList({
           className="flex items-center outline-hidden transition-all hover:scale-110"
           aria-label={m.list_select_to_add({ collectionId })}
         >
-          <ListPlus className="h-3 w-3 sm:h-5 sm:w-5" />
+          <IconPlaylistAdd className="h-3 w-3 sm:h-5 sm:w-5" />
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start">
+      <DropdownMenuContent align="start" className="w-fit">
         <DropdownMenuLabel>{collectionId}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
@@ -119,9 +119,9 @@ function ListItem({
       >
         <span>{list.name}</span>
         {mutation.isPending ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
+          <IconLoader2 className="h-4 w-4 animate-spin" />
         ) : (
-          <Plus className="h-4 w-4 opacity-0 transition-all group-hover:opacity-100" />
+          <IconPlus className="h-4 w-4 opacity-0 transition-all group-hover:opacity-100" />
         )}
       </button>
     </DropdownMenuItem>

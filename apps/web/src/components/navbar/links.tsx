@@ -1,6 +1,11 @@
-import { ChartColumnBig, Menu, PackageOpen, Vote } from "lucide-react";
+import {
+  IconArchive,
+  IconCards,
+  IconChartBar,
+  IconMenu2,
+  IconPackage,
+} from "@tabler/icons-react";
 import { Link, useLocation } from "@tanstack/react-router";
-import { IconCards } from "@tabler/icons-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,10 +24,9 @@ import {
 } from "../ui/tooltip";
 import NavbarSearch from "./navbar-search";
 import { ArtistItem } from "./artist-selectbox";
+import type { Icon } from "@tabler/icons-react";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
-import type { TablerIcon } from "@tabler/icons-react";
 import type { PublicUser } from "@/lib/universal/auth";
-import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useArtists } from "@/hooks/use-artists";
 import { m } from "@/i18n/messages";
@@ -51,10 +55,10 @@ export default function Links(props: Props) {
                 className="outline-hidden drop-shadow-lg"
                 aria-label={m.common_menu()}
               >
-                <Menu className="h-8 w-8 shrink-0" />
+                <IconMenu2 className="h-8 w-8 shrink-0" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
+            <DropdownMenuContent className="w-fit">
               <DropdownMenuLabel>{m.common_menu()}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <MobileLinks {...props} />
@@ -86,14 +90,14 @@ function DesktopLinks(props: LinksProps) {
       <LinkButton
         href="/objekts/stats"
         active={location.pathname === "/objekts/stats"}
-        icon={ChartColumnBig}
+        icon={IconChartBar}
         name={m.nav_objekt_stats()}
       />
 
       <LinkButton
         href="/gravity"
         active={location.pathname.startsWith("/gravity")}
-        icon={Vote}
+        icon={IconArchive}
         name={m.gravity_header()}
       />
 
@@ -101,7 +105,7 @@ function DesktopLinks(props: LinksProps) {
         <LinkButton
           href={`/@${props.cosmo.username}`}
           active={location.pathname.startsWith(`/@${props.cosmo.username}`)}
-          icon={PackageOpen}
+          icon={IconPackage}
           name={m.collection_title()}
         />
       )}
@@ -134,7 +138,7 @@ export function MobileLinks(props: Props) {
       {/* objekt stats */}
       <DropdownMenuItem asChild>
         <Link to="/objekts/stats" aria-label={m.nav_objekt_stats()}>
-          <ChartColumnBig
+          <IconChartBar
             className={cn(
               "h-4 w-4 shrink-0 fill-transparent transition-all",
               location.pathname === "/objekts/stats" && "fill-white/50",
@@ -147,7 +151,7 @@ export function MobileLinks(props: Props) {
       {/* gravity */}
       <DropdownMenuItem asChild>
         <Link to="/gravity" aria-label={m.gravity_header()}>
-          <Vote
+          <IconArchive
             className={cn(
               "h-4 w-4 shrink-0 fill-transparent transition-all",
               location.pathname.startsWith("/gravity") && "fill-white/50",
@@ -165,7 +169,7 @@ export function MobileLinks(props: Props) {
             params={{ username: props.cosmo.username }}
             aria-label={m.collection_title()}
           >
-            <PackageOpen
+            <IconPackage
               className={cn(
                 "h-4 w-4 shrink-0 fill-transparent transition-all",
                 location.pathname === `/@${props.cosmo.username}` &&
@@ -201,7 +205,7 @@ type LinkButtonProps = {
   href: string;
   active: boolean;
   user?: PublicUser;
-  icon: LucideIcon | TablerIcon;
+  icon: Icon;
   name: string;
 };
 

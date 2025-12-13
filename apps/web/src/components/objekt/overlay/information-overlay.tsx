@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { Maximize2 } from "lucide-react";
+import { IconMaximize } from "@tabler/icons-react";
 import { useMemo, useState } from "react";
 import RescanMetadata from "./rescan-metadata";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
@@ -41,7 +41,7 @@ export default function InformationOverlay({ collection, token }: Props) {
         className="z-50 flex items-center place-self-end transition-all hover:scale-110"
         onClick={() => setOpen((prev) => !prev)}
       >
-        <Maximize2 className="h-3 w-3 sm:h-5 sm:w-5" />
+        <IconMaximize className="h-3 w-3 sm:h-5 sm:w-5" />
       </button>
 
       <div className="absolute z-40 flex flex-col gap-1 transition-all group-data-[open=false]:opacity-0 group-data-[open=true]:opacity-100">

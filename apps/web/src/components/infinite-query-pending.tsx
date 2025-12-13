@@ -1,4 +1,4 @@
-import { ChevronDown, Loader2, PawPrint } from "lucide-react";
+import { IconChevronDown, IconLoader2, IconPaw } from "@tabler/icons-react";
 import { useOnInView } from "react-intersection-observer";
 import type { QueryStatus } from "@tanstack/react-query";
 
@@ -28,15 +28,15 @@ export function InfiniteQueryNext({
           onClick={fetchNextPage}
           disabled={isFetchingNextPage}
         >
-          <ChevronDown className="h-12 w-12 animate-bounce" />
+          <IconChevronDown className="h-12 w-12 animate-bounce" />
         </button>
       )}
 
       {/* fetching next page */}
-      {isFetchingNextPage && <Loader2 className="h-12 w-12 animate-spin" />}
+      {isFetchingNextPage && <IconLoader2 className="h-12 w-12 animate-spin" />}
 
       {/* no more pages */}
-      {status === "success" && !hasNextPage && <PawPrint className="h-6 w-6" />}
+      {status === "success" && !hasNextPage && <IconPaw className="h-6 w-6" />}
     </div>
   );
 }

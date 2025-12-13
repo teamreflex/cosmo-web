@@ -8,7 +8,7 @@ type Props = {
 
 export default function UserAvatar({ className, username = "User" }: Props) {
   return (
-    <Avatar className={cn("h-20 w-20", className)}>
+    <Avatar className={cn("size-20", className)}>
       <AvatarFallback>{username.charAt(0).toUpperCase()}</AvatarFallback>
       <AvatarImage
         className="bg-cosmo-profile p-3"

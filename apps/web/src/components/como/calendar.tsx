@@ -1,4 +1,4 @@
-import { Sparkles } from "lucide-react";
+import { IconSparkles } from "@tabler/icons-react";
 import ArtistIcon from "../artist-icon";
 import {
   Tooltip,
@@ -85,7 +85,7 @@ export default function ComoCalendar({ artists, transfers }: Props) {
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger>
-                            <Sparkles className="h-5 w-5 text-yellow-600" />
+                            <IconSparkles className="h-5 w-5 text-yellow-600" />
                           </TooltipTrigger>
                           <TooltipContent className="flex flex-col gap-1">
                             <p className="font-semibold">

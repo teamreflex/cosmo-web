@@ -1,4 +1,4 @@
-import { RotateCcw } from "lucide-react";
+import { IconRotate } from "@tabler/icons-react";
 import {
   Tooltip,
   TooltipContent,
@@ -37,7 +37,7 @@ export default function ResetFilters(props: Props) {
       <Tooltip>
         <TooltipTrigger asChild>
           <Button onClick={handleReset} disabled={disabled} variant="outline">
-            <RotateCcw />
+            <IconRotate />
           </Button>
         </TooltipTrigger>
         <TooltipContent>{m.filter_reset()}</TooltipContent>

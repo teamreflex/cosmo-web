@@ -1,4 +1,4 @@
-import { Loader2, Lock, Unlock } from "lucide-react";
+import { IconLoader2, IconLock, IconLockOpen } from "@tabler/icons-react";
 import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { $toggleObjektLock } from "@/components/collection/actions";
@@ -36,11 +36,11 @@ export default function LockObjekt({ tokenId, isLocked }: Props) {
       onClick={toggle}
     >
       {mutation.isPending ? (
-        <Loader2 className="h-3 w-3 animate-spin sm:h-5 sm:w-5" />
+        <IconLoader2 className="h-3 w-3 animate-spin sm:h-5 sm:w-5" />
       ) : isLocked ? (
-        <Lock className="h-3 w-3 sm:h-5 sm:w-5" />
+        <IconLock className="h-3 w-3 sm:h-5 sm:w-5" />
       ) : (
-        <Unlock className="h-3 w-3 sm:h-5 sm:w-5" />
+        <IconLockOpen className="h-3 w-3 sm:h-5 sm:w-5" />
       )}
     </button>
   );

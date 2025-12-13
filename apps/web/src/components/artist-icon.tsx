@@ -1,4 +1,3 @@
-import { Sparkle } from "lucide-react";
 import type { ValidArtist } from "@apollo/cosmo/types/common";
 import type { ReactNode } from "react";
 
@@ -6,7 +5,6 @@ const map: Record<ValidArtist, ReactNode> = {
   artms: (
     <div className="rounded-full p-px ring-1 ring-teal-400 saturate-[.60]">
       <svg
-        xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"
         strokeWidth={1.5}
@@ -22,7 +20,19 @@ const map: Record<ValidArtist, ReactNode> = {
     </div>
   ),
   tripleS: (
-    <Sparkle className="h-4 w-4 rounded-full fill-purple-300 p-px text-purple-300 ring-1 ring-purple-300" />
+    <svg
+      className="h-4 w-4 rounded-full fill-purple-300 p-px text-purple-300 ring-1 ring-purple-300"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z" />
+    </svg>
   ),
   idntt: (
     <div className="rounded-full p-px ring-1 ring-[#3b82f6]">

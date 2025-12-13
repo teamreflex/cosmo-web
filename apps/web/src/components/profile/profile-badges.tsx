@@ -1,9 +1,9 @@
 import {
   IconBrandDiscordFilled,
   IconBrandTwitterFilled,
+  IconCheck,
 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
-import { Check } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -28,7 +28,7 @@ export function CosmoVerifiedBadge() {
         </TooltipTrigger>
         <TooltipContent side="bottom" align="start">
           <div className="flex flex-row items-center gap-2">
-            <Check className="h-4 w-4" />
+            <IconCheck className="h-4 w-4" />
             <span>{m.profile_badge_cosmo_verified()}</span>
           </div>
         </TooltipContent>

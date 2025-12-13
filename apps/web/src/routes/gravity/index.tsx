@@ -1,6 +1,6 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { isFuture } from "date-fns";
-import { CalendarDays } from "lucide-react";
+import { IconCalendarEvent } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import type { Gravity } from "@/lib/server/db/schema";
 import type { CosmoArtistBFF } from "@apollo/cosmo/types/artists";
@@ -123,7 +123,7 @@ function GravityItem(props: { gravity: Gravity }) {
         />
         <CardContent className="isolate flex h-full w-full items-end justify-start gap-2 bg-gradient-to-t from-black/80 from-5% via-black/20 via-20% to-black/0 px-0">
           <div className="flex w-full flex-row items-center gap-2 p-2">
-            <CalendarDays className="size-4 shrink-0" />
+            <IconCalendarEvent className="size-4 shrink-0" />
             <GravityTimestamp
               className="text-sm font-semibold"
               date={props.gravity.startDate}

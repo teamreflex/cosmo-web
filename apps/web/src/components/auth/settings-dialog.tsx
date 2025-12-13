@@ -1,17 +1,11 @@
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { IconLoader2 } from "@tabler/icons-react";
+import { Controller, useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "../ui/form";
+import { Field, FieldContent, FieldError, FieldLabel } from "../ui/field";
 import { useTheme } from "../theme-provider";
 import { $updateSettings } from "./actions";
 import type { Theme } from "../theme-provider";
@@ -85,160 +79,138 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl">
+      <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>{m.settings_title()}</DialogTitle>
           <DialogDescription>{m.settings_description()}</DialogDescription>
         </DialogHeader>
 
-        <Form {...form}>
-          <form
-            id="settings-form"
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="flex flex-col gap-4"
-          >
-            {/* language */}
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex flex-col">
-                <h2 className="col-span-3 text-sm font-semibold">
-                  {m.settings_language()}
-                </h2>
-                <p className="col-span-3 col-start-1 row-span-2 text-xs opacity-80">
-                  {m.settings_language_description()}
-                </p>
-              </div>
+        <form
+          id="settings-form"
+          onSubmit={form.handleSubmit(handleSubmit)}
+          className="flex flex-col gap-4"
+        >
+          {/* language */}
+          <Field orientation="horizontal">
+            <FieldContent>
+              <FieldLabel>{m.settings_language()}</FieldLabel>
+              <p className="text-xs opacity-80">
+                {m.settings_language_description()}
+              </p>
+            </FieldContent>
 
-              <Select
-                name="language"
-                defaultValue={locale}
-                onValueChange={(value) => setLocale(value as typeof locale)}
-              >
-                <SelectTrigger className="w-36">
-                  <SelectValue placeholder={m.settings_language()} />
-                </SelectTrigger>
-                <SelectContent align="end">
-                  <SelectItem value="en">
-                    {m.settings_language_english()}
-                  </SelectItem>
-                  <SelectItem value="ko">
-                    {m.settings_language_korean()}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <Select
+              name="language"
+              defaultValue={locale}
+              onValueChange={(value) => setLocale(value as typeof locale)}
+            >
+              <SelectTrigger className="w-36">
+                <SelectValue placeholder={m.settings_language()} />
+              </SelectTrigger>
+              <SelectContent align="end">
+                <SelectItem value="en">
+                  {m.settings_language_english()}
+                </SelectItem>
+                <SelectItem value="ko">
+                  {m.settings_language_korean()}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
 
-            {/* theme */}
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex flex-col">
-                <h2 className="col-span-3 text-sm font-semibold">
-                  {m.settings_theme()}
-                </h2>
-                <p className="col-span-3 col-start-1 row-span-2 text-xs opacity-80">
-                  {m.settings_theme_description()}
-                </p>
-              </div>
+          {/* theme */}
+          <Field orientation="horizontal">
+            <FieldContent>
+              <FieldLabel>{m.settings_theme()}</FieldLabel>
+              <p className="text-xs opacity-80">
+                {m.settings_theme_description()}
+              </p>
+            </FieldContent>
 
-              <Select
-                name="theme"
-                defaultValue={theme}
-                onValueChange={(value) => setTheme(value as Theme)}
-              >
-                <SelectTrigger className="w-36">
-                  <SelectValue placeholder={m.settings_theme()} />
-                </SelectTrigger>
-                <SelectContent align="end">
-                  <SelectItem value="dark">
-                    {m.settings_theme_dark()}
-                  </SelectItem>
-                  <SelectItem value="light">
-                    {m.settings_theme_light()}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <Select
+              name="theme"
+              defaultValue={theme}
+              onValueChange={(value) => setTheme(value as Theme)}
+            >
+              <SelectTrigger className="w-36">
+                <SelectValue placeholder={m.settings_theme()} />
+              </SelectTrigger>
+              <SelectContent align="end">
+                <SelectItem value="dark">{m.settings_theme_dark()}</SelectItem>
+                <SelectItem value="light">
+                  {m.settings_theme_light()}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
 
-            {/* grid column size */}
-            <FormField
-              control={form.control}
-              name="gridColumns"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex flex-col">
-                        <h2 className="col-span-3 text-sm font-semibold">
-                          {m.settings_objekt_columns()}
-                        </h2>
-                        <p className="col-span-3 col-start-1 row-span-3 row-start-2 text-xs opacity-80">
-                          {m.settings_objekt_columns_description()}
-                        </p>
-                      </div>
+          {/* grid column size */}
+          <Controller
+            control={form.control}
+            name="gridColumns"
+            render={({ field, fieldState }) => (
+              <Field orientation="horizontal" data-invalid={fieldState.invalid}>
+                <FieldContent>
+                  <FieldLabel>{m.settings_objekt_columns()}</FieldLabel>
+                  <p className="text-xs opacity-80">
+                    {m.settings_objekt_columns_description()}
+                  </p>
+                </FieldContent>
 
-                      <Select
-                        name="gridColumns"
-                        onValueChange={field.onChange}
-                        defaultValue={field.value.toString()}
-                      >
-                        <SelectTrigger className="w-36">
-                          <SelectValue
-                            placeholder={m.settings_objekt_columns()}
-                          />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="4">
-                            {m.settings_columns_count({ count: "4" })}
-                          </SelectItem>
-                          <SelectItem value="5">
-                            {m.settings_columns_count({ count: "5" })}
-                          </SelectItem>
-                          <SelectItem value="6">
-                            {m.settings_columns_count({ count: "6" })}
-                          </SelectItem>
-                          <SelectItem value="7">
-                            {m.settings_columns_count({ count: "7" })}
-                          </SelectItem>
-                          <SelectItem value="8">
-                            {m.settings_columns_count({ count: "8" })}
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                <Select
+                  name="gridColumns"
+                  onValueChange={field.onChange}
+                  defaultValue={field.value.toString()}
+                >
+                  <SelectTrigger className="w-36">
+                    <SelectValue placeholder={m.settings_objekt_columns()} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="4">
+                      {m.settings_columns_count({ count: "4" })}
+                    </SelectItem>
+                    <SelectItem value="5">
+                      {m.settings_columns_count({ count: "5" })}
+                    </SelectItem>
+                    <SelectItem value="6">
+                      {m.settings_columns_count({ count: "6" })}
+                    </SelectItem>
+                    <SelectItem value="7">
+                      {m.settings_columns_count({ count: "7" })}
+                    </SelectItem>
+                    <SelectItem value="8">
+                      {m.settings_columns_count({ count: "8" })}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <FieldError errors={[fieldState.error]} />
+              </Field>
+            )}
+          />
 
-            {/* collection mode */}
-            <FormField
-              control={form.control}
-              name="collectionMode"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex flex-col">
-                        <h2 className="col-span-3 text-sm font-semibold">
-                          {m.settings_collection_mode()}
-                        </h2>
-                        <p className="col-span-3 col-start-1 row-span-3 row-start-2 text-xs opacity-80">
-                          {m.settings_collection_mode_description()}
-                        </p>
-                      </div>
+          {/* collection mode */}
+          <Controller
+            control={form.control}
+            name="collectionMode"
+            render={({ field, fieldState }) => (
+              <Field orientation="horizontal" data-invalid={fieldState.invalid}>
+                <FieldContent>
+                  <FieldLabel>{m.settings_collection_mode()}</FieldLabel>
+                  <p className="text-xs opacity-80">
+                    {m.settings_collection_mode_description()}
+                  </p>
+                </FieldContent>
 
-                      <DataSourceSelector
-                        name="collectionMode"
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </form>
-        </Form>
+                <DataSourceSelector
+                  name="collectionMode"
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                />
+                <FieldError errors={[fieldState.error]} />
+              </Field>
+            )}
+          />
+        </form>
 
         <DialogFooter className="flex-row justify-end gap-2">
           <Button
@@ -247,7 +219,9 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
             disabled={mutation.isPending}
           >
             <span>{m.common_save()}</span>
-            {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+            {mutation.isPending && (
+              <IconLoader2 className="h-4 w-4 animate-spin" />
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

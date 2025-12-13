@@ -1,18 +1,11 @@
-import { Edit, Loader2 } from "lucide-react";
+import { IconEdit, IconLoader2 } from "@tabler/icons-react";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { useForm, useFormState } from "react-hook-form";
+import { Controller, FormProvider, useForm, useFormState } from "react-hook-form";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "../ui/form";
+import { Field, FieldError, FieldLabel } from "../ui/field";
 import { updateObjektListSchema } from "../../lib/universal/schema/objekt-list";
 import { Input } from "../ui/input";
 import {
@@ -75,39 +68,39 @@ export default function UpdateList({ objektList }: Props) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="secondary" size="icon" className="rounded-full">
-          <Edit />
+          <IconEdit />
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>{m.list_update()}</DialogTitle>
         </DialogHeader>
-        <Form {...form}>
+        <FormProvider {...form}>
           <form
             onSubmit={form.handleSubmit(handleSubmit)}
             className="flex w-full flex-col gap-2"
           >
-            <FormField
+            <Controller
               control={form.control}
               name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{m.list_name()}</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={m.list_name_placeholder()}
-                      data-1p-ignore
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="name">{m.list_name()}</FieldLabel>
+                  <Input
+                    id="name"
+                    placeholder={m.list_name_placeholder()}
+                    data-1p-ignore
+                    aria-invalid={fieldState.invalid}
+                    {...field}
+                  />
+                  <FieldError errors={[fieldState.error]} />
+                </Field>
               )}
             />
 
             <SubmitButton />
           </form>
-        </Form>
+        </FormProvider>
       </DialogContent>
     </Dialog>
   );
@@ -119,7 +112,7 @@ function SubmitButton() {
   return (
     <Button type="submit" disabled={isSubmitting}>
       <span>{m.common_save()}</span>
-      {isSubmitting && <Loader2 className="animate-spin" />}
+      {isSubmitting && <IconLoader2 className="animate-spin" />}
     </Button>
   );
 }

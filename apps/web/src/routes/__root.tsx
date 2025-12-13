@@ -7,7 +7,7 @@ import {
 import { preconnect } from "react-dom";
 import { Toaster } from "sonner";
 import React from "react";
-import { FileQuestion, RefreshCcw } from "lucide-react";
+import { IconFileUnknown, IconRefresh } from "@tabler/icons-react";
 import appCss from "../styles/tailwind.css?url";
 import type { QueryClient } from "@tanstack/react-query";
 import Navbar from "@/components/navbar/navbar";
@@ -38,6 +38,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 
     await context.queryClient.ensureQueryData(selectedArtistsQuery);
   },
+  shellComponent: ShellComponent,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
   errorComponent: ErrorComponent,
@@ -124,14 +125,10 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 });
 
 function RootComponent() {
-  return (
-    <RootDocument>
-      <Outlet />
-    </RootDocument>
-  );
+  return <Outlet />;
 }
 
-function RootDocument({ children }: { children: React.ReactNode }) {
+function ShellComponent({ children }: { children: React.ReactNode }) {
   preconnect("https://imagedelivery.net");
   preconnect("https://resources.cosmo.fans");
   preconnect("https://static.cosmo.fans");
@@ -170,7 +167,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 function NotFoundComponent() {
   return (
     <div className="flex w-full flex-col items-center justify-center gap-2 py-12">
-      <FileQuestion className="h-24 w-24" />
+      <IconFileUnknown className="h-24 w-24" />
       <p className="text-center text-sm font-semibold">
         {m.error_page_not_found()}
       </p>
@@ -186,7 +183,7 @@ function ErrorComponent() {
         {m.error_something_wrong_description({ appName: env.VITE_APP_NAME })}
       </p>
       <Button variant="outline" onClick={() => window.location.reload()}>
-        <RefreshCcw className="mr-2" />
+        <IconRefresh className="mr-2" />
         <span>{m.error_reload()}</span>
       </Button>
     </main>

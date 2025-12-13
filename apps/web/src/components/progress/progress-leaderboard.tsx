@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { Trophy } from "lucide-react";
+import { IconTrophy } from "@tabler/icons-react";
 import { Button } from "../ui/button";
 import {
   Tooltip,
@@ -62,7 +62,7 @@ export default function ProgressLeaderboard({ member, seasons }: Props) {
               size="icon"
               onClick={() => toggle()}
             >
-              <Trophy className="h-5 w-5" />
+              <IconTrophy className="h-5 w-5" />
             </Button>
           </TooltipTrigger>
           <TooltipContent side="left">

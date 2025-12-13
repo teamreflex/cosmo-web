@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { ChevronRight, LetterText, List, PlusCircle } from "lucide-react";
+import {
+  IconChevronRight,
+  IconCirclePlus,
+  IconLetterCase,
+  IconList,
+} from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import CreateListDialog from "./create-list-dialog";
 import DiscordFormatDialog from "./discord-format-dialog";
@@ -10,7 +15,6 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -43,13 +47,11 @@ export default function ListDropdown(props: Props) {
 
       <DropdownMenuTrigger asChild>
         <Button variant="secondary" size="profile" data-profile>
-          <List className="h-5 w-5" />
+          <IconList className="h-5 w-5" />
           <span className="hidden sm:block">{m.list_lists()}</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuLabel>{m.objekt_list()}</DropdownMenuLabel>
-        <DropdownMenuSeparator />
+      <DropdownMenuContent align="end" className="w-fit">
         <DropdownMenuGroup>
           {props.objektLists.map((list) => (
             <DropdownMenuItem
@@ -62,7 +64,7 @@ export default function ListDropdown(props: Props) {
                 className="flex w-full items-center justify-between"
               >
                 {list.name}
-                <ChevronRight className="h-4 w-4" />
+                <IconChevronRight className="h-4 w-4" />
               </Link>
             </DropdownMenuItem>
           ))}
@@ -77,11 +79,11 @@ export default function ListDropdown(props: Props) {
               <DropdownMenuSeparator />
 
               <DropdownMenuItem onClick={() => setCreateOpen(true)}>
-                <PlusCircle className="h-4 w-4" />
+                <IconCirclePlus className="h-4 w-4" />
                 <span className="font-semibold">{m.list_create_new()}</span>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setCompareOpen(true)}>
-                <LetterText className="h-4 w-4" />
+                <IconLetterCase className="h-4 w-4" />
                 <span className="font-semibold">{m.list_discord_format()}</span>
               </DropdownMenuItem>
             </div>

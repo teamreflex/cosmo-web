@@ -1,4 +1,4 @@
-import { X } from "lucide-react";
+import { IconX } from "@tabler/icons-react";
 import { getRouteApi } from "@tanstack/react-router";
 import { useState } from "react";
 import { useDebounceCallback } from "usehooks-ts";
@@ -46,7 +46,7 @@ export default function FilterSearch() {
       />
 
       <button type="button" onClick={() => set(undefined)}>
-        <X className="mr-3 h-4 w-4" />
+        <IconX className="mr-3 h-4 w-4" />
       </button>
     </div>
   );

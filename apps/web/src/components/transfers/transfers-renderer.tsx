@@ -3,7 +3,7 @@ import {
   useSuspenseInfiniteQuery,
 } from "@tanstack/react-query";
 import { ErrorBoundary } from "react-error-boundary";
-import { HeartCrack, RefreshCcw } from "lucide-react";
+import { IconHeartBroken, IconRefresh } from "@tabler/icons-react";
 import { Suspense, useCallback } from "react";
 import { Skeleton } from "../ui/skeleton";
 import { Button } from "../ui/button";
@@ -78,11 +78,11 @@ export default function TransfersRenderer({ cosmo }: Props) {
               fallbackRender={({ resetErrorBoundary }) => (
                 <div className="flex w-full flex-col items-center gap-2">
                   <div className="flex flex-col items-center justify-center gap-2 py-12">
-                    <HeartCrack className="h-12 w-12" />
+                    <IconHeartBroken className="h-12 w-12" />
                     <p>{m.transfer_error_loading()}</p>
                   </div>
                   <Button variant="outline" onClick={resetErrorBoundary}>
-                    <RefreshCcw className="mr-2" /> {m.common_retry()}
+                    <IconRefresh className="mr-2" /> {m.common_retry()}
                   </Button>
                 </div>
               )}

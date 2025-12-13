@@ -1,5 +1,5 @@
 import { ofetch } from "ofetch";
-import { HeartCrack, RefreshCcw } from "lucide-react";
+import { IconHeartBroken, IconRefresh } from "@tabler/icons-react";
 import { Button } from "../../ui/button";
 import { ObjektNotFoundError } from "../common";
 import type { FetchError } from "ofetch";
@@ -38,11 +38,11 @@ export function MetadataDialogError({
   return (
     <div className="flex flex-col items-center justify-center gap-2 p-4">
       <div className="flex items-center gap-2">
-        <HeartCrack className="h-6 w-6" />
+        <IconHeartBroken className="h-6 w-6" />
         <span className="text-sm font-semibold">{message}</span>
       </div>
       <Button size="sm" variant="outline" onClick={resetErrorBoundary}>
-        <RefreshCcw className="mr-2" /> {m.common_retry()}
+        <IconRefresh className="mr-2" /> {m.common_retry()}
       </Button>
     </div>
   );

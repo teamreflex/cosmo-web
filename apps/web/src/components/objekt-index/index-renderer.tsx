@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { List } from "lucide-react";
+import { IconList } from "@tabler/icons-react";
 import CosmoMemberFilter from "../objekt/cosmo-member-filter";
 import FiltersContainer from "../collection/filters-container";
 import VirtualizedObjektGrid from "../objekt/virtualized-objekt-grid";
@@ -35,6 +35,7 @@ export default function IndexRenderer(props: Props) {
       </FiltersContainer>
 
       <CosmoMemberFilter />
+
       <VirtualizedObjektGrid
         options={options}
         gridColumns={gridColumns}
@@ -74,7 +75,7 @@ function Title() {
                 size="profile"
                 data-profile
               >
-                <List className="h-5 w-5" />
+                <IconList className="h-5 w-5" />
                 <span className="hidden sm:block">{m.list_lists()}</span>
               </Button>
             }

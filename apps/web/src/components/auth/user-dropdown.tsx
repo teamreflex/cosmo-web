@@ -1,6 +1,12 @@
-import { Info, LogOut, ShieldAlert, UserCog, Wrench } from "lucide-react";
+import {
+  IconBrandDiscord,
+  IconInfoCircle,
+  IconLogout,
+  IconShieldExclamation,
+  IconTool,
+  IconUserCog,
+} from "@tabler/icons-react";
 import { useState } from "react";
-import { IconBrandDiscord } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import { ArtistItem } from "../navbar/artist-selectbox";
 import UserAvatar from "../profile/user-avatar";
@@ -57,7 +63,7 @@ export default function UserDropdown({
           username={user.username ?? "Apollo"}
         />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="w-fit">
         <DropdownMenuGroup>
           {artistList
             .sort((a, b) => a.comoTokenId - b.comoTokenId)
@@ -75,7 +81,7 @@ export default function UserDropdown({
           onClick={() => setOpenAccount(true)}
           className="cursor-pointer"
         >
-          <UserCog className="h-4 w-4" />
+          <IconUserCog className="h-4 w-4" />
           <span>{m.common_account()}</span>
         </DropdownMenuItem>
 
@@ -83,7 +89,7 @@ export default function UserDropdown({
           onClick={() => setOpenSettings(true)}
           className="cursor-pointer"
         >
-          <Wrench className="h-4 w-4" />
+          <IconTool className="h-4 w-4" />
           <span>{m.user_dropdown_settings()}</span>
         </DropdownMenuItem>
 
@@ -92,7 +98,7 @@ export default function UserDropdown({
             <DropdownMenuSeparator />
             <DropdownMenuItem className="cursor-pointer" asChild>
               <Link to="/admin">
-                <ShieldAlert className="h-4 w-4" />
+                <IconShieldExclamation className="h-4 w-4" />
                 <span>{m.common_admin()}</span>
               </Link>
             </DropdownMenuItem>
@@ -105,7 +111,7 @@ export default function UserDropdown({
           onClick={() => setOpenAbout(true)}
           className="cursor-pointer"
         >
-          <Info className="h-4 w-4" />
+          <IconInfoCircle className="h-4 w-4" />
           <span>{m.logo_about()}</span>
         </DropdownMenuItem>
 
@@ -121,7 +127,7 @@ export default function UserDropdown({
           onClick={() => onSignOut()}
           className="cursor-pointer"
         >
-          <LogOut className="h-4 w-4" />
+          <IconLogout className="h-4 w-4" />
           <span>{m.user_dropdown_sign_out()}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>

@@ -1,4 +1,4 @@
-import { Loader2, MailCheck, Trash2 } from "lucide-react";
+import { IconLoader2, IconMailCheck, IconTrash } from "@tabler/icons-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,7 +21,7 @@ export default function DeleteAccount() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="destructive" className="w-fit">
-          <Trash2 className="h-4 w-4" />
+          <IconTrash className="h-4 w-4" />
           <span>{m.delete_account_title()}</span>
         </Button>
       </DialogTrigger>
@@ -47,7 +47,7 @@ export default function DeleteAccount() {
               >
                 <span>{m.delete_account_send_email()}</span>
                 {status === "pending" && (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <IconLoader2 className="h-4 w-4 animate-spin" />
                 )}
               </Button>
             </DialogFooter>
@@ -61,7 +61,7 @@ export default function DeleteAccount() {
 function Success(props: { onClose: () => void }) {
   return (
     <div className="flex h-full flex-col items-center justify-center">
-      <MailCheck className="h-10 w-10" />
+      <IconMailCheck className="h-10 w-10" />
       <p className="text-sm font-semibold">
         {m.delete_account_success_title()}
       </p>

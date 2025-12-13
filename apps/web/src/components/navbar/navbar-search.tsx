@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search } from "lucide-react";
+import { IconSearch } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { UserSearch } from "../user-search";
 import {
@@ -43,7 +43,7 @@ export default function NavbarSearch() {
               aria-label={m.navbar_search_user()}
               onClick={() => setOpen(true)}
             >
-              <Search className="h-8 w-8 shrink-0 fill-transparent transition-all" />
+              <IconSearch className="h-8 w-8 shrink-0 fill-transparent transition-all" />
             </button>
           </TooltipTrigger>
           <TooltipContent>

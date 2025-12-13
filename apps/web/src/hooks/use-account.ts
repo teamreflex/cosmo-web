@@ -1,41 +1,37 @@
-import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
+import { queryOptions, useMutation } from "@tanstack/react-query";
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 
 export type Provider = "twitter" | "discord";
 
-export function useSessionUser() {
-  return useSuspenseQuery({
-    queryKey: ["session"],
-    queryFn: async ({ signal }) => {
-      const result = await authClient.getSession({
-        fetchOptions: {
-          signal,
-        },
-      });
-      if (result.error) {
-        throw new Error(getAuthErrorMessage(result.error));
-      }
-      return result.data?.user ?? null;
-    },
-  });
-}
+export const sessionQuery = queryOptions({
+  queryKey: ["session"],
+  queryFn: async ({ signal }) => {
+    const result = await authClient.getSession({
+      fetchOptions: {
+        signal,
+      },
+    });
+    if (result.error) {
+      throw new Error(getAuthErrorMessage(result.error));
+    }
+    return result.data?.user ?? null;
+  },
+});
 
-export function useListAccounts() {
-  return useSuspenseQuery({
-    queryKey: ["accounts"],
-    queryFn: async ({ signal }) => {
-      const result = await authClient.listAccounts({
-        fetchOptions: {
-          signal,
-        },
-      });
-      if (result.error) {
-        throw new Error(getAuthErrorMessage(result.error));
-      }
-      return result.data;
-    },
-  });
-}
+export const listAccountsQuery = queryOptions({
+  queryKey: ["accounts"],
+  queryFn: async ({ signal }) => {
+    const result = await authClient.listAccounts({
+      fetchOptions: {
+        signal,
+      },
+    });
+    if (result.error) {
+      throw new Error(getAuthErrorMessage(result.error));
+    }
+    return result.data;
+  },
+});
 
 export type LinkedAccount = {
   id: string;

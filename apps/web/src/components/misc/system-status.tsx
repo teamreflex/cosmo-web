@@ -1,4 +1,4 @@
-import { Activity, HardDriveDownload, X } from "lucide-react";
+import { IconActivity, IconServer, IconX } from "@tabler/icons-react";
 import { ErrorBoundary } from "react-error-boundary";
 import { Suspense } from "react";
 import { useSuspenseQuery } from "@tanstack/react-query";
@@ -47,7 +47,7 @@ function SystemStatusPopover() {
             bgStatus(processor.status),
           )}
         >
-          <Activity className="h-5 w-5" />
+          <IconActivity className="h-5 w-5" />
         </button>
       </PopoverTrigger>
       <PopoverContent align="start" className="p-2">
@@ -64,7 +64,7 @@ function SystemStatusPopover() {
               <span className="font-semibold">
                 {processor.height.processor}
               </span>
-              <HardDriveDownload className="size-4" />
+              <IconServer className="size-4" />
             </div>
           </div>
           <p className="text-xs">{processorText[processor.status]}</p>
@@ -80,8 +80,8 @@ function ErrorFallback() {
       <Tooltip>
         <TooltipTrigger asChild>
           <div className="flex items-center gap-1 text-cosmo-text">
-            <Activity className="h-5 w-5" />
-            <X className="h-4 w-4" />
+            <IconActivity className="h-5 w-5" />
+            <IconX className="h-4 w-4" />
           </div>
         </TooltipTrigger>
         <TooltipContent>{m.system_status_fetch_error()}</TooltipContent>

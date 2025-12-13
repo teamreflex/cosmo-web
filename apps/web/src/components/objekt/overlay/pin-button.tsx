@@ -1,4 +1,4 @@
-import { Loader2, Pin, PinOff } from "lucide-react";
+import { IconLoader2, IconPin, IconPinnedOff } from "@tabler/icons-react";
 import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -52,9 +52,9 @@ function PinButton(props: ButtonProps) {
       onClick={handleClick}
     >
       {mutation.isPending ? (
-        <Loader2 className="h-3 w-3 animate-spin sm:h-5 sm:w-5" />
+        <IconLoader2 className="h-3 w-3 animate-spin sm:h-5 sm:w-5" />
       ) : (
-        <Pin className="h-3 w-3 sm:h-5 sm:w-5" />
+        <IconPin className="h-3 w-3 sm:h-5 sm:w-5" />
       )}
     </button>
   );
@@ -86,9 +86,9 @@ function UnpinButton(props: ButtonProps) {
       onClick={handleClick}
     >
       {mutation.isPending ? (
-        <Loader2 className="h-3 w-3 animate-spin sm:h-5 sm:w-5" />
+        <IconLoader2 className="h-3 w-3 animate-spin sm:h-5 sm:w-5" />
       ) : (
-        <PinOff className="h-3 w-3 sm:h-5 sm:w-5" />
+        <IconPinnedOff className="h-3 w-3 sm:h-5 sm:w-5" />
       )}
     </button>
   );

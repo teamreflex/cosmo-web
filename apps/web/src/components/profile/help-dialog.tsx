@@ -1,6 +1,5 @@
-import { HelpCircle, Lock, MailX } from "lucide-react";
+import { IconHelp, IconLock, IconMailOff } from "@tabler/icons-react";
 import { Button } from "../ui/button";
-import VisuallyHidden from "../ui/visually-hidden";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,18 +18,16 @@ export default function HelpDialog() {
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <Button variant="secondary" size="profile">
-          <HelpCircle className="h-5 w-5" />
+          <IconHelp className="h-5 w-5" />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
-        <VisuallyHidden>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{m.help_profile_title()}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {m.help_profile_description()}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-        </VisuallyHidden>
+        <AlertDialogHeader className="sr-only">
+          <AlertDialogTitle>{m.help_profile_title()}</AlertDialogTitle>
+          <AlertDialogDescription>
+            {m.help_profile_description()}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
         <div className="flex flex-col gap-4">
           {/* grid/column size */}
           <div className="flex flex-col gap-1 text-sm text-foreground/80">
@@ -63,7 +60,7 @@ export default function HelpDialog() {
               {/* locked */}
               <div className="flex items-center gap-2">
                 <div className="flex w-fit items-center justify-center rounded-lg bg-[#FFDD00] p-1 text-black">
-                  <Lock className="h-5 w-5" />
+                  <IconLock className="h-5 w-5" />
                 </div>
                 <p className="text-sm font-semibold">
                   {m.profile_help_locked()}
@@ -73,7 +70,7 @@ export default function HelpDialog() {
               {/* not transferable */}
               <div className="flex items-center gap-2">
                 <div className="flex w-fit items-center justify-center rounded-lg bg-[#75FB4C] p-1 text-black">
-                  <MailX className="h-5 w-5" />
+                  <IconMailOff className="h-5 w-5" />
                 </div>
                 <p className="text-sm font-semibold">
                   {m.profile_help_not_transferable()}

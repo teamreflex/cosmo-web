@@ -1,5 +1,5 @@
 import { Link, Outlet, createFileRoute } from "@tanstack/react-router";
-import { CircleAlert } from "lucide-react";
+import { IconAlertCircle } from "@tabler/icons-react";
 import { ErrorBoundary } from "react-error-boundary";
 import { Suspense } from "react";
 import { Addresses, isEqual } from "@apollo/util";
@@ -191,7 +191,7 @@ function PendingComponent() {
 function NotFoundComponent() {
   return (
     <main className="container flex w-full flex-col items-center justify-center gap-2 py-12">
-      <CircleAlert className="h-24 w-24" />
+      <IconAlertCircle className="h-24 w-24" />
       <p className="text-sm font-semibold">{m.error_not_found_title()}</p>
       <p className="w-64 text-center text-sm text-balance">
         {m.error_not_found_description({ appName: env.VITE_APP_NAME })}

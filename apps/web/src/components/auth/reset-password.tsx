@@ -1,19 +1,12 @@
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { IconLoader2 } from "@tabler/icons-react";
+import { Controller, useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { useNavigate } from "@tanstack/react-router";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "../ui/form";
+import { Field, FieldError, FieldLabel } from "../ui/field";
 import type { z } from "zod";
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { resetPasswordSchema } from "@/lib/universal/schema/auth";
@@ -59,34 +52,32 @@ export default function ResetPassword({ token }: Props) {
   }
 
   return (
-    <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(handleSubmit)}
-        className="flex w-full flex-col gap-2"
-      >
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{m.auth_new_password()}</FormLabel>
-              <FormControl>
-                <Input
-                  type="password"
-                  placeholder={m.form_password_placeholder()}
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+    <form
+      onSubmit={form.handleSubmit(handleSubmit)}
+      className="flex w-full flex-col gap-2"
+    >
+      <Controller
+        control={form.control}
+        name="password"
+        render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid}>
+            <FieldLabel htmlFor="password">{m.auth_new_password()}</FieldLabel>
+            <Input
+              id="password"
+              type="password"
+              placeholder={m.form_password_placeholder()}
+              aria-invalid={fieldState.invalid}
+              {...field}
+            />
+            <FieldError errors={[fieldState.error]} />
+          </Field>
+        )}
+      />
 
-        <Button type="submit" disabled={mutation.isPending}>
-          <span>{m.auth_reset_password()}</span>
-          {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-        </Button>
-      </form>
-    </Form>
+      <Button type="submit" disabled={mutation.isPending}>
+        <span>{m.auth_reset_password()}</span>
+        {mutation.isPending && <IconLoader2 className="h-4 w-4 animate-spin" />}
+      </Button>
+    </form>
   );
 }

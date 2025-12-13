@@ -1,4 +1,4 @@
-import { ListX, Loader2 } from "lucide-react";
+import { IconLoader2, IconPlaylistX } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
@@ -53,9 +53,9 @@ export default function RemoveFromList({ id, collection, objektList }: Props) {
       })}
     >
       {mutation.isPending ? (
-        <Loader2 className="h-3 w-3 animate-spin sm:h-5 sm:w-5" />
+        <IconLoader2 className="h-3 w-3 animate-spin sm:h-5 sm:w-5" />
       ) : (
-        <ListX className="h-3 w-3 sm:h-5 sm:w-5" />
+        <IconPlaylistX className="h-3 w-3 sm:h-5 sm:w-5" />
       )}
     </button>
   );

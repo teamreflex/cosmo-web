@@ -1,5 +1,5 @@
 import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
-import { HeartCrack } from "lucide-react";
+import { IconHeartBroken } from "@tabler/icons-react";
 import { Error } from "@/components/error-boundary";
 import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -150,7 +150,7 @@ function PendingComponent() {
 function NotFoundComponent() {
   return (
     <main className="container flex w-full flex-col items-center justify-center gap-2 py-12">
-      <HeartCrack className="h-24 w-24" />
+      <IconHeartBroken className="h-24 w-24" />
       <p className="text-sm font-semibold">{m.list_not_found()}</p>
     </main>
   );

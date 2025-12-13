@@ -1,4 +1,4 @@
-import { Star } from "lucide-react";
+import { IconStar } from "@tabler/icons-react";
 import { ObjektSidebar } from "../objekt/common";
 import ExpandableObjekt from "../objekt/objekt-expandable";
 import type { ObjektProgression } from "@/lib/universal/progress";
@@ -22,7 +22,7 @@ export default function ProgressObjekt({ objekt }: Props) {
     >
       {objekt.unobtainable && (
         <div className="absolute top-1 left-1 rounded-full bg-black p-1 sm:top-2 sm:left-2">
-          <Star className="size-4 fill-white text-white" />
+          <IconStar className="size-4 fill-white text-white" />
         </div>
       )}
       <ObjektSidebar collection={collection} />
