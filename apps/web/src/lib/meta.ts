@@ -216,6 +216,9 @@ export function defineHead(meta: Meta) {
   if (denyRobots) {
     metaTags.push({ name: "robots", content: "noindex,nofollow" });
   }
+  if (meta.viewport) {
+    metaTags.push({ name: "viewport", content: meta.viewport });
+  }
 
   const links: { rel: string; href: string }[] = [];
   if (canonical) {
