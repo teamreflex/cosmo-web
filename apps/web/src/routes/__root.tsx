@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { getLocale } from "@/i18n/runtime";
 import Devtools from "@/components/devtools";
 import { ThemeProvider } from "@/components/theme-provider";
+import { defineHead } from "@/lib/meta";
 
 interface RouterContext {
   queryClient: QueryClient;
@@ -42,86 +43,92 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
   errorComponent: ErrorComponent,
-  head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      {
-        name: "viewport",
-        content: "width=device-width, initial-scale=1",
+  head: () => {
+    const head = defineHead({
+      extra: [<meta charSet="utf-8" />],
+      viewport: "width=device-width, initial-scale=1",
+      title: env.VITE_APP_NAME,
+      description: `${env.VITE_APP_NAME} - Objekt & gravity explorer for Cosmo`,
+      keywords: [
+        "kpop",
+        "korea",
+        "modhaus",
+        "모드하우스",
+        "cosmo",
+        "objekt",
+        "como",
+        "gravity",
+        "tripleS",
+        "트리플에스",
+        "artms",
+        "artemis",
+        "아르테미스",
+        "아르테미스 스트래티지",
+        "odd eye circle",
+        "오드아이써클",
+        "loona",
+        "이달의 소녀",
+        "idntt",
+      ],
+      themeColor: {
+        light: "#ffffff",
+        dark: "#09090b",
       },
-      { title: env.VITE_APP_NAME },
-      {
-        description: `${env.VITE_APP_NAME} - Objekt & gravity explorer for Cosmo`,
-      },
-      {
-        keywords: [
-          "kpop",
-          "korea",
-          "modhaus",
-          "모드하우스",
-          "cosmo",
-          "objekt",
-          "como",
-          "gravity",
-          "tripleS",
-          "트리플에스",
-          "artms",
-          "artemis",
-          "아르테미스",
-          "아르테미스 스트래티지",
-          "odd eye circle",
-          "오드아이써클",
-          "loona",
-          "이달의 소녀",
-          "idntt",
-        ],
-      },
-    ],
-    links: [
-      {
-        rel: "preload",
-        href: "/HalvarBreit-Bd.woff2",
-        as: "font",
-        type: "font/woff2",
-        crossOrigin: "anonymous",
-      },
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
-      {
-        rel: "apple-touch-icon",
-        sizes: "180x180",
-        href: "/apple-touch-icon.png",
-      },
-      {
-        rel: "icon",
-        type: "image/png",
-        sizes: "32x32",
-        href: "/favicon-32x32.png",
-      },
-      {
-        rel: "icon",
-        type: "image/png",
-        sizes: "16x16",
-        href: "/favicon-16x16.png",
-      },
-      { rel: "manifest", href: "/site.webmanifest", color: "#020618" },
-      { rel: "icon", href: "/favicon.ico" },
-    ],
-    scripts: [
-      // umami analytics
-      ...(env.VITE_UMAMI_ID && env.VITE_UMAMI_SCRIPT_URL
-        ? [
-            {
-              src: env.VITE_UMAMI_SCRIPT_URL,
-              async: true,
-              "data-website-id": env.VITE_UMAMI_ID,
-            },
-          ]
-        : []),
-    ],
-  }),
+    });
+
+    const core = {
+      links: [
+        {
+          rel: "preload",
+          href: "/HalvarBreit-Bd.woff2",
+          as: "font",
+          type: "font/woff2",
+          crossOrigin: "anonymous",
+        },
+        {
+          rel: "stylesheet",
+          href: appCss,
+        },
+        {
+          rel: "apple-touch-icon",
+          sizes: "180x180",
+          href: "/apple-touch-icon.png",
+        },
+        {
+          rel: "icon",
+          type: "image/png",
+          sizes: "32x32",
+          href: "/favicon-32x32.png",
+        },
+        {
+          rel: "icon",
+          type: "image/png",
+          sizes: "16x16",
+          href: "/favicon-16x16.png",
+        },
+        { rel: "manifest", href: "/site.webmanifest", color: "#09090b" },
+        { rel: "icon", href: "/favicon.ico" },
+      ],
+      scripts: [
+        // umami analytics
+        ...(env.VITE_UMAMI_ID && env.VITE_UMAMI_SCRIPT_URL
+          ? [
+              {
+                src: env.VITE_UMAMI_SCRIPT_URL,
+                async: true,
+                "data-website-id": env.VITE_UMAMI_ID,
+              },
+            ]
+          : []),
+      ],
+    };
+
+    return {
+      ...head,
+      links: [...core.links, ...head.links],
+      scripts: [...core.scripts, ...head.scripts],
+    };
+  },
 });
 
 function RootComponent() {

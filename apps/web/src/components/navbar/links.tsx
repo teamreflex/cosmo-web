@@ -58,7 +58,7 @@ export default function Links(props: Props) {
                 <IconMenu2 className="h-8 w-8 shrink-0" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-fit">
+            <DropdownMenuContent className="w-fit" align="end">
               <DropdownMenuLabel>{m.common_menu()}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <MobileLinks {...props} />

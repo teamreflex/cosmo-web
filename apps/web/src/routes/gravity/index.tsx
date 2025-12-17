@@ -114,14 +114,14 @@ function GravityItem(props: { gravity: Gravity }) {
     <Link to={href} className="[content-visibility:auto]" preload={false}>
       <Card
         data-recent={isRecent}
-        className="group relative aspect-square overflow-clip py-0 data-[recent=true]:border-cosmo"
+        className="group relative aspect-square overflow-clip py-0 data-recent:border-cosmo"
       >
         <img
           src={props.gravity.image}
           alt={props.gravity.title}
           className="absolute object-cover grayscale transition-all duration-300 group-hover:grayscale-0 group-data-[recent=true]:grayscale-0"
         />
-        <CardContent className="isolate flex h-full w-full items-end justify-start gap-2 bg-gradient-to-t from-black/80 from-5% via-black/20 via-20% to-black/0 px-0">
+        <CardContent className="isolate flex h-full w-full items-end justify-start gap-2 bg-linear-to-t from-black/80 from-5% via-black/20 via-20% to-black/0 px-0">
           <div className="flex w-full flex-row items-center gap-2 p-2">
             <IconCalendarEvent className="size-4 shrink-0" />
             <GravityTimestamp

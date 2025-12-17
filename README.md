@@ -18,11 +18,13 @@ A platform for exploring objekts & gravities from [MODHAUS](https://www.mod-haus
 
 ## Project
 
-- `apps/web`: Core Tanstack Start web app deployed at [apollo.cafe](https://apollo.cafe)
+- `apps/web`: Core TanStack Start web app deployed at [apollo.cafe](https://apollo.cafe)
 - `apps/indexer`: Subsquid blockchain indexer for cataloging Modhaus objekt collections
+- `apps/schedules`: Functions for executing scheduled tasks
+- `apps/typesense`: Dockerfile for building Typesense with `curl` available
 - `apps/typesense-import`: Sync new objekt collections to the Typesense database
-- `packages/cosmo`: Types and requests for the COSMO API
-- `packages/database`: Drizzle schemas for the web app and indexer databases
+- `packages/cosmo`: COSMO related types and API functions
+- `packages/database`: `drizzle-orm` schemas for both databases
 - `packages/eslint`: Shared ESLint config
 - `packages/typescript`: Shared tsconfig.json file
 - `packages/util`: Shared utility functions
@@ -47,7 +49,7 @@ bun install
 cp .env.example .env.local
 turbo i18n
 turbo db:migrate
-turbo dev
+turbo dev --filter web
 ```
 
 ## Tooling

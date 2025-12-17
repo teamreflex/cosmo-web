@@ -59,6 +59,8 @@ const cosmo = await db
   .where(eq(cosmoAccounts.username, "username"));
 ```
 
+Do not write raw SQL in `sql` template tags unless absolutely necessary due to the lack of Drizzle function. Things like `array_agg()`, `CASE ... WHEN` statements etc.
+
 ## Tailwind
 
 The project uses Tailwind v4, so always use v4 conventions rather than v3. This includes things like:
@@ -71,3 +73,7 @@ The project uses Tailwind v4, so always use v4 conventions rather than v3. This 
 
 - when writing new components that include strings, always use the i18n system and create new strings for all languages in `messages/`
 - use `turbo i18n` to compile messages into .js modules for use with the `m()` helper.
+
+## Development
+
+When writing throwaway scripts for testing, use the `apps/web/tmp` directory. The contents has been put into `.gitignore` - nothing in here should be committed. Always delete once done.

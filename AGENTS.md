@@ -14,7 +14,7 @@ This is a Turborepo monorepo for the Apollo project.
 
 ### Turborepo
 
-- This is a Turborepo monorepo - **never run package commands with `bun`, `pnpm` or `npm` directly**
+- This is a [Bun](https://bun.sh/) monorepo. Do not use npm/pnpm.
 - Use `turbo <command>` to run commands across packages
 - You can append a turbo command with `--filter <package>` to run the command for only one app/package.
   - For example, typecheck only the web app: `turbo typecheck --filter web`, or only the util package: `turbo typecheck --filter @apollo/util`
@@ -30,12 +30,16 @@ This is a Turborepo monorepo for the Apollo project.
 
 #### Apps
 
-- `apps/web`: Core Tanstack Start web app
+- `apps/web`: Core TanStack Start web app
 - `apps/indexer`: Subsquid blockchain indexer for cataloging Modhaus objekt collections
+- `apps/schedules`: Functions for executing scheduled tasks
+- `apps/typesense`: Dockerfile for building Typesense with `curl` available
 - `apps/typesense-import`: Sync new objekt collections to the Typesense database
 
 #### Packages
 
+- `packages/cosmo`: COSMO related types and API functions
+- `packages/database`: `drizzle-orm` schemas for both databases
 - `packages/eslint`: Shared ESLint config
 - `packages/typescript`: Shared tsconfig.json file
 - `packages/util`: Shared utility functions
