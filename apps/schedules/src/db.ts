@@ -16,10 +16,7 @@ export class DatabaseWeb extends Effect.Service<DatabaseWeb>()(
 
       const client = new SQL({
         url: url.toString(),
-        max: 2, // only need 1-2 connections for single-threaded app
-        idleTimeout: 60, // close idle connections after 1 minute
-        maxLifetime: 3600, // recycle connections every hour
-        connectionTimeout: 30, // timeout for establishing new connections
+        max: 1, // only need 1 connection for single-threaded app
       });
       return drizzle({ client, relations });
     }),

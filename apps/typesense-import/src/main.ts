@@ -14,6 +14,9 @@ import { Typesense } from "./typesense";
 
 const main = Effect.gen(function* () {
   const config = yield* getConfig;
+  const indexer = yield* Indexer;
+  const metadata = yield* Metadata;
+  const typesense = yield* Typesense;
   const timestamp = yield* Ref.make<number | null>(null);
 
   // perform initial setup
@@ -29,9 +32,6 @@ const main = Effect.gen(function* () {
     yield* Effect.logInfo(
       `Fetching collections from ${current === null ? "the start" : new Date(current).toISOString()}`,
     );
-
-    const indexer = yield* Indexer;
-    const metadata = yield* Metadata;
 
     const collections = yield* Effect.promise(async () => {
       return await indexer.query.collections.findMany({
@@ -74,24 +74,23 @@ const main = Effect.gen(function* () {
     });
 
     // build the new objects that will be inserted into typesense
-    const zipped = collections.map((c) => {
-      const description = descriptions.find((d) => d.collectionId === c.slug);
-      return {
-        // collection fields
-        ...c,
-        createdAt: new Date(c.createdAt).getTime(),
-        // custom fields
-        description: description?.description,
-        shortCode:
-          c.artist !== "idntt"
-            ? getShortCode(c.collectionNo, c.season)
-            : c.collectionNo, // a101z, b101z, aa101z etc
-        edition: getEdition(c.collectionNo, c.class), // 1st, 2nd, 3rd
-      };
-    });
+    const descMap = new Map(
+      descriptions.map((d) => [d.collectionId, d.description]),
+    );
+    const zipped = collections.map((c) => ({
+      // collection fields
+      ...c,
+      createdAt: new Date(c.createdAt).getTime(),
+      // custom fields
+      description: descMap.get(c.slug),
+      shortCode:
+        c.artist !== "idntt"
+          ? getShortCode(c.collectionNo, c.season)
+          : c.collectionNo, // a101z, b101z, aa101z etc
+      edition: getEdition(c.collectionNo, c.class), // 1st, 2nd, 3rd
+    }));
 
     // bulk upsert the objects into typesense
-    const typesense = yield* Typesense;
     let count = 0;
     for (let i = 0; i < zipped.length; i += 500) {
       const chunk = zipped.slice(i, i + 500);
