@@ -16,7 +16,7 @@
   "dependencies": {
     "ofetch": "^1.5.1",
     "puppeteer-core": "^24.33.0",
-    "zod": "^4.1.13"
+    "zod": "^4.2.1"
   },
   "devDependencies": {
     "@apollo/eslint": "workspace:*",
@@ -28,6 +28,6 @@
     "prettier": "^3.7.4",
     "turbo": "^2.6.3",
     "typescript": "5.9.3",
-    "typescript-eslint": "^8.49.0"
+    "typescript-eslint": "^8.50.0"
   }
 }
