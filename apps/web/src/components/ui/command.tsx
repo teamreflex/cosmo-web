@@ -5,7 +5,6 @@ import { Button } from "./button";
 import { cn } from "@/lib/utils";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -58,12 +57,15 @@ function CommandDialog({
   );
 }
 
-function CommandInput({
-  className,
-  ...props
-}: React.ComponentProps<typeof CommandPrimitive.Input>) {
+interface CommandInputProps extends React.ComponentProps<
+  typeof CommandPrimitive.Input
+> {
+  onClose?: () => void;
+}
+
+function CommandInput({ className, onClose, ...props }: CommandInputProps) {
   return (
-    <div data-slot="command-input-wrapper" className="p-1 pb-0">
+    <div data-slot="command-input-wrapper" className="p-1">
       <InputGroup className="h-8! rounded-lg! border-input/30 bg-input/30 shadow-none! *:data-[slot=input-group-addon]:pl-2!">
         <CommandPrimitive.Input
           data-slot="command-input"
@@ -77,11 +79,9 @@ function CommandInput({
           <IconSearch className="size-4 shrink-0 opacity-50" />
         </InputGroupAddon>
         <InputGroupAddon align="inline-end" className="pr-2">
-          <DialogClose asChild>
-            <Button variant="ghost" size="icon-xs">
-              <IconX className="size-4 shrink-0 opacity-50" />
-            </Button>
-          </DialogClose>
+          <Button variant="ghost" size="icon-xs" onClick={onClose}>
+            <IconX className="size-4 shrink-0 opacity-50" />
+          </Button>
         </InputGroupAddon>
       </InputGroup>
     </div>

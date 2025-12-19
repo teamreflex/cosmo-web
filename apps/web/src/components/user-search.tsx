@@ -89,6 +89,11 @@ export function UserSearch({
     });
   }
 
+  function handleClose() {
+    setQuery("");
+    onOpenChange(false);
+  }
+
   return (
     <div className="contents">
       {children}
@@ -115,6 +120,7 @@ export function UserSearch({
             placeholder={placeholder ?? m.user_search_placeholder()}
             value={query}
             onValueChange={setQuery}
+            onClose={handleClose}
           />
 
           <CommandList>

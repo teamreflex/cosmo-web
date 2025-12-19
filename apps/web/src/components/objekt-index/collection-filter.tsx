@@ -36,6 +36,10 @@ export default function CollectionFilter(props: Props) {
     });
   }
 
+  function handleClose() {
+    setOpen(false);
+  }
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -54,7 +58,10 @@ export default function CollectionFilter(props: Props) {
       </PopoverTrigger>
       <PopoverContent className="w-36 p-0">
         <Command>
-          <CommandInput placeholder={m.common_search_placeholder()} />
+          <CommandInput
+            placeholder={m.common_search_placeholder()}
+            onClose={handleClose}
+          />
           <CommandList>
             <CommandEmpty>{m.filter_collections_none()}</CommandEmpty>
             <CommandGroup>
