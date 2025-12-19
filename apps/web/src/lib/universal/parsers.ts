@@ -114,7 +114,7 @@ export const transfersBackendSchema = cosmoSchema
   })
   .extend({
     address: z.string(),
-    page: z.coerce.number().default(0),
+    cursor: z.string().nullish(),
     type: z.enum(transferTypes).default("all"),
     artists: z.string().array().default([]),
   });

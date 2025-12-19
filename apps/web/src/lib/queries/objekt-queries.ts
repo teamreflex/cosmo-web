@@ -200,7 +200,7 @@ export function objektListQuery(
 }
 
 /**
- * Objekt list: Listing entries
+ * Transfers: Listing entries with cursor-based pagination
  */
 export function transfersQuery(
   address: string,
@@ -217,19 +217,19 @@ export function transfersQuery(
         artists: selectedArtists,
       },
     ],
-    queryFn: ({ signal, pageParam = 0 }) => {
+    queryFn: ({ signal, pageParam }) => {
       return $fetchTransfers({
         signal,
         data: {
           ...searchParams,
           address,
-          page: pageParam,
+          cursor: pageParam,
           artists: selectedArtists,
         },
       });
     },
-    initialPageParam: 0,
-    getNextPageParam: (lastPage) => lastPage.nextStartAfter,
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage.cursor,
     staleTime: 1000 * 60 * 5,
     refetchOnMount: false,
   });

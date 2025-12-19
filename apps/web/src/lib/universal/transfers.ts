@@ -10,7 +10,7 @@ export type AggregatedTransfer = {
 
 export type TransferResult = {
   results: AggregatedTransfer[];
-  nextStartAfter?: number;
+  cursor?: string;
 };
 
 export const transferTypes = [

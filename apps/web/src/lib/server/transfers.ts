@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, not, or, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, lt, not, or, sql } from "drizzle-orm";
 import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
 import { Addresses, isEqual } from "@apollo/util";
 import { indexer } from "./db/indexer";
@@ -16,7 +16,7 @@ import type { z } from "zod";
 import type { TransferResult, TransferType } from "../universal/transfers";
 import { transfersBackendSchema } from "@/lib/universal/parsers";
 
-const PER_PAGE = 30;
+const PER_PAGE = 60;
 
 /**
  * Fetches transfers and zips known nicknames into the results.
@@ -28,7 +28,7 @@ export const $fetchTransfers = createServerFn({ method: "GET" })
     if (isEqual(data.address, Addresses.NULL)) {
       return {
         results: [],
-        nextStartAfter: undefined,
+        cursor: undefined,
       };
     }
 
@@ -64,6 +64,8 @@ const fetchTransferRows = createServerOnlyFn(
     address: string,
     params: z.infer<typeof transfersBackendSchema>,
   ): Promise<TransferResult> => {
+    const cursor = decodeCursor(params.cursor);
+
     const results = await indexer
       .select({
         transfer: transfers,
@@ -78,6 +80,18 @@ const fetchTransferRows = createServerOnlyFn(
         and(
           // base requirements
           withType(address.toLowerCase(), params.type),
+          // cursor pagination
+          ...(cursor
+            ? [
+                or(
+                  lt(transfers.timestamp, cursor.timestamp),
+                  and(
+                    eq(transfers.timestamp, cursor.timestamp),
+                    lt(transfers.id, cursor.id),
+                  ),
+                ),
+              ]
+            : []),
           // additional filters
           ...[
             ...withArtist(params.artist),
@@ -89,13 +103,16 @@ const fetchTransferRows = createServerOnlyFn(
           ],
         ),
       )
-      .orderBy(desc(transfers.timestamp))
-      .limit(PER_PAGE)
-      .offset(params.page * PER_PAGE);
+      .orderBy(desc(transfers.timestamp), desc(transfers.id))
+      .limit(PER_PAGE);
 
+    const lastResult = results[results.length - 1];
     return {
       results,
-      nextStartAfter: results.length === PER_PAGE ? params.page + 1 : undefined,
+      cursor:
+        results.length === PER_PAGE && lastResult
+          ? encodeCursor(lastResult.transfer.timestamp, lastResult.transfer.id)
+          : undefined,
     };
   },
 );
@@ -128,3 +145,25 @@ const withType = createServerOnlyFn((address: string, type: TransferType) => {
       return and(eq(transfers.to, Addresses.SPIN), eq(transfers.from, address));
   }
 });
+
+/**
+ * Decode a base64 cursor into timestamp and id.
+ */
+function decodeCursor(cursor: string | null | undefined) {
+  if (!cursor) return null;
+
+  try {
+    const decoded = Buffer.from(cursor, "base64").toString();
+    const [timestamp, id] = decoded.split("|");
+    return timestamp && id ? { timestamp, id } : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Encode timestamp and id into a base64 cursor.
+ */
+function encodeCursor(timestamp: string, id: string) {
+  return Buffer.from(`${timestamp}|${id}`).toString("base64");
+}
