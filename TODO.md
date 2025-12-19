@@ -24,6 +24,7 @@
 - [x] fix sort filter flicker
 - [x] fix layout shift in profile layout
 - [ ] load test?
+- [ ] reproduce cosmo leaderboards using transfers table to only count mints
 
 ## indexer
 

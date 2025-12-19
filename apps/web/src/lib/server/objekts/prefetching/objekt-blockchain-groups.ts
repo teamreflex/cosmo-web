@@ -1,6 +1,7 @@
 import { and, asc, desc, eq, inArray, max, sql } from "drizzle-orm";
 import * as z from "zod";
 import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
+import { Addresses, isEqual } from "@apollo/util";
 import { collections, objekts } from "../../db/indexer/schema";
 import { indexer } from "../../db/indexer";
 import {
@@ -33,6 +34,11 @@ export const $fetchObjektsBlockchainGroups = createServerFn({ method: "GET" })
     }),
   )
   .handler(async ({ data }) => {
+    // query is too slow for the spin account
+    if (isEqual(data.address, Addresses.SPIN)) {
+      return { collectionCount: 0, collections: [] };
+    }
+
     const offset = (data.page - 1) * PER_PAGE;
     const sort = data.sort ?? "newest";
 

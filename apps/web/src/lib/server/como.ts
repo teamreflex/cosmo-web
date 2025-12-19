@@ -1,7 +1,7 @@
 import { and, eq, inArray, not, sql } from "drizzle-orm";
 import { createServerFn } from "@tanstack/react-start";
 import * as z from "zod";
-import { addr } from "@apollo/util";
+import { Addresses, addr, isEqual } from "@apollo/util";
 import { indexer } from "./db/indexer";
 import { collections, objekts } from "./db/indexer/schema";
 import { remember } from "./cache";
@@ -14,6 +14,11 @@ import { $fetchArtists } from "@/lib/server/artists";
 export const $fetchObjektsWithComo = createServerFn({ method: "GET" })
   .inputValidator(z.object({ address: z.string() }))
   .handler(async ({ data }): Promise<ObjektWithCollection[]> => {
+    // spin account doesn't accumulate como
+    if (isEqual(data.address, Addresses.SPIN)) {
+      return [];
+    }
+
     return await indexer
       .select({
         artistId: collections.artist,

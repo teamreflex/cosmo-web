@@ -6,6 +6,11 @@ services:
     image: postgres:17.6-alpine
     ports:
       - "5435:5432"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.125"
+          memory: 1g
     environment:
       - POSTGRES_DB=web
       - POSTGRES_USER=postgres
@@ -59,6 +64,11 @@ services:
     image: postgres:17.6-alpine
     ports:
       - "5434:5432"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 2g
     environment:
       - POSTGRES_DB=indexer
       - POSTGRES_USER=postgres
