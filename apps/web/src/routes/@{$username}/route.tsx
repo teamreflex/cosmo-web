@@ -97,7 +97,7 @@ function RouteComponent() {
           </div>
 
           {/* profile-related buttons */}
-          <div className="col-span-3 row-start-3 flex flex-wrap justify-center gap-2 md:col-span-2 md:row-start-auto md:justify-end">
+          <div className="col-span-3 row-start-3 flex flex-wrap justify-center gap-2 pt-[2px] md:col-span-2 md:row-start-auto md:justify-end">
             <CopyAddressButton address={target.cosmo.address} />
             <TradesButton cosmo={target.cosmo} />
             <ComoButton cosmo={target.cosmo} />
@@ -162,7 +162,7 @@ function PendingComponent() {
         </div>
 
         {/* profile-related buttons */}
-        <div className="col-span-3 row-start-3 flex flex-wrap justify-center gap-2 md:col-span-2 md:row-start-auto md:justify-end">
+        <div className="col-span-3 row-start-3 flex flex-wrap justify-center gap-2 pt-[2px] md:col-span-2 md:row-start-auto md:justify-end">
           {/* copy address */}
           <Skeleton className="h-10 w-10 shrink-0 rounded-full lg:h-8 lg:w-[84px]" />
           {/* trades */}
