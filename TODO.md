@@ -66,14 +66,13 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA drizzle GRANT ALL ON TABLES TO postgres;
 ### production checklist
 
 - [x] bring indexer up to date
-- [x] point nextjs deployment to railway typesense
-- [x] create maintenance branch
+- [ ] create maintenance branch
 - [ ] promote maintenance branch to prod in vercel
 - [ ] dump prod neon db
 - [ ] restore neon db to railway
-- [x] switch search.apollo.cafe to railway typesense service
-- [x] update typesense settings in railway:
-  - [x] public URL to search.apollo.cafe
-  - [x] CORS domain to https://apollo.cafe
+- [ ] switch search.apollo.cafe to railway typesense service
+- [ ] update typesense settings in railway:
+  - [ ] public URL to search.apollo.cafe
+  - [ ] CORS domain to https://apollo.cafe
 - [ ] update web app domain to apollo.cafe in railway
 - [ ] switch apollo.cafe to railway web service in cloudflare
