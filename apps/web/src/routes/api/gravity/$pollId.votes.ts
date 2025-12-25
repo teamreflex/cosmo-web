@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { isPast } from "date-fns";
 import { eq } from "drizzle-orm";
+import { gravities, gravityPolls } from "@apollo/database/web/schema";
 import { db } from "@/lib/server/db";
-import { gravities, gravityPolls } from "@/lib/server/db/schema";
 import { fetchAbstractVotes } from "@/lib/server/gravity";
 import { cacheHeaders } from "@/lib/server/cache";
 

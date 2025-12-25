@@ -9,7 +9,7 @@ import IndexListDropdown from "../lists/index-list-dropdown";
 import { Button } from "../ui/button";
 import HelpDialog from "./help-dialog";
 import { IndexGridItem } from "./index-grid-item";
-import type { ObjektList } from "@/lib/server/db/schema";
+import type { ObjektList } from "@apollo/database/web/types";
 import { useGridColumns } from "@/hooks/use-grid-columns";
 import { useUserState } from "@/hooks/use-user-state";
 import { useObjektIndex } from "@/hooks/use-objekt-index";

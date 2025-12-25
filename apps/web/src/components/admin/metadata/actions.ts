@@ -1,8 +1,8 @@
 import { sql } from "drizzle-orm";
 import * as z from "zod";
 import { createServerFn } from "@tanstack/react-start";
+import { objektMetadata } from "@apollo/database/web/schema";
 import { db } from "@/lib/server/db";
-import { objektMetadata } from "@/lib/server/db/schema";
 import { metadataObjectSchema } from "@/lib/universal/schema/admin";
 import { adminMiddleware } from "@/lib/server/middlewares";
 

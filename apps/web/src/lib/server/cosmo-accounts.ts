@@ -3,10 +3,10 @@ import { FetchError } from "ofetch";
 import { createServerOnlyFn } from "@tanstack/react-start";
 import { isAddress } from "@apollo/util";
 import { fetchByNickname } from "@apollo/cosmo/server/user";
+import { cosmoAccounts } from "@apollo/database/web/schema";
 import { db } from "./db";
-import { cosmoAccounts } from "./db/schema";
 import { toPublicUser } from "./auth";
-import type { CosmoAccount } from "./db/schema";
+import type { CosmoAccount } from "@apollo/database/web/types";
 import type { FullAccount, PublicCosmo } from "../universal/cosmo-accounts";
 
 /**

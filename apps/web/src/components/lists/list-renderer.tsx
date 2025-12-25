@@ -3,7 +3,7 @@ import CosmoMemberFilter from "../objekt/cosmo-member-filter";
 import VirtualizedObjektGrid from "../objekt/virtualized-objekt-grid";
 import ObjektIndexFilters from "../collection/filter-contexts/objekt-index-filters";
 import { ListGridItem } from "./list-grid-item";
-import type { ObjektList } from "@/lib/server/db/schema";
+import type { ObjektList } from "@apollo/database/web/types";
 import { objektOptions } from "@/hooks/use-objekt-response";
 import { useGridColumns } from "@/hooks/use-grid-columns";
 import { objektListQuery } from "@/lib/queries/objekt-queries";

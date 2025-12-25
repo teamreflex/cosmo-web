@@ -1,6 +1,6 @@
 import type { PublicCosmo } from "./cosmo-accounts";
 import type { Collection, Transfer } from "@/lib/server/db/indexer/schema";
-import type { ObjektMetadataEntry } from "@/lib/server/db/schema";
+import type { ObjektMetadataEntry } from "@apollo/database/web/types";
 import type {
   CosmoObjekt,
   ObjektBaseFields,

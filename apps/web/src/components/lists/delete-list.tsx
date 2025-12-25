@@ -6,7 +6,7 @@ import { useRouter } from "@tanstack/react-router";
 import { Button } from "../ui/button";
 import { $deleteObjektList } from "./actions";
 import type { MouseEvent } from "react";
-import type { ObjektList } from "@/lib/server/db/schema";
+import type { ObjektList } from "@apollo/database/web/types";
 import {
   AlertDialog,
   AlertDialogAction,

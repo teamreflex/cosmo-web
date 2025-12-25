@@ -14,7 +14,7 @@ import {
 } from "../ui/dropdown-menu";
 import { ScrollArea } from "../ui/scroll-area";
 import { $addObjektToList } from "./actions";
-import type { ObjektList } from "@/lib/server/db/schema";
+import type { ObjektList } from "@apollo/database/web/types";
 import type { MouseEvent } from "react";
 import { m } from "@/i18n/messages";
 

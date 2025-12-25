@@ -22,7 +22,7 @@ import {
 import { Button } from "../ui/button";
 import { ScrollArea } from "../ui/scroll-area";
 import { $generateDiscordList } from "./actions";
-import type { ObjektList } from "@/lib/server/db/schema";
+import type { ObjektList } from "@apollo/database/web/types";
 import { m } from "@/i18n/messages";
 
 type Props = {

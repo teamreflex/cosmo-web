@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { $removeObjektFromList } from "./actions";
-import type { ObjektList } from "@/lib/server/db/schema";
+import type { ObjektList } from "@apollo/database/web/types";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { m } from "@/i18n/messages";
 

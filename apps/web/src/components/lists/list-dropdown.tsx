@@ -8,7 +8,7 @@ import {
 import { Link } from "@tanstack/react-router";
 import CreateListDialog from "./create-list-dialog";
 import DiscordFormatDialog from "./discord-format-dialog";
-import type { ObjektList } from "@/lib/server/db/schema";
+import type { ObjektList } from "@apollo/database/web/types";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,

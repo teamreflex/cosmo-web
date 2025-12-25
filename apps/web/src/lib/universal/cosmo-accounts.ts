@@ -1,4 +1,4 @@
-import type { ObjektList } from "../server/db/schema";
+import type { ObjektList } from "@apollo/database/web/types";
 import type { PublicUser } from "./auth";
 
 export type PublicCosmo = {

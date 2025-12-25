@@ -8,12 +8,12 @@ import { eq } from "drizzle-orm";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { GRID_COLUMNS } from "@apollo/util";
 import * as authSchema from "@apollo/database/auth";
+import { cosmoAccounts } from "@apollo/database/web/schema";
 import {
   sendAccountDeletionEmail,
   sendPasswordResetEmail,
   sendVerificationEmail,
 } from "./mail";
-import { cosmoAccounts } from "./db/schema";
 import { db } from "./db";
 import type { CollectionDataSource } from "@apollo/util";
 import type { PublicUser } from "../universal/auth";

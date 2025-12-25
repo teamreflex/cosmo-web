@@ -1,7 +1,7 @@
 import AddToList from "../lists/add-to-list";
 import OverlayStatus from "../objekt/overlay/overlay-status";
 import type { IndexedObjekt } from "@/lib/universal/objekts";
-import type { ObjektList } from "@/lib/server/db/schema";
+import type { ObjektList } from "@apollo/database/web/types";
 import { useObjektOverlay } from "@/store";
 import { cn } from "@/lib/utils";
 import { m } from "@/i18n/messages";

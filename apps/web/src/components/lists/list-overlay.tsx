@@ -1,7 +1,7 @@
 import OverlayStatus from "../objekt/overlay/overlay-status";
 import RemoveFromList from "./remove-from-list";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
-import type { ObjektList } from "@/lib/server/db/schema";
+import type { ObjektList } from "@apollo/database/web/types";
 import { cn } from "@/lib/utils";
 
 type Props = {

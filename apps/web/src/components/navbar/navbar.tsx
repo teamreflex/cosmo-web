@@ -1,6 +1,12 @@
 import { Fragment, Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { IconArchive, IconCards, IconChartBar, IconMenu2, IconSearch } from "@tabler/icons-react";
+import {
+  IconArchive,
+  IconCards,
+  IconChartBar,
+  IconMenu2,
+  IconSearch,
+} from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import Logo from "../logo";
 import UpdateDialog from "../misc/update-dialog";

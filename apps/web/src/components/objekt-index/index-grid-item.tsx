@@ -3,7 +3,7 @@ import ExpandableObjekt from "../objekt/objekt-expandable";
 import { ObjektSidebar } from "../objekt/common";
 import { TopOverlay } from "./index-overlay";
 import type { IndexedObjekt } from "@/lib/universal/objekts";
-import type { ObjektList } from "@/lib/server/db/schema";
+import type { ObjektList } from "@apollo/database/web/types";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import { useActiveObjekt } from "@/hooks/use-active-objekt";
 

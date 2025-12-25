@@ -3,8 +3,8 @@ import * as z from "zod";
 import { createServerFn } from "@tanstack/react-start";
 import { fetchMetadataV1 } from "@apollo/cosmo/server/metadata";
 import { collections, objekts } from "@apollo/database/indexer/schema";
+import { objektMetadata } from "@apollo/database/web/schema";
 import { db } from "@/lib/server/db";
-import { objektMetadata } from "@/lib/server/db/schema";
 import {
   adminMiddleware,
   authenticatedMiddleware,

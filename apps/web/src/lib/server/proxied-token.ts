@@ -1,9 +1,9 @@
 import { createServerOnlyFn } from "@tanstack/react-start";
 import { decodeJwt } from "jose";
 import { refresh } from "@apollo/cosmo/server/auth";
+import { cosmoTokens } from "@apollo/database/web/schema";
 import { db } from "./db";
-import { cosmoTokens } from "./db/schema";
-import type { CosmoToken } from "./db/schema";
+import type { CosmoToken } from "@apollo/database/web/types";
 
 /**
  * Get the latest COSMO token from the database, refresh if necessary.

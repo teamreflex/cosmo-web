@@ -3,7 +3,7 @@ import { createContext, useContext, useRef } from "react";
 import { useShallow } from "zustand/react/shallow";
 import type { PropsWithChildren } from "react";
 import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
-import type { ObjektList } from "@/lib/server/db/schema";
+import type { ObjektList } from "@apollo/database/web/types";
 import type { PublicAccount } from "@/lib/universal/cosmo-accounts";
 
 interface ProfileProps {

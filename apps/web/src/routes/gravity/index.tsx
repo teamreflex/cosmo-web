@@ -2,7 +2,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { isFuture } from "date-fns";
 import { IconCalendarEvent } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import type { Gravity } from "@/lib/server/db/schema";
+import type { Gravity } from "@apollo/database/web/types";
 import type { CosmoArtistBFF } from "@apollo/cosmo/types/artists";
 import type { CosmoGravityType } from "@apollo/cosmo/types/gravity";
 import type { PropsWithClassName } from "@/lib/utils";

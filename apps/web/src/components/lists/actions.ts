@@ -1,6 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
 import { redirect } from "@tanstack/react-router";
+import { objektListEntries, objektLists } from "@apollo/database/web/schema";
 import {
   addObjektToListSchema,
   createObjektListSchema,
@@ -11,11 +12,10 @@ import {
 } from "../../lib/universal/schema/objekt-list";
 import type { Collection } from "@/lib/server/db/indexer/schema";
 import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
-import type { ObjektListEntry } from "@/lib/server/db/schema";
+import type { ObjektListEntry } from "@apollo/database/web/types";
 import { $fetchObjektList } from "@/lib/server/objekts/lists";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
-import { objektListEntries, objektLists } from "@/lib/server/db/schema";
 import { authenticatedMiddleware } from "@/lib/server/middlewares";
 import { $fetchArtists } from "@/lib/server/artists";
 

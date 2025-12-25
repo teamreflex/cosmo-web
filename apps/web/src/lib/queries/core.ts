@@ -9,7 +9,7 @@ import * as z from "zod";
 import { $fetchArtists } from "../server/artists";
 import type { PublicUser } from "@/lib/universal/auth";
 import type { FullAccount, PublicCosmo } from "@/lib/universal/cosmo-accounts";
-import type { ObjektList } from "@/lib/server/db/schema";
+import type { ObjektList } from "@apollo/database/web/types";
 import type { CosmoMemberBFF } from "@apollo/cosmo/types/artists";
 import {
   fetchUniqueClasses,

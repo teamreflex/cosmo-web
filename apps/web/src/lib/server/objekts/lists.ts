@@ -1,8 +1,8 @@
 import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
 import * as z from "zod";
 import { redirect } from "@tanstack/react-router";
+import { objektListEntries, objektLists } from "@apollo/database/web/schema";
 import { db } from "../db";
-import { objektListEntries, objektLists } from "../db/schema";
 import { sanitizeUuid } from "@/lib/utils";
 
 /**

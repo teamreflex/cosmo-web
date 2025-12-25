@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { like } from "drizzle-orm";
 import { search } from "@apollo/cosmo/server/user";
+import { cosmoAccounts } from "@apollo/database/web/schema";
 import type { CosmoSearchResult } from "@apollo/cosmo/types/user";
 import { cacheAccounts } from "@/lib/server/cosmo-accounts";
 import { db } from "@/lib/server/db";
-import { cosmoAccounts } from "@/lib/server/db/schema";
 import { getProxiedToken } from "@/lib/server/proxied-token";
 
 export const Route = createFileRoute("/api/bff/v3/users/search")({
