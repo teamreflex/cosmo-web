@@ -15,7 +15,7 @@ import { objektIndexFrontendSchema } from "@/lib/universal/parsers";
 import { objektIndexBlockchainQuery } from "@/lib/queries/objekt-queries";
 import { defineHead } from "@/lib/meta";
 import { m } from "@/i18n/messages";
-import { ObjektGridSkeleton } from "@/components/objekt/virtualized-objekt-grid";
+import ObjektGridSkeleton from "@/components/objekt/objekt-grid-skeleton";
 
 export const Route = createFileRoute("/")({
   staleTime: 1000 * 60 * 15, // 15 minutes

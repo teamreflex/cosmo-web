@@ -25,6 +25,10 @@
     "dev": {
       "persistent": true,
       "cache": false
+    },
+    "db:seed": {
+      "cache": false,
+      "dependsOn": ["//#services"]
     }
   }
 }

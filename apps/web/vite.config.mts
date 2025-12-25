@@ -4,14 +4,12 @@ import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { paraglideVitePlugin } from "@inlang/paraglide-js";
+import tsConfigPaths from "vite-tsconfig-paths";
 
 import "./src/lib/env/client";
 import "./src/lib/env/server";
 
 export default defineConfig({
-  resolve: {
-    tsconfigPaths: true,
-  },
   server: {
     port: 3000,
   },
@@ -21,6 +19,9 @@ export default defineConfig({
   plugins: [
     devtools({
       removeDevtoolsOnBuild: true,
+    }),
+    tsConfigPaths({
+      projects: ["./tsconfig.json"],
     }),
     tanstackStart(),
     react({
