@@ -9,6 +9,9 @@ import type {
   gravityPollCandidates,
   objektListEntries,
   objektLists,
+  eras,
+  events,
+  eventCollections,
 } from "./schema";
 
 export type {
@@ -26,3 +29,10 @@ export type Gravity = typeof gravities.$inferSelect;
 export type GravityPoll = typeof gravityPolls.$inferSelect;
 export type GravityPollCandidate = typeof gravityPollCandidates.$inferSelect;
 export type ObjektMetadataEntry = typeof objektMetadata.$inferSelect;
+export type Era = typeof eras.$inferSelect;
+export type Event = typeof events.$inferSelect;
+export type EventCollection = typeof eventCollections.$inferSelect;
+
+export interface EventWithEra extends Event {
+  era: Era;
+}

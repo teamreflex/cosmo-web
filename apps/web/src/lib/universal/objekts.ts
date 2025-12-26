@@ -1,6 +1,4 @@
-import type { PublicCosmo } from "./cosmo-accounts";
 import type { Collection, Transfer } from "@/lib/server/db/indexer/schema";
-import type { ObjektMetadataEntry } from "@apollo/database/web/types";
 import type {
   CosmoObjekt,
   ObjektBaseFields,
@@ -18,14 +16,27 @@ export type ObjektResponse<T extends LegacyObjekt> = {
 };
 
 // metadata
-interface ObjektInformation extends ObjektMetadataEntry {
-  profile?: Pick<PublicCosmo, "username"> | null;
-}
+export type ObjektEventInfo = {
+  id: string;
+  slug: string;
+  name: string;
+  eventType: string;
+  twitterUrl: string | null;
+  description: string | null;
+  category: string | null;
+  era: {
+    id: string;
+    slug: string;
+    name: string;
+    spotifyAlbumArt: string | null;
+  } | null;
+};
+
 export type ObjektMetadata = {
   total: number;
   transferable: number;
   percentage: number;
-  metadata: ObjektInformation | undefined;
+  event: ObjektEventInfo | null;
 };
 
 export type SerialTransfer = Transfer & {

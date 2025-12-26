@@ -1,0 +1,214 @@
+import * as z from "zod";
+import { and, eq, sql } from "drizzle-orm";
+import { createServerFn } from "@tanstack/react-start";
+import { eras, eventCollections, events } from "@apollo/database/web/schema";
+import {
+  fetchSpotifyAlbum,
+  getBestAlbumArt,
+  searchSpotifyAlbums,
+} from "./spotify";
+import { db } from "@/lib/server/db";
+import { adminMiddleware } from "@/lib/server/middlewares";
+import {
+  addCollectionsToEventSchema,
+  createEraSchema,
+  createEventSchema,
+  removeCollectionFromEventSchema,
+  updateEraSchema,
+  updateEventSchema,
+} from "@/lib/universal/schema/events";
+
+/**
+ * Creates a new era.
+ */
+export const $createEra = createServerFn({ method: "POST" })
+  .middleware([adminMiddleware])
+  .inputValidator(createEraSchema)
+  .handler(async ({ data }) => {
+    const [era] = await db
+      .insert(eras)
+      .values({
+        slug: data.slug,
+        name: data.name,
+        description: data.description,
+        artist: data.artist,
+        spotifyAlbumId: data.spotifyAlbumId,
+        spotifyAlbumArt: data.spotifyAlbumArt,
+        startDate: data.startDate,
+        endDate: data.endDate,
+      })
+      .returning();
+
+    if (!era) {
+      throw new Error("Failed to create era");
+    }
+
+    return era;
+  });
+
+/**
+ * Updates an era.
+ */
+export const $updateEra = createServerFn({ method: "POST" })
+  .middleware([adminMiddleware])
+  .inputValidator(updateEraSchema)
+  .handler(async ({ data }) => {
+    const { id, ...updateData } = data;
+
+    const [era] = await db
+      .update(eras)
+      .set(updateData)
+      .where(eq(eras.id, id))
+      .returning();
+
+    if (!era) {
+      throw new Error("Failed to update era");
+    }
+
+    return era;
+  });
+
+/**
+ * Deletes an era.
+ */
+export const $deleteEra = createServerFn({ method: "POST" })
+  .middleware([adminMiddleware])
+  .inputValidator(z.object({ id: z.uuid() }))
+  .handler(async ({ data }) => {
+    await db.delete(eras).where(eq(eras.id, data.id));
+    return { success: true };
+  });
+
+/**
+ * Creates a new event.
+ */
+export const $createEvent = createServerFn({ method: "POST" })
+  .middleware([adminMiddleware])
+  .inputValidator(createEventSchema)
+  .handler(async ({ data }) => {
+    const [event] = await db
+      .insert(events)
+      .values({
+        slug: data.slug,
+        name: data.name,
+        description: data.description,
+        artist: data.artist,
+        eventType: data.eventType,
+        eraId: data.eraId,
+        twitterUrl: data.twitterUrl,
+        startDate: data.startDate,
+        endDate: data.endDate,
+      })
+      .returning();
+
+    if (!event) {
+      throw new Error("Failed to create event");
+    }
+
+    return event;
+  });
+
+/**
+ * Updates an event.
+ */
+export const $updateEvent = createServerFn({ method: "POST" })
+  .middleware([adminMiddleware])
+  .inputValidator(updateEventSchema)
+  .handler(async ({ data }) => {
+    const { id, ...updateData } = data;
+
+    const [event] = await db
+      .update(events)
+      .set(updateData)
+      .where(eq(events.id, id))
+      .returning();
+
+    if (!event) {
+      throw new Error("Failed to update event");
+    }
+
+    return event;
+  });
+
+/**
+ * Deletes an event.
+ */
+export const $deleteEvent = createServerFn({ method: "POST" })
+  .middleware([adminMiddleware])
+  .inputValidator(z.object({ id: z.uuid() }))
+  .handler(async ({ data }) => {
+    await db.delete(events).where(eq(events.id, data.id));
+    return { success: true };
+  });
+
+/**
+ * Adds collections to an event.
+ */
+export const $addCollectionsToEvent = createServerFn({ method: "POST" })
+  .middleware([adminMiddleware])
+  .inputValidator(addCollectionsToEventSchema)
+  .handler(async ({ data }) => {
+    const result = await db
+      .insert(eventCollections)
+      .values(
+        data.collections.map((c) => ({
+          eventId: data.eventId,
+          collectionSlug: c.collectionSlug,
+          description: c.description,
+          category: c.category,
+        })),
+      )
+      .onConflictDoUpdate({
+        target: [eventCollections.eventId, eventCollections.collectionSlug],
+        set: {
+          description: sql.raw(`excluded.${eventCollections.description.name}`),
+          category: sql.raw(`excluded.${eventCollections.category.name}`),
+        },
+      })
+      .returning();
+
+    return result.length;
+  });
+
+/**
+ * Removes a collection from an event.
+ */
+export const $removeCollectionFromEvent = createServerFn({ method: "POST" })
+  .middleware([adminMiddleware])
+  .inputValidator(removeCollectionFromEventSchema)
+  .handler(async ({ data }) => {
+    await db
+      .delete(eventCollections)
+      .where(
+        and(
+          eq(eventCollections.eventId, data.eventId),
+          eq(eventCollections.collectionSlug, data.collectionSlug),
+        ),
+      );
+  });
+
+/**
+ * Searches for albums on Spotify.
+ */
+export const $searchSpotifyAlbums = createServerFn({ method: "GET" })
+  .middleware([adminMiddleware])
+  .inputValidator(z.object({ query: z.string().min(1) }))
+  .handler(async ({ data }) => {
+    return searchSpotifyAlbums(data.query);
+  });
+
+/**
+ * Gets a Spotify album.
+ */
+export const $getSpotifyAlbum = createServerFn({ method: "GET" })
+  .middleware([adminMiddleware])
+  .inputValidator(z.object({ albumId: z.string().min(1) }))
+  .handler(async ({ data }) => {
+    const album = await fetchSpotifyAlbum(data.albumId);
+    if (!album) return null;
+
+    return {
+      ...album,
+      bestArt: getBestAlbumArt(album),
+    };
+  });

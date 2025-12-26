@@ -130,6 +130,80 @@ export const objektMetadata = pgTable(
   ],
 );
 
+// #region Events/Drops System
+export type EventType =
+  | "album"
+  | "showcase"
+  | "shop"
+  | "collaboration"
+  | "promotional"
+  | "anniversary"
+  | "tour"
+  | "other";
+
+export const eras = pgTable(
+  "eras",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    createdAt,
+    slug: citext("slug", { length: 64 }).notNull().unique(),
+    name: varchar("name", { length: 128 }).notNull(),
+    description: text("description"),
+    artist: varchar("artist", { length: 32 }).notNull(),
+    spotifyAlbumId: varchar("spotify_album_id", { length: 64 }),
+    spotifyAlbumArt: varchar("spotify_album_art", { length: 255 }),
+    startDate: timestamp("start_date", { mode: "date" }),
+    endDate: timestamp("end_date", { mode: "date" }),
+  },
+  (t) => [
+    index("eras_artist_idx").on(t.artist),
+    index("eras_slug_idx").on(t.slug),
+  ],
+);
+
+export const events = pgTable(
+  "events",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    createdAt,
+    eraId: uuid("era_id")
+      .notNull()
+      .references(() => eras.id, { onDelete: "cascade" }),
+    slug: citext("slug", { length: 64 }).notNull().unique(),
+    name: varchar("name", { length: 128 }).notNull(),
+    description: text("description"),
+    artist: varchar("artist", { length: 32 }).notNull(),
+    eventType: varchar("event_type", { length: 32 }).notNull().$type<EventType>(),
+    twitterUrl: varchar("twitter_url", { length: 255 }),
+    startDate: timestamp("start_date", { mode: "date" }),
+    endDate: timestamp("end_date", { mode: "date" }),
+  },
+  (t) => [
+    index("events_artist_idx").on(t.artist),
+    index("events_era_idx").on(t.eraId),
+    index("events_slug_idx").on(t.slug),
+  ],
+);
+
+export const eventCollections = pgTable(
+  "event_collections",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    createdAt,
+    eventId: uuid("event_id")
+      .notNull()
+      .references(() => events.id, { onDelete: "cascade" }),
+    collectionSlug: varchar("collection_slug", { length: 64 }).notNull(),
+    description: varchar("description", { length: 255 }),
+    category: varchar("category", { length: 64 }),
+  },
+  (t) => [
+    uniqueIndex("event_collections_unique").on(t.eventId, t.collectionSlug),
+    index("event_collections_slug_idx").on(t.collectionSlug),
+  ],
+);
+// #endregion
+
 export const cosmoTokens = pgTable(
   "cosmo_tokens",
   {

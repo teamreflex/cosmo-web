@@ -14,9 +14,9 @@ export const Route = createFileRoute("/admin")({
 
 function RouteComponent() {
   return (
-    <SidebarProvider className="h-[calc(100dvh-3.5rem)]">
-      <AdminSidebar className="mt-14 h-[calc(100dvh-3.5rem)]" />
-      <SidebarInset>
+    <SidebarProvider className="min-h-0">
+      <AdminSidebar className="mt-14" />
+      <SidebarInset className="h-[calc(100dvh-4.5rem)]">
         <header className="flex h-12 w-full shrink-0 items-center gap-2 border-b px-4">
           <SidebarTrigger className="-ml-1" />
           <Separator orientation="vertical" className="my-3 mr-2 h-auto" />

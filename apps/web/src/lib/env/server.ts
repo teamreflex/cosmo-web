@@ -30,6 +30,9 @@ export const env = createEnv({
     // browserless cdp
     COSMO_RECAPTCHA_KEY: z.string().min(1),
     CDP_ENDPOINT: z.string().min(1),
+    // spotify api
+    SPOTIFY_CLIENT_ID: z.string().min(1),
+    SPOTIFY_CLIENT_SECRET: z.string().min(1),
   },
   runtimeEnv: {
     DATABASE_URL: process.env.DATABASE_URL,
@@ -49,6 +52,8 @@ export const env = createEnv({
     MAIL_SES_SECRET_KEY: process.env.MAIL_SES_SECRET_KEY,
     COSMO_RECAPTCHA_KEY: process.env.COSMO_RECAPTCHA_KEY,
     CDP_ENDPOINT: process.env.CDP_ENDPOINT,
+    SPOTIFY_CLIENT_ID: process.env.SPOTIFY_CLIENT_ID,
+    SPOTIFY_CLIENT_SECRET: process.env.SPOTIFY_CLIENT_SECRET,
   },
   emptyStringAsUndefined: true,
 });

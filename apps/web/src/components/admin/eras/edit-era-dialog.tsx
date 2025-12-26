@@ -1,0 +1,131 @@
+import { IconLoader2 } from "@tabler/icons-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { FormProvider, useForm, useFormState } from "react-hook-form";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import DeleteEra from "./delete-era";
+import EraForm from "./era-form";
+import type { Era } from "@apollo/database/web/types";
+import type { SpotifyAlbum } from "@/lib/universal/events";
+import type { CreateEraInput } from "@/lib/universal/schema/events";
+import { createEraSchema } from "@/lib/universal/schema/events";
+import { $updateEra } from "@/lib/server/events/actions";
+import { erasQuery } from "@/lib/queries/events";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { m } from "@/i18n/messages";
+
+type Props = {
+  era: Era;
+  children: React.ReactNode;
+};
+
+export default function EditEraDialog({ era, children }: Props) {
+  const [open, setOpen] = useState(false);
+  const queryClient = useQueryClient();
+  const [selectedAlbum, setSelectedAlbum] = useState<SpotifyAlbum | null>(null);
+  const mutation = useMutation({
+    mutationFn: useServerFn($updateEra),
+    onSuccess: () => {
+      toast.success(m.admin_era_updated());
+      queryClient.invalidateQueries({ queryKey: erasQuery().queryKey });
+      setOpen(false);
+    },
+    onError: () => {
+      toast.error(m.error_unknown());
+    },
+  });
+
+  const form = useForm({
+    resolver: standardSchemaResolver(createEraSchema),
+    values: {
+      slug: era.slug,
+      name: era.name,
+      description: era.description ?? "",
+      artist: era.artist,
+      spotifyAlbumId: era.spotifyAlbumId ?? undefined,
+      spotifyAlbumArt: era.spotifyAlbumArt ?? undefined,
+      startDate: era.startDate ?? undefined,
+      endDate: era.endDate ?? undefined,
+    },
+  });
+
+  function handleAlbumSelect(album: SpotifyAlbum) {
+    setSelectedAlbum(album);
+    form.setValue("spotifyAlbumId", album.id);
+    form.setValue("spotifyAlbumArt", album.images[0]?.url);
+    form.setValue("name", album.name);
+    const slug = album.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+    form.setValue("slug", slug);
+  }
+
+  function handleAlbumClear() {
+    setSelectedAlbum(null);
+    form.setValue("spotifyAlbumId", undefined);
+    form.setValue("spotifyAlbumArt", undefined);
+  }
+
+  async function handleSubmit(data: CreateEraInput) {
+    await mutation.mutateAsync({ data: { ...data, id: era.id } });
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>{m.admin_era_edit()}</DialogTitle>
+          <DialogDescription>
+            {m.admin_era_edit_description()}
+          </DialogDescription>
+        </DialogHeader>
+        <FormProvider {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)}>
+            <EraForm
+              selectedAlbum={selectedAlbum}
+              onAlbumSelect={handleAlbumSelect}
+              onAlbumClear={handleAlbumClear}
+            />
+            <DialogFooter className="mt-6">
+              <div className="mr-auto">
+                <DeleteEra eraId={era.id} onSuccess={() => setOpen(false)} />
+              </div>
+
+              <DialogClose asChild>
+                <Button type="button" variant="outline">
+                  {m.common_cancel()}
+                </Button>
+              </DialogClose>
+              <SubmitButton />
+            </DialogFooter>
+          </form>
+        </FormProvider>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function SubmitButton() {
+  const { isSubmitting } = useFormState();
+
+  return (
+    <Button type="submit" disabled={isSubmitting}>
+      <span>{m.common_save()}</span>
+      {isSubmitting && <IconLoader2 className="animate-spin" />}
+    </Button>
+  );
+}

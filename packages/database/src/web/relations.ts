@@ -105,6 +105,27 @@ export const relations = defineRelations(schema, (r) => ({
       to: r.user.id,
     }),
   },
+  // #region Events/Drops System
+  eras: {
+    events: r.many.events(),
+  },
+  events: {
+    era: r.one.eras({
+      from: r.events.eraId,
+      to: r.eras.id,
+      optional: false,
+    }),
+    collections: r.many.eventCollections(),
+  },
+  eventCollections: {
+    event: r.one.events({
+      from: r.eventCollections.eventId,
+      to: r.events.id,
+      optional: false,
+    }),
+  },
+  // #endregion
+
   // #region Legacy
   lists: {
     entries: r.many.listEntries(),

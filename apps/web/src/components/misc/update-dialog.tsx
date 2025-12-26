@@ -1,4 +1,4 @@
-import { IconNews } from "@tabler/icons-react";
+import { IconSpeakerphone } from "@tabler/icons-react";
 import { addDays, format, isWithinInterval, subDays } from "date-fns";
 import { useMemo } from "react";
 import {
@@ -35,7 +35,7 @@ export default function UpdateDialog() {
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <button className="relative flex h-8 w-9 items-center justify-center rounded-r-md bg-cosmo-text/25 transition-colors hover:bg-cosmo-text/40">
-          <IconNews className="h-5 w-5 text-cosmo-text" />
+          <IconSpeakerphone className="h-5 w-5 text-cosmo-text" />
           {isNew && (
             <span className="absolute top-0 right-0 h-2 w-2 animate-pulse rounded-full bg-red-500" />
           )}

@@ -20,6 +20,8 @@ import { Route as ObjektsStatsRouteImport } from './routes/objekts/stats'
 import { Route as ListIdRouteImport } from './routes/list/$id'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
 import { Route as AdminMetadataRouteImport } from './routes/admin/metadata'
+import { Route as AdminEventsRouteImport } from './routes/admin/events'
+import { Route as AdminErasRouteImport } from './routes/admin/eras'
 import { Route as AdminBandsRouteImport } from './routes/admin/bands'
 import { Route as AtChar123usernameChar125TradesRouteImport } from './routes/@{$username}/trades'
 import { Route as AtChar123usernameChar125ProgressRouteImport } from './routes/@{$username}/progress'
@@ -95,6 +97,16 @@ const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
 const AdminMetadataRoute = AdminMetadataRouteImport.update({
   id: '/metadata',
   path: '/metadata',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminEventsRoute = AdminEventsRouteImport.update({
+  id: '/events',
+  path: '/events',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminErasRoute = AdminErasRouteImport.update({
+  id: '/eras',
+  path: '/eras',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const AdminBandsRoute = AdminBandsRouteImport.update({
@@ -212,6 +224,8 @@ export interface FileRoutesByFullPath {
   '/@{$username}/progress': typeof AtChar123usernameChar125ProgressRoute
   '/@{$username}/trades': typeof AtChar123usernameChar125TradesRoute
   '/admin/bands': typeof AdminBandsRoute
+  '/admin/eras': typeof AdminErasRoute
+  '/admin/events': typeof AdminEventsRoute
   '/admin/metadata': typeof AdminMetadataRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/list/$id': typeof ListIdRoute
@@ -243,6 +257,8 @@ export interface FileRoutesByTo {
   '/@{$username}/progress': typeof AtChar123usernameChar125ProgressRoute
   '/@{$username}/trades': typeof AtChar123usernameChar125TradesRoute
   '/admin/bands': typeof AdminBandsRoute
+  '/admin/eras': typeof AdminErasRoute
+  '/admin/events': typeof AdminEventsRoute
   '/admin/metadata': typeof AdminMetadataRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/list/$id': typeof ListIdRoute
@@ -276,6 +292,8 @@ export interface FileRoutesById {
   '/@{$username}/progress': typeof AtChar123usernameChar125ProgressRoute
   '/@{$username}/trades': typeof AtChar123usernameChar125TradesRoute
   '/admin/bands': typeof AdminBandsRoute
+  '/admin/eras': typeof AdminErasRoute
+  '/admin/events': typeof AdminEventsRoute
   '/admin/metadata': typeof AdminMetadataRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/list/$id': typeof ListIdRoute
@@ -310,6 +328,8 @@ export interface FileRouteTypes {
     | '/@{$username}/progress'
     | '/@{$username}/trades'
     | '/admin/bands'
+    | '/admin/eras'
+    | '/admin/events'
     | '/admin/metadata'
     | '/auth/reset-password'
     | '/list/$id'
@@ -341,6 +361,8 @@ export interface FileRouteTypes {
     | '/@{$username}/progress'
     | '/@{$username}/trades'
     | '/admin/bands'
+    | '/admin/eras'
+    | '/admin/events'
     | '/admin/metadata'
     | '/auth/reset-password'
     | '/list/$id'
@@ -373,6 +395,8 @@ export interface FileRouteTypes {
     | '/@{$username}/progress'
     | '/@{$username}/trades'
     | '/admin/bands'
+    | '/admin/eras'
+    | '/admin/events'
     | '/admin/metadata'
     | '/auth/reset-password'
     | '/list/$id'
@@ -500,6 +524,20 @@ declare module '@tanstack/react-router' {
       path: '/metadata'
       fullPath: '/admin/metadata'
       preLoaderRoute: typeof AdminMetadataRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/events': {
+      id: '/admin/events'
+      path: '/events'
+      fullPath: '/admin/events'
+      preLoaderRoute: typeof AdminEventsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/eras': {
+      id: '/admin/eras'
+      path: '/eras'
+      fullPath: '/admin/eras'
+      preLoaderRoute: typeof AdminErasRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/admin/bands': {
@@ -664,11 +702,15 @@ const AtChar123usernameChar125RouteRouteWithChildren =
 
 interface AdminRouteRouteChildren {
   AdminBandsRoute: typeof AdminBandsRoute
+  AdminErasRoute: typeof AdminErasRoute
+  AdminEventsRoute: typeof AdminEventsRoute
   AdminMetadataRoute: typeof AdminMetadataRoute
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminBandsRoute: AdminBandsRoute,
+  AdminErasRoute: AdminErasRoute,
+  AdminEventsRoute: AdminEventsRoute,
   AdminMetadataRoute: AdminMetadataRoute,
 }
 

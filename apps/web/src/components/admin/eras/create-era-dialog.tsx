@@ -1,0 +1,127 @@
+import { IconLoader2, IconPlus } from "@tabler/icons-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { FormProvider, useForm, useFormState } from "react-hook-form";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import EraForm from "./era-form";
+import type { SpotifyAlbum } from "@/lib/universal/events";
+import type { CreateEraInput } from "@/lib/universal/schema/events";
+import { createEraSchema } from "@/lib/universal/schema/events";
+import { $createEra } from "@/lib/server/events/actions";
+import { erasQuery } from "@/lib/queries/events";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { m } from "@/i18n/messages";
+
+export default function CreateEra() {
+  const [open, setOpen] = useState(false);
+  const queryClient = useQueryClient();
+  const [selectedAlbum, setSelectedAlbum] = useState<SpotifyAlbum | null>(null);
+  const mutation = useMutation({
+    mutationFn: useServerFn($createEra),
+    onSuccess: () => {
+      toast.success(m.admin_era_created());
+      queryClient.invalidateQueries({ queryKey: erasQuery().queryKey });
+      setOpen(false);
+      form.reset();
+      setSelectedAlbum(null);
+    },
+    onError: () => {
+      toast.error(m.error_unknown());
+    },
+  });
+
+  const form = useForm({
+    resolver: standardSchemaResolver(createEraSchema),
+    defaultValues: {
+      slug: "",
+      name: "",
+      description: "",
+      artist: "",
+      spotifyAlbumId: undefined,
+      spotifyAlbumArt: undefined,
+      startDate: undefined,
+      endDate: undefined,
+    },
+  });
+
+  function handleAlbumSelect(album: SpotifyAlbum) {
+    setSelectedAlbum(album);
+    form.setValue("spotifyAlbumId", album.id);
+    form.setValue("spotifyAlbumArt", album.images[0]?.url);
+    form.setValue("name", album.name);
+    const slug = album.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+    form.setValue("slug", slug);
+  }
+
+  function handleAlbumClear() {
+    setSelectedAlbum(null);
+    form.setValue("spotifyAlbumId", undefined);
+    form.setValue("spotifyAlbumArt", undefined);
+  }
+
+  async function handleSubmit(data: CreateEraInput) {
+    await mutation.mutateAsync({ data });
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm">
+          <IconPlus className="size-4" />
+          <span>{m.admin_eras_new()}</span>
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>{m.admin_eras_new()}</DialogTitle>
+          <DialogDescription>
+            {m.admin_eras_new_description()}
+          </DialogDescription>
+        </DialogHeader>
+        <FormProvider {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)}>
+            <EraForm
+              selectedAlbum={selectedAlbum}
+              onAlbumSelect={handleAlbumSelect}
+              onAlbumClear={handleAlbumClear}
+            />
+            <DialogFooter className="mt-6">
+              <DialogClose asChild>
+                <Button type="button" variant="outline">
+                  {m.common_cancel()}
+                </Button>
+              </DialogClose>
+              <SubmitButton />
+            </DialogFooter>
+          </form>
+        </FormProvider>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function SubmitButton() {
+  const { isSubmitting } = useFormState();
+
+  return (
+    <Button type="submit" disabled={isSubmitting}>
+      <span>{m.common_create()}</span>
+      {isSubmitting && <IconLoader2 className="animate-spin" />}
+    </Button>
+  );
+}

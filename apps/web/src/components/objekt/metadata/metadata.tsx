@@ -1,28 +1,26 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ofetch } from "ofetch";
-import { useState } from "react";
 import { useCopyToClipboard } from "usehooks-ts";
 import {
+  IconBrandTwitter,
   IconCloudDownload,
   IconLink,
   IconMovie,
   IconPhoto,
 } from "@tabler/icons-react";
 import { toast } from "sonner";
-import { Link } from "@tanstack/react-router";
 import { Button } from "../../ui/button";
 import { getObjektImageUrls } from "../common";
 import Portal from "../../portal";
 import Pill from "./pill";
-import EditMetadata from "./edit-metadata";
 import SerialsPanel from "./serials-panel";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
-import type { ObjektMetadata } from "@/lib/universal/objekts";
+import type { ObjektEventInfo, ObjektMetadata } from "@/lib/universal/objekts";
 import type { ObjektMetadataTab } from "./common";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import { env } from "@/lib/env/client";
 import { unobtainables } from "@/lib/unobtainables";
-import { useUserState } from "@/hooks/use-user-state";
 import { m } from "@/i18n/messages";
 import {
   DropdownMenu,
@@ -39,8 +37,6 @@ type Props = {
 
 export default function Metadata(props: Props) {
   const [_, copy] = useCopyToClipboard();
-  const [showForm, setShowForm] = useState(false);
-  const { user } = useUserState();
 
   const { data } = useSuspenseQuery({
     queryKey: ["collection-metadata", "metadata", props.objekt.slug],
@@ -79,20 +75,10 @@ export default function Metadata(props: Props) {
 
         {/* metadata */}
         <TabsContent value="metadata" className="flex grow flex-col">
-          {showForm ? (
-            <EditMetadata
-              slug={props.objekt.slug}
-              metadata={data}
-              onClose={() => setShowForm(false)}
-            />
-          ) : (
-            data.metadata !== undefined && (
-              <div className="min-h-10 sm:h-full">
-                <p className="text-sm sm:text-base">
-                  {data.metadata.description}
-                </p>
-              </div>
-            )
+          {data.event?.description && (
+            <p className="min-h-10 text-sm sm:text-base">
+              {data.event.description}
+            </p>
           )}
 
           <div className="mt-auto flex w-full flex-row-reverse items-center gap-2 self-end">
@@ -134,26 +120,12 @@ export default function Metadata(props: Props) {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {user?.isAdmin === true && (
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setShowForm((prev) => !prev)}
-              >
-                {showForm ? m.common_cancel() : m.objekt_metadata_edit()}
-              </Button>
-            )}
-
-            {!!data.metadata?.profile && (
-              <div className="mr-auto flex items-center gap-1 text-xs">
-                <p>{m.objekt_metadata_sourced_by()}</p>
-                <Link
-                  className="underline"
-                  to="/@{$username}"
-                  params={{ username: data.metadata.profile.username }}
-                >
-                  {data.metadata.profile.username}
-                </Link>
+            {data.event && (
+              <div className="mr-auto flex min-h-10 items-center gap-2">
+                <span className="text-xs text-muted-foreground">
+                  {m.event_from()}
+                </span>
+                <EventBadge event={data.event} />
               </div>
             )}
           </div>
@@ -186,6 +158,34 @@ export default function Metadata(props: Props) {
           </div>
         )}
       </Portal>
+    </div>
+  );
+}
+
+function EventBadge({ event }: { event: ObjektEventInfo }) {
+  return (
+    <div className="flex items-center gap-1">
+      {event.era?.spotifyAlbumArt && (
+        <img
+          src={event.era.spotifyAlbumArt}
+          alt={event.era.name}
+          className="size-5 rounded"
+        />
+      )}
+      <Badge variant="secondary" className="gap-1">
+        <span>{event.name}</span>
+        {event.twitterUrl && (
+          <a
+            href={event.twitterUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-muted-foreground hover:text-foreground"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <IconBrandTwitter className="size-3" />
+          </a>
+        )}
+      </Badge>
     </div>
   );
 }

@@ -24,7 +24,9 @@
         "MAIL_SES_SECRET_KEY",
         "COSMO_RECAPTCHA_KEY",
         "CDP_ENDPOINT",
-        "REDIS_URL"
+        "REDIS_URL",
+        "SPOTIFY_CLIENT_ID",
+        "SPOTIFY_CLIENT_SECRET"
       ]
     },
     "start": {

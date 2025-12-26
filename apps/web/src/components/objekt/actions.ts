@@ -3,40 +3,8 @@ import * as z from "zod";
 import { createServerFn } from "@tanstack/react-start";
 import { fetchMetadataV1 } from "@apollo/cosmo/server/metadata";
 import { collections, objekts } from "@apollo/database/indexer/schema";
-import { objektMetadata } from "@apollo/database/web/schema";
-import { db } from "@/lib/server/db";
-import {
-  adminMiddleware,
-  authenticatedMiddleware,
-} from "@/lib/server/middlewares";
-import { metadataObjectSchema } from "@/lib/universal/schema/admin";
+import { authenticatedMiddleware } from "@/lib/server/middlewares";
 import { indexer } from "@/lib/server/db/indexer";
-
-/**
- * Update an objekt's metadata.
- */
-export const $updateObjektMetadata = createServerFn({ method: "POST" })
-  .middleware([adminMiddleware])
-  .inputValidator(metadataObjectSchema)
-  .handler(async ({ data, context }) => {
-    const [result] = await db
-      .insert(objektMetadata)
-      .values({
-        ...data,
-        contributor: context.cosmo.address,
-      })
-      .onConflictDoUpdate({
-        set: {
-          description: data.description,
-          contributor: context.cosmo.address,
-        },
-        target: objektMetadata.collectionId,
-        where: eq(objektMetadata.collectionId, data.collectionId),
-      })
-      .returning();
-
-    return result;
-  });
 
 /**
  * Rescan an objekt's metadata.
