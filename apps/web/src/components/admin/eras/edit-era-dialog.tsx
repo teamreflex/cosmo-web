@@ -1,5 +1,5 @@
 import { IconLoader2 } from "@tabler/icons-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { FormProvider, useForm, useFormState } from "react-hook-form";
@@ -11,7 +11,7 @@ import type { Era } from "@apollo/database/web/types";
 import type { SpotifyAlbum } from "@/lib/universal/events";
 import type { CreateEraInput } from "@/lib/universal/schema/events";
 import { createEraSchema } from "@/lib/universal/schema/events";
-import { $updateEra } from "@/lib/server/events/actions";
+import { $getEraImageUploadUrl, $updateEra } from "@/lib/server/events/actions";
 import { erasQuery } from "@/lib/queries/events";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,12 +35,18 @@ export default function EditEraDialog({ era, children }: Props) {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
   const [selectedAlbum, setSelectedAlbum] = useState<SpotifyAlbum | null>(null);
+  const selectedImageRef = useRef<File | null>(null);
+  const [currentImageUrl, setCurrentImageUrl] = useState<string | undefined>(
+    era.imageUrl ?? undefined,
+  );
+
   const mutation = useMutation({
     mutationFn: useServerFn($updateEra),
     onSuccess: () => {
       toast.success(m.admin_era_updated());
       queryClient.invalidateQueries({ queryKey: erasQuery().queryKey });
       setOpen(false);
+      selectedImageRef.current = null;
     },
     onError: () => {
       toast.error(m.error_unknown());
@@ -56,6 +62,7 @@ export default function EditEraDialog({ era, children }: Props) {
       artist: era.artist,
       spotifyAlbumId: era.spotifyAlbumId ?? undefined,
       spotifyAlbumArt: era.spotifyAlbumArt ?? undefined,
+      imageUrl: era.imageUrl ?? undefined,
       startDate: era.startDate ?? undefined,
       endDate: era.endDate ?? undefined,
     },
@@ -71,6 +78,9 @@ export default function EditEraDialog({ era, children }: Props) {
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)/g, "");
     form.setValue("slug", slug);
+    selectedImageRef.current = null;
+    setCurrentImageUrl(undefined);
+    form.setValue("imageUrl", undefined);
   }
 
   function handleAlbumClear() {
@@ -79,8 +89,52 @@ export default function EditEraDialog({ era, children }: Props) {
     form.setValue("spotifyAlbumArt", undefined);
   }
 
+  function handleImageSelect(file: File | null) {
+    selectedImageRef.current = file;
+  }
+
+  function handleImageClear() {
+    selectedImageRef.current = null;
+    setCurrentImageUrl(undefined);
+    form.setValue("imageUrl", undefined);
+  }
+
   async function handleSubmit(data: CreateEraInput) {
-    await mutation.mutateAsync({ data: { ...data, id: era.id } });
+    let imageUrl = data.imageUrl;
+
+    // Upload image if selected
+    if (selectedImageRef.current) {
+      try {
+        const file = selectedImageRef.current;
+        const { uploadUrl, publicUrl } = await $getEraImageUploadUrl({
+          data: {
+            filename: file.name,
+            contentType: file.type,
+            contentLength: file.size,
+          },
+        });
+
+        // Upload to R2
+        const uploadResponse = await fetch(uploadUrl, {
+          method: "PUT",
+          body: file,
+          headers: {
+            "Content-Type": file.type,
+          },
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error("Upload failed");
+        }
+
+        imageUrl = publicUrl;
+      } catch {
+        toast.error(m.admin_era_image_upload_failed());
+        return;
+      }
+    }
+
+    await mutation.mutateAsync({ data: { ...data, imageUrl, id: era.id } });
   }
 
   return (
@@ -99,6 +153,9 @@ export default function EditEraDialog({ era, children }: Props) {
               selectedAlbum={selectedAlbum}
               onAlbumSelect={handleAlbumSelect}
               onAlbumClear={handleAlbumClear}
+              existingImageUrl={currentImageUrl}
+              onImageSelect={handleImageSelect}
+              onImageClear={handleImageClear}
             />
             <DialogFooter className="mt-6">
               <div className="mr-auto">

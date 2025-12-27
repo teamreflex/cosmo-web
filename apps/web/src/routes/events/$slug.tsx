@@ -42,6 +42,8 @@ export const Route = createFileRoute("/events/$slug")({
 function RouteComponent() {
   const { account, event } = Route.useLoaderData();
 
+  const imageUrl = event.era.spotifyAlbumArt || event.era.imageUrl;
+
   return (
     <main className="container flex flex-col gap-4 py-2">
       {/* header */}
@@ -54,9 +56,9 @@ function RouteComponent() {
             )}
           </div>
 
-          {event.era.spotifyAlbumArt && (
+          {imageUrl && (
             <img
-              src={event.era.spotifyAlbumArt}
+              src={imageUrl}
               alt={event.era.name}
               className="size-16 shrink-0 rounded-lg"
             />

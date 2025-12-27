@@ -10,6 +10,10 @@ import {
 import { db } from "@/lib/server/db";
 import { adminMiddleware } from "@/lib/server/middlewares";
 import {
+  generateEraImageKey,
+  getPresignedUploadUrl,
+} from "@/lib/server/r2";
+import {
   addCollectionsToEventSchema,
   createEraSchema,
   createEventSchema,
@@ -34,6 +38,7 @@ export const $createEra = createServerFn({ method: "POST" })
         artist: data.artist,
         spotifyAlbumId: data.spotifyAlbumId,
         spotifyAlbumArt: data.spotifyAlbumArt,
+        imageUrl: data.imageUrl,
         startDate: data.startDate,
         endDate: data.endDate,
       })
@@ -211,4 +216,29 @@ export const $getSpotifyAlbum = createServerFn({ method: "GET" })
       ...album,
       bestArt: getBestAlbumArt(album),
     };
+  });
+
+/**
+ * Gets a presigned URL for uploading an era image to R2.
+ */
+export const $getEraImageUploadUrl = createServerFn({ method: "POST" })
+  .middleware([adminMiddleware])
+  .inputValidator(
+    z.object({
+      filename: z.string().min(1),
+      contentType: z.string().regex(/^image\/(jpeg|png|gif|webp)$/),
+      contentLength: z.number().min(1).max(1024 * 1024), // 1MB max
+    }),
+  )
+  .handler(async ({ data }) => {
+    const extension = data.filename.split(".").pop()?.toLowerCase() || "jpg";
+    const key = generateEraImageKey(extension);
+
+    const { uploadUrl, publicUrl } = await getPresignedUploadUrl({
+      key,
+      contentType: data.contentType,
+      contentLength: data.contentLength,
+    });
+
+    return { uploadUrl, publicUrl };
   });

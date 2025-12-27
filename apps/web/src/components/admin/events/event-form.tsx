@@ -1,10 +1,10 @@
 import { Controller, useFormContext } from "react-hook-form";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
+import { eventTypes } from "@apollo/database/web/types";
 import type { Era } from "@apollo/database/web/types";
 import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
 import type { CreateEventInput } from "@/lib/universal/schema/events";
-import { eventTypes } from "@/lib/universal/schema/events";
 import { erasQuery } from "@/lib/queries/events";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";

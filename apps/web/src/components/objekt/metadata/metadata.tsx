@@ -166,13 +166,15 @@ export default function Metadata(props: Props) {
 }
 
 function EventBadge({ event }: { event: CollectionDataEvent }) {
+  const imageUrl = event.era.spotifyAlbumArt || event.era.imageUrl;
+
   return (
     <div className="flex items-center gap-1">
-      {event.era.spotifyAlbumArt && (
+      {imageUrl && (
         <img
-          src={event.era.spotifyAlbumArt}
+          src={imageUrl}
           alt={event.era.name}
-          className="size-5 rounded"
+          className="aspect-square size-5 rounded"
         />
       )}
       <Badge variant="secondary" className="gap-1">

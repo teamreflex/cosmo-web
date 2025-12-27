@@ -31,6 +31,7 @@
   - [ ] index: show current event based on start/end dates, maybe a carousel for multiple?
   - [ ] index: instead of tabs, just show everything in chronological order but have filter and sort options
   - [ ] event: make header better
+  - [x] era: add custom image for non-album eras
 
 ## indexer
 

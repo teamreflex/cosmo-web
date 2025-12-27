@@ -11,7 +11,7 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 import { citext, createdAt } from "../custom";
-import type { CosmoGravityType, CosmoPollType } from "./types";
+import type { CosmoGravityType, CosmoPollType, EventType } from "./types";
 import { sql } from "drizzle-orm";
 import { user } from "../auth";
 
@@ -116,16 +116,6 @@ export const objektListEntries = pgTable(
   (t) => [index("objekt_list_entries_list_idx").on(t.objektListId)],
 );
 
-export type EventType =
-  | "album"
-  | "showcase"
-  | "shop"
-  | "collaboration"
-  | "promotional"
-  | "anniversary"
-  | "tour"
-  | "other";
-
 export const eras = pgTable(
   "eras",
   {
@@ -137,6 +127,7 @@ export const eras = pgTable(
     artist: varchar("artist", { length: 32 }).notNull(),
     spotifyAlbumId: varchar("spotify_album_id", { length: 64 }),
     spotifyAlbumArt: varchar("spotify_album_art", { length: 255 }),
+    imageUrl: varchar("image_url", { length: 255 }),
     startDate: timestamp("start_date", { mode: "date" }),
     endDate: timestamp("end_date", { mode: "date" }),
   },

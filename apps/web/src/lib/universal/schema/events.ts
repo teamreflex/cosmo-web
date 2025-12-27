@@ -1,27 +1,7 @@
+import { eventTypes } from "@apollo/database/web/types";
 import * as z from "zod";
-import type { EventType } from "@apollo/database/web/schema";
 
-export const eventTypes: EventType[] = [
-  "album",
-  "showcase",
-  "shop",
-  "collaboration",
-  "promotional",
-  "anniversary",
-  "tour",
-  "other",
-];
-
-export const eventTypeSchema = z.enum([
-  "album",
-  "showcase",
-  "shop",
-  "collaboration",
-  "promotional",
-  "anniversary",
-  "tour",
-  "other",
-]);
+export const eventTypeSchema = z.enum(eventTypes);
 
 // Era schemas
 export const createEraSchema = z.object({
@@ -35,6 +15,7 @@ export const createEraSchema = z.object({
   artist: z.string().min(1).max(32),
   spotifyAlbumId: z.string().max(64).optional(),
   spotifyAlbumArt: z.url().max(255).optional(),
+  imageUrl: z.url().max(255).optional(),
   startDate: z.date().optional(),
   endDate: z.date().optional(),
 });

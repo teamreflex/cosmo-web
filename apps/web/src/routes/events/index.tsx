@@ -104,13 +104,15 @@ type EventCardProps = {
 };
 
 function EventCard({ event, era }: EventCardProps) {
+  const imageUrl = era?.spotifyAlbumArt || era?.imageUrl;
+
   return (
     <Link to="/events/$slug" params={{ slug: event.slug }}>
       <Card className="group relative overflow-clip transition-colors hover:border-foreground/50">
         <CardContent className="flex flex-col gap-2 p-4">
           <div className="flex items-start justify-between gap-2">
             <div className="flex flex-col gap-1">
-              <h3 className="font-semibold leading-tight">{event.name}</h3>
+              <h3 className="leading-tight font-semibold">{event.name}</h3>
               {event.description && (
                 <p className="line-clamp-2 text-sm text-muted-foreground">
                   {event.description}
@@ -118,9 +120,9 @@ function EventCard({ event, era }: EventCardProps) {
               )}
             </div>
 
-            {era?.spotifyAlbumArt && (
+            {imageUrl && (
               <img
-                src={era.spotifyAlbumArt}
+                src={imageUrl}
                 alt={era.name}
                 className="size-12 shrink-0 rounded"
               />

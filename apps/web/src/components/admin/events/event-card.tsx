@@ -16,16 +16,17 @@ type Props = {
 
 export default function EventCard({ event, artist }: Props) {
   const artistName = artist?.title ?? event.artist;
+  const imageUrl = event.era.spotifyAlbumArt || event.era.imageUrl;
 
   return (
     <Card>
       <CardContent className="flex flex-col gap-2">
         <div className="flex items-center gap-4">
-          {event.era.spotifyAlbumArt ? (
+          {imageUrl ? (
             <img
-              src={event.era.spotifyAlbumArt}
+              src={imageUrl}
               alt={event.era.name}
-              className="size-16 shrink-0 rounded-md object-cover"
+              className="aspect-square size-16 shrink-0 rounded-md object-cover"
             />
           ) : (
             <div className="flex size-16 shrink-0 items-center justify-center rounded-md bg-muted">

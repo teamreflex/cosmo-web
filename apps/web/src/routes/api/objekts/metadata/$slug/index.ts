@@ -130,6 +130,7 @@ async function fetchEventForCollection(collectionId: string) {
               slug: true,
               name: true,
               spotifyAlbumArt: true,
+              imageUrl: true,
             },
           },
         },

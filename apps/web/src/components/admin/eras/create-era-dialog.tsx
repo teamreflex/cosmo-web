@@ -1,5 +1,5 @@
 import { IconLoader2, IconPlus } from "@tabler/icons-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { FormProvider, useForm, useFormState } from "react-hook-form";
@@ -9,7 +9,7 @@ import EraForm from "./era-form";
 import type { SpotifyAlbum } from "@/lib/universal/events";
 import type { CreateEraInput } from "@/lib/universal/schema/events";
 import { createEraSchema } from "@/lib/universal/schema/events";
-import { $createEra } from "@/lib/server/events/actions";
+import { $createEra, $getEraImageUploadUrl } from "@/lib/server/events/actions";
 import { erasQuery } from "@/lib/queries/events";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,6 +28,8 @@ export default function CreateEra() {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
   const [selectedAlbum, setSelectedAlbum] = useState<SpotifyAlbum | null>(null);
+  const selectedImageRef = useRef<File | null>(null);
+
   const mutation = useMutation({
     mutationFn: useServerFn($createEra),
     onSuccess: () => {
@@ -36,6 +38,7 @@ export default function CreateEra() {
       setOpen(false);
       form.reset();
       setSelectedAlbum(null);
+      selectedImageRef.current = null;
     },
     onError: () => {
       toast.error(m.error_unknown());
@@ -51,6 +54,7 @@ export default function CreateEra() {
       artist: "",
       spotifyAlbumId: undefined,
       spotifyAlbumArt: undefined,
+      imageUrl: undefined,
       startDate: undefined,
       endDate: undefined,
     },
@@ -66,6 +70,8 @@ export default function CreateEra() {
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)/g, "");
     form.setValue("slug", slug);
+    selectedImageRef.current = null;
+    form.setValue("imageUrl", undefined);
   }
 
   function handleAlbumClear() {
@@ -74,8 +80,51 @@ export default function CreateEra() {
     form.setValue("spotifyAlbumArt", undefined);
   }
 
+  function handleImageSelect(file: File | null) {
+    selectedImageRef.current = file;
+  }
+
+  function handleImageClear() {
+    selectedImageRef.current = null;
+    form.setValue("imageUrl", undefined);
+  }
+
   async function handleSubmit(data: CreateEraInput) {
-    await mutation.mutateAsync({ data });
+    let imageUrl = data.imageUrl;
+
+    // Upload image if selected
+    if (selectedImageRef.current) {
+      try {
+        const file = selectedImageRef.current;
+        const { uploadUrl, publicUrl } = await $getEraImageUploadUrl({
+          data: {
+            filename: file.name,
+            contentType: file.type,
+            contentLength: file.size,
+          },
+        });
+
+        // Upload to R2
+        const uploadResponse = await fetch(uploadUrl, {
+          method: "PUT",
+          body: file,
+          headers: {
+            "Content-Type": file.type,
+          },
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error("Upload failed");
+        }
+
+        imageUrl = publicUrl;
+      } catch {
+        toast.error(m.admin_era_image_upload_failed());
+        return;
+      }
+    }
+
+    await mutation.mutateAsync({ data: { ...data, imageUrl } });
   }
 
   return (
@@ -99,6 +148,8 @@ export default function CreateEra() {
               selectedAlbum={selectedAlbum}
               onAlbumSelect={handleAlbumSelect}
               onAlbumClear={handleAlbumClear}
+              onImageSelect={handleImageSelect}
+              onImageClear={handleImageClear}
             />
             <DialogFooter className="mt-6">
               <DialogClose asChild>

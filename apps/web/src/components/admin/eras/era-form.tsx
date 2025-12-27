@@ -1,5 +1,6 @@
 import { Controller, useFormContext } from "react-hook-form";
 import { getRouteApi } from "@tanstack/react-router";
+import EraImageUpload from "./era-image-upload";
 import SpotifyAlbumDisplay from "./spotify-album-display";
 import type { SpotifyAlbum } from "@/lib/universal/events";
 import type { CreateEraInput } from "@/lib/universal/schema/events";
@@ -23,6 +24,9 @@ type Props = {
   selectedAlbum: SpotifyAlbum | null;
   onAlbumSelect: (album: SpotifyAlbum) => void;
   onAlbumClear: () => void;
+  existingImageUrl?: string;
+  onImageSelect: (file: File | null) => void;
+  onImageClear: () => void;
 };
 
 export default function EraForm(props: Props) {
@@ -50,6 +54,18 @@ export default function EraForm(props: Props) {
           />
         )}
       </Field>
+
+      {/* Custom Image (for eras without Spotify album) */}
+      {!hasAlbum && (
+        <Field>
+          <FieldLabel>{m.admin_era_image()}</FieldLabel>
+          <EraImageUpload
+            existingUrl={props.existingImageUrl}
+            onFileSelect={props.onImageSelect}
+            onClear={props.onImageClear}
+          />
+        </Field>
+      )}
 
       {/* Artist */}
       <Controller

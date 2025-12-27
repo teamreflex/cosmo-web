@@ -21,7 +21,7 @@ export interface CollectionDataEvent extends Pick<
   Event,
   "id" | "slug" | "name" | "eventType" | "twitterUrl"
 > {
-  era: Pick<Era, "id" | "slug" | "name" | "spotifyAlbumArt">;
+  era: Pick<Era, "id" | "slug" | "name" | "spotifyAlbumArt" | "imageUrl">;
 }
 
 export type ObjektCollectionData = {

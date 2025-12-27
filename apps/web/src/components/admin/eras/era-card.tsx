@@ -15,20 +15,21 @@ export default function EraCard({ era }: Props) {
   const { artists } = route.useLoaderData();
 
   const artist = artists.find((a) => a.id === era.artist);
+  const imageUrl = era.spotifyAlbumArt || era.imageUrl;
 
   return (
     <EditEraDialog era={era}>
       <Card className="cursor-pointer transition-colors hover:bg-accent">
         <CardContent className="flex flex-col gap-2">
           <div className="flex items-center gap-4">
-            {era.spotifyAlbumArt ? (
+            {imageUrl ? (
               <img
-                src={era.spotifyAlbumArt}
+                src={imageUrl}
                 alt={era.name}
-                className="size-16 shrink-0 rounded-md object-cover"
+                className="aspect-square size-16 shrink-0 rounded-md object-cover"
               />
             ) : (
-              <div className="flex size-16 shrink-0 items-center justify-center rounded-md bg-muted">
+              <div className="flex aspect-square size-16 shrink-0 items-center justify-center rounded-md bg-muted">
                 <span className="text-xs text-muted-foreground">No art</span>
               </div>
             )}
