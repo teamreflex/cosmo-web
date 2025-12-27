@@ -8,7 +8,7 @@ import { adminMiddleware } from "../middlewares";
 export const $fetchLatestMetadata = createServerFn({ method: "GET" })
   .middleware([adminMiddleware])
   .handler(async () => {
-    return await db.query.objektMetadata.findMany({
+    return await db.query.collectionData.findMany({
       orderBy: {
         id: "desc",
       },

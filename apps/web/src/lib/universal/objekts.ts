@@ -1,3 +1,4 @@
+import type { Era, Event } from "@apollo/database/web/types";
 import type { Collection, Transfer } from "@/lib/server/db/indexer/schema";
 import type {
   CosmoObjekt,
@@ -16,27 +17,25 @@ export type ObjektResponse<T extends LegacyObjekt> = {
 };
 
 // metadata
-export type ObjektEventInfo = {
-  id: string;
-  slug: string;
-  name: string;
-  eventType: string;
-  twitterUrl: string | null;
+export interface CollectionDataEvent extends Pick<
+  Event,
+  "id" | "slug" | "name" | "eventType" | "twitterUrl"
+> {
+  era: Pick<Era, "id" | "slug" | "name" | "spotifyAlbumArt">;
+}
+
+export type ObjektCollectionData = {
+  id: number;
+  collectionId: string;
   description: string | null;
-  category: string | null;
-  era: {
-    id: string;
-    slug: string;
-    name: string;
-    spotifyAlbumArt: string | null;
-  } | null;
+  event: CollectionDataEvent | null;
 };
 
 export type ObjektMetadata = {
   total: number;
   transferable: number;
   percentage: number;
-  event: ObjektEventInfo | null;
+  data: ObjektCollectionData | undefined;
 };
 
 export type SerialTransfer = Transfer & {

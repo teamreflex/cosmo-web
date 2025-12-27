@@ -9,10 +9,10 @@ import { m } from "@/i18n/messages";
 
 type Props = {
   eventId: string;
-  collectionSlug: string;
+  collectionId: string;
 };
 
-export default function DeleteCollection({ eventId, collectionSlug }: Props) {
+export default function DeleteCollection({ eventId, collectionId }: Props) {
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: useServerFn($removeCollectionFromEvent),
@@ -30,7 +30,7 @@ export default function DeleteCollection({ eventId, collectionSlug }: Props) {
 
   function handleRemove() {
     mutation.mutate({
-      data: { eventId, collectionSlug },
+      data: { eventId, collectionId },
     });
   }
 

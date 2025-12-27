@@ -33,14 +33,14 @@ type Props = {
 export default function AddCollectionsDialog({ eventId, eventName }: Props) {
   const [open, setOpen] = useState(false);
   const [rows, setRows] = useState<EventCollectionInput[]>([
-    { collectionSlug: "", description: undefined },
+    { collectionId: "", description: undefined },
   ]);
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: useServerFn($addCollectionsToEvent),
     onSuccess: (data) => {
       toast.success(m.admin_collections_added({ count: data as number }));
-      setRows([{ collectionSlug: "", description: undefined }]);
+      setRows([{ collectionId: "", description: undefined }]);
       queryClient.invalidateQueries({ queryKey: eventsQuery().queryKey });
       queryClient.invalidateQueries({
         queryKey: eventCollectionsQuery(eventId).queryKey,
@@ -53,7 +53,7 @@ export default function AddCollectionsDialog({ eventId, eventName }: Props) {
   });
 
   const hasRows =
-    rows.length > 0 && rows.some((r) => r.collectionSlug.length > 0);
+    rows.length > 0 && rows.some((r) => r.collectionId.length > 0);
 
   function update(
     index: number,
@@ -87,7 +87,7 @@ export default function AddCollectionsDialog({ eventId, eventName }: Props) {
   function addRow() {
     setRows((prev) => [
       ...prev,
-      { collectionSlug: "", description: undefined },
+      { collectionId: "", description: undefined },
     ]);
   }
 
@@ -97,7 +97,7 @@ export default function AddCollectionsDialog({ eventId, eventName }: Props) {
 
   function handleSubmit() {
     if (!hasRows) return;
-    const validRows = rows.filter((r) => r.collectionSlug.length > 0);
+    const validRows = rows.filter((r) => r.collectionId.length > 0);
     mutation.mutate({
       data: { eventId, collections: validRows },
     });
@@ -133,9 +133,9 @@ export default function AddCollectionsDialog({ eventId, eventName }: Props) {
               <div key={index} className="grid grid-cols-[1fr_1fr_auto] gap-2">
                 <Input
                   placeholder={m.admin_collection_slug_placeholder()}
-                  value={row.collectionSlug}
+                  value={row.collectionId}
                   onChange={(e) =>
-                    update(index, "collectionSlug", e.currentTarget.value)
+                    update(index, "collectionId", e.currentTarget.value)
                   }
                 />
                 <Input

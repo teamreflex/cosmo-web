@@ -72,9 +72,8 @@ export type UpdateEventInput = z.infer<typeof updateEventSchema>;
 
 // Event collection schemas
 export const eventCollectionSchema = z.object({
-  collectionSlug: z.string().min(1).max(64),
+  collectionId: z.string().min(1).max(64),
   description: z.string().max(255).optional(),
-  category: z.string().max(64).optional(),
 });
 
 export const addCollectionsToEventSchema = z.object({
@@ -84,7 +83,7 @@ export const addCollectionsToEventSchema = z.object({
 
 export const removeCollectionFromEventSchema = z.object({
   eventId: z.uuid(),
-  collectionSlug: z.string().min(1),
+  collectionId: z.string().min(1),
 });
 
 export type EventCollectionInput = z.infer<typeof eventCollectionSchema>;
@@ -102,9 +101,8 @@ export const bulkCollectionImportSchema = z.preprocess((value) => {
     .map((line) => {
       const parts = line.split(" :: ");
       return {
-        collectionSlug: parts[0]?.trim() || "",
+        collectionId: parts[0]?.trim() || "",
         description: parts[1]?.trim() || undefined,
-        category: parts[2]?.trim() || undefined,
       };
     });
 }, z.array(eventCollectionSchema));

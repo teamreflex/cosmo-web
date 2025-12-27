@@ -60,7 +60,7 @@ const main = Effect.gen(function* () {
     // for each collection, fetch the metadata
     const slugs = collections.map((c) => c.slug);
     const descriptions = yield* Effect.promise(async () => {
-      return await metadata.query.objektMetadata.findMany({
+      return await metadata.query.collectionData.findMany({
         where: {
           collectionId: {
             in: slugs,

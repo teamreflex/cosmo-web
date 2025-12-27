@@ -4,7 +4,6 @@ import * as schema from "./schema";
 export const relations = defineRelations(schema, (r) => ({
   cosmoAccounts: {
     lockedObjekts: r.many.lockedObjekts(),
-    objektMetadata: r.many.objektMetadata(),
     pins: r.many.pins(),
     user: r.one.user({
       from: r.cosmoAccounts.userId,
@@ -35,10 +34,10 @@ export const relations = defineRelations(schema, (r) => ({
       to: r.cosmoAccounts.address,
     }),
   },
-  objektMetadata: {
-    profile: r.one.cosmoAccounts({
-      from: r.objektMetadata.contributor,
-      to: r.cosmoAccounts.address,
+  collectionData: {
+    event: r.one.events({
+      from: r.collectionData.eventId,
+      to: r.events.id,
     }),
   },
   objektLists: {
@@ -115,14 +114,7 @@ export const relations = defineRelations(schema, (r) => ({
       to: r.eras.id,
       optional: false,
     }),
-    collections: r.many.eventCollections(),
-  },
-  eventCollections: {
-    event: r.one.events({
-      from: r.eventCollections.eventId,
-      to: r.events.id,
-      optional: false,
-    }),
+    collections: r.many.collectionData(),
   },
   // #endregion
 

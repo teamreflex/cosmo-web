@@ -16,7 +16,10 @@ import Portal from "../../portal";
 import Pill from "./pill";
 import SerialsPanel from "./serials-panel";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
-import type { ObjektEventInfo, ObjektMetadata } from "@/lib/universal/objekts";
+import type {
+  CollectionDataEvent,
+  ObjektMetadata,
+} from "@/lib/universal/objekts";
 import type { ObjektMetadataTab } from "./common";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -38,7 +41,6 @@ type Props = {
 
 export default function Metadata(props: Props) {
   const [_, copy] = useCopyToClipboard();
-
   const { data } = useSuspenseQuery({
     queryKey: ["collection-metadata", "metadata", props.objekt.slug],
     queryFn: ({ signal }) =>
@@ -76,9 +78,9 @@ export default function Metadata(props: Props) {
 
         {/* metadata */}
         <TabsContent value="metadata" className="flex grow flex-col">
-          {data.event?.description && (
+          {data.data?.description && (
             <p className="min-h-10 text-sm sm:text-base">
-              {data.event.description}
+              {data.data.description}
             </p>
           )}
 
@@ -121,12 +123,12 @@ export default function Metadata(props: Props) {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {data.event && (
+            {data.data?.event && (
               <div className="mr-auto flex min-h-10 items-center gap-2">
                 <span className="text-xs text-muted-foreground">
                   {m.event_from()}
                 </span>
-                <EventBadge event={data.event} />
+                <EventBadge event={data.data.event} />
               </div>
             )}
           </div>
@@ -163,10 +165,10 @@ export default function Metadata(props: Props) {
   );
 }
 
-function EventBadge({ event }: { event: ObjektEventInfo }) {
+function EventBadge({ event }: { event: CollectionDataEvent }) {
   return (
     <div className="flex items-center gap-1">
-      {event.era?.spotifyAlbumArt && (
+      {event.era.spotifyAlbumArt && (
         <img
           src={event.era.spotifyAlbumArt}
           alt={event.era.name}

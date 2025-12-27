@@ -1,7 +1,7 @@
 import * as z from "zod";
 import { and, eq, sql } from "drizzle-orm";
 import { createServerFn } from "@tanstack/react-start";
-import { eras, eventCollections, events } from "@apollo/database/web/schema";
+import { collectionData, eras, events } from "@apollo/database/web/schema";
 import {
   fetchSpotifyAlbum,
   getBestAlbumArt,
@@ -149,20 +149,19 @@ export const $addCollectionsToEvent = createServerFn({ method: "POST" })
   .inputValidator(addCollectionsToEventSchema)
   .handler(async ({ data }) => {
     const result = await db
-      .insert(eventCollections)
+      .insert(collectionData)
       .values(
         data.collections.map((c) => ({
           eventId: data.eventId,
-          collectionSlug: c.collectionSlug,
+          collectionId: c.collectionId,
           description: c.description,
-          category: c.category,
         })),
       )
       .onConflictDoUpdate({
-        target: [eventCollections.eventId, eventCollections.collectionSlug],
+        target: collectionData.collectionId,
         set: {
-          description: sql.raw(`excluded.${eventCollections.description.name}`),
-          category: sql.raw(`excluded.${eventCollections.category.name}`),
+          eventId: data.eventId,
+          description: sql.raw(`excluded.${collectionData.description.name}`),
         },
       })
       .returning();
@@ -178,11 +177,12 @@ export const $removeCollectionFromEvent = createServerFn({ method: "POST" })
   .inputValidator(removeCollectionFromEventSchema)
   .handler(async ({ data }) => {
     await db
-      .delete(eventCollections)
+      .update(collectionData)
+      .set({ eventId: null })
       .where(
         and(
-          eq(eventCollections.eventId, data.eventId),
-          eq(eventCollections.collectionSlug, data.collectionSlug),
+          eq(collectionData.eventId, data.eventId),
+          eq(collectionData.collectionId, data.collectionId),
         ),
       );
   });

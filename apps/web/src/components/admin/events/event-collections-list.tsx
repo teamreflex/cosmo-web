@@ -27,13 +27,13 @@ export default function EventCollectionsList({ eventId }: Props) {
             key={col.id}
             className="grid grid-cols-[1fr_1fr_auto] items-center gap-2 border-b border-accent p-2 last:border-0"
           >
-            <span className="font-semibold">{col.collectionSlug}</span>
+            <span className="font-semibold">{col.collectionId}</span>
             <span className="text-muted-foreground">
               {col.description || "-"}
             </span>
             <DeleteCollection
               eventId={eventId}
-              collectionSlug={col.collectionSlug}
+              collectionId={col.collectionId}
             />
           </div>
         ))}

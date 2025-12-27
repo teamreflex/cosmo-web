@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 import * as z from "zod";
 import { createServerFn } from "@tanstack/react-start";
-import { objektMetadata } from "@apollo/database/web/schema";
+import { collectionData } from "@apollo/database/web/schema";
 import { db } from "@/lib/server/db";
 import { metadataObjectSchema } from "@/lib/universal/schema/admin";
 import { adminMiddleware } from "@/lib/server/middlewares";
@@ -16,21 +16,19 @@ export const $saveMetadata = createServerFn({ method: "POST" })
       rows: metadataObjectSchema.array(),
     }),
   )
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data }) => {
     const result = await db
-      .insert(objektMetadata)
+      .insert(collectionData)
       .values(
         data.rows.map((r) => ({
           collectionId: r.collectionId,
           description: r.description,
-          contributor: context.cosmo.address,
         })),
       )
       .onConflictDoUpdate({
-        target: objektMetadata.collectionId,
+        target: collectionData.collectionId,
         set: {
-          description: sql.raw(`excluded.${objektMetadata.description.name}`),
-          contributor: context.cosmo.address,
+          description: sql.raw(`excluded.${collectionData.description.name}`),
         },
       })
       .returning();

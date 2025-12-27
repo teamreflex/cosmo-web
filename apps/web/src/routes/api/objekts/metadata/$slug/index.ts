@@ -1,7 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { eq, sql } from "drizzle-orm";
 import { Addresses, addr } from "@apollo/util";
-import type { ObjektEventInfo, ObjektMetadata } from "@/lib/universal/objekts";
+import type {
+  ObjektCollectionData,
+  ObjektMetadata,
+} from "@/lib/universal/objekts";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import { collections, objekts } from "@/lib/server/db/indexer/schema";
@@ -15,7 +18,7 @@ export const Route = createFileRoute("/api/objekts/metadata/$slug/")({
        * Fetches metadata about a collection.
        */
       GET: async ({ params }) => {
-        const [collection, event] = await Promise.all([
+        const [collection, data] = await Promise.all([
           fetchCollection(params.slug),
           fetchEventForCollection(params.slug),
         ]);
@@ -48,7 +51,7 @@ export const Route = createFileRoute("/api/objekts/metadata/$slug/")({
             total: collection.total,
             transferable: collection.transferable,
             percentage: collection.percentage,
-            event,
+            data,
           } satisfies ObjektMetadata,
           {
             headers: cacheHeaders({ cdn: cacheTime }),
@@ -103,9 +106,14 @@ async function fetchCollection(slug: string) {
 /**
  * Fetch the event that includes this collection.
  */
-async function fetchEventForCollection(collectionSlug: string) {
-  const eventCollection = await db.query.eventCollections.findFirst({
-    where: { collectionSlug },
+async function fetchEventForCollection(collectionId: string) {
+  const result = await db.query.collectionData.findFirst({
+    where: { collectionId },
+    columns: {
+      id: true,
+      collectionId: true,
+      description: true,
+    },
     with: {
       event: {
         columns: {
@@ -129,18 +137,5 @@ async function fetchEventForCollection(collectionSlug: string) {
     },
   });
 
-  if (!eventCollection) {
-    return null;
-  }
-
-  return {
-    id: eventCollection.event.id,
-    slug: eventCollection.event.slug,
-    name: eventCollection.event.name,
-    eventType: eventCollection.event.eventType,
-    twitterUrl: eventCollection.event.twitterUrl,
-    description: eventCollection.description,
-    category: eventCollection.category,
-    era: eventCollection.event.era,
-  } satisfies ObjektEventInfo;
+  return result satisfies ObjektCollectionData | undefined;
 }

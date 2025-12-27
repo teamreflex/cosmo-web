@@ -116,21 +116,6 @@ export const objektListEntries = pgTable(
   (t) => [index("objekt_list_entries_list_idx").on(t.objektListId)],
 );
 
-export const objektMetadata = pgTable(
-  "objekt_metadata",
-  {
-    id: serial("id").primaryKey(),
-    collectionId: varchar("collection_id", { length: 36 }).notNull().unique(), // slug: atom01-jinsoul-101z
-    description: varchar("description", { length: 255 }).notNull(),
-    contributor: citext("address", { length: 42 }).notNull(),
-  },
-  (t) => [
-    index("objekt_metadata_collection_idx").on(t.collectionId),
-    index("objekt_metadata_contributor_idx").on(t.contributor),
-  ],
-);
-
-// #region Events/Drops System
 export type EventType =
   | "album"
   | "showcase"
@@ -173,7 +158,9 @@ export const events = pgTable(
     name: varchar("name", { length: 128 }).notNull(),
     description: text("description"),
     artist: varchar("artist", { length: 32 }).notNull(),
-    eventType: varchar("event_type", { length: 32 }).notNull().$type<EventType>(),
+    eventType: varchar("event_type", { length: 32 })
+      .notNull()
+      .$type<EventType>(),
     twitterUrl: varchar("twitter_url", { length: 255 }),
     startDate: timestamp("start_date", { mode: "date" }),
     endDate: timestamp("end_date", { mode: "date" }),
@@ -185,24 +172,21 @@ export const events = pgTable(
   ],
 );
 
-export const eventCollections = pgTable(
-  "event_collections",
+export const collectionData = pgTable(
+  "collection_data",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    createdAt,
-    eventId: uuid("event_id")
-      .notNull()
-      .references(() => events.id, { onDelete: "cascade" }),
-    collectionSlug: varchar("collection_slug", { length: 64 }).notNull(),
+    id: serial("id").primaryKey(),
+    collectionId: varchar("collection_id", { length: 36 }).notNull().unique(), // slug: atom01-jinsoul-101z
+    eventId: uuid("event_id").references(() => events.id, {
+      onDelete: "set null",
+    }),
     description: varchar("description", { length: 255 }),
-    category: varchar("category", { length: 64 }),
   },
   (t) => [
-    uniqueIndex("event_collections_unique").on(t.eventId, t.collectionSlug),
-    index("event_collections_slug_idx").on(t.collectionSlug),
+    index("collection_data_collection_id_idx").on(t.collectionId),
+    index("collection_data_event_idx").on(t.eventId),
   ],
 );
-// #endregion
 
 export const cosmoTokens = pgTable(
   "cosmo_tokens",

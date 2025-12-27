@@ -1,11 +1,17 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "fa5d4daf-04dd-4a10-89cc-37ab9a279948",
+  "id": "d8276752-107f-45cd-a7a1-80e51de7ac02",
   "prevIds": [
-    "35ff97fe-5928-47d8-b3e5-207a6ce7f36e"
+    "a3443e45-4ade-454d-8306-20aaed98898b"
   ],
   "ddl": [
+    {
+      "isRlsEnabled": false,
+      "name": "collection_data",
+      "entityType": "tables",
+      "schema": "public"
+    },
     {
       "isRlsEnabled": false,
       "name": "cosmo_account_changes",
@@ -27,12 +33,6 @@
     {
       "isRlsEnabled": false,
       "name": "eras",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "event_collections",
       "entityType": "tables",
       "schema": "public"
     },
@@ -92,12 +92,6 @@
     },
     {
       "isRlsEnabled": false,
-      "name": "objekt_metadata",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
       "name": "pins",
       "entityType": "tables",
       "schema": "public"
@@ -131,6 +125,58 @@
       "name": "verification",
       "entityType": "tables",
       "schema": "public"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "collection_data"
+    },
+    {
+      "type": "varchar(36)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "collection_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "collection_data"
+    },
+    {
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "event_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "collection_data"
+    },
+    {
+      "type": "varchar(255)",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "description",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "collection_data"
     },
     {
       "type": "citext",
@@ -417,84 +463,6 @@
       "entityType": "columns",
       "schema": "public",
       "table": "eras"
-    },
-    {
-      "type": "uuid",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "gen_random_uuid()",
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "event_collections"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "created_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "event_collections"
-    },
-    {
-      "type": "uuid",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "event_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "event_collections"
-    },
-    {
-      "type": "varchar(64)",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "collection_slug",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "event_collections"
-    },
-    {
-      "type": "varchar(255)",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "description",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "event_collections"
-    },
-    {
-      "type": "varchar(64)",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "category",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "event_collections"
     },
     {
       "type": "uuid",
@@ -1171,58 +1139,6 @@
       "entityType": "columns",
       "schema": "public",
       "table": "objekt_lists"
-    },
-    {
-      "type": "serial",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "objekt_metadata"
-    },
-    {
-      "type": "varchar(36)",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "collection_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "objekt_metadata"
-    },
-    {
-      "type": "varchar(255)",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "description",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "objekt_metadata"
-    },
-    {
-      "type": "citext",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "address",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "objekt_metadata"
     },
     {
       "type": "serial",
@@ -1943,6 +1859,48 @@
       "nameExplicit": true,
       "columns": [
         {
+          "value": "collection_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "collection_data_collection_id_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "collection_data"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "event_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "collection_data_event_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "collection_data"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
           "value": "address",
           "isExpression": false,
           "asc": true,
@@ -2197,55 +2155,6 @@
       "entityType": "indexes",
       "schema": "public",
       "table": "eras"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "value": "event_id",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        },
-        {
-          "value": "collection_slug",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        }
-      ],
-      "isUnique": true,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "event_collections_unique",
-      "entityType": "indexes",
-      "schema": "public",
-      "table": "event_collections"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "value": "collection_slug",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        }
-      ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "event_collections_slug_idx",
-      "entityType": "indexes",
-      "schema": "public",
-      "table": "event_collections"
     },
     {
       "nameExplicit": true,
@@ -2692,48 +2601,6 @@
       "nameExplicit": true,
       "columns": [
         {
-          "value": "collection_id",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        }
-      ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "objekt_metadata_collection_idx",
-      "entityType": "indexes",
-      "schema": "public",
-      "table": "objekt_metadata"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "value": "address",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        }
-      ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "objekt_metadata_contributor_idx",
-      "entityType": "indexes",
-      "schema": "public",
-      "table": "objekt_metadata"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
           "value": "address",
           "isExpression": false,
           "asc": true,
@@ -3000,11 +2867,11 @@
         "id"
       ],
       "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "event_collections_event_id_events_id_fkey",
+      "onDelete": "SET NULL",
+      "name": "collection_data_event_id_events_id_fkey",
       "entityType": "fks",
       "schema": "public",
-      "table": "event_collections"
+      "table": "collection_data"
     },
     {
       "nameExplicit": false,
@@ -3113,6 +2980,16 @@
         "id"
       ],
       "nameExplicit": false,
+      "name": "objekt_metadata_pkey",
+      "schema": "public",
+      "table": "collection_data",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
       "name": "cosmo_account_pkey",
       "schema": "public",
       "table": "cosmo_account",
@@ -3136,16 +3013,6 @@
       "name": "eras_pkey",
       "schema": "public",
       "table": "eras",
-      "entityType": "pks"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": false,
-      "name": "event_collections_pkey",
-      "schema": "public",
-      "table": "event_collections",
       "entityType": "pks"
     },
     {
@@ -3243,16 +3110,6 @@
         "id"
       ],
       "nameExplicit": false,
-      "name": "objekt_metadata_pkey",
-      "schema": "public",
-      "table": "objekt_metadata",
-      "entityType": "pks"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": false,
       "name": "pins_pkey",
       "schema": "public",
       "table": "pins",
@@ -3311,6 +3168,17 @@
     {
       "nameExplicit": false,
       "columns": [
+        "collection_id"
+      ],
+      "nullsNotDistinct": false,
+      "name": "objekt_metadata_collection_id_unique",
+      "schema": "public",
+      "table": "collection_data",
+      "entityType": "uniques"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
         "slug"
       ],
       "nullsNotDistinct": false,
@@ -3328,17 +3196,6 @@
       "name": "events_slug_key",
       "schema": "public",
       "table": "events",
-      "entityType": "uniques"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "collection_id"
-      ],
-      "nullsNotDistinct": false,
-      "name": "objekt_metadata_collection_id_unique",
-      "schema": "public",
-      "table": "objekt_metadata",
       "entityType": "uniques"
     },
     {
@@ -3375,5 +3232,8 @@
       "entityType": "uniques"
     }
   ],
-  "renames": []
+  "renames": [
+    "public.objekt_metadata->public.collection_data",
+    "public.collection_data.objekt_metadata_collection_idx->public.collection_data.collection_data_collection_id_idx"
+  ]
 }

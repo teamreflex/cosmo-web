@@ -2,7 +2,7 @@ import * as z from "zod";
 import { asc, eq, inArray, sql } from "drizzle-orm";
 import { createServerFn } from "@tanstack/react-start";
 import { collections } from "@apollo/database/indexer/schema";
-import { eventCollections, events } from "@apollo/database/web/schema";
+import { collectionData, events } from "@apollo/database/web/schema";
 import { notFound } from "@tanstack/react-router";
 import { adminMiddleware } from "../middlewares";
 import type { Collection } from "@apollo/database/indexer/types";
@@ -76,7 +76,7 @@ export const $fetchCollectionsForEvent = createServerFn({ method: "GET" })
   .middleware([adminMiddleware])
   .inputValidator(z.object({ eventId: z.uuid() }))
   .handler(async ({ data }) => {
-    return db.query.eventCollections.findMany({
+    return db.query.collectionData.findMany({
       where: { eventId: data.eventId },
     });
   });
@@ -94,18 +94,17 @@ export const $fetchEventObjekts = createServerFn({ method: "GET" })
     }),
   )
   .handler(async ({ data }) => {
-    // single query: join events + event_collections with count over window
+    // single query: join events + collection_data with count over window
     const rows = await db
       .select({
-        collectionSlug: eventCollections.collectionSlug,
-        description: eventCollections.description,
-        category: eventCollections.category,
+        collectionId: collectionData.collectionId,
+        description: collectionData.description,
         total: sql<number>`count(*) over()`.as("total"),
       })
-      .from(eventCollections)
-      .innerJoin(events, eq(eventCollections.eventId, events.id))
+      .from(collectionData)
+      .innerJoin(events, eq(collectionData.eventId, events.id))
       .where(eq(events.slug, data.eventSlug))
-      .orderBy(asc(eventCollections.createdAt))
+      .orderBy(asc(collectionData.collectionId))
       .limit(PER_PAGE)
       .offset(data.cursor ?? 0);
 
@@ -120,7 +119,7 @@ export const $fetchEventObjekts = createServerFn({ method: "GET" })
 
     const total = rows[0]?.total ?? 0;
 
-    const slugs = rows.map((r) => r.collectionSlug);
+    const slugs = rows.map((r) => r.collectionId);
     const indexerCollections = await indexer
       .select()
       .from(collections)
@@ -128,7 +127,7 @@ export const $fetchEventObjekts = createServerFn({ method: "GET" })
 
     const collectionMap = new Map(indexerCollections.map((c) => [c.slug, c]));
     const objekts = rows
-      .map((row) => collectionMap.get(row.collectionSlug))
+      .map((row) => collectionMap.get(row.collectionId))
       .filter((o): o is Collection => !!o);
 
     const nextOffset = (data.cursor ?? 0) + rows.length;
