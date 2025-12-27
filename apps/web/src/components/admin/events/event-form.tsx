@@ -36,74 +36,78 @@ export default function EventForm() {
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Artist */}
-      <Controller
-        control={form.control}
-        name="artist"
-        render={({ field, fieldState }) => (
-          <Field data-invalid={fieldState.invalid}>
-            <FieldLabel htmlFor="artist">{m.admin_event_artist()}</FieldLabel>
-            <Select
-              value={field.value}
-              onValueChange={(v) => {
-                field.onChange(v);
-                form.setValue("eraId", "");
-              }}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder={m.admin_event_artist_placeholder()} />
-              </SelectTrigger>
-              <SelectContent>
-                {artistList.map((artist) => (
-                  <SelectItem
-                    key={artist.id}
-                    value={artist.id}
-                    className="flex items-center gap-2"
-                  >
-                    <img
-                      src={artist.logoImageUrl}
-                      alt={artist.title}
-                      className="aspect-square size-4 rounded-full"
-                    />
-                    <span>{artist.title}</span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <FieldError errors={[fieldState.error]} />
-          </Field>
-        )}
-      />
-
-      {/* Era */}
-      <Controller
-        control={form.control}
-        name="eraId"
-        render={({ field, fieldState }) => (
-          <Field data-invalid={fieldState.invalid}>
-            <FieldLabel htmlFor="eraId">{m.admin_event_era()}</FieldLabel>
-            <Select
-              value={field.value}
-              onValueChange={field.onChange}
-              disabled={!selectedArtist && filteredEras.length === 0}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder={m.admin_event_era_placeholder()} />
-              </SelectTrigger>
-              <SelectContent>
-                {filteredEras.map((era) => (
-                  <EraSelectItem
-                    key={era.id}
-                    era={era}
-                    artist={artists[era.artist]}
+      <div className="grid grid-cols-2 gap-4">
+        {/* Artist */}
+        <Controller
+          control={form.control}
+          name="artist"
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="artist">{m.admin_event_artist()}</FieldLabel>
+              <Select
+                value={field.value}
+                onValueChange={(v) => {
+                  field.onChange(v);
+                  form.setValue("eraId", "");
+                }}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue
+                    placeholder={m.admin_event_artist_placeholder()}
                   />
-                ))}
-              </SelectContent>
-            </Select>
-            <FieldError errors={[fieldState.error]} />
-          </Field>
-        )}
-      />
+                </SelectTrigger>
+                <SelectContent>
+                  {artistList.map((artist) => (
+                    <SelectItem
+                      key={artist.id}
+                      value={artist.id}
+                      className="flex items-center gap-2"
+                    >
+                      <img
+                        src={artist.logoImageUrl}
+                        alt={artist.title}
+                        className="aspect-square size-4 rounded-full"
+                      />
+                      <span>{artist.title}</span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FieldError errors={[fieldState.error]} />
+            </Field>
+          )}
+        />
+
+        {/* Era */}
+        <Controller
+          control={form.control}
+          name="eraId"
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="eraId">{m.admin_event_era()}</FieldLabel>
+              <Select
+                value={field.value}
+                onValueChange={field.onChange}
+                disabled={!selectedArtist && filteredEras.length === 0}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder={m.admin_event_era_placeholder()} />
+                </SelectTrigger>
+                <SelectContent>
+                  {filteredEras.map((era) => (
+                    <EraSelectItem
+                      key={era.id}
+                      era={era}
+                      artist={artists[era.artist]}
+                    />
+                  ))}
+                </SelectContent>
+              </Select>
+              <FieldError errors={[fieldState.error]} />
+            </Field>
+          )}
+        />
+      </div>
 
       {/* Event Type */}
       <Controller
@@ -215,6 +219,7 @@ export default function EventForm() {
                 value={field.value}
                 onChange={field.onChange}
                 placeholder={m.admin_era_start_date_placeholder()}
+                side="bottom"
               />
               <FieldError errors={[fieldState.error]} />
             </Field>
@@ -231,6 +236,7 @@ export default function EventForm() {
                 value={field.value}
                 onChange={field.onChange}
                 placeholder={m.admin_era_end_date_placeholder()}
+                side="bottom"
               />
               <FieldError errors={[fieldState.error]} />
             </Field>
@@ -248,12 +254,13 @@ type EraSelectItemProps = {
 
 function EraSelectItem(props: EraSelectItemProps) {
   const artistName = props.artist?.title ?? props.era.artist;
+  const imageUrl = props.era.spotifyAlbumArt || props.era.imageUrl;
 
   return (
     <SelectItem value={props.era.id} className="flex items-center gap-2">
-      {props.era.spotifyAlbumArt ? (
+      {imageUrl ? (
         <img
-          src={props.era.spotifyAlbumArt}
+          src={imageUrl}
           alt={props.era.name}
           className="aspect-square size-4 rounded"
         />

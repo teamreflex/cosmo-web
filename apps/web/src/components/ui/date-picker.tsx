@@ -15,6 +15,7 @@ type DatePickerProps = {
   placeholder?: string;
   className?: string;
   disabled?: boolean;
+  side?: "top" | "right" | "bottom" | "left";
 };
 
 export function DatePicker({
@@ -23,6 +24,7 @@ export function DatePicker({
   placeholder = "Pick a date",
   className,
   disabled,
+  side,
 }: DatePickerProps) {
   return (
     <Popover>
@@ -40,7 +42,7 @@ export function DatePicker({
           {value ? format(value, "PPP") : <span>{placeholder}</span>}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0">
+      <PopoverContent className="w-auto p-0" side={side}>
         <Calendar mode="single" selected={value} onSelect={onChange} />
       </PopoverContent>
     </Popover>

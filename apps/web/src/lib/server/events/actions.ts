@@ -9,10 +9,7 @@ import {
 } from "./spotify";
 import { db } from "@/lib/server/db";
 import { adminMiddleware } from "@/lib/server/middlewares";
-import {
-  generateEraImageKey,
-  getPresignedUploadUrl,
-} from "@/lib/server/r2";
+import { generateEraImageKey, getPresignedUploadUrl } from "@/lib/server/r2";
 import {
   addCollectionsToEventSchema,
   createEraSchema,
@@ -166,7 +163,7 @@ export const $addCollectionsToEvent = createServerFn({ method: "POST" })
         target: collectionData.collectionId,
         set: {
           eventId: data.eventId,
-          description: sql.raw(`excluded.${collectionData.description.name}`),
+          description: sql`COALESCE(excluded.${sql.raw(collectionData.description.name)}, ${collectionData.description})`,
         },
       })
       .returning();
@@ -227,7 +224,10 @@ export const $getEraImageUploadUrl = createServerFn({ method: "POST" })
     z.object({
       filename: z.string().min(1),
       contentType: z.string().regex(/^image\/(jpeg|png|gif|webp)$/),
-      contentLength: z.number().min(1).max(1024 * 1024), // 1MB max
+      contentLength: z
+        .number()
+        .min(1)
+        .max(1024 * 1024), // 1MB max
     }),
   )
   .handler(async ({ data }) => {

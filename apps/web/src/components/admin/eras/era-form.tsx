@@ -166,6 +166,7 @@ export default function EraForm(props: Props) {
                 value={field.value}
                 onChange={field.onChange}
                 placeholder={m.admin_era_start_date_placeholder()}
+                side="bottom"
               />
               <FieldError errors={[fieldState.error]} />
             </Field>
@@ -182,6 +183,7 @@ export default function EraForm(props: Props) {
                 value={field.value}
                 onChange={field.onChange}
                 placeholder={m.admin_era_end_date_placeholder()}
+                side="bottom"
               />
               <FieldError errors={[fieldState.error]} />
             </Field>

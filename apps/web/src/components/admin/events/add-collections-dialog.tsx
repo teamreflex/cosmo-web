@@ -65,7 +65,7 @@ export default function AddCollectionsDialog({ eventId, eventName }: Props) {
         if (i === index) {
           return {
             ...p,
-            [key]: value || undefined,
+            [key]: value,
           };
         }
         return p;
@@ -85,10 +85,7 @@ export default function AddCollectionsDialog({ eventId, eventName }: Props) {
   }
 
   function addRow() {
-    setRows((prev) => [
-      ...prev,
-      { collectionId: "", description: undefined },
-    ]);
+    setRows((prev) => [...prev, { collectionId: "", description: undefined }]);
   }
 
   function removeRow(index: number) {

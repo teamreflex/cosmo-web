@@ -69,7 +69,7 @@ export default function EditEventDialog({ event }: Props) {
           <IconPencil className="size-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>{m.admin_event_edit()}</DialogTitle>
           <DialogDescription>

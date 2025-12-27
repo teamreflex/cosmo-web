@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { FormProvider, useForm, useFormState } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { getRouteApi } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import DeleteEra from "./delete-era";
 import EraForm from "./era-form";
@@ -26,12 +27,15 @@ import {
 } from "@/components/ui/dialog";
 import { m } from "@/i18n/messages";
 
+const route = getRouteApi("/admin/eras");
+
 type Props = {
   era: Era;
   children: React.ReactNode;
 };
 
 export default function EditEraDialog({ era, children }: Props) {
+  const { artists } = route.useLoaderData();
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
   const [selectedAlbum, setSelectedAlbum] = useState<SpotifyAlbum | null>(null);
@@ -81,6 +85,17 @@ export default function EditEraDialog({ era, children }: Props) {
     selectedImageRef.current = null;
     setCurrentImageUrl(undefined);
     form.setValue("imageUrl", undefined);
+
+    // Try to match album artist to available artists
+    const albumArtist = album.artists[0]?.name.toLowerCase();
+    if (albumArtist) {
+      const matchedArtist = artists.find(
+        (a) => a.title.toLowerCase() === albumArtist,
+      );
+      if (matchedArtist) {
+        form.setValue("artist", matchedArtist.id);
+      }
+    }
   }
 
   function handleAlbumClear() {
