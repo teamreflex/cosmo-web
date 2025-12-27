@@ -1,7 +1,7 @@
-import { eventTypes } from "@apollo/database/web/types";
+import { eventTypeKeys } from "@apollo/database/web/types";
 import * as z from "zod";
 
-export const eventTypeSchema = z.enum(eventTypes);
+export const eventTypeSchema = z.enum(eventTypeKeys);
 
 // Era schemas
 export const createEraSchema = z.object({

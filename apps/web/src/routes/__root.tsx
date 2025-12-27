@@ -151,7 +151,7 @@ function ShellComponent({ children }: { children: React.ReactNode }) {
       </head>
       <body className="overflow-y-scroll bg-background text-foreground antialiased">
         <ThemeProvider defaultTheme="dark">
-          <div className="relative flex min-h-dvh flex-col">
+          <div className="relative flex flex-col">
             <Navbar />
 
             {/* content */}

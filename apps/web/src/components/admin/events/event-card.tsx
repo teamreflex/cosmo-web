@@ -2,9 +2,9 @@ import AddCollectionsDialog from "./add-collections-dialog";
 import DeleteEvent from "./delete-event";
 import EditEventDialog from "./edit-event-dialog";
 import ViewCollectionsDialog from "./view-collections-dialog";
+import EventTypeBadge from "@/components/events/event-type-badge";
 import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
 import type { EventWithEra } from "@apollo/database/web/types";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Timestamp } from "@/components/ui/timestamp";
 import { cn } from "@/lib/utils";
@@ -67,7 +67,7 @@ export default function EventCard({ event, artist }: Props) {
         </div>
 
         <div className="flex items-center justify-between">
-          <Badge>{event.eventType}</Badge>
+          <EventTypeBadge eventType={event.eventType} />
           <div className="flex gap-1">
             <AddCollectionsDialog eventId={event.id} eventName={event.name} />
             <ViewCollectionsDialog eventId={event.id} eventName={event.name} />

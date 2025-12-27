@@ -35,12 +35,39 @@ export interface EventWithEra extends Event {
   era: Era;
 }
 
-export const eventTypes = [
-  "album", // bundled in albums or are objekt music albums
-  "offline", // objekts sold at offline events such as concerts, fanmeetings etc
-  "shop", // digital objekts purchased from the cosmo app shop
-  "collaboration", // objekts given out as part of collaborations with brands
-  "promotional", // objekts given out as part of promotional campaigns
-  "tour", // objekts given out as part of tours, such as attendance rewards
-] as const;
-export type EventType = (typeof eventTypes)[number];
+export const eventTypes = {
+  // bundled in albums or are objekt music albums
+  album: {
+    value: "album",
+    label: "Album",
+  },
+  // objekts sold at offline events such as concerts, fanmeetings etc
+  offline: {
+    value: "offline",
+    label: "Offline",
+  },
+  // digital objekts purchased from the cosmo app shop
+  shop: {
+    value: "shop",
+    label: "Shop",
+  },
+  // objekts given out as part of collaborations with brands
+  collaboration: {
+    value: "collaboration",
+    label: "Collaboration",
+  },
+  // objekts given out as part of promotional campaigns
+  promotional: {
+    value: "promotional",
+    label: "Promotional",
+  },
+  // objekts given out as part of tours, such as attendance rewards
+  tour: {
+    value: "tour",
+    label: "Tour",
+  },
+} as const;
+export const eventTypeKeys = Object.keys(
+  eventTypes,
+) as (keyof typeof eventTypes)[];
+export type EventTypeKey = (typeof eventTypeKeys)[number];

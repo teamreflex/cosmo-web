@@ -11,7 +11,7 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 import { citext, createdAt } from "../custom";
-import type { CosmoGravityType, CosmoPollType, EventType } from "./types";
+import type { CosmoGravityType, CosmoPollType, EventTypeKey } from "./types";
 import { sql } from "drizzle-orm";
 import { user } from "../auth";
 
@@ -128,6 +128,7 @@ export const eras = pgTable(
     spotifyAlbumId: varchar("spotify_album_id", { length: 64 }),
     spotifyAlbumArt: varchar("spotify_album_art", { length: 255 }),
     imageUrl: varchar("image_url", { length: 255 }),
+    dominantColor: varchar("dominant_color", { length: 16 }),
     startDate: timestamp("start_date", { mode: "date" }),
     endDate: timestamp("end_date", { mode: "date" }),
   },
@@ -151,7 +152,7 @@ export const events = pgTable(
     artist: varchar("artist", { length: 32 }).notNull(),
     eventType: varchar("event_type", { length: 32 })
       .notNull()
-      .$type<EventType>(),
+      .$type<EventTypeKey>(),
     twitterUrl: varchar("twitter_url", { length: 255 }),
     startDate: timestamp("start_date", { mode: "date" }),
     endDate: timestamp("end_date", { mode: "date" }),

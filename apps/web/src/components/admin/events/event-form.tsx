@@ -33,6 +33,7 @@ export default function EventForm() {
     ? eras.filter((era) => era.artist === selectedArtist)
     : eras;
   const artistList = Object.values(artists);
+  const eventTypesList = Object.values(eventTypes);
 
   return (
     <div className="flex flex-col gap-4">
@@ -121,9 +122,9 @@ export default function EventForm() {
                 <SelectValue placeholder={m.admin_event_type_placeholder()} />
               </SelectTrigger>
               <SelectContent>
-                {eventTypes.map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                {eventTypesList.map((type) => (
+                  <SelectItem key={type.value} value={type.value}>
+                    {type.label}
                   </SelectItem>
                 ))}
               </SelectContent>

@@ -2,8 +2,8 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { IconCalendarEvent } from "@tabler/icons-react";
 import type { Era, EventWithEra } from "@apollo/database/web/types";
+import EventTypeBadge from "@/components/events/event-type-badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import SkeletonGradient from "@/components/skeleton/skeleton-overlay";
 import { Error } from "@/components/error-boundary";
@@ -137,9 +137,10 @@ function EventCard({ event, era }: EventCardProps) {
               format="PPP"
             />
 
-            <Badge variant="secondary" className="ml-auto">
-              {event.eventType}
-            </Badge>
+            <EventTypeBadge
+              eventType={event.eventType}
+              className="ml-auto"
+            />
           </div>
         </CardContent>
       </Card>

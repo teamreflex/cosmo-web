@@ -7,6 +7,7 @@ import {
   getBestAlbumArt,
   searchSpotifyAlbums,
 } from "./spotify";
+import { extractDominantColor } from "./color-extraction";
 import { db } from "@/lib/server/db";
 import { adminMiddleware } from "@/lib/server/middlewares";
 import { generateEraImageKey, getPresignedUploadUrl } from "@/lib/server/r2";
@@ -26,6 +27,9 @@ export const $createEra = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
   .inputValidator(createEraSchema)
   .handler(async ({ data }) => {
+    const imageUrl = data.spotifyAlbumArt || data.imageUrl || null;
+    const dominantColor = await extractDominantColor(imageUrl);
+
     const [era] = await db
       .insert(eras)
       .values({
@@ -36,6 +40,7 @@ export const $createEra = createServerFn({ method: "POST" })
         spotifyAlbumId: data.spotifyAlbumId,
         spotifyAlbumArt: data.spotifyAlbumArt,
         imageUrl: data.imageUrl,
+        dominantColor,
         startDate: data.startDate,
         endDate: data.endDate,
       })
@@ -57,9 +62,15 @@ export const $updateEra = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { id, ...updateData } = data;
 
+    const imageUrl = updateData.spotifyAlbumArt || updateData.imageUrl || null;
+    const dominantColor = await extractDominantColor(imageUrl);
+
     const [era] = await db
       .update(eras)
-      .set(updateData)
+      .set({
+        ...updateData,
+        dominantColor,
+      })
       .where(eq(eras.id, id))
       .returning();
 

@@ -1,7 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { IconAlertCircle, IconBrandTwitter } from "@tabler/icons-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { IconAlertCircle } from "@tabler/icons-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import SkeletonGradient from "@/components/skeleton/skeleton-overlay";
 import { Error as ErrorFallback } from "@/components/error-boundary";
@@ -13,6 +11,7 @@ import { defineHead } from "@/lib/meta";
 import { env } from "@/lib/env/client";
 import { m } from "@/i18n/messages";
 import EventGridItem from "@/components/events/event-grid-item";
+import EventHeader from "@/components/events/event-header";
 import { UserStateProvider } from "@/hooks/use-user-state";
 import { currentAccountQuery } from "@/lib/queries/core";
 import { ProfileProvider } from "@/hooks/use-profile";
@@ -42,54 +41,19 @@ export const Route = createFileRoute("/events/$slug")({
 function RouteComponent() {
   const { account, event } = Route.useLoaderData();
 
-  const imageUrl = event.era.spotifyAlbumArt || event.era.imageUrl;
-
   return (
-    <main className="container flex flex-col gap-4 py-2">
-      {/* header */}
-      <div className="flex flex-col gap-2">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex flex-col gap-1">
-            <h1 className="font-cosmo text-3xl uppercase">{event.name}</h1>
-            {event.description && (
-              <p className="text-muted-foreground">{event.description}</p>
-            )}
-          </div>
+    <main className="flex flex-col">
+      {/* Header - full bleed */}
+      <EventHeader event={event} />
 
-          {imageUrl && (
-            <img
-              src={imageUrl}
-              alt={event.era.name}
-              className="size-16 shrink-0 rounded-lg"
-            />
-          )}
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Badge variant="secondary">{event.eventType}</Badge>
-          {event.era.name && <Badge variant="outline">{event.era.name}</Badge>}
-          {event.twitterUrl && (
-            <Button variant="ghost" size="sm" asChild>
-              <a
-                href={event.twitterUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <IconBrandTwitter className="size-4" />
-                {m.event_announcement()}
-              </a>
-            </Button>
-          )}
-
-          <div id="objekt-total" className="ml-auto" />
-        </div>
+      {/* Content - constrained */}
+      <div className="container -mt-16 pb-4 md:-mt-48">
+        <UserStateProvider user={account?.user} cosmo={account?.cosmo}>
+          <ProfileProvider>
+            <EventRenderer slug={event.slug} />
+          </ProfileProvider>
+        </UserStateProvider>
       </div>
-
-      <UserStateProvider user={account?.user} cosmo={account?.cosmo}>
-        <ProfileProvider>
-          <EventRenderer slug={event.slug} />
-        </ProfileProvider>
-      </UserStateProvider>
     </main>
   );
 }
@@ -129,20 +93,33 @@ function EventRenderer(props: EventRendererProps) {
 
 function PendingComponent() {
   return (
-    <main className="container flex flex-col gap-4 py-2">
-      <div className="flex flex-col gap-2">
-        <Skeleton className="h-9 w-64" />
-        <Skeleton className="h-5 w-96" />
+    <main>
+      {/* Header skeleton */}
+      <div className="flex flex-col gap-4 px-4 py-8 md:px-8 md:py-12">
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:gap-6">
+          <Skeleton className="size-48 shrink-0 rounded-lg" />
+          <div className="flex flex-col gap-2">
+            <Skeleton className="h-12 w-64 md:h-14 md:w-96" />
+            <Skeleton className="h-5 w-80 md:w-[32rem]" />
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <Skeleton className="h-6 w-20" />
+          <Skeleton className="h-6 w-24" />
+        </div>
       </div>
 
-      <div className="relative grid grid-cols-3 gap-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8">
-        <SkeletonGradient />
-        {Array.from({ length: 16 }).map((_, index) => (
-          <Skeleton
-            key={index}
-            className="aspect-photocard w-full rounded-xl shadow-sm"
-          />
-        ))}
+      {/* Content skeleton */}
+      <div className="container">
+        <div className="relative grid grid-cols-3 gap-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8">
+          <SkeletonGradient />
+          {Array.from({ length: 16 }).map((_, index) => (
+            <Skeleton
+              key={index}
+              className="aspect-photocard w-full rounded-xl shadow-sm"
+            />
+          ))}
+        </div>
       </div>
     </main>
   );
