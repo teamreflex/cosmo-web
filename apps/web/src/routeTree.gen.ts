@@ -21,7 +21,6 @@ import { Route as ObjektsStatsRouteImport } from './routes/objekts/stats'
 import { Route as ListIdRouteImport } from './routes/list/$id'
 import { Route as EventsSlugRouteImport } from './routes/events/$slug'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
-import { Route as AdminMetadataRouteImport } from './routes/admin/metadata'
 import { Route as AdminEventsRouteImport } from './routes/admin/events'
 import { Route as AdminErasRouteImport } from './routes/admin/eras'
 import { Route as AdminBandsRouteImport } from './routes/admin/bands'
@@ -105,11 +104,6 @@ const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
   id: '/auth/reset-password',
   path: '/auth/reset-password',
   getParentRoute: () => rootRouteImport,
-} as any)
-const AdminMetadataRoute = AdminMetadataRouteImport.update({
-  id: '/metadata',
-  path: '/metadata',
-  getParentRoute: () => AdminRouteRoute,
 } as any)
 const AdminEventsRoute = AdminEventsRouteImport.update({
   id: '/events',
@@ -238,7 +232,6 @@ export interface FileRoutesByFullPath {
   '/admin/bands': typeof AdminBandsRoute
   '/admin/eras': typeof AdminErasRoute
   '/admin/events': typeof AdminEventsRoute
-  '/admin/metadata': typeof AdminMetadataRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/events/$slug': typeof EventsSlugRoute
   '/list/$id': typeof ListIdRoute
@@ -273,7 +266,6 @@ export interface FileRoutesByTo {
   '/admin/bands': typeof AdminBandsRoute
   '/admin/eras': typeof AdminErasRoute
   '/admin/events': typeof AdminEventsRoute
-  '/admin/metadata': typeof AdminMetadataRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/events/$slug': typeof EventsSlugRoute
   '/list/$id': typeof ListIdRoute
@@ -310,7 +302,6 @@ export interface FileRoutesById {
   '/admin/bands': typeof AdminBandsRoute
   '/admin/eras': typeof AdminErasRoute
   '/admin/events': typeof AdminEventsRoute
-  '/admin/metadata': typeof AdminMetadataRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/events/$slug': typeof EventsSlugRoute
   '/list/$id': typeof ListIdRoute
@@ -348,7 +339,6 @@ export interface FileRouteTypes {
     | '/admin/bands'
     | '/admin/eras'
     | '/admin/events'
-    | '/admin/metadata'
     | '/auth/reset-password'
     | '/events/$slug'
     | '/list/$id'
@@ -383,7 +373,6 @@ export interface FileRouteTypes {
     | '/admin/bands'
     | '/admin/eras'
     | '/admin/events'
-    | '/admin/metadata'
     | '/auth/reset-password'
     | '/events/$slug'
     | '/list/$id'
@@ -419,7 +408,6 @@ export interface FileRouteTypes {
     | '/admin/bands'
     | '/admin/eras'
     | '/admin/events'
-    | '/admin/metadata'
     | '/auth/reset-password'
     | '/events/$slug'
     | '/list/$id'
@@ -558,13 +546,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/auth/reset-password'
       preLoaderRoute: typeof AuthResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/admin/metadata': {
-      id: '/admin/metadata'
-      path: '/metadata'
-      fullPath: '/admin/metadata'
-      preLoaderRoute: typeof AdminMetadataRouteImport
-      parentRoute: typeof AdminRouteRoute
     }
     '/admin/events': {
       id: '/admin/events'
@@ -744,14 +725,12 @@ interface AdminRouteRouteChildren {
   AdminBandsRoute: typeof AdminBandsRoute
   AdminErasRoute: typeof AdminErasRoute
   AdminEventsRoute: typeof AdminEventsRoute
-  AdminMetadataRoute: typeof AdminMetadataRoute
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminBandsRoute: AdminBandsRoute,
   AdminErasRoute: AdminErasRoute,
   AdminEventsRoute: AdminEventsRoute,
-  AdminMetadataRoute: AdminMetadataRoute,
 }
 
 const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(

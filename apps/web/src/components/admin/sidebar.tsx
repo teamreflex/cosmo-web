@@ -3,7 +3,6 @@ import {
   IconDisc,
   IconHome,
   IconLayoutSidebarRight,
-  IconUpload,
 } from "@tabler/icons-react";
 
 import { Link, useLocation } from "@tanstack/react-router";
@@ -27,11 +26,6 @@ export function getItems() {
       title: m.admin_home(),
       url: "/admin",
       icon: IconHome,
-    },
-    {
-      title: m.admin_metadata_title(),
-      url: "/admin/metadata",
-      icon: IconUpload,
     },
     {
       title: m.admin_bands_title(),
