@@ -355,6 +355,11 @@
   "admin_collection_category_placeholder": "Category (optional)...",
 
   "_comment_events": "Event display strings",
+  "events_header": "Events",
+  "events_no_events": "No events found",
+  "events_collections_count": "{count} collections",
+  "events_error_loading": "Could not load events",
+  "events_error_not_found": "Event not found",
   "event_from": "From:",
   "event_announcement": "View announcement",
 

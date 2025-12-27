@@ -23,8 +23,14 @@
 - [x] fix paraglide middleware
 - [x] fix sort filter flicker
 - [x] fix layout shift in profile layout
-- [ ] load test?
-- [ ] reproduce cosmo leaderboards using transfers table to only count mints
+- [x] load test?
+- [ ] event system
+  - [ ] general: add seasons? then create a SeasonBadge component with proper colors. for idntt use colors per season: winter - lightblue, summer - yellow, spring - green, autumn - brownish red
+  - [ ] general: add proper badges for the event types
+  - [x] general: reset migrations to reuse objekt_metadata table by making event_id nullable
+  - [ ] index: show current event based on start/end dates, maybe a carousel for multiple?
+  - [ ] index: instead of tabs, just show everything in chronological order but have filter and sort options
+  - [ ] event: make header better
 
 ## indexer
 

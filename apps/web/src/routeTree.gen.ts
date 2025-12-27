@@ -15,9 +15,11 @@ import { Route as AtChar123usernameChar125RouteRouteImport } from './routes/@{$u
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ObjektsIndexRouteImport } from './routes/objekts/index'
 import { Route as GravityIndexRouteImport } from './routes/gravity/index'
+import { Route as EventsIndexRouteImport } from './routes/events/index'
 import { Route as AtChar123usernameChar125IndexRouteImport } from './routes/@{$username}/index'
 import { Route as ObjektsStatsRouteImport } from './routes/objekts/stats'
 import { Route as ListIdRouteImport } from './routes/list/$id'
+import { Route as EventsSlugRouteImport } from './routes/events/$slug'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
 import { Route as AdminMetadataRouteImport } from './routes/admin/metadata'
 import { Route as AdminEventsRouteImport } from './routes/admin/events'
@@ -73,6 +75,11 @@ const GravityIndexRoute = GravityIndexRouteImport.update({
   path: '/gravity/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EventsIndexRoute = EventsIndexRouteImport.update({
+  id: '/events/',
+  path: '/events/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AtChar123usernameChar125IndexRoute =
   AtChar123usernameChar125IndexRouteImport.update({
     id: '/',
@@ -87,6 +94,11 @@ const ObjektsStatsRoute = ObjektsStatsRouteImport.update({
 const ListIdRoute = ListIdRouteImport.update({
   id: '/list/$id',
   path: '/list/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EventsSlugRoute = EventsSlugRouteImport.update({
+  id: '/events/$slug',
+  path: '/events/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
@@ -228,9 +240,11 @@ export interface FileRoutesByFullPath {
   '/admin/events': typeof AdminEventsRoute
   '/admin/metadata': typeof AdminMetadataRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
+  '/events/$slug': typeof EventsSlugRoute
   '/list/$id': typeof ListIdRoute
   '/objekts/stats': typeof ObjektsStatsRoute
   '/@{$username}/': typeof AtChar123usernameChar125IndexRoute
+  '/events': typeof EventsIndexRoute
   '/gravity': typeof GravityIndexRoute
   '/objekts': typeof ObjektsIndexRoute
   '/@{$username}/list/$slug': typeof AtChar123usernameChar125ListSlugRoute
@@ -261,9 +275,11 @@ export interface FileRoutesByTo {
   '/admin/events': typeof AdminEventsRoute
   '/admin/metadata': typeof AdminMetadataRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
+  '/events/$slug': typeof EventsSlugRoute
   '/list/$id': typeof ListIdRoute
   '/objekts/stats': typeof ObjektsStatsRoute
   '/@{$username}': typeof AtChar123usernameChar125IndexRoute
+  '/events': typeof EventsIndexRoute
   '/gravity': typeof GravityIndexRoute
   '/objekts': typeof ObjektsIndexRoute
   '/@{$username}/list/$slug': typeof AtChar123usernameChar125ListSlugRoute
@@ -296,9 +312,11 @@ export interface FileRoutesById {
   '/admin/events': typeof AdminEventsRoute
   '/admin/metadata': typeof AdminMetadataRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
+  '/events/$slug': typeof EventsSlugRoute
   '/list/$id': typeof ListIdRoute
   '/objekts/stats': typeof ObjektsStatsRoute
   '/@{$username}/': typeof AtChar123usernameChar125IndexRoute
+  '/events/': typeof EventsIndexRoute
   '/gravity/': typeof GravityIndexRoute
   '/objekts/': typeof ObjektsIndexRoute
   '/@{$username}/list/$slug': typeof AtChar123usernameChar125ListSlugRoute
@@ -332,9 +350,11 @@ export interface FileRouteTypes {
     | '/admin/events'
     | '/admin/metadata'
     | '/auth/reset-password'
+    | '/events/$slug'
     | '/list/$id'
     | '/objekts/stats'
     | '/@{$username}/'
+    | '/events'
     | '/gravity'
     | '/objekts'
     | '/@{$username}/list/$slug'
@@ -365,9 +385,11 @@ export interface FileRouteTypes {
     | '/admin/events'
     | '/admin/metadata'
     | '/auth/reset-password'
+    | '/events/$slug'
     | '/list/$id'
     | '/objekts/stats'
     | '/@{$username}'
+    | '/events'
     | '/gravity'
     | '/objekts'
     | '/@{$username}/list/$slug'
@@ -399,9 +421,11 @@ export interface FileRouteTypes {
     | '/admin/events'
     | '/admin/metadata'
     | '/auth/reset-password'
+    | '/events/$slug'
     | '/list/$id'
     | '/objekts/stats'
     | '/@{$username}/'
+    | '/events/'
     | '/gravity/'
     | '/objekts/'
     | '/@{$username}/list/$slug'
@@ -427,8 +451,10 @@ export interface RootRouteChildren {
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
   TermsPrivacyRoute: typeof TermsPrivacyRoute
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
+  EventsSlugRoute: typeof EventsSlugRoute
   ListIdRoute: typeof ListIdRoute
   ObjektsStatsRoute: typeof ObjektsStatsRoute
+  EventsIndexRoute: typeof EventsIndexRoute
   GravityIndexRoute: typeof GravityIndexRoute
   ObjektsIndexRoute: typeof ObjektsIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -491,6 +517,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GravityIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/events/': {
+      id: '/events/'
+      path: '/events'
+      fullPath: '/events'
+      preLoaderRoute: typeof EventsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/@{$username}/': {
       id: '/@{$username}/'
       path: '/'
@@ -510,6 +543,13 @@ declare module '@tanstack/react-router' {
       path: '/list/$id'
       fullPath: '/list/$id'
       preLoaderRoute: typeof ListIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/events/$slug': {
+      id: '/events/$slug'
+      path: '/events/$slug'
+      fullPath: '/events/$slug'
+      preLoaderRoute: typeof EventsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth/reset-password': {
@@ -725,8 +765,10 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRouteRoute: AdminRouteRouteWithChildren,
   TermsPrivacyRoute: TermsPrivacyRoute,
   AuthResetPasswordRoute: AuthResetPasswordRoute,
+  EventsSlugRoute: EventsSlugRoute,
   ListIdRoute: ListIdRoute,
   ObjektsStatsRoute: ObjektsStatsRoute,
+  EventsIndexRoute: EventsIndexRoute,
   GravityIndexRoute: GravityIndexRoute,
   ObjektsIndexRoute: ObjektsIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,

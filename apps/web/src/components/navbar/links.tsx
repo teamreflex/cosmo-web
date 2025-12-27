@@ -2,6 +2,7 @@ import {
   IconArchive,
   IconCards,
   IconChartBar,
+  IconFolderOpen,
   IconMenu2,
   IconPackage,
 } from "@tabler/icons-react";
@@ -95,6 +96,13 @@ function DesktopLinks(props: LinksProps) {
       />
 
       <LinkButton
+        href="/events"
+        active={location.pathname === "/events"}
+        icon={IconFolderOpen}
+        name={m.events_header()}
+      />
+
+      <LinkButton
         href="/gravity"
         active={location.pathname.startsWith("/gravity")}
         icon={IconArchive}
@@ -145,6 +153,18 @@ export function MobileLinks(props: Props) {
             )}
           />
           <span>{m.nav_objekt_stats()}</span>
+        </Link>
+      </DropdownMenuItem>
+
+      <DropdownMenuItem asChild>
+        <Link to="/events" aria-label={m.events_header()}>
+          <IconFolderOpen
+            className={cn(
+              "h-4 w-4 shrink-0 fill-transparent transition-all",
+              location.pathname === "/events" && "fill-white/50",
+            )}
+          />
+          <span>{m.events_header()}</span>
         </Link>
       </DropdownMenuItem>
 

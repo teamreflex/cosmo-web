@@ -9,6 +9,7 @@ import {
   IconPhoto,
 } from "@tabler/icons-react";
 import { toast } from "sonner";
+import { Link } from "@tanstack/react-router";
 import { Button } from "../../ui/button";
 import { getObjektImageUrls } from "../common";
 import Portal from "../../portal";
@@ -173,7 +174,9 @@ function EventBadge({ event }: { event: ObjektEventInfo }) {
         />
       )}
       <Badge variant="secondary" className="gap-1">
-        <span>{event.name}</span>
+        <Link to={`/events/$slug`} params={{ slug: event.slug }}>
+          {event.name}
+        </Link>
         {event.twitterUrl && (
           <a
             href={event.twitterUrl}
