@@ -5,6 +5,7 @@ import { eventTypes } from "@apollo/database/web/types";
 import type { Era } from "@apollo/database/web/types";
 import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
 import type { CreateEventInput } from "@/lib/universal/schema/events";
+import type { FilterData } from "@/hooks/use-filter-data";
 import { erasQuery } from "@/lib/queries/events";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
@@ -18,20 +19,24 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { m } from "@/i18n/messages";
+import { getSeasonKeys } from "@/hooks/use-filter-data";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 const route = getRouteApi("/admin/events");
 
 export default function EventForm() {
   const { data: eras } = useSuspenseQuery(erasQuery());
-  const { artists } = route.useLoaderData();
+  const { artists, filterData } = route.useLoaderData();
   const form = useFormContext<CreateEventInput>();
 
   const selectedArtist = form.watch("artist");
 
-  // Filter eras by selected artist
+  // filter eras by selected artist
   const filteredEras = selectedArtist
     ? eras.filter((era) => era.artist === selectedArtist)
     : eras;
+
   const artistList = Object.values(artists);
   const eventTypesList = Object.values(eventTypes);
 
@@ -61,7 +66,7 @@ export default function EventForm() {
                   {artistList.map((artist) => (
                     <SelectItem
                       key={artist.id}
-                      value={artist.id}
+                      value={artist.id.toLowerCase()}
                       className="flex items-center gap-2"
                     >
                       <img
@@ -188,6 +193,9 @@ export default function EventForm() {
         )}
       />
 
+      {/* Seasons */}
+      <SeasonSelection seasons={filterData.seasons} artist={selectedArtist} />
+
       {/* Twitter URL */}
       <Controller
         control={form.control}
@@ -270,5 +278,57 @@ function EraSelectItem(props: EraSelectItemProps) {
       )}
       <span>{`${props.era.name} • ${artistName}`}</span>
     </SelectItem>
+  );
+}
+
+type SeasonSelectionProps = {
+  seasons: FilterData["seasons"];
+  artist: string;
+};
+
+function SeasonSelection(props: SeasonSelectionProps) {
+  const form = useFormContext<CreateEventInput>();
+
+  const seasons = getSeasonKeys(
+    props.seasons.find((s) => s.artistId === props.artist)?.seasons ?? [],
+  );
+
+  return (
+    <Controller
+      control={form.control}
+      name="seasons"
+      render={({ field, fieldState }) => (
+        <Field data-invalid={fieldState.invalid}>
+          <FieldLabel htmlFor="seasons">Seasons</FieldLabel>
+          <div className="flex flex-wrap gap-2">
+            {seasons.map((season) => (
+              <button
+                key={`${props.artist}-${season.key}-${season.name}`}
+                type="button"
+                onClick={() => {
+                  const isSelected = field.value.includes(season.name);
+                  field.onChange(
+                    isSelected
+                      ? field.value.filter((s) => s !== season.name)
+                      : [...field.value, season.name],
+                  );
+                }}
+              >
+                <Badge
+                  variant={`season-${season.key}` as "season-atom"}
+                  className={cn(
+                    field.value.includes(season.name) &&
+                      "border-foreground bg-foreground text-background",
+                  )}
+                >
+                  {season.name}
+                </Badge>
+              </button>
+            ))}
+          </div>
+          <FieldError errors={[fieldState.error]} />
+        </Field>
+      )}
+    />
   );
 }

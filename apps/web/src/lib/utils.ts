@@ -72,3 +72,29 @@ export function randomColor(): string {
     .toString(16)
     .padStart(6, "0")}`;
 }
+
+/**
+ * Colors for each season.
+ */
+const seasonColors: Record<string, string> = {
+  atom: "#FFDD00",
+  binary: "#75FB4C",
+  cream: "#FF7477",
+  divine: "#B400FF",
+  ever: "#33ecfd",
+  summer: "#FFA500",
+  autumn: "#D2691E",
+  winter: "#87CEEB",
+  spring: "#98FB98",
+};
+
+/**
+ * Get the color for a season.
+ */
+export function getSeasonColor(season: string) {
+  const match = season.match(/^([a-zA-Z]+)/);
+  if (!match || !match[1]) return null;
+
+  const seasonName = match[1].toLowerCase();
+  return seasonColors[seasonName] || null;
+}

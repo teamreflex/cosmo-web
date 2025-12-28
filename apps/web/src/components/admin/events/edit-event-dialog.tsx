@@ -55,6 +55,7 @@ export default function EditEventDialog({ event }: Props) {
       twitterUrl: event.twitterUrl ?? undefined,
       startDate: event.startDate ?? undefined,
       endDate: event.endDate ?? undefined,
+      seasons: event.seasons,
     },
   });
 

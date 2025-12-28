@@ -41,6 +41,26 @@ export function useFilterData() {
   };
 }
 
+/**
+ * Convert a list of seasons to a list of season keys and names.
+ */
+export function getSeasonKeys(seasons: string[]) {
+  return seasons.map((season) => {
+    const match = season.match(/^([a-zA-Z]+)/);
+    if (!match || !match[1]) {
+      return {
+        key: season,
+        name: season,
+      };
+    }
+
+    return {
+      key: match[1].toLowerCase(),
+      name: season,
+    };
+  });
+}
+
 export type FilterData = {
   collections: string[];
   seasons: {

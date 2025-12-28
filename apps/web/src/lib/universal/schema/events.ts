@@ -42,6 +42,7 @@ export const createEventSchema = z.object({
   twitterUrl: z.url().max(255).optional(),
   startDate: z.date().optional(),
   endDate: z.date().optional(),
+  seasons: z.array(z.string()).default([]),
 });
 
 export const updateEventSchema = createEventSchema.partial().extend({

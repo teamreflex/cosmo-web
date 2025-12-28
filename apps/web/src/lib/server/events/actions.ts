@@ -111,6 +111,7 @@ export const $createEvent = createServerFn({ method: "POST" })
         twitterUrl: data.twitterUrl,
         startDate: data.startDate,
         endDate: data.endDate,
+        seasons: data.seasons,
       })
       .returning();
 

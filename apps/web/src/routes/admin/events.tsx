@@ -2,7 +2,11 @@ import { Suspense } from "react";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import CreateEvent from "@/components/admin/events/create-event-dialog";
 import EventsGrid from "@/components/admin/events/events-grid";
-import { artistsQuery, currentAccountQuery } from "@/lib/queries/core";
+import {
+  artistsQuery,
+  currentAccountQuery,
+  filterDataQuery,
+} from "@/lib/queries/core";
 import { erasQuery, eventsQuery } from "@/lib/queries/events";
 import { defineHead } from "@/lib/meta";
 import { m } from "@/i18n/messages";
@@ -16,13 +20,14 @@ export const Route = createFileRoute("/admin/events")({
     }
   },
   loader: async ({ context }) => {
-    const [{ artists }] = await Promise.all([
+    const [{ artists }, filterData] = await Promise.all([
       context.queryClient.ensureQueryData(artistsQuery),
+      context.queryClient.ensureQueryData(filterDataQuery),
       context.queryClient.ensureQueryData(eventsQuery()),
       context.queryClient.ensureQueryData(erasQuery()),
     ]);
 
-    return { artists };
+    return { artists, filterData };
   },
   head: () =>
     defineHead({ title: m.admin_events_title(), canonical: "/admin/events" }),

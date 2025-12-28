@@ -2,6 +2,7 @@ import {
   boolean,
   index,
   integer,
+  jsonb,
   pgTable,
   serial,
   text,
@@ -156,6 +157,7 @@ export const events = pgTable(
     twitterUrl: varchar("twitter_url", { length: 255 }),
     startDate: timestamp("start_date", { mode: "date" }),
     endDate: timestamp("end_date", { mode: "date" }),
+    seasons: jsonb("seasons").$type<string[]>().notNull().default([]),
   },
   (t) => [
     index("events_artist_idx").on(t.artist),

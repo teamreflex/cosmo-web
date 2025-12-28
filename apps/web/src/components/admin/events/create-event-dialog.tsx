@@ -51,6 +51,7 @@ export default function CreateEvent() {
       twitterUrl: undefined,
       startDate: undefined,
       endDate: undefined,
+      seasons: [],
     },
   });
 
