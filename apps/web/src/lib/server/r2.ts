@@ -47,10 +47,16 @@ export async function getPresignedUploadUrl(options: PresignedUrlOptions) {
 
 /**
  * Generate a unique key for an era image.
- * @param extension - The file extension (e.g., "jpg", "png")
- * @returns The key path in the format "era/{uuid}.{extension}"
  */
 export function generateEraImageKey(extension: string): string {
   const uuid = crypto.randomUUID();
   return `era/${uuid}.${extension}`;
+}
+
+/**
+ * Generate a unique key for an event image.
+ */
+export function generateEventImageKey(extension: string): string {
+  const uuid = crypto.randomUUID();
+  return `event/${uuid}.${extension}`;
 }

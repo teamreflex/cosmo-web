@@ -10,7 +10,11 @@ import {
 import { extractDominantColor } from "./color-extraction";
 import { db } from "@/lib/server/db";
 import { adminMiddleware } from "@/lib/server/middlewares";
-import { generateEraImageKey, getPresignedUploadUrl } from "@/lib/server/r2";
+import {
+  generateEraImageKey,
+  generateEventImageKey,
+  getPresignedUploadUrl,
+} from "@/lib/server/r2";
 import {
   addCollectionsToEventSchema,
   createEraSchema,
@@ -111,6 +115,7 @@ export const $createEvent = createServerFn({ method: "POST" })
         twitterUrl: data.twitterUrl,
         startDate: data.startDate,
         endDate: data.endDate,
+        imageUrl: data.imageUrl,
         seasons: data.seasons,
       })
       .returning();
@@ -245,6 +250,34 @@ export const $getEraImageUploadUrl = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const extension = data.filename.split(".").pop()?.toLowerCase() || "jpg";
     const key = generateEraImageKey(extension);
+
+    const { uploadUrl, publicUrl } = await getPresignedUploadUrl({
+      key,
+      contentType: data.contentType,
+      contentLength: data.contentLength,
+    });
+
+    return { uploadUrl, publicUrl };
+  });
+
+/**
+ * Gets a presigned URL for uploading an event image to R2.
+ */
+export const $getEventImageUploadUrl = createServerFn({ method: "POST" })
+  .middleware([adminMiddleware])
+  .inputValidator(
+    z.object({
+      filename: z.string().min(1),
+      contentType: z.string().regex(/^image\/(jpeg|png|gif|webp)$/),
+      contentLength: z
+        .number()
+        .min(1)
+        .max(1024 * 1024), // 1MB max
+    }),
+  )
+  .handler(async ({ data }) => {
+    const extension = data.filename.split(".").pop()?.toLowerCase() || "jpg";
+    const key = generateEventImageKey(extension);
 
     const { uploadUrl, publicUrl } = await getPresignedUploadUrl({
       key,

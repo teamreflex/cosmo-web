@@ -16,27 +16,26 @@ type EventHeaderProps = {
   event: EventWithEra;
 };
 
-const FALLBACK_COLOR = "#8b5cf6"; // cosmo brand purple
-
 export default function EventHeader({ event }: EventHeaderProps) {
-  const eraImageUrl = event.era.spotifyAlbumArt || event.era.imageUrl;
-  const dominantColor = event.era.dominantColor || FALLBACK_COLOR;
+  const imageUrl =
+    event.imageUrl || event.era.imageUrl || event.era.spotifyAlbumArt;
+  const dominantColor = event.era.dominantColor || "#8b5cf6"; // cosmo purple
 
   return (
     <div className="relative min-h-108 overflow-hidden md:min-h-120">
       {/* image and dominant color layers */}
-      {eraImageUrl && (
+      {imageUrl && (
         <>
           {/* Dominant color gradient base */}
           <div
             className="absolute inset-x-0 -top-14 bottom-0 bg-linear-to-b from-(--album-color) via-(--album-color)/70 to-(--album-color)/20"
-            style={{ "--album-color": dominantColor } as React.CSSProperties}
+            style={{ "--album-color": dominantColor }}
           />
 
           {/* Blurred album art overlay */}
           <div className="absolute inset-x-0 -top-14 bottom-0 opacity-50">
             <img
-              src={eraImageUrl}
+              src={imageUrl}
               alt={event.era.name}
               aria-hidden="true"
               className="size-full scale-110 object-cover blur-[30px]"
@@ -56,12 +55,12 @@ export default function EventHeader({ event }: EventHeaderProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.4, 0.0, 0.2, 1] }}
         >
-          {/* era image */}
+          {/* event/era image */}
           <div className="mx-auto shrink-0 drop-shadow-2xl md:mx-0">
-            {eraImageUrl ? (
+            {imageUrl ? (
               <img
-                src={eraImageUrl}
-                alt={event.era.name}
+                src={imageUrl}
+                alt={event.name}
                 className="size-32 rounded-lg shadow-2xl md:size-48"
               />
             ) : (
@@ -102,9 +101,13 @@ export default function EventHeader({ event }: EventHeaderProps) {
               />
 
               <Badge variant="event-era">
-                {eraImageUrl && (
+                {(event.era.imageUrl || event.era.spotifyAlbumArt) && (
                   <img
-                    src={eraImageUrl}
+                    src={
+                      event.era.imageUrl ||
+                      event.era.spotifyAlbumArt ||
+                      undefined
+                    }
                     alt={event.era.name}
                     className="size-3.5 rounded-xs"
                   />

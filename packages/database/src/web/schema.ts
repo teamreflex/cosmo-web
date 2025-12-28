@@ -157,6 +157,7 @@ export const events = pgTable(
     twitterUrl: varchar("twitter_url", { length: 255 }),
     startDate: timestamp("start_date", { mode: "date" }),
     endDate: timestamp("end_date", { mode: "date" }),
+    imageUrl: varchar("image_url", { length: 255 }),
     seasons: jsonb("seasons").$type<string[]>().notNull().default([]),
   },
   (t) => [

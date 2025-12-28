@@ -16,7 +16,8 @@ type Props = {
 
 export default function EventCard({ event, artist }: Props) {
   const artistName = artist?.title ?? event.artist;
-  const imageUrl = event.era.spotifyAlbumArt || event.era.imageUrl;
+  const imageUrl =
+    event.imageUrl || event.era.imageUrl || event.era.spotifyAlbumArt;
 
   return (
     <Card>

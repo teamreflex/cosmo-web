@@ -22,10 +22,21 @@ import { m } from "@/i18n/messages";
 import { getSeasonKeys } from "@/hooks/use-filter-data";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import EventImageUpload from "@/components/admin/events/event-image-upload";
 
 const route = getRouteApi("/admin/events");
 
-export default function EventForm() {
+type EventFormProps = {
+  existingImageUrl?: string;
+  onImageSelect: (file: File | null) => void;
+  onImageClear: () => void;
+};
+
+export default function EventForm({
+  existingImageUrl,
+  onImageSelect,
+  onImageClear,
+}: EventFormProps) {
   const { data: eras } = useSuspenseQuery(erasQuery());
   const { artists, filterData } = route.useLoaderData();
   const form = useFormContext<CreateEventInput>();
@@ -192,6 +203,16 @@ export default function EventForm() {
           </Field>
         )}
       />
+
+      {/* Event Image */}
+      <Field>
+        <FieldLabel htmlFor="imageUrl">{m.admin_event_image()}</FieldLabel>
+        <EventImageUpload
+          existingUrl={existingImageUrl}
+          onFileSelect={onImageSelect}
+          onClear={onImageClear}
+        />
+      </Field>
 
       {/* Seasons */}
       <SeasonSelection seasons={filterData.seasons} artist={selectedArtist} />

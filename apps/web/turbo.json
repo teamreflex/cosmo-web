@@ -26,7 +26,12 @@
         "CDP_ENDPOINT",
         "REDIS_URL",
         "SPOTIFY_CLIENT_ID",
-        "SPOTIFY_CLIENT_SECRET"
+        "SPOTIFY_CLIENT_SECRET",
+        "R2_ACCOUNT_ID",
+        "R2_BUCKET",
+        "R2_ACCESS_KEY",
+        "R2_SECRET_KEY",
+        "R2_DOMAIN"
       ]
     },
     "start": {

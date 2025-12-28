@@ -104,7 +104,7 @@ type EventCardProps = {
 };
 
 function EventCard({ event, era }: EventCardProps) {
-  const imageUrl = era?.spotifyAlbumArt || era?.imageUrl;
+  const imageUrl = event.imageUrl || era?.imageUrl || era?.spotifyAlbumArt;
 
   return (
     <Link to="/events/$slug" params={{ slug: event.slug }}>
@@ -123,7 +123,7 @@ function EventCard({ event, era }: EventCardProps) {
             {imageUrl && (
               <img
                 src={imageUrl}
-                alt={era.name}
+                alt={event.name}
                 className="size-12 shrink-0 rounded"
               />
             )}
@@ -137,10 +137,7 @@ function EventCard({ event, era }: EventCardProps) {
               format="PPP"
             />
 
-            <EventTypeBadge
-              eventType={event.eventType}
-              className="ml-auto"
-            />
+            <EventTypeBadge eventType={event.eventType} className="ml-auto" />
           </div>
         </CardContent>
       </Card>
