@@ -323,28 +323,29 @@ function SeasonSelection(props: SeasonSelectionProps) {
           <FieldLabel htmlFor="seasons">Seasons</FieldLabel>
           <div className="flex flex-wrap gap-2">
             {seasons.map((season) => (
-              <button
+              <Badge
                 key={`${props.artist}-${season.key}-${season.name}`}
-                type="button"
-                onClick={() => {
-                  const isSelected = field.value.includes(season.name);
-                  field.onChange(
-                    isSelected
-                      ? field.value.filter((s) => s !== season.name)
-                      : [...field.value, season.name],
-                  );
-                }}
+                variant={`season-${season.key}` as "season-atom"}
+                className={cn(
+                  field.value.includes(season.name) &&
+                    "border-foreground bg-foreground text-background",
+                )}
+                asChild
               >
-                <Badge
-                  variant={`season-${season.key}` as "season-atom"}
-                  className={cn(
-                    field.value.includes(season.name) &&
-                      "border-foreground bg-foreground text-background",
-                  )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const isSelected = field.value.includes(season.name);
+                    field.onChange(
+                      isSelected
+                        ? field.value.filter((s) => s !== season.name)
+                        : [...field.value, season.name],
+                    );
+                  }}
                 >
                   {season.name}
-                </Badge>
-              </button>
+                </button>
+              </Badge>
             ))}
           </div>
           <FieldError errors={[fieldState.error]} />

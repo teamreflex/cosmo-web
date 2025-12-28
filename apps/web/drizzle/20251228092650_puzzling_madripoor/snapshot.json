@@ -1,7 +1,7 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "3e7d0a77-5b9e-4116-ac59-e3370fe10d3d",
+  "id": "e947be7a-5efa-41a2-9e93-93c3ab9b467d",
   "prevIds": [
     "5abfb94f-a20e-47f3-8876-a8ccf9645aa1"
   ],
@@ -642,6 +642,19 @@
       "generated": null,
       "identity": null,
       "name": "image_url",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "events"
+    },
+    {
+      "type": "varchar(16)",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "dominant_color",
       "entityType": "columns",
       "schema": "public",
       "table": "events"

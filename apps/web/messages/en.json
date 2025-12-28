@@ -373,7 +373,6 @@
   "events_error_loading": "Could not load events",
   "events_error_not_found": "Event not found",
   "event_from": "From:",
-  "event_announcement": "View announcement",
 
   "_comment_filter": "Filter strings",
   "filter_reset": "Reset Filters",

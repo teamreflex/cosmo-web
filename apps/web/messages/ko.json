@@ -373,7 +373,6 @@
   "events_error_loading": "이벤트를 불러올 수 없습니다",
   "events_error_not_found": "이벤트를 찾을 수 없습니다",
   "event_from": "출처:",
-  "event_announcement": "공지 보기",
 
   "_comment_filter": "Filter strings",
   "filter_reset": "필터 재설정",

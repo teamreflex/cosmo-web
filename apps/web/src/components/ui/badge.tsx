@@ -19,6 +19,10 @@ const badgeVariants = cva(
         ghost:
           "hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50",
         link: "text-primary underline-offset-4 hover:underline",
+        // misc
+        twitter: "bg-twitter text-white hover:bg-twitter/90",
+        discord: "bg-discord text-white hover:bg-discord/90",
+        cosmo: "bg-cosmo text-white hover:bg-cosmo/90",
         // gravity
         "event-gravity": "border-transparent bg-teal-200 text-teal-700",
         "grand-gravity": "border-transparent bg-pink-300 text-pink-700",

@@ -158,6 +158,7 @@ export const events = pgTable(
     startDate: timestamp("start_date", { mode: "date" }),
     endDate: timestamp("end_date", { mode: "date" }),
     imageUrl: varchar("image_url", { length: 255 }),
+    dominantColor: varchar("dominant_color", { length: 16 }),
     seasons: jsonb("seasons").$type<string[]>().notNull().default([]),
   },
   (t) => [

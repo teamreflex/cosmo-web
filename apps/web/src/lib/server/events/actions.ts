@@ -103,6 +103,8 @@ export const $createEvent = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
   .inputValidator(createEventSchema)
   .handler(async ({ data }) => {
+    const dominantColor = await extractDominantColor(data.imageUrl || null);
+
     const [event] = await db
       .insert(events)
       .values({
@@ -116,6 +118,7 @@ export const $createEvent = createServerFn({ method: "POST" })
         startDate: data.startDate,
         endDate: data.endDate,
         imageUrl: data.imageUrl,
+        dominantColor,
         seasons: data.seasons,
       })
       .returning();
@@ -136,9 +139,14 @@ export const $updateEvent = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { id, ...updateData } = data;
 
+    const dominantColor = await extractDominantColor(updateData.imageUrl || null);
+
     const [event] = await db
       .update(events)
-      .set(updateData)
+      .set({
+        ...updateData,
+        dominantColor,
+      })
       .where(eq(events.id, id))
       .returning();
 

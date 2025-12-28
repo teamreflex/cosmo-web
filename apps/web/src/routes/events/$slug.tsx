@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { IconAlertCircle } from "@tabler/icons-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import SkeletonGradient from "@/components/skeleton/skeleton-overlay";
 import { Error as ErrorFallback } from "@/components/error-boundary";
 import VirtualizedObjektGrid from "@/components/objekt/virtualized-objekt-grid";
 import { objektOptions } from "@/hooks/use-objekt-response";
@@ -15,6 +14,7 @@ import EventHeader from "@/components/events/event-header";
 import { UserStateProvider } from "@/hooks/use-user-state";
 import { currentAccountQuery } from "@/lib/queries/core";
 import { ProfileProvider } from "@/hooks/use-profile";
+import ObjektGridSkeleton from "@/components/objekt/objekt-grid-skeleton";
 
 export const Route = createFileRoute("/events/$slug")({
   loader: async ({ context, params }) => {
@@ -93,33 +93,55 @@ function EventRenderer(props: EventRendererProps) {
 
 function PendingComponent() {
   return (
-    <main>
-      {/* Header skeleton */}
-      <div className="flex flex-col gap-4 px-4 py-8 md:px-8 md:py-12">
-        <div className="flex flex-col gap-4 md:flex-row md:items-end md:gap-6">
-          <Skeleton className="size-48 shrink-0 rounded-lg" />
-          <div className="flex flex-col gap-2">
-            <Skeleton className="h-12 w-64 md:h-14 md:w-96" />
-            <Skeleton className="h-5 w-80 md:w-[32rem]" />
+    <main className="flex flex-col">
+      {/* EventHeader */}
+      <div className="relative min-h-108 overflow-hidden md:min-h-120">
+        {/* fade to background layer */}
+        <div className="absolute inset-x-0 bottom-0 h-2/3 bg-linear-to-t from-background to-transparent" />
+
+        {/* inner content */}
+        <div className="relative z-10 flex flex-col gap-4 px-4 py-8 md:container">
+          <div className="flex max-h-32 flex-col gap-4 md:max-h-48 md:flex-row md:items-end md:gap-6">
+            {/* event/era image */}
+            <div className="mx-auto shrink-0 drop-shadow-2xl md:mx-0">
+              <div className="aspect-square size-32 rounded-lg bg-muted shadow-2xl md:size-48" />
+            </div>
+
+            <div className="flex w-full flex-col gap-2 text-white drop-shadow-lg">
+              <div className="flex items-center justify-between gap-2">
+                {/* start/end dates */}
+                <Skeleton className="h-4 w-24" />
+              </div>
+
+              {/* badges/info */}
+              <div className="flex flex-wrap items-center justify-center gap-2 md:justify-start">
+                {/* event type */}
+                <Skeleton className="h-4 w-8 rounded-full" />
+
+                {/* event era */}
+                <Skeleton className="h-4 w-24 rounded-full" />
+              </div>
+
+              {/* title */}
+              <div className="@container w-full overflow-hidden">
+                <Skeleton className="h-[clamp(0.875rem,2cqw,3rem)] w-1/2 rounded-full md:h-[clamp(1.25rem,2.5cqw,3.5rem)]" />
+              </div>
+
+              {/* description */}
+              <div className="flex h-14 flex-col gap-1 md:h-16">
+                <Skeleton className="h-3 w-full md:h-4" />
+                <Skeleton className="h-3 w-full md:h-4" />
+                <Skeleton className="h-3 w-full md:h-4" />
+                <Skeleton className="h-3 w-2/3 md:h-4" />
+              </div>
+            </div>
           </div>
-        </div>
-        <div className="flex gap-2">
-          <Skeleton className="h-6 w-20" />
-          <Skeleton className="h-6 w-24" />
         </div>
       </div>
 
-      {/* Content skeleton */}
-      <div className="container">
-        <div className="relative grid grid-cols-3 gap-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8">
-          <SkeletonGradient />
-          {Array.from({ length: 16 }).map((_, index) => (
-            <Skeleton
-              key={index}
-              className="aspect-photocard w-full rounded-xl shadow-sm"
-            />
-          ))}
-        </div>
+      {/* EventRenderer */}
+      <div className="container -mt-20 pb-4 md:-mt-56">
+        <ObjektGridSkeleton gridColumns={5} />
       </div>
     </main>
   );

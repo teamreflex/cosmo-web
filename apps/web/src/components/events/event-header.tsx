@@ -8,8 +8,6 @@ import { Timestamp } from "../ui/timestamp";
 import EventTypeBadge from "./event-type-badge";
 import type { EventWithEra } from "@apollo/database/web/types";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { m } from "@/i18n/messages";
 import { getSeasonKeys } from "@/hooks/use-filter-data";
 
 type EventHeaderProps = {
@@ -19,7 +17,8 @@ type EventHeaderProps = {
 export default function EventHeader({ event }: EventHeaderProps) {
   const imageUrl =
     event.imageUrl || event.era.imageUrl || event.era.spotifyAlbumArt;
-  const dominantColor = event.era.dominantColor || "#8b5cf6"; // cosmo purple
+  const dominantColor =
+    event.dominantColor || event.era.dominantColor || "#8b5cf6"; // cosmo purple
 
   return (
     <div className="relative min-h-108 overflow-hidden md:min-h-120">
@@ -116,25 +115,19 @@ export default function EventHeader({ event }: EventHeaderProps) {
                 {event.era.name}
               </Badge>
 
-              <Seasons seasons={event.seasons} />
-
               {event.twitterUrl && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-white backdrop-blur-sm hover:bg-white/20 hover:text-white"
-                  asChild
-                >
+                <Badge variant="twitter" asChild>
                   <a
                     href={event.twitterUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <IconBrandTwitter className="size-4" />
-                    {m.event_announcement()}
+                    <IconBrandTwitter className="size-4 fill-white" />
                   </a>
-                </Button>
+                </Badge>
               )}
+
+              <Seasons seasons={event.seasons} />
             </div>
 
             {/* title */}
