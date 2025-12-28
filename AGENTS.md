@@ -25,6 +25,7 @@ This is a Turborepo monorepo for the Apollo project.
 
 - Linting and type checking is sufficent, you do not need to run the build or dev commands to test your work.
 - When dealing with new packages, always check `package.json` to see if it has already been installed.
+- When installing packages with `bun add`, you must run the command from the specific workspace directory (e.g., `cd apps/web && bun add package-name`). Bun does not support a `--filter` flag like other package managers. Running `bun add` from the root will add the package to the root `package.json` instead of the workspace.
 
 ### Project Structure
 

@@ -1,11 +1,13 @@
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 import { $getSpotifyAlbum } from "@/lib/server/events/actions";
 import {
+  $fetchActiveEvents,
   $fetchCollectionsForEvent,
   $fetchEras,
   $fetchEventBySlug,
   $fetchEventObjekts,
   $fetchEvents,
+  $fetchPaginatedEvents,
 } from "@/lib/server/events/queries";
 
 export function erasQuery(artist?: string) {
@@ -57,5 +59,22 @@ export function eventObjektsQuery(eventSlug: string) {
       $fetchEventObjekts({ data: { eventSlug, cursor: pageParam } }),
     initialPageParam: 0,
     getNextPageParam: (lastPage) => lastPage.nextStartAfter,
+  });
+}
+
+export function paginatedEventsQuery(artists?: string[]) {
+  return infiniteQueryOptions({
+    queryKey: ["events", "paginated", artists],
+    queryFn: ({ pageParam }) =>
+      $fetchPaginatedEvents({ data: { artists, cursor: pageParam } }),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage.nextStartAfter,
+  });
+}
+
+export function activeEventsQuery(artists?: string[]) {
+  return queryOptions({
+    queryKey: ["events", "active", artists],
+    queryFn: () => $fetchActiveEvents({ data: { artists } }),
   });
 }

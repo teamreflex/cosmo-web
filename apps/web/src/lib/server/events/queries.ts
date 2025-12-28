@@ -84,6 +84,74 @@ export const $fetchCollectionsForEvent = createServerFn({ method: "GET" })
 const PER_PAGE = 30;
 
 /**
+ * Fetches paginated events with timestamp-based cursor.
+ */
+export const $fetchPaginatedEvents = createServerFn({ method: "GET" })
+  .inputValidator(
+    z.object({
+      artists: z.array(z.string()).optional(),
+      cursor: z.string().datetime().optional(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const PER_PAGE_EVENTS = 16;
+
+    const whereClause: Record<string, unknown> = {};
+    if (data.artists?.length) {
+      whereClause.artist = { in: data.artists };
+    }
+    if (data.cursor) {
+      whereClause.createdAt = { lt: data.cursor };
+    }
+
+    const allEvents = await db.query.events.findMany({
+      where: Object.keys(whereClause).length > 0 ? whereClause : undefined,
+      orderBy: { createdAt: "desc" },
+      with: { era: true },
+      limit: PER_PAGE_EVENTS,
+    });
+
+    const hasNext = allEvents.length === PER_PAGE_EVENTS;
+    const nextStartAfter = hasNext
+      ? allEvents[allEvents.length - 1]!.createdAt
+      : undefined;
+
+    return {
+      events: allEvents,
+      nextStartAfter,
+    };
+  });
+
+/**
+ * Fetches active events (currently ongoing).
+ */
+export const $fetchActiveEvents = createServerFn({ method: "GET" })
+  .inputValidator(
+    z.object({
+      artists: z.array(z.string()).optional(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const now = new Date();
+
+    const whereClause: Record<string, unknown> = {
+      startDate: { lte: now },
+    };
+    if (data.artists?.length) {
+      whereClause.artist = { in: data.artists };
+    }
+
+    const allEvents = await db.query.events.findMany({
+      where: whereClause,
+      orderBy: { createdAt: "desc" },
+      with: { era: true },
+    });
+
+    // Filter out events where endDate exists and is in the past
+    return allEvents.filter((e) => !e.endDate || new Date(e.endDate) >= now);
+  });
+
+/**
  * Fetches paginated objekt collections for an event.
  */
 export const $fetchEventObjekts = createServerFn({ method: "GET" })

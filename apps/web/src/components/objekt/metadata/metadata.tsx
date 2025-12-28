@@ -2,7 +2,6 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { ofetch } from "ofetch";
 import { useCopyToClipboard } from "usehooks-ts";
 import {
-  IconBrandTwitter,
   IconCloudDownload,
   IconLink,
   IconMovie,
@@ -181,17 +180,6 @@ function EventBadge({ event }: { event: CollectionDataEvent }) {
         <Link to={`/events/$slug`} params={{ slug: event.slug }}>
           {event.name}
         </Link>
-        {event.twitterUrl && (
-          <a
-            href={event.twitterUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-muted-foreground hover:text-foreground"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <IconBrandTwitter className="size-3" />
-          </a>
-        )}
       </Badge>
     </div>
   );

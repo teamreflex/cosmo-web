@@ -27,7 +27,8 @@ const badgeVariants = cva(
         "event-gravity": "border-transparent bg-teal-200 text-teal-700",
         "grand-gravity": "border-transparent bg-pink-300 text-pink-700",
         // event system
-        "event-era": "border-white/30 text-white backdrop-blur-sm bg-white/10",
+        "event-era":
+          "border-foreground/30 text-foreground backdrop-blur-sm bg-foreground/10",
         // objekt seasons
         "season-atom": "border-atom/50 text-atom backdrop-blur-sm bg-atom/20",
         "season-binary":
