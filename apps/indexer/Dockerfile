@@ -19,7 +19,7 @@ COPY --from=installer /app .
 # this should be kept in sync with the build script in package.json
 RUN cd apps/indexer && rm -rf lib/ && npx tsc -p tsconfig.build.json
 
-# stage 4: run with node
+# stage 4: run with node due to the subsquid SDK not working in bun
 FROM node:22-alpine AS runner
 WORKDIR /app/apps/indexer
 ENV NODE_ENV=production
