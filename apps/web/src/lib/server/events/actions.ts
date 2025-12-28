@@ -1,6 +1,6 @@
 import * as z from "zod";
-import { and, eq, sql } from "drizzle-orm";
-import { createServerFn } from "@tanstack/react-start";
+import { and, eq, ne, sql } from "drizzle-orm";
+import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
 import { collectionData, eras, events } from "@apollo/database/web/schema";
 import {
   fetchSpotifyAlbum,
@@ -25,13 +25,51 @@ import {
 } from "@/lib/universal/schema/events";
 
 /**
+ * Validates that a slug is unique for eras.
+ */
+const validateEraSlug = createServerOnlyFn(
+  async (slug: string, excludeId?: string) => {
+    const count = await db.$count(
+      eras,
+      excludeId
+        ? and(eq(eras.slug, slug), ne(eras.id, excludeId))
+        : eq(eras.slug, slug),
+    );
+
+    if (count > 0) {
+      throw new Error(`An era with slug "${slug}" already exists`);
+    }
+  },
+);
+
+/**
+ * Validates that a slug is unique for events.
+ */
+const validateEventSlug = createServerOnlyFn(
+  async (slug: string, excludeId?: string) => {
+    const count = await db.$count(
+      events,
+      excludeId
+        ? and(eq(events.slug, slug), ne(events.id, excludeId))
+        : eq(events.slug, slug),
+    );
+
+    if (count > 0) {
+      throw new Error(`An event with slug "${slug}" already exists`);
+    }
+  },
+);
+
+/**
  * Creates a new era.
  */
 export const $createEra = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
   .inputValidator(createEraSchema)
   .handler(async ({ data }) => {
-    const imageUrl = data.spotifyAlbumArt || data.imageUrl || null;
+    await validateEraSlug(data.slug);
+
+    const imageUrl = data.imageUrl || data.spotifyAlbumArt || null;
     const dominantColor = await extractDominantColor(imageUrl);
 
     const [era] = await db
@@ -66,7 +104,11 @@ export const $updateEra = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { id, ...updateData } = data;
 
-    const imageUrl = updateData.spotifyAlbumArt || updateData.imageUrl || null;
+    if (updateData.slug !== undefined) {
+      await validateEraSlug(updateData.slug, id);
+    }
+
+    const imageUrl = updateData.imageUrl || updateData.spotifyAlbumArt || null;
     const dominantColor = await extractDominantColor(imageUrl);
 
     const [era] = await db
@@ -103,6 +145,8 @@ export const $createEvent = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
   .inputValidator(createEventSchema)
   .handler(async ({ data }) => {
+    await validateEventSlug(data.slug);
+
     const dominantColor = await extractDominantColor(data.imageUrl || null);
 
     const [event] = await db
@@ -139,7 +183,13 @@ export const $updateEvent = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { id, ...updateData } = data;
 
-    const dominantColor = await extractDominantColor(updateData.imageUrl || null);
+    if (updateData.slug !== undefined) {
+      await validateEventSlug(updateData.slug, id);
+    }
+
+    const dominantColor = await extractDominantColor(
+      updateData.imageUrl || null,
+    );
 
     const [event] = await db
       .update(events)

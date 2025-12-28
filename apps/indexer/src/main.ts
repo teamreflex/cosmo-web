@@ -6,7 +6,7 @@ import {
   parseBlocks,
 } from "./parser";
 import { Collection, ComoBalance, Objekt, type Transfer, Vote } from "./model";
-import { addr, chunk } from "@apollo/util";
+import { addr, chunk, slugifyObjekt } from "@apollo/util";
 import { TypeormDatabase, type Store } from "@subsquid/typeorm-store";
 import { randomUUID } from "crypto";
 import { env } from "./env";
@@ -156,15 +156,7 @@ async function handleCollection(
   buffer: Map<string, Collection>,
   transfer: Transfer,
 ) {
-  const slug = metadata.objekt.collectionId
-    .toLowerCase()
-    // replace diacritics
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    // remove non-alphanumeric characters
-    .replace(/[^\w\s-]/g, "")
-    // replace spaces with hyphens
-    .replace(/\s+/g, "-");
+  const slug = slugifyObjekt(metadata.objekt.collectionId);
 
   // fetch from db
   let collection = await ctx.store.get(Collection, {

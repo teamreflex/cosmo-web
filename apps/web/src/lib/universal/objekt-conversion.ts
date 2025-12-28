@@ -1,3 +1,4 @@
+import { slugifyObjekt } from "@apollo/util";
 import type { ValidArtist } from "@apollo/cosmo/types/common";
 import type {
   BFFCollectionGroupCollection,
@@ -195,23 +196,6 @@ export namespace Objekt {
   }
 }
 
-/**
- * Derives the slug from the season, member, and collectionNo.
- */
-function slugify(collectionId: string): string {
-  return (
-    collectionId
-      .toLowerCase()
-      // replace diacritics
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      // remove non-alphanumeric characters
-      .replace(/[^\w\s-]/g, "")
-      // replace spaces with hyphens
-      .replace(/\s+/g, "-")
-  );
-}
-
 type DerivedExtras = Pick<
   Objekt.Collection,
   "slug" | "artistName" | "onOffline"
@@ -224,7 +208,7 @@ type DerivedExtras = Pick<
 function deriveExtras(
   objekt: Omit<Objekt.Collection, "slug" | "artistName" | "onOffline">,
 ): DerivedExtras {
-  const slug = slugify(objekt.collectionId);
+  const slug = slugifyObjekt(objekt.collectionId);
 
   return {
     get slug() {

@@ -1,4 +1,4 @@
-import { Controller, useFormContext } from "react-hook-form";
+import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { getRouteApi } from "@tanstack/react-router";
 import EraImageUpload from "./era-image-upload";
 import SpotifyAlbumDisplay from "./spotify-album-display";
@@ -32,7 +32,7 @@ type Props = {
 export default function EraForm(props: Props) {
   const { artists } = route.useLoaderData();
   const form = useFormContext<CreateEraInput>();
-  const spotifyAlbumId = form.watch("spotifyAlbumId");
+  const spotifyAlbumId = useWatch({ control: form.control, name: "spotifyAlbumId" });
 
   const hasAlbum = props.selectedAlbum || spotifyAlbumId;
 

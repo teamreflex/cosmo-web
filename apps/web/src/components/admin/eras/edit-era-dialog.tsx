@@ -6,6 +6,7 @@ import { FormProvider, useForm, useFormState } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
+import { slugify } from "@apollo/util";
 import DeleteEra from "./delete-era";
 import EraForm from "./era-form";
 import type { Era } from "@apollo/database/web/types";
@@ -52,8 +53,8 @@ export default function EditEraDialog({ era, children }: Props) {
       setOpen(false);
       selectedImageRef.current = null;
     },
-    onError: () => {
-      toast.error(m.error_unknown());
+    onError: (error) => {
+      toast.error(error.message);
     },
   });
 
@@ -77,10 +78,7 @@ export default function EditEraDialog({ era, children }: Props) {
     form.setValue("spotifyAlbumId", album.id);
     form.setValue("spotifyAlbumArt", album.images[0]?.url);
     form.setValue("name", album.name);
-    const slug = album.name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "");
+    const slug = slugify(album.name);
     form.setValue("slug", slug);
     selectedImageRef.current = null;
     setCurrentImageUrl(undefined);

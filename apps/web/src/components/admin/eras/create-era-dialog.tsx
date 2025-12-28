@@ -6,6 +6,7 @@ import { FormProvider, useForm, useFormState } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
+import { slugify } from "@apollo/util";
 import EraForm from "./era-form";
 import type { SpotifyAlbum } from "@/lib/universal/events";
 import type { CreateEraInput } from "@/lib/universal/schema/events";
@@ -44,8 +45,8 @@ export default function CreateEra() {
       setSelectedAlbum(null);
       selectedImageRef.current = null;
     },
-    onError: () => {
-      toast.error(m.error_unknown());
+    onError: (error) => {
+      toast.error(error.message);
     },
   });
 
@@ -69,10 +70,7 @@ export default function CreateEra() {
     form.setValue("spotifyAlbumId", album.id);
     form.setValue("spotifyAlbumArt", album.images[0]?.url);
     form.setValue("name", album.name);
-    const slug = album.name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "");
+    const slug = slugify(album.name);
     form.setValue("slug", slug);
     selectedImageRef.current = null;
     form.setValue("imageUrl", undefined);

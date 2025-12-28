@@ -59,3 +59,33 @@ export const collectionDataSources = [
 ] as const;
 export type CollectionDataSource = (typeof collectionDataSources)[number];
 export type FilterType = "remote" | "local";
+
+/**
+ * Slugify a string for objekt collection IDs.
+ */
+export function slugifyObjekt(collectionId: string): string {
+  return (
+    collectionId
+      .toLowerCase()
+      // replace diacritics
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      // remove non-alphanumeric characters
+      .replace(/[^\w\s-]/g, "")
+      // replace spaces with hyphens
+      .replace(/\s+/g, "-")
+  );
+}
+
+/**
+ * Slugify a string for general use (era/event names, etc.).
+ */
+export function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^\w\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/^-+|-+$/g, ""); // trim leading/trailing hyphens
+}

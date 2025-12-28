@@ -39,8 +39,8 @@ export default function CreateEvent() {
       form.reset();
       selectedImageRef.current = null;
     },
-    onError: () => {
-      toast.error(m.error_unknown());
+    onError: (error) => {
+      toast.error(error.message);
     },
   });
 

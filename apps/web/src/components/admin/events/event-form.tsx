@@ -1,4 +1,4 @@
-import { Controller, useFormContext } from "react-hook-form";
+import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { eventTypes } from "@apollo/database/web/types";
@@ -41,7 +41,7 @@ export default function EventForm({
   const { artists, filterData } = route.useLoaderData();
   const form = useFormContext<CreateEventInput>();
 
-  const selectedArtist = form.watch("artist");
+  const selectedArtist = useWatch({ control: form.control, name: "artist" });
 
   // filter eras by selected artist
   const filteredEras = selectedArtist
