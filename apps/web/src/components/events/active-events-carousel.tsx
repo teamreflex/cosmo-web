@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import Autoplay from "embla-carousel-autoplay";
 import type { EventWithEra } from "@apollo/database/web/types";
 import type { CarouselApi } from "@/components/ui/carousel";
+import { cn } from "@/lib/utils";
 import EventCardLarge from "@/components/events/event-card-large";
 import {
   Carousel,
@@ -48,7 +49,12 @@ export default function ActiveEventsCarousel(props: ActiveEventsCarouselProps) {
   }
 
   return (
-    <div className="relative z-10 mt-4">
+    <div
+      className={cn(
+        "relative z-10 mt-4 transition-opacity",
+        api ? "opacity-100" : "opacity-0",
+      )}
+    >
       <Carousel
         opts={{
           loop: true,
