@@ -51,7 +51,7 @@ export default function ActiveEventsCarousel(props: ActiveEventsCarouselProps) {
   return (
     <div
       className={cn(
-        "relative z-10 mt-4 transition-opacity",
+        "relative z-10 mt-4 mask-[linear-gradient(to_right,transparent,black_15%,black_85%,transparent)] transition-opacity",
         api ? "opacity-100" : "opacity-0",
       )}
     >
@@ -64,7 +64,7 @@ export default function ActiveEventsCarousel(props: ActiveEventsCarouselProps) {
         setApi={setApi}
         className="w-full"
       >
-        <CarouselContent className="-ml-6 sm:-ml-8 md:-ml-4">
+        <CarouselContent className="-ml-6 pb-1 sm:-ml-8 md:-ml-4">
           {props.events.map((event, index) => (
             <CarouselItem
               key={event.id}

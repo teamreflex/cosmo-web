@@ -37,7 +37,7 @@ export default function EventCardLarge(props: EventCardLargeProps) {
         transition={{ duration: 0.3, ease: EASING }}
         className="h-full"
       >
-        <Card className="group relative h-full overflow-clip py-0 shadow-lg transition-colors hover:border-foreground/50">
+        <Card className="group relative h-full overflow-clip py-0 transition-colors hover:border-foreground/50">
           <CardContent className="flex h-full flex-col px-0">
             {/* Image */}
             <div className="relative aspect-square w-full overflow-hidden bg-muted">
