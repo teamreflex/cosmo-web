@@ -3,10 +3,11 @@ import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import { IconCalendarEvent } from "@tabler/icons-react";
 import type { EventWithEra } from "@apollo/database/web/types";
 import EventTypeBadge from "@/components/events/event-type-badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Timestamp } from "@/components/ui/timestamp";
 import { InfiniteQueryNext } from "@/components/infinite-query-pending";
 import { paginatedEventsQuery } from "@/lib/queries/events";
+import { getSeasonKeys } from "@/hooks/use-filter-data";
 import { m } from "@/i18n/messages";
 
 type EventsListProps = {
@@ -25,7 +26,7 @@ export default function EventsList({
 
   if (allEvents.length === 0) {
     return (
-      <p className="col-span-full py-12 text-center text-muted-foreground">
+      <p className="relative z-10 col-span-full mt-4 rounded-lg border border-dashed border-accent bg-background/60 py-12 text-center text-muted-foreground backdrop-blur-md md:mx-auto md:w-1/2">
         {m.events_no_events()}
       </p>
     );
@@ -33,10 +34,10 @@ export default function EventsList({
 
   return (
     <>
-      {/* events grid */}
-      <div className="relative z-10 mt-4 grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
+      {/* events list */}
+      <div className="relative z-10 mt-4 flex flex-col overflow-hidden rounded-lg border border-accent bg-background/60 text-sm backdrop-blur-md md:grid md:grid-cols-[auto_1fr_auto_auto_auto]">
         {allEvents.map((event) => (
-          <EventCard
+          <EventRow
             key={event.id}
             event={event}
             onMouseEnter={() => onHoverChange(event)}
@@ -55,61 +56,101 @@ export default function EventsList({
   );
 }
 
-type EventCardProps = {
+type EventRowProps = {
   event: EventWithEra;
   onMouseEnter?: () => void;
 };
 
-function EventCard(props: EventCardProps) {
+function EventRow({ event, onMouseEnter }: EventRowProps) {
   const imageUrl =
-    props.event.imageUrl ||
-    props.event.era.imageUrl ||
-    props.event.era.spotifyAlbumArt;
+    event.imageUrl || event.era.imageUrl || event.era.spotifyAlbumArt;
+  const eraImageUrl = event.era.imageUrl || event.era.spotifyAlbumArt;
 
   return (
     <Link
       to="/events/$slug"
-      params={{ slug: props.event.slug }}
-      onMouseEnter={props.onMouseEnter}
+      params={{ slug: event.slug }}
+      onMouseEnter={onMouseEnter}
+      className="border-b border-accent last:border-b-0 md:col-span-full md:grid md:grid-cols-subgrid"
     >
-      <Card className="group relative overflow-clip transition-colors hover:border-foreground/50">
-        <CardContent className="flex flex-col gap-2 p-4">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex flex-col gap-1">
-              <h3 className="leading-tight font-semibold">
-                {props.event.name}
-              </h3>
-              {props.event.description && (
-                <p className="line-clamp-2 text-sm text-muted-foreground">
-                  {props.event.description}
-                </p>
-              )}
-            </div>
+      <div className="flex flex-col gap-2 p-3 transition-colors hover:bg-secondary/40 md:col-span-full md:grid md:grid-cols-subgrid md:items-center md:gap-4 md:px-4 md:py-2">
+        {/* Mobile: Row 1 / Desktop: Columns 1-2 */}
+        <div className="flex items-start gap-3 md:contents">
+          {/* Image thumbnail */}
+          {imageUrl ? (
+            <img
+              src={imageUrl}
+              alt={event.name}
+              className="size-10 shrink-0 rounded md:size-12"
+            />
+          ) : (
+            <div className="hidden size-12 md:block" />
+          )}
 
-            {imageUrl && (
-              <img
-                src={imageUrl}
-                alt={props.event.name}
-                className="size-12 shrink-0 rounded"
-              />
+          {/* Name + Description */}
+          <div className="flex min-w-0 flex-col">
+            <span className="leading-tight font-semibold">{event.name}</span>
+            {event.description && (
+              <p className="line-clamp-2 text-xs text-muted-foreground">
+                {event.description}
+              </p>
             )}
           </div>
+        </div>
 
-          <div className="flex items-center gap-2">
-            <IconCalendarEvent className="size-4 shrink-0 text-muted-foreground" />
-            <Timestamp
-              className="text-sm text-muted-foreground"
-              date={new Date(props.event.createdAt)}
-              format="PPP"
-            />
-
-            <EventTypeBadge
-              eventType={props.event.eventType}
-              className="ml-auto"
-            />
+        {/* Mobile: Row 2 / Desktop: Column 3 */}
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <IconCalendarEvent className="size-4" />
+          <div className="flex gap-1">
+            {event.startDate && (
+              <Timestamp date={event.startDate} format="MMM d, yyyy" />
+            )}
+            {event.startDate && <span>~</span>}
+            {event.endDate ? (
+              <Timestamp date={event.endDate} format="MMM d, yyyy" />
+            ) : (
+              <span className="italic">Present</span>
+            )}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+
+        {/* Mobile: Row 3 / Desktop: Columns 4-5 */}
+        <div className="flex flex-wrap items-center gap-1.5 md:contents">
+          {/* Type + Era badges (stacked on desktop) */}
+          <div className="flex items-center gap-1.5 md:flex-col md:items-end">
+            <EventTypeBadge eventType={event.eventType} />
+            <Badge variant="event-era">
+              {eraImageUrl && (
+                <img
+                  src={eraImageUrl}
+                  alt={event.era.name}
+                  className="size-3.5 rounded-xs"
+                />
+              )}
+              <span>{event.era.name}</span>
+            </Badge>
+          </div>
+
+          {/* Season badges */}
+          <div className="flex flex-wrap items-center justify-end gap-1.5">
+            <Seasons seasons={event.seasons} />
+          </div>
+        </div>
+      </div>
     </Link>
+  );
+}
+
+function Seasons({ seasons }: { seasons: string[] }) {
+  const seasonKeys = getSeasonKeys(seasons);
+
+  return (
+    <>
+      {seasonKeys.map(({ key, name }) => (
+        <Badge key={name} variant={`season-${key}` as "season-atom"}>
+          {name}
+        </Badge>
+      ))}
+    </>
   );
 }

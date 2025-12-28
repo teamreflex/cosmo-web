@@ -74,8 +74,8 @@ function RouteComponent() {
         onHoverChange={handleHoverChange}
       />
 
-      {/* all events grid */}
-      <Suspense fallback={<GridSkeleton />}>
+      {/* all events list */}
+      <Suspense fallback={<ListSkeleton />}>
         <EventsList
           selectedArtists={selectedIds}
           onHoverChange={setHoveredEvent}
@@ -85,12 +85,12 @@ function RouteComponent() {
   );
 }
 
-function GridSkeleton() {
+function ListSkeleton() {
   return (
-    <div className="relative z-10 mt-4 grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
+    <div className="relative z-10 mt-4 flex flex-col divide-y divide-accent overflow-hidden rounded-lg border border-accent">
       <SkeletonGradient />
       {Array.from({ length: 6 }).map((_, index) => (
-        <Skeleton key={index} className="h-32 w-full rounded-xl shadow-sm" />
+        <Skeleton key={index} className="h-16 w-full rounded-none" />
       ))}
     </div>
   );
@@ -99,15 +99,12 @@ function GridSkeleton() {
 function PendingComponent() {
   return (
     <main className="container flex flex-col py-2">
-      <div className="flex flex-row items-center justify-between">
-        <h1 className="font-cosmo text-3xl uppercase">{m.events_header()}</h1>
-        <Skeleton className="h-9 w-48 rounded-md" />
-      </div>
+      <h1 className="font-cosmo text-3xl uppercase">{m.events_header()}</h1>
 
-      <div className="relative mt-2 grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-3">
+      <div className="relative mt-4 flex flex-col divide-y divide-accent overflow-hidden rounded-lg border border-accent">
         <SkeletonGradient />
         {Array.from({ length: 6 }).map((_, index) => (
-          <Skeleton key={index} className="h-32 w-full rounded-xl shadow-sm" />
+          <Skeleton key={index} className="h-16 w-full rounded-none" />
         ))}
       </div>
     </main>
