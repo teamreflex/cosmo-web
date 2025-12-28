@@ -47,7 +47,7 @@ function RouteComponent() {
       <EventHeader event={event} />
 
       {/* Content - constrained */}
-      <div className="container -mt-20 pb-4 md:-mt-56">
+      <div className="container -mt-16 pb-4 md:-mt-42">
         <UserStateProvider user={account?.user} cosmo={account?.cosmo}>
           <ProfileProvider>
             <EventRenderer slug={event.slug} />

@@ -21,7 +21,7 @@ export default function EventHeader({ event }: EventHeaderProps) {
     event.dominantColor || event.era.dominantColor || "#8b5cf6"; // cosmo purple
 
   return (
-    <div className="relative min-h-108 overflow-hidden md:min-h-120">
+    <div className="relative -mt-14 min-h-108 overflow-hidden pt-14 md:min-h-120">
       {/* image and dominant color layers */}
       {imageUrl && (
         <>
@@ -88,7 +88,7 @@ export default function EventHeader({ event }: EventHeaderProps) {
               {/* objekt total */}
               <div
                 id="objekt-total"
-                className="ml-auto text-sm text-white/90 drop-shadow-lg md:text-base"
+                className="ml-auto text-sm text-white md:text-base"
               />
             </div>
 
