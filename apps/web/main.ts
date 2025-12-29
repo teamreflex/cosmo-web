@@ -257,6 +257,9 @@ async function initializeServer() {
   const server = Bun.serve({
     port: SERVER_PORT,
 
+    // keep connections alive for 2 minutes
+    idleTimeout: 120,
+
     routes: {
       // Health check
       "/health": () => {
