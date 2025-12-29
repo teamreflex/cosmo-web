@@ -10,7 +10,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { m } from "@/i18n/messages";
-import { erasQuery } from "@/lib/queries/events";
+import { adminErasQuery } from "@/lib/queries/events";
 import { $createEra, $getEraImageUploadUrl } from "@/lib/server/events/actions";
 import type { SpotifyAlbum } from "@/lib/universal/events";
 import type { CreateEraInput } from "@/lib/universal/schema/events";
@@ -39,7 +39,9 @@ export default function CreateEra() {
     mutationFn: useServerFn($createEra),
     onSuccess: async () => {
       toast.success(m.admin_era_created());
-      await queryClient.invalidateQueries({ queryKey: erasQuery().queryKey });
+      await queryClient.invalidateQueries({
+        queryKey: adminErasQuery().queryKey,
+      });
       setOpen(false);
       form.reset();
       setSelectedAlbum(null);

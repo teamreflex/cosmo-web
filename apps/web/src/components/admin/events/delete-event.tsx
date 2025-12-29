@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { m } from "@/i18n/messages";
-import { eventsQuery } from "@/lib/queries/events";
+import { adminEventsQuery } from "@/lib/queries/events";
 import { $deleteEvent } from "@/lib/server/events/actions";
 import { IconLoader2, IconTrash } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -27,7 +27,9 @@ export default function DeleteEvent({ eventId }: Props) {
     mutationFn: useServerFn($deleteEvent),
     onSuccess: async () => {
       toast.success(m.admin_event_deleted());
-      await queryClient.invalidateQueries({ queryKey: eventsQuery().queryKey });
+      await queryClient.invalidateQueries({
+        queryKey: adminEventsQuery().queryKey,
+      });
     },
     onError: () => {
       toast.error(m.error_unknown());

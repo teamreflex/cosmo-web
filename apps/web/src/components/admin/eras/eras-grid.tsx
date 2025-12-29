@@ -1,10 +1,10 @@
 import { m } from "@/i18n/messages";
-import { erasQuery } from "@/lib/queries/events";
+import { adminErasQuery } from "@/lib/queries/events";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import EraCard from "./era-card";
 
 export default function ErasGrid() {
-  const { data } = useSuspenseQuery(erasQuery());
+  const { data } = useSuspenseQuery(adminErasQuery());
 
   if (data.length === 0) {
     return (

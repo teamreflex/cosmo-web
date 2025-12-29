@@ -1,6 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { m } from "@/i18n/messages";
-import { eventCollectionsQuery, eventsQuery } from "@/lib/queries/events";
+import {
+  adminEventCollectionsQuery,
+  adminEventsQuery,
+} from "@/lib/queries/events";
 import { $removeCollectionFromEvent } from "@/lib/server/events/actions";
 import { IconLoader2, IconTrash } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -18,9 +21,11 @@ export default function DeleteCollection({ eventId, collectionId }: Props) {
     mutationFn: useServerFn($removeCollectionFromEvent),
     onSuccess: async () => {
       toast.success(m.admin_collection_removed());
-      await queryClient.invalidateQueries({ queryKey: eventsQuery().queryKey });
       await queryClient.invalidateQueries({
-        queryKey: eventCollectionsQuery(eventId).queryKey,
+        queryKey: adminEventsQuery().queryKey,
+      });
+      await queryClient.invalidateQueries({
+        queryKey: adminEventCollectionsQuery(eventId).queryKey,
       });
     },
     onError: () => {

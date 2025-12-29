@@ -10,7 +10,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { m } from "@/i18n/messages";
-import { erasQuery } from "@/lib/queries/events";
+import { adminErasQuery } from "@/lib/queries/events";
 import { $getEraImageUploadUrl, $updateEra } from "@/lib/server/events/actions";
 import type { SpotifyAlbum } from "@/lib/universal/events";
 import type { CreateEraInput } from "@/lib/universal/schema/events";
@@ -49,7 +49,9 @@ export default function EditEraDialog({ era, children }: Props) {
     mutationFn: useServerFn($updateEra),
     onSuccess: async () => {
       toast.success(m.admin_era_updated());
-      await queryClient.invalidateQueries({ queryKey: erasQuery().queryKey });
+      await queryClient.invalidateQueries({
+        queryKey: adminErasQuery().queryKey,
+      });
       setOpen(false);
       selectedImageRef.current = null;
     },

@@ -1,1 +1,0 @@
-ALTER TABLE "eras" ADD COLUMN "dominant_color" varchar(16);

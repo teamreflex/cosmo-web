@@ -135,7 +135,7 @@ export const eras = pgTable(
   },
   (t) => [
     index("eras_artist_idx").on(t.artist),
-    index("eras_slug_idx").on(t.slug),
+    index("eras_created_at_idx").on(t.createdAt),
   ],
 );
 
@@ -164,7 +164,8 @@ export const events = pgTable(
   (t) => [
     index("events_artist_idx").on(t.artist),
     index("events_era_idx").on(t.eraId),
-    index("events_slug_idx").on(t.slug),
+    index("events_created_at_idx").on(t.createdAt),
+    index("events_start_date_idx").on(t.startDate),
   ],
 );
 

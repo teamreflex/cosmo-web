@@ -1,5 +1,5 @@
 import { m } from "@/i18n/messages";
-import { eventCollectionsQuery } from "@/lib/queries/events";
+import { adminEventCollectionsQuery } from "@/lib/queries/events";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import DeleteCollection from "./delete-collection";
 
@@ -8,7 +8,7 @@ type Props = {
 };
 
 export default function EventCollectionsList({ eventId }: Props) {
-  const { data } = useSuspenseQuery(eventCollectionsQuery(eventId));
+  const { data } = useSuspenseQuery(adminEventCollectionsQuery(eventId));
 
   if (data.length === 0) {
     return (

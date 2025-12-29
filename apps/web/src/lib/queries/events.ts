@@ -10,27 +10,21 @@ import {
 } from "@/lib/server/events/queries";
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 
-export function erasQuery(artist?: string) {
+export function adminErasQuery() {
   return queryOptions({
-    queryKey: ["eras", artist],
-    queryFn: () => $fetchEras({ data: { artist } }),
+    queryKey: ["admin", "eras"],
+    queryFn: () => $fetchEras(),
   });
 }
 
-export function eventsQuery(options?: { artist?: string; eraId?: string }) {
+export function adminEventsQuery() {
   return queryOptions({
-    queryKey: ["events", options],
-    queryFn: () =>
-      $fetchEvents({
-        data: {
-          artist: options?.artist,
-          eraId: options?.eraId,
-        },
-      }),
+    queryKey: ["admin", "events"],
+    queryFn: () => $fetchEvents(),
   });
 }
 
-export function eventCollectionsQuery(eventId: string) {
+export function adminEventCollectionsQuery(eventId: string) {
   return queryOptions({
     queryKey: ["event-collections", eventId],
     queryFn: () => $fetchCollectionsForEvent({ data: { eventId } }),

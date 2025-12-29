@@ -1,9 +1,9 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "5abfb94f-a20e-47f3-8876-a8ccf9645aa1",
+  "id": "eaa6967e-a0f1-43b9-9deb-8a1ba4c0c897",
   "prevIds": [
-    "b0195f57-75d9-418e-b249-30ee85101679"
+    "a3443e45-4ade-454d-8306-20aaed98898b"
   ],
   "ddl": [
     {
@@ -629,6 +629,45 @@
       "generated": null,
       "identity": null,
       "name": "end_date",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "events"
+    },
+    {
+      "type": "varchar(255)",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "image_url",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "events"
+    },
+    {
+      "type": "varchar(16)",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "dominant_color",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "events"
+    },
+    {
+      "type": "jsonb",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "'[]'",
+      "generated": null,
+      "identity": null,
+      "name": "seasons",
       "entityType": "columns",
       "schema": "public",
       "table": "events"
@@ -2165,7 +2204,7 @@
       "nameExplicit": true,
       "columns": [
         {
-          "value": "slug",
+          "value": "created_at",
           "isExpression": false,
           "asc": true,
           "nullsFirst": false,
@@ -2177,7 +2216,7 @@
       "with": "",
       "method": "btree",
       "concurrently": false,
-      "name": "eras_slug_idx",
+      "name": "eras_created_at_idx",
       "entityType": "indexes",
       "schema": "public",
       "table": "eras"
@@ -2228,7 +2267,7 @@
       "nameExplicit": true,
       "columns": [
         {
-          "value": "slug",
+          "value": "created_at",
           "isExpression": false,
           "asc": true,
           "nullsFirst": false,
@@ -2240,7 +2279,28 @@
       "with": "",
       "method": "btree",
       "concurrently": false,
-      "name": "events_slug_idx",
+      "name": "events_created_at_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "events"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "start_date",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "events_start_date_idx",
       "entityType": "indexes",
       "schema": "public",
       "table": "events"
@@ -3258,5 +3318,8 @@
       "entityType": "uniques"
     }
   ],
-  "renames": []
+  "renames": [
+    "public.objekt_metadata->public.collection_data",
+    "public.collection_data.objekt_metadata_collection_idx->public.collection_data.collection_data_collection_id_idx"
+  ]
 }

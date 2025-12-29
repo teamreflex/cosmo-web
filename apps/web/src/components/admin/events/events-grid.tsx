@@ -1,5 +1,5 @@
 import { m } from "@/i18n/messages";
-import { eventsQuery } from "@/lib/queries/events";
+import { adminEventsQuery } from "@/lib/queries/events";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import EventCard from "./event-card";
@@ -8,7 +8,7 @@ const route = getRouteApi("/admin/events");
 
 export default function EventsGrid() {
   const { artists } = route.useLoaderData();
-  const { data: eventsList } = useSuspenseQuery(eventsQuery());
+  const { data: eventsList } = useSuspenseQuery(adminEventsQuery());
 
   if (eventsList.length === 0) {
     return (

@@ -14,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type { FilterData } from "@/hooks/use-filter-data";
 import { getSeasonKeys } from "@/hooks/use-filter-data";
 import { m } from "@/i18n/messages";
-import { erasQuery } from "@/lib/queries/events";
+import { adminErasQuery } from "@/lib/queries/events";
 import type { CreateEventInput } from "@/lib/universal/schema/events";
 import { cn } from "@/lib/utils";
 import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
@@ -37,7 +37,7 @@ export default function EventForm({
   onImageSelect,
   onImageClear,
 }: EventFormProps) {
-  const { data: eras } = useSuspenseQuery(erasQuery());
+  const { data: eras } = useSuspenseQuery(adminErasQuery());
   const { artists, filterData } = route.useLoaderData();
   const form = useFormContext<CreateEventInput>();
 

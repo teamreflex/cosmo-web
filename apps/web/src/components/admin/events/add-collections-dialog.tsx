@@ -9,7 +9,10 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { m } from "@/i18n/messages";
-import { eventCollectionsQuery, eventsQuery } from "@/lib/queries/events";
+import {
+  adminEventCollectionsQuery,
+  adminEventsQuery,
+} from "@/lib/queries/events";
 import { $addCollectionsToEvent } from "@/lib/server/events/actions";
 import type { EventCollectionInput } from "@/lib/universal/schema/events";
 import { bulkCollectionImportSchema } from "@/lib/universal/schema/events";
@@ -41,9 +44,11 @@ export default function AddCollectionsDialog({ eventId, eventName }: Props) {
     onSuccess: async (data) => {
       toast.success(m.admin_collections_added({ count: data as number }));
       setRows([{ collectionId: "", description: undefined }]);
-      await queryClient.invalidateQueries({ queryKey: eventsQuery().queryKey });
       await queryClient.invalidateQueries({
-        queryKey: eventCollectionsQuery(eventId).queryKey,
+        queryKey: adminEventsQuery().queryKey,
+      });
+      await queryClient.invalidateQueries({
+        queryKey: adminEventCollectionsQuery(eventId).queryKey,
       });
       setOpen(false);
     },

@@ -10,41 +10,39 @@ import * as z from "zod";
 import { adminMiddleware } from "../middlewares";
 
 /**
- * Fetches all eras, optionally filtered by artist.
+ * Fetches all eras.
  */
 export const $fetchEras = createServerFn({ method: "GET" })
-  .inputValidator(
-    z.object({
-      artist: z.string().optional(),
-    }),
-  )
-  .handler(async ({ data }) => {
+  .middleware([adminMiddleware])
+  .handler(async () => {
     return db.query.eras.findMany({
-      where: data.artist ? { artist: data.artist } : undefined,
       orderBy: { createdAt: "desc" },
     });
   });
 
 /**
- * Fetches all events, optionally filtered by artist and/or era.
+ * Fetches all events.
  */
 export const $fetchEvents = createServerFn({ method: "GET" })
-  .inputValidator(
-    z.object({
-      artist: z.string().optional(),
-      eraId: z.uuid().optional(),
-    }),
-  )
-  .handler(async ({ data }) => {
+  .middleware([adminMiddleware])
+  .handler(async () => {
     return db.query.events.findMany({
-      where: {
-        ...(data.artist && { artist: data.artist }),
-        ...(data.eraId && { eraId: data.eraId }),
-      },
       orderBy: { createdAt: "desc" },
       with: {
         era: true,
       },
+    });
+  });
+
+/**
+ * Fetches all collections for an event (admin use).
+ */
+export const $fetchCollectionsForEvent = createServerFn({ method: "GET" })
+  .middleware([adminMiddleware])
+  .inputValidator(z.object({ eventId: z.uuid() }))
+  .handler(async ({ data }) => {
+    return db.query.collectionData.findMany({
+      where: { eventId: data.eventId },
     });
   });
 
@@ -70,31 +68,17 @@ export const $fetchEventBySlug = createServerFn({ method: "GET" })
   });
 
 /**
- * Fetches all collections for an event (admin use).
- */
-export const $fetchCollectionsForEvent = createServerFn({ method: "GET" })
-  .middleware([adminMiddleware])
-  .inputValidator(z.object({ eventId: z.uuid() }))
-  .handler(async ({ data }) => {
-    return db.query.collectionData.findMany({
-      where: { eventId: data.eventId },
-    });
-  });
-
-const PER_PAGE = 30;
-
-/**
  * Fetches paginated events with timestamp-based cursor.
  */
 export const $fetchPaginatedEvents = createServerFn({ method: "GET" })
   .inputValidator(
     z.object({
       artists: z.array(z.string()).optional(),
-      cursor: z.string().datetime().optional(),
+      cursor: z.iso.datetime().optional(),
     }),
   )
   .handler(async ({ data }) => {
-    const PER_PAGE_EVENTS = 16;
+    const PER_PAGE_EVENTS = 24;
 
     const whereClause: Record<string, unknown> = {};
     if (data.artists?.length) {
@@ -136,19 +120,17 @@ export const $fetchActiveEvents = createServerFn({ method: "GET" })
 
     const whereClause: Record<string, unknown> = {
       startDate: { lte: now },
+      OR: [{ endDate: { isNull: true } }, { endDate: { gte: now } }],
     };
     if (data.artists?.length) {
       whereClause.artist = { in: data.artists };
     }
 
-    const allEvents = await db.query.events.findMany({
+    return db.query.events.findMany({
       where: whereClause,
       orderBy: { createdAt: "desc" },
       with: { era: true },
     });
-
-    // Filter out events where endDate exists and is in the past
-    return allEvents.filter((e) => !e.endDate || new Date(e.endDate) >= now);
   });
 
 /**
@@ -173,7 +155,7 @@ export const $fetchEventObjekts = createServerFn({ method: "GET" })
       .innerJoin(events, eq(collectionData.eventId, events.id))
       .where(eq(events.slug, data.eventSlug))
       .orderBy(asc(collectionData.collectionId))
-      .limit(PER_PAGE)
+      .limit(60)
       .offset(data.cursor ?? 0);
 
     if (rows.length === 0) {

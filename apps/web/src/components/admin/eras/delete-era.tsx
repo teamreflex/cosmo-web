@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { m } from "@/i18n/messages";
-import { erasQuery } from "@/lib/queries/events";
+import { adminErasQuery } from "@/lib/queries/events";
 import { $deleteEra } from "@/lib/server/events/actions";
 import { IconLoader2, IconTrash } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -28,7 +28,9 @@ export default function DeleteEra({ eraId, onSuccess }: Props) {
     mutationFn: useServerFn($deleteEra),
     onSuccess: async () => {
       toast.success(m.admin_era_deleted());
-      await queryClient.invalidateQueries({ queryKey: erasQuery().queryKey });
+      await queryClient.invalidateQueries({
+        queryKey: adminErasQuery().queryKey,
+      });
       onSuccess();
     },
     onError: () => {

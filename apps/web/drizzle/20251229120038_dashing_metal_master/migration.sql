@@ -7,6 +7,8 @@ CREATE TABLE "eras" (
 	"artist" varchar(32) NOT NULL,
 	"spotify_album_id" varchar(64),
 	"spotify_album_art" varchar(255),
+	"image_url" varchar(255),
+	"dominant_color" varchar(16),
 	"start_date" timestamp,
 	"end_date" timestamp
 );
@@ -22,7 +24,10 @@ CREATE TABLE "events" (
 	"event_type" varchar(32) NOT NULL,
 	"twitter_url" varchar(255),
 	"start_date" timestamp,
-	"end_date" timestamp
+	"end_date" timestamp,
+	"image_url" varchar(255),
+	"dominant_color" varchar(16),
+	"seasons" jsonb DEFAULT '[]' NOT NULL
 );
 --> statement-breakpoint
 ALTER TABLE "objekt_metadata" RENAME TO "collection_data";--> statement-breakpoint
@@ -33,9 +38,10 @@ ALTER TABLE "collection_data" DROP COLUMN "address";--> statement-breakpoint
 ALTER TABLE "collection_data" ALTER COLUMN "description" DROP NOT NULL;--> statement-breakpoint
 CREATE INDEX "collection_data_event_idx" ON "collection_data" ("event_id");--> statement-breakpoint
 CREATE INDEX "eras_artist_idx" ON "eras" ("artist");--> statement-breakpoint
-CREATE INDEX "eras_slug_idx" ON "eras" ("slug");--> statement-breakpoint
+CREATE INDEX "eras_created_at_idx" ON "eras" ("created_at");--> statement-breakpoint
 CREATE INDEX "events_artist_idx" ON "events" ("artist");--> statement-breakpoint
 CREATE INDEX "events_era_idx" ON "events" ("era_id");--> statement-breakpoint
-CREATE INDEX "events_slug_idx" ON "events" ("slug");--> statement-breakpoint
+CREATE INDEX "events_created_at_idx" ON "events" ("created_at");--> statement-breakpoint
+CREATE INDEX "events_start_date_idx" ON "events" ("start_date");--> statement-breakpoint
 ALTER TABLE "collection_data" ADD CONSTRAINT "collection_data_event_id_events_id_fkey" FOREIGN KEY ("event_id") REFERENCES "events"("id") ON DELETE SET NULL;--> statement-breakpoint
 ALTER TABLE "events" ADD CONSTRAINT "events_era_id_eras_id_fkey" FOREIGN KEY ("era_id") REFERENCES "eras"("id") ON DELETE CASCADE;

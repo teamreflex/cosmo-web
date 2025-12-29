@@ -10,7 +10,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { m } from "@/i18n/messages";
-import { eventsQuery } from "@/lib/queries/events";
+import { adminEventsQuery } from "@/lib/queries/events";
 import {
   $getEventImageUploadUrl,
   $updateEvent,
@@ -39,7 +39,9 @@ export default function EditEventDialog({ event }: Props) {
     mutationFn: useServerFn($updateEvent),
     onSuccess: async () => {
       toast.success(m.admin_event_updated());
-      await queryClient.invalidateQueries({ queryKey: eventsQuery().queryKey });
+      await queryClient.invalidateQueries({
+        queryKey: adminEventsQuery().queryKey,
+      });
       setOpen(false);
       form.reset();
       selectedImageRef.current = null;

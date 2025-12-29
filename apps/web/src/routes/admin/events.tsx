@@ -7,7 +7,7 @@ import {
   currentAccountQuery,
   filterDataQuery,
 } from "@/lib/queries/core";
-import { erasQuery, eventsQuery } from "@/lib/queries/events";
+import { adminErasQuery, adminEventsQuery } from "@/lib/queries/events";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { Suspense } from "react";
 
@@ -23,8 +23,8 @@ export const Route = createFileRoute("/admin/events")({
     const [{ artists }, filterData] = await Promise.all([
       context.queryClient.ensureQueryData(artistsQuery),
       context.queryClient.ensureQueryData(filterDataQuery),
-      context.queryClient.ensureQueryData(eventsQuery()),
-      context.queryClient.ensureQueryData(erasQuery()),
+      context.queryClient.ensureQueryData(adminEventsQuery()),
+      context.queryClient.ensureQueryData(adminErasQuery()),
     ]);
 
     return { artists, filterData };
