@@ -1,9 +1,9 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "ddd92ca7-2ac8-43fc-be96-0a4566ccf77c",
+  "id": "65bd7bf5-78ae-424c-b775-6e20e1414297",
   "prevIds": [
-    "eaa6967e-a0f1-43b9-9deb-8a1ba4c0c897"
+    "a3443e45-4ade-454d-8306-20aaed98898b"
   ],
   "ddl": [
     {
@@ -1991,6 +1991,27 @@
       "with": "",
       "method": "btree",
       "concurrently": false,
+      "name": "collection_data_contributor_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "collection_data"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "address",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
       "name": "cosmo_account_changes_address_idx",
       "entityType": "indexes",
       "schema": "public",
@@ -3331,5 +3352,9 @@
       "entityType": "uniques"
     }
   ],
-  "renames": []
+  "renames": [
+    "public.objekt_metadata->public.collection_data",
+    "public.collection_data.objekt_metadata_collection_idx->public.collection_data.collection_data_collection_id_idx",
+    "public.collection_data.objekt_metadata_contributor_idx->public.collection_data.collection_data_contributor_idx"
+  ]
 }

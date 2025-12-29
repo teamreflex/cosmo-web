@@ -183,6 +183,7 @@ export const collectionData = pgTable(
   (t) => [
     index("collection_data_collection_id_idx").on(t.collectionId),
     index("collection_data_event_idx").on(t.eventId),
+    index("collection_data_contributor_idx").on(t.contributor),
   ],
 );
 
