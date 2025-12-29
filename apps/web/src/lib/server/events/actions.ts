@@ -224,7 +224,7 @@ export const $deleteEvent = createServerFn({ method: "POST" })
 export const $addCollectionsToEvent = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
   .inputValidator(addCollectionsToEventSchema)
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     const result = await db
       .insert(collectionData)
       .values(
@@ -232,6 +232,7 @@ export const $addCollectionsToEvent = createServerFn({ method: "POST" })
           eventId: data.eventId,
           collectionId: c.collectionId,
           description: c.description,
+          contributor: context.cosmo.address,
         })),
       )
       .onConflictDoUpdate({

@@ -34,7 +34,6 @@ ALTER TABLE "objekt_metadata" RENAME TO "collection_data";--> statement-breakpoi
 ALTER INDEX "objekt_metadata_collection_idx" RENAME TO "collection_data_collection_id_idx";--> statement-breakpoint
 DROP INDEX "objekt_metadata_contributor_idx";--> statement-breakpoint
 ALTER TABLE "collection_data" ADD COLUMN "event_id" uuid;--> statement-breakpoint
-ALTER TABLE "collection_data" DROP COLUMN "address";--> statement-breakpoint
 ALTER TABLE "collection_data" ALTER COLUMN "description" DROP NOT NULL;--> statement-breakpoint
 CREATE INDEX "collection_data_event_idx" ON "collection_data" ("event_id");--> statement-breakpoint
 CREATE INDEX "eras_artist_idx" ON "eras" ("artist");--> statement-breakpoint

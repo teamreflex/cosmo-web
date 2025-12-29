@@ -178,6 +178,7 @@ export const collectionData = pgTable(
       onDelete: "set null",
     }),
     description: varchar("description", { length: 255 }),
+    contributor: citext("address", { length: 42 }).notNull(),
   },
   (t) => [
     index("collection_data_collection_id_idx").on(t.collectionId),
