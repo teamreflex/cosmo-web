@@ -1,7 +1,7 @@
-import ProgressSection from "./progress-section";
+import { m } from "@/i18n/messages";
 import type { Stat } from "@/lib/universal/progress";
 import { getSeasonColor, randomColor } from "@/lib/utils";
-import { m } from "@/i18n/messages";
+import ProgressSection from "./progress-section";
 
 type Props = {
   data: Stat[];

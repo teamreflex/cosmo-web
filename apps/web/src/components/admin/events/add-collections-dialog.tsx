@@ -1,19 +1,3 @@
-import {
-  IconClipboard,
-  IconLoader2,
-  IconPlus,
-  IconTrash,
-  IconUpload,
-} from "@tabler/icons-react";
-import { useState } from "react";
-import { toast } from "sonner";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
-import type { EventCollectionInput } from "@/lib/universal/schema/events";
-import { bulkCollectionImportSchema } from "@/lib/universal/schema/events";
-import { $addCollectionsToEvent } from "@/lib/server/events/actions";
-import { eventCollectionsQuery, eventsQuery } from "@/lib/queries/events";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -23,7 +7,23 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { m } from "@/i18n/messages";
+import { eventCollectionsQuery, eventsQuery } from "@/lib/queries/events";
+import { $addCollectionsToEvent } from "@/lib/server/events/actions";
+import type { EventCollectionInput } from "@/lib/universal/schema/events";
+import { bulkCollectionImportSchema } from "@/lib/universal/schema/events";
+import {
+  IconClipboard,
+  IconLoader2,
+  IconPlus,
+  IconTrash,
+  IconUpload,
+} from "@tabler/icons-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { useState } from "react";
+import { toast } from "sonner";
 
 type Props = {
   eventId: string;
@@ -38,11 +38,11 @@ export default function AddCollectionsDialog({ eventId, eventName }: Props) {
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: useServerFn($addCollectionsToEvent),
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       toast.success(m.admin_collections_added({ count: data as number }));
       setRows([{ collectionId: "", description: undefined }]);
-      queryClient.invalidateQueries({ queryKey: eventsQuery().queryKey });
-      queryClient.invalidateQueries({
+      await queryClient.invalidateQueries({ queryKey: eventsQuery().queryKey });
+      await queryClient.invalidateQueries({
         queryKey: eventCollectionsQuery(eventId).queryKey,
       });
       setOpen(false);
@@ -52,8 +52,7 @@ export default function AddCollectionsDialog({ eventId, eventName }: Props) {
     },
   });
 
-  const hasRows =
-    rows.length > 0 && rows.some((r) => r.collectionId.length > 0);
+  const hasRows = rows.some((r) => r.collectionId.length > 0);
 
   function update(
     index: number,

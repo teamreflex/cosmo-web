@@ -1,9 +1,3 @@
-import * as React from "react";
-import { cva } from "class-variance-authority";
-import { Slot } from "radix-ui";
-import { IconLayoutSidebar } from "@tabler/icons-react";
-import type { VariantProps } from "class-variance-authority";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
@@ -21,6 +15,12 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import { cn } from "@/lib/utils";
+import { IconLayoutSidebar } from "@tabler/icons-react";
+import { cva } from "class-variance-authority";
+import type { VariantProps } from "class-variance-authority";
+import { Slot } from "radix-ui";
+import * as React from "react";
 
 const SIDEBAR_WIDTH = "16rem";
 const SIDEBAR_WIDTH_MOBILE = "18rem";

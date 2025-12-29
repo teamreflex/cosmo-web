@@ -1,5 +1,6 @@
-import { motion } from "motion/react";
+import { cn } from "@/lib/utils";
 import { IconChevronDown } from "@tabler/icons-react";
+import { motion } from "motion/react";
 import {
   createContext,
   useCallback,
@@ -9,6 +10,7 @@ import {
   useRef,
   useState,
 } from "react";
+import type { ComponentProps, RefObject } from "react";
 import {
   Card,
   CardAction,
@@ -18,8 +20,6 @@ import {
   CardHeader,
   CardTitle,
 } from "./card";
-import type { ComponentProps, RefObject } from "react";
-import { cn } from "@/lib/utils";
 
 interface ExpandableCardProps extends ComponentProps<typeof Card> {}
 interface ExpandableCardContentProps extends ComponentProps<

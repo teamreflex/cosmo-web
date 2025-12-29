@@ -1,18 +1,18 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { IconLoader2 } from "@tabler/icons-react";
-import { Controller, useForm } from "react-hook-form";
-import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { useRouter } from "@tanstack/react-router";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { Field, FieldError, FieldLabel } from "../ui/field";
-import type { z } from "zod";
+import { m } from "@/i18n/messages";
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
+import { currentAccountQuery } from "@/lib/queries/core";
 import { signInSchema } from "@/lib/universal/schema/auth";
 import { track } from "@/lib/utils";
-import { currentAccountQuery } from "@/lib/queries/core";
-import { m } from "@/i18n/messages";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { IconLoader2 } from "@tabler/icons-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
+import { Controller, useForm } from "react-hook-form";
+import { toast } from "sonner";
+import type { z } from "zod";
+import { Button } from "../ui/button";
+import { Field, FieldError, FieldLabel } from "../ui/field";
+import { Input } from "../ui/input";
 
 type Props = {
   onForgotPassword: () => void;
@@ -48,13 +48,13 @@ export default function WithEmail(props: Props) {
 
   function handleSubmit(data: z.infer<typeof signInSchema>) {
     mutation.mutate(data, {
-      onSuccess: async () => {
+      onSuccess: () => {
         track("sign-in");
-        await queryClient.invalidateQueries({
+        void queryClient.invalidateQueries({
           queryKey: currentAccountQuery.queryKey,
         });
-        await router.invalidate();
-        await router.navigate({ to: "/" });
+        void router.invalidate();
+        void router.navigate({ to: "/" });
         props.onSuccess();
       },
       onError: (error) => {
@@ -107,7 +107,9 @@ export default function WithEmail(props: Props) {
       <div className="grid grid-cols-2 items-center gap-2">
         <Button type="submit" disabled={mutation.isPending}>
           <span>{m.auth_sign_in()}</span>
-          {mutation.isPending && <IconLoader2 className="h-4 w-4 animate-spin" />}
+          {mutation.isPending && (
+            <IconLoader2 className="h-4 w-4 animate-spin" />
+          )}
         </Button>
 
         <Button

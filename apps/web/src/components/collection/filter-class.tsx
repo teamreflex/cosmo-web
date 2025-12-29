@@ -1,8 +1,3 @@
-import { useState } from "react";
-import { IconChevronDown } from "@tabler/icons-react";
-import { isEqual } from "@apollo/util";
-import type { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
-import type { ValidArtist } from "@apollo/cosmo/types/common";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -12,9 +7,14 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
+import type { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { useFilterData } from "@/hooks/use-filter-data";
 import { m } from "@/i18n/messages";
+import { cn } from "@/lib/utils";
+import type { ValidArtist } from "@apollo/cosmo/types/common";
+import { isEqual } from "@apollo/util";
+import { IconChevronDown } from "@tabler/icons-react";
+import { useState } from "react";
 
 type Props = {
   classes: CosmoFilters["class"];

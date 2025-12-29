@@ -1,5 +1,5 @@
-import { useShallow } from "zustand/react/shallow";
 import { GRID_COLUMNS } from "@apollo/util";
+import { useShallow } from "zustand/react/shallow";
 import { useMediaQuery } from "./use-media-query";
 import { useProfileContext } from "./use-profile";
 import { useUserState } from "./use-user-state";

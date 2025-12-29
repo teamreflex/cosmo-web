@@ -1,8 +1,8 @@
-import { IconLanguage } from "@tabler/icons-react";
-import GuestSettings from "../navbar/guest-settings";
-import ArtistSelectbox from "../navbar/artist-selectbox";
-import SignIn from "./sign-in";
 import Hydrated from "@/components/hydrated";
+import { IconLanguage } from "@tabler/icons-react";
+import ArtistSelectbox from "../navbar/artist-selectbox";
+import GuestSettings from "../navbar/guest-settings";
+import SignIn from "./sign-in";
 
 export default function StateGuest() {
   return (

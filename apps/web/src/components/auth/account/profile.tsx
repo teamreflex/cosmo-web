@@ -1,16 +1,16 @@
-import { useSuspenseQueries } from "@tanstack/react-query";
-import UpdateUsername from "./update-username";
-import UpdateEmail from "./update-email";
-import UpdatePassword from "./update-password";
-import UpdateSocial from "./update-social";
-import { listAccountsQuery, sessionQuery } from "@/hooks/use-account";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { listAccountsQuery, sessionQuery } from "@/hooks/use-account";
 import { m } from "@/i18n/messages";
+import { useSuspenseQueries } from "@tanstack/react-query";
+import UpdateEmail from "./update-email";
+import UpdatePassword from "./update-password";
+import UpdateSocial from "./update-social";
+import UpdateUsername from "./update-username";
 
 export default function Profile() {
   const [{ data: accounts }, { data: user }] = useSuspenseQueries({

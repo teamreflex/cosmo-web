@@ -1,11 +1,11 @@
-import { IconLoader2 } from "@tabler/icons-react";
-import { useLocation, useRouter } from "@tanstack/react-router";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import UserDropdown from "./user-dropdown";
-import type { PublicUser } from "@/lib/universal/auth";
-import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import { authClient } from "@/lib/client/auth";
 import { currentAccountQuery } from "@/lib/queries/core";
+import type { PublicUser } from "@/lib/universal/auth";
+import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import { IconLoader2 } from "@tabler/icons-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useLocation, useRouter } from "@tanstack/react-router";
+import UserDropdown from "./user-dropdown";
 
 type Props = {
   user: PublicUser;

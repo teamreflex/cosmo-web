@@ -1,10 +1,10 @@
 import { Cron, Duration, Effect, Schedule } from "effect";
 import type { DatabaseWeb } from "./db";
 import type { Env } from "./env";
-import type { ProxiedToken } from "./proxied-token";
-import type { Redis } from "./redis";
 import { clearObjektStatsTask } from "./functions/clear-objekt-stats";
 import { syncGravitiesTask } from "./functions/sync-gravities";
+import type { ProxiedToken } from "./proxied-token";
+import type { Redis } from "./redis";
 
 export interface ScheduledTask<TSuccess = void, TFailure = unknown> {
   name: string;
@@ -13,7 +13,7 @@ export interface ScheduledTask<TSuccess = void, TFailure = unknown> {
   effect: Effect.Effect<
     TSuccess,
     TFailure,
-    Redis | DatabaseWeb | ProxiedToken | Env | never
+    Redis | DatabaseWeb | ProxiedToken | Env
   >;
 }
 
@@ -45,7 +45,7 @@ export const createResilientTask = Effect.fn(function* (task: ScheduledTask) {
           ),
         ),
         Effect.tapError((error) =>
-          Effect.logError(`Task ${task.name} iteration failed: ${error}`),
+          Effect.logError(`Task ${task.name} iteration failed`),
         ),
       );
     }).pipe(

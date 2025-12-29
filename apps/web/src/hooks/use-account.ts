@@ -1,5 +1,5 @@
-import { queryOptions, useMutation } from "@tanstack/react-query";
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
+import { queryOptions, useMutation } from "@tanstack/react-query";
 
 export type Provider = "twitter" | "discord";
 

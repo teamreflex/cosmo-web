@@ -1,9 +1,12 @@
-import { and, desc, eq, inArray, lt, not, or, sql } from "drizzle-orm";
-import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
+import { transfersBackendSchema } from "@/lib/universal/parsers";
 import { Addresses, isEqual } from "@apollo/util";
+import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
+import { and, desc, eq, inArray, lt, not, or, sql } from "drizzle-orm";
+import type { z } from "zod";
+import type { TransferResult, TransferType } from "../universal/transfers";
+import { fetchKnownAddresses } from "./cosmo-accounts";
 import { indexer } from "./db/indexer";
 import { collections, objekts, transfers } from "./db/indexer/schema";
-import { fetchKnownAddresses } from "./cosmo-accounts";
 import {
   withArtist,
   withClass,
@@ -12,9 +15,6 @@ import {
   withSeason,
   withSelectedArtists,
 } from "./objekts/filters";
-import type { z } from "zod";
-import type { TransferResult, TransferType } from "../universal/transfers";
-import { transfersBackendSchema } from "@/lib/universal/parsers";
 
 const PER_PAGE = 60;
 
@@ -93,14 +93,12 @@ const fetchTransferRows = createServerOnlyFn(
               ]
             : []),
           // additional filters
-          ...[
-            ...withArtist(params.artist),
-            ...withClass(params.class ?? []),
-            ...withSeason(params.season ?? []),
-            ...withOnlineType(params.on_offline ?? []),
-            ...withMember(params.member),
-            ...withSelectedArtists(params.artists),
-          ],
+          ...withArtist(params.artist),
+          ...withClass(params.class ?? []),
+          ...withSeason(params.season ?? []),
+          ...withOnlineType(params.on_offline ?? []),
+          ...withMember(params.member),
+          ...withSelectedArtists(params.artists),
         ),
       )
       .orderBy(desc(transfers.timestamp), desc(transfers.id))

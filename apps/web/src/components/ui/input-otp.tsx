@@ -1,7 +1,7 @@
-import * as React from "react";
-import { OTPInput, OTPInputContext } from "input-otp";
-import { IconMinus } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
+import { IconMinus } from "@tabler/icons-react";
+import { OTPInput, OTPInputContext } from "input-otp";
+import * as React from "react";
 
 function InputOTP({
   className,

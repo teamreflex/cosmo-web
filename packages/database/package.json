@@ -3,17 +3,17 @@
   "version": "0.0.0",
   "private": true,
   "license": "MIT",
-  "scripts": {
-    "lint": "eslint . --max-warnings 0",
-    "lint:fix": "eslint . --fix",
-    "typecheck": "tsc --pretty --noEmit",
-    "format": "prettier --write \"**/*.{ts,tsx}\""
-  },
   "exports": {
     "./web/*": "./src/web/*.ts",
     "./indexer/*": "./src/indexer/*.ts",
     "./auth": "./src/auth.ts",
     "./custom": "./src/custom.ts"
+  },
+  "scripts": {
+    "lint": "oxlint --type-aware",
+    "lint:fix": "oxlint --type-aware --fix",
+    "typecheck": "tsc --pretty --noEmit",
+    "format": "oxfmt ."
   },
   "dependencies": {
     "@apollo/cosmo": "workspace:*",
@@ -21,14 +21,8 @@
     "drizzle-orm": "1.0.0-beta.6-4414a19"
   },
   "devDependencies": {
-    "@apollo/eslint": "workspace:*",
     "@apollo/typescript": "workspace:*",
-    "@eslint/eslintrc": "^3.3.3",
-    "@eslint/js": "^9.39.2",
-    "eslint": "9.39.2",
-    "prettier": "^3.7.4",
     "turbo": "^2.7.2",
-    "typescript": "5.9.3",
-    "typescript-eslint": "^8.50.1"
+    "typescript": "5.9.3"
   }
 }

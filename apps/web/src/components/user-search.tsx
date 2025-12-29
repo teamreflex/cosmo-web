@@ -1,18 +1,3 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { IconLoader2 } from "@tabler/icons-react";
-import { ofetch } from "ofetch";
-import { useDebounceValue } from "usehooks-ts";
-import { isAddress } from "@apollo/util";
-import { DialogClose } from "./ui/dialog";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Command } from "./ui/command";
-import type { RecentUser } from "@/store";
-import type {
-  CosmoPublicUser,
-  CosmoSearchResult,
-} from "@apollo/cosmo/types/user";
-import type { PropsWithChildren } from "react";
 import {
   CommandDialog,
   CommandGroup,
@@ -20,8 +5,23 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { cn } from "@/lib/utils";
 import { m } from "@/i18n/messages";
+import { cn } from "@/lib/utils";
+import type { RecentUser } from "@/store";
+import type {
+  CosmoPublicUser,
+  CosmoSearchResult,
+} from "@apollo/cosmo/types/user";
+import { isAddress } from "@apollo/util";
+import { IconLoader2 } from "@tabler/icons-react";
+import { useQuery } from "@tanstack/react-query";
+import { ofetch } from "ofetch";
+import { useState } from "react";
+import type { PropsWithChildren } from "react";
+import { useDebounceValue } from "usehooks-ts";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { Command } from "./ui/command";
+import { DialogClose } from "./ui/dialog";
 
 type Props = PropsWithChildren<{
   placeholder?: string;

@@ -24,9 +24,6 @@
     "noErrorTruncation": false,
     "forceConsistentCasingInFileNames": true,
     "removeComments": false,
-    "plugins": [{ "name": "@effect/language-service" }],
-
-    // Path aliases
-    "baseUrl": "."
+    "plugins": [{ "name": "@effect/language-service" }]
   }
 }

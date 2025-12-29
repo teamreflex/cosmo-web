@@ -1,7 +1,15 @@
-import { and, eq } from "drizzle-orm";
-import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
-import { redirect } from "@tanstack/react-router";
+import { $fetchArtists } from "@/lib/server/artists";
+import { db } from "@/lib/server/db";
+import { indexer } from "@/lib/server/db/indexer";
+import type { Collection } from "@/lib/server/db/indexer/schema";
+import { authenticatedMiddleware } from "@/lib/server/middlewares";
+import { $fetchObjektList } from "@/lib/server/objekts/lists";
+import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
 import { objektListEntries, objektLists } from "@apollo/database/web/schema";
+import type { ObjektListEntry } from "@apollo/database/web/types";
+import { redirect } from "@tanstack/react-router";
+import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
+import { and, eq } from "drizzle-orm";
 import {
   addObjektToListSchema,
   createObjektListSchema,
@@ -10,14 +18,6 @@ import {
   removeObjektFromListSchema,
   updateObjektListSchema,
 } from "../../lib/universal/schema/objekt-list";
-import type { Collection } from "@/lib/server/db/indexer/schema";
-import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
-import type { ObjektListEntry } from "@apollo/database/web/types";
-import { $fetchObjektList } from "@/lib/server/objekts/lists";
-import { db } from "@/lib/server/db";
-import { indexer } from "@/lib/server/db/indexer";
-import { authenticatedMiddleware } from "@/lib/server/middlewares";
-import { $fetchArtists } from "@/lib/server/artists";
 
 function createSlug(name: string) {
   return name.trim().toLowerCase().replace(/ /g, "-");

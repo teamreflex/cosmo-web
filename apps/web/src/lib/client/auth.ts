@@ -1,11 +1,11 @@
-import { createAuthClient } from "better-auth/react";
+import { m } from "@/i18n/messages";
+import { baseUrl } from "@/lib/utils";
 import {
   inferAdditionalFields,
   usernameClient,
 } from "better-auth/client/plugins";
+import { createAuthClient } from "better-auth/react";
 import type { auth } from "../server/auth";
-import { baseUrl } from "@/lib/utils";
-import { m } from "@/i18n/messages";
 
 /**
  * Better Auth client instance.

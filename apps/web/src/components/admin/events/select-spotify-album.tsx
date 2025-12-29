@@ -1,10 +1,4 @@
-import { IconCheck, IconLoader2, IconSelector } from "@tabler/icons-react";
-import { useState } from "react";
-import { useDebounceValue } from "usehooks-ts";
-import { useQuery } from "@tanstack/react-query";
-import type { ReactNode } from "react";
-import type { SpotifyAlbum } from "@/lib/universal/events";
-import { $searchSpotifyAlbums } from "@/lib/server/events/actions";
+import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandGroup,
@@ -17,8 +11,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
+import { $searchSpotifyAlbums } from "@/lib/server/events/actions";
+import type { SpotifyAlbum } from "@/lib/universal/events";
 import { cn } from "@/lib/utils";
+import { IconCheck, IconLoader2, IconSelector } from "@tabler/icons-react";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import type { ReactNode } from "react";
+import { useDebounceValue } from "usehooks-ts";
 
 type Props = {
   onSelect: (album: SpotifyAlbum) => void;
@@ -71,7 +71,10 @@ export default function SelectSpotifyAlbum({
           </Button>
         )}
       </PopoverTrigger>
-      <PopoverContent className="w-(--radix-popover-trigger-width) p-0" align="start">
+      <PopoverContent
+        className="w-(--radix-popover-trigger-width) p-0"
+        align="start"
+      >
         <Command shouldFilter={false}>
           <CommandInput
             value={search}

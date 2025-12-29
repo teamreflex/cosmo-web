@@ -1,3 +1,6 @@
+import { Badge } from "@/components/ui/badge";
+import { eventTypes } from "@apollo/database/web/types";
+import type { EventTypeKey } from "@apollo/database/web/types";
 import {
   IconDisc,
   IconHeartHandshake,
@@ -6,9 +9,6 @@ import {
   IconShoppingBag,
   IconSparkles,
 } from "@tabler/icons-react";
-import { eventTypes } from "@apollo/database/web/types";
-import type { EventTypeKey } from "@apollo/database/web/types";
-import { Badge } from "@/components/ui/badge";
 
 type EventTypeBadgeProps = {
   eventType: EventTypeKey;

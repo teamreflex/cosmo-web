@@ -1,6 +1,6 @@
 import { IconChevronDown, IconLoader2, IconPaw } from "@tabler/icons-react";
-import { useOnInView } from "react-intersection-observer";
 import type { QueryStatus } from "@tanstack/react-query";
+import { useOnInView } from "react-intersection-observer";
 
 type Props = {
   status: QueryStatus;

@@ -1,3 +1,4 @@
+import { m } from "@/i18n/messages";
 import { IconAlertTriangle } from "@tabler/icons-react";
 import {
   Tooltip,
@@ -5,7 +6,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
-import { m } from "@/i18n/messages";
 
 type Props = {
   message?: string;

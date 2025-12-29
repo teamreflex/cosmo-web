@@ -1,6 +1,6 @@
+import { cosmoSchema } from "@/lib/universal/parsers";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import type { z } from "zod";
-import { cosmoSchema } from "@/lib/universal/parsers";
 
 /**
  * Manages objekt-related filters.
@@ -30,7 +30,7 @@ export function useCosmoFilters() {
       input = input(filters);
     }
 
-    navigate({
+    void navigate({
       // @ts-ignore - this hook is used on different routes so we can't reliably type this
       search: (prev) => ({
         ...prev,

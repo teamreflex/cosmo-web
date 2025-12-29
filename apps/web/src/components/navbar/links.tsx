@@ -1,3 +1,8 @@
+import { useArtists } from "@/hooks/use-artists";
+import { m } from "@/i18n/messages";
+import type { PublicUser } from "@/lib/universal/auth";
+import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import { cn } from "@/lib/utils";
 import {
   IconArchive,
   IconCards,
@@ -6,7 +11,9 @@ import {
   IconMenu2,
   IconPackage,
 } from "@tabler/icons-react";
+import type { Icon } from "@tabler/icons-react";
 import { Link, useLocation } from "@tanstack/react-router";
+import LinkCosmo from "../auth/link-cosmo";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,21 +23,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import LinkCosmo from "../auth/link-cosmo";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
-import NavbarSearch from "./navbar-search";
 import { ArtistItem } from "./artist-selectbox";
-import type { Icon } from "@tabler/icons-react";
-import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
-import type { PublicUser } from "@/lib/universal/auth";
-import { cn } from "@/lib/utils";
-import { useArtists } from "@/hooks/use-artists";
-import { m } from "@/i18n/messages";
+import NavbarSearch from "./navbar-search";
 
 type Props = {
   signedIn: boolean;

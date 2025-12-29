@@ -1,14 +1,14 @@
-import { useEffect, useRef, useState } from "react";
-import Autoplay from "embla-carousel-autoplay";
-import type { EventWithEra } from "@apollo/database/web/types";
-import type { CarouselApi } from "@/components/ui/carousel";
-import { cn } from "@/lib/utils";
 import EventCardLarge from "@/components/events/event-card-large";
+import type { CarouselApi } from "@/components/ui/carousel";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel";
+import { cn } from "@/lib/utils";
+import type { EventWithEra } from "@apollo/database/web/types";
+import Autoplay from "embla-carousel-autoplay";
+import { useEffect, useRef, useState } from "react";
 
 type ActiveEventsCarouselProps = {
   events: EventWithEra[];
@@ -16,7 +16,11 @@ type ActiveEventsCarouselProps = {
   onHoverChange: (event: EventWithEra | null) => void;
 };
 
-export default function ActiveEventsCarousel(props: ActiveEventsCarouselProps) {
+export default function ActiveEventsCarousel({
+  events,
+  onActiveChange,
+  onHoverChange,
+}: ActiveEventsCarouselProps) {
   const [api, setApi] = useState<CarouselApi>();
   const [activeIndex, setActiveIndex] = useState(0);
   const autoplay = useRef(
@@ -29,12 +33,12 @@ export default function ActiveEventsCarousel(props: ActiveEventsCarouselProps) {
 
   // track active slide and emit to parent
   useEffect(() => {
-    if (!api || props.events.length === 0) return;
+    if (!api || events.length === 0) return;
 
     const updateActiveEvent = () => {
       const index = api.selectedScrollSnap();
       setActiveIndex(index);
-      props.onActiveChange(props.events[index] || null);
+      onActiveChange(events[index] || null);
     };
 
     api.on("select", updateActiveEvent);
@@ -42,9 +46,9 @@ export default function ActiveEventsCarousel(props: ActiveEventsCarouselProps) {
     return () => {
       api.off("select", updateActiveEvent);
     };
-  }, [api, props.events, props.onActiveChange]);
+  }, [api, events, onActiveChange]);
 
-  if (props.events.length === 0) {
+  if (events.length === 0) {
     return null;
   }
 
@@ -65,7 +69,7 @@ export default function ActiveEventsCarousel(props: ActiveEventsCarouselProps) {
         className="w-full"
       >
         <CarouselContent className="-ml-6 pb-1 sm:-ml-8 md:-ml-4">
-          {props.events.map((event, index) => (
+          {events.map((event, index) => (
             <CarouselItem
               key={event.id}
               className="basis-4/5 pl-6 sm:pl-8 md:basis-2/5 md:pl-4 lg:basis-1/4"
@@ -73,8 +77,8 @@ export default function ActiveEventsCarousel(props: ActiveEventsCarouselProps) {
               <EventCardLarge
                 event={event}
                 isActive={index === activeIndex}
-                onMouseEnter={() => props.onHoverChange(event)}
-                onMouseLeave={() => props.onHoverChange(null)}
+                onMouseEnter={() => onHoverChange(event)}
+                onMouseLeave={() => onHoverChange(null)}
               />
             </CarouselItem>
           ))}

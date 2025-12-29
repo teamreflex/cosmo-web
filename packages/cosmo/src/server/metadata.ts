@@ -1,8 +1,8 @@
+import { ofetch } from "ofetch";
 import type {
   CosmoObjektMetadataV1,
   CosmoObjektMetadataV3,
 } from "../types/metadata";
-import { ofetch } from "ofetch";
 
 /**
  * Fetch objekt metadata from the v1 API.

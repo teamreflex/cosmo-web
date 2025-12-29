@@ -1,8 +1,8 @@
-import { useCallback, useState } from "react";
+import type { CollectionDataSource } from "@apollo/util";
 import { getRouteApi } from "@tanstack/react-router";
+import { useCallback, useState } from "react";
 import { defaultFilters, useCosmoFilters } from "./use-cosmo-filters";
 import type { CosmoFilters } from "./use-cosmo-filters";
-import type { CollectionDataSource } from "@apollo/util";
 
 const route = getRouteApi("/@{$username}/");
 
@@ -34,7 +34,7 @@ export function useFilters(opts?: DefaultOptions) {
 
   const setShowLocked = useCallback(
     (state: boolean | undefined) => {
-      navigate({
+      void navigate({
         search: (prev) => ({
           ...prev,
           locked: state,
@@ -42,7 +42,7 @@ export function useFilters(opts?: DefaultOptions) {
         replace: true,
       });
     },
-    [searchParams],
+    [navigate],
   );
 
   function reset() {

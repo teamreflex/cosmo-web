@@ -1,5 +1,5 @@
-import { queryOptions } from "@tanstack/react-query";
 import { $fetchObjektsWithComo, $fetchTokenBalances } from "@/lib/server/como";
+import { queryOptions } from "@tanstack/react-query";
 
 export const fetchObjektsWithComoQuery = (address: string) =>
   queryOptions({

@@ -1,12 +1,3 @@
-import { Suspense } from "react";
-import { Separator } from "../ui/separator";
-import { Skeleton } from "../ui/skeleton";
-import { Button } from "../ui/button";
-import LinkedAccounts from "./account/linked-accounts";
-import Profile from "./account/profile";
-import DeleteAccount from "./account/delete-account";
-import LinkCosmo, { useLinkCosmo } from "./link-cosmo";
-import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import {
   Dialog,
   DialogContent,
@@ -15,6 +6,15 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { m } from "@/i18n/messages";
+import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import { Suspense } from "react";
+import { Button } from "../ui/button";
+import { Separator } from "../ui/separator";
+import { Skeleton } from "../ui/skeleton";
+import DeleteAccount from "./account/delete-account";
+import LinkedAccounts from "./account/linked-accounts";
+import Profile from "./account/profile";
+import LinkCosmo, { useLinkCosmo } from "./link-cosmo";
 
 type Props = {
   open: boolean;

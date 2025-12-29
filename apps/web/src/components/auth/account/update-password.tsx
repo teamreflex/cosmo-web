@@ -1,16 +1,16 @@
-import { toast } from "sonner";
-import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { useMutation } from "@tanstack/react-query";
-import { Controller, useForm } from "react-hook-form";
-import { IconLoader2 } from "@tabler/icons-react";
-import { useRouter } from "@tanstack/react-router";
-import type { z } from "zod";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { updatePasswordSchema } from "@/lib/universal/schema/auth";
-import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import { m } from "@/i18n/messages";
+import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
+import { updatePasswordSchema } from "@/lib/universal/schema/auth";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { IconLoader2 } from "@tabler/icons-react";
+import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
+import { Controller, useForm } from "react-hook-form";
+import { toast } from "sonner";
+import type { z } from "zod";
 
 export default function UpdatePassword() {
   const router = useRouter();
@@ -39,7 +39,7 @@ export default function UpdatePassword() {
     mutation.mutate(data, {
       onSuccess: () => {
         toast.success(m.auth_password_updated());
-        router.invalidate();
+        void router.invalidate();
       },
       onError: (error) => {
         toast.error(error.message);

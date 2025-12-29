@@ -1,5 +1,4 @@
-import { Fragment, Suspense } from "react";
-import { ErrorBoundary } from "react-error-boundary";
+import { currentAccountQuery } from "@/lib/queries/core";
 import {
   IconArchive,
   IconCards,
@@ -8,15 +7,16 @@ import {
   IconSearch,
 } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import Logo from "../logo";
-import UpdateDialog from "../misc/update-dialog";
-import SystemStatus from "../misc/system-status";
-import StateGuest from "../auth/state-guest";
-import StateAuthenticated from "../auth/state-authenticated";
+import { Fragment, Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 import AuthFallback from "../auth/auth-fallback";
+import StateAuthenticated from "../auth/state-authenticated";
+import StateGuest from "../auth/state-guest";
+import Logo from "../logo";
+import SystemStatus from "../misc/system-status";
+import UpdateDialog from "../misc/update-dialog";
 import { Skeleton } from "../ui/skeleton";
 import Links from "./links";
-import { currentAccountQuery } from "@/lib/queries/core";
 
 export default function Navbar() {
   return (

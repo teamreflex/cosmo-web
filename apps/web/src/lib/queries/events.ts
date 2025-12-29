@@ -1,4 +1,3 @@
-import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 import { $getSpotifyAlbum } from "@/lib/server/events/actions";
 import {
   $fetchActiveEvents,
@@ -9,6 +8,7 @@ import {
   $fetchEvents,
   $fetchPaginatedEvents,
 } from "@/lib/server/events/queries";
+import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 
 export function erasQuery(artist?: string) {
   return queryOptions({

@@ -1,5 +1,5 @@
-import { useState } from "react";
 import type { Hoverable } from "@/components/objekt/common";
+import { useState } from "react";
 
 export default function useOverlayHover() {
   const [state, setState] = useState<Hoverable>();

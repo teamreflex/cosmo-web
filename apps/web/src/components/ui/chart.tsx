@@ -1,13 +1,7 @@
-import * as React from "react";
-import {
-  Legend,
-  
-  ResponsiveContainer,
-  Tooltip
-} from "recharts";
-import type {LegendProps} from "recharts";
-
 import { cn } from "@/lib/utils";
+import * as React from "react";
+import { Legend, ResponsiveContainer, Tooltip } from "recharts";
+import type { LegendProps } from "recharts";
 
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const;
@@ -303,7 +297,7 @@ function ChartLegendContent({
       )}
     >
       {payload.map((item) => {
-        const key = `${nameKey || item.dataKey || "value"}`;
+        const key = String(nameKey || item.dataKey || "value");
         const itemConfig = getPayloadConfigFromPayload(config, item, key);
 
         return (

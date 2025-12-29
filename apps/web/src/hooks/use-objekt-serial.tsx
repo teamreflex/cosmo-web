@@ -20,7 +20,7 @@ export function useObjektSerial() {
       serial = serial(searchSerial);
     }
 
-    navigate({
+    void navigate({
       // @ts-ignore - this hook is used on different routes so we can't reliably type this
       search: (prev) => ({ ...prev, serial }),
       replace: true,

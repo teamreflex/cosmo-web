@@ -1,9 +1,9 @@
+import { fetchArtist, fetchArtists } from "@apollo/cosmo/server/artists";
+import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
 import { createServerFn } from "@tanstack/react-start";
 import { setResponseHeaders } from "@tanstack/react-start/server";
-import { fetchArtist, fetchArtists } from "@apollo/cosmo/server/artists";
 import { cacheHeaders, clearTag, remember } from "./cache";
 import { getProxiedToken } from "./proxied-token";
-import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
 
 const cacheKey = "artists";
 

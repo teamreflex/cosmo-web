@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryColumn, Index, OneToMany } from "typeorm";
-import { Transfer } from "./transfer.model";
 import { Objekt } from "./objekt.model";
+import { Transfer } from "./transfer.model";
 
 @Entity()
 export class Collection {

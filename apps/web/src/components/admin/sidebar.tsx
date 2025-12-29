@@ -1,13 +1,4 @@
 import {
-  IconCalendarEvent,
-  IconDisc,
-  IconHome,
-  IconLayoutSidebarRight,
-} from "@tabler/icons-react";
-
-import { Link, useLocation } from "@tanstack/react-router";
-import type { PropsWithClassName } from "@/lib/utils";
-import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
@@ -17,8 +8,16 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { env } from "@/lib/env/client";
 import { m } from "@/i18n/messages";
+import { env } from "@/lib/env/client";
+import type { PropsWithClassName } from "@/lib/utils";
+import {
+  IconCalendarEvent,
+  IconDisc,
+  IconHome,
+  IconLayoutSidebarRight,
+} from "@tabler/icons-react";
+import { Link, useLocation } from "@tanstack/react-router";
 
 export function getItems() {
   return [

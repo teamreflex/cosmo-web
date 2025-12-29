@@ -1,13 +1,7 @@
-import { Controller, useFormContext, useWatch } from "react-hook-form";
-import { getRouteApi } from "@tanstack/react-router";
-import EraImageUpload from "./era-image-upload";
-import SpotifyAlbumDisplay from "./spotify-album-display";
-import type { SpotifyAlbum } from "@/lib/universal/events";
-import type { CreateEraInput } from "@/lib/universal/schema/events";
 import SelectSpotifyAlbum from "@/components/admin/events/select-spotify-album";
 import { DatePicker } from "@/components/ui/date-picker";
-import { Input } from "@/components/ui/input";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -17,6 +11,12 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { m } from "@/i18n/messages";
+import type { SpotifyAlbum } from "@/lib/universal/events";
+import type { CreateEraInput } from "@/lib/universal/schema/events";
+import { getRouteApi } from "@tanstack/react-router";
+import { Controller, useFormContext, useWatch } from "react-hook-form";
+import EraImageUpload from "./era-image-upload";
+import SpotifyAlbumDisplay from "./spotify-album-display";
 
 const route = getRouteApi("/admin/eras");
 
@@ -32,7 +32,10 @@ type Props = {
 export default function EraForm(props: Props) {
   const { artists } = route.useLoaderData();
   const form = useFormContext<CreateEraInput>();
-  const spotifyAlbumId = useWatch({ control: form.control, name: "spotifyAlbumId" });
+  const spotifyAlbumId = useWatch({
+    control: form.control,
+    name: "spotifyAlbumId",
+  });
 
   const hasAlbum = props.selectedAlbum || spotifyAlbumId;
 

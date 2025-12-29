@@ -1,7 +1,7 @@
+import { $fetchSelectedArtists } from "@/lib/queries/core";
+import { putCookie } from "@/lib/server/cookies";
 import { createServerFn } from "@tanstack/react-start";
 import * as z from "zod";
-import { putCookie } from "@/lib/server/cookies";
-import { $fetchSelectedArtists } from "@/lib/queries/core";
 
 /**
  * Set the selected artists in a cookie.

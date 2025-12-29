@@ -1,10 +1,10 @@
-import { Suspense } from "react";
-import { IconX } from "@tabler/icons-react";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import type { SpotifyAlbum } from "@/lib/universal/events";
-import { spotifyAlbumQuery } from "@/lib/queries/events";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { spotifyAlbumQuery } from "@/lib/queries/events";
+import type { SpotifyAlbum } from "@/lib/universal/events";
+import { IconX } from "@tabler/icons-react";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { Suspense } from "react";
 
 type Props = {
   selectedAlbum: SpotifyAlbum | null;

@@ -1,8 +1,8 @@
+import { m } from "@/i18n/messages";
+import { eventsQuery } from "@/lib/queries/events";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import EventCard from "./event-card";
-import { eventsQuery } from "@/lib/queries/events";
-import { m } from "@/i18n/messages";
 
 const route = getRouteApi("/admin/events");
 

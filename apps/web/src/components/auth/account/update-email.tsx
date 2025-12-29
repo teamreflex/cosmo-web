@@ -1,12 +1,3 @@
-import { toast } from "sonner";
-import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { useMutation } from "@tanstack/react-query";
-import { Controller, useForm } from "react-hook-form";
-import { IconDeviceFloppy, IconLoader2 } from "@tabler/icons-react";
-import { useRouter } from "@tanstack/react-router";
-import type { z } from "zod";
-import { updateEmailSchema } from "@/lib/universal/schema/auth";
-import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { Field, FieldDescription, FieldError } from "@/components/ui/field";
 import {
   InputGroup,
@@ -14,6 +5,15 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { m } from "@/i18n/messages";
+import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
+import { updateEmailSchema } from "@/lib/universal/schema/auth";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { IconDeviceFloppy, IconLoader2 } from "@tabler/icons-react";
+import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
+import { Controller, useForm } from "react-hook-form";
+import { toast } from "sonner";
+import type { z } from "zod";
 
 type Props = {
   email: string;
@@ -44,7 +44,7 @@ export default function UpdateEmail({ email }: Props) {
     mutation.mutate(data, {
       onSuccess: () => {
         toast.success(m.auth_email_verification_sent());
-        router.invalidate();
+        void router.invalidate();
       },
       onError: (error) => {
         toast.error(error.message);

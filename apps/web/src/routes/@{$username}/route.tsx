@@ -1,28 +1,28 @@
-import { Link, Outlet, createFileRoute } from "@tanstack/react-router";
-import { IconAlertCircle } from "@tabler/icons-react";
-import { ErrorBoundary } from "react-error-boundary";
-import { Suspense } from "react";
-import { Addresses, isEqual } from "@apollo/util";
-import CopyAddressButton from "@/components/profile/copy-address-button";
-import TradesButton from "@/components/profile/trades-button";
-import ComoButton from "@/components/profile/como-button";
-import ProgressButton from "@/components/profile/progress-button";
-import UserAvatar from "@/components/profile/user-avatar";
+import ListDropdown from "@/components/lists/list-dropdown";
 import UserBalances, {
   ComoBalanceErrorFallback,
 } from "@/components/navbar/como-balances";
+import ComoButton from "@/components/profile/como-button";
+import CopyAddressButton from "@/components/profile/copy-address-button";
 import {
   CosmoVerifiedBadge,
   DiscordBadge,
   ModhausBadge,
   TwitterBadge,
 } from "@/components/profile/profile-badges";
+import ProgressButton from "@/components/profile/progress-button";
+import TradesButton from "@/components/profile/trades-button";
+import UserAvatar from "@/components/profile/user-avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { env } from "@/lib/env/client";
-import { m } from "@/i18n/messages";
-import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
-import ListDropdown from "@/components/lists/list-dropdown";
 import { UserStateProvider } from "@/hooks/use-user-state";
+import { m } from "@/i18n/messages";
+import { env } from "@/lib/env/client";
+import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
+import { Addresses, isEqual } from "@apollo/util";
+import { IconAlertCircle } from "@tabler/icons-react";
+import { Link, Outlet, createFileRoute } from "@tanstack/react-router";
+import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 
 export const Route = createFileRoute("/@{$username}")({
   component: RouteComponent,

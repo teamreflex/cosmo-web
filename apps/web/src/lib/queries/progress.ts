@@ -1,10 +1,10 @@
+import type { ValidOnlineType } from "@apollo/cosmo/types/common";
 import { queryOptions } from "@tanstack/react-query";
 import {
   $fetchArtistStatsByAddress,
   $fetchProgressBreakdown,
   $fetchProgressLeaderboard,
 } from "../server/progress";
-import type { ValidOnlineType } from "@apollo/cosmo/types/common";
 
 export const artistStatsQuery = (address: string) =>
   queryOptions({

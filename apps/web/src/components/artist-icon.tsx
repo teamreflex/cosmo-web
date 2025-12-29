@@ -73,10 +73,6 @@ const map: Record<ValidArtist, ReactNode> = {
   ),
 };
 
-export default function ArtistIcon({
-  artist,
-}: {
-  artist: ValidArtist | string;
-}) {
+export default function ArtistIcon({ artist }: { artist: string }) {
   return map[artist as ValidArtist] ?? null;
 }

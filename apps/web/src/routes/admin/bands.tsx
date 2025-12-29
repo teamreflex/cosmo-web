@@ -1,8 +1,8 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import { currentAccountQuery } from "@/lib/queries/core";
 import InsertBands from "@/components/admin/bands/insert-bands";
-import { defineHead } from "@/lib/meta";
 import { m } from "@/i18n/messages";
+import { defineHead } from "@/lib/meta";
+import { currentAccountQuery } from "@/lib/queries/core";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/admin/bands")({
   staleTime: Infinity,

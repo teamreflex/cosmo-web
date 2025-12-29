@@ -1,12 +1,12 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { captureException } from "@sentry/tanstackstart-react";
+import { env } from "@/lib/env/server";
+import { $fetchCurrentUser } from "@/lib/queries/core";
+import { getCorsHeaders } from "@/lib/server/cors";
 import {
   exchangeLoginTicket,
   getRecaptchaToken,
 } from "@apollo/cosmo/server/qr-auth";
-import { $fetchCurrentUser } from "@/lib/queries/core";
-import { getCorsHeaders } from "@/lib/server/cors";
-import { env } from "@/lib/env/server";
+import { captureException } from "@sentry/tanstackstart-react";
+import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/api/cosmo/qr-auth/recaptcha")({
   server: {

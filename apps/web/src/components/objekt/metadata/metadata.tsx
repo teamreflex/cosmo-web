@@ -1,36 +1,36 @@
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { ofetch } from "ofetch";
-import { useCopyToClipboard } from "usehooks-ts";
-import {
-  IconCloudDownload,
-  IconLink,
-  IconMovie,
-  IconPhoto,
-} from "@tabler/icons-react";
-import { toast } from "sonner";
-import { Link } from "@tanstack/react-router";
-import { Button } from "../../ui/button";
-import { getObjektImageUrls } from "../common";
-import Portal from "../../portal";
-import Pill from "./pill";
-import SerialsPanel from "./serials-panel";
-import type { Objekt } from "@/lib/universal/objekt-conversion";
-import type {
-  CollectionDataEvent,
-  ObjektMetadata,
-} from "@/lib/universal/objekts";
-import type { ObjektMetadataTab } from "./common";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { env } from "@/lib/env/client";
-import { unobtainables } from "@/lib/unobtainables";
-import { m } from "@/i18n/messages";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { m } from "@/i18n/messages";
+import { env } from "@/lib/env/client";
+import type { Objekt } from "@/lib/universal/objekt-conversion";
+import type {
+  CollectionDataEvent,
+  ObjektMetadata,
+} from "@/lib/universal/objekts";
+import { unobtainables } from "@/lib/unobtainables";
+import {
+  IconCloudDownload,
+  IconLink,
+  IconMovie,
+  IconPhoto,
+} from "@tabler/icons-react";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
+import { ofetch } from "ofetch";
+import { toast } from "sonner";
+import { useCopyToClipboard } from "usehooks-ts";
+import Portal from "../../portal";
+import { Button } from "../../ui/button";
+import { getObjektImageUrls } from "../common";
+import type { ObjektMetadataTab } from "./common";
+import Pill from "./pill";
+import SerialsPanel from "./serials-panel";
 
 type Props = {
   objekt: Objekt.Collection;
@@ -51,7 +51,9 @@ export default function Metadata(props: Props) {
 
   function copyUrl() {
     const scheme = env.VITE_APP_ENV === "development" ? "http" : "https";
-    copy(`${scheme}://${env.VITE_BASE_URL}/objekts?id=${props.objekt.slug}`);
+    void copy(
+      `${scheme}://${env.VITE_BASE_URL}/objekts?id=${props.objekt.slug}`,
+    );
     toast.success(m.toast_objekt_url_copied());
   }
 

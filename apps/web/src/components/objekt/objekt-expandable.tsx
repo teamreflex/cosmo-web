@@ -1,13 +1,13 @@
-import { useShallow } from "zustand/react/shallow";
-import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { getObjektImageUrls } from "./common";
-import { fetchObjektQuery } from "./metadata/common";
-import MetadataDialog, { useMetadataDialog } from "./metadata-dialog";
-import type { PropsWithChildren } from "react";
-import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { useObjektTransfer } from "@/hooks/use-objekt-transfer";
+import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
+import { useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import type { PropsWithChildren } from "react";
+import { useShallow } from "zustand/react/shallow";
+import { getObjektImageUrls } from "./common";
+import MetadataDialog, { useMetadataDialog } from "./metadata-dialog";
+import { fetchObjektQuery } from "./metadata/common";
 
 type Props = PropsWithChildren<{
   collection: Objekt.Collection;

@@ -1,5 +1,5 @@
-import MetadataDialog from "./metadata-dialog";
 import { useActiveObjekt } from "@/hooks/use-active-objekt";
+import MetadataDialog from "./metadata-dialog";
 
 /**
  * Provides a pre-opened MetadataDialog for the index when routing to an objekt slug.

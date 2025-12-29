@@ -1,9 +1,9 @@
+import { useArtists } from "@/hooks/use-artists";
+import { artistColors, cn } from "@/lib/utils";
+import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
+import type { ValidArtist } from "@apollo/cosmo/types/common";
 import { useState } from "react";
 import { Popover, PopoverAnchor, PopoverContent } from "../ui/popover";
-import type { ValidArtist } from "@apollo/cosmo/types/common";
-import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
-import { artistColors, cn } from "@/lib/utils";
-import { useArtists } from "@/hooks/use-artists";
 
 type Props = {
   showArtists?: boolean;

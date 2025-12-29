@@ -1,22 +1,22 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
-import { isFuture } from "date-fns";
-import { IconCalendarEvent } from "@tabler/icons-react";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import type { Gravity } from "@apollo/database/web/types";
+import { Error } from "@/components/error-boundary";
+import GravityTimestamp from "@/components/gravity/timestamp";
+import SkeletonGradient from "@/components/skeleton/skeleton-overlay";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { m } from "@/i18n/messages";
+import { defineHead } from "@/lib/meta";
+import { artistsQuery, selectedArtistsQuery } from "@/lib/queries/core";
+import { gravitiesIndexQuery } from "@/lib/queries/gravity";
+import type { PropsWithClassName } from "@/lib/utils";
 import type { CosmoArtistBFF } from "@apollo/cosmo/types/artists";
 import type { CosmoGravityType } from "@apollo/cosmo/types/gravity";
-import type { PropsWithClassName } from "@/lib/utils";
-import { Skeleton } from "@/components/ui/skeleton";
-import SkeletonGradient from "@/components/skeleton/skeleton-overlay";
-import { Error } from "@/components/error-boundary";
-import { gravitiesIndexQuery } from "@/lib/queries/gravity";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent } from "@/components/ui/card";
-import GravityTimestamp from "@/components/gravity/timestamp";
-import { Badge } from "@/components/ui/badge";
-import { artistsQuery, selectedArtistsQuery } from "@/lib/queries/core";
-import { defineHead } from "@/lib/meta";
-import { m } from "@/i18n/messages";
+import type { Gravity } from "@apollo/database/web/types";
+import { IconCalendarEvent } from "@tabler/icons-react";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { Link, createFileRoute } from "@tanstack/react-router";
+import { isFuture } from "date-fns";
 
 export const Route = createFileRoute("/gravity/")({
   loader: async ({ context }) => {

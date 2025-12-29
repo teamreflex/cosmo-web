@@ -12,7 +12,7 @@ export function useActiveObjekt() {
   });
 
   const setActiveObjekt = (slug: string | undefined) => {
-    navigate({
+    void navigate({
       search: (prev) => ({ ...prev, id: slug }),
       replace: true,
     });

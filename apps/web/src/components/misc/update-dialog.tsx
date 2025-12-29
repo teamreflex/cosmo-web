@@ -1,3 +1,11 @@
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { m } from "@/i18n/messages";
+import { env } from "@/lib/env/client";
 import { IconSpeakerphone } from "@tabler/icons-react";
 import { addDays, format, isWithinInterval, subDays } from "date-fns";
 import { useMemo } from "react";
@@ -11,14 +19,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { env } from "@/lib/env/client";
-import { m } from "@/i18n/messages";
 
 export default function UpdateDialog() {
   const isNew = useMemo(() => {

@@ -1,13 +1,13 @@
-import AddCollectionsDialog from "./add-collections-dialog";
-import DeleteEvent from "./delete-event";
-import EditEventDialog from "./edit-event-dialog";
-import ViewCollectionsDialog from "./view-collections-dialog";
-import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
-import type { EventWithEra } from "@apollo/database/web/types";
 import EventTypeBadge from "@/components/events/event-type-badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Timestamp } from "@/components/ui/timestamp";
 import { cn } from "@/lib/utils";
+import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
+import type { EventWithEra } from "@apollo/database/web/types";
+import AddCollectionsDialog from "./add-collections-dialog";
+import DeleteEvent from "./delete-event";
+import EditEventDialog from "./edit-event-dialog";
+import ViewCollectionsDialog from "./view-collections-dialog";
 
 type Props = {
   event: EventWithEra;

@@ -1,18 +1,18 @@
-import * as motion from "motion/react-client";
-import { AnimatePresence } from "motion/react";
-import { useMemo } from "react";
-import type { PollSelectedContentImage } from "@apollo/cosmo/types/gravity";
-import type {
-  AggregatedVotes,
-  RevealedVote,
-} from "@/lib/client/gravity/polygon/types";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import type {
+  AggregatedVotes,
+  RevealedVote,
+} from "@/lib/client/gravity/polygon/types";
+import type { PollSelectedContentImage } from "@apollo/cosmo/types/gravity";
+import { AnimatePresence } from "motion/react";
+import * as motion from "motion/react-client";
+import { useMemo } from "react";
 
 type Props = {
   votes: RevealedVote[];

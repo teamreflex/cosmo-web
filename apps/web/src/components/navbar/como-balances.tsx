@@ -1,3 +1,7 @@
+import { useArtists } from "@/hooks/use-artists";
+import { tokenBalancesQuery } from "@/lib/queries/como";
+import type { ComoBalance } from "@/lib/universal/como";
+import type { CosmoArtistBFF } from "@apollo/cosmo/types/artists";
 import { IconX } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import ArtistIcon from "../artist-icon";
@@ -7,10 +11,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
-import type { CosmoArtistBFF } from "@apollo/cosmo/types/artists";
-import type { ComoBalance } from "@/lib/universal/como";
-import { tokenBalancesQuery } from "@/lib/queries/como";
-import { useArtists } from "@/hooks/use-artists";
 
 type Props = {
   address: string;

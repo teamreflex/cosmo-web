@@ -1,14 +1,20 @@
-import { IconClipboard, IconLoader2, IconPlus, IconTrash, IconUpload } from "@tabler/icons-react";
-import { useState } from "react";
-import { toast } from "sonner";
-import { useServerFn } from "@tanstack/react-start";
-import { useMutation } from "@tanstack/react-query";
-import { $saveBandUrls } from "./actions";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { m } from "@/i18n/messages";
 import type { BandUrlRow } from "@/lib/universal/schema/admin";
 import { bandUrlInputSchema } from "@/lib/universal/schema/admin";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { m } from "@/i18n/messages";
+import {
+  IconClipboard,
+  IconLoader2,
+  IconPlus,
+  IconTrash,
+  IconUpload,
+} from "@tabler/icons-react";
+import { useMutation } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { useState } from "react";
+import { toast } from "sonner";
+import { $saveBandUrls } from "./actions";
 
 export default function InsertBands() {
   const [items, setItems] = useState<BandUrlRow[]>([
@@ -26,9 +32,9 @@ export default function InsertBands() {
     },
   });
 
-  const hasRows =
-    items.length > 0 &&
-    items.some((r) => r.slug.length > 0 && r.bandImageUrl.length > 0);
+  const hasRows = items.some(
+    (r) => r.slug.length > 0 && r.bandImageUrl.length > 0,
+  );
 
   function update(index: number, key: keyof BandUrlRow, value: string) {
     setItems((prev) =>

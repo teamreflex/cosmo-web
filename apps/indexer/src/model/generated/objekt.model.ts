@@ -6,8 +6,8 @@ import {
   OneToMany,
   ManyToOne,
 } from "typeorm";
-import { Transfer } from "./transfer.model";
 import { Collection } from "./collection.model";
+import { Transfer } from "./transfer.model";
 
 @Entity()
 export class Objekt {

@@ -1,27 +1,27 @@
+import { useArtists } from "@/hooks/use-artists";
+import type { TransferFilters } from "@/hooks/use-transfer-filters";
+import { useTransferFilters } from "@/hooks/use-transfer-filters";
+import { m } from "@/i18n/messages";
+import { transfersQuery } from "@/lib/queries/objekt-queries";
+import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import type { TransferType } from "@/lib/universal/transfers";
+import type { ValidArtist } from "@apollo/cosmo/types/common";
+import { IconHeartBroken, IconRefresh } from "@tabler/icons-react";
 import {
   QueryErrorResetBoundary,
   useSuspenseInfiniteQuery,
 } from "@tanstack/react-query";
-import { ErrorBoundary } from "react-error-boundary";
-import { IconHeartBroken, IconRefresh } from "@tabler/icons-react";
 import { Suspense, useCallback } from "react";
-import { Skeleton } from "../ui/skeleton";
-import { Button } from "../ui/button";
-import Portal from "../portal";
-import { InfiniteQueryNext } from "../infinite-query-pending";
+import { ErrorBoundary } from "react-error-boundary";
+import { TransfersFilters } from "../collection/filter-contexts/transfers-filters";
 import FiltersContainer from "../collection/filters-container";
 import MemberFilter from "../collection/member-filter";
+import { InfiniteQueryNext } from "../infinite-query-pending";
+import Portal from "../portal";
 import SkeletonGradient from "../skeleton/skeleton-overlay";
-import { TransfersFilters } from "../collection/filter-contexts/transfers-filters";
+import { Button } from "../ui/button";
+import { Skeleton } from "../ui/skeleton";
 import TransferRow from "./transfer-row";
-import type { ValidArtist } from "@apollo/cosmo/types/common";
-import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
-import type { TransferFilters } from "@/hooks/use-transfer-filters";
-import type { TransferType } from "@/lib/universal/transfers";
-import { transfersQuery } from "@/lib/queries/objekt-queries";
-import { useTransferFilters } from "@/hooks/use-transfer-filters";
-import { m } from "@/i18n/messages";
-import { useArtists } from "@/hooks/use-artists";
 
 type Props = {
   cosmo: PublicCosmo;

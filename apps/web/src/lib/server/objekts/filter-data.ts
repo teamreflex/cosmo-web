@@ -1,5 +1,5 @@
-import { asc } from "drizzle-orm";
 import { createServerOnlyFn } from "@tanstack/react-start";
+import { asc } from "drizzle-orm";
 import { indexer } from "../db/indexer";
 import { collections } from "../db/indexer/schema";
 

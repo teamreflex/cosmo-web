@@ -1,7 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { defineHead } from "@/lib/meta";
 import { m } from "@/i18n/messages";
+import { defineHead } from "@/lib/meta";
+import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/terms-privacy")({
   head: () =>

@@ -1,8 +1,13 @@
-import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
-import { IconHeartBroken } from "@tabler/icons-react";
 import { Error } from "@/components/error-boundary";
+import DeleteList from "@/components/lists/delete-list";
+import ListRenderer from "@/components/lists/list-renderer";
+import UpdateList from "@/components/lists/update-list";
 import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ProfileProvider } from "@/hooks/use-profile";
+import { UserStateProvider } from "@/hooks/use-user-state";
+import { m } from "@/i18n/messages";
+import { defineHead } from "@/lib/meta";
 import {
   artistsQuery,
   currentAccountQuery,
@@ -10,16 +15,11 @@ import {
   selectedArtistsQuery,
   targetAccountQuery,
 } from "@/lib/queries/core";
-import { $fetchObjektList } from "@/lib/server/objekts/lists";
-import { UserStateProvider } from "@/hooks/use-user-state";
-import { ProfileProvider } from "@/hooks/use-profile";
-import UpdateList from "@/components/lists/update-list";
-import DeleteList from "@/components/lists/delete-list";
-import ListRenderer from "@/components/lists/list-renderer";
-import { objektListFrontendSchema } from "@/lib/universal/parsers";
 import { objektListQuery } from "@/lib/queries/objekt-queries";
-import { defineHead } from "@/lib/meta";
-import { m } from "@/i18n/messages";
+import { $fetchObjektList } from "@/lib/server/objekts/lists";
+import { objektListFrontendSchema } from "@/lib/universal/parsers";
+import { IconHeartBroken } from "@tabler/icons-react";
+import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/@{$username}/list/$slug")({
   staleTime: 1000 * 60 * 15, // 15 minutes
@@ -30,7 +30,7 @@ export const Route = createFileRoute("/@{$username}/list/$slug")({
   validateSearch: objektListFrontendSchema,
   loaderDeps: ({ search }) => ({ searchParams: search }),
   loader: async ({ context, params, deps }) => {
-    context.queryClient.prefetchQuery(filterDataQuery);
+    void context.queryClient.prefetchQuery(filterDataQuery);
 
     const [account, target, selected] = await Promise.all([
       context.queryClient.ensureQueryData(currentAccountQuery),
@@ -60,7 +60,7 @@ export const Route = createFileRoute("/@{$username}/list/$slug")({
     }
 
     // fetch entries
-    context.queryClient.prefetchInfiniteQuery(
+    void context.queryClient.prefetchInfiniteQuery(
       objektListQuery(objektList.id, deps.searchParams, selected),
     );
 

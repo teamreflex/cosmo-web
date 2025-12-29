@@ -1,8 +1,3 @@
-import * as React from "react";
-import { Command as CommandPrimitive } from "cmdk";
-import { IconCheck, IconSearch, IconX } from "@tabler/icons-react";
-import { Button } from "./button";
-import { cn } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -11,6 +6,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { InputGroup, InputGroupAddon } from "@/components/ui/input-group";
+import { cn } from "@/lib/utils";
+import { IconCheck, IconSearch, IconX } from "@tabler/icons-react";
+import { Command as CommandPrimitive } from "cmdk";
+import * as React from "react";
+import { Button } from "./button";
 
 function Command({
   className,

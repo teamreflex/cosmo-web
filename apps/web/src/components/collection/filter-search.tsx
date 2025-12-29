@@ -1,9 +1,9 @@
+import { m } from "@/i18n/messages";
+import { cn } from "@/lib/utils";
 import { IconX } from "@tabler/icons-react";
 import { getRouteApi } from "@tanstack/react-router";
 import { useState } from "react";
 import { useDebounceCallback } from "usehooks-ts";
-import { cn } from "@/lib/utils";
-import { m } from "@/i18n/messages";
 
 const route = getRouteApi("/");
 
@@ -15,7 +15,7 @@ export default function FilterSearch() {
   const navigate = route.useNavigate();
 
   const setDebounced = useDebounceCallback((term: string | undefined) => {
-    navigate({
+    void navigate({
       search: (prev) => ({
         ...prev,
         search: term,

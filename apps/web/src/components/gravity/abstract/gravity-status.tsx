@@ -1,6 +1,10 @@
-import { IconActivity, IconCircleCheck, IconLoader2 } from "@tabler/icons-react";
-import type { LiveStatus } from "@/lib/client/gravity/abstract/types";
 import { m } from "@/i18n/messages";
+import type { LiveStatus } from "@/lib/client/gravity/abstract/types";
+import {
+  IconActivity,
+  IconCircleCheck,
+  IconLoader2,
+} from "@tabler/icons-react";
 
 type StatusProps = {
   liveStatus: LiveStatus;

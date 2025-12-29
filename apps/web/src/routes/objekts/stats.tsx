@@ -1,14 +1,14 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { artistsQuery, selectedArtistsQuery } from "@/lib/queries/core";
-import { objektStatsQuery } from "@/lib/queries/stats";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Error } from "@/components/error-boundary";
 import ArtistChart from "@/components/objekt-stats/artist-chart";
 import MemberBreakdown from "@/components/objekt-stats/member-breakdown";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Error } from "@/components/error-boundary";
-import { defineHead } from "@/lib/meta";
-import { m } from "@/i18n/messages";
 import { useArtists } from "@/hooks/use-artists";
+import { m } from "@/i18n/messages";
+import { defineHead } from "@/lib/meta";
+import { artistsQuery, selectedArtistsQuery } from "@/lib/queries/core";
+import { objektStatsQuery } from "@/lib/queries/stats";
+import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/objekts/stats")({
   loader: async ({ context }) => {

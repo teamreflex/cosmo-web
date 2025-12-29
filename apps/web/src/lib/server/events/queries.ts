@@ -1,13 +1,13 @@
-import * as z from "zod";
-import { asc, eq, inArray, sql } from "drizzle-orm";
-import { createServerFn } from "@tanstack/react-start";
-import { collections } from "@apollo/database/indexer/schema";
-import { collectionData, events } from "@apollo/database/web/schema";
-import { notFound } from "@tanstack/react-router";
-import { adminMiddleware } from "../middlewares";
-import type { Collection } from "@apollo/database/indexer/types";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
+import { collections } from "@apollo/database/indexer/schema";
+import type { Collection } from "@apollo/database/indexer/types";
+import { collectionData, events } from "@apollo/database/web/schema";
+import { notFound } from "@tanstack/react-router";
+import { createServerFn } from "@tanstack/react-start";
+import { asc, eq, inArray, sql } from "drizzle-orm";
+import * as z from "zod";
+import { adminMiddleware } from "../middlewares";
 
 /**
  * Fetches all eras, optionally filtered by artist.

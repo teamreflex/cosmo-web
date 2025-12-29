@@ -1,21 +1,21 @@
+import { $fetchArtists } from "@/lib/server/artists";
+import { fetchGravity, fetchPoll } from "@apollo/cosmo/server/gravity";
+import type { ValidArtist } from "@apollo/cosmo/types/common";
+import { gravities } from "@apollo/database/web/schema";
 import { notFound } from "@tanstack/react-router";
 import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
+import { setResponseHeaders } from "@tanstack/react-start/server";
+import { isBefore } from "date-fns";
 import { desc } from "drizzle-orm";
 import * as z from "zod";
-import { isBefore } from "date-fns";
-import { setResponseHeaders } from "@tanstack/react-start/server";
-import { fetchGravity, fetchPoll } from "@apollo/cosmo/server/gravity";
-import { gravities } from "@apollo/database/web/schema";
+import type { RevealedVote } from "../client/gravity/polygon/types";
 import { findPoll } from "../client/gravity/util";
 import { GravityNotSupportedError } from "../universal/gravity";
-import { db } from "./db";
-import { getProxiedToken } from "./proxied-token";
-import { cacheHeaders, remember } from "./cache";
-import { indexer } from "./db/indexer";
 import type { GravityVote } from "../universal/gravity";
-import type { RevealedVote } from "../client/gravity/polygon/types";
-import type { ValidArtist } from "@apollo/cosmo/types/common";
-import { $fetchArtists } from "@/lib/server/artists";
+import { cacheHeaders, remember } from "./cache";
+import { db } from "./db";
+import { indexer } from "./db/indexer";
+import { getProxiedToken } from "./proxied-token";
 
 /**
  * Fetch full gravity details.

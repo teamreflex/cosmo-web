@@ -1,15 +1,8 @@
-import { Controller, useFormContext, useWatch } from "react-hook-form";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { getRouteApi } from "@tanstack/react-router";
-import { eventTypes } from "@apollo/database/web/types";
-import type { Era } from "@apollo/database/web/types";
-import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
-import type { CreateEventInput } from "@/lib/universal/schema/events";
-import type { FilterData } from "@/hooks/use-filter-data";
-import { erasQuery } from "@/lib/queries/events";
+import EventImageUpload from "@/components/admin/events/event-image-upload";
+import { Badge } from "@/components/ui/badge";
 import { DatePicker } from "@/components/ui/date-picker";
-import { Input } from "@/components/ui/input";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -18,11 +11,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { m } from "@/i18n/messages";
+import type { FilterData } from "@/hooks/use-filter-data";
 import { getSeasonKeys } from "@/hooks/use-filter-data";
-import { Badge } from "@/components/ui/badge";
+import { m } from "@/i18n/messages";
+import { erasQuery } from "@/lib/queries/events";
+import type { CreateEventInput } from "@/lib/universal/schema/events";
 import { cn } from "@/lib/utils";
-import EventImageUpload from "@/components/admin/events/event-image-upload";
+import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
+import { eventTypes } from "@apollo/database/web/types";
+import type { Era } from "@apollo/database/web/types";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { getRouteApi } from "@tanstack/react-router";
+import { Controller, useFormContext, useWatch } from "react-hook-form";
 
 const route = getRouteApi("/admin/events");
 

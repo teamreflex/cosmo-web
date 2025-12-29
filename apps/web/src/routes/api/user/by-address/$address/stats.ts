@@ -1,6 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { env } from "@/lib/env/server";
 import { $fetchArtistStatsByAddress } from "@/lib/server/progress";
+import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/api/user/by-address/$address/stats")({
   server: {

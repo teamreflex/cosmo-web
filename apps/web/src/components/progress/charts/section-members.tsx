@@ -1,9 +1,9 @@
+import { useArtists } from "@/hooks/use-artists";
+import { m } from "@/i18n/messages";
+import type { Stat } from "@/lib/universal/progress";
+import { randomColor } from "@/lib/utils";
 import { useMemo } from "react";
 import ProgressSection from "./progress-section";
-import type { Stat } from "@/lib/universal/progress";
-import { useArtists } from "@/hooks/use-artists";
-import { randomColor } from "@/lib/utils";
-import { m } from "@/i18n/messages";
 
 type Props = {
   data: Stat[];

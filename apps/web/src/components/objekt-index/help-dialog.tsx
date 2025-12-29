@@ -1,4 +1,3 @@
-import { IconHelp } from "@tabler/icons-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,6 +10,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { m } from "@/i18n/messages";
+import { IconHelp } from "@tabler/icons-react";
 
 export default function HelpDialog() {
   return (

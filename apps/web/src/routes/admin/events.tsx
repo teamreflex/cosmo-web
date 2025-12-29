@@ -1,15 +1,15 @@
-import { Suspense } from "react";
-import { createFileRoute, redirect } from "@tanstack/react-router";
 import CreateEvent from "@/components/admin/events/create-event-dialog";
 import EventsGrid from "@/components/admin/events/events-grid";
+import { m } from "@/i18n/messages";
+import { defineHead } from "@/lib/meta";
 import {
   artistsQuery,
   currentAccountQuery,
   filterDataQuery,
 } from "@/lib/queries/core";
 import { erasQuery, eventsQuery } from "@/lib/queries/events";
-import { defineHead } from "@/lib/meta";
-import { m } from "@/i18n/messages";
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { Suspense } from "react";
 
 export const Route = createFileRoute("/admin/events")({
   staleTime: Infinity,

@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
-import { Skeleton } from "../ui/skeleton";
 import type { PropsWithClassName } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
+import { Skeleton } from "../ui/skeleton";
 
 type Props = PropsWithClassName<{
   date: Date;

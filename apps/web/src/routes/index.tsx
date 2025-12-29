@@ -1,21 +1,21 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { Error } from "@/components/error-boundary";
+import IndexRenderer from "@/components/objekt-index/index-renderer";
+import ObjektGridSkeleton from "@/components/objekt/objekt-grid-skeleton";
 import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ProfileProvider } from "@/hooks/use-profile";
+import { UserStateProvider } from "@/hooks/use-user-state";
+import { m } from "@/i18n/messages";
+import { defineHead } from "@/lib/meta";
 import {
   artistsQuery,
   currentAccountQuery,
   filterDataQuery,
   selectedArtistsQuery,
 } from "@/lib/queries/core";
-import { UserStateProvider } from "@/hooks/use-user-state";
-import { ProfileProvider } from "@/hooks/use-profile";
-import IndexRenderer from "@/components/objekt-index/index-renderer";
-import { objektIndexFrontendSchema } from "@/lib/universal/parsers";
 import { objektIndexBlockchainQuery } from "@/lib/queries/objekt-queries";
-import { defineHead } from "@/lib/meta";
-import { m } from "@/i18n/messages";
-import ObjektGridSkeleton from "@/components/objekt/objekt-grid-skeleton";
+import { objektIndexFrontendSchema } from "@/lib/universal/parsers";
+import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
   staleTime: 1000 * 60 * 15, // 15 minutes
@@ -26,7 +26,7 @@ export const Route = createFileRoute("/")({
   loaderDeps: ({ search }) => ({ searchParams: search }),
   loader: async ({ context, deps }) => {
     // prefetch filter data
-    context.queryClient.prefetchQuery(filterDataQuery);
+    void context.queryClient.prefetchQuery(filterDataQuery);
 
     // load required data
     const [account, selected] = await Promise.all([
@@ -38,7 +38,7 @@ export const Route = createFileRoute("/")({
     // prefetch objekts
     if (!deps.searchParams.search) {
       // prefetch blockchain
-      context.queryClient.prefetchInfiniteQuery(
+      void context.queryClient.prefetchInfiniteQuery(
         objektIndexBlockchainQuery(deps.searchParams, selected),
       );
     }

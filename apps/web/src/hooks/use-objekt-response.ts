@@ -1,3 +1,4 @@
+import type { FilterType } from "@apollo/util";
 import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import type {
   DataTag,
@@ -7,7 +8,6 @@ import type {
   UnusedSkipTokenInfiniteOptions,
 } from "@tanstack/react-query";
 import type { ReactNode } from "react";
-import type { FilterType } from "@apollo/util";
 
 export type ObjektResponseOptions<
   TResponse,

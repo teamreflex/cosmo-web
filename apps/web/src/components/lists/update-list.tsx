@@ -1,13 +1,22 @@
-import { IconEdit, IconLoader2 } from "@tabler/icons-react";
+import { useUserState } from "@/hooks/use-user-state";
+import { m } from "@/i18n/messages";
+import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
+import type { ObjektList } from "@apollo/database/web/types";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { Controller, FormProvider, useForm, useFormState } from "react-hook-form";
-import { useState } from "react";
-import { toast } from "sonner";
-import { useServerFn } from "@tanstack/react-start";
+import { IconEdit, IconLoader2 } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Field, FieldError, FieldLabel } from "../ui/field";
+import { useServerFn } from "@tanstack/react-start";
+import { useState } from "react";
+import {
+  Controller,
+  FormProvider,
+  useForm,
+  useFormState,
+} from "react-hook-form";
+import { toast } from "sonner";
+import type { z } from "zod";
 import { updateObjektListSchema } from "../../lib/universal/schema/objekt-list";
-import { Input } from "../ui/input";
+import { Button } from "../ui/button";
 import {
   Dialog,
   DialogContent,
@@ -15,13 +24,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
-import { Button } from "../ui/button";
+import { Field, FieldError, FieldLabel } from "../ui/field";
+import { Input } from "../ui/input";
 import { $updateObjektList } from "./actions";
-import type { z } from "zod";
-import type { ObjektList } from "@apollo/database/web/types";
-import { useUserState } from "@/hooks/use-user-state";
-import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
-import { m } from "@/i18n/messages";
 
 type Props = {
   objektList: ObjektList;
@@ -34,15 +39,15 @@ export default function UpdateList({ objektList }: Props) {
   const mutationFn = useServerFn($updateObjektList);
   const mutation = useMutation({
     mutationFn,
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success(m.toast_list_updated());
       // invalidate current account query to update list name in user's lists
-      queryClient.invalidateQueries({
+      await queryClient.invalidateQueries({
         queryKey: currentAccountQuery.queryKey,
       });
       // invalidate target account queries to update list name on profile pages
       if (cosmo) {
-        queryClient.invalidateQueries({
+        await queryClient.invalidateQueries({
           queryKey: targetAccountQuery(cosmo.username).queryKey,
         });
       }

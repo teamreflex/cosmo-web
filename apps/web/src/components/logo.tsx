@@ -1,5 +1,5 @@
-import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
+import { Link } from "@tanstack/react-router";
 
 type Props = {
   className?: string;

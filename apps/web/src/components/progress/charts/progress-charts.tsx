@@ -1,11 +1,11 @@
-import { useMemo } from "react";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import SectionClasses from "./section-classes";
-import SectionSeasons from "./section-seasons";
-import SectionMembers from "./section-members";
-import type { ArtistStats } from "@/lib/universal/progress";
-import { artistStatsQuery } from "@/lib/queries/progress";
 import { useProgressFilters } from "@/hooks/use-progress-filters";
+import { artistStatsQuery } from "@/lib/queries/progress";
+import type { ArtistStats } from "@/lib/universal/progress";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
+import SectionClasses from "./section-classes";
+import SectionMembers from "./section-members";
+import SectionSeasons from "./section-seasons";
 
 type Props = {
   address: string;

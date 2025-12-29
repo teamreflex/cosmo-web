@@ -8,7 +8,7 @@ module.exports = class Data1721359520022 {
 
     // create role
     await db.query(
-      `CREATE ROLE "${readUser}" WITH LOGIN PASSWORD '${readPass}'`
+      `CREATE ROLE "${readUser}" WITH LOGIN PASSWORD '${readPass}'`,
     );
     // give connect privileges
     await db.query(`GRANT CONNECT ON DATABASE "${dbName}" TO "${readUser}"`);
@@ -16,22 +16,22 @@ module.exports = class Data1721359520022 {
     await db.query(`GRANT USAGE ON SCHEMA public TO "${readUser}"`);
     // give select privileges to all tables
     await db.query(
-      `GRANT SELECT ON ALL TABLES IN SCHEMA public TO "${readUser}"`
+      `GRANT SELECT ON ALL TABLES IN SCHEMA public TO "${readUser}"`,
     );
 
     // give select privileges to all sequences
     await db.query(
-      `GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO "${readUser}"`
+      `GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO "${readUser}"`,
     );
 
     // give select privileges to all future tables
     await db.query(
-      `ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO "${readUser}"`
+      `ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO "${readUser}"`,
     );
 
     // give select privileges to all future sequences
     await db.query(
-      `ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON SEQUENCES TO "${readUser}"`
+      `ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON SEQUENCES TO "${readUser}"`,
     );
 
     // grant on processor schema

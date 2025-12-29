@@ -1,7 +1,7 @@
-import { SearchClient } from "typesense";
 import type { CosmoFilters } from "@/hooks/use-cosmo-filters";
-import type { IndexedObjekt, ObjektResponse } from "../universal/objekts";
 import { env } from "@/lib/env/client";
+import { SearchClient } from "typesense";
+import type { IndexedObjekt, ObjektResponse } from "../universal/objekts";
 
 const PER_PAGE = 30;
 

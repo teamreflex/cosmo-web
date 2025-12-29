@@ -1,8 +1,8 @@
-import { IconCalendarStats } from "@tabler/icons-react";
-import { Link } from "@tanstack/react-router";
-import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import { Button } from "@/components/ui/button";
 import { m } from "@/i18n/messages";
+import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import { IconCalendarStats } from "@tabler/icons-react";
+import { Link } from "@tanstack/react-router";
 
 type Props = {
   cosmo: PublicCosmo;

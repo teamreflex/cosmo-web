@@ -1,10 +1,10 @@
+import { progressLeaderboardQuery } from "@/lib/queries/progress";
+import type { LeaderboardItem } from "@/lib/universal/progress";
+import { ordinal } from "@/lib/utils";
+import type { ValidOnlineType } from "@apollo/cosmo/types/common";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { Skeleton } from "../ui/skeleton";
-import type { LeaderboardItem } from "@/lib/universal/progress";
-import type { ValidOnlineType } from "@apollo/cosmo/types/common";
-import { ordinal } from "@/lib/utils";
-import { progressLeaderboardQuery } from "@/lib/queries/progress";
 
 type Props = {
   member: string;

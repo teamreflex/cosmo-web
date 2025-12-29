@@ -1,6 +1,11 @@
+import { objektListBackendSchema } from "@/lib/universal/parsers";
+import { createServerFn } from "@tanstack/react-start";
 import { and, sql } from "drizzle-orm";
 import * as z from "zod";
-import { createServerFn } from "@tanstack/react-start";
+import { db } from "../../db";
+import { indexer } from "../../db/indexer";
+import { collections } from "../../db/indexer/schema";
+import type { Collection } from "../../db/indexer/schema";
 import {
   withArtist,
   withClass,
@@ -10,11 +15,6 @@ import {
   withOnlineType,
   withSeason,
 } from "../filters";
-import { indexer } from "../../db/indexer";
-import { collections } from "../../db/indexer/schema";
-import { db } from "../../db";
-import type { Collection } from "../../db/indexer/schema";
-import { objektListBackendSchema } from "@/lib/universal/parsers";
 
 const LIMIT = 60;
 
@@ -64,14 +64,12 @@ export const $fetchObjektListEntries = createServerFn({ method: "GET" })
       .from(collections)
       .where(
         and(
-          ...[
-            ...withObjektListEntries(entries.map((e) => e.collectionId)),
-            ...withArtist(data.artist),
-            ...withClass(data.class ?? []),
-            ...withSeason(data.season ?? []),
-            ...withOnlineType(data.on_offline ?? []),
-            ...withMember(data.member),
-          ],
+          ...withObjektListEntries(entries.map((e) => e.collectionId)),
+          ...withArtist(data.artist),
+          ...withClass(data.class ?? []),
+          ...withSeason(data.season ?? []),
+          ...withOnlineType(data.on_offline ?? []),
+          ...withMember(data.member),
         ),
       )
       .$dynamic();

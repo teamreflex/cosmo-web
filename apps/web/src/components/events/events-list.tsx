@@ -1,14 +1,14 @@
-import { Link } from "@tanstack/react-router";
-import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
-import { IconCalendarEvent } from "@tabler/icons-react";
-import type { EventWithEra } from "@apollo/database/web/types";
 import EventTypeBadge from "@/components/events/event-type-badge";
+import { InfiniteQueryNext } from "@/components/infinite-query-pending";
 import { Badge } from "@/components/ui/badge";
 import { Timestamp } from "@/components/ui/timestamp";
-import { InfiniteQueryNext } from "@/components/infinite-query-pending";
-import { paginatedEventsQuery } from "@/lib/queries/events";
 import { getSeasonKeys } from "@/hooks/use-filter-data";
 import { m } from "@/i18n/messages";
+import { paginatedEventsQuery } from "@/lib/queries/events";
+import type { EventWithEra } from "@apollo/database/web/types";
+import { IconCalendarEvent } from "@tabler/icons-react";
+import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 
 type EventsListProps = {
   selectedArtists: string[] | undefined;

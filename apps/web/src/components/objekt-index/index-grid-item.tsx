@@ -1,11 +1,11 @@
-import { useMemo } from "react";
-import ExpandableObjekt from "../objekt/objekt-expandable";
-import { ObjektSidebar } from "../objekt/common";
-import { TopOverlay } from "./index-overlay";
+import { useActiveObjekt } from "@/hooks/use-active-objekt";
+import { Objekt } from "@/lib/universal/objekt-conversion";
 import type { IndexedObjekt } from "@/lib/universal/objekts";
 import type { ObjektList } from "@apollo/database/web/types";
-import { Objekt } from "@/lib/universal/objekt-conversion";
-import { useActiveObjekt } from "@/hooks/use-active-objekt";
+import { useMemo } from "react";
+import { ObjektSidebar } from "../objekt/common";
+import ExpandableObjekt from "../objekt/objekt-expandable";
+import { TopOverlay } from "./index-overlay";
 
 type Props = {
   item: IndexedObjekt;

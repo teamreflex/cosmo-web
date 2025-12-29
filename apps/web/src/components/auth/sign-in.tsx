@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { m } from "@/i18n/messages";
+import { env } from "@/lib/env/client";
 import { IconLogin } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { Button } from "../ui/button";
 import {
   Dialog,
@@ -10,13 +12,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
+import ForgotPassword from "./forgot-password";
+import SignUp from "./sign-up";
 import SignInWithDiscord from "./with-discord";
 import WithEmail from "./with-email";
 import SignInWithTwitter from "./with-twitter";
-import SignUp from "./sign-up";
-import ForgotPassword from "./forgot-password";
-import { env } from "@/lib/env/client";
-import { m } from "@/i18n/messages";
 
 type State = "sign-in" | "sign-up" | "forgot-password";
 

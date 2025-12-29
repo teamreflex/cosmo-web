@@ -1,15 +1,15 @@
+import { useArtists } from "@/hooks/use-artists";
+import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
+import { useGridColumns } from "@/hooks/use-grid-columns";
+import { objektOptions } from "@/hooks/use-objekt-response";
+import { m } from "@/i18n/messages";
+import { objektListQuery } from "@/lib/queries/objekt-queries";
+import type { ObjektList } from "@apollo/database/web/types";
+import ObjektIndexFilters from "../collection/filter-contexts/objekt-index-filters";
 import FiltersContainer from "../collection/filters-container";
 import CosmoMemberFilter from "../objekt/cosmo-member-filter";
 import VirtualizedObjektGrid from "../objekt/virtualized-objekt-grid";
-import ObjektIndexFilters from "../collection/filter-contexts/objekt-index-filters";
 import { ListGridItem } from "./list-grid-item";
-import type { ObjektList } from "@apollo/database/web/types";
-import { objektOptions } from "@/hooks/use-objekt-response";
-import { useGridColumns } from "@/hooks/use-grid-columns";
-import { objektListQuery } from "@/lib/queries/objekt-queries";
-import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
-import { useArtists } from "@/hooks/use-artists";
-import { m } from "@/i18n/messages";
 
 type Props = {
   objektList: ObjektList;

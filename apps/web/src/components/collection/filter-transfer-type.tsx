@@ -1,3 +1,5 @@
+import { m } from "@/i18n/messages";
+import type { TransferType } from "@/lib/universal/transfers";
 import {
   Select,
   SelectContent,
@@ -5,8 +7,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import type { TransferType } from "@/lib/universal/transfers";
-import { m } from "@/i18n/messages";
 
 type Props = {
   type: TransferType;

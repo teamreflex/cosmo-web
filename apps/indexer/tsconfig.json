@@ -1,7 +1,7 @@
 {
   "extends": "@apollo/typescript/tsconfig.node.json",
 
-  "include": ["src/**/*.ts", "eslint.config.ts"],
+  "include": ["src/**/*.ts"],
   "exclude": ["node_modules", ".turbo", "lib"],
 
   "compilerOptions": {
@@ -14,9 +14,8 @@
     "sourceMap": true,
 
     // Path aliases
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     }
   }
 }

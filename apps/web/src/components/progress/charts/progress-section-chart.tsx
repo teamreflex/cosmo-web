@@ -1,11 +1,11 @@
-import { useMemo } from "react";
-import { Cell, Pie, PieChart } from "recharts";
-import type { Stat } from "@/lib/universal/progress";
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import type { Stat } from "@/lib/universal/progress";
+import { useMemo } from "react";
+import { Cell, Pie, PieChart } from "recharts";
 
 const RADIAN = Math.PI / 180;
 

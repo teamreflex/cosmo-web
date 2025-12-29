@@ -1,20 +1,20 @@
-import { useMemo } from "react";
-import { IconAlertTriangle } from "@tabler/icons-react";
-import GravitySkeleton from "../gravity-skeleton";
-import CandidateBreakdown from "./candidate-breakdown";
-import TimelineChart from "./timeline-chart";
-import type { CosmoArtistBFF } from "@apollo/cosmo/types/artists";
-import type {
-  CosmoOngoingGravity,
-  CosmoPastGravity,
-} from "@apollo/cosmo/types/gravity";
+import Portal from "@/components/portal";
+import { m } from "@/i18n/messages";
 import {
   useChainData,
   useCurrentDate,
 } from "@/lib/client/gravity/abstract/hooks";
 import { useGravityPoll } from "@/lib/client/gravity/common";
-import Portal from "@/components/portal";
-import { m } from "@/i18n/messages";
+import type { CosmoArtistBFF } from "@apollo/cosmo/types/artists";
+import type {
+  CosmoOngoingGravity,
+  CosmoPastGravity,
+} from "@apollo/cosmo/types/gravity";
+import { IconAlertTriangle } from "@tabler/icons-react";
+import { useMemo } from "react";
+import GravitySkeleton from "../gravity-skeleton";
+import CandidateBreakdown from "./candidate-breakdown";
+import TimelineChart from "./timeline-chart";
 
 export type Props = {
   artist: CosmoArtistBFF;

@@ -1,5 +1,9 @@
-import { and } from "drizzle-orm";
+import type { IndexedObjekt, ObjektResponse } from "@/lib/universal/objekts";
+import { objektIndexBackendSchema } from "@/lib/universal/parsers";
 import { createServerFn } from "@tanstack/react-start";
+import { and } from "drizzle-orm";
+import { indexer } from "../../db/indexer";
+import { collections } from "../../db/indexer/schema";
 import {
   withArtist,
   withClass,
@@ -10,10 +14,6 @@ import {
   withSeason,
   withSelectedArtists,
 } from "../filters";
-import { indexer } from "../../db/indexer";
-import { collections } from "../../db/indexer/schema";
-import type { IndexedObjekt, ObjektResponse } from "@/lib/universal/objekts";
-import { objektIndexBackendSchema } from "@/lib/universal/parsers";
 
 const LIMIT = 60;
 
@@ -25,15 +25,13 @@ export const $fetchObjektsIndex = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     // build the where clause
     const where = and(
-      ...[
-        ...withArtist(data.artist),
-        ...withClass(data.class ?? []),
-        ...withSeason(data.season ?? []),
-        ...withOnlineType(data.on_offline ?? []),
-        ...withMember(data.member),
-        ...withCollections(data.collectionNo),
-        ...withSelectedArtists(data.artists),
-      ],
+      ...withArtist(data.artist),
+      ...withClass(data.class ?? []),
+      ...withSeason(data.season ?? []),
+      ...withOnlineType(data.on_offline ?? []),
+      ...withMember(data.member),
+      ...withCollections(data.collectionNo),
+      ...withSelectedArtists(data.artists),
     );
 
     // build the query

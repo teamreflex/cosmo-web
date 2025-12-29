@@ -1,16 +1,16 @@
-import { useState } from "react";
+import { m } from "@/i18n/messages";
+import { useSearchStore } from "@/store";
+import type { CosmoPublicUser } from "@apollo/cosmo/types/user";
 import { IconSearch } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
-import { UserSearch } from "../user-search";
+import { useState } from "react";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
-import type { CosmoPublicUser } from "@apollo/cosmo/types/user";
-import { useSearchStore } from "@/store";
-import { m } from "@/i18n/messages";
+import { UserSearch } from "../user-search";
 
 export default function NavbarSearch() {
   const recent = useSearchStore((state) => state.recentLookups);
@@ -25,7 +25,7 @@ export default function NavbarSearch() {
       address: user.address,
       profileImageUrl: user.profileImageUrl,
     });
-    navigate({ to: `/@${user.nickname}` });
+    void navigate({ to: `/@${user.nickname}` });
   }
 
   return (

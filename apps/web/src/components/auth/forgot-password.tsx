@@ -1,15 +1,15 @@
-import { useMutation } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { IconLoader2, IconMailCheck } from "@tabler/icons-react";
-import { Controller, useForm } from "react-hook-form";
-import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { Field, FieldError, FieldLabel } from "../ui/field";
-import type { z } from "zod";
+import { m } from "@/i18n/messages";
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { forgotPasswordSchema } from "@/lib/universal/schema/auth";
-import { m } from "@/i18n/messages";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { IconLoader2, IconMailCheck } from "@tabler/icons-react";
+import { useMutation } from "@tanstack/react-query";
+import { Controller, useForm } from "react-hook-form";
+import { toast } from "sonner";
+import type { z } from "zod";
+import { Button } from "../ui/button";
+import { Field, FieldError, FieldLabel } from "../ui/field";
+import { Input } from "../ui/input";
 
 type Props = {
   onCancel: () => void;
@@ -82,7 +82,9 @@ export default function ForgotPassword({ onCancel }: Props) {
       <div className="grid grid-cols-2 items-center gap-2">
         <Button type="submit" disabled={mutation.isPending}>
           <span>{m.auth_send_reset_link()}</span>
-          {mutation.isPending && <IconLoader2 className="h-4 w-4 animate-spin" />}
+          {mutation.isPending && (
+            <IconLoader2 className="h-4 w-4 animate-spin" />
+          )}
         </Button>
 
         <Button type="button" variant="secondary" onClick={onCancel}>

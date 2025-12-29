@@ -1,9 +1,16 @@
-import { and, asc, desc, eq, inArray, max, sql } from "drizzle-orm";
-import * as z from "zod";
-import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
+import { userCollectionBackendSchema } from "@/lib/universal/parsers";
+import type { ValidSort } from "@apollo/cosmo/types/common";
+import type {
+  BFFCollectionGroup,
+  BFFCollectionGroupResponse,
+} from "@apollo/cosmo/types/objekts";
 import { Addresses, isEqual } from "@apollo/util";
-import { collections, objekts } from "../../db/indexer/schema";
+import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
+import { and, asc, desc, eq, inArray, max, sql } from "drizzle-orm";
+import type { PgSelect } from "drizzle-orm/pg-core";
+import * as z from "zod";
 import { indexer } from "../../db/indexer";
+import { collections, objekts } from "../../db/indexer/schema";
 import {
   withArtist,
   withClass,
@@ -14,13 +21,6 @@ import {
   withTransferable,
 } from "../filters";
 import { nonTransferableReason } from "./common";
-import type { ValidSort } from "@apollo/cosmo/types/common";
-import type { PgSelect } from "drizzle-orm/pg-core";
-import type {
-  BFFCollectionGroup,
-  BFFCollectionGroupResponse,
-} from "@apollo/cosmo/types/objekts";
-import { userCollectionBackendSchema } from "@/lib/universal/parsers";
 
 export const PER_PAGE = 30;
 
@@ -45,15 +45,13 @@ export const $fetchObjektsBlockchainGroups = createServerFn({ method: "GET" })
     // build common filters
     const filters = and(
       eq(objekts.owner, data.address.toLowerCase()),
-      ...[
-        ...withArtist(data.artist),
-        ...withClass(data.class ?? []),
-        ...withSeason(data.season ?? []),
-        ...withOnlineType(data.on_offline ?? []),
-        ...withMember(data.member),
-        ...withTransferable(data.transferable),
-        ...withSelectedArtists(data.artists),
-      ],
+      ...withArtist(data.artist),
+      ...withClass(data.class ?? []),
+      ...withSeason(data.season ?? []),
+      ...withOnlineType(data.on_offline ?? []),
+      ...withMember(data.member),
+      ...withTransferable(data.transferable),
+      ...withSelectedArtists(data.artists),
     );
 
     // 1. fetch collection count and IDs in parallel

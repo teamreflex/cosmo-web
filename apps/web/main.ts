@@ -299,7 +299,7 @@ async function initializeServer() {
     },
 
     error(error) {
-      log.error(`Server error: ${String(error)}`);
+      log.error(`Server error: ${error.message}`);
       const headers = new Headers({
         "Content-Type": "text/plain",
       });
@@ -320,7 +320,7 @@ initializeServer()
   .then((server) => {
     const shutdown = (signal: string) => {
       log.info(`Received ${signal}, shutting down...`);
-      server.stop();
+      void server.stop();
       process.exit(0);
     };
 

@@ -1,11 +1,11 @@
-import { Link } from "@tanstack/react-router";
-import { motion } from "motion/react";
-import { IconCalendarEvent, IconPhoto } from "@tabler/icons-react";
-import type { EventWithEra } from "@apollo/database/web/types";
 import EventTypeBadge from "@/components/events/event-type-badge";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Timestamp } from "@/components/ui/timestamp";
+import type { EventWithEra } from "@apollo/database/web/types";
+import { IconCalendarEvent, IconPhoto } from "@tabler/icons-react";
+import { Link } from "@tanstack/react-router";
+import { motion } from "motion/react";
 
 type EventCardLargeProps = {
   event: EventWithEra;

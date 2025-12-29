@@ -1,10 +1,20 @@
-import { IconLoader2 } from "@tabler/icons-react";
-import { toast } from "sonner";
+import { m } from "@/i18n/messages";
+import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
+import { track } from "@/lib/utils";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { Controller, FormProvider, useForm, useFormState } from "react-hook-form";
+import { IconLoader2 } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import { useRouter } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import {
+  Controller,
+  FormProvider,
+  useForm,
+  useFormState,
+} from "react-hook-form";
+import { toast } from "sonner";
+import type { z } from "zod";
+import { createObjektListSchema } from "../../lib/universal/schema/objekt-list";
 import { Button } from "../ui/button";
 import {
   Dialog,
@@ -13,14 +23,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../ui/dialog";
-import { Input } from "../ui/input";
-import { createObjektListSchema } from "../../lib/universal/schema/objekt-list";
 import { Field, FieldError, FieldLabel } from "../ui/field";
+import { Input } from "../ui/input";
 import { $createObjektList } from "./actions";
-import type { z } from "zod";
-import { track } from "@/lib/utils";
-import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
-import { m } from "@/i18n/messages";
 
 type Props = {
   open: boolean;
@@ -61,7 +66,7 @@ export default function CreateListDialog(props: Props) {
       }
 
       // refresh the loader
-      router.invalidate({
+      void router.invalidate({
         filter: (route) =>
           route.routeId === "/" ||
           (props.username !== undefined &&

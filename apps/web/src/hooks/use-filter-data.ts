@@ -1,6 +1,6 @@
+import { filterDataQuery } from "@/lib/queries/core";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useArtists } from "./use-artists";
-import { filterDataQuery } from "@/lib/queries/core";
 
 export function useFilterData() {
   const { data } = useSuspenseQuery(filterDataQuery);

@@ -1,10 +1,10 @@
-import { ofetch } from "ofetch";
+import { env } from "@/lib/env/server";
+import { redis } from "@/lib/server/cache";
 import type {
   SpotifyAlbum,
   SpotifySearchResponse,
 } from "@/lib/universal/events";
-import { env } from "@/lib/env/server";
-import { redis } from "@/lib/server/cache";
+import { ofetch } from "ofetch";
 
 const SPOTIFY_API_URL = "https://api.spotify.com/v1";
 const SPOTIFY_TOKEN_KEY = "spotify:access_token";

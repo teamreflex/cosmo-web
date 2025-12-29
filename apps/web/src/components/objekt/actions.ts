@@ -1,10 +1,10 @@
-import { eq } from "drizzle-orm";
-import * as z from "zod";
-import { createServerFn } from "@tanstack/react-start";
+import { indexer } from "@/lib/server/db/indexer";
+import { authenticatedMiddleware } from "@/lib/server/middlewares";
 import { fetchMetadataV1 } from "@apollo/cosmo/server/metadata";
 import { collections, objekts } from "@apollo/database/indexer/schema";
-import { authenticatedMiddleware } from "@/lib/server/middlewares";
-import { indexer } from "@/lib/server/db/indexer";
+import { createServerFn } from "@tanstack/react-start";
+import { eq } from "drizzle-orm";
+import * as z from "zod";
 
 /**
  * Rescan an objekt's metadata.

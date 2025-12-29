@@ -1,11 +1,11 @@
-import ProgressSectionChart from "./progress-section-chart";
-import type { Stat } from "@/lib/universal/progress";
 import {
   ExpandableCard,
   ExpandableCardContent,
   ExpandableCardHeader,
   ExpandableCardTitle,
 } from "@/components/ui/expandable-card";
+import type { Stat } from "@/lib/universal/progress";
+import ProgressSectionChart from "./progress-section-chart";
 
 type Props = {
   title: string;

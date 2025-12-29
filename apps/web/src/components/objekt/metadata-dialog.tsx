@@ -1,24 +1,24 @@
-import { IconLoader2 } from "@tabler/icons-react";
-import { QueryErrorResetBoundary } from "@tanstack/react-query";
-import { Suspense, createContext, useContext, useState } from "react";
-import { ErrorBoundary } from "react-error-boundary";
-import MetadataContent from "./metadata/metadata-content";
-import { MetadataDialogError } from "./metadata/common";
-import type { ReactNode } from "react";
-import { useMediaQuery } from "@/hooks/use-media-query";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerTitle,
-} from "@/components/ui/drawer-radix";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerTitle,
+} from "@/components/ui/drawer-radix";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import { useObjektSerial } from "@/hooks/use-objekt-serial";
+import { IconLoader2 } from "@tabler/icons-react";
+import { QueryErrorResetBoundary } from "@tanstack/react-query";
+import { Suspense, createContext, useContext, useState } from "react";
+import type { ReactNode } from "react";
+import { ErrorBoundary } from "react-error-boundary";
+import { MetadataDialogError } from "./metadata/common";
+import MetadataContent from "./metadata/metadata-content";
 
 const MetadataDialogContext = createContext<{
   open: () => void;

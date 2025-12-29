@@ -1,17 +1,17 @@
-import { Suspense, useCallback, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import type { EventWithEra } from "@apollo/database/web/types";
-import EventsBackground from "@/components/events/events-background";
-import ActiveEventsCarousel from "@/components/events/active-events-carousel";
-import EventsList from "@/components/events/events-list";
-import { Skeleton } from "@/components/ui/skeleton";
-import SkeletonGradient from "@/components/skeleton/skeleton-overlay";
 import { Error } from "@/components/error-boundary";
-import { activeEventsQuery, paginatedEventsQuery } from "@/lib/queries/events";
-import { selectedArtistsQuery } from "@/lib/queries/core";
-import { defineHead } from "@/lib/meta";
+import ActiveEventsCarousel from "@/components/events/active-events-carousel";
+import EventsBackground from "@/components/events/events-background";
+import EventsList from "@/components/events/events-list";
+import SkeletonGradient from "@/components/skeleton/skeleton-overlay";
+import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
+import { defineHead } from "@/lib/meta";
+import { selectedArtistsQuery } from "@/lib/queries/core";
+import { activeEventsQuery, paginatedEventsQuery } from "@/lib/queries/events";
+import type { EventWithEra } from "@apollo/database/web/types";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
+import { Suspense, useCallback, useState } from "react";
 
 export const Route = createFileRoute("/events/")({
   loader: async ({ context }) => {

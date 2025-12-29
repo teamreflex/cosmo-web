@@ -1,5 +1,5 @@
-import { queryOptions } from "@tanstack/react-query";
 import { $fetchPins } from "@/lib/server/objekts/pins";
+import { queryOptions } from "@tanstack/react-query";
 
 export const pinsQuery = (username: string) =>
   queryOptions({

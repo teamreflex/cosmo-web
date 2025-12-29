@@ -1,15 +1,15 @@
-import { createFileRoute } from "@tanstack/react-router";
-import CurrentMonth from "@/components/como/current-month";
-import { Error } from "@/components/error-boundary";
-import { artistsQuery, targetAccountQuery } from "@/lib/queries/core";
-import { fetchObjektsWithComoQuery } from "@/lib/queries/como";
 import ArtistIcon from "@/components/artist-icon";
 import ComoCalendar from "@/components/como/calendar";
-import Portal from "@/components/portal";
+import CurrentMonth from "@/components/como/current-month";
 import HelpDialog from "@/components/como/help-dialog";
-import { defineHead } from "@/lib/meta";
-import { m } from "@/i18n/messages";
+import { Error } from "@/components/error-boundary";
+import Portal from "@/components/portal";
 import { useArtists } from "@/hooks/use-artists";
+import { m } from "@/i18n/messages";
+import { defineHead } from "@/lib/meta";
+import { fetchObjektsWithComoQuery } from "@/lib/queries/como";
+import { artistsQuery, targetAccountQuery } from "@/lib/queries/core";
+import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/@{$username}/como")({
   component: RouteComponent,

@@ -1,17 +1,17 @@
-import { useCallback } from "react";
-import { BlockchainGridItem } from "./blockchain-grid-item";
-import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
-import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
-import { useProfileContext } from "@/hooks/use-profile";
-import { objektOptions } from "@/hooks/use-objekt-response";
-import { filtersAreDirty } from "@/hooks/use-filters";
-import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import VirtualizedObjektGrid from "@/components/objekt/virtualized-objekt-grid";
 import { useArtists } from "@/hooks/use-artists";
 import { useAuthenticated } from "@/hooks/use-authenticated";
+import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
+import { filtersAreDirty } from "@/hooks/use-filters";
 import { useGridColumns } from "@/hooks/use-grid-columns";
-import { userCollectionBlockchainQuery } from "@/lib/queries/objekt-queries";
+import { objektOptions } from "@/hooks/use-objekt-response";
+import { useProfileContext } from "@/hooks/use-profile";
 import { m } from "@/i18n/messages";
+import { userCollectionBlockchainQuery } from "@/lib/queries/objekt-queries";
+import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
+import { useCallback } from "react";
+import { BlockchainGridItem } from "./blockchain-grid-item";
 
 type Props = {
   gridColumns: number;

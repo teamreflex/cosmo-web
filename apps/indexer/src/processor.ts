@@ -1,3 +1,4 @@
+import { Addresses } from "@apollo/util";
 import {
   type BlockHeader,
   type DataHandlerContext,
@@ -6,11 +7,10 @@ import {
   type Log as _Log,
   type Transaction as _Transaction,
 } from "@subsquid/evm-processor";
-import * as ABI_OBJEKT from "./abi/objekt";
 import * as ABI_COMO from "./abi/como";
 import * as ABI_GRAVITY from "./abi/gravity";
+import * as ABI_OBJEKT from "./abi/objekt";
 import { env } from "./env";
-import { Addresses } from "@apollo/util";
 
 const COSMO_START_BLOCK = 6363806;
 

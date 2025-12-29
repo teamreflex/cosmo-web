@@ -1,5 +1,3 @@
-import { useLocation } from "@tanstack/react-router";
-import { getItems } from "./sidebar";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -9,6 +7,8 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { m } from "@/i18n/messages";
+import { useLocation } from "@tanstack/react-router";
+import { getItems } from "./sidebar";
 
 export default function AdminBreadcrumbs() {
   const location = useLocation();

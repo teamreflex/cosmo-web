@@ -22,18 +22,34 @@ module.exports = class Data1765383875504 {
 
   async down(db) {
     // transfer table
-    await db.query(`CREATE INDEX "IDX_be54ea276e0f665ffc38630fc0" ON "transfer" ("from");`);
-    await db.query(`CREATE INDEX "IDX_4cbc37e8c3b47ded161f44c24f" ON "transfer" ("to");`);
-    await db.query(`CREATE INDEX "idx_transfer_collection_id" ON "transfer" ("collection_id");`);
-    await db.query(`CREATE INDEX "IDX_98d4c0e33193fdd3edfc826c37" ON "transfer" ("objekt_id");`);
+    await db.query(
+      `CREATE INDEX "IDX_be54ea276e0f665ffc38630fc0" ON "transfer" ("from");`,
+    );
+    await db.query(
+      `CREATE INDEX "IDX_4cbc37e8c3b47ded161f44c24f" ON "transfer" ("to");`,
+    );
+    await db.query(
+      `CREATE INDEX "idx_transfer_collection_id" ON "transfer" ("collection_id");`,
+    );
+    await db.query(
+      `CREATE INDEX "IDX_98d4c0e33193fdd3edfc826c37" ON "transfer" ("objekt_id");`,
+    );
 
     // objekt table
-    await db.query(`CREATE INDEX "IDX_d2ddf18405b46538e169ab03e8" ON "objekt" ("owner");`);
-    await db.query(`CREATE INDEX "IDX_cc0196669f13f5958a307824a2" ON "objekt" ("collection_id");`);
+    await db.query(
+      `CREATE INDEX "IDX_d2ddf18405b46538e169ab03e8" ON "objekt" ("owner");`,
+    );
+    await db.query(
+      `CREATE INDEX "IDX_cc0196669f13f5958a307824a2" ON "objekt" ("collection_id");`,
+    );
 
     // como_balance table
-    await db.query(`CREATE INDEX "IDX_como_balance_owner" ON "como_balance" ("owner");`);
-    await db.query(`CREATE INDEX "IDX_625af50d78a8e51e688e96a331" ON "como_balance" ("owner");`);
+    await db.query(
+      `CREATE INDEX "IDX_como_balance_owner" ON "como_balance" ("owner");`,
+    );
+    await db.query(
+      `CREATE INDEX "IDX_625af50d78a8e51e688e96a331" ON "como_balance" ("owner");`,
+    );
 
     // collection table
     await db.query(`CREATE INDEX "IDX_collection_id" ON "collection" ("id");`);

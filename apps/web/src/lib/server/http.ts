@@ -1,5 +1,5 @@
-import { ofetch } from "ofetch";
 import { env } from "@/lib/env/server";
+import { ofetch } from "ofetch";
 
 /**
  * HTTP RPC client for the Abstract RPC.

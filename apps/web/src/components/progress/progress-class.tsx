@@ -1,7 +1,7 @@
-import { IconArrowsMaximize, IconArrowsMinimize } from "@tabler/icons-react";
+import { m } from "@/i18n/messages";
 import type { SeasonProgress } from "@/lib/universal/progress";
 import { cn } from "@/lib/utils";
-import { m } from "@/i18n/messages";
+import { IconArrowsMaximize, IconArrowsMinimize } from "@tabler/icons-react";
 
 type Props = {
   progress: SeasonProgress;

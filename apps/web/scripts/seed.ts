@@ -1,8 +1,8 @@
-import { SQL } from "bun";
-import { drizzle } from "drizzle-orm/bun-sql";
-import { sql } from "drizzle-orm";
-import * as webSchema from "@apollo/database/web/schema";
 import * as indexerSchema from "@apollo/database/indexer/schema";
+import * as webSchema from "@apollo/database/web/schema";
+import { SQL } from "bun";
+import { sql } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/bun-sql";
 
 // Constants
 const SEED_USER_ID = "seed-user-1";
@@ -528,8 +528,8 @@ async function seed() {
   }
 
   // Close connections
-  webClient.close();
-  indexerClient.close();
+  await webClient.close();
+  await indexerClient.close();
 
   console.log("\n✅ Seed complete!");
   console.log("\nLogin credentials:");

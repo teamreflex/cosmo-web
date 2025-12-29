@@ -1,5 +1,5 @@
-import { AnimatePresence, motion } from "motion/react";
 import type { EventWithEra } from "@apollo/database/web/types";
+import { AnimatePresence, motion } from "motion/react";
 
 type EventsBackgroundProps = {
   event: EventWithEra | null;

@@ -1,10 +1,10 @@
-import { createStore, useStore } from "zustand";
-import { createContext, useContext, useRef } from "react";
-import { useShallow } from "zustand/react/shallow";
-import type { PropsWithChildren } from "react";
+import type { PublicAccount } from "@/lib/universal/cosmo-accounts";
 import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
 import type { ObjektList } from "@apollo/database/web/types";
-import type { PublicAccount } from "@/lib/universal/cosmo-accounts";
+import { createContext, useContext, useRef } from "react";
+import type { PropsWithChildren } from "react";
+import { createStore, useStore } from "zustand";
+import { useShallow } from "zustand/react/shallow";
 
 interface ProfileProps {
   target: Partial<PublicAccount> | undefined;

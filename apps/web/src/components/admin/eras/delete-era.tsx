@@ -1,9 +1,3 @@
-import { IconLoader2, IconTrash } from "@tabler/icons-react";
-import { toast } from "sonner";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
-import { $deleteEra } from "@/lib/server/events/actions";
-import { erasQuery } from "@/lib/queries/events";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -16,6 +10,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { m } from "@/i18n/messages";
+import { erasQuery } from "@/lib/queries/events";
+import { $deleteEra } from "@/lib/server/events/actions";
+import { IconLoader2, IconTrash } from "@tabler/icons-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
 
 type Props = {
   eraId: string;
@@ -26,9 +26,9 @@ export default function DeleteEra({ eraId, onSuccess }: Props) {
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: useServerFn($deleteEra),
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success(m.admin_era_deleted());
-      queryClient.invalidateQueries({ queryKey: erasQuery().queryKey });
+      await queryClient.invalidateQueries({ queryKey: erasQuery().queryKey });
       onSuccess();
     },
     onError: () => {

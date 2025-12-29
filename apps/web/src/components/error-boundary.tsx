@@ -1,6 +1,6 @@
+import { m } from "@/i18n/messages";
 import { IconHeartBroken, IconRefresh } from "@tabler/icons-react";
 import { Button } from "./ui/button";
-import { m } from "@/i18n/messages";
 
 export function Error({ message }: { message: string }) {
   function refresh() {

@@ -1,13 +1,13 @@
-import { sql } from "drizzle-orm";
-import { FetchError } from "ofetch";
-import { createServerOnlyFn } from "@tanstack/react-start";
-import { isAddress } from "@apollo/util";
 import { fetchByNickname } from "@apollo/cosmo/server/user";
 import { cosmoAccounts } from "@apollo/database/web/schema";
-import { db } from "./db";
-import { toPublicUser } from "./auth";
 import type { CosmoAccount } from "@apollo/database/web/types";
+import { isAddress } from "@apollo/util";
+import { createServerOnlyFn } from "@tanstack/react-start";
+import { sql } from "drizzle-orm";
+import { FetchError } from "ofetch";
 import type { FullAccount, PublicCosmo } from "../universal/cosmo-accounts";
+import { toPublicUser } from "./auth";
+import { db } from "./db";
 
 /**
  * Fetch a full account from the database.

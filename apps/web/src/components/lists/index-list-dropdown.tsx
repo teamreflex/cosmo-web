@@ -1,7 +1,7 @@
+import { currentAccountQuery } from "@/lib/queries/core";
+import type { ObjektList } from "@apollo/database/web/types";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import ListDropdown from "./list-dropdown";
-import type { ObjektList } from "@apollo/database/web/types";
-import { currentAccountQuery } from "@/lib/queries/core";
 
 export default function IndexListDropdown() {
   const { data } = useSuspenseQuery(currentAccountQuery);

@@ -1,30 +1,30 @@
-import {
-  HeadContent,
-  Outlet,
-  Scripts,
-  createRootRouteWithContext,
-} from "@tanstack/react-router";
-import { preconnect } from "react-dom";
-import { Toaster } from "sonner";
-import React from "react";
-import { IconFileUnknown, IconRefresh } from "@tabler/icons-react";
-import appCss from "../styles/tailwind.css?url";
-import type { QueryClient } from "@tanstack/react-query";
+import Devtools from "@/components/devtools";
 import Navbar from "@/components/navbar/navbar";
 import TailwindIndicator from "@/components/tailwind-indicator";
-import { env } from "@/lib/env/client";
+import { ThemeProvider } from "@/components/theme-provider";
+import { Button } from "@/components/ui/button";
 import { m } from "@/i18n/messages";
+import { getLocale } from "@/i18n/runtime";
+import { env } from "@/lib/env/client";
+import { defineHead } from "@/lib/meta";
 import {
   artistsQuery,
   currentAccountQuery,
   selectedArtistsQuery,
 } from "@/lib/queries/core";
 import { systemStatusQuery } from "@/lib/queries/system";
-import { Button } from "@/components/ui/button";
-import { getLocale } from "@/i18n/runtime";
-import Devtools from "@/components/devtools";
-import { ThemeProvider } from "@/components/theme-provider";
-import { defineHead } from "@/lib/meta";
+import { IconFileUnknown, IconRefresh } from "@tabler/icons-react";
+import type { QueryClient } from "@tanstack/react-query";
+import {
+  HeadContent,
+  Outlet,
+  Scripts,
+  createRootRouteWithContext,
+} from "@tanstack/react-router";
+import React from "react";
+import { preconnect } from "react-dom";
+import { Toaster } from "sonner";
+import appCss from "../styles/tailwind.css?url";
 
 interface RouterContext {
   queryClient: QueryClient;
@@ -33,9 +33,9 @@ interface RouterContext {
 export const Route = createRootRouteWithContext<RouterContext>()({
   staleTime: Infinity,
   loader: async ({ context }) => {
-    context.queryClient.prefetchQuery(currentAccountQuery);
-    context.queryClient.prefetchQuery(systemStatusQuery);
-    context.queryClient.prefetchQuery(artistsQuery);
+    void context.queryClient.prefetchQuery(currentAccountQuery);
+    void context.queryClient.prefetchQuery(systemStatusQuery);
+    void context.queryClient.prefetchQuery(artistsQuery);
 
     await context.queryClient.ensureQueryData(selectedArtistsQuery);
   },
@@ -45,7 +45,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   errorComponent: ErrorComponent,
   head: () => {
     const head = defineHead({
-      extra: [<meta charSet="utf-8" />],
+      extra: [<meta key="charset" charSet="utf-8" />],
       viewport: "width=device-width, initial-scale=1",
       title: env.VITE_APP_NAME,
       description: `${env.VITE_APP_NAME} - Objekt & gravity explorer for Cosmo`,
@@ -109,9 +109,9 @@ export const Route = createRootRouteWithContext<RouterContext>()({
         { rel: "manifest", href: "/site.webmanifest", color: "#09090b" },
         { rel: "icon", href: "/favicon.ico" },
       ],
-      scripts: [
+      scripts:
         // umami analytics
-        ...(env.VITE_UMAMI_ID && env.VITE_UMAMI_SCRIPT_URL
+        env.VITE_UMAMI_ID && env.VITE_UMAMI_SCRIPT_URL
           ? [
               {
                 src: env.VITE_UMAMI_SCRIPT_URL,
@@ -119,8 +119,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
                 "data-website-id": env.VITE_UMAMI_ID,
               },
             ]
-          : []),
-      ],
+          : [],
     };
 
     return {

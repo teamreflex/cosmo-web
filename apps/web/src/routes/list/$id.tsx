@@ -1,25 +1,25 @@
-import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
-import { IconHeartBroken } from "@tabler/icons-react";
 import { Error } from "@/components/error-boundary";
+import DeleteList from "@/components/lists/delete-list";
+import ListRenderer from "@/components/lists/list-renderer";
+import UpdateList from "@/components/lists/update-list";
 import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
-import { objektListFrontendSchema } from "@/lib/universal/parsers";
+import { ProfileProvider } from "@/hooks/use-profile";
+import { UserStateProvider } from "@/hooks/use-user-state";
+import { m } from "@/i18n/messages";
+import { defineHead } from "@/lib/meta";
 import {
   artistsQuery,
   currentAccountQuery,
   filterDataQuery,
   selectedArtistsQuery,
 } from "@/lib/queries/core";
-import { $getObjektListWithUser } from "@/lib/server/objekts/lists";
 import { objektListQuery } from "@/lib/queries/objekt-queries";
-import { UserStateProvider } from "@/hooks/use-user-state";
-import { ProfileProvider } from "@/hooks/use-profile";
-import UpdateList from "@/components/lists/update-list";
-import DeleteList from "@/components/lists/delete-list";
-import ListRenderer from "@/components/lists/list-renderer";
+import { $getObjektListWithUser } from "@/lib/server/objekts/lists";
+import { objektListFrontendSchema } from "@/lib/universal/parsers";
 import { sanitizeUuid } from "@/lib/utils";
-import { defineHead } from "@/lib/meta";
-import { m } from "@/i18n/messages";
+import { IconHeartBroken } from "@tabler/icons-react";
+import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/list/$id")({
   staleTime: 1000 * 60 * 15, // 15 minutes
@@ -30,7 +30,7 @@ export const Route = createFileRoute("/list/$id")({
   validateSearch: objektListFrontendSchema,
   loaderDeps: ({ search }) => ({ searchParams: search }),
   loader: async ({ context, params, deps }) => {
-    context.queryClient.prefetchQuery(filterDataQuery);
+    void context.queryClient.prefetchQuery(filterDataQuery);
 
     // sanitize the id due to discord users accidentally appending formatting to the URL
     const sanitizedId = sanitizeUuid(params.id);
@@ -41,7 +41,7 @@ export const Route = createFileRoute("/list/$id")({
     // kick off loading of objekt list entries
     const selected =
       await context.queryClient.ensureQueryData(selectedArtistsQuery);
-    context.queryClient.prefetchInfiniteQuery(
+    void context.queryClient.prefetchInfiniteQuery(
       objektListQuery(sanitizedId, deps.searchParams, selected),
     );
 

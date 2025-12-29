@@ -1,9 +1,9 @@
-import { useTransition } from "react";
-import { IconBrandDiscordFilled } from "@tabler/icons-react";
-import { Button } from "../ui/button";
+import { m } from "@/i18n/messages";
 import { authClient } from "@/lib/client/auth";
 import { track } from "@/lib/utils";
-import { m } from "@/i18n/messages";
+import { IconBrandDiscordFilled } from "@tabler/icons-react";
+import { useTransition } from "react";
+import { Button } from "../ui/button";
 
 export default function SignInWithDiscord() {
   const [isPending, startTransition] = useTransition();

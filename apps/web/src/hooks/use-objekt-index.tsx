@@ -1,13 +1,13 @@
-import { useEffect } from "react";
-import { getRouteApi } from "@tanstack/react-router";
-import { useArtists } from "./use-artists";
-import { objektOptions } from "./use-objekt-response";
-import { track } from "@/lib/utils";
+import { m } from "@/i18n/messages";
 import {
   objektIndexBlockchainQuery,
   objektIndexTypesenseQuery,
 } from "@/lib/queries/objekt-queries";
-import { m } from "@/i18n/messages";
+import { track } from "@/lib/utils";
+import { getRouteApi } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { useArtists } from "./use-artists";
+import { objektOptions } from "./use-objekt-response";
 
 const route = getRouteApi("/");
 

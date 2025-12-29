@@ -1,17 +1,17 @@
-import { Bar, BarChart } from "recharts";
-import { format } from "date-fns";
-import { Suspense } from "react";
-import { IconLoader2 } from "@tabler/icons-react";
-import GravityStatus from "./gravity-status";
-import type { LiveStatus } from "@/lib/client/gravity/abstract/types";
 import type { ChartConfig } from "@/components/ui/chart";
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { useVotedEvents } from "@/lib/client/gravity/abstract/hooks";
 import { m } from "@/i18n/messages";
+import { useVotedEvents } from "@/lib/client/gravity/abstract/hooks";
+import type { LiveStatus } from "@/lib/client/gravity/abstract/types";
+import { IconLoader2 } from "@tabler/icons-react";
+import { format } from "date-fns";
+import { Suspense } from "react";
+import { Bar, BarChart } from "recharts";
+import GravityStatus from "./gravity-status";
 
 type Props = {
   pollId: number;

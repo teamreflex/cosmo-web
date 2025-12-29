@@ -1,18 +1,18 @@
-import { useMutation } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { IconCircleCheck, IconLoader2 } from "@tabler/icons-react";
-import { Controller, useForm } from "react-hook-form";
-import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { useMemo } from "react";
-import { Field, FieldError, FieldLabel } from "../ui/field";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { randomHandle } from "./account/update-username";
-import type { z } from "zod";
+import { m } from "@/i18n/messages";
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { signUpSchema } from "@/lib/universal/schema/auth";
 import { track } from "@/lib/utils";
-import { m } from "@/i18n/messages";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { IconCircleCheck, IconLoader2 } from "@tabler/icons-react";
+import { useMutation } from "@tanstack/react-query";
+import { useMemo } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { toast } from "sonner";
+import type { z } from "zod";
+import { Button } from "../ui/button";
+import { Field, FieldError, FieldLabel } from "../ui/field";
+import { Input } from "../ui/input";
+import { randomHandle } from "./account/update-username";
 
 type Props = {
   onCancel: () => void;
@@ -130,7 +130,9 @@ export default function SignUp({ onCancel }: Props) {
       <div className="grid grid-cols-2 items-center gap-2">
         <Button type="submit" disabled={mutation.isPending}>
           <span>{m.auth_create_account()}</span>
-          {mutation.isPending && <IconLoader2 className="h-4 w-4 animate-spin" />}
+          {mutation.isPending && (
+            <IconLoader2 className="h-4 w-4 animate-spin" />
+          )}
         </Button>
 
         <Button type="button" variant="secondary" onClick={onCancel}>

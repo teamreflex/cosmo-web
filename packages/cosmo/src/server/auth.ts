@@ -1,5 +1,5 @@
-import { cosmo } from "./http";
 import type { RefreshTokenResult } from "../types/auth";
+import { cosmo } from "./http";
 
 /**
  * Refresh the given token.

@@ -1,10 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
 import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
 import TransfersRenderer, {
   TransfersSkeleton,
 } from "@/components/transfers/transfers-renderer";
 import { Skeleton } from "@/components/ui/skeleton";
-import { transfersFrontendSchema } from "@/lib/universal/parsers";
+import { m } from "@/i18n/messages";
+import { defineHead } from "@/lib/meta";
 import {
   artistsQuery,
   filterDataQuery,
@@ -12,8 +12,8 @@ import {
   targetAccountQuery,
 } from "@/lib/queries/core";
 import { transfersQuery } from "@/lib/queries/objekt-queries";
-import { defineHead } from "@/lib/meta";
-import { m } from "@/i18n/messages";
+import { transfersFrontendSchema } from "@/lib/universal/parsers";
+import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/@{$username}/trades")({
   component: RouteComponent,
@@ -21,7 +21,7 @@ export const Route = createFileRoute("/@{$username}/trades")({
   validateSearch: transfersFrontendSchema,
   loaderDeps: ({ search }) => ({ searchParams: search }),
   loader: async ({ context, params, deps }) => {
-    context.queryClient.prefetchQuery(filterDataQuery);
+    void context.queryClient.prefetchQuery(filterDataQuery);
 
     const [target, selected] = await Promise.all([
       context.queryClient.ensureQueryData(targetAccountQuery(params.username)),
@@ -29,7 +29,7 @@ export const Route = createFileRoute("/@{$username}/trades")({
       context.queryClient.ensureQueryData(artistsQuery),
     ]);
 
-    context.queryClient.prefetchInfiniteQuery(
+    void context.queryClient.prefetchInfiniteQuery(
       transfersQuery(target.cosmo.address, deps.searchParams, selected),
     );
 

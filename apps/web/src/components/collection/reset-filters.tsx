@@ -1,3 +1,7 @@
+import { Button } from "@/components/ui/button";
+import type { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
+import { filtersAreDirty } from "@/hooks/use-filters";
+import { m } from "@/i18n/messages";
 import { IconRotate } from "@tabler/icons-react";
 import {
   Tooltip,
@@ -5,10 +9,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
-import type { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
-import { m } from "@/i18n/messages";
-import { Button } from "@/components/ui/button";
-import { filtersAreDirty } from "@/hooks/use-filters";
 
 type Props = {
   filters: CosmoFilters;

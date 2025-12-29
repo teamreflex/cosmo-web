@@ -1,8 +1,8 @@
-import { drizzle } from "drizzle-orm/bun-sql";
 import { relations } from "@apollo/database/web/relations";
+import { SQL } from "bun";
+import { drizzle } from "drizzle-orm/bun-sql";
 import { Effect, Redacted } from "effect";
 import { Env } from "./env";
-import { SQL } from "bun";
 
 export class DatabaseWeb extends Effect.Service<DatabaseWeb>()(
   "app/Database/Web",

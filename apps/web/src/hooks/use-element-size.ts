@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from "react";
-import { useIsomorphicLayoutEffect } from "usehooks-ts";
 import type { RefObject } from "react";
+import { useIsomorphicLayoutEffect } from "usehooks-ts";
 
 type Axis = "width" | "height" | "both";
 

@@ -1,5 +1,3 @@
-import { IconHelp, IconSparkles } from "@tabler/icons-react";
-import { Button } from "../ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,6 +9,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { m } from "@/i18n/messages";
+import { IconHelp, IconSparkles } from "@tabler/icons-react";
+import { Button } from "../ui/button";
 
 export default function HelpDialog() {
   return (
@@ -33,7 +33,8 @@ export default function HelpDialog() {
             <p>{m.help_como_timezone()}</p>
 
             <span>
-              A <IconSparkles className="inline-block h-5 w-5 text-yellow-600" />{" "}
+              A{" "}
+              <IconSparkles className="inline-block h-5 w-5 text-yellow-600" />{" "}
               {m.help_como_sparkles()}
             </span>
 

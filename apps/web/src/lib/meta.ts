@@ -1,11 +1,11 @@
-// https://paperclover.net/blog/webdev/one-year-next-app-router
-import { env } from "./env/client";
 import type {
   DetailedHTMLProps,
   MetaHTMLAttributes,
   ScriptHTMLAttributes,
   StyleHTMLAttributes,
 } from "react";
+// https://paperclover.net/blog/webdev/one-year-next-app-router
+import { env } from "./env/client";
 
 const base = `https://${env.VITE_BASE_URL}`;
 const titleTemplate = (title: string) =>

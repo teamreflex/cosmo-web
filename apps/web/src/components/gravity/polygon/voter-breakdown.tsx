@@ -1,9 +1,9 @@
-import TopVotes from "./top-votes";
-import TopUsers from "./top-users";
-import type { RevealedVote } from "@/lib/client/gravity/polygon/types";
-import type { PollSelectedContentImage } from "@apollo/cosmo/types/gravity";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { m } from "@/i18n/messages";
+import type { RevealedVote } from "@/lib/client/gravity/polygon/types";
+import type { PollSelectedContentImage } from "@apollo/cosmo/types/gravity";
+import TopUsers from "./top-users";
+import TopVotes from "./top-votes";
 
 type Props = {
   tokenId: number;

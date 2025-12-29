@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
   boolean,
   index,
@@ -11,10 +12,9 @@ import {
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
+import { user } from "../auth";
 import { citext, createdAt } from "../custom";
 import type { CosmoGravityType, CosmoPollType, EventTypeKey } from "./types";
-import { sql } from "drizzle-orm";
-import { user } from "../auth";
 
 export * from "../auth";
 

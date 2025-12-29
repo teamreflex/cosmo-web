@@ -1,7 +1,7 @@
+import { env } from "@/lib/env/server";
+import { relations } from "@apollo/database/web/relations";
 import { SQL } from "bun";
 import { drizzle } from "drizzle-orm/bun-sql";
-import { relations } from "@apollo/database/web/relations";
-import { env } from "@/lib/env/server";
 
 // set application name for pg_stat_activity visibility
 const url = new URL(env.DATABASE_URL);

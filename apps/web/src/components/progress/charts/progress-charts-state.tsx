@@ -1,9 +1,9 @@
-import { useErrorBoundary } from "react-error-boundary";
-import { IconRefresh } from "@tabler/icons-react";
-import { Button } from "../../ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import SkeletonGradient from "@/components/skeleton/skeleton-overlay";
+import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
+import { IconRefresh } from "@tabler/icons-react";
+import { useErrorBoundary } from "react-error-boundary";
+import { Button } from "../../ui/button";
 
 export function ProgressChartsSkeleton() {
   return (

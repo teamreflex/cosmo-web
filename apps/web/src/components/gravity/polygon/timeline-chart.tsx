@@ -1,6 +1,3 @@
-import { IconCircleCheck } from "@tabler/icons-react";
-import { Bar, BarChart } from "recharts";
-import type { RevealedVote } from "@/lib/client/gravity/polygon/types";
 import type { ChartConfig } from "@/components/ui/chart";
 import {
   ChartContainer,
@@ -8,6 +5,9 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { m } from "@/i18n/messages";
+import type { RevealedVote } from "@/lib/client/gravity/polygon/types";
+import { IconCircleCheck } from "@tabler/icons-react";
+import { Bar, BarChart } from "recharts";
 
 type Props = {
   totalComoUsed: number;

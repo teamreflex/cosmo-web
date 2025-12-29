@@ -1,3 +1,4 @@
+import { GRID_COLUMNS, type CollectionDataSource } from "@apollo/util";
 import {
   pgTable,
   text,
@@ -7,7 +8,6 @@ import {
   index,
 } from "drizzle-orm/pg-core";
 import { citext } from "./custom";
-import { GRID_COLUMNS, type CollectionDataSource } from "@apollo/util";
 
 export const user = pgTable(
   "user",

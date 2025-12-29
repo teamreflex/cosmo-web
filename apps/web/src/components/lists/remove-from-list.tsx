@@ -1,11 +1,11 @@
+import { m } from "@/i18n/messages";
+import type { Objekt } from "@/lib/universal/objekt-conversion";
+import type { ObjektList } from "@apollo/database/web/types";
 import { IconLoader2, IconPlaylistX } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
 import { $removeObjektFromList } from "./actions";
-import type { ObjektList } from "@apollo/database/web/types";
-import type { Objekt } from "@/lib/universal/objekt-conversion";
-import { m } from "@/i18n/messages";
 
 type Props = {
   id: string;
@@ -18,14 +18,14 @@ export default function RemoveFromList({ id, collection, objektList }: Props) {
   const mutationFn = useServerFn($removeObjektFromList);
   const mutation = useMutation({
     mutationFn,
-    onSuccess() {
+    onSuccess: async () => {
       toast.success(
         m.toast_removed_from_list({
           collectionId: collection.collectionId,
           listName: objektList.name,
         }),
       );
-      queryClient.invalidateQueries({
+      await queryClient.invalidateQueries({
         predicate: (query) =>
           query.queryKey[0] === "objekt-list" &&
           query.queryKey[1] === objektList.id,

@@ -1,8 +1,8 @@
-import { useState } from "react";
 import { IconAdjustmentsHorizontal } from "@tabler/icons-react";
+import { useState } from "react";
+import type { PropsWithChildren } from "react";
 import Portal from "../portal";
 import { Button } from "../ui/button";
-import type { PropsWithChildren } from "react";
 
 type Props = PropsWithChildren<{
   isPortaled?: boolean;

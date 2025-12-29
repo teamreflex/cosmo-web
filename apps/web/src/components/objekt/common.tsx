@@ -1,11 +1,11 @@
-import { Fragment, useState } from "react";
-import ArtistLogo from "./artist-logo";
-import type { CSSProperties, PropsWithChildren } from "react";
-import type { NonTransferableReason } from "@apollo/cosmo/types/objekts";
+import { m } from "@/i18n/messages";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import type { PropsWithClassName } from "@/lib/utils";
 import { cn } from "@/lib/utils";
-import { m } from "@/i18n/messages";
+import type { NonTransferableReason } from "@apollo/cosmo/types/objekts";
+import { Fragment, useState } from "react";
+import type { CSSProperties, PropsWithChildren } from "react";
+import ArtistLogo from "./artist-logo";
 
 type ObjektSidebarProps = {
   collection: Objekt.Collection;

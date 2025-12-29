@@ -1,15 +1,15 @@
-import { Suspense, useCallback } from "react";
-import { QueryErrorResetBoundary } from "@tanstack/react-query";
-import { ErrorBoundary } from "react-error-boundary";
-import { IconRefresh } from "@tabler/icons-react";
-import { Button } from "../ui/button";
-import MemberFilter from "../collection/member-filter";
-import { Skeleton } from "../ui/skeleton";
-import ProgressTable from "./progress-table";
-import type { PropsWithChildren } from "react";
-import type { ValidArtist } from "@apollo/cosmo/types/common";
 import { useProgressFilters } from "@/hooks/use-progress-filters";
 import { m } from "@/i18n/messages";
+import type { ValidArtist } from "@apollo/cosmo/types/common";
+import { IconRefresh } from "@tabler/icons-react";
+import { QueryErrorResetBoundary } from "@tanstack/react-query";
+import { Suspense, useCallback } from "react";
+import type { PropsWithChildren } from "react";
+import { ErrorBoundary } from "react-error-boundary";
+import MemberFilter from "../collection/member-filter";
+import { Button } from "../ui/button";
+import { Skeleton } from "../ui/skeleton";
+import ProgressTable from "./progress-table";
 
 type Props = PropsWithChildren<{
   address: string;

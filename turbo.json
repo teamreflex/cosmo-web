@@ -12,7 +12,8 @@
     },
     "lint": {
       "cache": true,
-      "dependsOn": ["^lint"]
+      "dependsOn": ["^lint"],
+      "inputs": ["**/*.ts", "**/*.tsx", ".oxlintrc.json", "!node_modules/**"]
     },
     "lint:fix": {
       "cache": false,
@@ -20,7 +21,8 @@
     },
     "format": {
       "cache": true,
-      "dependsOn": ["^format"]
+      "dependsOn": ["^format"],
+      "inputs": ["**/*.ts", "**/*.tsx", "!node_modules/**"]
     },
     "dev": {
       "persistent": true,

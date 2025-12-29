@@ -1,14 +1,14 @@
-import { motion } from "motion/react";
+import { Badge } from "@/components/ui/badge";
+import { getSeasonKeys } from "@/hooks/use-filter-data";
+import type { EventWithEra } from "@apollo/database/web/types";
 import {
   IconBrandTwitter,
   IconCalendarEvent,
   IconPhoto,
 } from "@tabler/icons-react";
+import { motion } from "motion/react";
 import { Timestamp } from "../ui/timestamp";
 import EventTypeBadge from "./event-type-badge";
-import type { EventWithEra } from "@apollo/database/web/types";
-import { Badge } from "@/components/ui/badge";
-import { getSeasonKeys } from "@/hooks/use-filter-data";
 
 type EventHeaderProps = {
   event: EventWithEra;

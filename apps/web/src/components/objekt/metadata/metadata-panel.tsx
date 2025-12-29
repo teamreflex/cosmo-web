@@ -1,11 +1,11 @@
-import { Suspense } from "react";
+import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { QueryErrorResetBoundary } from "@tanstack/react-query";
+import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { Skeleton } from "../../ui/skeleton";
-import Metadata from "./metadata";
 import { MetadataDialogError } from "./common";
 import type { ObjektMetadataTab } from "./common";
-import type { Objekt } from "@/lib/universal/objekt-conversion";
+import Metadata from "./metadata";
 
 type Props = {
   objekt: Objekt.Collection;

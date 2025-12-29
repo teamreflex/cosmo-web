@@ -1,21 +1,21 @@
-import { infiniteQueryOptions } from "@tanstack/react-query";
+import { getTypesenseResults } from "@/lib/client/typesense";
+import { $fetchObjektsBlockchain } from "@/lib/server/objekts/prefetching/objekt-blockchain";
+import {
+  $fetchObjektsBlockchainGroups,
+  PER_PAGE as BLOCKCHAIN_GROUPS_PER_PAGE,
+} from "@/lib/server/objekts/prefetching/objekt-blockchain-groups";
+import { $fetchObjektsIndex } from "@/lib/server/objekts/prefetching/objekt-index";
+import { $fetchObjektListEntries } from "@/lib/server/objekts/prefetching/objekt-list";
+import { $fetchTransfers } from "@/lib/server/transfers";
 import type {
   objektIndexFrontendSchema,
   objektListFrontendSchema,
   transfersFrontendSchema,
   userCollectionFrontendSchema,
 } from "@/lib/universal/parsers";
-import type { z } from "zod";
-import { getTypesenseResults } from "@/lib/client/typesense";
-import { $fetchObjektsIndex } from "@/lib/server/objekts/prefetching/objekt-index";
-import {
-  $fetchObjektsBlockchainGroups,
-  PER_PAGE as BLOCKCHAIN_GROUPS_PER_PAGE,
-} from "@/lib/server/objekts/prefetching/objekt-blockchain-groups";
-import { $fetchObjektsBlockchain } from "@/lib/server/objekts/prefetching/objekt-blockchain";
-import { $fetchObjektListEntries } from "@/lib/server/objekts/prefetching/objekt-list";
-import { $fetchTransfers } from "@/lib/server/transfers";
 import { normalizeFilters } from "@/lib/universal/parsers";
+import { infiniteQueryOptions } from "@tanstack/react-query";
+import type { z } from "zod";
 
 /**
  * Object index: Searching via Typesense

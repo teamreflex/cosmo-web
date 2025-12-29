@@ -1,4 +1,4 @@
-import { cosmo } from "./http";
+import type { ValidArtist } from "../types/common";
 import type {
   CosmoGravity,
   CosmoOngoingGravity,
@@ -6,7 +6,7 @@ import type {
   CosmoPollChoices,
   CosmoUpcomingGravity,
 } from "../types/gravity";
-import type { ValidArtist } from "../types/common";
+import { cosmo } from "./http";
 
 type CosmoGravityList = {
   upcoming: CosmoUpcomingGravity[];

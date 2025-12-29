@@ -45,6 +45,7 @@ export class ServiceName extends Effect.Service<ServiceName>()("app/ServiceName"
 ```
 
 **Examples:**
+
 - `Typesense` (src/typesense.ts:5) - Typesense client service
 - `Indexer` (src/db/indexer.ts:6) - Indexer database connection
 - `Metadata` (src/db/metadata.ts:6) - Metadata database connection
@@ -66,6 +67,7 @@ const program = Effect.gen(function* () {
 ```
 
 **Key usages:**
+
 - Main application logic (src/main.ts:17)
 - Setup functions (src/setup.ts:11, 38, 139)
 - Config retrieval (src/config.ts:6)
@@ -151,6 +153,7 @@ Converts season + collection number to compact format:
 
 **Implementation:** src/collections.ts:20-27
 **Examples:**
+
 - Atom01, collectionNo: "101Z" → "a101z"
 - Atom02, collectionNo: "101Z" → "aa101z"
 - Binary01, collectionNo: "101Z" → "b101z"
@@ -239,6 +242,7 @@ yield* Effect.promise(async () => {
 ```
 
 **Examples:**
+
 - API key creation (src/setup.ts:11-33)
 - Collection creation (src/setup.ts:38-132)
 
@@ -303,6 +307,7 @@ await typesense.collections(...).synonyms().upsert(id, {
 ```
 
 **Types:**
+
 1. **Unit synonyms** (src/synonyms.ts:42-136) - Map unit names to member lists
 2. **Member synonyms** (src/synonyms.ts:6-40) - Map abbreviations to full names
 3. **Class synonyms** (src/synonyms.ts:138-145) - Map abbreviations to class names
@@ -372,6 +377,7 @@ Set `LOOP_INTERVAL` environment variable (milliseconds)
 ### Adding Database Indexes
 
 For performance, index frequently queried columns:
+
 - Collections by `createdAt` (for incremental queries)
 - Metadata by `collectionId` (for joins)
 

@@ -1,15 +1,15 @@
-import { Addresses, isEqual } from "@apollo/util";
-import FiltersContainer from "../collection/filters-container";
-import Portal from "../portal";
-import Blockchain from "../collection/data-sources/blockchain";
-import BlockchainGroups from "../collection/data-sources/blockchain-groups";
-import CollectionFilters from "../collection/filter-contexts/collection-filters";
-import CosmoMemberFilter from "../objekt/cosmo-member-filter";
-import HelpDialog from "./help-dialog";
-import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import { useFilters } from "@/hooks/use-filters";
 import { useGridColumns } from "@/hooks/use-grid-columns";
 import { useUserState } from "@/hooks/use-user-state";
+import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import { Addresses, isEqual } from "@apollo/util";
+import Blockchain from "../collection/data-sources/blockchain";
+import BlockchainGroups from "../collection/data-sources/blockchain-groups";
+import CollectionFilters from "../collection/filter-contexts/collection-filters";
+import FiltersContainer from "../collection/filters-container";
+import CosmoMemberFilter from "../objekt/cosmo-member-filter";
+import Portal from "../portal";
+import HelpDialog from "./help-dialog";
 
 type Props = {
   targetCosmo: PublicCosmo;

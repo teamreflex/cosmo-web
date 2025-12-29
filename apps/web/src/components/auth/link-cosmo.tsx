@@ -1,20 +1,34 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
+import { m } from "@/i18n/messages";
+import { env } from "@/lib/env/client";
+import { currentAccountQuery } from "@/lib/queries/core";
+import { verifyCosmoSchema } from "@/lib/universal/schema/cosmo";
+import { track } from "@/lib/utils";
+import { generateQrCode } from "@apollo/cosmo/types/qr-auth";
+import type { AuthTicket, QueryTicket } from "@apollo/cosmo/types/qr-auth";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import {
   IconAlertTriangle,
   IconCircleCheck,
   IconLoader2,
 } from "@tabler/icons-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { FetchError, ofetch } from "ofetch";
 import { createContext, useContext, useState } from "react";
+import type { ReactNode } from "react";
+import { Controller, useForm } from "react-hook-form";
 import QRCode from "react-qr-code";
 import { toast } from "sonner";
 import { useInterval } from "usehooks-ts";
-import { REGEXP_ONLY_DIGITS } from "input-otp";
-import { Controller, useForm } from "react-hook-form";
-import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { useServerFn } from "@tanstack/react-start";
-import { generateQrCode } from "@apollo/cosmo/types/qr-auth";
-import { useRouter } from "@tanstack/react-router";
+import type { z } from "zod";
 import {
   Dialog,
   DialogContent,
@@ -24,20 +38,6 @@ import {
 } from "../ui/dialog";
 import { Field, FieldError } from "../ui/field";
 import { $verifyCosmo } from "./actions";
-import type { AuthTicket, QueryTicket } from "@apollo/cosmo/types/qr-auth";
-import type { ReactNode } from "react";
-import type { z } from "zod";
-import { verifyCosmoSchema } from "@/lib/universal/schema/cosmo";
-import { track } from "@/lib/utils";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
-import { Button } from "@/components/ui/button";
-import { env } from "@/lib/env/client";
-import { m } from "@/i18n/messages";
-import { currentAccountQuery } from "@/lib/queries/core";
 
 type LinkCosmoContextType = {
   open: boolean;
@@ -128,7 +128,9 @@ function GetRecaptcha() {
         </div>
       )}
 
-      {status === "success" && <RenderTicket ticket={data} retry={refetch} />}
+      {status === "success" && (
+        <RenderTicket ticket={data} retry={() => refetch()} />
+      )}
     </div>
   );
 }
@@ -281,22 +283,19 @@ function OTP({ ticket }: OTPProps) {
     await mutation.mutateAsync(
       { data },
       {
-        onSuccess: async () => {
-          track("cosmo-link");
-          toast.success(m.link_cosmo_success());
-
-          await router.invalidate();
-          await queryClient.invalidateQueries({
-            queryKey: currentAccountQuery.queryKey,
-          });
-
-          ctx.setOpen(false);
-        },
         onError() {
           toast.error(m.link_cosmo_error_linking());
         },
       },
     );
+
+    track("cosmo-link");
+    toast.success(m.link_cosmo_success());
+    await router.invalidate();
+    await queryClient.invalidateQueries({
+      queryKey: currentAccountQuery.queryKey,
+    });
+    ctx.setOpen(false);
   }
 
   if (mutation.status === "error") {

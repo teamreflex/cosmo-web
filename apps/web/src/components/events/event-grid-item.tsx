@@ -1,8 +1,8 @@
-import { useMemo } from "react";
-import ExpandableObjekt from "../objekt/objekt-expandable";
-import { ObjektSidebar } from "../objekt/common";
-import type { IndexedObjekt } from "@/lib/universal/objekts";
 import { Objekt } from "@/lib/universal/objekt-conversion";
+import type { IndexedObjekt } from "@/lib/universal/objekts";
+import { useMemo } from "react";
+import { ObjektSidebar } from "../objekt/common";
+import ExpandableObjekt from "../objekt/objekt-expandable";
 
 type Props = {
   item: IndexedObjekt;

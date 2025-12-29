@@ -1,5 +1,5 @@
-import { queryOptions } from "@tanstack/react-query";
 import { $fetchSystemStatus } from "@/lib/server/system";
+import { queryOptions } from "@tanstack/react-query";
 
 export const systemStatusQuery = queryOptions({
   queryKey: ["system-status"],

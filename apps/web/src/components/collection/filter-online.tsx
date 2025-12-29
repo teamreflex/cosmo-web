@@ -1,8 +1,3 @@
-import { useState } from "react";
-import { IconChevronDown } from "@tabler/icons-react";
-import {  validOnlineTypes } from "@apollo/cosmo/types/common";
-import type {ValidOnlineType} from "@apollo/cosmo/types/common";
-import type { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -10,8 +5,13 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
+import type { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { m } from "@/i18n/messages";
+import { cn } from "@/lib/utils";
+import { validOnlineTypes } from "@apollo/cosmo/types/common";
+import type { ValidOnlineType } from "@apollo/cosmo/types/common";
+import { IconChevronDown } from "@tabler/icons-react";
+import { useState } from "react";
 
 function getOnlineTypeMap(): Record<ValidOnlineType, string> {
   return {

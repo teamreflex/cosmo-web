@@ -1,16 +1,16 @@
 import {
-  IconBrandDiscordFilled,
-  IconBrandTwitterFilled,
-  IconCheck,
-} from "@tabler/icons-react";
-import { Link } from "@tanstack/react-router";
-import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { m } from "@/i18n/messages";
+import {
+  IconBrandDiscordFilled,
+  IconBrandTwitterFilled,
+  IconCheck,
+} from "@tabler/icons-react";
+import { Link } from "@tanstack/react-router";
 
 /**
  * User has verified their COSMO account

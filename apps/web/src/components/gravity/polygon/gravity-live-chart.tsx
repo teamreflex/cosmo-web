@@ -1,13 +1,13 @@
-import { useSuspenseQuery } from "@tanstack/react-query";
-import CandidateBreakdown from "./candidate-breakdown";
-import TimelineChart from "./timeline-chart";
-import VoterBreakdown from "./voter-breakdown";
+import { polygonGravityQuery } from "@/lib/queries/gravity";
+import type { CosmoArtistBFF } from "@apollo/cosmo/types/artists";
 import type {
   CosmoOngoingGravity,
   CosmoPastGravity,
 } from "@apollo/cosmo/types/gravity";
-import type { CosmoArtistBFF } from "@apollo/cosmo/types/artists";
-import { polygonGravityQuery } from "@/lib/queries/gravity";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import CandidateBreakdown from "./candidate-breakdown";
+import TimelineChart from "./timeline-chart";
+import VoterBreakdown from "./voter-breakdown";
 
 export type Props = {
   artist: CosmoArtistBFF;

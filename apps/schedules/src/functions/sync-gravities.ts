@@ -1,6 +1,5 @@
-import { eq } from "drizzle-orm";
-import { Data, Effect } from "effect";
-import { chunk } from "@apollo/util";
+import { DatabaseWeb } from "@/db";
+import { ProxiedToken } from "@/proxied-token";
 import { fetchArtist, fetchArtists } from "@apollo/cosmo/server/artists";
 import { fetchGravities, fetchPoll } from "@apollo/cosmo/server/gravity";
 import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
@@ -9,8 +8,9 @@ import {
   gravityPollCandidates,
   gravityPolls,
 } from "@apollo/database/web/schema";
-import { DatabaseWeb } from "@/db";
-import { ProxiedToken } from "@/proxied-token";
+import { chunk } from "@apollo/util";
+import { eq } from "drizzle-orm";
+import { Data, Effect } from "effect";
 import type { ScheduledTask } from "../task";
 
 /**
@@ -49,7 +49,7 @@ export const syncGravitiesTask = {
         processGravities(accessToken, artist).pipe(
           Effect.catchAll((error) =>
             Effect.logError(
-              `Failed to process gravities for ${artist.title}: ${error}`,
+              `Failed to process gravities for ${artist.title}: ${error.message}`,
             ),
           ),
         ),

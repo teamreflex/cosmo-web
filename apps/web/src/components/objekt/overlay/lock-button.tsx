@@ -1,10 +1,10 @@
+import { $toggleObjektLock } from "@/components/collection/actions";
+import { useProfileContext } from "@/hooks/use-profile";
+import { m } from "@/i18n/messages";
+import { track } from "@/lib/utils";
 import { IconLoader2, IconLock, IconLockOpen } from "@tabler/icons-react";
 import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { $toggleObjektLock } from "@/components/collection/actions";
-import { track } from "@/lib/utils";
-import { useProfileContext } from "@/hooks/use-profile";
-import { m } from "@/i18n/messages";
 
 type Props = {
   tokenId: number;

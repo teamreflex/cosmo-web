@@ -1,9 +1,6 @@
-import { cosmo } from "./http";
-import type {
-  CosmoArtist,
-  CosmoArtistWithMembersBFF,
-} from "../types/artists";
+import type { CosmoArtist, CosmoArtistWithMembersBFF } from "../types/artists";
 import type { ValidArtist } from "../types/common";
+import { cosmo } from "./http";
 
 /**
  * Fetch artists within COSMO.

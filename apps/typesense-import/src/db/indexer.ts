@@ -1,6 +1,6 @@
+import { relations } from "@apollo/database/indexer/relations";
 import { SQL } from "bun";
 import { drizzle } from "drizzle-orm/bun-sql";
-import { relations } from "@apollo/database/indexer/relations";
 import { Effect, Redacted } from "effect";
 import { getConfig } from "../config";
 

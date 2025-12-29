@@ -1,9 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Addresses, isEqual } from "@apollo/util";
-import { userCollectionFrontendSchema } from "@/lib/universal/parsers";
-import { Skeleton } from "@/components/ui/skeleton";
-import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
 import { Error } from "@/components/error-boundary";
+import ProfileRenderer from "@/components/profile/profile-renderer";
+import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ProfileProvider } from "@/hooks/use-profile";
+import { m } from "@/i18n/messages";
+import { defineHead } from "@/lib/meta";
 import {
   artistsQuery,
   currentAccountQuery,
@@ -11,15 +12,14 @@ import {
   selectedArtistsQuery,
   targetAccountQuery,
 } from "@/lib/queries/core";
-import { ProfileProvider } from "@/hooks/use-profile";
-import ProfileRenderer from "@/components/profile/profile-renderer";
-import { pinsQuery } from "@/lib/queries/profile";
 import {
   userCollectionBlockchainGroupsQuery,
   userCollectionBlockchainQuery,
 } from "@/lib/queries/objekt-queries";
-import { defineHead } from "@/lib/meta";
-import { m } from "@/i18n/messages";
+import { pinsQuery } from "@/lib/queries/profile";
+import { userCollectionFrontendSchema } from "@/lib/universal/parsers";
+import { Addresses, isEqual } from "@apollo/util";
+import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/@{$username}/")({
   validateSearch: userCollectionFrontendSchema,
@@ -28,7 +28,7 @@ export const Route = createFileRoute("/@{$username}/")({
   pendingComponent: PendingComponent,
   errorComponent: ErrorComponent,
   loader: async ({ context, params, deps }) => {
-    context.queryClient.prefetchQuery(filterDataQuery);
+    void context.queryClient.prefetchQuery(filterDataQuery);
 
     const [account, target, pins, selected] = await Promise.all([
       context.queryClient.ensureQueryData(currentAccountQuery),
@@ -43,7 +43,7 @@ export const Route = createFileRoute("/@{$username}/")({
       account?.user.collectionMode === "blockchain-groups" &&
       !isEqual(target.cosmo.address, Addresses.SPIN)
     ) {
-      context.queryClient.prefetchInfiniteQuery(
+      void context.queryClient.prefetchInfiniteQuery(
         userCollectionBlockchainGroupsQuery(
           target.cosmo.address,
           deps.searchParams,
@@ -52,7 +52,7 @@ export const Route = createFileRoute("/@{$username}/")({
       );
     } else {
       // if the user is a guest or is in blockchain mode, prefetch the objekts
-      context.queryClient.prefetchInfiniteQuery(
+      void context.queryClient.prefetchInfiniteQuery(
         userCollectionBlockchainQuery(
           target.cosmo.address,
           deps.searchParams,

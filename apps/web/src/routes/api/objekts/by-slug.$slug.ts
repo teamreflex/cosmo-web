@@ -1,7 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { cacheHeaders } from "@/lib/server/cache";
 import { indexer } from "@/lib/server/db/indexer";
 import { Objekt } from "@/lib/universal/objekt-conversion";
-import { cacheHeaders } from "@/lib/server/cache";
+import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/api/objekts/by-slug/$slug")({
   server: {

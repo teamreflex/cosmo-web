@@ -1,27 +1,27 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { ErrorBoundary } from "react-error-boundary";
-import { Suspense } from "react";
+import Portal from "@/components/portal";
+import ProgressCharts from "@/components/progress/charts/progress-charts";
+import {
+  ProgressChartsError,
+  ProgressChartsSkeleton,
+} from "@/components/progress/charts/progress-charts-state";
+import HelpDialog from "@/components/progress/help-dialog";
+import ProgressRenderer from "@/components/progress/progress-renderer";
 import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
+import { ProfileProvider } from "@/hooks/use-profile";
+import { UserStateProvider } from "@/hooks/use-user-state";
+import { m } from "@/i18n/messages";
+import { defineHead } from "@/lib/meta";
 import {
   artistsQuery,
   currentAccountQuery,
   filterDataQuery,
   targetAccountQuery,
 } from "@/lib/queries/core";
-import { progressFrontendSchema } from "@/lib/universal/parsers";
-import { UserStateProvider } from "@/hooks/use-user-state";
-import { ProfileProvider } from "@/hooks/use-profile";
-import ProgressRenderer from "@/components/progress/progress-renderer";
-import {
-  ProgressChartsError,
-  ProgressChartsSkeleton,
-} from "@/components/progress/charts/progress-charts-state";
-import ProgressCharts from "@/components/progress/charts/progress-charts";
-import Portal from "@/components/portal";
-import HelpDialog from "@/components/progress/help-dialog";
 import { artistStatsQuery } from "@/lib/queries/progress";
-import { defineHead } from "@/lib/meta";
-import { m } from "@/i18n/messages";
+import { progressFrontendSchema } from "@/lib/universal/parsers";
+import { createFileRoute } from "@tanstack/react-router";
+import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 
 export const Route = createFileRoute("/@{$username}/progress")({
   component: RouteComponent,
@@ -29,7 +29,7 @@ export const Route = createFileRoute("/@{$username}/progress")({
   validateSearch: progressFrontendSchema,
   loaderDeps: ({ search }) => ({ searchParams: search }),
   loader: async ({ context, params }) => {
-    context.queryClient.prefetchQuery(filterDataQuery);
+    void context.queryClient.prefetchQuery(filterDataQuery);
 
     const [target, account] = await Promise.all([
       context.queryClient.ensureQueryData(targetAccountQuery(params.username)),
@@ -37,7 +37,9 @@ export const Route = createFileRoute("/@{$username}/progress")({
       context.queryClient.ensureQueryData(artistsQuery),
     ]);
 
-    context.queryClient.prefetchQuery(artistStatsQuery(target.cosmo.address));
+    void context.queryClient.prefetchQuery(
+      artistStatsQuery(target.cosmo.address),
+    );
 
     return { target, account };
   },

@@ -1,17 +1,17 @@
-import { Suspense } from "react";
-import { ErrorBoundary } from "react-error-boundary";
-import LockedFilter from "../filter-locked";
-import TransferableFilter from "../filter-transferable";
-import SeasonFilter from "../filter-season";
-import OnlineFilter from "../filter-online";
-import ClassFilter from "../filter-class";
-import SortFilter from "../filter-sort";
-import FilterDataSource from "../filter-data-source";
-import ResetFilters from "../reset-filters";
-import type { Dispatch, SetStateAction } from "react";
-import type { CollectionDataSource } from "@apollo/util";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
+import type { CollectionDataSource } from "@apollo/util";
+import { Suspense } from "react";
+import type { Dispatch, SetStateAction } from "react";
+import { ErrorBoundary } from "react-error-boundary";
+import ClassFilter from "../filter-class";
+import FilterDataSource from "../filter-data-source";
+import LockedFilter from "../filter-locked";
+import OnlineFilter from "../filter-online";
+import SeasonFilter from "../filter-season";
+import SortFilter from "../filter-sort";
+import TransferableFilter from "../filter-transferable";
+import ResetFilters from "../reset-filters";
 
 type Props = {
   showLocked: boolean;

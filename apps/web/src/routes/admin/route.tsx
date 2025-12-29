@@ -1,4 +1,3 @@
-import { Outlet, createFileRoute } from "@tanstack/react-router";
 import AdminBreadcrumbs from "@/components/admin/breadcrumbs";
 import { AdminSidebar } from "@/components/admin/sidebar";
 import { Separator } from "@/components/ui/separator";
@@ -7,6 +6,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { Outlet, createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/admin")({
   component: RouteComponent,

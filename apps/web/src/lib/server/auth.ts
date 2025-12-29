@@ -1,25 +1,25 @@
-import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
-import { betterAuth } from "better-auth/minimal";
-import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { username } from "better-auth/plugins/username";
-import { createAuthMiddleware } from "better-auth/api";
-import { parseSessionOutput, parseUserOutput } from "better-auth/db";
-import { eq } from "drizzle-orm";
-import { tanstackStartCookies } from "better-auth/tanstack-start";
-import { GRID_COLUMNS } from "@apollo/util";
+import * as clientEnv from "@/lib/env/client";
+import * as serverEnv from "@/lib/env/server";
+import { baseUrl } from "@/lib/utils";
 import * as authSchema from "@apollo/database/auth";
 import { cosmoAccounts } from "@apollo/database/web/schema";
+import { GRID_COLUMNS } from "@apollo/util";
+import type { CollectionDataSource } from "@apollo/util";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { createAuthMiddleware } from "better-auth/api";
+import { parseSessionOutput, parseUserOutput } from "better-auth/db";
+import { betterAuth } from "better-auth/minimal";
+import { username } from "better-auth/plugins/username";
+import { tanstackStartCookies } from "better-auth/tanstack-start";
+import { eq } from "drizzle-orm";
+import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
+import type { PublicUser } from "../universal/auth";
+import { db } from "./db";
 import {
   sendAccountDeletionEmail,
   sendPasswordResetEmail,
   sendVerificationEmail,
 } from "./mail";
-import { db } from "./db";
-import type { CollectionDataSource } from "@apollo/util";
-import type { PublicUser } from "../universal/auth";
-import * as serverEnv from "@/lib/env/server";
-import * as clientEnv from "@/lib/env/client";
-import { baseUrl } from "@/lib/utils";
 
 export const IP_HEADER = "cf-connecting-ip";
 
@@ -110,7 +110,6 @@ export const auth = betterAuth({
   databaseHooks: {
     account: {
       create: {
-        // eslint-disable-next-line @typescript-eslint/require-await
         async before(account) {
           const withEncryptedTokens = { ...account };
           if (account.accessToken) {
@@ -189,7 +188,6 @@ export const auth = betterAuth({
    * Hooks to modify the context.
    */
   hooks: {
-    // eslint-disable-next-line @typescript-eslint/require-await
     before: createAuthMiddleware(async (ctx) => {
       /**
        * Override the internal adapter to return the session and user in one query.

@@ -1,18 +1,18 @@
-import { useId } from "react";
+import { useArtists } from "@/hooks/use-artists";
+import { selectedArtistsQuery } from "@/lib/queries/core";
+import type { CosmoArtistBFF } from "@apollo/cosmo/types/artists";
 import { IconCheck, IconLoader2 } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { useId } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { $setSelectedArtist } from "./actions";
-import type { CosmoArtistBFF } from "@apollo/cosmo/types/artists";
-import { useArtists } from "@/hooks/use-artists";
-import { selectedArtistsQuery } from "@/lib/queries/core";
 
 export default function ArtistSelectbox() {
   const id = useId();

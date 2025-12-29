@@ -1,14 +1,12 @@
-import {
-  useClient,
-  useReadContracts,
-  useWatchContractEvent,
-} from "wagmi";
-import { getContractEvents } from "viem/actions";
-import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
-import { abstract } from "viem/chains";
-import { addMinutes, isAfter, isBefore, startOfHour } from "date-fns";
+import governorAbi from "@/abi/governor";
 import { Addresses } from "@apollo/util";
+import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
+import { addMinutes, isAfter, isBefore, startOfHour } from "date-fns";
+import { useEffect, useMemo, useState } from "react";
+import type { Hex } from "viem";
+import { getContractEvents } from "viem/actions";
+import { abstract } from "viem/chains";
+import { useClient, useReadContracts, useWatchContractEvent } from "wagmi";
 import { useGravityVotes } from "../common";
 import type { GravityHookParams } from "../common";
 import type {
@@ -19,8 +17,6 @@ import type {
   UseChainDataPending,
   UseChainDataSuccess,
 } from "./types";
-import type { Hex } from "viem";
-import governorAbi from "@/abi/governor";
 
 // chain to connect to
 const chainId = abstract.id;
@@ -93,7 +89,7 @@ function useEndBlock(
    * Fetch the end block.
    */
   const endQueryOptions = queryOptions({
-    // eslint-disable-next-line @tanstack/query/exhaustive-deps
+    // oxlint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: [
       "gravity",
       "end-block",

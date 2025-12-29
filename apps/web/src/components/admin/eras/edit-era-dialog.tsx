@@ -1,20 +1,3 @@
-import { IconLoader2 } from "@tabler/icons-react";
-import { useRef, useState } from "react";
-import { toast } from "sonner";
-import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { FormProvider, useForm, useFormState } from "react-hook-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { getRouteApi } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
-import { slugify } from "@apollo/util";
-import DeleteEra from "./delete-era";
-import EraForm from "./era-form";
-import type { Era } from "@apollo/database/web/types";
-import type { SpotifyAlbum } from "@/lib/universal/events";
-import type { CreateEraInput } from "@/lib/universal/schema/events";
-import { createEraSchema } from "@/lib/universal/schema/events";
-import { $getEraImageUploadUrl, $updateEra } from "@/lib/server/events/actions";
-import { erasQuery } from "@/lib/queries/events";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -27,6 +10,23 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { m } from "@/i18n/messages";
+import { erasQuery } from "@/lib/queries/events";
+import { $getEraImageUploadUrl, $updateEra } from "@/lib/server/events/actions";
+import type { SpotifyAlbum } from "@/lib/universal/events";
+import type { CreateEraInput } from "@/lib/universal/schema/events";
+import { createEraSchema } from "@/lib/universal/schema/events";
+import type { Era } from "@apollo/database/web/types";
+import { slugify } from "@apollo/util";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { IconLoader2 } from "@tabler/icons-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { getRouteApi } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { useRef, useState } from "react";
+import { FormProvider, useForm, useFormState } from "react-hook-form";
+import { toast } from "sonner";
+import DeleteEra from "./delete-era";
+import EraForm from "./era-form";
 
 const route = getRouteApi("/admin/eras");
 
@@ -47,9 +47,9 @@ export default function EditEraDialog({ era, children }: Props) {
 
   const mutation = useMutation({
     mutationFn: useServerFn($updateEra),
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success(m.admin_era_updated());
-      queryClient.invalidateQueries({ queryKey: erasQuery().queryKey });
+      await queryClient.invalidateQueries({ queryKey: erasQuery().queryKey });
       setOpen(false);
       selectedImageRef.current = null;
     },

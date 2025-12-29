@@ -1,8 +1,13 @@
-import { createHash } from "node:crypto";
-import { and, eq, sql } from "drizzle-orm";
-import * as z from "zod";
-import { createServerFn } from "@tanstack/react-start";
+import { redis } from "@/lib/server/cache";
+import { indexer } from "@/lib/server/db/indexer";
+import type { Collection, Objekt } from "@/lib/server/db/indexer/schema";
+import { collections, objekts } from "@/lib/server/db/indexer/schema";
+import { userCollectionBackendSchema } from "@/lib/universal/parsers";
 import { Addresses, isEqual } from "@apollo/util";
+import { createServerFn } from "@tanstack/react-start";
+import { and, eq, sql } from "drizzle-orm";
+import { createHash } from "node:crypto";
+import * as z from "zod";
 import {
   withArtist,
   withClass,
@@ -15,11 +20,6 @@ import {
   withTransferable,
 } from "../filters";
 import { mapLegacyObjekt } from "./common";
-import type { Collection, Objekt } from "@/lib/server/db/indexer/schema";
-import { collections, objekts } from "@/lib/server/db/indexer/schema";
-import { indexer } from "@/lib/server/db/indexer";
-import { userCollectionBackendSchema } from "@/lib/universal/parsers";
-import { redis } from "@/lib/server/cache";
 
 /**
  * this is a complete shitshow because the @cosmo-spin account doesn't get emptied, it just keeps growing (3.2m rows at the time of writing)
@@ -230,12 +230,16 @@ function buildCountCacheKey(address: string, filters: InputData): string {
   const parts = [
     address.toLowerCase(),
     filters.artist ?? "",
-    [...filters.artists].sort().join(","),
-    [...(filters.class ?? [])].sort().join(","),
-    [...(filters.season ?? [])].sort().join(","),
-    [...(filters.on_offline ?? [])].sort().join(","),
+    [...filters.artists].sort((a, b) => a.localeCompare(b)).join(","),
+    [...(filters.class ?? [])].sort((a, b) => a.localeCompare(b)).join(","),
+    [...(filters.season ?? [])].sort((a, b) => a.localeCompare(b)).join(","),
+    [...(filters.on_offline ?? [])]
+      .sort((a, b) => a.localeCompare(b))
+      .join(","),
     filters.member ?? "",
-    [...(filters.collectionNo ?? [])].sort().join(","),
+    [...(filters.collectionNo ?? [])]
+      .sort((a, b) => a.localeCompare(b))
+      .join(","),
     String(filters.transferable ?? ""),
   ];
   const hash = createHash("md5").update(parts.join(":")).digest("hex");

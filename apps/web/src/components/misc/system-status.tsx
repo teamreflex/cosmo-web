@@ -1,22 +1,22 @@
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { m } from "@/i18n/messages";
+import { systemStatusQuery } from "@/lib/queries/system";
+import type { SystemStatus as SystemStatusType } from "@/lib/universal/system";
+import { cn } from "@/lib/utils";
 import { IconActivity, IconServer, IconX } from "@tabler/icons-react";
-import { ErrorBoundary } from "react-error-boundary";
-import { Suspense } from "react";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
-import type { SystemStatus as SystemStatusType } from "@/lib/universal/system";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import { systemStatusQuery } from "@/lib/queries/system";
-import { m } from "@/i18n/messages";
 
 export default function SystemStatus() {
   return (

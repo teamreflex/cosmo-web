@@ -1,9 +1,9 @@
+import { useArtists } from "@/hooks/use-artists";
+import { useObjektTransfer } from "@/hooks/use-objekt-transfer";
+import { m } from "@/i18n/messages";
+import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { IconSend } from "@tabler/icons-react";
 import { toast } from "sonner";
-import type { Objekt } from "@/lib/universal/objekt-conversion";
-import { useObjektTransfer } from "@/hooks/use-objekt-transfer";
-import { useArtists } from "@/hooks/use-artists";
-import { m } from "@/i18n/messages";
 
 type Props = {
   collection: Objekt.Collection;

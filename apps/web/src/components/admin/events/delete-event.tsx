@@ -1,9 +1,3 @@
-import { IconLoader2, IconTrash } from "@tabler/icons-react";
-import { toast } from "sonner";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
-import { $deleteEvent } from "@/lib/server/events/actions";
-import { eventsQuery } from "@/lib/queries/events";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -16,6 +10,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { m } from "@/i18n/messages";
+import { eventsQuery } from "@/lib/queries/events";
+import { $deleteEvent } from "@/lib/server/events/actions";
+import { IconLoader2, IconTrash } from "@tabler/icons-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
 
 type Props = {
   eventId: string;
@@ -25,17 +25,17 @@ export default function DeleteEvent({ eventId }: Props) {
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: useServerFn($deleteEvent),
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success(m.admin_event_deleted());
-      queryClient.invalidateQueries({ queryKey: eventsQuery().queryKey });
+      await queryClient.invalidateQueries({ queryKey: eventsQuery().queryKey });
     },
     onError: () => {
       toast.error(m.error_unknown());
     },
   });
 
-  async function handleDelete() {
-    await mutation.mutateAsync({ data: { id: eventId } });
+  function handleDelete() {
+    mutation.mutate({ data: { id: eventId } });
   }
 
   return (

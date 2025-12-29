@@ -1,7 +1,7 @@
+import { m } from "@/i18n/messages";
+import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { getEdition } from "../common";
 import Pill from "./pill";
-import type { Objekt } from "@/lib/universal/objekt-conversion";
-import { m } from "@/i18n/messages";
 
 type Props = {
   objekt: Objekt.Collection;

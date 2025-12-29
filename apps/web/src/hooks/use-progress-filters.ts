@@ -1,7 +1,7 @@
-import { useCallback } from "react";
-import { getRouteApi } from "@tanstack/react-router";
-import type { z } from "zod";
 import type { progressFrontendSchema } from "@/lib/universal/parsers";
+import { getRouteApi } from "@tanstack/react-router";
+import { useCallback } from "react";
+import type { z } from "zod";
 
 const route = getRouteApi("/@{$username}/progress");
 
@@ -22,7 +22,7 @@ export function useProgressFilters() {
         input = input(searchParams);
       }
 
-      navigate({
+      void navigate({
         search: (prev) => ({
           ...prev,
           ...input,
@@ -30,7 +30,7 @@ export function useProgressFilters() {
         replace: true,
       });
     },
-    [searchParams],
+    [navigate, searchParams],
   );
 
   /**

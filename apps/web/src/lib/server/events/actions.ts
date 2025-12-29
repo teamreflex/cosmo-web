@@ -1,13 +1,3 @@
-import * as z from "zod";
-import { and, eq, ne, sql } from "drizzle-orm";
-import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
-import { collectionData, eras, events } from "@apollo/database/web/schema";
-import {
-  fetchSpotifyAlbum,
-  getBestAlbumArt,
-  searchSpotifyAlbums,
-} from "./spotify";
-import { extractDominantColor } from "./color-extraction";
 import { db } from "@/lib/server/db";
 import { adminMiddleware } from "@/lib/server/middlewares";
 import {
@@ -23,6 +13,16 @@ import {
   updateEraSchema,
   updateEventSchema,
 } from "@/lib/universal/schema/events";
+import { collectionData, eras, events } from "@apollo/database/web/schema";
+import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
+import { and, eq, ne, sql } from "drizzle-orm";
+import * as z from "zod";
+import { extractDominantColor } from "./color-extraction";
+import {
+  fetchSpotifyAlbum,
+  getBestAlbumArt,
+  searchSpotifyAlbums,
+} from "./spotify";
 
 /**
  * Validates that a slug is unique for eras.

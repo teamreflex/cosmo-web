@@ -1,6 +1,10 @@
-import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import type { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
+import { useFilterData } from "@/hooks/use-filter-data";
+import { m } from "@/i18n/messages";
+import { cn } from "@/lib/utils";
 import { IconCheck, IconChevronDown } from "@tabler/icons-react";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { useState } from "react";
 import {
   Command,
   CommandEmpty,
@@ -9,11 +13,7 @@ import {
   CommandItem,
   CommandList,
 } from "../ui/command";
-import type { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { useFilterData } from "@/hooks/use-filter-data";
-import { m } from "@/i18n/messages";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 
 type Props = {
   collections: CosmoFilters["collectionNo"];

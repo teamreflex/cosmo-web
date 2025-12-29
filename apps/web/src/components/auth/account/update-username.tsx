@@ -1,20 +1,20 @@
-import { toast } from "sonner";
-import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { useMutation } from "@tanstack/react-query";
-import { useMemo } from "react";
-import { Controller, useForm } from "react-hook-form";
-import { IconDeviceFloppy, IconLoader2 } from "@tabler/icons-react";
-import { useRouter } from "@tanstack/react-router";
-import type { z } from "zod";
-import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { Field, FieldDescription, FieldError } from "@/components/ui/field";
 import {
   InputGroup,
   InputGroupButton,
   InputGroupInput,
 } from "@/components/ui/input-group";
-import { updateUsernameSchema } from "@/lib/universal/schema/auth";
 import { m } from "@/i18n/messages";
+import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
+import { updateUsernameSchema } from "@/lib/universal/schema/auth";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { IconDeviceFloppy, IconLoader2 } from "@tabler/icons-react";
+import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
+import { useMemo } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { toast } from "sonner";
+import type { z } from "zod";
 
 type Props = {
   username: string;
@@ -45,7 +45,7 @@ export default function UpdateUsername({ username }: Props) {
     mutation.mutate(data, {
       onSuccess: () => {
         toast.success(m.auth_username_updated());
-        router.invalidate();
+        void router.invalidate();
       },
       onError: (error) => {
         toast.error(error.message);

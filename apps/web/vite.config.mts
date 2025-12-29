@@ -1,11 +1,10 @@
-import { defineConfig } from "vite";
+import { paraglideVitePlugin } from "@inlang/paraglide-js";
+import tailwindcss from "@tailwindcss/vite";
 import { devtools } from "@tanstack/devtools-vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import react from "@vitejs/plugin-react";
-import tailwindcss from "@tailwindcss/vite";
-import { paraglideVitePlugin } from "@inlang/paraglide-js";
+import { defineConfig } from "vite";
 import tsConfigPaths from "vite-tsconfig-paths";
-
 import "./src/lib/env/client";
 import "./src/lib/env/server";
 

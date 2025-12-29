@@ -1,4 +1,3 @@
-import { IconBrandGithub, IconCheck } from "@tabler/icons-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,6 +10,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { m } from "@/i18n/messages";
 import { env } from "@/lib/env/client";
+import { IconBrandGithub, IconCheck } from "@tabler/icons-react";
 
 type Props = {
   open: boolean;

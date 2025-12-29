@@ -1,16 +1,16 @@
-import { useMutation } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { IconLoader2 } from "@tabler/icons-react";
-import { Controller, useForm } from "react-hook-form";
-import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { useNavigate } from "@tanstack/react-router";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { Field, FieldError, FieldLabel } from "../ui/field";
-import type { z } from "zod";
+import { m } from "@/i18n/messages";
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { resetPasswordSchema } from "@/lib/universal/schema/auth";
-import { m } from "@/i18n/messages";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { IconLoader2 } from "@tabler/icons-react";
+import { useMutation } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
+import { Controller, useForm } from "react-hook-form";
+import { toast } from "sonner";
+import type { z } from "zod";
+import { Button } from "../ui/button";
+import { Field, FieldError, FieldLabel } from "../ui/field";
+import { Input } from "../ui/input";
 
 type Props = {
   token: string;
@@ -43,7 +43,7 @@ export default function ResetPassword({ token }: Props) {
     mutation.mutate(data, {
       onSuccess: () => {
         toast.success(m.auth_password_reset_success());
-        navigate({ to: "/" });
+        void navigate({ to: "/" });
       },
       onError: (error) => {
         toast.error(error.message);

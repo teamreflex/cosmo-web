@@ -1,5 +1,5 @@
-import * as motion from "motion/react-client";
 import type { PollSelectedContentImage } from "@apollo/cosmo/types/gravity";
+import * as motion from "motion/react-client";
 
 type Props = {
   content: PollSelectedContentImage[];

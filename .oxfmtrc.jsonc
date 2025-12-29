@@ -1,0 +1,14 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "printWidth": 80,
+  "trailingComma": "all",
+  "experimentalSortImports": {
+    "groups": [
+      ["builtin", "external"],
+      ["internal"],
+      ["parent", "sibling", "index"]
+    ],
+    "internalPattern": ["@/**", "@apollo/**"],
+    "newlinesBetween": false
+  }
+}

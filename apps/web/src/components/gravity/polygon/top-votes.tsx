@@ -1,8 +1,8 @@
-import * as motion from "motion/react-client";
-import { AnimatePresence } from "motion/react";
+import { m } from "@/i18n/messages";
 import type { RevealedVote } from "@/lib/client/gravity/polygon/types";
 import type { PollSelectedContentImage } from "@apollo/cosmo/types/gravity";
-import { m } from "@/i18n/messages";
+import { AnimatePresence } from "motion/react";
+import * as motion from "motion/react-client";
 
 type Props = {
   votes: RevealedVote[];

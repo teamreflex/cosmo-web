@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
-import { format as formatDate } from "date-fns";
-import { Skeleton } from "./skeleton";
 import type { PropsWithClassName } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import { format as formatDate } from "date-fns";
+import { useEffect, useState } from "react";
+import { Skeleton } from "./skeleton";
 
 type Props = PropsWithClassName<{
   date: Date;

@@ -1,3 +1,17 @@
+import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import type { LinkedAccount, Provider } from "@/hooks/use-account";
+import {
+  listAccountsQuery,
+  useLinkAccount,
+  useUnlinkAccount,
+} from "@/hooks/use-account";
+import { m } from "@/i18n/messages";
 import {
   IconBrandDiscordFilled,
   IconBrandTwitterFilled,
@@ -6,20 +20,6 @@ import {
   IconUnlink,
 } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import type { LinkedAccount, Provider } from "@/hooks/use-account";
-import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  listAccountsQuery,
-  useLinkAccount,
-  useUnlinkAccount,
-} from "@/hooks/use-account";
-import { m } from "@/i18n/messages";
 
 export default function LinkedAccounts() {
   const { data } = useSuspenseQuery(listAccountsQuery);

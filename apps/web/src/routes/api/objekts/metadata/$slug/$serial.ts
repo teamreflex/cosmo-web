@@ -1,8 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
-import type { SerialObjekt, SerialTransfer } from "@/lib/universal/objekts";
 import { cacheHeaders } from "@/lib/server/cache";
-import { indexer } from "@/lib/server/db/indexer";
 import { fetchKnownAddresses } from "@/lib/server/cosmo-accounts";
+import { indexer } from "@/lib/server/db/indexer";
+import type { SerialObjekt, SerialTransfer } from "@/lib/universal/objekts";
+import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/api/objekts/metadata/$slug/$serial")({
   server: {

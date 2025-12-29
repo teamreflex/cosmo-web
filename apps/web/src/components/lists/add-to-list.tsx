@@ -1,8 +1,11 @@
+import { m } from "@/i18n/messages";
+import type { ObjektList } from "@apollo/database/web/types";
 import { IconLoader2, IconPlaylistAdd, IconPlus } from "@tabler/icons-react";
-import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
+import { useState } from "react";
+import type { MouseEvent } from "react";
+import { toast } from "sonner";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,9 +17,6 @@ import {
 } from "../ui/dropdown-menu";
 import { ScrollArea } from "../ui/scroll-area";
 import { $addObjektToList } from "./actions";
-import type { ObjektList } from "@apollo/database/web/types";
-import type { MouseEvent } from "react";
-import { m } from "@/i18n/messages";
 
 type AddToListProps = {
   collectionId: string;
@@ -86,11 +86,11 @@ function ListItem({
   const mutationFn = useServerFn($addObjektToList);
   const mutation = useMutation({
     mutationFn,
-    onSuccess() {
+    onSuccess: async () => {
       toast.success(
         m.toast_added_to_list({ collectionId, listName: list.name }),
       );
-      queryClient.invalidateQueries({
+      await queryClient.invalidateQueries({
         predicate: (query) =>
           query.queryKey[0] === "objekt-list" && query.queryKey[1] === list.id,
       });

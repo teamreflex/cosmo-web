@@ -1,14 +1,16 @@
-import { useState } from "react";
-import { IconHelpCircle } from "@tabler/icons-react";
+import { m } from "@/i18n/messages";
+import { env } from "@/lib/env/client";
 import { Addresses, isEqual } from "@apollo/util";
+import type { CollectionDataSource } from "@apollo/util";
+import { IconHelpCircle } from "@tabler/icons-react";
+import { useState } from "react";
+import type { ReactNode } from "react";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectSeparator,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "../ui/accordion";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,17 +20,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "../ui/alert-dialog";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "../ui/accordion";
 import { Button } from "../ui/button";
-import type { ReactNode } from "react";
-import type { CollectionDataSource } from "@apollo/util";
-import { m } from "@/i18n/messages";
-import { env } from "@/lib/env/client";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 type Props = {
   name: string;

@@ -1,9 +1,9 @@
-import { createServerFn } from "@tanstack/react-start";
-import { sql } from "drizzle-orm";
-import { collections } from "@apollo/database/indexer/schema";
+import { indexer } from "@/lib/server/db/indexer";
 import { adminMiddleware } from "@/lib/server/middlewares";
 import { bandUrlRowSchema } from "@/lib/universal/schema/admin";
-import { indexer } from "@/lib/server/db/indexer";
+import { collections } from "@apollo/database/indexer/schema";
+import { createServerFn } from "@tanstack/react-start";
+import { sql } from "drizzle-orm";
 
 /**
  * Update collections with band URLs.

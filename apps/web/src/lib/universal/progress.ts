@@ -1,5 +1,5 @@
-import type { Collection } from "../server/db/indexer/schema";
 import type { ValidOnlineType } from "@apollo/cosmo/types/common";
+import type { Collection } from "../server/db/indexer/schema";
 
 export type SeasonMatrix = {
   season: string;

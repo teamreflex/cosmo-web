@@ -1,3 +1,8 @@
+import { m } from "@/i18n/messages";
+import type { ObjektWithCollection } from "@/lib/universal/como";
+import { buildCalendar, getDays } from "@/lib/universal/como";
+import { cn } from "@/lib/utils";
+import type { CosmoArtistBFF } from "@apollo/cosmo/types/artists";
 import { IconSparkles } from "@tabler/icons-react";
 import ArtistIcon from "../artist-icon";
 import {
@@ -6,11 +11,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
-import type { CosmoArtistBFF } from "@apollo/cosmo/types/artists";
-import type { ObjektWithCollection } from "@/lib/universal/como";
-import { buildCalendar, getDays } from "@/lib/universal/como";
-import { cn } from "@/lib/utils";
-import { m } from "@/i18n/messages";
 
 type Props = {
   artists: CosmoArtistBFF[];

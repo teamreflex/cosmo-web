@@ -1,6 +1,3 @@
-import { IconList } from "@tabler/icons-react";
-import { Suspense, useState } from "react";
-import EventCollectionsList from "./event-collections-list";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,6 +8,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { m } from "@/i18n/messages";
+import { IconList } from "@tabler/icons-react";
+import { Suspense, useState } from "react";
+import EventCollectionsList from "./event-collections-list";
 
 type Props = {
   eventId: string;

@@ -1,12 +1,18 @@
-import { Suspense } from "react";
-import { IconTrophy } from "@tabler/icons-react";
-import { Button } from "../ui/button";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "../ui/tooltip";
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { useArtists } from "@/hooks/use-artists";
+import type { FilterData } from "@/hooks/use-filter-data";
+import { useProgressFilters } from "@/hooks/use-progress-filters";
+import { m } from "@/i18n/messages";
+import type { ValidOnlineType } from "@apollo/cosmo/types/common";
+import { IconTrophy } from "@tabler/icons-react";
+import { Suspense } from "react";
+import { Button } from "../ui/button";
 import {
   Select,
   SelectContent,
@@ -17,21 +23,15 @@ import {
   SelectValue,
 } from "../ui/select";
 import { Separator } from "../ui/separator";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../ui/tooltip";
 import ProgressLeaderboardContent, {
   LeaderboardSkeleton,
 } from "./progress-leaderboard-content";
-import type { FilterData } from "@/hooks/use-filter-data";
-import type { ValidOnlineType } from "@apollo/cosmo/types/common";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import { useArtists } from "@/hooks/use-artists";
-import { useProgressFilters } from "@/hooks/use-progress-filters";
-import { m } from "@/i18n/messages";
 
 type Props = {
   member: string;

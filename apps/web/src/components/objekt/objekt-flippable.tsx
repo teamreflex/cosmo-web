@@ -1,8 +1,8 @@
-import { Fragment, useState } from "react";
-import ReactPlayer from "react-player";
-import type { PropsWithChildren } from "react";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
+import { Fragment, useState } from "react";
+import type { PropsWithChildren } from "react";
+import ReactPlayer from "react-player";
 
 type Props = PropsWithChildren<{
   collection: Objekt.Collection;

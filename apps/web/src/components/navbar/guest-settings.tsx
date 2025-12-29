@@ -1,6 +1,3 @@
-import { IconLanguage, IconMoon, IconSun } from "@tabler/icons-react";
-import { useTheme } from "../theme-provider";
-import type { Theme } from "../theme-provider";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +10,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { m } from "@/i18n/messages";
 import { getLocale, setLocale } from "@/i18n/runtime";
+import { IconLanguage, IconMoon, IconSun } from "@tabler/icons-react";
+import { useTheme } from "../theme-provider";
+import type { Theme } from "../theme-provider";
 
 export default function GuestSettings() {
   return (
@@ -57,7 +57,7 @@ function LanguageSubmenu() {
   const locale = getLocale();
 
   function handleLanguageChange(value: string) {
-    setLocale(value as typeof locale);
+    void setLocale(value as typeof locale);
   }
 
   return (

@@ -1,13 +1,13 @@
-import { createServerFn } from "@tanstack/react-start";
-import { getRequestHeaders } from "@tanstack/react-start/server";
-import { certifyTicket } from "@apollo/cosmo/server/qr-auth";
-import { userWebshop } from "@apollo/cosmo/server/user";
-import { authenticatedMiddleware } from "@/lib/server/middlewares";
 import { auth } from "@/lib/server/auth";
 import { linkAccount } from "@/lib/server/cosmo-accounts";
+import { authenticatedMiddleware } from "@/lib/server/middlewares";
 import { importObjektLists } from "@/lib/server/objekts/lists";
-import { verifyCosmoSchema } from "@/lib/universal/schema/cosmo";
 import { settingsSchema } from "@/lib/universal/schema/auth";
+import { verifyCosmoSchema } from "@/lib/universal/schema/cosmo";
+import { certifyTicket } from "@apollo/cosmo/server/qr-auth";
+import { userWebshop } from "@apollo/cosmo/server/user";
+import { createServerFn } from "@tanstack/react-start";
+import { getRequestHeaders } from "@tanstack/react-start/server";
 
 /**
  * Updates the user's settings.

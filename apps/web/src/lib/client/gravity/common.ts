@@ -1,9 +1,9 @@
+import type { GravityPollDetailsParams } from "@/lib/queries/gravity";
+import { gravityPollDetailsQuery } from "@/lib/queries/gravity";
+import type { GravityVote } from "@/lib/universal/gravity";
+import { baseUrl } from "@/lib/utils";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ofetch } from "ofetch";
-import type { GravityVote } from "@/lib/universal/gravity";
-import type { GravityPollDetailsParams } from "@/lib/queries/gravity";
-import { baseUrl } from "@/lib/utils";
-import { gravityPollDetailsQuery } from "@/lib/queries/gravity";
 
 export type GravityHookParams = {
   tokenId: bigint;

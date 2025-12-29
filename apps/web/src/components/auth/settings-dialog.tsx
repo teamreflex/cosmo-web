@@ -1,25 +1,4 @@
-import { toast } from "sonner";
-import { IconLoader2 } from "@tabler/icons-react";
-import { Controller, useForm } from "react-hook-form";
-import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { useServerFn } from "@tanstack/react-start";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "@tanstack/react-router";
-import { Field, FieldContent, FieldError, FieldLabel } from "../ui/field";
-import { useTheme } from "../theme-provider";
-import { $updateSettings } from "./actions";
-import type { Theme } from "../theme-provider";
-import type { PublicUser } from "@/lib/universal/auth";
-import type { z } from "zod";
-import { settingsSchema } from "@/lib/universal/schema/auth";
 import { DataSourceSelector } from "@/components/collection/data-source-selector";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -29,9 +8,30 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { currentAccountQuery } from "@/lib/queries/core";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { m } from "@/i18n/messages";
 import { getLocale, setLocale } from "@/i18n/runtime";
+import { currentAccountQuery } from "@/lib/queries/core";
+import type { PublicUser } from "@/lib/universal/auth";
+import { settingsSchema } from "@/lib/universal/schema/auth";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { IconLoader2 } from "@tabler/icons-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { Controller, useForm } from "react-hook-form";
+import { toast } from "sonner";
+import type { z } from "zod";
+import { useTheme } from "../theme-provider";
+import type { Theme } from "../theme-provider";
+import { Field, FieldContent, FieldError, FieldLabel } from "../ui/field";
+import { $updateSettings } from "./actions";
 
 type Props = {
   open: boolean;
@@ -77,6 +77,10 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
     );
   }
 
+  function handleLanguageChange(value: string) {
+    void setLocale(value as typeof locale);
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-xl">
@@ -102,7 +106,7 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
             <Select
               name="language"
               defaultValue={locale}
-              onValueChange={(value) => setLocale(value as typeof locale)}
+              onValueChange={handleLanguageChange}
             >
               <SelectTrigger className="w-36">
                 <SelectValue placeholder={m.settings_language()} />

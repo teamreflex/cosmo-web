@@ -1,5 +1,3 @@
-import { IconLoader2, IconMailCheck, IconTrash } from "@tabler/icons-react";
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,6 +10,8 @@ import {
 } from "@/components/ui/dialog";
 import { useDeleteAccount } from "@/hooks/use-account";
 import { m } from "@/i18n/messages";
+import { IconLoader2, IconMailCheck, IconTrash } from "@tabler/icons-react";
+import { useState } from "react";
 
 export default function DeleteAccount() {
   const [open, setOpen] = useState(false);

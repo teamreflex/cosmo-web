@@ -1,9 +1,9 @@
+import { sanitizeUuid } from "@/lib/utils";
+import { objektListEntries, objektLists } from "@apollo/database/web/schema";
+import { redirect } from "@tanstack/react-router";
 import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
 import * as z from "zod";
-import { redirect } from "@tanstack/react-router";
-import { objektListEntries, objektLists } from "@apollo/database/web/schema";
 import { db } from "../db";
-import { sanitizeUuid } from "@/lib/utils";
 
 /**
  * Fetch a single objekt list.

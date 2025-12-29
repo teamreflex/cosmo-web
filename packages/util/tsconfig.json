@@ -1,12 +1,11 @@
 {
   "extends": "@apollo/typescript/tsconfig.bun.json",
-  "include": ["src/**/*.ts", "eslint.config.ts"],
+  "include": ["src/**/*.ts"],
   "exclude": ["node_modules", ".turbo"],
 
   "compilerOptions": {
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     }
   }
 }

@@ -1,4 +1,4 @@
-import { slugifyObjekt } from "@apollo/util";
+import type { IndexedObjekt } from "@/lib/universal/objekts";
 import type { ValidArtist } from "@apollo/cosmo/types/common";
 import type {
   BFFCollectionGroupCollection,
@@ -7,7 +7,7 @@ import type {
   NonTransferableReason,
   ScannedObjekt,
 } from "@apollo/cosmo/types/objekts";
-import type { IndexedObjekt } from "@/lib/universal/objekts";
+import { slugifyObjekt } from "@apollo/util";
 
 export namespace Objekt {
   /**

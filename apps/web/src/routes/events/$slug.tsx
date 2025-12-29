@@ -1,24 +1,26 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { IconAlertCircle } from "@tabler/icons-react";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Error as ErrorFallback } from "@/components/error-boundary";
-import VirtualizedObjektGrid from "@/components/objekt/virtualized-objekt-grid";
-import { objektOptions } from "@/hooks/use-objekt-response";
-import { useGridColumns } from "@/hooks/use-grid-columns";
-import { eventBySlugQuery, eventObjektsQuery } from "@/lib/queries/events";
-import { defineHead } from "@/lib/meta";
-import { env } from "@/lib/env/client";
-import { m } from "@/i18n/messages";
 import EventGridItem from "@/components/events/event-grid-item";
 import EventHeader from "@/components/events/event-header";
-import { UserStateProvider } from "@/hooks/use-user-state";
-import { currentAccountQuery } from "@/lib/queries/core";
-import { ProfileProvider } from "@/hooks/use-profile";
 import ObjektGridSkeleton from "@/components/objekt/objekt-grid-skeleton";
+import VirtualizedObjektGrid from "@/components/objekt/virtualized-objekt-grid";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useGridColumns } from "@/hooks/use-grid-columns";
+import { objektOptions } from "@/hooks/use-objekt-response";
+import { ProfileProvider } from "@/hooks/use-profile";
+import { UserStateProvider } from "@/hooks/use-user-state";
+import { m } from "@/i18n/messages";
+import { env } from "@/lib/env/client";
+import { defineHead } from "@/lib/meta";
+import { currentAccountQuery } from "@/lib/queries/core";
+import { eventBySlugQuery, eventObjektsQuery } from "@/lib/queries/events";
+import { IconAlertCircle } from "@tabler/icons-react";
+import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/events/$slug")({
   loader: async ({ context, params }) => {
-    context.queryClient.prefetchInfiniteQuery(eventObjektsQuery(params.slug));
+    void context.queryClient.prefetchInfiniteQuery(
+      eventObjektsQuery(params.slug),
+    );
 
     const [account, event] = await Promise.all([
       context.queryClient.ensureQueryData(currentAccountQuery),

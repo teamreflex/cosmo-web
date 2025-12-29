@@ -1,9 +1,9 @@
+import type { ValidArtist } from "@apollo/cosmo/types/common";
 import { clsx } from "clsx";
+import type { ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import * as z from "zod";
 import { env } from "./env/client";
-import type { ClassValue } from "clsx";
-import type { ValidArtist } from "@apollo/cosmo/types/common";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

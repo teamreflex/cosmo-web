@@ -1,21 +1,26 @@
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useObjektSerial } from "@/hooks/use-objekt-serial";
+import { m } from "@/i18n/messages";
+import type { SerialObjekt, SerialTransfer } from "@/lib/universal/objekts";
+import { Addresses, isEqual } from "@apollo/util";
+import {
+  IconChevronDown,
+  IconChevronUp,
+  IconHeartBroken,
+  IconRotate360,
+} from "@tabler/icons-react";
 import {
   QueryErrorResetBoundary,
   useSuspenseQuery,
 } from "@tanstack/react-query";
-import { ErrorBoundary } from "react-error-boundary";
-import { Suspense } from "react";
-import { ofetch } from "ofetch";
-import { IconChevronDown, IconChevronUp, IconHeartBroken, IconRotate360  } from "@tabler/icons-react";
-import { useDebounceValue } from "usehooks-ts";
 import { Link } from "@tanstack/react-router";
-import { Addresses, isEqual } from "@apollo/util";
+import { ofetch } from "ofetch";
+import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
+import { useDebounceValue } from "usehooks-ts";
 import { MetadataDialogError } from "./common";
-import type { SerialObjekt, SerialTransfer } from "@/lib/universal/objekts";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { useObjektSerial } from "@/hooks/use-objekt-serial";
-import { m } from "@/i18n/messages";
 
 type Props = {
   slug: string;
@@ -236,7 +241,7 @@ function TransferItem({ transfer }: TransferItemProps) {
       </div>
 
       {/* timestamp */}
-      <span className="text-right break-words text-muted-foreground">
+      <span className="text-right wrap-break-word text-muted-foreground">
         {timestamp}
       </span>
     </div>

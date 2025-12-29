@@ -1,12 +1,12 @@
+import * as Sentry from "@sentry/tanstackstart-react";
+import { QueryClient } from "@tanstack/react-query";
 import { createRouter } from "@tanstack/react-router";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
-import { QueryClient } from "@tanstack/react-query";
+import type { ReactNode } from "react";
 import { hashFn } from "wagmi/query";
-import * as Sentry from "@sentry/tanstackstart-react";
-import { routeTree } from "./routeTree.gen";
 import { MediaQueryProvider } from "./hooks/use-media-query";
 import { env } from "./lib/env/client";
-import type { ReactNode } from "react";
+import { routeTree } from "./routeTree.gen";
 
 export function getRouter() {
   const queryClient = new QueryClient({

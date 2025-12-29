@@ -26,6 +26,7 @@ This is a Turborepo monorepo for the Apollo project.
 - Linting and type checking is sufficent, you do not need to run the build or dev commands to test your work.
 - When dealing with new packages, always check `package.json` to see if it has already been installed.
 - When installing packages with `bun add`, you must run the command from the specific workspace directory (e.g., `cd apps/web && bun add package-name`). Bun does not support a `--filter` flag like other package managers. Running `bun add` from the root will add the package to the root `package.json` instead of the workspace.
+- The project uses [oxlint](https://oxc.rs/docs/guide/usage/linter.html) instead of eslint, and [oxfmt](https://oxc.rs/docs/guide/usage/formatter.html) instead of Prettier. Do not manually use eslint or Prettier.
 
 ### Project Structure
 
@@ -41,7 +42,7 @@ This is a Turborepo monorepo for the Apollo project.
 
 - `packages/cosmo`: COSMO related types and API functions
 - `packages/database`: `drizzle-orm` schemas for both databases
-- `packages/eslint`: Shared ESLint config
+- `packages/lint`: Shared oxlint config
 - `packages/typescript`: Shared tsconfig.json file
 - `packages/util`: Shared utility functions
 

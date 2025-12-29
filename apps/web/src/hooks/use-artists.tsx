@@ -1,5 +1,5 @@
-import { useSuspenseQueries } from "@tanstack/react-query";
 import { artistsQuery, selectedArtistsQuery } from "@/lib/queries/core";
+import { useSuspenseQueries } from "@tanstack/react-query";
 
 /**
  * Provides a way to pull an artist and its contracts/members deep in the component tree.

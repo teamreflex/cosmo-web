@@ -1,14 +1,14 @@
-import { Suspense } from "react";
-import { ErrorBoundary } from "react-error-boundary";
-import SeasonFilter from "../filter-season";
-import OnlineFilter from "../filter-online";
-import ClassFilter from "../filter-class";
-import SortFilter from "../filter-sort";
-import FilterSearch from "../filter-search";
-import ResetFilters from "../reset-filters";
 import CollectionFilter from "@/components/objekt-index/collection-filter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
+import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
+import ClassFilter from "../filter-class";
+import OnlineFilter from "../filter-online";
+import FilterSearch from "../filter-search";
+import SeasonFilter from "../filter-season";
+import SortFilter from "../filter-sort";
+import ResetFilters from "../reset-filters";
 
 type Props = {
   search?: boolean;

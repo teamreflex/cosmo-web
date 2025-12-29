@@ -1,9 +1,9 @@
-import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
 import { subsquidStatus } from "@apollo/database/indexer/schema";
-import { abstract } from "./http";
+import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
+import type { RPCResponse, SystemStatus } from "../universal/system";
 import { remember } from "./cache";
 import { indexer } from "./db/indexer";
-import type { RPCResponse, SystemStatus } from "../universal/system";
+import { abstract } from "./http";
 
 /**
  * Fetch the current block height from the indexer.

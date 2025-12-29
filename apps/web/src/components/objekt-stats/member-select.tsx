@@ -1,7 +1,4 @@
-import { useState } from "react";
-import { IconChevronDown } from "@tabler/icons-react";
-import { ScrollArea } from "../ui/scroll-area";
-import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -10,8 +7,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
 import { artistColors } from "@/lib/utils";
+import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
+import { IconChevronDown } from "@tabler/icons-react";
+import { useState } from "react";
+import { ScrollArea } from "../ui/scroll-area";
 
 type Props = {
   artists: CosmoArtistWithMembersBFF[];

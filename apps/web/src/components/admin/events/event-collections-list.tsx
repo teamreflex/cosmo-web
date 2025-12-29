@@ -1,7 +1,7 @@
+import { m } from "@/i18n/messages";
+import { eventCollectionsQuery } from "@/lib/queries/events";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import DeleteCollection from "./delete-collection";
-import { eventCollectionsQuery } from "@/lib/queries/events";
-import { m } from "@/i18n/messages";
 
 type Props = {
   eventId: string;

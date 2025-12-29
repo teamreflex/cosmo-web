@@ -1,9 +1,12 @@
+import { m } from "@/i18n/messages";
+import type { ObjektList } from "@apollo/database/web/types";
 import { IconCloudDownload, IconCopy, IconLoader2 } from "@tabler/icons-react";
+import { useMutation } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useCopyToClipboard } from "usehooks-ts";
-import { useMutation } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
+import { Button } from "../ui/button";
 import {
   Dialog,
   DialogContent,
@@ -12,6 +15,7 @@ import {
   DialogTitle,
 } from "../ui/dialog";
 import { Label } from "../ui/label";
+import { ScrollArea } from "../ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -19,11 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { Button } from "../ui/button";
-import { ScrollArea } from "../ui/scroll-area";
 import { $generateDiscordList } from "./actions";
-import type { ObjektList } from "@apollo/database/web/types";
-import { m } from "@/i18n/messages";
 
 type Props = {
   open: boolean;
@@ -65,7 +65,7 @@ export default function DiscordFormatDialog({
   }
 
   function copy() {
-    copyToClipboard(result ?? "");
+    void copyToClipboard(result ?? "");
     toast.success(m.toast_copied_clipboard());
   }
 

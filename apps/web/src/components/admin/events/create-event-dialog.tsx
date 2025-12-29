@@ -1,18 +1,3 @@
-import { IconLoader2, IconPlus } from "@tabler/icons-react";
-import { Suspense, useRef, useState } from "react";
-import { toast } from "sonner";
-import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { FormProvider, useForm, useFormState } from "react-hook-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
-import EventForm from "./event-form";
-import type { CreateEventInput } from "@/lib/universal/schema/events";
-import { createEventSchema } from "@/lib/universal/schema/events";
-import {
-  $createEvent,
-  $getEventImageUploadUrl,
-} from "@/lib/server/events/actions";
-import { eventsQuery } from "@/lib/queries/events";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -25,6 +10,21 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { m } from "@/i18n/messages";
+import { eventsQuery } from "@/lib/queries/events";
+import {
+  $createEvent,
+  $getEventImageUploadUrl,
+} from "@/lib/server/events/actions";
+import type { CreateEventInput } from "@/lib/universal/schema/events";
+import { createEventSchema } from "@/lib/universal/schema/events";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { IconLoader2, IconPlus } from "@tabler/icons-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { Suspense, useRef, useState } from "react";
+import { FormProvider, useForm, useFormState } from "react-hook-form";
+import { toast } from "sonner";
+import EventForm from "./event-form";
 
 export default function CreateEvent() {
   const [open, setOpen] = useState(false);
@@ -32,9 +32,9 @@ export default function CreateEvent() {
   const selectedImageRef = useRef<File | null>(null);
   const mutation = useMutation({
     mutationFn: useServerFn($createEvent),
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success(m.admin_event_created());
-      queryClient.invalidateQueries({ queryKey: eventsQuery().queryKey });
+      await queryClient.invalidateQueries({ queryKey: eventsQuery().queryKey });
       setOpen(false);
       form.reset();
       selectedImageRef.current = null;

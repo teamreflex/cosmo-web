@@ -7,14 +7,14 @@ module.exports = class Data1741083743969 {
 
     // 2. create an index specifically for the cosmo-spin account
     await db.query(
-      `CREATE INDEX "IDX_objekts_spin_initial" ON "objekt" ("received_at" DESC) WHERE owner = '0xd3d5f29881ad87bb10c1100e2c709c9596de345f'`
+      `CREATE INDEX "IDX_objekts_spin_initial" ON "objekt" ("received_at" DESC) WHERE owner = '0xd3d5f29881ad87bb10c1100e2c709c9596de345f'`,
     );
   }
 
   async down(db) {
     // recreate 1
     await db.query(
-      `CREATE INDEX "IDX_objekt_owner_received_at" ON "objekt" ("owner", "received_at") `
+      `CREATE INDEX "IDX_objekt_owner_received_at" ON "objekt" ("owner", "received_at") `,
     );
 
     // drop the cosmo-spin index

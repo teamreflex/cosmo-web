@@ -1,3 +1,8 @@
+import { m } from "@/i18n/messages";
+import { filterDataQuery } from "@/lib/queries/core";
+import { progressBreakdownQuery } from "@/lib/queries/progress";
+import type { SeasonProgress } from "@/lib/universal/progress";
+import type { ValidOnlineType } from "@apollo/cosmo/types/common";
 import { useSuspenseQueries } from "@tanstack/react-query";
 import {
   Select,
@@ -6,13 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import ProgressSeason from "./progress-season";
 import ProgressLeaderboard from "./progress-leaderboard";
-import type { SeasonProgress } from "@/lib/universal/progress";
-import type { ValidOnlineType } from "@apollo/cosmo/types/common";
-import { filterDataQuery } from "@/lib/queries/core";
-import { progressBreakdownQuery } from "@/lib/queries/progress";
-import { m } from "@/i18n/messages";
+import ProgressSeason from "./progress-season";
 
 type Props = {
   address: string;
@@ -61,7 +61,6 @@ export default function ProgressTable(props: Props) {
   );
 
   // calculate total progress
-  // eslint-disable-next-line prefer-const
   let { progress, total, unobtainable } = Object.values(items)
     .flat()
     .reduce(

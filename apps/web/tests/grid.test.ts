@@ -1,9 +1,9 @@
 import { describe, expect, it } from "bun:test";
+import type { Collection } from "../src/lib/server/db/indexer/schema";
 import {
   buildCollectionLookupMap,
   calculateGrids,
 } from "../src/lib/universal/grid";
-import type { Collection } from "../src/lib/server/db/indexer/schema";
 
 // Helper to create mock collections
 function createCollection(
@@ -150,22 +150,20 @@ describe("calculateGrids", () => {
   });
 
   it("should detect multiple complete grids with duplicates", () => {
+    // 2 copies of each collection
     const owned = [
-      // 2 copies of each collection
-      ...[
-        "101z",
-        "102z",
-        "103z",
-        "104z",
-        "105z",
-        "106z",
-        "107z",
-        "108z",
-      ].flatMap((no) => [
-        createOwned("Atom01", "JinSoul", no, true),
-        createOwned("Atom01", "JinSoul", no, true),
-      ]),
-    ];
+      "101z",
+      "102z",
+      "103z",
+      "104z",
+      "105z",
+      "106z",
+      "107z",
+      "108z",
+    ].flatMap((no) => [
+      createOwned("Atom01", "JinSoul", no, true),
+      createOwned("Atom01", "JinSoul", no, true),
+    ]);
 
     const result = calculateGrids(owned, lookup);
 

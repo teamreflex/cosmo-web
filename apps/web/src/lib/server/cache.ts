@@ -1,6 +1,6 @@
-import { RedisClient } from "bun";
-import { createServerOnlyFn } from "@tanstack/react-start";
 import { env } from "@/lib/env/server";
+import { createServerOnlyFn } from "@tanstack/react-start";
+import { RedisClient } from "bun";
 
 export const redis = new RedisClient(env.REDIS_URL);
 
@@ -21,7 +21,7 @@ export const remember = createServerOnlyFn(
     }
 
     const fresh = await callback();
-    redis.setex(key, ttl, JSON.stringify(fresh));
+    await redis.setex(key, ttl, JSON.stringify(fresh));
 
     return fresh;
   },

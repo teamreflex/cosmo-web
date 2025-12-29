@@ -1,18 +1,18 @@
-import { processor, type ProcessorContext } from "./processor";
+import { fetchMetadataV1 } from "@apollo/cosmo/server/metadata";
+import type { CosmoObjektMetadataV1 } from "@apollo/cosmo/types/metadata";
+import { addr, chunk, slugifyObjekt } from "@apollo/util";
+import { Addresses } from "@apollo/util";
+import { TypeormDatabase, type Store } from "@subsquid/typeorm-store";
+import { randomUUID } from "crypto";
+import { env } from "./env";
+import { Collection, ComoBalance, Objekt, type Transfer, Vote } from "./model";
 import {
   type ComoBalanceEvent,
   type TransferabilityUpdate,
   type VoteEvent,
   parseBlocks,
 } from "./parser";
-import { Collection, ComoBalance, Objekt, type Transfer, Vote } from "./model";
-import { addr, chunk, slugifyObjekt } from "@apollo/util";
-import { TypeormDatabase, type Store } from "@subsquid/typeorm-store";
-import { randomUUID } from "crypto";
-import { env } from "./env";
-import { Addresses } from "@apollo/util";
-import { fetchMetadataV1 } from "@apollo/cosmo/server/metadata";
-import type { CosmoObjektMetadataV1 } from "@apollo/cosmo/types/metadata";
+import { processor, type ProcessorContext } from "./processor";
 
 const db = new TypeormDatabase({ supportHotBlocks: true });
 

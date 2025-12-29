@@ -1,7 +1,7 @@
+import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
+import type { ValidArtist } from "@apollo/cosmo/types/common";
 import { useCallback } from "react";
 import MemberFilter from "../collection/member-filter";
-import type { ValidArtist } from "@apollo/cosmo/types/common";
-import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 
 export default function CosmoMemberFilter() {
   const { filters, setFilters } = useCosmoFilters();

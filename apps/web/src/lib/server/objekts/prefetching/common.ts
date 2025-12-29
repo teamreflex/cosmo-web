@@ -1,9 +1,9 @@
+import type { ValidArtist } from "@apollo/cosmo/types/common";
 import type {
   CosmoObjekt,
   NonTransferableReason,
 } from "@apollo/cosmo/types/objekts";
 import type { Collection, Objekt } from "../../db/indexer/schema";
-import type { ValidArtist } from "@apollo/cosmo/types/common";
 
 /**
  * Map indexed objekt/collection into an entity compatible with existing type.

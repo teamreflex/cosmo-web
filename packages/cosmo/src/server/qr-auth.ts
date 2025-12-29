@@ -1,6 +1,6 @@
-import { cosmoShop, cosmoShopHeaders } from "./http";
-import type { AuthTicket, QueryTicket } from "../types/qr-auth";
 import puppeteer from "puppeteer-core";
+import type { AuthTicket, QueryTicket } from "../types/qr-auth";
+import { cosmoShop, cosmoShopHeaders } from "./http";
 
 export interface QrAuthConfig {
   recaptchaKey: string;

@@ -4,7 +4,7 @@ module.exports = class Data1739771974876 {
   async up(db) {
     // for querying stats for the last 24 hours
     await db.query(
-      `CREATE INDEX "IDX_objekt_minted_at" ON "objekt" ("minted_at") `
+      `CREATE INDEX "IDX_objekt_minted_at" ON "objekt" ("minted_at") `,
     );
 
     // improves performance when joining objekt and collection
@@ -12,7 +12,7 @@ module.exports = class Data1739771974876 {
 
     // improves leaderboard query performance
     await db.query(
-      `CREATE INDEX "IDX_objekt_collection_owner" ON "objekt" ("collection_id", "owner") `
+      `CREATE INDEX "IDX_objekt_collection_owner" ON "objekt" ("collection_id", "owner") `,
     );
   }
 

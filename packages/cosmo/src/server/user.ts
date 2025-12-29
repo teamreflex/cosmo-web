@@ -1,9 +1,9 @@
-import { cosmo, cosmoShop } from "./http";
 import type {
   CosmoByNicknameResult,
   CosmoSearchResult,
   CosmoShopUser,
 } from "../types/user";
+import { cosmo, cosmoShop } from "./http";
 
 /**
  * Fetch a user from COSMO by nickname.

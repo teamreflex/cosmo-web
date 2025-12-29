@@ -1,8 +1,8 @@
+import { Objekt } from "@/lib/universal/objekt-conversion";
+import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
 import { useMemo } from "react";
 import ExpandableObjekt from "../../objekt/objekt-expandable";
 import { LegacyOverlay } from "./common-legacy";
-import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
-import { Objekt } from "@/lib/universal/objekt-conversion";
 
 type Props = {
   item: CosmoObjekt;

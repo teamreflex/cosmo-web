@@ -1,10 +1,10 @@
+import { cacheHeaders } from "@/lib/server/cache";
+import { db } from "@/lib/server/db";
+import { fetchAbstractVotes } from "@/lib/server/gravity";
+import { gravities, gravityPolls } from "@apollo/database/web/schema";
 import { createFileRoute } from "@tanstack/react-router";
 import { isPast } from "date-fns";
 import { eq } from "drizzle-orm";
-import { gravities, gravityPolls } from "@apollo/database/web/schema";
-import { db } from "@/lib/server/db";
-import { fetchAbstractVotes } from "@/lib/server/gravity";
-import { cacheHeaders } from "@/lib/server/cache";
 
 export const Route = createFileRoute("/api/gravity/$pollId/votes")({
   server: {

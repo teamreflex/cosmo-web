@@ -1,19 +1,19 @@
-import { Suspense } from "react";
+import { useGridColumns } from "@/hooks/use-grid-columns";
+import { useObjektIndex } from "@/hooks/use-objekt-index";
+import { useUserState } from "@/hooks/use-user-state";
+import { m } from "@/i18n/messages";
+import type { ObjektList } from "@apollo/database/web/types";
 import { IconList } from "@tabler/icons-react";
-import CosmoMemberFilter from "../objekt/cosmo-member-filter";
-import FiltersContainer from "../collection/filters-container";
-import VirtualizedObjektGrid from "../objekt/virtualized-objekt-grid";
+import { Suspense } from "react";
 import ObjektIndexFilters from "../collection/filter-contexts/objekt-index-filters";
-import RoutedExpandableObjekt from "../objekt/objekt-routed";
+import FiltersContainer from "../collection/filters-container";
 import IndexListDropdown from "../lists/index-list-dropdown";
+import CosmoMemberFilter from "../objekt/cosmo-member-filter";
+import RoutedExpandableObjekt from "../objekt/objekt-routed";
+import VirtualizedObjektGrid from "../objekt/virtualized-objekt-grid";
 import { Button } from "../ui/button";
 import HelpDialog from "./help-dialog";
 import { IndexGridItem } from "./index-grid-item";
-import type { ObjektList } from "@apollo/database/web/types";
-import { useGridColumns } from "@/hooks/use-grid-columns";
-import { useUserState } from "@/hooks/use-user-state";
-import { useObjektIndex } from "@/hooks/use-objekt-index";
-import { m } from "@/i18n/messages";
 
 type Props = {
   objektLists: ObjektList[];

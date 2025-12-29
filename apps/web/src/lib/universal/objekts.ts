@@ -1,9 +1,9 @@
-import type { Era, Event } from "@apollo/database/web/types";
 import type { Collection, Transfer } from "@/lib/server/db/indexer/schema";
 import type {
   CosmoObjekt,
   ObjektBaseFields,
 } from "@apollo/cosmo/types/objekts";
+import type { Era, Event } from "@apollo/database/web/types";
 
 // alias the indexer type
 export type IndexedObjekt = Collection;

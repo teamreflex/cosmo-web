@@ -1,5 +1,3 @@
-import { IconHelp, IconLock, IconMailOff } from "@tabler/icons-react";
-import { Button } from "../ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,8 +8,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { env } from "@/lib/env/client";
 import { m } from "@/i18n/messages";
+import { env } from "@/lib/env/client";
+import { IconHelp, IconLock, IconMailOff } from "@tabler/icons-react";
+import { Button } from "../ui/button";
 
 export default function HelpDialog() {
   return (

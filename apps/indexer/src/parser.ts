@@ -1,12 +1,12 @@
-import { Transfer } from "./model";
-import type { Fields, Log, Transaction } from "./processor";
 import { addr } from "@apollo/util";
+import { Addresses } from "@apollo/util";
 import type { BlockData } from "@subsquid/evm-processor";
-import * as ABI_OBJEKT from "./abi/objekt";
+import { randomUUID } from "crypto";
 import * as ABI_COMO from "./abi/como";
 import * as ABI_GRAVITY from "./abi/gravity";
-import { Addresses } from "@apollo/util";
-import { randomUUID } from "crypto";
+import * as ABI_OBJEKT from "./abi/objekt";
+import { Transfer } from "./model";
+import type { Fields, Log, Transaction } from "./processor";
 
 const transferability = ABI_OBJEKT.functions.batchUpdateObjektTransferability;
 

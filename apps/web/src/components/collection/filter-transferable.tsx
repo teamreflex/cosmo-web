@@ -1,5 +1,5 @@
-import type { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { Toggle } from "@/components/ui/toggle";
+import type { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { m } from "@/i18n/messages";
 
 type Props = {

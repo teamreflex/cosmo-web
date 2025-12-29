@@ -1,7 +1,3 @@
-import { validSorts } from "@apollo/cosmo/types/common";
-import type { ValidSort } from "@apollo/cosmo/types/common";
-import type { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
-import type { CollectionDataSource } from "@apollo/util";
 import {
   Select,
   SelectContent,
@@ -9,7 +5,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import type { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { m } from "@/i18n/messages";
+import { validSorts } from "@apollo/cosmo/types/common";
+import type { ValidSort } from "@apollo/cosmo/types/common";
+import type { CollectionDataSource } from "@apollo/util";
 
 type Props = {
   sort: CosmoFilters["sort"];

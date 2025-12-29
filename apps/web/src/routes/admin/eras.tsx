@@ -1,11 +1,11 @@
-import { Suspense } from "react";
-import { createFileRoute, redirect } from "@tanstack/react-router";
 import CreateEra from "@/components/admin/eras/create-era-dialog";
 import ErasGrid from "@/components/admin/eras/eras-grid";
+import { m } from "@/i18n/messages";
+import { defineHead } from "@/lib/meta";
 import { artistsQuery, currentAccountQuery } from "@/lib/queries/core";
 import { erasQuery } from "@/lib/queries/events";
-import { defineHead } from "@/lib/meta";
-import { m } from "@/i18n/messages";
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { Suspense } from "react";
 
 export const Route = createFileRoute("/admin/eras")({
   staleTime: Infinity,

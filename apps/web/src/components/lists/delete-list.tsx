@@ -1,12 +1,3 @@
-import { IconLoader2, IconTrash } from "@tabler/icons-react";
-import { toast } from "sonner";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
-import { useRouter } from "@tanstack/react-router";
-import { Button } from "../ui/button";
-import { $deleteObjektList } from "./actions";
-import type { MouseEvent } from "react";
-import type { ObjektList } from "@apollo/database/web/types";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,9 +9,18 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
 import { useProfileContext } from "@/hooks/use-profile";
 import { m } from "@/i18n/messages";
+import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
+import type { ObjektList } from "@apollo/database/web/types";
+import { IconLoader2, IconTrash } from "@tabler/icons-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import type { MouseEvent } from "react";
+import { toast } from "sonner";
+import { Button } from "../ui/button";
+import { $deleteObjektList } from "./actions";
 
 type Props = {
   objektList: ObjektList;
@@ -66,7 +66,7 @@ export default function DeleteList({ objektList }: Props) {
       }
 
       // refresh the loader
-      router.invalidate({
+      void router.invalidate({
         filter: (route) =>
           route.routeId === "/" ||
           (target?.cosmo?.username !== undefined &&

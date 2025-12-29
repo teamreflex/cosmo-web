@@ -1,26 +1,26 @@
-import { Dialog as DialogPrimitive, VisuallyHidden } from "radix-ui";
+import { useObjektTransfer } from "@/hooks/use-objekt-transfer";
+import { useProfileContext } from "@/hooks/use-profile";
+import { m } from "@/i18n/messages";
+import { Objekt } from "@/lib/universal/objekt-conversion";
+import { cn } from "@/lib/utils";
+import { useObjektOverlay } from "@/store";
+import type {
+  BFFCollectionGroup,
+  BFFCollectionGroupObjekt,
+} from "@apollo/cosmo/types/objekts";
 import { IconInfoCircle, IconX } from "@tabler/icons-react";
-import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { Dialog as DialogPrimitive, VisuallyHidden } from "radix-ui";
+import { useState } from "react";
 import { useShallow } from "zustand/react/shallow";
-import MetadataDialog, { useMetadataDialog } from "./metadata-dialog";
-import { fetchObjektQuery } from "./metadata/common";
-import StaticObjekt from "./objekt-static";
 import {
   ObjektNewIndicator,
   ObjektSidebar,
   getObjektImageUrls,
 } from "./common";
-import type {
-  BFFCollectionGroup,
-  BFFCollectionGroupObjekt,
-} from "@apollo/cosmo/types/objekts";
-import { useObjektTransfer } from "@/hooks/use-objekt-transfer";
-import { useProfileContext } from "@/hooks/use-profile";
-import { Objekt } from "@/lib/universal/objekt-conversion";
-import { cn } from "@/lib/utils";
-import { useObjektOverlay } from "@/store";
-import { m } from "@/i18n/messages";
+import MetadataDialog, { useMetadataDialog } from "./metadata-dialog";
+import { fetchObjektQuery } from "./metadata/common";
+import StaticObjekt from "./objekt-static";
 
 interface Props {
   group: BFFCollectionGroup;

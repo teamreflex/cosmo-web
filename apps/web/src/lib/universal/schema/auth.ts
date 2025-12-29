@@ -1,5 +1,5 @@
-import * as z from "zod";
 import { collectionDataSources } from "@apollo/util";
+import * as z from "zod";
 
 const emailSchema = z.email("Invalid email address");
 const passwordSchema = z

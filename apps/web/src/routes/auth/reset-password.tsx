@@ -1,8 +1,8 @@
+import ResetPassword from "@/components/auth/reset-password";
+import { m } from "@/i18n/messages";
+import { defineHead } from "@/lib/meta";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import * as z from "zod";
-import ResetPassword from "@/components/auth/reset-password";
-import { defineHead } from "@/lib/meta";
-import { m } from "@/i18n/messages";
 
 export const Route = createFileRoute("/auth/reset-password")({
   validateSearch: z.object({

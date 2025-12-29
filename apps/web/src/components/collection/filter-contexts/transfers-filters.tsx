@@ -1,12 +1,12 @@
-import { ErrorBoundary } from "react-error-boundary";
-import { Suspense } from "react";
-import SeasonFilter from "../filter-season";
-import OnlineFilter from "../filter-online";
-import ClassFilter from "../filter-class";
-import TransferTypeFilter from "../filter-transfer-type";
-import type { TransferType } from "@/lib/universal/transfers";
-import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
+import type { TransferType } from "@/lib/universal/transfers";
+import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
+import ClassFilter from "../filter-class";
+import OnlineFilter from "../filter-online";
+import SeasonFilter from "../filter-season";
+import TransferTypeFilter from "../filter-transfer-type";
 
 type Props = {
   type: TransferType;

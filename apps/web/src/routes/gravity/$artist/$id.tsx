@@ -1,18 +1,18 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { ErrorBoundary } from "react-error-boundary";
-import { IconAlertTriangle, IconHeartBroken } from "@tabler/icons-react";
-import { Suspense } from "react";
-import type { ErrorComponentProps } from "@tanstack/react-router";
+import { Error } from "@/components/error-boundary";
+import DynamicLiveChart from "@/components/gravity/dynamic-live-chart";
+import GravityProvider from "@/components/gravity/gravity-provider";
 import GravitySkeleton from "@/components/gravity/gravity-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
-import GravityProvider from "@/components/gravity/gravity-provider";
+import { m } from "@/i18n/messages";
+import { defineHead } from "@/lib/meta";
+import { gravityPollDetailsQuery } from "@/lib/queries/gravity";
 import { $fetchGravityDetails } from "@/lib/server/gravity";
 import { GravityNotSupportedError } from "@/lib/universal/gravity";
-import { Error } from "@/components/error-boundary";
-import { gravityPollDetailsQuery } from "@/lib/queries/gravity";
-import DynamicLiveChart from "@/components/gravity/dynamic-live-chart";
-import { defineHead } from "@/lib/meta";
-import { m } from "@/i18n/messages";
+import { IconAlertTriangle, IconHeartBroken } from "@tabler/icons-react";
+import { createFileRoute } from "@tanstack/react-router";
+import type { ErrorComponentProps } from "@tanstack/react-router";
+import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 
 export const Route = createFileRoute("/gravity/$artist/$id")({
   staleTime: Infinity,
@@ -33,7 +33,7 @@ export const Route = createFileRoute("/gravity/$artist/$id")({
      * abstract: prefetch poll details (candidates etc)
      */
     if (isPolygon === false) {
-      context.queryClient.prefetchQuery(
+      void context.queryClient.prefetchQuery(
         gravityPollDetailsQuery({
           artistName: params.artist,
           tokenId: BigInt(artist.comoTokenId),
@@ -53,7 +53,7 @@ export const Route = createFileRoute("/gravity/$artist/$id")({
   head: ({ loaderData }) =>
     defineHead({
       title: loaderData?.gravity.title ?? m.gravity_header(),
-      canonical: `/gravity/${loaderData?.artist}/${loaderData?.gravity.id}`,
+      canonical: `/gravity/${loaderData?.artist?.id}/${loaderData?.gravity.id}`,
     }),
 });
 

@@ -1,7 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
-import * as z from "zod";
 import { env } from "@/lib/env/server";
 import { db } from "@/lib/server/db";
+import { createFileRoute } from "@tanstack/react-router";
+import * as z from "zod";
 
 const schema = z.object({
   addresses: z

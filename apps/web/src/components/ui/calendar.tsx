@@ -1,13 +1,13 @@
-import * as React from "react";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   IconChevronDown,
   IconChevronLeft,
   IconChevronRight,
 } from "@tabler/icons-react";
+import * as React from "react";
 import { DayPicker, getDefaultClassNames } from "react-day-picker";
 import type { DayButton } from "react-day-picker";
-import { cn } from "@/lib/utils";
-import { Button, buttonVariants } from "@/components/ui/button";
 
 function Calendar({
   className,
@@ -136,10 +136,17 @@ function Calendar({
             />
           );
         },
-        Chevron: ({ className: chevronClassName, orientation, ...chevronProps }) => {
+        Chevron: ({
+          className: chevronClassName,
+          orientation,
+          ...chevronProps
+        }) => {
           if (orientation === "left") {
             return (
-              <IconChevronLeft className={cn("size-4", chevronClassName)} {...chevronProps} />
+              <IconChevronLeft
+                className={cn("size-4", chevronClassName)}
+                {...chevronProps}
+              />
             );
           }
 
@@ -153,7 +160,10 @@ function Calendar({
           }
 
           return (
-            <IconChevronDown className={cn("size-4", chevronClassName)} {...chevronProps} />
+            <IconChevronDown
+              className={cn("size-4", chevronClassName)}
+              {...chevronProps}
+            />
           );
         },
         DayButton: CalendarDayButton,

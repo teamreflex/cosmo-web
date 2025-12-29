@@ -1,6 +1,3 @@
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import type { HourlyBreakdown } from "@/lib/universal/stats";
-import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
 import type { ChartConfig } from "@/components/ui/chart";
 import {
   ChartContainer,
@@ -9,6 +6,9 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import type { HourlyBreakdown } from "@/lib/universal/stats";
+import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
 type Props = {
   artists: CosmoArtistWithMembersBFF[];

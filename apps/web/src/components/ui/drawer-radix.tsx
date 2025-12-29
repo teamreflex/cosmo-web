@@ -1,10 +1,10 @@
 "use client";
 
-import * as React from "react";
-import { Dialog as DialogPrimitive } from "radix-ui";
+import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "motion/react";
 import type { PanInfo } from "motion/react";
-import { cn } from "@/lib/utils";
+import { Dialog as DialogPrimitive } from "radix-ui";
+import * as React from "react";
 
 type Side = "top" | "bottom" | "left" | "right";
 
@@ -24,7 +24,9 @@ function useDrawerContext() {
   return context;
 }
 
-interface DrawerProps extends React.ComponentProps<typeof DialogPrimitive.Root> {
+interface DrawerProps extends React.ComponentProps<
+  typeof DialogPrimitive.Root
+> {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   side?: Side;
@@ -39,7 +41,12 @@ function Drawer({
 }: DrawerProps) {
   return (
     <DrawerContext.Provider value={{ open, onOpenChange, side }}>
-      <DialogPrimitive.Root data-slot="drawer" open={open} onOpenChange={onOpenChange} {...props}>
+      <DialogPrimitive.Root
+        data-slot="drawer"
+        open={open}
+        onOpenChange={onOpenChange}
+        {...props}
+      >
         {children}
       </DialogPrimitive.Root>
     </DrawerContext.Provider>
@@ -58,11 +65,10 @@ function DrawerClose({
   return <DialogPrimitive.Close data-slot="drawer-close" {...props} />;
 }
 
-interface DrawerContentProps
-  extends Omit<
-    React.ComponentProps<typeof DialogPrimitive.Content>,
-    "onAnimationEnd" | "onDragEnd" | "onDrag" | "onDragStart"
-  > {
+interface DrawerContentProps extends Omit<
+  React.ComponentProps<typeof DialogPrimitive.Content>,
+  "onAnimationEnd" | "onDragEnd" | "onDrag" | "onDragStart"
+> {
   notch?: boolean;
 }
 
@@ -175,7 +181,10 @@ function DrawerHeader({
   return (
     <div
       data-slot="drawer-header"
-      className={cn("flex flex-col gap-1.5 p-4 text-center sm:text-left", className)}
+      className={cn(
+        "flex flex-col gap-1.5 p-4 text-center sm:text-left",
+        className,
+      )}
       {...props}
     />
   );

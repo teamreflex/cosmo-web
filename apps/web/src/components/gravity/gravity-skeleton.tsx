@@ -1,5 +1,5 @@
-import { Skeleton } from "../ui/skeleton";
 import SkeletonGradient from "../skeleton/skeleton-overlay";
+import { Skeleton } from "../ui/skeleton";
 
 export default function GravitySkeleton() {
   return (

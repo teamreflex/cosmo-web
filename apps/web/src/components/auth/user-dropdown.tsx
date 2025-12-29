@@ -1,22 +1,4 @@
 import {
-  IconBrandDiscord,
-  IconInfoCircle,
-  IconLogout,
-  IconShieldExclamation,
-  IconTool,
-  IconUserCog,
-} from "@tabler/icons-react";
-import { useState } from "react";
-import { Link } from "@tanstack/react-router";
-import { ArtistItem } from "../navbar/artist-selectbox";
-import UserAvatar from "../profile/user-avatar";
-import AboutDialog from "../navbar/about";
-import SettingsDialog from "./settings-dialog";
-import AccountDialog from "./account-dialog";
-import type { PublicUser } from "@/lib/universal/auth";
-import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
-import { useArtists } from "@/hooks/use-artists";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
@@ -24,7 +6,25 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useArtists } from "@/hooks/use-artists";
 import { m } from "@/i18n/messages";
+import type { PublicUser } from "@/lib/universal/auth";
+import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import {
+  IconBrandDiscord,
+  IconInfoCircle,
+  IconLogout,
+  IconShieldExclamation,
+  IconTool,
+  IconUserCog,
+} from "@tabler/icons-react";
+import { Link } from "@tanstack/react-router";
+import { useState } from "react";
+import AboutDialog from "../navbar/about";
+import { ArtistItem } from "../navbar/artist-selectbox";
+import UserAvatar from "../profile/user-avatar";
+import AccountDialog from "./account-dialog";
+import SettingsDialog from "./settings-dialog";
 
 type UserDropdownProps = {
   user: PublicUser;

@@ -1,6 +1,6 @@
-import { lazy } from "react";
 import type { Props as AbstractProps } from "@/components/gravity/abstract/gravity-live-chart";
 import type { Props as PolygonProps } from "@/components/gravity/polygon/gravity-live-chart";
+import { lazy } from "react";
 
 const AbstractLiveChart = lazy(
   () => import("@/components/gravity/abstract/gravity-live-chart"),

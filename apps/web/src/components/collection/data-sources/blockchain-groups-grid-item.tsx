@@ -1,5 +1,5 @@
-import GroupedObjekt from "../../objekt/objekt-collection-group";
 import type { BFFCollectionGroup } from "@apollo/cosmo/types/objekts";
+import GroupedObjekt from "../../objekt/objekt-collection-group";
 
 type Props = {
   item: BFFCollectionGroup;

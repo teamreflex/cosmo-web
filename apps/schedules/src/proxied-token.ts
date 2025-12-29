@@ -1,7 +1,7 @@
-import { decodeJwt } from "jose";
-import { Data, Effect } from "effect";
 import { refresh } from "@apollo/cosmo/server/auth";
 import { cosmoTokens } from "@apollo/database/web/schema";
+import { Data, Effect } from "effect";
+import { decodeJwt } from "jose";
 import { DatabaseWeb } from "./db";
 
 export class ProxiedToken extends Effect.Service<ProxiedToken>()(

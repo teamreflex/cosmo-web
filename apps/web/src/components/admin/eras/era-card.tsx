@@ -1,9 +1,9 @@
-import { getRouteApi } from "@tanstack/react-router";
-import EditEraDialog from "./edit-era-dialog";
-import type { Era } from "@apollo/database/web/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Timestamp } from "@/components/ui/timestamp";
 import { cn } from "@/lib/utils";
+import type { Era } from "@apollo/database/web/types";
+import { getRouteApi } from "@tanstack/react-router";
+import EditEraDialog from "./edit-era-dialog";
 
 const route = getRouteApi("/admin/eras");
 

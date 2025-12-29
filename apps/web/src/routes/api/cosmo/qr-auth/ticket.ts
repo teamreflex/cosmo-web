@@ -1,5 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { queryTicket } from "@apollo/cosmo/server/qr-auth";
+import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/api/cosmo/qr-auth/ticket")({
   server: {

@@ -1,6 +1,6 @@
-import { SES } from "@aws-sdk/client-ses";
-import { env as serverEnv } from "@/lib/env/server";
 import { env as clientEnv } from "@/lib/env/client";
+import { env as serverEnv } from "@/lib/env/server";
+import { SES } from "@aws-sdk/client-ses";
 
 const ses = new SES({
   region: serverEnv.MAIL_SES_REGION,
