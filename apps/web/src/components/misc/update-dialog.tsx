@@ -81,13 +81,13 @@ const updates = [
   {
     date: "2025-12-25",
     changes: [
-      "Migrated to a new framework which should be faster and more responsive.",
-      "Added translations with preliminary support for Korean.",
-      "Updated the design of the artist/member filter to better accomodate more artists.",
-      "Additional design tweaks and improvements.",
-      "Moved the about dialog to the user dropdown, now the logo links to the objekts page.",
-      "Fixed jank objekt popups on mobile, including drag-to-close not working.",
-      "Fixed past gravity events showing as live instead of completed.",
+      "Added: Event catalog system - an easy way of viewing past and ongoing objekt drops.",
+      "Added: Translations with preliminary support for Korean.",
+      "Updated: the design of the artist/member filter to better accomodate more artists.",
+      "Updated: Design tweaks and improvements.",
+      "Updated: Moved the about dialog to the user dropdown, now the logo links to the objekts page.",
+      "Fixed: Janky objekt popups on mobile, including drag-to-close not working.",
+      "Fixed: Past gravity events showing as live instead of completed.",
     ],
   },
 ];
