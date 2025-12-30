@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { eventTypes } from "@apollo/database/web/types";
 import type { EventTypeKey } from "@apollo/database/web/types";
 import {
+  IconCalendar,
   IconDisc,
   IconHeartHandshake,
   IconMapPin,
@@ -15,7 +16,8 @@ type EventTypeBadgeProps = {
   className?: string;
 };
 
-const eventTypeIcons = {
+const eventTypeIcons: Record<EventTypeKey, React.ElementType> = {
+  seasonal: IconCalendar,
   album: IconDisc,
   offline: IconMapPin,
   shop: IconShoppingBag,

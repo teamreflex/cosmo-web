@@ -36,6 +36,11 @@ export interface EventWithEra extends Event {
 }
 
 export const eventTypes = {
+  // objekts available all season (First, Basic, Welcome class)
+  seasonal: {
+    value: "seasonal",
+    label: "Seasonal",
+  },
   // bundled in albums or are objekt music albums
   album: {
     value: "album",
