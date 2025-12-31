@@ -85,19 +85,20 @@ export const $fetchPaginatedEvents = createServerFn({ method: "GET" })
       whereClause.artist = { in: data.artists };
     }
     if (data.cursor) {
-      whereClause.createdAt = { lt: data.cursor };
+      whereClause.startDate = { lt: data.cursor };
     }
 
     const allEvents = await db.query.events.findMany({
       where: Object.keys(whereClause).length > 0 ? whereClause : undefined,
-      orderBy: { createdAt: "desc" },
+      orderBy: { startDate: "desc" },
       with: { era: true },
       limit: PER_PAGE_EVENTS,
     });
 
     const hasNext = allEvents.length === PER_PAGE_EVENTS;
+    const lastEvent = allEvents[allEvents.length - 1];
     const nextStartAfter = hasNext
-      ? allEvents[allEvents.length - 1]!.createdAt
+      ? lastEvent?.startDate?.toISOString()
       : undefined;
 
     return {
@@ -128,7 +129,7 @@ export const $fetchActiveEvents = createServerFn({ method: "GET" })
 
     return db.query.events.findMany({
       where: whereClause,
-      orderBy: { createdAt: "desc" },
+      orderBy: { startDate: "desc" },
       with: { era: true },
     });
   });
