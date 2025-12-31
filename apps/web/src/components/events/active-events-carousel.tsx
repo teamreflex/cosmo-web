@@ -63,6 +63,7 @@ export default function ActiveEventsCarousel({
         opts={{
           loop: true,
           align: "center",
+          containScroll: false,
         }}
         plugins={[autoplay.current]}
         setApi={setApi}
