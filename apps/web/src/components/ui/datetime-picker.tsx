@@ -95,6 +95,7 @@ export function DateTimePicker({
           <Calendar
             mode="single"
             selected={zonedValue}
+            defaultMonth={zonedValue}
             onSelect={handleDateSelect}
           />
         </PopoverContent>
