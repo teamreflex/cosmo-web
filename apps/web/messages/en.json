@@ -344,6 +344,7 @@
   "admin_event_twitter_url": "Twitter Announcement URL",
   "admin_event_start_date": "Start Date",
   "admin_event_end_date": "End Date",
+  "admin_event_timezone_hint": "Times are entered in KST",
   "admin_event_spin_available": "Spin Available After",
   "admin_event_published": "Published",
   "admin_event_created": "Event created successfully",

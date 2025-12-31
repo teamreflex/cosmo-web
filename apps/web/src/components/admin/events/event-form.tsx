@@ -1,6 +1,6 @@
 import EventImageUpload from "@/components/admin/events/event-image-upload";
 import { Badge } from "@/components/ui/badge";
-import { DatePicker } from "@/components/ui/date-picker";
+import { DateTimePicker } from "@/components/ui/datetime-picker";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
@@ -237,42 +237,44 @@ export default function EventForm({
         )}
       />
 
-      {/* Date Range */}
-      <div className="grid grid-cols-2 gap-4">
-        <Controller
-          control={form.control}
-          name="startDate"
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel>{m.admin_event_start_date()}</FieldLabel>
-              <DatePicker
-                value={field.value}
-                onChange={field.onChange}
-                placeholder={m.admin_era_start_date_placeholder()}
-                side="bottom"
-              />
-              <FieldError errors={[fieldState.error]} />
-            </Field>
-          )}
-        />
+      {/* start date */}
+      <Controller
+        control={form.control}
+        name="startDate"
+        render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid}>
+            <FieldLabel>{m.admin_event_start_date()}</FieldLabel>
+            <DateTimePicker
+              value={field.value}
+              onChange={field.onChange}
+              placeholder={m.admin_era_start_date_placeholder()}
+              side="bottom"
+            />
+            <p className="text-xs text-muted-foreground">
+              {m.admin_event_timezone_hint()}
+            </p>
+            <FieldError errors={[fieldState.error]} />
+          </Field>
+        )}
+      />
 
-        <Controller
-          control={form.control}
-          name="endDate"
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel>{m.admin_event_end_date()}</FieldLabel>
-              <DatePicker
-                value={field.value}
-                onChange={field.onChange}
-                placeholder={m.admin_era_end_date_placeholder()}
-                side="bottom"
-              />
-              <FieldError errors={[fieldState.error]} />
-            </Field>
-          )}
-        />
-      </div>
+      {/* end date */}
+      <Controller
+        control={form.control}
+        name="endDate"
+        render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid}>
+            <FieldLabel>{m.admin_event_end_date()}</FieldLabel>
+            <DateTimePicker
+              value={field.value}
+              onChange={field.onChange}
+              placeholder={m.admin_era_end_date_placeholder()}
+              side="bottom"
+            />
+            <FieldError errors={[fieldState.error]} />
+          </Field>
+        )}
+      />
     </div>
   );
 }

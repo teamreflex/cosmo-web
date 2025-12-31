@@ -75,10 +75,10 @@ export default function EventHeader({ event }: EventHeaderProps) {
               {event.startDate !== null && (
                 <div className="flex items-center justify-center gap-2 text-xs md:justify-start">
                   <IconCalendarEvent className="size-4" />
-                  <Timestamp date={event.startDate} format="MMM d, yyyy" />
+                  <Timestamp date={event.startDate} format="MMM d, yyyy" showTime />
                   <span>~</span>
                   {event.endDate ? (
-                    <Timestamp date={event.endDate} format="MMM d, yyyy" />
+                    <Timestamp date={event.endDate} format="MMM d, yyyy" showTime />
                   ) : (
                     <span className="italic">Present</span>
                   )}

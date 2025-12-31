@@ -7,9 +7,10 @@ import { Skeleton } from "./skeleton";
 type Props = PropsWithClassName<{
   date: Date;
   format: string;
+  showTime?: boolean;
 }>;
 
-export function Timestamp({ date, format, className }: Props) {
+export function Timestamp({ date, format, className, showTime }: Props) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -20,9 +21,11 @@ export function Timestamp({ date, format, className }: Props) {
     return <Skeleton className="h-4 w-20 rounded-full" />;
   }
 
+  const displayFormat = showTime ? `${format} h:mm a` : format;
+
   return (
     <time dateTime={date.toISOString()} className={cn(className)}>
-      {formatDate(date, format)}
+      {formatDate(date, displayFormat)}
     </time>
   );
 }

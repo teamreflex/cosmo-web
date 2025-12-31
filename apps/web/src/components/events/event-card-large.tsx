@@ -75,12 +75,14 @@ export default function EventCardLarge(props: EventCardLargeProps) {
                     <Timestamp
                       date={props.event.startDate}
                       format="MMM d, yyyy"
+                      showTime
                     />
                     <span>~</span>
                     {props.event.endDate ? (
                       <Timestamp
                         date={props.event.endDate}
                         format="MMM d, yyyy"
+                        showTime
                       />
                     ) : (
                       <span className="italic">Present</span>
