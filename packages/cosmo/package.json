@@ -16,7 +16,7 @@
   "dependencies": {
     "ofetch": "^1.5.1",
     "puppeteer-core": "^24.34.0",
-    "zod": "^4.2.1"
+    "zod": "^4.3.0"
   },
   "devDependencies": {
     "@apollo/typescript": "workspace:*",

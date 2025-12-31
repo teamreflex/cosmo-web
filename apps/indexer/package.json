@@ -28,7 +28,7 @@
     "ofetch": "^1.5.1",
     "path-scurry": "^2.0.1",
     "typeorm": "^0.3.28",
-    "zod": "^4.2.1"
+    "zod": "^4.3.0"
   },
   "devDependencies": {
     "@apollo/typescript": "workspace:*",
