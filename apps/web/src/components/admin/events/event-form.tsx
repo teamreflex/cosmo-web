@@ -77,7 +77,7 @@ export default function EventForm({
                   {artistList.map((artist) => (
                     <SelectItem
                       key={artist.id}
-                      value={artist.id.toLowerCase()}
+                      value={artist.id}
                       className="flex items-center gap-2"
                     >
                       <img
