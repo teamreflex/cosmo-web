@@ -75,10 +75,18 @@ export default function EventHeader({ event }: EventHeaderProps) {
               {event.startDate !== null && (
                 <div className="flex items-center justify-center gap-2 text-xs md:justify-start">
                   <IconCalendarEvent className="size-4" />
-                  <Timestamp date={event.startDate} format="MMM d, yyyy" showTime />
+                  <Timestamp
+                    date={event.startDate}
+                    format="MMM d, yyyy"
+                    showTime
+                  />
                   <span>~</span>
                   {event.endDate ? (
-                    <Timestamp date={event.endDate} format="MMM d, yyyy" showTime />
+                    <Timestamp
+                      date={event.endDate}
+                      format="MMM d, yyyy"
+                      showTime
+                    />
                   ) : (
                     <span className="italic">Present</span>
                   )}
@@ -94,10 +102,7 @@ export default function EventHeader({ event }: EventHeaderProps) {
 
             {/* badges/info */}
             <div className="flex flex-wrap items-center justify-center gap-2 md:justify-start">
-              <EventTypeBadge
-                eventType={event.eventType}
-                className="backdrop-blur-sm"
-              />
+              <EventTypeBadge eventType={event.eventType} />
 
               <Badge variant="event-era">
                 {(event.era.imageUrl || event.era.spotifyAlbumArt) && (

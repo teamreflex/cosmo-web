@@ -33,6 +33,17 @@
   - [x] event: make header better
   - [x] era: add custom image for non-album eras
 
+- triples: triplescosmos
+- triples japan: tripleS_JAPAN
+- withmuu: Withmuu_twt
+- jumpup: jumpup_ent
+- dmm: dearmymuse_foru
+- flnk/bstage: bstageplus
+- mmt: _mmtshop
+- everline: everlineshop
+- kmonstar: kmonstar_global
+- hellolive: hellolivetv
+
 ## indexer
 
 - [x] confirm deployment on railway works

@@ -5,6 +5,7 @@
 @import "./layout.css";
 
 @custom-variant dark (&:is(.dark *));
+@custom-variant firefox (:-moz-any(&));
 
 /* dm-sans-latin-wght-normal */
 @font-face {
