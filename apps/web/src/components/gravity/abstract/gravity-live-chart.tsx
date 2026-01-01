@@ -54,14 +54,18 @@ export default function AbstractLiveChart(props: Props) {
     return { comoByCandidate: comoMap, comoUsed: used };
   }, [poll.pollViewMetadata.selectedContent, chain]);
 
-  const percentageCounted =
-    chain.status === "success"
-      ? Math.round(
-          ((chain.totalVotesCount - chain.remainingVotesCount) /
-            chain.totalVotesCount) *
-            100,
-        )
-      : 0;
+  // calculate the percentage of votes counted.
+  const percentageCounted = useMemo(() => {
+    if (chain.status !== "success") return "0";
+
+    const pct =
+      ((chain.totalVotesCount - chain.remainingVotesCount) /
+        chain.totalVotesCount) *
+      100;
+
+    if (pct === 0 || pct === 100) return String(pct);
+    return pct.toFixed(2);
+  }, [chain]);
 
   if (chain.status === "pending") {
     return <GravitySkeleton />;

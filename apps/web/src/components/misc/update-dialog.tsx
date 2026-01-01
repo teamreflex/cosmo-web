@@ -79,15 +79,16 @@ export default function UpdateDialog() {
 
 const updates = [
   {
-    date: "2025-12-25",
+    date: "2026-01-15",
     changes: [
+      "Added: Translations, starting with support for Korean.",
       "Added: Event catalog system - an easy way of viewing past and ongoing objekt drops.",
-      "Added: Translations with preliminary support for Korean.",
-      "Updated: the design of the artist/member filter to better accomodate more artists.",
-      "Updated: Design tweaks and improvements.",
+      "Updated: The design of the artist/member filter to better accommodate more artists.",
+      "Updated: Other design tweaks and improvements such as a new font and color scheme.",
       "Updated: Moved the about dialog to the user dropdown, now the logo links to the objekts page.",
       "Fixed: Janky objekt popups on mobile, including drag-to-close not working.",
       "Fixed: Past gravity events showing as live instead of completed.",
+      "Fixed: Gravity vote percentage rounding up incorrectly.",
     ],
   },
 ];
