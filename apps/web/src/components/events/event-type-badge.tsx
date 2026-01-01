@@ -6,6 +6,7 @@ import {
   IconDisc,
   IconHeartHandshake,
   IconMapPin,
+  IconPackage,
   IconPlane,
   IconShoppingBag,
   IconSparkles,
@@ -19,6 +20,7 @@ type EventTypeBadgeProps = {
 const eventTypeIcons: Record<EventTypeKey, React.ElementType> = {
   seasonal: IconCalendar,
   album: IconDisc,
+  merch: IconPackage,
   offline: IconMapPin,
   shop: IconShoppingBag,
   collaboration: IconHeartHandshake,

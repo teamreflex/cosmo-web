@@ -46,6 +46,11 @@ export const eventTypes = {
     value: "album",
     label: "Album",
   },
+  // non-album merch such as seasons greetings
+  merch: {
+    value: "merch",
+    label: "Merch",
+  },
   // objekts sold at offline events such as concerts, fanmeetings etc
   offline: {
     value: "offline",
