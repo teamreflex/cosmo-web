@@ -1,6 +1,5 @@
 import { Error } from "@/components/error-boundary";
 import DynamicLiveChart from "@/components/gravity/dynamic-live-chart";
-import GravityProvider from "@/components/gravity/gravity-provider";
 import GravitySkeleton from "@/components/gravity/gravity-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
@@ -61,42 +60,40 @@ function RouteComponent() {
   const { artist, gravity, isPolygon, pollId } = Route.useLoaderData();
 
   return (
-    <GravityProvider>
-      <main className="container flex flex-col py-2">
-        {/* header */}
-        <div className="flex flex-col pb-4">
-          <div className="flex items-center justify-between gap-2">
-            <h1 className="font-cosmo text-3xl uppercase">
-              {m.gravity_header()}
-            </h1>
-            <div id="gravity-status"></div>
-          </div>
-          <p className="text-sm font-semibold text-muted-foreground">
-            {gravity.title}
-          </p>
+    <main className="container flex flex-col py-2">
+      {/* header */}
+      <div className="flex flex-col pb-4">
+        <div className="flex items-center justify-between gap-2">
+          <h1 className="font-cosmo text-3xl uppercase">
+            {m.gravity_header()}
+          </h1>
+          <div id="gravity-status"></div>
         </div>
+        <p className="text-sm font-semibold text-muted-foreground">
+          {gravity.title}
+        </p>
+      </div>
 
-        {/* content */}
-        <ErrorBoundary
-          fallback={
-            <div className="flex flex-col items-center justify-center gap-2 py-4">
-              <IconAlertTriangle className="size-12" />
-              <p className="text-sm font-semibold">{m.gravity_failed_load()}</p>
-            </div>
-          }
-        >
-          <Suspense fallback={<GravitySkeleton />}>
-            {/* dynamically load the appropriate component at runtime */}
-            <DynamicLiveChart
-              network={isPolygon ? "polygon" : "abstract"}
-              artist={artist}
-              gravity={gravity}
-              pollId={pollId}
-            />
-          </Suspense>
-        </ErrorBoundary>
-      </main>
-    </GravityProvider>
+      {/* content */}
+      <ErrorBoundary
+        fallback={
+          <div className="flex flex-col items-center justify-center gap-2 py-4">
+            <IconAlertTriangle className="size-12" />
+            <p className="text-sm font-semibold">{m.gravity_failed_load()}</p>
+          </div>
+        }
+      >
+        <Suspense fallback={<GravitySkeleton />}>
+          {/* dynamically load the appropriate component at runtime */}
+          <DynamicLiveChart
+            network={isPolygon ? "polygon" : "abstract"}
+            artist={artist}
+            gravity={gravity}
+            pollId={pollId}
+          />
+        </Suspense>
+      </ErrorBoundary>
+    </main>
   );
 }
 
