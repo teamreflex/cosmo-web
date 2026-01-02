@@ -35,7 +35,7 @@ export const Route = createFileRoute("/gravity/$artist/$id")({
       void context.queryClient.prefetchQuery(
         gravityPollDetailsQuery({
           artistName: params.artist,
-          tokenId: BigInt(artist.comoTokenId),
+          tokenId: artist.comoTokenId,
           gravityId: gravity.id,
           pollId: poll.id,
         }),

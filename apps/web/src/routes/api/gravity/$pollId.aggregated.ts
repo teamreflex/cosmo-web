@@ -1,3 +1,4 @@
+import { AggregatedGravityData } from "@/lib/client/gravity/abstract/types";
 import { cacheHeaders } from "@/lib/server/cache";
 import { fetchKnownAddresses } from "@/lib/server/cosmo-accounts";
 import { db } from "@/lib/server/db";
@@ -10,7 +11,7 @@ export const Route = createFileRoute("/api/gravity/$pollId/aggregated")({
     handlers: {
       /**
        * API route that returns aggregated gravity vote data.
-       * Returns chart data, top 50 votes, top 25 users, and comoPerCandidate.
+       * Returns chart data, top 50 votes, top 25 users, and reveals.
        */
       GET: async ({ params }) => {
         // validate pollId
@@ -33,29 +34,41 @@ export const Route = createFileRoute("/api/gravity/$pollId/aggregated")({
         // fetch all votes from indexer
         const rawVotes = await indexer.query.votes.findMany({
           columns: {
-            id: true,
-            from: true,
-            createdAt: true,
-            amount: true,
-            blockNumber: true,
-            candidateId: true,
+            tokenId: false,
+            pollId: false,
+            logIndex: false,
+            hash: false,
           },
           where: { pollId },
         });
 
         // compute aggregations in parallel
-        const [chartData, topVotes, topUsers, comoPerCandidate] =
-          await Promise.all([
-            computeChartData(rawVotes, startDate, endDate),
-            computeTopVotes(rawVotes, 50),
-            computeTopUsers(rawVotes, 25),
-            computeComoPerCandidate(rawVotes),
-          ]);
+        const [chartData, topVotes, topUsers] = await Promise.all([
+          computeChartData(rawVotes, startDate, endDate),
+          computeTopVotes(rawVotes, 50),
+          computeTopUsers(rawVotes, 25),
+        ]);
 
         // count revealed votes
         const revealedVoteCount = rawVotes.filter(
           (v) => v.candidateId !== null,
         ).length;
+
+        // sum como used
+        const totalComoCount = rawVotes.reduce((acc, v) => acc + v.amount, 0);
+
+        // only return reveals array if all votes are revealed (finalized)
+        // otherwise client will poll for reveals
+        const isFinalized = revealedVoteCount === rawVotes.length;
+        const reveals = isFinalized
+          ? rawVotes
+              .filter((v) => v.candidateId !== null)
+              .map((v) => ({
+                id: v.id,
+                candidateId: v.candidateId!,
+                amount: v.amount,
+              }))
+          : [];
 
         // collect unique addresses from top votes and top users
         const addresses = new Set<string>();
@@ -84,19 +97,19 @@ export const Route = createFileRoute("/api/gravity/$pollId/aggregated")({
           ? 60 * 60 * 24 * 30 // 30 days if past
           : 60 * 10; // 10 minutes if not
 
-        return Response.json(
-          {
-            chartData,
-            topVotes: topVotesWithUsernames,
-            topUsers: topUsersWithUsernames,
-            totalVoteCount: rawVotes.length,
-            revealedVoteCount,
-            comoPerCandidate,
-          },
-          {
-            headers: cacheHeaders({ cdn: cacheTime }),
-          },
-        );
+        const result = {
+          chartData,
+          topVotes: topVotesWithUsernames,
+          topUsers: topUsersWithUsernames,
+          totalVoteCount: rawVotes.length,
+          totalComoCount,
+          revealedVoteCount,
+          reveals,
+        } satisfies AggregatedGravityData;
+
+        return Response.json(result, {
+          headers: cacheHeaders({ cdn: cacheTime }),
+        });
       },
     },
   },
@@ -234,28 +247,4 @@ function computeTopUsers(votes: RawVote[], limit: number) {
 
   // sort final result descending by total
   return topUsersHeap.sort((a, b) => b.total - a.total);
-}
-
-/**
- * Compute COMO totals per candidate from all revealed votes.
- */
-function computeComoPerCandidate(votes: RawVote[]): number[] {
-  const comoByCandidate = new Map<number, number>();
-
-  for (const vote of votes) {
-    if (vote.candidateId !== null) {
-      comoByCandidate.set(
-        vote.candidateId,
-        (comoByCandidate.get(vote.candidateId) ?? 0) + vote.amount,
-      );
-    }
-  }
-
-  // convert to array indexed by candidateId
-  const maxCandidateId = Math.max(0, ...comoByCandidate.keys());
-  const result: number[] = [];
-  for (let i = 0; i <= maxCandidateId; i++) {
-    result.push(comoByCandidate.get(i) ?? 0);
-  }
-  return result;
 }

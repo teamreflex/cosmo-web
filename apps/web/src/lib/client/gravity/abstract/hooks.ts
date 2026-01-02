@@ -1,110 +1,111 @@
+import {
+  type GravityPollDetailsParams,
+  gravityPollDetailsQuery,
+  gravityVoteDataQuery,
+} from "@/lib/queries/gravity";
 import { $fetchRevealedVotes } from "@/lib/server/gravity";
-import { baseUrl } from "@/lib/utils";
-import { useInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
-import { isAfter } from "date-fns";
-import { ofetch } from "ofetch";
+import { useInfiniteQuery, useSuspenseQueries } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import type { RevealedVote } from "../types";
 import type {
-  AggregatedGravityData,
   AggregatedTopUser,
   AggregatedTopVote,
   LiveStatus,
-  UseChainData,
-  UseChainDataOptions,
-  UseChainDataSuccess,
+  Reveal,
+  UseRevealsOptions,
+  UseRevealsResult,
 } from "./types";
 
-// polling intervals in ms
-const DATE_POLLING_INTERVAL = 2500;
 const REVEAL_POLLING_INTERVAL = 10_000;
 
 /**
- * Get the current date and updates with the polling interval.
+ * Fetch poll details and vote data in parallel.
  */
-export function useCurrentDate() {
-  const [date, setDate] = useState(() => new Date());
+export function useGravityData(params: GravityPollDetailsParams) {
+  const [{ data: poll }, { data: aggregated }] = useSuspenseQueries({
+    queries: [
+      gravityPollDetailsQuery(params),
+      gravityVoteDataQuery(params.pollId),
+    ],
+  });
+
+  return { poll, aggregated };
+}
+
+/**
+ * Track whether voting has ended, triggering a single re-render when endDate passes.
+ */
+function useVotingEnded(endDate: string) {
+  const [hasEnded, setHasEnded] = useState(
+    () => new Date() >= new Date(endDate),
+  );
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setDate(new Date());
-    }, DATE_POLLING_INTERVAL);
+    if (hasEnded) return;
 
-    return () => clearInterval(interval);
-  }, []);
-
-  return date;
-}
-
-/**
- * Fetch aggregated gravity data from the backend.
- */
-export function useAggregatedGravityData(pollId: number) {
-  return useSuspenseQuery({
-    queryKey: ["gravity", "aggregated", pollId],
-    queryFn: async ({ signal }) => {
-      const url = new URL(`/api/gravity/${pollId}/aggregated`, baseUrl());
-      return await ofetch<AggregatedGravityData>(url.toString(), {
-        signal,
-      });
-    },
-    refetchOnWindowFocus: false,
-    staleTime: Infinity,
-  });
-}
-
-/**
- * Fetch and derive vote data from the backend.
- * Polls for reveals during the "live" phase.
- */
-export function useChainData(params: UseChainDataOptions): UseChainData {
-  const pollId = Number(params.pollId);
-  const { data: aggregated } = useAggregatedGravityData(pollId);
-
-  // determine initial live status based on aggregated data
-  const initialLiveStatus = useMemo((): LiveStatus => {
-    if (isAfter(new Date(params.endDate), params.now)) {
-      return "voting";
+    const msUntilEnd = new Date(endDate).getTime() - Date.now();
+    if (msUntilEnd <= 0) {
+      setHasEnded(true);
+      return;
     }
-    // use server-provided revealed count to determine status
-    const unrevealed = aggregated.totalVoteCount - aggregated.revealedVoteCount;
-    return unrevealed === 0 ? "finalized" : "live";
-  }, [
-    aggregated.totalVoteCount,
-    aggregated.revealedVoteCount,
-    params.endDate,
-    params.now,
-  ]);
+
+    const timeout = setTimeout(() => setHasEnded(true), msUntilEnd);
+    return () => clearTimeout(timeout);
+  }, [endDate, hasEnded]);
+
+  return hasEnded;
+}
+
+/**
+ * Derive vote data and poll for reveals during the "live" phase.
+ */
+export function useReveals(params: UseRevealsOptions): UseRevealsResult {
+  const { pollId, endDate, aggregated } = params;
+  const votingEnded = useVotingEnded(endDate);
 
   // poll for reveals during "live" phase using infinite query for accumulation
-  const { data, fetchNextPage, isFetchingNextPage } = useInfiniteQuery({
-    queryKey: ["gravity", "reveals", pollId],
-    queryFn: ({ pageParam }: { pageParam: number | undefined }) =>
-      $fetchRevealedVotes({
-        data: { pollId, cursor: pageParam },
-      }),
-    initialPageParam: undefined,
-    getNextPageParam: (lastPage) => lastPage.nextCursor,
-    enabled: initialLiveStatus === "live",
-  });
+  // only poll if: voting ended AND aggregated has no reveals (not finalized)
+  const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
+    useInfiniteQuery({
+      queryKey: ["gravity", "reveals", pollId],
+      queryFn: ({ pageParam }: { pageParam: number | undefined }) =>
+        $fetchRevealedVotes({
+          data: { pollId, cursor: pageParam },
+        }),
+      initialPageParam: undefined,
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+      enabled: () => votingEnded && aggregated.reveals.length === 0,
+    });
+
+  // merge reveal sources: use aggregated.reveals (finalized) or polled data (live)
+  const reveals = useMemo((): Reveal[] => {
+    if (aggregated.reveals.length > 0) {
+      return aggregated.reveals;
+    }
+    return data?.pages.flatMap((page) => page.votes) ?? [];
+  }, [aggregated.reveals, data]);
+
+  const remainingVotesCount = aggregated.totalVoteCount - reveals.length;
+
+  const liveStatus = useMemo((): LiveStatus => {
+    if (!votingEnded) {
+      return "voting";
+    }
+    return remainingVotesCount === 0 ? "finalized" : "live";
+  }, [votingEnded, remainingVotesCount]);
 
   // manual polling interval
   useEffect(() => {
-    if (initialLiveStatus !== "live") return;
+    if (liveStatus !== "live") return;
 
     const interval = setInterval(() => {
-      if (!isFetchingNextPage) {
+      if (!isFetchingNextPage && hasNextPage) {
         void fetchNextPage();
       }
     }, REVEAL_POLLING_INTERVAL);
 
     return () => clearInterval(interval);
-  }, [initialLiveStatus, fetchNextPage, isFetchingNextPage]);
-
-  // flatten all pages into a single array of reveals
-  const reveals = useMemo(() => {
-    return data?.pages.flatMap((page) => page.votes) ?? [];
-  }, [data]);
+  }, [liveStatus, fetchNextPage, isFetchingNextPage, hasNextPage]);
 
   // create a map for O(1) reveal lookups
   const revealMap = useMemo(() => {
@@ -146,25 +147,26 @@ export function useChainData(params: UseChainDataOptions): UseChainData {
         candidateId: vote.candidateId!,
         blockNumber: vote.blockNumber,
         username: vote.username,
-        pollId: 0,
+        pollId: 0, // we don't query this nor is it used
         hash: vote.id,
       }));
   }, [topVotesWithReveals]);
 
-  // use server-provided comoPerCandidate (computed from all revealed votes)
-  const comoPerCandidate = aggregated.comoPerCandidate;
-
-  // use server-provided revealed count for remaining calculation
-  const remainingVotesCount =
-    aggregated.totalVoteCount - aggregated.revealedVoteCount;
-
-  // Derive final live status
-  const liveStatus = useMemo((): LiveStatus => {
-    if (isAfter(new Date(params.endDate), params.now)) {
-      return "voting";
+  // compute COMO per candidate from reveals
+  const comoPerCandidate = useMemo((): number[] => {
+    if (reveals.length === 0) {
+      return [];
     }
-    return remainingVotesCount === 0 ? "finalized" : "live";
-  }, [params.endDate, params.now, remainingVotesCount]);
+    const comoMap = new Map<number, number>();
+    for (const reveal of reveals) {
+      comoMap.set(
+        reveal.candidateId,
+        (comoMap.get(reveal.candidateId) ?? 0) + reveal.amount,
+      );
+    }
+    const maxId = Math.max(0, ...comoMap.keys());
+    return Array.from({ length: maxId + 1 }, (_, i) => comoMap.get(i) ?? 0);
+  }, [reveals]);
 
   return {
     status: "success",
@@ -174,9 +176,8 @@ export function useChainData(params: UseChainDataOptions): UseChainData {
     remainingVotesCount,
     comoPerCandidate,
     revealedVotes,
-    // New fields for components that use aggregated data directly
     chartData: aggregated.chartData,
     topVotes: topVotesWithReveals,
     topUsers: topUsersWithReveals,
-  } satisfies UseChainDataSuccess;
+  } satisfies UseRevealsResult;
 }

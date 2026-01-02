@@ -298,6 +298,7 @@ export const $fetchRevealedVotes = createServerFn({ method: "GET" })
         id: true,
         candidateId: true,
         blockNumber: true,
+        amount: true,
       },
       where: {
         pollId: data.pollId,
@@ -319,6 +320,7 @@ export const $fetchRevealedVotes = createServerFn({ method: "GET" })
       votes: votes.map((v) => ({
         id: v.id,
         candidateId: v.candidateId!,
+        amount: v.amount,
       })),
       nextCursor,
     };

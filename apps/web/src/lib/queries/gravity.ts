@@ -1,4 +1,7 @@
+import type { AggregatedGravityData } from "@/lib/client/gravity/abstract/types";
+import { baseUrl } from "@/lib/utils";
 import { queryOptions } from "@tanstack/react-query";
+import { ofetch } from "ofetch";
 import {
   $fetchCachedPoll,
   $fetchGravities,
@@ -12,7 +15,7 @@ export const gravitiesIndexQuery = queryOptions({
 
 export type GravityPollDetailsParams = {
   artistName: string;
-  tokenId: bigint;
+  tokenId: number;
   gravityId: number;
   pollId: number;
 };
@@ -25,7 +28,7 @@ export const gravityPollDetailsQuery = (params: GravityPollDetailsParams) =>
       {
         artistName: params.artistName,
         gravityId: params.gravityId,
-        tokenId: Number(params.tokenId),
+        tokenId: params.tokenId,
         pollId: params.pollId,
       },
     ],
@@ -54,4 +57,15 @@ export const polygonGravityQuery = (artist: string, id: number) =>
           id,
         },
       }),
+  });
+
+export const gravityVoteDataQuery = (pollId: number) =>
+  queryOptions({
+    queryKey: ["gravity", "votes", pollId],
+    queryFn: async ({ signal }) => {
+      const url = new URL(`/api/gravity/${pollId}/aggregated`, baseUrl());
+      return await ofetch<AggregatedGravityData>(url.toString(), { signal });
+    },
+    refetchOnWindowFocus: false,
+    staleTime: Infinity,
   });

@@ -24,6 +24,8 @@
 - [x] fix sort filter flicker
 - [x] fix layout shift in profile layout
 - [x] load test?
+- [x] re-implement top votes and top users for gravity display
+- [x] optimize gravity data fetching
 - [ ] event system
   - [x] general: add seasons? then create a SeasonBadge component with proper colors. for idntt use colors per season: winter - lightblue, summer - yellow, spring - green, autumn - brownish red
   - [x] general: add proper badges for the event types
@@ -87,8 +89,10 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA drizzle GRANT ALL ON TABLES TO postgres;
 - [x] point nextjs deployment to railway typesense
 - [x] create maintenance branch
 - [ ] promote maintenance branch to prod in vercel
+- [ ] dump planetscale eras,events,collection_data tables
 - [ ] dump prod neon db
-- [ ] restore neon db to railway
+- [ ] restore neon db to planetscale
+- [ ] restore eras,events,collection_data tables to planetscale
 - [x] switch search.apollo.cafe to railway typesense service
 - [x] update typesense settings in railway:
   - [x] public URL to search.apollo.cafe

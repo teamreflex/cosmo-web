@@ -1,15 +1,14 @@
-import type { GravityHookParams } from "../common";
 import type { RevealedVote } from "../types";
 
-export interface UseChainDataOptions extends GravityHookParams {
-  startDate: string;
+export type UseRevealsOptions = {
+  pollId: number;
   endDate: string;
-  now: Date;
-}
+  aggregated: AggregatedGravityData;
+};
 
 export type LiveStatus = "voting" | "live" | "finalized";
 
-export type UseChainDataSuccess = {
+export type UseRevealsResult = {
   status: "success";
   liveStatus: LiveStatus;
   isRefreshing: boolean;
@@ -17,14 +16,19 @@ export type UseChainDataSuccess = {
   comoPerCandidate: number[];
   remainingVotesCount: number;
   revealedVotes: RevealedVote[];
-  // New fields for aggregated data
   chartData: ChartSegment[];
   topVotes: AggregatedTopVote[];
   topUsers: AggregatedTopUser[];
 };
 
-// Kept for backwards compatibility with components that check status
-export type UseChainData = UseChainDataSuccess;
+/**
+ * A revealed vote with its candidate and amount.
+ */
+export interface Reveal {
+  id: string;
+  candidateId: number;
+  amount: number;
+}
 
 /**
  * Response from the aggregated gravity data endpoint.
@@ -34,8 +38,10 @@ export interface AggregatedGravityData {
   topVotes: AggregatedTopVote[];
   topUsers: AggregatedTopUser[];
   totalVoteCount: number;
+  totalComoCount: number;
   revealedVoteCount: number;
-  comoPerCandidate: number[];
+  /** Populated only for finalized polls (all votes revealed). Empty otherwise. */
+  reveals: Reveal[];
 }
 
 export interface ChartSegment {

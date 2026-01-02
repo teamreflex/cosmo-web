@@ -33,7 +33,6 @@ import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AtChar123usernameChar125ListSlugRouteImport } from './routes/@{$username}/list.$slug'
 import { Route as ApiObjektsBySlugSlugRouteImport } from './routes/api/objekts/by-slug.$slug'
 import { Route as ApiObjektListForUserIdentifierRouteImport } from './routes/api/objekt-list/for-user.$identifier'
-import { Route as ApiGravityPollIdVotesRouteImport } from './routes/api/gravity/$pollId.votes'
 import { Route as ApiGravityPollIdAggregatedRouteImport } from './routes/api/gravity/$pollId.aggregated'
 import { Route as ApiCosmoQrAuthTicketRouteImport } from './routes/api/cosmo/qr-auth/ticket'
 import { Route as ApiCosmoQrAuthRecaptchaRouteImport } from './routes/api/cosmo/qr-auth/recaptcha'
@@ -171,11 +170,6 @@ const ApiObjektListForUserIdentifierRoute =
     path: '/api/objekt-list/for-user/$identifier',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiGravityPollIdVotesRoute = ApiGravityPollIdVotesRouteImport.update({
-  id: '/api/gravity/$pollId/votes',
-  path: '/api/gravity/$pollId/votes',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiGravityPollIdAggregatedRoute =
   ApiGravityPollIdAggregatedRouteImport.update({
     id: '/api/gravity/$pollId/aggregated',
@@ -254,7 +248,6 @@ export interface FileRoutesByFullPath {
   '/api/cosmo/qr-auth/recaptcha': typeof ApiCosmoQrAuthRecaptchaRoute
   '/api/cosmo/qr-auth/ticket': typeof ApiCosmoQrAuthTicketRoute
   '/api/gravity/$pollId/aggregated': typeof ApiGravityPollIdAggregatedRoute
-  '/api/gravity/$pollId/votes': typeof ApiGravityPollIdVotesRoute
   '/api/objekt-list/for-user/$identifier': typeof ApiObjektListForUserIdentifierRoute
   '/api/objekts/by-slug/$slug': typeof ApiObjektsBySlugSlugRoute
   '/api/bff/v3/users/search': typeof ApiBffV3UsersSearchRoute
@@ -289,7 +282,6 @@ export interface FileRoutesByTo {
   '/api/cosmo/qr-auth/recaptcha': typeof ApiCosmoQrAuthRecaptchaRoute
   '/api/cosmo/qr-auth/ticket': typeof ApiCosmoQrAuthTicketRoute
   '/api/gravity/$pollId/aggregated': typeof ApiGravityPollIdAggregatedRoute
-  '/api/gravity/$pollId/votes': typeof ApiGravityPollIdVotesRoute
   '/api/objekt-list/for-user/$identifier': typeof ApiObjektListForUserIdentifierRoute
   '/api/objekts/by-slug/$slug': typeof ApiObjektsBySlugSlugRoute
   '/api/bff/v3/users/search': typeof ApiBffV3UsersSearchRoute
@@ -326,7 +318,6 @@ export interface FileRoutesById {
   '/api/cosmo/qr-auth/recaptcha': typeof ApiCosmoQrAuthRecaptchaRoute
   '/api/cosmo/qr-auth/ticket': typeof ApiCosmoQrAuthTicketRoute
   '/api/gravity/$pollId/aggregated': typeof ApiGravityPollIdAggregatedRoute
-  '/api/gravity/$pollId/votes': typeof ApiGravityPollIdVotesRoute
   '/api/objekt-list/for-user/$identifier': typeof ApiObjektListForUserIdentifierRoute
   '/api/objekts/by-slug/$slug': typeof ApiObjektsBySlugSlugRoute
   '/api/bff/v3/users/search': typeof ApiBffV3UsersSearchRoute
@@ -364,7 +355,6 @@ export interface FileRouteTypes {
     | '/api/cosmo/qr-auth/recaptcha'
     | '/api/cosmo/qr-auth/ticket'
     | '/api/gravity/$pollId/aggregated'
-    | '/api/gravity/$pollId/votes'
     | '/api/objekt-list/for-user/$identifier'
     | '/api/objekts/by-slug/$slug'
     | '/api/bff/v3/users/search'
@@ -399,7 +389,6 @@ export interface FileRouteTypes {
     | '/api/cosmo/qr-auth/recaptcha'
     | '/api/cosmo/qr-auth/ticket'
     | '/api/gravity/$pollId/aggregated'
-    | '/api/gravity/$pollId/votes'
     | '/api/objekt-list/for-user/$identifier'
     | '/api/objekts/by-slug/$slug'
     | '/api/bff/v3/users/search'
@@ -435,7 +424,6 @@ export interface FileRouteTypes {
     | '/api/cosmo/qr-auth/recaptcha'
     | '/api/cosmo/qr-auth/ticket'
     | '/api/gravity/$pollId/aggregated'
-    | '/api/gravity/$pollId/votes'
     | '/api/objekt-list/for-user/$identifier'
     | '/api/objekts/by-slug/$slug'
     | '/api/bff/v3/users/search'
@@ -464,7 +452,6 @@ export interface RootRouteChildren {
   ApiCosmoQrAuthRecaptchaRoute: typeof ApiCosmoQrAuthRecaptchaRoute
   ApiCosmoQrAuthTicketRoute: typeof ApiCosmoQrAuthTicketRoute
   ApiGravityPollIdAggregatedRoute: typeof ApiGravityPollIdAggregatedRoute
-  ApiGravityPollIdVotesRoute: typeof ApiGravityPollIdVotesRoute
   ApiObjektListForUserIdentifierRoute: typeof ApiObjektListForUserIdentifierRoute
   ApiObjektsBySlugSlugRoute: typeof ApiObjektsBySlugSlugRoute
   ApiBffV3UsersSearchRoute: typeof ApiBffV3UsersSearchRoute
@@ -645,13 +632,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiObjektListForUserIdentifierRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/gravity/$pollId/votes': {
-      id: '/api/gravity/$pollId/votes'
-      path: '/api/gravity/$pollId/votes'
-      fullPath: '/api/gravity/$pollId/votes'
-      preLoaderRoute: typeof ApiGravityPollIdVotesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/gravity/$pollId/aggregated': {
       id: '/api/gravity/$pollId/aggregated'
       path: '/api/gravity/$pollId/aggregated'
@@ -777,7 +757,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiCosmoQrAuthRecaptchaRoute: ApiCosmoQrAuthRecaptchaRoute,
   ApiCosmoQrAuthTicketRoute: ApiCosmoQrAuthTicketRoute,
   ApiGravityPollIdAggregatedRoute: ApiGravityPollIdAggregatedRoute,
-  ApiGravityPollIdVotesRoute: ApiGravityPollIdVotesRoute,
   ApiObjektListForUserIdentifierRoute: ApiObjektListForUserIdentifierRoute,
   ApiObjektsBySlugSlugRoute: ApiObjektsBySlugSlugRoute,
   ApiBffV3UsersSearchRoute: ApiBffV3UsersSearchRoute,

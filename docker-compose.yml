@@ -169,7 +169,7 @@ services:
       - "8108:8108"
     environment:
       - TYPESENSE_ENABLE_CORS=true
-      - TYPESENSE_CORS_DOMAINS=http://localhost:3000,http://localhost:5173
+      - TYPESENSE_CORS_DOMAINS=http://localhost:3000
     volumes:
       - typesense-data:/data
     command: "--data-dir /data --api-key=dev-local-key-do-not-use-in-production --api-port=8108 --enable-leader-election=false"
@@ -192,8 +192,8 @@ services:
       - TYPESENSE_API_KEY=dev-local-key-do-not-use-in-production
       - TYPESENSE_URL=http://typesense:8108
       - LOOP_INTERVAL=${TYPESENSE_IMPORT_LOOP_INTERVAL}
-      - INDEXER_DATABASE_URL=postgresql://postgres:postgres@pgbouncer-indexer:6432/indexer
-      - WEB_DATABASE_URL=postgresql://postgres:postgres@pgbouncer-web:6432/web
+      - INDEXER_DATABASE_URL=postgresql://postgres:postgres@pgbouncer-indexer:5432/indexer
+      - WEB_DATABASE_URL=postgresql://postgres:postgres@pgbouncer-web:5432/web
     depends_on:
       typesense:
         condition: service_healthy
@@ -211,7 +211,7 @@ services:
       dockerfile: apps/schedules/Dockerfile
     restart: on-failure
     environment:
-      - WEB_DATABASE_URL=postgresql://postgres:postgres@pgbouncer-web:6432/web
+      - WEB_DATABASE_URL=postgresql://postgres:postgres@pgbouncer-web:5432/web
       - REDIS_URL=redis://valkey:6379
     depends_on:
       pgbouncer-web:

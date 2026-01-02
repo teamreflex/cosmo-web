@@ -1,10 +1,9 @@
 import Portal from "@/components/portal";
 import { m } from "@/i18n/messages";
 import {
-  useChainData,
-  useCurrentDate,
+  useGravityData,
+  useReveals,
 } from "@/lib/client/gravity/abstract/hooks";
-import { useGravityPoll } from "@/lib/client/gravity/common";
 import type { CosmoArtistBFF } from "@apollo/cosmo/types/artists";
 import type {
   CosmoOngoingGravity,
@@ -22,68 +21,64 @@ export type Props = {
 };
 
 export default function AbstractLiveChart(props: Props) {
-  const now = useCurrentDate();
-  const { data: poll } = useGravityPoll({
+  const { poll, aggregated } = useGravityData({
     artistName: props.artist.id,
-    tokenId: BigInt(props.artist.comoTokenId),
+    tokenId: props.artist.comoTokenId,
     gravityId: props.gravity.id,
     pollId: props.pollId,
   });
-  const chain = useChainData({
-    startDate: poll.startDate,
+  const reveals = useReveals({
+    pollId: poll.id,
     endDate: poll.endDate,
-    tokenId: BigInt(props.artist.comoTokenId),
-    pollId: BigInt(poll.id),
-    now,
+    aggregated,
   });
 
   // get the number of como used for each candidate
-  const { comoByCandidate, comoUsed } = useMemo(() => {
+  const comoByCandidate = useMemo(() => {
     const comoMap: Record<number, number> = {};
-    let used = 0;
     for (let i = 0; i < poll.pollViewMetadata.selectedContent.length; i++) {
-      const chainComo = chain.comoPerCandidate[i] ?? 0;
+      const chainComo = reveals.comoPerCandidate[i] ?? 0;
       comoMap[i] = chainComo;
-      used += chainComo;
     }
-    return { comoByCandidate: comoMap, comoUsed: used };
-  }, [poll.pollViewMetadata.selectedContent, chain.comoPerCandidate]);
+    return comoMap;
+  }, [poll.pollViewMetadata.selectedContent, reveals.comoPerCandidate]);
 
   // calculate the percentage of votes counted.
   const percentageCounted = useMemo(() => {
-    if (chain.totalVotesCount === 0) return "0";
+    if (reveals.totalVotesCount === 0) return "0";
 
     const pct =
-      ((chain.totalVotesCount - chain.remainingVotesCount) /
-        chain.totalVotesCount) *
+      ((reveals.totalVotesCount - reveals.remainingVotesCount) /
+        reveals.totalVotesCount) *
       100;
 
     if (pct === 0 || pct === 100) return String(pct);
     return pct.toFixed(2);
-  }, [chain.totalVotesCount, chain.remainingVotesCount]);
+  }, [reveals.totalVotesCount, reveals.remainingVotesCount]);
 
-  const totalVotes = chain.totalVotesCount;
-  const countedVotes = totalVotes - chain.remainingVotesCount;
+  const totalVotes = reveals.totalVotesCount;
+  const countedVotes = totalVotes - reveals.remainingVotesCount;
+  const showBreakdown = reveals.topVotes.some((v) => v.candidateId !== null);
 
   return (
     <div className="flex w-full flex-col gap-2">
       <TimelineChart
-        chartData={chain.chartData}
-        liveStatus={chain.liveStatus}
-        totalComoUsed={comoUsed}
+        chartData={reveals.chartData}
+        liveStatus={reveals.liveStatus}
+        totalComoUsed={aggregated.totalComoCount}
       />
 
       <CandidateBreakdown
         content={poll.pollViewMetadata.selectedContent}
         comoByCandidate={comoByCandidate}
-        liveStatus={chain.liveStatus}
-        isRefreshing={chain.isRefreshing}
+        liveStatus={reveals.liveStatus}
+        isRefreshing={reveals.isRefreshing}
       />
 
-      {chain.topVotes.some((v) => v.candidateId !== null) && (
+      {showBreakdown && (
         <VoterBreakdown
-          topVotes={chain.topVotes}
-          topUsers={chain.topUsers}
+          topVotes={reveals.topVotes}
+          topUsers={reveals.topUsers}
           candidates={poll.pollViewMetadata.selectedContent}
         />
       )}
