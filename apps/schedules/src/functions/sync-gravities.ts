@@ -135,6 +135,8 @@ const processGravities = Effect.fn(function* (
                   cosmoId: poll.id,
                   pollIdOnChain: poll.pollIdOnChain,
                   title: cleanString(poll.title),
+                  startDate: new Date(poll.startDate),
+                  endDate: new Date(poll.endDate),
                 })),
               );
 

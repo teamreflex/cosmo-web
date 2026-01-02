@@ -1,13 +1,9 @@
 import { cacheHeaders } from "@/lib/server/cache";
 import { fetchKnownAddresses } from "@/lib/server/cosmo-accounts";
+import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import { createFileRoute } from "@tanstack/react-router";
 import { addMinutes, isPast, startOfHour } from "date-fns";
-import * as z from "zod";
-
-const searchSchema = z.object({
-  endDate: z.string(),
-});
 
 export const Route = createFileRoute("/api/gravity/$pollId/aggregated")({
   server: {
@@ -16,25 +12,23 @@ export const Route = createFileRoute("/api/gravity/$pollId/aggregated")({
        * API route that returns aggregated gravity vote data.
        * Returns chart data, top 50 votes, top 25 users, and comoPerCandidate.
        */
-      GET: async ({ params, request }) => {
+      GET: async ({ params }) => {
         // validate pollId
         const pollId = Number(params.pollId);
         if (isNaN(pollId)) {
           return Response.json({ error: "Invalid poll ID" }, { status: 422 });
         }
 
-        // parse query params
-        const url = new URL(request.url);
-        const parsed = searchSchema.safeParse({
-          endDate: url.searchParams.get("endDate"),
+        // fetch poll dates from database
+        const poll = await db.query.gravityPolls.findFirst({
+          where: { cosmoId: pollId },
+          columns: { startDate: true, endDate: true },
         });
-        if (!parsed.success) {
-          return Response.json(
-            { error: "Missing endDate parameter" },
-            { status: 422 },
-          );
+        if (!poll?.startDate || !poll?.endDate) {
+          return Response.json({ error: "Poll not found" }, { status: 404 });
         }
-        const { endDate } = parsed.data;
+        const startDate = poll.startDate.toISOString();
+        const endDate = poll.endDate.toISOString();
 
         // fetch all votes from indexer
         const rawVotes = await indexer.query.votes.findMany({
@@ -46,15 +40,13 @@ export const Route = createFileRoute("/api/gravity/$pollId/aggregated")({
             blockNumber: true,
             candidateId: true,
           },
-          where: {
-            pollId,
-          },
+          where: { pollId },
         });
 
         // compute aggregations in parallel
         const [chartData, topVotes, topUsers, comoPerCandidate] =
           await Promise.all([
-            computeChartData(rawVotes, endDate),
+            computeChartData(rawVotes, startDate, endDate),
             computeTopVotes(rawVotes, 50),
             computeTopUsers(rawVotes, 25),
             computeComoPerCandidate(rawVotes),
@@ -122,28 +114,24 @@ type RawVote = {
 /**
  * Compute chart data by grouping votes into 30-minute segments.
  */
-function computeChartData(votes: RawVote[], endDate: string) {
-  if (votes.length === 0) {
-    return [];
-  }
-
-  // find the earliest vote timestamp
-  const voteTimes = votes.map((vote) => new Date(vote.createdAt).getTime());
-  const earliestVoteTime = new Date(Math.min(...voteTimes));
+function computeChartData(
+  votes: RawVote[],
+  startDate: string,
+  endDate: string,
+) {
+  const startTime = new Date(startDate);
   const endTime = new Date(endDate);
 
-  // generate 30-minute segments
+  // generate 30-minute segments covering the full poll period
   const segmentMap = new Map<
     string,
     { timestamp: string; voteCount: number; totalTokenAmount: number }
   >();
 
-  // start from the 30-minute segment containing the first vote
-  const firstVoteHour = startOfHour(earliestVoteTime);
+  // start from the 30-minute segment containing the poll start
+  const startHour = startOfHour(startTime);
   let currentTime =
-    earliestVoteTime.getMinutes() < 30
-      ? firstVoteHour
-      : addMinutes(firstVoteHour, 30);
+    startTime.getMinutes() < 30 ? startHour : addMinutes(startHour, 30);
 
   while (currentTime < endTime) {
     segmentMap.set(currentTime.toISOString(), {

@@ -6,8 +6,8 @@ import type {
 } from "@apollo/cosmo/types/gravity";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import CandidateBreakdown from "../candidate-breakdown";
-import VoterBreakdown from "../voter-breakdown";
 import TimelineChart from "./timeline-chart";
+import VoterBreakdown from "./voter-breakdown";
 
 export type Props = {
   artist: CosmoArtistBFF;

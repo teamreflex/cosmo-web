@@ -37,20 +37,13 @@ export function useCurrentDate() {
 }
 
 /**
- * Query key for aggregated gravity data.
- */
-export const aggregatedGravityKey = (pollId: number, endDate: string) =>
-  ["gravity", "aggregated", pollId, endDate] as const;
-
-/**
  * Fetch aggregated gravity data from the backend.
  */
-export function useAggregatedGravityData(pollId: number, endDate: string) {
+export function useAggregatedGravityData(pollId: number) {
   return useSuspenseQuery({
-    queryKey: aggregatedGravityKey(pollId, endDate),
+    queryKey: ["gravity", "aggregated", pollId],
     queryFn: async ({ signal }) => {
       const url = new URL(`/api/gravity/${pollId}/aggregated`, baseUrl());
-      url.searchParams.set("endDate", endDate);
       return await ofetch<AggregatedGravityData>(url.toString(), {
         signal,
       });
@@ -66,7 +59,7 @@ export function useAggregatedGravityData(pollId: number, endDate: string) {
  */
 export function useChainData(params: UseChainDataOptions): UseChainData {
   const pollId = Number(params.pollId);
-  const { data: aggregated } = useAggregatedGravityData(pollId, params.endDate);
+  const { data: aggregated } = useAggregatedGravityData(pollId);
 
   // determine initial live status based on aggregated data
   const initialLiveStatus = useMemo((): LiveStatus => {
@@ -74,8 +67,7 @@ export function useChainData(params: UseChainDataOptions): UseChainData {
       return "voting";
     }
     // use server-provided revealed count to determine status
-    const unrevealed =
-      aggregated.totalVoteCount - aggregated.revealedVoteCount;
+    const unrevealed = aggregated.totalVoteCount - aggregated.revealedVoteCount;
     return unrevealed === 0 ? "finalized" : "live";
   }, [
     aggregated.totalVoteCount,
@@ -188,4 +180,3 @@ export function useChainData(params: UseChainDataOptions): UseChainData {
     topUsers: topUsersWithReveals,
   } satisfies UseChainDataSuccess;
 }
-

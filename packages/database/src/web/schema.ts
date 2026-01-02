@@ -232,6 +232,8 @@ export const gravityPolls = pgTable(
     cosmoId: integer("cosmo_id").notNull(),
     pollIdOnChain: integer("poll_id_on_chain").notNull(),
     title: varchar("title", { length: 255 }).notNull(),
+    startDate: timestamp("start_date", { mode: "date" }),
+    endDate: timestamp("end_date", { mode: "date" }),
   },
   (t) => [
     index("gravity_polls_cosmo_gravity_id_idx").on(t.cosmoGravityId),
