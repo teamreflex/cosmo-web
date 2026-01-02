@@ -5,10 +5,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import type {
-  AggregatedVotes,
-  RevealedVote,
-} from "@/lib/client/gravity/polygon/types";
+import type { AggregatedVotes, RevealedVote } from "@/lib/client/gravity/types";
 import type { PollSelectedContentImage } from "@apollo/cosmo/types/gravity";
 import { AnimatePresence } from "motion/react";
 import * as motion from "motion/react-client";

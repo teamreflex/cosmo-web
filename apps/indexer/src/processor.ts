@@ -29,6 +29,7 @@ const processor = new EvmBatchProcessor()
       topics: true,
       data: true,
       transactionHash: true,
+      logIndex: true,
     },
     transaction: {
       input: true,
@@ -66,6 +67,12 @@ processor
   .addLog({
     address: [Addresses.GRAVITY],
     topic0: [ABI_GRAVITY.events.Voted.topic],
+    range: { from: COSMO_START_BLOCK },
+  })
+  // gravity reveals
+  .addTransaction({
+    to: [Addresses.GRAVITY],
+    sighash: [ABI_GRAVITY.functions.reveal.sighash],
     range: { from: COSMO_START_BLOCK },
   });
 

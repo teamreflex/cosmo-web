@@ -8,6 +8,7 @@ import { env } from "./env";
 import { Collection, ComoBalance, Objekt, type Transfer, Vote } from "./model";
 import {
   type ComoBalanceEvent,
+  type RevealFunction,
   type TransferabilityUpdate,
   type VoteEvent,
   parseBlocks,
@@ -17,9 +18,8 @@ import { processor, type ProcessorContext } from "./processor";
 const db = new TypeormDatabase({ supportHotBlocks: true });
 
 processor.run(db, async (ctx) => {
-  const { transfers, transferability, comoBalanceUpdates, votes } = parseBlocks(
-    ctx.blocks,
-  );
+  const { transfers, transferability, comoBalanceUpdates, votes, reveals } =
+    parseBlocks(ctx.blocks);
 
   if (env.ENABLE_OBJEKTS) {
     if (transfers.length > 0) {
@@ -136,12 +136,19 @@ processor.run(db, async (ctx) => {
     }
 
     for (const event of votes) {
-      const vote = await handleVoteCreation(event);
+      const vote = handleVoteCreation(event);
       voteBatch.push(vote);
     }
 
     if (voteBatch.length > 0) {
       await ctx.store.upsert(voteBatch);
+    }
+    // #endregion
+
+    // #region reveals
+    if (reveals.length > 0) {
+      ctx.log.info(`Processing ${reveals.length} gravity reveals`);
+      await handleReveals(ctx, reveals);
     }
     // #endregion
   }
@@ -334,15 +341,58 @@ async function getBalance(
 /**
  * Create a new vote row.
  */
-async function handleVoteCreation(event: VoteEvent) {
+function handleVoteCreation(event: VoteEvent) {
   return new Vote({
     id: randomUUID(),
     from: event.from,
     createdAt: new Date(event.timestamp),
-    contract: event.contract,
+    tokenId: event.tokenId,
     pollId: event.pollId,
     amount: event.tokenAmount,
     blockNumber: event.blockNumber,
+    logIndex: event.logIndex,
     hash: event.hash,
+    candidateId: null,
   });
+}
+
+/**
+ * Match reveals to votes and update candidateId.
+ */
+async function handleReveals(
+  ctx: ProcessorContext<Store>,
+  reveals: RevealFunction[],
+) {
+  // Group reveals by (tokenId, pollId)
+  const grouped = new Map<string, RevealFunction[]>();
+  for (const reveal of reveals) {
+    const key = `${reveal.tokenId}-${reveal.pollId}`;
+    const existing = grouped.get(key) ?? [];
+    existing.push(reveal);
+    grouped.set(key, existing);
+  }
+
+  for (const [key, pollReveals] of grouped) {
+    const [tokenId, pollId] = key.split("-").map(Number);
+
+    // Get all votes for this poll, ordered by position (blockNumber, logIndex)
+    const votes = await ctx.store.find(Vote, {
+      where: { tokenId, pollId },
+      order: { blockNumber: "ASC", logIndex: "ASC" },
+    });
+
+    // Match each reveal to its vote by position
+    const toUpdate: Vote[] = [];
+    for (const reveal of pollReveals) {
+      const vote = votes[reveal.position];
+      if (vote && vote.candidateId === null) {
+        vote.candidateId = reveal.candidateId;
+        toUpdate.push(vote);
+      }
+    }
+
+    if (toUpdate.length > 0) {
+      await ctx.store.upsert(toUpdate);
+    }
+  }
 }

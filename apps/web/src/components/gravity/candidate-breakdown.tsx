@@ -5,7 +5,6 @@ import { motion } from "motion/react";
 type Props = {
   content: PollSelectedContentImage[];
   comoByCandidate: Record<number, number>;
-  totalComoUsed: number;
   liveStatus: LiveStatus;
   isRefreshing: boolean;
 };
@@ -17,6 +16,11 @@ export default function CandidateBreakdown(props: Props) {
       comoUsed: props.comoByCandidate[i] ?? 0,
     }))
     .sort((a, b) => b.comoUsed - a.comoUsed);
+
+  const totalComoUsed = candidates.reduce(
+    (acc, candidate) => acc + candidate.comoUsed,
+    0,
+  );
 
   return (
     <div className="flex w-full flex-col gap-2">
@@ -33,7 +37,7 @@ export default function CandidateBreakdown(props: Props) {
         >
           <CandidateRow
             content={candidate.content}
-            totalComoUsed={props.totalComoUsed}
+            totalComoUsed={totalComoUsed}
             candidateComoUsed={candidate.comoUsed}
             liveStatus={props.liveStatus}
           />

@@ -5,9 +5,9 @@ import type {
   CosmoPastGravity,
 } from "@apollo/cosmo/types/gravity";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import CandidateBreakdown from "./candidate-breakdown";
+import CandidateBreakdown from "../candidate-breakdown";
+import VoterBreakdown from "../voter-breakdown";
 import TimelineChart from "./timeline-chart";
-import VoterBreakdown from "./voter-breakdown";
 
 export type Props = {
   artist: CosmoArtistBFF;
@@ -29,6 +29,8 @@ export default function PolygonLiveChart({ artist, gravity }: Props) {
       <CandidateBreakdown
         content={data.poll.pollViewMetadata.selectedContent}
         comoByCandidate={data.comoByCandidate}
+        liveStatus="finalized"
+        isRefreshing={false}
       />
 
       <VoterBreakdown

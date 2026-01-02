@@ -5,7 +5,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { m } from "@/i18n/messages";
-import type { RevealedVote } from "@/lib/client/gravity/polygon/types";
+import type { RevealedVote } from "@/lib/client/gravity/types";
 import { IconCircleCheck } from "@tabler/icons-react";
 import { Bar, BarChart } from "recharts";
 

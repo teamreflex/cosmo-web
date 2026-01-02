@@ -9,6 +9,7 @@ import { Transfer } from "./model";
 import type { Fields, Log, Transaction } from "./processor";
 
 const transferability = ABI_OBJEKT.functions.batchUpdateObjektTransferability;
+const reveal = ABI_GRAVITY.functions.reveal;
 
 /**
  * Parse incoming blocks.
@@ -54,6 +55,16 @@ export function parseBlocks(blocks: BlockData<Fields>[]) {
       .filter((log) => addr(Addresses.GRAVITY) === addr(log.address))
       .map(parseVote)
       .filter((e) => e !== undefined),
+
+    // reveal functions
+    reveals: transactions
+      .filter(
+        (tx) =>
+          !!tx.to &&
+          Addresses.GRAVITY === addr(tx.to) &&
+          tx.sighash === reveal.sighash,
+      )
+      .flatMap(parseRevealFunction),
   };
 }
 
@@ -85,29 +96,6 @@ export function parseTransferEvent(log: Log): TransferEvent | undefined {
     return undefined;
   } catch (err) {
     return undefined;
-  }
-}
-
-export type TransferabilityUpdate = {
-  tokenId: string;
-  transferable: boolean;
-};
-
-/**
- * Parse an event into an objekt update.
- */
-export function parseTransferabilityUpdate(
-  tx: Transaction,
-): TransferabilityUpdate[] {
-  try {
-    const { tokenIds, transferable } = transferability.decode(tx.input);
-
-    return tokenIds.map((tokenId) => ({
-      tokenId: tokenId.toString(),
-      transferable: transferable,
-    }));
-  } catch (err) {
-    return [];
   }
 }
 
@@ -176,10 +164,11 @@ export type VoteEvent = {
   id: string;
   from: string;
   timestamp: number;
-  contract: string;
+  tokenId: number;
   pollId: number;
   tokenAmount: bigint;
   blockNumber: number;
+  logIndex: number;
 };
 
 /**
@@ -194,12 +183,72 @@ export function parseVote(log: Log): VoteEvent | undefined {
       id: log.id,
       from: addr(event.voter),
       timestamp: log.block.timestamp,
-      contract: addr(log.address),
+      tokenId: Number(event.tokenId),
       pollId: Number(event.pollId),
       tokenAmount: event.tokenAmount,
       blockNumber: log.block.height,
+      logIndex: log.logIndex,
     };
   } catch (err) {
     return undefined;
+  }
+}
+
+export type RevealFunction = {
+  tokenId: number;
+  pollId: number;
+  candidateId: number;
+  position: number;
+};
+
+/**
+ * Parse a transaction into reveal functions.
+ */
+export function parseRevealFunction(tx: Transaction): RevealFunction[] {
+  try {
+    const { tokenId, pollId, data, offset } = reveal.decode(tx.input);
+
+    const reveals: RevealFunction[] = [];
+
+    for (let i = 0; i < data.length; i++) {
+      const revealData = data[i];
+      if (!revealData) {
+        continue;
+      }
+
+      reveals.push({
+        tokenId: Number(tokenId),
+        pollId: Number(pollId),
+        candidateId: Number(revealData.votedCandidateId),
+        position: Number(offset) + i,
+      });
+    }
+
+    return reveals;
+  } catch (err) {
+    return [];
+  }
+}
+
+export type TransferabilityUpdate = {
+  tokenId: string;
+  transferable: boolean;
+};
+
+/**
+ * Parse an event into an objekt update.
+ */
+export function parseTransferabilityUpdate(
+  tx: Transaction,
+): TransferabilityUpdate[] {
+  try {
+    const { tokenIds, transferable } = transferability.decode(tx.input);
+
+    return tokenIds.map((tokenId) => ({
+      tokenId: tokenId.toString(),
+      transferable: transferable,
+    }));
+  } catch (err) {
+    return [];
   }
 }

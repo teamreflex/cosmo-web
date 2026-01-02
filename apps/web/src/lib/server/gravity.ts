@@ -8,7 +8,7 @@ import { setResponseHeaders } from "@tanstack/react-start/server";
 import { isBefore } from "date-fns";
 import { desc } from "drizzle-orm";
 import * as z from "zod";
-import type { RevealedVote } from "../client/gravity/polygon/types";
+import type { RevealedVote } from "../client/gravity/types";
 import { findPoll } from "../client/gravity/util";
 import { GravityNotSupportedError } from "../universal/gravity";
 import type { GravityVote } from "../universal/gravity";
@@ -261,8 +261,14 @@ export const $fetchCachedPoll = createServerFn({ method: "GET" })
  * Fetch votes from the indexer.
  */
 export const fetchAbstractVotes = createServerOnlyFn(
-  async (pollId: number): Promise<GravityVote[]> => {
+  async (pollId: number): Promise<Omit<GravityVote, "username">[]> => {
     const votes = await indexer.query.votes.findMany({
+      columns: {
+        logIndex: false,
+        tokenId: false,
+        hash: false,
+        pollId: false,
+      },
       where: {
         pollId,
       },
@@ -274,6 +280,49 @@ export const fetchAbstractVotes = createServerOnlyFn(
     }));
   },
 );
+
+/**
+ * Fetch revealed votes (candidateId != null) from the indexer.
+ * Cursor-based for incremental fetching during reveal polling.
+ */
+export const $fetchRevealedVotes = createServerFn({ method: "GET" })
+  .inputValidator(
+    z.object({
+      pollId: z.number(),
+      cursor: z.number().optional(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const votes = await indexer.query.votes.findMany({
+      columns: {
+        id: true,
+        candidateId: true,
+        blockNumber: true,
+      },
+      where: {
+        pollId: data.pollId,
+        candidateId: { isNotNull: true },
+        ...(data.cursor !== undefined && {
+          blockNumber: { gt: data.cursor },
+        }),
+      },
+      orderBy: {
+        blockNumber: "asc",
+      },
+    });
+
+    // Get the highest block number for the next cursor
+    const nextCursor =
+      votes.length > 0 ? votes[votes.length - 1]!.blockNumber : undefined;
+
+    return {
+      votes: votes.map((v) => ({
+        id: v.id,
+        candidateId: v.candidateId!,
+      })),
+      nextCursor,
+    };
+  });
 
 const ADDRESSES: Record<string, string> = {
   triples: "0xc3e5ad11ae2f00c740e74b81f134426a3331d950",

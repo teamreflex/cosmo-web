@@ -86,6 +86,7 @@ const updates = [
       "Updated: The design of the artist/member filter to better accommodate more artists.",
       "Updated: Other design tweaks and improvements such as a new font and color scheme.",
       "Updated: Moved the about dialog to the user dropdown, now the logo links to the objekts page.",
+      "Updated: Brought back gravity vote results per user.",
       "Fixed: Janky objekt popups on mobile, including drag-to-close not working.",
       "Fixed: Past gravity events showing as live instead of completed.",
       "Fixed: Gravity vote percentage rounding up incorrectly.",

@@ -1,35 +1,23 @@
-import governorAbi from "@/abi/governor";
-import { Addresses } from "@apollo/util";
-import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
-import { addMinutes, isAfter, isBefore, startOfHour } from "date-fns";
+import { $fetchRevealedVotes } from "@/lib/server/gravity";
+import { baseUrl } from "@/lib/utils";
+import { useInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { isAfter } from "date-fns";
+import { ofetch } from "ofetch";
 import { useEffect, useMemo, useState } from "react";
-import type { Hex } from "viem";
-import { getContractEvents } from "viem/actions";
-import { abstract } from "viem/chains";
-import { useClient, useReadContracts, useWatchContractEvent } from "wagmi";
-import { useGravityVotes } from "../common";
-import type { GravityHookParams } from "../common";
+import type { RevealedVote } from "../types";
 import type {
-  UseBlockStatus,
+  AggregatedGravityData,
+  AggregatedTopUser,
+  AggregatedTopVote,
+  LiveStatus,
   UseChainData,
-  UseChainDataError,
   UseChainDataOptions,
-  UseChainDataPending,
   UseChainDataSuccess,
 } from "./types";
 
-// chain to connect to
-const chainId = abstract.id;
-// polling interval in ms
-const POLLING_INTERVAL = 2500;
-
-/**
- * Default config for interacting with the Governor contract.
- */
-const config = {
-  abi: governorAbi,
-  address: Addresses.GRAVITY as Hex,
-};
+// polling intervals in ms
+const DATE_POLLING_INTERVAL = 2500;
+const REVEAL_POLLING_INTERVAL = 10_000;
 
 /**
  * Get the current date and updates with the polling interval.
@@ -40,7 +28,7 @@ export function useCurrentDate() {
   useEffect(() => {
     const interval = setInterval(() => {
       setDate(new Date());
-    }, POLLING_INTERVAL);
+    }, DATE_POLLING_INTERVAL);
 
     return () => clearInterval(interval);
   }, []);
@@ -49,271 +37,155 @@ export function useCurrentDate() {
 }
 
 /**
- * Get the start block from the first vote in the poll.
- * Returns null if there are no votes yet.
+ * Query key for aggregated gravity data.
  */
-function useStartBlock(pollId: number) {
-  const { data: votes } = useGravityVotes(pollId);
-
-  const startBlock = useMemo(() => {
-    if (votes.length === 0) {
-      return null;
-    }
-
-    // Find the vote with the lowest block number
-    const firstVote = votes.reduce((min, vote) =>
-      vote.blockNumber < min.blockNumber ? vote : min,
-    );
-
-    // Return the block number of the first vote
-    // Subtract a small buffer to ensure we don't miss the event
-    return firstVote.blockNumber - 10;
-  }, [votes]);
-
-  return startBlock;
-}
+export const aggregatedGravityKey = (pollId: number, endDate: string) =>
+  ["gravity", "aggregated", pollId, endDate] as const;
 
 /**
- * Fetch the end block for a given poll.
+ * Fetch aggregated gravity data from the backend.
  */
-function useEndBlock(
-  params: GravityHookParams,
-  startBlock: number | null,
-  endDate: string,
-  now: Date,
-) {
-  const queryClient = useQueryClient();
-  const client = useClient({ chainId });
-
-  /**
-   * Fetch the end block.
-   */
-  const endQueryOptions = queryOptions({
-    // oxlint-disable-next-line @tanstack/query/exhaustive-deps
-    queryKey: [
-      "gravity",
-      "end-block",
-      { tokenId: params.tokenId },
-      Number(params.pollId),
-    ],
-    queryFn: async () => {
-      const events = await getContractEvents(client, {
-        ...config,
-        eventName: "Finalized",
-        fromBlock: startBlock ? BigInt(startBlock) : undefined,
-        args: {
-          tokenId: params.tokenId,
-          pollId: params.pollId,
-        },
-        strict: true,
+export function useAggregatedGravityData(pollId: number, endDate: string) {
+  return useSuspenseQuery({
+    queryKey: aggregatedGravityKey(pollId, endDate),
+    queryFn: async ({ signal }) => {
+      const url = new URL(`/api/gravity/${pollId}/aggregated`, baseUrl());
+      url.searchParams.set("endDate", endDate);
+      return await ofetch<AggregatedGravityData>(url.toString(), {
+        signal,
       });
-
-      const event = events.find((e) => e.args.pollId === params.pollId);
-      return event ? Number(event.blockNumber) : null;
     },
-    enabled: startBlock !== null,
+    refetchOnWindowFocus: false,
     staleTime: Infinity,
   });
-  const endQuery = useQuery(endQueryOptions);
-
-  /**
-   * Poll for the end block if the initial block is not found.
-   */
-  useWatchContractEvent({
-    ...config,
-    eventName: "Finalized",
-    fromBlock: startBlock ? BigInt(startBlock) : undefined,
-    onLogs: (logs) => {
-      const event = logs.find((log) => log.args.pollId === params.pollId);
-      if (event) {
-        queryClient.setQueryData(
-          endQueryOptions.queryKey,
-          Number(event.blockNumber),
-        );
-      }
-    },
-    enabled:
-      // wait for start block estimation
-      startBlock !== null &&
-      // wait for end block initial fetch
-      endQuery.status === "success" &&
-      // ensure end block wasn't found yet
-      endQuery.data === null &&
-      // ensure poll has ended
-      isBefore(new Date(endDate), now),
-  });
-
-  return endQuery;
 }
 
 /**
- * Find the start and finalized blocks for a given poll.
- */
-function useBlockStatus({
-  endDate,
-  now,
-  ...params
-}: UseChainDataOptions): UseBlockStatus {
-  const startBlock = useStartBlock(Number(params.pollId));
-  const endQuery = useEndBlock(params, startBlock, endDate, now);
-
-  if (startBlock === null || endQuery.isPending) {
-    return { isPending: true };
-  }
-
-  return {
-    isPending: false,
-    startBlock: startBlock,
-    endBlock: endQuery.data ?? null,
-  };
-}
-
-/**
- * Fetch and conditionally poll the chain for vote data.
+ * Fetch and derive vote data from the backend.
+ * Polls for reveals during the "live" phase.
  */
 export function useChainData(params: UseChainDataOptions): UseChainData {
-  const blockStatus = useBlockStatus(params);
+  const pollId = Number(params.pollId);
+  const { data: aggregated } = useAggregatedGravityData(pollId, params.endDate);
 
-  const args = [BigInt(params.tokenId), BigInt(params.pollId)] as const;
-  const shouldPoll =
-    // ensure all block statuses are ready
-    blockStatus.isPending === false &&
-    // ensure end block is not found yet
-    blockStatus.endBlock === null &&
-    // ensure poll has ended
-    isBefore(new Date(params.endDate), params.now);
-
-  const { data, status, error, isFetching } = useReadContracts({
-    contracts: [
-      { ...config, args, functionName: "totalVotesCount" },
-      { ...config, args, functionName: "votesPerCandidates" },
-      { ...config, args, functionName: "remainingVotesCount" },
-    ],
-    query: {
-      refetchInterval: shouldPoll ? POLLING_INTERVAL : false,
-      refetchIntervalInBackground: true,
-    },
-  });
-
-  const liveStatus = useMemo(() => {
-    // poll is still voting
+  // determine initial live status based on aggregated data
+  const initialLiveStatus = useMemo((): LiveStatus => {
     if (isAfter(new Date(params.endDate), params.now)) {
       return "voting";
     }
+    // use server-provided revealed count to determine status
+    const unrevealed =
+      aggregated.totalVoteCount - aggregated.revealedVoteCount;
+    return unrevealed === 0 ? "finalized" : "live";
+  }, [
+    aggregated.totalVoteCount,
+    aggregated.revealedVoteCount,
+    params.endDate,
+    params.now,
+  ]);
 
-    // haven't found the Finalized event yet
-    if (blockStatus.isPending === false && blockStatus.endBlock !== null) {
-      return "finalized";
+  // poll for reveals during "live" phase using infinite query for accumulation
+  const { data, fetchNextPage, isFetchingNextPage } = useInfiniteQuery({
+    queryKey: ["gravity", "reveals", pollId],
+    queryFn: ({ pageParam }: { pageParam: number | undefined }) =>
+      $fetchRevealedVotes({
+        data: { pollId, cursor: pageParam },
+      }),
+    initialPageParam: undefined,
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+    enabled: initialLiveStatus === "live",
+  });
+
+  // manual polling interval
+  useEffect(() => {
+    if (initialLiveStatus !== "live") return;
+
+    const interval = setInterval(() => {
+      if (!isFetchingNextPage) {
+        void fetchNextPage();
+      }
+    }, REVEAL_POLLING_INTERVAL);
+
+    return () => clearInterval(interval);
+  }, [initialLiveStatus, fetchNextPage, isFetchingNextPage]);
+
+  // flatten all pages into a single array of reveals
+  const reveals = useMemo(() => {
+    return data?.pages.flatMap((page) => page.votes) ?? [];
+  }, [data]);
+
+  // create a map for O(1) reveal lookups
+  const revealMap = useMemo(() => {
+    return new Map(reveals.map((r) => [r.id, r.candidateId]));
+  }, [reveals]);
+
+  // apply reveals to top votes
+  const topVotesWithReveals = useMemo((): AggregatedTopVote[] => {
+    if (reveals.length === 0) {
+      return aggregated.topVotes;
     }
+    return aggregated.topVotes.map((vote) => ({
+      ...vote,
+      candidateId: revealMap.get(vote.id) ?? vote.candidateId,
+    }));
+  }, [aggregated.topVotes, revealMap, reveals.length]);
 
-    return "live";
-  }, [blockStatus, params.endDate, params.now]);
+  // apply reveals to top users
+  const topUsersWithReveals = useMemo((): AggregatedTopUser[] => {
+    if (reveals.length === 0) {
+      return aggregated.topUsers;
+    }
+    return aggregated.topUsers.map((user) => ({
+      ...user,
+      votes: user.votes.map((v) => ({
+        ...v,
+        candidateId: revealMap.get(v.id) ?? v.candidateId,
+      })),
+    }));
+  }, [aggregated.topUsers, revealMap, reveals.length]);
 
-  if (status === "pending") {
-    return {
-      status: "pending",
-    } satisfies UseChainDataPending;
-  }
+  // derive revealed votes list from top votes (for VoterBreakdown)
+  const revealedVotes = useMemo((): RevealedVote[] => {
+    return topVotesWithReveals
+      .filter((v) => v.candidateId !== null)
+      .map((vote) => ({
+        voter: vote.voter,
+        comoAmount: vote.comoAmount,
+        candidateId: vote.candidateId!,
+        blockNumber: vote.blockNumber,
+        username: vote.username,
+        pollId: 0,
+        hash: vote.id,
+      }));
+  }, [topVotesWithReveals]);
 
-  if (status === "error") {
-    return {
-      status: "error",
-      error: error.message,
-    } satisfies UseChainDataError;
-  }
+  // use server-provided comoPerCandidate (computed from all revealed votes)
+  const comoPerCandidate = aggregated.comoPerCandidate;
 
-  const [total, comoPerCandidate, remaining] = data;
-  const totalVotesCount = total.status === "success" ? Number(total.result) : 0;
+  // use server-provided revealed count for remaining calculation
   const remainingVotesCount =
-    remaining.status === "success" ? Number(remaining.result) : 0;
+    aggregated.totalVoteCount - aggregated.revealedVoteCount;
+
+  // Derive final live status
+  const liveStatus = useMemo((): LiveStatus => {
+    if (isAfter(new Date(params.endDate), params.now)) {
+      return "voting";
+    }
+    return remainingVotesCount === 0 ? "finalized" : "live";
+  }, [params.endDate, params.now, remainingVotesCount]);
 
   return {
     status: "success",
     liveStatus,
-    isRefreshing: isFetching,
-    totalVotesCount,
+    isRefreshing: isFetchingNextPage,
+    totalVotesCount: aggregated.totalVoteCount,
     remainingVotesCount,
-    comoPerCandidate:
-      comoPerCandidate.status === "success"
-        ? comoPerCandidate.result.map((candidate) => Number(candidate))
-        : [],
+    comoPerCandidate,
+    revealedVotes,
+    // New fields for components that use aggregated data directly
+    chartData: aggregated.chartData,
+    topVotes: topVotesWithReveals,
+    topUsers: topUsersWithReveals,
   } satisfies UseChainDataSuccess;
 }
 
-/**
- * Timeline data point for vote visualization.
- */
-export interface VoteTimelineSegment {
-  timestamp: Date;
-  voteCount: number;
-  totalTokenAmount: number;
-}
-
-/**
- * Fetch all Voted events and format them for timeline visualization.
- * Groups votes by 30-minute time segments for consistent visualization.
- */
-export function useVotedEvents(
-  pollId: number,
-  endDate: string,
-): VoteTimelineSegment[] {
-  const { data: votes } = useGravityVotes(pollId);
-
-  // Process votes into time-based segments
-  const data = useMemo(() => {
-    if (votes.length === 0) {
-      return [];
-    }
-
-    // Find the first vote timestamp and use endDate for range
-    const voteTimes = votes.map((vote) => new Date(vote.createdAt));
-    const earliestVoteTime = new Date(
-      Math.min(...voteTimes.map((t) => t.getTime())),
-    );
-    const endTime = new Date(endDate);
-
-    // Generate 30-minute time segments from first vote to end date
-    const segments: VoteTimelineSegment[] = [];
-    const segmentMap = new Map<string, VoteTimelineSegment>();
-
-    // Start from the 30-minute segment containing the first vote
-    const firstVoteHour = startOfHour(earliestVoteTime);
-    let currentTime =
-      earliestVoteTime.getMinutes() < 30
-        ? firstVoteHour
-        : addMinutes(firstVoteHour, 30);
-
-    while (currentTime < endTime) {
-      const segment = {
-        timestamp: currentTime,
-        voteCount: 0,
-        totalTokenAmount: 0,
-      };
-
-      segments.push(segment);
-      segmentMap.set(currentTime.toISOString(), segment);
-
-      currentTime = addMinutes(currentTime, 30);
-    }
-
-    // Populate segments with vote data using exact timestamps
-    votes.forEach((vote) => {
-      const voteTime = new Date(vote.createdAt);
-
-      // Find the appropriate 30-minute segment
-      const hour = startOfHour(voteTime);
-      const segmentTime =
-        voteTime.getMinutes() < 30 ? hour : addMinutes(hour, 30);
-
-      const segment = segmentMap.get(segmentTime.toISOString());
-      if (segment) {
-        segment.voteCount += 1;
-        segment.totalTokenAmount += vote.amount;
-      }
-    });
-
-    return segments;
-  }, [votes, endDate]);
-
-  return data;
-}

@@ -5,56 +5,18 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { m } from "@/i18n/messages";
-import { useVotedEvents } from "@/lib/client/gravity/abstract/hooks";
-import type { LiveStatus } from "@/lib/client/gravity/abstract/types";
-import { IconLoader2 } from "@tabler/icons-react";
+import type { ChartSegment, LiveStatus } from "@/lib/client/gravity/abstract/types";
 import { format } from "date-fns";
-import { Suspense } from "react";
 import { Bar, BarChart } from "recharts";
 import GravityStatus from "./gravity-status";
 
 type Props = {
-  pollId: number;
-  endDate: string;
+  chartData: ChartSegment[];
   liveStatus: LiveStatus;
   totalComoUsed: number;
 };
 
 export default function TimelineChart(props: Props) {
-  return (
-    <Suspense
-      fallback={
-        <TimelineChartSkeleton
-          liveStatus={props.liveStatus}
-          totalComoUsed={props.totalComoUsed}
-        />
-      }
-    >
-      <TimelineChartContent {...props} />
-    </Suspense>
-  );
-}
-
-function TimelineChartSkeleton({
-  liveStatus,
-  totalComoUsed,
-}: Pick<Props, "liveStatus" | "totalComoUsed">) {
-  return (
-    <div className="flex w-full flex-col gap-2 rounded-md bg-secondary p-3 pb-0">
-      <div className="flex items-center justify-between text-sm">
-        <GravityStatus liveStatus={liveStatus} />
-        <p className="text-xs">{totalComoUsed.toLocaleString()} COMO</p>
-      </div>
-      <div className="flex h-40 flex-col items-center justify-center p-2">
-        <IconLoader2 className="size-8 animate-spin" />
-      </div>
-    </div>
-  );
-}
-
-function TimelineChartContent(props: Props) {
-  const data = useVotedEvents(props.pollId, props.endDate);
-
   return (
     <div className="flex w-full flex-col gap-2 rounded-md bg-secondary p-3 pb-0">
       <div className="flex items-center justify-between text-sm">
@@ -65,7 +27,7 @@ function TimelineChartContent(props: Props) {
       <ChartContainer config={chartConfig} className="aspect-auto h-40">
         <BarChart
           accessibilityLayer
-          data={data}
+          data={props.chartData}
           margin={{
             left: 0,
             right: 0,

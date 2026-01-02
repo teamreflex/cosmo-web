@@ -23,8 +23,8 @@ export class Vote {
   createdAt!: Date;
 
   @Index()
-  @Column("text", { nullable: false })
-  contract!: string;
+  @Column("int4", { nullable: false })
+  tokenId!: number;
 
   @Index()
   @Column("int4", { nullable: false })
@@ -38,9 +38,15 @@ export class Vote {
   amount!: bigint;
 
   @Index()
-  @Column("int4", { nullable: true })
+  @Column("int4", { nullable: false })
   blockNumber!: number;
 
-  @Column("text", { nullable: true })
+  @Column("int4", { nullable: false })
+  logIndex!: number;
+
+  @Column("text", { nullable: false })
   hash!: string;
+
+  @Column("int4", { nullable: true })
+  candidateId!: number | null;
 }

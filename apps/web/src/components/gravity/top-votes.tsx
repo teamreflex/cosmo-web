@@ -1,5 +1,5 @@
 import { m } from "@/i18n/messages";
-import type { RevealedVote } from "@/lib/client/gravity/polygon/types";
+import type { RevealedVote } from "@/lib/client/gravity/types";
 import type { PollSelectedContentImage } from "@apollo/cosmo/types/gravity";
 import { AnimatePresence } from "motion/react";
 import * as motion from "motion/react-client";

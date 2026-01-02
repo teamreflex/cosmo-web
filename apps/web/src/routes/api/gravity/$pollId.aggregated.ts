@@ -1,0 +1,273 @@
+import { cacheHeaders } from "@/lib/server/cache";
+import { fetchKnownAddresses } from "@/lib/server/cosmo-accounts";
+import { indexer } from "@/lib/server/db/indexer";
+import { createFileRoute } from "@tanstack/react-router";
+import { addMinutes, isPast, startOfHour } from "date-fns";
+import * as z from "zod";
+
+const searchSchema = z.object({
+  endDate: z.string(),
+});
+
+export const Route = createFileRoute("/api/gravity/$pollId/aggregated")({
+  server: {
+    handlers: {
+      /**
+       * API route that returns aggregated gravity vote data.
+       * Returns chart data, top 50 votes, top 25 users, and comoPerCandidate.
+       */
+      GET: async ({ params, request }) => {
+        // validate pollId
+        const pollId = Number(params.pollId);
+        if (isNaN(pollId)) {
+          return Response.json({ error: "Invalid poll ID" }, { status: 422 });
+        }
+
+        // parse query params
+        const url = new URL(request.url);
+        const parsed = searchSchema.safeParse({
+          endDate: url.searchParams.get("endDate"),
+        });
+        if (!parsed.success) {
+          return Response.json(
+            { error: "Missing endDate parameter" },
+            { status: 422 },
+          );
+        }
+        const { endDate } = parsed.data;
+
+        // fetch all votes from indexer
+        const rawVotes = await indexer.query.votes.findMany({
+          columns: {
+            id: true,
+            from: true,
+            createdAt: true,
+            amount: true,
+            blockNumber: true,
+            candidateId: true,
+          },
+          where: {
+            pollId,
+          },
+        });
+
+        // compute aggregations in parallel
+        const [chartData, topVotes, topUsers, comoPerCandidate] =
+          await Promise.all([
+            computeChartData(rawVotes, endDate),
+            computeTopVotes(rawVotes, 50),
+            computeTopUsers(rawVotes, 25),
+            computeComoPerCandidate(rawVotes),
+          ]);
+
+        // count revealed votes
+        const revealedVoteCount = rawVotes.filter(
+          (v) => v.candidateId !== null,
+        ).length;
+
+        // collect unique addresses from top votes and top users
+        const addresses = new Set<string>();
+        for (const vote of topVotes) {
+          addresses.add(vote.voter);
+        }
+        for (const user of topUsers) {
+          addresses.add(user.address);
+        }
+
+        // fetch usernames for those addresses only
+        const addressMap = await fetchKnownAddresses([...addresses]);
+
+        // map usernames onto results
+        const topVotesWithUsernames = topVotes.map((vote) => ({
+          ...vote,
+          username: addressMap.get(vote.voter.toLowerCase())?.username,
+        }));
+
+        const topUsersWithUsernames = topUsers.map((user) => ({
+          ...user,
+          nickname: addressMap.get(user.address.toLowerCase())?.username,
+        }));
+
+        const cacheTime = isPast(endDate)
+          ? 60 * 60 * 24 * 30 // 30 days if past
+          : 60 * 10; // 10 minutes if not
+
+        return Response.json(
+          {
+            chartData,
+            topVotes: topVotesWithUsernames,
+            topUsers: topUsersWithUsernames,
+            totalVoteCount: rawVotes.length,
+            revealedVoteCount,
+            comoPerCandidate,
+          },
+          {
+            headers: cacheHeaders({ cdn: cacheTime }),
+          },
+        );
+      },
+    },
+  },
+});
+
+type RawVote = {
+  id: string;
+  from: string;
+  createdAt: string;
+  amount: number;
+  blockNumber: number;
+  candidateId: number | null;
+};
+
+/**
+ * Compute chart data by grouping votes into 30-minute segments.
+ */
+function computeChartData(votes: RawVote[], endDate: string) {
+  if (votes.length === 0) {
+    return [];
+  }
+
+  // find the earliest vote timestamp
+  const voteTimes = votes.map((vote) => new Date(vote.createdAt).getTime());
+  const earliestVoteTime = new Date(Math.min(...voteTimes));
+  const endTime = new Date(endDate);
+
+  // generate 30-minute segments
+  const segmentMap = new Map<
+    string,
+    { timestamp: string; voteCount: number; totalTokenAmount: number }
+  >();
+
+  // start from the 30-minute segment containing the first vote
+  const firstVoteHour = startOfHour(earliestVoteTime);
+  let currentTime =
+    earliestVoteTime.getMinutes() < 30
+      ? firstVoteHour
+      : addMinutes(firstVoteHour, 30);
+
+  while (currentTime < endTime) {
+    segmentMap.set(currentTime.toISOString(), {
+      timestamp: currentTime.toISOString(),
+      voteCount: 0,
+      totalTokenAmount: 0,
+    });
+    currentTime = addMinutes(currentTime, 30);
+  }
+
+  // populate segments with vote data
+  for (const vote of votes) {
+    const voteTime = new Date(vote.createdAt);
+    const hour = startOfHour(voteTime);
+    const segmentTime =
+      voteTime.getMinutes() < 30 ? hour : addMinutes(hour, 30);
+
+    const segment = segmentMap.get(segmentTime.toISOString());
+    if (segment) {
+      segment.voteCount += 1;
+      segment.totalTokenAmount += vote.amount;
+    }
+  }
+
+  // convert to sorted array
+  return Array.from(segmentMap.values()).sort(
+    (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+  );
+}
+
+/**
+ * Get top N votes sorted by amount descending.
+ */
+function computeTopVotes(votes: RawVote[], limit: number) {
+  // sort by amount descending and take top N
+  const sorted = [...votes].sort((a, b) => b.amount - a.amount);
+
+  return sorted.slice(0, limit).map((vote) => ({
+    id: vote.id,
+    voter: vote.from,
+    comoAmount: vote.amount,
+    candidateId: vote.candidateId,
+    blockNumber: vote.blockNumber,
+  }));
+}
+
+type AggregatedUser = {
+  address: string;
+  total: number;
+  votes: { id: string; candidateId: number | null; amount: number }[];
+};
+
+/**
+ * Aggregate votes by user and return top N users by total COMO.
+ */
+function computeTopUsers(votes: RawVote[], limit: number) {
+  // aggregate votes by user address
+  const userMap = new Map<string, AggregatedUser>();
+
+  for (const vote of votes) {
+    const address = vote.from.toLowerCase();
+    let user = userMap.get(address);
+
+    if (!user) {
+      user = {
+        address,
+        total: 0,
+        votes: [],
+      };
+      userMap.set(address, user);
+    }
+
+    user.total += vote.amount;
+    user.votes.push({
+      id: vote.id,
+      candidateId: vote.candidateId,
+      amount: vote.amount,
+    });
+  }
+
+  // use min-heap approach to find top N users
+  const topUsersHeap: AggregatedUser[] = [];
+
+  const maintainHeap = () => {
+    topUsersHeap.sort((a, b) => a.total - b.total);
+  };
+
+  for (const user of userMap.values()) {
+    if (topUsersHeap.length < limit) {
+      topUsersHeap.push(user);
+      maintainHeap();
+    } else if (
+      topUsersHeap[0] !== undefined &&
+      user.total > topUsersHeap[0].total
+    ) {
+      topUsersHeap[0] = user;
+      maintainHeap();
+    }
+  }
+
+  // sort final result descending by total
+  return topUsersHeap.sort((a, b) => b.total - a.total);
+}
+
+/**
+ * Compute COMO totals per candidate from all revealed votes.
+ */
+function computeComoPerCandidate(votes: RawVote[]): number[] {
+  const comoByCandidate = new Map<number, number>();
+
+  for (const vote of votes) {
+    if (vote.candidateId !== null) {
+      comoByCandidate.set(
+        vote.candidateId,
+        (comoByCandidate.get(vote.candidateId) ?? 0) + vote.amount,
+      );
+    }
+  }
+
+  // convert to array indexed by candidateId
+  const maxCandidateId = Math.max(0, ...comoByCandidate.keys());
+  const result: number[] = [];
+  for (let i = 0; i <= maxCandidateId; i++) {
+    result.push(comoByCandidate.get(i) ?? 0);
+  }
+  return result;
+}
