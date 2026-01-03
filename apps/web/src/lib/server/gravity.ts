@@ -312,9 +312,9 @@ export const $fetchRevealedVotes = createServerFn({ method: "GET" })
       },
     });
 
-    // Get the highest block number for the next cursor
+    // if there's new reveals, return the highest block number, otherwise return the current cursor
     const nextCursor =
-      votes.length > 0 ? votes[votes.length - 1]!.blockNumber : undefined;
+      votes.length > 0 ? votes[votes.length - 1]!.blockNumber : data.cursor;
 
     return {
       votes: votes.map((v) => ({
