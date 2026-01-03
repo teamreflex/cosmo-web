@@ -15,12 +15,6 @@ type Props = {
 };
 
 export default function VoterBreakdown(props: Props) {
-  // filter to only revealed votes
-  const revealedVotes = props.topVotes.filter((v) => v.candidateId !== null);
-  const revealedUsers = props.topUsers.filter((u) =>
-    u.votes.some((v) => v.candidateId !== null),
-  );
-
   return (
     <Tabs defaultValue="top-votes">
       <TabsList>
@@ -29,10 +23,10 @@ export default function VoterBreakdown(props: Props) {
       </TabsList>
 
       <TabsContent value="top-votes">
-        <TopVotes votes={revealedVotes} candidates={props.candidates} />
+        <TopVotes votes={props.topVotes} candidates={props.candidates} />
       </TabsContent>
       <TabsContent value="top-users">
-        <TopUsers users={revealedUsers} candidates={props.candidates} />
+        <TopUsers users={props.topUsers} candidates={props.candidates} />
       </TabsContent>
     </Tabs>
   );

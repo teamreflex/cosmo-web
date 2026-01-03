@@ -41,17 +41,20 @@ type RowProps = {
 };
 
 function Row(props: RowProps) {
-  if (!props.candidate) {
-    return null;
-  }
-
+  const candidate = props.candidate?.content.title;
   const nickname = props.vote.username ?? props.vote.voter.substring(0, 8);
 
   return (
     <div className="flex h-12 w-full items-center rounded-lg bg-secondary/70 px-4 transition-all hover:bg-secondary">
       <div className="flex flex-col">
         <span className="text-sm font-semibold">{nickname}</span>
-        <span className="text-xs">{props.candidate.content.title}</span>
+        {candidate !== undefined ? (
+          <span className="text-xs">{candidate}</span>
+        ) : (
+          <span className="text-xs italic text-muted-foreground">
+            {m.gravity_unrevealed()}
+          </span>
+        )}
       </div>
 
       <span className="ml-auto text-sm">

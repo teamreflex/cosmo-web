@@ -5,8 +5,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { m } from "@/i18n/messages";
 import type { AggregatedTopUser } from "@/lib/client/gravity/abstract/types";
 import type { PollSelectedContentImage } from "@apollo/cosmo/types/gravity";
+import { IconQuestionMark } from "@tabler/icons-react";
 import { AnimatePresence } from "motion/react";
 import * as motion from "motion/react-client";
 import { useMemo } from "react";
@@ -16,12 +18,22 @@ type Props = {
   candidates: PollSelectedContentImage[];
 };
 
-type CandidateBreakdown = {
-  id: number;
+type UnrevealedVote = {
+  id: string;
   comoAmount: number;
-  title: string;
-  imageUrl: string;
+  candidate: null;
 };
+
+type RevealedVote = {
+  id: string;
+  comoAmount: number;
+  candidate: {
+    title: string;
+    imageUrl: string;
+  };
+};
+
+type CandidateBreakdown = UnrevealedVote | RevealedVote;
 
 export default function TopUsers(props: Props) {
   return (
@@ -56,66 +68,84 @@ type RowProps = {
 
 function Row({ user, candidates }: RowProps) {
   const nickname = user.nickname ?? user.address.substring(0, 8);
+  const totalComo = user.votes.reduce((sum, v) => sum + v.amount, 0);
 
-  // compute candidate breakdown from revealed votes only
-  const candidateBreakdown = useMemo((): CandidateBreakdown[] => {
-    const breakdown = new Map<number, CandidateBreakdown>();
+  // zip candidate data with votes
+  const votes = useMemo((): CandidateBreakdown[] => {
+    const breakdown: CandidateBreakdown[] = [];
 
     for (const vote of user.votes) {
-      if (vote.candidateId === null) continue;
+      // handle unrevealed votes
+      if (vote.candidateId === null) {
+        breakdown.push({
+          id: vote.id,
+          comoAmount: vote.amount,
+          candidate: null,
+        });
+
+        continue;
+      }
 
       const candidate = candidates[vote.candidateId];
       if (!candidate) continue;
 
-      let entry = breakdown.get(vote.candidateId);
-      if (!entry) {
-        entry = {
-          id: vote.candidateId,
-          comoAmount: 0,
+      breakdown.push({
+        id: vote.id,
+        comoAmount: vote.amount,
+        candidate: {
           title: candidate.content.title,
           imageUrl: candidate.content.imageUrl,
-        };
-        breakdown.set(vote.candidateId, entry);
-      }
-      entry.comoAmount += vote.amount;
+        },
+      });
     }
 
-    return Array.from(breakdown.values()).sort(
-      (a, b) => b.comoAmount - a.comoAmount,
-    );
+    return breakdown;
   }, [user.votes, candidates]);
-
-  // compute revealed total
-  const revealedTotal = useMemo(() => {
-    return user.votes
-      .filter((v) => v.candidateId !== null)
-      .reduce((sum, v) => sum + v.amount, 0);
-  }, [user.votes]);
 
   return (
     <div className="flex h-12 w-full items-center rounded-lg bg-secondary/70 px-4 transition-all hover:bg-secondary">
       <div className="flex flex-col">
         <span className="text-sm font-semibold">{nickname}</span>
-        <span className="text-xs">{revealedTotal.toLocaleString()} COMO</span>
+        <span className="text-xs">{totalComo.toLocaleString()} COMO</span>
       </div>
 
       <span className="ml-auto flex items-center -space-x-3">
-        {candidateBreakdown.map((candidate) => (
-          <TooltipProvider key={candidate.id}>
-            <Tooltip>
-              <TooltipTrigger>
-                <Avatar className="size-8 rounded ring ring-secondary">
-                  <AvatarFallback>{candidate.title.at(0)}</AvatarFallback>
-                  <AvatarImage src={candidate.imageUrl} />
-                </Avatar>
-              </TooltipTrigger>
-              <TooltipContent className="flex flex-col">
-                <span className="font-semibold">{candidate.title}</span>
-                <span className="text-xs">
-                  {candidate.comoAmount.toLocaleString()} COMO
-                </span>
-              </TooltipContent>
-            </Tooltip>
+        {votes.map((vote) => (
+          <TooltipProvider key={vote.id}>
+            {vote.candidate !== null ? (
+              <Tooltip>
+                <TooltipTrigger>
+                  <Avatar className="size-8 rounded ring ring-secondary">
+                    <AvatarFallback>
+                      {vote.candidate.title.at(0)}
+                    </AvatarFallback>
+                    <AvatarImage src={vote.candidate.imageUrl} />
+                  </Avatar>
+                </TooltipTrigger>
+                <TooltipContent className="flex flex-col">
+                  <span className="font-semibold">{vote.candidate.title}</span>
+                  <span className="text-xs">
+                    {vote.comoAmount.toLocaleString()} COMO
+                  </span>
+                </TooltipContent>
+              </Tooltip>
+            ) : (
+              <Tooltip>
+                <TooltipTrigger>
+                  <div className="flex items-center justify-center size-8 rounded bg-accent ring ring-secondary">
+                    <IconQuestionMark className="size-5 text-foreground" />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent className="flex flex-col">
+                  <span className="font-semibold italic">
+                    {m.gravity_unrevealed()}
+                  </span>
+                  <span className="text-xs">
+                    {vote.comoAmount.toLocaleString()} COMO
+                  </span>
+                </TooltipContent>
+              </Tooltip>
+            )}
           </TooltipProvider>
         ))}
       </span>

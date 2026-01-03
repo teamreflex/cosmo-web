@@ -458,6 +458,7 @@
   "gravity_badge_event": "Event",
   "gravity_badge_grand": "Grand",
   "gravity_error_loading_details": "Could not load gravity",
+  "gravity_unrevealed": "Unrevealed",
 
   "_comment_blockchain": "Blockchain strings",
   "blockchain_types": "types",

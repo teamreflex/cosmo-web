@@ -58,7 +58,6 @@ export default function AbstractLiveChart(props: Props) {
 
   const totalVotes = reveals.totalVotesCount;
   const countedVotes = totalVotes - reveals.remainingVotesCount;
-  const showBreakdown = reveals.topVotes.some((v) => v.candidateId !== null);
 
   return (
     <div className="flex w-full flex-col gap-2">
@@ -75,13 +74,11 @@ export default function AbstractLiveChart(props: Props) {
         isRefreshing={reveals.isRefreshing}
       />
 
-      {showBreakdown && (
-        <VoterBreakdown
-          topVotes={reveals.topVotes}
-          topUsers={reveals.topUsers}
-          candidates={poll.pollViewMetadata.selectedContent}
-        />
-      )}
+      <VoterBreakdown
+        topVotes={reveals.topVotes}
+        topUsers={reveals.topUsers}
+        candidates={poll.pollViewMetadata.selectedContent}
+      />
 
       <Portal to="#gravity-status">
         <div className="flex flex-col items-end text-xs font-semibold">
