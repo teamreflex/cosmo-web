@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import { eventTypes } from "@apollo/database/web/types";
 import type { EventTypeKey } from "@apollo/database/web/types";
 import {
@@ -36,7 +37,7 @@ export default function EventTypeBadge({
   const label = eventTypes[eventType].label;
 
   return (
-    <Badge variant="secondary" className={className}>
+    <Badge variant="secondary" className={cn("shadow-xs", className)}>
       <Icon className="size-4" />
       <span>{label}</span>
     </Badge>

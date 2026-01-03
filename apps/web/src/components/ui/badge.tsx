@@ -28,26 +28,26 @@ const badgeVariants = cva(
         "grand-gravity": "border-transparent bg-pink-300 text-pink-700",
         // event system
         "event-era":
-          "border-foreground/30 text-foreground backdrop-blur-sm transform-gpu bg-foreground/10 firefox:backdrop-blur-none",
+          "shadow-xs border-foreground/30 text-foreground backdrop-blur-sm transform-gpu bg-foreground/10 firefox:backdrop-blur-none",
         // objekt seasons
         "season-atom":
-          "border-atom/50 text-atom backdrop-blur-sm bg-atom/20 firefox:backdrop-blur-none",
+          "shadow-xs border-atom/50 text-atom backdrop-blur-sm bg-atom/20 firefox:backdrop-blur-none",
         "season-binary":
-          "border-binary/50 text-binary backdrop-blur-sm bg-binary/20 firefox:backdrop-blur-none",
+          "shadow-xs border-binary/50 text-binary backdrop-blur-sm bg-binary/20 firefox:backdrop-blur-none",
         "season-cream":
-          "border-cream/50 text-cream backdrop-blur-sm bg-cream/20 firefox:backdrop-blur-none",
+          "shadow-xs border-cream/50 text-cream backdrop-blur-sm bg-cream/20 firefox:backdrop-blur-none",
         "season-divine":
-          "border-divine/50 text-divine backdrop-blur-sm bg-divine/20 firefox:backdrop-blur-none",
+          "shadow-xs border-divine/50 text-divine backdrop-blur-sm bg-divine/20 firefox:backdrop-blur-none",
         "season-ever":
-          "border-ever/50 text-ever backdrop-blur-sm bg-ever/20 firefox:backdrop-blur-none",
+          "shadow-xs border-ever/50 text-ever backdrop-blur-sm bg-ever/20 firefox:backdrop-blur-none",
         "season-summer":
-          "border-summer/50 text-summer backdrop-blur-sm bg-summer/20 firefox:backdrop-blur-none",
+          "shadow-xs border-summer/50 text-summer backdrop-blur-sm bg-summer/20 firefox:backdrop-blur-none",
         "season-autumn":
-          "border-autumn/50 text-autumn backdrop-blur-sm bg-autumn/20 firefox:backdrop-blur-none",
+          "shadow-xs border-autumn/50 text-autumn backdrop-blur-sm bg-autumn/20 firefox:backdrop-blur-none",
         "season-winter":
-          "border-winter/50 text-winter backdrop-blur-sm bg-winter/20 firefox:backdrop-blur-none",
+          "shadow-xs border-winter/50 text-winter backdrop-blur-sm bg-winter/20 firefox:backdrop-blur-none",
         "season-spring":
-          "border-spring/50 text-spring backdrop-blur-sm bg-spring/20 firefox:backdrop-blur-none",
+          "shadow-xs border-spring/50 text-spring backdrop-blur-sm bg-spring/20 firefox:backdrop-blur-none",
       },
     },
     defaultVariants: {

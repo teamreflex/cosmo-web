@@ -82,10 +82,10 @@ const seasonColors: Record<string, string> = {
   cream: "#FF7477",
   divine: "#B400FF",
   ever: "#33ecfd",
-  summer: "#FFA500",
-  autumn: "#D2691E",
-  winter: "#87CEEB",
-  spring: "#98FB98",
+  summer: "#619AFF",
+  autumn: "#B5315A",
+  winter: "#C6C6C6",
+  spring: "#FFE527",
 };
 
 /**
