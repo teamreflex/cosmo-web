@@ -2,7 +2,7 @@ import { fetchArtist, fetchArtists } from "@apollo/cosmo/server/artists";
 import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
 import { createServerFn } from "@tanstack/react-start";
 import { setResponseHeaders } from "@tanstack/react-start/server";
-import { cacheHeaders, clearTag, remember } from "./cache";
+import { cacheHeaders, remember } from "./cache";
 import { getProxiedToken } from "./proxied-token";
 
 const cacheKey = "artists";
@@ -16,7 +16,9 @@ const cacheKey = "artists";
  */
 export const $fetchArtists = createServerFn({ method: "GET" }).handler(
   async () => {
-    setResponseHeaders(new Headers(cacheHeaders({ cdn: 60 * 60 })));
+    setResponseHeaders(
+      new Headers(cacheHeaders({ cdn: 60 * 60, tags: [cacheKey] })),
+    );
 
     return await remember(cacheKey, 60 * 60 * 24, async () => {
       const { accessToken } = await getProxiedToken();
@@ -31,14 +33,5 @@ export const $fetchArtists = createServerFn({ method: "GET" }).handler(
 
       return { artists: artistMap };
     });
-  },
-);
-
-/**
- * Reset the Redis artists cache.
- */
-export const $resetArtistsCache = createServerFn({ method: "POST" }).handler(
-  async () => {
-    await clearTag(cacheKey);
   },
 );

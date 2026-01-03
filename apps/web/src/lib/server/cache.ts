@@ -36,13 +36,21 @@ export const clearTag = createServerOnlyFn(async (tag: string) => {
 
 type CacheHeaders = {
   cdn: number;
+  tags?: string | string[];
 };
 
 /**
  * Default cache headers for API responses, in order of priority.
  */
-export function cacheHeaders({ cdn }: CacheHeaders) {
+export function cacheHeaders(cache: CacheHeaders) {
+  const tags = cache.tags
+    ? Array.isArray(cache.tags)
+      ? cache.tags
+      : [cache.tags]
+    : [];
+
   return {
-    "Cache-Control": `public, max-age=30, s-maxage=${cdn}, stale-while-revalidate=30`,
+    "Cache-Control": `public, max-age=30, s-maxage=${cache.cdn}, stale-while-revalidate=30`,
+    ...(tags.length > 0 ? { "Cache-Tag": tags.join(",") } : {}),
   };
 }

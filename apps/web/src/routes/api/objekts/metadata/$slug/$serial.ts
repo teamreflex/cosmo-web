@@ -12,7 +12,10 @@ export const Route = createFileRoute("/api/objekts/metadata/$slug/$serial")({
        * Cached for 4 hours.
        */
       GET: async ({ params }) => {
-        const headers = cacheHeaders({ cdn: 60 * 60 * 4 });
+        const headers = cacheHeaders({
+          cdn: 60 * 60 * 4,
+          tags: ["objekt", `serial:${params.slug}:${params.serial}`],
+        });
 
         // validate serial
         const serial = parseInt(params.serial);

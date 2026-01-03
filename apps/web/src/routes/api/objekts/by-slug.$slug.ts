@@ -12,6 +12,8 @@ export const Route = createFileRoute("/api/objekts/by-slug/$slug")({
        * Cached for 24 hours (4 hours for 404).
        */
       GET: async ({ params }) => {
+        const cacheKey = `objekt:${params.slug}`;
+
         const collection = await indexer.query.collections.findFirst({
           where: {
             slug: params.slug,
@@ -21,13 +23,22 @@ export const Route = createFileRoute("/api/objekts/by-slug/$slug")({
         if (!collection) {
           return Response.json(
             { message: "Collection not found" },
-            { status: 404, headers: cacheHeaders({ cdn: 60 * 60 * 4 }) },
+            {
+              status: 404,
+              headers: cacheHeaders({
+                cdn: 60 * 60 * 4,
+                tags: ["objekt", cacheKey],
+              }),
+            },
           );
         }
 
         const common = Objekt.fromIndexer(collection);
         return Response.json(common, {
-          headers: cacheHeaders({ cdn: 60 * 60 * 24 }),
+          headers: cacheHeaders({
+            cdn: 60 * 60 * 24,
+            tags: ["objekt", cacheKey],
+          }),
         });
       },
     },
