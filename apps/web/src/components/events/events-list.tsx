@@ -26,7 +26,7 @@ export default function EventsList({
 
   if (allEvents.length === 0) {
     return (
-      <p className="relative z-10 col-span-full mt-4 rounded-lg border border-dashed border-accent bg-background/60 py-12 text-center text-muted-foreground backdrop-blur-md md:mx-auto md:w-1/2">
+      <p className="relative z-20 col-span-full mt-4 rounded-lg border border-dashed border-accent bg-background/60 py-12 text-center text-muted-foreground backdrop-blur-md md:mx-auto md:w-1/2">
         {m.events_no_events()}
       </p>
     );
@@ -35,12 +35,12 @@ export default function EventsList({
   return (
     <>
       {/* events list */}
-      <div className="relative z-10 mt-4 flex flex-col overflow-hidden rounded-lg border border-accent bg-background/60 text-sm backdrop-blur-md md:grid md:grid-cols-[auto_1fr_auto_auto_auto]">
+      <div className="relative z-20 mt-4 flex flex-col overflow-hidden rounded-lg border border-accent bg-background/60 text-sm backdrop-blur-md md:grid md:grid-cols-[auto_1fr_auto_auto_auto]">
         {allEvents.map((event) => (
           <EventRow
             key={event.id}
             event={event}
-            onMouseEnter={() => onHoverChange(event)}
+            onPointerEnter={() => onHoverChange(event)}
           />
         ))}
       </div>
@@ -58,10 +58,10 @@ export default function EventsList({
 
 type EventRowProps = {
   event: EventWithEra;
-  onMouseEnter?: () => void;
+  onPointerEnter?: () => void;
 };
 
-function EventRow({ event, onMouseEnter }: EventRowProps) {
+function EventRow({ event, onPointerEnter }: EventRowProps) {
   const imageUrl =
     event.imageUrl || event.era.imageUrl || event.era.spotifyAlbumArt;
   const eraImageUrl = event.era.imageUrl || event.era.spotifyAlbumArt;
@@ -70,7 +70,7 @@ function EventRow({ event, onMouseEnter }: EventRowProps) {
     <Link
       to="/events/$slug"
       params={{ slug: event.slug }}
-      onMouseEnter={onMouseEnter}
+      onPointerEnter={(e) => e.pointerType === "mouse" && onPointerEnter?.()}
       className="flex flex-col gap-2 border-b border-accent p-3 transition-colors last:border-b-0 hover:bg-secondary/40 md:col-span-full md:grid md:grid-cols-subgrid md:items-center md:gap-4 md:px-4 md:py-2"
     >
       {/* Mobile: Row 1 / Desktop: Columns 1-2 */}
