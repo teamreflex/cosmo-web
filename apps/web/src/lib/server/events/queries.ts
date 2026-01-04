@@ -47,7 +47,7 @@ export const $fetchCollectionsForEvent = createServerFn({ method: "GET" })
   });
 
 /**
- * Fetches an event by slug along with its era and collections.
+ * Fetches an event by slug along with its era.
  */
 export const $fetchEventBySlug = createServerFn({ method: "GET" })
   .inputValidator(z.object({ slug: z.string() }))
@@ -56,7 +56,6 @@ export const $fetchEventBySlug = createServerFn({ method: "GET" })
       where: { slug: data.slug },
       with: {
         era: true,
-        collections: true,
       },
     });
 
