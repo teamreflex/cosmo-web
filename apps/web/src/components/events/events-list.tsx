@@ -71,70 +71,68 @@ function EventRow({ event, onMouseEnter }: EventRowProps) {
       to="/events/$slug"
       params={{ slug: event.slug }}
       onMouseEnter={onMouseEnter}
-      className="border-b border-accent last:border-b-0 md:col-span-full md:grid md:grid-cols-subgrid"
+      className="flex flex-col gap-2 border-b border-accent p-3 transition-colors last:border-b-0 hover:bg-secondary/40 md:col-span-full md:grid md:grid-cols-subgrid md:items-center md:gap-4 md:px-4 md:py-2"
     >
-      <div className="flex flex-col gap-2 p-3 transition-colors hover:bg-secondary/40 md:col-span-full md:grid md:grid-cols-subgrid md:items-center md:gap-4 md:px-4 md:py-2">
-        {/* Mobile: Row 1 / Desktop: Columns 1-2 */}
-        <div className="flex items-start gap-3 md:contents">
-          {/* Image thumbnail */}
-          {imageUrl ? (
-            <img
-              src={imageUrl}
-              alt={event.name}
-              className="size-10 shrink-0 rounded md:size-12"
-            />
-          ) : (
-            <div className="hidden size-12 md:block" />
+      {/* Mobile: Row 1 / Desktop: Columns 1-2 */}
+      <div className="flex items-start gap-3 md:contents">
+        {/* Image thumbnail */}
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={event.name}
+            className="size-10 shrink-0 rounded md:size-12"
+          />
+        ) : (
+          <div className="hidden size-12 md:block" />
+        )}
+
+        {/* Name + Description */}
+        <div className="flex min-w-0 flex-col">
+          <span className="leading-tight font-semibold">{event.name}</span>
+          {event.description && (
+            <p className="line-clamp-2 text-xs text-muted-foreground">
+              {event.description}
+            </p>
           )}
+        </div>
+      </div>
 
-          {/* Name + Description */}
-          <div className="flex min-w-0 flex-col">
-            <span className="leading-tight font-semibold">{event.name}</span>
-            {event.description && (
-              <p className="line-clamp-2 text-xs text-muted-foreground">
-                {event.description}
-              </p>
+      {/* Mobile: Row 2 / Desktop: Column 3 */}
+      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <IconCalendarEvent className="size-4" />
+        <div className="flex gap-1">
+          {event.startDate && (
+            <Timestamp date={event.startDate} format="MMM d, yyyy" />
+          )}
+          {event.startDate && <span>~</span>}
+          {event.endDate ? (
+            <Timestamp date={event.endDate} format="MMM d, yyyy" />
+          ) : (
+            <span className="italic">Present</span>
+          )}
+        </div>
+      </div>
+
+      {/* Mobile: Row 3 / Desktop: Columns 4-5 */}
+      <div className="flex flex-wrap items-center gap-1.5 md:contents">
+        {/* Type + Era badges (stacked on desktop) */}
+        <div className="flex items-center gap-1.5 md:flex-col md:items-end">
+          <EventTypeBadge eventType={event.eventType} />
+          <Badge variant="event-era">
+            {eraImageUrl && (
+              <img
+                src={eraImageUrl}
+                alt={event.era.name}
+                className="size-3.5 rounded-xs"
+              />
             )}
-          </div>
+            <span>{event.era.name}</span>
+          </Badge>
         </div>
 
-        {/* Mobile: Row 2 / Desktop: Column 3 */}
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <IconCalendarEvent className="size-4" />
-          <div className="flex gap-1">
-            {event.startDate && (
-              <Timestamp date={event.startDate} format="MMM d, yyyy" />
-            )}
-            {event.startDate && <span>~</span>}
-            {event.endDate ? (
-              <Timestamp date={event.endDate} format="MMM d, yyyy" />
-            ) : (
-              <span className="italic">Present</span>
-            )}
-          </div>
-        </div>
-
-        {/* Mobile: Row 3 / Desktop: Columns 4-5 */}
-        <div className="flex flex-wrap items-center gap-1.5 md:contents">
-          {/* Type + Era badges (stacked on desktop) */}
-          <div className="flex items-center gap-1.5 md:flex-col md:items-end">
-            <EventTypeBadge eventType={event.eventType} />
-            <Badge variant="event-era">
-              {eraImageUrl && (
-                <img
-                  src={eraImageUrl}
-                  alt={event.era.name}
-                  className="size-3.5 rounded-xs"
-                />
-              )}
-              <span>{event.era.name}</span>
-            </Badge>
-          </div>
-
-          {/* Season badges */}
-          <div className="flex flex-wrap items-center justify-end gap-1.5">
-            <Seasons seasons={event.seasons} />
-          </div>
+        {/* Season badges */}
+        <div className="flex flex-wrap items-center justify-end gap-1.5">
+          <Seasons seasons={event.seasons} />
         </div>
       </div>
     </Link>
