@@ -1,4 +1,3 @@
-import { cacheHeaders } from "@/lib/server/cache";
 import { fetchKnownAddresses } from "@/lib/server/cosmo-accounts";
 import { indexer } from "@/lib/server/db/indexer";
 import type { SerialObjekt, SerialTransfer } from "@/lib/universal/objekts";
@@ -9,21 +8,12 @@ export const Route = createFileRoute("/api/objekts/metadata/$slug/$serial")({
     handlers: {
       /**
        * API route for fetching an objekt and its owner by its serial number.
-       * Cached for 4 hours.
        */
       GET: async ({ params }) => {
-        const headers = cacheHeaders({
-          cdn: 60 * 60 * 4,
-          tags: ["objekt", `serial:${params.slug}:${params.serial}`],
-        });
-
         // validate serial
         const serial = parseInt(params.serial);
         if (isNaN(serial)) {
-          return Response.json(
-            { message: "Invalid serial" },
-            { status: 422, headers },
-          );
+          return Response.json({ message: "Invalid serial" }, { status: 422 });
         }
 
         // fetch objekt with transfers
@@ -48,12 +38,12 @@ export const Route = createFileRoute("/api/objekts/metadata/$slug/$serial")({
         });
 
         if (!collection) {
-          return Response.json({ result: null }, { headers });
+          return Response.json({ result: null });
         }
 
         const objekt = collection.objekts[0];
         if (!objekt) {
-          return Response.json({ result: null }, { headers });
+          return Response.json({ result: null });
         }
 
         // collect all unique addresses from transfers and owner
@@ -85,7 +75,7 @@ export const Route = createFileRoute("/api/objekts/metadata/$slug/$serial")({
           transfers,
         } satisfies SerialObjekt;
 
-        return Response.json({ result }, { headers });
+        return Response.json({ result });
       },
     },
   },

@@ -23,29 +23,6 @@ export const Route = createFileRoute("/api/objekts/metadata/$slug/")({
           fetchEventForCollection(params.slug),
         ]);
 
-        const timestamp = collection.createdAt.getTime();
-        const now = new Date().getTime();
-        const hourInMs = 1000 * 60 * 60;
-
-        let cacheTime: number;
-
-        /**
-         * cache for:
-         * - older than 12 hours: 5 minutes
-         * - older than 24 hours: 1 hour
-         * - older than 48 hours: 4 hours
-         * - else: 12 hours
-         */
-        if (now - timestamp <= 12 * hourInMs) {
-          cacheTime = 60 * 5;
-        } else if (now - timestamp <= 24 * hourInMs) {
-          cacheTime = 60 * 60;
-        } else if (now - timestamp <= 48 * hourInMs) {
-          cacheTime = 60 * 60 * 4;
-        } else {
-          cacheTime = 60 * 60 * 12;
-        }
-
         return Response.json(
           {
             total: collection.total,
@@ -55,7 +32,7 @@ export const Route = createFileRoute("/api/objekts/metadata/$slug/")({
           } satisfies ObjektMetadata,
           {
             headers: cacheHeaders({
-              cdn: cacheTime,
+              cdn: 1000 * 60 * 10, // 10 minutes
               tags: ["objekt", `metadata:${params.slug}`],
             }),
           },
@@ -109,8 +86,10 @@ async function fetchCollection(slug: string) {
 /**
  * Fetch the event that includes this collection.
  */
-async function fetchEventForCollection(collectionId: string) {
-  const result = await db.query.collectionData.findFirst({
+async function fetchEventForCollection(
+  collectionId: string,
+): Promise<ObjektCollectionData | undefined> {
+  return await db.query.collectionData.findFirst({
     where: { collectionId },
     columns: {
       id: true,
@@ -140,6 +119,4 @@ async function fetchEventForCollection(collectionId: string) {
       },
     },
   });
-
-  return result satisfies ObjektCollectionData | undefined;
 }

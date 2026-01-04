@@ -16,13 +16,14 @@ export default defineConfig({
     external: ["bun"],
   },
   plugins: [
-    devtools({
-      removeDevtoolsOnBuild: true,
-    }),
     tsConfigPaths({
       projects: ["./tsconfig.json"],
     }),
     tanstackStart(),
+    devtools({
+      removeDevtoolsOnBuild: true,
+    }),
+    tailwindcss(),
     react({
       babel: {
         plugins: ["babel-plugin-react-compiler"],
@@ -35,6 +36,5 @@ export default defineConfig({
       cookieName: "PARAGLIDE_LOCALE",
       strategy: ["cookie", "preferredLanguage", "baseLocale"],
     }),
-    tailwindcss(),
   ],
 });
