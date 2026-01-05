@@ -90,6 +90,7 @@ const updates = [
       "Fixed: Janky objekt popups on mobile, including drag-to-close not working.",
       "Fixed: Past gravity events showing as live instead of completed.",
       "Fixed: Gravity vote percentage rounding up incorrectly.",
+      "Fixed: Objekt lists sorting incorrectly.",
     ],
   },
 ];

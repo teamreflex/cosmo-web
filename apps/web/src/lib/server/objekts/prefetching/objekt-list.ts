@@ -59,7 +59,7 @@ export const $fetchObjektListEntries = createServerFn({ method: "GET" })
     let query = indexer
       .select({
         count: sql<number>`count(*) OVER() AS count`,
-        collections,
+        collection: collections,
       })
       .from(collections)
       .where(
@@ -77,21 +77,14 @@ export const $fetchObjektListEntries = createServerFn({ method: "GET" })
     query = query.limit(LIMIT).offset(data.page * LIMIT);
 
     const result = await query;
-    const flatCollections = result.map((c) => c.collections);
 
-    const collectionMap = new Map(flatCollections.map((c) => [c.slug, c]));
-
-    const collectionList = entries
-      .map((entry) => {
-        const collection = collectionMap.get(entry.collectionId);
-        if (!collection) return undefined;
-        return {
-          ...collection,
-          // map the entryId into the collection for uniqueness
-          id: entry.id.toString(),
-        };
-      })
-      .filter((c): c is Collection => c !== undefined);
+    const idMap = new Map(entries.map((e) => [e.collectionId, e.id]));
+    const collectionList = result
+      .map((c) => ({
+        ...c.collection,
+        id: idMap.get(c.collection.slug),
+      }))
+      .filter((c): c is Collection => c.id !== undefined);
 
     const hasNext = collectionList.length === LIMIT;
     const nextStartAfter = hasNext ? data.page + 1 : undefined;
