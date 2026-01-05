@@ -30,7 +30,7 @@ export default function MemberFilter({
       <div className="absolute pointer-events-none z-20 top-0 right-0 h-full w-2 bg-linear-to-l from-background to-transparent" />
 
       {selected
-        .sort((a, b) => b.comoTokenId - a.comoTokenId)
+        .sort((a, b) => a.id.localeCompare(b.id))
         .map((artist) => (
           <div
             key={artist.name}
