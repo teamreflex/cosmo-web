@@ -21,8 +21,6 @@ import {
   sendVerificationEmail,
 } from "./mail";
 
-export const IP_HEADER = "cf-connecting-ip";
-
 /**
  * Better Auth server instance.
  */
@@ -59,15 +57,6 @@ export const auth = betterAuth({
       },
       strategy: "compact",
       version: "1",
-    },
-  },
-
-  /**
-   * Ensure IP address logging uses the correct header.
-   */
-  security: {
-    ipAddress: {
-      ipAddressHeaders: [IP_HEADER],
     },
   },
 
@@ -254,6 +243,9 @@ export const auth = betterAuth({
     },
   },
   advanced: {
+    ipAddress: {
+      ipAddressHeaders: ["cf-connecting-ip", "x-forwarded-for"],
+    },
     cookiePrefix: "apollo",
     useSecureCookies: true,
     defaultCookieAttributes: {
