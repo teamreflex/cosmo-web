@@ -24,7 +24,7 @@ export default function EventsGrid() {
         <EventCard
           key={event.id}
           event={event}
-          artist={artists[event.artist]}
+          artist={artists[event.artist.toLowerCase()]}
         />
       ))}
     </div>

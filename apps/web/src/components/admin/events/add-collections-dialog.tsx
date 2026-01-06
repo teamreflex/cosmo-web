@@ -68,7 +68,8 @@ export default function AddCollectionsDialog({
 
   const artistMembers = artist.artistMembers.map((m) => m.name);
   const availableSeasons = getSeasonKeys(
-    filterData.seasons.find((s) => s.artistId === artist.id)?.seasons ?? [],
+    filterData.seasons.find((s) => s.artistId === artist.id.toLowerCase())
+      ?.seasons ?? [],
   );
 
   const expandedSlugs = useMemo(() => {
