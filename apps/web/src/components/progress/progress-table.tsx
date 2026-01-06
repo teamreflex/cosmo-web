@@ -2,6 +2,7 @@ import { m } from "@/i18n/messages";
 import { filterDataQuery } from "@/lib/queries/core";
 import { progressBreakdownQuery } from "@/lib/queries/progress";
 import type { SeasonProgress } from "@/lib/universal/progress";
+import { seasonSort } from "@/lib/utils";
 import type { ValidOnlineType } from "@apollo/cosmo/types/common";
 import { useSuspenseQueries } from "@tanstack/react-query";
 import {
@@ -105,13 +106,15 @@ export default function ProgressTable(props: Props) {
         </div>
 
         <div className="flex flex-col gap-6">
-          {seasons.map(([season, classes]) => (
-            <ProgressSeason
-              key={`${key}:${season}`}
-              season={season}
-              classes={classes}
-            />
-          ))}
+          {seasons
+            .sort(([a], [b]) => seasonSort(a, b))
+            .map(([season, classes]) => (
+              <ProgressSeason
+                key={`${key}:${season}`}
+                season={season}
+                classes={classes}
+              />
+            ))}
         </div>
       </div>
     </div>
