@@ -540,6 +540,7 @@
   "objekt_metadata_save_front_image": "앞면 이미지 저장",
   "objekt_metadata_save_back_image": "뒷면 이미지 저장",
   "objekt_metadata_save_video": "비디오 저장",
+  "objekt_metadata_description": "설명",
 
   "_comment_objekt_serials": "Objekt serials strings",
   "objekt_serials_placeholder": "시리얼 선택...",

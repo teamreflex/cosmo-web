@@ -6,13 +6,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useUserState } from "@/hooks/use-user-state";
 import { m } from "@/i18n/messages";
 import { env } from "@/lib/env/client";
+import { objektMetadataQuery } from "@/lib/queries/objekt-queries";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
-import type {
-  CollectionDataEvent,
-  ObjektMetadata,
-} from "@/lib/universal/objekts";
+import type { CollectionDataEvent } from "@/lib/universal/objekts";
 import { unobtainables } from "@/lib/unobtainables";
 import {
   IconCloudDownload,
@@ -22,13 +21,13 @@ import {
 } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { ofetch } from "ofetch";
 import { toast } from "sonner";
 import { useCopyToClipboard } from "usehooks-ts";
 import Portal from "../../portal";
 import { Button } from "../../ui/button";
 import { getObjektImageUrls } from "../common";
 import type { ObjektMetadataTab } from "./common";
+import EditMetadata from "./edit-metadata";
 import Pill from "./pill";
 import SerialsPanel from "./serials-panel";
 
@@ -39,21 +38,13 @@ type Props = {
 };
 
 export default function Metadata(props: Props) {
+  const { user } = useUserState();
   const [_, copy] = useCopyToClipboard();
-  const { data } = useSuspenseQuery({
-    queryKey: ["collection-metadata", "metadata", props.objekt.slug],
-    queryFn: ({ signal }) =>
-      ofetch<ObjektMetadata>(`/api/objekts/metadata/${props.objekt.slug}`, {
-        signal,
-      }),
-    retry: 1,
-  });
+  const { data } = useSuspenseQuery(objektMetadataQuery(props.objekt.slug));
 
   function copyUrl() {
     const scheme = env.VITE_APP_ENV === "development" ? "http" : "https";
-    void copy(
-      `${scheme}://${env.VITE_BASE_URL}/objekts?id=${props.objekt.slug}`,
-    );
+    void copy(`${scheme}://${env.VITE_BASE_URL}?id=${props.objekt.slug}`);
     toast.success(m.toast_objekt_url_copied());
   }
 
@@ -123,6 +114,13 @@ export default function Metadata(props: Props) {
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
+
+            {user?.isAdmin && (
+              <EditMetadata
+                slug={props.objekt.slug}
+                defaultValue={data.data?.description}
+              />
+            )}
 
             {data.data?.event && (
               <div className="mr-auto flex min-h-10 items-center gap-2">

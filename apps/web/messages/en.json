@@ -540,6 +540,7 @@
   "objekt_metadata_save_front_image": "Save Front Image",
   "objekt_metadata_save_back_image": "Save Back Image",
   "objekt_metadata_save_video": "Save Video",
+  "objekt_metadata_description": "Description",
 
   "_comment_objekt_serials": "Objekt serials strings",
   "objekt_serials_placeholder": "Select a serial...",

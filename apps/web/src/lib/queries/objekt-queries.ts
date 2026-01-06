@@ -14,8 +14,10 @@ import type {
   userCollectionFrontendSchema,
 } from "@/lib/universal/parsers";
 import { normalizeFilters } from "@/lib/universal/parsers";
-import { infiniteQueryOptions } from "@tanstack/react-query";
+import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
+import { ofetch } from "ofetch";
 import type { z } from "zod";
+import { ObjektMetadata } from "../universal/objekts";
 
 /**
  * Object index: Searching via Typesense
@@ -232,5 +234,19 @@ export function transfersQuery(
     getNextPageParam: (lastPage) => lastPage.cursor,
     staleTime: 1000 * 60 * 5,
     refetchOnMount: false,
+  });
+}
+
+/**
+ * Objekt metadata: Fetching metadata about a collection
+ */
+export function objektMetadataQuery(slug: string) {
+  return queryOptions({
+    queryKey: ["collection-metadata", "metadata", slug],
+    queryFn: ({ signal }) =>
+      ofetch<ObjektMetadata>(`/api/objekts/metadata/${slug}`, {
+        signal,
+      }),
+    retry: 1,
   });
 }
