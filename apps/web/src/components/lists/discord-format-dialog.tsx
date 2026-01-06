@@ -2,7 +2,6 @@ import { m } from "@/i18n/messages";
 import type { ObjektList } from "@apollo/database/web/types";
 import { IconCloudDownload, IconCopy, IconLoader2 } from "@tabler/icons-react";
 import { useMutation } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useCopyToClipboard } from "usehooks-ts";
@@ -36,9 +35,8 @@ export default function DiscordFormatDialog({
   onOpenChange,
   objektLists,
 }: Props) {
-  const mutationFn = useServerFn($generateDiscordList);
   const mutation = useMutation({
-    mutationFn,
+    mutationFn: $generateDiscordList,
     onSuccess: (data) => {
       setResult(data);
     },

@@ -11,7 +11,6 @@ import {
   IconUpload,
 } from "@tabler/icons-react";
 import { useMutation } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
 import { $saveBandUrls } from "./actions";
@@ -20,9 +19,8 @@ export default function InsertBands() {
   const [items, setItems] = useState<BandUrlRow[]>([
     { slug: "", bandImageUrl: "" },
   ]);
-  const mutationFn = useServerFn($saveBandUrls);
   const mutation = useMutation({
-    mutationFn,
+    mutationFn: $saveBandUrls,
     onSuccess: () => {
       toast.success(m.admin_bands_updated({ count: items.length }));
       setItems([{ slug: "", bandImageUrl: "" }]);

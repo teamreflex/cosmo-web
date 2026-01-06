@@ -24,7 +24,6 @@ import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconLoader2 } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
@@ -43,9 +42,8 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
   const { theme, setTheme } = useTheme();
   const queryClient = useQueryClient();
   const router = useRouter();
-  const mutationFn = useServerFn($updateSettings);
   const mutation = useMutation({
-    mutationFn,
+    mutationFn: $updateSettings,
   });
 
   const locale = getLocale();

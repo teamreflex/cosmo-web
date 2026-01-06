@@ -14,7 +14,6 @@ import { adminEventsQuery } from "@/lib/queries/events";
 import { $deleteEvent } from "@/lib/server/events/actions";
 import { IconLoader2, IconTrash } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 
 type Props = {
@@ -24,7 +23,7 @@ type Props = {
 export default function DeleteEvent({ eventId }: Props) {
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: useServerFn($deleteEvent),
+    mutationFn: $deleteEvent,
     onSuccess: async () => {
       toast.success(m.admin_event_deleted());
       await queryClient.invalidateQueries({

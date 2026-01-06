@@ -4,7 +4,6 @@ import { m } from "@/i18n/messages";
 import { track } from "@/lib/utils";
 import { IconLoader2, IconLock, IconLockOpen } from "@tabler/icons-react";
 import { useMutation } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 
 type Props = {
   tokenId: number;
@@ -13,9 +12,8 @@ type Props = {
 
 export default function LockObjekt({ tokenId, isLocked }: Props) {
   const toggleLock = useProfileContext((ctx) => ctx.toggleLock);
-  const mutationFn = useServerFn($toggleObjektLock);
   const mutation = useMutation({
-    mutationFn,
+    mutationFn: $toggleObjektLock,
     onSuccess: () => {
       track(`${isLocked ? "unlock" : "lock"}-objekt`);
       toggleLock(tokenId);

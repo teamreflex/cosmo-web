@@ -2,7 +2,6 @@ import { m } from "@/i18n/messages";
 import type { ObjektList } from "@apollo/database/web/types";
 import { IconLoader2, IconPlaylistAdd, IconPlus } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import type { MouseEvent } from "react";
 import { toast } from "sonner";
@@ -83,9 +82,8 @@ function ListItem({
   onDone,
 }: ListItemProps) {
   const queryClient = useQueryClient();
-  const mutationFn = useServerFn($addObjektToList);
   const mutation = useMutation({
-    mutationFn,
+    mutationFn: $addObjektToList,
     onSuccess: async () => {
       toast.success(
         m.toast_added_to_list({ collectionId, listName: list.name }),

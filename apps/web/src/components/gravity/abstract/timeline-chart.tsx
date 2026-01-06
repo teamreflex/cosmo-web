@@ -5,7 +5,10 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { m } from "@/i18n/messages";
-import type { ChartSegment, LiveStatus } from "@/lib/client/gravity/abstract/types";
+import type {
+  ChartSegment,
+  LiveStatus,
+} from "@/lib/client/gravity/abstract/types";
 import { format } from "date-fns";
 import { Bar, BarChart } from "recharts";
 import GravityStatus from "./gravity-status";

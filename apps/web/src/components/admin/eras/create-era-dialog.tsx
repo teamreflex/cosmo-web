@@ -20,7 +20,6 @@ import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconLoader2, IconPlus } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import { useRef, useState } from "react";
 import { FormProvider, useForm, useFormState } from "react-hook-form";
 import { toast } from "sonner";
@@ -36,7 +35,7 @@ export default function CreateEra() {
   const selectedImageRef = useRef<File | null>(null);
 
   const mutation = useMutation({
-    mutationFn: useServerFn($createEra),
+    mutationFn: $createEra,
     onSuccess: async () => {
       toast.success(m.admin_era_created());
       await queryClient.invalidateQueries({

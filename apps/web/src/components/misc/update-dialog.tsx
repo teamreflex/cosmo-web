@@ -41,7 +41,7 @@ export default function UpdateDialog() {
           )}
         </button>
       </AlertDialogTrigger>
-      <AlertDialogContent>
+      <AlertDialogContent size="lg">
         <AlertDialogHeader>
           <AlertDialogTitle>
             {m.updates_title({ appName: env.VITE_APP_NAME })}
@@ -85,12 +85,13 @@ const updates = [
       "Added: Event catalog system - an easy way of viewing past and ongoing objekt drops.",
       "Updated: The design of the artist/member filter to better accommodate more artists.",
       "Updated: Other design tweaks and improvements such as a new font and color scheme.",
-      "Updated: Moved the about dialog to the user dropdown, now the logo links to the objekts page.",
+      "Updated: Moved the about dialog to the user dropdown, logo now links to the home page.",
       "Updated: Brought back gravity vote results per user.",
-      "Fixed: Janky objekt popups on mobile, including drag-to-close not working.",
-      "Fixed: Past gravity events showing as live instead of completed.",
-      "Fixed: Gravity vote percentage rounding up incorrectly.",
-      "Fixed: Objekt lists sorting incorrectly.",
+      "Fixed: Objekt info popups now drag-to-close correctly on mobile.",
+      "Fixed: Past gravity events now correctly show as completed.",
+      "Fixed: Gravity vote percentage no longer rounds up whole numbers.",
+      "Fixed: Objekt lists now sort correctly.",
+      "Fixed: idntt seasons are now sorted correctly on the progress page.",
     ],
   },
 ];

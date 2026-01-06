@@ -7,7 +7,6 @@ import {
 import { $removeCollectionFromEvent } from "@/lib/server/events/actions";
 import { IconLoader2, IconTrash } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 
 type Props = {
@@ -18,7 +17,7 @@ type Props = {
 export default function DeleteCollection({ eventId, collectionId }: Props) {
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: useServerFn($removeCollectionFromEvent),
+    mutationFn: $removeCollectionFromEvent,
     onSuccess: async () => {
       toast.success(m.admin_collection_removed());
       await queryClient.invalidateQueries({

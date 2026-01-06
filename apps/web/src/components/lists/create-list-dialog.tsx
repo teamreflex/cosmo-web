@@ -5,7 +5,6 @@ import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconLoader2 } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import {
   Controller,
   FormProvider,
@@ -36,9 +35,8 @@ type Props = {
 export default function CreateListDialog(props: Props) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const mutationFn = useServerFn($createObjektList);
   const mutation = useMutation({
-    mutationFn,
+    mutationFn: $createObjektList,
     onSuccess: (result) => {
       track("create-list");
       toast.success(m.toast_list_created());

@@ -25,7 +25,6 @@ import { slugify } from "@apollo/util";
 import { IconLoader2, IconPlus, IconUpload } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -50,7 +49,7 @@ export default function AddCollectionsDialog({
   const [description, setDescription] = useState("");
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: useServerFn($addCollectionsToEvent),
+    mutationFn: $addCollectionsToEvent,
     onSuccess: async (data) => {
       toast.success(m.admin_collections_added({ count: data as number }));
       resetForm();

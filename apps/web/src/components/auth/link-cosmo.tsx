@@ -19,7 +19,6 @@ import {
 } from "@tabler/icons-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { FetchError, ofetch } from "ofetch";
 import { createContext, useContext, useState } from "react";
@@ -264,9 +263,8 @@ type OTPProps = {
 
 function OTP({ ticket }: OTPProps) {
   const ctx = useContext(LinkCosmoContext);
-  const mutationFn = useServerFn($verifyCosmo);
   const mutation = useMutation({
-    mutationFn,
+    mutationFn: $verifyCosmo,
   });
   const router = useRouter();
   const queryClient = useQueryClient();

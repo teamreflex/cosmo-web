@@ -11,7 +11,6 @@ import { $updateCollectionMetadata } from "@/lib/server/metadata";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconEdit, IconLoader2 } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -37,7 +36,7 @@ export default function EditMetadata(props: Props) {
   });
 
   const mutation = useMutation({
-    mutationFn: useServerFn($updateCollectionMetadata),
+    mutationFn: $updateCollectionMetadata,
     onSuccess: async () => {
       toast.success(m.toast_metadata_updated());
       await queryClient.invalidateQueries({

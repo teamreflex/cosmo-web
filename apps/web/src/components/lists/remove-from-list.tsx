@@ -3,7 +3,6 @@ import type { Objekt } from "@/lib/universal/objekt-conversion";
 import type { ObjektList } from "@apollo/database/web/types";
 import { IconLoader2, IconPlaylistX } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { $removeObjektFromList } from "./actions";
 
@@ -15,9 +14,8 @@ type Props = {
 
 export default function RemoveFromList({ id, collection, objektList }: Props) {
   const queryClient = useQueryClient();
-  const mutationFn = useServerFn($removeObjektFromList);
   const mutation = useMutation({
-    mutationFn,
+    mutationFn: $removeObjektFromList,
     onSuccess: async () => {
       toast.success(
         m.toast_removed_from_list({

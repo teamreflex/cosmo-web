@@ -21,7 +21,6 @@ import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconLoader2 } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import { useRef, useState } from "react";
 import { FormProvider, useForm, useFormState } from "react-hook-form";
 import { toast } from "sonner";
@@ -46,7 +45,7 @@ export default function EditEraDialog({ era, children }: Props) {
   );
 
   const mutation = useMutation({
-    mutationFn: useServerFn($updateEra),
+    mutationFn: $updateEra,
     onSuccess: async () => {
       toast.success(m.admin_era_updated());
       await queryClient.invalidateQueries({

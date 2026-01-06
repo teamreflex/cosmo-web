@@ -123,7 +123,7 @@ where: {
 ```ts
 // Simple equality (shorthand)
 const user = await db.query.users.findFirst({
-  where: { id: 1 },  // Shorthand for { id: { eq: 1 } }
+  where: { id: 1 }, // Shorthand for { id: { eq: 1 } }
 });
 
 // Simple equality (explicit)
@@ -142,10 +142,7 @@ const users = await db.query.users.findMany({
 // OR conditions
 const users = await db.query.users.findMany({
   where: {
-    OR: [
-      { age: { lt: 18 } },
-      { status: { eq: "inactive" } },
-    ],
+    OR: [{ age: { lt: 18 } }, { status: { eq: "inactive" } }],
   },
 });
 
@@ -155,10 +152,7 @@ const users = await db.query.users.findMany({
     AND: [
       { age: { gte: 18 } },
       {
-        OR: [
-          { status: { eq: "active" } },
-          { verified: { eq: true } },
-        ],
+        OR: [{ status: { eq: "active" } }, { verified: { eq: true } }],
       },
     ],
   },
@@ -401,7 +395,7 @@ import { ErrorBoundary } from "react-error-boundary";
   <Suspense fallback={<LoadingSkeleton />}>
     <AsyncComponent />
   </Suspense>
-</ErrorBoundary>
+</ErrorBoundary>;
 ```
 
 ### Mutation Error Handling

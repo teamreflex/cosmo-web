@@ -34,14 +34,17 @@ All external dependencies are defined as Effect Services with dependency injecti
 
 ```typescript
 // Pattern: Effect.Service with factory function
-export class ServiceName extends Effect.Service<ServiceName>()("app/ServiceName", {
-  effect: Effect.gen(function* () {
-    const config = yield* getConfig;
-    // Initialize and return service instance
-    return serviceInstance;
-  }),
-  dependencies: [],
-}) {}
+export class ServiceName extends Effect.Service<ServiceName>()(
+  "app/ServiceName",
+  {
+    effect: Effect.gen(function* () {
+      const config = yield* getConfig;
+      // Initialize and return service instance
+      return serviceInstance;
+    }),
+    dependencies: [],
+  },
+) {}
 ```
 
 **Examples:**
@@ -99,9 +102,7 @@ The import loop uses `Effect.schedule` for periodic execution:
 ```typescript
 Effect.gen(function* () {
   // Loop body
-}).pipe(
-  Effect.schedule(Schedule.spaced(Duration.millis(interval)))
-);
+}).pipe(Effect.schedule(Schedule.spaced(Duration.millis(interval))));
 ```
 
 **Location:** src/main.ts:103-105
@@ -112,11 +113,11 @@ Effect.gen(function* () {
 Config values are retrieved using `Effect.Config` with type safety and defaults:
 
 ```typescript
-const CONFIG_KEY = yield* Config.redacted("KEY");           // Sensitive values
-const CONFIG_NUM = yield* Config.number("NUM")
-  .pipe(Config.withDefault(defaultValue));                  // With defaults
-const CONFIG_STR = yield* Config.string("STR")
-  .pipe(Config.withDefault("default"));
+const CONFIG_KEY = yield * Config.redacted("KEY"); // Sensitive values
+const CONFIG_NUM =
+  yield * Config.number("NUM").pipe(Config.withDefault(defaultValue)); // With defaults
+const CONFIG_STR =
+  yield * Config.string("STR").pipe(Config.withDefault("default"));
 ```
 
 **Location:** src/config.ts
@@ -182,11 +183,11 @@ Queries use timestamp-based filtering for incremental syncing:
 await indexer.query.collections.findMany({
   where: {
     createdAt: {
-      gt: currentTimestamp ?? undefined,  // Only fetch new records
+      gt: currentTimestamp ?? undefined, // Only fetch new records
     },
   },
   orderBy: {
-    createdAt: "asc",                     // Chronological order
+    createdAt: "asc", // Chronological order
   },
 });
 ```
@@ -252,7 +253,7 @@ Typesense imports use `action: "upsert"` to handle updates:
 
 ```typescript
 await typesense.collections(COLLECTION_NAME).documents().import(chunk, {
-  action: "upsert",  // Insert or update based on ID
+  action: "upsert", // Insert or update based on ID
 });
 ```
 
@@ -288,7 +289,7 @@ fields: [
   // Display-only fields (not searchable)
   { name: "thumbnailImage", type: "string", index: false },
   { name: "frontImage", type: "string", index: false },
-]
+];
 ```
 
 **Location:** src/setup.ts:53-127
@@ -328,9 +329,9 @@ Effect-TS provides automatic error handling:
 Structured logging using `Effect.logInfo`:
 
 ```typescript
-yield* Effect.logInfo(`Fetching collections from ${timestamp}`);
-yield* Effect.logInfo(`Found ${collections.length} collections`);
-yield* Effect.logInfo(`Upserted ${count} objects`);
+yield * Effect.logInfo(`Fetching collections from ${timestamp}`);
+yield * Effect.logInfo(`Found ${collections.length} collections`);
+yield * Effect.logInfo(`Upserted ${count} objects`);
 ```
 
 **Locations:** Throughout main.ts and setup.ts
@@ -344,10 +345,10 @@ BunRuntime.runMain(
   main.pipe(
     Effect.provide(
       Layer.mergeAll(
-        BunContext.layer,      // Bun platform context
-        Typesense.Default,     // Typesense service
-        Indexer.Default,       // Indexer DB service
-        Metadata.Default,      // Metadata DB service
+        BunContext.layer, // Bun platform context
+        Typesense.Default, // Typesense service
+        Indexer.Default, // Indexer DB service
+        Metadata.Default, // Metadata DB service
       ),
     ),
   ),

@@ -5,7 +5,6 @@ import type { ObjektList } from "@apollo/database/web/types";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconEdit, IconLoader2 } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import {
   Controller,
@@ -36,9 +35,8 @@ export default function UpdateList({ objektList }: Props) {
   const [open, setOpen] = useState(false);
   const { cosmo } = useUserState();
   const queryClient = useQueryClient();
-  const mutationFn = useServerFn($updateObjektList);
   const mutation = useMutation({
-    mutationFn,
+    mutationFn: $updateObjektList,
     onSuccess: async () => {
       toast.success(m.toast_list_updated());
       // invalidate current account query to update list name in user's lists

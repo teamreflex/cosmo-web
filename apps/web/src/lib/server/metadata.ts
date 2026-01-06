@@ -1,8 +1,8 @@
+import { collectionData } from "@apollo/database/web/schema";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { adminMiddleware } from "./middlewares";
 import { db } from "./db";
-import { collectionData } from "@apollo/database/web/schema";
+import { adminMiddleware } from "./middlewares";
 
 const updateCollectionMetadataSchema = z.object({
   slug: z.string().min(1),

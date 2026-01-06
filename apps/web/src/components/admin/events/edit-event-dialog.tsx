@@ -21,7 +21,6 @@ import type { EventWithEra } from "@apollo/database/web/types";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconLoader2, IconPencil } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import { Suspense, useRef, useState } from "react";
 import { FormProvider, useForm, useFormState } from "react-hook-form";
 import { toast } from "sonner";
@@ -36,7 +35,7 @@ export default function EditEventDialog({ event }: Props) {
   const queryClient = useQueryClient();
   const selectedImageRef = useRef<File | null>(null);
   const mutation = useMutation({
-    mutationFn: useServerFn($updateEvent),
+    mutationFn: $updateEvent,
     onSuccess: async () => {
       toast.success(m.admin_event_updated());
       await queryClient.invalidateQueries({

@@ -20,7 +20,6 @@ import { createEventSchema } from "@/lib/universal/schema/events";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconLoader2, IconPlus } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import { Suspense, useRef, useState } from "react";
 import { FormProvider, useForm, useFormState } from "react-hook-form";
 import { toast } from "sonner";
@@ -31,7 +30,7 @@ export default function CreateEvent() {
   const queryClient = useQueryClient();
   const selectedImageRef = useRef<File | null>(null);
   const mutation = useMutation({
-    mutationFn: useServerFn($createEvent),
+    mutationFn: $createEvent,
     onSuccess: async () => {
       toast.success(m.admin_event_created());
       await queryClient.invalidateQueries({

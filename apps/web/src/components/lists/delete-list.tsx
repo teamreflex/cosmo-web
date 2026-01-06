@@ -16,7 +16,6 @@ import type { ObjektList } from "@apollo/database/web/types";
 import { IconLoader2, IconTrash } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import type { MouseEvent } from "react";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
@@ -31,9 +30,8 @@ export default function DeleteList({ objektList }: Props) {
   const target = useProfileContext((ctx) => ctx.target);
   const removeObjektList = useProfileContext((state) => state.removeObjektList);
   const queryClient = useQueryClient();
-  const mutationFn = useServerFn($deleteObjektList);
   const mutation = useMutation({
-    mutationFn,
+    mutationFn: $deleteObjektList,
     onSuccess: () => {
       toast.success(m.toast_list_deleted());
 
