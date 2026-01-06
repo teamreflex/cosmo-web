@@ -70,7 +70,13 @@ export default function EventCard({ event, artist }: Props) {
         <div className="flex items-center justify-between">
           <EventTypeBadge eventType={event.eventType} />
           <div className="flex gap-1">
-            <AddCollectionsDialog eventId={event.id} eventName={event.name} />
+            {artist !== undefined && (
+              <AddCollectionsDialog
+                eventId={event.id}
+                eventName={event.name}
+                artist={artist}
+              />
+            )}
             <ViewCollectionsDialog eventId={event.id} eventName={event.name} />
             <EditEventDialog event={event} />
             <DeleteEvent eventId={event.id} />
