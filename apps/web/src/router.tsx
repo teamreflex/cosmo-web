@@ -3,7 +3,6 @@ import { QueryClient } from "@tanstack/react-query";
 import { createRouter } from "@tanstack/react-router";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
 import type { ReactNode } from "react";
-import { hashFn } from "wagmi/query";
 import { MediaQueryProvider } from "./hooks/use-media-query";
 import { env } from "./lib/env/client";
 import { routeTree } from "./routeTree.gen";
@@ -13,7 +12,6 @@ export function getRouter() {
     defaultOptions: {
       queries: {
         staleTime: 1000 * 60 * 5, // 5 minutes
-        queryKeyHashFn: hashFn,
       },
     },
   });

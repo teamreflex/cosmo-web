@@ -34,6 +34,7 @@
   - [ ] index: add filter and sort options
   - [x] event: make header better
   - [x] era: add custom image for non-album eras
+- [ ] fix scuffed admin panel layout
 
 - triples: triplescosmos
 - triples japan: tripleS_JAPAN
