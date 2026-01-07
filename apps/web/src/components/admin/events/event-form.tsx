@@ -306,14 +306,19 @@ function EraSelectItem(props: EraSelectItemProps) {
 
 type SeasonSelectionProps = {
   seasons: FilterData["seasons"];
-  artist: string;
+  artist: string | undefined;
 };
 
 function SeasonSelection(props: SeasonSelectionProps) {
   const form = useFormContext<CreateEventInput>();
 
+  if (!props.artist) {
+    return null;
+  }
+
   const seasons = getSeasonKeys(
-    props.seasons.find((s) => s.artistId === props.artist)?.seasons ?? [],
+    props.seasons.find((s) => s.artistId === props.artist!.toLowerCase())
+      ?.seasons ?? [],
   );
 
   return (
