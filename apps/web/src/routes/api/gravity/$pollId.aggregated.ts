@@ -1,5 +1,5 @@
 import type { AggregatedGravityData } from "@/lib/client/gravity/abstract/types";
-import { cacheHeaders, remember } from "@/lib/server/cache";
+import { cacheHeaders } from "@/lib/server/cache";
 import { fetchKnownAddresses } from "@/lib/server/cosmo-accounts";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
@@ -38,99 +38,93 @@ export const Route = createFileRoute("/api/gravity/$pollId/aggregated")({
         const startDate = poll.startDate.toISOString();
         const endDate = poll.endDate.toISOString();
 
-        // using redis helps when the page is server rendered
-        const result = await remember(
-          `gravity:aggregated:${pollId}`,
-          60 * 10, // 10 minutes
-          async () => {
-            // fetch all votes from indexer
-            const rawVotes = await indexer.query.votes.findMany({
-              columns: {
-                tokenId: false,
-                pollId: false,
-                logIndex: false,
-                hash: false,
-              },
-              where: { pollId },
-            });
-
-            // compute aggregations in parallel
-            const [chartData, topVotes, topUsers] = await Promise.all([
-              computeChartData(rawVotes, startDate, endDate),
-              computeTopVotes(rawVotes, 50),
-              computeTopUsers(rawVotes, 25),
-            ]);
-
-            // count revealed votes
-            const revealedVoteCount = rawVotes.filter(
-              (v) => v.candidateId !== null,
-            ).length;
-
-            // sum como used
-            const totalComoCount = rawVotes.reduce(
-              (acc, v) => acc + v.amount,
-              0,
-            );
-
-            // only return reveals array if all votes are revealed (finalized)
-            // otherwise client will poll for reveals
-            const isFinalized = revealedVoteCount === rawVotes.length;
-            const reveals = isFinalized
-              ? rawVotes
-                  .filter((v) => v.candidateId !== null)
-                  .map((v) => ({
-                    id: v.id,
-                    candidateId: v.candidateId!,
-                    amount: v.amount,
-                  }))
-              : [];
-
-            // collect unique addresses from top votes and top users
-            const addresses = new Set<string>();
-            for (const vote of topVotes) {
-              addresses.add(vote.voter);
-            }
-            for (const user of topUsers) {
-              addresses.add(user.address);
-            }
-
-            // fetch usernames for those addresses only
-            const addressMap = await fetchKnownAddresses([...addresses]);
-
-            // map usernames onto results
-            const topVotesWithUsernames = topVotes.map((vote) => ({
-              ...vote,
-              username: addressMap.get(vote.voter.toLowerCase())?.username,
-            }));
-
-            const topUsersWithUsernames = topUsers.map((user) => ({
-              ...user,
-              nickname: addressMap.get(user.address.toLowerCase())?.username,
-            }));
-
-            return {
-              chartData,
-              topVotes: topVotesWithUsernames,
-              topUsers: topUsersWithUsernames,
-              totalVoteCount: rawVotes.length,
-              totalComoCount,
-              revealedVoteCount,
-              reveals,
-            } satisfies AggregatedGravityData;
+        // fetch all votes from indexer
+        const rawVotes = await indexer.query.votes.findMany({
+          columns: {
+            tokenId: false,
+            pollId: false,
+            logIndex: false,
+            hash: false,
           },
-        );
+          where: { pollId },
+        });
+
+        // compute aggregations in parallel
+        const [chartData, topVotes, topUsers] = await Promise.all([
+          computeChartData(rawVotes, startDate, endDate),
+          computeTopVotes(rawVotes, 50),
+          computeTopUsers(rawVotes, 25),
+        ]);
+
+        // count revealed votes
+        const revealedVoteCount = rawVotes.filter(
+          (v) => v.candidateId !== null,
+        ).length;
+
+        // sum como used
+        const totalComoCount = rawVotes.reduce((acc, v) => acc + v.amount, 0);
+
+        // only return reveals array if all votes are revealed (finalized)
+        // otherwise client will poll for reveals
+        const isFinalized = revealedVoteCount === rawVotes.length;
+        const reveals = isFinalized
+          ? rawVotes
+              .filter((v) => v.candidateId !== null)
+              .map((v) => ({
+                id: v.id,
+                candidateId: v.candidateId!,
+                amount: v.amount,
+              }))
+          : [];
+
+        // collect unique addresses from top votes and top users
+        const addresses = new Set<string>();
+        for (const vote of topVotes) {
+          addresses.add(vote.voter);
+        }
+        for (const user of topUsers) {
+          addresses.add(user.address);
+        }
+
+        // fetch usernames for those addresses only
+        const addressMap = await fetchKnownAddresses([...addresses]);
+
+        // map usernames onto results
+        const topVotesWithUsernames = topVotes.map((vote) => ({
+          ...vote,
+          username: addressMap.get(vote.voter.toLowerCase())?.username,
+        }));
+
+        const topUsersWithUsernames = topUsers.map((user) => ({
+          ...user,
+          nickname: addressMap.get(user.address.toLowerCase())?.username,
+        }));
+
+        const result = {
+          chartData,
+          topVotes: topVotesWithUsernames,
+          topUsers: topUsersWithUsernames,
+          totalVoteCount: rawVotes.length,
+          totalComoCount,
+          revealedVoteCount,
+          reveals,
+          startDate,
+          endDate,
+        } satisfies AggregatedGravityData;
 
         /**
          * using the poll end doesn't work for caching because it's when reveals start,
          * so we use the gravity end date instead, which is usually +1h from the poll end
          */
-        const cacheTime = isPast(poll.gravity.endDate) ? 60 * 60 * 24 * 7 : 0;
+        const headers = isPast(poll.gravity.endDate)
+          ? cacheHeaders({
+              cdn: 60 * 60 * 24 * 7,
+              tags: ["gravity", `gravity:${pollId}`],
+            })
+          : undefined;
 
         return Response.json(result, {
-          headers: cacheHeaders({
-            cdn: cacheTime,
-            tags: ["gravity", `gravity:${pollId}`],
-          }),
+          headers,
         });
       },
     },

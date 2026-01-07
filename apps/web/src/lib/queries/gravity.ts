@@ -70,6 +70,8 @@ export const polygonGravityQuery = (artist: string, id: number) =>
       }),
   });
 
+const VOTING_POLL_INTERVAL = 30_000;
+
 export const gravityVoteDataQuery = (pollId: number) =>
   queryOptions({
     queryKey: ["gravity", "votes", pollId],
@@ -79,4 +81,12 @@ export const gravityVoteDataQuery = (pollId: number) =>
     },
     refetchOnWindowFocus: false,
     staleTime: Infinity,
+    refetchInterval: (query) => {
+      if (!query.state.data) return false;
+      const { startDate, endDate } = query.state.data;
+      const now = Date.now();
+      const start = new Date(startDate).getTime();
+      const end = new Date(endDate).getTime();
+      return now >= start && now < end ? VOTING_POLL_INTERVAL : false;
+    },
   });

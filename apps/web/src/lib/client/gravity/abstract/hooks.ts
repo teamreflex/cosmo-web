@@ -66,7 +66,7 @@ export function useReveals(params: UseRevealsOptions): UseRevealsResult {
 
   // poll for reveals during "live" phase using infinite query for accumulation
   // only poll if: voting ended AND aggregated has no reveals (not finalized)
-  const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
+  const { data, fetchNextPage, refetch, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
       queryKey: ["gravity", "reveals", pollId],
       queryFn: ({ pageParam }: { pageParam: number | undefined }) =>
@@ -103,13 +103,18 @@ export function useReveals(params: UseRevealsOptions): UseRevealsResult {
     if (liveStatus !== "live") return;
 
     const interval = setInterval(() => {
-      if (!isFetchingNextPage && hasNextPage) {
+      if (isFetchingNextPage) return;
+
+      if (hasNextPage) {
         void fetchNextPage();
+      } else {
+        // no next page yet - refetch from start to check for new reveals
+        void refetch();
       }
     }, REVEAL_POLLING_INTERVAL);
 
     return () => clearInterval(interval);
-  }, [liveStatus, fetchNextPage, isFetchingNextPage, hasNextPage]);
+  }, [liveStatus, fetchNextPage, refetch, isFetchingNextPage, hasNextPage]);
 
   // create a map for O(1) reveal lookups
   const revealMap = useMemo(() => {

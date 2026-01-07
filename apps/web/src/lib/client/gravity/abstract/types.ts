@@ -43,6 +43,8 @@ export interface AggregatedGravityData {
   revealedVoteCount: number;
   /** Populated only for finalized polls (all votes revealed). Empty otherwise. */
   reveals: Reveal[];
+  startDate: string;
+  endDate: string;
 }
 
 export interface ChartSegment {
