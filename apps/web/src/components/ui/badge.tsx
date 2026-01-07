@@ -27,7 +27,7 @@ const badgeVariants = cva(
         "event-gravity": "border-transparent bg-teal-200 text-teal-700",
         "grand-gravity": "border-transparent bg-pink-300 text-pink-700",
         "gravity-starts": "border-transparent bg-blue-200 text-gravity-starts",
-        "gravity-voting": "border-transparent bg-cosmo/20 text-gravity-voting",
+        "gravity-voting": "border-transparent bg-cosmo text-white",
         "gravity-counting":
           "border-transparent bg-amber-200 text-gravity-counting",
         // event system
