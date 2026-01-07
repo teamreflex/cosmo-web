@@ -63,9 +63,17 @@ function GravityHeroCard({ gravity, artist }: GravityHeroCardProps) {
                 fallback={<Skeleton className="h-5 w-24 rounded-full" />}
               >
                 <div className="flex flex-col sm:contents">
-                  <span>{format(gravity.startDate, "MMM d, yyyy h:mm a")}</span>
+                  {gravity.pollStartDate !== null && (
+                    <span>
+                      {format(gravity.pollStartDate, "MMM d, yyyy h:mm a")}
+                    </span>
+                  )}
                   <span className="hidden sm:block">~</span>
-                  <span>{format(gravity.endDate, "MMM d, yyyy h:mm a")}</span>
+                  {gravity.pollEndDate !== null && (
+                    <span>
+                      {format(gravity.pollEndDate, "MMM d, yyyy h:mm a")}
+                    </span>
+                  )}
                 </div>
               </ClientOnly>
             </div>
