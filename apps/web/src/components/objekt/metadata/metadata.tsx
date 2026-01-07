@@ -51,6 +51,8 @@ export default function Metadata(props: Props) {
   const { front, back } = getObjektImageUrls(props.objekt);
   const isUnobtainable = unobtainables.includes(props.objekt.slug);
   const total = Number(data.total).toLocaleString();
+  const description =
+    data.data?.description ?? data.data?.event?.description ?? null;
 
   return (
     <div className="flex grow flex-col justify-between gap-2 px-4">
@@ -70,10 +72,8 @@ export default function Metadata(props: Props) {
 
         {/* metadata */}
         <TabsContent value="metadata" className="flex grow flex-col">
-          {data.data?.description && (
-            <p className="min-h-10 text-sm sm:text-base">
-              {data.data.description}
-            </p>
+          {description !== null && (
+            <p className="min-h-10 text-sm sm:text-base">{description}</p>
           )}
 
           <div className="mt-auto flex w-full flex-row-reverse items-center gap-2 self-end">

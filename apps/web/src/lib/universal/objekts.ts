@@ -19,7 +19,7 @@ export type ObjektResponse<T extends LegacyObjekt> = {
 // metadata
 export interface CollectionDataEvent extends Pick<
   Event,
-  "id" | "slug" | "name" | "eventType" | "twitterUrl"
+  "id" | "slug" | "name" | "eventType" | "twitterUrl" | "description"
 > {
   era: Pick<Era, "id" | "slug" | "name" | "spotifyAlbumArt" | "imageUrl">;
 }

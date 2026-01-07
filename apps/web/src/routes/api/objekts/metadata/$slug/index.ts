@@ -104,6 +104,7 @@ async function fetchEventForCollection(
           name: true,
           eventType: true,
           twitterUrl: true,
+          description: true,
         },
         with: {
           era: {
