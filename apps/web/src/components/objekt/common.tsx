@@ -19,11 +19,13 @@ const fontSizeConfig = {
 
 type SidebarTextProps = PropsWithChildren<{
   type: keyof typeof fontSizeConfig;
+  className?: string;
 }>;
 
 function SidebarText(props: SidebarTextProps) {
   return (
     <span
+      className={props.className}
       style={
         {
           fontSize: `${fontSizeConfig[props.type] * 100}cqw`,
@@ -77,7 +79,10 @@ export function ObjektSidebar({ collection, serial }: ObjektSidebarProps) {
           {useCustomBand && (
             <SidebarText type="name">{collection.member}</SidebarText>
           )}
-          <SidebarText type="collection">
+          <SidebarText
+            type="collection"
+            className={cn(useCustomBand && "absolute top-1/2 -translate-y-1/2")}
+          >
             <div className="flex items-center gap-2">
               <span>{collection.collectionNo}</span>
               {paddedSerial && <span>#{paddedSerial}</span>}
