@@ -26,6 +26,10 @@ const badgeVariants = cva(
         // gravity
         "event-gravity": "border-transparent bg-teal-200 text-teal-700",
         "grand-gravity": "border-transparent bg-pink-300 text-pink-700",
+        "gravity-starts": "border-transparent bg-blue-200 text-gravity-starts",
+        "gravity-voting": "border-transparent bg-cosmo/20 text-gravity-voting",
+        "gravity-counting":
+          "border-transparent bg-amber-200 text-gravity-counting",
         // event system
         "event-era":
           "shadow-xs border-foreground/30 text-foreground backdrop-blur-sm transform-gpu bg-foreground/10 firefox:backdrop-blur-none",

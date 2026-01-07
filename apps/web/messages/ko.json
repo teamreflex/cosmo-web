@@ -458,6 +458,7 @@
   "gravity_votes_counted": "집계된 투표",
   "gravity_top_votes": "상위 투표",
   "gravity_top_users": "상위 사용자",
+  "gravity_status_upcoming": "예정",
   "gravity_status_voting": "투표 중",
   "gravity_status_live": "진행 중",
   "gravity_status_complete": "완료",
@@ -469,6 +470,10 @@
   "gravity_badge_grand": "그랜드",
   "gravity_error_loading_details": "그래비티를 불러올 수 없습니다",
   "gravity_unrevealed": "비공개",
+  "gravity_starts_in": "시작까지",
+  "gravity_voting_ends": "투표 종료",
+  "gravity_counting": "결과 집계 중",
+  "gravity_no_active": "진행 중인 그래비티 없음",
 
   "_comment_blockchain": "Blockchain strings",
   "blockchain_types": "타입",

@@ -458,6 +458,7 @@
   "gravity_votes_counted": "Votes Counted",
   "gravity_top_votes": "Top Votes",
   "gravity_top_users": "Top Users",
+  "gravity_status_upcoming": "UPCOMING",
   "gravity_status_voting": "VOTING",
   "gravity_status_live": "LIVE",
   "gravity_status_complete": "COMPLETE",
@@ -469,6 +470,10 @@
   "gravity_badge_grand": "Grand",
   "gravity_error_loading_details": "Could not load gravity",
   "gravity_unrevealed": "Unrevealed",
+  "gravity_starts_in": "Starts in",
+  "gravity_voting_ends": "Voting ends",
+  "gravity_counting": "Counting Results",
+  "gravity_no_active": "No active gravities",
 
   "_comment_blockchain": "Blockchain strings",
   "blockchain_types": "types",

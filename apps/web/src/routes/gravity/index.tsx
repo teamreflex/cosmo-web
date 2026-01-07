@@ -1,35 +1,33 @@
 import { Error } from "@/components/error-boundary";
-import GravityTimestamp from "@/components/gravity/timestamp";
+import GravityHero from "@/components/gravity/gravity-hero";
+import GravityList from "@/components/gravity/gravity-list";
 import SkeletonGradient from "@/components/skeleton/skeleton-overlay";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import { artistsQuery, selectedArtistsQuery } from "@/lib/queries/core";
-import { gravitiesIndexQuery } from "@/lib/queries/gravity";
-import type { PropsWithClassName } from "@/lib/utils";
-import type { CosmoArtistBFF } from "@apollo/cosmo/types/artists";
-import type { CosmoGravityType } from "@apollo/cosmo/types/gravity";
-import type { Gravity } from "@apollo/database/web/types";
-import { IconCalendarEvent } from "@tabler/icons-react";
+import {
+  activeGravitiesQuery,
+  paginatedGravitiesQuery,
+} from "@/lib/queries/gravity";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Link, createFileRoute } from "@tanstack/react-router";
-import { isFuture } from "date-fns";
+import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/gravity/")({
   loader: async ({ context }) => {
-    const [{ artists }, gravities] = await Promise.all([
-      context.queryClient.ensureQueryData(artistsQuery),
-      context.queryClient.ensureQueryData(gravitiesIndexQuery),
-      context.queryClient.ensureQueryData(selectedArtistsQuery),
-    ]);
+    const selected =
+      await context.queryClient.ensureQueryData(selectedArtistsQuery);
+    const artistsFilter = selected.length > 0 ? selected : undefined;
 
-    return {
-      gravities,
-      artists,
-    };
+    // prefetch gravities
+    void context.queryClient.prefetchQuery(activeGravitiesQuery(artistsFilter));
+    void context.queryClient.prefetchInfiniteQuery(
+      paginatedGravitiesQuery(artistsFilter),
+    );
+
+    const { artists } = await context.queryClient.ensureQueryData(artistsQuery);
+
+    return { artists };
   },
   staleTime: 1000 * 60 * 15, // 15 minutes
   component: RouteComponent,
@@ -39,142 +37,40 @@ export const Route = createFileRoute("/gravity/")({
 });
 
 function RouteComponent() {
-  const { data: selected, dataUpdatedAt } =
-    useSuspenseQuery(selectedArtistsQuery);
-  const { gravities, artists } = Route.useLoaderData();
+  const { data: selected } = useSuspenseQuery(selectedArtistsQuery);
+  const { artists } = Route.useLoaderData();
 
-  const artistList = Object.values(artists).sort(
-    (a, b) => a.comoTokenId - b.comoTokenId,
+  const artistsFilter = selected.length > 0 ? selected : undefined;
+  const { data: activeGravities } = useSuspenseQuery(
+    activeGravitiesQuery(artistsFilter),
   );
-  const toRender =
-    selected.length > 0
-      ? artistList.filter((a) => selected.includes(a.id))
-      : artistList;
 
   return (
-    <main className="container flex flex-col py-2">
-      <Tabs defaultValue={toRender[0]?.id} key={dataUpdatedAt}>
-        {/* header */}
-        <div className="flex flex-row items-center justify-between">
-          <h1 className="font-cosmo text-3xl uppercase">
-            {m.gravity_header()}
-          </h1>
+    <main className="container flex flex-col gap-4 py-2">
+      {/* Header */}
+      <h1 className="font-cosmo text-3xl uppercase">{m.gravity_header()}</h1>
 
-          <TabsList>
-            {toRender.map((artist) => (
-              <TabsTrigger key={artist.id} value={artist.id} className="gap-2">
-                <img
-                  className="aspect-square size-5 shrink-0 rounded-full"
-                  src={artist.logoImageUrl}
-                  alt={artist.title}
-                />
-                {artist.title}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </div>
+      {/* Active gravities hero */}
+      <GravityHero gravities={activeGravities} artists={artists} />
 
-        {toRender.map((artist) => (
-          <ArtistTab
-            key={artist.id}
-            artist={artist}
-            gravities={gravities[artist.id] ?? []}
-          />
-        ))}
-      </Tabs>
+      {/* Past gravities list */}
+      <GravityList selectedArtists={artistsFilter} artists={artists} />
     </main>
   );
-}
-
-type ArtistTabProps = {
-  artist: CosmoArtistBFF;
-  gravities: Gravity[];
-};
-
-function ArtistTab({ artist, gravities }: ArtistTabProps) {
-  return (
-    <TabsContent
-      key={artist.id}
-      value={artist.id}
-      className="grid grid-cols-1 gap-2 data-[state=inactive]:hidden md:grid-cols-3 xl:grid-cols-4"
-      forceMount
-    >
-      {gravities.map((gravity) => (
-        <GravityItem key={gravity.id} gravity={gravity} />
-      ))}
-    </TabsContent>
-  );
-}
-
-function GravityItem(props: { gravity: Gravity }) {
-  const href = `/gravity/${props.gravity.artist}/${props.gravity.cosmoId}`;
-  const isRecent = isFuture(props.gravity.endDate);
-
-  return (
-    <Link to={href} className="[content-visibility:auto]" preload={false}>
-      <Card
-        data-recent={isRecent}
-        className="group relative aspect-square overflow-clip py-0 data-recent:border-cosmo"
-      >
-        <img
-          src={props.gravity.image}
-          alt={props.gravity.title}
-          className="absolute object-cover grayscale transition-all duration-300 group-hover:grayscale-0 group-data-[recent=true]:grayscale-0"
-        />
-        <CardContent className="isolate flex h-full w-full items-end justify-start gap-2 bg-linear-to-t from-black/80 from-5% via-black/20 via-20% to-black/0 px-0">
-          <div className="flex w-full flex-row items-center gap-2 p-2">
-            <IconCalendarEvent className="size-4 shrink-0" />
-            <GravityTimestamp
-              className="text-sm font-semibold"
-              date={props.gravity.startDate}
-            />
-            <GravityBadge
-              className="ml-auto"
-              type={props.gravity.gravityType}
-            />
-          </div>
-        </CardContent>
-      </Card>
-    </Link>
-  );
-}
-
-function GravityBadge(props: PropsWithClassName<{ type: CosmoGravityType }>) {
-  switch (props.type) {
-    case "event-gravity":
-      return (
-        <Badge className={props.className} variant="event-gravity">
-          {m.gravity_badge_event()}
-        </Badge>
-      );
-    case "grand-gravity":
-      return (
-        <Badge className={props.className} variant="grand-gravity">
-          {m.gravity_badge_grand()}
-        </Badge>
-      );
-    default:
-      return null;
-  }
 }
 
 function PendingComponent() {
   return (
     <main className="container flex flex-col py-2">
       {/* header */}
-      <div className="flex flex-row items-center justify-between">
-        <h1 className="font-cosmo text-3xl uppercase">{m.gravity_header()}</h1>
-        <Skeleton className="h-9 w-48 rounded-md" />
-      </div>
+      <h1 className="font-cosmo text-3xl uppercase">{m.gravity_header()}</h1>
 
-      <div className="relative mt-2 grid grid-cols-1 gap-2 md:grid-cols-3 xl:grid-cols-4">
+      <div className="relative mt-4 flex flex-col gap-4">
         <SkeletonGradient />
-        {Array.from({ length: 12 }).map((_, index) => (
-          <Skeleton
-            key={index}
-            className="aspect-square w-full rounded-xl shadow-sm"
-          />
-        ))}
+        {/* Hero skeleton */}
+        <Skeleton className="h-[180px] w-full rounded-xl" />
+        {/* List skeleton */}
+        <Skeleton className="h-[400px] w-full rounded-xl" />
       </div>
     </main>
   );

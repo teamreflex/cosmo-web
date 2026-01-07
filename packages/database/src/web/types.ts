@@ -35,6 +35,11 @@ export interface EventWithEra extends Event {
   era: Era;
 }
 
+export interface GravityWithPoll extends Gravity {
+  pollStartDate: Date | null;
+  pollEndDate: Date | null;
+}
+
 export const eventTypes = {
   // objekts available all season (First, Basic, Welcome class)
   seasonal: {

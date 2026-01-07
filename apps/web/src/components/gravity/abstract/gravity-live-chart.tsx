@@ -29,6 +29,7 @@ export default function AbstractLiveChart(props: Props) {
   });
   const reveals = useReveals({
     pollId: poll.id,
+    startDate: poll.startDate,
     endDate: poll.endDate,
     aggregated,
   });

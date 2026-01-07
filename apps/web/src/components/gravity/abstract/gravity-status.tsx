@@ -3,6 +3,7 @@ import type { LiveStatus } from "@/lib/client/gravity/abstract/types";
 import {
   IconActivity,
   IconCircleCheck,
+  IconClock,
   IconLoader2,
 } from "@tabler/icons-react";
 
@@ -34,6 +35,10 @@ export default function GravityStatus({
 
 function getStatusConfig() {
   return {
+    upcoming: {
+      icon: <IconClock className="size-4 text-blue-500" />,
+      text: m.gravity_status_upcoming(),
+    },
     voting: {
       icon: <IconActivity className="size-5 text-cosmo" />,
       text: m.gravity_status_voting(),

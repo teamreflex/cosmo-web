@@ -78,6 +78,10 @@
   --color-cosmo-hover: var(--color-violet-700);
   --color-cosmo-profile: var(--color-violet-200);
 
+  --color-gravity-starts: var(--color-blue-500);
+  --color-gravity-voting: var(--color-cosmo);
+  --color-gravity-counting: var(--color-amber-500);
+
   --color-abstract: #29e58a;
   --color-discord: #5865f2;
   --color-twitter: #1da1f2;

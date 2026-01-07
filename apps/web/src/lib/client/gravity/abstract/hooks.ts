@@ -33,35 +33,36 @@ export function useGravityData(params: GravityPollDetailsParams) {
 }
 
 /**
- * Track whether voting has ended, triggering a single re-render when endDate passes.
+ * Track whether a date has passed, triggering a single re-render when it does.
  */
-function useVotingEnded(endDate: string) {
-  const [hasEnded, setHasEnded] = useState(
-    () => new Date() >= new Date(endDate),
+function useDatePassed(date: string) {
+  const [hasPassed, setHasPassed] = useState(
+    () => new Date() >= new Date(date),
   );
 
   useEffect(() => {
-    if (hasEnded) return;
+    if (hasPassed) return;
 
-    const msUntilEnd = new Date(endDate).getTime() - Date.now();
-    if (msUntilEnd <= 0) {
-      setHasEnded(true);
+    const msUntilDate = new Date(date).getTime() - Date.now();
+    if (msUntilDate <= 0) {
+      setHasPassed(true);
       return;
     }
 
-    const timeout = setTimeout(() => setHasEnded(true), msUntilEnd);
+    const timeout = setTimeout(() => setHasPassed(true), msUntilDate);
     return () => clearTimeout(timeout);
-  }, [endDate, hasEnded]);
+  }, [date, hasPassed]);
 
-  return hasEnded;
+  return hasPassed;
 }
 
 /**
  * Derive vote data and poll for reveals during the "live" phase.
  */
 export function useReveals(params: UseRevealsOptions): UseRevealsResult {
-  const { pollId, endDate, aggregated } = params;
-  const votingEnded = useVotingEnded(endDate);
+  const { pollId, startDate, endDate, aggregated } = params;
+  const votingStarted = useDatePassed(startDate);
+  const votingEnded = useDatePassed(endDate);
 
   // poll for reveals during "live" phase using infinite query for accumulation
   // only poll if: voting ended AND aggregated has no reveals (not finalized)
@@ -88,11 +89,14 @@ export function useReveals(params: UseRevealsOptions): UseRevealsResult {
   const remainingVotesCount = aggregated.totalVoteCount - reveals.length;
 
   const liveStatus = useMemo((): LiveStatus => {
+    if (!votingStarted) {
+      return "upcoming";
+    }
     if (!votingEnded) {
       return "voting";
     }
     return remainingVotesCount === 0 ? "finalized" : "live";
-  }, [votingEnded, remainingVotesCount]);
+  }, [votingStarted, votingEnded, remainingVotesCount]);
 
   // manual polling interval
   useEffect(() => {

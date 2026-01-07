@@ -1,17 +1,28 @@
 import type { AggregatedGravityData } from "@/lib/client/gravity/abstract/types";
 import { baseUrl } from "@/lib/utils";
-import { queryOptions } from "@tanstack/react-query";
+import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 import { ofetch } from "ofetch";
 import {
+  $fetchActiveGravities,
   $fetchCachedPoll,
-  $fetchGravities,
+  $fetchPaginatedGravities,
   $fetchPolygonGravity,
 } from "../server/gravity";
 
-export const gravitiesIndexQuery = queryOptions({
-  queryKey: ["gravities"],
-  queryFn: $fetchGravities,
-});
+export const activeGravitiesQuery = (artists?: string[]) =>
+  queryOptions({
+    queryKey: ["gravities", "active", { artists }],
+    queryFn: () => $fetchActiveGravities({ data: { artists } }),
+  });
+
+export const paginatedGravitiesQuery = (artists?: string[]) =>
+  infiniteQueryOptions({
+    queryKey: ["gravities", "paginated", { artists }],
+    queryFn: ({ pageParam }) =>
+      $fetchPaginatedGravities({ data: { artists, cursor: pageParam } }),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage.nextStartAfter,
+  });
 
 export type GravityPollDetailsParams = {
   artistName: string;

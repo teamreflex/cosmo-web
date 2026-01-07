@@ -1,12 +1,21 @@
 import { $fetchArtists } from "@/lib/server/artists";
 import { fetchGravity, fetchPoll } from "@apollo/cosmo/server/gravity";
 import type { ValidArtist } from "@apollo/cosmo/types/common";
-import { gravities } from "@apollo/database/web/schema";
+import { gravities, gravityPolls } from "@apollo/database/web/schema";
 import { notFound } from "@tanstack/react-router";
 import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
 import { setResponseHeaders } from "@tanstack/react-start/server";
 import { isBefore } from "date-fns";
-import { desc } from "drizzle-orm";
+import {
+  and,
+  desc,
+  eq,
+  getTableColumns,
+  gte,
+  inArray,
+  lt,
+  max,
+} from "drizzle-orm";
 import * as z from "zod";
 import type { RevealedVote } from "../client/gravity/types";
 import { findPoll } from "../client/gravity/util";
@@ -79,17 +88,107 @@ export const $fetchGravityDetails = createServerFn({ method: "GET" })
   });
 
 /**
- * Fetch all gravities and group them by artist.
+ * Subquery to get the last poll for each gravity (highest cosmoId).
  */
-export const $fetchGravities = createServerFn({ method: "GET" }).handler(
-  async () => {
-    const data = await db
-      .select()
+function getLastPollSubquery() {
+  return db
+    .select({
+      cosmoGravityId: gravityPolls.cosmoGravityId,
+      maxCosmoId: max(gravityPolls.cosmoId).as("max_cosmo_id"),
+    })
+    .from(gravityPolls)
+    .groupBy(gravityPolls.cosmoGravityId)
+    .as("last_poll");
+}
+
+/**
+ * Fetch active gravities (endDate in the future) with their last poll's dates.
+ */
+export const $fetchActiveGravities = createServerFn({ method: "GET" })
+  .inputValidator(z.object({ artists: z.array(z.string()).optional() }))
+  .handler(async ({ data }) => {
+    const lastPoll = getLastPollSubquery();
+    const now = new Date();
+
+    const conditions = [gte(gravities.endDate, now)];
+    if (data.artists?.length) {
+      conditions.push(inArray(gravities.artist, data.artists));
+    }
+
+    const results = await db
+      .select({
+        ...getTableColumns(gravities),
+        pollStartDate: gravityPolls.startDate,
+        pollEndDate: gravityPolls.endDate,
+      })
       .from(gravities)
+      .leftJoin(lastPoll, eq(gravities.cosmoId, lastPoll.cosmoGravityId))
+      .leftJoin(
+        gravityPolls,
+        and(
+          eq(gravityPolls.cosmoGravityId, lastPoll.cosmoGravityId),
+          eq(gravityPolls.cosmoId, lastPoll.maxCosmoId),
+        ),
+      )
+      .where(and(...conditions))
       .orderBy(desc(gravities.startDate));
-    return Object.groupBy(data, (r) => r.artist);
-  },
-);
+
+    return results;
+  });
+
+/**
+ * Fetch paginated past gravities (endDate in the past) with their last poll's dates.
+ */
+export const $fetchPaginatedGravities = createServerFn({ method: "GET" })
+  .inputValidator(
+    z.object({
+      artists: z.array(z.string()).optional(),
+      cursor: z.iso.datetime().optional(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const PER_PAGE = 16;
+    const lastPoll = getLastPollSubquery();
+    const now = new Date();
+
+    const conditions = [lt(gravities.endDate, now)];
+    if (data.artists?.length) {
+      conditions.push(inArray(gravities.artist, data.artists));
+    }
+    if (data.cursor) {
+      conditions.push(lt(gravities.startDate, new Date(data.cursor)));
+    }
+
+    const results = await db
+      .select({
+        ...getTableColumns(gravities),
+        pollStartDate: gravityPolls.startDate,
+        pollEndDate: gravityPolls.endDate,
+      })
+      .from(gravities)
+      .leftJoin(lastPoll, eq(gravities.cosmoId, lastPoll.cosmoGravityId))
+      .leftJoin(
+        gravityPolls,
+        and(
+          eq(gravityPolls.cosmoGravityId, lastPoll.cosmoGravityId),
+          eq(gravityPolls.cosmoId, lastPoll.maxCosmoId),
+        ),
+      )
+      .where(and(...conditions))
+      .orderBy(desc(gravities.startDate))
+      .limit(PER_PAGE);
+
+    const hasNext = results.length === PER_PAGE;
+    const lastGravity = results[results.length - 1];
+    const nextStartAfter = hasNext
+      ? lastGravity?.startDate.toISOString()
+      : undefined;
+
+    return {
+      gravities: results,
+      nextStartAfter,
+    };
+  });
 
 /**
  * Fetch historical data for a Polygon gravity.

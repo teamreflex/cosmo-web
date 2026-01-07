@@ -2,11 +2,12 @@ import type { RevealedVote } from "../types";
 
 export type UseRevealsOptions = {
   pollId: number;
+  startDate: string;
   endDate: string;
   aggregated: AggregatedGravityData;
 };
 
-export type LiveStatus = "voting" | "live" | "finalized";
+export type LiveStatus = "upcoming" | "voting" | "live" | "finalized";
 
 export type UseRevealsResult = {
   status: "success";
