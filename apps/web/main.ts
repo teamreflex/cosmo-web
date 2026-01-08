@@ -129,7 +129,6 @@ function createStaticHandler(
 
       if (acceptsGzip(acceptEncoding)) {
         headers.set("Content-Encoding", "gzip");
-        ensureNoTransform(headers);
         headers.delete("Content-Length");
 
         const stream = file.stream().pipeThrough(new CompressionStream("gzip"));
