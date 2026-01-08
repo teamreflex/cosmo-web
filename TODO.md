@@ -35,6 +35,7 @@
   - [x] event: make header better
   - [x] era: add custom image for non-album eras
 - [x] fix scuffed admin panel layout
+- [ ] wait for start fix: https://github.com/TanStack/router/pull/6293
 
 - triples: triplescosmos
 - triples japan: tripleS_JAPAN

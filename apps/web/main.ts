@@ -170,6 +170,19 @@ async function buildStaticRoutes(
 }
 
 /**
+ * Add a Server-Timing entry to response headers
+ */
+function addServerTiming(
+  headers: Headers,
+  name: string,
+  duration: number,
+): void {
+  const existing = headers.get("Server-Timing");
+  const entry = `${name};dur=${duration.toFixed(1)}`;
+  headers.set("Server-Timing", existing ? `${existing}, ${entry}` : entry);
+}
+
+/**
  * Add no-transform to Cache-Control header
  */
 function ensureNoTransform(headers: Headers): void {
@@ -280,13 +293,32 @@ async function initializeServer() {
       // Fallback to TanStack Start
       "/*": async (req: Request) => {
         try {
+          const handlerStart = performance.now();
           const response = await handler.fetch(req);
+          const handlerDuration = performance.now() - handlerStart;
 
           if (ENABLE_DYNAMIC_COMPRESSION) {
-            return compressResponse(response, req);
+            const compressStart = performance.now();
+            const compressed = compressResponse(response, req);
+            const compressDuration = performance.now() - compressStart;
+
+            const headers = new Headers(compressed.headers);
+            addServerTiming(headers, "origin", handlerDuration);
+            addServerTiming(headers, "compress", compressDuration);
+            return new Response(compressed.body, {
+              status: compressed.status,
+              statusText: compressed.statusText,
+              headers,
+            });
           }
 
-          return response;
+          const headers = new Headers(response.headers);
+          addServerTiming(headers, "origin", handlerDuration);
+          return new Response(response.body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers,
+          });
         } catch (error) {
           log.error(`Handler error: ${String(error)}`);
           const headers = new Headers({
