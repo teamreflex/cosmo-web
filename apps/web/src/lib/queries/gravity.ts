@@ -87,6 +87,6 @@ export const gravityVoteDataQuery = (pollId: number) =>
       const now = Date.now();
       const start = new Date(startDate).getTime();
       const end = new Date(endDate).getTime();
-      return now >= start && now < end ? VOTING_POLL_INTERVAL : false;
+      return now >= start && now < end + 60_000 ? VOTING_POLL_INTERVAL : false;
     },
   });
