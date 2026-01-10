@@ -17,7 +17,7 @@ import { normalizeFilters } from "@/lib/universal/parsers";
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 import { ofetch } from "ofetch";
 import type { z } from "zod";
-import { ObjektMetadata } from "../universal/objekts";
+import type { ObjektMetadata } from "../universal/objekts";
 
 /**
  * Object index: Searching via Typesense

@@ -6,16 +6,7 @@ import { notFound } from "@tanstack/react-router";
 import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
 import { setResponseHeaders } from "@tanstack/react-start/server";
 import { isBefore } from "date-fns";
-import {
-  and,
-  desc,
-  eq,
-  getTableColumns,
-  gte,
-  inArray,
-  lt,
-  max,
-} from "drizzle-orm";
+import { and, desc, eq, getColumns, gte, inArray, lt } from "drizzle-orm";
 import * as z from "zod";
 import type { RevealedVote } from "../client/gravity/types";
 import { findPoll } from "../client/gravity/util";
@@ -88,17 +79,18 @@ export const $fetchGravityDetails = createServerFn({ method: "GET" })
   });
 
 /**
- * Subquery to get the last poll for each gravity (highest cosmoId).
+ * Subquery to get the latest poll for each gravity.
  */
-function getLastPollSubquery() {
+function getLatestPollSubquery() {
   return db
-    .select({
+    .selectDistinctOn([gravityPolls.cosmoGravityId], {
       cosmoGravityId: gravityPolls.cosmoGravityId,
-      maxCosmoId: max(gravityPolls.cosmoId).as("max_cosmo_id"),
+      pollStartDate: gravityPolls.startDate,
+      pollEndDate: gravityPolls.endDate,
     })
     .from(gravityPolls)
-    .groupBy(gravityPolls.cosmoGravityId)
-    .as("last_poll");
+    .orderBy(gravityPolls.cosmoGravityId, desc(gravityPolls.cosmoId))
+    .as("latest_poll");
 }
 
 /**
@@ -107,7 +99,7 @@ function getLastPollSubquery() {
 export const $fetchActiveGravities = createServerFn({ method: "GET" })
   .inputValidator(z.object({ artists: z.array(z.string()).optional() }))
   .handler(async ({ data }) => {
-    const lastPoll = getLastPollSubquery();
+    const latestPoll = getLatestPollSubquery();
     const now = new Date();
 
     const conditions = [gte(gravities.endDate, now)];
@@ -115,25 +107,16 @@ export const $fetchActiveGravities = createServerFn({ method: "GET" })
       conditions.push(inArray(gravities.artist, data.artists));
     }
 
-    const results = await db
+    return db
       .select({
-        ...getTableColumns(gravities),
-        pollStartDate: gravityPolls.startDate,
-        pollEndDate: gravityPolls.endDate,
+        ...getColumns(gravities),
+        pollStartDate: latestPoll.pollStartDate,
+        pollEndDate: latestPoll.pollEndDate,
       })
       .from(gravities)
-      .leftJoin(lastPoll, eq(gravities.cosmoId, lastPoll.cosmoGravityId))
-      .leftJoin(
-        gravityPolls,
-        and(
-          eq(gravityPolls.cosmoGravityId, lastPoll.cosmoGravityId),
-          eq(gravityPolls.cosmoId, lastPoll.maxCosmoId),
-        ),
-      )
+      .leftJoin(latestPoll, eq(gravities.cosmoId, latestPoll.cosmoGravityId))
       .where(and(...conditions))
       .orderBy(desc(gravities.startDate));
-
-    return results;
   });
 
 /**
@@ -147,8 +130,8 @@ export const $fetchPaginatedGravities = createServerFn({ method: "GET" })
     }),
   )
   .handler(async ({ data }) => {
-    const PER_PAGE = 16;
-    const lastPoll = getLastPollSubquery();
+    const PER_PAGE = 24;
+    const latestPoll = getLatestPollSubquery();
     const now = new Date();
 
     const conditions = [lt(gravities.endDate, now)];
@@ -161,19 +144,12 @@ export const $fetchPaginatedGravities = createServerFn({ method: "GET" })
 
     const results = await db
       .select({
-        ...getTableColumns(gravities),
-        pollStartDate: gravityPolls.startDate,
-        pollEndDate: gravityPolls.endDate,
+        ...getColumns(gravities),
+        pollStartDate: latestPoll.pollStartDate,
+        pollEndDate: latestPoll.pollEndDate,
       })
       .from(gravities)
-      .leftJoin(lastPoll, eq(gravities.cosmoId, lastPoll.cosmoGravityId))
-      .leftJoin(
-        gravityPolls,
-        and(
-          eq(gravityPolls.cosmoGravityId, lastPoll.cosmoGravityId),
-          eq(gravityPolls.cosmoId, lastPoll.maxCosmoId),
-        ),
-      )
+      .leftJoin(latestPoll, eq(gravities.cosmoId, latestPoll.cosmoGravityId))
       .where(and(...conditions))
       .orderBy(desc(gravities.startDate))
       .limit(PER_PAGE);
