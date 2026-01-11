@@ -2,7 +2,8 @@ import { useArtists } from "@/hooks/use-artists";
 import { artistColors, cn } from "@/lib/utils";
 import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
 import type { ValidArtist } from "@apollo/cosmo/types/common";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { preload } from "react-dom";
 import { Popover, PopoverAnchor, PopoverContent } from "../ui/popover";
 
 type Props = {
@@ -121,6 +122,16 @@ function ArtistTriggerButton(props: ArtistTriggerButtonProps) {
     props.artist.artistMembers.findIndex((m) => m.name === props.active) !== -1;
   const isActive = props.isOpen || isArtistActive || isMemberActive;
   const artistColor = artistColors[props.artist.name as ValidArtist];
+
+  // preload all member images on mount
+  useEffect(() => {
+    for (const member of props.artist.artistMembers) {
+      preload(member.profileImageUrl, {
+        as: "image",
+      });
+    }
+    // oxlint-disable-next-line exhaustive-deps
+  }, []);
 
   function handlePointerDown(e: React.PointerEvent) {
     // prevent this from being detected as clicking outside
