@@ -21,6 +21,7 @@ export function getRouter() {
     context: { queryClient },
     defaultPreload: "intent",
     defaultPendingMs: 250,
+    scrollRestoration: true,
     Wrap: (props: { children: ReactNode }) => {
       return <MediaQueryProvider>{props.children}</MediaQueryProvider>;
     },
