@@ -97,7 +97,7 @@ function DesktopLinks(props: LinksProps) {
 
       <LinkButton
         href="/events"
-        active={location.pathname === "/events"}
+        active={location.pathname.startsWith("/events")}
         icon={IconFolderOpen}
         name={m.events_header()}
       />
