@@ -18,7 +18,7 @@
   "dependencies": {
     "@apollo/cosmo": "workspace:*",
     "@apollo/util": "workspace:*",
-    "drizzle-orm": "1.0.0-beta.6-4414a19"
+    "drizzle-orm": "1.0.0-beta.10-42c284e"
   },
   "devDependencies": {
     "@apollo/typescript": "workspace:*",

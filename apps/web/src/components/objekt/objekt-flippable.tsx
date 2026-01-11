@@ -1,8 +1,10 @@
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
-import { Fragment, useState } from "react";
+import { Fragment, useState, lazy } from "react";
 import type { PropsWithChildren } from "react";
-import ReactPlayer from "react-player";
+import { ErrorBoundary } from "react-error-boundary";
+
+const ObjektVideo = lazy(() => import("./objekt-video"));
 
 type Props = PropsWithChildren<{
   collection: Objekt.Collection;
@@ -35,17 +37,31 @@ export default function FlippableObjekt({ children, collection }: Props) {
       {/* front */}
       <div className="absolute inset-0 backface-hidden">
         {collection.frontMedia ? (
-          <FrontVideo
-            imageSrc={collection.frontImage}
-            videoSrc={collection.frontMedia}
+          <ErrorBoundary
+            fallback={
+              <ObjektImage
+                src={collection.frontImage}
+                alt={collection.collectionId}
+              >
+                {children}
+              </ObjektImage>
+            }
+          >
+            <ObjektVideo
+              imageSrc={collection.frontImage}
+              videoSrc={collection.frontMedia}
+              alt={collection.collectionId}
+            >
+              {children}
+            </ObjektVideo>
+          </ErrorBoundary>
+        ) : (
+          <ObjektImage
+            src={collection.frontImage}
             alt={collection.collectionId}
           >
             {children}
-          </FrontVideo>
-        ) : (
-          <FrontImage src={collection.frontImage} alt={collection.collectionId}>
-            {children}
-          </FrontImage>
+          </ObjektImage>
         )}
       </div>
 
@@ -61,7 +77,7 @@ export default function FlippableObjekt({ children, collection }: Props) {
   );
 }
 
-type FrontImageProps = PropsWithChildren<{
+type ObjektImageProps = PropsWithChildren<{
   src: string;
   alt: string;
 }>;
@@ -69,39 +85,10 @@ type FrontImageProps = PropsWithChildren<{
 /**
  * Every objekt except Motion class.
  */
-function FrontImage(props: FrontImageProps) {
+function ObjektImage(props: ObjektImageProps) {
   return (
     <Fragment>
       <img className="absolute" src={props.src} alt={props.alt} />
-      {props.children}
-    </Fragment>
-  );
-}
-
-type FrontVideoProps = PropsWithChildren<{
-  imageSrc: string;
-  videoSrc: string;
-  alt: string;
-}>;
-
-/**
- * Motion class objekts have videos.
- */
-function FrontVideo(props: FrontVideoProps) {
-  return (
-    <Fragment>
-      <div className="absolute inset-0 h-full w-full animate-pulse rounded-2xl bg-secondary" />
-      <ReactPlayer
-        className="absolute overflow-hidden rounded-2xl"
-        style={{ width: "100%", height: "auto", aspectRatio: "5.5 / 8.5" }}
-        src={props.videoSrc}
-        preload="auto"
-        playsInline={true}
-        loop={true}
-        muted={true}
-        autoPlay={true}
-        controls={false}
-      />
       {props.children}
     </Fragment>
   );

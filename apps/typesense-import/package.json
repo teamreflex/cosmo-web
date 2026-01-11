@@ -16,7 +16,7 @@
     "@effect/cluster": "^0.56.1",
     "@effect/platform": "^0.94.1",
     "@effect/platform-bun": "^0.87.0",
-    "drizzle-orm": "1.0.0-beta.6-4414a19",
+    "drizzle-orm": "1.0.0-beta.10-42c284e",
     "effect": "^3.19.14",
     "typesense": "^2.1.0"
   },
