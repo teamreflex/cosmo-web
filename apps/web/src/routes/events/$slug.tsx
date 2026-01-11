@@ -1,6 +1,9 @@
 import { Error as ErrorFallback } from "@/components/error-boundary";
 import EventGridItem from "@/components/events/event-grid-item";
 import EventHeader from "@/components/events/event-header";
+import Overlay from "@/components/misc/overlay";
+import ScrollToTop from "@/components/misc/overlay/scroll-to-top";
+import ToggleObjektBands from "@/components/misc/overlay/toggle-objekt-bands";
 import ObjektGridSkeleton from "@/components/objekt/objekt-grid-skeleton";
 import VirtualizedObjektGrid from "@/components/objekt/virtualized-objekt-grid";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -56,6 +59,11 @@ function RouteComponent() {
           </ProfileProvider>
         </UserStateProvider>
       </div>
+
+      <Overlay>
+        <ScrollToTop />
+        <ToggleObjektBands />
+      </Overlay>
     </main>
   );
 }

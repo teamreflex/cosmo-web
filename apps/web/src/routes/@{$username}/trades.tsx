@@ -1,3 +1,5 @@
+import Overlay from "@/components/misc/overlay";
+import ScrollToTop from "@/components/misc/overlay/scroll-to-top";
 import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
 import TransfersRenderer, {
   TransfersSkeleton,
@@ -50,6 +52,10 @@ function RouteComponent() {
   return (
     <section className="flex flex-col">
       <TransfersRenderer cosmo={cosmo} />
+
+      <Overlay>
+        <ScrollToTop />
+      </Overlay>
 
       <div id="pagination" />
     </section>

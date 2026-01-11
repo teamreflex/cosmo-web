@@ -1,4 +1,7 @@
 import { Error } from "@/components/error-boundary";
+import Overlay from "@/components/misc/overlay";
+import ScrollToTop from "@/components/misc/overlay/scroll-to-top";
+import ToggleObjektBands from "@/components/misc/overlay/toggle-objekt-bands";
 import IndexRenderer from "@/components/objekt-index/index-renderer";
 import ObjektGridSkeleton from "@/components/objekt/objekt-grid-skeleton";
 import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
@@ -52,12 +55,17 @@ function RouteComponent() {
   const { account } = Route.useLoaderData();
 
   return (
-    <main className="container flex flex-col py-2">
+    <main className="relative container flex flex-col py-2">
       <UserStateProvider user={account?.user} cosmo={account?.cosmo}>
         <ProfileProvider objektLists={account?.objektLists ?? []}>
           <IndexRenderer objektLists={account?.objektLists ?? []} />
         </ProfileProvider>
       </UserStateProvider>
+
+      <Overlay>
+        <ScrollToTop />
+        <ToggleObjektBands />
+      </Overlay>
     </main>
   );
 }

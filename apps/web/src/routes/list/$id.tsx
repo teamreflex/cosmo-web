@@ -2,6 +2,9 @@ import { Error } from "@/components/error-boundary";
 import DeleteList from "@/components/lists/delete-list";
 import ListRenderer from "@/components/lists/list-renderer";
 import UpdateList from "@/components/lists/update-list";
+import Overlay from "@/components/misc/overlay";
+import ScrollToTop from "@/components/misc/overlay/scroll-to-top";
+import ToggleObjektBands from "@/components/misc/overlay/toggle-objekt-bands";
 import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ProfileProvider } from "@/hooks/use-profile";
@@ -115,6 +118,11 @@ function RouteComponent() {
             authenticated={isAuthenticated}
             objektList={objektList}
           />
+
+          <Overlay>
+            <ScrollToTop />
+            <ToggleObjektBands />
+          </Overlay>
         </ProfileProvider>
       </UserStateProvider>
     </main>

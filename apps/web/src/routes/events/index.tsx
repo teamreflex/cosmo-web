@@ -2,6 +2,8 @@ import { Error } from "@/components/error-boundary";
 import ActiveEventsCarousel from "@/components/events/active-events-carousel";
 import EventsBackground from "@/components/events/events-background";
 import EventsList from "@/components/events/events-list";
+import Overlay from "@/components/misc/overlay";
+import ScrollToTop from "@/components/misc/overlay/scroll-to-top";
 import SkeletonGradient from "@/components/skeleton/skeleton-overlay";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
@@ -81,6 +83,10 @@ function RouteComponent() {
           onHoverChange={setHoveredEvent}
         />
       </Suspense>
+
+      <Overlay>
+        <ScrollToTop />
+      </Overlay>
     </main>
   );
 }

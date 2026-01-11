@@ -1,4 +1,7 @@
 import { Error } from "@/components/error-boundary";
+import Overlay from "@/components/misc/overlay";
+import ScrollToTop from "@/components/misc/overlay/scroll-to-top";
+import ToggleObjektBands from "@/components/misc/overlay/toggle-objekt-bands";
 import ProfileRenderer from "@/components/profile/profile-renderer";
 import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -88,6 +91,11 @@ function RouteComponent() {
       <section className="flex flex-col">
         <ProfileRenderer targetCosmo={target.cosmo} />
       </section>
+
+      <Overlay>
+        <ScrollToTop />
+        <ToggleObjektBands />
+      </Overlay>
     </ProfileProvider>
   );
 }

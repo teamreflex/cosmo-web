@@ -83,6 +83,7 @@ const updates = [
     changes: [
       "Added: Translations, starting with support for Korean.",
       "Added: Event catalog system - an easy way of viewing past and ongoing objekt drops.",
+      "Added: Scroll to top and objekt band toggle (idntt only) buttons.",
       "Updated: The design of the artist/member filter to better accommodate more artists.",
       "Updated: Other design tweaks and improvements such as a new font and color scheme.",
       "Updated: Moved the about dialog to the user dropdown, logo now links to the home page.",

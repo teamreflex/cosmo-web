@@ -1,3 +1,4 @@
+import { useObjektBands } from "@/hooks/use-objekt-bands";
 import { m } from "@/i18n/messages";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import type { PropsWithClassName } from "@/lib/utils";
@@ -39,6 +40,7 @@ function SidebarText(props: SidebarTextProps) {
 }
 
 export function ObjektSidebar({ collection, serial }: ObjektSidebarProps) {
+  const { hidden } = useObjektBands();
   const [bandLoaded, setBandLoaded] = useState(false);
 
   const paddedSerial =
@@ -47,6 +49,11 @@ export function ObjektSidebar({ collection, serial }: ObjektSidebarProps) {
   const useCustomBand = collection.artist === "idntt";
   const useBackground =
     useCustomBand && (!collection.bandImageUrl || !bandLoaded);
+  const showBand =
+    // handle tripleS/ARTMS
+    useCustomBand === false ||
+    // handle idntt
+    (!hidden && (useBackground || useCustomBand));
 
   /**
    * sometimes the first element in the grid is a couple pixels smaller on the width, resulting in an offset number, not sure why.
@@ -55,7 +62,7 @@ export function ObjektSidebar({ collection, serial }: ObjektSidebarProps) {
    */
   return (
     <Fragment>
-      {collection.bandImageUrl && (
+      {showBand && collection.bandImageUrl && (
         <img
           src={collection.bandImageUrl}
           className={cn(
@@ -73,22 +80,28 @@ export function ObjektSidebar({ collection, serial }: ObjektSidebarProps) {
             "flex items-center justify-center gap-2 font-semibold text-(--objekt-text-color) select-none [writing-mode:vertical-lr]",
             useCustomBand &&
               "my-auto h-[89%] w-full justify-between rounded-l-[35cqw] px-[50cqw]",
-            useBackground && "bg-(--objekt-background-color)",
+            showBand && useBackground && "bg-(--objekt-background-color)",
           )}
         >
-          {useCustomBand && (
-            <SidebarText type="name">{collection.member}</SidebarText>
+          {showBand && (
+            <Fragment>
+              {useCustomBand && (
+                <SidebarText type="name">{collection.member}</SidebarText>
+              )}
+              <SidebarText
+                type="collection"
+                className={cn(
+                  useCustomBand && "absolute top-1/2 -translate-y-1/2",
+                )}
+              >
+                <div className="flex items-center gap-2">
+                  <span>{collection.collectionNo}</span>
+                  {paddedSerial && <span>#{paddedSerial}</span>}
+                </div>
+              </SidebarText>
+              {useCustomBand && <ArtistLogo artist={collection.artist} />}
+            </Fragment>
           )}
-          <SidebarText
-            type="collection"
-            className={cn(useCustomBand && "absolute top-1/2 -translate-y-1/2")}
-          >
-            <div className="flex items-center gap-2">
-              <span>{collection.collectionNo}</span>
-              {paddedSerial && <span>#{paddedSerial}</span>}
-            </div>
-          </SidebarText>
-          {useCustomBand && <ArtistLogo artist={collection.artist} />}
         </div>
       </div>
     </Fragment>
