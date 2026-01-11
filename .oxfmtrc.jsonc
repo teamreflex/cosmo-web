@@ -10,5 +10,10 @@
     ],
     "internalPattern": ["@/**", "@apollo/**"],
     "newlinesBetween": false
-  }
+  },
+  // https://github.com/oxc-project/oxc/issues/17764
+  // "experimentalTailwindcss": {
+  //   "stylesheet": "./apps/web/src/styles/tailwind.css",
+  //   "functions": ["cn", "clsx"],
+  // }
 }
