@@ -15,6 +15,7 @@ export function useActiveObjekt() {
     void navigate({
       search: (prev) => ({ ...prev, id: slug }),
       replace: true,
+      resetScroll: false,
     });
   };
 
