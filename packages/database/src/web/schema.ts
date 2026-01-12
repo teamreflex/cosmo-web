@@ -155,6 +155,7 @@ export const events = pgTable(
       .notNull()
       .$type<EventTypeKey>(),
     twitterUrl: varchar("twitter_url", { length: 255 }),
+    discordUrl: varchar("discord_url", { length: 255 }),
     startDate: timestamp("start_date", { mode: "date", withTimezone: true }),
     endDate: timestamp("end_date", { mode: "date", withTimezone: true }),
     imageUrl: varchar("image_url", { length: 255 }),

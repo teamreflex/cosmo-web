@@ -60,6 +60,7 @@ export default function EditEventDialog({ event }: Props) {
       eventType: event.eventType,
       eraId: event.eraId,
       twitterUrl: event.twitterUrl ?? undefined,
+      discordUrl: event.discordUrl ?? undefined,
       startDate: event.startDate ?? undefined,
       endDate: event.endDate ?? undefined,
       imageUrl: event.imageUrl ?? undefined,

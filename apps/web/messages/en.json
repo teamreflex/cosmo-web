@@ -342,6 +342,7 @@
   "admin_event_era": "Era",
   "admin_event_description": "Description",
   "admin_event_twitter_url": "Twitter Announcement URL",
+  "admin_event_discord_url": "Discord Server URL",
   "admin_event_start_date": "Start Date",
   "admin_event_end_date": "End Date",
   "admin_event_timezone_hint": "Times are entered in KST",

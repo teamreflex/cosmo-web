@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { getSeasonKeys } from "@/hooks/use-filter-data";
 import type { EventWithEra } from "@apollo/database/web/types";
 import {
+  IconBrandDiscord,
   IconBrandTwitter,
   IconCalendarEvent,
   IconPhoto,
@@ -120,7 +121,7 @@ export default function EventHeader({ event }: EventHeaderProps) {
                 {event.era.name}
               </Badge>
 
-              {event.twitterUrl && (
+              {event.twitterUrl !== null && (
                 <Badge variant="twitter" asChild>
                   <a
                     href={event.twitterUrl}
@@ -128,6 +129,18 @@ export default function EventHeader({ event }: EventHeaderProps) {
                     rel="noopener noreferrer"
                   >
                     <IconBrandTwitter className="size-4 fill-white" />
+                  </a>
+                </Badge>
+              )}
+
+              {event.discordUrl !== null && (
+                <Badge variant="discord" asChild>
+                  <a
+                    href={event.discordUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <IconBrandDiscord className="size-4 fill-white" />
                   </a>
                 </Badge>
               )}

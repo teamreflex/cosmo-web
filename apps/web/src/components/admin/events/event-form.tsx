@@ -237,6 +237,26 @@ export default function EventForm({
         )}
       />
 
+      {/* Discord URL */}
+      <Controller
+        control={form.control}
+        name="discordUrl"
+        render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid}>
+            <FieldLabel htmlFor="discordUrl">
+              {m.admin_event_discord_url()}
+            </FieldLabel>
+            <Input
+              id="discordUrl"
+              type="url"
+              placeholder="https://discord.gg/..."
+              {...field}
+            />
+            <FieldError errors={[fieldState.error]} />
+          </Field>
+        )}
+      />
+
       {/* start date */}
       <Controller
         control={form.control}

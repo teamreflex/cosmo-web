@@ -1,0 +1,1 @@
+ALTER TABLE "events" ADD COLUMN "discord_url" varchar(255);

@@ -55,6 +55,7 @@ export default function CreateEvent() {
       eventType: "album",
       eraId: undefined,
       twitterUrl: undefined,
+      discordUrl: undefined,
       startDate: undefined,
       endDate: undefined,
       imageUrl: undefined,

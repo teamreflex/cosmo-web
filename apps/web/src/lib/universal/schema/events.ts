@@ -40,6 +40,7 @@ export const createEventSchema = z.object({
   eventType: eventTypeSchema,
   eraId: z.uuid(),
   twitterUrl: z.url().max(255).optional(),
+  discordUrl: z.url().max(255).optional(),
   startDate: z.date().optional(),
   endDate: z.date().optional(),
   imageUrl: z.url().max(255).optional(),

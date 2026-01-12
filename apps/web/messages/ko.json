@@ -342,6 +342,7 @@
   "admin_event_era": "시대",
   "admin_event_description": "설명",
   "admin_event_twitter_url": "트위터 공지 URL",
+  "admin_event_discord_url": "디스코드 서버 URL",
   "admin_event_start_date": "시작 날짜",
   "admin_event_end_date": "종료 날짜",
   "admin_event_timezone_hint": "시간은 KST 기준입니다",
