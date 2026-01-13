@@ -1,16 +1,13 @@
 import { env } from "@/lib/env/server";
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { S3Client } from "bun";
 
 const MAX_FILE_SIZE = 1024 * 1024; // 1MB
 
-export const r2Client = new S3Client({
-  region: "auto",
+const r2 = new S3Client({
   endpoint: `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-  credentials: {
-    accessKeyId: env.R2_ACCESS_KEY,
-    secretAccessKey: env.R2_SECRET_KEY,
-  },
+  bucket: env.R2_BUCKET,
+  accessKeyId: env.R2_ACCESS_KEY,
+  secretAccessKey: env.R2_SECRET_KEY,
 });
 
 type PresignedUrlOptions = {
@@ -22,22 +19,17 @@ type PresignedUrlOptions = {
 /**
  * Generate a presigned URL for uploading to R2.
  */
-export async function getPresignedUploadUrl(options: PresignedUrlOptions) {
+export function getPresignedUploadUrl(options: PresignedUrlOptions) {
   const { key, contentType, contentLength } = options;
 
   if (contentLength > MAX_FILE_SIZE) {
     throw new Error(`File size exceeds maximum of ${MAX_FILE_SIZE} bytes`);
   }
 
-  const command = new PutObjectCommand({
-    Bucket: env.R2_BUCKET,
-    Key: key,
-    ContentType: contentType,
-    ContentLength: contentLength,
-  });
-
-  const uploadUrl = await getSignedUrl(r2Client, command, {
-    expiresIn: 300, // 5 minutes
+  const uploadUrl = r2.presign(key, {
+    method: "PUT",
+    expiresIn: 300,
+    type: contentType,
   });
 
   const publicUrl = `${env.R2_DOMAIN}/${key}`;

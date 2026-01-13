@@ -310,7 +310,7 @@ export const $getEraImageUploadUrl = createServerFn({ method: "POST" })
     const extension = data.filename.split(".").pop()?.toLowerCase() || "jpg";
     const key = generateEraImageKey(extension);
 
-    const { uploadUrl, publicUrl } = await getPresignedUploadUrl({
+    const { uploadUrl, publicUrl } = getPresignedUploadUrl({
       key,
       contentType: data.contentType,
       contentLength: data.contentLength,
@@ -338,7 +338,7 @@ export const $getEventImageUploadUrl = createServerFn({ method: "POST" })
     const extension = data.filename.split(".").pop()?.toLowerCase() || "jpg";
     const key = generateEventImageKey(extension);
 
-    const { uploadUrl, publicUrl } = await getPresignedUploadUrl({
+    const { uploadUrl, publicUrl } = getPresignedUploadUrl({
       key,
       contentType: data.contentType,
       contentLength: data.contentLength,
