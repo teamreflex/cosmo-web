@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bun:*)",
+      "Bash(turbo lint:*)",
+      "Bash(turbo typecheck:*)",
+      "Bash(turbo format:*)",
+      "Bash(turbo test:*)",
+      "Bash(turbo i18n:*)",
+      "Bash(turbo build:*)",
+      "Bash(turbo db:generate:*)",
+      "Bash(turbo dev:*)"
+    ],
+    "deny": [
+      "Bash(npm:*)",
+      "Bash(pnpm:*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(jq -r '.tool_input.file_path'); case \"$f\" in *.ts|*.tsx) bunx oxfmt \"$f\" && bunx oxlint --type-aware --fix \"$f\";; esac"
+          }
+        ]
+      }
+    ]
+  }
+}
