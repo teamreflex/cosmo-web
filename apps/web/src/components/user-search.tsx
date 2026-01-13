@@ -74,6 +74,7 @@ export function UserSearch({
   function selectAddress(address: string) {
     setQuery("");
     onSelect({
+      id: 0,
       nickname: address,
       address,
       profileImageUrl: "",
@@ -84,6 +85,7 @@ export function UserSearch({
   function selectRecent(user: RecentUser) {
     setQuery("");
     onSelect({
+      id: 0,
       ...user,
       userProfiles: [],
     });

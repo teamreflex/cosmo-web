@@ -32,6 +32,7 @@ export type CosmoProfile = {
 };
 
 export type CosmoPublicUser = {
+  id: number;
   nickname: string;
   profileImageUrl: string;
   address: string;
@@ -39,7 +40,21 @@ export type CosmoPublicUser = {
 };
 
 export type CosmoSearchResult = {
+  hasNext: boolean;
+  nextStartAfter: string | null;
   results: CosmoPublicUser[];
+};
+
+export type CosmoUserProfile = {
+  id: number;
+  nickname: string;
+  address: string;
+  profileImageUrl: string;
+  fandomName: string;
+  followDurationDays: number;
+  currentStreak: number;
+  statusMessage: string | null;
+  createdAt: string;
 };
 
 export type CosmoByNicknameResult = {

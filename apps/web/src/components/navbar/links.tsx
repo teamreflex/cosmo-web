@@ -13,7 +13,6 @@ import {
 } from "@tabler/icons-react";
 import type { Icon } from "@tabler/icons-react";
 import { Link, useLocation } from "@tanstack/react-router";
-import LinkCosmo from "../auth/link-cosmo";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,33 +39,31 @@ type Props = {
 export default function Links(props: Props) {
   return (
     <div className="flex grow justify-end lg:justify-center">
-      <LinkCosmo>
-        {/* desktop */}
-        <div className="hidden flex-row items-center gap-6 lg:flex">
-          <DesktopLinks {...props} />
-        </div>
+      {/* desktop */}
+      <div className="hidden flex-row items-center gap-6 lg:flex">
+        <DesktopLinks {...props} />
+      </div>
 
-        {/* mobile */}
-        <div className="flex flex-row items-center gap-2 lg:hidden">
-          <NavbarSearch />
+      {/* mobile */}
+      <div className="flex flex-row items-center gap-2 lg:hidden">
+        <NavbarSearch />
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                className="outline-hidden drop-shadow-lg"
-                aria-label={m.common_menu()}
-              >
-                <IconMenu2 className="h-8 w-8 shrink-0" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-fit" align="end">
-              <DropdownMenuLabel>{m.common_menu()}</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <MobileLinks {...props} />
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </LinkCosmo>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              className="outline-hidden drop-shadow-lg"
+              aria-label={m.common_menu()}
+            >
+              <IconMenu2 className="h-8 w-8 shrink-0" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-fit" align="end">
+            <DropdownMenuLabel>{m.common_menu()}</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <MobileLinks {...props} />
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </div>
   );
 }

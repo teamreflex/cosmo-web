@@ -8,13 +8,12 @@ import {
 import { m } from "@/i18n/messages";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import { Suspense } from "react";
-import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
 import { Skeleton } from "../ui/skeleton";
 import DeleteAccount from "./account/delete-account";
 import LinkedAccounts from "./account/linked-accounts";
 import Profile from "./account/profile";
-import LinkCosmo, { useLinkCosmo } from "./link-cosmo";
+import LinkCosmo from "./link-cosmo";
 
 type Props = {
   open: boolean;
@@ -54,9 +53,7 @@ export default function AccountDialog({ open, onOpenChange, cosmo }: Props) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               {cosmo === undefined ? (
-                <LinkCosmo>
-                  <LinkCosmoButton />
-                </LinkCosmo>
+                <LinkCosmo />
               ) : (
                 <div className="flex items-center gap-2">
                   <img
@@ -73,20 +70,5 @@ export default function AccountDialog({ open, onOpenChange, cosmo }: Props) {
         </div>
       </DialogContent>
     </Dialog>
-  );
-}
-
-function LinkCosmoButton() {
-  const ctx = useLinkCosmo();
-
-  return (
-    <Button variant="cosmo" onClick={() => ctx.setOpen(true)}>
-      <img
-        src="/cosmo.webp"
-        alt={m.common_cosmo()}
-        className="aspect-square size-5 rounded-full"
-      />
-      <span>{m.link_cosmo_title()}</span>
-    </Button>
   );
 }

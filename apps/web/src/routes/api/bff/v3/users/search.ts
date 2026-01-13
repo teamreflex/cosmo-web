@@ -17,7 +17,11 @@ export const Route = createFileRoute("/api/bff/v3/users/search")({
         // get the latest cosmo token
         const { accessToken } = await getProxiedToken();
 
-        let results: CosmoSearchResult = { results: [] };
+        let results: CosmoSearchResult = {
+          hasNext: false,
+          nextStartAfter: null,
+          results: [],
+        };
 
         // try cosmo first
         try {
@@ -44,11 +48,12 @@ export const Route = createFileRoute("/api/bff/v3/users/search")({
  */
 async function queryDatabase(query: string): Promise<CosmoSearchResult> {
   if (query.length < 2) {
-    return { results: [] };
+    return { hasNext: false, nextStartAfter: null, results: [] };
   }
 
   const users = await db
     .select({
+      cosmoId: cosmoAccounts.cosmoId,
       username: cosmoAccounts.username,
       address: cosmoAccounts.address,
     })
@@ -56,7 +61,10 @@ async function queryDatabase(query: string): Promise<CosmoSearchResult> {
     .where(like(cosmoAccounts.username, `${query}%`));
 
   return {
+    hasNext: false,
+    nextStartAfter: null,
     results: users.map((result) => ({
+      id: result.cosmoId ?? 0,
       nickname: result.username,
       address: result.address,
       profileImageUrl: "",

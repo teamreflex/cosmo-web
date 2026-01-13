@@ -1,7 +1,9 @@
+import type { ValidArtist } from "../types/common";
 import type {
   CosmoByNicknameResult,
   CosmoSearchResult,
   CosmoShopUser,
+  CosmoUserProfile,
 } from "../types/user";
 import { cosmo, cosmoShop } from "./http";
 
@@ -43,6 +45,24 @@ export async function search(token: string, term: string) {
       nickname: term,
       skip: 0,
       take: 100,
+    },
+  });
+}
+
+/**
+ * Fetch a user's public profile.
+ */
+export async function fetchUserProfile(
+  token: string,
+  userId: number,
+  artistId: ValidArtist,
+) {
+  return await cosmo<CosmoUserProfile>(`/bff/v3/users/${userId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    query: {
+      artistId,
     },
   });
 }
