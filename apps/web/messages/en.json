@@ -608,5 +608,20 @@
   "_comment_logo": "Logo strings",
   "logo_about": "About",
   "logo_description": "{appName} is platform for exploring objekts & gravities from Cosmo: the Gate.",
-  "logo_source_code": "Source code can be found below."
+  "logo_source_code": "Source code can be found below.",
+
+  "_comment_share_data": "Share data page strings",
+  "share_data_title": "Share Data",
+  "share_data_description": "This feature allows you to share collection media data from your COSMO account to help populate the {appName} database.",
+  "share_data_explanation": "We will fetch Motion and Unit class collections from your account and extract any video or image URLs to store in our database.",
+  "share_data_privacy": "Your COSMO credentials are not stored.",
+  "share_data_fetching": "Fetching collections from COSMO...",
+  "share_data_fetch_error": "Failed to fetch collections",
+  "share_data_no_collections": "No collections with media found in your account.",
+  "share_data_found_collections": "Found {count} collections with media:",
+  "share_data_front_media_count": "{count} with front media (videos)",
+  "share_data_band_image_count": "{count} with band images",
+  "share_data_uploading": "Uploading media to database...",
+  "share_data_success": "Successfully updated {count} collections.",
+  "share_data_thanks": "Thank you for contributing to {appName}!"
 }

@@ -608,5 +608,20 @@
   "_comment_logo": "Logo strings",
   "logo_about": "정보",
   "logo_description": "{appName}는 Cosmo: the Gate의 오브젝트 및 그래비티를 탐색하는 플랫폼입니다.",
-  "logo_source_code": "소스 코드는 아래에서 확인할 수 있습니다."
+  "logo_source_code": "소스 코드는 아래에서 확인할 수 있습니다.",
+
+  "_comment_share_data": "Share data page strings",
+  "share_data_title": "데이터 공유",
+  "share_data_description": "이 기능을 통해 COSMO 계정의 컬렉션 미디어 데이터를 공유하여 {appName} 데이터베이스를 채울 수 있습니다.",
+  "share_data_explanation": "계정에서 Motion 및 Unit 클래스 컬렉션을 가져와 비디오 또는 이미지 URL을 데이터베이스에 저장합니다.",
+  "share_data_privacy": "COSMO 자격 증명은 저장되지 않습니다.",
+  "share_data_fetching": "COSMO에서 컬렉션을 가져오는 중...",
+  "share_data_fetch_error": "컬렉션을 가져오지 못했습니다",
+  "share_data_no_collections": "계정에서 미디어가 포함된 컬렉션을 찾을 수 없습니다.",
+  "share_data_found_collections": "미디어가 포함된 {count}개의 컬렉션을 찾았습니다:",
+  "share_data_front_media_count": "{count}개의 전면 미디어 (비디오)",
+  "share_data_band_image_count": "{count}개의 밴드 이미지",
+  "share_data_uploading": "데이터베이스에 미디어 업로드 중...",
+  "share_data_success": "{count}개의 컬렉션이 성공적으로 업데이트되었습니다.",
+  "share_data_thanks": "{appName}에 기여해 주셔서 감사합니다!"
 }

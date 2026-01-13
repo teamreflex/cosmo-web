@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermsPrivacyRouteImport } from './routes/terms-privacy'
+import { Route as ShareDataRouteImport } from './routes/share-data'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as AtChar123usernameChar125RouteRouteImport } from './routes/@{$username}/route'
 import { Route as IndexRouteImport } from './routes/index'
@@ -46,6 +47,11 @@ import { Route as ApiBffV3UsersSearchRouteImport } from './routes/api/bff/v3/use
 const TermsPrivacyRoute = TermsPrivacyRouteImport.update({
   id: '/terms-privacy',
   path: '/terms-privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShareDataRoute = ShareDataRouteImport.update({
+  id: '/share-data',
+  path: '/share-data',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRouteRoute = AdminRouteRouteImport.update({
@@ -226,6 +232,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/@{$username}': typeof AtChar123usernameChar125RouteRouteWithChildren
   '/admin': typeof AdminRouteRouteWithChildren
+  '/share-data': typeof ShareDataRoute
   '/terms-privacy': typeof TermsPrivacyRoute
   '/@{$username}/como': typeof AtChar123usernameChar125ComoRoute
   '/@{$username}/progress': typeof AtChar123usernameChar125ProgressRoute
@@ -260,6 +267,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
+  '/share-data': typeof ShareDataRoute
   '/terms-privacy': typeof TermsPrivacyRoute
   '/@{$username}/como': typeof AtChar123usernameChar125ComoRoute
   '/@{$username}/progress': typeof AtChar123usernameChar125ProgressRoute
@@ -296,6 +304,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/@{$username}': typeof AtChar123usernameChar125RouteRouteWithChildren
   '/admin': typeof AdminRouteRouteWithChildren
+  '/share-data': typeof ShareDataRoute
   '/terms-privacy': typeof TermsPrivacyRoute
   '/@{$username}/como': typeof AtChar123usernameChar125ComoRoute
   '/@{$username}/progress': typeof AtChar123usernameChar125ProgressRoute
@@ -333,6 +342,7 @@ export interface FileRouteTypes {
     | '/'
     | '/@{$username}'
     | '/admin'
+    | '/share-data'
     | '/terms-privacy'
     | '/@{$username}/como'
     | '/@{$username}/progress'
@@ -367,6 +377,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/share-data'
     | '/terms-privacy'
     | '/@{$username}/como'
     | '/@{$username}/progress'
@@ -402,6 +413,7 @@ export interface FileRouteTypes {
     | '/'
     | '/@{$username}'
     | '/admin'
+    | '/share-data'
     | '/terms-privacy'
     | '/@{$username}/como'
     | '/@{$username}/progress'
@@ -438,6 +450,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AtChar123usernameChar125RouteRoute: typeof AtChar123usernameChar125RouteRouteWithChildren
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
+  ShareDataRoute: typeof ShareDataRoute
   TermsPrivacyRoute: typeof TermsPrivacyRoute
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   EventsSlugRoute: typeof EventsSlugRoute
@@ -469,6 +482,13 @@ declare module '@tanstack/react-router' {
       path: '/terms-privacy'
       fullPath: '/terms-privacy'
       preLoaderRoute: typeof TermsPrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/share-data': {
+      id: '/share-data'
+      path: '/share-data'
+      fullPath: '/share-data'
+      preLoaderRoute: typeof ShareDataRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -743,6 +763,7 @@ const rootRouteChildren: RootRouteChildren = {
   AtChar123usernameChar125RouteRoute:
     AtChar123usernameChar125RouteRouteWithChildren,
   AdminRouteRoute: AdminRouteRouteWithChildren,
+  ShareDataRoute: ShareDataRoute,
   TermsPrivacyRoute: TermsPrivacyRoute,
   AuthResetPasswordRoute: AuthResetPasswordRoute,
   EventsSlugRoute: EventsSlugRoute,

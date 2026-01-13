@@ -12,10 +12,8 @@ import { settingsSchema } from "@/lib/universal/schema/auth";
 import {
   generateVerificationCodeSchema,
   verifyCosmoBioSchema,
-  verifyCosmoSchema,
 } from "@/lib/universal/schema/cosmo";
-import { certifyTicket } from "@apollo/cosmo/server/qr-auth";
-import { fetchUserProfile, userWebshop } from "@apollo/cosmo/server/user";
+import { fetchUserProfile } from "@apollo/cosmo/server/user";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeaders } from "@tanstack/react-start/server";
 
@@ -33,58 +31,6 @@ export const $updateSettings = createServerFn({ method: "POST" })
         collectionMode: data.collectionMode,
       },
     });
-  });
-
-/**
- * Verify the user's COSMO account.
- */
-export const $verifyCosmo = createServerFn({ method: "POST" })
-  .middleware([authenticatedMiddleware])
-  .inputValidator(verifyCosmoSchema)
-  .handler(async ({ data, context }) => {
-    // send the otp and ticket to the cosmo api
-    try {
-      var response = await certifyTicket(data.otp, data.ticket);
-    } catch (err) {
-      throw new Error("Error connecting to COSMO");
-    }
-
-    // get the user-session cookie from the response
-    const headers = response.headers.getSetCookie();
-    let session: string | null = null;
-    for (const header of headers) {
-      const parts = header.split(";");
-      for (const part of parts) {
-        const [name, value] = part.trim().split("=");
-        if (name === "user-session" && value !== undefined) {
-          session = value;
-          break;
-        }
-      }
-    }
-
-    if (!session) {
-      throw new Error("Error getting webshop session");
-    }
-
-    // get user info from cosmo
-    try {
-      var cosmoUser = await userWebshop(session);
-    } catch (err) {
-      throw new Error("Error getting user from COSMO");
-    }
-
-    // update the database with the new user info
-    const account = await linkAccount({
-      address: cosmoUser.address,
-      username: cosmoUser.nickname,
-      cosmoId: cosmoUser.id,
-      userId: context.session.user.id,
-      polygonAddress: null,
-    });
-
-    // import any existing objekt lists
-    await importObjektLists(context.session.user.id, account.address);
   });
 
 /**

@@ -52,3 +52,44 @@ export function generateEventImageKey(extension: string): string {
   const uuid = crypto.randomUUID();
   return `event/${uuid}.${extension}`;
 }
+
+/**
+ * Generate a key for collection media.
+ */
+export function generateCollectionMediaKey(
+  artistName: string,
+  slug: string,
+): string {
+  return `mco/${artistName}/${slug}.mp4`;
+}
+
+/**
+ * Download media from source URL and upload to R2.
+ */
+export async function uploadCollectionMedia(
+  sourceUrl: string,
+  artistName: string,
+  slug: string,
+): Promise<string> {
+  const response = await fetch(sourceUrl);
+  if (!response.ok) {
+    throw new Error(`Failed to download media: ${response.status}`);
+  }
+
+  const contentType = response.headers.get("content-type");
+  if (
+    !contentType?.startsWith("video/") &&
+    contentType !== "application/octet-stream"
+  ) {
+    throw new Error(`Invalid content type: ${contentType}`);
+  }
+
+  const key = generateCollectionMediaKey(artistName, slug);
+  const blob = await response.blob();
+
+  await r2.write(key, blob, {
+    type: "video/mp4",
+  });
+
+  return `${env.R2_DOMAIN}/${key}`;
+}

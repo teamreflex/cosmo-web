@@ -1,102 +1,36 @@
 import { Button } from "@/components/ui/button";
+import { Field, FieldError } from "@/components/ui/field";
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { m } from "@/i18n/messages";
-import { env } from "@/lib/env/client";
-import { currentAccountQuery } from "@/lib/queries/core";
+import { $scrapeCollectionMedia } from "@/lib/queries/share-data";
 import { verifyCosmoSchema } from "@/lib/universal/schema/cosmo";
-import { track } from "@/lib/utils";
-import { generateQrCode } from "@apollo/cosmo/types/qr-auth";
 import type { AuthTicket, QueryTicket } from "@apollo/cosmo/types/qr-auth";
+import { generateQrCode } from "@apollo/cosmo/types/qr-auth";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import {
   IconAlertTriangle,
   IconCircleCheck,
   IconLoader2,
 } from "@tabler/icons-react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "@tanstack/react-router";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { FetchError, ofetch } from "ofetch";
-import { createContext, useContext, useState } from "react";
-import type { ReactNode } from "react";
+import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import QRCode from "react-qr-code";
 import { toast } from "sonner";
 import { useInterval } from "usehooks-ts";
 import type { z } from "zod";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "../ui/dialog";
-import { Field, FieldError } from "../ui/field";
-import { $verifyCosmo } from "./actions";
 
-type LinkCosmoContextType = {
-  open: boolean;
-  setOpen: (open: boolean) => void;
+type GetRecaptchaProps = {
+  onSuccess: (updated: number) => void;
 };
 
-const LinkCosmoContext = createContext<LinkCosmoContextType>({
-  open: false,
-  setOpen: () => {},
-});
-
-type Props = {
-  children: ReactNode;
-};
-
-export default function LinkCosmo({ children }: Props) {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <LinkCosmoContext value={{ open, setOpen }}>
-      <Dialog open={open} onOpenChange={setOpen}>
-        {children}
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{m.link_cosmo_title()}</DialogTitle>
-            <DialogDescription>
-              {m.link_cosmo_description({ appName: env.VITE_APP_NAME })}
-            </DialogDescription>
-          </DialogHeader>
-
-          <StartLink />
-        </DialogContent>
-      </Dialog>
-    </LinkCosmoContext>
-  );
-}
-
-function StartLink() {
-  const [started, setStarted] = useState(false);
-
-  if (started) {
-    return <GetRecaptcha />;
-  }
-
-  return (
-    <div className="flex flex-col gap-2 text-sm text-muted-foreground">
-      <p>{m.link_cosmo_sign_in_info({ appName: env.VITE_APP_NAME })}</p>
-      <p>{m.link_cosmo_features()}</p>
-      <p>{m.link_cosmo_privacy({ appName: env.VITE_APP_NAME })}</p>
-      <p>{m.link_cosmo_permanent()}</p>
-
-      <Button className="mx-auto mt-2 w-fit" onClick={() => setStarted(true)}>
-        {m.common_start()}
-      </Button>
-    </div>
-  );
-}
-
-function GetRecaptcha() {
-  // get recaptcha token and exchange it for a ticket on mount
+export default function GetRecaptcha({ onSuccess }: GetRecaptchaProps) {
   const { data, error, status, refetch } = useQuery({
     queryKey: ["qr-auth", "code"],
     queryFn: () =>
@@ -128,19 +62,23 @@ function GetRecaptcha() {
       )}
 
       {status === "success" && (
-        <RenderTicket ticket={data} retry={() => refetch()} />
+        <RenderTicket
+          ticket={data}
+          retry={() => refetch()}
+          onSuccess={onSuccess}
+        />
       )}
     </div>
   );
 }
 
-type RenderQRProps = {
+type RenderTicketProps = {
   ticket: AuthTicket;
   retry: () => void;
+  onSuccess: (updated: number) => void;
 };
 
-function RenderTicket({ ticket, retry }: RenderQRProps) {
-  // query the ticket when the QR code is loaded
+function RenderTicket({ ticket, retry, onSuccess }: RenderTicketProps) {
   const { data, status, refetch } = useQuery({
     queryKey: ["qr-auth", "ticket", ticket.ticket],
     queryFn: () =>
@@ -150,13 +88,11 @@ function RenderTicket({ ticket, retry }: RenderQRProps) {
         },
       }),
     refetchInterval: 2500,
-    // stop polling when the user has is prompted to input their OTP
     enabled: (query) => {
       return query.state.data?.status !== "wait_for_certify";
     },
   });
 
-  // request errored
   if (status === "error") {
     return (
       <div className="flex flex-col items-center gap-2">
@@ -170,12 +106,10 @@ function RenderTicket({ ticket, retry }: RenderQRProps) {
     );
   }
 
-  // component mount and when the QR code hasn't been scanned
   if (data === undefined || data.status === "wait_for_user_action") {
     return <RenderQRCode key={ticket.expireAt} ticket={ticket} retry={retry} />;
   }
 
-  // ticket check failed for whatever reason
   if (data.status === "invalid") {
     return (
       <div className="flex flex-col items-center gap-2">
@@ -187,12 +121,10 @@ function RenderTicket({ ticket, retry }: RenderQRProps) {
     );
   }
 
-  // waiting for user to input their otp
   if (data.status === "wait_for_certify") {
-    return <OTP ticket={ticket} />;
+    return <OTP ticket={ticket} onSuccess={onSuccess} />;
   }
 
-  // login success
   return (
     <div className="flex items-center justify-center">
       <IconCircleCheck className="h-8 w-8" />
@@ -200,7 +132,12 @@ function RenderTicket({ ticket, retry }: RenderQRProps) {
   );
 }
 
-function RenderQRCode({ ticket, retry }: RenderQRProps) {
+type RenderQRCodeProps = {
+  ticket: AuthTicket;
+  retry: () => void;
+};
+
+function RenderQRCode({ ticket, retry }: RenderQRCodeProps) {
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [isExpired, setIsExpired] = useState<boolean>(false);
 
@@ -226,7 +163,7 @@ function RenderQRCode({ ticket, retry }: RenderQRProps) {
       <p className="text-sm">{m.link_cosmo_scan_qr()}</p>
 
       <Button className="inline-flex lg:hidden" variant="link" asChild>
-        <a href={qr} target="_blank">
+        <a href={qr} target="_blank" rel="noreferrer">
           <span>{m.link_cosmo_mobile_open()}</span>
         </a>
       </Button>
@@ -259,15 +196,13 @@ function RenderQRCode({ ticket, retry }: RenderQRProps) {
 
 type OTPProps = {
   ticket: AuthTicket;
+  onSuccess: (updated: number) => void;
 };
 
-function OTP({ ticket }: OTPProps) {
-  const ctx = useContext(LinkCosmoContext);
+function OTP({ ticket, onSuccess }: OTPProps) {
   const mutation = useMutation({
-    mutationFn: $verifyCosmo,
+    mutationFn: $scrapeCollectionMedia,
   });
-  const router = useRouter();
-  const queryClient = useQueryClient();
 
   const form = useForm<z.infer<typeof verifyCosmoSchema>>({
     resolver: standardSchemaResolver(verifyCosmoSchema),
@@ -278,7 +213,7 @@ function OTP({ ticket }: OTPProps) {
   });
 
   async function handleSubmit(data: z.infer<typeof verifyCosmoSchema>) {
-    await mutation.mutateAsync(
+    const result = await mutation.mutateAsync(
       { data },
       {
         onError() {
@@ -287,13 +222,7 @@ function OTP({ ticket }: OTPProps) {
       },
     );
 
-    track("cosmo-link");
-    toast.success(m.link_cosmo_success());
-    await router.invalidate();
-    await queryClient.invalidateQueries({
-      queryKey: currentAccountQuery.queryKey,
-    });
-    ctx.setOpen(false);
+    onSuccess(result.updated);
   }
 
   if (mutation.status === "error") {
@@ -305,12 +234,23 @@ function OTP({ ticket }: OTPProps) {
     );
   }
 
+  if (mutation.isPending) {
+    return (
+      <div className="flex flex-col items-center gap-2">
+        <IconLoader2 className="h-8 w-8 animate-spin" />
+        <p className="text-sm text-muted-foreground">
+          {m.share_data_uploading()}
+        </p>
+      </div>
+    );
+  }
+
   return (
     <form
       onSubmit={form.handleSubmit(handleSubmit)}
       className="flex flex-col gap-4"
     >
-      <div className="flex flex-col items-center gap-4">
+      <div className="flex flex-col items-center justify-center gap-4">
         <p className="text-center text-sm">{m.link_cosmo_enter_code()}</p>
 
         <Controller
@@ -319,7 +259,7 @@ function OTP({ ticket }: OTPProps) {
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <InputOTP
-                value={field.value.toString()}
+                value={field.value?.toString() ?? ""}
                 onChange={(value) => field.onChange(Number(value))}
                 maxLength={2}
                 pattern={REGEXP_ONLY_DIGITS}
@@ -343,8 +283,4 @@ function OTP({ ticket }: OTPProps) {
       </Button>
     </form>
   );
-}
-
-export function useLinkCosmo() {
-  return useContext(LinkCosmoContext);
 }

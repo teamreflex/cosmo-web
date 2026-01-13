@@ -116,3 +116,17 @@ export type BFFCollectionGroupObjekt = {
     updatedAt: string;
   };
 };
+
+export type ObjektSummariesResponse = {
+  collectionCount: number;
+  collections: ObjektSummary[];
+};
+
+export type ObjektSummary = {
+  collection: {
+    collectionId: string;
+    artistName: string;
+    frontMedia?: string | null;
+    bandImageUrl?: string | null;
+  };
+};
