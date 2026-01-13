@@ -16,7 +16,7 @@ export const $fetchEras = createServerFn({ method: "GET" })
   .middleware([adminMiddleware])
   .handler(async () => {
     return db.query.eras.findMany({
-      orderBy: { createdAt: "desc" },
+      orderBy: { startDate: "desc" },
     });
   });
 
@@ -78,6 +78,7 @@ export const $fetchPaginatedEvents = createServerFn({ method: "GET" })
   )
   .handler(async ({ data }) => {
     const PER_PAGE_EVENTS = 24;
+    const now = new Date();
 
     const whereClause: Record<string, unknown> = {};
     if (data.artists?.length) {
@@ -85,6 +86,8 @@ export const $fetchPaginatedEvents = createServerFn({ method: "GET" })
     }
     if (data.cursor) {
       whereClause.startDate = { lt: data.cursor };
+    } else {
+      whereClause.startDate = { lte: now };
     }
 
     const allEvents = await db.query.events.findMany({
@@ -119,7 +122,6 @@ export const $fetchActiveEvents = createServerFn({ method: "GET" })
     const now = new Date();
 
     const whereClause: Record<string, unknown> = {
-      startDate: { lte: now },
       OR: [{ endDate: { isNull: true } }, { endDate: { gte: now } }],
     };
     if (data.artists?.length) {

@@ -12,7 +12,6 @@ import { objektOptions } from "@/hooks/use-objekt-response";
 import { ProfileProvider } from "@/hooks/use-profile";
 import { UserStateProvider } from "@/hooks/use-user-state";
 import { m } from "@/i18n/messages";
-import { env } from "@/lib/env/client";
 import { defineHead } from "@/lib/meta";
 import { currentAccountQuery } from "@/lib/queries/core";
 import { eventBySlugQuery, eventObjektsQuery } from "@/lib/queries/events";
@@ -167,7 +166,7 @@ function NotFoundComponent() {
       <IconAlertCircle className="h-24 w-24" />
       <p className="text-sm font-semibold">{m.events_error_not_found()}</p>
       <p className="w-64 text-center text-sm text-balance">
-        {m.error_not_found_description({ appName: env.VITE_APP_NAME })}
+        {m.events_error_not_found_description()}
       </p>
     </main>
   );
