@@ -1,4 +1,5 @@
 import type { SeasonProgress } from "@/lib/universal/progress";
+import { classSort } from "@/lib/utils";
 import { useState } from "react";
 import ProgressClass from "./progress-class";
 import ProgressObjektGrid from "./progress-objekt-grid";
@@ -43,16 +44,18 @@ export default function ProgressSeason({ season, classes }: Props) {
         }}
         className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-[repeat(var(--class-count),_minmax(0,_1fr))]"
       >
-        {classes.map((p) => (
-          <ProgressClass
-            key={p.key}
-            progress={p}
-            onExpand={() => toggleSelected(p)}
-            isSelected={
-              selectedClass !== undefined && selectedClass.key === p.key
-            }
-          />
-        ))}
+        {classes
+          .sort((a, b) => classSort(a.class, b.class))
+          .map((p) => (
+            <ProgressClass
+              key={p.key}
+              progress={p}
+              onExpand={() => toggleSelected(p)}
+              isSelected={
+                selectedClass !== undefined && selectedClass.key === p.key
+              }
+            />
+          ))}
       </div>
 
       {selectedClass && (

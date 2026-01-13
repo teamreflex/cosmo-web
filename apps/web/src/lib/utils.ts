@@ -156,3 +156,29 @@ export function seasonSort(a: string, b: string) {
   // Then by season order descending
   return seasonConfig[bSeason].order - seasonConfig[aSeason].order;
 }
+
+/**
+ * Sort classes by their collection number.
+ */
+const classConfig = {
+  Welcome: 1, // 100 (idntt: 200)
+  Basic: 2, // 100
+  First: 2, // 100
+  Event: 2.5, // 200
+  Special: 3, // 200 (idntt: 300)
+  Double: 4, // 300
+  Unit: 4, // idntt: 400
+  Premier: 5, // 400
+  Motion: 6, // 500
+  Zero: 7, // 000
+} as const;
+
+/**
+ * Sort classes by their order in the class config.
+ */
+export function classSort(a: string, b: string) {
+  const aMatch = classConfig[a as keyof typeof classConfig];
+  const bMatch = classConfig[b as keyof typeof classConfig];
+  if (!aMatch || !bMatch) return 0;
+  return aMatch - bMatch;
+}

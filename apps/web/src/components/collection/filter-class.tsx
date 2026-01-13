@@ -10,7 +10,7 @@ import {
 import type { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { useFilterData } from "@/hooks/use-filter-data";
 import { m } from "@/i18n/messages";
-import { cn } from "@/lib/utils";
+import { classSort, cn } from "@/lib/utils";
 import type { ValidArtist } from "@apollo/cosmo/types/common";
 import { isEqual } from "@apollo/util";
 import { IconChevronDown } from "@tabler/icons-react";
@@ -73,20 +73,22 @@ export default function ClassFilter(props: Props) {
               />
               {classArtist.title}
             </DropdownMenuLabel>
-            {classNames.map((className) => (
-              <DropdownMenuCheckboxItem
-                key={className}
-                checked={
-                  isEqual(classArtist.id, props.artist ?? undefined) &&
-                  (props.classes?.includes(className) ?? false)
-                }
-                onCheckedChange={(checked) =>
-                  handleChange(classArtist.id, className, checked)
-                }
-              >
-                {className}
-              </DropdownMenuCheckboxItem>
-            ))}
+            {classNames
+              .sort((a, b) => classSort(a, b))
+              .map((className) => (
+                <DropdownMenuCheckboxItem
+                  key={className}
+                  checked={
+                    isEqual(classArtist.id, props.artist ?? undefined) &&
+                    (props.classes?.includes(className) ?? false)
+                  }
+                  onCheckedChange={(checked) =>
+                    handleChange(classArtist.id, className, checked)
+                  }
+                >
+                  {className}
+                </DropdownMenuCheckboxItem>
+              ))}
           </DropdownMenuGroup>
         ))}
       </DropdownMenuContent>
