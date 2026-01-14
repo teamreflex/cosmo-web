@@ -14,7 +14,7 @@
   "deploy": {
     "runtime": "V2",
     "numReplicas": 1,
-    "startCommand": "bun run --bun ./apps/web/main.ts",
+    "startCommand": "bun run --bun --preload ./apps/web/instrument.ts ./apps/web/main.ts",
     "limitOverride": {
       "containers": {
         "cpu": 3,

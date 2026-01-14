@@ -14,7 +14,7 @@ export default defineConfig({
     port: 3000,
   },
   build: {
-    sourcemap: "hidden",
+    sourcemap: process.env.SENTRY_AUTH_TOKEN === undefined ? false : "hidden",
   },
   ssr: {
     external: ["bun"],

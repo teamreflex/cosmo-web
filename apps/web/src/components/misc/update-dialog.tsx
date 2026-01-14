@@ -79,21 +79,19 @@ export default function UpdateDialog() {
 
 const updates = [
   {
-    date: "2026-01-15",
+    date: "2026-01-17",
     changes: [
       "Added: Translations, starting with support for Korean.",
       "Added: Event catalog system - an easy way of viewing past and ongoing objekt drops.",
-      "Added: Scroll to top and objekt band toggle (idntt only) buttons.",
-      "Updated: Linking COSMO accounts no longer requires signing in.",
-      "Updated: The design of the artist/member filter to better accommodate more artists.",
-      "Updated: Other design tweaks and improvements such as a new font and color scheme.",
+      "Added: Objekt band toggle (idntt only) & scroll to top buttons.",
+      "Updated: Linking COSMO accounts no longer requires signing in with QR codes.",
+      "Updated: Artist/member filter has been redesigned.",
+      "Updated: General design tweaks and improvements such as a new font and color scheme.",
       "Updated: Moved the about dialog to the user dropdown, logo now links to the home page.",
-      "Updated: Brought back gravity vote results per user.",
+      "Updated: Gravity top votes & top users have returned.",
       "Fixed: Objekt info popups now drag-to-close correctly on mobile.",
-      "Fixed: Past gravity events now correctly show as completed.",
-      "Fixed: Gravity vote percentage no longer rounds up whole numbers.",
-      "Fixed: Objekt lists now sort correctly.",
-      "Fixed: idntt seasons are now sorted correctly on the progress page.",
+      "Fixed: Gravities now correctly transition between states without needing to refresh the page.",
+      "Other small fixes: Gravity vote percentage no longer rounds up whole numbers, objekt lists now sort correctly, idntt seasons are now sorted correctly on the progress page, classes are now sorted in order of collection number (FCO->SCO->DCO->PCO->MCO).",
     ],
   },
 ];
