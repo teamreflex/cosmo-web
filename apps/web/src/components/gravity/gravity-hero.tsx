@@ -42,8 +42,8 @@ function GravityHeroCard({ gravity, artist }: GravityHeroCardProps) {
       to="/gravity/$artist/$id"
       params={{ artist: gravity.artist, id: gravity.cosmoId.toString() }}
     >
-      <Card className="gap-0 overflow-hidden border border-cosmo p-0 h-36 flex-row mx-auto w-full lg:w-2/3 xl:w-1/2">
-        <CardContent className="flex px-0 w-full">
+      <Card className="mx-auto h-36 w-full flex-row gap-0 overflow-hidden border border-cosmo p-0 lg:w-2/3 xl:w-1/2">
+        <CardContent className="flex w-full px-0">
           {/* Image */}
           <img
             src={gravity.image}
@@ -57,7 +57,7 @@ function GravityHeroCard({ gravity, artist }: GravityHeroCardProps) {
             <h2 className="text-lg font-semibold">{gravity.title}</h2>
 
             {/* Dates */}
-            <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground sm:text-sm">
               <IconCalendarEvent className="size-4" />
               <ClientOnly
                 fallback={<Skeleton className="h-5 w-24 rounded-full" />}
@@ -81,7 +81,7 @@ function GravityHeroCard({ gravity, artist }: GravityHeroCardProps) {
             {/* Badge + Artist */}
             <div className="mt-auto flex items-center gap-3">
               {artist && (
-                <div className="aspect-square shrink-0 flex items-center rounded-full ring-2 ring-accent">
+                <div className="flex aspect-square shrink-0 items-center rounded-full ring-2 ring-accent">
                   <img
                     src={artist.logoImageUrl}
                     alt={artist.title}

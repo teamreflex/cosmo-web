@@ -6,14 +6,14 @@
     "groups": [
       ["builtin", "external"],
       ["internal"],
-      ["parent", "sibling", "index"]
+      ["parent", "sibling", "index"],
     ],
     "internalPattern": ["@/**", "@apollo/**"],
-    "newlinesBetween": false
+    "newlinesBetween": false,
   },
   // https://github.com/oxc-project/oxc/issues/17764
-  // "experimentalTailwindcss": {
-  //   "stylesheet": "./apps/web/src/styles/tailwind.css",
-  //   "functions": ["cn", "clsx"],
-  // }
+  "experimentalTailwindcss": {
+    "stylesheet": "./src/styles/tailwind.css",
+    "functions": ["cn", "clsx"],
+  },
 }

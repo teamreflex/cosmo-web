@@ -93,11 +93,11 @@ function GravityRow({ gravity, artist }: GravityRowProps) {
         </div>
 
         {/* Mobile: Row 3 / Desktop: Column 4 */}
-        <div className="flex items-center gap-4 justify-end">
+        <div className="flex items-center justify-end gap-4">
           <GravityTypeBadge type={gravity.gravityType} />
 
           {artist && (
-            <div className="aspect-square shrink-0 flex items-center rounded-full ring-2 ring-accent">
+            <div className="flex aspect-square shrink-0 items-center rounded-full ring-2 ring-accent">
               <img
                 src={artist.logoImageUrl}
                 alt={artist.title}

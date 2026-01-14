@@ -200,14 +200,14 @@ function ArtistStep({ onContinue }: ArtistStepProps) {
               onClick={() => setSelected(artist.id)}
               style={{ "--artist-color": artistColors[artist.id] }}
               className={cn(
-                "flex items-center gap-3 overflow-hidden rounded-lg ring-3 ring-transparent p-3 transition-all",
+                "flex items-center gap-3 overflow-hidden rounded-lg p-3 ring-3 ring-transparent transition-all",
                 selected === artist.id && "ring-(--artist-color)",
               )}
             >
               <img
                 src={artist.logoImageUrl}
                 alt={artist.title.at(0)}
-                className="size-8 rounded-full aspect-square shrink-0"
+                className="aspect-square size-8 shrink-0 rounded-full"
               />
               <span className="font-medium">{artist.title}</span>
             </button>

@@ -132,7 +132,7 @@ function Row({ user, candidates }: RowProps) {
             ) : (
               <Tooltip>
                 <TooltipTrigger>
-                  <div className="flex items-center justify-center size-8 rounded bg-accent ring ring-secondary">
+                  <div className="flex size-8 items-center justify-center rounded bg-accent ring ring-secondary">
                     <IconQuestionMark className="size-5 text-foreground" />
                   </div>
                 </TooltipTrigger>

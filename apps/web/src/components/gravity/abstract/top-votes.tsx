@@ -51,7 +51,7 @@ function Row(props: RowProps) {
         {candidate !== undefined ? (
           <span className="text-xs">{candidate}</span>
         ) : (
-          <span className="text-xs italic text-muted-foreground">
+          <span className="text-xs text-muted-foreground italic">
             {m.gravity_unrevealed()}
           </span>
         )}

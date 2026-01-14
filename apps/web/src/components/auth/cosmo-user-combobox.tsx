@@ -97,7 +97,7 @@ export default function CosmoUserCombobox({
       </PopoverAnchor>
 
       <PopoverContent
-        className="w-(--radix-popover-trigger-width) p-0 overflow-hidden"
+        className="w-(--radix-popover-trigger-width) overflow-hidden p-0"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         {status === "pending" && debouncedQuery.length > 0 && (

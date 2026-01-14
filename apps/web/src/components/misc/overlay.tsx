@@ -4,7 +4,7 @@ type Props = {
 
 export default function Overlay({ children }: Props) {
   return (
-    <div className="fixed bottom-2 right-[calc(0.5rem+var(--removed-body-scroll-bar-size,0px))] flex flex-col gap-2">
+    <div className="fixed right-[calc(0.5rem+var(--removed-body-scroll-bar-size,0px))] bottom-2 flex flex-col gap-2">
       {children}
     </div>
   );
