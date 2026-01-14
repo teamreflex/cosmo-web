@@ -43,7 +43,7 @@
 - jumpup: jumpup_ent
 - dmm: dearmymuse_foru
 - flnk/bstage: bstageplus
-- mmt: _mmtshop
+- mmt: \_mmtshop
 - everline: everlineshop
 - kmonstar: kmonstar_global
 - hellolive: hellolivetv
@@ -94,6 +94,7 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA drizzle GRANT ALL ON TABLES TO postgres;
 - [ ] dump planetscale eras,events,collection_data tables
 - [ ] dump prod neon db
 - [ ] restore neon db to planetscale
+- [ ] run migrations against restored database
 - [ ] restore eras,events,collection_data tables to planetscale
 - [x] switch search.apollo.cafe to railway typesense service
 - [x] update typesense settings in railway:

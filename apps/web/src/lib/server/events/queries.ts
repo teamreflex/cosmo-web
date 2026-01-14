@@ -78,16 +78,12 @@ export const $fetchPaginatedEvents = createServerFn({ method: "GET" })
   )
   .handler(async ({ data }) => {
     const PER_PAGE_EVENTS = 24;
-    const now = new Date();
-
     const whereClause: Record<string, unknown> = {};
     if (data.artists?.length) {
       whereClause.artist = { in: data.artists };
     }
     if (data.cursor) {
       whereClause.startDate = { lt: data.cursor };
-    } else {
-      whereClause.startDate = { lte: now };
     }
 
     const allEvents = await db.query.events.findMany({
