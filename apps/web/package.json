@@ -9,7 +9,7 @@
     "build": "bun run env -- bun run --bun vite build",
     "build:prod": "bun run --bun i18n && bun run --bun typecheck && bun run --bun vite build --mode production",
     "preview": "bun run build && bun run env -- bun run start",
-    "start": "bun run --bun main.ts",
+    "start": "bun run --bun --preload ./instrument.ts main.ts",
     "test": "bun test",
     "lint": "oxlint --type-aware",
     "lint:fix": "oxlint --type-aware --fix",
@@ -76,6 +76,7 @@
   "devDependencies": {
     "@apollo/typescript": "workspace:*",
     "@inlang/paraglide-js": "2.8.0",
+    "@sentry/vite-plugin": "^4.6.1",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/devtools-vite": "^0.4.1",
     "@tanstack/eslint-plugin-query": "^5.91.2",

@@ -39,6 +39,10 @@ export const env = createEnv({
     R2_ACCESS_KEY: z.string().min(1),
     R2_SECRET_KEY: z.string().min(1),
     R2_DOMAIN: z.string().min(1),
+    // sentry
+    SENTRY_AUTH_TOKEN: z.string().min(1).optional(),
+    SENTRY_ORG: z.string().min(1).optional(),
+    SENTRY_PROJECT: z.string().min(1).optional(),
   },
   runtimeEnv: {
     DATABASE_URL: process.env.DATABASE_URL,
@@ -65,6 +69,9 @@ export const env = createEnv({
     R2_ACCESS_KEY: process.env.R2_ACCESS_KEY,
     R2_SECRET_KEY: process.env.R2_SECRET_KEY,
     R2_DOMAIN: process.env.R2_DOMAIN,
+    SENTRY_AUTH_TOKEN: process.env.SENTRY_AUTH_TOKEN,
+    SENTRY_ORG: process.env.SENTRY_ORG,
+    SENTRY_PROJECT: process.env.SENTRY_PROJECT,
   },
   emptyStringAsUndefined: true,
 });

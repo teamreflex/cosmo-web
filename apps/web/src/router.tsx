@@ -27,11 +27,12 @@ export function getRouter() {
     },
   });
 
-  if (!router.isServer) {
+  if (!router.isServer && env.VITE_SENTRY_DSN !== undefined) {
     Sentry.init({
       dsn: env.VITE_SENTRY_DSN,
-      sendDefaultPii: true,
-      integrations: [],
+      sendDefaultPii: false,
+      debug: false,
+      tracesSampleRate: 0,
     });
   }
 
