@@ -158,27 +158,44 @@ export function seasonSort(a: string, b: string) {
 }
 
 /**
- * Sort classes by their collection number.
+ * Sort classes by their collection number, per-artist.
+ * Welcome is sorted first and Zero last for the sake of consistency.
  */
-const classConfig = {
-  Welcome: 1, // 100 (idntt: 200)
-  Basic: 2, // 100
-  First: 2, // 100
-  Event: 2.5, // 200
-  Special: 3, // 200 (idntt: 300)
-  Double: 4, // 300
-  Unit: 4, // idntt: 400
-  Premier: 5, // 400
-  Motion: 6, // 500
-  Zero: 7, // 000
-} as const;
+const classConfigs: Record<ValidArtist, Record<string, number>> = {
+  tripleS: {
+    Welcome: 1, // 100
+    First: 2, // 100
+    Special: 3, // 200
+    Double: 4, // 300
+    Premier: 5, // 400
+    Motion: 6, // 500
+    Unit: 7, // 600
+    Zero: 8, // 000
+  },
+  artms: {
+    Welcome: 1, // 100
+    First: 2, // 100
+    Special: 3, // 200
+    Double: 4, // 300
+    Premier: 5, // 400
+    Motion: 6, // 500
+  },
+  idntt: {
+    Welcome: 1, // 200
+    Basic: 2, // 100
+    Event: 3, // 200
+    Special: 3, // 300
+    Unit: 4, // 400
+    Motion: 5, // 500
+  },
+};
 
 /**
- * Sort classes by their order in the class config.
+ * Sort classes by their order in the per-artist class config.
  */
-export function classSort(a: string, b: string) {
-  const aMatch = classConfig[a as keyof typeof classConfig];
-  const bMatch = classConfig[b as keyof typeof classConfig];
-  if (!aMatch || !bMatch) return 0;
-  return aMatch - bMatch;
+export function classSort(a: string, b: string, artist: ValidArtist) {
+  const aOrder = classConfigs[artist][a];
+  const bOrder = classConfigs[artist][b];
+  if (aOrder === undefined || bOrder === undefined) return 0;
+  return aOrder - bOrder;
 }

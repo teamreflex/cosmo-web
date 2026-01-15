@@ -1,4 +1,5 @@
 import { artistsQuery, selectedArtistsQuery } from "@/lib/queries/core";
+import type { ValidArtist } from "@apollo/cosmo/types/common";
 import { useSuspenseQueries } from "@tanstack/react-query";
 
 /**
@@ -30,6 +31,19 @@ export function useArtists() {
   }
 
   /**
+   * Get the artist ID for a member name
+   */
+  function getArtistForMember(memberName: string): ValidArtist | undefined {
+    const lower = memberName.toLowerCase();
+    for (const artist of Object.values(artists)) {
+      if (artist.artistMembers.some((m) => m.name.toLowerCase() === lower)) {
+        return artist.id as ValidArtist;
+      }
+    }
+    return undefined;
+  }
+
+  /**
    * Get artists in array form.
    */
   const artistList = Object.values(artists);
@@ -46,6 +60,7 @@ export function useArtists() {
     artists,
     artistList,
     getArtist,
+    getArtistForMember,
     getMember,
     selected,
     selectedIds,

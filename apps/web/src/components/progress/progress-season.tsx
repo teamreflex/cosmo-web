@@ -1,15 +1,17 @@
 import type { SeasonProgress } from "@/lib/universal/progress";
 import { classSort } from "@/lib/utils";
+import type { ValidArtist } from "@apollo/cosmo/types/common";
 import { useState } from "react";
 import ProgressClass from "./progress-class";
 import ProgressObjektGrid from "./progress-objekt-grid";
 
 type Props = {
+  artist: ValidArtist;
   season: string;
   classes: SeasonProgress[];
 };
 
-export default function ProgressSeason({ season, classes }: Props) {
+export default function ProgressSeason({ artist, season, classes }: Props) {
   const [selectedClass, setSelectedClass] = useState<SeasonProgress>();
 
   const total = classes.reduce((acc, progress) => acc + progress.total, 0);
@@ -45,7 +47,7 @@ export default function ProgressSeason({ season, classes }: Props) {
         className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-[repeat(var(--class-count),_minmax(0,_1fr))]"
       >
         {classes
-          .sort((a, b) => classSort(a.class, b.class))
+          .sort((a, b) => classSort(a.class, b.class, artist))
           .map((p) => (
             <ProgressClass
               key={p.key}

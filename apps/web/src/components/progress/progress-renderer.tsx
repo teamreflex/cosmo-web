@@ -1,3 +1,4 @@
+import { useArtists } from "@/hooks/use-artists";
 import { useProgressFilters } from "@/hooks/use-progress-filters";
 import { m } from "@/i18n/messages";
 import type { ValidArtist } from "@apollo/cosmo/types/common";
@@ -17,6 +18,11 @@ type Props = PropsWithChildren<{
 
 export default function ProgressRenderer(props: Props) {
   const { filters, setFilters, setFilter } = useProgressFilters();
+  const { getArtistForMember } = useArtists();
+
+  const memberArtist = filters.member
+    ? getArtistForMember(filters.member)
+    : undefined;
 
   const setActiveMember = useCallback(
     (member: string) => {
@@ -62,9 +68,10 @@ export default function ProgressRenderer(props: Props) {
               </div>
             )}
           >
-            {filters.member ? (
+            {filters.member && memberArtist ? (
               <Suspense fallback={<ProgressTableSkeleton />}>
                 <ProgressTable
+                  artist={memberArtist}
                   address={props.address}
                   member={filters.member}
                   onlineType={filters.filter ?? undefined}

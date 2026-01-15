@@ -3,7 +3,7 @@ import { filterDataQuery } from "@/lib/queries/core";
 import { progressBreakdownQuery } from "@/lib/queries/progress";
 import type { SeasonProgress } from "@/lib/universal/progress";
 import { seasonSort } from "@/lib/utils";
-import type { ValidOnlineType } from "@apollo/cosmo/types/common";
+import type { ValidArtist, ValidOnlineType } from "@apollo/cosmo/types/common";
 import { useSuspenseQueries } from "@tanstack/react-query";
 import {
   Select,
@@ -16,6 +16,7 @@ import ProgressLeaderboard from "./progress-leaderboard";
 import ProgressSeason from "./progress-season";
 
 type Props = {
+  artist: ValidArtist;
   address: string;
   member: string;
   onlineType: ValidOnlineType | undefined;
@@ -111,6 +112,7 @@ export default function ProgressTable(props: Props) {
             .map(([season, classes]) => (
               <ProgressSeason
                 key={`${key}:${season}`}
+                artist={props.artist}
                 season={season}
                 classes={classes}
               />

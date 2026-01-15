@@ -74,7 +74,7 @@ export default function ClassFilter(props: Props) {
               {classArtist.title}
             </DropdownMenuLabel>
             {classNames
-              .sort((a, b) => classSort(a, b))
+              .sort((a, b) => classSort(a, b, classArtist.id))
               .map((className) => (
                 <DropdownMenuCheckboxItem
                   key={className}
