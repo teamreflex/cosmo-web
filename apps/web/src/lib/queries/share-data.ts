@@ -21,7 +21,7 @@ export const $scrapeCollectionMedia = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     // safety check: if no collections need to be updated, return early
     const missing = await $fetchScrapeCandidates();
-    if (missing.length === 0) {
+    if (missing.size === 0) {
       return { updated: 0 };
     }
 
@@ -45,7 +45,7 @@ export const $scrapeCollectionMedia = createServerFn({ method: "POST" })
       throw new Error("Error getting session");
     }
 
-    // fetch collections from COSMO API
+    // create search queries
     const queries: {
       artistId: ValidArtist;
       class: string;
@@ -66,21 +66,32 @@ export const $scrapeCollectionMedia = createServerFn({ method: "POST" })
 
     const candidates: UpdateCandidate[] = [];
 
-    for (const query of queries) {
-      const summaries = await fetchObjektSummaries({
-        session,
-        artistId: query.artistId,
-        className: query.class,
-      });
+    // fetch objekt summaries in parallel
+    const summaries = await Promise.allSettled(
+      queries.map(async (query) => {
+        const result = await fetchObjektSummaries({
+          session,
+          artistId: query.artistId,
+          className: query.class,
+        });
 
-      for (const item of summaries) {
-        const value = item.collection[query.prop];
-        if (value) {
+        return { query, summaries: result };
+      }),
+    );
+
+    for (const result of summaries) {
+      if (result.status === "rejected") continue;
+
+      for (const item of result.value.summaries) {
+        const value = item.collection[result.value.query.prop];
+
+        // only operate on items that are missing and have a value
+        if (value && missing.has(item.collection.collectionId)) {
           candidates.push({
             slug: slugifyObjekt(item.collection.collectionId),
             artistName: item.collection.artistName.toLowerCase(),
             value,
-            prop: query.prop,
+            prop: result.value.query.prop,
           });
         }
       }
@@ -90,30 +101,9 @@ export const $scrapeCollectionMedia = createServerFn({ method: "POST" })
       return { updated: 0 };
     }
 
-    // fetch existing collections to filter out ones that already have data
-    const slugs = candidates.map((c) => c.slug);
-    const existing = await indexer
-      .select({
-        slug: collections.slug,
-        frontMedia: collections.frontMedia,
-        bandImageUrl: collections.bandImageUrl,
-      })
-      .from(collections)
-      .where(inArray(collections.slug, slugs));
-
-    const existingMap = new Map(existing.map((c) => [c.slug, c]));
-
-    // filter to only collections that need updating
-    const toUpdate = candidates.filter((c) => {
-      const existing = existingMap.get(c.slug);
-      if (!existing) return false;
-      return !existing[c.prop];
-    });
-
     // process and upload media
     let updated = 0;
-
-    for (const candidate of toUpdate) {
+    for (const candidate of candidates) {
       let value = candidate.value;
 
       if (candidate.prop === "frontMedia") {
@@ -157,12 +147,12 @@ export const $fetchScrapeCandidates = createServerFn({
           inArray(collections.class, ["Special", "Unit"]),
           isNull(collections.bandImageUrl),
         ),
-        // tripleS and artms motion videos
+        // motion videos
         and(eq(collections.class, "Motion"), isNull(collections.frontMedia)),
       ),
     );
 
-  return result.map((c) => c.collectionId);
+  return new Set(result.map((c) => c.collectionId));
 });
 
 export const scrapeCandidatesQuery = queryOptions({

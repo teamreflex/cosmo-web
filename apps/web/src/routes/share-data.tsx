@@ -37,7 +37,7 @@ function RouteComponent() {
   const { collections } = Route.useLoaderData();
   const [state, setState] = useState<State>({ step: "info" });
 
-  if (collections.length === 0) {
+  if (collections.size === 0) {
     return (
       <div className="container flex max-w-sm flex-col gap-2 py-2">
         <Card>
