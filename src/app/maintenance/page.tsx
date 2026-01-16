@@ -6,7 +6,7 @@ export default function MaintenancePage() {
       <LogoSVG className="w-24 h-24" />
       <h1 className="text-3xl font-cosmo uppercase">Maintenance</h1>
       <div className="text-sm font-semibold text-muted-foreground">
-        <p>We should be back by 6am KST (Jan. 17)</p>
+        <p>We should be back by 7am KST (Jan. 17)</p>
       </div>
     </main>
   );
