@@ -63,6 +63,12 @@ turbo dev --filter web
 - [Subsquid](https://subsquid.io/)
 - [Typesense](https://typesense.org/)
 
+## Versions
+
+The `polygon` branch contains the April 18th 2025 version that worked with the old COSMO API and Polygon blockchain, before the app was migrated away. It will not work anymore.
+
+The `abstract-nextjs` branch contains the January 17th 2025 version which is the last copy running on Nextjs.
+
 ## License
 
 Licensed under the [MIT license](https://github.com/teamreflex/cosmo-web/blob/refactor/abstract/LICENSE.md).
