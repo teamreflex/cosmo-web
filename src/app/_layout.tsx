@@ -1,10 +1,16 @@
 import "../styles/tailwind.css";
+import Navbar from "@/components/navbar/navbar";
+import ClientProviders from "@/components/client-providers";
 import type { Metadata } from "next";
 import { env } from "@/env";
 import { Inter } from "next/font/google";
 import localFont from "next/font/local";
 import { ThemeProvider } from "next-themes";
+import TailwindIndicator from "@/components/tailwind-indicator";
+import Script from "next/script";
 import type { ReactNode } from "react";
+import { Toaster } from "@/components/ui/sonner";
+import { preconnect } from "react-dom";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -50,17 +56,40 @@ export default async function RootLayout({
 }: {
   children: ReactNode;
 }) {
+  preconnect(new URL(env.NEXT_PUBLIC_SENTRY_DSN).origin);
+  preconnect("https://imagedelivery.net");
+  preconnect("https://resources.cosmo.fans");
+  preconnect("https://static.cosmo.fans");
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${inter.variable} ${cosmo.variable} font-inter antialiased bg-background text-foreground overflow-y-scroll`}
       >
         <ThemeProvider attribute="class" defaultTheme="dark">
-          <div className="relative flex min-h-dvh flex-col">
-            <div className="flex min-w-full flex-col text-foreground">
-              {children}
+          <ClientProviders>
+            <div className="relative flex min-h-dvh flex-col">
+              <Navbar />
+
+              {/* content */}
+              <div className="flex min-w-full flex-col text-foreground">
+                {children}
+              </div>
             </div>
-          </div>
+          </ClientProviders>
+
+          <Toaster />
+          <TailwindIndicator />
+
+          {/* umami analytics */}
+          {env.NEXT_PUBLIC_UMAMI_ID !== "dev" && (
+            <Script
+              strategy="afterInteractive"
+              async
+              src={env.NEXT_PUBLIC_UMAMI_SCRIPT_URL}
+              data-website-id={env.NEXT_PUBLIC_UMAMI_ID}
+            />
+          )}
         </ThemeProvider>
       </body>
     </html>
