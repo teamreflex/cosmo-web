@@ -3,6 +3,7 @@ import { cacheHeaders } from "@/lib/server/cache";
 import { fetchKnownAddresses } from "@/lib/server/cosmo-accounts";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
+import { addr } from "@apollo/util";
 import { createFileRoute } from "@tanstack/react-router";
 import { addMinutes, isPast, startOfHour } from "date-fns";
 
@@ -80,24 +81,24 @@ export const Route = createFileRoute("/api/gravity/$pollId/aggregated")({
         // collect unique addresses from top votes and top users
         const addresses = new Set<string>();
         for (const vote of topVotes) {
-          addresses.add(vote.voter);
+          addresses.add(addr(vote.voter));
         }
         for (const user of topUsers) {
-          addresses.add(user.address);
+          addresses.add(addr(user.address));
         }
 
         // fetch usernames for those addresses only
-        const addressMap = await fetchKnownAddresses([...addresses]);
+        const addressMap = await fetchKnownAddresses(Array.from(addresses));
 
         // map usernames onto results
         const topVotesWithUsernames = topVotes.map((vote) => ({
           ...vote,
-          username: addressMap.get(vote.voter.toLowerCase())?.username,
+          username: addressMap.get(addr(vote.voter))?.username,
         }));
 
         const topUsersWithUsernames = topUsers.map((user) => ({
           ...user,
-          nickname: addressMap.get(user.address.toLowerCase())?.username,
+          nickname: addressMap.get(addr(user.address))?.username,
         }));
 
         const result = {

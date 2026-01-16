@@ -45,9 +45,9 @@ function Row(props: RowProps) {
   const nickname = props.vote.username ?? props.vote.voter.substring(0, 8);
 
   return (
-    <div className="flex h-12 w-full items-center rounded-lg bg-secondary/70 px-4 transition-all hover:bg-secondary">
+    <div className="flex h-12 w-full items-center rounded-lg gap-4 bg-secondary/70 px-4 transition-all hover:bg-secondary">
       <div className="flex flex-col">
-        <span className="text-sm font-semibold">{nickname}</span>
+        <span className="text-sm font-semibold truncate">{nickname}</span>
         {candidate !== undefined ? (
           <span className="text-xs">{candidate}</span>
         ) : (

@@ -1,7 +1,7 @@
 import { fetchByNickname } from "@apollo/cosmo/server/user";
 import { cosmoAccounts } from "@apollo/database/web/schema";
 import type { CosmoAccount } from "@apollo/database/web/types";
-import { isAddress } from "@apollo/util";
+import { addr, isAddress } from "@apollo/util";
 import { createServerOnlyFn } from "@tanstack/react-start";
 import { sql } from "drizzle-orm";
 import { FetchError } from "ofetch";
@@ -173,7 +173,7 @@ export const fetchKnownAddresses = createServerOnlyFn(
     });
 
     // convert to Map for O(1) lookups
-    return new Map(results.map((a) => [a.address.toLowerCase(), a]));
+    return new Map(results.map((a) => [addr(a.address), a]));
   },
 );
 
