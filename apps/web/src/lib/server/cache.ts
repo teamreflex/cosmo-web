@@ -6,6 +6,7 @@ export const redis = new RedisClient(env.REDIS_URL);
 
 /**
  * Get an item from the cache, or store the default value.
+ * TTL is in seconds.
  */
 export const remember = createServerOnlyFn(
   async <T>(

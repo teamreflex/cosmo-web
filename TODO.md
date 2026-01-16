@@ -35,7 +35,6 @@
   - [x] event: make header better
   - [x] era: add custom image for non-album eras
 - [x] fix scuffed admin panel layout
-- [ ] include Unit classes in per-member progress. may require extra parsing
 
 - triples: triplescosmos
 - triples japan: tripleS_JAPAN

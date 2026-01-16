@@ -5,7 +5,6 @@ import { validOnlineTypes } from "@apollo/cosmo/types/common";
 import type { ValidOnlineType } from "@apollo/cosmo/types/common";
 import { Addresses } from "@apollo/util";
 import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
-import { setResponseHeader } from "@tanstack/react-start/server";
 import { and, count, desc, eq, not, notInArray, sql } from "drizzle-orm";
 import * as z from "zod";
 import type {
@@ -16,7 +15,7 @@ import type {
   SeasonProgress,
 } from "../universal/progress";
 import { unobtainables } from "../unobtainables";
-import { cacheHeaders } from "./cache";
+import { remember } from "./cache";
 import { fetchKnownAddresses } from "./cosmo-accounts";
 
 /**
@@ -31,11 +30,6 @@ export const $fetchProgressBreakdown = createServerFn({ method: "GET" })
     }),
   )
   .handler(async ({ data }) => {
-    setResponseHeader(
-      "Cache-Control",
-      cacheHeaders({ cdn: 60 * 60 })["Cache-Control"],
-    );
-
     const [totals, progress] = await Promise.all([
       fetchTotal({ member: data.member }),
       fetchProgress(data.address.toLowerCase(), data.member),
@@ -73,51 +67,46 @@ export const $fetchProgressLeaderboard = createServerFn({ method: "GET" })
     }),
   )
   .handler(async ({ data }) => {
-    setResponseHeader(
-      "Cache-Control",
-      cacheHeaders({ cdn: 60 * 60 })["Cache-Control"],
-    );
+    const key = [data.member, data.onlineType, data.season]
+      .filter(Boolean)
+      .join("-");
 
-    const [totals, leaderboard] = await Promise.all([
-      fetchTotal(data),
-      fetchLeaderboard(data),
-    ]);
+    return await remember(`leaderboard:${key}`, 60 * 60, async () => {
+      const [totals, leaderboard] = await Promise.all([
+        fetchTotal(data),
+        fetchLeaderboard(data),
+      ]);
 
-    // fetch profiles for each address
-    const addressMap = await fetchKnownAddresses(
-      leaderboard.map((a) => a.owner),
-    );
+      // fetch profiles for each address
+      const addressMap = await fetchKnownAddresses(
+        leaderboard.map((a) => a.owner),
+      );
 
-    // map the nickname onto the results
-    const results = leaderboard.map((row) => {
-      const known = addressMap.get(row.owner.toLowerCase());
+      // map the nickname onto the results
+      const results = leaderboard.map((row) => {
+        const known = addressMap.get(row.owner.toLowerCase());
+
+        return {
+          count: row.count,
+          nickname: known?.username ?? row.owner.substring(0, 8),
+          address: row.owner,
+          isAddress: known === undefined,
+        };
+      }) satisfies LeaderboardItem[];
 
       return {
-        count: row.count,
-        nickname: known?.username ?? row.owner.substring(0, 8),
-        address: row.owner,
-        isAddress: known === undefined,
+        total: totals.filter((c) => !unobtainables.includes(c.slug)).length,
+        leaderboard: results,
       };
-    }) satisfies LeaderboardItem[];
-
-    return {
-      total: totals.filter((c) => !unobtainables.includes(c.slug)).length,
-      leaderboard: results,
-    };
+    });
   });
 
 /**
  * Get objekts stats grouped by artist for a given address
- * Cached for 1 hour.
  */
 export const $fetchArtistStatsByAddress = createServerFn({ method: "GET" })
   .inputValidator(z.object({ address: z.string() }))
   .handler(async ({ data }) => {
-    setResponseHeader(
-      "Cache-Control",
-      cacheHeaders({ cdn: 60 * 60 })["Cache-Control"],
-    );
-
     const stats = await indexer
       .select({
         season: collections.season,
@@ -344,118 +333,56 @@ type FetchLeaderboard = {
 };
 
 const LEADERBOARD_COUNT = 25;
-const TOP_CANDIDATES = LEADERBOARD_COUNT + 10; // +10 to account for ties
 
 /**
  * Fetch top 25 for the given member.
+ * TODO: refactor into view?
  */
 export const fetchLeaderboard = createServerOnlyFn(
   async ({ member, onlineType, season }: FetchLeaderboard) => {
-    // 1. fetch filtered collection IDs
-    const filteredCollections = await indexer
-      .select({ id: collections.id })
-      .from(collections)
-      .where(
-        and(
-          eq(collections.member, member),
-          notInArray(collections.class, ["Welcome", "Zero"]),
-          notInArray(collections.slug, unobtainables),
-          ...(onlineType !== null
-            ? [eq(collections.onOffline, onlineType)]
-            : []),
-          ...(season !== null ? [eq(collections.season, season)] : []),
-        ),
-      );
-
-    const collectionIds = filteredCollections.map((c) => c.id);
-    if (collectionIds.length === 0) return [];
-
-    // 2. fetch distinct owners per collection
-    const ownersPerCollection = await indexer
-      .select({
-        collectionId: objekts.collectionId,
-        owners: sql<string[]>`array_agg(distinct ${objekts.owner})`,
-      })
-      .from(objekts)
-      .where(
-        and(
-          sql`${objekts.collectionId} IN (${sql.join(
-            collectionIds.map((id) => sql`${id}`),
-            sql`, `,
-          )})`,
-          not(eq(objekts.owner, Addresses.SPIN)),
-        ),
-      )
-      .groupBy(objekts.collectionId);
-
-    // 3. aggregate in js - count collections per owner
-    const ownerCounts = new Map<string, number>();
-    for (const row of ownersPerCollection) {
-      for (const owner of row.owners) {
-        ownerCounts.set(owner, (ownerCounts.get(owner) ?? 0) + 1);
-      }
-    }
-
-    // 4. get top candidates
-    const candidates = [...ownerCounts.entries()]
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, TOP_CANDIDATES);
-
-    // 5. find which counts have ties
-    const countFrequency = new Map<number, string[]>();
-    for (const [owner, cnt] of candidates) {
-      const list = countFrequency.get(cnt) ?? [];
-      list.push(owner);
-      countFrequency.set(cnt, list);
-    }
-
-    // only query addresses that are tied
-    const tiedAddresses = [...countFrequency.values()]
-      .filter((list) => list.length > 1)
-      .flat();
-
-    let totalObjektsMap = new Map<string, number>();
-
-    // 6. get total objekts for tied addresses only (for tie-breaking)
-    if (tiedAddresses.length > 0) {
-      const totalObjektsQuery = await indexer
-        .select({
-          owner: objekts.owner,
-          total: count().as("total"),
-        })
-        .from(objekts)
+    // CTE 1: filter collections
+    const filteredCollections = indexer.$with("filtered_collections").as(
+      indexer
+        .select({ id: collections.id })
+        .from(collections)
         .where(
           and(
-            sql`${objekts.owner} IN (${sql.join(
-              tiedAddresses.map((a) => sql`${a}`),
-              sql`, `,
-            )})`,
-            sql`${objekts.collectionId} IN (${sql.join(
-              collectionIds.map((id) => sql`${id}`),
-              sql`, `,
-            )})`,
+            eq(collections.member, member),
+            notInArray(collections.class, ["Welcome", "Zero"]),
+            notInArray(collections.slug, unobtainables),
+            ...(onlineType !== null
+              ? [eq(collections.onOffline, onlineType)]
+              : []),
+            ...(season !== null ? [eq(collections.season, season)] : []),
           ),
+        ),
+    );
+
+    // CTE 2: deduplicate (owner, collectionId) pairs
+    const ownedCollections = indexer.$with("owned_collections").as(
+      indexer
+        .selectDistinct({
+          owner: objekts.owner,
+          collectionId: objekts.collectionId,
+        })
+        .from(objekts)
+        .innerJoin(
+          filteredCollections,
+          eq(objekts.collectionId, filteredCollections.id),
         )
-        .groupBy(objekts.owner);
+        .where(not(eq(objekts.owner, Addresses.SPIN))),
+    );
 
-      totalObjektsMap = new Map(
-        totalObjektsQuery.map((r) => [r.owner, r.total]),
-      );
-    }
-
-    // 7. sort with tie-breaking by total objekts
-    return candidates
-      .map(([owner, distinctCount]) => ({
-        owner,
-        count: distinctCount,
-      }))
-      .sort((a, b) => {
-        if (b.count !== a.count) return b.count - a.count;
-        // break ties by total objekt count
-        const aTotal = totalObjektsMap.get(a.owner) ?? 0;
-        const bTotal = totalObjektsMap.get(b.owner) ?? 0;
-        return bTotal - aTotal;
+    // Final: count per owner
+    return await indexer
+      .with(filteredCollections, ownedCollections)
+      .select({
+        owner: ownedCollections.owner,
+        count: count().as("count"),
       })
-      .slice(0, LEADERBOARD_COUNT);
+      .from(ownedCollections)
+      .groupBy(ownedCollections.owner)
+      .orderBy(sql`count desc`)
+      .limit(LEADERBOARD_COUNT);
   },
 );
