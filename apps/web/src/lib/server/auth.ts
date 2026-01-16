@@ -253,15 +253,6 @@ export const auth = betterAuth({
     defaultCookieAttributes: {
       sameSite: "strict",
     },
-    // https://github.com/better-auth/better-auth/issues/5243#issuecomment-3393837130
-    cookies: {
-      state: {
-        attributes: {
-          sameSite: "none",
-          secure: true,
-        },
-      },
-    },
   },
   user: {
     changeEmail: {

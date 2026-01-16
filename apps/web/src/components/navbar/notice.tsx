@@ -1,5 +1,6 @@
 import { IconAlertTriangle } from "@tabler/icons-react";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { Separator } from "../ui/separator";
 
 export default function Notice() {
   return (
@@ -17,6 +18,13 @@ export default function Notice() {
         <p>
           Event data for tripleS Binary01 and Cream01 are currently missing and
           will be added soon.
+        </p>
+
+        <Separator orientation="horizontal" />
+
+        <p>
+          Discord & Twitter sign-in are currently having issues and may not
+          work.
         </p>
       </PopoverContent>
     </Popover>
