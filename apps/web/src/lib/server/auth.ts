@@ -223,6 +223,7 @@ export const auth = betterAuth({
       enabled: true,
       clientId: serverEnv.env.DISCORD_CLIENT_ID,
       clientSecret: serverEnv.env.DISCORD_CLIENT_SECRET,
+      redirectURI: `${baseUrl()}/api/auth/callback/discord`,
       overrideUserInfoOnSignIn: true,
       mapProfileToUser: (profile) => {
         return {
@@ -234,6 +235,7 @@ export const auth = betterAuth({
       enabled: true,
       clientId: serverEnv.env.TWITTER_CLIENT_ID,
       clientSecret: serverEnv.env.TWITTER_CLIENT_SECRET,
+      redirectURI: `${baseUrl()}/api/auth/callback/twitter`,
       overrideUserInfoOnSignIn: true,
       mapProfileToUser: (profile) => {
         return {

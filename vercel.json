@@ -3,8 +3,7 @@
   "regions": ["sfo1"],
   "git": {
     "deploymentEnabled": {
-      "refactor/tanstack-start": false,
-      "refactor/tanstack-start-railway": false
+      "main": false
     }
   }
 }
