@@ -1,12 +1,13 @@
+import type { AnyRouteMatch } from "@tanstack/react-router";
 import type {
   DetailedHTMLProps,
   MetaHTMLAttributes,
   ScriptHTMLAttributes,
   StyleHTMLAttributes,
 } from "react";
-// https://paperclover.net/blog/webdev/one-year-next-app-router
 import { env } from "./env/client";
 
+// https://paperclover.net/blog/webdev/one-year-next-app-router
 const base = `https://${env.VITE_BASE_URL}`;
 const titleTemplate = (title: string) =>
   [title, env.VITE_APP_NAME].filter(Boolean).join(" · ");
@@ -41,6 +42,8 @@ export interface Meta {
    * These are not rendered with React but simply parsed as objects.
    */
   extra?: React.ReactElement[];
+  /** Adds `<link rel="..." href="..." />` */
+  links?: AnyRouteMatch["links"];
 
   /** Adds `<meta name="author" content="{...}" />` */
   authors?: string[];
@@ -220,7 +223,7 @@ export function defineHead(meta: Meta) {
     metaTags.push({ name: "viewport", content: meta.viewport });
   }
 
-  const links: { rel: string; href: string }[] = [];
+  const links = meta.links ?? [];
   if (canonical) {
     links.push({ rel: "canonical", href: canonical });
   }

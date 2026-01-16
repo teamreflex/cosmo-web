@@ -43,8 +43,8 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
   errorComponent: ErrorComponent,
-  head: () => {
-    const head = defineHead({
+  head: () =>
+    defineHead({
       extra: [<meta key="charset" charSet="utf-8" />],
       viewport: "width=device-width, initial-scale=1",
       title: env.VITE_APP_NAME,
@@ -74,9 +74,6 @@ export const Route = createRootRouteWithContext<RouterContext>()({
         light: "#ffffff",
         dark: "#09090b",
       },
-    });
-
-    const core = {
       links: [
         {
           rel: "preload",
@@ -109,29 +106,30 @@ export const Route = createRootRouteWithContext<RouterContext>()({
         { rel: "manifest", href: "/site.webmanifest", color: "#09090b" },
         { rel: "icon", href: "/favicon.ico" },
       ],
-      scripts:
-        // umami analytics
-        env.VITE_UMAMI_ID && env.VITE_UMAMI_SCRIPT_URL
-          ? [
-              {
-                src: env.VITE_UMAMI_SCRIPT_URL,
-                async: true,
-                "data-website-id": env.VITE_UMAMI_ID,
-              },
-            ]
-          : [],
-    };
+    }),
+  scripts: () => {
+    const scripts = [];
 
-    return {
-      ...head,
-      links: [...core.links, ...head.links],
-      scripts: [...core.scripts, ...head.scripts],
-    };
+    // umami analytics
+    if (env.VITE_UMAMI_ID && env.VITE_UMAMI_SCRIPT_URL) {
+      scripts.push({
+        src: env.VITE_UMAMI_SCRIPT_URL,
+        defer: true,
+        "data-website-id": env.VITE_UMAMI_ID,
+      });
+    }
+
+    return scripts;
   },
 });
 
 function RootComponent() {
-  return <Outlet />;
+  return (
+    <>
+      <Outlet />
+      <Scripts />
+    </>
+  );
 }
 
 function ShellComponent({ children }: { children: React.ReactNode }) {
@@ -164,7 +162,6 @@ function ShellComponent({ children }: { children: React.ReactNode }) {
         </ThemeProvider>
 
         <Devtools />
-        <Scripts />
       </body>
     </html>
   );
