@@ -1,0 +1,23 @@
+{
+  "name": "@apollo/util",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "lint": "oxlint --type-aware",
+    "lint:fix": "oxlint --type-aware --fix",
+    "typecheck": "tsc --pretty --noEmit",
+    "format": "oxfmt ."
+  },
+  "devDependencies": {
+    "@apollo/typescript": "workspace:*",
+    "turbo": "^2.7.4",
+    "typescript": "5.9.3"
+  }
+}

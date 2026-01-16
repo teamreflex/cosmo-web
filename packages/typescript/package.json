@@ -1,0 +1,14 @@
+{
+  "name": "@apollo/typescript",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    "./tsconfig.base.json": "./tsconfig.base.json",
+    "./tsconfig.bun.json": "./tsconfig.bun.json",
+    "./tsconfig.node.json": "./tsconfig.node.json"
+  }
+}

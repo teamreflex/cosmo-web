@@ -8,18 +8,12 @@
 # testing
 /coverage
 
-# next.js
-/.next/
-/out/
-
-# production
-/build
-/dist
-
 # misc
 .DS_Store
 *.pem
 .vscode
+!.vscode/settings.json
+!.vscode/extensions.json
 
 # debug
 npm-debug.log*
@@ -27,18 +21,12 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
-.env*
+.env.*
 .env
-
-# vercel
-.vercel
+!.env.example
 
 # typescript
 *.tsbuildinfo
-next-env.d.ts
 
-# Sentry Config File
-.sentryclirc
-
-# Sentry Config File
-.env.sentry-build-plugin
+# Turborepo
+.turbo

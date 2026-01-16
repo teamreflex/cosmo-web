@@ -1,0 +1,37 @@
+{
+  "extends": ["../../packages/lint/oxlint.json"],
+  "jsPlugins": [
+    "eslint-plugin-drizzle",
+    "@tanstack/eslint-plugin-query",
+    "@tanstack/eslint-plugin-router",
+    "eslint-plugin-react-google-translate"
+  ],
+  "ignorePatterns": [
+    "node_modules",
+    ".turbo",
+    ".output",
+    "dist",
+    ".nitro",
+    ".tanstack",
+    ".vercel",
+    "src/routeTree.gen.ts",
+    "src/i18n/**/*.js"
+  ],
+  "rules": {
+    "drizzle/enforce-delete-with-where": [
+      "error",
+      {
+        "drizzleObjectName": ["db", "indexer"]
+      }
+    ],
+    "drizzle/enforce-update-with-where": [
+      "error",
+      {
+        "drizzleObjectName": ["db", "indexer"]
+      }
+    ],
+    "react-google-translate/no-conditional-text-nodes-with-siblings": "error",
+    "react-google-translate/no-return-text-nodes": "error",
+    "@tanstack/query/exhaustive-deps": "error"
+  }
+}

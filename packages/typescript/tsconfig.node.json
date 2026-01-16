@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    // Node.js environment
+    "target": "ES2022",
+    "module": "NodeNext",
+    "lib": ["ES2022"],
+    "moduleResolution": "NodeNext",
+    "moduleDetection": "force",
+
+    // Node.js compatibility
+    "esModuleInterop": true,
+    "noEmit": true,
+
+    // Additional type safety
+    "isolatedModules": true,
+    "resolveJsonModule": true,
+
+    // Best practices
+    "strict": true,
+    "skipLibCheck": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "strictNullChecks": true,
+
+    // Stricter linting
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
+  }
+}

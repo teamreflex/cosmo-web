@@ -1,0 +1,27 @@
+manifestVersion: subsquid.io/v0.1
+name: cosmo-db
+version: 1
+description: A squid indexer generated from an ABI template
+secrets:
+  - ENABLE_OBJEKTS
+  - ENABLE_GRAVITY
+build:
+deploy:
+  addons:
+    postgres:
+  processor:
+    cmd:
+      - node
+      - lib/main
+  api:
+    cmd:
+      - npx
+      - squid-graphql-server
+      - "--dumb-cache"
+      - in-memory
+      - "--dumb-cache-ttl"
+      - "1000"
+      - "--dumb-cache-size"
+      - "100"
+      - "--dumb-cache-max-age"
+      - "1000"

@@ -1,0 +1,62 @@
+import { env } from "@/lib/env/server";
+import { db } from "@/lib/server/db";
+import { createFileRoute } from "@tanstack/react-router";
+import * as z from "zod";
+
+const schema = z.object({
+  addresses: z
+    .array(z.string().regex(/^0x[a-fA-F0-9]{40}$/, "Invalid Ethereum address"))
+    .min(1, "At least one address is required")
+    .max(250, "Maximum 250 addresses allowed"),
+});
+
+export const Route = createFileRoute("/api/user/by-addresses")({
+  server: {
+    handlers: {
+      /**
+       * Endpoint for getting a list of usernames by a list of addresses.
+       */
+      POST: async ({ request }) => {
+        const authKey = request.headers.get("Authorization");
+        if (authKey !== env.AUTH_KEY) {
+          return Response.json(
+            { error: "invalid authorization" },
+            { status: 401 },
+          );
+        }
+
+        try {
+          const body: unknown = await request.json();
+          const { addresses } = schema.parse(body);
+
+          const accounts = await db.query.cosmoAccounts.findMany({
+            where: {
+              address: {
+                in: addresses,
+              },
+            },
+            columns: {
+              username: true,
+              address: true,
+              polygonAddress: true,
+            },
+          });
+
+          return Response.json({ accounts });
+        } catch (error) {
+          if (error instanceof z.ZodError) {
+            return Response.json(
+              { error: "validation error", details: error.issues },
+              { status: 422 },
+            );
+          }
+
+          return Response.json(
+            { error: "internal server error" },
+            { status: 500 },
+          );
+        }
+      },
+    },
+  },
+});

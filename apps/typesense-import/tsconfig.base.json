@@ -1,0 +1,29 @@
+{
+  "extends": "@apollo/typescript/tsconfig.bun.json",
+
+  "compilerOptions": {
+    // Effect-TS build requirements
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "incremental": true,
+
+    // Effect-TS specific
+    "exactOptionalPropertyTypes": true,
+    "downlevelIteration": true,
+    "esModuleInterop": false,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": [],
+    "noImplicitReturns": false,
+    "noUnusedParameters": false,
+    "noUncheckedIndexedAccess": false,
+    "noEmitOnError": false,
+    "noErrorTruncation": false,
+    "forceConsistentCasingInFileNames": true,
+    "removeComments": false,
+    "plugins": [{ "name": "@effect/language-service" }]
+  }
+}

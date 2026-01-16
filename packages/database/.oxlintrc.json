@@ -1,0 +1,4 @@
+{
+  "extends": ["../lint/oxlint.json"],
+  "ignorePatterns": ["node_modules", ".turbo", "dist"]
+}

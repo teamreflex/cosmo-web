@@ -1,0 +1,246 @@
+# for development purposes, don't use this for production
+services:
+  # postgres for the web app (persistent user data)
+  postgres-web:
+    restart: on-failure
+    image: postgres:17.6-alpine
+    ports:
+      - "5435:5432"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.125"
+          memory: 1g
+    environment:
+      - POSTGRES_DB=web
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    healthcheck:
+      test: "pg_isready -d web -U postgres"
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s
+    volumes:
+      - postgres-web-data:/var/lib/postgresql/data
+    networks:
+      - apollo-network
+
+  # pgbouncer for web app (HMR-safe)
+  pgbouncer-web:
+    image: edoburu/pgbouncer:latest
+    restart: on-failure
+    ports:
+      - "5433:5432"
+    environment:
+      - DB_HOST=postgres-web
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=web
+      - POOL_MODE=transaction
+      - MAX_CLIENT_CONN=1000
+      - DEFAULT_POOL_SIZE=25
+      - MIN_POOL_SIZE=5
+      - RESERVE_POOL_SIZE=5
+      - RESERVE_POOL_TIMEOUT=3
+      - MAX_PREPARED_STATEMENTS=200
+      - AUTH_TYPE=scram-sha-256
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 5432 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    depends_on:
+      postgres-web:
+        condition: service_healthy
+    networks:
+      - apollo-network
+
+  # postgres for the indexer (ephemeral blockchain data)
+  postgres-indexer:
+    restart: on-failure
+    image: postgres:17.6-alpine
+    ports:
+      - "5434:5432"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 2g
+    environment:
+      - POSTGRES_DB=indexer
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    healthcheck:
+      test: "pg_isready -d indexer -U postgres"
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s
+    volumes:
+      - postgres-indexer-data:/var/lib/postgresql/data
+    networks:
+      - apollo-network
+
+  # pgbouncer for indexer
+  pgbouncer-indexer:
+    image: edoburu/pgbouncer:latest
+    restart: on-failure
+    ports:
+      - "5432:5432"
+    environment:
+      - DB_HOST=postgres-indexer
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=indexer
+      - POOL_MODE=transaction
+      - MAX_CLIENT_CONN=1000
+      - DEFAULT_POOL_SIZE=25
+      - MIN_POOL_SIZE=5
+      - RESERVE_POOL_SIZE=5
+      - RESERVE_POOL_TIMEOUT=3
+      - MAX_PREPARED_STATEMENTS=200
+      - AUTH_TYPE=scram-sha-256
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 5432 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    depends_on:
+      postgres-indexer:
+        condition: service_healthy
+    networks:
+      - apollo-network
+
+  # valkey (redis-compatible)
+  valkey:
+    image: valkey/valkey:8-alpine
+    restart: on-failure
+    ports:
+      - "6379:6379"
+    command: valkey-server --save 60 1 --loglevel warning
+    volumes:
+      - valkey-data:/data
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - apollo-network
+
+  # indexer processor
+  processor:
+    build:
+      context: .
+      dockerfile: apps/indexer/Dockerfile
+    restart: on-failure
+    environment:
+      - FORCE_PRETTY_LOGGER=${INDEXER_FORCE_PRETTY_LOGGER}
+      - RPC_ENDPOINT=${INDEXER_RPC_ENDPOINT}
+      - RPC_RATE_LIMIT=${INDEXER_RPC_RATE_LIMIT}
+      - RPC_FINALITY=${INDEXER_RPC_FINALITY}
+      - SQD_ENDPOINT=${INDEXER_SQD_ENDPOINT}
+      - DB_URL=postgresql://postgres:postgres@postgres-indexer:5432/indexer
+      - DB_NAME=indexer
+      - DB_READ_USER=postgres
+      - DB_READ_PASS=postgres
+      - ENABLE_OBJEKTS=${INDEXER_ENABLE_OBJEKTS}
+      - ENABLE_GRAVITY=${INDEXER_ENABLE_GRAVITY}
+      - COSMO_PARALLEL_COUNT=${INDEXER_COSMO_PARALLEL_COUNT}
+    depends_on:
+      # indexer shouldn't go through pgbouncer
+      postgres-indexer:
+        condition: service_healthy
+    networks:
+      - apollo-network
+
+  # typesense instance
+  typesense:
+    build:
+      context: .
+      dockerfile: apps/typesense/Dockerfile
+    restart: on-failure
+    ports:
+      - "8108:8108"
+    environment:
+      - TYPESENSE_ENABLE_CORS=true
+      - TYPESENSE_CORS_DOMAINS=http://localhost:3000
+    volumes:
+      - typesense-data:/data
+    command: "--data-dir /data --api-key=dev-local-key-do-not-use-in-production --api-port=8108 --enable-leader-election=false"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8108/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - apollo-network
+
+  # typesense import server
+  import-server:
+    build:
+      context: .
+      dockerfile: apps/typesense-import/Dockerfile
+    restart: on-failure
+    environment:
+      - TYPESENSE_API_KEY=dev-local-key-do-not-use-in-production
+      - TYPESENSE_URL=http://typesense:8108
+      - LOOP_INTERVAL=${TYPESENSE_IMPORT_LOOP_INTERVAL}
+      - INDEXER_DATABASE_URL=postgresql://postgres:postgres@pgbouncer-indexer:5432/indexer
+      - WEB_DATABASE_URL=postgresql://postgres:postgres@pgbouncer-web:5432/web
+    depends_on:
+      typesense:
+        condition: service_healthy
+      pgbouncer-indexer:
+        condition: service_healthy
+      pgbouncer-web:
+        condition: service_healthy
+    networks:
+      - apollo-network
+
+  # cron jobs
+  schedules:
+    build:
+      context: .
+      dockerfile: apps/schedules/Dockerfile
+    restart: on-failure
+    environment:
+      - WEB_DATABASE_URL=postgresql://postgres:postgres@pgbouncer-web:5432/web
+      - REDIS_URL=redis://valkey:6379
+    depends_on:
+      pgbouncer-web:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+    networks:
+      - apollo-network
+
+  # browserless.io
+  browserless:
+    image: ghcr.io/browserless/chromium:latest
+    restart: on-failure
+    ports:
+      - "5000:3000"
+    environment:
+      - CONCURRENT=5
+      - TOKEN=browserless-token
+      - ENABLE_CORS=false
+    networks:
+      - apollo-network
+
+networks:
+  apollo-network:
+    name: apollo-network
+    driver: bridge
+
+volumes:
+  postgres-web-data:
+  postgres-indexer-data:
+  typesense-data:
+  valkey-data:

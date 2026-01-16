@@ -1,0 +1,790 @@
+{
+  "id": "a45d7440-34a8-4ae9-ad70-357066b3aa2d",
+  "prevIds": [
+    "ab6b2ae1-611c-44a4-89aa-8b83462c65cd"
+  ],
+  "version": "8",
+  "dialect": "postgres",
+  "ddl": [
+    {
+      "isRlsEnabled": false,
+      "name": "list_entries",
+      "schema": "public",
+      "entityType": "tables"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "list_entries_pkey",
+      "schema": "public",
+      "table": "list_entries",
+      "entityType": "pks"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "schema": "public",
+      "table": "list_entries",
+      "entityType": "columns"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "list_id",
+      "schema": "public",
+      "table": "list_entries",
+      "entityType": "columns"
+    },
+    {
+      "type": "varchar(36)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "collection_id",
+      "schema": "public",
+      "table": "list_entries",
+      "entityType": "columns"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "list_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "list_entries_list_idx",
+      "schema": "public",
+      "table": "list_entries",
+      "entityType": "indexes"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "lists",
+      "schema": "public",
+      "entityType": "tables"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "lists_pkey",
+      "schema": "public",
+      "table": "lists",
+      "entityType": "pks"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "schema": "public",
+      "table": "lists",
+      "entityType": "columns"
+    },
+    {
+      "type": "citext",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "user_address",
+      "schema": "public",
+      "table": "lists",
+      "entityType": "columns"
+    },
+    {
+      "type": "varchar(24)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "name",
+      "schema": "public",
+      "table": "lists",
+      "entityType": "columns"
+    },
+    {
+      "type": "citext",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "slug",
+      "schema": "public",
+      "table": "lists",
+      "entityType": "columns"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "user_address",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "lists_address_idx",
+      "schema": "public",
+      "table": "lists",
+      "entityType": "indexes"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "slug",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "lists_slug_idx",
+      "schema": "public",
+      "table": "lists",
+      "entityType": "indexes"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "locked_objekts",
+      "schema": "public",
+      "entityType": "tables"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "locked_objekts_pkey",
+      "schema": "public",
+      "table": "locked_objekts",
+      "entityType": "pks"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "schema": "public",
+      "table": "locked_objekts",
+      "entityType": "columns"
+    },
+    {
+      "type": "citext",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "user_address",
+      "schema": "public",
+      "table": "locked_objekts",
+      "entityType": "columns"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "tokenId",
+      "schema": "public",
+      "table": "locked_objekts",
+      "entityType": "columns"
+    },
+    {
+      "type": "boolean",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "locked",
+      "schema": "public",
+      "table": "locked_objekts",
+      "entityType": "columns"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "user_address",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "locked_objekts_user_address_idx",
+      "schema": "public",
+      "table": "locked_objekts",
+      "entityType": "indexes"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "locked",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "locked_objekts_locked_idx",
+      "schema": "public",
+      "table": "locked_objekts",
+      "entityType": "indexes"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "user_address",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "locked",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "address_locked_idx",
+      "schema": "public",
+      "table": "locked_objekts",
+      "entityType": "indexes"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "user_address",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "tokenId",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "address_token_idx",
+      "schema": "public",
+      "table": "locked_objekts",
+      "entityType": "indexes"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "objekt_metadata",
+      "schema": "public",
+      "entityType": "tables"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "objekt_metadata_pkey",
+      "schema": "public",
+      "table": "objekt_metadata",
+      "entityType": "pks"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "schema": "public",
+      "table": "objekt_metadata",
+      "entityType": "columns"
+    },
+    {
+      "type": "varchar(36)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "collection_id",
+      "schema": "public",
+      "table": "objekt_metadata",
+      "entityType": "columns"
+    },
+    {
+      "type": "varchar(255)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "description",
+      "schema": "public",
+      "table": "objekt_metadata",
+      "entityType": "columns"
+    },
+    {
+      "type": "citext",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "user_address",
+      "schema": "public",
+      "table": "objekt_metadata",
+      "entityType": "columns"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        "collection_id"
+      ],
+      "nullsNotDistinct": false,
+      "name": "objekt_metadata_collection_id_unique",
+      "schema": "public",
+      "table": "objekt_metadata",
+      "entityType": "uniques"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "collection_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "objekt_metadata_collection_idx",
+      "schema": "public",
+      "table": "objekt_metadata",
+      "entityType": "indexes"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "user_address",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "objekt_metadata_contributor_idx",
+      "schema": "public",
+      "table": "objekt_metadata",
+      "entityType": "indexes"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "profiles",
+      "schema": "public",
+      "entityType": "tables"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "profiles_pkey",
+      "schema": "public",
+      "table": "profiles",
+      "entityType": "pks"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "schema": "public",
+      "table": "profiles",
+      "entityType": "columns"
+    },
+    {
+      "type": "citext",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "user_address",
+      "schema": "public",
+      "table": "profiles",
+      "entityType": "columns"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "cosmo_id",
+      "schema": "public",
+      "table": "profiles",
+      "entityType": "columns"
+    },
+    {
+      "type": "citext",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "nickname",
+      "schema": "public",
+      "table": "profiles",
+      "entityType": "columns"
+    },
+    {
+      "type": "varchar(24)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "artist",
+      "schema": "public",
+      "table": "profiles",
+      "entityType": "columns"
+    },
+    {
+      "type": "boolean",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "false",
+      "generated": null,
+      "identity": null,
+      "name": "privacy_nickname",
+      "schema": "public",
+      "table": "profiles",
+      "entityType": "columns"
+    },
+    {
+      "type": "boolean",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "false",
+      "generated": null,
+      "identity": null,
+      "name": "privacy_objekts",
+      "schema": "public",
+      "table": "profiles",
+      "entityType": "columns"
+    },
+    {
+      "type": "boolean",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "false",
+      "generated": null,
+      "identity": null,
+      "name": "privacy_como",
+      "schema": "public",
+      "table": "profiles",
+      "entityType": "columns"
+    },
+    {
+      "type": "boolean",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "false",
+      "generated": null,
+      "identity": null,
+      "name": "privacy_trades",
+      "schema": "public",
+      "table": "profiles",
+      "entityType": "columns"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "5",
+      "generated": null,
+      "identity": null,
+      "name": "grid_columns",
+      "schema": "public",
+      "table": "profiles",
+      "entityType": "columns"
+    },
+    {
+      "type": "boolean",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "false",
+      "generated": null,
+      "identity": null,
+      "name": "objekt_editor",
+      "schema": "public",
+      "table": "profiles",
+      "entityType": "columns"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "user_address",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "profiles_address_idx",
+      "schema": "public",
+      "table": "profiles",
+      "entityType": "indexes"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "cosmo_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "profiles_cosmo_id_idx",
+      "schema": "public",
+      "table": "profiles",
+      "entityType": "indexes"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "nickname",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "profiles_nickname_idx",
+      "schema": "public",
+      "table": "profiles",
+      "entityType": "indexes"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "privacy_nickname",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "profiles_priv_nickname_idx",
+      "schema": "public",
+      "table": "profiles",
+      "entityType": "indexes"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "privacy_objekts",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "profiles_priv_objekts_idx",
+      "schema": "public",
+      "table": "profiles",
+      "entityType": "indexes"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "privacy_como",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "profiles_priv_como_idx",
+      "schema": "public",
+      "table": "profiles",
+      "entityType": "indexes"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "privacy_trades",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "profiles_priv_trades_idx",
+      "schema": "public",
+      "table": "profiles",
+      "entityType": "indexes"
+    }
+  ],
+  "renames": []
+}

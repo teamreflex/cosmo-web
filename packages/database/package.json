@@ -1,0 +1,28 @@
+{
+  "name": "@apollo/database",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "exports": {
+    "./web/*": "./src/web/*.ts",
+    "./indexer/*": "./src/indexer/*.ts",
+    "./auth": "./src/auth.ts",
+    "./custom": "./src/custom.ts"
+  },
+  "scripts": {
+    "lint": "oxlint --type-aware",
+    "lint:fix": "oxlint --type-aware --fix",
+    "typecheck": "tsc --pretty --noEmit",
+    "format": "oxfmt ."
+  },
+  "dependencies": {
+    "@apollo/cosmo": "workspace:*",
+    "@apollo/util": "workspace:*",
+    "drizzle-orm": "1.0.0-beta.10-42c284e"
+  },
+  "devDependencies": {
+    "@apollo/typescript": "workspace:*",
+    "turbo": "^2.7.4",
+    "typescript": "5.9.3"
+  }
+}

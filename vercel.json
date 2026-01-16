@@ -1,14 +1,10 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "regions": ["sfo1"],
-  "buildCommand": "next build && pnpm db:migrate",
-  "crons": [
-    {
-      "path": "/api/cron/gravity",
-      "schedule": "*/30 * * * *"
-    },
-    {
-      "path": "/api/cron/objekt-stats",
-      "schedule": "0 * * * *"
+  "git": {
+    "deploymentEnabled": {
+      "refactor/tanstack-start": false,
+      "refactor/tanstack-start-railway": false
     }
-  ]
+  }
 }

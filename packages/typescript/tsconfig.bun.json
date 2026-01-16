@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    // Environment setup & latest features
+    "lib": ["ESNext"],
+    "target": "ESNext",
+    "module": "Preserve",
+    "moduleDetection": "force",
+
+    // Bundler mode
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": false,
+    "noEmit": true,
+
+    // Additional type safety
+    "isolatedModules": true,
+    "resolveJsonModule": true,
+
+    // Best practices
+    "strict": true,
+    "skipLibCheck": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "strictNullChecks": true,
+    "noUncheckedSideEffectImports": true,
+
+    // Stricter linting (override Bun's defaults)
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
+  }
+}

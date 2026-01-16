@@ -1,0 +1,19 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "printWidth": 80,
+  "trailingComma": "all",
+  "experimentalSortImports": {
+    "groups": [
+      ["builtin", "external"],
+      ["internal"],
+      ["parent", "sibling", "index"],
+    ],
+    "internalPattern": ["@/**", "@apollo/**"],
+    "newlinesBetween": false,
+  },
+  // https://github.com/oxc-project/oxc/issues/17764
+  "experimentalTailwindcss": {
+    "stylesheet": "./src/styles/tailwind.css",
+    "functions": ["cn", "clsx"],
+  },
+}

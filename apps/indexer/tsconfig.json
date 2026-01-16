@@ -1,0 +1,21 @@
+{
+  "extends": "@apollo/typescript/tsconfig.node.json",
+
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", ".turbo", "lib"],
+
+  "compilerOptions": {
+    // TypeORM decorators
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+
+    // Build output
+    "declaration": false,
+    "sourceMap": true,
+
+    // Path aliases
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}

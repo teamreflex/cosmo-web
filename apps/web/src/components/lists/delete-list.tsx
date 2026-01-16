@@ -1,0 +1,113 @@
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useProfileContext } from "@/hooks/use-profile";
+import { m } from "@/i18n/messages";
+import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
+import type { ObjektList } from "@apollo/database/web/types";
+import { IconLoader2, IconTrash } from "@tabler/icons-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
+import type { MouseEvent } from "react";
+import { toast } from "sonner";
+import { Button } from "../ui/button";
+import { $deleteObjektList } from "./actions";
+
+type Props = {
+  objektList: ObjektList;
+};
+
+export default function DeleteList({ objektList }: Props) {
+  const router = useRouter();
+  const target = useProfileContext((ctx) => ctx.target);
+  const removeObjektList = useProfileContext((state) => state.removeObjektList);
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: $deleteObjektList,
+    onSuccess: () => {
+      toast.success(m.toast_list_deleted());
+
+      // remove list from current account query
+      queryClient.setQueryData(currentAccountQuery.queryKey, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          objektLists: old.objektLists.filter(
+            (list) => list.id !== objektList.id,
+          ),
+        };
+      });
+
+      // remove list from target account query if it exists
+      if (target?.cosmo?.username) {
+        removeObjektList(objektList.id);
+        queryClient.setQueryData(
+          targetAccountQuery(target.cosmo.username).queryKey,
+          (old) => {
+            if (!old) return old;
+            return {
+              ...old,
+              objektLists: old.objektLists.filter(
+                (list) => list.id !== objektList.id,
+              ),
+            };
+          },
+        );
+      }
+
+      // refresh the loader
+      void router.invalidate({
+        filter: (route) =>
+          route.routeId === "/" ||
+          (target?.cosmo?.username !== undefined &&
+            route.pathname === `/@${target.cosmo.username}`),
+      });
+    },
+  });
+
+  function handleClick(event: MouseEvent<HTMLButtonElement>) {
+    event.preventDefault();
+    mutation.mutate({
+      data: {
+        id: objektList.id,
+      },
+    });
+  }
+
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button variant="destructive" size="icon" className="rounded-full">
+          <IconTrash />
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{m.list_delete_confirm()}</AlertDialogTitle>
+          <AlertDialogDescription>
+            {m.list_delete_confirm_description({ listName: objektList.name })}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>{m.common_cancel()}</AlertDialogCancel>
+          <AlertDialogAction
+            type="button"
+            onClick={handleClick}
+            disabled={mutation.isPending}
+          >
+            <span>{m.common_delete()}</span>
+            {mutation.isPending && <IconLoader2 className="animate-spin" />}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}

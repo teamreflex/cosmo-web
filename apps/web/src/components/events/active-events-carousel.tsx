@@ -1,0 +1,90 @@
+import EventCardLarge from "@/components/events/event-card-large";
+import type { CarouselApi } from "@/components/ui/carousel";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from "@/components/ui/carousel";
+import { cn } from "@/lib/utils";
+import type { EventWithEra } from "@apollo/database/web/types";
+import Autoplay from "embla-carousel-autoplay";
+import { useEffect, useRef, useState } from "react";
+
+type ActiveEventsCarouselProps = {
+  events: EventWithEra[];
+  onActiveChange: (event: EventWithEra | null) => void;
+  onHoverChange: (event: EventWithEra | null) => void;
+};
+
+export default function ActiveEventsCarousel({
+  events,
+  onActiveChange,
+  onHoverChange,
+}: ActiveEventsCarouselProps) {
+  const [api, setApi] = useState<CarouselApi>();
+  const [activeIndex, setActiveIndex] = useState(0);
+  const autoplay = useRef(
+    Autoplay({
+      delay: 5000,
+      stopOnInteraction: false,
+      stopOnMouseEnter: true,
+    }),
+  );
+
+  // track active slide and emit to parent
+  useEffect(() => {
+    if (!api || events.length === 0) return;
+
+    const updateActiveEvent = () => {
+      const index = api.selectedScrollSnap();
+      setActiveIndex(index);
+      onActiveChange(events[index] || null);
+    };
+
+    api.on("select", updateActiveEvent);
+
+    return () => {
+      api.off("select", updateActiveEvent);
+    };
+  }, [api, events, onActiveChange]);
+
+  if (events.length === 0) {
+    return null;
+  }
+
+  return (
+    <div
+      className={cn(
+        "relative z-10 mt-4 mask-[linear-gradient(to_right,transparent,black_15%,black_85%,transparent)] transition-opacity",
+        api ? "opacity-100" : "opacity-0",
+      )}
+    >
+      <Carousel
+        opts={{
+          loop: true,
+          align: "center",
+          containScroll: false,
+        }}
+        plugins={[autoplay.current]}
+        setApi={setApi}
+        className="w-full"
+      >
+        <CarouselContent className="-ml-6 pb-1 sm:-ml-8 md:-ml-4">
+          {events.map((event, index) => (
+            <CarouselItem
+              key={event.id}
+              className="basis-4/5 pl-6 sm:pl-8 md:basis-2/5 md:pl-4 lg:basis-1/4"
+            >
+              <EventCardLarge
+                event={event}
+                isActive={index === activeIndex}
+                onMouseEnter={() => onHoverChange(event)}
+                onMouseLeave={() => onHoverChange(null)}
+              />
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+      </Carousel>
+    </div>
+  );
+}

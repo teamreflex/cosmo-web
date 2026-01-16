@@ -1,0 +1,65 @@
+type Collection @entity {
+  id: ID! @index # uuid
+  contract: String! @index
+  createdAt: DateTime! @index
+  slug: String! @index @unique
+  # objekt fields
+  collectionId: String!
+  season: String! @index
+  member: String! @index
+  artist: String! @index
+  collectionNo: String! @index
+  class: String! @index
+  thumbnailImage: String!
+  frontImage: String!
+  frontMedia: String
+  backImage: String!
+  backgroundColor: String!
+  textColor: String!
+  accentColor: String!
+  comoAmount: Int!
+  onOffline: String! @index
+  bandImageUrl: String
+  transfers: [Transfer!] @derivedFrom(field: "collection")
+  objekts: [Objekt!] @derivedFrom(field: "collection")
+}
+
+type Transfer @entity {
+  id: ID! @index # uuid
+  from: String! @index
+  to: String! @index
+  createdAt: DateTime! @index
+  tokenId: String!
+  hash: String!
+  objekt: Objekt!
+  collection: Collection!
+}
+
+type Objekt @entity {
+  id: ID! @index # tokenId
+  owner: String! @index
+  mintedAt: DateTime!
+  receivedAt: DateTime! @index
+  serial: Int! @index
+  transferable: Boolean! @index
+  transfers: [Transfer!] @derivedFrom(field: "objekt")
+  collection: Collection!
+}
+
+type ComoBalance @entity {
+  id: ID! # uuid
+  contract: String! @index
+  owner: String! @index
+  amount: Int! @index
+}
+
+type Vote @entity {
+  id: ID! # uuid
+  from: String! @index
+  createdAt: DateTime! @index
+  contract: String! @index
+  pollId: Int! @index
+  candidateId: Int @index
+  index: Int! @index
+  amount: Int! @index
+}

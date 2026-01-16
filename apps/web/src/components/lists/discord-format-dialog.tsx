@@ -1,0 +1,156 @@
+import { m } from "@/i18n/messages";
+import type { ObjektList } from "@apollo/database/web/types";
+import { IconCloudDownload, IconCopy, IconLoader2 } from "@tabler/icons-react";
+import { useMutation } from "@tanstack/react-query";
+import { useState } from "react";
+import { toast } from "sonner";
+import { useCopyToClipboard } from "usehooks-ts";
+import { Button } from "../ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "../ui/dialog";
+import { Label } from "../ui/label";
+import { ScrollArea } from "../ui/scroll-area";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+import { $generateDiscordList } from "./actions";
+
+type Props = {
+  open: boolean;
+  onOpenChange: (state: boolean) => void;
+  objektLists: ObjektList[];
+};
+
+export default function DiscordFormatDialog({
+  open,
+  onOpenChange,
+  objektLists,
+}: Props) {
+  const mutation = useMutation({
+    mutationFn: $generateDiscordList,
+    onSuccess: (data) => {
+      setResult(data);
+    },
+  });
+  const [result, setResult] = useState<string>();
+  const [haveId, setHaveId] = useState<string>();
+  const [wantId, setWantId] = useState<string>();
+  const [_, copyToClipboard] = useCopyToClipboard();
+
+  const disabled = !haveId || !wantId;
+
+  function generate() {
+    if (disabled) {
+      toast.error(m.toast_select_both_lists());
+      return;
+    }
+
+    mutation.mutate({
+      data: {
+        haveId,
+        wantId,
+      },
+    });
+  }
+
+  function copy() {
+    void copyToClipboard(result ?? "");
+    toast.success(m.toast_copied_clipboard());
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{m.list_discord_format_title()}</DialogTitle>
+          <DialogDescription>
+            {m.list_discord_format_description()}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="flex w-full flex-col gap-2">
+          <div className="grid grid-cols-2 gap-2">
+            <div className="grid gap-1.5">
+              <Label>{m.list_discord_have()}</Label>
+              <SelectList
+                objektLists={objektLists}
+                value={haveId}
+                onSelect={setHaveId}
+              />
+            </div>
+
+            <div className="grid gap-1.5">
+              <Label>{m.list_discord_want()}</Label>
+              <SelectList
+                objektLists={objektLists}
+                value={wantId}
+                onSelect={setWantId}
+              />
+            </div>
+          </div>
+
+          <div className="flex w-full justify-center gap-2">
+            <Button
+              onClick={generate}
+              disabled={disabled || mutation.isPending}
+            >
+              <span>{m.common_generate()}</span>
+              {mutation.isPending ? (
+                <IconLoader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <IconCloudDownload className="h-4 w-4" />
+              )}
+            </Button>
+
+            {result && (
+              <Button onClick={copy}>
+                <span>{m.common_copy()}</span>
+                <IconCopy className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+
+          {result !== undefined && (
+            <ScrollArea className="max-h-60 rounded-lg border border-border">
+              <pre className="p-2 font-mono text-sm whitespace-pre-wrap">
+                {result}
+              </pre>
+            </ScrollArea>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+type SelectListProps = {
+  objektLists: ObjektList[];
+  value: string | undefined;
+  onSelect: (slug: string) => void;
+};
+
+function SelectList({ objektLists, value, onSelect }: SelectListProps) {
+  return (
+    <Select value={value} onValueChange={onSelect}>
+      <SelectTrigger className="w-full">
+        <SelectValue placeholder={m.objekt_list()} />
+      </SelectTrigger>
+      <SelectContent>
+        {objektLists.map((list) => (
+          <SelectItem key={list.id} value={list.id}>
+            {list.name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}

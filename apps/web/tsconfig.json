@@ -1,0 +1,34 @@
+{
+  "extends": "@apollo/typescript/tsconfig.bun.json",
+
+  "references": [{ "path": "./tsconfig.bun.json" }],
+
+  "include": ["**/*.ts", "**/*.tsx", "vite.config.mts"],
+  "exclude": [
+    "node_modules",
+    ".turbo",
+    ".output",
+    "dist",
+    ".nitro",
+    ".tanstack",
+    ".vercel",
+    "project.inlang",
+    "src/i18n/**/*.js",
+    "src/routeTree.gen.ts",
+    "main.ts"
+  ],
+
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "types": ["vite/client", "@types/umami"],
+    "verbatimModuleSyntax": false,
+
+    // for paraglide
+    "allowJs": true,
+
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}

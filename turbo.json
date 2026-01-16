@@ -1,0 +1,36 @@
+{
+  "$schema": "https://turborepo.com/schema.json",
+  "ui": "tui",
+  "tasks": {
+    "//#services": {
+      "cache": false,
+      "persistent": true
+    },
+    "typecheck": {
+      "cache": true,
+      "dependsOn": ["^typecheck"]
+    },
+    "lint": {
+      "cache": true,
+      "dependsOn": ["^lint"],
+      "inputs": ["**/*.ts", "**/*.tsx", ".oxlintrc.json", "!node_modules/**"]
+    },
+    "lint:fix": {
+      "cache": false,
+      "dependsOn": ["^lint:fix"]
+    },
+    "format": {
+      "cache": true,
+      "dependsOn": ["^format"],
+      "inputs": ["**/*.ts", "**/*.tsx", "!node_modules/**"]
+    },
+    "dev": {
+      "persistent": true,
+      "cache": false
+    },
+    "db:seed": {
+      "cache": false,
+      "dependsOn": ["//#services"]
+    }
+  }
+}

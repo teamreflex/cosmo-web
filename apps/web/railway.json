@@ -1,0 +1,35 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "builder": "RAILPACK",
+    "buildCommand": "VITE_COMMIT_SHA=$RAILWAY_GIT_COMMIT_SHA bun --filter web build:prod",
+    "watchPatterns": [
+      "/apps/web/**",
+      "/packages/database/**",
+      "/packages/util/**",
+      "/packages/cosmo/**"
+    ],
+    "buildEnvironment": "V3"
+  },
+  "deploy": {
+    "runtime": "V2",
+    "numReplicas": 1,
+    "startCommand": "bun run --bun --preload ./apps/web/instrument.ts ./apps/web/main.ts",
+    "limitOverride": {
+      "containers": {
+        "cpu": 3,
+        "memoryBytes": 3000000000
+      }
+    },
+    "preDeployCommand": ["bun --filter web db:migrate"],
+    "sleepApplication": false,
+    "useLegacyStacker": false,
+    "multiRegionConfig": {
+      "us-west2": {
+        "numReplicas": 1
+      }
+    },
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 10
+  }
+}

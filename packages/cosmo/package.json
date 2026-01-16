@@ -1,0 +1,27 @@
+{
+  "name": "@apollo/cosmo",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "exports": {
+    "./types/*": "./src/types/*.ts",
+    "./server/*": "./src/server/*.ts"
+  },
+  "scripts": {
+    "lint": "oxlint --type-aware",
+    "lint:fix": "oxlint --type-aware --fix",
+    "typecheck": "tsc --pretty --noEmit",
+    "format": "oxfmt ."
+  },
+  "dependencies": {
+    "ofetch": "^1.5.1",
+    "puppeteer-core": "^24.35.0",
+    "zod": "^4.3.5"
+  },
+  "devDependencies": {
+    "@apollo/typescript": "workspace:*",
+    "@types/bun": "1.3.6",
+    "turbo": "^2.7.4",
+    "typescript": "5.9.3"
+  }
+}
