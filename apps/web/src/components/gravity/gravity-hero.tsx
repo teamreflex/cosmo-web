@@ -54,7 +54,9 @@ function GravityHeroCard({ gravity, artist }: GravityHeroCardProps) {
           {/* Content */}
           <div className="flex flex-1 flex-col gap-2 p-4">
             {/* Title */}
-            <h2 className="text-lg font-semibold">{gravity.title}</h2>
+            <h2 className="text-sm sm:text-lg font-semibold line-clamp-2">
+              {gravity.title}
+            </h2>
 
             {/* Dates */}
             <div className="flex items-center gap-2 text-xs text-muted-foreground sm:text-sm">
@@ -79,7 +81,7 @@ function GravityHeroCard({ gravity, artist }: GravityHeroCardProps) {
             </div>
 
             {/* Badge + Artist */}
-            <div className="mt-auto flex items-center gap-3">
+            <div className="mt-auto flex items-center gap-2">
               {artist && (
                 <div className="flex aspect-square shrink-0 items-center rounded-full ring-2 ring-accent">
                   <img

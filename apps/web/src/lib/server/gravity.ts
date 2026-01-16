@@ -6,7 +6,7 @@ import { notFound } from "@tanstack/react-router";
 import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
 import { setResponseHeaders } from "@tanstack/react-start/server";
 import { isBefore } from "date-fns";
-import { and, desc, eq, getColumns, gte, inArray, lt } from "drizzle-orm";
+import { and, asc, desc, eq, getColumns, gte, inArray, lt } from "drizzle-orm";
 import * as z from "zod";
 import type { RevealedVote } from "../client/gravity/types";
 import { findPoll } from "../client/gravity/util";
@@ -116,7 +116,7 @@ export const $fetchActiveGravities = createServerFn({ method: "GET" })
       .from(gravities)
       .leftJoin(latestPoll, eq(gravities.cosmoId, latestPoll.cosmoGravityId))
       .where(and(...conditions))
-      .orderBy(desc(gravities.startDate));
+      .orderBy(asc(gravities.startDate));
   });
 
 /**
