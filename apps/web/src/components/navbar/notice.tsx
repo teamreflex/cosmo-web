@@ -5,7 +5,7 @@ export default function Notice() {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <button className="relative h-8 w-9 flex justify-center items-center rounded-md bg-orange-500/30 hover:bg-orange-500/45 transition-colors">
+        <button className="relative h-8 w-9 flex justify-center items-center rounded-md bg-orange-500/30 hover:bg-orange-500/45 border border-orange-500/30 transition-colors shadow-sm">
           <IconAlertTriangle className="text-orange-500 w-5 h-5" />
         </button>
       </PopoverTrigger>

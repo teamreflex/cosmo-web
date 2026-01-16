@@ -34,8 +34,8 @@ export default function UpdateDialog() {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <button className="relative flex h-8 w-9 items-center justify-center rounded-r-md bg-cosmo-text/25 transition-colors hover:bg-cosmo-text/40">
-          <IconSpeakerphone className="h-5 w-5 text-cosmo-text" />
+        <button className="relative flex h-8 w-9 items-center justify-center rounded-r-md bg-cosmo/25 transition-colors hover:bg-cosmo/40 border border-cosmo/40 shadow-sm">
+          <IconSpeakerphone className="h-5 w-5 text-cosmo-text/75" />
           {isNew && (
             <span className="absolute top-0 right-0 h-2 w-2 animate-pulse rounded-full bg-red-500" />
           )}

@@ -45,7 +45,7 @@ export default function EventHeader({ event }: EventHeaderProps) {
       )}
 
       {/* fade to background layer */}
-      <div className="absolute inset-x-0 bottom-0 h-2/3 bg-linear-to-t from-background to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 dark:h-2/3 h-full bg-linear-to-t from-background dark:to-transparent to-foreground/20" />
 
       {/* inner content */}
       <div className="relative z-10 flex flex-col gap-4 px-4 py-8 md:container">
@@ -56,15 +56,15 @@ export default function EventHeader({ event }: EventHeaderProps) {
           transition={{ duration: 0.5, ease: [0.4, 0.0, 0.2, 1] }}
         >
           {/* event/era image */}
-          <div className="mx-auto shrink-0 drop-shadow-2xl md:mx-0">
+          <div className="mx-auto shrink-0 drop-shadow-lg md:mx-0">
             {imageUrl ? (
               <img
                 src={imageUrl}
                 alt={event.name}
-                className="size-32 rounded-lg shadow-2xl md:size-48"
+                className="size-32 rounded-lg md:size-48"
               />
             ) : (
-              <div className="flex size-32 flex-col items-center justify-center rounded-lg bg-muted shadow-2xl md:size-48">
+              <div className="flex size-32 flex-col items-center justify-center rounded-lg bg-muted md:size-48">
                 <IconPhoto className="size-12 text-muted-foreground" />
               </div>
             )}
