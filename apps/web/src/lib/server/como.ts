@@ -9,7 +9,7 @@ import { indexer } from "./db/indexer";
 import { collections, objekts } from "./db/indexer/schema";
 
 /**
- * Fetch incoming transfers for Special & Premier objekts for a given address
+ * Fetch Special & Premier objekts for a given address.
  */
 export const $fetchObjektsWithComo = createServerFn({ method: "GET" })
   .inputValidator(z.object({ address: z.string() }))
@@ -24,26 +24,16 @@ export const $fetchObjektsWithComo = createServerFn({ method: "GET" })
         artistId: collections.artist,
         mintedAt: objekts.mintedAt,
         amount: sql<number>`
-        case 
-          when ${collections.class} = 'Special' then 1
-          when ${collections.class} = 'Premier' then 2
-          else 0
-        end
-      `.mapWith(Number),
+          case when ${collections.class} = 'Special' then 1 else 2 end
+        `.mapWith(Number),
       })
       .from(objekts)
+      .innerJoin(collections, eq(objekts.collectionId, collections.id))
       .where(
         and(
           eq(objekts.owner, data.address.toLowerCase()),
-          // idntt doesn't have monthly como
-          not(eq(collections.artist, "idntt")),
-        ),
-      )
-      .innerJoin(
-        collections,
-        and(
-          eq(objekts.collectionId, collections.id),
           inArray(collections.class, ["Special", "Premier"]),
+          not(eq(collections.artist, "idntt")),
         ),
       );
   });
