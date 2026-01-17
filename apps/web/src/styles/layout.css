@@ -67,6 +67,34 @@
   scrollbar-width: none; /* Firefox */
 }
 
+/* hide scrollbar on mobile, show on desktop when overflowing */
+@utility member-filter-scrollbar {
+  @media (pointer: coarse) {
+    &::-webkit-scrollbar {
+      display: none;
+    }
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  @media (pointer: fine) {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-muted-foreground) transparent;
+
+    &::-webkit-scrollbar {
+      @apply h-2;
+    }
+
+    &::-webkit-scrollbar-track {
+      @apply bg-transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      @apply rounded-full bg-muted-foreground;
+    }
+  }
+}
+
 /*
  * navbar glass effect
  * https://codesandbox.io/s/realistic-glass-aka-bien-glass-mk5phz
