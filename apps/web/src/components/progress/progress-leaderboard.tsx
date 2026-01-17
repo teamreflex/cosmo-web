@@ -141,7 +141,7 @@ type SeasonSelectProps = {
 };
 
 function SeasonSelect(props: SeasonSelectProps) {
-  const { getArtist, selectedIds } = useArtists();
+  const { getArtist } = useArtists();
 
   function set(value: string) {
     props.update(value === "all" ? undefined : value);
@@ -155,12 +155,10 @@ function SeasonSelect(props: SeasonSelectProps) {
         seasons,
       };
     })
-    .filter(
-      ({ artist }) =>
-        selectedIds.includes(artist.id) &&
-        artist.artistMembers
-          .map((member) => member.name.toLowerCase())
-          .includes(props.member.toLowerCase()),
+    .filter(({ artist }) =>
+      artist.artistMembers
+        .map((member) => member.name.toLowerCase())
+        .includes(props.member.toLowerCase()),
     );
 
   return (
