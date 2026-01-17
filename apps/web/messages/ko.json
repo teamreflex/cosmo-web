@@ -177,7 +177,7 @@
   "help_objekts_search_desc": "검색창은 대소문자를 구분하지 않으며, 오타 허용 및 단축어를 지원합니다.",
   "help_objekts_search_examples": "단축어 예시:",
   "help_objekts_search_unit_names": "유닛 이름: oec, lovelution, vv. 유닛 멤버의 오브젝트를 검색합니다.",
-  "help_objekts_search_s_numbers": "S 번호: s15는 신유 오브젝트를 반환합니다.",
+  "help_objekts_search_s_numbers": "S 번호: s15는 신위 오브젝트를 반환합니다.",
   "help_objekts_search_nicknames": "닉네임: soda는 다현 오브젝트를 반환합니다.",
   "help_objekts_search_collections": "컬렉션: a213z는 Atom 213Z 오브젝트를 반환합니다.",
   "help_objekts_search_description": "설명으로 검색도 가능합니다: cherry는 2025 벚꽃 이벤트의 오브젝트를 반환합니다.",
