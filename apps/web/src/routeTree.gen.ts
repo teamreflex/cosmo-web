@@ -17,6 +17,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ObjektsIndexRouteImport } from './routes/objekts/index'
 import { Route as GravityIndexRouteImport } from './routes/gravity/index'
 import { Route as EventsIndexRouteImport } from './routes/events/index'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AtChar123usernameChar125IndexRouteImport } from './routes/@{$username}/index'
 import { Route as ObjektsStatsRouteImport } from './routes/objekts/stats'
 import { Route as ListIdRouteImport } from './routes/list/$id'
@@ -84,6 +85,11 @@ const EventsIndexRoute = EventsIndexRouteImport.update({
   id: '/events/',
   path: '/events/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRouteRoute,
 } as any)
 const AtChar123usernameChar125IndexRoute =
   AtChar123usernameChar125IndexRouteImport.update({
@@ -245,6 +251,7 @@ export interface FileRoutesByFullPath {
   '/list/$id': typeof ListIdRoute
   '/objekts/stats': typeof ObjektsStatsRoute
   '/@{$username}/': typeof AtChar123usernameChar125IndexRoute
+  '/admin/': typeof AdminIndexRoute
   '/events': typeof EventsIndexRoute
   '/gravity': typeof GravityIndexRoute
   '/objekts': typeof ObjektsIndexRoute
@@ -266,7 +273,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRouteRouteWithChildren
   '/share-data': typeof ShareDataRoute
   '/terms-privacy': typeof TermsPrivacyRoute
   '/@{$username}/como': typeof AtChar123usernameChar125ComoRoute
@@ -280,6 +286,7 @@ export interface FileRoutesByTo {
   '/list/$id': typeof ListIdRoute
   '/objekts/stats': typeof ObjektsStatsRoute
   '/@{$username}': typeof AtChar123usernameChar125IndexRoute
+  '/admin': typeof AdminIndexRoute
   '/events': typeof EventsIndexRoute
   '/gravity': typeof GravityIndexRoute
   '/objekts': typeof ObjektsIndexRoute
@@ -317,6 +324,7 @@ export interface FileRoutesById {
   '/list/$id': typeof ListIdRoute
   '/objekts/stats': typeof ObjektsStatsRoute
   '/@{$username}/': typeof AtChar123usernameChar125IndexRoute
+  '/admin/': typeof AdminIndexRoute
   '/events/': typeof EventsIndexRoute
   '/gravity/': typeof GravityIndexRoute
   '/objekts/': typeof ObjektsIndexRoute
@@ -355,6 +363,7 @@ export interface FileRouteTypes {
     | '/list/$id'
     | '/objekts/stats'
     | '/@{$username}/'
+    | '/admin/'
     | '/events'
     | '/gravity'
     | '/objekts'
@@ -376,7 +385,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/admin'
     | '/share-data'
     | '/terms-privacy'
     | '/@{$username}/como'
@@ -390,6 +398,7 @@ export interface FileRouteTypes {
     | '/list/$id'
     | '/objekts/stats'
     | '/@{$username}'
+    | '/admin'
     | '/events'
     | '/gravity'
     | '/objekts'
@@ -426,6 +435,7 @@ export interface FileRouteTypes {
     | '/list/$id'
     | '/objekts/stats'
     | '/@{$username}/'
+    | '/admin/'
     | '/events/'
     | '/gravity/'
     | '/objekts/'
@@ -532,6 +542,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/events'
       preLoaderRoute: typeof EventsIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
     }
     '/@{$username}/': {
       id: '/@{$username}/'
@@ -746,12 +763,14 @@ interface AdminRouteRouteChildren {
   AdminBandsRoute: typeof AdminBandsRoute
   AdminErasRoute: typeof AdminErasRoute
   AdminEventsRoute: typeof AdminEventsRoute
+  AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminBandsRoute: AdminBandsRoute,
   AdminErasRoute: AdminErasRoute,
   AdminEventsRoute: AdminEventsRoute,
+  AdminIndexRoute: AdminIndexRoute,
 }
 
 const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
