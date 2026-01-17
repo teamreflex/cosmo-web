@@ -1,7 +1,6 @@
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import { collections } from "@apollo/database/indexer/schema";
-import type { Collection } from "@apollo/database/indexer/types";
 import { collectionData, events } from "@apollo/database/web/schema";
 import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
@@ -152,7 +151,6 @@ export const $fetchEventObjekts = createServerFn({ method: "GET" })
       .from(collectionData)
       .innerJoin(events, eq(collectionData.eventId, events.id))
       .where(eq(events.slug, data.eventSlug))
-      .orderBy(asc(collectionData.collectionId))
       .limit(60)
       .offset(data.cursor ?? 0);
 
@@ -168,15 +166,11 @@ export const $fetchEventObjekts = createServerFn({ method: "GET" })
     const total = rows[0]?.total ?? 0;
 
     const slugs = rows.map((r) => r.collectionId);
-    const indexerCollections = await indexer
+    const objekts = await indexer
       .select()
       .from(collections)
-      .where(inArray(collections.slug, slugs));
-
-    const collectionMap = new Map(indexerCollections.map((c) => [c.slug, c]));
-    const objekts = rows
-      .map((row) => collectionMap.get(row.collectionId))
-      .filter((o): o is Collection => !!o);
+      .where(inArray(collections.slug, slugs))
+      .orderBy(asc(collections.createdAt));
 
     const nextOffset = (data.cursor ?? 0) + rows.length;
     const hasNext = nextOffset < total;
