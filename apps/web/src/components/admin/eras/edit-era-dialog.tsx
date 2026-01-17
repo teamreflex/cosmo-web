@@ -74,6 +74,14 @@ export default function EditEraDialog({ era, children }: Props) {
     },
   });
 
+  function handleOpenChange(open: boolean) {
+    setOpen(open);
+    if (!open) {
+      form.reset();
+      selectedImageRef.current = null;
+    }
+  }
+
   function handleAlbumSelect(album: SpotifyAlbum) {
     setSelectedAlbum(album);
     form.setValue("spotifyAlbumId", album.id);
@@ -152,7 +160,7 @@ export default function EditEraDialog({ era, children }: Props) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>

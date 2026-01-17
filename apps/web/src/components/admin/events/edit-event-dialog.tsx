@@ -68,6 +68,14 @@ export default function EditEventDialog({ event }: Props) {
     },
   });
 
+  function handleOpenChange(open: boolean) {
+    setOpen(open);
+    if (!open) {
+      form.reset();
+      selectedImageRef.current = null;
+    }
+  }
+
   function handleImageSelect(file: File | null) {
     selectedImageRef.current = file;
   }
@@ -116,7 +124,7 @@ export default function EditEventDialog({ event }: Props) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button size="icon-xs" variant="ghost">
           <IconPencil className="size-4" />
