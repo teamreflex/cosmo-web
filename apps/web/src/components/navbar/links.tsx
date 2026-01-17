@@ -238,7 +238,7 @@ function LinkButton(props: LinkButtonProps) {
           >
             <props.icon
               className={cn(
-                "h-8 w-8 shrink-0 fill-transparent transition-all dark:drop-shadow-lg",
+                "h-8 w-8 shrink-0 fill-transparent transition-all drop-shadow-lg",
                 props.active && "fill-cosmo/50 dark:fill-foreground/50",
               )}
             />
