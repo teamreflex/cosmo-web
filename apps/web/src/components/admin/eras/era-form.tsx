@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { m } from "@/i18n/messages";
 import type { SpotifyAlbum } from "@/lib/universal/events";
 import type { CreateEraInput } from "@/lib/universal/schema/events";
+import { slugify } from "@apollo/util";
 import { getRouteApi } from "@tanstack/react-router";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 import EraImageUpload from "./era-image-upload";
@@ -114,6 +115,10 @@ export default function EraForm(props: Props) {
               id="name"
               placeholder={m.admin_era_name_placeholder()}
               {...field}
+              onChange={(e) => {
+                field.onChange(e);
+                form.setValue("slug", slugify(e.target.value));
+              }}
             />
             <FieldError errors={[fieldState.error]} />
           </Field>

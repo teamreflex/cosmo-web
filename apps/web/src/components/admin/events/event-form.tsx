@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
 import { eventTypes } from "@apollo/database/web/types";
 import type { Era } from "@apollo/database/web/types";
+import { slugify } from "@apollo/util";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
@@ -161,6 +162,10 @@ export default function EventForm({
               id="name"
               placeholder={m.admin_event_name_placeholder()}
               {...field}
+              onChange={(e) => {
+                field.onChange(e);
+                form.setValue("slug", slugify(e.target.value));
+              }}
             />
             <FieldError errors={[fieldState.error]} />
           </Field>
