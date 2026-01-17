@@ -26,7 +26,7 @@ export function LogoSVG({ className, themed = true }: LogoSVGProps) {
       xmlns="http://www.w3.org/2000/svg"
       viewBox="125 275 750 450"
       xmlSpace="preserve"
-      className={cn("group aspect-750/450 h-full", className)}
+      className={cn("group aspect-750/450 h-full dark:drop-shadow", className)}
     >
       <switch>
         <g>

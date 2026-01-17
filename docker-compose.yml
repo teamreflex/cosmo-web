@@ -66,9 +66,10 @@ services:
       - "5434:5432"
     deploy:
       resources:
+        # intentionally lower than production
         limits:
-          cpus: "0.25"
-          memory: 2g
+          cpus: "0.125"
+          memory: 1g
     environment:
       - POSTGRES_DB=indexer
       - POSTGRES_USER=postgres

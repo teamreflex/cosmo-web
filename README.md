@@ -46,10 +46,10 @@ A platform for exploring objekts & gravities from [MODHAUS](https://www.mod-haus
 git clone git@github.com:teamreflex/cosmo-web.git
 cd cosmo-web
 bun install
-cp .env.example .env.local
+cp .env.example .env
 turbo i18n
-turbo db:migrate
 turbo dev --filter web
+turbo db:migrate
 ```
 
 ## Tooling
@@ -63,11 +63,15 @@ turbo dev --filter web
 - [Subsquid](https://subsquid.io/)
 - [Typesense](https://typesense.org/)
 
-## Versions
+## Contributing
 
-The `polygon` branch contains the April 18th 2025 version that worked with the old COSMO API and Polygon blockchain, before the app was migrated away. It will not work anymore.
+For security reasons, PRs will not be accepted. This project is considered _source available_ for the purpose of scrutiny rather than open source for contributions. If a problem needs reporting, please make an issue in post in Discord.
 
-The `abstract-nextjs` branch contains the January 17th 2025 version which is the last copy running on Nextjs.
+## Branches
+
+- `main`: Production branch deployed to [apollo.cafe](https://apollo.cafe).
+- `polygon`: Last copy of the project compatible with the Ramper-based COSMO API and Polygon blockchain, before Modhaus migrated to privy.io + Abstract on 18/04/2025.
+- `abstract-nextjs`: Last copy of the project running on Nextjs, before it was migrated to this current stack on 17/01/2026.
 
 ## License
 
