@@ -115,7 +115,7 @@ export const transfersBackendSchema = cosmoSchema
   .extend({
     address: z.string(),
     cursor: z.string().nullish(),
-    type: z.enum(transferTypes).default("all"),
+    type: z.enum(transferTypes).nullish().default("all"),
     artists: z.string().array().default([]),
   });
 

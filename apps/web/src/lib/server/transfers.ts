@@ -264,7 +264,7 @@ async function fetchTransferFirst(
     .leftJoin(collections, eq(transfers.collectionId, collections.id))
     .where(
       and(
-        withType(address, params.type),
+        withType(address, params.type ?? "all"),
         ...cursorFilters(cursor),
         ...collectionFilters(params),
         ...extraFilters,
