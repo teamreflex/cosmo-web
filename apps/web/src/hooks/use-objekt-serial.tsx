@@ -23,6 +23,7 @@ export function useObjektSerial() {
     void navigate({
       // @ts-ignore - this hook is used on different routes so we can't reliably type this
       search: (prev) => ({ ...prev, serial }),
+      resetScroll: false,
       replace: true,
     });
   };
