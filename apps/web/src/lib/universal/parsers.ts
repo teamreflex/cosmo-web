@@ -99,7 +99,7 @@ export const transfersFrontendSchema = cosmoSchema
     on_offline: true,
   })
   .extend({
-    type: z.enum(transferTypes).default("all"),
+    type: z.enum(transferTypes).nullish(),
   })
   .partial();
 
