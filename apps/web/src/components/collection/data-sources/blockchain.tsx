@@ -1,4 +1,9 @@
 import VirtualizedObjektGrid from "@/components/objekt/virtualized-objekt-grid";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useArtists } from "@/hooks/use-artists";
 import { useAuthenticated } from "@/hooks/use-authenticated";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
@@ -10,6 +15,8 @@ import { m } from "@/i18n/messages";
 import { userCollectionBlockchainQuery } from "@/lib/queries/objekt-queries";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
+import { Addresses, isEqual } from "@apollo/util";
+import { IconInfoCircle } from "@tabler/icons-react";
 import { useCallback } from "react";
 import { BlockchainGridItem } from "./blockchain-grid-item";
 
@@ -62,6 +69,25 @@ export default function Blockchain(props: Props) {
       selectedIds,
     ),
     calculateTotal: (data) => {
+      if (isEqual(props.targetCosmo.address, Addresses.SPIN)) {
+        return (
+          <Popover>
+            <PopoverTrigger className="flex justify-end" asChild>
+              <button>
+                <IconInfoCircle className="h-5 w-5" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent align="end">
+              <p className="text-xs">
+                @cosmo-spin data has been limited to the last month of received
+                objekts and trades. As it accounts for almost 25% of all
+                objekts, accessing the data gets increasingly difficult.
+              </p>
+            </PopoverContent>
+          </Popover>
+        );
+      }
+
       const total = data.pages[0]?.total ?? 0;
       return (
         <p className="text-end font-semibold">

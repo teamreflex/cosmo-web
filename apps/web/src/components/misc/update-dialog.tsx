@@ -79,6 +79,17 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2026-01-19",
+    changes: [
+      "Fixed: Discord & Twitter sign in have been fixed.",
+      "Fixed: Member filter how has a scroll bar on desktop when necessary.",
+      "Fixed: Season filters on leaderboards now ignore selected artists.",
+      "Fixed: Objekts within event pages are now sorted by collection creation.",
+      "Fixed: Serial input no longer resets scroll position.",
+      "Updated: Data for the @cosmo-spin account is now limited to the last month of received objekts and trades.",
+    ],
+  },
+  {
     date: "2026-01-17",
     changes: [
       "Added: Translations, starting with support for Korean.",
