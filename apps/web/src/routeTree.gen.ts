@@ -29,6 +29,7 @@ import { Route as AdminBandsRouteImport } from './routes/admin/bands'
 import { Route as AtChar123usernameChar125TradesRouteImport } from './routes/@{$username}/trades'
 import { Route as AtChar123usernameChar125ProgressRouteImport } from './routes/@{$username}/progress'
 import { Route as AtChar123usernameChar125ComoRouteImport } from './routes/@{$username}/como'
+import { Route as ApiObjektsIndexRouteImport } from './routes/api/objekts/index'
 import { Route as GravityArtistIdRouteImport } from './routes/gravity/$artist/$id'
 import { Route as ApiUserByAddressesRouteImport } from './routes/api/user/by-addresses'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -150,6 +151,11 @@ const AtChar123usernameChar125ComoRoute =
     path: '/como',
     getParentRoute: () => AtChar123usernameChar125RouteRoute,
   } as any)
+const ApiObjektsIndexRoute = ApiObjektsIndexRouteImport.update({
+  id: '/api/objekts/',
+  path: '/api/objekts/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GravityArtistIdRoute = GravityArtistIdRouteImport.update({
   id: '/gravity/$artist/$id',
   path: '/gravity/$artist/$id',
@@ -259,6 +265,7 @@ export interface FileRoutesByFullPath {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/user/by-addresses': typeof ApiUserByAddressesRoute
   '/gravity/$artist/$id': typeof GravityArtistIdRoute
+  '/api/objekts': typeof ApiObjektsIndexRoute
   '/api/cosmo/qr-auth/recaptcha': typeof ApiCosmoQrAuthRecaptchaRoute
   '/api/cosmo/qr-auth/ticket': typeof ApiCosmoQrAuthTicketRoute
   '/api/gravity/$pollId/aggregated': typeof ApiGravityPollIdAggregatedRoute
@@ -294,6 +301,7 @@ export interface FileRoutesByTo {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/user/by-addresses': typeof ApiUserByAddressesRoute
   '/gravity/$artist/$id': typeof GravityArtistIdRoute
+  '/api/objekts': typeof ApiObjektsIndexRoute
   '/api/cosmo/qr-auth/recaptcha': typeof ApiCosmoQrAuthRecaptchaRoute
   '/api/cosmo/qr-auth/ticket': typeof ApiCosmoQrAuthTicketRoute
   '/api/gravity/$pollId/aggregated': typeof ApiGravityPollIdAggregatedRoute
@@ -332,6 +340,7 @@ export interface FileRoutesById {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/user/by-addresses': typeof ApiUserByAddressesRoute
   '/gravity/$artist/$id': typeof GravityArtistIdRoute
+  '/api/objekts/': typeof ApiObjektsIndexRoute
   '/api/cosmo/qr-auth/recaptcha': typeof ApiCosmoQrAuthRecaptchaRoute
   '/api/cosmo/qr-auth/ticket': typeof ApiCosmoQrAuthTicketRoute
   '/api/gravity/$pollId/aggregated': typeof ApiGravityPollIdAggregatedRoute
@@ -371,6 +380,7 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/api/user/by-addresses'
     | '/gravity/$artist/$id'
+    | '/api/objekts'
     | '/api/cosmo/qr-auth/recaptcha'
     | '/api/cosmo/qr-auth/ticket'
     | '/api/gravity/$pollId/aggregated'
@@ -406,6 +416,7 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/api/user/by-addresses'
     | '/gravity/$artist/$id'
+    | '/api/objekts'
     | '/api/cosmo/qr-auth/recaptcha'
     | '/api/cosmo/qr-auth/ticket'
     | '/api/gravity/$pollId/aggregated'
@@ -443,6 +454,7 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/api/user/by-addresses'
     | '/gravity/$artist/$id'
+    | '/api/objekts/'
     | '/api/cosmo/qr-auth/recaptcha'
     | '/api/cosmo/qr-auth/ticket'
     | '/api/gravity/$pollId/aggregated'
@@ -472,6 +484,7 @@ export interface RootRouteChildren {
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiUserByAddressesRoute: typeof ApiUserByAddressesRoute
   GravityArtistIdRoute: typeof GravityArtistIdRoute
+  ApiObjektsIndexRoute: typeof ApiObjektsIndexRoute
   ApiCosmoQrAuthRecaptchaRoute: typeof ApiCosmoQrAuthRecaptchaRoute
   ApiCosmoQrAuthTicketRoute: typeof ApiCosmoQrAuthTicketRoute
   ApiGravityPollIdAggregatedRoute: typeof ApiGravityPollIdAggregatedRoute
@@ -626,6 +639,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/@{$username}/como'
       preLoaderRoute: typeof AtChar123usernameChar125ComoRouteImport
       parentRoute: typeof AtChar123usernameChar125RouteRoute
+    }
+    '/api/objekts/': {
+      id: '/api/objekts/'
+      path: '/api/objekts'
+      fullPath: '/api/objekts'
+      preLoaderRoute: typeof ApiObjektsIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/gravity/$artist/$id': {
       id: '/gravity/$artist/$id'
@@ -794,6 +814,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiUserByAddressesRoute: ApiUserByAddressesRoute,
   GravityArtistIdRoute: GravityArtistIdRoute,
+  ApiObjektsIndexRoute: ApiObjektsIndexRoute,
   ApiCosmoQrAuthRecaptchaRoute: ApiCosmoQrAuthRecaptchaRoute,
   ApiCosmoQrAuthTicketRoute: ApiCosmoQrAuthTicketRoute,
   ApiGravityPollIdAggregatedRoute: ApiGravityPollIdAggregatedRoute,

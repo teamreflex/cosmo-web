@@ -199,3 +199,21 @@ export function classSort(a: string, b: string, artist: ValidArtist) {
   if (aOrder === undefined || bOrder === undefined) return 0;
   return aOrder - bOrder;
 }
+
+/**
+ * Parse URLSearchParams into a record.
+ */
+export function parseSearchParams(
+  searchParams: URLSearchParams,
+): Record<string, string | string[]> {
+  const obj: Record<string, string | string[]> = {};
+  for (const key of new Set(searchParams.keys())) {
+    const values = searchParams.getAll(key);
+    if (values.length > 1) {
+      obj[key] = values;
+    } else if (values.length === 1) {
+      obj[key] = values[0]!;
+    }
+  }
+  return obj;
+}
