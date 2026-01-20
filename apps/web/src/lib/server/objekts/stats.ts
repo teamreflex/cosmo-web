@@ -1,6 +1,6 @@
 import type { HourlyBreakdown, ObjektStats } from "@/lib/universal/stats";
 import { createServerFn } from "@tanstack/react-start";
-import { and, eq, gte, lt, sql } from "drizzle-orm";
+import { and, count, eq, gte, lt, sql } from "drizzle-orm";
 import { remember } from "../cache";
 import { indexer } from "../db/indexer";
 import { collections, objekts } from "../db/indexer/schema";
@@ -10,6 +10,8 @@ interface RawStats {
   member: string;
   artist: string;
   count: number;
+  premierCount: number;
+  scannedCount: number;
 }
 
 /**
@@ -51,14 +53,29 @@ function initializeBreakdown(referenceHours: string[]): HourlyBreakdown[] {
 
 /**
  * Get hourly stats for the given date range.
+ * Groups by hour, member, and artist while using filtered
+ * aggregates to compute totals in a single query.
  */
 async function getHourlyStats(since: Date, until: Date): Promise<RawStats[]> {
-  const stats = await indexer
+  return indexer
     .select({
       timestamp: sql<string>`date_trunc('hour', ${objekts.mintedAt})::text`,
       member: collections.member,
       artist: collections.artist,
-      count: sql<number>`count(*)::int`,
+      count: count(),
+      premierCount: sql`
+        sum(
+          case
+            when ${collections.class} = 'Premier'
+              and ${collections.onOffline} = 'online'
+            then 1
+            else 0
+          end
+        )
+      `.mapWith(Number),
+      scannedCount: sql`
+        sum(case when ${collections.onOffline} = 'offline' then 1 else 0 end)
+      `.mapWith(Number),
     })
     .from(objekts)
     .innerJoin(collections, eq(objekts.collectionId, collections.id))
@@ -73,74 +90,46 @@ async function getHourlyStats(since: Date, until: Date): Promise<RawStats[]> {
       collections.member,
       collections.artist,
     );
-
-  return stats;
 }
 
 /**
- * Get counts for Premier digital PCOs and scanned objekts in the given date range.
+ * Process the raw stats and return all computed values.
  */
-async function getObjektCounts(
-  since: Date,
-  until: Date,
-): Promise<{
-  premierCount: number;
-  scannedCount: number;
-}> {
-  const result = await indexer
-    .select({
-      premierCount: sql<number>`sum(case when ${collections.class} = 'Premier' and ${collections.onOffline} = 'online' then 1 else 0 end)::int`,
-      scannedCount: sql<number>`sum(case when ${collections.onOffline} = 'offline' then 1 else 0 end)::int`,
-    })
-    .from(objekts)
-    .innerJoin(collections, eq(objekts.collectionId, collections.id))
-    .where(
-      and(
-        gte(objekts.mintedAt, since.toISOString()),
-        lt(objekts.mintedAt, until.toISOString()),
-      ),
-    );
-
-  return {
-    premierCount: result[0]?.premierCount ?? 0,
-    scannedCount: result[0]?.scannedCount ?? 0,
-  };
-}
-
-/**
- * Process the raw stats and return the hourly breakdowns.
- */
-function processRawStats(rawStats: RawStats[], referenceHours: string[]) {
+function processRawStats(
+  rawStats: RawStats[],
+  referenceHours: string[],
+): ObjektStats {
   const memberBreakdown: Record<string, HourlyBreakdown[]> = {};
   const artistBreakdown: Record<string, HourlyBreakdown[]> = {};
   let totalCount = 0;
+  let premierCount = 0;
+  let scannedCount = 0;
 
-  // initialize breakdowns with zero counts
-  for (const stat of rawStats) {
-    if (!memberBreakdown[stat.member]) {
-      memberBreakdown[stat.member] = initializeBreakdown(referenceHours);
-    }
-    if (!artistBreakdown[stat.artist]) {
-      artistBreakdown[stat.artist] = initializeBreakdown(referenceHours);
-    }
+  // Build a map for O(1) hour index lookups
+  const hourIndexMap = new Map<string, number>();
+  for (let i = 0; i < referenceHours.length; i++) {
+    const d = new Date(referenceHours[i]!);
+    const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}-${d.getHours()}`;
+    hourIndexMap.set(key, i);
   }
 
-  // fill in data
+  // Initialize breakdowns and compute stats in a single pass
   for (const stat of rawStats) {
+    // Initialize breakdown arrays if needed
+    memberBreakdown[stat.member] ??= initializeBreakdown(referenceHours);
+    artistBreakdown[stat.artist] ??= initializeBreakdown(referenceHours);
+
+    // Accumulate counts
     totalCount += stat.count;
+    premierCount += stat.premierCount;
+    scannedCount += stat.scannedCount;
 
+    // Find hour index and update breakdowns
     const statDate = new Date(stat.timestamp);
-    const hourIndex = referenceHours.findIndex((h) => {
-      const referenceDate = new Date(h);
-      return (
-        referenceDate.getFullYear() === statDate.getFullYear() &&
-        referenceDate.getMonth() === statDate.getMonth() &&
-        referenceDate.getDate() === statDate.getDate() &&
-        referenceDate.getHours() === statDate.getHours()
-      );
-    });
+    const hourKey = `${statDate.getFullYear()}-${statDate.getMonth()}-${statDate.getDate()}-${statDate.getHours()}`;
+    const hourIndex = hourIndexMap.get(hourKey);
 
-    if (hourIndex !== -1) {
+    if (hourIndex !== undefined) {
       memberBreakdown[stat.member]![hourIndex]!.count += stat.count;
       artistBreakdown[stat.artist]![hourIndex]!.count += stat.count;
     }
@@ -150,6 +139,8 @@ function processRawStats(rawStats: RawStats[], referenceHours: string[]) {
     memberBreakdown,
     artistBreakdown,
     totalCount,
+    premierCount,
+    scannedCount,
   };
 }
 
@@ -161,16 +152,7 @@ export const $fetchObjektStats = createServerFn({ method: "GET" }).handler(() =>
   remember(`objekt-stats`, 60 * 60 * 2, async (): Promise<ObjektStats> => {
     const { start, end } = get24HourWindow();
     const hourlyTimestamps = timestamps();
-
-    const [rawStats, { premierCount, scannedCount }] = await Promise.all([
-      getHourlyStats(start, end),
-      getObjektCounts(start, end),
-    ]);
-
-    return {
-      ...processRawStats(rawStats, hourlyTimestamps),
-      premierCount,
-      scannedCount,
-    };
+    const rawStats = await getHourlyStats(start, end);
+    return processRawStats(rawStats, hourlyTimestamps);
   }),
 );

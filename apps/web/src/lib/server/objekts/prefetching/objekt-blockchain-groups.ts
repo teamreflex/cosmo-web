@@ -41,48 +41,56 @@ export const $fetchObjektsBlockchainGroups = createServerFn({ method: "GET" })
 
     const offset = (data.page - 1) * PER_PAGE;
     const sort = data.sort ?? "newest";
+    const address = data.address.toLowerCase();
 
-    // build common filters
-    const filters = and(
-      eq(objekts.owner, data.address.toLowerCase()),
+    const objektFilters = [
+      eq(objekts.owner, address),
+      ...withTransferable(data.transferable),
+    ];
+    const collectionFilters = [
       ...withArtist(data.artist),
       ...withClass(data.class ?? []),
       ...withSeason(data.season ?? []),
       ...withOnlineType(data.on_offline ?? []),
       ...withMember(data.member),
-      ...withTransferable(data.transferable),
       ...withSelectedArtists(data.artists),
+    ];
+    const requiresCollectionJoin =
+      collectionFilters.length > 0 ||
+      sort === "noAscending" ||
+      sort === "noDescending";
+
+    let idsQuery = requiresCollectionJoin
+      ? indexer
+          .select({
+            collectionId: collections.id,
+            collectionNo: collections.collectionNo,
+            totalCount: sql<number>`count(*) over ()::int`.mapWith(Number),
+          })
+          .from(objekts)
+          .innerJoin(collections, eq(objekts.collectionId, collections.id))
+          .where(and(...objektFilters, ...collectionFilters))
+          .groupBy(collections.id, collections.collectionNo)
+          .$dynamic()
+      : indexer
+          .select({
+            collectionId: objekts.collectionId,
+            totalCount: sql<number>`count(*) over ()::int`.mapWith(Number),
+          })
+          .from(objekts)
+          .where(and(...objektFilters))
+          .groupBy(objekts.collectionId)
+          .$dynamic();
+
+    idsQuery = withObjektGroupSort(
+      idsQuery,
+      sort,
+      requiresCollectionJoin ? collections.id : objekts.collectionId,
     );
-
-    // 1. fetch collection count and IDs in parallel
-    let idsQuery = indexer
-      .select({
-        collectionId: collections.id,
-        newestReceivedAt: max(objekts.receivedAt),
-        maxSerial: max(objekts.serial),
-        collectionNo: collections.collectionNo,
-      })
-      .from(objekts)
-      .innerJoin(collections, eq(objekts.collectionId, collections.id))
-      .where(filters)
-      .groupBy(collections.id, collections.collectionNo)
-      .$dynamic();
-
-    idsQuery = withObjektGroupSort(idsQuery, sort);
     idsQuery = idsQuery.limit(PER_PAGE).offset(offset);
 
-    const [countResult, idsResult] = await Promise.all([
-      indexer
-        .select({
-          count: sql<number>`count(distinct ${collections.id})`.mapWith(Number),
-        })
-        .from(objekts)
-        .innerJoin(collections, eq(objekts.collectionId, collections.id))
-        .where(filters),
-      idsQuery,
-    ]);
-
-    const totalCount = countResult[0]?.count ?? 0;
+    const idsResult = await idsQuery;
+    const totalCount = idsResult[0]?.totalCount ?? 0;
 
     if (idsResult.length === 0) {
       return { collectionCount: 0, collections: [] };
@@ -91,6 +99,31 @@ export const $fetchObjektsBlockchainGroups = createServerFn({ method: "GET" })
     const collectionIds = idsResult.map((r) => r.collectionId);
 
     // 2. fetch collections and objekts separately in parallel
+    const objektsQuery = requiresCollectionJoin
+      ? indexer
+          .select({
+            collectionId: objekts.collectionId,
+            id: objekts.id,
+            serial: objekts.serial,
+            transferable: objekts.transferable,
+            owner: objekts.owner,
+            mintedAt: objekts.mintedAt,
+            receivedAt: objekts.receivedAt,
+          })
+          .from(objekts)
+          .innerJoin(collections, eq(objekts.collectionId, collections.id))
+      : indexer
+          .select({
+            collectionId: objekts.collectionId,
+            id: objekts.id,
+            serial: objekts.serial,
+            transferable: objekts.transferable,
+            owner: objekts.owner,
+            mintedAt: objekts.mintedAt,
+            receivedAt: objekts.receivedAt,
+          })
+          .from(objekts);
+
     const [collectionsResult, objektsResult] = await Promise.all([
       // 2a. fetch collections
       indexer
@@ -117,25 +150,12 @@ export const $fetchObjektsBlockchainGroups = createServerFn({ method: "GET" })
         .where(inArray(collections.id, collectionIds)),
 
       // 2b. fetch objekts
-      indexer
-        .select({
-          collectionId: objekts.collectionId,
-          collectionSlug: collections.collectionId,
-          id: objekts.id,
-          serial: objekts.serial,
-          transferable: objekts.transferable,
-          owner: objekts.owner,
-          mintedAt: objekts.mintedAt,
-          receivedAt: objekts.receivedAt,
-        })
-        .from(objekts)
-        .innerJoin(collections, eq(objekts.collectionId, collections.id))
-        .where(
-          and(
-            eq(objekts.owner, data.address.toLowerCase()),
-            inArray(objekts.collectionId, collectionIds),
-          ),
+      objektsQuery.where(
+        and(
+          eq(objekts.owner, address),
+          inArray(objekts.collectionId, collectionIds),
         ),
+      ),
     ]);
 
     // 3. build the response in JS
@@ -158,7 +178,7 @@ export const $fetchObjektsBlockchainGroups = createServerFn({ method: "GET" })
       const colObjekts = objektsByCollection.get(colId) ?? [];
       const mapped = colObjekts.map((obj) => ({
         metadata: {
-          collectionId: obj.collectionSlug,
+          collectionId: col.collectionId,
           objektNo: obj.serial,
           tokenId: Number(obj.id),
           transferable: obj.transferable,
@@ -218,20 +238,24 @@ export const $fetchObjektsBlockchainGroups = createServerFn({ method: "GET" })
  * Custom sorting filters as collection groups have a different mechanism for sorting.
  */
 const withObjektGroupSort = createServerOnlyFn(
-  <T extends PgSelect>(qb: T, sort: ValidSort) => {
+  <T extends PgSelect>(
+    qb: T,
+    sort: ValidSort,
+    tieBreaker: typeof collections.id | typeof objekts.collectionId,
+  ) => {
     switch (sort) {
       case "newest":
-        return qb.orderBy(desc(max(objekts.receivedAt)), asc(collections.id));
+        return qb.orderBy(desc(max(objekts.receivedAt)), asc(tieBreaker));
       case "oldest":
-        return qb.orderBy(asc(max(objekts.receivedAt)), asc(collections.id));
+        return qb.orderBy(asc(max(objekts.receivedAt)), asc(tieBreaker));
       case "noAscending":
-        return qb.orderBy(asc(collections.collectionNo), asc(collections.id));
+        return qb.orderBy(asc(collections.collectionNo), asc(tieBreaker));
       case "noDescending":
-        return qb.orderBy(desc(collections.collectionNo), asc(collections.id));
+        return qb.orderBy(desc(collections.collectionNo), asc(tieBreaker));
       case "serialAsc":
-        return qb.orderBy(asc(max(objekts.serial)), asc(collections.id));
+        return qb.orderBy(asc(max(objekts.serial)), asc(tieBreaker));
       case "serialDesc":
-        return qb.orderBy(desc(max(objekts.serial)), asc(collections.id));
+        return qb.orderBy(desc(max(objekts.serial)), asc(tieBreaker));
     }
   },
 );
