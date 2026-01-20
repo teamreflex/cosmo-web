@@ -19,11 +19,11 @@ export const $saveBandUrls = createServerFn({ method: "POST" })
       .reduce((acc, curr) => sql`${acc}, ${curr}`);
 
     await indexer.execute(sql`
-      UPDATE ${collections}
-      SET ${collections.bandImageUrl} = data.band_image_url
-      FROM (VALUES ${values}) AS data(slug, band_image_url)
-      WHERE ${collections.slug} = data.slug
-    `);
+        UPDATE ${collections}
+        SET band_image_url = data.band_image_url
+        FROM (VALUES ${values}) AS data(slug, band_image_url)
+        WHERE ${collections.slug} = data.slug
+      `);
 
     return true;
   });

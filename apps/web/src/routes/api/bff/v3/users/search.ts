@@ -58,7 +58,8 @@ async function queryDatabase(query: string): Promise<CosmoSearchResult> {
       address: cosmoAccounts.address,
     })
     .from(cosmoAccounts)
-    .where(like(cosmoAccounts.username, `${query}%`));
+    .where(like(cosmoAccounts.username, `${query}%`))
+    .limit(100);
 
   return {
     hasNext: false,
