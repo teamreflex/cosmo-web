@@ -1,6 +1,6 @@
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
-import { Fragment, useState, lazy } from "react";
+import { Fragment, useState, lazy, Suspense } from "react";
 import type { PropsWithChildren } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
@@ -20,6 +20,12 @@ type Props = PropsWithChildren<{
 export default function FlippableObjekt({ children, collection }: Props) {
   const [flipped, setFlipped] = useState(false);
 
+  const Image = (
+    <ObjektImage src={collection.frontImage} alt={collection.collectionId}>
+      {children}
+    </ObjektImage>
+  );
+
   return (
     <div
       role="button"
@@ -37,31 +43,19 @@ export default function FlippableObjekt({ children, collection }: Props) {
       {/* front */}
       <div className="absolute inset-0 backface-hidden">
         {collection.frontMedia ? (
-          <ErrorBoundary
-            fallback={
-              <ObjektImage
-                src={collection.frontImage}
+          <ErrorBoundary fallback={Image}>
+            <Suspense fallback={Image}>
+              <ObjektVideo
+                imageSrc={collection.frontImage}
+                videoSrc={collection.frontMedia}
                 alt={collection.collectionId}
               >
                 {children}
-              </ObjektImage>
-            }
-          >
-            <ObjektVideo
-              imageSrc={collection.frontImage}
-              videoSrc={collection.frontMedia}
-              alt={collection.collectionId}
-            >
-              {children}
-            </ObjektVideo>
+              </ObjektVideo>
+            </Suspense>
           </ErrorBoundary>
         ) : (
-          <ObjektImage
-            src={collection.frontImage}
-            alt={collection.collectionId}
-          >
-            {children}
-          </ObjektImage>
+          Image
         )}
       </div>
 
