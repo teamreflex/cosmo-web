@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/popover";
 import { m } from "@/i18n/messages";
 import { cn } from "@/lib/utils";
-import { IconPlus, IconX } from "@tabler/icons-react";
+import { IconPlus, IconUsers, IconX } from "@tabler/icons-react";
 import { useState } from "react";
 
 type Props = {
@@ -45,6 +45,10 @@ export default function MemberSelection({ members, value, onChange }: Props) {
     setPopoverOpen(false);
   }
 
+  function handleAddAllMembers() {
+    onChange(members);
+  }
+
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -56,23 +60,31 @@ export default function MemberSelection({ members, value, onChange }: Props) {
     <Field>
       <div className="flex items-center justify-between">
         <FieldLabel>{m.admin_matrix_members()}</FieldLabel>
-        <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
-          <PopoverTrigger asChild>
-            <Button size="xs" variant="ghost">
-              <IconPlus className="size-3" />
-              <span>Custom</span>
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-48 p-2" align="end">
-            <Input
-              placeholder={m.admin_matrix_custom_member_placeholder()}
-              value={customInput}
-              onChange={(e) => setCustomInput(e.currentTarget.value)}
-              onKeyDown={handleKeyDown}
-              autoFocus
-            />
-          </PopoverContent>
-        </Popover>
+
+        <div className="flex items-center gap-2">
+          <Button size="xs" onClick={handleAddAllMembers}>
+            <IconUsers className="size-3" />
+            <span>All</span>
+          </Button>
+
+          <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+            <PopoverTrigger asChild>
+              <Button size="xs">
+                <IconPlus className="size-3" />
+                <span>Custom</span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-48 p-2" align="end">
+              <Input
+                placeholder={m.admin_matrix_custom_member_placeholder()}
+                value={customInput}
+                onChange={(e) => setCustomInput(e.currentTarget.value)}
+                onKeyDown={handleKeyDown}
+                autoFocus
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
       </div>
       <div className="flex flex-wrap gap-2">
         {members.map((member) => (
