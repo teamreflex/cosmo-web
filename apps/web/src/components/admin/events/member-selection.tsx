@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/popover";
 import { m } from "@/i18n/messages";
 import { cn } from "@/lib/utils";
-import { IconPlus, IconUsers, IconX } from "@tabler/icons-react";
+import { IconPlus, IconRefresh, IconUsers, IconX } from "@tabler/icons-react";
 import { useState } from "react";
 
 type Props = {
@@ -49,6 +49,10 @@ export default function MemberSelection({ members, value, onChange }: Props) {
     onChange(members);
   }
 
+  function handleReset() {
+    onChange([]);
+  }
+
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -62,6 +66,10 @@ export default function MemberSelection({ members, value, onChange }: Props) {
         <FieldLabel>{m.admin_matrix_members()}</FieldLabel>
 
         <div className="flex items-center gap-2">
+          <Button size="xs" onClick={handleReset}>
+            <IconRefresh className="size-3" />
+          </Button>
+
           <Button size="xs" onClick={handleAddAllMembers}>
             <IconUsers className="size-3" />
             <span>All</span>
