@@ -1,26 +1,4 @@
-import type { LoginChannel } from "./auth";
 import type { ValidArtist } from "./common";
-
-export type CosmoShopUser = {
-  id: number;
-  nickname: string;
-  address: string;
-  profileImageUrl: string;
-  birth: string;
-  loginChannel: LoginChannel;
-  socialLoginUserId: null;
-  isBanned: boolean;
-  marketingConsentDate: string;
-  lastViewedArtist: string;
-  lastActiveAt: string;
-  locale: string;
-  country: string;
-  os: string;
-  appVersion: string;
-  createdAt: string;
-  updatedAt: string;
-  profileImages: CosmoProfile[];
-};
 
 export type CosmoProfile = {
   artistId: ValidArtist;
@@ -57,10 +35,9 @@ export type CosmoUserProfile = {
   createdAt: string;
 };
 
-export type CosmoByNicknameResult = {
-  profile: {
-    nickname: string;
-    address: string;
-    profileImageUrl: string;
-  };
+export type CosmoByNickname = {
+  nickname: string;
+  address: string;
+  profileImageUrl: string;
+  guid: string;
 };
