@@ -5,7 +5,8 @@
   "license": "MIT",
   "exports": {
     "./types/*": "./src/types/*.ts",
-    "./server/*": "./src/server/*.ts"
+    "./server/*": "./src/server/*.ts",
+    "./bands": "./src/bands.ts"
   },
   "scripts": {
     "lint": "oxlint --type-aware",

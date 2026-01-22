@@ -65,7 +65,7 @@ turbo db:migrate
 
 ## Contributing
 
-For security reasons, PRs will not be accepted. This project is considered _source available_ for the purpose of scrutiny rather than open source for contributions. If a problem needs reporting, please make an issue in post in Discord.
+For security reasons, PRs will not be accepted. This project is considered _source available_ for the purpose of scrutiny rather than open source for contributions. If a problem needs reporting, please make an issue or post in Discord.
 
 ## Branches
 

@@ -3,6 +3,7 @@ import { m } from "@/i18n/messages";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import type { PropsWithClassName } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import { bands } from "@apollo/cosmo/bands";
 import type { NonTransferableReason } from "@apollo/cosmo/types/objekts";
 import { Fragment, useState } from "react";
 import type { CSSProperties, PropsWithChildren } from "react";
@@ -47,8 +48,9 @@ export function ObjektSidebar({ collection, serial }: ObjektSidebarProps) {
     serial === 0 ? "00000" : serial?.toString().padStart(5, "0");
 
   const useCustomBand = collection.artist === "idntt";
-  const useBackground =
-    useCustomBand && (!collection.bandImageUrl || !bandLoaded);
+  const bandImageUrl =
+    collection.bandImageUrl ?? bands[collection.artist][collection.class];
+  const useBackground = useCustomBand && (!bandImageUrl || !bandLoaded);
   const showBand =
     // handle tripleS/ARTMS
     useCustomBand === false ||
@@ -62,9 +64,9 @@ export function ObjektSidebar({ collection, serial }: ObjektSidebarProps) {
    */
   return (
     <Fragment>
-      {showBand && collection.bandImageUrl && (
+      {showBand && bandImageUrl && (
         <img
-          src={collection.bandImageUrl}
+          src={bandImageUrl}
           className={cn(
             "pointer-events-none absolute top-0 left-0 h-full w-full object-cover opacity-0 transition-opacity",
             bandLoaded && "opacity-100",
