@@ -154,6 +154,7 @@ export const $fetchObjektsBlockchainGroups = createServerFn({ method: "GET" })
         and(
           eq(objekts.owner, address),
           inArray(objekts.collectionId, collectionIds),
+          ...withTransferable(data.transferable),
         ),
       ),
     ]);

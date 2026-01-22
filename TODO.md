@@ -6,5 +6,5 @@
 - [x] add _all_ to member selection in add collections dialog
 - [ ] figure out system for batch linking unit collections
 - [x] hardcode band URLs and match based on artist+class?
-- [ ] fix collection groups transferable filter
+- [x] fix collection groups transferable filter
 - [ ] explore loading artists in korean
