@@ -49,7 +49,7 @@ export function ObjektSidebar({ collection, serial }: ObjektSidebarProps) {
 
   const useCustomBand = collection.artist === "idntt";
   const bandImageUrl =
-    collection.bandImageUrl ?? bands[collection.artist][collection.class];
+    collection.bandImageUrl ?? bands[collection.artist]?.[collection.class];
   const useBackground = useCustomBand && (!bandImageUrl || !bandLoaded);
   const showBand =
     // handle tripleS/ARTMS
