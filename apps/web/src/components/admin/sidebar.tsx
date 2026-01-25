@@ -11,44 +11,14 @@ import {
 import { m } from "@/i18n/messages";
 import { env } from "@/lib/env/client";
 import type { PropsWithClassName } from "@/lib/utils";
-import {
-  IconCalendarEvent,
-  IconDisc,
-  IconHome,
-  IconLayoutSidebarRight,
-} from "@tabler/icons-react";
 import { Link, useLocation } from "@tanstack/react-router";
-
-export function getItems() {
-  return [
-    {
-      title: m.admin_home(),
-      url: "/admin",
-      icon: IconHome,
-    },
-    {
-      title: m.admin_bands_title(),
-      url: "/admin/bands",
-      icon: IconLayoutSidebarRight,
-    },
-    {
-      title: m.admin_eras_title(),
-      url: "/admin/eras",
-      icon: IconDisc,
-    },
-    {
-      title: m.admin_events_title(),
-      url: "/admin/events",
-      icon: IconCalendarEvent,
-    },
-  ];
-}
+import { getAdminItems } from "./common";
 
 type Props = PropsWithClassName<{}>;
 
 export function AdminSidebar({ className }: Props) {
   const location = useLocation();
-  const items = getItems();
+  const items = getAdminItems();
 
   return (
     <Sidebar variant="inset" className={className}>

@@ -1,13 +1,14 @@
+import { useMetadataDialog } from "@/hooks/use-metadata-dialog";
 import { useObjektTransfer } from "@/hooks/use-objekt-transfer";
+import { getObjektImageUrls } from "@/lib/client/objekt-util";
+import { objektQuery } from "@/lib/queries/objekt-queries";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import type { PropsWithChildren } from "react";
 import { useShallow } from "zustand/react/shallow";
-import { getObjektImageUrls } from "./common";
-import MetadataDialog, { useMetadataDialog } from "./metadata-dialog";
-import { fetchObjektQuery } from "./metadata/common";
+import MetadataDialog from "./metadata-dialog";
 
 type Props = PropsWithChildren<{
   collection: Objekt.Collection;
@@ -87,7 +88,7 @@ function FrontImage(props: FrontImageProps) {
       onClick={() => {
         // populate the query cache so it doesn't re-fetch
         queryClient.setQueryData(
-          fetchObjektQuery(props.collection.slug).queryKey,
+          objektQuery(props.collection.slug).queryKey,
           props.collection,
         );
 

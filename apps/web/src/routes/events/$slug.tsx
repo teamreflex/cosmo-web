@@ -9,12 +9,12 @@ import VirtualizedObjektGrid from "@/components/objekt/virtualized-objekt-grid";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useGridColumns } from "@/hooks/use-grid-columns";
 import { objektOptions } from "@/hooks/use-objekt-response";
-import { ProfileProvider } from "@/hooks/use-profile";
-import { UserStateProvider } from "@/hooks/use-user-state";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import { currentAccountQuery } from "@/lib/queries/core";
 import { eventBySlugQuery, eventObjektsQuery } from "@/lib/queries/events";
+import { ProfileProvider } from "@/providers/profile-provider";
+import { UserStateProvider } from "@/providers/user-state-provider";
 import { IconAlertCircle } from "@tabler/icons-react";
 import { createFileRoute } from "@tanstack/react-router";
 

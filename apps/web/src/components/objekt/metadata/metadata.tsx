@@ -8,6 +8,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUserState } from "@/hooks/use-user-state";
 import { m } from "@/i18n/messages";
+import { getObjektImageUrls } from "@/lib/client/objekt-util";
 import { env } from "@/lib/env/client";
 import { objektMetadataQuery } from "@/lib/queries/objekt-queries";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
@@ -25,7 +26,6 @@ import { toast } from "sonner";
 import { useCopyToClipboard } from "usehooks-ts";
 import Portal from "../../portal";
 import { Button } from "../../ui/button";
-import { getObjektImageUrls } from "../common";
 import type { ObjektMetadataTab } from "./common";
 import EditMetadata from "./edit-metadata";
 import Pill from "./pill";

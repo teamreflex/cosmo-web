@@ -39,7 +39,7 @@ export default function NavbarSearch() {
         <Tooltip>
           <TooltipTrigger asChild>
             <button
-              className="outline-hidden focus:outline-hidden drop-shadow-lg"
+              className="outline-hidden drop-shadow-lg focus:outline-hidden"
               aria-label={m.navbar_search_user()}
               onClick={() => setOpen(true)}
             >

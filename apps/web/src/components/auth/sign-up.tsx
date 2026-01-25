@@ -2,6 +2,7 @@ import { m } from "@/i18n/messages";
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { signUpSchema } from "@/lib/universal/schema/auth";
 import { track } from "@/lib/utils";
+import { randomHandle } from "@/lib/utils";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconCircleCheck, IconLoader2 } from "@tabler/icons-react";
 import { useMutation } from "@tanstack/react-query";
@@ -12,7 +13,6 @@ import type { z } from "zod";
 import { Button } from "../ui/button";
 import { Field, FieldError, FieldLabel } from "../ui/field";
 import { Input } from "../ui/input";
-import { randomHandle } from "./account/update-username";
 
 type Props = {
   onCancel: () => void;

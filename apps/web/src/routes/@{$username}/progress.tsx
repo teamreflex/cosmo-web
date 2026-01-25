@@ -7,8 +7,6 @@ import {
 import HelpDialog from "@/components/progress/help-dialog";
 import ProgressRenderer from "@/components/progress/progress-renderer";
 import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
-import { ProfileProvider } from "@/hooks/use-profile";
-import { UserStateProvider } from "@/hooks/use-user-state";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import {
@@ -19,6 +17,8 @@ import {
 } from "@/lib/queries/core";
 import { artistStatsQuery } from "@/lib/queries/progress";
 import { progressFrontendSchema } from "@/lib/universal/parsers";
+import { ProfileProvider } from "@/providers/profile-provider";
+import { UserStateProvider } from "@/providers/user-state-provider";
 import { createFileRoute } from "@tanstack/react-router";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";

@@ -59,7 +59,7 @@ export default function UserDropdown({
 
       <DropdownMenuTrigger className="group outline-hidden">
         <UserAvatar
-          className="h-8 w-8 **:p-1 shadow-sm"
+          className="h-8 w-8 shadow-sm **:p-1"
           username={user.username ?? "Apollo"}
         />
       </DropdownMenuTrigger>

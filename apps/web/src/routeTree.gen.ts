@@ -258,14 +258,14 @@ export interface FileRoutesByFullPath {
   '/objekts/stats': typeof ObjektsStatsRoute
   '/@{$username}/': typeof AtChar123usernameChar125IndexRoute
   '/admin/': typeof AdminIndexRoute
-  '/events': typeof EventsIndexRoute
-  '/gravity': typeof GravityIndexRoute
-  '/objekts': typeof ObjektsIndexRoute
+  '/events/': typeof EventsIndexRoute
+  '/gravity/': typeof GravityIndexRoute
+  '/objekts/': typeof ObjektsIndexRoute
   '/@{$username}/list/$slug': typeof AtChar123usernameChar125ListSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/user/by-addresses': typeof ApiUserByAddressesRoute
   '/gravity/$artist/$id': typeof GravityArtistIdRoute
-  '/api/objekts': typeof ApiObjektsIndexRoute
+  '/api/objekts/': typeof ApiObjektsIndexRoute
   '/api/cosmo/qr-auth/recaptcha': typeof ApiCosmoQrAuthRecaptchaRoute
   '/api/cosmo/qr-auth/ticket': typeof ApiCosmoQrAuthTicketRoute
   '/api/gravity/$pollId/aggregated': typeof ApiGravityPollIdAggregatedRoute
@@ -275,8 +275,8 @@ export interface FileRoutesByFullPath {
   '/api/objekts/metadata/$slug/$serial': typeof ApiObjektsMetadataSlugSerialRoute
   '/api/user/by-address/$address/como': typeof ApiUserByAddressAddressComoRoute
   '/api/user/by-address/$address/stats': typeof ApiUserByAddressAddressStatsRoute
-  '/api/objekts/metadata/$slug': typeof ApiObjektsMetadataSlugIndexRoute
-  '/api/user/by-address/$address': typeof ApiUserByAddressAddressIndexRoute
+  '/api/objekts/metadata/$slug/': typeof ApiObjektsMetadataSlugIndexRoute
+  '/api/user/by-address/$address/': typeof ApiUserByAddressAddressIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -373,14 +373,14 @@ export interface FileRouteTypes {
     | '/objekts/stats'
     | '/@{$username}/'
     | '/admin/'
-    | '/events'
-    | '/gravity'
-    | '/objekts'
+    | '/events/'
+    | '/gravity/'
+    | '/objekts/'
     | '/@{$username}/list/$slug'
     | '/api/auth/$'
     | '/api/user/by-addresses'
     | '/gravity/$artist/$id'
-    | '/api/objekts'
+    | '/api/objekts/'
     | '/api/cosmo/qr-auth/recaptcha'
     | '/api/cosmo/qr-auth/ticket'
     | '/api/gravity/$pollId/aggregated'
@@ -390,8 +390,8 @@ export interface FileRouteTypes {
     | '/api/objekts/metadata/$slug/$serial'
     | '/api/user/by-address/$address/como'
     | '/api/user/by-address/$address/stats'
-    | '/api/objekts/metadata/$slug'
-    | '/api/user/by-address/$address'
+    | '/api/objekts/metadata/$slug/'
+    | '/api/user/by-address/$address/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -538,21 +538,21 @@ declare module '@tanstack/react-router' {
     '/objekts/': {
       id: '/objekts/'
       path: '/objekts'
-      fullPath: '/objekts'
+      fullPath: '/objekts/'
       preLoaderRoute: typeof ObjektsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/gravity/': {
       id: '/gravity/'
       path: '/gravity'
-      fullPath: '/gravity'
+      fullPath: '/gravity/'
       preLoaderRoute: typeof GravityIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/events/': {
       id: '/events/'
       path: '/events'
-      fullPath: '/events'
+      fullPath: '/events/'
       preLoaderRoute: typeof EventsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
@@ -643,7 +643,7 @@ declare module '@tanstack/react-router' {
     '/api/objekts/': {
       id: '/api/objekts/'
       path: '/api/objekts'
-      fullPath: '/api/objekts'
+      fullPath: '/api/objekts/'
       preLoaderRoute: typeof ApiObjektsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
@@ -713,14 +713,14 @@ declare module '@tanstack/react-router' {
     '/api/user/by-address/$address/': {
       id: '/api/user/by-address/$address/'
       path: '/api/user/by-address/$address'
-      fullPath: '/api/user/by-address/$address'
+      fullPath: '/api/user/by-address/$address/'
       preLoaderRoute: typeof ApiUserByAddressAddressIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/objekts/metadata/$slug/': {
       id: '/api/objekts/metadata/$slug/'
       path: '/api/objekts/metadata/$slug'
-      fullPath: '/api/objekts/metadata/$slug'
+      fullPath: '/api/objekts/metadata/$slug/'
       preLoaderRoute: typeof ApiObjektsMetadataSlugIndexRouteImport
       parentRoute: typeof rootRouteImport
     }

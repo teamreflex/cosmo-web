@@ -7,8 +7,6 @@ import ScrollToTop from "@/components/misc/overlay/scroll-to-top";
 import ToggleObjektBands from "@/components/misc/overlay/toggle-objekt-bands";
 import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ProfileProvider } from "@/hooks/use-profile";
-import { UserStateProvider } from "@/hooks/use-user-state";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import {
@@ -21,6 +19,8 @@ import {
 import { objektListQuery } from "@/lib/queries/objekt-queries";
 import { $fetchObjektList } from "@/lib/server/objekts/lists";
 import { objektListFrontendSchema } from "@/lib/universal/parsers";
+import { ProfileProvider } from "@/providers/profile-provider";
+import { UserStateProvider } from "@/providers/user-state-provider";
 import { IconHeartBroken } from "@tabler/icons-react";
 import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
 

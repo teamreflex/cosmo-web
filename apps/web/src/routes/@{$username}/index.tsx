@@ -5,7 +5,6 @@ import ToggleObjektBands from "@/components/misc/overlay/toggle-objekt-bands";
 import ProfileRenderer from "@/components/profile/profile-renderer";
 import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ProfileProvider } from "@/hooks/use-profile";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import {
@@ -21,6 +20,7 @@ import {
 } from "@/lib/queries/objekt-queries";
 import { pinsQuery } from "@/lib/queries/profile";
 import { userCollectionFrontendSchema } from "@/lib/universal/parsers";
+import { ProfileProvider } from "@/providers/profile-provider";
 import { Addresses, isEqual } from "@apollo/util";
 import { createFileRoute } from "@tanstack/react-router";
 

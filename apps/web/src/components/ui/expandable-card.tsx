@@ -213,5 +213,4 @@ export {
   ExpandableCardAction,
   ExpandableCardContent,
   ExpandableCardFooter,
-  useExpandableCard,
 };

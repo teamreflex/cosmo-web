@@ -1,6 +1,9 @@
+import { useMetadataDialog } from "@/hooks/use-metadata-dialog";
 import { useObjektTransfer } from "@/hooks/use-objekt-transfer";
 import { useProfileContext } from "@/hooks/use-profile";
 import { m } from "@/i18n/messages";
+import { getObjektImageUrls } from "@/lib/client/objekt-util";
+import { objektQuery } from "@/lib/queries/objekt-queries";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
 import { useObjektOverlay } from "@/store";
@@ -13,13 +16,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Dialog as DialogPrimitive, VisuallyHidden } from "radix-ui";
 import { useState } from "react";
 import { useShallow } from "zustand/react/shallow";
-import {
-  ObjektNewIndicator,
-  ObjektSidebar,
-  getObjektImageUrls,
-} from "./common";
-import MetadataDialog, { useMetadataDialog } from "./metadata-dialog";
-import { fetchObjektQuery } from "./metadata/common";
+import { ObjektNewIndicator, ObjektSidebar } from "./common";
+import MetadataDialog from "./metadata-dialog";
 import StaticObjekt from "./objekt-static";
 
 interface Props {
@@ -193,10 +191,7 @@ function RootObjektOverlay({
 
   function handleClick() {
     // populate the query cache so it doesn't re-fetch
-    queryClient.setQueryData(
-      fetchObjektQuery(collection.slug).queryKey,
-      collection,
-    );
+    queryClient.setQueryData(objektQuery(collection.slug).queryKey, collection);
 
     // open the dialog
     open();

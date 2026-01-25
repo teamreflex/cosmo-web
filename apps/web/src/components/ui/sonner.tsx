@@ -1,5 +1,6 @@
 "use client";
 
+import { useTheme } from "@/hooks/use-theme";
 import {
   IconAlertOctagon,
   IconAlertTriangle,
@@ -9,7 +10,6 @@ import {
 } from "@tabler/icons-react";
 import { Toaster as Sonner } from "sonner";
 import type { ToasterProps } from "sonner";
-import { useTheme } from "../theme-provider";
 
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme();

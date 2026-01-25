@@ -5,11 +5,11 @@ export default function Notice() {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <button className="relative h-8 w-9 flex justify-center items-center rounded-md bg-orange-500/30 hover:bg-orange-500/45 border border-orange-500/30 transition-colors shadow-sm">
-          <IconAlertTriangle className="text-orange-500 w-5 h-5" />
+        <button className="relative flex h-8 w-9 items-center justify-center rounded-md border border-orange-500/30 bg-orange-500/30 shadow-sm transition-colors hover:bg-orange-500/45">
+          <IconAlertTriangle className="h-5 w-5 text-orange-500" />
         </button>
       </PopoverTrigger>
-      <PopoverContent className="flex flex-col text-xs gap-1">
+      <PopoverContent className="flex flex-col gap-1 text-xs">
         <p>
           We've just completed a big update and platform migration, so things
           might be a little unstable for a bit.

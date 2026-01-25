@@ -45,7 +45,7 @@ export default function EventHeader({ event }: EventHeaderProps) {
       )}
 
       {/* fade to background layer */}
-      <div className="absolute inset-x-0 bottom-0 dark:h-2/3 h-full bg-linear-to-t from-background dark:to-transparent to-foreground/20" />
+      <div className="absolute inset-x-0 bottom-0 h-full bg-linear-to-t from-background to-foreground/20 dark:h-2/3 dark:to-transparent" />
 
       {/* inner content */}
       <div className="relative z-10 flex flex-col gap-4 px-4 py-8 md:container">

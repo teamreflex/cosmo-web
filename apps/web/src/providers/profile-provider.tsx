@@ -1,10 +1,14 @@
+import {
+  ProfileContext,
+  type ProfileState,
+  type ProfileStore,
+} from "@/hooks/use-profile";
 import type { PublicAccount } from "@/lib/universal/cosmo-accounts";
 import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
 import type { ObjektList } from "@apollo/database/web/types";
-import { createContext, useContext, useRef } from "react";
+import { useRef } from "react";
 import type { PropsWithChildren } from "react";
-import { createStore, useStore } from "zustand";
-import { useShallow } from "zustand/react/shallow";
+import { createStore } from "zustand";
 
 interface ProfileProps {
   target: Partial<PublicAccount> | undefined;
@@ -14,16 +18,6 @@ interface ProfileProps {
 }
 
 type ProfileProviderProps = PropsWithChildren<Partial<ProfileProps>>;
-
-interface ProfileState extends ProfileProps {
-  toggleLock: (tokenId: number) => void;
-  addPin: (objekt: CosmoObjekt) => void;
-  removePin: (tokenId: number) => void;
-  addObjektList: (list: ObjektList) => void;
-  removeObjektList: (listId: string) => void;
-}
-
-type ProfileStore = ReturnType<typeof createProfileStore>;
 
 const createProfileStore = (initProps?: Partial<ProfileProps>) => {
   const DEFAULT_PROPS: ProfileProps = {
@@ -37,9 +31,6 @@ const createProfileStore = (initProps?: Partial<ProfileProps>) => {
     ...DEFAULT_PROPS,
     ...initProps,
 
-    /**
-     * Toggle the lock state of a token
-     */
     toggleLock: (tokenId: number) =>
       set((state) => ({
         ...state,
@@ -48,36 +39,24 @@ const createProfileStore = (initProps?: Partial<ProfileProps>) => {
           : [...state.lockedObjekts, tokenId],
       })),
 
-    /**
-     * Pin the given objekt
-     */
     addPin: (objekt: CosmoObjekt) =>
       set((state) => ({
         ...state,
         pins: [objekt, ...state.pins],
       })),
 
-    /**
-     * Remove a pinned objekt
-     */
     removePin: (tokenId: number) =>
       set((state) => ({
         ...state,
         pins: state.pins.filter((p) => p.tokenId !== tokenId.toString()),
       })),
 
-    /**
-     * Add an objekt list
-     */
     addObjektList: (list: ObjektList) =>
       set((state) => ({
         ...state,
         objektLists: [...state.objektLists, list],
       })),
 
-    /**
-     * Remove an objekt list
-     */
     removeObjektList: (listId: string) =>
       set((state) => ({
         ...state,
@@ -85,8 +64,6 @@ const createProfileStore = (initProps?: Partial<ProfileProps>) => {
       })),
   }));
 };
-
-const ProfileContext = createContext<ProfileStore | null>(null);
 
 export function ProfileProvider({ children, ...props }: ProfileProviderProps) {
   const storeRef = useRef<ProfileStore>(null);
@@ -97,35 +74,5 @@ export function ProfileProvider({ children, ...props }: ProfileProviderProps) {
     <ProfileContext.Provider value={storeRef.current}>
       {children}
     </ProfileContext.Provider>
-  );
-}
-
-export function useProfileContext<T>(selector: (state: ProfileState) => T): T {
-  const store = useContext(ProfileContext);
-  if (!store) {
-    throw new Error("useProfileContext must be used within a ProfileProvider");
-  }
-
-  return useStore(store, selector);
-}
-
-/**
- * Optimized hook for checking if a token is locked.
- */
-export function useLockedObjekt(tokenId: number) {
-  return useProfileContext(
-    useShallow((state) => state.lockedObjekts.includes(tokenId)),
-  );
-}
-
-/**
- * Optimized hook for checking if a token is locked.
- */
-export function usePinnedObjekt(tokenId: number) {
-  return useProfileContext(
-    useShallow(
-      (state) =>
-        state.pins.findIndex((p) => Number(p.tokenId) === tokenId) !== -1,
-    ),
   );
 }

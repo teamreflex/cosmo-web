@@ -1,33 +1,15 @@
 import { m } from "@/i18n/messages";
-import type { Objekt } from "@/lib/universal/objekt-conversion";
+import { ObjektNotFoundError } from "@/lib/client/objekt-util";
 import { IconHeartBroken, IconRefresh } from "@tabler/icons-react";
-import { ofetch } from "ofetch";
-import type { FetchError } from "ofetch";
 import { Button } from "../../ui/button";
-import { ObjektNotFoundError } from "../common";
 
 export type ObjektMetadataTab = "metadata" | "serials";
-
-export const fetchObjektQuery = (slug: string) => ({
-  queryKey: ["collection-metadata", "objekt", slug],
-  queryFn: async () => {
-    return await ofetch<Objekt.Collection>(
-      `/api/objekts/by-slug/${slug}`,
-    ).catch((error: FetchError) => {
-      if (error.status === 404) {
-        throw new ObjektNotFoundError("Objekt not found");
-      }
-      throw error;
-    });
-  },
-  retry: 1,
-});
 
 export function MetadataDialogError({
   error,
   resetErrorBoundary,
 }: {
-  error: Error;
+  error: unknown;
   resetErrorBoundary: () => void;
 }) {
   const message =

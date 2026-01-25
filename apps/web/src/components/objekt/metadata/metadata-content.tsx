@@ -1,4 +1,5 @@
 import { useObjektSerial } from "@/hooks/use-objekt-serial";
+import { objektQuery } from "@/lib/queries/objekt-queries";
 import { cn } from "@/lib/utils";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -6,7 +7,6 @@ import { Separator } from "../../ui/separator";
 import { ObjektSidebar } from "../common";
 import FlippableObjekt from "../objekt-flippable";
 import AttributePanel from "./attribute-panel";
-import { fetchObjektQuery } from "./common";
 import type { ObjektMetadataTab } from "./common";
 import MetadataPanel from "./metadata-panel";
 
@@ -15,7 +15,7 @@ type Props = {
 };
 
 export default function MetadataContent(props: Props) {
-  const { data } = useSuspenseQuery(fetchObjektQuery(props.slug));
+  const { data } = useSuspenseQuery(objektQuery(props.slug));
   const { serial } = useObjektSerial();
   const [tab, setTab] = useState<ObjektMetadataTab>(() =>
     serial !== undefined ? "serials" : "metadata",

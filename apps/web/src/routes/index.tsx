@@ -6,8 +6,6 @@ import IndexRenderer from "@/components/objekt-index/index-renderer";
 import ObjektGridSkeleton from "@/components/objekt/objekt-grid-skeleton";
 import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ProfileProvider } from "@/hooks/use-profile";
-import { UserStateProvider } from "@/hooks/use-user-state";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import {
@@ -18,6 +16,8 @@ import {
 } from "@/lib/queries/core";
 import { objektIndexBlockchainQuery } from "@/lib/queries/objekt-queries";
 import { objektIndexFrontendSchema } from "@/lib/universal/parsers";
+import { ProfileProvider } from "@/providers/profile-provider";
+import { UserStateProvider } from "@/providers/user-state-provider";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({

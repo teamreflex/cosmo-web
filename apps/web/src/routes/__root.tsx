@@ -1,7 +1,6 @@
 import Devtools from "@/components/devtools";
 import Navbar from "@/components/navbar/navbar";
 import TailwindIndicator from "@/components/tailwind-indicator";
-import { ThemeProvider } from "@/components/theme-provider";
 import { Button } from "@/components/ui/button";
 import { m } from "@/i18n/messages";
 import { getLocale } from "@/i18n/runtime";
@@ -13,6 +12,7 @@ import {
   selectedArtistsQuery,
 } from "@/lib/queries/core";
 import { systemStatusQuery } from "@/lib/queries/system";
+import { ThemeProvider } from "@/providers/theme-provider";
 import { IconFileUnknown, IconRefresh } from "@tabler/icons-react";
 import type { QueryClient } from "@tanstack/react-query";
 import {

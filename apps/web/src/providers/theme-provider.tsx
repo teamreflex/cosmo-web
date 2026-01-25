@@ -1,14 +1,7 @@
+import { ThemeProviderContext, type Theme } from "@/hooks/use-theme";
 import { ScriptOnce } from "@tanstack/react-router";
-import {
-  createContext,
-  use,
-  useEffect,
-  useEffectEvent,
-  useMemo,
-  useState,
-} from "react";
+import { useEffect, useEffectEvent, useMemo, useState } from "react";
 
-export type Theme = "dark" | "light" | "system";
 const MEDIA = "(prefers-color-scheme: dark)";
 
 type ThemeProviderProps = {
@@ -16,18 +9,6 @@ type ThemeProviderProps = {
   defaultTheme?: Theme;
   storageKey?: string;
 };
-
-type ThemeProviderState = {
-  theme: Theme;
-  setTheme: (theme: Theme) => void;
-};
-
-const initialState: ThemeProviderState = {
-  theme: "system",
-  setTheme: () => null,
-};
-
-const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 
 // references:
 // https://ui.shadcn.com/docs/dark-mode/vite
@@ -107,13 +88,4 @@ export function ThemeProvider({
       {children}
     </ThemeProviderContext>
   );
-}
-
-export function useTheme() {
-  const context = use(ThemeProviderContext);
-
-  if (context === undefined)
-    throw new Error("useTheme must be used within a ThemeProvider");
-
-  return context;
 }

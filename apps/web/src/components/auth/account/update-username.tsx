@@ -7,6 +7,7 @@ import {
 import { m } from "@/i18n/messages";
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { updateUsernameSchema } from "@/lib/universal/schema/auth";
+import { randomHandle } from "@/lib/utils";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconDeviceFloppy, IconLoader2 } from "@tabler/icons-react";
 import { useMutation } from "@tanstack/react-query";
@@ -91,15 +92,4 @@ export default function UpdateUsername({ username }: Props) {
       />
     </form>
   );
-}
-
-const handles = [
-  "0ct0ber19",
-  "withaseul",
-  "kimxxlip",
-  "zindoriyam",
-  "cher_ryppo",
-];
-export function randomHandle() {
-  return handles[Math.floor(Math.random() * handles.length)];
 }

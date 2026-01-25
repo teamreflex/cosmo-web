@@ -217,3 +217,14 @@ export function parseSearchParams(
   }
   return obj;
 }
+
+const handles = [
+  "0ct0ber19",
+  "withaseul",
+  "kimxxlip",
+  "zindoriyam",
+  "cher_ryppo",
+];
+export function randomHandle() {
+  return handles[Math.floor(Math.random() * handles.length)];
+}

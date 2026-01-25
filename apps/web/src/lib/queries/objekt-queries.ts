@@ -1,3 +1,4 @@
+import { ObjektNotFoundError } from "@/lib/client/objekt-util";
 import { getTypesenseResults } from "@/lib/client/typesense";
 import { $fetchObjektsBlockchain } from "@/lib/server/objekts/prefetching/objekt-blockchain";
 import {
@@ -15,9 +16,11 @@ import type {
 } from "@/lib/universal/parsers";
 import { normalizeFilters } from "@/lib/universal/parsers";
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
-import { ofetch } from "ofetch";
+import { type FetchError, ofetch } from "ofetch";
 import type { z } from "zod";
+import type { Objekt } from "../universal/objekt-conversion";
 import type { ObjektMetadata } from "../universal/objekts";
+import { baseUrl } from "../utils";
 
 /**
  * Object index: Searching via Typesense
@@ -247,6 +250,27 @@ export function objektMetadataQuery(slug: string) {
       ofetch<ObjektMetadata>(`/api/objekts/metadata/${slug}`, {
         signal,
       }),
+    retry: 1,
+  });
+}
+
+/**
+ * Objekt metadata: Fetch a single objekt when routed to ?id=
+ */
+export function objektQuery(slug: string) {
+  return queryOptions({
+    queryKey: ["collection-metadata", "objekt", slug],
+    queryFn: async () => {
+      const url = new URL(`/api/objekts/by-slug/${slug}`, baseUrl());
+      return await ofetch<Objekt.Collection>(url.toString()).catch(
+        (error: FetchError) => {
+          if (error.status === 404) {
+            throw new ObjektNotFoundError("Objekt not found");
+          }
+          throw error;
+        },
+      );
+    },
     retry: 1,
   });
 }

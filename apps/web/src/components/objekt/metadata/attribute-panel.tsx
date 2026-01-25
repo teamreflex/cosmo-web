@@ -1,6 +1,6 @@
 import { m } from "@/i18n/messages";
+import { getEdition } from "@/lib/client/objekt-util";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
-import { getEdition } from "../common";
 import Pill from "./pill";
 
 type Props = {

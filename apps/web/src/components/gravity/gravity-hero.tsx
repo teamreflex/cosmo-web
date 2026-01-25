@@ -54,7 +54,7 @@ function GravityHeroCard({ gravity, artist }: GravityHeroCardProps) {
           {/* Content */}
           <div className="flex flex-1 flex-col gap-2 p-4">
             {/* Title */}
-            <h2 className="text-sm sm:text-lg font-semibold line-clamp-2">
+            <h2 className="line-clamp-2 text-sm font-semibold sm:text-lg">
               {gravity.title}
             </h2>
 

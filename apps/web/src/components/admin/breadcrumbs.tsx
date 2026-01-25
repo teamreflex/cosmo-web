@@ -8,11 +8,11 @@ import {
 } from "@/components/ui/breadcrumb";
 import { m } from "@/i18n/messages";
 import { useLocation } from "@tanstack/react-router";
-import { getItems } from "./sidebar";
+import { getAdminItems } from "./common";
 
 export default function AdminBreadcrumbs() {
   const location = useLocation();
-  const items = getItems();
+  const items = getAdminItems();
   const match = items.find((i) => i.url === location.pathname);
 
   return (

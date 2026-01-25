@@ -8,11 +8,10 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useTheme, type Theme } from "@/hooks/use-theme";
 import { m } from "@/i18n/messages";
 import { getLocale, setLocale } from "@/i18n/runtime";
 import { IconLanguage, IconMoon, IconSun } from "@tabler/icons-react";
-import { useTheme } from "../theme-provider";
-import type { Theme } from "../theme-provider";
 
 export default function GuestSettings() {
   return (
