@@ -1,8 +1,10 @@
+import type { EventsFilters } from "@/hooks/use-events-filters";
 import { $getSpotifyAlbum } from "@/lib/server/events/actions";
 import {
   $fetchActiveEvents,
   $fetchCollectionsForEvent,
   $fetchEras,
+  $fetchErasForFilter,
   $fetchEventBySlug,
   $fetchEventObjekts,
   $fetchEvents,
@@ -56,11 +58,34 @@ export function eventObjektsQuery(eventSlug: string) {
   });
 }
 
-export function paginatedEventsQuery(artists?: string[]) {
+export const erasForFilterQuery = queryOptions({
+  queryKey: ["eras", "filter"],
+  queryFn: () => $fetchErasForFilter(),
+  staleTime: 1000 * 60 * 60, // 1 hour
+});
+
+type PaginatedEventsQueryParams = {
+  artists?: string[];
+  filters?: Omit<EventsFilters, "artist">;
+};
+
+export function paginatedEventsQuery({
+  artists,
+  filters,
+}: PaginatedEventsQueryParams) {
   return infiniteQueryOptions({
-    queryKey: ["events", "paginated", artists],
+    queryKey: ["events", "paginated", artists, filters],
     queryFn: ({ pageParam }) =>
-      $fetchPaginatedEvents({ data: { artists, cursor: pageParam } }),
+      $fetchPaginatedEvents({
+        data: {
+          artists,
+          cursor: pageParam,
+          sort: filters?.sort,
+          era: filters?.era,
+          season: filters?.season,
+          eventType: filters?.type,
+        },
+      }),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextStartAfter,
   });

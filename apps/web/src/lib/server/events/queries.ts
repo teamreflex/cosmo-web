@@ -1,15 +1,16 @@
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import { collections } from "@apollo/database/indexer/schema";
-import { collectionData, events } from "@apollo/database/web/schema";
+import { collectionData, eras, events } from "@apollo/database/web/schema";
+import { eventTypeKeys } from "@apollo/database/web/types";
 import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
-import { asc, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gt, inArray, lt, sql } from "drizzle-orm";
 import * as z from "zod";
 import { adminMiddleware } from "../middlewares";
 
 /**
- * Fetches all eras.
+ * Fetches all eras (admin).
  */
 export const $fetchEras = createServerFn({ method: "GET" })
   .middleware([adminMiddleware])
@@ -18,6 +19,24 @@ export const $fetchEras = createServerFn({ method: "GET" })
       orderBy: { startDate: "desc" },
     });
   });
+
+/**
+ * Fetches all eras with minimal data for filters.
+ */
+export const $fetchErasForFilter = createServerFn({ method: "GET" }).handler(
+  async () => {
+    return db
+      .select({
+        id: eras.id,
+        name: eras.name,
+        imageUrl: eras.imageUrl,
+        spotifyAlbumArt: eras.spotifyAlbumArt,
+        artist: eras.artist,
+      })
+      .from(eras)
+      .orderBy(asc(eras.startDate));
+  },
+);
 
 /**
  * Fetches all events.
@@ -66,31 +85,68 @@ export const $fetchEventBySlug = createServerFn({ method: "GET" })
   });
 
 /**
- * Fetches paginated events with timestamp-based cursor.
+ * Fetches paginated events with timestamp-based cursor and filters.
  */
 export const $fetchPaginatedEvents = createServerFn({ method: "GET" })
   .inputValidator(
     z.object({
       artists: z.array(z.string()).optional(),
       cursor: z.iso.datetime().optional(),
+      sort: z.enum(["newest", "oldest"]).optional(),
+      era: z.string().optional(),
+      season: z.array(z.string()).optional(),
+      eventType: z.enum(eventTypeKeys).optional(),
     }),
   )
   .handler(async ({ data }) => {
     const PER_PAGE_EVENTS = 24;
-    const whereClause: Record<string, unknown> = {};
+    const isAscending = data.sort === "oldest";
+
+    const conditions = [];
     if (data.artists?.length) {
-      whereClause.artist = { in: data.artists };
+      conditions.push(inArray(events.artist, data.artists));
+    }
+    if (data.era) {
+      conditions.push(eq(events.eraId, data.era));
+    }
+    if (data.season?.length) {
+      // Check if JSONB array contains any of the specified seasons
+      // @> requires both sides to be arrays: '["a","b"]' @> '["a"]'
+      conditions.push(
+        sql`(${sql.join(
+          data.season.map(
+            (s) => sql`${events.seasons} @> ${JSON.stringify([s])}::jsonb`,
+          ),
+          sql` OR `,
+        )})`,
+      );
+    }
+    if (data.eventType) {
+      conditions.push(eq(events.eventType, data.eventType));
     }
     if (data.cursor) {
-      whereClause.startDate = { lt: data.cursor };
+      conditions.push(
+        isAscending
+          ? gt(events.startDate, new Date(data.cursor))
+          : lt(events.startDate, new Date(data.cursor)),
+      );
     }
 
-    const allEvents = await db.query.events.findMany({
-      where: Object.keys(whereClause).length > 0 ? whereClause : undefined,
-      orderBy: { startDate: "desc" },
-      with: { era: true },
-      limit: PER_PAGE_EVENTS,
-    });
+    const rows = await db
+      .select({
+        event: events,
+        era: eras,
+      })
+      .from(events)
+      .innerJoin(eras, eq(events.eraId, eras.id))
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .orderBy(isAscending ? asc(events.startDate) : desc(events.startDate))
+      .limit(PER_PAGE_EVENTS);
+
+    const allEvents = rows.map((row) => ({
+      ...row.event,
+      era: row.era,
+    }));
 
     const hasNext = allEvents.length === PER_PAGE_EVENTS;
     const lastEvent = allEvents[allEvents.length - 1];

@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
     "allow": [
       "Bash(bun:*)",
@@ -11,10 +12,20 @@
       "Bash(turbo db:generate:*)",
       "Bash(turbo dev:*)"
     ],
-    "deny": [
-      "Bash(npm:*)",
-      "Bash(pnpm:*)"
-    ]
+    "deny": ["Bash(npm:*)", "Bash(pnpm:*)"]
+  },
+  "enabledMcpjsonServers": ["bun", "context7"],
+  "enabledPlugins": {
+    "typescript-lsp@claude-plugins-official": true,
+    "agent-browser@agent-browser": true
+  },
+  "extraKnownMarketplaces": {
+    "agent-browser": {
+      "source": {
+        "source": "git",
+        "url": "https://github.com/vercel-labs/agent-browser.git"
+      }
+    }
   },
   "hooks": {
     "PostToolUse": [

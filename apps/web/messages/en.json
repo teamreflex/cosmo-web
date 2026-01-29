@@ -395,6 +395,7 @@
 
   "_comment_events": "Event display strings",
   "events_header": "Events",
+  "events_filter_era": "Era",
   "events_no_events": "No events found",
   "events_collections_count": "{count} collections",
   "events_error_loading": "Could not load events",

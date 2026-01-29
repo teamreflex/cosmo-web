@@ -2,6 +2,7 @@ import EventTypeBadge from "@/components/events/event-type-badge";
 import { InfiniteQueryNext } from "@/components/infinite-query-pending";
 import { Badge } from "@/components/ui/badge";
 import { Timestamp } from "@/components/ui/timestamp";
+import type { EventsFilters } from "@/hooks/use-events-filters";
 import { getSeasonKeys } from "@/hooks/use-filter-data";
 import { m } from "@/i18n/messages";
 import { paginatedEventsQuery } from "@/lib/queries/events";
@@ -12,21 +13,25 @@ import { Link } from "@tanstack/react-router";
 
 type EventsListProps = {
   selectedArtists: string[] | undefined;
+  filters: EventsFilters;
   onHoverChange: (event: EventWithEra | null) => void;
 };
 
 export default function EventsList({
   selectedArtists,
+  filters,
   onHoverChange,
 }: EventsListProps) {
   const { data, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    useSuspenseInfiniteQuery(paginatedEventsQuery(selectedArtists));
+    useSuspenseInfiniteQuery(
+      paginatedEventsQuery({ artists: selectedArtists, filters }),
+    );
 
   const allEvents = data.pages.flatMap((page) => page.events);
 
   if (allEvents.length === 0) {
     return (
-      <p className="relative z-20 col-span-full mt-4 rounded-lg border border-dashed border-accent bg-background/60 py-12 text-center text-muted-foreground backdrop-blur-md md:mx-auto md:w-1/2">
+      <p className="col-span-full py-12 text-center text-muted-foreground">
         {m.events_no_events()}
       </p>
     );
@@ -35,7 +40,7 @@ export default function EventsList({
   return (
     <>
       {/* events list */}
-      <div className="relative z-20 mt-4 flex flex-col overflow-hidden rounded-lg border border-accent bg-background/60 text-sm backdrop-blur-md md:grid md:grid-cols-[auto_1fr_auto_auto_auto]">
+      <div className="flex flex-col md:grid md:grid-cols-[auto_1fr_auto_auto_auto]">
         {allEvents.map((event) => (
           <EventRow
             key={event.id}
