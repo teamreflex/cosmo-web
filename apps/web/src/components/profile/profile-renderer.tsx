@@ -19,10 +19,9 @@ export default function ProfileRenderer({ targetCosmo }: Props) {
   const { user } = useUserState();
   const gridColumns = useGridColumns();
 
+  const isSpin = isEqual(targetCosmo.address, Addresses.SPIN);
   const { showLocked, setShowLocked, dataSource, setDataSource } = useFilters({
-    dataSource: isEqual(targetCosmo.address, Addresses.SPIN)
-      ? "blockchain"
-      : user?.collectionMode,
+    dataSource: isSpin ? "blockchain" : user?.collectionMode,
   });
 
   return (
@@ -37,6 +36,7 @@ export default function ProfileRenderer({ targetCosmo }: Props) {
           setDataSource={setDataSource}
           showLocked={showLocked}
           setShowLocked={setShowLocked}
+          isSpin={isSpin}
         />
       </FiltersContainer>
 

@@ -2,6 +2,7 @@ import { indexer } from "@/lib/server/db/indexer";
 import type { Collection, Objekt } from "@/lib/server/db/indexer/schema";
 import { collections, objekts } from "@/lib/server/db/indexer/schema";
 import { userCollectionBackendSchema } from "@/lib/universal/parsers";
+import type { ValidSort } from "@apollo/cosmo/types/common";
 import { Addresses, isEqual } from "@apollo/util";
 import { createServerFn } from "@tanstack/react-start";
 import { and, eq, gte, sql } from "drizzle-orm";
@@ -89,7 +90,8 @@ async function fetchObjekts(
     )
     .$dynamic();
 
-  query = withCollectionSort(query, data.sort ?? "newest");
+  const sort = isSpin ? clampSpinSort(data.sort) : (data.sort ?? "newest");
+  query = withCollectionSort(query, sort);
   query = query.limit(PER_PAGE).offset(data.page * PER_PAGE);
 
   return await query;
@@ -122,6 +124,16 @@ async function fetchCount(owner: string, filters: InputData): Promise<number> {
 function spinMonthFilter(isSpin: boolean) {
   if (!isSpin) return [];
   return [gte(objekts.receivedAt, sql`now() - interval '1 month'`)];
+}
+
+/**
+ * Serial sorts on the spin account cause catastrophic query plans — the
+ * planner walks the serial index and filters millions of rows by received_at.
+ * Fall back to newest which uses the received_at index instead.
+ */
+function clampSpinSort(sort: ValidSort | null | undefined): ValidSort {
+  if (sort === "serialAsc" || sort === "serialDesc") return "newest";
+  return sort ?? "newest";
 }
 
 /**

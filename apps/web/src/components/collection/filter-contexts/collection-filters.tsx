@@ -18,6 +18,7 @@ type Props = {
   setShowLocked: (showLocked: boolean | undefined) => void;
   dataSource: CollectionDataSource;
   setDataSource: Dispatch<SetStateAction<CollectionDataSource>>;
+  isSpin?: boolean;
 };
 
 /**
@@ -29,6 +30,7 @@ export default function CollectionFilters({
   setShowLocked,
   dataSource,
   setDataSource,
+  isSpin,
 }: Props) {
   const { filters, setFilters } = useCosmoFilters();
 
@@ -72,7 +74,7 @@ export default function CollectionFilters({
         onChange={setFilters}
         dataSource={dataSource}
         setDataSource={setDataSource}
-        serials
+        serials={!isSpin}
       />
 
       <FilterDataSource
