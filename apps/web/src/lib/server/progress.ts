@@ -5,7 +5,16 @@ import { validOnlineTypes } from "@apollo/cosmo/types/common";
 import type { ValidOnlineType } from "@apollo/cosmo/types/common";
 import { Addresses } from "@apollo/util";
 import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
-import { and, count, desc, eq, not, notInArray, sql } from "drizzle-orm";
+import {
+  and,
+  count,
+  desc,
+  eq,
+  inArray,
+  not,
+  notInArray,
+  sql,
+} from "drizzle-orm";
 import * as z from "zod";
 import type {
   ArtistStats,
@@ -336,13 +345,13 @@ const LEADERBOARD_COUNT = 25;
 
 /**
  * Fetch top 25 for the given member.
- * TODO: refactor into view?
+ * Uses two-level aggregation: GROUP BY (owner, collectionId) first to leverage
+ * the (collection_id, owner) index with incremental sort, then COUNT per owner.
  */
 export const fetchLeaderboard = createServerOnlyFn(
   async ({ member, onlineType, season }: FetchLeaderboard) => {
-    // CTE 1: filter collections
-    const filteredCollections = indexer.$with("filtered_collections").as(
-      indexer
+    const collectionIds = (
+      await indexer
         .select({ id: collections.id })
         .from(collections)
         .where(
@@ -355,33 +364,33 @@ export const fetchLeaderboard = createServerOnlyFn(
               : []),
             ...(season !== null ? [eq(collections.season, season)] : []),
           ),
-        ),
-    );
-
-    // CTE 2: deduplicate (owner, collectionId) pairs
-    const ownedCollections = indexer.$with("owned_collections").as(
-      indexer
-        .selectDistinct({
-          owner: objekts.owner,
-          collectionId: objekts.collectionId,
-        })
-        .from(objekts)
-        .innerJoin(
-          filteredCollections,
-          eq(objekts.collectionId, filteredCollections.id),
         )
-        .where(not(eq(objekts.owner, Addresses.SPIN))),
-    );
+    ).map((c) => c.id);
 
-    // Final: count per owner
-    return await indexer
-      .with(filteredCollections, ownedCollections)
+    if (collectionIds.length === 0) return [];
+
+    const distinctPairs = indexer
       .select({
-        owner: ownedCollections.owner,
-        count: count().as("count"),
+        owner: objekts.owner,
+        collectionId: objekts.collectionId,
       })
-      .from(ownedCollections)
-      .groupBy(ownedCollections.owner)
+      .from(objekts)
+      .where(
+        and(
+          not(eq(objekts.owner, Addresses.SPIN)),
+          inArray(objekts.collectionId, collectionIds),
+        ),
+      )
+      .groupBy(objekts.owner, objekts.collectionId)
+      .as("distinct_pairs");
+
+    return await indexer
+      .select({
+        owner: distinctPairs.owner,
+        count: sql<number>`count(*)::int`.as("count"),
+      })
+      .from(distinctPairs)
+      .groupBy(distinctPairs.owner)
       .orderBy(sql`count desc`)
       .limit(LEADERBOARD_COUNT);
   },
