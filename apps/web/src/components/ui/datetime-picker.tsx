@@ -3,19 +3,19 @@ import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
 import {
   Popover,
+  PopoverAnchor,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { IconCalendar, IconX } from "@tabler/icons-react";
-import { format, setHours, setMinutes } from "date-fns";
+import { IconCalendar, IconClock, IconX } from "@tabler/icons-react";
+import { format, isValid, parse, setHours, setMinutes } from "date-fns";
 import { fromZonedTime, toZonedTime } from "date-fns-tz";
 import { useState } from "react";
 
 type DateTimePickerProps = {
   value?: Date;
   onChange?: (date: Date | undefined | null) => void;
-  placeholder?: string;
   className?: string;
   disabled?: boolean;
   timezone?: string;
@@ -25,7 +25,6 @@ type DateTimePickerProps = {
 export function DateTimePicker({
   value,
   onChange,
-  placeholder = "Pick date and time",
   className,
   disabled,
   timezone = "Asia/Seoul",
@@ -35,7 +34,19 @@ export function DateTimePicker({
 
   // Convert UTC value to zoned time for display/editing
   const zonedValue = value ? toZonedTime(value, timezone) : undefined;
+  const dateValue = zonedValue ? format(zonedValue, "yyyy-MM-dd") : "";
   const timeValue = zonedValue ? format(zonedValue, "HH:mm") : "";
+
+  function handleDateInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const dateString = e.target.value;
+    if (!dateString) return;
+    const parsed = parse(dateString, "yyyy-MM-dd", new Date());
+    if (!isValid(parsed)) return;
+    const hours = zonedValue ? zonedValue.getHours() : 0;
+    const minutes = zonedValue ? zonedValue.getMinutes() : 0;
+    const newDate = setMinutes(setHours(parsed, hours), minutes);
+    onChange?.(fromZonedTime(newDate, timezone));
+  }
 
   // Handle date selection from calendar
   function handleDateSelect(date: Date | undefined) {
@@ -76,21 +87,27 @@ export function DateTimePicker({
   return (
     <div className={cn("flex items-center gap-2", className)}>
       <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            disabled={disabled}
-            data-empty={!zonedValue}
-            className="flex-2 justify-start text-left font-normal data-[empty=true]:text-muted-foreground"
-          >
-            <IconCalendar className="size-4" />
-            {zonedValue ? (
-              format(zonedValue, "PPP")
-            ) : (
-              <span>{placeholder}</span>
-            )}
-          </Button>
-        </PopoverTrigger>
+        <PopoverAnchor asChild>
+          <div className="relative flex-2">
+            <Input
+              type="date"
+              value={dateValue}
+              onChange={handleDateInputChange}
+              disabled={disabled}
+              className="pr-9 [&::-webkit-calendar-picker-indicator]:hidden"
+            />
+            <PopoverTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                disabled={disabled}
+                className="absolute right-1 top-1/2 -translate-y-1/2"
+              >
+                <IconCalendar className="size-4" />
+              </Button>
+            </PopoverTrigger>
+          </div>
+        </PopoverAnchor>
         <PopoverContent className="w-auto p-0" side={side}>
           <Calendar
             mode="single"
@@ -101,13 +118,16 @@ export function DateTimePicker({
         </PopoverContent>
       </Popover>
 
-      <Input
-        type="time"
-        value={timeValue}
-        onChange={handleTimeChange}
-        disabled={disabled}
-        className="flex-1"
-      />
+      <div className="relative flex-1">
+        <Input
+          type="time"
+          value={timeValue}
+          onChange={handleTimeChange}
+          disabled={disabled}
+          className="pr-9 [&::-webkit-calendar-picker-indicator]:hidden"
+        />
+        <IconClock className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2" />
+      </div>
 
       <Button type="button" variant="outline" size="icon" onClick={handleReset}>
         <IconX />

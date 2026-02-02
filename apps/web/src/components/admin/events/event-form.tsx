@@ -272,7 +272,6 @@ export default function EventForm({
             <DateTimePicker
               value={field.value}
               onChange={field.onChange}
-              placeholder={m.admin_era_start_date_placeholder()}
               side="bottom"
             />
             <p className="text-xs text-muted-foreground">
@@ -293,7 +292,6 @@ export default function EventForm({
             <DateTimePicker
               value={field.value}
               onChange={field.onChange}
-              placeholder={m.admin_era_end_date_placeholder()}
               side="bottom"
             />
             <FieldError errors={[fieldState.error]} />

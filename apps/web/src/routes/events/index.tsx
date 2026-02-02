@@ -53,8 +53,6 @@ export const Route = createFileRoute("/events/")({
     const globalSelectedIds = selected.length > 0 ? selected : undefined;
     const filteredArtists = search.artist ? [search.artist] : globalSelectedIds;
 
-    console.log(search);
-
     const [activeEvents] = await Promise.all([
       // active events only uses global selection, not filters
       context.queryClient.ensureQueryData(activeEventsQuery(globalSelectedIds)),
