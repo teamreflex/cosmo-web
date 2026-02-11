@@ -10,10 +10,6 @@ import type {
 export async function fetchMetadataV1(tokenId: string) {
   return await ofetch<CosmoObjektMetadataV1>(
     `https://api.cosmo.fans/objekt/v1/token/${tokenId}`,
-    {
-      retry: 4,
-      retryDelay: 750, // 750ms backoff
-    },
   );
 }
 

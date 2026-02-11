@@ -1,10 +1,10 @@
-import { fetchMetadataV1 } from "@apollo/cosmo/server/metadata";
 import type { CosmoObjektMetadataV1 } from "@apollo/cosmo/types/metadata";
 import { addr, chunk, slugifyObjekt } from "@apollo/util";
 import { Addresses } from "@apollo/util";
 import { TypeormDatabase, type Store } from "@subsquid/typeorm-store";
 import { randomUUID } from "crypto";
 import { env } from "./env";
+import { fetchMetadataWithRetry } from "./metadata";
 import { Collection, ComoBalance, Objekt, type Transfer, Vote } from "./model";
 import {
   type ComoBalanceEvent,
@@ -33,7 +33,7 @@ processor.run(db, async (ctx) => {
       const objektBatch = new Map<string, Objekt>();
 
       const metadataBatch = await Promise.allSettled(
-        chunk.map((e) => fetchMetadataV1(e.tokenId)),
+        chunk.map((e) => fetchMetadataWithRetry(e.tokenId)),
       );
 
       // iterate over each objekt metadata request
