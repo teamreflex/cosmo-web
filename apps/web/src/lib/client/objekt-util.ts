@@ -42,7 +42,7 @@ export function getObjektImageUrls(opts: {
 /**
  * Returns the edition of the collection based on the collection number.
  */
-export function getEdition(collectionNo: string): string {
+export function getEdition(collectionNo: string): string | null {
   const collection = parseInt(collectionNo);
 
   if ((collection >= 101 && collection <= 108) || collection === 501) {
@@ -54,7 +54,7 @@ export function getEdition(collectionNo: string): string {
   if ((collection >= 117 && collection <= 120) || collection === 503) {
     return m.objekt_edition_3rd();
   }
-  return m.common_unknown();
+  return null;
 }
 
 export class ObjektNotFoundError extends Error {

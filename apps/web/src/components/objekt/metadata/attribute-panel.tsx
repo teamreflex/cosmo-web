@@ -9,7 +9,8 @@ type Props = {
 
 export default function AttributePanel({ objekt }: Props) {
   const edition = getEdition(objekt.collectionNo);
-  const hasEdition = ["First", "Motion"].includes(objekt.class);
+  const hasEdition =
+    ["First", "Motion"].includes(objekt.class) && edition !== null;
 
   return (
     <div
