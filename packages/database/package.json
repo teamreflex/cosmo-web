@@ -10,8 +10,8 @@
     "./custom": "./src/custom.ts"
   },
   "scripts": {
-    "lint": "oxlint --type-aware",
-    "lint:fix": "oxlint --type-aware --fix",
+    "lint": "bun --bun oxlint --type-aware",
+    "lint:fix": "bun --bun oxlint --type-aware --fix",
     "typecheck": "tsc --pretty --noEmit",
     "format": "oxfmt ."
   },
@@ -21,8 +21,9 @@
     "drizzle-orm": "1.0.0-beta.10-42c284e"
   },
   "devDependencies": {
+    "@apollo/lint": "workspace:*",
     "@apollo/typescript": "workspace:*",
-    "turbo": "^2.8.1",
+    "turbo": "^2.8.7",
     "typescript": "5.9.3"
   }
 }

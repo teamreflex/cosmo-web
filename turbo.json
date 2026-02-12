@@ -13,7 +13,7 @@
     "lint": {
       "cache": true,
       "dependsOn": ["^lint"],
-      "inputs": ["**/*.ts", "**/*.tsx", ".oxlintrc.json", "!node_modules/**"]
+      "inputs": ["**/*.ts", "**/*.tsx", "oxlint.config.ts", "!node_modules/**"]
     },
     "lint:fix": {
       "cache": false,

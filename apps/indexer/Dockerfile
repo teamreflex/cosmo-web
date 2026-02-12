@@ -2,7 +2,7 @@
 FROM oven/bun:1.3.6-alpine AS pruner
 WORKDIR /app
 COPY . .
-RUN bunx turbo@2.8.1 prune indexer --docker
+RUN bunx turbo@2.8.7 prune indexer --docker
 
 # stage 2: install dependencies with bun
 FROM oven/bun:1.3.6-alpine AS installer

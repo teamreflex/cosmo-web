@@ -6,25 +6,26 @@
     "dev": "bun run --bun --watch --env-file=../../.env --env-file=../../.env.local ./src/main.ts",
     "build": "bun build ./src/main.ts --outdir ./dist --target bun",
     "start": "bun run --bun dist/main.js",
-    "lint": "oxlint --type-aware",
-    "lint:fix": "oxlint --type-aware --fix",
+    "lint": "bun --bun oxlint --type-aware",
+    "lint:fix": "bun --bun oxlint --type-aware --fix",
     "typecheck": "tsc --pretty --noEmit",
     "format": "oxfmt ."
   },
   "dependencies": {
     "@apollo/database": "workspace:*",
-    "@effect/cluster": "^0.56.1",
-    "@effect/platform": "^0.94.2",
+    "@effect/cluster": "^0.56.3",
+    "@effect/platform": "^0.94.4",
     "@effect/platform-bun": "^0.87.1",
     "drizzle-orm": "1.0.0-beta.10-42c284e",
-    "effect": "^3.19.15",
+    "effect": "^3.19.16",
     "typesense": "^2.1.0"
   },
   "devDependencies": {
+    "@apollo/lint": "workspace:*",
     "@apollo/typescript": "workspace:*",
     "@effect/build-utils": "^0.8.9",
     "@effect/eslint-plugin": "^0.3.2",
-    "@effect/language-service": "^0.72.0",
+    "@effect/language-service": "^0.73.1",
     "@types/bun": "1.3.6",
     "typescript": "^5.9.3"
   },

@@ -19,10 +19,10 @@
   },
   "devDependencies": {
     "dotenv-cli": "^11.0.0",
-    "oxfmt": "^0.27.0",
-    "oxlint": "^1.42.0",
-    "oxlint-tsgolint": "^0.11.4",
-    "turbo": "^2.8.1",
+    "oxfmt": "^0.32.0",
+    "oxlint": "^1.47.0",
+    "oxlint-tsgolint": "^0.12.0",
+    "turbo": "^2.8.7",
     "typescript": "^5.9.3"
   },
   "engines": {

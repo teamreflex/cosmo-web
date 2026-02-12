@@ -10,14 +10,15 @@
     "access": "public"
   },
   "scripts": {
-    "lint": "oxlint --type-aware",
-    "lint:fix": "oxlint --type-aware --fix",
+    "lint": "bun --bun oxlint --type-aware",
+    "lint:fix": "bun --bun oxlint --type-aware --fix",
     "typecheck": "tsc --pretty --noEmit",
     "format": "oxfmt ."
   },
   "devDependencies": {
+    "@apollo/lint": "workspace:*",
     "@apollo/typescript": "workspace:*",
-    "turbo": "^2.8.1",
+    "turbo": "^2.8.7",
     "typescript": "5.9.3"
   }
 }

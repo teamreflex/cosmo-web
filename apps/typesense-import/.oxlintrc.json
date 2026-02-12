@@ -1,8 +1,0 @@
-{
-  "extends": ["../../packages/lint/oxlint.json"],
-  "jsPlugins": ["@effect/eslint-plugin"],
-  "ignorePatterns": ["node_modules", ".turbo", "build", "dist"],
-  "rules": {
-    "@effect/dprint": "off"
-  }
-}
