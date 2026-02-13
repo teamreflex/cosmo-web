@@ -82,7 +82,6 @@ export default function EditEventDialog({ event }: Props) {
 
   function handleImageClear() {
     selectedImageRef.current = null;
-    form.setValue("imageUrl", undefined);
   }
 
   async function handleSubmit(data: CreateEventInput) {
@@ -141,7 +140,6 @@ export default function EditEventDialog({ event }: Props) {
           <form onSubmit={form.handleSubmit(handleSubmit)}>
             <Suspense fallback={<div>Loading...</div>}>
               <EventForm
-                existingImageUrl={event.imageUrl ?? undefined}
                 onImageSelect={handleImageSelect}
                 onImageClear={handleImageClear}
               />

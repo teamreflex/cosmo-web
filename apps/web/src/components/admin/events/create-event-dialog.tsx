@@ -69,7 +69,6 @@ export default function CreateEvent() {
 
   function handleImageClear() {
     selectedImageRef.current = null;
-    form.setValue("imageUrl", undefined);
   }
 
   async function handleSubmit(data: CreateEventInput) {

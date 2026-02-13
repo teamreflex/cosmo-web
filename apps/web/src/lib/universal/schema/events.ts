@@ -43,7 +43,7 @@ export const createEventSchema = z.object({
   discordUrl: z.url().max(255).optional(),
   startDate: z.date().optional(),
   endDate: z.date().optional(),
-  imageUrl: z.url().max(255).optional(),
+  imageUrl: z.url().max(255).nullish(),
   seasons: z.array(z.string()).default([]),
 });
 

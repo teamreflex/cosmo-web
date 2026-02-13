@@ -28,13 +28,11 @@ import { Controller, useFormContext, useWatch } from "react-hook-form";
 const route = getRouteApi("/admin/events");
 
 type EventFormProps = {
-  existingImageUrl?: string;
   onImageSelect: (file: File | null) => void;
   onImageClear: () => void;
 };
 
 export default function EventForm({
-  existingImageUrl,
   onImageSelect,
   onImageClear,
 }: EventFormProps) {
@@ -210,14 +208,24 @@ export default function EventForm({
       />
 
       {/* Event Image */}
-      <Field>
-        <FieldLabel htmlFor="imageUrl">{m.admin_event_image()}</FieldLabel>
-        <EventImageUpload
-          existingUrl={existingImageUrl}
-          onFileSelect={onImageSelect}
-          onClear={onImageClear}
-        />
-      </Field>
+      <Controller
+        control={form.control}
+        name="imageUrl"
+        render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid}>
+            <FieldLabel htmlFor="imageUrl">{m.admin_event_image()}</FieldLabel>
+            <EventImageUpload
+              existingUrl={field.value}
+              onFileSelect={onImageSelect}
+              onClear={() => {
+                field.onChange(null);
+                onImageClear();
+              }}
+            />
+            <FieldError errors={[fieldState.error]} />
+          </Field>
+        )}
+      />
 
       {/* Seasons */}
       <SeasonSelection seasons={filterData.seasons} artist={selectedArtist} />

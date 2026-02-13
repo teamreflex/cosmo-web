@@ -4,7 +4,7 @@ import { IconPhoto, IconX } from "@tabler/icons-react";
 import { useEffect, useRef, useState } from "react";
 
 type Props = {
-  existingUrl?: string;
+  existingUrl?: string | null;
   onFileSelect: (file: File | null) => void;
   onClear: () => void;
 };
