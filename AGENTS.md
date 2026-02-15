@@ -48,7 +48,16 @@ This is a Turborepo monorepo for the Apollo project.
 
 ## Project Context
 
-Apollo is a blockchain explorer for MODHAUS' Cosmo app objekts and gravities. The platform tracks digital collectibles (objekts) and voting systems (gravities) on the blockchain.
+Apollo is a blockchain explorer for MODHAUS' COSMO app objekts and gravities. The platform tracks digital collectibles (objekts) and voting systems (gravities) via on-chain data.
+
+We do not provide authenticated access to COSMO APIs by allowing users to login with their own accounts. We have a database table containing access and refresh tokens for a dummy account that allows us to proxy authenticated access to specific APIs required for operation. These APIs are:
+
+- fetching artist + member information
+- fetching gravity polls for candidate lists
+- providing user search
+- verifying user account ownership by reading profiles
+
+### Concepts
 
 A `collection` represents a type of objekt. Certain properties on a collection are:
 
@@ -74,3 +83,7 @@ A `grid` is when a user collects all 8 (or 4) First class objekts for a member, 
 - Exceptions to this rule are as follows:
   - tripleS Atom01 2nd edition Special class objekts were designated as 216 & 217
   - tripleS Atom01 3rd edition Special class objekts were designated as 218 & 219
+
+`COMO` is the currency used for voting in `gravity` events. Every objekt purchase grants some value of this, and objekts of `Special` class generate 1 COMO per month. We track COMO balances of every account via blockchain events.
+
+Gravity events are polls where users can place their COMO on specific candidates. Usually these range from things such as voting for a song to release, or which members will participate in a specific group sub-unit. We provide live voting data by tracking `Voted` events on-chain, and merge in which candidate was selected per vote by tracking `Reveal` events.
