@@ -12,10 +12,12 @@ import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
 import { and, eq } from "drizzle-orm";
 import {
   addObjektToListSchema,
+  addObjektToSaleListSchema,
   createObjektListSchema,
   deleteObjektListSchema,
   generateDiscordListSchema,
   removeObjektFromListSchema,
+  updateObjektListEntrySchema,
   updateObjektListSchema,
 } from "../../lib/universal/schema/objekt-list";
 
@@ -49,6 +51,7 @@ export const $createObjektList = createServerFn({ method: "POST" })
       .values({
         name: data.name,
         slug,
+        currency: data.currency ?? null,
         userId: context.session.session.userId,
       })
       .returning();
@@ -75,7 +78,7 @@ export const $updateObjektList = createServerFn({ method: "POST" })
         slug,
         userId: context.session.session.userId,
         id: {
-          NOT: data.id,
+          ne: data.id,
         },
       },
     });
@@ -86,7 +89,7 @@ export const $updateObjektList = createServerFn({ method: "POST" })
     // update list
     const [result] = await db
       .update(objektLists)
-      .set({ name: data.name, slug })
+      .set({ name: data.name, slug, currency: data.currency ?? null })
       .where(
         and(
           eq(objektLists.id, data.id),
@@ -150,6 +153,67 @@ export const $addObjektToList = createServerFn({ method: "POST" })
       objektListId: data.objektListId,
       collectionId: data.collectionSlug,
     });
+
+    return true;
+  });
+
+/**
+ * Add an objekt to a sale list with quantity/price, upserting if already present.
+ */
+export const $addObjektToSaleList = createServerFn({ method: "POST" })
+  .inputValidator(addObjektToSaleListSchema)
+  .middleware([authenticatedMiddleware])
+  .handler(async ({ data, context }) => {
+    await assertUserOwnsList(data.objektListId, context.session.session.userId);
+
+    const existing = await db.query.objektListEntries.findFirst({
+      where: {
+        objektListId: data.objektListId,
+        collectionId: data.collectionSlug,
+      },
+    });
+
+    if (existing) {
+      await db
+        .update(objektListEntries)
+        .set({
+          quantity: existing.quantity + data.quantity,
+          price: data.price ?? existing.price,
+        })
+        .where(eq(objektListEntries.id, existing.id));
+    } else {
+      await db.insert(objektListEntries).values({
+        objektListId: data.objektListId,
+        collectionId: data.collectionSlug,
+        quantity: data.quantity,
+        price: data.price ?? null,
+      });
+    }
+
+    return true;
+  });
+
+/**
+ * Update quantity/price on an existing list entry.
+ */
+export const $updateObjektListEntry = createServerFn({ method: "POST" })
+  .inputValidator(updateObjektListEntrySchema)
+  .middleware([authenticatedMiddleware])
+  .handler(async ({ data, context }) => {
+    await assertUserOwnsList(data.objektListId, context.session.session.userId);
+
+    await db
+      .update(objektListEntries)
+      .set({
+        quantity: data.quantity,
+        price: data.price ?? null,
+      })
+      .where(
+        and(
+          eq(objektListEntries.id, data.objektListEntryId),
+          eq(objektListEntries.objektListId, data.objektListId),
+        ),
+      );
 
     return true;
   });
@@ -232,8 +296,18 @@ export const $generateDiscordList = createServerFn({ method: "POST" })
     const artistsArray = Object.values(artists);
 
     // map into discord format
-    const haveCollections = format(collections, have.entries, artistsArray);
-    const wantCollections = format(collections, want.entries, artistsArray);
+    const haveCollections = format(
+      collections,
+      have.entries,
+      artistsArray,
+      have.currency,
+    );
+    const wantCollections = format(
+      collections,
+      want.entries,
+      artistsArray,
+      want.currency,
+    );
 
     const result = [
       "Have:",
@@ -251,27 +325,45 @@ type CollectionSubset = Pick<
   "slug" | "member" | "season" | "collectionNo" | "artist"
 >;
 
+type CollectionWithEntry = CollectionSubset & {
+  quantity?: number;
+  price?: number | null;
+};
+
 /**
  * Formats a list of collections for a single member.
  */
-function formatMemberCollections(collections: CollectionSubset[]): string {
-  // extract unique season initial + collection number, sort, and join
-  return [
-    ...new Set(
-      collections.map((c) => {
-        if (c.artist === "idntt") {
-          return `${c.season} ${c.collectionNo}`;
-        }
-
+function formatMemberCollections(
+  collections: CollectionWithEntry[],
+  currency: string | null,
+): string {
+  return collections
+    .map((c) => {
+      let label: string;
+      if (c.artist === "idntt") {
+        label = `${c.season} ${c.collectionNo}`;
+      } else {
         const match = c.season.match(/([A-Za-z]+)(\d+)/);
-        if (!match) return `${c.season.at(0)}${c.collectionNo}`;
-        const [, seasonText, seasonNum] = match;
-        const firstLetter = seasonText?.at(0) ?? "";
-        const seasonPart = firstLetter.repeat(parseInt(seasonNum ?? "0", 10));
-        return `${seasonPart}${c.collectionNo}`;
-      }),
-    ),
-  ]
+        if (!match) {
+          label = `${c.season.at(0)}${c.collectionNo}`;
+        } else {
+          const [, seasonText, seasonNum] = match;
+          const firstLetter = seasonText?.at(0) ?? "";
+          const seasonPart = firstLetter.repeat(parseInt(seasonNum ?? "0", 10));
+          label = `${seasonPart}${c.collectionNo}`;
+        }
+      }
+
+      if (currency && c.quantity !== undefined) {
+        const qty = c.quantity > 1 ? ` x${c.quantity}` : "";
+        const price =
+          c.price != null
+            ? ` (${c.price.toLocaleString("en")} ${currency})`
+            : "";
+        return `${label}${qty}${price}`;
+      }
+      return label;
+    })
     .sort()
     .join(", ");
 }
@@ -283,6 +375,7 @@ function format(
   collections: CollectionSubset[],
   entries: ObjektListEntry[],
   artists: CosmoArtistWithMembersBFF[],
+  currency: string | null,
 ): string[] {
   // create a map for quick collection lookup by slug
   const collectionsMap = new Map(collections.map((c) => [c.slug, c]));
@@ -291,22 +384,22 @@ function format(
   const memberOrderMap: Record<string, number> = {};
   artists.forEach((artist, artistIndex) => {
     artist.artistMembers.forEach((member) => {
-      // combine artist index and member order to ensure members of the same group stay together
-      // and are ordered correctly within their group
       memberOrderMap[member.name] = (artistIndex + 1) * 1000 + member.order;
     });
   });
 
-  // group collections by member
-  const groupedCollectionsByMember = new Map<string, CollectionSubset[]>();
+  // group collections by member, carrying entry metadata
+  const groupedCollectionsByMember = new Map<string, CollectionWithEntry[]>();
   for (const entry of entries) {
     const collection = collectionsMap.get(entry.collectionId);
     if (collection) {
-      // get existing collections for the member or initialize an empty array
       const memberCollections =
         groupedCollectionsByMember.get(collection.member) ?? [];
-      memberCollections.push(collection);
-      // update the map
+      memberCollections.push({
+        ...collection,
+        quantity: entry.quantity,
+        price: entry.price,
+      });
       groupedCollectionsByMember.set(collection.member, memberCollections);
     }
   }
@@ -314,13 +407,15 @@ function format(
   // sort members based on the order map
   return Array.from(groupedCollectionsByMember.entries())
     .sort(([memberA], [memberB]) => {
-      // use max safe integer for members not found in the map (should only happen with special DCOs)
       const orderA = memberOrderMap[memberA] ?? Number.MAX_SAFE_INTEGER;
       const orderB = memberOrderMap[memberB] ?? Number.MAX_SAFE_INTEGER;
       return orderA - orderB;
     })
     .map(([member, memberCollections]) => {
-      const formattedCollections = formatMemberCollections(memberCollections);
+      const formattedCollections = formatMemberCollections(
+        memberCollections,
+        currency,
+      );
       return `${member} ${formattedCollections}`;
     });
 }

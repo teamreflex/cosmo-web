@@ -95,6 +95,11 @@ function RouteComponent() {
             <div className="flex items-center">
               <h3 className="font-cosmo text-xl leading-none">
                 {objektList.name}
+                {objektList.currency && (
+                  <span className="ml-2 text-sm text-muted-foreground">
+                    ({objektList.currency})
+                  </span>
+                )}
               </h3>
             </div>
 

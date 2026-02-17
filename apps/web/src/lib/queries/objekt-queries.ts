@@ -170,6 +170,14 @@ export function userCollectionBlockchainQuery(
 }
 
 /**
+ * Partial key filter for invalidating all objekt list queries for a given list,
+ * regardless of active sort/filter params.
+ */
+export function objektListQueryFilter(objektListId: string) {
+  return { queryKey: ["objekt-list", objektListId] };
+}
+
+/**
  * Objekt list: Listing entries
  */
 export function objektListQuery(

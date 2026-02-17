@@ -5,6 +5,7 @@ import type { ObjektList } from "@apollo/database/web/types";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconEdit, IconLoader2 } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import {
   Controller,
@@ -14,7 +15,10 @@ import {
 } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
-import { updateObjektListSchema } from "../../lib/universal/schema/objekt-list";
+import {
+  defaultCurrencies,
+  updateObjektListSchema,
+} from "../../lib/universal/schema/objekt-list";
 import { Button } from "../ui/button";
 import {
   Dialog,
@@ -36,7 +40,7 @@ export default function UpdateList({ objektList }: Props) {
   const { cosmo } = useUserState();
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: $updateObjektList,
+    mutationFn: useServerFn($updateObjektList),
     onSuccess: async () => {
       toast.success(m.toast_list_updated());
       // invalidate current account query to update list name in user's lists
@@ -58,6 +62,7 @@ export default function UpdateList({ objektList }: Props) {
     defaultValues: {
       id: objektList.id,
       name: objektList.name,
+      currency: objektList.currency ?? undefined,
     },
   });
 
@@ -101,11 +106,53 @@ export default function UpdateList({ objektList }: Props) {
               )}
             />
 
+            <CurrencyField />
+
             <SubmitButton />
           </form>
         </FormProvider>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function CurrencyField() {
+  return (
+    <Controller
+      name="currency"
+      render={({ field, fieldState }) => (
+        <Field data-invalid={fieldState.invalid}>
+          <FieldLabel>{m.list_currency()}</FieldLabel>
+          <Input
+            placeholder="USD"
+            maxLength={3}
+            value={field.value ?? ""}
+            onChange={(e) =>
+              field.onChange(e.target.value === "" ? undefined : e.target.value)
+            }
+          />
+          <div className="flex gap-1">
+            {defaultCurrencies.map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() =>
+                  field.onChange(field.value === c ? undefined : c)
+                }
+                className="rounded-md border px-2 py-0.5 text-xs data-[active=true]:bg-accent"
+                data-active={field.value?.toUpperCase() === c}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {m.list_currency_description()}
+          </p>
+          <FieldError errors={[fieldState.error]} />
+        </Field>
+      )}
+    />
   );
 }
 

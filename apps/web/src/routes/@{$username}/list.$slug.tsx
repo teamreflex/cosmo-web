@@ -93,7 +93,14 @@ function RouteComponent() {
     <UserStateProvider {...account}>
       <ProfileProvider target={target} objektLists={targetObjektLists}>
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className="font-cosmo text-xl">{objektList.name}</h3>
+          <h3 className="font-cosmo text-xl">
+            {objektList.name}
+            {objektList.currency && (
+              <span className="ml-2 text-sm text-muted-foreground">
+                ({objektList.currency})
+              </span>
+            )}
+          </h3>
 
           {isAuthenticated && (
             <div className="flex items-center gap-2">

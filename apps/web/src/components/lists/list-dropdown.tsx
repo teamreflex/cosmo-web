@@ -63,7 +63,14 @@ export default function ListDropdown(props: Props) {
                 to={props.createListUrl(list)}
                 className="flex w-full items-center justify-between"
               >
-                {list.name}
+                <span>
+                  {list.name}
+                  {list.currency && (
+                    <span className="ml-1 text-xs text-muted-foreground">
+                      ({list.currency})
+                    </span>
+                  )}
+                </span>
                 <IconChevronRight className="h-4 w-4" />
               </Link>
             </DropdownMenuItem>

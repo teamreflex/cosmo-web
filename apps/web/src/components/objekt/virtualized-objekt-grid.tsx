@@ -58,6 +58,7 @@ type Props<
   gridColumns: number;
   getObjektId: (objekt: TItem) => string;
   authenticated: boolean;
+  extraRowHeight?: number;
 };
 
 export default function VirtualizedObjektGrid<
@@ -106,6 +107,7 @@ function ObjektGrid<
   gridColumns,
   getObjektId,
   authenticated,
+  extraRowHeight = 0,
 }: Props<TResponse, TItem, TItemProps, TError, TQueryKey>) {
   const { query, total, items } = useObjektResponse(options);
   const rows = useMemo(() => {
@@ -135,7 +137,7 @@ function ObjektGrid<
     overscan: 3,
     estimateSize: () => {
       const itemWidth = (width - GAP * (gridColumns - 1)) / gridColumns;
-      return itemWidth * ASPECT_RATIO;
+      return itemWidth * ASPECT_RATIO + extraRowHeight;
     },
     scrollMargin: containerRef.current?.offsetTop ?? 0,
   });

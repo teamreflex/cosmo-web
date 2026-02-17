@@ -169,6 +169,13 @@
   "list_select_to_add": "{collectionId}를 추가할 리스트 선택",
   "list_add_to_list": "리스트에 오브젝트 추가",
   "list_remove_from_list": "{listName}에서 {collectionId} 제거",
+  "list_currency": "통화",
+  "list_currency_description": "통화를 설정하면 가격과 수량이 포함된 판매 리스트가 생성됩니다.",
+  "list_add_to_sale_list": "판매 리스트에 추가",
+  "list_sale_quantity": "수량",
+  "list_sale_price": "가격",
+  "list_edit_sale_entry": "항목 수정",
+  "toast_entry_updated": "항목이 업데이트되었습니다",
 
   "_comment_help": "Help dialog content",
   "help_objekts_title": "도움말: 오브젝트",

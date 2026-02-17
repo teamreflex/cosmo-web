@@ -18,11 +18,16 @@ import {
 
 const LIMIT = 60;
 
+export type ObjektListItem = Collection & {
+  entryQuantity: number;
+  entryPrice: number | null;
+};
+
 type FetchObjektListEntries = {
   total: number;
   hasNext: boolean;
   nextStartAfter: number | undefined;
-  objekts: Collection[];
+  objekts: ObjektListItem[];
 };
 
 /**
@@ -40,6 +45,8 @@ export const $fetchObjektListEntries = createServerFn({ method: "GET" })
       columns: {
         id: true,
         collectionId: true,
+        quantity: true,
+        price: true,
       },
       orderBy: {
         createdAt: "desc",
@@ -78,13 +85,24 @@ export const $fetchObjektListEntries = createServerFn({ method: "GET" })
 
     const result = await query;
 
-    const idMap = new Map(entries.map((e) => [e.collectionId, e.id]));
+    const entryMap = new Map(
+      entries.map((e) => [
+        e.collectionId,
+        { id: e.id, quantity: e.quantity, price: e.price },
+      ]),
+    );
     const collectionList = result
-      .map((c) => ({
-        ...c.collection,
-        id: idMap.get(c.collection.slug),
-      }))
-      .filter((c): c is Collection => c.id !== undefined);
+      .map((c) => {
+        const entry = entryMap.get(c.collection.slug);
+        if (!entry) return undefined;
+        return {
+          ...c.collection,
+          id: entry.id,
+          entryQuantity: entry.quantity,
+          entryPrice: entry.price,
+        };
+      })
+      .filter((c): c is ObjektListItem => c !== undefined);
 
     const hasNext = collectionList.length === LIMIT;
     const nextStartAfter = hasNext ? data.page + 1 : undefined;

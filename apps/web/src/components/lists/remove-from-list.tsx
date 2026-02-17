@@ -1,4 +1,5 @@
 import { m } from "@/i18n/messages";
+import { objektListQueryFilter } from "@/lib/queries/objekt-queries";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import type { ObjektList } from "@apollo/database/web/types";
 import { IconLoader2, IconPlaylistX } from "@tabler/icons-react";
@@ -23,11 +24,7 @@ export default function RemoveFromList({ id, collection, objektList }: Props) {
           listName: objektList.name,
         }),
       );
-      await queryClient.invalidateQueries({
-        predicate: (query) =>
-          query.queryKey[0] === "objekt-list" &&
-          query.queryKey[1] === objektList.id,
-      });
+      await queryClient.invalidateQueries(objektListQueryFilter(objektList.id));
     },
   });
 

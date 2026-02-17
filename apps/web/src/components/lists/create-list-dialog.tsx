@@ -13,7 +13,10 @@ import {
 } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
-import { createObjektListSchema } from "../../lib/universal/schema/objekt-list";
+import {
+  createObjektListSchema,
+  defaultCurrencies,
+} from "../../lib/universal/schema/objekt-list";
 import { Button } from "../ui/button";
 import {
   Dialog,
@@ -79,6 +82,7 @@ export default function CreateListDialog(props: Props) {
     resolver: standardSchemaResolver(createObjektListSchema),
     defaultValues: {
       name: "",
+      currency: undefined,
     },
   });
 
@@ -116,11 +120,53 @@ export default function CreateListDialog(props: Props) {
               )}
             />
 
+            <CurrencyField />
+
             <SubmitButton />
           </form>
         </FormProvider>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function CurrencyField() {
+  return (
+    <Controller
+      name="currency"
+      render={({ field, fieldState }) => (
+        <Field data-invalid={fieldState.invalid}>
+          <FieldLabel>{m.list_currency()}</FieldLabel>
+          <Input
+            placeholder="USD"
+            maxLength={3}
+            value={field.value ?? ""}
+            onChange={(e) =>
+              field.onChange(e.target.value === "" ? undefined : e.target.value)
+            }
+          />
+          <div className="flex gap-1">
+            {defaultCurrencies.map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() =>
+                  field.onChange(field.value === c ? undefined : c)
+                }
+                className="rounded-md border px-2 py-0.5 text-xs data-[active=true]:bg-accent"
+                data-active={field.value?.toUpperCase() === c}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {m.list_currency_description()}
+          </p>
+          <FieldError errors={[fieldState.error]} />
+        </Field>
+      )}
+    />
   );
 }
 

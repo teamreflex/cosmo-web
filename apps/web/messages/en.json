@@ -169,6 +169,13 @@
   "list_select_to_add": "Select list to add {collectionId} to",
   "list_add_to_list": "Add objekt to list",
   "list_remove_from_list": "Remove {collectionId} from {listName}",
+  "list_currency": "Currency",
+  "list_currency_description": "Set a currency to create a sale list with prices and quantities.",
+  "list_add_to_sale_list": "Add to Sale List",
+  "list_sale_quantity": "Quantity",
+  "list_sale_price": "Price",
+  "list_edit_sale_entry": "Edit Entry",
+  "toast_entry_updated": "Entry updated",
 
   "_comment_help": "Help dialog content",
   "help_objekts_title": "Help: Objekts",

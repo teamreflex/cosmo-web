@@ -5,6 +5,7 @@ import {
   integer,
   jsonb,
   pgTable,
+  real,
   serial,
   text,
   timestamp,
@@ -95,6 +96,7 @@ export const objektLists = pgTable(
       }),
     name: varchar("name", { length: 24 }).notNull(),
     slug: citext("slug", { length: 24 }).notNull(),
+    currency: varchar("currency", { length: 3 }),
   },
   (t) => [
     index("objekt_lists_slug_idx").on(t.slug),
@@ -113,6 +115,8 @@ export const objektListEntries = pgTable(
         onDelete: "cascade",
       }),
     collectionId: varchar("collection_id", { length: 36 }).notNull(), // slug: atom01-jinsoul-101z
+    quantity: integer("quantity").notNull().default(1),
+    price: real("price"),
   },
   (t) => [index("objekt_list_entries_list_idx").on(t.objektListId)],
 );
