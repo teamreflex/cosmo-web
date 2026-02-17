@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { m } from "@/i18n/messages";
 import { spotifyAlbumQuery } from "@/lib/queries/events";
 import type { SpotifyAlbum } from "@/lib/universal/events";
 import { IconX } from "@tabler/icons-react";
@@ -66,7 +67,13 @@ function AlbumCard({ album, onClear }: AlbumCardProps) {
           {album.artists.map((a) => a.name).join(", ")}
         </span>
       </div>
-      <Button type="button" variant="ghost" size="icon" onClick={onClear}>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        onClick={onClear}
+        aria-label={m.aria_clear_album()}
+      >
         <IconX className="size-4" />
       </Button>
     </div>

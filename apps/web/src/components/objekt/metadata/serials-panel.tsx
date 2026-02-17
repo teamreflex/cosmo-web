@@ -62,10 +62,20 @@ export default function SerialsPanel(props: Props) {
           className="flex-1"
         />
 
-        <Button variant="outline" size="icon" onClick={handleNext}>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={handleNext}
+          aria-label={m.aria_next_serial()}
+        >
           <IconChevronUp />
         </Button>
-        <Button variant="outline" size="icon" onClick={handlePrevious}>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={handlePrevious}
+          aria-label={m.aria_previous_serial()}
+        >
           <IconChevronDown />
         </Button>
       </div>

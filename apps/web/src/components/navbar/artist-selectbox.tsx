@@ -1,4 +1,5 @@
 import { useArtists } from "@/hooks/use-artists";
+import { m } from "@/i18n/messages";
 import { selectedArtistsQuery } from "@/lib/queries/core";
 import type { CosmoArtistBFF } from "@apollo/cosmo/types/artists";
 import { IconCheck, IconLoader2 } from "@tabler/icons-react";
@@ -23,6 +24,7 @@ export default function ArtistSelectbox() {
         <button
           id={id}
           className="flex items-center -space-x-3 focus:outline-none"
+          aria-label={m.aria_select_artist()}
         >
           {selected.map((artist) => (
             <Avatar
@@ -30,7 +32,7 @@ export default function ArtistSelectbox() {
               className="size-8 rounded-full ring ring-accent"
             >
               <AvatarFallback className="rounded-full">A</AvatarFallback>
-              <AvatarImage src={artist.logoImageUrl} />
+              <AvatarImage src={artist.logoImageUrl} alt={artist.title} />
             </Avatar>
           ))}
         </button>

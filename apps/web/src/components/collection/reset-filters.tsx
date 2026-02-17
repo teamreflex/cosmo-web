@@ -36,7 +36,12 @@ export default function ResetFilters(props: Props) {
     <TooltipProvider delayDuration={0}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Button onClick={handleReset} disabled={disabled} variant="outline">
+          <Button
+            onClick={handleReset}
+            disabled={disabled}
+            variant="outline"
+            aria-label={m.aria_reset_filters()}
+          >
             <IconRotate />
           </Button>
         </TooltipTrigger>

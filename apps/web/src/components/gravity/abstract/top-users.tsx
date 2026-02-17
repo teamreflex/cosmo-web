@@ -119,7 +119,10 @@ function Row({ user, candidates }: RowProps) {
                     <AvatarFallback>
                       {vote.candidate.title.at(0)}
                     </AvatarFallback>
-                    <AvatarImage src={vote.candidate.imageUrl} />
+                    <AvatarImage
+                      src={vote.candidate.imageUrl}
+                      alt={vote.candidate.title}
+                    />
                   </Avatar>
                 </TooltipTrigger>
                 <TooltipContent className="flex flex-col">

@@ -82,6 +82,7 @@ function LinkedAccountItem(props: LinkedAccountItemProps) {
               size="icon"
               onClick={() => mutate()}
               disabled={status === "pending" || props.disabled}
+              aria-label={m.aria_unlink_account()}
             >
               {status === "pending" ? (
                 <IconLoader2 className="h-4 w-4 animate-spin" />
@@ -119,6 +120,7 @@ function LinkNewAccount(props: LinkNewAccountProps) {
         size="icon"
         onClick={() => mutate()}
         disabled={status === "pending"}
+        aria-label={m.aria_link_account()}
       >
         {status === "pending" ? (
           <IconLoader2 className="h-4 w-4 animate-spin" />

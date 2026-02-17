@@ -209,6 +209,7 @@ function RootObjektOverlay({
         <button
           className="z-50 flex items-center place-self-end transition-all hover:scale-110"
           onClick={handleClick}
+          aria-label={m.aria_collection_info()}
         >
           <IconInfoCircle className="h-3 w-3 sm:h-5 sm:w-5" />
         </button>

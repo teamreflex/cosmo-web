@@ -73,7 +73,7 @@ export default function Blockchain(props: Props) {
         return (
           <Popover>
             <PopoverTrigger className="flex justify-end" asChild>
-              <button>
+              <button aria-label={m.aria_data_source_info()}>
                 <IconInfoCircle className="h-5 w-5" />
               </button>
             </PopoverTrigger>

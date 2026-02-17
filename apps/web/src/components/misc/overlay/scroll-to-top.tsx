@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { m } from "@/i18n/messages";
 import { IconSquareArrowUp } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 
@@ -19,6 +20,7 @@ export default function ScrollToTop() {
       className="transition-opacity data-[hidden=true]:pointer-events-none data-[hidden=true]:opacity-0"
       data-hidden={!visible}
       onClick={() => window.scrollTo({ top: 0, behavior: "instant" })}
+      aria-label={m.aria_scroll_to_top()}
     >
       <IconSquareArrowUp className="size-6" />
     </Button>

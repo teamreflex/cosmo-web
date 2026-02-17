@@ -40,6 +40,7 @@ export default function InformationOverlay({ collection, token }: Props) {
       <button
         className="z-50 flex items-center place-self-end transition-all hover:scale-110"
         onClick={() => setOpen((prev) => !prev)}
+        aria-label={m.aria_expand_info()}
       >
         <IconMaximize className="h-3 w-3 sm:h-5 sm:w-5" />
       </button>

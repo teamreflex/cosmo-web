@@ -61,6 +61,7 @@ export default function ProgressLeaderboard({ member, seasons }: Props) {
               variant="secondary"
               size="icon"
               onClick={() => toggle()}
+              aria-label={m.aria_open_leaderboard()}
             >
               <IconTrophy className="h-5 w-5" />
             </Button>

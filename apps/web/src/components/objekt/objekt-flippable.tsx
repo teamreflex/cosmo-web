@@ -1,3 +1,4 @@
+import { m } from "@/i18n/messages";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
 import { Fragment, useState, lazy, Suspense } from "react";
@@ -29,6 +30,7 @@ export default function FlippableObjekt({ children, collection }: Props) {
   return (
     <div
       role="button"
+      aria-label={m.aria_flip_objekt()}
       style={{
         "--objekt-background-color": collection.backgroundColor,
         "--objekt-text-color": collection.textColor,

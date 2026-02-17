@@ -77,7 +77,12 @@ export default function Metadata(props: Props) {
           )}
 
           <div className="mt-auto flex w-full flex-row-reverse items-center gap-2 self-end">
-            <Button variant="secondary" size="sm" onClick={copyUrl}>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={copyUrl}
+              aria-label={m.aria_copy_url()}
+            >
               <IconLink />
             </Button>
 
@@ -87,6 +92,7 @@ export default function Metadata(props: Props) {
                   variant="secondary"
                   size="sm"
                   className="focus:outline-none"
+                  aria-label={m.aria_download()}
                 >
                   <IconCloudDownload />
                 </Button>

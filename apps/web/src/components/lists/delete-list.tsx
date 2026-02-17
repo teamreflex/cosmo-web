@@ -85,7 +85,12 @@ export default function DeleteList({ objektList }: Props) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive" size="icon" className="rounded-full">
+        <Button
+          variant="destructive"
+          size="icon"
+          className="rounded-full"
+          aria-label={m.aria_delete_list()}
+        >
           <IconTrash />
         </Button>
       </AlertDialogTrigger>

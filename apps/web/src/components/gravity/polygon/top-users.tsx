@@ -137,7 +137,7 @@ function Row({ user }: RowProps) {
                   className="size-8 rounded ring ring-secondary"
                 >
                   <AvatarFallback>{candidate.title.at(0)}</AvatarFallback>
-                  <AvatarImage src={candidate.imageUrl} />
+                  <AvatarImage src={candidate.imageUrl} alt={candidate.title} />
                 </Avatar>
               </TooltipTrigger>
               <TooltipContent className="flex flex-col">

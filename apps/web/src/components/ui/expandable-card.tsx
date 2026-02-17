@@ -1,3 +1,4 @@
+import { m } from "@/i18n/messages";
 import { cn } from "@/lib/utils";
 import { IconChevronDown } from "@tabler/icons-react";
 import { motion } from "motion/react";
@@ -189,6 +190,7 @@ function ExpandableCardContent({
           <button
             data-expanded={isExpanded}
             onClick={toggleExpanded}
+            aria-label={m.aria_expand_card()}
             className={cn(
               "group flex w-full items-center justify-center gap-2 text-xs text-background focus:outline-none dark:text-foreground",
             )}

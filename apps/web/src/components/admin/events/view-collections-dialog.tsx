@@ -23,7 +23,11 @@ export default function ViewCollectionsDialog({ eventId, eventName }: Props) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="icon-xs" variant="ghost">
+        <Button
+          size="icon-xs"
+          variant="ghost"
+          aria-label={m.aria_view_collections()}
+        >
           <IconList className="size-4" />
         </Button>
       </DialogTrigger>

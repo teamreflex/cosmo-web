@@ -44,6 +44,7 @@ export default function DeleteCollection({ eventId, collectionId }: Props) {
       size="icon-xs"
       onClick={handleRemove}
       disabled={mutation.isPending}
+      aria-label={m.aria_delete_collection()}
     >
       {mutation.isPending ? (
         <IconLoader2 className="size-4 animate-spin" />

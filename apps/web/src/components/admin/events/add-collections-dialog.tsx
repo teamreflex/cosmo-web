@@ -108,7 +108,11 @@ export default function AddCollectionsDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="icon-xs" variant="ghost">
+        <Button
+          size="icon-xs"
+          variant="ghost"
+          aria-label={m.aria_add_collections()}
+        >
           <IconPlus className="size-4" />
         </Button>
       </DialogTrigger>

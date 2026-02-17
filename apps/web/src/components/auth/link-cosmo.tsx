@@ -341,7 +341,12 @@ function CodeStep({ user, artistId, code, onSuccess, onBack }: CodeStepProps) {
         <span className="rounded-md bg-muted px-4 py-2 font-mono text-2xl font-bold tracking-widest">
           {code}
         </span>
-        <Button variant="ghost" size="icon" onClick={handleCopy}>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleCopy}
+          aria-label={m.aria_copy_code()}
+        >
           {copied ? (
             <IconCheck className="size-4" />
           ) : (

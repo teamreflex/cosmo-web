@@ -1,5 +1,6 @@
 import { useMetadataDialog } from "@/hooks/use-metadata-dialog";
 import { useObjektTransfer } from "@/hooks/use-objekt-transfer";
+import { m } from "@/i18n/messages";
 import { getObjektImageUrls } from "@/lib/client/objekt-util";
 import { objektQuery } from "@/lib/queries/objekt-queries";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
@@ -83,6 +84,7 @@ function FrontImage(props: FrontImageProps) {
   return (
     <img
       role="button"
+      aria-label={m.aria_view_objekt()}
       onMouseOver={prefetch}
       onLoad={() => setIsLoaded(true)}
       onClick={() => {

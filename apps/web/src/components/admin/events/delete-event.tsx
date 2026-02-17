@@ -47,6 +47,7 @@ export default function DeleteEvent({ eventId }: Props) {
           size="icon-xs"
           variant="destructive"
           disabled={mutation.isPending}
+          aria-label={m.aria_delete_event()}
         >
           <IconTrash className="size-4" />
         </Button>

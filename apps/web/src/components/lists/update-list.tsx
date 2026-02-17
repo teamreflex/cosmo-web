@@ -75,7 +75,12 @@ export default function UpdateList({ objektList }: Props) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="secondary" size="icon" className="rounded-full">
+        <Button
+          variant="secondary"
+          size="icon"
+          className="rounded-full"
+          aria-label={m.aria_edit_list()}
+        >
           <IconEdit />
         </Button>
       </DialogTrigger>
@@ -141,6 +146,7 @@ function CurrencyField() {
                 }
                 className="rounded-md border px-2 py-0.5 text-xs data-[active=true]:bg-accent"
                 data-active={field.value?.toUpperCase() === c}
+                aria-pressed={field.value?.toUpperCase() === c}
               >
                 {c}
               </button>

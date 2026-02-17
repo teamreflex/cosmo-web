@@ -147,7 +147,7 @@ function ListItem({
         onClick={handleClick}
         disabled={mutation.isPending}
         className="flex w-full items-center justify-between"
-        aria-label={m.list_add_to_list()}
+        aria-label={m.list_add_to_list_named({ listName: list.name })}
       >
         <span>
           {list.name}

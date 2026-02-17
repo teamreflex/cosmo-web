@@ -37,11 +37,15 @@ export default function AboutDialog({ open, onOpenChange }: Props) {
         </AlertDialogHeader>
         <AlertDialogFooter className="sm:justify-between">
           <AlertDialogCancel asChild>
-            <a href="https://github.com/teamreflex/cosmo-web" target="_blank">
+            <a
+              href="https://github.com/teamreflex/cosmo-web"
+              target="_blank"
+              aria-label={m.aria_github()}
+            >
               <IconBrandGithub />
             </a>
           </AlertDialogCancel>
-          <AlertDialogAction>
+          <AlertDialogAction aria-label={m.aria_close_dialog()}>
             <IconCheck />
           </AlertDialogAction>
         </AlertDialogFooter>

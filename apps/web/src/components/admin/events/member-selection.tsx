@@ -106,7 +106,11 @@ export default function MemberSelection({ members, value, onChange }: Props) {
             )}
             asChild
           >
-            <button type="button" onClick={() => toggleMember(member)}>
+            <button
+              type="button"
+              onClick={() => toggleMember(member)}
+              aria-pressed={value.includes(member)}
+            >
               {member}
             </button>
           </Badge>

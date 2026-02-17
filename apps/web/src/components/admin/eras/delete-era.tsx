@@ -48,6 +48,7 @@ export default function DeleteEra({ eraId, onSuccess }: Props) {
           type="button"
           variant="destructive"
           disabled={mutation.isPending}
+          aria-label={m.aria_delete_era()}
         >
           <IconTrash className="size-4" />
         </Button>

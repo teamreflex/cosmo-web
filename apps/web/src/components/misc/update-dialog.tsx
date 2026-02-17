@@ -34,7 +34,10 @@ export default function UpdateDialog() {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <button className="relative flex h-8 w-9 items-center justify-center rounded-r-md border border-cosmo/40 bg-cosmo/25 shadow-sm transition-colors hover:bg-cosmo/40">
+        <button
+          className="relative flex h-8 w-9 items-center justify-center rounded-r-md border border-cosmo/40 bg-cosmo/25 shadow-sm transition-colors hover:bg-cosmo/40"
+          aria-label={m.aria_updates()}
+        >
           <IconSpeakerphone className="h-5 w-5 text-cosmo-text/75" />
           {isNew && (
             <span className="absolute top-0 right-0 h-2 w-2 animate-pulse rounded-full bg-red-500" />

@@ -125,7 +125,7 @@ export default function EditEventDialog({ event }: Props) {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button size="icon-xs" variant="ghost">
+        <Button size="icon-xs" variant="ghost" aria-label={m.aria_edit_event()}>
           <IconPencil className="size-4" />
         </Button>
       </DialogTrigger>

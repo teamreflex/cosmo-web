@@ -7,6 +7,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { m } from "@/i18n/messages";
 import { cn } from "@/lib/utils";
 import { IconCalendar, IconClock, IconX } from "@tabler/icons-react";
 import { format, isValid, parse, setHours, setMinutes } from "date-fns";
@@ -102,6 +103,7 @@ export function DateTimePicker({
                 size="icon-sm"
                 disabled={disabled}
                 className="absolute right-1 top-1/2 -translate-y-1/2"
+                aria-label={m.aria_open_calendar()}
               >
                 <IconCalendar className="size-4" />
               </Button>
@@ -129,7 +131,13 @@ export function DateTimePicker({
         <IconClock className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2" />
       </div>
 
-      <Button type="button" variant="outline" size="icon" onClick={handleReset}>
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        onClick={handleReset}
+        aria-label={m.aria_reset_date()}
+      >
         <IconX />
       </Button>
     </div>

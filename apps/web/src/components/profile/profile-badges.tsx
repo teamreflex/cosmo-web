@@ -67,7 +67,10 @@ export function DiscordBadge(props: { handle: string }) {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <button className="flex size-5 items-center justify-center rounded bg-discord text-white">
+          <button
+            className="flex size-5 items-center justify-center rounded bg-discord text-white"
+            aria-label={m.aria_discord_profile()}
+          >
             <IconBrandDiscordFilled className="w-4" />
           </button>
         </TooltipTrigger>

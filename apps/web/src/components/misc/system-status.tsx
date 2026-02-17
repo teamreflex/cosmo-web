@@ -46,6 +46,7 @@ function SystemStatusPopover() {
             textStatus(processor.status),
             bgStatus(processor.status),
           )}
+          aria-label={m.aria_system_status()}
         >
           <IconActivity className="h-5 w-5" />
         </button>

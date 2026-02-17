@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { getSeasonKeys } from "@/hooks/use-filter-data";
+import { m } from "@/i18n/messages";
 import type { EventWithEra } from "@apollo/database/web/types";
 import {
   IconBrandDiscord,
@@ -127,6 +128,7 @@ export default function EventHeader({ event }: EventHeaderProps) {
                     href={event.twitterUrl}
                     target="_blank"
                     rel="noopener noreferrer"
+                    aria-label={m.aria_twitter()}
                   >
                     <IconBrandTwitter className="size-4 fill-white" />
                   </a>
@@ -139,6 +141,7 @@ export default function EventHeader({ event }: EventHeaderProps) {
                     href={event.discordUrl}
                     target="_blank"
                     rel="noopener noreferrer"
+                    aria-label={m.aria_discord()}
                   >
                     <IconBrandDiscord className="size-4 fill-white" />
                   </a>

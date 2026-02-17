@@ -45,7 +45,11 @@ export default function FilterSearch() {
         maxLength={32}
       />
 
-      <button type="button" onClick={() => set(undefined)}>
+      <button
+        type="button"
+        onClick={() => set(undefined)}
+        aria-label={m.aria_clear_search()}
+      >
         <IconX className="mr-3 h-4 w-4" />
       </button>
     </div>

@@ -86,6 +86,7 @@ export default function EventImageUpload({
             size="icon"
             className="absolute -top-2 -right-2 size-6"
             onClick={handleClear}
+            aria-label={m.aria_clear_image()}
           >
             <IconX className="size-3" />
           </Button>

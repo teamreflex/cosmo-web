@@ -6,6 +6,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { InputGroup, InputGroupAddon } from "@/components/ui/input-group";
+import { m } from "@/i18n/messages";
 import { cn } from "@/lib/utils";
 import { IconCheck, IconSearch, IconX } from "@tabler/icons-react";
 import { Command as CommandPrimitive } from "cmdk";
@@ -79,7 +80,12 @@ function CommandInput({ className, onClose, ...props }: CommandInputProps) {
           <IconSearch className="size-4 shrink-0 opacity-50" />
         </InputGroupAddon>
         <InputGroupAddon align="inline-end" className="pr-2">
-          <Button variant="ghost" size="icon-xs" onClick={onClose}>
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            onClick={onClose}
+            aria-label={m.aria_close_search()}
+          >
             <IconX className="size-4 shrink-0 opacity-50" />
           </Button>
         </InputGroupAddon>

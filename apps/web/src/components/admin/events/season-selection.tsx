@@ -35,7 +35,11 @@ export default function SeasonSelection({ seasons, value, onChange }: Props) {
           )}
           asChild
         >
-          <button type="button" onClick={() => toggle(season.name)}>
+          <button
+            type="button"
+            onClick={() => toggle(season.name)}
+            aria-pressed={value.includes(season.name)}
+          >
             {season.name}
           </button>
         </Badge>

@@ -35,6 +35,7 @@ export default function SendObjekt({ collection, token }: Props) {
     <button
       onClick={handleClick}
       className="flex items-center transition-all hover:scale-110"
+      aria-label={m.aria_send_objekt()}
     >
       <IconSend className="h-3 w-3 sm:h-5 sm:w-5" />
     </button>
