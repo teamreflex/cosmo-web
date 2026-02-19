@@ -1,5 +1,5 @@
 import { env } from "@/lib/env/server";
-import { $fetchCurrentUser } from "@/lib/queries/core";
+import { $fetchCurrentUser } from "@/lib/functions/core";
 import { getCorsHeaders } from "@/lib/server/cors";
 import {
   exchangeLoginTicket,

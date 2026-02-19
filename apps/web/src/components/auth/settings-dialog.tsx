@@ -18,6 +18,7 @@ import {
 import { useTheme, type Theme } from "@/hooks/use-theme";
 import { m } from "@/i18n/messages";
 import { getLocale, setLocale } from "@/i18n/runtime";
+import { $updateSettings } from "@/lib/functions/auth";
 import { currentAccountQuery } from "@/lib/queries/core";
 import type { PublicUser } from "@/lib/universal/auth";
 import { settingsSchema } from "@/lib/universal/schema/auth";
@@ -29,7 +30,6 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
 import { Field, FieldContent, FieldError, FieldLabel } from "../ui/field";
-import { $updateSettings } from "./actions";
 
 type Props = {
   open: boolean;

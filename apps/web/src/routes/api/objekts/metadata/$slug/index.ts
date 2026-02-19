@@ -1,4 +1,4 @@
-import { cacheHeaders } from "@/lib/server/cache";
+import { cacheHeaders } from "@/lib/server/cache.server";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import { collections, objekts } from "@/lib/server/db/indexer/schema";

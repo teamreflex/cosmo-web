@@ -1,9 +1,9 @@
+import { $fetchRevealedVotes } from "@/lib/functions/gravity";
 import {
   type GravityPollDetailsParams,
   gravityPollDetailsQuery,
   gravityVoteDataQuery,
 } from "@/lib/queries/gravity";
-import { $fetchRevealedVotes } from "@/lib/server/gravity";
 import { useInfiniteQuery, useSuspenseQueries } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import type { RevealedVote } from "../types";

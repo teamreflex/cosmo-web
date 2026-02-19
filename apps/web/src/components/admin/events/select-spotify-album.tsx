@@ -11,7 +11,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { $searchSpotifyAlbums } from "@/lib/server/events/actions";
+import { $searchSpotifyAlbums } from "@/lib/functions/events";
 import type { SpotifyAlbum } from "@/lib/universal/events";
 import { cn } from "@/lib/utils";
 import { IconCheck, IconLoader2, IconSelector } from "@tabler/icons-react";

@@ -1,5 +1,5 @@
 import { env } from "@/lib/env/server";
-import { $fetchObjektsWithComo } from "@/lib/server/como";
+import { $fetchObjektsWithComo } from "@/lib/functions/como";
 import { buildCalendar } from "@/lib/universal/como";
 import { createFileRoute } from "@tanstack/react-router";
 

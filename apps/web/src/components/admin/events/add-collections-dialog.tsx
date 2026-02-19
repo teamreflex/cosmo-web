@@ -14,11 +14,11 @@ import { Field, FieldLabel } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 import { getSeasonKeys } from "@/hooks/use-filter-data";
 import { m } from "@/i18n/messages";
+import { $addCollectionsToEvent } from "@/lib/functions/events";
 import {
   adminEventCollectionsQuery,
   adminEventsQuery,
 } from "@/lib/queries/events";
-import { $addCollectionsToEvent } from "@/lib/server/events/actions";
 import { cn } from "@/lib/utils";
 import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
 import { slugify } from "@apollo/util";

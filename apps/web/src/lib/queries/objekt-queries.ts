@@ -1,13 +1,13 @@
 import { ObjektNotFoundError } from "@/lib/client/objekt-util";
 import { getTypesenseResults } from "@/lib/client/typesense";
-import { $fetchObjektsBlockchain } from "@/lib/server/objekts/prefetching/objekt-blockchain";
+import { $fetchObjektsBlockchain } from "@/lib/functions/objekts/objekt-blockchain";
 import {
   $fetchObjektsBlockchainGroups,
   PER_PAGE as BLOCKCHAIN_GROUPS_PER_PAGE,
-} from "@/lib/server/objekts/prefetching/objekt-blockchain-groups";
-import { $fetchObjektsIndex } from "@/lib/server/objekts/prefetching/objekt-index";
-import { $fetchObjektListEntries } from "@/lib/server/objekts/prefetching/objekt-list";
-import { $fetchTransfers } from "@/lib/server/transfers";
+} from "@/lib/functions/objekts/objekt-blockchain-groups";
+import { $fetchObjektsIndex } from "@/lib/functions/objekts/objekt-index";
+import { $fetchObjektListEntries } from "@/lib/functions/objekts/objekt-list";
+import { $fetchTransfers } from "@/lib/functions/transfers";
 import type {
   objektIndexFrontendSchema,
   objektListFrontendSchema,

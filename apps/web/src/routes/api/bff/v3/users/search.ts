@@ -1,6 +1,6 @@
-import { cacheAccounts } from "@/lib/server/cosmo-accounts";
+import { cacheAccounts } from "@/lib/server/cosmo-accounts.server";
 import { db } from "@/lib/server/db";
-import { getProxiedToken } from "@/lib/server/proxied-token";
+import { getProxiedToken } from "@/lib/server/proxied-token.server";
 import { search } from "@apollo/cosmo/server/user";
 import type { CosmoSearchResult } from "@apollo/cosmo/types/user";
 import { cosmoAccounts } from "@apollo/database/web/schema";

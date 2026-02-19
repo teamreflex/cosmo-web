@@ -1,11 +1,11 @@
 import { m } from "@/i18n/messages";
+import { $removeObjektFromList } from "@/lib/functions/lists";
 import { objektListQueryFilter } from "@/lib/queries/objekt-queries";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import type { ObjektList } from "@apollo/database/web/types";
 import { IconLoader2, IconPlaylistX } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { $removeObjektFromList } from "./actions";
 
 type Props = {
   id: string;

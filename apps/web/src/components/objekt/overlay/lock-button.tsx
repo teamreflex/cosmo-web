@@ -1,6 +1,6 @@
-import { $toggleObjektLock } from "@/components/collection/actions";
 import { useProfileContext } from "@/hooks/use-profile";
 import { m } from "@/i18n/messages";
+import { $toggleObjektLock } from "@/lib/functions/collection";
 import { track } from "@/lib/utils";
 import { IconLoader2, IconLock, IconLockOpen } from "@tabler/icons-react";
 import { useMutation } from "@tanstack/react-query";

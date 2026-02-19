@@ -1,4 +1,4 @@
-import { $fetchObjektsIndex } from "@/lib/server/objekts/prefetching/objekt-index";
+import { $fetchObjektsIndex } from "@/lib/functions/objekts/objekt-index";
 import { objektIndexBackendSchema } from "@/lib/universal/parsers";
 import { parseSearchParams } from "@/lib/utils";
 import { createFileRoute } from "@tanstack/react-router";

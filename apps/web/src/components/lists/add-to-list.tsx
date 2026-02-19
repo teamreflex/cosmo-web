@@ -1,4 +1,5 @@
 import { m } from "@/i18n/messages";
+import { $addObjektToList } from "@/lib/functions/lists";
 import { objektListQueryFilter } from "@/lib/queries/objekt-queries";
 import type { ObjektList } from "@apollo/database/web/types";
 import { IconLoader2, IconPlaylistAdd, IconPlus } from "@tabler/icons-react";
@@ -16,7 +17,6 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { ScrollArea } from "../ui/scroll-area";
-import { $addObjektToList } from "./actions";
 import SaleListDialog from "./sale-list-dialog";
 
 type AddToListProps = {

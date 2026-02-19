@@ -10,11 +10,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { m } from "@/i18n/messages";
+import { $createEvent, $getEventImageUploadUrl } from "@/lib/functions/events";
 import { adminEventsQuery } from "@/lib/queries/events";
-import {
-  $createEvent,
-  $getEventImageUploadUrl,
-} from "@/lib/server/events/actions";
 import type { CreateEventInput } from "@/lib/universal/schema/events";
 import { createEventSchema } from "@/lib/universal/schema/events";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";

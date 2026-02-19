@@ -1,5 +1,4 @@
 import type { EventsFilters } from "@/hooks/use-events-filters";
-import { $getSpotifyAlbum } from "@/lib/server/events/actions";
 import {
   $fetchActiveEvents,
   $fetchCollectionsForEvent,
@@ -9,7 +8,8 @@ import {
   $fetchEventObjekts,
   $fetchEvents,
   $fetchPaginatedEvents,
-} from "@/lib/server/events/queries";
+  $getSpotifyAlbum,
+} from "@/lib/functions/events";
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 
 export function adminErasQuery() {

@@ -1,4 +1,4 @@
-import type { ObjektListItem } from "@/lib/server/objekts/prefetching/objekt-list";
+import type { ObjektListItem } from "@/lib/functions/objekts/objekt-list";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import type { ObjektList } from "@apollo/database/web/types";
 import { useMemo, useState } from "react";

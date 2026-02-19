@@ -1,4 +1,4 @@
-import { $fetchSystemStatus } from "@/lib/server/system";
+import { $fetchSystemStatus } from "@/lib/functions/system";
 import { queryOptions } from "@tanstack/react-query";
 
 export const systemStatusQuery = queryOptions({

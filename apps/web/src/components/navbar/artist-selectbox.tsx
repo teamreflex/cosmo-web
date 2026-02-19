@@ -1,5 +1,6 @@
 import { useArtists } from "@/hooks/use-artists";
 import { m } from "@/i18n/messages";
+import { $setSelectedArtist } from "@/lib/functions/core";
 import { selectedArtistsQuery } from "@/lib/queries/core";
 import type { CosmoArtistBFF } from "@apollo/cosmo/types/artists";
 import { IconCheck, IconLoader2 } from "@tabler/icons-react";
@@ -12,7 +13,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { $setSelectedArtist } from "./actions";
 
 export default function ArtistSelectbox() {
   const id = useId();

@@ -1,9 +1,9 @@
 import { m } from "@/i18n/messages";
+import { $rescanObjektMetadata } from "@/lib/functions/objekt";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { IconRefresh } from "@tabler/icons-react";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { $rescanObjektMetadata } from "../actions";
 
 type Props = {
   collection: Objekt.Collection;

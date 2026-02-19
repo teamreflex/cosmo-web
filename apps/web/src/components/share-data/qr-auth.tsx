@@ -6,7 +6,7 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { m } from "@/i18n/messages";
-import { $scrapeCollectionMedia } from "@/lib/queries/share-data";
+import { $scrapeCollectionMedia } from "@/lib/functions/share-data";
 import { verifyCosmoSchema } from "@/lib/universal/schema/cosmo";
 import type { AuthTicket, QueryTicket } from "@apollo/cosmo/types/qr-auth";
 import { generateQrCode } from "@apollo/cosmo/types/qr-auth";

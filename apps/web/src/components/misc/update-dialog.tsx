@@ -82,6 +82,13 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2026-02-21",
+    changes: [
+      "Added: Filters and sort options for events.",
+      "Added: Objekt lists can now have prices and quantities assigned, good for doing sale lists.",
+    ],
+  },
+  {
     date: "2026-01-19",
     changes: [
       "Fixed: Discord & Twitter sign in have been fixed.",

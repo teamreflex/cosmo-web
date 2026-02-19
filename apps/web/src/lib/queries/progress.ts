@@ -4,7 +4,7 @@ import {
   $fetchArtistStatsByAddress,
   $fetchProgressBreakdown,
   $fetchProgressLeaderboard,
-} from "../server/progress";
+} from "../functions/progress";
 
 export const artistStatsQuery = (address: string) =>
   queryOptions({

@@ -7,7 +7,7 @@ import {
   $fetchCachedPoll,
   $fetchPaginatedGravities,
   $fetchPolygonGravity,
-} from "../server/gravity";
+} from "../functions/gravity";
 
 export const activeGravitiesQuery = (artists?: string[]) =>
   queryOptions({

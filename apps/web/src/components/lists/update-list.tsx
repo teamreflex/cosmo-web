@@ -1,5 +1,6 @@
 import { useUserState } from "@/hooks/use-user-state";
 import { m } from "@/i18n/messages";
+import { $updateObjektList } from "@/lib/functions/lists";
 import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
 import type { ObjektList } from "@apollo/database/web/types";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
@@ -29,7 +30,6 @@ import {
 } from "../ui/dialog";
 import { Field, FieldError, FieldLabel } from "../ui/field";
 import { Input } from "../ui/input";
-import { $updateObjektList } from "./actions";
 
 type Props = {
   objektList: ObjektList;

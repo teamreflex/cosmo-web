@@ -1,4 +1,4 @@
-import { $fetchObjektStats } from "@/lib/server/objekts/stats";
+import { $fetchObjektStats } from "@/lib/functions/stats";
 import { queryOptions } from "@tanstack/react-query";
 
 export const objektStatsQuery = queryOptions({

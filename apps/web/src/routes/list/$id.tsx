@@ -8,6 +8,7 @@ import ToggleObjektBands from "@/components/misc/overlay/toggle-objekt-bands";
 import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
+import { $getObjektListWithUser } from "@/lib/functions/lists";
 import { defineHead } from "@/lib/meta";
 import {
   artistsQuery,
@@ -16,7 +17,6 @@ import {
   selectedArtistsQuery,
 } from "@/lib/queries/core";
 import { objektListQuery } from "@/lib/queries/objekt-queries";
-import { $getObjektListWithUser } from "@/lib/server/objekts/lists";
 import { objektListFrontendSchema } from "@/lib/universal/parsers";
 import { sanitizeUuid } from "@/lib/utils";
 import { ProfileProvider } from "@/providers/profile-provider";

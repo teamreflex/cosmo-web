@@ -11,6 +11,10 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
 import { env } from "@/lib/env/client";
+import {
+  $generateVerificationCode,
+  $verifyCosmoBio,
+} from "@/lib/functions/auth";
 import { artistsQuery, currentAccountQuery } from "@/lib/queries/core";
 import { artistColors, cn, track } from "@/lib/utils";
 import type { ValidArtist } from "@apollo/cosmo/types/common";
@@ -24,7 +28,6 @@ import {
 import { useRouter } from "@tanstack/react-router";
 import { Suspense, useState } from "react";
 import { toast } from "sonner";
-import { $generateVerificationCode, $verifyCosmoBio } from "./actions";
 import CosmoUserCombobox from "./cosmo-user-combobox";
 
 type WizardState =

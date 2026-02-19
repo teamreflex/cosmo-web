@@ -1,4 +1,5 @@
 import { m } from "@/i18n/messages";
+import { $updateObjektListEntry } from "@/lib/functions/lists";
 import { objektListQueryFilter } from "@/lib/queries/objekt-queries";
 import { updateObjektListEntrySchema } from "@/lib/universal/schema/objekt-list";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
@@ -16,7 +17,6 @@ import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Field, FieldError, FieldLabel } from "../ui/field";
 import { Input } from "../ui/input";
-import { $updateObjektListEntry } from "./actions";
 
 type Props = {
   open: boolean;

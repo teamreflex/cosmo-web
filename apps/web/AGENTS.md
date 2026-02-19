@@ -16,9 +16,10 @@
 - `src/lib/` - Core business logic
   - `env/` - Environment variables for per client/server environment
   - `client/` - Client-only utilities
-  - `server/` - Server-side logic (database, API calls)
+  - `functions/` - All `createServerFn` definitions
+  - `server/` - Server infrastructure + `*.server.ts` helper files (auth, cache, db, middlewares, etc.)
   - `universal/` - Shared types and Zod schemas
-  - `queries/` - Server functions and associated TanStack Query options
+  - `queries/` - `queryOptions` only (client-safe, imports server functions from `functions/`)
 - `src/hooks/` - Custom React hooks
 - `src/styles/` - Tailwind and general styling config
 - `messages/` - Paraglide JS translation strings
@@ -227,8 +228,10 @@ Do not write raw SQL in `sql` template tags unless absolutely necessary due to t
 The app uses [TanStack Router](https://tanstack.com/router/latest/docs/framework/react/overview) with [TanStack Start](https://tanstack.com/start/latest/docs/framework/react/overview) for SSR & server functions and [TanStack Query](https://tanstack.com/query/latest/docs/framework/react/overview) for data fetching/mutation. Refer to official documentation for detailed patterns and APIs.
 
 - Routes are file-based in `src/routes/` using `createFileRoute()`
-- Server functions defined with `createServerFn()` in `lib/queries/`
+- Server functions defined with `createServerFn()` in `lib/functions/`
 - Query options exported as factories (not hooks) from `lib/queries/`
+- `*.server.ts` files are protected from client bundles via TanStack Start's import protection
+- Helper functions using `db`/`indexer`/server-only APIs belong in `*.server.ts` companion files in `lib/server/`
 
 ## Components
 

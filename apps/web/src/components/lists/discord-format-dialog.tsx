@@ -1,4 +1,5 @@
 import { m } from "@/i18n/messages";
+import { $generateDiscordList } from "@/lib/functions/lists";
 import type { ObjektList } from "@apollo/database/web/types";
 import { IconCloudDownload, IconCopy, IconLoader2 } from "@tabler/icons-react";
 import { useMutation } from "@tanstack/react-query";
@@ -22,7 +23,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { $generateDiscordList } from "./actions";
 
 type Props = {
   open: boolean;

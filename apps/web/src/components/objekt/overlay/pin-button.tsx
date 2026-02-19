@@ -1,6 +1,6 @@
-import { $pinObjekt, $unpinObjekt } from "@/components/collection/actions";
 import { useProfileContext } from "@/hooks/use-profile";
 import { m } from "@/i18n/messages";
+import { $pinObjekt, $unpinObjekt } from "@/lib/functions/collection";
 import { track } from "@/lib/utils";
 import { IconLoader2, IconPin, IconPinnedOff } from "@tabler/icons-react";
 import { useMutation } from "@tanstack/react-query";

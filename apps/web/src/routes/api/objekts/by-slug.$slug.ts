@@ -1,4 +1,4 @@
-import { cacheHeaders } from "@/lib/server/cache";
+import { cacheHeaders } from "@/lib/server/cache.server";
 import { indexer } from "@/lib/server/db/indexer";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import { createFileRoute } from "@tanstack/react-router";

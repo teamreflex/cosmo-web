@@ -1,6 +1,6 @@
 import type { AggregatedGravityData } from "@/lib/client/gravity/abstract/types";
-import { cacheHeaders } from "@/lib/server/cache";
-import { fetchKnownAddresses } from "@/lib/server/cosmo-accounts";
+import { cacheHeaders } from "@/lib/server/cache.server";
+import { fetchKnownAddresses } from "@/lib/server/cosmo-accounts.server";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import { addr } from "@apollo/util";

@@ -10,8 +10,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { m } from "@/i18n/messages";
+import { $createEra, $getEraImageUploadUrl } from "@/lib/functions/events";
 import { adminErasQuery } from "@/lib/queries/events";
-import { $createEra, $getEraImageUploadUrl } from "@/lib/server/events/actions";
 import type { SpotifyAlbum } from "@/lib/universal/events";
 import type { CreateEraInput } from "@/lib/universal/schema/events";
 import { createEraSchema } from "@/lib/universal/schema/events";

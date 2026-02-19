@@ -1,4 +1,4 @@
-import { fetchKnownAddresses } from "@/lib/server/cosmo-accounts";
+import { fetchKnownAddresses } from "@/lib/server/cosmo-accounts.server";
 import { indexer } from "@/lib/server/db/indexer";
 import type { SerialObjekt, SerialTransfer } from "@/lib/universal/objekts";
 import { createFileRoute } from "@tanstack/react-router";

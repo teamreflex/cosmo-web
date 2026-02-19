@@ -1,5 +1,5 @@
 import { env } from "@/lib/env/server";
-import { $fetchObjektsWithComo } from "@/lib/server/como";
+import { $fetchObjektsWithComo } from "@/lib/functions/como";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import { collections, objekts } from "@/lib/server/db/indexer/schema";

@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { m } from "@/i18n/messages";
+import { $removeCollectionFromEvent } from "@/lib/functions/events";
 import {
   adminEventCollectionsQuery,
   adminEventsQuery,
 } from "@/lib/queries/events";
-import { $removeCollectionFromEvent } from "@/lib/server/events/actions";
 import { IconLoader2, IconTrash } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";

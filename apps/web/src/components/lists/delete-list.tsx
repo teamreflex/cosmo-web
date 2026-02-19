@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useProfileContext } from "@/hooks/use-profile";
 import { m } from "@/i18n/messages";
+import { $deleteObjektList } from "@/lib/functions/lists";
 import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
 import type { ObjektList } from "@apollo/database/web/types";
 import { IconLoader2, IconTrash } from "@tabler/icons-react";
@@ -19,7 +20,6 @@ import { useRouter } from "@tanstack/react-router";
 import type { MouseEvent } from "react";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
-import { $deleteObjektList } from "./actions";
 
 type Props = {
   objektList: ObjektList;

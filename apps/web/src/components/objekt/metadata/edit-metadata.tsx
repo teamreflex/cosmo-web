@@ -6,8 +6,8 @@ import {
 } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { m } from "@/i18n/messages";
+import { $updateCollectionMetadata } from "@/lib/functions/metadata";
 import { objektMetadataQuery } from "@/lib/queries/objekt-queries";
-import { $updateCollectionMetadata } from "@/lib/server/metadata";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconEdit, IconLoader2 } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";

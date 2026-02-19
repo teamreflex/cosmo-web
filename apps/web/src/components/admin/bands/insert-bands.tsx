@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { m } from "@/i18n/messages";
+import { $saveBandUrls } from "@/lib/functions/bands";
 import type { BandUrlRow } from "@/lib/universal/schema/admin";
 import { bandUrlInputSchema } from "@/lib/universal/schema/admin";
 import {
@@ -13,7 +14,6 @@ import {
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { $saveBandUrls } from "./actions";
 
 export default function InsertBands() {
   const [items, setItems] = useState<BandUrlRow[]>([

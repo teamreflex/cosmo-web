@@ -10,8 +10,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { m } from "@/i18n/messages";
+import { $deleteEvent } from "@/lib/functions/events";
 import { adminEventsQuery } from "@/lib/queries/events";
-import { $deleteEvent } from "@/lib/server/events/actions";
 import { IconLoader2, IconTrash } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";

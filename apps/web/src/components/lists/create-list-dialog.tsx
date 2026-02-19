@@ -1,4 +1,5 @@
 import { m } from "@/i18n/messages";
+import { $createObjektList } from "@/lib/functions/lists";
 import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
 import { track } from "@/lib/utils";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
@@ -27,7 +28,6 @@ import {
 } from "../ui/dialog";
 import { Field, FieldError, FieldLabel } from "../ui/field";
 import { Input } from "../ui/input";
-import { $createObjektList } from "./actions";
 
 type Props = {
   open: boolean;
