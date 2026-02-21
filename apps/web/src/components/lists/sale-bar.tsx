@@ -31,7 +31,7 @@ export default function SaleBar({
       style={{ backgroundColor, color: textColor }}
     >
       {formattedPrice && <span>{formattedPrice}</span>}
-      {quantity > 1 && <span className="ml-auto">x{quantity}</span>}
+      <span className="ml-auto">x{quantity}</span>
     </button>
   );
 }

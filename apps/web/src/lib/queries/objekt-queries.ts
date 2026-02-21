@@ -208,7 +208,6 @@ export function objektListQuery(
     initialPageParam: 0,
     getNextPageParam: (lastPage) => lastPage.nextStartAfter,
     staleTime: 1000 * 60 * 5,
-    refetchOnMount: false,
   });
 }
 

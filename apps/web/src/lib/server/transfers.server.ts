@@ -1,4 +1,4 @@
-import { transfersBackendSchema } from "@/lib/universal/parsers";
+import type { transfersBackendSchema } from "@/lib/universal/parsers";
 import { Addresses, isEqual } from "@apollo/util";
 import {
   and,

@@ -23,10 +23,10 @@
     "@subsquid/util-internal": "^3.2.0",
     "dotenv": "^17.3.1",
     "ethers": "^6.16.0",
-    "glob": "^13.0.5",
+    "glob": "^13.0.6",
     "lru-cache": "^11.2.6",
     "ofetch": "catalog:",
-    "path-scurry": "^2.0.1",
+    "path-scurry": "^2.0.2",
     "typeorm": "^0.3.28",
     "zod": "catalog:"
   },

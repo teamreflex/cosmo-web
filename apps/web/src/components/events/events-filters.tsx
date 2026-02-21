@@ -50,7 +50,6 @@ export default function EventsFiltersContainer({ filters, setFilters }: Props) {
 
   return (
     <div className="flex flex-wrap items-center justify-center gap-2 md:justify-end">
-      <EventsSortFilter sort={filters.sort} onChange={setFilters} />
       <EventsArtistFilter artist={filters.artist} onChange={setFilters} />
       <ErrorBoundary
         fallback={<Skeleton className="h-9 w-24 bg-destructive" />}
@@ -75,6 +74,7 @@ export default function EventsFiltersContainer({ filters, setFilters }: Props) {
         </Suspense>
       </ErrorBoundary>
       <EventsTypeFilter type={filters.type} onChange={setFilters} />
+      <EventsSortFilter sort={filters.sort} onChange={setFilters} />
 
       <TooltipProvider delayDuration={0}>
         <Tooltip>
