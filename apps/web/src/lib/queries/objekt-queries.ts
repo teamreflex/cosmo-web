@@ -1,5 +1,4 @@
 import { ObjektNotFoundError } from "@/lib/client/objekt-util";
-import { getTypesenseResults } from "@/lib/client/typesense";
 import { $fetchObjektsBlockchain } from "@/lib/functions/objekts/objekt-blockchain";
 import {
   $fetchObjektsBlockchainGroups,
@@ -40,7 +39,8 @@ export function objektIndexTypesenseQuery(
         artists: selectedArtists,
       },
     ],
-    queryFn: ({ pageParam = 0 }) => {
+    queryFn: async ({ pageParam = 0 }) => {
+      const { getTypesenseResults } = await import("@/lib/client/typesense");
       return getTypesenseResults({
         query: searchParams.search || "",
         filters: {
