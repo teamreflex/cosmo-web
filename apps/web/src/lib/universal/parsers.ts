@@ -32,7 +32,13 @@ export const cosmoSchema = z.object({
   class: castToArray(z.string()).nullish(),
   on_offline: castToArray(z.enum(validOnlineTypes)).nullish(),
   member: z.string().nullish(),
-  artist: z.enum(validArtists).nullish(),
+  artist: z
+    .string()
+    .transform(
+      (v) => validArtists.find((a) => a.toLowerCase() === v.toLowerCase()) ?? v,
+    )
+    .pipe(z.enum(validArtists))
+    .nullish(),
   transferable: z.coerce.boolean().nullish(),
   gridable: z.coerce.boolean().nullish(),
   collectionNo: castToArray(z.string()).nullish(),
