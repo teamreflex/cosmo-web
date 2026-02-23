@@ -53,13 +53,13 @@ export const Route = createFileRoute("/events/")({
     const globalSelectedIds = selected.length > 0 ? selected : undefined;
     const filteredArtists = search.artist ? [search.artist] : globalSelectedIds;
 
-    const [activeEvents] = await Promise.all([
-      // active events only uses global selection, not filters
-      context.queryClient.ensureQueryData(activeEventsQuery(globalSelectedIds)),
-      context.queryClient.ensureInfiniteQueryData(
-        paginatedEventsQuery({ artists: filteredArtists, filters: search }),
-      ),
-    ]);
+    void context.queryClient.prefetchInfiniteQuery(
+      paginatedEventsQuery({ artists: filteredArtists, filters: search }),
+    );
+
+    const activeEvents = await context.queryClient.ensureQueryData(
+      activeEventsQuery(globalSelectedIds),
+    );
 
     return { activeEvents };
   },
