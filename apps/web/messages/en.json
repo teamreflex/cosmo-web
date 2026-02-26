@@ -195,7 +195,7 @@
   "help_como_title": "COMO Calendar",
   "help_como_description": "Help information for COMO calendar",
   "help_como_timezone": "Dates and times of your daily COMO drops may not perfectly align with COSMO due to timezones and batches.",
-  "help_como_sparkles": "A sparkles icon denotes that a drop is scheduled to happen on a day that does not exist in the current month, and will instead be carried over to last day of the month.",
+  "help_como_sparkles": "A sparkles icon denotes that a drop is scheduled to happen on a day that does not exist in the current month, and will instead be carried over to the last day of the month.",
   "help_como_example": "For example, COMO additions scheduled for the 29th, 30th, and 31st will be added on the 28th in February (29th in leap years).",
 
   "help_progress_title": "Help: Progress",
