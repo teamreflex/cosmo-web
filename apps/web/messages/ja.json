@@ -180,7 +180,6 @@
   "list_edit_sale_entry": "エントリーを編集",
   "toast_entry_updated": "エントリーを更新しました",
 
-
   "_comment_help": "Help dialog content",
   "help_objekts_title": "ヘルプ：Objekts",
   "help_objekts_description": "Objektインデックスに関するヘルプ",
@@ -637,6 +636,7 @@
   "share_data_success": "{count}件のコレクションを更新しました。",
   "share_data_thanks": "{appName}へのご協力ありがとうございます！",
 
+  "_comment_aria": "aria labels for icon-only buttons",
   "aria_scroll_to_top": "ページ上部へスクロール",
   "aria_toggle_objekt_bands": "Objekt詳細を切替",
   "aria_edit_list": "リストを編集",
