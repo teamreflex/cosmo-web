@@ -47,14 +47,9 @@ export async function fetchGravity(token: string, gravityId: number) {
 /**
  * Fetch the poll fields.
  */
-export async function fetchPoll(
-  token: string,
-  artist: ValidArtist,
-  gravityId: number,
-  pollId: number,
-) {
+export async function fetchPoll(token: string, pollId: number) {
   return await cosmo<{ pollDetail: CosmoPollChoices }>(
-    `/gravity/v3/${artist}/gravity/${gravityId}/polls/${pollId}`,
+    `/bff/v3/polls/${pollId}`,
     {
       headers: {
         Authorization: `Bearer ${token}`,

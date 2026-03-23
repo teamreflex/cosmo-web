@@ -198,6 +198,7 @@ type PollDefaultContentImage = {
 export type PollViewDefaultContent = PollDefaultContentImage;
 
 export type PollSelectedContentImageContent = {
+  id: string;
   type: "image";
   imageUrl: string;
   title: string;
@@ -243,6 +244,7 @@ type CosmoSinglePollChoices = {
     defaultContent: PollViewDefaultContent;
     selectedContent: PollViewSelectedContent[];
     choiceViewType: "vertical" | "horizontal";
+    selectContent: PollViewSelectedContent[];
   };
   choices: SinglePollChoice[];
 };
@@ -266,6 +268,7 @@ type CosmoCombinationPollChoices = {
     defaultContent: PollViewDefaultContent;
     selectedContent: PollViewSelectedContent[];
     choiceViewType: "vertical" | "horizontal";
+    selectContent: PollViewSelectedContent[];
   };
   choices: CombinationPollChoice[];
 };

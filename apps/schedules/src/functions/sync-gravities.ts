@@ -108,9 +108,7 @@ const processGravities = Effect.fn(function* (
       chunk(notStoredGravities, 5, async (chunked) => {
         for (const gravity of chunked) {
           const polls = await Promise.all(
-            gravity.polls.map((poll) =>
-              fetchPoll(token, artist.id, gravity.id, poll.id),
-            ),
+            gravity.polls.map((poll) => fetchPoll(token, poll.id)),
           );
 
           await db

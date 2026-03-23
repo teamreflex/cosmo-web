@@ -6,7 +6,6 @@ import { indexer } from "@/lib/server/db/indexer";
 import { getProxiedToken } from "@/lib/server/proxied-token.server";
 import { GravityNotSupportedError } from "@/lib/universal/gravity";
 import { fetchGravity, fetchPoll } from "@apollo/cosmo/server/gravity";
-import type { ValidArtist } from "@apollo/cosmo/types/common";
 import { gravities, gravityPolls } from "@apollo/database/web/schema";
 import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
@@ -205,12 +204,7 @@ export const $fetchPolygonGravity = createServerFn({ method: "GET" })
           throw notFound();
         }
 
-        const poll = await fetchPoll(
-          accessToken,
-          data.artist as ValidArtist,
-          gravity.id,
-          gravityPoll.poll.id,
-        );
+        const poll = await fetchPoll(accessToken, gravityPoll.poll.id);
 
         // prior to gravity 11, they used the cosmo poll ID on-chain instead of a separate ID
         const chainPollId = gravity.id <= 11 ? poll.id : poll.pollIdOnChain;
@@ -302,12 +296,7 @@ export const $fetchCachedPoll = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     const fn = async () => {
       const { accessToken } = await getProxiedToken();
-      return await fetchPoll(
-        accessToken,
-        data.artist as ValidArtist,
-        data.gravityId,
-        data.pollId,
-      );
+      return await fetchPoll(accessToken, data.pollId);
     };
 
     // check the database for the end date if not provided
