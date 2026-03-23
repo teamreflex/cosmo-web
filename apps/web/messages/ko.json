@@ -139,6 +139,8 @@
   "settings_language_description": "앱 언어.",
   "settings_language_english": "영어",
   "settings_language_korean": "한국어",
+  "settings_language_french": "프랑스어",
+  "settings_language_japanese": "일본어",
 
   "_comment_nav": "Navigation strings",
   "nav_objekt_stats": "오브젝트 통계",
@@ -193,8 +195,8 @@
   "help_como_title": "코모 캘린더",
   "help_como_description": "코모 캘린더에 대한 도움말",
   "help_como_timezone": "일일 코모 드랍의 날짜와 시간은 시간대와 배치로 인해 코스모와 완벽하게 일치하지 않을 수 있습니다.",
-  "help_como_sparkles": "반짝임 아이콘은 해당 월에 존재하지 않는 날짜에 드랍이 예정되어 있어 다음 달로 이월됨을 나타냅니다.",
-  "help_como_example": "예를 들어, 5월 31일에 드랍 예정인 코모는 6월 30일에 드랍됩니다.",
+  "help_como_sparkles": "반짝임 아이콘은 해당 월에 존재하지 않는 날짜에 드랍이 예정되어 있어 해당 드롭이 그 달의 마지막 날로 이월됨을 나타냅니다.",
+  "help_como_example": "예를 들어 29일, 30일, 31일로 예정된 COMO 추가 항목은 2월에는 28일에 추가되며(윤년에는 29일).",
 
   "help_progress_title": "도움말: 진행도",
   "help_progress_description": "진행도 페이지에 대한 도움말",

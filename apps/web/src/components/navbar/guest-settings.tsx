@@ -73,6 +73,12 @@ function LanguageSubmenu() {
           <DropdownMenuRadioItem value="ko">
             {m.settings_language_korean()}
           </DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="ja">
+            {m.settings_language_japanese()}
+          </DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="fr">
+            {m.settings_language_french()}
+          </DropdownMenuRadioItem>
         </DropdownMenuRadioGroup>
       </DropdownMenuSubContent>
     </DropdownMenuSub>

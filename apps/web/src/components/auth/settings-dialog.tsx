@@ -115,6 +115,12 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
                 <SelectItem value="ko">
                   {m.settings_language_korean()}
                 </SelectItem>
+                <SelectItem value="ja">
+                  {m.settings_language_japanese()}
+                </SelectItem>
+                <SelectItem value="fr">
+                  {m.settings_language_french()}
+                </SelectItem>
               </SelectContent>
             </Select>
           </Field>
