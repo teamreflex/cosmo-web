@@ -17,6 +17,7 @@ import SystemStatus from "../misc/system-status";
 import UpdateDialog from "../misc/update-dialog";
 import { Skeleton } from "../ui/skeleton";
 import Links from "./links";
+import Notice from "./notice";
 
 export default function Navbar() {
   return (
@@ -30,6 +31,8 @@ export default function Navbar() {
                 <SystemStatus />
                 <UpdateDialog />
               </div>
+
+              <Notice />
             </div>
 
             <ErrorBoundary fallback={<AuthFallback />}>

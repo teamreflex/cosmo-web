@@ -15,12 +15,8 @@ export default function Notice() {
       </PopoverTrigger>
       <PopoverContent className="flex flex-col gap-1 text-xs">
         <p>
-          We've just completed a big update and platform migration, so things
-          might be a little unstable for a bit.
-        </p>
-        <p>
-          Event data for tripleS Binary01 and Cream01 are currently missing and
-          will be added soon.
+          A COSMO issue/update is preventing objekt updates, unsure when this
+          will be resolved.
         </p>
       </PopoverContent>
     </Popover>
