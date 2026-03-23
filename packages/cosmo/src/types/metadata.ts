@@ -57,7 +57,7 @@ export function normalizeV3(
     image: metadata.image,
     background_color: metadata.background_color,
     objekt: {
-      collectionId: `${season}-${member}-${collection}`,
+      collectionId: `${season} ${member} ${collection}`,
       season: season,
       member: member,
       collectionNo: collection,
@@ -73,8 +73,8 @@ export function normalizeV3(
       accentColor: "",
       textColor: "#000000",
       objektNo: 0,
-      tokenAddress: "",
-      transferable: false,
+      tokenAddress: "0x0000000000000000000000000000000000000000",
+      transferable: true,
     },
   };
 }

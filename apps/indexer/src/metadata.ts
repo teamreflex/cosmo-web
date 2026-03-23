@@ -1,4 +1,5 @@
-import { fetchMetadataV1 } from "@apollo/cosmo/server/metadata";
+import { fetchMetadataV3 } from "@apollo/cosmo/server/metadata";
+import { normalizeV3 } from "@apollo/cosmo/types/metadata";
 
 /**
  * Fetch objekt metadata with exponential backoff.
@@ -13,7 +14,8 @@ export async function fetchMetadataWithRetry(
   let delay = 1_000;
   while (true) {
     try {
-      return await fetchMetadataV1(tokenId);
+      const metadata = await fetchMetadataV3(tokenId);
+      return normalizeV3(metadata, tokenId);
     } catch (error) {
       if (Date.now() >= deadline) throw error;
       await new Promise((resolve) => setTimeout(resolve, delay));
