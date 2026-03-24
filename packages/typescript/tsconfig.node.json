@@ -8,8 +8,6 @@
     "moduleResolution": "NodeNext",
     "moduleDetection": "force",
 
-    // Node.js compatibility
-    "esModuleInterop": true,
     "noEmit": true,
 
     // Additional type safety

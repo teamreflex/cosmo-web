@@ -17,8 +17,6 @@
 
     // Effect-TS specific
     "exactOptionalPropertyTypes": true,
-    "downlevelIteration": true,
-    "esModuleInterop": false,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "lib": ["ES2022", "DOM", "DOM.Iterable"],

@@ -6,8 +6,8 @@
   "scripts": {
     "build": "rm -rf lib/ && tsc -p tsconfig.build.json",
     "start": "squid-commands process:prod",
-    "lint": "bun --bun oxlint --type-aware",
-    "lint:fix": "bun --bun oxlint --type-aware --fix",
+    "lint": "bun --bun oxlint --type-aware --type-check",
+    "lint:fix": "bun --bun oxlint --type-aware --type-check --fix",
     "typecheck": "tsc --pretty --noEmit",
     "format": "oxfmt ."
   },
