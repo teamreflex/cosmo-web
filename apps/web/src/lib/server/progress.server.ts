@@ -74,8 +74,7 @@ const LEADERBOARD_COUNT = 25;
 
 /**
  * Fetch top 25 for the given member.
- * Uses two-level aggregation: GROUP BY (owner, collectionId) first to leverage
- * the (collection_id, owner) index with incremental sort, then COUNT per owner.
+ * TODO: optimize or refactor, it's blowing up the db
  */
 export async function fetchLeaderboard({
   member,

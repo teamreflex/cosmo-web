@@ -58,7 +58,7 @@ export const $fetchProgressBreakdown = createServerFn({ method: "GET" })
 
 /**
  * Fetch the progress leaderboard for a given member and filters.
- * Cached for 1 hour.
+ * Cached for 24 hours, resets 9am KST (UTC+9).
  */
 export const $fetchProgressLeaderboard = createServerFn({ method: "GET" })
   .inputValidator(
@@ -76,7 +76,13 @@ export const $fetchProgressLeaderboard = createServerFn({ method: "GET" })
       .filter(Boolean)
       .join("-");
 
-    return await remember(`leaderboard:${key}`, 60 * 60, async () => {
+    // cache until next 9am KST (UTC+9), i.e. midnight UTC
+    const now = Date.now();
+    const msInDay = 86_400_000;
+    const nextMidnightUTC = Math.ceil(now / msInDay) * msInDay;
+    const ttl = Math.floor((nextMidnightUTC - now) / 1000) || 86_400;
+
+    return await remember(`leaderboard:${key}`, ttl, async () => {
       const [totals, leaderboard] = await Promise.all([
         fetchTotal(data),
         fetchLeaderboard(data),

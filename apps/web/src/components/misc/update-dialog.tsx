@@ -82,37 +82,18 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2026-04-25",
+    changes: [
+      "Added: Japanese and French translations (thanks Azagal).",
+      "Fixed: COSMO error causing objekts to be missing serials and back-face images.",
+      "Updated: Leaderboards now update at 9am KST every day rather than every hour.",
+    ],
+  },
+  {
     date: "2026-02-23",
     changes: [
       "Added: Filters and sort options for events.",
       "Added: Objekt lists can now have prices and quantities assigned, good for doing sale lists.",
-    ],
-  },
-  {
-    date: "2026-01-19",
-    changes: [
-      "Fixed: Discord & Twitter sign in have been fixed.",
-      "Fixed: Member filter how has a scroll bar on desktop when necessary.",
-      "Fixed: Season filters on leaderboards now ignore selected artists.",
-      "Fixed: Objekts within event pages are now sorted by collection creation.",
-      "Fixed: Serial input no longer resets scroll position.",
-      "Updated: Data for the @cosmo-spin account is now limited to the last month of received objekts and trades.",
-    ],
-  },
-  {
-    date: "2026-01-17",
-    changes: [
-      "Added: Translations, starting with support for Korean.",
-      "Added: Event catalog system - an easy way of viewing past and ongoing objekt drops.",
-      "Added: Objekt band toggle (idntt only) & scroll to top buttons.",
-      "Updated: Linking COSMO accounts no longer requires signing in with QR codes.",
-      "Updated: Artist/member filter has been redesigned.",
-      "Updated: General design tweaks and improvements such as a new font and color scheme.",
-      "Updated: Moved the about dialog to the user dropdown, logo now links to the home page.",
-      "Updated: Gravity top votes & top users have returned.",
-      "Fixed: Objekt info popups now drag-to-close correctly on mobile.",
-      "Fixed: Gravities now correctly transition between states without needing to refresh the page.",
-      "Other small fixes: Gravity vote percentage no longer rounds up whole numbers, objekt lists now sort correctly, idntt seasons are now sorted correctly on the progress page, classes are now sorted in order of collection number (FCO->SCO->DCO->PCO->MCO).",
     ],
   },
 ];
