@@ -76,6 +76,7 @@
     "@apollo/lint": "workspace:*",
     "@apollo/typescript": "workspace:*",
     "@inlang/paraglide-js": "2.15.1",
+    "@rolldown/plugin-babel": "^0.2.2",
     "@sentry/vite-plugin": "^5.1.1",
     "@tailwindcss/vite": "^4.2.2",
     "@tanstack/devtools-vite": "^0.6.0",
