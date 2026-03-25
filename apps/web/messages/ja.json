@@ -462,7 +462,7 @@
   "progress_help_progress_desc_4": "進捗データは毎時更新されます。",
   "progress_help_leaderboard_desc_1": "リーダーボードは、所持しているObjekt数ではなく、ユニークなコレクション数に基づいて上位25名を表示します。",
   "progress_help_leaderboard_desc_2": "リーダーボードの割合には入手不可のObjektは含まれません。",
-  "progress_help_leaderboard_desc_3": "割合は毎時再計算されます。",
+  "progress_help_leaderboard_desc_3": "リーダーボードは毎日午前9時（KST）にリセットされます。",
   "progress_help_leaderboard_desc_4": "同順位の場合、更新時に順序が変わることがあります。",
   "progress_error_fetching_stats": "Objekt統計の取得中にエラー",
   "progress_error_fetching": "進捗の取得中にエラー",

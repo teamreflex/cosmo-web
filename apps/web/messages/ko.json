@@ -462,7 +462,7 @@
   "progress_help_progress_desc_4": "진행도 분석은 매시간 업데이트됩니다.",
   "progress_help_leaderboard_desc_1": "리더보드는 주어진 멤버에 대한 상위 25명의 사용자를 표시하며, 이는 사용자가 소유한 총 오브젝트 수가 아닌 고유 컬렉션 수를 기반으로 합니다.",
   "progress_help_leaderboard_desc_2": "리더보드 백분율은 획득 불가능한 오브젝트를 완전히 제외하므로 진행도 백분율과 다를 수 있습니다.",
-  "progress_help_leaderboard_desc_3": "진행도 백분율은 매시간 재계산됩니다.",
+  "progress_help_leaderboard_desc_3": "리더보드는 매일 오전 9시(KST)에 초기화됩니다.",
   "progress_help_leaderboard_desc_4": "동일한 순위는 무작위이며 새로고침 시 변경될 수 있습니다.",
   "progress_error_fetching_stats": "오브젝트 통계를 가져오는 중 오류 발생",
   "progress_error_fetching": "진행도를 가져오는 중 오류 발생",

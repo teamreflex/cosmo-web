@@ -462,7 +462,7 @@
   "progress_help_progress_desc_4": "Les progression sont mises à jour toutes les heures.",
   "progress_help_leaderboard_desc_1": "Les classements affichent le top 25 des comptes pour le membre choisi, qui est basé sur le nombre total de collections que l'utilisateur a, et pas le nombre total d'objekt qu'il possède.",
   "progress_help_leaderboard_desc_2": "Les pourcentages des classements excluent les objekts inobtenable; votre progression peut donc être différente de votre pourcentage dans le classement.",
-  "progress_help_leaderboard_desc_3": "Les pourcentages de progression sont mis à jour toutes les heures.",
+  "progress_help_leaderboard_desc_3": "Les classements sont réinitialisés chaque jour à 9h KST.",
   "progress_help_leaderboard_desc_4": "Toutes égalités sont aléatoires et peuvent changer en rafraîchissant.",
   "progress_error_fetching_stats": "Erreur de récupération des statistiques d'objekts",
   "progress_error_fetching": "Erreur de récupération de la progression",
