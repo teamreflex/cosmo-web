@@ -82,9 +82,10 @@ export default function UpdateDialog() {
 
 const updates = [
   {
-    date: "2026-04-25",
+    date: "2026-03-25",
     changes: [
       "Added: Japanese and French translations (thanks Azagal).",
+      "Added: Icon denoting when an MCO hasn't had its video loaded in yet.",
       "Fixed: COSMO error causing objekts to be missing serials and back-face images.",
       "Updated: Leaderboards now update at 9am KST every day rather than every hour.",
     ],

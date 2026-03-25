@@ -573,6 +573,7 @@
   "objekt_metadata_save_front_image": "表面画像を保存",
   "objekt_metadata_save_back_image": "裏面画像を保存",
   "objekt_metadata_save_video": "動画を保存",
+  "objekt_metadata_video_not_loaded": "動画はまだシステムに読み込まれていません。",
   "objekt_metadata_description": "説明",
 
   "_comment_objekt_serials": "Objekt serials strings",
