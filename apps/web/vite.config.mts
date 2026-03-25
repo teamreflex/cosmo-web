@@ -1,11 +1,11 @@
 import { paraglideVitePlugin } from "@inlang/paraglide-js";
+import babel from "@rolldown/plugin-babel";
 import { sentryVitePlugin } from "@sentry/vite-plugin";
 import tailwindcss from "@tailwindcss/vite";
 import { devtools } from "@tanstack/devtools-vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
-import react from "@vitejs/plugin-react";
+import react, { reactCompilerPreset } from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
-import tsConfigPaths from "vite-tsconfig-paths";
 import "./src/lib/env/client";
 import "./src/lib/env/server";
 
@@ -13,26 +13,29 @@ export default defineConfig({
   server: {
     port: 3000,
   },
+  resolve: {
+    tsconfigPaths: true,
+  },
   build: {
     sourcemap: process.env.SENTRY_AUTH_TOKEN === undefined ? false : "hidden",
+    // prevent rolldown outputting a massive file to stdout
+    rolldownOptions: {
+      checks: {
+        commonJsVariableInEsm: false,
+      },
+    },
   },
   ssr: {
     external: ["bun"],
   },
   plugins: [
-    tsConfigPaths({
-      projects: ["./tsconfig.json"],
-    }),
     tanstackStart(),
     devtools({
       removeDevtoolsOnBuild: true,
     }),
     tailwindcss(),
-    react({
-      babel: {
-        plugins: ["babel-plugin-react-compiler"],
-      },
-    }),
+    react(),
+    babel({ presets: [reactCompilerPreset()] }),
     paraglideVitePlugin({
       project: "./project.inlang",
       outdir: "./src/i18n",
