@@ -16,14 +16,10 @@ type Props = {
 
 export default function ProgressSectionChart(props: Props) {
   const data = useMemo(() => {
-    const total = props.data.reduce((sum, entry) => sum + entry.count, 0);
-
-    return props.data
-      .filter((entry) => (entry.count / total) * 100 >= 1)
-      .map((entry) => ({
-        ...entry,
-        color: props.colors[entry.name] || "var(--foreground)",
-      }));
+    return props.data.map((entry) => ({
+      ...entry,
+      color: props.colors[entry.name] || "var(--foreground)",
+    }));
   }, [props.data, props.colors]);
 
   return (
