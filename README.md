@@ -75,7 +75,7 @@ For security reasons, PRs will not be accepted. This project is considered _sour
 
 ## License
 
-Licensed under the [MIT license](https://github.com/teamreflex/cosmo-web/blob/refactor/abstract/LICENSE.md).
+Licensed under the [MIT license](https://github.com/teamreflex/cosmo-web/blob/main/LICENSE.md).
 
 ## Contact
 

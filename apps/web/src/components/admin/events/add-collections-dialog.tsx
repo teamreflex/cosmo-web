@@ -67,6 +67,9 @@ export default function AddCollectionsDialog({
   });
 
   const artistMembers = artist.artistMembers.map((m) => m.name);
+  const memberAliases = Object.fromEntries(
+    artist.artistMembers.map((m) => [m.name, m.alias]),
+  );
   const availableSeasons = getSeasonKeys(
     filterData.seasons.find((s) => s.artistId === artist.id.toLowerCase())
       ?.seasons ?? [],
@@ -130,6 +133,8 @@ export default function AddCollectionsDialog({
               members={artistMembers}
               value={selectedMembers}
               onChange={setSelectedMembers}
+              memberAliases={memberAliases}
+              disableUnits={artist.id === "artms"}
             />
 
             {/* Seasons */}

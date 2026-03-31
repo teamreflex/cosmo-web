@@ -9,16 +9,30 @@ import {
 } from "@/components/ui/popover";
 import { m } from "@/i18n/messages";
 import { cn } from "@/lib/utils";
-import { IconPlus, IconRefresh, IconUsers, IconX } from "@tabler/icons-react";
+import {
+  IconArrowsShuffle,
+  IconPlus,
+  IconRefresh,
+  IconUsers,
+  IconX,
+} from "@tabler/icons-react";
 import { useState } from "react";
 
 type Props = {
   members: string[];
   value: string[];
   onChange: (members: string[]) => void;
+  memberAliases?: Record<string, string>;
+  disableUnits?: boolean;
 };
 
-export default function MemberSelection({ members, value, onChange }: Props) {
+export default function MemberSelection({
+  members,
+  value,
+  onChange,
+  memberAliases,
+  disableUnits,
+}: Props) {
   const [customInput, setCustomInput] = useState("");
   const [popoverOpen, setPopoverOpen] = useState(false);
 
@@ -53,6 +67,19 @@ export default function MemberSelection({ members, value, onChange }: Props) {
     onChange([]);
   }
 
+  function handleAddUnits() {
+    if (!memberAliases) return;
+    const pairs: string[] = [];
+    for (const [i, memberA] of members.entries()) {
+      for (const memberB of members.slice(i + 1)) {
+        const a = memberAliases[memberA];
+        const b = memberAliases[memberB];
+        if (a && b) pairs.push(`${a} x ${b}`);
+      }
+    }
+    onChange(pairs);
+  }
+
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -73,6 +100,11 @@ export default function MemberSelection({ members, value, onChange }: Props) {
           <Button size="xs" onClick={handleAddAllMembers}>
             <IconUsers className="size-3" />
             <span>All</span>
+          </Button>
+
+          <Button size="xs" onClick={handleAddUnits} disabled={disableUnits}>
+            <IconArrowsShuffle className="size-3" />
+            <span>Units</span>
           </Button>
 
           <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
