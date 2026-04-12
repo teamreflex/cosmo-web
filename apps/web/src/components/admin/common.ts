@@ -1,6 +1,7 @@
 import { m } from "@/i18n/messages";
 import {
   IconCalendarEvent,
+  IconDatabase,
   IconDisc,
   IconHome,
   IconLayoutSidebarRight,
@@ -27,6 +28,11 @@ export function getAdminItems() {
       title: m.admin_events_title(),
       url: "/admin/events",
       icon: IconCalendarEvent,
+    },
+    {
+      title: m.admin_cache_title(),
+      url: "/admin/cache",
+      icon: IconDatabase,
     },
   ];
 }
