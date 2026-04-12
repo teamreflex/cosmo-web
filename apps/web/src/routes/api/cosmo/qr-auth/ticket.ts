@@ -1,3 +1,4 @@
+import { $fetchCurrentUser } from "@/lib/functions/core";
 import { queryTicket } from "@apollo/cosmo/server/qr-auth";
 import { createFileRoute } from "@tanstack/react-router";
 
@@ -8,6 +9,11 @@ export const Route = createFileRoute("/api/cosmo/qr-auth/ticket")({
        * Query the status of a login ticket.
        */
       GET: async ({ request }) => {
+        const user = await $fetchCurrentUser();
+        if (!user) {
+          return Response.json({ error: "unauthorized" }, { status: 401 });
+        }
+
         const url = new URL(request.url);
         const param = url.searchParams.get("ticket");
         if (!param) {
