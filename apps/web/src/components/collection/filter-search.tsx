@@ -37,6 +37,7 @@ export default function FilterSearch() {
       )}
     >
       <input
+        id="filter-search"
         type="text"
         placeholder={m.common_search_placeholder()}
         value={query ?? ""}
