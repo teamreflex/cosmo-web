@@ -99,20 +99,32 @@ export default function Metadata(props: Props) {
               </DropdownMenuTrigger>
               <DropdownMenuContent side="top" align="end" className="w-fit">
                 <DropdownMenuItem asChild>
-                  <a href={front.download} target="_blank">
+                  <a
+                    href={front.download}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     <IconPhoto />
                     <span>{m.objekt_metadata_save_front_image()}</span>
                   </a>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <a href={back.download} target="_blank">
+                  <a
+                    href={back.download}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     <IconPhoto />
                     <span>{m.objekt_metadata_save_back_image()}</span>
                   </a>
                 </DropdownMenuItem>
                 {props.objekt.frontMedia && (
                   <DropdownMenuItem asChild>
-                    <a href={props.objekt.frontMedia} target="_blank">
+                    <a
+                      href={props.objekt.frontMedia}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       <IconMovie />
                       <span>{m.objekt_metadata_save_video()}</span>
                     </a>

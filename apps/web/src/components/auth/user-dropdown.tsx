@@ -116,7 +116,11 @@ export default function UserDropdown({
         </DropdownMenuItem>
 
         <DropdownMenuItem className="cursor-pointer" asChild>
-          <a href="https://discord.gg/A72VRX8FgK" target="_blank">
+          <a
+            href="https://discord.gg/A72VRX8FgK"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <IconBrandDiscord className="h-4 w-4" />
             <span>{m.common_discord()}</span>
           </a>
