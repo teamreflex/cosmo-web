@@ -48,7 +48,6 @@ export const FILTER_DATA_CACHE_KEY = "filter-data";
  */
 export const $fetchFilterData = createServerFn({ method: "GET" }).handler(() =>
   remember(FILTER_DATA_CACHE_KEY, 60 * 60 * 4, async () => {
-    console.log("fetching filter data");
     const [uniqueCollections, seasons, classes] = await Promise.all([
       fetchUniqueCollections(),
       fetchUniqueSeasons(),
