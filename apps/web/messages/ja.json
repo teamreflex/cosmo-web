@@ -178,6 +178,7 @@
   "list_sale_quantity": "数量",
   "list_sale_price": "価格",
   "list_edit_sale_entry": "エントリーを編集",
+  "list_market_price": "市場 {price}",
   "toast_entry_updated": "エントリーを更新しました",
 
   "_comment_help": "Help dialog content",
@@ -584,6 +585,14 @@
   "objekt_metadata_save_video": "動画を保存",
   "objekt_metadata_video_not_loaded": "動画はまだシステムに読み込まれていません。",
   "objekt_metadata_description": "説明",
+  "objekt_metadata_pricing_tab": "価格",
+  "objekt_metadata_market_price": "市場価格",
+  "objekt_metadata_min_price": "最安値",
+  "objekt_metadata_max_price": "最高値",
+  "objekt_metadata_listing_count": "出品数",
+  "objekt_metadata_pricing_empty": "市場価格を算出するための出品数が不足しています。",
+  "objekt_metadata_pricing_updated": "{when}に更新",
+  "objekt_metadata_pricing_source": "他のユーザーがオブジェクトリストで設定した価格に基づいています。",
 
   "_comment_objekt_serials": "Objekt serials strings",
   "objekt_serials_placeholder": "シリアルを選択...",

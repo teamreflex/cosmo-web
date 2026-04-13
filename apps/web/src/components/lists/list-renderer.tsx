@@ -12,7 +12,7 @@ import VirtualizedObjektGrid from "../objekt/virtualized-objekt-grid";
 import { ListGridItem } from "./list-grid-item";
 
 type Props = {
-  objektList: ObjektList;
+  objektList: ObjektList & { fxRateToUsd: number | null };
   authenticated: boolean;
 };
 

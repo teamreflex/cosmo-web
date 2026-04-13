@@ -3,7 +3,7 @@ import { ObjektNotFoundError } from "@/lib/client/objekt-util";
 import { IconHeartBroken, IconRefresh } from "@tabler/icons-react";
 import { Button } from "../../ui/button";
 
-export type ObjektMetadataTab = "metadata" | "serials";
+export type ObjektMetadataTab = "metadata" | "serials" | "pricing";
 
 export function MetadataDialogError({
   error,

@@ -1,3 +1,4 @@
+import { FetchHttpClient } from "@effect/platform";
 import { BunContext, BunRuntime } from "@effect/platform-bun";
 import { ConfigProvider, Duration, Effect, Layer, Schedule } from "effect";
 import { DatabaseWeb } from "./db";
@@ -28,7 +29,7 @@ const main = Effect.gen(function* () {
   }).pipe(Effect.repeat(Schedule.spaced(Duration.minutes(5))), Effect.fork);
 
   // keep the main fiber alive to prevent process exit
-  yield* Effect.never;
+  return yield* Effect.never;
 });
 
 BunRuntime.runMain(
@@ -42,6 +43,7 @@ BunRuntime.runMain(
     Effect.provide(
       Layer.mergeAll(
         BunContext.layer,
+        FetchHttpClient.layer,
         Env.Default,
         DatabaseWeb.Default,
         ProxiedToken.Default,

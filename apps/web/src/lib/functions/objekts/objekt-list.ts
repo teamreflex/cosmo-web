@@ -21,6 +21,8 @@ const LIMIT = 60;
 export type ObjektListItem = Collection & {
   entryQuantity: number;
   entryPrice: number | null;
+  medianPriceUsd: number | null;
+  listingCount: number;
 };
 
 type FetchObjektListEntries = {
@@ -47,6 +49,14 @@ export const $fetchObjektListEntries = createServerFn({ method: "GET" })
         collectionId: true,
         quantity: true,
         price: true,
+      },
+      with: {
+        priceStats: {
+          columns: {
+            medianPriceUsd: true,
+            listingCount: true,
+          },
+        },
       },
       orderBy: {
         createdAt: "desc",
@@ -88,7 +98,13 @@ export const $fetchObjektListEntries = createServerFn({ method: "GET" })
     const entryMap = new Map(
       entries.map((e) => [
         e.collectionId,
-        { id: e.id, quantity: e.quantity, price: e.price },
+        {
+          id: e.id,
+          quantity: e.quantity,
+          price: e.price,
+          medianPriceUsd: e.priceStats?.medianPriceUsd ?? null,
+          listingCount: e.priceStats?.listingCount ?? 0,
+        },
       ]),
     );
     const collectionList = result
@@ -100,6 +116,8 @@ export const $fetchObjektListEntries = createServerFn({ method: "GET" })
           id: entry.id,
           entryQuantity: entry.quantity,
           entryPrice: entry.price,
+          medianPriceUsd: entry.medianPriceUsd,
+          listingCount: entry.listingCount,
         };
       })
       .filter((c): c is ObjektListItem => c !== undefined);

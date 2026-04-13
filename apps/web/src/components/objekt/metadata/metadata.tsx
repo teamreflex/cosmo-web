@@ -29,6 +29,7 @@ import { Button } from "../../ui/button";
 import type { ObjektMetadataTab } from "./common";
 import EditMetadata from "./edit-metadata";
 import Pill from "./pill";
+import PricingPanel from "./pricing-panel";
 import SerialsPanel from "./serials-panel";
 
 type Props = {
@@ -67,6 +68,9 @@ export default function Metadata(props: Props) {
           </TabsTrigger>
           <TabsTrigger value="serials">
             {m.objekt_metadata_serials()}
+          </TabsTrigger>
+          <TabsTrigger value="pricing">
+            {m.objekt_metadata_pricing_tab()}
           </TabsTrigger>
         </TabsList>
 
@@ -154,6 +158,11 @@ export default function Metadata(props: Props) {
         {/* serials */}
         <TabsContent value="serials" className="flex grow">
           <SerialsPanel slug={props.objekt.slug} />
+        </TabsContent>
+
+        {/* pricing */}
+        <TabsContent value="pricing" className="flex grow">
+          <PricingPanel data={data.priceStats} />
         </TabsContent>
       </Tabs>
 

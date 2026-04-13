@@ -2,6 +2,7 @@
   "name": "web",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "license": "MIT",
   "scripts": {
     "env": "bun run --bun --env-file=../../.env --env-file=../../.env.local",

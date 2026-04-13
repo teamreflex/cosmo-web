@@ -178,6 +178,7 @@
   "list_sale_quantity": "수량",
   "list_sale_price": "가격",
   "list_edit_sale_entry": "항목 수정",
+  "list_market_price": "시장 {price}",
   "toast_entry_updated": "항목이 업데이트되었습니다",
 
   "_comment_help": "Help dialog content",
@@ -584,6 +585,14 @@
   "objekt_metadata_save_video": "비디오 저장",
   "objekt_metadata_video_not_loaded": "영상이 아직 시스템에 로드되지 않았습니다.",
   "objekt_metadata_description": "설명",
+  "objekt_metadata_pricing_tab": "가격",
+  "objekt_metadata_market_price": "시장 가격",
+  "objekt_metadata_min_price": "최저가",
+  "objekt_metadata_max_price": "최고가",
+  "objekt_metadata_listing_count": "매물 수",
+  "objekt_metadata_pricing_empty": "시장 가격을 계산하기에 충분한 매물이 없습니다.",
+  "objekt_metadata_pricing_updated": "{when} 업데이트됨",
+  "objekt_metadata_pricing_source": "다른 사용자가 오브젝트 목록에서 설정한 가격을 기반으로 합니다.",
 
   "_comment_objekt_serials": "Objekt serials strings",
   "objekt_serials_placeholder": "시리얼 선택...",

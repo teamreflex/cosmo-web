@@ -1,10 +1,12 @@
 import { sql } from "drizzle-orm";
 import {
   boolean,
+  date,
   index,
   integer,
   jsonb,
   pgTable,
+  primaryKey,
   real,
   serial,
   text,
@@ -190,6 +192,33 @@ export const collectionData = pgTable(
     index("collection_data_event_idx").on(t.eventId),
     index("collection_data_contributor_idx").on(t.contributor),
   ],
+);
+
+export const fxRates = pgTable(
+  "fx_rates",
+  {
+    date: date("date", { mode: "string" }).notNull(),
+    currency: varchar("currency", { length: 3 }).notNull(),
+    rateToUsd: real("rate_to_usd").notNull(),
+    updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.date, t.currency] }),
+    index("fx_rates_currency_idx").on(t.currency),
+  ],
+);
+
+export const collectionPriceStats = pgTable(
+  "collection_price_stats",
+  {
+    collectionId: varchar("collection_id", { length: 36 }).primaryKey(),
+    medianPriceUsd: real("median_price_usd").notNull(),
+    listingCount: integer("listing_count").notNull(),
+    minPriceUsd: real("min_price_usd").notNull(),
+    maxPriceUsd: real("max_price_usd").notNull(),
+    updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
+  },
+  (t) => [index("collection_price_stats_median_idx").on(t.medianPriceUsd)],
 );
 
 export const cosmoTokens = pgTable(

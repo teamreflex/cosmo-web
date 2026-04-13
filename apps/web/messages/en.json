@@ -178,6 +178,7 @@
   "list_sale_quantity": "Quantity",
   "list_sale_price": "Price",
   "list_edit_sale_entry": "Edit Entry",
+  "list_market_price": "{price} market",
   "toast_entry_updated": "Entry updated",
 
   "_comment_help": "Help dialog content",
@@ -584,6 +585,14 @@
   "objekt_metadata_save_video": "Save Video",
   "objekt_metadata_video_not_loaded": "Video not yet loaded into the system.",
   "objekt_metadata_description": "Description",
+  "objekt_metadata_pricing_tab": "Pricing",
+  "objekt_metadata_market_price": "Market price",
+  "objekt_metadata_min_price": "Lowest",
+  "objekt_metadata_max_price": "Highest",
+  "objekt_metadata_listing_count": "Listings",
+  "objekt_metadata_pricing_empty": "Not enough listings to compute a market price yet.",
+  "objekt_metadata_pricing_updated": "Updated {when}",
+  "objekt_metadata_pricing_source": "Based on prices set by other users in their objekt lists.",
 
   "_comment_objekt_serials": "Objekt serials strings",
   "objekt_serials_placeholder": "Select a serial...",

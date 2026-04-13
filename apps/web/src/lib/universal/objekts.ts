@@ -31,12 +31,26 @@ export type ObjektCollectionData = {
   event: CollectionDataEvent | null;
 };
 
+export type PriceStats = {
+  medianPriceUsd: number;
+  listingCount: number;
+  minPriceUsd: number;
+  maxPriceUsd: number;
+  updatedAt: string;
+};
+
 export type ObjektMetadata = {
   total: number;
   transferable: number;
   percentage: number;
   data: ObjektCollectionData | undefined;
+  priceStats: PriceStats | null;
 };
+
+/**
+ * Minimum number of listings required to display price stats.
+ */
+export const PRICE_STATS_MIN_LISTINGS = 3;
 
 export type SerialTransfer = Transfer & {
   fromUsername: string | null;
