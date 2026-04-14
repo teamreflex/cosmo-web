@@ -57,25 +57,27 @@ export default function ListDropdown(props: Props) {
           {props.objektLists.map((list) => (
             <DropdownMenuItem
               key={list.id}
-              className="text-sm"
               onClick={() => setDropdownOpen(false)}
             >
               <Link
                 to={props.createListUrl(list)}
                 className="flex w-full items-center justify-between gap-2"
               >
-                <span className="flex items-center gap-1.5">
-                  {list.name}
-                  {list.type === "have" && (
-                    <Badge variant="list-have">{m.list_type_have()}</Badge>
-                  )}
-                  {list.type === "want" && (
-                    <Badge variant="list-want">{m.list_type_want()}</Badge>
-                  )}
-                  {list.currency && (
-                    <Badge variant="secondary">{list.currency}</Badge>
-                  )}
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm">{list.name}</span>
+
+                  <span className="text-xs">
+                    {list.type === "have" && (
+                      <Badge variant="list-have">{m.list_type_have()}</Badge>
+                    )}
+                    {list.type === "want" && (
+                      <Badge variant="list-want">{m.list_type_want()}</Badge>
+                    )}
+                    {list.currency && (
+                      <Badge variant="secondary">{list.currency}</Badge>
+                    )}
+                  </span>
+                </div>
                 <IconChevronRight className="h-4 w-4" />
               </Link>
             </DropdownMenuItem>

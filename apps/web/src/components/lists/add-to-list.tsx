@@ -1,5 +1,9 @@
 import { m } from "@/i18n/messages";
-import { $addObjektToList } from "@/lib/functions/lists";
+import {
+  $addObjektToHaveList,
+  $addObjektToList,
+  $addObjektToWantList,
+} from "@/lib/functions/lists";
 import { objektListQueryFilter } from "@/lib/queries/objekt-queries";
 import type { ObjektList } from "@apollo/database/web/types";
 import { IconLoader2, IconPlaylistAdd, IconPlus } from "@tabler/icons-react";
@@ -7,6 +11,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import type { MouseEvent } from "react";
 import { toast } from "sonner";
+import { Badge } from "../ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -116,13 +121,31 @@ function ListItem({
 }: ListItemProps) {
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: $addObjektToList,
+    mutationFn: async (payload: {
+      objektListId: string;
+      collectionSlug: string;
+    }) => {
+      switch (list.type) {
+        case "have":
+          return await $addObjektToHaveList({ data: payload });
+        case "want":
+          return await $addObjektToWantList({ data: payload });
+        case "regular":
+          return await $addObjektToList({ data: payload });
+        default:
+          list.type satisfies never;
+          throw new Error("Invalid list type");
+      }
+    },
     onSuccess: async () => {
       toast.success(
         m.toast_added_to_list({ collectionId, listName: list.name }),
       );
       await queryClient.invalidateQueries(objektListQueryFilter(list.id));
       onDone();
+    },
+    onError: (error) => {
+      toast.error(error.message);
     },
   });
 
@@ -133,30 +156,34 @@ function ListItem({
       return;
     }
     mutation.mutate({
-      data: {
-        objektListId: list.id,
-        collectionSlug: collectionSlug,
-      },
+      objektListId: list.id,
+      collectionSlug: collectionSlug,
     });
   }
 
   return (
-    <DropdownMenuItem className="group truncate text-sm">
+    <DropdownMenuItem className="group truncate">
       <button
         type="button"
         onClick={handleClick}
         disabled={mutation.isPending}
-        className="flex w-full items-center justify-between"
+        className="flex w-full items-center justify-between gap-2"
         aria-label={m.list_add_to_list_named({ listName: list.name })}
       >
-        <span>
-          {list.name}
-          {list.currency && (
-            <span className="ml-1 text-xs text-muted-foreground">
-              ({list.currency})
-            </span>
-          )}
-        </span>
+        <div className="flex items-center gap-1.5 text-sm">
+          <span>{list.name}</span>
+          <span className="text-xs">
+            {list.type === "have" && (
+              <Badge variant="list-have">{m.list_type_have()}</Badge>
+            )}
+            {list.type === "want" && (
+              <Badge variant="list-want">{m.list_type_want()}</Badge>
+            )}
+            {list.currency && (
+              <Badge variant="secondary">{list.currency}</Badge>
+            )}
+          </span>
+        </div>
         {mutation.isPending ? (
           <IconLoader2 className="h-4 w-4 animate-spin" />
         ) : (
