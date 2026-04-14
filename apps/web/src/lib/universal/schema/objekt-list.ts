@@ -92,6 +92,7 @@ export const addObjektToListSchema = z.object({
 export const addObjektToLiveListSchema = z.object({
   objektListId: z.uuid(),
   collectionSlug: z.string(),
+  collectionId: z.string(),
 });
 
 export const addObjektToSaleListSchema = z.object({

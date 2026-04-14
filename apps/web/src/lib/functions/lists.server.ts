@@ -10,6 +10,7 @@ import type { ListMatchPayload } from "@apollo/database/web/types";
 import { and, eq, exists, isNotNull, ne } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 
+// it is what it is, man
 type WebTx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 type DbOrTx = typeof db | WebTx;
 
@@ -42,6 +43,7 @@ export async function assertOwnsCollection(
 type FireNotificationArgs = {
   sourceUserId: string;
   sourceListId: string;
+  collectionSlug: string;
   collectionId: string;
 };
 
@@ -82,7 +84,7 @@ export async function fireHaveAddNotifications(
       watcherWantEntry,
       and(
         eq(watcherWantEntry.objektListId, watcherWant.id),
-        eq(watcherWantEntry.collectionId, args.collectionId),
+        eq(watcherWantEntry.collectionId, args.collectionSlug),
       ),
     )
     .where(
@@ -170,7 +172,7 @@ export async function fireWantAddNotifications(
       watcherHaveEntry,
       and(
         eq(watcherHaveEntry.objektListId, watcherHave.id),
-        eq(watcherHaveEntry.collectionId, args.collectionId),
+        eq(watcherHaveEntry.collectionId, args.collectionSlug),
       ),
     )
     .where(

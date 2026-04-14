@@ -206,8 +206,9 @@
   "notification_bell_label": "通知",
   "notification_mark_all_read": "すべて既読にする",
   "notification_empty": "まだ通知はありません。",
-  "notification_list_match_have": "あるユーザーが{collection}をhaveリストに追加しました",
-  "notification_list_match_want": "あるユーザーが{collection}を探しています",
+  "notification_list_match_have": "{username}が{collection}をhaveリストに追加しました",
+  "notification_list_match_want": "{username}が{collection}を探しています",
+  "notification_unknown_user": "あるユーザー",
 
   "_comment_help": "Help dialog content",
   "help_objekts_title": "ヘルプ：Objekts",

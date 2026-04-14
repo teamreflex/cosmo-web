@@ -206,8 +206,9 @@
   "notification_bell_label": "Notifications",
   "notification_mark_all_read": "Tout marquer comme lu",
   "notification_empty": "Aucune notification pour le moment.",
-  "notification_list_match_have": "Quelqu'un vient d'ajouter {collection} à sa liste have",
-  "notification_list_match_want": "Quelqu'un recherche désormais {collection}",
+  "notification_list_match_have": "{username} vient d'ajouter {collection} à sa liste have",
+  "notification_list_match_want": "{username} recherche désormais {collection}",
+  "notification_unknown_user": "Quelqu'un",
 
   "_comment_help": "Help dialog content",
   "help_objekts_title": "Aide: Objekts",

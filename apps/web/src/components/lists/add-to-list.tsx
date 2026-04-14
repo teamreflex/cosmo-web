@@ -125,6 +125,7 @@ function ListItem({
     mutationFn: async (payload: {
       objektListId: string;
       collectionSlug: string;
+      collectionId: string;
     }) => {
       switch (list.type) {
         case "have":
@@ -132,7 +133,12 @@ function ListItem({
         case "want":
           return await $addObjektToWantList({ data: payload });
         case "regular":
-          return await $addObjektToList({ data: payload });
+          return await $addObjektToList({
+            data: {
+              objektListId: payload.objektListId,
+              collectionSlug: payload.collectionSlug,
+            },
+          });
         default:
           list.type satisfies never;
           throw new Error("Invalid list type");
@@ -158,7 +164,8 @@ function ListItem({
     }
     mutation.mutate({
       objektListId: list.id,
-      collectionSlug: collectionSlug,
+      collectionSlug,
+      collectionId,
     });
   }
 

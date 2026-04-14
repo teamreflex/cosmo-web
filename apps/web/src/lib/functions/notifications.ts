@@ -1,8 +1,9 @@
 import { db } from "@/lib/server/db";
 import { authenticatedMiddleware } from "@/lib/server/middlewares";
-import { notifications } from "@apollo/database/web/schema";
+import type { NotificationListItem } from "@/lib/universal/notifications";
+import { cosmoAccounts, notifications } from "@apollo/database/web/schema";
 import { createServerFn } from "@tanstack/react-start";
-import { and, desc, eq, inArray, isNull } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import * as z from "zod";
 
 const listNotificationsSchema = z.object({
@@ -21,13 +22,26 @@ export const $listNotifications = createServerFn({ method: "GET" })
   .inputValidator(listNotificationsSchema)
   .middleware([authenticatedMiddleware])
   .handler(async ({ data, context }) => {
-    return await db
-      .select()
+    const rows = await db
+      .select({
+        id: notifications.id,
+        createdAt: notifications.createdAt,
+        type: notifications.type,
+        payload: notifications.payload,
+        readAt: notifications.readAt,
+        sourceUsername: cosmoAccounts.username,
+      })
       .from(notifications)
+      .leftJoin(
+        cosmoAccounts,
+        sql`${cosmoAccounts.userId} = ${notifications.payload}->>'sourceUserId'`,
+      )
       .where(eq(notifications.userId, context.session.session.userId))
       .orderBy(desc(notifications.createdAt))
       .limit(data.limit)
       .offset(data.offset);
+
+    return rows satisfies NotificationListItem[];
   });
 
 /**

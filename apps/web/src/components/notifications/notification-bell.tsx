@@ -4,9 +4,11 @@ import {
   $markNotificationsRead,
   $unreadNotificationCount,
 } from "@/lib/functions/notifications";
+import type { NotificationListItem } from "@/lib/universal/notifications";
 import type { ListMatchPayload } from "@apollo/database/web/types";
-import { IconBell } from "@tabler/icons-react";
+import { IconArrowsExchange, IconBell } from "@tabler/icons-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
@@ -63,7 +65,7 @@ export default function NotificationBell() {
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-80 p-0">
+      <PopoverContent align="end" className="w-80 p-0 gap-0">
         <header className="flex items-center justify-between border-b p-3">
           <h4 className="text-sm font-semibold">
             {m.notification_bell_label()}
@@ -93,7 +95,7 @@ export default function NotificationBell() {
                 className="border-b p-3 text-sm last:border-b-0 data-[unread=true]:bg-accent/30"
                 data-unread={n.readAt === null}
               >
-                <NotificationRow payload={n.payload as ListMatchPayload} />
+                <NotificationRow notification={n} />
               </li>
             ))}
           </ul>
@@ -103,15 +105,46 @@ export default function NotificationBell() {
   );
 }
 
-function NotificationRow({ payload }: { payload: ListMatchPayload }) {
-  const isHave = payload.direction === "they_added_have";
-  const text = isHave
-    ? m.notification_list_match_have({ collection: payload.collectionId })
-    : m.notification_list_match_want({ collection: payload.collectionId });
+function NotificationRow({
+  notification,
+}: {
+  notification: NotificationListItem;
+}) {
+  switch (notification.type) {
+    case "list_match":
+      return <ListMatchRow notification={notification} />;
+    default:
+      notification.type satisfies never;
+      return null;
+  }
+}
+
+function ListMatchRow({
+  notification,
+}: {
+  notification: NotificationListItem;
+}) {
+  const payload: ListMatchPayload = notification.payload;
+  const username = notification.sourceUsername ?? m.notification_unknown_user();
+  const text =
+    payload.direction === "they_added_have"
+      ? m.notification_list_match_have({
+          username,
+          collection: payload.collectionId,
+        })
+      : m.notification_list_match_want({
+          username,
+          collection: payload.collectionId,
+        });
 
   return (
-    <a href={`/list/${payload.sourceListId}`} className="block hover:underline">
-      {text}
-    </a>
+    <Link
+      to="/list/$id"
+      params={{ id: payload.sourceListId }}
+      className="flex items-start gap-2 hover:underline"
+    >
+      <IconArrowsExchange className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+      <span>{text}</span>
+    </Link>
   );
 }

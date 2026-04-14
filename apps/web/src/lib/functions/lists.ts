@@ -561,7 +561,8 @@ export const $addObjektToHaveList = createServerFn({ method: "POST" })
         await fireHaveAddNotifications(tx, {
           sourceUserId: userId,
           sourceListId: data.objektListId,
-          collectionId: data.collectionSlug,
+          collectionSlug: data.collectionSlug,
+          collectionId: data.collectionId,
         });
       }
     });
@@ -621,7 +622,8 @@ export const $addObjektToWantList = createServerFn({ method: "POST" })
         await fireWantAddNotifications(tx, {
           sourceUserId: userId,
           sourceListId: data.objektListId,
-          collectionId: data.collectionSlug,
+          collectionSlug: data.collectionSlug,
+          collectionId: data.collectionId,
         });
       }
     });
