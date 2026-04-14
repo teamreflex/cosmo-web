@@ -1,4 +1,5 @@
 import { ObjektNotFoundError } from "@/lib/client/objekt-util";
+import { $findTradePartnersForList } from "@/lib/functions/lists";
 import { $fetchObjektsBlockchain } from "@/lib/functions/objekts/objekt-blockchain";
 import {
   $fetchObjektsBlockchainGroups,
@@ -279,5 +280,17 @@ export function objektQuery(slug: string) {
       );
     },
     retry: 1,
+  });
+}
+
+/**
+ * Mutual trade partners for a single live list. Sheet-only — opt-in fetch.
+ */
+export function listMatchesQuery(listId: string) {
+  return queryOptions({
+    queryKey: ["list-trade-partners", listId],
+    queryFn: ({ signal }) =>
+      $findTradePartnersForList({ signal, data: { listId } }),
+    staleTime: 1000 * 60,
   });
 }

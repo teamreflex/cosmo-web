@@ -1,25 +1,33 @@
 import { useUserState } from "@/hooks/use-user-state";
 import { m } from "@/i18n/messages";
-import { $updateObjektList } from "@/lib/functions/lists";
+import { $updateLiveList, $updateObjektList } from "@/lib/functions/lists";
 import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
 import type { ObjektList } from "@apollo/database/web/types";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconEdit, IconLoader2 } from "@tabler/icons-react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQueryClient,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import {
   Controller,
   FormProvider,
   useForm,
+  useFormContext,
   useFormState,
 } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
 import {
   defaultCurrencies,
-  updateObjektListSchema,
+  updateHaveListSchema,
+  updateRegularListSchema,
+  updateWantListSchema,
 } from "../../lib/universal/schema/objekt-list";
+import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import {
   Dialog,
@@ -30,6 +38,15 @@ import {
 } from "../ui/dialog";
 import { Field, FieldError, FieldLabel } from "../ui/field";
 import { Input } from "../ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+import { Switch } from "../ui/switch";
+import { Textarea } from "../ui/textarea";
 
 type Props = {
   objektList: ObjektList;
@@ -39,37 +56,20 @@ export default function UpdateList({ objektList }: Props) {
   const [open, setOpen] = useState(false);
   const { cosmo } = useUserState();
   const queryClient = useQueryClient();
-  const mutation = useMutation({
-    mutationFn: useServerFn($updateObjektList),
-    onSuccess: async () => {
-      toast.success(m.toast_list_updated());
-      // invalidate current account query to update list name in user's lists
-      await queryClient.invalidateQueries({
-        queryKey: currentAccountQuery.queryKey,
-      });
-      // invalidate target account queries to update list name on profile pages
-      if (cosmo) {
-        await queryClient.invalidateQueries({
-          queryKey: targetAccountQuery(cosmo.username).queryKey,
-        });
-      }
-      setOpen(false);
-    },
-  });
+  const account = useSuspenseQuery(currentAccountQuery);
+  const allLists = account.data?.objektLists ?? [];
 
-  const form = useForm<z.infer<typeof updateObjektListSchema>>({
-    resolver: standardSchemaResolver(updateObjektListSchema),
-    defaultValues: {
-      id: objektList.id,
-      name: objektList.name,
-      currency: objektList.currency ?? undefined,
-    },
-  });
-
-  async function handleSubmit(data: z.infer<typeof updateObjektListSchema>) {
-    await mutation.mutateAsync({
-      data,
+  async function handleSuccess() {
+    toast.success(m.toast_list_updated());
+    await queryClient.invalidateQueries({
+      queryKey: currentAccountQuery.queryKey,
     });
+    if (cosmo) {
+      await queryClient.invalidateQueries({
+        queryKey: targetAccountQuery(cosmo.username).queryKey,
+      });
+    }
+    setOpen(false);
   }
 
   return (
@@ -88,42 +88,222 @@ export default function UpdateList({ objektList }: Props) {
         <DialogHeader>
           <DialogTitle>{m.list_update()}</DialogTitle>
         </DialogHeader>
-        <FormProvider {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="flex w-full flex-col gap-2"
-          >
-            <Controller
-              control={form.control}
-              name="name"
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="name">{m.list_name()}</FieldLabel>
-                  <Input
-                    id="name"
-                    placeholder={m.list_name_placeholder()}
-                    data-1p-ignore
-                    aria-invalid={fieldState.invalid}
-                    {...field}
-                  />
-                  <FieldError errors={[fieldState.error]} />
-                </Field>
-              )}
-            />
 
-            <CurrencyField />
+        <Field>
+          <FieldLabel>{m.list_type()}</FieldLabel>
+          <Badge variant="outline" className="w-fit capitalize">
+            {objektList.type}
+          </Badge>
+        </Field>
 
-            <SubmitButton />
-          </form>
-        </FormProvider>
+        {objektList.type === "regular" && (
+          <RegularForm objektList={objektList} onSuccess={handleSuccess} />
+        )}
+        {objektList.type === "have" && (
+          <HaveForm
+            objektList={objektList}
+            allLists={allLists}
+            onSuccess={handleSuccess}
+          />
+        )}
+        {objektList.type === "want" && (
+          <WantForm
+            objektList={objektList}
+            allLists={allLists}
+            onSuccess={handleSuccess}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );
 }
 
-function CurrencyField() {
+type FormProps = {
+  objektList: ObjektList;
+  onSuccess: () => Promise<void>;
+};
+
+function RegularForm({ objektList, onSuccess }: FormProps) {
+  const mutation = useMutation({ mutationFn: useServerFn($updateObjektList) });
+  const form = useForm({
+    resolver: standardSchemaResolver(updateRegularListSchema),
+    defaultValues: {
+      type: "regular",
+      id: objektList.id,
+      name: objektList.name,
+      description: objektList.description ?? undefined,
+      currency: objektList.currency ?? undefined,
+    },
+  });
+
+  async function handleSubmit(data: z.infer<typeof updateRegularListSchema>) {
+    await mutation.mutateAsync({ data });
+    await onSuccess();
+  }
+
+  return (
+    <FormProvider {...form}>
+      <form
+        onSubmit={form.handleSubmit(handleSubmit)}
+        className="flex w-full flex-col gap-3"
+      >
+        <NameField />
+        <DescriptionField />
+        <CurrencyField />
+        <SubmitButton />
+      </form>
+    </FormProvider>
+  );
+}
+
+type LiveFormProps = FormProps & {
+  allLists: ObjektList[];
+};
+
+function HaveForm({ objektList, allLists, onSuccess }: LiveFormProps) {
+  const mutation = useMutation({ mutationFn: useServerFn($updateLiveList) });
+  const form = useForm({
+    resolver: standardSchemaResolver(updateHaveListSchema),
+    defaultValues: {
+      type: "have",
+      id: objektList.id,
+      name: objektList.name,
+      description: objektList.description ?? undefined,
+      discoverable: objektList.discoverable,
+      pairListId: objektList.linkedWantListId,
+    },
+  });
+
+  async function handleSubmit(data: z.infer<typeof updateHaveListSchema>) {
+    await mutation.mutateAsync({ data });
+    await onSuccess();
+  }
+
+  const availableLists = allLists.filter(
+    (l) =>
+      l.type === "want" &&
+      !allLists.some(
+        (other) =>
+          other.type === "have" &&
+          other.id !== objektList.id &&
+          other.linkedWantListId === l.id,
+      ),
+  );
+
+  return (
+    <FormProvider {...form}>
+      <form
+        onSubmit={form.handleSubmit(handleSubmit)}
+        className="flex w-full flex-col gap-3"
+      >
+        <NameField />
+        <DescriptionField />
+        <DiscoverableField />
+        <PairField availableLists={availableLists} />
+        <SubmitButton />
+      </form>
+    </FormProvider>
+  );
+}
+
+function WantForm({ objektList, allLists, onSuccess }: LiveFormProps) {
+  const mutation = useMutation({ mutationFn: useServerFn($updateLiveList) });
+  const currentHave = allLists.find(
+    (l) => l.type === "have" && l.linkedWantListId === objektList.id,
+  );
+  const form = useForm({
+    resolver: standardSchemaResolver(updateWantListSchema),
+    defaultValues: {
+      type: "want",
+      id: objektList.id,
+      name: objektList.name,
+      description: objektList.description ?? undefined,
+      discoverable: objektList.discoverable,
+      pairListId: currentHave?.id ?? null,
+    },
+  });
+
+  async function handleSubmit(data: z.infer<typeof updateWantListSchema>) {
+    await mutation.mutateAsync({ data });
+    await onSuccess();
+  }
+
+  const availableLists = allLists.filter(
+    (l) =>
+      l.type === "have" &&
+      (l.linkedWantListId === null || l.linkedWantListId === objektList.id),
+  );
+
+  return (
+    <FormProvider {...form}>
+      <form
+        onSubmit={form.handleSubmit(handleSubmit)}
+        className="flex w-full flex-col gap-3"
+      >
+        <NameField />
+        <DescriptionField />
+        <DiscoverableField />
+        <PairField availableLists={availableLists} />
+        <SubmitButton />
+      </form>
+    </FormProvider>
+  );
+}
+
+function NameField() {
+  const form = useFormContext<{ name: string }>();
   return (
     <Controller
+      control={form.control}
+      name="name"
+      render={({ field, fieldState }) => (
+        <Field data-invalid={fieldState.invalid}>
+          <FieldLabel htmlFor="name">{m.list_name()}</FieldLabel>
+          <Input
+            id="name"
+            placeholder={m.list_name_placeholder()}
+            data-1p-ignore
+            aria-invalid={fieldState.invalid}
+            {...field}
+          />
+          <FieldError errors={[fieldState.error]} />
+        </Field>
+      )}
+    />
+  );
+}
+
+function DescriptionField() {
+  const form = useFormContext<{ description?: string | null }>();
+  return (
+    <Controller
+      control={form.control}
+      name="description"
+      render={({ field, fieldState }) => (
+        <Field data-invalid={fieldState.invalid}>
+          <FieldLabel htmlFor="description">{m.list_description()}</FieldLabel>
+          <Textarea
+            id="description"
+            placeholder={m.list_description_placeholder()}
+            rows={3}
+            maxLength={500}
+            value={field.value ?? ""}
+            onChange={(e) =>
+              field.onChange(e.target.value === "" ? undefined : e.target.value)
+            }
+          />
+          <FieldError errors={[fieldState.error]} />
+        </Field>
+      )}
+    />
+  );
+}
+
+function CurrencyField() {
+  const form = useFormContext<{ currency?: string | null }>();
+  return (
+    <Controller
+      control={form.control}
       name="currency"
       render={({ field, fieldState }) => (
         <Field data-invalid={fieldState.invalid}>
@@ -156,6 +336,71 @@ function CurrencyField() {
             {m.list_currency_description()}
           </p>
           <FieldError errors={[fieldState.error]} />
+        </Field>
+      )}
+    />
+  );
+}
+
+function DiscoverableField() {
+  const form = useFormContext<{ discoverable: boolean }>();
+  return (
+    <Controller
+      control={form.control}
+      name="discoverable"
+      render={({ field }) => (
+        <Field>
+          <div className="flex items-center justify-between">
+            <FieldLabel htmlFor="discoverable">
+              {m.list_discoverable()}
+            </FieldLabel>
+            <Switch
+              id="discoverable"
+              checked={field.value === true}
+              onCheckedChange={field.onChange}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {m.list_discoverable_description()}
+          </p>
+        </Field>
+      )}
+    />
+  );
+}
+
+function PairField({ availableLists }: { availableLists: ObjektList[] }) {
+  const form = useFormContext<{ pairListId: string | null }>();
+  return (
+    <Controller
+      control={form.control}
+      name="pairListId"
+      render={({ field }) => (
+        <Field>
+          <FieldLabel>{m.list_pair_with()}</FieldLabel>
+          <Select
+            value={field.value ?? "__unpaired__"}
+            onValueChange={(value) =>
+              field.onChange(value === "__unpaired__" ? null : value)
+            }
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__unpaired__">
+                {m.list_pair_unpair()}
+              </SelectItem>
+              {availableLists.map((l) => (
+                <SelectItem key={l.id} value={l.id}>
+                  {l.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground">
+            {m.list_pair_required_for_matching()}
+          </p>
         </Field>
       )}
     />

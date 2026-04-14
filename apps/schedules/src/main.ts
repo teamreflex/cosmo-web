@@ -1,6 +1,7 @@
 import { BunContext, BunRuntime } from "@effect/platform-bun";
 import { ConfigProvider, Duration, Effect, Layer, Schedule } from "effect";
 import { DatabaseWeb } from "./db";
+import { DatabaseIndexer } from "./db-indexer";
 import { Env } from "./env";
 import { ProxiedToken } from "./proxied-token";
 import { Redis } from "./redis";
@@ -44,6 +45,7 @@ BunRuntime.runMain(
         BunContext.layer,
         Env.Default,
         DatabaseWeb.Default,
+        DatabaseIndexer.Default,
         ProxiedToken.Default,
         Redis.Default,
       ),

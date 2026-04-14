@@ -213,9 +213,12 @@ services:
     restart: on-failure
     environment:
       - WEB_DATABASE_URL=postgresql://postgres:postgres@pgbouncer-web:5432/web
+      - INDEXER_DATABASE_URL=postgresql://postgres:postgres@pgbouncer-indexer:5432/indexer
       - REDIS_URL=redis://valkey:6379
     depends_on:
       pgbouncer-web:
+        condition: service_healthy
+      pgbouncer-indexer:
         condition: service_healthy
       valkey:
         condition: service_healthy

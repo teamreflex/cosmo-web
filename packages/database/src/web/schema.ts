@@ -1,9 +1,11 @@
-import { sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import {
+  type AnyPgColumn,
   boolean,
   index,
   integer,
   jsonb,
+  pgEnum,
   pgTable,
   real,
   serial,
@@ -15,9 +17,17 @@ import {
 } from "drizzle-orm/pg-core";
 import { user } from "../auth";
 import { citext, createdAt } from "../custom";
-import type { CosmoGravityType, CosmoPollType, EventTypeKey } from "./types";
+import type {
+  CosmoGravityType,
+  CosmoPollType,
+  EventTypeKey,
+  NotificationPayload,
+} from "./types";
 
 export * from "../auth";
+
+const listType = pgEnum("list_type", ["regular", "have", "want"]);
+const notificationType = pgEnum("notification_type", ["list_match"]);
 
 export const cosmoAccounts = pgTable(
   "cosmo_account",
@@ -97,10 +107,23 @@ export const objektLists = pgTable(
     name: varchar("name", { length: 24 }).notNull(),
     slug: citext("slug", { length: 24 }).notNull(),
     currency: varchar("currency", { length: 3 }),
+    type: listType("type").notNull().default("regular"),
+    discoverable: boolean("discoverable").notNull().default(false),
+    description: text("description"),
+    linkedWantListId: uuid("linked_want_list_id").references(
+      (): AnyPgColumn => objektLists.id,
+      { onDelete: "set null" },
+    ),
   },
   (t) => [
     index("objekt_lists_slug_idx").on(t.slug),
     uniqueIndex("objekt_lists_user_slug_idx").on(t.userId, t.slug),
+    index("objekt_lists_trade_active_idx")
+      .on(t.type, t.userId)
+      .where(sql`type IN ('have', 'want') AND discoverable = true`),
+    uniqueIndex("objekt_lists_linked_want_list_idx")
+      .on(t.linkedWantListId)
+      .where(sql`linked_want_list_id IS NOT NULL`),
   ],
 );
 
@@ -117,8 +140,36 @@ export const objektListEntries = pgTable(
     collectionId: varchar("collection_id", { length: 36 }).notNull(), // slug: atom01-jinsoul-101z
     quantity: integer("quantity").notNull().default(1),
     price: real("price"),
+    verifiedAt: timestamp("verified_at", { mode: "string" }),
   },
-  (t) => [index("objekt_list_entries_list_idx").on(t.objektListId)],
+  (t) => [
+    index("objekt_list_entries_list_idx").on(t.objektListId),
+    index("objekt_list_entries_collection_id_idx").on(t.collectionId),
+  ],
+);
+
+export const notifications = pgTable(
+  "notifications",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    createdAt,
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    type: notificationType("type").notNull(),
+    payload: jsonb("payload").$type<NotificationPayload>().notNull(),
+    readAt: timestamp("read_at", { mode: "string" }),
+  },
+  (t) => [
+    index("notifications_user_unread_idx").on(t.userId, t.readAt),
+    uniqueIndex("notifications_list_match_dedup_idx")
+      .on(
+        t.userId,
+        sql`(payload->>'sourceUserId')`,
+        sql`(payload->>'collectionId')`,
+      )
+      .where(eq(t.type, "list_match")),
+  ],
 );
 
 export const eras = pgTable(

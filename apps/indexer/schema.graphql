@@ -63,3 +63,14 @@ type Vote @entity {
   index: Int! @index
   amount: Int! @index
 }
+
+type ListEventOutbox @entity {
+  id: ID! # auto-generated bigserial seq
+  transferId: String!
+  fromAddress: String!
+  toAddress: String!
+  collectionId: String!
+  tokenId: String!
+  timestamp: DateTime!
+  createdAt: DateTime! @index
+}

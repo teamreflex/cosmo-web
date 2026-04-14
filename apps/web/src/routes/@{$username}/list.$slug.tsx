@@ -1,5 +1,6 @@
 import { Error } from "@/components/error-boundary";
 import DeleteList from "@/components/lists/delete-list";
+import ListMatchesSheet from "@/components/lists/list-matches-sheet";
 import ListRenderer from "@/components/lists/list-renderer";
 import UpdateList from "@/components/lists/update-list";
 import Overlay from "@/components/misc/overlay";
@@ -19,6 +20,7 @@ import {
 } from "@/lib/queries/core";
 import { objektListQuery } from "@/lib/queries/objekt-queries";
 import { objektListFrontendSchema } from "@/lib/universal/parsers";
+import { type ListType } from "@/lib/universal/schema/objekt-list";
 import { ProfileProvider } from "@/providers/profile-provider";
 import { UserStateProvider } from "@/providers/user-state-provider";
 import { IconHeartBroken } from "@tabler/icons-react";
@@ -89,24 +91,54 @@ function RouteComponent() {
   const { account, target, targetObjektLists, isAuthenticated, objektList } =
     Route.useLoaderData();
 
+  const isLive = objektList.type === "have" || objektList.type === "want";
+  // a list is trade-active if it's a have list with a linked want, OR a want
+  // list that some have list of the same user links to
+  const linkingHave =
+    objektList.type === "want"
+      ? targetObjektLists.find(
+          (l) => l.type === "have" && l.linkedWantListId === objektList.id,
+        )
+      : undefined;
+  const isTradeActive =
+    objektList.type === "have"
+      ? objektList.linkedWantListId !== null
+      : linkingHave !== undefined;
+
   return (
     <UserStateProvider {...account}>
       <ProfileProvider target={target} objektLists={targetObjektLists}>
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className="font-cosmo text-xl">
-            {objektList.name}
-            {objektList.currency && (
-              <span className="ml-2 text-sm text-muted-foreground">
-                ({objektList.currency})
-              </span>
-            )}
-          </h3>
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h3 className="font-cosmo text-xl">
+              {objektList.name}
+              {objektList.currency && (
+                <span className="ml-2 text-sm text-muted-foreground">
+                  ({objektList.currency})
+                </span>
+              )}
+            </h3>
 
-          {isAuthenticated && (
             <div className="flex items-center gap-2">
-              <UpdateList objektList={objektList} />
-              <DeleteList objektList={objektList} />
+              {isAuthenticated && isLive && isTradeActive && (
+                <ListMatchesSheet
+                  listId={objektList.id}
+                  listType={objektList.type as Exclude<ListType, "regular">}
+                />
+              )}
+              {isAuthenticated && (
+                <>
+                  <UpdateList objektList={objektList} />
+                  <DeleteList objektList={objektList} />
+                </>
+              )}
             </div>
+          </div>
+
+          {objektList.description && (
+            <p className="whitespace-pre-wrap text-sm text-muted-foreground">
+              {objektList.description}
+            </p>
           )}
         </div>
 

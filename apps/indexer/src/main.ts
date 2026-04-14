@@ -6,6 +6,7 @@ import { randomUUID } from "crypto";
 import { env } from "./env";
 import { fetchMetadataWithRetry } from "./metadata";
 import { Collection, ComoBalance, Objekt, type Transfer, Vote } from "./model";
+import { ListEventOutbox } from "./model";
 import {
   type ComoBalanceEvent,
   type RevealFunction,
@@ -25,6 +26,8 @@ processor.run(db, async (ctx) => {
     if (transfers.length > 0) {
       ctx.log.info(`Processing ${transfers.length} objekt transfers`);
     }
+
+    const processedTransfers: Transfer[] = [];
 
     // chunk everything into batches
     await chunk(transfers, env.COSMO_PARALLEL_COUNT, async (chunk) => {
@@ -85,8 +88,30 @@ processor.run(db, async (ctx) => {
       // upsert transfers
       if (transferBatch.length > 0) {
         await ctx.store.upsert(transferBatch);
+        processedTransfers.push(...transferBatch);
       }
     });
+
+    // append outbox rows for the live have/want list drain in apps/schedules.
+    // bigserial id is left undefined so Postgres assigns it from the sequence.
+    // TTL pruning happens out-of-band in the drain task, which has direct DB access.
+    if (processedTransfers.length > 0) {
+      const outboxRows = processedTransfers.map(
+        (t) =>
+          new ListEventOutbox({
+            transferId: t.id,
+            fromAddress: t.from,
+            toAddress: t.to,
+            // store the slug (not the UUID) so the web-side drain can match
+            // it directly against objekt_list_entries.collection_id, which is
+            // also a slug.
+            collectionId: t.collection.slug,
+            tokenId: t.tokenId,
+            timestamp: new Date(t.timestamp),
+          }),
+      );
+      await ctx.store.insert(outboxRows);
+    }
 
     // process transferability updates separately from transfers
     if (transferability.length > 0) {

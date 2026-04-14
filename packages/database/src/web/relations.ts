@@ -51,11 +51,28 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.objektLists.userId,
       to: r.cosmoAccounts.userId,
     }),
+    linkedWantList: r.one.objektLists({
+      from: r.objektLists.linkedWantListId,
+      to: r.objektLists.id,
+      alias: "have_want_pair",
+    }),
+    linkingHaveList: r.one.objektLists({
+      from: r.objektLists.id,
+      to: r.objektLists.linkedWantListId,
+      alias: "have_want_pair",
+    }),
   },
   objektListEntries: {
-    list: r.one.objektLists({
+    objektList: r.one.objektLists({
       from: r.objektListEntries.objektListId,
       to: r.objektLists.id,
+    }),
+  },
+  notifications: {
+    user: r.one.user({
+      from: r.notifications.userId,
+      to: r.user.id,
+      optional: false,
     }),
   },
   cosmoTokens: {},
