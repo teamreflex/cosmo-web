@@ -1,3 +1,4 @@
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -61,14 +62,18 @@ export default function ListDropdown(props: Props) {
             >
               <Link
                 to={props.createListUrl(list)}
-                className="flex w-full items-center justify-between"
+                className="flex w-full items-center justify-between gap-2"
               >
-                <span>
+                <span className="flex items-center gap-1.5">
                   {list.name}
+                  {list.type === "have" && (
+                    <Badge variant="list-have">{m.list_type_have()}</Badge>
+                  )}
+                  {list.type === "want" && (
+                    <Badge variant="list-want">{m.list_type_want()}</Badge>
+                  )}
                   {list.currency && (
-                    <span className="ml-1 text-xs text-muted-foreground">
-                      ({list.currency})
-                    </span>
+                    <Badge variant="secondary">{list.currency}</Badge>
                   )}
                 </span>
                 <IconChevronRight className="h-4 w-4" />
