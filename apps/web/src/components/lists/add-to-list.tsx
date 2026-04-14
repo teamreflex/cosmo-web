@@ -1,4 +1,5 @@
 import { m } from "@/i18n/messages";
+import { formatListError } from "@/lib/client/list-errors";
 import {
   $addObjektToHaveList,
   $addObjektToList,
@@ -145,7 +146,7 @@ function ListItem({
       onDone();
     },
     onError: (error) => {
-      toast.error(error.message);
+      toast.error(formatListError(error, { collectionId }));
     },
   });
 

@@ -35,7 +35,7 @@ export async function assertOwnsCollection(
     .limit(1);
 
   if (owned.length === 0) {
-    throw new Error(`You don't own a transferable ${collectionSlug}`);
+    throw new Error("not_owned");
   }
 }
 

@@ -506,7 +506,7 @@ export const $addObjektToHaveList = createServerFn({ method: "POST" })
       columns: { type: true, discoverable: true, linkedWantListId: true },
     });
     if (parentList?.type !== "have") {
-      throw new Error("Not a have list");
+      throw new Error("not_have_list");
     }
 
     await assertOwnsCollection(context.cosmo.address, data.collectionSlug);
@@ -528,9 +528,7 @@ export const $addObjektToHaveList = createServerFn({ method: "POST" })
         columns: { id: true },
       });
       if (conflict) {
-        throw new Error(
-          `${data.collectionSlug} is already on another of your linked have lists. Remove it there first.`,
-        );
+        throw new Error("already_on_linked_have");
       }
     }
 
@@ -588,7 +586,7 @@ export const $addObjektToWantList = createServerFn({ method: "POST" })
       columns: { type: true, discoverable: true, id: true },
     });
     if (parentList?.type !== "want") {
-      throw new Error("Not a want list");
+      throw new Error("not_want_list");
     }
 
     // trade-active for a want list = some have list of mine links to it
@@ -710,7 +708,7 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
       },
     });
     if (!myList || (myList.type !== "have" && myList.type !== "want")) {
-      throw new Error("Not a live list");
+      throw new Error("not_live_list");
     }
 
     const anchorIsActive =
@@ -718,9 +716,7 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
         ? myList.linkedWantListId !== null
         : myList.linkingHaveList !== null;
     if (!anchorIsActive) {
-      throw new Error(
-        "Pair this list with the opposite type to find trade partners",
-      );
+      throw new Error("anchor_not_trade_active");
     }
 
     // The anchor side scopes one direction of the mutual check; the other
@@ -991,7 +987,7 @@ export const $generateDiscordList = createServerFn({ method: "POST" })
     const want = lists.find((l) => l.id === data.wantId);
 
     if (!have || !want) {
-      throw new Error("Please select both lists.");
+      throw new Error("discord_lists_required");
     }
 
     // fetch collections from the indexer
@@ -1001,7 +997,7 @@ export const $generateDiscordList = createServerFn({ method: "POST" })
     ]);
 
     if (unique.size === 0) {
-      throw new Error("Please select lists that are not empty");
+      throw new Error("discord_list_empty");
     }
 
     const collections = await indexer.query.collections.findMany({
