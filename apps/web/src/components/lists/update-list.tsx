@@ -27,7 +27,6 @@ import {
   updateRegularListSchema,
   updateWantListSchema,
 } from "../../lib/universal/schema/objekt-list";
-import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import {
   Dialog,
@@ -88,13 +87,6 @@ export default function UpdateList({ objektList }: Props) {
         <DialogHeader>
           <DialogTitle>{m.list_update()}</DialogTitle>
         </DialogHeader>
-
-        <Field>
-          <FieldLabel>{m.list_type()}</FieldLabel>
-          <Badge variant="outline" className="w-fit capitalize">
-            {objektList.type}
-          </Badge>
-        </Field>
 
         {objektList.type === "regular" && (
           <RegularForm objektList={objektList} onSuccess={handleSuccess} />
