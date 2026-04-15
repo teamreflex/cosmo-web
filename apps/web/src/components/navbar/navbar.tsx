@@ -15,7 +15,6 @@ import StateGuest from "../auth/state-guest";
 import Logo from "../logo";
 import SystemStatus from "../misc/system-status";
 import UpdateDialog from "../misc/update-dialog";
-import NotificationBell from "../notifications/notification-bell";
 import { Skeleton } from "../ui/skeleton";
 import Links from "./links";
 
@@ -85,10 +84,7 @@ function AuthState() {
         {!data ? (
           <StateGuest />
         ) : (
-          <>
-            <NotificationBell />
-            <StateAuthenticated user={data.user} cosmo={data.cosmo} />
-          </>
+          <StateAuthenticated user={data.user} cosmo={data.cosmo} />
         )}
       </div>
     </>

@@ -182,7 +182,7 @@ function ErrorComponent() {
   return (
     <main className="flex h-dvh w-full flex-col items-center justify-center gap-1.5">
       <h2 className="text-lg font-semibold">{m.error_something_wrong()}</h2>
-      <p className="text-sm">
+      <p className="text-sm text-center">
         {m.error_something_wrong_description({ appName: env.VITE_APP_NAME })}
       </p>
       <Button variant="outline" onClick={() => window.location.reload()}>

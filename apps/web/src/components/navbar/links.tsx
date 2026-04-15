@@ -13,6 +13,7 @@ import {
 } from "@tabler/icons-react";
 import type { Icon } from "@tabler/icons-react";
 import { Link, useLocation } from "@tanstack/react-router";
+import NotificationBell from "../notifications/notification-bell";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,6 +38,8 @@ type Props = {
 };
 
 export default function Links(props: Props) {
+  const location = useLocation();
+
   return (
     <div className="flex grow justify-end lg:justify-center">
       {/* desktop */}
@@ -46,6 +49,8 @@ export default function Links(props: Props) {
 
       {/* mobile */}
       <div className="flex flex-row items-center gap-2 lg:hidden">
+        <NotificationBell key={location.pathname} />
+
         <NavbarSearch />
 
         <DropdownMenu>
