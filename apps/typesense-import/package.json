@@ -2,6 +2,7 @@
   "name": "typesense-import",
   "version": "1.0.0",
   "license": "MIT",
+  "type": "module",
   "scripts": {
     "dev": "bun run --bun --watch --env-file=../../.env --env-file=../../.env.local ./src/main.ts",
     "build": "bun build ./src/main.ts --outdir ./dist --target bun",

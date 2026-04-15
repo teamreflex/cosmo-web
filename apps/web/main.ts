@@ -23,7 +23,7 @@ const SERVER_PORT =
 const CLIENT_DIRECTORY = path.join(import.meta.dir, "./dist/client");
 const SERVER_ENTRY_POINT = path.join(
   import.meta.dir,
-  "./dist/server/server.mjs",
+  "./dist/server/server.js",
 );
 
 // Optional compression for dynamic responses (TanStack SSR, API routes)
