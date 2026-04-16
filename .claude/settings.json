@@ -15,7 +15,7 @@
     ],
     "deny": ["Bash(npm:*)", "Bash(pnpm:*)"]
   },
-  "enabledMcpjsonServers": ["bun", "context7", "tanstack"],
+  "enabledMcpjsonServers": ["bun", "context7"],
   "enabledPlugins": {
     "typescript-lsp@claude-plugins-official": true,
     "agent-browser@agent-browser": true
