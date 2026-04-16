@@ -6,11 +6,7 @@ import { track } from "@/lib/utils";
 import type { ObjektList } from "@apollo/database/web/types";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconLoader2 } from "@tabler/icons-react";
-import {
-  useMutation,
-  useQueryClient,
-  useSuspenseQuery,
-} from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import {
@@ -29,6 +25,7 @@ import {
   defaultCurrencies,
   type ListType,
 } from "../../lib/universal/schema/objekt-list";
+import Portal from "../portal";
 import { Button } from "../ui/button";
 import {
   Dialog,
@@ -54,6 +51,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 type Props = {
   open: boolean;
   onOpenChange: (state: boolean) => void;
+  objektLists: ObjektList[];
   username?: string;
 };
 
@@ -61,8 +59,6 @@ export default function CreateListDialog(props: Props) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { cosmo } = useUserState();
-  const account = useSuspenseQuery(currentAccountQuery);
-  const allLists = account.data?.objektLists ?? [];
   const [tab, setTab] = useState<ListType>("regular");
 
   function handleCreated(result: ObjektList) {
@@ -99,7 +95,9 @@ export default function CreateListDialog(props: Props) {
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>{m.list_create()}</DialogTitle>
-          <DialogDescription>{m.list_create_description()}</DialogDescription>
+          <DialogDescription>
+            <span id="list-type-description" />
+          </DialogDescription>
         </DialogHeader>
 
         <Tabs value={tab} onValueChange={(v) => setTab(v as ListType)}>
@@ -115,16 +113,28 @@ export default function CreateListDialog(props: Props) {
           </TabsList>
 
           <TabsContent value="regular">
+            <Portal to="#list-type-description">
+              {m.list_type_regular_description()}
+            </Portal>
             <RegularForm onCreated={handleCreated} />
           </TabsContent>
           <TabsContent value="sale">
+            <Portal to="#list-type-description">
+              {m.list_type_sale_description()}
+            </Portal>
             <SaleForm onCreated={handleCreated} />
           </TabsContent>
           <TabsContent value="have">
-            <HaveForm allLists={allLists} onCreated={handleCreated} />
+            <Portal to="#list-type-description">
+              {m.list_type_have_description()}
+            </Portal>
+            <HaveForm allLists={props.objektLists} onCreated={handleCreated} />
           </TabsContent>
           <TabsContent value="want">
-            <WantForm allLists={allLists} onCreated={handleCreated} />
+            <Portal to="#list-type-description">
+              {m.list_type_want_description()}
+            </Portal>
+            <WantForm allLists={props.objektLists} onCreated={handleCreated} />
           </TabsContent>
         </Tabs>
       </DialogContent>

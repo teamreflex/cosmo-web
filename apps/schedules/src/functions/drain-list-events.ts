@@ -25,6 +25,8 @@ const processBatch = Effect.gen(function* () {
   const indexerDb = yield* DatabaseIndexer;
   const webDb = yield* DatabaseWeb;
 
+  yield* Effect.logInfo("Draining outbox...");
+
   const cursor = yield* Effect.tryPromise({
     try: () =>
       webDb.query.listDrainCursor.findFirst({

@@ -1,17 +1,26 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "f153b581-fa22-44a7-a0ef-154273a4a170",
-  "prevIds": ["8c9fa674-275a-4f73-89a0-c75dfd2e25c3"],
+  "id": "51e4498f-0807-4a69-b47a-dad57992f31a",
+  "prevIds": [
+    "8c9fa674-275a-4f73-89a0-c75dfd2e25c3"
+  ],
   "ddl": [
     {
-      "values": ["regular", "have", "want"],
+      "values": [
+        "regular",
+        "have",
+        "want",
+        "sale"
+      ],
       "name": "list_type",
       "entityType": "enums",
       "schema": "public"
     },
     {
-      "values": ["list_match"],
+      "values": [
+        "list_match"
+      ],
       "name": "notification_type",
       "entityType": "enums",
       "schema": "public"
@@ -67,6 +76,12 @@
     {
       "isRlsEnabled": false,
       "name": "gravity_polls",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "list_drain_cursor",
       "entityType": "tables",
       "schema": "public"
     },
@@ -1014,6 +1029,32 @@
       "table": "gravity_polls"
     },
     {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "name",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "list_drain_cursor"
+    },
+    {
+      "type": "bigint",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "seq",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "list_drain_cursor"
+    },
+    {
       "type": "serial",
       "typeSchema": null,
       "notNull": true,
@@ -1282,6 +1323,19 @@
       "generated": null,
       "identity": null,
       "name": "collection_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "objekt_list_entries"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "token_id",
       "entityType": "columns",
       "schema": "public",
       "table": "objekt_list_entries"
@@ -2938,7 +2992,7 @@
         }
       ],
       "isUnique": true,
-      "where": "type = 'list_match'",
+      "where": "\"type\" = 'list_match'",
       "with": "",
       "method": "btree",
       "concurrently": false,
@@ -2985,6 +3039,34 @@
       "method": "btree",
       "concurrently": false,
       "name": "objekt_list_entries_collection_id_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "objekt_list_entries"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "token_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "objekt_list_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": true,
+      "where": "\"token_id\" IS NOT NULL",
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "objekt_list_entries_token_list_unique_idx",
       "entityType": "indexes",
       "schema": "public",
       "table": "objekt_list_entries"
@@ -3348,10 +3430,14 @@
     },
     {
       "nameExplicit": false,
-      "columns": ["event_id"],
+      "columns": [
+        "event_id"
+      ],
       "schemaTo": "public",
       "tableTo": "events",
-      "columnsTo": ["id"],
+      "columnsTo": [
+        "id"
+      ],
       "onUpdate": "NO ACTION",
       "onDelete": "SET NULL",
       "name": "collection_data_event_id_events_id_fkey",
@@ -3361,10 +3447,14 @@
     },
     {
       "nameExplicit": false,
-      "columns": ["era_id"],
+      "columns": [
+        "era_id"
+      ],
       "schemaTo": "public",
       "tableTo": "eras",
-      "columnsTo": ["id"],
+      "columnsTo": [
+        "id"
+      ],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "events_era_id_eras_id_fkey",
@@ -3374,10 +3464,14 @@
     },
     {
       "nameExplicit": false,
-      "columns": ["list_id"],
+      "columns": [
+        "list_id"
+      ],
       "schemaTo": "public",
       "tableTo": "lists",
-      "columnsTo": ["id"],
+      "columnsTo": [
+        "id"
+      ],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "list_entries_list_id_lists_id_fk",
@@ -3387,10 +3481,14 @@
     },
     {
       "nameExplicit": false,
-      "columns": ["user_id"],
+      "columns": [
+        "user_id"
+      ],
       "schemaTo": "public",
       "tableTo": "user",
-      "columnsTo": ["id"],
+      "columnsTo": [
+        "id"
+      ],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "notifications_user_id_user_id_fkey",
@@ -3400,10 +3498,14 @@
     },
     {
       "nameExplicit": false,
-      "columns": ["objekt_list_id"],
+      "columns": [
+        "objekt_list_id"
+      ],
       "schemaTo": "public",
       "tableTo": "objekt_lists",
-      "columnsTo": ["id"],
+      "columnsTo": [
+        "id"
+      ],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "objekt_list_entries_objekt_list_id_objekt_lists_id_fk",
@@ -3413,10 +3515,14 @@
     },
     {
       "nameExplicit": false,
-      "columns": ["user_id"],
+      "columns": [
+        "user_id"
+      ],
       "schemaTo": "public",
       "tableTo": "user",
-      "columnsTo": ["id"],
+      "columnsTo": [
+        "id"
+      ],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "objekt_lists_user_id_user_id_fk",
@@ -3426,10 +3532,14 @@
     },
     {
       "nameExplicit": false,
-      "columns": ["linked_want_list_id"],
+      "columns": [
+        "linked_want_list_id"
+      ],
       "schemaTo": "public",
       "tableTo": "objekt_lists",
-      "columnsTo": ["id"],
+      "columnsTo": [
+        "id"
+      ],
       "onUpdate": "NO ACTION",
       "onDelete": "SET NULL",
       "name": "objekt_lists_linked_want_list_id_objekt_lists_id_fkey",
@@ -3439,10 +3549,14 @@
     },
     {
       "nameExplicit": false,
-      "columns": ["user_id"],
+      "columns": [
+        "user_id"
+      ],
       "schemaTo": "public",
       "tableTo": "user",
-      "columnsTo": ["id"],
+      "columnsTo": [
+        "id"
+      ],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "account_user_id_user_id_fk",
@@ -3452,10 +3566,14 @@
     },
     {
       "nameExplicit": false,
-      "columns": ["user_id"],
+      "columns": [
+        "user_id"
+      ],
       "schemaTo": "public",
       "tableTo": "user",
-      "columnsTo": ["id"],
+      "columnsTo": [
+        "id"
+      ],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "session_user_id_user_id_fk",
@@ -3464,7 +3582,9 @@
       "table": "session"
     },
     {
-      "columns": ["id"],
+      "columns": [
+        "id"
+      ],
       "nameExplicit": false,
       "name": "objekt_metadata_pkey",
       "schema": "public",
@@ -3472,7 +3592,9 @@
       "entityType": "pks"
     },
     {
-      "columns": ["id"],
+      "columns": [
+        "id"
+      ],
       "nameExplicit": false,
       "name": "cosmo_account_pkey",
       "schema": "public",
@@ -3480,7 +3602,9 @@
       "entityType": "pks"
     },
     {
-      "columns": ["id"],
+      "columns": [
+        "id"
+      ],
       "nameExplicit": false,
       "name": "cosmo_tokens_pkey",
       "schema": "public",
@@ -3488,7 +3612,9 @@
       "entityType": "pks"
     },
     {
-      "columns": ["id"],
+      "columns": [
+        "id"
+      ],
       "nameExplicit": false,
       "name": "eras_pkey",
       "schema": "public",
@@ -3496,7 +3622,9 @@
       "entityType": "pks"
     },
     {
-      "columns": ["id"],
+      "columns": [
+        "id"
+      ],
       "nameExplicit": false,
       "name": "events_pkey",
       "schema": "public",
@@ -3504,7 +3632,9 @@
       "entityType": "pks"
     },
     {
-      "columns": ["id"],
+      "columns": [
+        "id"
+      ],
       "nameExplicit": false,
       "name": "gravities_pkey",
       "schema": "public",
@@ -3512,7 +3642,9 @@
       "entityType": "pks"
     },
     {
-      "columns": ["id"],
+      "columns": [
+        "id"
+      ],
       "nameExplicit": false,
       "name": "gravity_poll_candidates_pkey",
       "schema": "public",
@@ -3520,7 +3652,9 @@
       "entityType": "pks"
     },
     {
-      "columns": ["id"],
+      "columns": [
+        "id"
+      ],
       "nameExplicit": false,
       "name": "gravity_polls_pkey",
       "schema": "public",
@@ -3528,7 +3662,19 @@
       "entityType": "pks"
     },
     {
-      "columns": ["id"],
+      "columns": [
+        "name"
+      ],
+      "nameExplicit": false,
+      "name": "list_drain_cursor_pkey",
+      "schema": "public",
+      "table": "list_drain_cursor",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
       "nameExplicit": false,
       "name": "list_entries_pkey",
       "schema": "public",
@@ -3536,7 +3682,9 @@
       "entityType": "pks"
     },
     {
-      "columns": ["id"],
+      "columns": [
+        "id"
+      ],
       "nameExplicit": false,
       "name": "lists_pkey",
       "schema": "public",
@@ -3544,7 +3692,9 @@
       "entityType": "pks"
     },
     {
-      "columns": ["id"],
+      "columns": [
+        "id"
+      ],
       "nameExplicit": false,
       "name": "locked_objekts_pkey",
       "schema": "public",
@@ -3552,7 +3702,9 @@
       "entityType": "pks"
     },
     {
-      "columns": ["id"],
+      "columns": [
+        "id"
+      ],
       "nameExplicit": false,
       "name": "notifications_pkey",
       "schema": "public",
@@ -3560,7 +3712,9 @@
       "entityType": "pks"
     },
     {
-      "columns": ["id"],
+      "columns": [
+        "id"
+      ],
       "nameExplicit": false,
       "name": "objekt_list_entries_pkey",
       "schema": "public",
@@ -3568,7 +3722,9 @@
       "entityType": "pks"
     },
     {
-      "columns": ["id"],
+      "columns": [
+        "id"
+      ],
       "nameExplicit": false,
       "name": "objekt_lists_pkey",
       "schema": "public",
@@ -3576,7 +3732,9 @@
       "entityType": "pks"
     },
     {
-      "columns": ["id"],
+      "columns": [
+        "id"
+      ],
       "nameExplicit": false,
       "name": "pins_pkey",
       "schema": "public",
@@ -3584,7 +3742,9 @@
       "entityType": "pks"
     },
     {
-      "columns": ["id"],
+      "columns": [
+        "id"
+      ],
       "nameExplicit": false,
       "name": "polygon_votes_pkey",
       "schema": "public",
@@ -3592,7 +3752,9 @@
       "entityType": "pks"
     },
     {
-      "columns": ["id"],
+      "columns": [
+        "id"
+      ],
       "nameExplicit": false,
       "name": "account_pkey",
       "schema": "public",
@@ -3600,7 +3762,9 @@
       "entityType": "pks"
     },
     {
-      "columns": ["id"],
+      "columns": [
+        "id"
+      ],
       "nameExplicit": false,
       "name": "session_pkey",
       "schema": "public",
@@ -3608,7 +3772,9 @@
       "entityType": "pks"
     },
     {
-      "columns": ["id"],
+      "columns": [
+        "id"
+      ],
       "nameExplicit": false,
       "name": "user_pkey",
       "schema": "public",
@@ -3616,7 +3782,9 @@
       "entityType": "pks"
     },
     {
-      "columns": ["id"],
+      "columns": [
+        "id"
+      ],
       "nameExplicit": false,
       "name": "verification_pkey",
       "schema": "public",
@@ -3625,7 +3793,9 @@
     },
     {
       "nameExplicit": false,
-      "columns": ["collection_id"],
+      "columns": [
+        "collection_id"
+      ],
       "nullsNotDistinct": false,
       "name": "objekt_metadata_collection_id_unique",
       "schema": "public",
@@ -3634,7 +3804,9 @@
     },
     {
       "nameExplicit": false,
-      "columns": ["slug"],
+      "columns": [
+        "slug"
+      ],
       "nullsNotDistinct": false,
       "name": "eras_slug_key",
       "schema": "public",
@@ -3643,7 +3815,9 @@
     },
     {
       "nameExplicit": false,
-      "columns": ["slug"],
+      "columns": [
+        "slug"
+      ],
       "nullsNotDistinct": false,
       "name": "events_slug_key",
       "schema": "public",
@@ -3652,7 +3826,9 @@
     },
     {
       "nameExplicit": false,
-      "columns": ["token"],
+      "columns": [
+        "token"
+      ],
       "nullsNotDistinct": false,
       "name": "session_token_unique",
       "schema": "public",
@@ -3661,7 +3837,9 @@
     },
     {
       "nameExplicit": false,
-      "columns": ["email"],
+      "columns": [
+        "email"
+      ],
       "nullsNotDistinct": false,
       "name": "user_email_unique",
       "schema": "public",
@@ -3670,12 +3848,21 @@
     },
     {
       "nameExplicit": false,
-      "columns": ["username"],
+      "columns": [
+        "username"
+      ],
       "nullsNotDistinct": false,
       "name": "user_username_unique",
       "schema": "public",
       "table": "user",
       "entityType": "uniques"
+    },
+    {
+      "value": "(\"type\" = 'sale') = (\"currency\" IS NOT NULL)",
+      "name": "objekt_lists_currency_type_chk",
+      "entityType": "checks",
+      "schema": "public",
+      "table": "objekt_lists"
     }
   ],
   "renames": []

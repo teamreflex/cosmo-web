@@ -36,6 +36,7 @@ export default function ListDropdown(props: Props) {
   return (
     <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
       <CreateListDialog
+        objektLists={props.objektLists}
         open={createOpen}
         onOpenChange={setCreateOpen}
         username={props.username}
