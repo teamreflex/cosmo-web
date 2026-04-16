@@ -15,6 +15,8 @@ export namespace Objekt {
    */
   export type Collection = {
     // comes directly from metadata
+    /** diverges from cosmo api */
+    id: string;
     artist: ValidArtist;
     member: string;
     season: string;
@@ -57,6 +59,7 @@ export namespace Objekt {
    */
   export function fromIndexer(objekt: IndexedObjekt): Objekt.Collection {
     const collection = {
+      id: objekt.id,
       artist: objekt.artist.toLowerCase() as ValidArtist,
       member: objekt.member,
       season: objekt.season,
@@ -79,6 +82,7 @@ export namespace Objekt {
    */
   export function fromLegacy(objekt: CosmoObjekt): Objekt.Objekt {
     const collection = {
+      id: objekt.id,
       artist: objekt.artists[0]!,
       member: objekt.member,
       season: objekt.season,
@@ -131,6 +135,7 @@ export namespace Objekt {
     let collection: Objekt.Collection | undefined;
     if (opts.collection) {
       const base = {
+        id: opts.collection.id,
         artist: opts.collection.artistName as ValidArtist,
         member: opts.collection.member,
         season: opts.collection.season,
@@ -178,6 +183,8 @@ export namespace Objekt {
    */
   export function fromScanned({ objekt }: ScannedObjekt): Objekt.Collection {
     const collection = {
+      // scan path is currently unused; placeholder id keeps the shape consistent
+      id: crypto.randomUUID(),
       artist: objekt.artists[0] as ValidArtist,
       member: objekt.member,
       season: objekt.season,

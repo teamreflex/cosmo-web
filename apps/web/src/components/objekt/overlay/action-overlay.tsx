@@ -96,9 +96,11 @@ export default function ActionOverlay({
         {authenticated && !isPin && (
           <div {...createHoverProps("list")}>
             <AddToList
-              collectionId={collection.collectionId}
-              collectionSlug={collection.slug}
+              collectionName={collection.collectionId}
+              slug={collection.slug}
+              collectionId={collection.id}
               lists={objektLists}
+              tokenId={token.tokenId}
             />
           </div>
         )}

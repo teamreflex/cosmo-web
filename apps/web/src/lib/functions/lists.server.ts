@@ -1,13 +1,13 @@
 import type { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
-import { collections, objekts } from "@apollo/database/indexer/schema";
+import { objekts } from "@apollo/database/indexer/schema";
 import {
   notifications,
   objektListEntries,
   objektLists,
 } from "@apollo/database/web/schema";
 import type { ListMatchPayload } from "@apollo/database/web/types";
-import { and, eq, exists, isNotNull, ne } from "drizzle-orm";
+import { and, eq, exists, inArray, isNotNull, ne } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 
 // it is what it is, man
@@ -15,27 +15,28 @@ type WebTx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 type DbOrTx = typeof db | WebTx;
 
 /**
- * Throws if the given address doesn't currently own at least one transferable
- * objekt of the given collection slug. Used as the live-have-list add gate.
+ * Throws unless every tokenId belongs to `address`, is transferable, and
+ * matches `collectionId` (indexer UUID). Single indexer round-trip, no join —
+ * `objekts.collectionId` is the FK so the filter is an index lookup.
  */
-export async function assertOwnsCollection(
+export async function assertOwnsTokens(
   address: string,
-  collectionSlug: string,
+  collectionId: string,
+  tokenIds: string[],
 ): Promise<void> {
   const owned = await indexer
     .select({ id: objekts.id })
     .from(objekts)
-    .innerJoin(collections, eq(collections.id, objekts.collectionId))
     .where(
       and(
+        inArray(objekts.id, tokenIds),
         eq(objekts.owner, address),
         eq(objekts.transferable, true),
-        eq(collections.slug, collectionSlug),
+        eq(objekts.collectionId, collectionId),
       ),
-    )
-    .limit(1);
+    );
 
-  if (owned.length === 0) {
+  if (owned.length !== tokenIds.length) {
     throw new Error("not_owned");
   }
 }
@@ -43,8 +44,8 @@ export async function assertOwnsCollection(
 type FireNotificationArgs = {
   sourceUserId: string;
   sourceListId: string;
-  collectionSlug: string;
-  collectionId: string;
+  slug: string;
+  collectionName: string;
 };
 
 /**
@@ -69,7 +70,7 @@ export async function fireHaveAddNotifications(
   const payload = {
     sourceUserId: args.sourceUserId,
     sourceListId: args.sourceListId,
-    collectionId: args.collectionId,
+    collectionId: args.collectionName,
     direction: "they_added_have",
   } satisfies ListMatchPayload;
 
@@ -84,7 +85,7 @@ export async function fireHaveAddNotifications(
       watcherWantEntry,
       and(
         eq(watcherWantEntry.objektListId, watcherWant.id),
-        eq(watcherWantEntry.collectionId, args.collectionSlug),
+        eq(watcherWantEntry.collectionId, args.slug),
       ),
     )
     .where(
@@ -161,7 +162,7 @@ export async function fireWantAddNotifications(
   const payload = {
     sourceUserId: args.sourceUserId,
     sourceListId: args.sourceListId,
-    collectionId: args.collectionId,
+    collectionId: args.collectionName,
     direction: "they_added_want",
   } satisfies ListMatchPayload;
 
@@ -172,7 +173,7 @@ export async function fireWantAddNotifications(
       watcherHaveEntry,
       and(
         eq(watcherHaveEntry.objektListId, watcherHave.id),
-        eq(watcherHaveEntry.collectionId, args.collectionSlug),
+        eq(watcherHaveEntry.collectionId, args.slug),
       ),
     )
     .where(

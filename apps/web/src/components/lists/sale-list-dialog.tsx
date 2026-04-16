@@ -23,8 +23,8 @@ type Props = {
   onOpenChange: (open: boolean) => void;
   objektListId: string;
   listName: string;
-  collectionSlug: string;
-  collectionId: string;
+  slug: string;
+  collectionName: string;
   currency: string;
 };
 
@@ -33,15 +33,17 @@ export default function SaleListDialog({
   onOpenChange,
   objektListId,
   listName,
-  collectionSlug,
-  collectionId,
+  slug,
+  collectionName,
   currency,
 }: Props) {
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: $addObjektToSaleList,
     onSuccess: async () => {
-      toast.success(m.toast_added_to_list({ collectionId, listName }));
+      toast.success(
+        m.toast_added_to_list({ collectionId: collectionName, listName }),
+      );
       await queryClient.invalidateQueries(objektListQueryFilter(objektListId));
       onOpenChange(false);
     },
@@ -51,7 +53,7 @@ export default function SaleListDialog({
     resolver: standardSchemaResolver(addObjektToSaleListSchema),
     defaultValues: {
       objektListId,
-      collectionSlug,
+      slug,
       quantity: 1,
       price: undefined,
     },
@@ -66,7 +68,7 @@ export default function SaleListDialog({
       <DialogContent className="sm:max-w-[425px]" aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>
-            {m.list_add_to_sale_list()} — {collectionId}
+            {m.list_add_to_sale_list()} — {collectionName}
           </DialogTitle>
         </DialogHeader>
         <FormProvider {...form}>

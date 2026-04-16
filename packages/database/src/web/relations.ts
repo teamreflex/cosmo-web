@@ -75,6 +75,7 @@ export const relations = defineRelations(schema, (r) => ({
       optional: false,
     }),
   },
+  listDrainCursor: {},
   cosmoTokens: {},
   gravities: {
     polls: r.many.gravityPolls(),

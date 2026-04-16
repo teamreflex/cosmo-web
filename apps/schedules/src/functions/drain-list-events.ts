@@ -1,186 +1,147 @@
 import { DatabaseWeb } from "@/db";
 import { DatabaseIndexer } from "@/db-indexer";
-import { Redis } from "@/redis";
+import { listEventOutbox } from "@apollo/database/indexer/schema";
 import {
-  collections,
-  listEventOutbox,
-  objekts,
-} from "@apollo/database/indexer/schema";
-import {
-  cosmoAccounts,
+  listDrainCursor,
   objektListEntries,
-  objektLists,
 } from "@apollo/database/web/schema";
-import { and, count, eq, gt, isNotNull, lt, sql } from "drizzle-orm";
+import { and, gt, inArray, lt, lte, sql } from "drizzle-orm";
 import { Data, Effect } from "effect";
 import type { ScheduledTask } from "../task";
 
 const BATCH_SIZE = 1000;
-const CURSOR_KEY = "list-drain:cursor";
+const CURSOR_NAME = "list-drain";
 
 /**
- * Drain the indexer outbox, recomputing live have-list entries whose owner
- * appears as the sender of a recent transfer. The Redis cursor advances only
- * after the web-DB transaction commits, and the recompute is idempotent so
- * re-applying the same outbox row is safe.
+ * Process one drain batch. Returns the number of outbox rows pulled so the
+ * caller can keep looping while we're still hitting the BATCH_SIZE ceiling.
+ *
+ * Idempotency: the cursor row lives in the web DB and is advanced inside
+ * the same transaction that deletes the entries. A crash anywhere before
+ * commit rolls back both, and after commit the cursor already points past
+ * the applied rows, so the next tick never replays them.
+ */
+const processBatch = Effect.gen(function* () {
+  const indexerDb = yield* DatabaseIndexer;
+  const webDb = yield* DatabaseWeb;
+
+  const cursor = yield* Effect.tryPromise({
+    try: () =>
+      webDb.query.listDrainCursor.findFirst({
+        where: { name: CURSOR_NAME },
+        columns: { seq: true },
+      }),
+    catch: (cause) => new DrainError({ cause }),
+  });
+  const fromSeq = cursor?.seq ?? 0n;
+
+  const outboxRows = yield* Effect.tryPromise({
+    try: () =>
+      indexerDb
+        .select({
+          id: listEventOutbox.id,
+          tokenId: listEventOutbox.tokenId,
+        })
+        .from(listEventOutbox)
+        .where(gt(listEventOutbox.id, fromSeq))
+        .orderBy(listEventOutbox.id)
+        .limit(BATCH_SIZE),
+    catch: (cause) => new DrainError({ cause }),
+  });
+
+  if (outboxRows.length === 0) {
+    return yield* Effect.as(purgeOutbox(fromSeq), 0);
+  }
+
+  const lastSeq = outboxRows[outboxRows.length - 1]!.id;
+  const tokenIds = [...new Set(outboxRows.map((r) => r.tokenId))];
+
+  yield* Effect.tryPromise({
+    try: () =>
+      webDb.transaction(async (tx) => {
+        // every entry keyed by one of these tokenIds is stale — the chain
+        // event proves the token left the sender's address. partial unique
+        // index on (tokenId, objektListId) makes this an index lookup.
+        await tx
+          .delete(objektListEntries)
+          .where(inArray(objektListEntries.tokenId, tokenIds));
+
+        // advance the cursor in the same transaction. any crash before
+        // commit rolls back the deletes and the cursor together; after
+        // commit, the next tick reads the advanced cursor and skips these
+        // rows — exactly-once, no replay window.
+        await upsertCursor(tx, lastSeq);
+      }),
+    catch: (cause) => new DrainError({ cause }),
+  });
+
+  yield* purgeOutbox(lastSeq);
+
+  yield* Effect.logInfo(
+    `drain-list-events: processed ${outboxRows.length} outbox rows for ${tokenIds.length} unique tokens`,
+  );
+
+  return outboxRows.length;
+});
+
+/**
+ * Drain the indexer outbox, deleting live have-list entries for every
+ * transferable objekt that left the sender's address. Loops back-to-back
+ * while the last batch saturated the limit, so backlog catches up within
+ * a single tick instead of bleeding out one BATCH_SIZE at a time across
+ * cron ticks.
  */
 export const drainListEventsTask = {
   name: "drain-list-events",
   cron: "*/1 * * * *",
-  effect: Effect.gen(function* () {
-    const indexerDb = yield* DatabaseIndexer;
-    const webDb = yield* DatabaseWeb;
-    const redis = yield* Redis;
-
-    const cursorStr = yield* redis.get(CURSOR_KEY);
-    const fromSeq = BigInt(cursorStr ?? "0");
-
-    const rows = yield* Effect.tryPromise({
-      try: () =>
-        indexerDb
-          .select({
-            id: listEventOutbox.id,
-            fromAddress: listEventOutbox.fromAddress,
-            collectionId: listEventOutbox.collectionId,
-          })
-          .from(listEventOutbox)
-          .where(gt(listEventOutbox.id, fromSeq))
-          .orderBy(listEventOutbox.id)
-          .limit(BATCH_SIZE),
-      catch: (cause) => new DrainError({ cause }),
-    });
-
-    const purgeOldOutboxRows = Effect.tryPromise({
-      try: () =>
-        indexerDb
-          .delete(listEventOutbox)
-          .where(
-            lt(
-              listEventOutbox.createdAt,
-              sql<string>`now() - interval '7 days'`,
-            ),
-          ),
-      catch: (cause) => new DrainError({ cause }),
-    });
-
-    if (rows.length === 0) {
-      yield* purgeOldOutboxRows;
-      return;
-    }
-
-    // build address → user map, restricted to users with at least one
-    // trade-active (linked) have list. unlinked archive lists are silently
-    // ignored by the drain.
-    const watchRows = yield* Effect.tryPromise({
-      try: () =>
-        webDb
-          .selectDistinct({
-            address: cosmoAccounts.address,
-            userId: cosmoAccounts.userId,
-          })
-          .from(cosmoAccounts)
-          .innerJoin(objektLists, eq(objektLists.userId, cosmoAccounts.userId))
-          .where(
-            and(
-              eq(objektLists.type, "have"),
-              isNotNull(objektLists.linkedWantListId),
-              isNotNull(cosmoAccounts.userId),
-            ),
-          ),
-      catch: (cause) => new DrainError({ cause }),
-    });
-    const watch = new Map<string, { address: string; userId: string }>();
-    for (const row of watchRows) {
-      if (row.userId === null) continue;
-      watch.set(row.address, { address: row.address, userId: row.userId });
-    }
-
-    // dedupe to one recompute per (userId, collectionSlug) — the apply is
-    // idempotent so duplicates wouldn't break correctness, just waste work
-    const seen = new Set<string>();
-    const targets: { userId: string; address: string; collectionId: string }[] =
-      [];
-    for (const row of rows) {
-      const owner = watch.get(row.fromAddress);
-      if (!owner) continue;
-      const key = `${owner.userId}:${row.collectionId}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      targets.push({
-        userId: owner.userId,
-        address: owner.address,
-        collectionId: row.collectionId,
-      });
-    }
-
-    if (targets.length > 0) {
-      yield* Effect.tryPromise({
-        try: () =>
-          webDb.transaction(async (tx) => {
-            for (const target of targets) {
-              const entry = await tx.query.objektListEntries.findFirst({
-                where: {
-                  collectionId: target.collectionId,
-                  objektList: {
-                    userId: target.userId,
-                    type: "have",
-                    linkedWantListId: { isNotNull: true },
-                  },
-                },
-                columns: { id: true },
-              });
-              if (!entry) continue;
-
-              // recompute the user's transferable holdings of this collection
-              // against the current indexer state — naturally idempotent
-              const result = await indexerDb
-                .select({ owned: count() })
-                .from(objekts)
-                .innerJoin(
-                  collections,
-                  eq(collections.id, objekts.collectionId),
-                )
-                .where(
-                  and(
-                    eq(objekts.owner, target.address),
-                    eq(objekts.transferable, true),
-                    eq(collections.slug, target.collectionId),
-                  ),
-                );
-              const ownedCount = result[0]?.owned ?? 0;
-
-              if (ownedCount === 0) {
-                await tx
-                  .delete(objektListEntries)
-                  .where(eq(objektListEntries.id, entry.id));
-              } else {
-                await tx
-                  .update(objektListEntries)
-                  .set({
-                    quantity: ownedCount,
-                    verifiedAt: new Date().toISOString(),
-                  })
-                  .where(eq(objektListEntries.id, entry.id));
-              }
-            }
-          }),
-        catch: (cause) => new DrainError({ cause }),
-      });
-    }
-
-    // advance the cursor only after the web-DB tx commits. order matters:
-    // a crash here causes at-least-once replay, absorbed by idempotency.
-    const lastSeq = rows[rows.length - 1]!.id;
-    yield* redis.set(CURSOR_KEY, lastSeq.toString());
-
-    yield* purgeOldOutboxRows;
-
-    yield* Effect.logInfo(
-      `drain-list-events: processed ${rows.length} rows (${targets.length} recomputes)`,
-    );
+  effect: Effect.repeat(processBatch, {
+    while: (rowCount) => rowCount === BATCH_SIZE,
   }),
 } satisfies ScheduledTask;
 
 export class DrainError extends Data.TaggedError("DrainError")<{
   readonly cause: unknown;
 }> {}
+
+/**
+ * Upsert the single-row drain cursor. Accepts either `webDb` or a `tx` so
+ * the call site can choose whether to run inside a transaction.
+ */
+function upsertCursor(
+  db: Pick<Effect.Effect.Success<typeof DatabaseWeb>, "insert">,
+  seq: bigint,
+) {
+  return db
+    .insert(listDrainCursor)
+    .values({ name: CURSOR_NAME, seq })
+    .onConflictDoUpdate({
+      target: listDrainCursor.name,
+      set: { seq },
+    });
+}
+
+/**
+ * Delete outbox rows that are BOTH older than 7 days AND already past the
+ * drain cursor. Gating on the cursor prevents events from being purged
+ * before they've been applied, which would otherwise cause permanent drift
+ * if the drain is down for longer than the retention window.
+ */
+const purgeOutbox = (cursorSeq: bigint) =>
+  Effect.gen(function* () {
+    const indexer = yield* DatabaseIndexer;
+    return yield* Effect.tryPromise({
+      try: () =>
+        indexer
+          .delete(listEventOutbox)
+          .where(
+            and(
+              lt(
+                listEventOutbox.createdAt,
+                sql<string>`now() - interval '7 days'`,
+              ),
+              lte(listEventOutbox.id, cursorSeq),
+            ),
+          ),
+      catch: (cause) => new DrainError({ cause }),
+    });
+  });

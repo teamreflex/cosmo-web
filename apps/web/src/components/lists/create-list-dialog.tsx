@@ -24,6 +24,7 @@ import type { z } from "zod";
 import {
   createHaveListSchema,
   createRegularListSchema,
+  createSaleListSchema,
   createWantListSchema,
   defaultCurrencies,
   type ListType,
@@ -102,8 +103,9 @@ export default function CreateListDialog(props: Props) {
         </DialogHeader>
 
         <Tabs value={tab} onValueChange={(v) => setTab(v as ListType)}>
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="regular">{m.list_type_regular()}</TabsTrigger>
+            <TabsTrigger value="sale">{m.list_type_sale()}</TabsTrigger>
             <LiveTypeTrigger value="have" enabled={cosmo !== undefined}>
               {m.list_type_have()}
             </LiveTypeTrigger>
@@ -114,6 +116,9 @@ export default function CreateListDialog(props: Props) {
 
           <TabsContent value="regular">
             <RegularForm onCreated={handleCreated} />
+          </TabsContent>
+          <TabsContent value="sale">
+            <SaleForm onCreated={handleCreated} />
           </TabsContent>
           <TabsContent value="have">
             <HaveForm allLists={allLists} onCreated={handleCreated} />
@@ -165,11 +170,41 @@ function RegularForm({ onCreated }: FormProps) {
       type: "regular",
       name: "",
       description: undefined,
-      currency: undefined,
     },
   });
 
   async function handleSubmit(data: z.infer<typeof createRegularListSchema>) {
+    const result = await mutation.mutateAsync({ data });
+    onCreated(result);
+  }
+
+  return (
+    <FormProvider {...form}>
+      <form
+        onSubmit={form.handleSubmit(handleSubmit)}
+        className="flex w-full flex-col gap-3"
+      >
+        <NameField />
+        <DescriptionField />
+        <SubmitButton isPending={mutation.isPending} />
+      </form>
+    </FormProvider>
+  );
+}
+
+function SaleForm({ onCreated }: FormProps) {
+  const mutation = useMutation({ mutationFn: $createObjektList });
+  const form = useForm({
+    resolver: standardSchemaResolver(createSaleListSchema),
+    defaultValues: {
+      type: "sale",
+      name: "",
+      description: undefined,
+      currency: "",
+    },
+  });
+
+  async function handleSubmit(data: z.infer<typeof createSaleListSchema>) {
     const result = await mutation.mutateAsync({ data });
     onCreated(result);
   }

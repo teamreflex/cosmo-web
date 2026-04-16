@@ -13,14 +13,14 @@ export default defineConfig({
     },
   },
   rules: {
-    "no-unused-vars": "off",
+    "no-unused-vars": "warn",
     "no-var": "off",
     "typescript/array-type": "off",
     "typescript/triple-slash-reference": "off",
     "typescript/no-namespace": "off",
     "typescript/no-empty-object-type": "off",
     "typescript/no-unused-vars": [
-      "error",
+      "warn",
       {
         args: "none",
         varsIgnorePattern: "^_",

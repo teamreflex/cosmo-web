@@ -73,7 +73,7 @@ export default function ListDropdown(props: Props) {
                     {list.type === "want" && (
                       <Badge variant="list-want">{m.list_type_want()}</Badge>
                     )}
-                    {list.currency && (
+                    {list.type === "sale" && list.currency && (
                       <Badge variant="secondary">{list.currency}</Badge>
                     )}
                   </span>

@@ -1,17 +1,13 @@
+import { useAddToList } from "@/hooks/use-add-to-list";
 import { m } from "@/i18n/messages";
-import { formatListError } from "@/lib/client/list-errors";
 import {
   $addObjektToHaveList,
   $addObjektToList,
   $addObjektToWantList,
 } from "@/lib/functions/lists";
-import { objektListQueryFilter } from "@/lib/queries/objekt-queries";
 import type { ObjektList } from "@apollo/database/web/types";
 import { IconLoader2, IconPlaylistAdd, IconPlus } from "@tabler/icons-react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import type { MouseEvent } from "react";
-import { toast } from "sonner";
 import { Badge } from "../ui/badge";
 import {
   DropdownMenu,
@@ -24,24 +20,43 @@ import {
 } from "../ui/dropdown-menu";
 import { ScrollArea } from "../ui/scroll-area";
 import SaleListDialog from "./sale-list-dialog";
+import SerialPickerDialog from "./serial-picker-dialog";
 
 type AddToListProps = {
+  collectionName: string;
+  slug: string;
   collectionId: string;
-  collectionSlug: string;
   lists: ObjektList[];
+  tokenId?: number;
 };
 
+type ClickType = "direct" | "sale" | "serial-picker";
+
 export default function AddToList({
+  collectionName,
+  slug,
   collectionId,
-  collectionSlug,
   lists,
+  tokenId,
 }: AddToListProps) {
   const [open, setOpen] = useState(false);
-  const [saleListPending, setSaleListPending] = useState<{
-    listId: string;
-    listName: string;
-    currency: string;
-  }>();
+  const [saleListPending, setSaleListPending] = useState<ObjektList>();
+  const [serialPickerPending, setSerialPickerPending] = useState<ObjektList>();
+
+  function handleClick(list: ObjektList, kind: ClickType) {
+    switch (kind) {
+      case "sale":
+        setOpen(false);
+        setSaleListPending(list);
+        return;
+      case "serial-picker":
+        setOpen(false);
+        setSerialPickerPending(list);
+        return;
+      case "direct":
+        return;
+    }
+  }
 
   return (
     <>
@@ -50,13 +65,13 @@ export default function AddToList({
           <button
             onClick={() => setOpen((state) => !state)}
             className="flex items-center outline-hidden transition-all hover:scale-110"
-            aria-label={m.list_select_to_add({ collectionId })}
+            aria-label={m.list_select_to_add({ collectionId: collectionName })}
           >
             <IconPlaylistAdd className="h-3 w-3 sm:h-5 sm:w-5" />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-fit">
-          <DropdownMenuLabel>{collectionId}</DropdownMenuLabel>
+          <DropdownMenuLabel>{collectionName}</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             {lists.length === 0 && (
@@ -66,115 +81,182 @@ export default function AddToList({
             )}
 
             <ScrollArea className="max-h-44 overflow-y-auto">
-              {lists.map((list) => (
-                <ListItem
-                  key={list.id}
-                  collectionId={collectionId}
-                  collectionSlug={collectionSlug}
-                  list={list}
-                  onDone={() => setOpen(false)}
-                  onSaleListClick={(currency) => {
-                    setOpen(false);
-                    setSaleListPending({
-                      listId: list.id,
-                      listName: list.name,
-                      currency,
-                    });
-                  }}
-                />
-              ))}
+              {lists.map((list) => {
+                const commonProps = {
+                  list,
+                  collectionName,
+                  slug,
+                  collectionId,
+                  onDone: () => setOpen(false),
+                  onClick: (kind: ClickType) => handleClick(list, kind),
+                };
+                switch (list.type) {
+                  case "regular":
+                    return <RegularListItem key={list.id} {...commonProps} />;
+                  case "sale":
+                    return <SaleListItem key={list.id} {...commonProps} />;
+                  case "have":
+                    return (
+                      <HaveListItem
+                        key={list.id}
+                        {...commonProps}
+                        tokenId={tokenId}
+                      />
+                    );
+                  case "want":
+                    return <WantListItem key={list.id} {...commonProps} />;
+                  default:
+                    list.type satisfies never;
+                    return null;
+                }
+              })}
             </ScrollArea>
           </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {saleListPending && (
+      {saleListPending?.currency && (
         <SaleListDialog
           open={true}
           onOpenChange={(open) => {
             if (!open) setSaleListPending(undefined);
           }}
-          objektListId={saleListPending.listId}
-          listName={saleListPending.listName}
-          collectionSlug={collectionSlug}
-          collectionId={collectionId}
+          objektListId={saleListPending.id}
+          listName={saleListPending.name}
+          slug={slug}
+          collectionName={collectionName}
           currency={saleListPending.currency}
+        />
+      )}
+
+      {serialPickerPending && (
+        <SerialPickerDialog
+          open={true}
+          onOpenChange={(open) => {
+            if (!open) setSerialPickerPending(undefined);
+          }}
+          list={serialPickerPending}
+          slug={slug}
+          collectionName={collectionName}
+          collectionId={collectionId}
         />
       )}
     </>
   );
 }
 
-type ListItemProps = {
-  collectionId: string;
-  collectionSlug: string;
+type ListItemBaseProps = {
   list: ObjektList;
+  collectionName: string;
+  slug: string;
+  collectionId: string;
   onDone: () => void;
-  onSaleListClick: (currency: string) => void;
+  onClick: (kind: ClickType) => void;
 };
 
-function ListItem({
-  collectionId,
-  collectionSlug,
-  list,
-  onDone,
-  onSaleListClick,
-}: ListItemProps) {
-  const queryClient = useQueryClient();
-  const mutation = useMutation({
-    mutationFn: async (payload: {
-      objektListId: string;
-      collectionSlug: string;
-      collectionId: string;
-    }) => {
-      switch (list.type) {
-        case "have":
-          return await $addObjektToHaveList({ data: payload });
-        case "want":
-          return await $addObjektToWantList({ data: payload });
-        case "regular":
-          return await $addObjektToList({
-            data: {
-              objektListId: payload.objektListId,
-              collectionSlug: payload.collectionSlug,
-            },
-          });
-        default:
-          list.type satisfies never;
-          throw new Error("Invalid list type");
-      }
-    },
-    onSuccess: async () => {
-      toast.success(
-        m.toast_added_to_list({ collectionId, listName: list.name }),
-      );
-      await queryClient.invalidateQueries(objektListQueryFilter(list.id));
-      onDone();
-    },
-    onError: (error) => {
-      toast.error(formatListError(error, { collectionId }));
-    },
-  });
+function RegularListItem(props: ListItemBaseProps) {
+  const mutate = useAddToList(props, () =>
+    $addObjektToList({
+      data: {
+        objektListId: props.list.id,
+        slug: props.slug,
+      },
+    }),
+  );
+  return (
+    <ListItemShell
+      list={props.list}
+      isPending={mutate.isPending}
+      onClick={() => {
+        props.onClick("direct");
+        mutate.mutate();
+      }}
+    />
+  );
+}
 
-  function handleClick(event: MouseEvent<HTMLButtonElement>) {
-    event.preventDefault();
-    if (list.currency) {
-      onSaleListClick(list.currency);
-      return;
-    }
-    mutation.mutate({
-      objektListId: list.id,
-      collectionSlug,
-      collectionId,
+function WantListItem(props: ListItemBaseProps) {
+  const mutate = useAddToList(props, () =>
+    $addObjektToWantList({
+      data: {
+        objektListId: props.list.id,
+        slug: props.slug,
+        collectionName: props.collectionName,
+      },
+    }),
+  );
+  return (
+    <ListItemShell
+      list={props.list}
+      isPending={mutate.isPending}
+      onClick={() => {
+        props.onClick("direct");
+        mutate.mutate();
+      }}
+    />
+  );
+}
+
+type HaveListItemProps = ListItemBaseProps & {
+  tokenId: number | undefined;
+};
+
+function HaveListItem(props: HaveListItemProps) {
+  const mutate = useAddToList(props, () => {
+    // caller guarantees tokenId is defined before dispatching the direct path
+    if (props.tokenId === undefined) throw new Error("token_id_required");
+    return $addObjektToHaveList({
+      data: {
+        objektListId: props.list.id,
+        slug: props.slug,
+        collectionName: props.collectionName,
+        collectionId: props.collectionId,
+        tokenIds: [String(props.tokenId)],
+      },
     });
-  }
+  });
+  return (
+    <ListItemShell
+      list={props.list}
+      isPending={mutate.isPending}
+      onClick={() => {
+        if (props.tokenId === undefined) {
+          props.onClick("serial-picker");
+          return;
+        }
+        props.onClick("direct");
+        mutate.mutate();
+      }}
+    />
+  );
+}
 
+function SaleListItem(props: ListItemBaseProps) {
+  return (
+    <ListItemShell
+      list={props.list}
+      isPending={false}
+      onClick={() => props.onClick("sale")}
+    />
+  );
+}
+
+type ListItemShellProps = {
+  list: ObjektList;
+  isPending: boolean;
+  onClick: () => void;
+};
+
+function ListItemShell({ list, isPending, onClick }: ListItemShellProps) {
   return (
     <DropdownMenuItem className="group truncate">
       <button
         type="button"
-        onClick={handleClick}
-        disabled={mutation.isPending}
+        onClick={(event) => {
+          event.preventDefault();
+          onClick();
+        }}
+        disabled={isPending}
         className="flex w-full items-center justify-between gap-2"
         aria-label={m.list_add_to_list_named({ listName: list.name })}
       >
@@ -187,12 +269,12 @@ function ListItem({
             {list.type === "want" && (
               <Badge variant="list-want">{m.list_type_want()}</Badge>
             )}
-            {list.currency && (
+            {list.type === "sale" && list.currency && (
               <Badge variant="secondary">{list.currency}</Badge>
             )}
           </span>
         </div>
-        {mutation.isPending ? (
+        {isPending ? (
           <IconLoader2 className="h-4 w-4 animate-spin" />
         ) : (
           <IconPlus className="h-4 w-4 opacity-0 transition-all group-hover:opacity-100" />

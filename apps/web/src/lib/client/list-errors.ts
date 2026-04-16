@@ -19,8 +19,8 @@ export function formatListError(error: unknown, context: Context = {}): string {
         return m.list_error_not_want_list();
       case "not_owned":
         return m.list_error_not_owned({ collectionId });
-      case "already_on_linked_have":
-        return m.list_error_already_on_linked_have({ collectionId });
+      case "already_on_list":
+        return m.list_already_on_list({ collectionId });
       case "not_live_list":
         return m.list_error_not_live_list();
       case "anchor_not_trade_active":

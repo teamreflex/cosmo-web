@@ -20,7 +20,6 @@ import {
 } from "@/lib/queries/core";
 import { objektListQuery } from "@/lib/queries/objekt-queries";
 import { objektListFrontendSchema } from "@/lib/universal/parsers";
-import { type ListType } from "@/lib/universal/schema/objekt-list";
 import { ProfileProvider } from "@/providers/profile-provider";
 import { UserStateProvider } from "@/providers/user-state-provider";
 import { IconHeartBroken } from "@tabler/icons-react";
@@ -91,7 +90,6 @@ function RouteComponent() {
   const { account, target, targetObjektLists, isAuthenticated, objektList } =
     Route.useLoaderData();
 
-  const isLive = objektList.type === "have" || objektList.type === "want";
   // a list is trade-active if it's a have list with a linked want, OR a want
   // list that some have list of the same user links to
   const linkingHave =
@@ -112,7 +110,7 @@ function RouteComponent() {
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h3 className="font-cosmo text-xl">
               {objektList.name}
-              {objektList.currency && (
+              {objektList.type === "sale" && objektList.currency && (
                 <span className="ml-2 text-sm text-muted-foreground">
                   ({objektList.currency})
                 </span>
@@ -120,12 +118,14 @@ function RouteComponent() {
             </h3>
 
             <div className="flex items-center gap-2">
-              {isAuthenticated && isLive && isTradeActive && (
-                <ListMatchesSheet
-                  listId={objektList.id}
-                  listType={objektList.type as Exclude<ListType, "regular">}
-                />
-              )}
+              {isAuthenticated &&
+                isTradeActive &&
+                (objektList.type === "have" || objektList.type === "want") && (
+                  <ListMatchesSheet
+                    listId={objektList.id}
+                    listType={objektList.type}
+                  />
+                )}
               {isAuthenticated && (
                 <>
                   <UpdateList objektList={objektList} />

@@ -202,6 +202,7 @@ export const $fetchObjektsBlockchainGroups = createServerFn({ method: "GET" })
 
       resultCollections.push({
         collection: {
+          id: col.id, // diverges from cosmo api
           collectionId: col.collectionId,
           season: col.season,
           collectionNo: col.collectionNo,

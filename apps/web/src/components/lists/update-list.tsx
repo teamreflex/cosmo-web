@@ -25,6 +25,7 @@ import {
   defaultCurrencies,
   updateHaveListSchema,
   updateRegularListSchema,
+  updateSaleListSchema,
   updateWantListSchema,
 } from "../../lib/universal/schema/objekt-list";
 import { Button } from "../ui/button";
@@ -91,6 +92,9 @@ export default function UpdateList({ objektList }: Props) {
         {objektList.type === "regular" && (
           <RegularForm objektList={objektList} onSuccess={handleSuccess} />
         )}
+        {objektList.type === "sale" && (
+          <SaleForm objektList={objektList} onSuccess={handleSuccess} />
+        )}
         {objektList.type === "have" && (
           <HaveForm
             objektList={objektList}
@@ -124,11 +128,42 @@ function RegularForm({ objektList, onSuccess }: FormProps) {
       id: objektList.id,
       name: objektList.name,
       description: objektList.description ?? undefined,
-      currency: objektList.currency ?? undefined,
     },
   });
 
   async function handleSubmit(data: z.infer<typeof updateRegularListSchema>) {
+    await mutation.mutateAsync({ data });
+    await onSuccess();
+  }
+
+  return (
+    <FormProvider {...form}>
+      <form
+        onSubmit={form.handleSubmit(handleSubmit)}
+        className="flex w-full flex-col gap-3"
+      >
+        <NameField />
+        <DescriptionField />
+        <SubmitButton />
+      </form>
+    </FormProvider>
+  );
+}
+
+function SaleForm({ objektList, onSuccess }: FormProps) {
+  const mutation = useMutation({ mutationFn: useServerFn($updateObjektList) });
+  const form = useForm({
+    resolver: standardSchemaResolver(updateSaleListSchema),
+    defaultValues: {
+      type: "sale",
+      id: objektList.id,
+      name: objektList.name,
+      description: objektList.description ?? undefined,
+      currency: objektList.currency ?? "",
+    },
+  });
+
+  async function handleSubmit(data: z.infer<typeof updateSaleListSchema>) {
     await mutation.mutateAsync({ data });
     await onSuccess();
   }

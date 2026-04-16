@@ -2,7 +2,7 @@ import * as z from "zod";
 
 export const defaultCurrencies = ["USD", "KRW", "EUR", "GBP", "JPY"] as const;
 
-export const listTypes = ["regular", "have", "want"] as const;
+export const listTypes = ["regular", "have", "want", "sale"] as const;
 export type ListType = (typeof listTypes)[number];
 
 const nameSchema = z
@@ -16,7 +16,7 @@ const nameSchema = z
 
 const currencySchema = z
   .string()
-  .length(3)
+  .length(3, "Currency must be 3 characters")
   .transform((v) => v.toUpperCase());
 
 const descriptionSchema = z
@@ -30,7 +30,6 @@ const baseCreate = z.object({
 
 export const createRegularListSchema = baseCreate.extend({
   type: z.literal("regular"),
-  currency: currencySchema.nullish(),
 });
 
 export const createHaveListSchema = baseCreate.extend({
@@ -45,10 +44,16 @@ export const createWantListSchema = baseCreate.extend({
   pairListId: z.uuid().nullable(),
 });
 
+export const createSaleListSchema = baseCreate.extend({
+  type: z.literal("sale"),
+  currency: currencySchema,
+});
+
 export const createObjektListSchema = z.discriminatedUnion("type", [
   createRegularListSchema,
   createHaveListSchema,
   createWantListSchema,
+  createSaleListSchema,
 ]);
 
 const baseUpdate = z.object({
@@ -59,7 +64,6 @@ const baseUpdate = z.object({
 
 export const updateRegularListSchema = baseUpdate.extend({
   type: z.literal("regular"),
-  currency: currencySchema.nullish(),
 });
 
 export const updateHaveListSchema = baseUpdate.extend({
@@ -74,10 +78,16 @@ export const updateWantListSchema = baseUpdate.extend({
   pairListId: z.uuid().nullable(),
 });
 
+export const updateSaleListSchema = baseUpdate.extend({
+  type: z.literal("sale"),
+  currency: currencySchema,
+});
+
 export const updateObjektListSchema = z.discriminatedUnion("type", [
   updateRegularListSchema,
   updateHaveListSchema,
   updateWantListSchema,
+  updateSaleListSchema,
 ]);
 
 export const deleteObjektListSchema = z.object({
@@ -86,18 +96,26 @@ export const deleteObjektListSchema = z.object({
 
 export const addObjektToListSchema = z.object({
   objektListId: z.uuid(),
-  collectionSlug: z.string(),
+  slug: z.string(),
 });
 
-export const addObjektToLiveListSchema = z.object({
+export const addObjektToHaveListSchema = z.object({
   objektListId: z.uuid(),
-  collectionSlug: z.string(),
-  collectionId: z.string(),
+  slug: z.string(),
+  collectionName: z.string(),
+  collectionId: z.uuid(),
+  tokenIds: z.array(z.string()).min(1).max(50),
+});
+
+export const addObjektToWantListSchema = z.object({
+  objektListId: z.uuid(),
+  slug: z.string(),
+  collectionName: z.string(),
 });
 
 export const addObjektToSaleListSchema = z.object({
   objektListId: z.uuid(),
-  collectionSlug: z.string(),
+  slug: z.string(),
   quantity: z.number().int().min(1).max(99),
   price: z.number().min(0).nullish(),
 });

@@ -2,7 +2,7 @@ export const listErrorCodes = [
   "not_have_list",
   "not_want_list",
   "not_owned",
-  "already_on_linked_have",
+  "already_on_list",
   "not_live_list",
   "anchor_not_trade_active",
   "discord_lists_required",

@@ -7,9 +7,10 @@ import {
 } from "@/lib/server/middlewares";
 import { assertUserOwnsList } from "@/lib/server/objekts/lists.server";
 import {
+  addObjektToHaveListSchema,
   addObjektToListSchema,
-  addObjektToLiveListSchema,
   addObjektToSaleListSchema,
+  addObjektToWantListSchema,
   createObjektListSchema,
   deleteObjektListSchema,
   findTradePartnersSchema,
@@ -33,7 +34,7 @@ import { alias } from "drizzle-orm/pg-core";
 import * as z from "zod";
 import { $fetchArtists } from "./artists";
 import {
-  assertOwnsCollection,
+  assertOwnsTokens,
   fireHaveAddNotifications,
   fireWantAddNotifications,
 } from "./lists.server";
@@ -91,13 +92,13 @@ function createSlug(name: string) {
 }
 
 /**
- * Create a new objekt list.
+ * Create a new regular or sale objekt list. Have/want lists go through $createLiveList instead.
  */
 export const $createObjektList = createServerFn({ method: "POST" })
   .inputValidator(createObjektListSchema)
   .middleware([authenticatedMiddleware])
   .handler(async ({ data, context }) => {
-    if (data.type !== "regular") {
+    if (data.type !== "regular" && data.type !== "sale") {
       throw new Error("Use $createLiveList for have/want lists.");
     }
 
@@ -118,9 +119,9 @@ export const $createObjektList = createServerFn({ method: "POST" })
       .values({
         name: data.name,
         slug,
-        currency: data.currency ?? null,
+        currency: data.type === "sale" ? data.currency : null,
         description: data.description ?? null,
-        type: "regular",
+        type: data.type,
         userId: context.session.session.userId,
       })
       .returning();
@@ -142,8 +143,8 @@ export const $createLiveList = createServerFn({ method: "POST" })
   .inputValidator(createObjektListSchema)
   .middleware([cosmoMiddleware])
   .handler(async ({ data, context }) => {
-    if (data.type === "regular") {
-      throw new Error("Use $createObjektList for regular lists.");
+    if (data.type !== "have" && data.type !== "want") {
+      throw new Error("Use $createObjektList for regular/sale lists.");
     }
 
     const userId = context.session.user.id;
@@ -221,13 +222,14 @@ export const $createLiveList = createServerFn({ method: "POST" })
   });
 
 /**
- * Update an objekt list (regular variant only — never touches discoverable or type).
+ * Update a regular or sale objekt list. Type cannot change after creation;
+ * have/want lists go through $updateLiveList.
  */
 export const $updateObjektList = createServerFn({ method: "POST" })
   .inputValidator(updateObjektListSchema)
   .middleware([authenticatedMiddleware])
   .handler(async ({ data, context }) => {
-    if (data.type !== "regular") {
+    if (data.type !== "regular" && data.type !== "sale") {
       throw new Error("Use $updateLiveList for have/want lists.");
     }
 
@@ -241,7 +243,7 @@ export const $updateObjektList = createServerFn({ method: "POST" })
     if (!existingRow) {
       throw new Error("List not found");
     }
-    if (existingRow.type !== "regular") {
+    if (existingRow.type !== data.type) {
       throw new Error("Cannot change list type after creation");
     }
 
@@ -263,7 +265,7 @@ export const $updateObjektList = createServerFn({ method: "POST" })
       .set({
         name: data.name,
         slug,
-        currency: data.currency ?? null,
+        currency: data.type === "sale" ? data.currency : null,
         description: data.description ?? null,
       })
       .where(
@@ -302,8 +304,8 @@ export const $updateLiveList = createServerFn({ method: "POST" })
   .inputValidator(updateObjektListSchema)
   .middleware([cosmoMiddleware])
   .handler(async ({ data, context }) => {
-    if (data.type === "regular") {
-      throw new Error("Use $updateObjektList for regular lists.");
+    if (data.type !== "have" && data.type !== "want") {
+      throw new Error("Use $updateObjektList for regular/sale lists.");
     }
 
     const userId = context.session.user.id;
@@ -447,7 +449,7 @@ export const $addObjektToList = createServerFn({ method: "POST" })
 
     await db.insert(objektListEntries).values({
       objektListId: data.objektListId,
-      collectionId: data.collectionSlug,
+      collectionId: data.slug,
     });
 
     return true;
@@ -465,7 +467,7 @@ export const $addObjektToSaleList = createServerFn({ method: "POST" })
     const existing = await db.query.objektListEntries.findFirst({
       where: {
         objektListId: data.objektListId,
-        collectionId: data.collectionSlug,
+        collectionId: data.slug,
       },
     });
 
@@ -480,7 +482,7 @@ export const $addObjektToSaleList = createServerFn({ method: "POST" })
     } else {
       await db.insert(objektListEntries).values({
         objektListId: data.objektListId,
-        collectionId: data.collectionSlug,
+        collectionId: data.slug,
         quantity: data.quantity,
         price: data.price ?? null,
       });
@@ -490,79 +492,66 @@ export const $addObjektToSaleList = createServerFn({ method: "POST" })
   });
 
 /**
- * Add an objekt to a have list. Verifies ownership against the indexer using
- * the user's COSMO address. If the list is trade-active and discoverable, fires
- * mutual-viability notifications to other users with matching want lists.
+ * Add one or more owned serials of a collection to a have list. Each serial
+ * becomes its own entry row keyed by tokenId, so the drain can delete on
+ * transfer with a single index lookup. If the list is trade-active and
+ * discoverable, fires a single notification fan-out for the collection.
  */
 export const $addObjektToHaveList = createServerFn({ method: "POST" })
-  .inputValidator(addObjektToLiveListSchema)
+  .inputValidator(addObjektToHaveListSchema)
   .middleware([cosmoMiddleware])
   .handler(async ({ data, context }) => {
     const userId = context.session.user.id;
-    await assertUserOwnsList(data.objektListId, userId);
 
-    const parentList = await db.query.objektLists.findFirst({
-      where: { id: data.objektListId },
-      columns: { type: true, discoverable: true, linkedWantListId: true },
-    });
-    if (parentList?.type !== "have") {
-      throw new Error("not_have_list");
-    }
+    // verify ownership against the indexer first
+    await assertOwnsTokens(
+      context.cosmo.address,
+      data.collectionId,
+      data.tokenIds,
+    );
 
-    await assertOwnsCollection(context.cosmo.address, data.collectionSlug);
-
-    // a collection may appear at most once across the user's *linked* have
-    // lists, so the drain has exactly one target per (user, collection).
-    // unlinked archive lists are unconstrained.
-    if (parentList.linkedWantListId !== null) {
-      const conflict = await db.query.objektListEntries.findFirst({
-        where: {
-          collectionId: data.collectionSlug,
-          objektList: {
-            userId,
-            type: "have",
-            linkedWantListId: { isNotNull: true },
-            id: { ne: data.objektListId },
-          },
-        },
-        columns: { id: true },
-      });
-      if (conflict) {
-        throw new Error("already_on_linked_have");
-      }
-    }
+    const verifiedAt = new Date().toISOString();
 
     await db.transaction(async (tx) => {
-      const existing = await tx.query.objektListEntries.findFirst({
-        where: {
-          objektListId: data.objektListId,
-          collectionId: data.collectionSlug,
-        },
+      const list = await tx.query.objektLists.findFirst({
+        where: { id: data.objektListId, userId },
+        columns: { type: true, discoverable: true, linkedWantListId: true },
       });
 
-      if (existing) {
-        await tx
-          .update(objektListEntries)
-          .set({
-            quantity: existing.quantity + 1,
-            verifiedAt: new Date().toISOString(),
-          })
-          .where(eq(objektListEntries.id, existing.id));
-      } else {
-        await tx.insert(objektListEntries).values({
-          objektListId: data.objektListId,
-          collectionId: data.collectionSlug,
-          quantity: 1,
-          verifiedAt: new Date().toISOString(),
-        });
+      if (!list) {
+        throw new Error("You do not have access to this list");
+      }
+      if (list.type !== "have") {
+        throw new Error("not_have_list");
       }
 
-      if (parentList.discoverable && parentList.linkedWantListId !== null) {
+      try {
+        await tx.insert(objektListEntries).values(
+          data.tokenIds.map((tokenId) => ({
+            objektListId: data.objektListId,
+            collectionId: data.slug,
+            tokenId,
+            quantity: 1,
+            verifiedAt,
+          })),
+        );
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          "code" in error &&
+          error.code === "23505"
+        ) {
+          throw new Error("already_on_list");
+        }
+        throw error;
+      }
+
+      if (list.discoverable && list.linkedWantListId !== null) {
         await fireHaveAddNotifications(tx, {
           sourceUserId: userId,
           sourceListId: data.objektListId,
-          collectionSlug: data.collectionSlug,
-          collectionId: data.collectionId,
+          slug: data.slug,
+          collectionName: data.collectionName,
         });
       }
     });
@@ -576,32 +565,37 @@ export const $addObjektToHaveList = createServerFn({ method: "POST" })
  * list is trade-active and discoverable.
  */
 export const $addObjektToWantList = createServerFn({ method: "POST" })
-  .inputValidator(addObjektToLiveListSchema)
+  .inputValidator(addObjektToWantListSchema)
   .middleware([cosmoMiddleware])
   .handler(async ({ data, context }) => {
     const userId = context.session.user.id;
-    await assertUserOwnsList(data.objektListId, userId);
-
-    const parentList = await db.query.objektLists.findFirst({
-      where: { id: data.objektListId },
-      columns: { type: true, discoverable: true, id: true },
-    });
-    if (parentList?.type !== "want") {
-      throw new Error("not_want_list");
-    }
-
-    // trade-active for a want list = some have list of mine links to it
-    const linkingHave = await db.query.objektLists.findFirst({
-      where: { linkedWantListId: parentList.id, userId },
-      columns: { id: true },
-    });
-    const isTradeActive = linkingHave !== undefined;
 
     await db.transaction(async (tx) => {
+      // assert ownership of the list and pull the linked list
+      const parentList = await tx.query.objektLists.findFirst({
+        where: { id: data.objektListId, userId },
+        columns: { type: true, discoverable: true },
+        with: {
+          linkingHaveList: {
+            where: { userId },
+            columns: { id: true },
+          },
+        },
+      });
+
+      if (!parentList) {
+        throw new Error("You do not have access to this list");
+      }
+      if (parentList.type !== "want") {
+        throw new Error("not_want_list");
+      }
+
+      const isTradeActive = parentList.linkingHaveList !== null;
+
       const existing = await tx.query.objektListEntries.findFirst({
         where: {
           objektListId: data.objektListId,
-          collectionId: data.collectionSlug,
+          collectionId: data.slug,
         },
       });
 
@@ -613,7 +607,7 @@ export const $addObjektToWantList = createServerFn({ method: "POST" })
       } else {
         await tx.insert(objektListEntries).values({
           objektListId: data.objektListId,
-          collectionId: data.collectionSlug,
+          collectionId: data.slug,
           quantity: 1,
         });
       }
@@ -622,8 +616,8 @@ export const $addObjektToWantList = createServerFn({ method: "POST" })
         await fireWantAddNotifications(tx, {
           sourceUserId: userId,
           sourceListId: data.objektListId,
-          collectionSlug: data.collectionSlug,
-          collectionId: data.collectionId,
+          slug: data.slug,
+          collectionName: data.collectionName,
         });
       }
     });
@@ -1026,13 +1020,13 @@ export const $generateDiscordList = createServerFn({ method: "POST" })
       collections,
       have.entries,
       artistsArray,
-      have.currency,
+      have.type === "sale" ? have.currency : null,
     );
     const wantCollections = format(
       collections,
       want.entries,
       artistsArray,
-      want.currency,
+      want.type === "sale" ? want.currency : null,
     );
 
     const result = [

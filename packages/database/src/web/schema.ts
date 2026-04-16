@@ -1,7 +1,9 @@
 import { eq, sql } from "drizzle-orm";
 import {
   type AnyPgColumn,
+  bigint,
   boolean,
+  check,
   index,
   integer,
   jsonb,
@@ -26,8 +28,13 @@ import type {
 
 export * from "../auth";
 
-const listType = pgEnum("list_type", ["regular", "have", "want"]);
-const notificationType = pgEnum("notification_type", ["list_match"]);
+export const listType = pgEnum("list_type", [
+  "regular",
+  "have",
+  "want",
+  "sale",
+]);
+export const notificationType = pgEnum("notification_type", ["list_match"]);
 
 export const cosmoAccounts = pgTable(
   "cosmo_account",
@@ -124,6 +131,10 @@ export const objektLists = pgTable(
     uniqueIndex("objekt_lists_linked_want_list_idx")
       .on(t.linkedWantListId)
       .where(sql`linked_want_list_id IS NOT NULL`),
+    check(
+      "objekt_lists_currency_type_chk",
+      sql`(${t.type} = 'sale') = (${t.currency} IS NOT NULL)`,
+    ),
   ],
 );
 
@@ -138,6 +149,7 @@ export const objektListEntries = pgTable(
         onDelete: "cascade",
       }),
     collectionId: varchar("collection_id", { length: 36 }).notNull(), // slug: atom01-jinsoul-101z
+    tokenId: text("token_id"),
     quantity: integer("quantity").notNull().default(1),
     price: real("price"),
     verifiedAt: timestamp("verified_at", { mode: "string" }),
@@ -145,6 +157,9 @@ export const objektListEntries = pgTable(
   (t) => [
     index("objekt_list_entries_list_idx").on(t.objektListId),
     index("objekt_list_entries_collection_id_idx").on(t.collectionId),
+    uniqueIndex("objekt_list_entries_token_list_unique_idx")
+      .on(t.tokenId, t.objektListId)
+      .where(sql`${t.tokenId} IS NOT NULL`),
   ],
 );
 
@@ -171,6 +186,16 @@ export const notifications = pgTable(
       .where(eq(t.type, "list_match")),
   ],
 );
+
+/**
+ * Named cursor for the indexer outbox drain. The drain advances `seq`
+ * inside the same transaction as the entry deletes so a crash cannot
+ * replay already-applied outbox rows.
+ */
+export const listDrainCursor = pgTable("list_drain_cursor", {
+  name: text("name").primaryKey(),
+  seq: bigint("seq", { mode: "bigint" }).notNull(),
+});
 
 export const eras = pgTable(
   "eras",
