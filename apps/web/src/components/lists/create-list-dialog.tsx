@@ -194,7 +194,7 @@ function RegularForm({ onCreated }: FormProps) {
         onSubmit={form.handleSubmit(handleSubmit)}
         className="flex w-full flex-col gap-3"
       >
-        <NameField />
+        <NameField placeholder={m.list_name_placeholder_regular()} />
         <DescriptionField />
         <SubmitButton isPending={mutation.isPending} />
       </form>
@@ -225,7 +225,7 @@ function SaleForm({ onCreated }: FormProps) {
         onSubmit={form.handleSubmit(handleSubmit)}
         className="flex w-full flex-col gap-3"
       >
-        <NameField />
+        <NameField placeholder={m.list_name_placeholder_sale()} />
         <DescriptionField />
         <CurrencyField />
         <SubmitButton isPending={mutation.isPending} />
@@ -270,7 +270,7 @@ function HaveForm({ allLists, onCreated }: LiveFormProps) {
         onSubmit={form.handleSubmit(handleSubmit)}
         className="flex w-full flex-col gap-3"
       >
-        <NameField />
+        <NameField placeholder={m.list_name_placeholder_have()} />
         <DescriptionField />
         <DiscoverableField />
         <PairField availableLists={availableLists} />
@@ -308,7 +308,7 @@ function WantForm({ allLists, onCreated }: LiveFormProps) {
         onSubmit={form.handleSubmit(handleSubmit)}
         className="flex w-full flex-col gap-3"
       >
-        <NameField />
+        <NameField placeholder={m.list_name_placeholder_want()} />
         <DescriptionField />
         <DiscoverableField />
         <PairField availableLists={availableLists} />
@@ -318,7 +318,7 @@ function WantForm({ allLists, onCreated }: LiveFormProps) {
   );
 }
 
-function NameField() {
+function NameField({ placeholder }: { placeholder: string }) {
   const form = useFormContext<{ name: string }>();
   return (
     <Controller
@@ -329,8 +329,9 @@ function NameField() {
           <FieldLabel htmlFor="name">{m.list_name()}</FieldLabel>
           <Input
             id="name"
-            placeholder={m.list_name_placeholder()}
+            placeholder={placeholder}
             data-1p-ignore
+            autoFocus
             aria-invalid={fieldState.invalid}
             {...field}
           />

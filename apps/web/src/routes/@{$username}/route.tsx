@@ -1,4 +1,4 @@
-import ListDropdown from "@/components/lists/list-dropdown";
+import ProfileListDropdown from "@/components/lists/profile-list-dropdown";
 import UserBalances, {
   ComoBalanceErrorFallback,
 } from "@/components/navbar/como-balances";
@@ -13,13 +13,14 @@ import {
 import ProgressButton from "@/components/profile/progress-button";
 import TradesButton from "@/components/profile/trades-button";
 import UserAvatar from "@/components/profile/user-avatar";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
 import { env } from "@/lib/env/client";
 import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
 import { UserStateProvider } from "@/providers/user-state-provider";
 import { Addresses, isEqual } from "@apollo/util";
-import { IconAlertCircle } from "@tabler/icons-react";
+import { IconAlertCircle, IconList } from "@tabler/icons-react";
 import { Link, Outlet, createFileRoute } from "@tanstack/react-router";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
@@ -102,14 +103,24 @@ function RouteComponent() {
             <TradesButton cosmo={target.cosmo} />
             <ComoButton cosmo={target.cosmo} />
             <ProgressButton cosmo={target.cosmo} />
-            <ListDropdown
-              username={target.cosmo.username}
-              objektLists={target.objektLists}
-              allowCreate={isAuthenticated}
-              createListUrl={(list) =>
-                `/@${target.cosmo.username}/list/${list.slug}`
+            <Suspense
+              fallback={
+                <Button
+                  className="animate-pulse"
+                  variant="secondary"
+                  size="profile"
+                  data-profile
+                >
+                  <IconList className="h-5 w-5" />
+                  <span className="hidden sm:block">{m.list_lists()}</span>
+                </Button>
               }
-            />
+            >
+              <ProfileListDropdown
+                username={target.cosmo.username}
+                isAuthenticated={isAuthenticated}
+              />
+            </Suspense>
 
             {/* content gets portaled in */}
             <div

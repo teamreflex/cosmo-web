@@ -54,18 +54,18 @@ type Props = {
 
 export default function UpdateList({ objektList }: Props) {
   const [open, setOpen] = useState(false);
-  const { cosmo } = useUserState();
-  const queryClient = useQueryClient();
   const account = useSuspenseQuery(currentAccountQuery);
+  const queryClient = useQueryClient();
+  const { cosmo } = useUserState();
+
   const allLists = account.data?.objektLists ?? [];
 
-  async function handleSuccess() {
-    toast.success(m.toast_list_updated());
-    await queryClient.invalidateQueries({
+  function handleSubmit() {
+    void queryClient.invalidateQueries({
       queryKey: currentAccountQuery.queryKey,
     });
-    if (cosmo) {
-      await queryClient.invalidateQueries({
+    if (cosmo?.username) {
+      void queryClient.invalidateQueries({
         queryKey: targetAccountQuery(cosmo.username).queryKey,
       });
     }
@@ -90,23 +90,23 @@ export default function UpdateList({ objektList }: Props) {
         </DialogHeader>
 
         {objektList.type === "regular" && (
-          <RegularForm objektList={objektList} onSuccess={handleSuccess} />
+          <RegularForm objektList={objektList} onSubmit={handleSubmit} />
         )}
         {objektList.type === "sale" && (
-          <SaleForm objektList={objektList} onSuccess={handleSuccess} />
+          <SaleForm objektList={objektList} onSubmit={handleSubmit} />
         )}
         {objektList.type === "have" && (
           <HaveForm
             objektList={objektList}
             allLists={allLists}
-            onSuccess={handleSuccess}
+            onSubmit={handleSubmit}
           />
         )}
         {objektList.type === "want" && (
           <WantForm
             objektList={objektList}
             allLists={allLists}
-            onSuccess={handleSuccess}
+            onSubmit={handleSubmit}
           />
         )}
       </DialogContent>
@@ -116,11 +116,16 @@ export default function UpdateList({ objektList }: Props) {
 
 type FormProps = {
   objektList: ObjektList;
-  onSuccess: () => Promise<void>;
+  onSubmit: () => void;
 };
 
-function RegularForm({ objektList, onSuccess }: FormProps) {
-  const mutation = useMutation({ mutationFn: useServerFn($updateObjektList) });
+function RegularForm({ objektList, onSubmit }: FormProps) {
+  const mutation = useMutation({
+    mutationFn: useServerFn($updateObjektList),
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
   const form = useForm({
     resolver: standardSchemaResolver(updateRegularListSchema),
     defaultValues: {
@@ -133,7 +138,7 @@ function RegularForm({ objektList, onSuccess }: FormProps) {
 
   async function handleSubmit(data: z.infer<typeof updateRegularListSchema>) {
     await mutation.mutateAsync({ data });
-    await onSuccess();
+    onSubmit();
   }
 
   return (
@@ -142,7 +147,7 @@ function RegularForm({ objektList, onSuccess }: FormProps) {
         onSubmit={form.handleSubmit(handleSubmit)}
         className="flex w-full flex-col gap-3"
       >
-        <NameField />
+        <NameField placeholder={m.list_name_placeholder_regular()} />
         <DescriptionField />
         <SubmitButton />
       </form>
@@ -150,8 +155,13 @@ function RegularForm({ objektList, onSuccess }: FormProps) {
   );
 }
 
-function SaleForm({ objektList, onSuccess }: FormProps) {
-  const mutation = useMutation({ mutationFn: useServerFn($updateObjektList) });
+function SaleForm({ objektList, onSubmit }: FormProps) {
+  const mutation = useMutation({
+    mutationFn: useServerFn($updateObjektList),
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
   const form = useForm({
     resolver: standardSchemaResolver(updateSaleListSchema),
     defaultValues: {
@@ -165,7 +175,7 @@ function SaleForm({ objektList, onSuccess }: FormProps) {
 
   async function handleSubmit(data: z.infer<typeof updateSaleListSchema>) {
     await mutation.mutateAsync({ data });
-    await onSuccess();
+    onSubmit();
   }
 
   return (
@@ -174,7 +184,7 @@ function SaleForm({ objektList, onSuccess }: FormProps) {
         onSubmit={form.handleSubmit(handleSubmit)}
         className="flex w-full flex-col gap-3"
       >
-        <NameField />
+        <NameField placeholder={m.list_name_placeholder_sale()} />
         <DescriptionField />
         <CurrencyField />
         <SubmitButton />
@@ -187,8 +197,13 @@ type LiveFormProps = FormProps & {
   allLists: ObjektList[];
 };
 
-function HaveForm({ objektList, allLists, onSuccess }: LiveFormProps) {
-  const mutation = useMutation({ mutationFn: useServerFn($updateLiveList) });
+function HaveForm({ objektList, allLists, onSubmit }: LiveFormProps) {
+  const mutation = useMutation({
+    mutationFn: useServerFn($updateLiveList),
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
   const form = useForm({
     resolver: standardSchemaResolver(updateHaveListSchema),
     defaultValues: {
@@ -203,7 +218,7 @@ function HaveForm({ objektList, allLists, onSuccess }: LiveFormProps) {
 
   async function handleSubmit(data: z.infer<typeof updateHaveListSchema>) {
     await mutation.mutateAsync({ data });
-    await onSuccess();
+    onSubmit();
   }
 
   const availableLists = allLists.filter(
@@ -223,7 +238,7 @@ function HaveForm({ objektList, allLists, onSuccess }: LiveFormProps) {
         onSubmit={form.handleSubmit(handleSubmit)}
         className="flex w-full flex-col gap-3"
       >
-        <NameField />
+        <NameField placeholder={m.list_name_placeholder_have()} />
         <DescriptionField />
         <DiscoverableField />
         <PairField availableLists={availableLists} />
@@ -233,8 +248,13 @@ function HaveForm({ objektList, allLists, onSuccess }: LiveFormProps) {
   );
 }
 
-function WantForm({ objektList, allLists, onSuccess }: LiveFormProps) {
-  const mutation = useMutation({ mutationFn: useServerFn($updateLiveList) });
+function WantForm({ objektList, allLists, onSubmit }: LiveFormProps) {
+  const mutation = useMutation({
+    mutationFn: useServerFn($updateLiveList),
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
   const currentHave = allLists.find(
     (l) => l.type === "have" && l.linkedWantListId === objektList.id,
   );
@@ -252,7 +272,7 @@ function WantForm({ objektList, allLists, onSuccess }: LiveFormProps) {
 
   async function handleSubmit(data: z.infer<typeof updateWantListSchema>) {
     await mutation.mutateAsync({ data });
-    await onSuccess();
+    onSubmit();
   }
 
   const availableLists = allLists.filter(
@@ -267,7 +287,7 @@ function WantForm({ objektList, allLists, onSuccess }: LiveFormProps) {
         onSubmit={form.handleSubmit(handleSubmit)}
         className="flex w-full flex-col gap-3"
       >
-        <NameField />
+        <NameField placeholder={m.list_name_placeholder_want()} />
         <DescriptionField />
         <DiscoverableField />
         <PairField availableLists={availableLists} />
@@ -277,7 +297,7 @@ function WantForm({ objektList, allLists, onSuccess }: LiveFormProps) {
   );
 }
 
-function NameField() {
+function NameField({ placeholder }: { placeholder: string }) {
   const form = useFormContext<{ name: string }>();
   return (
     <Controller
@@ -288,8 +308,9 @@ function NameField() {
           <FieldLabel htmlFor="name">{m.list_name()}</FieldLabel>
           <Input
             id="name"
-            placeholder={m.list_name_placeholder()}
+            placeholder={placeholder}
             data-1p-ignore
+            autoFocus
             aria-invalid={fieldState.invalid}
             {...field}
           />
