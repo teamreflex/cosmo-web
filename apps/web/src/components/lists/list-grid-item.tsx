@@ -13,7 +13,7 @@ type Props = {
   id: string;
   priority: boolean;
   authenticated: boolean;
-  objektList: ObjektList;
+  objektList: ObjektList & { fxRateToUsd: number | null };
 };
 
 export function ListGridItem({
@@ -25,6 +25,7 @@ export function ListGridItem({
   const collection = useMemo(() => Objekt.fromIndexer(item), [item]);
   const isSaleList = objektList.type === "sale";
   const serial = item.entrySerial ?? undefined;
+  const { fxRateToUsd } = objektList;
   const [editOpen, setEditOpen] = useState(false);
 
   return (
@@ -48,6 +49,9 @@ export function ListGridItem({
             quantity={item.entryQuantity}
             price={item.entryPrice}
             currency={objektList.currency}
+            medianPriceUsd={item.medianPriceUsd}
+            listingCount={item.listingCount}
+            fxRateToUsd={fxRateToUsd}
             backgroundColor={collection.backgroundColor}
             textColor={collection.textColor}
             onClick={authenticated ? () => setEditOpen(true) : undefined}

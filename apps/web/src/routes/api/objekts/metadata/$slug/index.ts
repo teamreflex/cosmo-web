@@ -5,6 +5,7 @@ import { collections, objekts } from "@/lib/server/db/indexer/schema";
 import type {
   ObjektCollectionData,
   ObjektMetadata,
+  PriceStats,
 } from "@/lib/universal/objekts";
 import { Addresses, addr } from "@apollo/util";
 import { createFileRoute } from "@tanstack/react-router";
@@ -18,9 +19,10 @@ export const Route = createFileRoute("/api/objekts/metadata/$slug/")({
        * Fetches metadata about a collection.
        */
       GET: async ({ params }) => {
-        const [collection, data] = await Promise.all([
+        const [collection, data, priceStats] = await Promise.all([
           fetchCollection(params.slug),
           fetchEventForCollection(params.slug),
+          fetchPriceStats(params.slug),
         ]);
 
         return Response.json(
@@ -29,6 +31,7 @@ export const Route = createFileRoute("/api/objekts/metadata/$slug/")({
             transferable: collection.transferable,
             percentage: collection.percentage,
             data,
+            priceStats,
           } satisfies ObjektMetadata,
           {
             headers: cacheHeaders({
@@ -80,6 +83,32 @@ async function fetchCollection(slug: string) {
   return {
     ...collection,
     createdAt: new Date(collection.createdAt),
+  };
+}
+
+/**
+ * Fetch the precomputed market price stats for a collection.
+ */
+async function fetchPriceStats(slug: string): Promise<PriceStats | null> {
+  const row = await db.query.collectionPriceStats.findFirst({
+    where: { collectionId: slug },
+    columns: {
+      medianPriceUsd: true,
+      listingCount: true,
+      minPriceUsd: true,
+      maxPriceUsd: true,
+      updatedAt: true,
+    },
+  });
+
+  if (!row) return null;
+
+  return {
+    medianPriceUsd: row.medianPriceUsd,
+    listingCount: row.listingCount,
+    minPriceUsd: row.minPriceUsd,
+    maxPriceUsd: row.maxPriceUsd,
+    updatedAt: row.updatedAt.toISOString(),
   };
 }
 

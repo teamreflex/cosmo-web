@@ -39,6 +39,10 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.collectionData.eventId,
       to: r.events.id,
     }),
+    priceStats: r.one.collectionPriceStats({
+      from: r.collectionData.collectionId,
+      to: r.collectionPriceStats.collectionId,
+    }),
   },
   objektLists: {
     entries: r.many.objektListEntries(),
@@ -67,6 +71,10 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.objektListEntries.objektListId,
       to: r.objektLists.id,
     }),
+    priceStats: r.one.collectionPriceStats({
+      from: r.objektListEntries.collectionId,
+      to: r.collectionPriceStats.collectionId,
+    }),
   },
   notifications: {
     user: r.one.user({
@@ -76,6 +84,8 @@ export const relations = defineRelations(schema, (r) => ({
     }),
   },
   listDrainCursor: {},
+  collectionPriceStats: {},
+  fxRates: {},
   cosmoTokens: {},
   gravities: {
     polls: r.many.gravityPolls(),

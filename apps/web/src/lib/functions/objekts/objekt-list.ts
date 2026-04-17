@@ -22,6 +22,8 @@ export type ObjektListItem = Collection & {
   entryPrice: number | null;
   entryTokenId: string | null;
   entrySerial: number | null;
+  medianPriceUsd: number | null;
+  listingCount: number;
 };
 
 type FetchObjektListEntries = {
@@ -59,6 +61,14 @@ export const $fetchObjektListEntries = createServerFn({ method: "GET" })
         quantity: true,
         price: true,
         createdAt: true,
+      },
+      with: {
+        priceStats: {
+          columns: {
+            medianPriceUsd: true,
+            listingCount: true,
+          },
+        },
       },
     });
 
@@ -118,6 +128,8 @@ export const $fetchObjektListEntries = createServerFn({ method: "GET" })
           entry.tokenId !== null
             ? (serialByTokenId.get(entry.tokenId) ?? null)
             : null,
+        medianPriceUsd: entry.priceStats?.medianPriceUsd ?? null,
+        listingCount: entry.priceStats?.listingCount ?? 0,
       });
     }
 

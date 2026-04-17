@@ -5,6 +5,7 @@ import {
   authenticatedMiddleware,
   cosmoMiddleware,
 } from "@/lib/server/middlewares";
+import { fetchLatestFxRate } from "@/lib/server/objekts/fx.server";
 import { assertUserOwnsList } from "@/lib/server/objekts/lists.server";
 import {
   addObjektToHaveListSchema,
@@ -40,7 +41,9 @@ import {
 } from "./lists.server";
 
 /**
- * Fetch a single objekt list.
+ * Fetch a single objekt list along with the latest USD FX rate for its
+ * currency, so the client can convert the global market price into the list's
+ * own currency for display.
  */
 export const $fetchObjektList = createServerFn({ method: "GET" })
   .inputValidator(
@@ -50,11 +53,19 @@ export const $fetchObjektList = createServerFn({ method: "GET" })
     ]),
   )
   .handler(async ({ data }) => {
-    return await db.query.objektLists.findFirst({ where: data });
+    const list = await db.query.objektLists.findFirst({ where: data });
+    if (!list) return undefined;
+
+    const fxRateToUsd = list.currency
+      ? await fetchLatestFxRate(list.currency)
+      : null;
+
+    return { ...list, fxRateToUsd };
   });
 
 /**
- * Fetch a single objekt list with the user.
+ * Fetch a single objekt list with the user, plus the latest USD FX rate for
+ * the list's currency.
  */
 export const $getObjektListWithUser = createServerFn({ method: "GET" })
   .inputValidator(z.object({ id: z.string() }))
@@ -68,7 +79,7 @@ export const $getObjektListWithUser = createServerFn({ method: "GET" })
       throw redirect({ to: "/list/$id", params: { id: sanitized } });
     }
 
-    return await db.query.objektLists.findFirst({
+    const list = await db.query.objektLists.findFirst({
       where: { id: sanitized },
       with: {
         user: {
@@ -85,6 +96,13 @@ export const $getObjektListWithUser = createServerFn({ method: "GET" })
         },
       },
     });
+    if (!list) return undefined;
+
+    const fxRateToUsd = list.currency
+      ? await fetchLatestFxRate(list.currency)
+      : null;
+
+    return { ...list, fxRateToUsd };
   });
 
 function createSlug(name: string) {

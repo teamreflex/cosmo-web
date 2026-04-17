@@ -1,9 +1,12 @@
+import type { HttpClient } from "@effect/platform";
 import { Cron, Duration, Effect, Schedule } from "effect";
 import type { DatabaseWeb } from "./db";
 import type { DatabaseIndexer } from "./db-indexer";
 import type { Env } from "./env";
 import { clearObjektStatsTask } from "./functions/clear-objekt-stats";
 import { drainListEventsTask } from "./functions/drain-list-events";
+// import { syncCollectionPriceStatsTask } from "./functions/sync-collection-price-stats";
+// import { syncFxRatesTask } from "./functions/sync-fx-rates";
 import { syncGravitiesTask } from "./functions/sync-gravities";
 import type { ProxiedToken } from "./proxied-token";
 import type { Redis } from "./redis";
@@ -15,7 +18,12 @@ export interface ScheduledTask<TSuccess = void, TFailure = unknown> {
   effect: Effect.Effect<
     TSuccess,
     TFailure,
-    Redis | DatabaseWeb | DatabaseIndexer | ProxiedToken | Env
+    | Redis
+    | DatabaseWeb
+    | DatabaseIndexer
+    | ProxiedToken
+    | Env
+    | HttpClient.HttpClient
   >;
 }
 
@@ -23,6 +31,9 @@ export const SCHEDULED_TASKS: ScheduledTask[] = [
   clearObjektStatsTask,
   syncGravitiesTask,
   drainListEventsTask,
+  // TODO: uncomment on second deploy step
+  // syncFxRatesTask,
+  // syncCollectionPriceStatsTask,
 ];
 
 /**

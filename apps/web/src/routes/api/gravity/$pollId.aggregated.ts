@@ -50,12 +50,9 @@ export const Route = createFileRoute("/api/gravity/$pollId/aggregated")({
           where: { pollId },
         });
 
-        // compute aggregations in parallel
-        const [chartData, topVotes, topUsers] = await Promise.all([
-          computeChartData(rawVotes, startDate, endDate),
-          computeTopVotes(rawVotes, 50),
-          computeTopUsers(rawVotes, 25),
-        ]);
+        const chartData = computeChartData(rawVotes, startDate, endDate);
+        const topVotes = computeTopVotes(rawVotes, 50);
+        const topUsers = computeTopUsers(rawVotes, 25);
 
         // count revealed votes
         const revealedVoteCount = rawVotes.filter(
