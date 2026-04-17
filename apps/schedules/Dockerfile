@@ -1,4 +1,4 @@
-FROM oven/bun:1.3.11-alpine AS base
+FROM oven/bun:1.3.11-slim AS base
 
 FROM base AS pruner
 WORKDIR /app

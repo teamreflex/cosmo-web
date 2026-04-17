@@ -173,7 +173,12 @@ type FormProps = {
 };
 
 function RegularForm({ onCreated }: FormProps) {
-  const mutation = useMutation({ mutationFn: $createObjektList });
+  const mutation = useMutation({
+    mutationFn: $createObjektList,
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
   const form = useForm({
     resolver: standardSchemaResolver(createRegularListSchema),
     defaultValues: {
@@ -203,7 +208,12 @@ function RegularForm({ onCreated }: FormProps) {
 }
 
 function SaleForm({ onCreated }: FormProps) {
-  const mutation = useMutation({ mutationFn: $createObjektList });
+  const mutation = useMutation({
+    mutationFn: $createObjektList,
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
   const form = useForm({
     resolver: standardSchemaResolver(createSaleListSchema),
     defaultValues: {
@@ -239,7 +249,12 @@ type LiveFormProps = FormProps & {
 };
 
 function HaveForm({ allLists, onCreated }: LiveFormProps) {
-  const mutation = useMutation({ mutationFn: $createLiveList });
+  const mutation = useMutation({
+    mutationFn: $createLiveList,
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
   const form = useForm({
     resolver: standardSchemaResolver(createHaveListSchema),
     defaultValues: {
@@ -281,7 +296,12 @@ function HaveForm({ allLists, onCreated }: LiveFormProps) {
 }
 
 function WantForm({ allLists, onCreated }: LiveFormProps) {
-  const mutation = useMutation({ mutationFn: $createLiveList });
+  const mutation = useMutation({
+    mutationFn: $createLiveList,
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
   const form = useForm({
     resolver: standardSchemaResolver(createWantListSchema),
     defaultValues: {
