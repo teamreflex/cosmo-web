@@ -150,7 +150,7 @@ function ObjektGrid<
     <>
       <div className="w-full py-2" ref={containerRef}>
         <div
-          className="relative flex flex-col will-change-transform contain-paint"
+          className="relative flex flex-col will-change-transform"
           style={{
             height: `${virtualizerRef.current.getTotalSize()}px`,
           }}

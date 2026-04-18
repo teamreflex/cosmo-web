@@ -162,39 +162,42 @@ function RootObjekt({
   }
 
   return (
-    <div
-      role="button"
-      style={{
-        "--objekt-background-color": collection.backgroundColor,
-        "--objekt-text-color": collection.textColor,
-      }}
-      className={cn(
-        "group/objekt relative aspect-photocard touch-manipulation overflow-hidden rounded-md bg-secondary ring-1 ring-border transition-[transform,box-shadow,ring-color] duration-200 ease-out hover:-translate-y-0.5 hover:shadow-lg hover:ring-cosmo",
-        hasSelected && "ring-2 ring-foreground hover:ring-foreground",
-      )}
-    >
-      <img
-        onMouseOver={prefetch}
-        onLoad={() => setIsLoaded(true)}
-        onClick={onClick}
+    <div className="@container">
+      <div
+        role="button"
+        style={{
+          "--objekt-background-color": collection.backgroundColor,
+          "--objekt-text-color": collection.textColor,
+        }}
         className={cn(
-          "w-full transition-opacity",
-          isLoaded === false && "opacity-0",
+          "group/objekt relative aspect-photocard touch-manipulation overflow-hidden rounded-photocard bg-secondary outline outline-1 outline-transparent transition-[transform,box-shadow,outline-color] duration-200 ease-out hover:-translate-y-0.5 hover:shadow-lg hover:outline-cosmo",
+          hasSelected &&
+            "outline-2 outline-foreground hover:outline-foreground",
         )}
-        src={front.display}
-        width={291}
-        height={450}
-        alt={collection.collectionId}
-        decoding="async"
-        fetchPriority={priority ? "high" : "auto"}
-      />
+      >
+        <img
+          onMouseOver={prefetch}
+          onLoad={() => setIsLoaded(true)}
+          onClick={onClick}
+          className={cn(
+            "w-full transition-opacity",
+            isLoaded === false && "opacity-0",
+          )}
+          src={front.display}
+          width={291}
+          height={450}
+          alt={collection.collectionId}
+          decoding="async"
+          fetchPriority={priority ? "high" : "auto"}
+        />
 
-      <ObjektSidebar collection={collection} />
-      <RootObjektOverlay
-        collection={collection}
-        count={count}
-        hasNew={hasNew}
-      />
+        <ObjektSidebar collection={collection} />
+        <RootObjektOverlay
+          collection={collection}
+          count={count}
+          hasNew={hasNew}
+        />
+      </div>
     </div>
   );
 }
