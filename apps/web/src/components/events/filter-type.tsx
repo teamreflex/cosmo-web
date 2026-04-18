@@ -1,40 +1,15 @@
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import type {
   EventsFilters,
   SetEventsFilters,
 } from "@/hooks/use-events-filters";
 import { m } from "@/i18n/messages";
-import { cn } from "@/lib/utils";
 import { eventTypes, type EventTypeKey } from "@apollo/database/web/types";
-import {
-  IconCalendar,
-  IconChevronDown,
-  IconDisc,
-  IconHeartHandshake,
-  IconMapPin,
-  IconPackage,
-  IconPlane,
-  IconShoppingBag,
-  IconSparkles,
-} from "@tabler/icons-react";
-import { useState } from "react";
+import FilterChip from "../collection/filter-chip";
+import SingleSelectList, {
+  type SingleSelectOption,
+} from "../collection/single-select-list";
 
-const eventTypeIcons: Record<EventTypeKey, React.ElementType> = {
-  seasonal: IconCalendar,
-  album: IconDisc,
-  merch: IconPackage,
-  offline: IconMapPin,
-  shop: IconShoppingBag,
-  collaboration: IconHeartHandshake,
-  promotional: IconSparkles,
-  tour: IconPlane,
-};
+type TypeValue = "all" | EventTypeKey;
 
 type Props = {
   type: EventsFilters["type"];
@@ -44,47 +19,43 @@ type Props = {
 const eventTypeList = Object.values(eventTypes);
 
 export default function EventsTypeFilter({ type, onChange }: Props) {
-  const [open, setOpen] = useState(false);
+  const value: TypeValue = type ?? "all";
 
-  function handleChange(eventType: EventTypeKey, checked: boolean) {
+  const options: SingleSelectOption<TypeValue>[] = [
+    { value: "all", label: m.filter_value_all() },
+    ...eventTypeList.map((t) => ({
+      value: t.value,
+      label: t.label,
+    })),
+  ];
+
+  function handleChange(newValue: TypeValue) {
     onChange({
-      type: checked ? eventType : undefined,
+      type: newValue === "all" ? undefined : newValue,
     });
   }
 
   const selectedType = type ? eventTypes[type] : undefined;
+  const valueLabel =
+    value === "all"
+      ? m.filter_value_all()
+      : (selectedType?.label.toLowerCase() ?? m.filter_value_all());
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          className={cn(
-            "flex items-center justify-between gap-2 w-32",
-            type && "border-cosmo dark:border-cosmo",
-          )}
-        >
-          <span>{selectedType?.label ?? m.common_type()}</span>
-          <IconChevronDown className="h-4 w-4 opacity-50" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-fit" align="end">
-        {eventTypeList.map((eventType) => {
-          const Icon = eventTypeIcons[eventType.value];
-          return (
-            <DropdownMenuCheckboxItem
-              key={eventType.value}
-              checked={type === eventType.value}
-              onCheckedChange={(checked) =>
-                handleChange(eventType.value, checked)
-              }
-            >
-              <Icon className="size-4" />
-              {eventType.label}
-            </DropdownMenuCheckboxItem>
-          );
-        })}
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <FilterChip
+      label={m.common_type()}
+      valueLabel={valueLabel}
+      active={type !== undefined}
+      width={200}
+    >
+      {({ close }) => (
+        <SingleSelectList
+          options={options}
+          value={value}
+          onChange={handleChange}
+          close={close}
+        />
+      )}
+    </FilterChip>
   );
 }
