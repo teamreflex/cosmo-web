@@ -7,10 +7,10 @@ import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import { Suspense, useCallback } from "react";
 import type { PropsWithChildren } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import FilterHeader from "../collection/filter-header";
 import MemberFilter from "../collection/member-filter";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
+import TitleHeader from "../ui/title-header";
 import ProgressTable from "./progress-table";
 
 type Props = PropsWithChildren<{
@@ -47,7 +47,7 @@ export default function ProgressRenderer(props: Props) {
 
   return (
     <div className="flex flex-col">
-      <FilterHeader title={m.progress_title()}>
+      <TitleHeader title={m.progress_title()}>
         <div className="ml-auto md:pointer-events-none md:absolute md:inset-0 md:ml-0 md:flex md:items-center md:justify-center">
           <div className="md:pointer-events-auto">
             <MemberFilter
@@ -57,7 +57,7 @@ export default function ProgressRenderer(props: Props) {
             />
           </div>
         </div>
-      </FilterHeader>
+      </TitleHeader>
 
       <div className="container flex flex-col gap-6 pt-4">
         <QueryErrorResetBoundary>

@@ -1,9 +1,9 @@
-import FilterHeader from "@/components/collection/filter-header";
 import { Error } from "@/components/error-boundary";
 import ArtistChart from "@/components/objekt-stats/artist-chart";
 import MemberBreakdown from "@/components/objekt-stats/member-breakdown";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import TitleHeader from "@/components/ui/title-header";
 import { useArtists } from "@/hooks/use-artists";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
@@ -37,11 +37,11 @@ function RouteComponent() {
 
   return (
     <main className="flex flex-col">
-      <FilterHeader title={m.stats_header()}>
+      <TitleHeader title={m.stats_header()}>
         <span className="font-mono text-xs text-muted-foreground">
           {m.stats_update_frequency()}
         </span>
-      </FilterHeader>
+      </TitleHeader>
 
       <div className="container flex flex-col gap-4 pt-4">
         {/* totals */}
@@ -127,11 +127,11 @@ function RouteComponent() {
 function PendingComponent() {
   return (
     <main className="flex flex-col">
-      <FilterHeader title={m.stats_header()}>
+      <TitleHeader title={m.stats_header()}>
         <span className="font-mono text-xs text-muted-foreground">
           {m.stats_update_frequency()}
         </span>
-      </FilterHeader>
+      </TitleHeader>
 
       <div className="container flex flex-col gap-4 pt-4">
         {/* totals */}

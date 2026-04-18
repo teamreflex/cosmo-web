@@ -1,4 +1,3 @@
-import FilterHeader from "@/components/collection/filter-header";
 import { Error } from "@/components/error-boundary";
 import GravityHero from "@/components/gravity/gravity-hero";
 import GravityList from "@/components/gravity/gravity-list";
@@ -6,6 +5,7 @@ import Overlay from "@/components/misc/overlay";
 import ScrollToTop from "@/components/misc/overlay/scroll-to-top";
 import SkeletonGradient from "@/components/skeleton/skeleton-overlay";
 import { Skeleton } from "@/components/ui/skeleton";
+import TitleHeader from "@/components/ui/title-header";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import { artistsQuery, selectedArtistsQuery } from "@/lib/queries/core";
@@ -50,7 +50,7 @@ function RouteComponent() {
 
   return (
     <main className="flex flex-col">
-      <FilterHeader title={m.gravity_header()} />
+      <TitleHeader title={m.gravity_header()} />
 
       <div className="container flex flex-col gap-4 pt-4">
         {/* Active gravities hero */}
@@ -70,7 +70,7 @@ function RouteComponent() {
 function PendingComponent() {
   return (
     <main className="flex flex-col">
-      <FilterHeader title={m.gravity_header()} />
+      <TitleHeader title={m.gravity_header()} />
 
       <div className="container relative flex flex-col gap-4 pt-4">
         <SkeletonGradient />

@@ -6,13 +6,13 @@ import type { ObjektList } from "@apollo/database/web/types";
 import { IconList } from "@tabler/icons-react";
 import { Suspense } from "react";
 import ObjektIndexFilters from "../collection/filter-contexts/objekt-index-filters";
-import FilterHeader from "../collection/filter-header";
 import FiltersContainer from "../collection/filters-container";
 import IndexListDropdown from "../lists/index-list-dropdown";
 import CosmoMemberFilter from "../objekt/cosmo-member-filter";
 import RoutedExpandableObjekt from "../objekt/objekt-routed";
 import VirtualizedObjektGrid from "../objekt/virtualized-objekt-grid";
 import { Button } from "../ui/button";
+import TitleHeader from "../ui/title-header";
 import { IndexGridItem } from "./index-grid-item";
 
 type Props = {
@@ -28,7 +28,7 @@ export default function IndexRenderer(props: Props) {
 
   return (
     <div className="flex flex-col">
-      <FilterHeader title={m.objekts_header()}>
+      <TitleHeader title={m.objekts_header()}>
         <div
           id="objekt-total"
           className="font-mono text-xs text-muted-foreground tabular-nums"
@@ -57,7 +57,7 @@ export default function IndexRenderer(props: Props) {
             <IndexListDropdown />
           </Suspense>
         </div>
-      </FilterHeader>
+      </TitleHeader>
 
       <FiltersContainer>
         <ObjektIndexFilters search />

@@ -14,7 +14,6 @@ import {
 import { Suspense, useCallback } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { TransfersFilters } from "../collection/filter-contexts/transfers-filters";
-import FilterHeader from "../collection/filter-header";
 import FiltersContainer from "../collection/filters-container";
 import MemberFilter from "../collection/member-filter";
 import { InfiniteQueryNext } from "../infinite-query-pending";
@@ -22,6 +21,7 @@ import Portal from "../portal";
 import SkeletonGradient from "../skeleton/skeleton-overlay";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
+import TitleHeader from "../ui/title-header";
 import TransferRow from "./transfer-row";
 
 type Props = {
@@ -61,7 +61,7 @@ export default function TransfersRenderer({ cosmo }: Props) {
 
   return (
     <div className="flex flex-col">
-      <FilterHeader title={m.trades_title()}>
+      <TitleHeader title={m.trades_title()}>
         <div className="ml-auto md:pointer-events-none md:absolute md:inset-0 md:ml-0 md:flex md:items-center md:justify-center">
           <div className="md:pointer-events-auto">
             <MemberFilter
@@ -71,7 +71,7 @@ export default function TransfersRenderer({ cosmo }: Props) {
             />
           </div>
         </div>
-      </FilterHeader>
+      </TitleHeader>
 
       <FiltersContainer>
         <TransfersFilters type={type} setType={setType} />

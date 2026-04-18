@@ -7,7 +7,7 @@ type Props = PropsWithChildren<
   }>
 >;
 
-export default function FilterHeader(props: Props) {
+export default function TitleHeader(props: Props) {
   return (
     <div className="border-b border-border">
       <div

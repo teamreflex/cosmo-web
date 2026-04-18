@@ -1,9 +1,9 @@
 import ArtistIcon from "@/components/artist-icon";
-import FilterHeader from "@/components/collection/filter-header";
 import ComoCalendar from "@/components/como/calendar";
 import HelpDialog from "@/components/como/help-dialog";
 import { Error } from "@/components/error-boundary";
 import Portal from "@/components/portal";
+import TitleHeader from "@/components/ui/title-header";
 import { useArtists } from "@/hooks/use-artists";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
@@ -54,7 +54,7 @@ function RouteComponent() {
 
   return (
     <main className="flex flex-col">
-      <FilterHeader title={m.common_como()}>
+      <TitleHeader title={m.common_como()}>
         <div className="ml-auto flex items-center gap-3">
           {totals.map((total) => (
             <div className="flex items-center gap-1" key={total.artist.name}>
@@ -65,7 +65,7 @@ function RouteComponent() {
             </div>
           ))}
         </div>
-      </FilterHeader>
+      </TitleHeader>
 
       <div className="container flex flex-col pt-4">
         <ComoCalendar artists={artistList} transfers={data} />
@@ -86,7 +86,7 @@ function PendingComponent() {
 
   return (
     <main className="flex flex-col">
-      <FilterHeader title={m.common_como()} />
+      <TitleHeader title={m.common_como()} />
 
       <div className="container pt-4">
         <div className="flex h-fit flex-col overflow-hidden rounded-lg border border-secondary bg-secondary text-clip">
