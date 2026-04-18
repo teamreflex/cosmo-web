@@ -32,7 +32,7 @@ export default function FilterSearch() {
   return (
     <div
       className={cn(
-        "flex h-8 w-48 min-w-0 items-center gap-1.5 rounded-sm border border-border bg-transparent px-2.5 font-mono transition-colors",
+        "flex h-8 w-48 min-w-0 items-center gap-1.5 rounded-sm border border-border bg-transparent px-2.5 transition-colors",
         "focus-within:border-cosmo/60",
       )}
     >
