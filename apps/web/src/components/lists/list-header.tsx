@@ -1,6 +1,7 @@
 import { m } from "@/i18n/messages";
 import { cn } from "@/lib/utils";
 import type { ObjektList } from "@apollo/database/web/types";
+import { IconList } from "@tabler/icons-react";
 import { format } from "date-fns";
 import type { ReactNode } from "react";
 import { Skeleton } from "../ui/skeleton";
@@ -166,7 +167,7 @@ function intentCopy(type: ObjektList["type"]) {
     default:
       return {
         label: m.list_header_intent_regular(),
-        glyph: "≡",
+        glyph: <IconList className="size-5 md:size-7" />,
         mark: "border-border bg-muted text-foreground",
         labelColor: "text-foreground",
         borderColor: "border-border",

@@ -25,8 +25,8 @@ const badgeVariants = cva(
         discord: "bg-discord text-white hover:bg-discord/90",
         cosmo: "bg-cosmo text-white hover:bg-cosmo/90",
         // list types
-        "list-have": "border-transparent bg-emerald-200 text-emerald-800!",
-        "list-want": "border-transparent bg-rose-200 text-rose-800!",
+        "list-have": "border-transparent bg-teal-200 text-teal-800!",
+        "list-want": "border-transparent bg-amber-200 text-amber-800!",
         // gravity
         "event-gravity": "border-transparent bg-teal-200 text-teal-700",
         "grand-gravity": "border-transparent bg-pink-300 text-pink-700",
