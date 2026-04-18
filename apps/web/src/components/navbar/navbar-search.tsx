@@ -4,6 +4,7 @@ import type { CosmoPublicUser } from "@apollo/cosmo/types/user";
 import { IconSearch } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { Button } from "../ui/button";
 import { UserSearch } from "../user-search";
 
 export default function NavbarSearch() {
@@ -29,14 +30,14 @@ export default function NavbarSearch() {
       onSelect={onSelect}
       recent={recent}
     >
-      <button
-        type="button"
-        className="outline-hidden drop-shadow-lg focus:outline-hidden"
+      <Button
+        variant="ghost"
+        size="icon"
         aria-label={m.navbar_search_user()}
         onClick={() => setOpen(true)}
       >
-        <IconSearch className="h-8 w-8 shrink-0 fill-transparent transition-all" />
-      </button>
+        <IconSearch className="size-6" />
+      </Button>
     </UserSearch>
   );
 }

@@ -11,7 +11,7 @@ import {
   IconPackage,
 } from "@tabler/icons-react";
 import { Link, useLocation } from "@tanstack/react-router";
-import NotificationBell from "../notifications/notification-bell";
+import { Button } from "../ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,92 +22,90 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { ArtistItem } from "./artist-selectbox";
-import NavbarSearch from "./navbar-search";
 
-type Props = {
-  signedIn: boolean;
-  cosmo?: PublicCosmo;
-};
-
-export default function Links(props: Props) {
+/**
+ * Public desktop link buttons — rendered regardless of auth state.
+ */
+export function DesktopPublicLinks() {
   const location = useLocation();
 
   return (
-    <>
-      {/* desktop */}
-      <div className="hidden grow items-center gap-1 lg:flex">
-        <DesktopLinks {...props} />
-      </div>
-
-      {/* mobile */}
-      <div className="ml-auto flex flex-row items-center gap-2 lg:hidden">
-        <NotificationBell key={location.pathname} />
-
-        <NavbarSearch />
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              className="inline-flex size-8 items-center justify-center rounded-sm border border-border text-muted-foreground outline-hidden hover:bg-accent hover:text-foreground"
-              aria-label={m.common_menu()}
-            >
-              <IconMenu2 className="size-4 shrink-0" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-fit" align="end">
-            <DropdownMenuLabel>{m.common_menu()}</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <MobileLinks {...props} />
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-    </>
-  );
-}
-
-function DesktopLinks(props: Props) {
-  const location = useLocation();
-
-  return (
-    <>
+    <div className="hidden items-center gap-1 lg:flex">
       <LinkButton
         href="/"
         active={location.pathname === "/" || location.pathname === "/objekts"}
         name={m.objekts_header()}
       />
-
       <LinkButton
         href="/objekts/stats"
         active={location.pathname === "/objekts/stats"}
         name={m.nav_objekt_stats()}
       />
-
       <LinkButton
         href="/events"
         active={location.pathname.startsWith("/events")}
         name={m.events_header()}
       />
-
       <LinkButton
         href="/gravity"
         active={location.pathname.startsWith("/gravity")}
         name={m.gravity_header()}
       />
-
-      {props.cosmo && (
-        <LinkButton
-          href={`/@${props.cosmo.username}`}
-          active={location.pathname.startsWith(`/@${props.cosmo.username}`)}
-          name={m.collection_title()}
-        />
-      )}
-
-      <NavbarSearch />
-    </>
+    </div>
   );
 }
 
-export function MobileLinks(props: Props) {
+type AuthLinksProps = {
+  cosmo?: PublicCosmo;
+};
+
+/**
+ * Auth-gated desktop links — currently the user's Collection page.
+ */
+export function DesktopAuthLinks({ cosmo }: AuthLinksProps) {
+  const location = useLocation();
+
+  if (!cosmo) return null;
+
+  return (
+    <div className="hidden items-center gap-1 lg:flex">
+      <LinkButton
+        href={`/@${cosmo.username}`}
+        active={location.pathname.startsWith(`/@${cosmo.username}`)}
+        name={m.collection_title()}
+      />
+    </div>
+  );
+}
+
+type MobileMenuProps = AuthLinksProps & { signedIn: boolean };
+
+/**
+ * Mobile hamburger menu with page links + artist selector for guests.
+ */
+export function MobileMenu(props: MobileMenuProps) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={m.common_menu()}
+          className="lg:hidden"
+        >
+          <IconMenu2 className="size-6" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-fit" align="end">
+        <DropdownMenuLabel>{m.common_menu()}</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <MobileMenuItems {...props} />
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function MobileMenuItems(props: MobileMenuProps) {
   const location = useLocation();
   const { artistList, selectedIds } = useArtists();
 

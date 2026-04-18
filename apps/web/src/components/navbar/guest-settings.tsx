@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,7 +18,9 @@ export default function GuestSettings() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <IconLanguage className="size-6 shrink-0 drop-shadow-lg hover:cursor-pointer" />
+        <Button variant="ghost" size="icon" aria-label={m.settings_language()}>
+          <IconLanguage className="size-6" />
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-fit">
         <ThemeSubmenu />

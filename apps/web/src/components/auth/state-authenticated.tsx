@@ -5,7 +5,6 @@ import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import { IconLoader2 } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation, useRouter } from "@tanstack/react-router";
-import NotificationBell from "../notifications/notification-bell";
 import UserDropdown from "./user-dropdown";
 
 type Props = {
@@ -31,17 +30,11 @@ export default function StateAuthenticated({ user, cosmo }: Props) {
   }
 
   return (
-    <div className="contents">
-      <div className="hidden sm:flex">
-        <NotificationBell key={location.pathname} />
-      </div>
-
-      <UserDropdown
-        key={location.pathname}
-        onSignOut={mutation.mutate}
-        user={user}
-        cosmo={cosmo}
-      />
-    </div>
+    <UserDropdown
+      key={location.pathname}
+      onSignOut={mutation.mutate}
+      user={user}
+      cosmo={cosmo}
+    />
   );
 }
