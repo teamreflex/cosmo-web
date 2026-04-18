@@ -88,7 +88,7 @@ function RouteComponent() {
                 </div>
               </div>
 
-              <div className="flex items-stretch divide-x divide-border h-10">
+              <div className="flex h-10 items-stretch divide-x divide-border [&>*:has(+:empty:last-child)]:border-e-0">
                 <ErrorBoundary fallback={<ComoBalanceErrorFallback />}>
                   <Suspense
                     fallback={
