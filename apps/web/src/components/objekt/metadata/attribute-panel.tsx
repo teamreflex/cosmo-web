@@ -20,7 +20,7 @@ export default function AttributePanel({ objekt }: Props) {
   const missingVideo = objekt.class === "Motion" && !objekt.frontMedia;
 
   return (
-    <div className="grid grid-cols-3 border-t border-b border-border">
+    <div className="grid grid-cols-3">
       <AttrCell label={m.objekt_attribute_artist()} value={objekt.artistName} />
       <AttrCell label={m.objekt_attribute_member()} value={objekt.member} />
       <AttrCell label={m.objekt_attribute_season()} value={objekt.season} />

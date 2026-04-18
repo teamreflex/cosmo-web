@@ -32,9 +32,11 @@ export default function MetadataDialog({
 
   function onOpenChange(state: boolean) {
     setOpen(state);
-    if (state === false && onClose !== undefined) {
+    if (state === false) {
       reset();
-      onClose();
+      if (onClose !== undefined) {
+        onClose();
+      }
     }
   }
 
@@ -45,35 +47,33 @@ export default function MetadataDialog({
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent
           side="right"
-          className="w-full gap-0 p-0 outline-hidden data-[side=right]:sm:max-w-[720px]"
+          className="w-full gap-0 p-0 outline-hidden data-[side=right]:sm:max-w-xl"
         >
           <div className="sr-only">
             <SheetTitle>{slug}</SheetTitle>
             <SheetDescription>{slug}</SheetDescription>
           </div>
-          <ResponsiveContent slug={slug} />
+
+          <QueryErrorResetBoundary>
+            {({ reset }) => (
+              <ErrorBoundary
+                FallbackComponent={MetadataDialogError}
+                onReset={reset}
+              >
+                <Suspense
+                  fallback={
+                    <div className="flex h-full w-full items-center justify-center">
+                      <IconLoader2 className="h-12 w-12 animate-spin" />
+                    </div>
+                  }
+                >
+                  <MetadataContent slug={slug} />
+                </Suspense>
+              </ErrorBoundary>
+            )}
+          </QueryErrorResetBoundary>
         </SheetContent>
       </Sheet>
     </MetadataDialogContext.Provider>
-  );
-}
-
-function ResponsiveContent(props: { slug: string }) {
-  return (
-    <QueryErrorResetBoundary>
-      {({ reset }) => (
-        <ErrorBoundary FallbackComponent={MetadataDialogError} onReset={reset}>
-          <Suspense
-            fallback={
-              <div className="flex h-full w-full items-center justify-center">
-                <IconLoader2 className="h-12 w-12 animate-spin" />
-              </div>
-            }
-          >
-            <MetadataContent slug={props.slug} />
-          </Suspense>
-        </ErrorBoundary>
-      )}
-    </QueryErrorResetBoundary>
   );
 }
