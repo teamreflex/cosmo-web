@@ -1,20 +1,9 @@
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import type { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { useFilterData } from "@/hooks/use-filter-data";
 import { m } from "@/i18n/messages";
-import { cn } from "@/lib/utils";
 import type { ValidArtist } from "@apollo/cosmo/types/common";
-import { isEqual } from "@apollo/util";
-import { IconChevronDown } from "@tabler/icons-react";
-import { useState } from "react";
+import ArtistGroupedMultiSelect from "./artist-grouped-multiselect";
+import FilterChip from "./filter-chip";
 
 type Props = {
   seasons: CosmoFilters["season"];
@@ -24,13 +13,10 @@ type Props = {
 
 export default function SeasonFilter(props: Props) {
   const { seasons } = useFilterData();
-  const [open, setOpen] = useState(false);
-
   const value = props.seasons ?? [];
 
   function handleChange(artist: string, season: string, checked: boolean) {
     props.onChange((prev) => {
-      // allow switching artist without needing to uncheck
       if (prev.artist !== artist) {
         return {
           artist: artist as ValidArtist,
@@ -49,48 +35,40 @@ export default function SeasonFilter(props: Props) {
     });
   }
 
+  function handleClear() {
+    props.onChange({ artist: undefined, season: undefined });
+  }
+
+  const valueLabel =
+    value.length === 0
+      ? m.filter_value_all()
+      : value.length === 1
+        ? value[0]!
+        : m.filter_value_multiple();
+
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          className={cn(
-            "flex items-center gap-2",
-            value.length > 0 && "border-cosmo dark:border-cosmo",
-          )}
-        >
-          <span>{m.common_season()}</span>
-          <IconChevronDown className="h-4 w-4 opacity-50" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="flex w-fit flex-row gap-2">
-        {seasons.map(({ artist, seasons: artistSeasons }) => (
-          <DropdownMenuGroup key={artist.id}>
-            <DropdownMenuLabel className="flex items-center gap-2 text-xs">
-              <img
-                className="aspect-square size-4 rounded-full"
-                src={artist.logoImageUrl}
-                alt={artist.title}
-              />
-              {artist.title}
-            </DropdownMenuLabel>
-            {artistSeasons.map((season) => (
-              <DropdownMenuCheckboxItem
-                key={season}
-                checked={
-                  isEqual(artist.id, props.artist ?? undefined) &&
-                  value.includes(season)
-                }
-                onCheckedChange={(checked) =>
-                  handleChange(artist.id, season, checked)
-                }
-              >
-                {season}
-              </DropdownMenuCheckboxItem>
-            ))}
-          </DropdownMenuGroup>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <FilterChip
+      label={m.common_season()}
+      valueLabel={valueLabel}
+      count={value.length}
+      active={value.length > 0}
+      width={420}
+    >
+      <ArtistGroupedMultiSelect
+        groups={seasons.map((s) => ({
+          artist: {
+            id: s.artist.id,
+            title: s.artist.title,
+            logoImageUrl: s.artist.logoImageUrl,
+          },
+          items: s.seasons,
+        }))}
+        activeArtist={props.artist ?? undefined}
+        selected={value}
+        onToggle={handleChange}
+        onClear={handleClear}
+        selectedCount={value.length}
+      />
+    </FilterChip>
   );
 }

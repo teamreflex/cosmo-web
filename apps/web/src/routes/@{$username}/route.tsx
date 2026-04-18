@@ -46,40 +46,33 @@ function RouteComponent() {
 
   return (
     <UserStateProvider {...account}>
-      <main className="relative container flex flex-col py-2">
-        <div className="grid grid-cols-2 grid-rows-[auto_auto_min-content] gap-2 md:h-24 md:grid-cols-3">
-          {/* user block */}
-          <div className="row-span-2 flex flex-row gap-4 md:row-span-3">
+      <main className="relative flex flex-col">
+        {/* profile header with accent background */}
+        <div className="relative border-b border-border">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 opacity-70 [background:radial-gradient(900px_220px_at_10%_0%,color-mix(in_oklch,var(--color-cosmo)_18%,transparent),transparent_60%)]"
+          />
+          <div className="relative container flex flex-col gap-4 py-6 md:flex-row md:items-center md:gap-6">
+            {/* avatar */}
             <UserAvatar
-              className="h-24 w-24"
+              variant="square"
+              className="size-16 md:size-[88px]"
               username={target.cosmo.username}
             />
 
-            <div className="flex flex-row">
-              <div className="flex h-24 flex-col justify-center gap-2">
+            {/* identity */}
+            <div className="flex min-w-0 flex-1 flex-col gap-3">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                 <Link
                   to="/@{$username}"
                   params={{ username: target.cosmo.username }}
-                  className="w-fit font-cosmo text-2xl leading-6 uppercase underline decoration-transparent underline-offset-4 transition-colors hover:decoration-cosmo"
+                  className="font-cosmo text-2xl leading-none font-black uppercase underline decoration-transparent underline-offset-4 transition-colors hover:decoration-cosmo md:text-3xl"
                 >
                   {target.cosmo.username}
                 </Link>
 
-                <ErrorBoundary fallback={<ComoBalanceErrorFallback />}>
-                  <Suspense
-                    fallback={
-                      <div className="flex items-center gap-2">
-                        <div className="h-[26px] w-16 animate-pulse rounded-lg border border-border bg-secondary" />
-                        <div className="h-[26px] w-16 animate-pulse rounded-lg border border-border bg-secondary" />
-                      </div>
-                    }
-                  >
-                    <UserBalances address={target.cosmo.address} />
-                  </Suspense>
-                </ErrorBoundary>
-
-                {/* badges? */}
-                <div className="flex h-5 flex-row gap-2">
+                <div className="flex flex-row items-center gap-1.5">
                   {target.verified && <CosmoVerifiedBadge />}
                   {isEqual(target.cosmo.address, Addresses.SPIN) && (
                     <ModhausBadge />
@@ -94,48 +87,61 @@ function RouteComponent() {
                     )}
                 </div>
               </div>
+
+              <div className="flex items-stretch divide-x divide-border">
+                <ErrorBoundary fallback={<ComoBalanceErrorFallback />}>
+                  <Suspense
+                    fallback={
+                      <div className="flex items-center pr-4 first:pl-0 last:pr-0">
+                        <Skeleton className="h-[36px] w-24" />
+                      </div>
+                    }
+                  >
+                    <UserBalances address={target.cosmo.address} />
+                  </Suspense>
+                </ErrorBoundary>
+                <div
+                  id="profile-total-stat"
+                  className="flex min-w-0 flex-col gap-0.5 pl-4 empty:hidden first:pl-0"
+                />
+              </div>
             </div>
-          </div>
 
-          {/* profile-related buttons */}
-          <div className="col-span-3 row-start-3 flex flex-wrap justify-center gap-2 pt-[2px] md:col-span-2 md:row-start-auto md:justify-end">
-            <CopyAddressButton address={target.cosmo.address} />
-            <TradesButton cosmo={target.cosmo} />
-            <ComoButton cosmo={target.cosmo} />
-            <ProgressButton cosmo={target.cosmo} />
-            <Suspense
-              fallback={
-                <Button
-                  className="animate-pulse"
-                  variant="secondary"
-                  size="profile"
-                  data-profile
-                >
-                  <IconList className="h-5 w-5" />
-                  <span className="hidden sm:block">{m.list_lists()}</span>
-                </Button>
-              }
-            >
-              <ProfileListDropdown
-                username={target.cosmo.username}
-                isAuthenticated={isAuthenticated}
+            {/* action cluster */}
+            <div className="-mx-4 flex flex-nowrap items-center gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:flex-wrap md:overflow-visible md:p-0">
+              <CopyAddressButton address={target.cosmo.address} />
+              <TradesButton cosmo={target.cosmo} />
+              <ComoButton cosmo={target.cosmo} />
+              <ProgressButton cosmo={target.cosmo} />
+              <Suspense
+                fallback={
+                  <Button
+                    className="animate-pulse"
+                    variant="outline"
+                    size="profile"
+                    data-profile
+                  >
+                    <IconList className="h-5 w-5" />
+                    <span className="hidden sm:block">{m.list_lists()}</span>
+                  </Button>
+                }
+              >
+                <ProfileListDropdown
+                  username={target.cosmo.username}
+                  isAuthenticated={isAuthenticated}
+                />
+              </Suspense>
+
+              {/* content gets portaled in */}
+              <div
+                className="flex h-10 items-center empty:hidden lg:h-8"
+                id="help"
               />
-            </Suspense>
-
-            {/* content gets portaled in */}
-            <div
-              className="flex h-10 items-center empty:hidden lg:h-8"
-              id="help"
-            />
-            <div
-              className="flex h-10 items-center lg:hidden"
-              id="filters-button"
-            />
-          </div>
-
-          {/* objekt total, gets portaled in */}
-          <div className="col-start-3 row-start-2 flex h-6 place-self-end md:row-start-3">
-            <span id="objekt-total" />
+              <div
+                className="flex h-10 items-center lg:hidden"
+                id="filters-button"
+              />
+            </div>
           </div>
         </div>
 
@@ -147,52 +153,21 @@ function RouteComponent() {
 
 function PendingComponent() {
   return (
-    <main className="relative container flex flex-col py-2">
-      <div className="grid grid-cols-2 grid-rows-[auto_auto_min-content] gap-2 md:h-24 md:grid-cols-3">
-        {/* user block */}
-        <div className="row-span-2 flex flex-row gap-4 md:row-span-3">
-          <Skeleton className="aspect-square h-24 w-24 rounded-full" />
-
-          <div className="flex flex-row">
-            <div className="flex h-24 flex-col justify-center gap-2">
-              {/* username */}
-              <Skeleton className="h-6 w-24 rounded-full py-0.5" />
-
-              {/* como balance */}
-              <div className="flex items-center gap-2">
-                <Skeleton className="h-[26px] w-16 rounded-lg" />
-                <Skeleton className="h-[26px] w-16 rounded-lg" />
-              </div>
-
-              {/* badges */}
-              <div className="flex h-5 flex-row gap-2">
-                <Skeleton className="aspect-square h-4 w-4 shrink-0 rounded" />
-              </div>
-            </div>
+    <main className="relative flex flex-col">
+      <div className="border-b border-border">
+        <div className="container flex flex-col gap-4 py-6 md:flex-row md:items-center md:gap-6">
+          <Skeleton className="size-16 rounded-sm md:size-[88px]" />
+          <div className="flex min-w-0 flex-1 flex-col gap-3">
+            <Skeleton className="h-8 w-40" />
+            <Skeleton className="h-[42px] w-36 rounded-sm" />
           </div>
-        </div>
-
-        {/* profile-related buttons */}
-        <div className="col-span-3 row-start-3 flex flex-wrap justify-center gap-2 pt-[2px] md:col-span-2 md:row-start-auto md:justify-end">
-          {/* copy address */}
-          <Skeleton className="h-10 w-10 shrink-0 rounded-full lg:h-8 lg:w-[84px]" />
-          {/* trades */}
-          <Skeleton className="h-10 w-10 shrink-0 rounded-full lg:h-8 lg:w-[75px]" />
-          {/* como */}
-          <Skeleton className="h-10 w-10 shrink-0 rounded-full lg:h-8 lg:w-[75px]" />
-          {/* progress */}
-          <Skeleton className="h-10 w-10 shrink-0 rounded-full lg:h-8 lg:w-[88px]" />
-          {/* lists */}
-          <Skeleton className="h-10 w-10 shrink-0 rounded-full lg:h-8 lg:w-[63px]" />
-          {/* help */}
-          <Skeleton className="aspect-square h-10 shrink-0 rounded-full lg:h-8" />
-          {/* filters */}
-          <Skeleton className="flex h-10 w-10 shrink-0 rounded-full lg:hidden lg:h-8 lg:w-[89px]" />
-        </div>
-
-        {/* objekt total, gets portaled in */}
-        <div className="col-start-3 row-start-2 flex h-6 place-self-end md:row-start-3">
-          <span id="objekt-total" />
+          <div className="flex flex-wrap items-center gap-2">
+            <Skeleton className="h-8 w-24" />
+            <Skeleton className="h-8 w-24" />
+            <Skeleton className="h-8 w-24" />
+            <Skeleton className="h-8 w-24" />
+            <Skeleton className="h-8 w-24" />
+          </div>
         </div>
       </div>
     </main>

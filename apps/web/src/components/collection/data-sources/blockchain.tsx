@@ -1,4 +1,5 @@
 import VirtualizedObjektGrid from "@/components/objekt/virtualized-objekt-grid";
+import ProfileTotalStat from "@/components/profile/profile-total-stat";
 import {
   Popover,
   PopoverContent,
@@ -35,6 +36,7 @@ export default function Blockchain(props: Props) {
   const gridColumns = useGridColumns();
 
   const usingFilters = filtersAreDirty(filters);
+  const isSpin = isEqual(props.targetCosmo.address, Addresses.SPIN);
 
   /**
    * Determine if the objekt should be rendered
@@ -68,32 +70,14 @@ export default function Blockchain(props: Props) {
       filters,
       selectedIds,
     ),
+    totalPortalTarget: "#profile-total-stat",
     calculateTotal: (data) => {
-      if (isEqual(props.targetCosmo.address, Addresses.SPIN)) {
-        return (
-          <Popover>
-            <PopoverTrigger className="flex justify-end" asChild>
-              <button aria-label={m.aria_data_source_info()}>
-                <IconInfoCircle className="h-5 w-5" />
-              </button>
-            </PopoverTrigger>
-            <PopoverContent align="end">
-              <p className="text-xs">
-                @cosmo-spin data has been limited to the last month of received
-                objekts and trades. As it accounts for almost 25% of all
-                objekts, accessing the data gets increasingly difficult.
-              </p>
-            </PopoverContent>
-          </Popover>
-        );
+      if (isSpin) {
+        return null;
       }
 
       const total = data.pages[0]?.total ?? 0;
-      return (
-        <p className="text-end font-semibold">
-          {total.toLocaleString("en")} {m.blockchain_total()}
-        </p>
-      );
+      return <ProfileTotalStat title={m.objekts_header()} count={total} />;
     },
     getItems: (data) => data.pages.flatMap((page) => page.objekts),
   });

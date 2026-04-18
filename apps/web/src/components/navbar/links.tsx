@@ -1,6 +1,5 @@
 import { useArtists } from "@/hooks/use-artists";
 import { m } from "@/i18n/messages";
-import type { PublicUser } from "@/lib/universal/auth";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import { cn } from "@/lib/utils";
 import {
@@ -11,7 +10,6 @@ import {
   IconMenu2,
   IconPackage,
 } from "@tabler/icons-react";
-import type { Icon } from "@tabler/icons-react";
 import { Link, useLocation } from "@tanstack/react-router";
 import NotificationBell from "../notifications/notification-bell";
 import {
@@ -23,12 +21,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "../ui/tooltip";
 import { ArtistItem } from "./artist-selectbox";
 import NavbarSearch from "./navbar-search";
 
@@ -41,14 +33,14 @@ export default function Links(props: Props) {
   const location = useLocation();
 
   return (
-    <div className="flex grow justify-end lg:justify-center">
+    <>
       {/* desktop */}
-      <div className="hidden flex-row items-center gap-6 lg:flex">
+      <div className="hidden grow items-center gap-1 lg:flex">
         <DesktopLinks {...props} />
       </div>
 
       {/* mobile */}
-      <div className="flex flex-row items-center gap-2 lg:hidden">
+      <div className="ml-auto flex flex-row items-center gap-2 lg:hidden">
         <NotificationBell key={location.pathname} />
 
         <NavbarSearch />
@@ -56,10 +48,10 @@ export default function Links(props: Props) {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
-              className="outline-hidden drop-shadow-lg"
+              className="inline-flex size-8 items-center justify-center rounded-sm border border-border text-muted-foreground outline-hidden hover:bg-accent hover:text-foreground"
               aria-label={m.common_menu()}
             >
-              <IconMenu2 className="h-8 w-8 shrink-0" />
+              <IconMenu2 className="size-4 shrink-0" />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-fit" align="end">
@@ -69,45 +61,36 @@ export default function Links(props: Props) {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-    </div>
+    </>
   );
 }
 
-type LinksProps = {
-  signedIn: boolean;
-  cosmo?: PublicCosmo;
-};
-
-function DesktopLinks(props: LinksProps) {
+function DesktopLinks(props: Props) {
   const location = useLocation();
 
   return (
-    <div className="contents">
+    <>
       <LinkButton
         href="/"
         active={location.pathname === "/" || location.pathname === "/objekts"}
-        icon={IconCards}
         name={m.objekts_header()}
       />
 
       <LinkButton
         href="/objekts/stats"
         active={location.pathname === "/objekts/stats"}
-        icon={IconChartBar}
         name={m.nav_objekt_stats()}
       />
 
       <LinkButton
         href="/events"
         active={location.pathname.startsWith("/events")}
-        icon={IconFolderOpen}
         name={m.events_header()}
       />
 
       <LinkButton
         href="/gravity"
         active={location.pathname.startsWith("/gravity")}
-        icon={IconArchive}
         name={m.gravity_header()}
       />
 
@@ -115,13 +98,12 @@ function DesktopLinks(props: LinksProps) {
         <LinkButton
           href={`/@${props.cosmo.username}`}
           active={location.pathname.startsWith(`/@${props.cosmo.username}`)}
-          icon={IconPackage}
           name={m.collection_title()}
         />
       )}
 
       <NavbarSearch />
-    </div>
+    </>
   );
 }
 
@@ -184,7 +166,6 @@ export function MobileLinks(props: Props) {
       </DropdownMenuItem>
 
       {props.cosmo && (
-        // user has a cosmo cosmo, go to collection
         <DropdownMenuItem asChild>
           <Link
             to="/@{$username}"
@@ -226,33 +207,21 @@ export function MobileLinks(props: Props) {
 type LinkButtonProps = {
   href: string;
   active: boolean;
-  user?: PublicUser;
-  icon: Icon;
   name: string;
 };
 
 function LinkButton(props: LinkButtonProps) {
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger>
-          <Link
-            to={props.href}
-            className="outline-hidden focus:outline-hidden"
-            aria-label={props.name}
-          >
-            <props.icon
-              className={cn(
-                "h-8 w-8 shrink-0 fill-transparent drop-shadow-lg transition-all",
-                props.active && "fill-cosmo/50 dark:fill-foreground/50",
-              )}
-            />
-          </Link>
-        </TooltipTrigger>
-        <TooltipContent className="hidden sm:block">
-          <p>{props.name}</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Link
+      to={props.href}
+      aria-label={props.name}
+      data-active={props.active || undefined}
+      className="relative flex h-14 items-center px-3 text-sm font-medium text-muted-foreground outline-hidden transition-colors hover:text-foreground data-[active]:text-foreground"
+    >
+      {props.name}
+      {props.active && (
+        <span className="absolute inset-x-3 bottom-0 h-0.5 bg-cosmo" />
+      )}
+    </Link>
   );
 }

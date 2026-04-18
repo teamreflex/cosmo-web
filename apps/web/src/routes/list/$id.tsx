@@ -1,7 +1,6 @@
 import { Error } from "@/components/error-boundary";
-import DeleteList from "@/components/lists/delete-list";
+import ListHeader from "@/components/lists/list-header";
 import ListRenderer from "@/components/lists/list-renderer";
-import UpdateList from "@/components/lists/update-list";
 import Overlay from "@/components/misc/overlay";
 import ScrollToTop from "@/components/misc/overlay/scroll-to-top";
 import ToggleObjektBands from "@/components/misc/overlay/toggle-objekt-bands";
@@ -73,6 +72,9 @@ export const Route = createFileRoute("/list/$id")({
 
     return {
       objektList,
+      owner: {
+        display: user.displayUsername ?? user.name,
+      },
       account,
       isAuthenticated,
     };
@@ -85,34 +87,25 @@ export const Route = createFileRoute("/list/$id")({
 });
 
 function RouteComponent() {
-  const { account, isAuthenticated, objektList } = Route.useLoaderData();
+  const { account, isAuthenticated, objektList, owner } = Route.useLoaderData();
 
   return (
-    <main className="container flex flex-col py-2">
+    <main className="flex flex-col">
       <UserStateProvider user={account?.user} cosmo={account?.cosmo}>
         <ProfileProvider>
-          <div className="grid grid-cols-2 grid-rows-2 lg:h-9 lg:grid-rows-1">
-            <div className="flex items-center">
-              <h3 className="font-cosmo text-xl leading-none">
-                {objektList.name}
-                {objektList.type === "sale" && objektList.currency && (
-                  <span className="ml-2 text-sm text-muted-foreground">
-                    ({objektList.currency})
-                  </span>
-                )}
-              </h3>
+          <div className="border-b border-border">
+            <div className="container">
+              <ListHeader
+                list={objektList}
+                ownerName={owner.display}
+                objektCount={0}
+                isOwner={isAuthenticated}
+              />
             </div>
+          </div>
 
-            <div className="row-span-2 grid grid-rows-subgrid flex-row items-center justify-end gap-2 lg:row-span-1 lg:flex">
-              <span className="row-start-2 ml-auto" id="objekt-total" />
-              {isAuthenticated && (
-                <div className="flex items-center gap-2">
-                  <UpdateList objektList={objektList} />
-                  <DeleteList objektList={objektList} />
-                </div>
-              )}
-            </div>
-
+          <div className="container flex items-center justify-end gap-2 pt-4 pb-2">
+            <span id="objekt-total" />
             <div
               className="flex h-10 items-center lg:hidden"
               id="filters-button"

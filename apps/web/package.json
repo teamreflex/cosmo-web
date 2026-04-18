@@ -30,6 +30,7 @@
     "@apollo/util": "workspace:*",
     "@aws-sdk/client-ses": "^3.1029.0",
     "@fontsource-variable/dm-sans": "^5.2.8",
+    "@fontsource-variable/jetbrains-mono": "^5.2.8",
     "@hookform/resolvers": "^5.2.2",
     "@sentry/tanstackstart-react": "^10.48.0",
     "@t3-oss/env-core": "^0.13.11",

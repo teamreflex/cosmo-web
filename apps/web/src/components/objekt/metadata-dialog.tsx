@@ -1,16 +1,9 @@
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerTitle,
-} from "@/components/ui/drawer-radix";
-import { useMediaQuery } from "@/hooks/use-media-query";
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { MetadataDialogContext } from "@/hooks/use-metadata-dialog";
 import { useObjektSerial } from "@/hooks/use-objekt-serial";
 import { IconLoader2 } from "@tabler/icons-react";
@@ -34,7 +27,6 @@ export default function MetadataDialog({
   defaultOpen = false,
   onClose,
 }: Props) {
-  const isDesktop = useMediaQuery();
   const [open, setOpen] = useState(() => defaultOpen);
   const { reset } = useObjektSerial();
 
@@ -50,27 +42,18 @@ export default function MetadataDialog({
     <MetadataDialogContext.Provider value={{ open: () => setOpen(true) }}>
       {children}
 
-      {isDesktop ? (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-          <DialogContent className="grid-cols-auto min-w-220 grid-flow-col gap-0 p-0 outline-hidden md:rounded-2xl">
-            <div className="sr-only">
-              <DialogTitle>{slug}</DialogTitle>
-              <DialogDescription>{slug}</DialogDescription>
-            </div>
-            <ResponsiveContent slug={slug} />
-          </DialogContent>
-        </Dialog>
-      ) : (
-        <Drawer open={open} onOpenChange={onOpenChange}>
-          <DrawerContent className="grid-cols-auto grid-flow-row gap-2 p-0 outline-hidden sm:gap-0">
-            <div className="sr-only">
-              <DrawerTitle>{slug}</DrawerTitle>
-              <DrawerDescription>{slug}</DrawerDescription>
-            </div>
-            <ResponsiveContent slug={slug} />
-          </DrawerContent>
-        </Drawer>
-      )}
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent
+          side="right"
+          className="w-full gap-0 p-0 outline-hidden data-[side=right]:sm:max-w-[720px]"
+        >
+          <div className="sr-only">
+            <SheetTitle>{slug}</SheetTitle>
+            <SheetDescription>{slug}</SheetDescription>
+          </div>
+          <ResponsiveContent slug={slug} />
+        </SheetContent>
+      </Sheet>
     </MetadataDialogContext.Provider>
   );
 }
@@ -82,7 +65,7 @@ function ResponsiveContent(props: { slug: string }) {
         <ErrorBoundary FallbackComponent={MetadataDialogError} onReset={reset}>
           <Suspense
             fallback={
-              <div className="flex h-112 w-full items-center justify-center">
+              <div className="flex h-full w-full items-center justify-center">
                 <IconLoader2 className="h-12 w-12 animate-spin" />
               </div>
             }

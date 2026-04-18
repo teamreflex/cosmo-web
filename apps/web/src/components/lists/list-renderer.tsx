@@ -27,12 +27,18 @@ export default function ListRenderer(props: Props) {
   const options = objektOptions({
     filtering: "remote",
     query: objektListQuery(props.objektList.id, filters, selectedIds),
+    totalPortalTarget: "#list-total-stat",
     calculateTotal: (data) => {
       const total = data.pages[0]?.total ?? 0;
       return (
-        <p className="font-semibold">
-          {total.toLocaleString("en")} {m.common_total()}
-        </p>
+        <span className="flex items-baseline gap-1">
+          <span className="tabular-nums text-foreground">
+            {total.toLocaleString()}
+          </span>
+          <span className="text-muted-foreground">
+            {m.list_header_objekts_label()}
+          </span>
+        </span>
       );
     },
     getItems: (data) => data.pages.flatMap((page) => page.objekts),
@@ -44,20 +50,22 @@ export default function ListRenderer(props: Props) {
         <ObjektIndexFilters />
       </FiltersContainer>
 
-      <CosmoMemberFilter />
-      <VirtualizedObjektGrid
-        options={options}
-        gridColumns={gridColumns}
-        getObjektId={(objekt) => objekt.id}
-        authenticated={props.authenticated}
-        ItemComponent={ListGridItem}
-        itemComponentProps={{
-          authenticated: props.authenticated,
-          objektList: props.objektList,
-        }}
-        extraRowHeight={props.objektList.type === "sale" ? 28 : 0}
-        showTotal
-      />
+      <div className="container flex flex-col">
+        <CosmoMemberFilter />
+        <VirtualizedObjektGrid
+          options={options}
+          gridColumns={gridColumns}
+          getObjektId={(objekt) => objekt.id}
+          authenticated={props.authenticated}
+          ItemComponent={ListGridItem}
+          itemComponentProps={{
+            authenticated: props.authenticated,
+            objektList: props.objektList,
+          }}
+          extraRowHeight={props.objektList.type === "sale" ? 28 : 0}
+          showTotal
+        />
+      </div>
     </div>
   );
 }

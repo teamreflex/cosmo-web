@@ -17,23 +17,10 @@ import { Link } from "@tanstack/react-router";
  */
 export function CosmoVerifiedBadge() {
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger>
-          <img
-            className="size-5 shrink-0 rounded invert dark:invert-0"
-            src="/cosmo.webp"
-            alt={m.common_cosmo()}
-          />
-        </TooltipTrigger>
-        <TooltipContent side="bottom" align="start">
-          <div className="flex flex-row items-center gap-2">
-            <IconCheck className="h-4 w-4" />
-            <span>{m.profile_badge_cosmo_verified()}</span>
-          </div>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <span className="inline-flex h-6 items-center gap-1 rounded-sm border border-border bg-background/40 px-1.5 font-mono text-[10px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
+      <IconCheck className="size-3" />
+      {m.profile_badge_verified()}
+    </span>
   );
 }
 

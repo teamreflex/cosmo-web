@@ -20,29 +20,20 @@ import Links from "./links";
 
 export default function Navbar() {
   return (
-    <nav className="sticky top-0 right-0 left-0 z-30 h-14">
-      <div className="glass">
-        <div className="flex h-14 w-full items-center">
-          <div className="pointer-events-auto container flex items-center gap-2 text-sm text-foreground lg:grid lg:grid-cols-3 lg:gap-4 lg:py-6">
-            <div className="flex items-center gap-4">
-              <Logo className="h-10" />
-              <div className="relative flex items-center">
-                <SystemStatus />
-                <UpdateDialog />
-              </div>
-
-              {/* <Notice /> */}
-            </div>
-
-            <ErrorBoundary fallback={<AuthFallback />}>
-              <Suspense fallback={<NavbarFallback />}>
-                <AuthState />
-              </Suspense>
-            </ErrorBoundary>
-          </div>
+    <nav className="sticky top-0 right-0 left-0 z-30 h-14 border-b border-border bg-background/90 backdrop-blur-lg">
+      <div className="container flex h-14 items-center gap-4 text-sm text-foreground">
+        <Logo className="h-8" />
+        <div className="flex items-center">
+          <SystemStatus />
+          <UpdateDialog />
         </div>
+
+        <ErrorBoundary fallback={<AuthFallback />}>
+          <Suspense fallback={<NavbarFallback />}>
+            <AuthState />
+          </Suspense>
+        </ErrorBoundary>
       </div>
-      <div className="glass-edge"></div>
     </nav>
   );
 }
@@ -51,17 +42,12 @@ function NavbarFallback() {
   return (
     <Fragment>
       {/* desktop */}
-      <div className="hidden lg:contents">
-        <div className="flex items-center justify-center gap-6">
-          <IconCards className="hidden size-8 shrink-0 fill-transparent lg:block" />
-          <IconChartBar className="hidden size-8 shrink-0 fill-transparent lg:block" />
-          <IconArchive className="hidden size-8 shrink-0 fill-transparent lg:block" />
-          <IconSearch className="hidden size-8 shrink-0 fill-transparent lg:block" />
-        </div>
-
-        <div className="flex grow-0 items-center justify-end gap-2">
-          <Skeleton className="aspect-square size-8 shrink-0 rounded-full" />
-        </div>
+      <div className="ml-auto hidden items-center gap-4 lg:flex">
+        <IconCards className="size-6 shrink-0 fill-transparent" />
+        <IconChartBar className="size-6 shrink-0 fill-transparent" />
+        <IconArchive className="size-6 shrink-0 fill-transparent" />
+        <Skeleton className="aspect-square size-8 shrink-0 rounded-sm" />
+        <Skeleton className="aspect-square size-8 shrink-0 rounded-full" />
       </div>
 
       {/* mobile */}
@@ -80,7 +66,7 @@ function AuthState() {
   return (
     <>
       <Links signedIn={data !== null} cosmo={data?.cosmo} />
-      <div className="flex grow-0 items-center justify-end gap-2">
+      <div className="ml-auto flex grow-0 items-center justify-end gap-2">
         {!data ? (
           <StateGuest />
         ) : (

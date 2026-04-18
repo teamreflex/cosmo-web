@@ -217,7 +217,11 @@ function ObjektGrid<
         </div>
       </div>
 
-      {showTotal && <Portal to="#objekt-total">{total}</Portal>}
+      {showTotal && (
+        <Portal to={options.totalPortalTarget ?? "#objekt-total"}>
+          {total}
+        </Portal>
+      )}
       <Portal to="#pagination">
         <InfiniteQueryNext
           status={query.status}

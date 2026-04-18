@@ -64,35 +64,37 @@ export default function TransfersRenderer({ cosmo }: Props) {
         <TransfersFilters type={type} setType={setType} />
       </FiltersContainer>
 
-      <MemberFilter
-        active={filters.artist ?? filters.member}
-        updateArtist={setActiveArtist}
-        updateMember={setActiveMember}
-      />
+      <div className="container flex flex-col">
+        <MemberFilter
+          active={filters.artist ?? filters.member}
+          updateArtist={setActiveArtist}
+          updateMember={setActiveMember}
+        />
 
-      <div className="pt-2">
-        <QueryErrorResetBoundary>
-          {({ reset }) => (
-            <ErrorBoundary
-              onReset={reset}
-              fallbackRender={({ resetErrorBoundary }) => (
-                <div className="flex w-full flex-col items-center gap-2">
-                  <div className="flex flex-col items-center justify-center gap-2 py-12">
-                    <IconHeartBroken className="h-12 w-12" />
-                    <p>{m.transfer_error_loading()}</p>
+        <div className="pt-2">
+          <QueryErrorResetBoundary>
+            {({ reset }) => (
+              <ErrorBoundary
+                onReset={reset}
+                fallbackRender={({ resetErrorBoundary }) => (
+                  <div className="flex w-full flex-col items-center gap-2">
+                    <div className="flex flex-col items-center justify-center gap-2 py-12">
+                      <IconHeartBroken className="h-12 w-12" />
+                      <p>{m.transfer_error_loading()}</p>
+                    </div>
+                    <Button variant="outline" onClick={resetErrorBoundary}>
+                      <IconRefresh className="mr-2" /> {m.common_retry()}
+                    </Button>
                   </div>
-                  <Button variant="outline" onClick={resetErrorBoundary}>
-                    <IconRefresh className="mr-2" /> {m.common_retry()}
-                  </Button>
-                </div>
-              )}
-            >
-              <Suspense fallback={<TransfersSkeleton />}>
-                <Transfers address={cosmo.address} filters={filters} />
-              </Suspense>
-            </ErrorBoundary>
-          )}
-        </QueryErrorResetBoundary>
+                )}
+              >
+                <Suspense fallback={<TransfersSkeleton />}>
+                  <Transfers address={cosmo.address} filters={filters} />
+                </Suspense>
+              </ErrorBoundary>
+            )}
+          </QueryErrorResetBoundary>
+        </div>
       </div>
     </div>
   );

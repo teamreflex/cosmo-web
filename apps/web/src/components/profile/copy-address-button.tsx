@@ -13,12 +13,7 @@ export default function CopyAddressButton({ address }: { address: string }) {
   }
 
   return (
-    <Button
-      onClick={copyAddress}
-      variant="secondary"
-      size="profile"
-      data-profile
-    >
+    <Button onClick={copyAddress} variant="outline" size="profile" data-profile>
       <IconCopy className="h-5 w-5" />
       <span>{m.profile_address()}</span>
     </Button>

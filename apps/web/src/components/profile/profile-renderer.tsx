@@ -40,31 +40,32 @@ export default function ProfileRenderer({ targetCosmo }: Props) {
         />
       </FiltersContainer>
 
-      <CosmoMemberFilter />
+      <div className="container flex flex-col">
+        <CosmoMemberFilter />
 
-      {/* display */}
-      {(() => {
-        switch (dataSource) {
-          case "blockchain":
-            return (
-              <Blockchain
-                gridColumns={gridColumns}
-                targetCosmo={targetCosmo}
-                showLocked={showLocked}
-              />
-            );
-          case "blockchain-groups":
-            return (
-              <BlockchainGroups
-                gridColumns={gridColumns}
-                targetCosmo={targetCosmo}
-                showLocked={showLocked}
-              />
-            );
-          default:
-            return null;
-        }
-      })()}
+        {(() => {
+          switch (dataSource) {
+            case "blockchain":
+              return (
+                <Blockchain
+                  gridColumns={gridColumns}
+                  targetCosmo={targetCosmo}
+                  showLocked={showLocked}
+                />
+              );
+            case "blockchain-groups":
+              return (
+                <BlockchainGroups
+                  gridColumns={gridColumns}
+                  targetCosmo={targetCosmo}
+                  showLocked={showLocked}
+                />
+              );
+            default:
+              return null;
+          }
+        })()}
+      </div>
     </div>
   );
 }

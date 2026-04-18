@@ -46,8 +46,8 @@ export default function ExpandableObjekt({
           "--objekt-text-color": collection.textColor,
         }}
         className={cn(
-          "relative aspect-photocard touch-manipulation overflow-hidden rounded-lg bg-secondary ring-2 ring-transparent drop-shadow-sm transition-colors md:rounded-xl lg:rounded-2xl",
-          isSelected && "ring-foreground",
+          "group/objekt relative aspect-photocard touch-manipulation overflow-hidden rounded-md bg-secondary ring-1 ring-border transition-[transform,box-shadow,ring-color] duration-200 ease-out hover:-translate-y-0.5 hover:ring-cosmo hover:ring-offset-0 hover:shadow-lg",
+          isSelected && "ring-2 ring-foreground hover:ring-foreground",
           className,
         )}
       >

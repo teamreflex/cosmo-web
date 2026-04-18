@@ -29,11 +29,23 @@ export default function MetadataPanel(props: Props) {
 
 function Fallback() {
   return (
-    <div className="flex grow flex-col justify-between gap-2 px-4">
-      <div className="flex min-h-10 flex-col gap-2 sm:h-full">
-        <Skeleton className="mx-auto h-8 w-46 rounded-md md:mx-0" />
-        <Skeleton className="h-3 w-full rounded-full sm:h-5" />
-        <Skeleton className="h-3 w-2/3 rounded-full sm:h-5" />
+    <div className="flex flex-col">
+      {/* stats row skeleton — fixed height so no layout shift */}
+      <div className="flex items-stretch border-b border-border">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div
+            key={i}
+            className="flex-1 border-r border-border px-4 py-3 last:border-r-0"
+          >
+            <Skeleton className="h-3 w-16" />
+            <Skeleton className="mt-1 h-4 w-20" />
+          </div>
+        ))}
+      </div>
+      <div className="flex flex-col gap-2 px-4 py-4">
+        <Skeleton className="h-8 w-40" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-2/3" />
       </div>
     </div>
   );

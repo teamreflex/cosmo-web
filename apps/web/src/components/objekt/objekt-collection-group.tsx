@@ -1,24 +1,32 @@
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerTitle,
+} from "@/components/ui/drawer-radix";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import { useMetadataDialog } from "@/hooks/use-metadata-dialog";
 import { useObjektTransfer } from "@/hooks/use-objekt-transfer";
-import { useProfileContext } from "@/hooks/use-profile";
 import { m } from "@/i18n/messages";
 import { getObjektImageUrls } from "@/lib/client/objekt-util";
 import { objektQuery } from "@/lib/queries/objekt-queries";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
 import { useObjektOverlay } from "@/store";
-import type {
-  BFFCollectionGroup,
-  BFFCollectionGroupObjekt,
-} from "@apollo/cosmo/types/objekts";
-import { IconInfoCircle, IconX } from "@tabler/icons-react";
+import type { BFFCollectionGroup } from "@apollo/cosmo/types/objekts";
+import { IconInfoCircle } from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Dialog as DialogPrimitive, VisuallyHidden } from "radix-ui";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { ObjektNewIndicator, ObjektSidebar } from "./common";
+import DetailContent from "./detail/detail-content";
 import MetadataDialog from "./metadata-dialog";
-import StaticObjekt from "./objekt-static";
 
 interface Props {
   group: BFFCollectionGroup;
@@ -27,24 +35,17 @@ interface Props {
   priority?: boolean;
 }
 
-/**
- * Shows all objekts in the collection group on click.
- */
 export default function GroupedObjekt({
   group,
-  gridColumns,
   showLocked,
   priority = false,
 }: Props) {
-  const [open, setOpen] = useState(false);
   const hasSelected = useObjektTransfer(
     useShallow((state) =>
       state.hasSelected(group.objekts.map((o) => o.metadata.tokenId)),
     ),
   );
 
-  const subtitle =
-    group.count === 1 ? m.objekt_group_objekt() : m.objekt_group_objekts();
   const collection = Objekt.fromCollectionGroup({
     collection: group.collection,
   });
@@ -54,7 +55,49 @@ export default function GroupedObjekt({
   });
 
   return (
-    <DialogPrimitive.Root open={open} onOpenChange={setOpen}>
+    <MetadataDialog slug={collection.slug}>
+      <Detail
+        collection={collection}
+        group={group}
+        showLocked={showLocked}
+        hasSelected={hasSelected}
+        hasNew={hasNew}
+        priority={priority}
+      />
+    </MetadataDialog>
+  );
+}
+
+type DetailProps = {
+  collection: Objekt.Collection;
+  group: BFFCollectionGroup;
+  showLocked: boolean;
+  hasSelected: boolean;
+  hasNew: boolean;
+  priority: boolean;
+};
+
+function Detail({
+  collection,
+  group,
+  showLocked,
+  hasSelected,
+  hasNew,
+  priority,
+}: DetailProps) {
+  const isDesktop = useMediaQuery();
+  const [open, setOpen] = useState(false);
+
+  const tokens = useMemo(
+    () =>
+      group.objekts
+        .filter((o) => (o.nonTransferableReason ? showLocked : true))
+        .map((o) => Objekt.fromCollectionGroup({ objekt: o })),
+    [group.objekts, showLocked],
+  );
+
+  return (
+    <>
       <RootObjekt
         collection={collection}
         count={group.count}
@@ -64,47 +107,39 @@ export default function GroupedObjekt({
         priority={priority}
       />
 
-      <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/10 backdrop-blur-sm data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0" />
-        <DialogPrimitive.Content>
-          {/* hide the title and description */}
-          <VisuallyHidden.Root>
-            <DialogPrimitive.Title>
-              {group.collection.collectionId}
-            </DialogPrimitive.Title>
-            <DialogPrimitive.Description>
-              {m.objekt_group_select()}
-            </DialogPrimitive.Description>
-          </VisuallyHidden.Root>
-
-          {/* content */}
-          <div className="fixed top-12 left-1/2 z-50 flex max-h-[calc(100dvh-3rem)] w-full max-w-304 -translate-x-1/2 flex-col overflow-y-auto px-4.5 lg:px-2">
-            {/* title */}
-            <div className="grid grid-flow-col grid-cols-[1fr_auto] grid-rows-2">
-              <h2 className="text-2xl font-bold">
-                {group.collection.collectionId}
-              </h2>
-              <p className="text-sm font-semibold text-muted-foreground">
-                {group.count} {subtitle}
-              </p>
-
-              <DialogPrimitive.Close className="place-self-end opacity-70 transition-opacity outline-none hover:opacity-100 disabled:pointer-events-none data-[state=open]:bg-secondary data-[state=open]:text-muted-foreground">
-                <IconX className="size-8" />
-                <span className="sr-only">{m.common_close()}</span>
-              </DialogPrimitive.Close>
+      {isDesktop ? (
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent
+            showCloseButton={false}
+            className="grid max-h-[92dvh] w-[calc(100%-2rem)] grid-rows-[1fr] gap-0 overflow-hidden rounded-md p-0 sm:max-w-[min(1400px,calc(100%-4rem))]"
+          >
+            <div className="sr-only">
+              <DialogTitle>{collection.collectionId}</DialogTitle>
+              <DialogDescription>{m.objekt_group_select()}</DialogDescription>
             </div>
-
-            {/* objekts */}
-            <ObjektList
+            <DetailContent
               collection={collection}
-              objekts={group.objekts}
-              gridColumns={gridColumns}
-              showLocked={showLocked}
+              tokens={tokens}
+              onSelect={() => setOpen(false)}
             />
-          </div>
-        </DialogPrimitive.Content>
-      </DialogPrimitive.Portal>
-    </DialogPrimitive.Root>
+          </DialogContent>
+        </Dialog>
+      ) : (
+        <Drawer open={open} onOpenChange={setOpen}>
+          <DrawerContent className="h-[92dvh] gap-0 rounded-t-md p-0">
+            <div className="sr-only">
+              <DrawerTitle>{collection.collectionId}</DrawerTitle>
+              <DrawerDescription>{m.objekt_group_select()}</DrawerDescription>
+            </div>
+            <DetailContent
+              collection={collection}
+              tokens={tokens}
+              onSelect={() => setOpen(false)}
+            />
+          </DrawerContent>
+        </Drawer>
+      )}
+    </>
   );
 }
 
@@ -135,42 +170,40 @@ function RootObjekt({
   }
 
   return (
-    <MetadataDialog slug={collection.slug}>
-      <div
-        role="button"
-        style={{
-          "--objekt-background-color": collection.backgroundColor,
-          "--objekt-text-color": collection.textColor,
-        }}
+    <div
+      role="button"
+      style={{
+        "--objekt-background-color": collection.backgroundColor,
+        "--objekt-text-color": collection.textColor,
+      }}
+      className={cn(
+        "group/objekt relative aspect-photocard touch-manipulation overflow-hidden rounded-md bg-secondary ring-1 ring-border transition-[transform,box-shadow,ring-color] duration-200 ease-out hover:-translate-y-0.5 hover:shadow-lg hover:ring-cosmo",
+        hasSelected && "ring-2 ring-foreground hover:ring-foreground",
+      )}
+    >
+      <img
+        onMouseOver={prefetch}
+        onLoad={() => setIsLoaded(true)}
+        onClick={onClick}
         className={cn(
-          "relative aspect-photocard touch-manipulation overflow-hidden rounded-lg bg-secondary ring-2 ring-transparent drop-shadow-sm transition-colors md:rounded-xl lg:rounded-2xl",
-          hasSelected && "ring-foreground",
+          "w-full transition-opacity",
+          isLoaded === false && "opacity-0",
         )}
-      >
-        <img
-          onMouseOver={prefetch}
-          onLoad={() => setIsLoaded(true)}
-          onClick={onClick}
-          className={cn(
-            "w-full transition-opacity",
-            isLoaded === false && "opacity-0",
-          )}
-          src={front.display}
-          width={291}
-          height={450}
-          alt={collection.collectionId}
-          decoding="async"
-          fetchPriority={priority ? "high" : "auto"}
-        />
+        src={front.display}
+        width={291}
+        height={450}
+        alt={collection.collectionId}
+        decoding="async"
+        fetchPriority={priority ? "high" : "auto"}
+      />
 
-        <ObjektSidebar collection={collection} />
-        <RootObjektOverlay
-          collection={collection}
-          count={count}
-          hasNew={hasNew}
-        />
-      </div>
-    </MetadataDialog>
+      <ObjektSidebar collection={collection} />
+      <RootObjektOverlay
+        collection={collection}
+        count={count}
+        hasNew={hasNew}
+      />
+    </div>
   );
 }
 
@@ -190,10 +223,7 @@ function RootObjektOverlay({
   const queryClient = useQueryClient();
 
   function handleClick() {
-    // populate the query cache so it doesn't re-fetch
     queryClient.setQueryData(objektQuery(collection.slug).queryKey, collection);
-
-    // open the dialog
     open();
   }
 
@@ -201,7 +231,7 @@ function RootObjektOverlay({
     <div className="contents">
       <div
         className={cn(
-          "group absolute bottom-0 left-0 isolate flex h-5 w-5 gap-2 rounded-tr-lg p-1 transition-all sm:h-9 sm:w-9 sm:rounded-tr-xl sm:p-2",
+          "group absolute bottom-0 left-0 isolate flex h-5 w-5 gap-2 rounded-tr-md p-1 transition-all sm:h-9 sm:w-9 sm:p-2",
           "bg-(--objekt-background-color) text-(--objekt-text-color)",
           isHidden && "hidden",
         )}
@@ -224,53 +254,6 @@ function RootObjektOverlay({
 
         {hasNew && <ObjektNewIndicator />}
       </div>
-    </div>
-  );
-}
-
-type ObjektListProps = {
-  collection: Objekt.Collection;
-  objekts: BFFCollectionGroupObjekt[];
-  gridColumns: number;
-  showLocked: boolean;
-};
-
-function ObjektList({
-  collection,
-  objekts,
-  gridColumns,
-  showLocked,
-}: ObjektListProps) {
-  const pins = useProfileContext((ctx) => ctx.pins);
-  const lockedObjekts = useProfileContext((ctx) => ctx.lockedObjekts);
-
-  const toRender = objekts
-    .filter((objekt) => {
-      return lockedObjekts.includes(objekt.metadata.tokenId)
-        ? showLocked
-        : true;
-    })
-    .sort((a, b) => a.metadata.objektNo - b.metadata.objektNo);
-
-  return (
-    <div
-      style={{ "--grid-columns": gridColumns }}
-      className="grid grid-cols-3 gap-4 pb-2 md:grid-cols-[repeat(var(--grid-columns),_minmax(0,_1fr))]"
-    >
-      {toRender.map((o) => {
-        const objekt = Objekt.fromCollectionGroup({ objekt: o });
-        return (
-          <StaticObjekt
-            key={objekt.tokenId}
-            collection={collection}
-            token={objekt}
-            isPinned={
-              pins.findIndex((p) => parseInt(p.tokenId) === objekt.tokenId) !==
-              -1
-            }
-          />
-        );
-      })}
     </div>
   );
 }

@@ -21,7 +21,7 @@ export function TransfersFilters(props: Props) {
   const { filters, setFilters } = useCosmoFilters();
 
   return (
-    <div className="flex flex-wrap items-center justify-center gap-2 group-data-[show=false]:hidden lg:group-data-[show=false]:flex">
+    <div className="flex flex-wrap items-center gap-2 group-data-[show=false]:hidden lg:group-data-[show=false]:flex">
       <ErrorBoundary
         fallback={<Skeleton className="h-9 w-[97px] bg-destructive" />}
       >

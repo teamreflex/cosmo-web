@@ -76,9 +76,8 @@ export default function UpdateList({ objektList }: Props) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
-          variant="secondary"
-          size="icon"
-          className="rounded-full"
+          variant="outline"
+          size="icon-sm"
           aria-label={m.aria_edit_list()}
         >
           <IconEdit />

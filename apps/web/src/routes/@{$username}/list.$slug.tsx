@@ -1,8 +1,7 @@
 import { Error } from "@/components/error-boundary";
-import DeleteList from "@/components/lists/delete-list";
+import ListHeader from "@/components/lists/list-header";
 import ListMatchesSheet from "@/components/lists/list-matches-sheet";
 import ListRenderer from "@/components/lists/list-renderer";
-import UpdateList from "@/components/lists/update-list";
 import Overlay from "@/components/misc/overlay";
 import ScrollToTop from "@/components/misc/overlay/scroll-to-top";
 import ToggleObjektBands from "@/components/misc/overlay/toggle-objekt-bands";
@@ -103,43 +102,26 @@ function RouteComponent() {
       ? objektList.linkedWantListId !== null
       : linkingHave !== undefined;
 
+  const extras =
+    isAuthenticated &&
+    isTradeActive &&
+    (objektList.type === "have" || objektList.type === "want") ? (
+      <ListMatchesSheet listId={objektList.id} listType={objektList.type} />
+    ) : null;
+
   return (
     <UserStateProvider {...account}>
       <ProfileProvider target={target} objektLists={targetObjektLists}>
-        <div className="flex flex-col gap-2">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h3 className="font-cosmo text-xl">
-              {objektList.name}
-              {objektList.type === "sale" && objektList.currency && (
-                <span className="ml-2 text-sm text-muted-foreground">
-                  ({objektList.currency})
-                </span>
-              )}
-            </h3>
-
-            <div className="flex items-center gap-2">
-              {isAuthenticated &&
-                isTradeActive &&
-                (objektList.type === "have" || objektList.type === "want") && (
-                  <ListMatchesSheet
-                    listId={objektList.id}
-                    listType={objektList.type}
-                  />
-                )}
-              {isAuthenticated && (
-                <>
-                  <UpdateList objektList={objektList} />
-                  <DeleteList objektList={objektList} />
-                </>
-              )}
-            </div>
+        <div className="border-b border-border">
+          <div className="container">
+            <ListHeader
+              list={objektList}
+              ownerName={target.cosmo.username}
+              objektCount={0}
+              isOwner={isAuthenticated}
+              extras={extras}
+            />
           </div>
-
-          {objektList.description && (
-            <p className="whitespace-pre-wrap text-sm text-muted-foreground">
-              {objektList.description}
-            </p>
-          )}
         </div>
 
         <ListRenderer objektList={objektList} authenticated={isAuthenticated} />

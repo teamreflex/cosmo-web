@@ -1,6 +1,6 @@
 import { m } from "@/i18n/messages";
 import { cn } from "@/lib/utils";
-import { IconX } from "@tabler/icons-react";
+import { IconSearch, IconX } from "@tabler/icons-react";
 import { getRouteApi } from "@tanstack/react-router";
 import { useState } from "react";
 import { useDebounceCallback } from "usehooks-ts";
@@ -32,27 +32,31 @@ export default function FilterSearch() {
   return (
     <div
       className={cn(
-        "flex h-9 w-48 min-w-0 items-center gap-2 rounded-md border border-input bg-transparent shadow-xs transition-[color,box-shadow] outline-none selection:bg-primary selection:text-primary-foreground placeholder:text-muted-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30",
-        "focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50",
+        "flex h-9 w-48 min-w-0 items-center gap-1.5 rounded-sm border border-border bg-background px-2.5 font-mono transition-colors",
+        "focus-within:border-cosmo/60 focus-within:bg-background",
       )}
     >
+      <IconSearch className="size-3.5 shrink-0 text-muted-foreground" />
       <input
         id="filter-search"
         type="text"
         placeholder={m.common_search_placeholder()}
         value={query ?? ""}
         onChange={(e) => set(e.currentTarget.value || undefined)}
-        className="h-full w-full grow py-1 pl-3 text-base outline-none md:text-sm"
+        className="h-full w-full grow bg-transparent text-xs tracking-[0.08em] outline-none placeholder:text-muted-foreground placeholder:uppercase"
         maxLength={32}
       />
 
-      <button
-        type="button"
-        onClick={() => set(undefined)}
-        aria-label={m.aria_clear_search()}
-      >
-        <IconX className="mr-3 h-4 w-4" />
-      </button>
+      {query && (
+        <button
+          type="button"
+          onClick={() => set(undefined)}
+          aria-label={m.aria_clear_search()}
+          className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <IconX className="size-3.5" />
+        </button>
+      )}
     </div>
   );
 }

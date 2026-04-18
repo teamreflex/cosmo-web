@@ -1,13 +1,12 @@
 import { useObjektSerial } from "@/hooks/use-objekt-serial";
 import { objektQuery } from "@/lib/queries/objekt-queries";
-import { cn } from "@/lib/utils";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { Separator } from "../../ui/separator";
 import { ObjektSidebar } from "../common";
 import FlippableObjekt from "../objekt-flippable";
 import AttributePanel from "./attribute-panel";
 import type { ObjektMetadataTab } from "./common";
+import MetadataFooter from "./metadata-footer";
 import MetadataPanel from "./metadata-panel";
 
 type Props = {
@@ -22,28 +21,30 @@ export default function MetadataContent(props: Props) {
   );
 
   return (
-    <div className="contents">
-      <div
-        data-tab={tab}
-        className={cn(
-          // common
-          "flex aspect-photocard shrink-0",
-          // mobile
-          "mx-auto mt-2 w-2/3 data-[tab=serials]:w-1/2",
-          // desktop
-          "md:mx-0 md:mt-0 md:h-[28rem] md:w-auto md:data-[tab=serials]:w-auto",
-        )}
-      >
-        <FlippableObjekt collection={data}>
-          <ObjektSidebar collection={data} />
-        </FlippableObjekt>
-      </div>
+    <div className="flex h-full flex-col overflow-hidden">
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+        {/* card */}
+        <div
+          className="flex shrink-0 items-center justify-center border-b border-border p-6"
+          style={{
+            background: `radial-gradient(600px 300px at 50% 30%, ${data.backgroundColor}22, transparent 70%)`,
+          }}
+        >
+          <div className="w-full max-w-[280px]">
+            <FlippableObjekt collection={data}>
+              <ObjektSidebar collection={data} />
+            </FlippableObjekt>
+          </div>
+        </div>
 
-      <div className="mb-2 flex flex-col gap-2 overflow-y-auto sm:my-4 sm:overflow-y-hidden">
+        {/* attributes */}
         <AttributePanel objekt={data} />
-        <Separator orientation="horizontal" />
+
+        {/* stats + tabs — suspended for metadata query */}
         <MetadataPanel objekt={data} tab={tab} setTab={setTab} />
       </div>
+
+      <MetadataFooter objekt={data} />
     </div>
   );
 }

@@ -48,7 +48,7 @@ export default function ListDropdown(props: Props) {
       />
 
       <DropdownMenuTrigger asChild>
-        <Button variant="secondary" size="profile" data-profile>
+        <Button variant="outline" size="profile" data-profile>
           <IconList className="h-5 w-5" />
           <span className="hidden sm:block">{m.list_lists()}</span>
         </Button>

@@ -85,6 +85,8 @@ export const $getObjektListWithUser = createServerFn({ method: "GET" })
         user: {
           columns: {
             id: true,
+            name: true,
+            displayUsername: true,
           },
           with: {
             cosmoAccount: {
