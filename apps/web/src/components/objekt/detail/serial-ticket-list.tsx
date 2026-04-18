@@ -1,11 +1,11 @@
 import { m } from "@/i18n/messages";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
-import { IconArrowsUpDown } from "@tabler/icons-react";
+import { IconArrowDown } from "@tabler/icons-react";
 import { useMemo, useState } from "react";
 import SerialTicket from "./serial-ticket";
 
-type SortKey = "serial" | "minted" | "status";
+type SortKey = "serial" | "received" | "status";
 type SortDir = "asc" | "desc";
 
 type Props = {
@@ -14,7 +14,6 @@ type Props = {
   authenticated: boolean;
   pins: Set<number>;
   locked: Set<number>;
-  onSelect: () => void;
 };
 
 export default function SerialTicketList({
@@ -23,7 +22,6 @@ export default function SerialTicketList({
   authenticated,
   pins,
   locked,
-  onSelect,
 }: Props) {
   const [sortKey, setSortKey] = useState<SortKey>("serial");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
@@ -44,12 +42,16 @@ export default function SerialTicketList({
     }
   }
 
+  const title = authenticated
+    ? m.detail_owned_objekts_self()
+    : m.detail_owned_objekts_other();
+
   return (
     <div className="flex min-h-0 flex-col">
       <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3 sm:px-5">
         <div className="flex items-baseline gap-2">
           <span className="font-cosmo text-sm font-black tracking-[0.14em] uppercase">
-            {m.detail_your_serials()}
+            {title}
           </span>
           <span className="font-mono text-xs text-muted-foreground">
             {m.detail_copies_count({ count: tokens.length.toString() })}
@@ -64,11 +66,11 @@ export default function SerialTicketList({
             {m.detail_sort_serial()}
           </SortButton>
           <SortButton
-            active={sortKey === "minted"}
+            active={sortKey === "received"}
             dir={sortDir}
-            onClick={() => toggleSort("minted")}
+            onClick={() => toggleSort("received")}
           >
-            {m.detail_sort_minted()}
+            {m.detail_sort_received()}
           </SortButton>
           <SortButton
             active={sortKey === "status"}
@@ -87,7 +89,6 @@ export default function SerialTicketList({
             collection={collection}
             token={token}
             authenticated={authenticated}
-            onSelect={onSelect}
           />
         ))}
       </div>
@@ -116,7 +117,7 @@ function SortButton({ active, dir, onClick, children }: SortButtonProps) {
     >
       <span>{children}</span>
       {active && (
-        <IconArrowsUpDown
+        <IconArrowDown
           className={cn(
             "size-3 transition-transform",
             dir === "desc" && "rotate-180",
@@ -135,7 +136,7 @@ function compare(
   locked: Set<number>,
 ) {
   if (key === "serial") return a.serial - b.serial;
-  if (key === "minted") {
+  if (key === "received") {
     const aT = new Date(a.acquiredAt).getTime();
     const bT = new Date(b.acquiredAt).getTime();
     return aT - bT;

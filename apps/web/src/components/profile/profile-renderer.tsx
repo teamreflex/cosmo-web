@@ -1,11 +1,13 @@
 import { useFilters } from "@/hooks/use-filters";
 import { useGridColumns } from "@/hooks/use-grid-columns";
 import { useUserState } from "@/hooks/use-user-state";
+import { m } from "@/i18n/messages";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import { Addresses, isEqual } from "@apollo/util";
 import Blockchain from "../collection/data-sources/blockchain";
 import BlockchainGroups from "../collection/data-sources/blockchain-groups";
 import CollectionFilters from "../collection/filter-contexts/collection-filters";
+import FilterHeader from "../collection/filter-header";
 import FiltersContainer from "../collection/filters-container";
 import CosmoMemberFilter from "../objekt/cosmo-member-filter";
 import Portal from "../portal";
@@ -30,6 +32,14 @@ export default function ProfileRenderer({ targetCosmo }: Props) {
         <HelpDialog />
       </Portal>
 
+      <FilterHeader title={m.collection_title()}>
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <div className="pointer-events-auto">
+            <CosmoMemberFilter />
+          </div>
+        </div>
+      </FilterHeader>
+
       <FiltersContainer isPortaled>
         <CollectionFilters
           dataSource={dataSource}
@@ -41,8 +51,6 @@ export default function ProfileRenderer({ targetCosmo }: Props) {
       </FiltersContainer>
 
       <div className="container flex flex-col">
-        <CosmoMemberFilter />
-
         {(() => {
           switch (dataSource) {
             case "blockchain":

@@ -1,7 +1,6 @@
 import { useAuthenticated } from "@/hooks/use-authenticated";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useProfileContext } from "@/hooks/use-profile";
-import { m } from "@/i18n/messages";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { useMemo } from "react";
 import { ObjektSidebar } from "../common";
@@ -11,10 +10,9 @@ import SerialTicketList from "./serial-ticket-list";
 type Props = {
   collection: Objekt.Collection;
   tokens: Objekt.Token[];
-  onSelect: () => void;
 };
 
-export default function DetailContent({ collection, tokens, onSelect }: Props) {
+export default function DetailContent({ collection, tokens }: Props) {
   const authenticated = useAuthenticated();
   const isDesktop = useMediaQuery();
   const pins = useProfileContext((ctx) => ctx.pins);
@@ -50,14 +48,6 @@ export default function DetailContent({ collection, tokens, onSelect }: Props) {
           <div className="mt-1 font-mono text-[11px] tracking-[0.14em] text-muted-foreground uppercase">
             {collection.artist} · {collection.season} · {collection.class}
           </div>
-          <div className="mt-4 inline-flex items-baseline gap-2 rounded-full border border-border px-3 py-1.5">
-            <span className="font-mono text-[10px] tracking-[0.14em] text-muted-foreground uppercase">
-              {m.detail_you_own()}
-            </span>
-            <span className="font-cosmo text-lg font-black tabular-nums">
-              ×{tokens.length}
-            </span>
-          </div>
         </div>
       </div>
 
@@ -67,7 +57,6 @@ export default function DetailContent({ collection, tokens, onSelect }: Props) {
         authenticated={authenticated}
         pins={pinSet}
         locked={lockedSet}
-        onSelect={onSelect}
       />
     </div>
   );

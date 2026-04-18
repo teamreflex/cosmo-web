@@ -10,7 +10,6 @@ import UpdateList from "./update-list";
 type Props = {
   list: ObjektList;
   ownerName: string;
-  objektCount: number;
   isOwner: boolean;
   extras?: ReactNode;
 };
@@ -18,7 +17,6 @@ type Props = {
 export default function ListHeader({
   list,
   ownerName,
-  objektCount,
   isOwner,
   extras,
 }: Props) {

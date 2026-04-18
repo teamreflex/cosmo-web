@@ -1,10 +1,5 @@
 import VirtualizedObjektGrid from "@/components/objekt/virtualized-objekt-grid";
 import ProfileTotalStat from "@/components/profile/profile-total-stat";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { useArtists } from "@/hooks/use-artists";
 import { useAuthenticated } from "@/hooks/use-authenticated";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
@@ -17,7 +12,6 @@ import { userCollectionBlockchainQuery } from "@/lib/queries/objekt-queries";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
 import { Addresses, isEqual } from "@apollo/util";
-import { IconInfoCircle } from "@tabler/icons-react";
 import { useCallback } from "react";
 import { BlockchainGridItem } from "./blockchain-grid-item";
 

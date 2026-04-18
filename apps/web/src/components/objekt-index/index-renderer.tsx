@@ -29,15 +29,19 @@ export default function IndexRenderer(props: Props) {
 
   return (
     <div className="flex flex-col">
-      <FilterHeader
-        title={
-          <>
-            {m.objekts_header()}
-            <HelpDialog />
-          </>
-        }
-        center={<CosmoMemberFilter />}
-        right={
+      <FilterHeader title={m.objekts_header()}>
+        <div
+          id="objekt-total"
+          className="font-mono text-xs text-muted-foreground tabular-nums"
+        />
+
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <div className="pointer-events-auto">
+            <CosmoMemberFilter />
+          </div>
+        </div>
+
+        <div className="ml-auto flex items-center gap-2">
           <Suspense
             fallback={
               <Button
@@ -53,8 +57,9 @@ export default function IndexRenderer(props: Props) {
           >
             <IndexListDropdown />
           </Suspense>
-        }
-      />
+          <HelpDialog />
+        </div>
+      </FilterHeader>
 
       <FiltersContainer>
         <ObjektIndexFilters search />

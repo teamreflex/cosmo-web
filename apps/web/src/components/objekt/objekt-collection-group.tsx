@@ -117,11 +117,7 @@ function Detail({
               <DialogTitle>{collection.collectionId}</DialogTitle>
               <DialogDescription>{m.objekt_group_select()}</DialogDescription>
             </div>
-            <DetailContent
-              collection={collection}
-              tokens={tokens}
-              onSelect={() => setOpen(false)}
-            />
+            <DetailContent collection={collection} tokens={tokens} />
           </DialogContent>
         </Dialog>
       ) : (
@@ -131,11 +127,7 @@ function Detail({
               <DrawerTitle>{collection.collectionId}</DrawerTitle>
               <DrawerDescription>{m.objekt_group_select()}</DrawerDescription>
             </div>
-            <DetailContent
-              collection={collection}
-              tokens={tokens}
-              onSelect={() => setOpen(false)}
-            />
+            <DetailContent collection={collection} tokens={tokens} />
           </DrawerContent>
         </Drawer>
       )}

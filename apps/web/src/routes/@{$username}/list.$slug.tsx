@@ -117,7 +117,6 @@ function RouteComponent() {
             <ListHeader
               list={objektList}
               ownerName={target.cosmo.username}
-              objektCount={0}
               isOwner={isAuthenticated}
               extras={extras}
             />

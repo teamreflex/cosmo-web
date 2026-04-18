@@ -98,7 +98,6 @@ function RouteComponent() {
               <ListHeader
                 list={objektList}
                 ownerName={owner.display}
-                objektCount={0}
                 isOwner={isAuthenticated}
               />
             </div>

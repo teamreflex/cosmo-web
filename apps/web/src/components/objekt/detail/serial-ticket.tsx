@@ -7,7 +7,6 @@ import { useLockedObjekt, usePinnedObjekt } from "@/hooks/use-profile";
 import { useProfileContext } from "@/hooks/use-profile";
 import { m } from "@/i18n/messages";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
-import { cn } from "@/lib/utils";
 import { IconArrowRight } from "@tabler/icons-react";
 import { format } from "date-fns";
 import { useMemo } from "react";
@@ -17,14 +16,12 @@ type Props = {
   collection: Objekt.Collection;
   token: Objekt.Token;
   authenticated: boolean;
-  onSelect: () => void;
 };
 
 export default function SerialTicket({
   collection,
   token,
   authenticated,
-  onSelect,
 }: Props) {
   const isLocked = useLockedObjekt(token.tokenId);
   const isPinned = usePinnedObjekt(token.tokenId);
@@ -32,7 +29,7 @@ export default function SerialTicket({
   const { setSerial } = useObjektSerial();
   const { open } = useMetadataDialog();
 
-  const mintedAt = useMemo(() => {
+  const receivedAt = useMemo(() => {
     try {
       return format(new Date(token.acquiredAt), "dd MMM yy");
     } catch {
@@ -45,7 +42,6 @@ export default function SerialTicket({
   function handleClick() {
     setSerial(token.serial);
     open();
-    onSelect();
   }
 
   const isTradable =
@@ -80,12 +76,12 @@ export default function SerialTicket({
         </div>
       </div>
 
-      {/* minted date — desktop only */}
+      {/* received date — desktop only */}
       <div className="hidden w-28 shrink-0 md:block">
         <div className="font-mono text-[10px] tracking-[0.14em] text-muted-foreground uppercase">
-          {m.detail_sort_minted()}
+          {m.detail_sort_received()}
         </div>
-        <div className="text-xs">{mintedAt}</div>
+        <div className="text-xs">{receivedAt}</div>
       </div>
 
       {/* status pills */}
@@ -94,7 +90,7 @@ export default function SerialTicket({
           <StatusPill tone="accent">{m.objekt_overlay_pinned()}</StatusPill>
         )}
         {isLocked && <StatusPill tone="muted">{m.common_locked()}</StatusPill>}
-        {isTradable && !isLocked && (
+        {isTradable && (
           <StatusPill tone="accent">{m.common_tradable()}</StatusPill>
         )}
         {!isTradable && token.nonTransferableReason && (
@@ -104,12 +100,10 @@ export default function SerialTicket({
         )}
       </div>
 
-      {/* hover actions — authenticated owner only */}
+      {/* actions — authenticated owner only, always visible */}
       {authenticated && (
         <div
-          className={cn(
-            "hidden items-center gap-2 text-foreground opacity-0 transition-opacity sm:flex group-hover:opacity-100",
-          )}
+          className="flex items-center gap-2 text-foreground"
           onClick={(e) => e.stopPropagation()}
           onKeyDown={(e) => e.stopPropagation()}
           role="presentation"

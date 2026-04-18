@@ -1,24 +1,38 @@
 import { cn } from "@/lib/utils";
+import { cva } from "class-variance-authority";
+import type { VariantProps } from "class-variance-authority";
 import type { ReactNode } from "react";
 
-type Tone = "accent" | "fg" | "muted";
+const statusPillVariants = cva(
+  "inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 font-mono text-[10px] tracking-widest uppercase",
+  {
+    variants: {
+      tone: {
+        accent: "bg-cosmo/30 text-cosmo-text",
+        fg: "bg-foreground/10 text-foreground",
+        muted: "bg-muted text-muted-foreground",
+      },
+    },
+    defaultVariants: {
+      tone: "accent",
+    },
+  },
+);
 
-type Props = {
-  tone: Tone;
+type Props = VariantProps<typeof statusPillVariants> & {
   children: ReactNode;
   glyph?: ReactNode;
+  className?: string;
 };
 
-export default function StatusPill({ tone, children, glyph }: Props) {
+export default function StatusPill({
+  tone,
+  children,
+  glyph,
+  className,
+}: Props) {
   return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 font-mono text-[10px] tracking-[0.1em] uppercase",
-        tone === "accent" && "bg-cosmo/20 text-cosmo",
-        tone === "fg" && "bg-foreground/10 text-foreground",
-        tone === "muted" && "bg-muted text-muted-foreground",
-      )}
-    >
+    <span className={cn(statusPillVariants({ tone }), className)}>
       {glyph}
       {children}
     </span>

@@ -1,35 +1,25 @@
-import { cn } from "@/lib/utils";
-import type { ReactNode } from "react";
+import { cn, type PropsWithClassName } from "@/lib/utils";
+import type { PropsWithChildren, ReactNode } from "react";
 
-type Props = {
-  title: ReactNode;
-  center?: ReactNode;
-  right?: ReactNode;
-  className?: string;
-};
+type Props = PropsWithChildren<
+  PropsWithClassName<{
+    title: ReactNode;
+  }>
+>;
 
-export default function FilterHeader({
-  title,
-  center,
-  right,
-  className,
-}: Props) {
+export default function FilterHeader(props: Props) {
   return (
     <div className="border-b border-border">
       <div
         className={cn(
-          "container grid grid-cols-[auto_1fr_auto] items-center gap-3 py-3",
-          className,
+          "container relative flex h-14 items-center gap-3",
+          props.className,
         )}
       >
-        <h1 className="flex items-center gap-2 font-cosmo text-2xl leading-none font-black tracking-wide uppercase md:text-3xl">
-          {title}
+        <h1 className="flex items-center gap-2 font-cosmo text-xl leading-none font-black tracking-wide uppercase md:text-2xl">
+          {props.title}
         </h1>
-        <div className="flex min-w-0 items-center justify-center">{center}</div>
-        <div className="flex min-w-0 items-center justify-end gap-2 font-mono text-xs text-muted-foreground tabular-nums">
-          <div id="objekt-total" className="hidden sm:block" />
-          {right}
-        </div>
+        {props.children}
       </div>
     </div>
   );
