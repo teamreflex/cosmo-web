@@ -47,7 +47,7 @@ export function AttrCell({ label, value, mono, className }: CellProps) {
         className,
       )}
     >
-      <span className="text-[10px] font-medium tracking-[0.14em] text-muted-foreground uppercase">
+      <span className="text-xxs font-medium tracking-[0.14em] text-muted-foreground uppercase">
         {label}
       </span>
       <span
@@ -70,7 +70,7 @@ export function StatCell({ label, value, mono, className }: CellProps) {
         className,
       )}
     >
-      <div className="text-[10px] font-medium tracking-[0.14em] text-muted-foreground uppercase">
+      <div className="text-xxs font-medium tracking-[0.14em] text-muted-foreground uppercase">
         {label}
       </div>
       <div className={cn("font-semibold", mono && "font-mono tabular-nums")}>

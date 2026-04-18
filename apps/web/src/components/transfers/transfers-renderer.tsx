@@ -73,7 +73,7 @@ export default function TransfersRenderer({ cosmo }: Props) {
         </div>
       </FilterHeader>
 
-      <FiltersContainer isPortaled>
+      <FiltersContainer>
         <TransfersFilters type={type} setType={setType} />
       </FiltersContainer>
 

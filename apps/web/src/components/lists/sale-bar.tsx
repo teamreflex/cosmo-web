@@ -30,7 +30,7 @@ export default function SaleBar(props: Props) {
       onClick={props.onClick}
       disabled={!props.onClick}
       className={cn(
-        "-mt-3 flex w-full items-center justify-between rounded-b-lg px-2 pt-4 pb-1.5 text-xs font-medium transition-[filter] md:rounded-b-xl lg:rounded-b-2xl",
+        "-mt-3 flex w-full items-center justify-between rounded-b-photocard px-2 pt-4 pb-1.5 text-xs font-medium transition-[filter]",
         props.onClick && "cursor-pointer hover:brightness-90",
       )}
       style={{ backgroundColor: props.backgroundColor, color: props.textColor }}

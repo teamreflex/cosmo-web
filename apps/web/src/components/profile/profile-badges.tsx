@@ -17,7 +17,7 @@ import { Link } from "@tanstack/react-router";
  */
 export function CosmoVerifiedBadge() {
   return (
-    <span className="inline-flex h-6 items-center gap-1 rounded-sm border border-border bg-background/40 px-1.5 font-mono text-[10px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
+    <span className="inline-flex h-6 items-center gap-1 rounded-sm border border-border bg-background/40 px-1.5 font-mono text-xxs font-semibold tracking-[0.14em] text-muted-foreground uppercase">
       <IconCheck className="size-3" />
       {m.profile_badge_verified()}
     </span>

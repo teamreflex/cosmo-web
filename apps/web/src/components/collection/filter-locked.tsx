@@ -1,5 +1,10 @@
-import { Toggle } from "@/components/ui/toggle";
 import { m } from "@/i18n/messages";
+import FilterChip from "./filter-chip";
+import SingleSelectList, {
+  type SingleSelectOption,
+} from "./single-select-list";
+
+type LockedValue = "all" | "hide";
 
 type Props = {
   showLocked: boolean;
@@ -7,19 +12,45 @@ type Props = {
 };
 
 export default function LockedFilter({ showLocked, setShowLocked }: Props) {
-  const state = showLocked
-    ? m.filter_locked_showing()
-    : m.filter_locked_hiding();
+  const value: LockedValue = showLocked ? "all" : "hide";
+
+  const options: SingleSelectOption<LockedValue>[] = [
+    {
+      value: "all",
+      label: m.filter_locked_all(),
+      sublabel: m.filter_locked_all_sub(),
+    },
+    {
+      value: "hide",
+      label: m.filter_locked_hide(),
+      sublabel: m.filter_locked_hide_sub(),
+    },
+  ];
+
+  function handleChange(newValue: LockedValue) {
+    setShowLocked(newValue === "all" ? undefined : false);
+  }
+
+  const valueLabel =
+    value === "all"
+      ? m.filter_value_all()
+      : options.find((o) => o.value === value)!.label.toLowerCase();
 
   return (
-    <Toggle
-      variant="outline"
-      className="w-36 data-[state=on]:border-cosmo"
-      pressed={showLocked}
-      onPressedChange={(v) => setShowLocked(v ? undefined : false)}
-      aria-label={m.filter_toggle_locked()}
+    <FilterChip
+      label={m.common_locked()}
+      valueLabel={valueLabel}
+      active={value !== "all"}
+      width={240}
     >
-      {state} {m.common_locked()}
-    </Toggle>
+      {({ close }) => (
+        <SingleSelectList
+          options={options}
+          value={value}
+          onChange={handleChange}
+          close={close}
+        />
+      )}
+    </FilterChip>
   );
 }

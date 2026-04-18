@@ -42,7 +42,7 @@ export default function ArtistGroupedMultiSelect({
                 alt={group.artist.title}
                 className="size-4 shrink-0 rounded-full"
               />
-              <span className="font-mono text-[10px] tracking-[0.14em] text-muted-foreground uppercase">
+              <span className="font-mono text-xxs tracking-[0.14em] text-muted-foreground uppercase">
                 {group.artist.title}
               </span>
             </div>
@@ -87,7 +87,7 @@ export default function ArtistGroupedMultiSelect({
       </div>
 
       <div className="flex items-center justify-between px-3 py-2">
-        <span className="font-mono text-[10px] text-muted-foreground">
+        <span className="font-mono text-xxs text-muted-foreground">
           {selectedCount === 0 ? "none selected" : `${selectedCount} selected`}
         </span>
         {selectedCount > 0 && onClear && (

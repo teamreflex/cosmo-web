@@ -137,10 +137,6 @@ function RouteComponent() {
                 className="flex h-10 items-center empty:hidden lg:h-8"
                 id="help"
               />
-              <div
-                className="flex h-10 items-center lg:hidden"
-                id="filters-button"
-              />
             </div>
           </div>
         </div>

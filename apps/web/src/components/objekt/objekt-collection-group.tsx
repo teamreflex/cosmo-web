@@ -1,16 +1,3 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerTitle,
-} from "@/components/ui/drawer-radix";
-import { useMediaQuery } from "@/hooks/use-media-query";
 import { useMetadataDialog } from "@/hooks/use-metadata-dialog";
 import { useObjektTransfer } from "@/hooks/use-objekt-transfer";
 import { m } from "@/i18n/messages";
@@ -25,7 +12,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { ObjektNewIndicator, ObjektSidebar } from "./common";
-import DetailContent from "./detail/detail-content";
+import DetailDialog from "./detail/detail-dialog";
 import MetadataDialog from "./metadata-dialog";
 
 interface Props {
@@ -85,7 +72,6 @@ function Detail({
   hasNew,
   priority,
 }: DetailProps) {
-  const isDesktop = useMediaQuery();
   const [open, setOpen] = useState(false);
 
   const tokens = useMemo(
@@ -107,30 +93,12 @@ function Detail({
         priority={priority}
       />
 
-      {isDesktop ? (
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogContent
-            showCloseButton={false}
-            className="grid max-h-[92dvh] w-[calc(100%-2rem)] grid-rows-[1fr] gap-0 overflow-hidden rounded-md p-0 sm:max-w-[min(1400px,calc(100%-4rem))]"
-          >
-            <div className="sr-only">
-              <DialogTitle>{collection.collectionId}</DialogTitle>
-              <DialogDescription>{m.objekt_group_select()}</DialogDescription>
-            </div>
-            <DetailContent collection={collection} tokens={tokens} />
-          </DialogContent>
-        </Dialog>
-      ) : (
-        <Drawer open={open} onOpenChange={setOpen}>
-          <DrawerContent className="h-[92dvh] gap-0 rounded-t-md p-0">
-            <div className="sr-only">
-              <DrawerTitle>{collection.collectionId}</DrawerTitle>
-              <DrawerDescription>{m.objekt_group_select()}</DrawerDescription>
-            </div>
-            <DetailContent collection={collection} tokens={tokens} />
-          </DrawerContent>
-        </Drawer>
-      )}
+      <DetailDialog
+        collection={collection}
+        tokens={tokens}
+        open={open}
+        onOpenChange={setOpen}
+      />
     </>
   );
 }
@@ -170,7 +138,7 @@ function RootObjekt({
           "--objekt-text-color": collection.textColor,
         }}
         className={cn(
-          "group/objekt relative aspect-photocard touch-manipulation overflow-hidden rounded-photocard bg-secondary outline outline-1 outline-transparent transition-[transform,box-shadow,outline-color] duration-200 ease-out hover:-translate-y-0.5 hover:shadow-lg hover:outline-cosmo",
+          "group/objekt relative aspect-photocard touch-manipulation overflow-hidden rounded-photocard bg-secondary outline outline-transparent transition-[transform,box-shadow,outline-color] duration-200 ease-out hover:-translate-y-0.5 hover:shadow-lg hover:outline-cosmo",
           hasSelected &&
             "outline-2 outline-foreground hover:outline-foreground",
         )}
@@ -226,7 +194,7 @@ function RootObjektOverlay({
     <div className="contents">
       <div
         className={cn(
-          "group absolute bottom-0 left-0 isolate flex h-5 w-5 gap-2 rounded-tr-md p-1 transition-all sm:h-9 sm:w-9 sm:p-2",
+          "group absolute bottom-0 left-0 isolate flex h-5 w-5 gap-2 rounded-tr-photocard p-1 transition-all sm:h-9 sm:w-9 sm:p-2",
           "bg-(--objekt-background-color) text-(--objekt-text-color)",
           isHidden && "hidden",
         )}

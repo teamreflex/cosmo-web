@@ -40,22 +40,13 @@ export default function Metadata(props: Props) {
           value={`${data.percentage}%`}
           mono
         />
-        {isUnobtainable ? (
+        {isUnobtainable && (
           <StatCell
             label={m.common_type()}
             value={
               <span className="text-red-500">
                 {m.objekt_metadata_unobtainable()}
               </span>
-            }
-          />
-        ) : (
-          <StatCell
-            label={m.common_type()}
-            value={
-              props.objekt.onOffline === "online"
-                ? m.filter_online_digital()
-                : m.filter_online_physical()
             }
           />
         )}

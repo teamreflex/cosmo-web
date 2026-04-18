@@ -6,6 +6,7 @@ import { m } from "@/i18n/messages";
 import { objektListQuery } from "@/lib/queries/objekt-queries";
 import type { ObjektList } from "@apollo/database/web/types";
 import ObjektIndexFilters from "../collection/filter-contexts/objekt-index-filters";
+import FilterHeader from "../collection/filter-header";
 import FiltersContainer from "../collection/filters-container";
 import CosmoMemberFilter from "../objekt/cosmo-member-filter";
 import VirtualizedObjektGrid from "../objekt/virtualized-objekt-grid";
@@ -46,12 +47,19 @@ export default function ListRenderer(props: Props) {
 
   return (
     <div className="flex flex-col">
-      <FiltersContainer isPortaled>
+      <FilterHeader title={m.list_title()}>
+        <div className="ml-auto md:pointer-events-none md:absolute md:inset-0 md:ml-0 md:flex md:items-center md:justify-center">
+          <div className="md:pointer-events-auto">
+            <CosmoMemberFilter />
+          </div>
+        </div>
+      </FilterHeader>
+
+      <FiltersContainer>
         <ObjektIndexFilters />
       </FiltersContainer>
 
       <div className="container flex flex-col">
-        <CosmoMemberFilter />
         <VirtualizedObjektGrid
           options={options}
           gridColumns={gridColumns}

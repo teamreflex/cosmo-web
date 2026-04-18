@@ -38,7 +38,7 @@ export default function ListHeader({
           </div>
 
           <div className="min-w-0">
-            <div className="mb-1 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[10px] tracking-[0.18em] uppercase">
+            <div className="mb-1 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-xxs tracking-[0.18em] uppercase">
               <span className={cn("font-semibold", intent.labelColor)}>
                 {intent.label}
               </span>
@@ -46,7 +46,9 @@ export default function ListHeader({
                 <>
                   <span className="text-muted-foreground">·</span>
                   <span className="text-muted-foreground">
-                    {format(new Date(list.createdAt), "d MMM yy")}
+                    {m.list_header_updated({
+                      date: format(new Date(list.createdAt), "d MMM yy"),
+                    })}
                   </span>
                 </>
               )}
@@ -77,18 +79,20 @@ export default function ListHeader({
       </div>
 
       <div className="mt-4 grid gap-4 md:grid-cols-[1fr_auto]">
-        {list.description ? (
-          <div className={cn("border-l-2 pl-4", intent.borderColor)}>
-            <div className="mb-1 font-mono text-[10px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
-              {intent.descriptionLabel}
-            </div>
+        <div className={cn("border-l-2 pl-4", intent.borderColor)}>
+          <div className="mb-1 font-mono text-xxs font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+            {m.list_header_description()}
+          </div>
+          {list.description ? (
             <p className="max-w-[62ch] text-sm leading-relaxed whitespace-pre-wrap text-foreground">
               {list.description}
             </p>
-          </div>
-        ) : (
-          <div />
-        )}
+          ) : (
+            <p className="text-sm text-muted-foreground italic">
+              {m.list_header_description_empty()}
+            </p>
+          )}
+        </div>
 
         <div className="md:min-w-[320px]">
           <ListContacts ownerName={ownerName} />
@@ -107,7 +111,6 @@ function intentCopy(type: ObjektList["type"]) {
         mark: "border-amber-500/50 bg-amber-500/10 text-amber-500",
         labelColor: "text-amber-500",
         borderColor: "border-amber-500/60",
-        descriptionLabel: m.list_header_description_want(),
       } as const;
     case "have":
       return {
@@ -116,7 +119,6 @@ function intentCopy(type: ObjektList["type"]) {
         mark: "border-teal-500/50 bg-teal-500/10 text-teal-500",
         labelColor: "text-teal-500",
         borderColor: "border-teal-500/60",
-        descriptionLabel: m.list_header_description_have(),
       } as const;
     case "sale":
       return {
@@ -125,7 +127,6 @@ function intentCopy(type: ObjektList["type"]) {
         mark: "border-border bg-muted text-foreground",
         labelColor: "text-foreground",
         borderColor: "border-border",
-        descriptionLabel: m.list_header_description_sale(),
       } as const;
     case "regular":
     default:
@@ -135,7 +136,6 @@ function intentCopy(type: ObjektList["type"]) {
         mark: "border-border bg-muted text-foreground",
         labelColor: "text-foreground",
         borderColor: "border-border",
-        descriptionLabel: m.list_header_description_regular(),
       } as const;
   }
 }

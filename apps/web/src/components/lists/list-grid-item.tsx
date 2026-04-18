@@ -29,7 +29,7 @@ export function ListGridItem({
   const [editOpen, setEditOpen] = useState(false);
 
   return (
-    <div className="relative">
+    <div className="relative @container">
       <div className="relative z-10 drop-shadow-md">
         <ExpandableObjekt collection={collection} priority={priority}>
           <ObjektSidebar collection={collection} serial={serial} />

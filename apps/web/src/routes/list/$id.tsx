@@ -103,14 +103,6 @@ function RouteComponent() {
             </div>
           </div>
 
-          <div className="container flex items-center justify-end gap-2 pt-4 pb-2">
-            <span id="objekt-total" />
-            <div
-              className="flex h-10 items-center lg:hidden"
-              id="filters-button"
-            />
-          </div>
-
           <ListRenderer
             authenticated={isAuthenticated}
             objektList={objektList}

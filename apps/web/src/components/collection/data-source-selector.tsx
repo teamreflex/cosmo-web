@@ -1,10 +1,8 @@
 import { m } from "@/i18n/messages";
 import { env } from "@/lib/env/client";
-import { Addresses, isEqual } from "@apollo/util";
 import type { CollectionDataSource } from "@apollo/util";
 import { IconHelpCircle } from "@tabler/icons-react";
 import { useState } from "react";
-import type { ReactNode } from "react";
 import {
   Accordion,
   AccordionContent,
@@ -29,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { getSources } from "./data-sources";
 
 type Props = {
   name: string;
@@ -135,71 +134,5 @@ function Content(props: { onClose: () => void }) {
         </AlertDialogAction>
       </AlertDialogFooter>
     </AlertDialogContent>
-  );
-}
-
-type Source = {
-  title: string;
-  subtitle: string;
-  label: string;
-  shortLabel: string;
-  icon: ReactNode;
-  value: CollectionDataSource;
-  description: string;
-  notes: string[];
-  isAvailable: (address?: string) => boolean;
-};
-
-function getSources(): Source[] {
-  return [
-    {
-      title: m.data_source_blockchain_groups_title(),
-      subtitle: m.data_source_blockchain_groups_subtitle(),
-      label: m.data_source_blockchain_groups_label(),
-      shortLabel: m.data_source_blockchain_groups_short(),
-      icon: <AbstractIcon />,
-      value: "blockchain-groups",
-      description: m.data_source_blockchain_groups_desc(),
-      notes: [
-        m.data_source_blockchain_groups_note_1(),
-        m.data_source_blockchain_groups_note_2(),
-        m.data_source_blockchain_groups_note_3(),
-        m.data_source_blockchain_groups_note_4(),
-        m.data_source_blockchain_groups_note_5(),
-      ],
-      /**
-       * prevent collection groups being used on the spin account.
-       * the SQL query to pull this off needs optimization.
-       */
-      isAvailable: (address) => {
-        return address !== undefined ? !isEqual(address, Addresses.SPIN) : true;
-      },
-    },
-    {
-      title: m.data_source_blockchain_title(),
-      subtitle: m.data_source_blockchain_subtitle(),
-      label: m.data_source_blockchain_label(),
-      shortLabel: m.data_source_blockchain_short(),
-      icon: <AbstractIcon />,
-      value: "blockchain",
-      description: m.data_source_blockchain_desc(),
-      notes: [
-        m.data_source_blockchain_note_1(),
-        m.data_source_blockchain_note_2(),
-      ],
-      isAvailable: () => true,
-    },
-  ];
-}
-
-function AbstractIcon() {
-  return (
-    <div className="relative size-6 rounded-full bg-abstract" data-icon>
-      <img
-        src="/abstract.svg"
-        alt={m.data_source_blockchain_short()}
-        className="absolute"
-      />
-    </div>
   );
 }

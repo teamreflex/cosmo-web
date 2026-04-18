@@ -40,7 +40,7 @@ export default function NotificationBell() {
         >
           <IconBell className="size-6" />
           {count > 0 && (
-            <div className="flex items-center justify-center absolute -right-1 -top-1 h-4 min-w-4 rounded-full px-1 text-[10px] bg-red-600/25 text-red-600">
+            <div className="flex items-center justify-center absolute -right-1 -top-1 h-4 min-w-4 rounded-full px-1 text-xxs bg-red-600/25 text-red-600">
               {count > 99 ? "99+" : count}
             </div>
           )}

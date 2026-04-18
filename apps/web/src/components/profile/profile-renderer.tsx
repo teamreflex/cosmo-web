@@ -33,14 +33,14 @@ export default function ProfileRenderer({ targetCosmo }: Props) {
       </Portal>
 
       <FilterHeader title={m.collection_title()}>
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="pointer-events-auto">
+        <div className="ml-auto md:pointer-events-none md:absolute md:inset-0 md:ml-0 md:flex md:items-center md:justify-center">
+          <div className="md:pointer-events-auto">
             <CosmoMemberFilter />
           </div>
         </div>
       </FilterHeader>
 
-      <FiltersContainer isPortaled>
+      <FiltersContainer>
         <CollectionFilters
           dataSource={dataSource}
           setDataSource={setDataSource}

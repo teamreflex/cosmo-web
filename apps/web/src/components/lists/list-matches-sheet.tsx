@@ -27,7 +27,9 @@ export default function ListMatchesSheet({ listId }: Props) {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="outline">{m.list_matches_view()}</Button>
+        <Button variant="outline" size="sm">
+          {m.list_matches_view()}
+        </Button>
       </SheetTrigger>
       <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-xl">
         <SheetHeader>

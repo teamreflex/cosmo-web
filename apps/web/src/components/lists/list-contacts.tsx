@@ -28,7 +28,7 @@ type Props = {
 export default function ListContacts({ ownerName }: Props) {
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex items-center gap-2 font-mono text-[10px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+      <div className="flex items-center gap-2 font-mono text-xxs font-semibold tracking-[0.18em] text-muted-foreground uppercase">
         <span>{m.list_header_contacts_heading({ user: ownerName })}</span>
         <span className="h-px flex-1 bg-border" />
       </div>
@@ -38,7 +38,7 @@ export default function ListContacts({ ownerName }: Props) {
         ))}
       </div>
       <div
-        className="font-mono text-[10px] leading-relaxed text-muted-foreground italic"
+        className="font-mono text-xxs leading-relaxed text-muted-foreground italic"
         title={m.list_header_contacts_soon()}
       >
         {m.list_header_contacts_soon()}
@@ -65,7 +65,7 @@ function ContactChip({ contact }: { contact: Contact }) {
       )}
     >
       <span className="text-cosmo">{ICONS[contact.kind]}</span>
-      <span className="text-[10px] tracking-[0.14em] text-muted-foreground uppercase">
+      <span className="text-xxs tracking-[0.14em] text-muted-foreground uppercase">
         {contact.label}
       </span>
       <span className="tabular-nums">{contact.handle}</span>

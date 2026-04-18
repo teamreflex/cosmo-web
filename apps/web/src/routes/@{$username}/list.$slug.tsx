@@ -6,6 +6,7 @@ import Overlay from "@/components/misc/overlay";
 import ScrollToTop from "@/components/misc/overlay/scroll-to-top";
 import ToggleObjektBands from "@/components/misc/overlay/toggle-objekt-bands";
 import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
 import { $fetchObjektList } from "@/lib/functions/lists";
@@ -21,8 +22,13 @@ import { objektListQuery } from "@/lib/queries/objekt-queries";
 import { objektListFrontendSchema } from "@/lib/universal/parsers";
 import { ProfileProvider } from "@/providers/profile-provider";
 import { UserStateProvider } from "@/providers/user-state-provider";
-import { IconHeartBroken } from "@tabler/icons-react";
-import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
+import { IconArrowsExchange, IconHeartBroken } from "@tabler/icons-react";
+import {
+  Link,
+  createFileRoute,
+  notFound,
+  redirect,
+} from "@tanstack/react-router";
 
 export const Route = createFileRoute("/@{$username}/list/$slug")({
   staleTime: 1000 * 60 * 15, // 15 minutes
@@ -102,12 +108,34 @@ function RouteComponent() {
       ? objektList.linkedWantListId !== null
       : linkingHave !== undefined;
 
-  const extras =
-    isAuthenticated &&
-    isTradeActive &&
-    (objektList.type === "have" || objektList.type === "want") ? (
-      <ListMatchesSheet listId={objektList.id} listType={objektList.type} />
-    ) : null;
+  const pairedList =
+    objektList.type === "have" && objektList.linkedWantListId
+      ? targetObjektLists.find((l) => l.id === objektList.linkedWantListId)
+      : linkingHave;
+
+  const extras = (
+    <>
+      {pairedList && (
+        <Button variant="outline" size="sm" asChild>
+          <Link
+            to="/@{$username}/list/$slug"
+            params={{
+              username: target.cosmo.username,
+              slug: pairedList.slug,
+            }}
+          >
+            <IconArrowsExchange />
+            <span>{m.list_header_paired()}</span>
+          </Link>
+        </Button>
+      )}
+      {isAuthenticated &&
+        isTradeActive &&
+        (objektList.type === "have" || objektList.type === "want") && (
+          <ListMatchesSheet listId={objektList.id} listType={objektList.type} />
+        )}
+    </>
+  );
 
   return (
     <UserStateProvider {...account}>

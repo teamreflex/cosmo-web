@@ -35,7 +35,7 @@ export default function CollectionFilters({
   const { filters, setFilters } = useCosmoFilters();
 
   return (
-    <div className="flex flex-wrap items-center gap-2 group-data-[show=false]:hidden group-data-[show=true]:pb-2 lg:group-data-[show=false]:flex">
+    <div className="flex flex-wrap items-center gap-2">
       <LockedFilter showLocked={showLocked} setShowLocked={setShowLocked} />
 
       <TransferableFilter

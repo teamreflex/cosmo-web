@@ -68,7 +68,7 @@ export default function SerialTicket({
 
       {/* serial */}
       <div className="w-20 shrink-0 sm:w-24">
-        <div className="font-mono text-[10px] tracking-[0.14em] text-muted-foreground uppercase">
+        <div className="font-mono text-xxs tracking-[0.14em] text-muted-foreground uppercase">
           {m.detail_sort_serial()}
         </div>
         <div className="font-mono text-sm font-bold tabular-nums sm:text-lg">
@@ -78,7 +78,7 @@ export default function SerialTicket({
 
       {/* received date — desktop only */}
       <div className="hidden w-28 shrink-0 md:block">
-        <div className="font-mono text-[10px] tracking-[0.14em] text-muted-foreground uppercase">
+        <div className="font-mono text-xxs tracking-[0.14em] text-muted-foreground uppercase">
           {m.detail_sort_received()}
         </div>
         <div className="text-xs">{receivedAt}</div>
@@ -103,7 +103,7 @@ export default function SerialTicket({
       {/* actions — authenticated owner only, always visible */}
       {authenticated && (
         <div
-          className="flex items-center gap-2 text-foreground"
+          className="flex items-center gap-3 text-foreground [&_svg]:size-5 sm:gap-2"
           onClick={(e) => e.stopPropagation()}
           onKeyDown={(e) => e.stopPropagation()}
           role="presentation"

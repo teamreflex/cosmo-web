@@ -23,7 +23,7 @@ export default function ObjektIndexFilters({ search = false }: Props) {
   const { filters, setFilters } = useCosmoFilters();
 
   return (
-    <div className="flex flex-wrap items-center gap-2 group-data-[show=false]:hidden lg:group-data-[show=false]:flex">
+    <div className="flex flex-wrap items-center gap-2">
       <ErrorBoundary
         fallback={<Skeleton className="h-9 w-[97px] bg-destructive" />}
       >

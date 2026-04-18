@@ -49,7 +49,7 @@ function Balance({
 }) {
   return (
     <div className="flex min-w-0 flex-col gap-0.5 px-4 first:pl-0 last:pr-0">
-      <div className="flex items-center gap-1.5 font-mono text-[10px] tracking-[0.14em] text-muted-foreground uppercase">
+      <div className="flex items-center gap-1.5 font-mono text-xxs tracking-[0.14em] text-muted-foreground uppercase">
         <ArtistIcon artist={artist.name} />
         <span>{artist.title}</span>
       </div>

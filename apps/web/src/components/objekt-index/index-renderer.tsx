@@ -13,7 +13,6 @@ import CosmoMemberFilter from "../objekt/cosmo-member-filter";
 import RoutedExpandableObjekt from "../objekt/objekt-routed";
 import VirtualizedObjektGrid from "../objekt/virtualized-objekt-grid";
 import { Button } from "../ui/button";
-import HelpDialog from "./help-dialog";
 import { IndexGridItem } from "./index-grid-item";
 
 type Props = {
@@ -35,8 +34,8 @@ export default function IndexRenderer(props: Props) {
           className="font-mono text-xs text-muted-foreground tabular-nums"
         />
 
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="pointer-events-auto">
+        <div className="ml-auto md:pointer-events-none md:absolute md:inset-0 md:ml-0 md:flex md:items-center md:justify-center">
+          <div className="md:pointer-events-auto">
             <CosmoMemberFilter />
           </div>
         </div>
@@ -57,7 +56,6 @@ export default function IndexRenderer(props: Props) {
           >
             <IndexListDropdown />
           </Suspense>
-          <HelpDialog />
         </div>
       </FilterHeader>
 

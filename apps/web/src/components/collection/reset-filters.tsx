@@ -38,7 +38,7 @@ export default function ResetFilters(props: Props) {
     >
       <IconX className="size-3" />
       <span>{m.filter_reset()}</span>
-      {count > 0 && <span className="font-mono text-[10px]">({count})</span>}
+      {count > 0 && <span className="font-mono text-xxs">({count})</span>}
     </button>
   );
 }

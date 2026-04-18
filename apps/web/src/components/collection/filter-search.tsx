@@ -32,8 +32,8 @@ export default function FilterSearch() {
   return (
     <div
       className={cn(
-        "flex h-9 w-48 min-w-0 items-center gap-1.5 rounded-sm border border-border bg-background px-2.5 font-mono transition-colors",
-        "focus-within:border-cosmo/60 focus-within:bg-background",
+        "flex h-8 w-48 min-w-0 items-center gap-1.5 rounded-sm border border-border bg-transparent px-2.5 font-mono transition-colors",
+        "focus-within:border-cosmo/60",
       )}
     >
       <IconSearch className="size-3.5 shrink-0 text-muted-foreground" />
@@ -43,7 +43,7 @@ export default function FilterSearch() {
         placeholder={m.common_search_placeholder()}
         value={query ?? ""}
         onChange={(e) => set(e.currentTarget.value || undefined)}
-        className="h-full w-full grow bg-transparent text-xs tracking-[0.08em] outline-none placeholder:text-muted-foreground placeholder:uppercase"
+        className="h-full w-full grow bg-transparent text-xs tracking-[0.08em] outline-none placeholder:text-muted-foreground"
         maxLength={32}
       />
 

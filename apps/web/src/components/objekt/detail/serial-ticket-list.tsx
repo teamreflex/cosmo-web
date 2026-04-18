@@ -57,7 +57,7 @@ export default function SerialTicketList({
             {m.detail_copies_count({ count: tokens.length.toString() })}
           </span>
         </div>
-        <div className="flex items-center gap-1 font-mono text-[10px] tracking-[0.14em] uppercase">
+        <div className="flex items-center gap-1 font-mono text-xxs tracking-[0.14em] uppercase">
           <SortButton
             active={sortKey === "serial"}
             dir={sortDir}
