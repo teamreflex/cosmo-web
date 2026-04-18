@@ -1,3 +1,4 @@
+import FiltersContainer from "@/components/collection/filters-container";
 import Overlay from "@/components/misc/overlay";
 import ScrollToTop from "@/components/misc/overlay/scroll-to-top";
 import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
@@ -5,6 +6,7 @@ import TransfersRenderer, {
   TransfersSkeleton,
 } from "@/components/transfers/transfers-renderer";
 import { Skeleton } from "@/components/ui/skeleton";
+import TitleHeader from "@/components/ui/title-header";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import {
@@ -65,19 +67,26 @@ function RouteComponent() {
 function PendingComponent() {
   return (
     <div className="flex flex-col">
-      {/* FiltersContainer */}
-      <div className="flex flex-col gap-2 pb-1 sm:pb-2">
-        <div className="hidden flex-wrap items-center justify-center gap-2 sm:flex">
+      <TitleHeader title={m.trades_title()}>
+        <div className="ml-auto md:pointer-events-none md:absolute md:inset-0 md:ml-0 md:flex md:items-center md:justify-center">
+          <div className="md:pointer-events-auto">
+            <MemberFilterSkeleton />
+          </div>
+        </div>
+      </TitleHeader>
+
+      <FiltersContainer>
+        <div className="flex flex-wrap items-center gap-2">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-9 w-24" />
+            <Skeleton key={i} className="h-8 w-24" />
           ))}
         </div>
-      </div>
+      </FiltersContainer>
 
-      <MemberFilterSkeleton />
-
-      <div className="pt-2">
-        <TransfersSkeleton />
+      <div className="container flex flex-col">
+        <div className="pt-2">
+          <TransfersSkeleton />
+        </div>
       </div>
     </div>
   );

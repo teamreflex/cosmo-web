@@ -24,13 +24,15 @@ export default function Navbar() {
           <UpdateDialog />
         </div>
 
-        <DesktopPublicLinks />
+        <div className="flex items-center gap-1">
+          <DesktopPublicLinks />
 
-        <ErrorBoundary fallback={null}>
-          <Suspense fallback={null}>
-            <DesktopAuthLink />
-          </Suspense>
-        </ErrorBoundary>
+          <ErrorBoundary fallback={null}>
+            <Suspense fallback={null}>
+              <DesktopAuthLink />
+            </Suspense>
+          </ErrorBoundary>
+        </div>
 
         <div className="ml-auto flex items-center gap-2">
           <NavbarSearch />

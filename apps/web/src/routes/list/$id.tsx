@@ -1,11 +1,13 @@
+import FiltersContainer from "@/components/collection/filters-container";
 import { Error } from "@/components/error-boundary";
-import ListHeader from "@/components/lists/list-header";
+import ListHeader, { ListHeaderSkeleton } from "@/components/lists/list-header";
 import ListRenderer from "@/components/lists/list-renderer";
 import Overlay from "@/components/misc/overlay";
 import ScrollToTop from "@/components/misc/overlay/scroll-to-top";
 import ToggleObjektBands from "@/components/misc/overlay/toggle-objekt-bands";
 import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
+import TitleHeader from "@/components/ui/title-header";
 import { m } from "@/i18n/messages";
 import { $getObjektListWithUser } from "@/lib/functions/lists";
 import { defineHead } from "@/lib/meta";
@@ -120,25 +122,29 @@ function RouteComponent() {
 
 function PendingComponent() {
   return (
-    <main className="container flex flex-col py-2">
-      {/* header */}
-      <div className="flex h-9 items-center">
-        <Skeleton className="h-6 w-32 rounded-full" />
+    <main className="flex flex-col">
+      <div className="border-b border-border">
+        <div className="container">
+          <ListHeaderSkeleton />
+        </div>
       </div>
 
-      {/* content */}
       <div className="flex flex-col">
-        {/* filters */}
-        <div className="flex flex-wrap items-center justify-center gap-2 transition-all group-data-[show=false]:invisible group-data-[show=false]:h-0 group-data-[show=false]:opacity-0 group-data-[show=true]:h-36 group-data-[show=true]:pb-2 sm:pb-1 sm:group-data-[show=false]:visible sm:group-data-[show=false]:h-12 sm:group-data-[show=false]:opacity-100 sm:group-data-[show=true]:visible sm:group-data-[show=true]:h-12 sm:group-data-[show=true]:opacity-100">
-          {Array.from({ length: 7 }).map((_, i) => (
-            <Skeleton key={i} className="h-9 w-24" />
-          ))}
-          <Skeleton className="h-[36px] w-[42px]" />
-        </div>
+        <TitleHeader title={m.list_title()}>
+          <div className="ml-auto md:pointer-events-none md:absolute md:inset-0 md:ml-0 md:flex md:items-center md:justify-center">
+            <div className="md:pointer-events-auto">
+              <MemberFilterSkeleton />
+            </div>
+          </div>
+        </TitleHeader>
 
-        <div className="flex flex-col">
-          <MemberFilterSkeleton />
-        </div>
+        <FiltersContainer>
+          <div className="flex flex-wrap items-center gap-2">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} className="h-8 w-24" />
+            ))}
+          </div>
+        </FiltersContainer>
       </div>
     </main>
   );

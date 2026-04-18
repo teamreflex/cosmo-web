@@ -88,12 +88,12 @@ function RouteComponent() {
                 </div>
               </div>
 
-              <div className="flex items-stretch divide-x divide-border">
+              <div className="flex items-stretch divide-x divide-border h-10">
                 <ErrorBoundary fallback={<ComoBalanceErrorFallback />}>
                   <Suspense
                     fallback={
                       <div className="flex items-center pr-4 first:pl-0 last:pr-0">
-                        <Skeleton className="h-[36px] w-24" />
+                        <Skeleton className="h-10 w-24" />
                       </div>
                     }
                   >
@@ -157,7 +157,7 @@ function PendingComponent() {
             <Skeleton className="h-8 w-40" />
             <Skeleton className="h-[42px] w-36 rounded-sm" />
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="-mx-4 flex flex-nowrap items-center justify-center gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:flex-wrap md:self-end md:overflow-visible md:p-0">
             <Skeleton className="h-8 w-24" />
             <Skeleton className="h-8 w-24" />
             <Skeleton className="h-8 w-24" />
