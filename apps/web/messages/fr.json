@@ -165,7 +165,7 @@
   "settings_language_japanese": "Japonais",
 
   "_comment_nav": "Navigation strings",
-  "nav_objekt_stats": "Statistiques",
+  "nav_objekt_stats": "Stats",
 
   "_comment_objekts": "Objekt related strings",
   "objekts_header": "Objekts",
@@ -693,7 +693,7 @@
 
   "_comment_stats": "Stats page strings",
   "stats_header": "Stats",
-  "stats_update_frequency": "Statistiques actualisées toutes les heures",
+  "stats_update_frequency": "Actualisées toutes les heures",
   "stats_total_objekts": "Objekts totaux",
   "stats_total_objekts_desc": "Total des objekts créés lors des dernières 24 heures",
   "stats_scanned_objekts": "Objekts scannés",

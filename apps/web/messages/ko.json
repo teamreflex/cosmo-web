@@ -165,7 +165,7 @@
   "settings_language_japanese": "일본어",
 
   "_comment_nav": "Navigation strings",
-  "nav_objekt_stats": "오브젝트 통계",
+  "nav_objekt_stats": "통계",
 
   "_comment_objekts": "Objekt related strings",
   "objekts_header": "오브젝트",
@@ -693,7 +693,7 @@
 
   "_comment_stats": "Stats page strings",
   "stats_header": "통계",
-  "stats_update_frequency": "통계는 매시간 업데이트됩니다",
+  "stats_update_frequency": "매시간 업데이트됨",
   "stats_total_objekts": "총 오브젝트",
   "stats_total_objekts_desc": "최근 24시간 동안 민트된 총 오브젝트",
   "stats_scanned_objekts": "스캔된 오브젝트",

@@ -165,7 +165,7 @@
   "settings_language_japanese": "Japanese",
 
   "_comment_nav": "Navigation strings",
-  "nav_objekt_stats": "Objekt Stats",
+  "nav_objekt_stats": "Stats",
 
   "_comment_objekts": "Objekt related strings",
   "objekts_header": "Objekts",
@@ -693,7 +693,7 @@
 
   "_comment_stats": "Stats page strings",
   "stats_header": "Stats",
-  "stats_update_frequency": "Statistics update every hour",
+  "stats_update_frequency": "Updates every hour",
   "stats_total_objekts": "Total Objekts",
   "stats_total_objekts_desc": "Total objekts minted in last 24 hours",
   "stats_scanned_objekts": "Scanned Objekts",

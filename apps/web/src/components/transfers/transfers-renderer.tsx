@@ -14,6 +14,7 @@ import {
 import { Suspense, useCallback } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { TransfersFilters } from "../collection/filter-contexts/transfers-filters";
+import FilterHeader from "../collection/filter-header";
 import FiltersContainer from "../collection/filters-container";
 import MemberFilter from "../collection/member-filter";
 import { InfiniteQueryNext } from "../infinite-query-pending";
@@ -60,17 +61,23 @@ export default function TransfersRenderer({ cosmo }: Props) {
 
   return (
     <div className="flex flex-col">
+      <FilterHeader title={m.trades_title()}>
+        <div className="ml-auto md:pointer-events-none md:absolute md:inset-0 md:ml-0 md:flex md:items-center md:justify-center">
+          <div className="md:pointer-events-auto">
+            <MemberFilter
+              active={filters.artist ?? filters.member}
+              updateArtist={setActiveArtist}
+              updateMember={setActiveMember}
+            />
+          </div>
+        </div>
+      </FilterHeader>
+
       <FiltersContainer isPortaled>
         <TransfersFilters type={type} setType={setType} />
       </FiltersContainer>
 
       <div className="container flex flex-col">
-        <MemberFilter
-          active={filters.artist ?? filters.member}
-          updateArtist={setActiveArtist}
-          updateMember={setActiveMember}
-        />
-
         <div className="pt-2">
           <QueryErrorResetBoundary>
             {({ reset }) => (

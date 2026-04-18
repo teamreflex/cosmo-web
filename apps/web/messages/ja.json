@@ -165,7 +165,7 @@
   "settings_language_japanese": "日本語",
 
   "_comment_nav": "Navigation strings",
-  "nav_objekt_stats": "Objekt統計",
+  "nav_objekt_stats": "統計",
 
   "_comment_objekts": "Objekt related strings",
   "objekts_header": "Objekts",
@@ -693,7 +693,7 @@
 
   "_comment_stats": "Stats page strings",
   "stats_header": "統計",
-  "stats_update_frequency": "統計は毎時更新されます",
+  "stats_update_frequency": "毎時更新",
   "stats_total_objekts": "総Objekts",
   "stats_total_objekts_desc": "過去24時間にミントされたObjekt数",
   "stats_scanned_objekts": "スキャン済みObjekts",

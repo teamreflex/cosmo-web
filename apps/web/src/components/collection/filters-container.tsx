@@ -22,12 +22,12 @@ export default function FiltersContainer({ children, isPortaled }: Props) {
           {!isPortaled && <div id="filters-button" />}
           <Portal to="#filters-button">
             <Button
-              className="h-8 rounded-sm"
               variant="outline"
-              size="sm"
+              size="profile"
+              data-profile
               onClick={() => setShow((prev) => !prev)}
             >
-              <IconAdjustmentsHorizontal />
+              <IconAdjustmentsHorizontal className="h-5 w-5" />
               <span>{m.common_filters()}</span>
             </Button>
           </Portal>

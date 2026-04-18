@@ -1,3 +1,4 @@
+import FilterHeader from "@/components/collection/filter-header";
 import { Error } from "@/components/error-boundary";
 import ArtistChart from "@/components/objekt-stats/artist-chart";
 import MemberBreakdown from "@/components/objekt-stats/member-breakdown";
@@ -35,17 +36,14 @@ function RouteComponent() {
   const { artistList } = useArtists();
 
   return (
-    <main className="container flex flex-col py-2">
-      {/* header */}
-      <div className="flex flex-col pb-4">
-        <h1 className="font-cosmo text-3xl uppercase">{m.stats_header()}</h1>
-        <p className="-mt-2 text-sm font-semibold text-muted-foreground">
+    <main className="flex flex-col">
+      <FilterHeader title={m.stats_header()}>
+        <span className="font-mono text-xs text-muted-foreground">
           {m.stats_update_frequency()}
-        </p>
-      </div>
+        </span>
+      </FilterHeader>
 
-      {/* content */}
-      <div className="flex flex-col gap-4">
+      <div className="container flex flex-col gap-4 pt-4">
         {/* totals */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           <Card className="min-h-36">
@@ -128,17 +126,14 @@ function RouteComponent() {
 
 function PendingComponent() {
   return (
-    <main className="container flex flex-col py-2">
-      {/* header */}
-      <div className="flex flex-col pb-4">
-        <h1 className="font-cosmo text-3xl uppercase">{m.stats_header()}</h1>
-        <p className="-mt-2 text-sm font-semibold text-muted-foreground">
+    <main className="flex flex-col">
+      <FilterHeader title={m.stats_header()}>
+        <span className="font-mono text-xs text-muted-foreground">
           {m.stats_update_frequency()}
-        </p>
-      </div>
+        </span>
+      </FilterHeader>
 
-      {/* content */}
-      <div className="flex flex-col gap-4">
+      <div className="container flex flex-col gap-4 pt-4">
         {/* totals */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           <Card className="min-h-36">

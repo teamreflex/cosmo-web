@@ -53,7 +53,7 @@ function RouteComponent() {
             aria-hidden
             className="pointer-events-none absolute inset-0 opacity-70 [background:radial-gradient(900px_220px_at_10%_0%,color-mix(in_oklch,var(--color-cosmo)_18%,transparent),transparent_60%)]"
           />
-          <div className="relative container flex flex-col gap-4 py-6 md:flex-row md:items-center md:gap-6">
+          <div className="relative container flex flex-col gap-4 py-6 pb-4 md:flex-row md:items-center md:gap-6">
             {/* avatar */}
             <UserAvatar
               variant="square"
@@ -108,7 +108,7 @@ function RouteComponent() {
             </div>
 
             {/* action cluster */}
-            <div className="-mx-4 flex flex-nowrap items-center gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:flex-wrap md:overflow-visible md:p-0">
+            <div className="-mx-4 flex flex-nowrap items-center justify-center gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:flex-wrap md:self-end md:overflow-visible md:p-0">
               <CopyAddressButton address={target.cosmo.address} />
               <TradesButton cosmo={target.cosmo} />
               <ComoButton cosmo={target.cosmo} />
