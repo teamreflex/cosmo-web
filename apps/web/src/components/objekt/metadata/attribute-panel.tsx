@@ -46,13 +46,10 @@ export default function AttributePanel({ objekt }: Props) {
         <div className="col-span-3 flex items-center gap-2 border-b border-border px-3 py-2 text-xs text-orange-500">
           <Popover>
             <PopoverTrigger asChild>
-              <button
-                type="button"
-                className="inline-flex items-center gap-1 text-orange-500"
-              >
+              <div className="inline-flex items-center gap-1 text-orange-500 focus:outline-none">
                 <IconAlertSquareRounded className="size-4" />
                 <span>{m.objekt_metadata_video_not_loaded()}</span>
-              </button>
+              </div>
             </PopoverTrigger>
             <PopoverContent side="bottom" className="w-fit text-xs">
               {m.objekt_metadata_video_not_loaded()}
