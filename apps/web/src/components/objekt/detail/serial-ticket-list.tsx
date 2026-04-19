@@ -50,7 +50,7 @@ export default function SerialTicketList({
     <div className="flex min-h-0 flex-col">
       <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3 sm:px-5">
         <div className="flex items-baseline gap-2">
-          <span className="font-cosmo text-sm font-black tracking-[0.14em] uppercase">
+          <span className="font-cosmo text-sm font-black tracking-[0.14em] uppercase hidden sm:block">
             {title}
           </span>
           <span className="font-mono text-xs text-muted-foreground">
@@ -120,7 +120,7 @@ function SortButton({ active, dir, onClick, children }: SortButtonProps) {
         <IconArrowDown
           className={cn(
             "size-3 transition-transform",
-            dir === "desc" && "rotate-180",
+            dir === "asc" && "rotate-180",
           )}
         />
       )}

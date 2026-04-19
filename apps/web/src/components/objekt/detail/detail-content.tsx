@@ -39,12 +39,13 @@ export default function DetailContent({ collection, tokens }: Props) {
             <ObjektSidebar collection={collection} />
           </FlippableObjekt>
         </div>
-        <div className="hidden text-center sm:block">
+        <div className="text-center">
           <div className="font-cosmo text-xl leading-none font-black tracking-[0.02em] uppercase">
             {collection.member}
           </div>
           <div className="mt-1 font-mono text-[11px] tracking-[0.14em] text-muted-foreground uppercase">
-            {collection.artist} · {collection.season} · {collection.class}
+            {collection.artist} · {collection.season} ·{" "}
+            {collection.collectionNo} · {collection.class}
           </div>
         </div>
       </ObjektGradient>

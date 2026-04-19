@@ -84,13 +84,13 @@ export default function SerialTicket({
 
       {/* status pills */}
       <div className="flex flex-1 flex-wrap items-center gap-1.5">
+        {isTradable && (
+          <StatusPill tone="accent">{m.common_tradable()}</StatusPill>
+        )}
         {isPinned && (
           <StatusPill tone="accent">{m.objekt_overlay_pinned()}</StatusPill>
         )}
         {isLocked && <StatusPill tone="muted">{m.common_locked()}</StatusPill>}
-        {isTradable && (
-          <StatusPill tone="accent">{m.common_tradable()}</StatusPill>
-        )}
         {!isTradable && token.nonTransferableReason && (
           <StatusPill tone="muted">
             {reasonLabel(token.nonTransferableReason)}

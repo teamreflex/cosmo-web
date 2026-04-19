@@ -17,10 +17,22 @@ import { Link } from "@tanstack/react-router";
  */
 export function CosmoVerifiedBadge() {
   return (
-    <span className="inline-flex h-6 items-center gap-1 rounded-sm border border-border bg-background/40 px-1.5 font-mono text-xxs font-semibold tracking-[0.14em] text-muted-foreground uppercase">
-      <IconCheck className="size-3" />
-      {m.profile_badge_verified()}
-    </span>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            className="inline-flex h-5 items-center gap-1 rounded border border-border bg-background/40 px-1.5 font-mono text-xxs font-semibold tracking-[0.14em] text-muted-foreground uppercase"
+            aria-label={m.profile_badge_cosmo_verified()}
+          >
+            <IconCheck className="size-3" />
+            {m.profile_badge_verified()}
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" align="start">
+          <span>{m.profile_badge_cosmo_verified()}</span>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 
