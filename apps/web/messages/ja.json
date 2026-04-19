@@ -56,8 +56,6 @@
   "list_header_description_empty": "説明なし",
   "list_header_paired": "ペアリスト",
   "list_header_contacts_heading": "{user}に連絡",
-  "list_header_contacts_soon": "コンタクト情報準備中",
-  "list_header_contacts_copy_hint": "チップをクリックしてハンドルをコピー。",
   "common_unknown": "不明",
 
   "_comment_auth": "Authentication related strings",

@@ -1,3 +1,4 @@
+import { toPublicUser } from "@/lib/server/auth.server";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import type { Collection } from "@/lib/server/db/indexer/schema";
@@ -84,11 +85,6 @@ export const $getObjektListWithUser = createServerFn({ method: "GET" })
       where: { id: sanitized },
       with: {
         user: {
-          columns: {
-            id: true,
-            name: true,
-            displayUsername: true,
-          },
           with: {
             cosmoAccount: {
               columns: {
@@ -105,7 +101,16 @@ export const $getObjektListWithUser = createServerFn({ method: "GET" })
       ? await fetchLatestFxRate(list.currency)
       : null;
 
-    return { ...list, fxRateToUsd };
+    const { user, ...listData } = list;
+    const { cosmoAccount, ...userRow } = user;
+
+    return {
+      ...listData,
+      fxRateToUsd,
+      user: toPublicUser(userRow),
+      userDisplay: userRow.displayUsername ?? userRow.name,
+      cosmoUsername: cosmoAccount?.username,
+    };
   });
 
 function createSlug(name: string) {

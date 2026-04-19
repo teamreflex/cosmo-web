@@ -56,8 +56,6 @@
   "list_header_description_empty": "No description",
   "list_header_paired": "Paired list",
   "list_header_contacts_heading": "Reach {user}",
-  "list_header_contacts_soon": "Contacts coming soon",
-  "list_header_contacts_copy_hint": "Click a chip to copy the handle.",
   "common_unknown": "Unknown",
 
   "_comment_auth": "Authentication related strings",

@@ -1,4 +1,5 @@
 import { m } from "@/i18n/messages";
+import type { PublicUser } from "@/lib/universal/auth";
 import { cn } from "@/lib/utils";
 import type { ObjektList } from "@apollo/database/web/types";
 import { IconList } from "@tabler/icons-react";
@@ -12,6 +13,7 @@ import UpdateList from "./update-list";
 type Props = {
   list: ObjektList;
   ownerName: string;
+  owner: PublicUser | undefined;
   isOwner: boolean;
   extras?: ReactNode;
 };
@@ -19,6 +21,7 @@ type Props = {
 export default function ListHeader({
   list,
   ownerName,
+  owner,
   isOwner,
   extras,
 }: Props) {
@@ -96,8 +99,8 @@ export default function ListHeader({
           )}
         </div>
 
-        <div className="md:min-w-[320px]">
-          <ListContacts ownerName={ownerName} />
+        <div className="md:min-w-[320px] md:empty:hidden">
+          <ListContacts ownerName={ownerName} user={owner} />
         </div>
       </div>
     </div>

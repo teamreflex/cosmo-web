@@ -56,8 +56,6 @@
   "list_header_description_empty": "Aucune description",
   "list_header_paired": "Liste appariée",
   "list_header_contacts_heading": "Contacter {user}",
-  "list_header_contacts_soon": "Contacts bientôt disponibles",
-  "list_header_contacts_copy_hint": "Cliquer sur une puce pour copier le pseudo.",
   "common_unknown": "Inconnu",
 
   "_comment_auth": "Authentication related strings",

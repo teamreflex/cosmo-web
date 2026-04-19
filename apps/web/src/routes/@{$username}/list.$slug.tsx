@@ -147,6 +147,7 @@ function RouteComponent() {
             <ListHeader
               list={objektList}
               ownerName={target.cosmo.username}
+              owner={target.user}
               isOwner={isAuthenticated}
               extras={extras}
             />

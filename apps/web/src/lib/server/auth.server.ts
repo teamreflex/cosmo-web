@@ -398,8 +398,8 @@ export function toPublicUser(
     collectionMode: (user.collectionMode ??
       "blockchain") as CollectionDataSource,
     social: {
-      discord: user.discord ?? undefined,
-      twitter: user.twitter ?? undefined,
+      discord: user.showSocials ? (user.discord ?? undefined) : undefined,
+      twitter: user.showSocials ? (user.twitter ?? undefined) : undefined,
     },
     showSocials: user.showSocials ?? false,
   } as PublicUser;

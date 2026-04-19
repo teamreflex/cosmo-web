@@ -60,13 +60,13 @@ export const Route = createFileRoute("/list/$id")({
       throw notFound();
     }
 
-    const { user, ...objektList } = objektListWithUser;
+    const { user, userDisplay, cosmoUsername, ...objektList } =
+      objektListWithUser;
     // if the user has a cosmo linked, redirect to the profile page
-    const cosmo = user.cosmoAccount?.username;
-    if (cosmo !== undefined) {
+    if (cosmoUsername !== undefined) {
       throw redirect({
         to: "/@{$username}/list/$slug",
-        params: { username: cosmo, slug: objektList.slug },
+        params: { username: cosmoUsername, slug: objektList.slug },
       });
     }
 
@@ -75,7 +75,8 @@ export const Route = createFileRoute("/list/$id")({
     return {
       objektList,
       owner: {
-        display: user.displayUsername ?? user.name,
+        display: userDisplay,
+        user,
       },
       account,
       isAuthenticated,
@@ -100,6 +101,7 @@ function RouteComponent() {
               <ListHeader
                 list={objektList}
                 ownerName={owner.display}
+                owner={owner.user}
                 isOwner={isAuthenticated}
               />
             </div>
