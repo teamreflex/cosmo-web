@@ -8,6 +8,13 @@ import {
 } from "@/lib/server/middlewares";
 import { fetchLatestFxRate } from "@/lib/server/objekts/fx.server";
 import { assertUserOwnsList } from "@/lib/server/objekts/lists.server";
+import type { PublicUser } from "@/lib/universal/auth";
+import type {
+  PartnerMatchRow,
+  TradePartner,
+  TradePartnersResponse,
+} from "@/lib/universal/lists";
+import { Objekt } from "@/lib/universal/objekt-conversion";
 import {
   addObjektToHaveListSchema,
   addObjektToListSchema,
@@ -23,11 +30,7 @@ import {
 } from "@/lib/universal/schema/objekt-list";
 import { sanitizeUuid } from "@/lib/utils";
 import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
-import {
-  cosmoAccounts,
-  objektListEntries,
-  objektLists,
-} from "@apollo/database/web/schema";
+import { objektListEntries, objektLists } from "@apollo/database/web/schema";
 import type { ObjektListEntry } from "@apollo/database/web/types";
 import { redirect } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
@@ -735,14 +738,6 @@ export const $removeObjektFromList = createServerFn({ method: "POST" })
     return true;
   });
 
-export type TradePartner = {
-  theirUserId: string;
-  theirUsername: string | null;
-  theyHaveIWant: string[];
-  iHaveTheyWant: string[];
-  descriptions: string[];
-};
-
 /**
  * Find trade partners for a single live list. Surfaces only mutual matches:
  * the partner must hold something in this anchor (or want it, depending on
@@ -752,7 +747,7 @@ export type TradePartner = {
 export const $findTradePartnersForList = createServerFn({ method: "GET" })
   .inputValidator(findTradePartnersSchema)
   .middleware([authenticatedMiddleware])
-  .handler(async ({ data, context }): Promise<TradePartner[]> => {
+  .handler(async ({ data, context }): Promise<TradePartnersResponse> => {
     const userId = context.session.session.userId;
 
     const myList = await db.query.objektLists.findFirst({
@@ -808,7 +803,6 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
         .select({
           id: w.id,
           userId: w.userId,
-          description: w.description,
         })
         .from(w)
         .innerJoin(h, eq(h.linkedWantListId, w.id))
@@ -824,7 +818,7 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
           .where(eq(objektListEntries.objektListId, data.listId)),
       );
 
-    let rows: TradePartner[] = [];
+    let matches: PartnerMatchRow[] = [];
 
     switch (myList.type) {
       case "want": {
@@ -845,7 +839,6 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
           db
             .select({
               userId: tradeActiveHaves.userId,
-              description: tradeActiveHaves.description,
               collectionId: objektListEntries.collectionId,
             })
             .from(objektListEntries)
@@ -867,7 +860,6 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
           db
             .select({
               userId: tradeActiveWants.userId,
-              description: tradeActiveWants.description,
               collectionId: objektListEntries.collectionId,
             })
             .from(objektListEntries)
@@ -893,32 +885,23 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
           )
           .select({
             theirUserId: theirHaves.userId,
-            theirUsername: cosmoAccounts.username,
             theyHaveIWant: sql<
               string[] | null
             >`array_agg(DISTINCT ${theirHaves.collectionId})`,
             iHaveTheyWant: sql<
               string[] | null
             >`array_agg(DISTINCT ${theirWants.collectionId})`,
-            descriptions: sql<string[] | null>`array_remove(
-              array_agg(DISTINCT ${theirHaves.description}) ||
-              array_agg(DISTINCT ${theirWants.description}),
-              NULL
-            )`,
           })
           .from(theirHaves)
           .innerJoin(theirWants, eq(theirWants.userId, theirHaves.userId))
-          .leftJoin(cosmoAccounts, eq(cosmoAccounts.userId, theirHaves.userId))
-          .groupBy(theirHaves.userId, cosmoAccounts.username)
+          .groupBy(theirHaves.userId)
           .orderBy(desc(countDistinct(theirHaves.collectionId)))
           .limit(50);
 
-        rows = result.map((r) => ({
-          theirUserId: r.theirUserId,
-          theirUsername: r.theirUsername,
+        matches = result.map((r) => ({
+          userId: r.theirUserId,
           theyHaveIWant: r.theyHaveIWant ?? [],
           iHaveTheyWant: r.iHaveTheyWant ?? [],
-          descriptions: r.descriptions ?? [],
         }));
         break;
       }
@@ -941,7 +924,6 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
           db
             .select({
               userId: tradeActiveWants.userId,
-              description: tradeActiveWants.description,
               collectionId: objektListEntries.collectionId,
             })
             .from(objektListEntries)
@@ -963,7 +945,6 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
           db
             .select({
               userId: tradeActiveHaves.userId,
-              description: tradeActiveHaves.description,
               collectionId: objektListEntries.collectionId,
             })
             .from(objektListEntries)
@@ -989,38 +970,83 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
           )
           .select({
             theirUserId: theirWants.userId,
-            theirUsername: cosmoAccounts.username,
             theyHaveIWant: sql<
               string[] | null
             >`array_agg(DISTINCT ${theirHaves.collectionId})`,
             iHaveTheyWant: sql<
               string[] | null
             >`array_agg(DISTINCT ${theirWants.collectionId})`,
-            descriptions: sql<string[] | null>`array_remove(
-              array_agg(DISTINCT ${theirWants.description}) ||
-              array_agg(DISTINCT ${theirHaves.description}),
-              NULL
-            )`,
           })
           .from(theirWants)
           .innerJoin(theirHaves, eq(theirHaves.userId, theirWants.userId))
-          .leftJoin(cosmoAccounts, eq(cosmoAccounts.userId, theirWants.userId))
-          .groupBy(theirWants.userId, cosmoAccounts.username)
+          .groupBy(theirWants.userId)
           .orderBy(desc(countDistinct(theirWants.collectionId)))
           .limit(50);
 
-        rows = result.map((r) => ({
-          theirUserId: r.theirUserId,
-          theirUsername: r.theirUsername,
+        matches = result.map((r) => ({
+          userId: r.theirUserId,
           theyHaveIWant: r.theyHaveIWant ?? [],
           iHaveTheyWant: r.iHaveTheyWant ?? [],
-          descriptions: r.descriptions ?? [],
         }));
         break;
       }
     }
 
-    return rows;
+    if (matches.length === 0) {
+      return { partners: [], collections: {} };
+    }
+
+    const userIds = [...new Set(matches.map((r) => r.userId))];
+    const slugs = [
+      ...new Set(
+        matches.flatMap((r) => [...r.theyHaveIWant, ...r.iHaveTheyWant]),
+      ),
+    ];
+
+    const [cosmos, indexedCollections] = await Promise.all([
+      db.query.cosmoAccounts.findMany({
+        where: { userId: { in: userIds } },
+        columns: { userId: true, username: true },
+        with: { user: true },
+      }),
+      slugs.length > 0
+        ? indexer.query.collections.findMany({
+            where: { slug: { in: slugs } },
+          })
+        : Promise.resolve([]),
+    ]);
+
+    const identityByUserId = new Map<
+      string,
+      { username: string; user: PublicUser }
+    >();
+    for (const cosmo of cosmos) {
+      if (!cosmo.userId || !cosmo.user) continue;
+      identityByUserId.set(cosmo.userId, {
+        username: cosmo.username,
+        user: toPublicUser(cosmo.user),
+      });
+    }
+
+    const collections: Record<string, Objekt.Collection> = {};
+    for (const c of indexedCollections) {
+      collections[c.slug] = Objekt.fromIndexer(c);
+    }
+
+    const partners: TradePartner[] = [];
+    for (const row of matches) {
+      const identity = identityByUserId.get(row.userId);
+      if (!identity) continue;
+      partners.push({
+        userId: row.userId,
+        username: identity.username,
+        user: identity.user,
+        theyHaveIWant: row.theyHaveIWant,
+        iHaveTheyWant: row.iHaveTheyWant,
+      });
+    }
+
+    return { partners, collections };
   });
 
 /**
