@@ -3,7 +3,7 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { useProfileContext } from "@/hooks/use-profile";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { useMemo } from "react";
-import { ObjektSidebar } from "../common";
+import { ObjektGradient, ObjektSidebar } from "../common";
 import FlippableObjekt from "../objekt-flippable";
 import SerialTicketList from "./serial-ticket-list";
 
@@ -29,12 +29,10 @@ export default function DetailContent({ collection, tokens }: Props) {
       className="grid min-h-0 flex-1 data-[desktop=false]:grid-cols-1 data-[desktop=false]:grid-rows-[auto_1fr] data-[desktop=true]:grid-cols-[minmax(280px,380px)_1fr] data-[desktop=true]:overflow-hidden"
       data-desktop={isDesktop}
     >
-      <div
+      <ObjektGradient
+        collection={collection}
         className="flex flex-col items-center justify-center gap-4 border-border p-4 data-[desktop=false]:-mt-10 data-[desktop=false]:border-b data-[desktop=false]:pt-14 data-[desktop=true]:border-r data-[desktop=true]:p-6"
         data-desktop={isDesktop}
-        style={{
-          background: `radial-gradient(600px 400px at 50% 30%, ${collection.backgroundColor}22, transparent 70%)`,
-        }}
       >
         <div className="w-full max-w-[220px] sm:max-w-[280px]">
           <FlippableObjekt collection={collection}>
@@ -49,7 +47,7 @@ export default function DetailContent({ collection, tokens }: Props) {
             {collection.artist} · {collection.season} · {collection.class}
           </div>
         </div>
-      </div>
+      </ObjektGradient>
 
       <SerialTicketList
         collection={collection}

@@ -5,7 +5,7 @@ import type { PropsWithClassName } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { bands } from "@apollo/cosmo/bands";
 import { Fragment, useState } from "react";
-import type { CSSProperties, PropsWithChildren } from "react";
+import type { ComponentProps, CSSProperties, PropsWithChildren } from "react";
 import ArtistLogo from "./artist-logo";
 
 type ObjektSidebarProps = {
@@ -119,5 +119,119 @@ export function ObjektNewIndicator(props: PropsWithClassName<{}>) {
     >
       {m.common_new()}
     </span>
+  );
+}
+
+const SPECIAL_GRADIENT_CONIC =
+  "conic-gradient(from 200deg at 50% 30%, #e6dbe2, #d3dde2, #efe5e3, #edd8e4, #bcadd2, #e6dbe2)";
+
+const SPECIAL_RIBBON_LINEAR =
+  "linear-gradient(135deg, rgba(210, 225, 235, 0.6) 0%, transparent 40%), linear-gradient(225deg, rgba(235, 215, 225, 0.5) 0%, transparent 45%), linear-gradient(180deg, #ecd8dd 0%, #e3dce4 20%, #f1e5de 45%, #eedae4 70%, #c8b4d6 100%)";
+
+const IDNTT_UNIT_LINEAR =
+  "linear-gradient(180deg, #ded7e0 0%, #e3e0e7 12%, #d8cee0 28%, #baa3c8 42%, #b098b9 55%, #d9aeb5 66%, #eec39b 76%, #f3d283 86%, #f0c558 100%)";
+
+type GradientVariant = { class: string; artist: string };
+
+function getVariantGradient(variant: GradientVariant): string | null {
+  if (variant.artist === "idntt" && variant.class === "Unit") {
+    return IDNTT_UNIT_LINEAR;
+  }
+  if (variant.class === "Special") {
+    return SPECIAL_GRADIENT_CONIC;
+  }
+  return null;
+}
+
+function getVariantRibbon(variant: GradientVariant): string | null {
+  if (variant.artist === "idntt" && variant.class === "Unit") {
+    return IDNTT_UNIT_LINEAR;
+  }
+  if (variant.class === "Special") {
+    return SPECIAL_RIBBON_LINEAR;
+  }
+  return null;
+}
+
+type ObjektGradientProps = ComponentProps<"div"> & {
+  collection: Pick<Objekt.Collection, "class" | "backgroundColor" | "artist">;
+  size?: { width: number; height: number };
+};
+
+/**
+ * Wraps its children in a div with an ellipse gradient background derived from
+ * the objekt. Certain class/artist combinations fade through custom multi-stop
+ * gradients; others fade from the objekt's backgroundColor.
+ */
+export function ObjektGradient({
+  collection,
+  size,
+  style,
+  className,
+  children,
+  ...props
+}: ObjektGradientProps) {
+  const w = size?.width ?? 600;
+  const h = size?.height ?? 400;
+  const variantBg = getVariantGradient(collection);
+
+  if (variantBg) {
+    const mask = `radial-gradient(${w}px ${h}px at 50% 30%, rgba(0,0,0,0.4), transparent 70%)`;
+    return (
+      <div
+        {...props}
+        className={cn("relative isolate", className)}
+        style={style}
+      >
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 -z-10"
+          style={{
+            background: variantBg,
+            WebkitMaskImage: mask,
+            maskImage: mask,
+          }}
+        />
+        {children}
+      </div>
+    );
+  }
+
+  return (
+    <div
+      {...props}
+      className={className}
+      style={{
+        ...style,
+        background: `radial-gradient(${w}px ${h}px at 50% 30%, ${collection.backgroundColor}22, transparent 70%)`,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+type ObjektRibbonProps = ComponentProps<"div"> & {
+  collection: Pick<Objekt.Collection, "class" | "backgroundColor" | "artist">;
+};
+
+/**
+ * Small ribbon sliver colored by the objekt. Certain class/artist combinations
+ * get a custom gradient; others use their backgroundColor as a solid fill.
+ */
+export function ObjektRibbon({
+  collection,
+  style,
+  className,
+  ...props
+}: ObjektRibbonProps) {
+  const background = getVariantRibbon(collection) ?? collection.backgroundColor;
+
+  return (
+    <div
+      {...props}
+      className={cn("h-12 w-1.5 shrink-0 rounded-full", className)}
+      style={{ ...style, background }}
+    />
   );
 }

@@ -10,6 +10,7 @@ import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { IconArrowRight } from "@tabler/icons-react";
 import { format } from "date-fns";
 import { useMemo } from "react";
+import { ObjektRibbon } from "../common";
 import StatusPill from "./status-pill";
 
 type Props = {
@@ -61,10 +62,7 @@ export default function SerialTicket({
       className="group flex w-full cursor-pointer items-center gap-3 border-b border-border px-4 py-3 text-left transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none sm:gap-4 sm:px-5"
     >
       {/* ribbon sliver */}
-      <div
-        className="h-12 w-1.5 shrink-0 rounded-full"
-        style={{ background: collection.backgroundColor }}
-      />
+      <ObjektRibbon collection={collection} />
 
       {/* serial */}
       <div className="w-20 shrink-0 sm:w-24">
