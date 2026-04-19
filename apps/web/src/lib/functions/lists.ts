@@ -33,6 +33,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { and, countDistinct, desc, eq, isNotNull, ne, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import * as z from "zod";
+import { isPostgresError } from "../server/util.server";
 import { $fetchArtists } from "./artists";
 import {
   assertOwnsTokens,
@@ -476,37 +477,59 @@ export const $addObjektToList = createServerFn({ method: "POST" })
   });
 
 /**
- * Add an objekt to a sale list with quantity/price, upserting if already present.
+ * Add one or more owned serials to a sale list, each keyed by tokenId with its
+ * own price. Verifies ownership against the indexer so users can only list
+ * objekts they actually hold and that are currently transferable.
  */
 export const $addObjektToSaleList = createServerFn({ method: "POST" })
   .inputValidator(addObjektToSaleListSchema)
-  .middleware([authenticatedMiddleware])
+  .middleware([cosmoMiddleware])
   .handler(async ({ data, context }) => {
-    await assertUserOwnsList(data.objektListId, context.session.session.userId);
+    const userId = context.session.user.id;
 
-    const existing = await db.query.objektListEntries.findFirst({
-      where: {
-        objektListId: data.objektListId,
-        collectionId: data.slug,
-      },
-    });
+    await assertOwnsTokens(
+      context.cosmo.address,
+      data.collectionId,
+      data.entries.map((e) => e.tokenId),
+    );
 
-    if (existing) {
-      await db
-        .update(objektListEntries)
-        .set({
-          quantity: existing.quantity + data.quantity,
-          price: data.price ?? existing.price,
-        })
-        .where(eq(objektListEntries.id, existing.id));
-    } else {
-      await db.insert(objektListEntries).values({
-        objektListId: data.objektListId,
-        collectionId: data.slug,
-        quantity: data.quantity,
-        price: data.price ?? null,
+    const verifiedAt = new Date().toISOString();
+
+    await db.transaction(async (tx) => {
+      const list = await tx.query.objektLists.findFirst({
+        where: { id: data.objektListId, userId },
+        columns: { type: true },
       });
-    }
+
+      if (!list) {
+        throw new Error("You do not have access to this list");
+      }
+      if (list.type !== "sale") {
+        throw new Error("not_sale_list");
+      }
+
+      try {
+        await tx.insert(objektListEntries).values(
+          data.entries.map((entry) => ({
+            objektListId: data.objektListId,
+            collectionId: data.slug,
+            tokenId: entry.tokenId,
+            quantity: 1,
+            price: entry.price,
+            verifiedAt,
+          })),
+        );
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          "code" in error &&
+          error.code === "23505"
+        ) {
+          throw new Error("already_on_list");
+        }
+        throw error;
+      }
+    });
 
     return true;
   });
@@ -556,13 +579,10 @@ export const $addObjektToHaveList = createServerFn({ method: "POST" })
           })),
         );
       } catch (error) {
-        if (
-          error instanceof Error &&
-          "code" in error &&
-          error.code === "23505"
-        ) {
+        if (isPostgresError(error, "23505")) {
           throw new Error("already_on_list");
         }
+
         throw error;
       }
 
@@ -646,7 +666,10 @@ export const $addObjektToWantList = createServerFn({ method: "POST" })
   });
 
 /**
- * Update quantity/price on an existing list entry.
+ * Update an existing list entry. Token-keyed entries (pinned to a single
+ * serial) can only change price; collection-keyed entries update both price
+ * and quantity. The client signals which variant via `kind`, and the server
+ * cross-checks against the stored `tokenId` to reject mismatches.
  */
 export const $updateObjektListEntry = createServerFn({ method: "POST" })
   .inputValidator(updateObjektListEntrySchema)
@@ -654,11 +677,27 @@ export const $updateObjektListEntry = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertUserOwnsList(data.objektListId, context.session.session.userId);
 
+    const entry = await db.query.objektListEntries.findFirst({
+      where: {
+        id: data.objektListEntryId,
+        objektListId: data.objektListId,
+      },
+      columns: { tokenId: true },
+    });
+    if (!entry) {
+      throw new Error("entry_not_found");
+    }
+
+    const isTokenKeyed = entry.tokenId !== null;
+    if (isTokenKeyed !== (data.kind === "token")) {
+      throw new Error("entry_kind_mismatch");
+    }
+
     await db
       .update(objektListEntries)
       .set({
-        quantity: data.quantity,
-        price: data.price ?? null,
+        price: data.price,
+        ...(data.kind === "collection" ? { quantity: data.quantity } : {}),
       })
       .where(
         and(

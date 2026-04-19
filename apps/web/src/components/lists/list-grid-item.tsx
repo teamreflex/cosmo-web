@@ -62,6 +62,7 @@ export function ListGridItem({
               onOpenChange={setEditOpen}
               objektListId={objektList.id}
               objektListEntryId={item.id}
+              tokenId={item.entryTokenId}
               quantity={item.entryQuantity}
               price={item.entryPrice}
               currency={objektList.currency}

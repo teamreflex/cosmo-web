@@ -1,24 +1,24 @@
-import { Badge } from "@/components/ui/badge";
+import StatusPill from "@/components/objekt/detail/status-pill";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { useAddToList } from "@/hooks/use-add-to-list";
 import { m } from "@/i18n/messages";
 import { $addObjektToHaveList } from "@/lib/functions/lists";
-import { $fetchOwnedSerials } from "@/lib/functions/objekts/owned-serials";
+import {
+  $fetchOwnedSerials,
+  type OwnedSerial,
+} from "@/lib/functions/objekts/owned-serials";
+import { cn } from "@/lib/utils";
+import type { NonTransferableReason } from "@apollo/cosmo/types/objekts";
 import type { ObjektList } from "@apollo/database/web/types";
-import { IconLoader2, IconLock } from "@tabler/icons-react";
+import { IconCheck, IconLoader2 } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense, useState } from "react";
 
@@ -41,9 +41,14 @@ export default function SerialPickerDialog({
 }: Props) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{m.list_picker_select_serials()}</DialogTitle>
+          <DialogTitle>
+            {m.list_picker_select_serials()} — {collectionName}
+          </DialogTitle>
+          <DialogDescription>
+            {m.list_picker_description({ listName: list.name })}
+          </DialogDescription>
         </DialogHeader>
 
         <Suspense
@@ -100,8 +105,7 @@ function SerialPickerBody({
     }),
   );
 
-  function toggle(tokenId: string, disabled: boolean) {
-    if (disabled) return;
+  function toggle(tokenId: string) {
     setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(tokenId)) next.delete(tokenId);
@@ -120,51 +124,17 @@ function SerialPickerBody({
 
   return (
     <>
-      <ScrollArea className="max-h-72">
-        <ul className="flex flex-col gap-1">
-          {owned.map((o) => {
-            const disabled = !o.transferable || o.locked;
-            const isChecked = selected.has(o.tokenId);
-            const reason = o.locked
-              ? m.list_picker_disabled_locked()
-              : m.list_picker_disabled_nontransferable();
-
-            const row = (
-              <button
-                type="button"
-                onClick={() => toggle(o.tokenId, disabled)}
-                disabled={disabled}
-                className="flex w-full items-center justify-between gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <span className="flex items-center gap-2">
-                  <Checkbox
-                    checked={isChecked}
-                    disabled={disabled}
-                    tabIndex={-1}
-                  />
-                  <Badge variant="secondary">
-                    #{o.serial.toString().padStart(5, "0")}
-                  </Badge>
-                </span>
-                {o.locked && <IconLock className="h-4 w-4" />}
-              </button>
-            );
-
-            return (
-              <li key={o.tokenId}>
-                {disabled ? (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span className="contents">{row}</span>
-                    </TooltipTrigger>
-                    <TooltipContent>{reason}</TooltipContent>
-                  </Tooltip>
-                ) : (
-                  row
-                )}
-              </li>
-            );
-          })}
+      <ScrollArea className="max-h-72 -mx-6">
+        <ul className="flex flex-col">
+          {owned.map((o) => (
+            <li key={o.tokenId}>
+              <SerialRow
+                serial={o}
+                isChecked={selected.has(o.tokenId)}
+                onToggle={() => toggle(o.tokenId)}
+              />
+            </li>
+          ))}
         </ul>
       </ScrollArea>
 
@@ -180,4 +150,76 @@ function SerialPickerBody({
       </Button>
     </>
   );
+}
+
+type SerialRowProps = {
+  serial: OwnedSerial;
+  isChecked: boolean;
+  onToggle: () => void;
+};
+
+function SerialRow({ serial, isChecked, onToggle }: SerialRowProps) {
+  const isTradable =
+    serial.transferable && serial.nonTransferableReason === undefined;
+  const disabled = !serial.transferable || serial.locked;
+  const paddedSerial = serial.serial.toString().padStart(5, "0");
+
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      disabled={disabled}
+      className="group flex w-full items-center gap-3 border-b border-border px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-accent focus-visible:bg-accent focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent sm:gap-4 sm:px-5"
+    >
+      <div className="w-20 shrink-0 sm:w-24">
+        <div className="font-mono text-xxs tracking-[0.14em] text-muted-foreground uppercase">
+          {m.detail_sort_serial()}
+        </div>
+        <div className="font-mono text-sm font-bold tabular-nums sm:text-lg">
+          #{paddedSerial}
+        </div>
+      </div>
+
+      <div className="flex flex-1 flex-wrap items-center gap-1.5">
+        {serial.locked && (
+          <StatusPill tone="muted">{m.common_locked()}</StatusPill>
+        )}
+        {isTradable && (
+          <StatusPill tone="accent">{m.common_tradable()}</StatusPill>
+        )}
+        {!isTradable && serial.nonTransferableReason && (
+          <StatusPill tone="muted">
+            {reasonLabel(serial.nonTransferableReason)}
+          </StatusPill>
+        )}
+      </div>
+
+      <div
+        aria-hidden
+        data-checked={isChecked}
+        className={cn(
+          "flex size-4 shrink-0 items-center justify-center rounded-[4px] border border-input transition-colors",
+          "data-[checked=true]:border-primary data-[checked=true]:bg-primary data-[checked=true]:text-primary-foreground",
+        )}
+      >
+        {isChecked && <IconCheck className="size-3.5" />}
+      </div>
+    </button>
+  );
+}
+
+function reasonLabel(reason: NonTransferableReason): string {
+  switch (reason) {
+    case "mint-pending":
+      return m.objekt_overlay_mint_pending();
+    case "welcome-objekt":
+      return m.objekt_overlay_welcome_reward();
+    case "used-for-grid":
+      return m.objekt_overlay_used_for_grid();
+    case "challenge-reward":
+      return m.objekt_overlay_event_reward();
+    case "not-transferable":
+    default:
+      return m.objekt_overlay_not_transferable();
+  }
 }

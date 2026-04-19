@@ -125,6 +125,7 @@ export default function AddToList({
           listName={saleListPending.name}
           slug={slug}
           collectionName={collectionName}
+          collectionId={collectionId}
           currency={saleListPending.currency}
         />
       )}

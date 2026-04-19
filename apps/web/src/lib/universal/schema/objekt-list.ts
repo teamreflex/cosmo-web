@@ -116,16 +116,38 @@ export const addObjektToWantListSchema = z.object({
 export const addObjektToSaleListSchema = z.object({
   objektListId: z.uuid(),
   slug: z.string(),
-  quantity: z.number().int().min(1).max(99),
-  price: z.number().min(0).nullish(),
+  collectionName: z.string(),
+  collectionId: z.uuid(),
+  entries: z
+    .array(
+      z.object({
+        tokenId: z.string(),
+        price: z.number().min(0).nullable(),
+      }),
+    )
+    .min(1)
+    .max(50),
 });
 
-export const updateObjektListEntrySchema = z.object({
+const updateEntryBase = z.object({
   objektListId: z.uuid(),
   objektListEntryId: z.uuid(),
-  quantity: z.number().int().min(1).max(99),
-  price: z.number().min(0).nullish(),
+  price: z.number().min(0).nullable(),
 });
+
+export const updateTokenEntrySchema = updateEntryBase.extend({
+  kind: z.literal("token"),
+});
+
+export const updateCollectionEntrySchema = updateEntryBase.extend({
+  kind: z.literal("collection"),
+  quantity: z.number().int().min(1).max(99),
+});
+
+export const updateObjektListEntrySchema = z.discriminatedUnion("kind", [
+  updateTokenEntrySchema,
+  updateCollectionEntrySchema,
+]);
 
 export const removeObjektFromListSchema = z.object({
   objektListId: z.uuid(),
