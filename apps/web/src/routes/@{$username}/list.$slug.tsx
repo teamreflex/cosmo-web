@@ -127,7 +127,11 @@ function RouteComponent() {
             }}
           >
             <IconArrowsExchange />
-            <span>{m.list_header_paired()}</span>
+            <span>
+              {pairedList.type === "have"
+                ? m.list_type_have()
+                : m.list_type_want()}
+            </span>
           </Link>
         </Button>
       )}
