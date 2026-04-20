@@ -1,4 +1,4 @@
-FROM oven/bun:1.3.11-slim AS bun
+FROM oven/bun:1.3.13-slim AS bun
 FROM node:22-slim AS node
 
 # stage 1: prune workspace with bun

@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "ofetch": "catalog:",
-    "puppeteer-core": "^24.40.0",
+    "puppeteer-core": "^24.42.0",
     "zod": "catalog:"
   },
   "devDependencies": {
