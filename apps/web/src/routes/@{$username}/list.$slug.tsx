@@ -134,7 +134,7 @@ function RouteComponent() {
       {isAuthenticated &&
         isTradeActive &&
         (objektList.type === "have" || objektList.type === "want") && (
-          <ListMatches listId={objektList.id} listName={objektList.name} />
+          <ListMatches list={objektList} />
         )}
     </>
   );

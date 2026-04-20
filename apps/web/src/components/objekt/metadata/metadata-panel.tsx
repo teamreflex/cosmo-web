@@ -32,10 +32,10 @@ function Fallback() {
     <div className="flex flex-col">
       {/* stats row skeleton — fixed height so no layout shift */}
       <div className="flex items-stretch border-b border-border">
-        {Array.from({ length: 3 }).map((_, i) => (
+        {Array.from({ length: 2 }).map((_, i) => (
           <div
             key={i}
-            className="flex-1 border-r border-border px-4 py-3 last:border-r-0"
+            className="flex-1 border-r border-border px-4 h-[58px] last:border-r-0 flex flex-col justify-center"
           >
             <Skeleton className="h-3 w-16" />
             <Skeleton className="mt-1 h-4 w-20" />

@@ -1,11 +1,11 @@
 import { useMetadataDialog } from "@/hooks/use-metadata-dialog";
 import { m } from "@/i18n/messages";
-import { listMatchesQuery } from "@/lib/queries/objekt-queries";
+import { listMatchesQuery, objektQuery } from "@/lib/queries/objekt-queries";
 import type { TradePartner } from "@/lib/universal/lists";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
 import { IconArrowsExchange, IconChevronRight } from "@tabler/icons-react";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import MetadataDialog from "../objekt/metadata-dialog";
 import {
@@ -254,6 +254,7 @@ function MiniObjektTileButton({
   collection: Objekt.Collection;
 }) {
   const { open } = useMetadataDialog();
+  const queryClient = useQueryClient();
   const background = collection.backgroundColor || "#333";
   const variantGradient = getVariantGradient(collection);
   const variantRibbon = getVariantRibbon(collection);
@@ -264,7 +265,13 @@ function MiniObjektTileButton({
   return (
     <button
       type="button"
-      onClick={open}
+      onClick={() => {
+        queryClient.setQueryData(
+          objektQuery(collection.slug).queryKey,
+          collection,
+        );
+        open();
+      }}
       className="relative flex h-14 w-28 overflow-hidden rounded-sm border border-border transition-shadow hover:shadow-md"
       title={`${collection.member} ${collection.collectionNo}`}
     >
