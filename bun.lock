@@ -57,6 +57,7 @@
         "@apollo/cosmo": "workspace:*",
         "@apollo/database": "workspace:*",
         "@apollo/util": "workspace:*",
+        "@apollo/util-server": "workspace:*",
         "@effect/cluster": "catalog:",
         "@effect/platform": "catalog:",
         "@effect/platform-bun": "catalog:",
@@ -103,6 +104,7 @@
         "@apollo/cosmo": "workspace:*",
         "@apollo/database": "workspace:*",
         "@apollo/util": "workspace:*",
+        "@apollo/util-server": "workspace:*",
         "@aws-sdk/client-ses": "^3.1032.0",
         "@fontsource-variable/dm-sans": "^5.2.8",
         "@fontsource-variable/jetbrains-mono": "^5.2.8",
@@ -226,6 +228,17 @@
         "typescript": "catalog:",
       },
     },
+    "packages/util-server": {
+      "name": "@apollo/util-server",
+      "version": "0.0.0",
+      "devDependencies": {
+        "@apollo/lint": "workspace:*",
+        "@apollo/typescript": "workspace:*",
+        "@types/bun": "catalog:",
+        "turbo": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
   },
   "catalog": {
     "@effect/build-utils": "^0.8.9",
@@ -261,6 +274,8 @@
     "@apollo/usage-reporting-protobuf": ["@apollo/usage-reporting-protobuf@4.1.1", "", { "dependencies": { "@apollo/protobufjs": "1.2.7" } }, "sha512-u40dIUePHaSKVshcedO7Wp+mPiZsaU6xjv9J+VyxpoU/zL6Jle+9zWeG98tr/+SZ0nZ4OXhrbb8SNr0rAPpIDA=="],
 
     "@apollo/util": ["@apollo/util@workspace:packages/util"],
+
+    "@apollo/util-server": ["@apollo/util-server@workspace:packages/util-server"],
 
     "@apollo/utils.dropunuseddefinitions": ["@apollo/utils.dropunuseddefinitions@1.1.0", "", { "peerDependencies": { "graphql": "14.x || 15.x || 16.x" } }, "sha512-jU1XjMr6ec9pPoL+BFWzEPW7VHHulVdGKMkPAMiCigpVIT11VmCbnij0bWob8uS3ODJ65tZLYKAh/55vLw2rbg=="],
 

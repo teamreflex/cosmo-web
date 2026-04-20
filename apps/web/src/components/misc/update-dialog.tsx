@@ -94,6 +94,7 @@ const updates = [
       "Updated: Owned objekt collection view has been redesigned to surface more detail rather than just replicating what COSMO shows.",
       "Updated: Filters now display all the time on mobile rather than being collapsed into a toggle.",
       "Updated: Sale lists now enforce selecting a specific objekt/serial when adding an entry. After some time, we will start automatically removing entries upon transfer just like 'have' lists.",
+      "Updated: Pins are removed upon sending the objekt to another user.",
       "Fixed: Locked & Transferable filters are more clear in their behavior.",
     ],
   },

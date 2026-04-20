@@ -4,7 +4,7 @@ import type { DatabaseWeb } from "./db";
 import type { DatabaseIndexer } from "./db-indexer";
 import type { Env } from "./env";
 import { clearObjektStatsTask } from "./functions/clear-objekt-stats";
-import { drainListEventsTask } from "./functions/drain-list-events";
+import { drainOutboxTask } from "./functions/drain-outbox";
 // import { syncCollectionPriceStatsTask } from "./functions/sync-collection-price-stats";
 // import { syncFxRatesTask } from "./functions/sync-fx-rates";
 import { syncGravitiesTask } from "./functions/sync-gravities";
@@ -30,7 +30,7 @@ export interface ScheduledTask<TSuccess = void, TFailure = unknown> {
 export const SCHEDULED_TASKS: ScheduledTask[] = [
   clearObjektStatsTask,
   syncGravitiesTask,
-  drainListEventsTask,
+  drainOutboxTask,
   // TODO: uncomment on second deploy step
   // syncFxRatesTask,
   // syncCollectionPriceStatsTask,

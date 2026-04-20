@@ -2,8 +2,8 @@ import { clearTag } from "@/lib/server/cache.server";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import { cosmoMiddleware } from "@/lib/server/middlewares";
-import { pinCacheKey } from "@/lib/server/objekts/pins.server";
 import { lockedObjekts, pins } from "@apollo/database/web/schema";
+import { pinCacheKey } from "@apollo/util-server";
 import { createServerFn } from "@tanstack/react-start";
 import { and, eq } from "drizzle-orm";
 import * as z from "zod";
@@ -81,10 +81,10 @@ export const $pinObjekt = createServerFn({ method: "POST" })
       throw new Error("Error pinning objekt");
     }
 
-    await Promise.all([
-      clearTag(pinCacheKey(context.cosmo.username)),
-      clearTag(pinCacheKey(context.cosmo.address)),
-    ]);
+    await clearTag(
+      pinCacheKey(context.cosmo.username),
+      pinCacheKey(context.cosmo.address),
+    );
     return normalizePin(objekt);
   });
 
@@ -108,9 +108,9 @@ export const $unpinObjekt = createServerFn({ method: "POST" })
         ),
       );
 
-    await Promise.all([
-      clearTag(pinCacheKey(context.cosmo.username)),
-      clearTag(pinCacheKey(context.cosmo.address)),
-    ]);
+    await clearTag(
+      pinCacheKey(context.cosmo.username),
+      pinCacheKey(context.cosmo.address),
+    );
     return true;
   });

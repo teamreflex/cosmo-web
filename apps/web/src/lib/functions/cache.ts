@@ -1,6 +1,6 @@
 import { clearTag } from "@/lib/server/cache.server";
 import { adminMiddleware } from "@/lib/server/middlewares";
-import { pinCacheKey } from "@/lib/server/objekts/pins.server";
+import { pinCacheKey } from "@apollo/util-server";
 import { createServerFn } from "@tanstack/react-start";
 import * as z from "zod";
 import { ARTISTS_CACHE_KEY } from "./artists";

@@ -28,6 +28,7 @@
     "@apollo/cosmo": "workspace:*",
     "@apollo/database": "workspace:*",
     "@apollo/util": "workspace:*",
+    "@apollo/util-server": "workspace:*",
     "@aws-sdk/client-ses": "^3.1032.0",
     "@fontsource-variable/dm-sans": "^5.2.8",
     "@fontsource-variable/jetbrains-mono": "^5.2.8",

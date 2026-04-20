@@ -1,16 +1,19 @@
 import { DatabaseWeb } from "@/db";
 import { DatabaseIndexer } from "@/db-indexer";
+import { Redis } from "@/redis";
 import { listEventOutbox } from "@apollo/database/indexer/schema";
 import {
   listDrainCursor,
   objektListEntries,
+  pins,
 } from "@apollo/database/web/schema";
+import { pinCacheKey } from "@apollo/util-server";
 import { and, gt, inArray, lt, lte, sql } from "drizzle-orm";
 import { Data, Effect } from "effect";
 import type { ScheduledTask } from "../task";
 
 const BATCH_SIZE = 1000;
-const CURSOR_NAME = "list-drain";
+const CURSOR_NAME = "outbox-drain";
 
 /**
  * Process one drain batch. Returns the number of outbox rows pulled so the
@@ -24,6 +27,7 @@ const CURSOR_NAME = "list-drain";
 const processBatch = Effect.gen(function* () {
   const indexerDb = yield* DatabaseIndexer;
   const webDb = yield* DatabaseWeb;
+  const redis = yield* Redis;
 
   yield* Effect.logInfo("Draining outbox...");
 
@@ -43,6 +47,7 @@ const processBatch = Effect.gen(function* () {
         .select({
           id: listEventOutbox.id,
           tokenId: listEventOutbox.tokenId,
+          fromAddress: listEventOutbox.fromAddress,
         })
         .from(listEventOutbox)
         .where(gt(listEventOutbox.id, fromSeq))
@@ -58,7 +63,7 @@ const processBatch = Effect.gen(function* () {
   const lastSeq = outboxRows[outboxRows.length - 1]!.id;
   const tokenIds = [...new Set(outboxRows.map((r) => r.tokenId))];
 
-  yield* Effect.tryPromise({
+  const cacheKeys = yield* Effect.tryPromise({
     try: () =>
       webDb.transaction(async (tx) => {
         // every entry keyed by one of these tokenIds is stale — the chain
@@ -68,19 +73,43 @@ const processBatch = Effect.gen(function* () {
           .delete(objektListEntries)
           .where(inArray(objektListEntries.tokenId, tokenIds));
 
+        const deletedPins = await tx
+          .delete(pins)
+          .where(inArray(pins.tokenId, tokenIds.map(Number)))
+          .returning({ address: pins.address });
+
         // advance the cursor in the same transaction. any crash before
         // commit rolls back the deletes and the cursor together; after
         // commit, the next tick reads the advanced cursor and skips these
         // rows — exactly-once, no replay window.
         await upsertCursor(tx, lastSeq);
+
+        if (deletedPins.length === 0) return [];
+
+        const addresses = [...new Set(deletedPins.map((p) => p.address))];
+        const accounts = await tx.query.cosmoAccounts.findMany({
+          where: { address: { in: addresses } },
+          columns: { address: true, username: true },
+        });
+
+        // bust both address-keyed and username-keyed cache entries since
+        // either can be requested by the web app.
+        return accounts.flatMap((a) => [
+          pinCacheKey(a.address),
+          pinCacheKey(a.username),
+        ]);
       }),
     catch: (cause) => new DrainError({ cause }),
   });
 
+  if (cacheKeys.length > 0) {
+    yield* redis.del(...cacheKeys);
+  }
+
   yield* purgeOutbox(lastSeq);
 
   yield* Effect.logInfo(
-    `drain-list-events: processed ${outboxRows.length} outbox rows for ${tokenIds.length} unique tokens`,
+    `drain-outbox: processed ${outboxRows.length} outbox rows for ${tokenIds.length} unique tokens, busted ${cacheKeys.length} pin cache keys`,
   );
 
   return outboxRows.length;
@@ -93,8 +122,8 @@ const processBatch = Effect.gen(function* () {
  * a single tick instead of bleeding out one BATCH_SIZE at a time across
  * cron ticks.
  */
-export const drainListEventsTask = {
-  name: "drain-list-events",
+export const drainOutboxTask = {
+  name: "drain-outbox",
   cron: "*/1 * * * *",
   effect: Effect.repeat(processBatch, {
     while: (rowCount) => rowCount === BATCH_SIZE,
