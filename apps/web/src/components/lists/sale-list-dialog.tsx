@@ -10,6 +10,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { m } from "@/i18n/messages";
+import { formatListError } from "@/lib/client/list-errors";
+import { reasonLabel } from "@/lib/client/objekt-util";
 import { $addObjektToSaleList } from "@/lib/functions/lists";
 import {
   $fetchOwnedSerials,
@@ -17,7 +19,6 @@ import {
 } from "@/lib/functions/objekts/owned-serials";
 import { objektListQueryFilter } from "@/lib/queries/objekt-queries";
 import { cn } from "@/lib/utils";
-import type { NonTransferableReason } from "@apollo/cosmo/types/objekts";
 import { IconCheck, IconLoader2 } from "@tabler/icons-react";
 import {
   useMutation,
@@ -119,7 +120,8 @@ function SaleListBody({
       await queryClient.invalidateQueries(objektListQueryFilter(objektListId));
       onClose();
     },
-    onError: (error) => toast.error(error.message),
+    onError: (error) =>
+      toast.error(formatListError(error, { collectionId: collectionName })),
   });
 
   function toggle(tokenId: string) {
@@ -226,10 +228,10 @@ function SaleRow({
 
   return (
     <div
-      role="button"
+      role="checkbox"
       tabIndex={disabled ? -1 : 0}
       aria-disabled={disabled}
-      aria-pressed={isChecked}
+      aria-checked={isChecked}
       onClick={handleClick}
       onKeyDown={(e) => {
         if (disabled) return;
@@ -302,20 +304,4 @@ function SaleRow({
       </div>
     </div>
   );
-}
-
-function reasonLabel(reason: NonTransferableReason): string {
-  switch (reason) {
-    case "mint-pending":
-      return m.objekt_overlay_mint_pending();
-    case "welcome-objekt":
-      return m.objekt_overlay_welcome_reward();
-    case "used-for-grid":
-      return m.objekt_overlay_used_for_grid();
-    case "challenge-reward":
-      return m.objekt_overlay_event_reward();
-    case "not-transferable":
-    default:
-      return m.objekt_overlay_not_transferable();
-  }
 }

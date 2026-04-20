@@ -124,11 +124,11 @@ function upsertCursor(
 
 /**
  * Delete outbox rows that are BOTH older than 7 days AND already past the
- * drain cursor. Gating on the cursor prevents events from being purged
+ * applied seq. Gating on the applied seq prevents events from being purged
  * before they've been applied, which would otherwise cause permanent drift
  * if the drain is down for longer than the retention window.
  */
-const purgeOutbox = (cursorSeq: bigint) =>
+const purgeOutbox = (appliedSeq: bigint) =>
   Effect.gen(function* () {
     const indexer = yield* DatabaseIndexer;
     return yield* Effect.tryPromise({
@@ -141,7 +141,7 @@ const purgeOutbox = (cursorSeq: bigint) =>
                 listEventOutbox.createdAt,
                 sql<string>`now() - interval '7 days'`,
               ),
-              lte(listEventOutbox.id, cursorSeq),
+              lte(listEventOutbox.id, appliedSeq),
             ),
           ),
       catch: (cause) => new DrainError({ cause }),

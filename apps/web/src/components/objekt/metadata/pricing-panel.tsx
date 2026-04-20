@@ -1,4 +1,5 @@
 import { m } from "@/i18n/messages";
+import { getLocale } from "@/i18n/runtime";
 import {
   PRICE_STATS_MIN_LISTINGS,
   type PriceStats,
@@ -55,19 +56,18 @@ export default function PricingPanel({ data }: Props) {
   );
 }
 
-const relativeFormatter = new Intl.RelativeTimeFormat("en", {
-  numeric: "auto",
-});
-
 function formatRelative(iso: string) {
+  const formatter = new Intl.RelativeTimeFormat(getLocale(), {
+    numeric: "auto",
+  });
   const updated = new Date(iso).getTime();
   const diffSeconds = Math.round((updated - Date.now()) / 1000);
   const abs = Math.abs(diffSeconds);
 
-  if (abs < 60) return relativeFormatter.format(diffSeconds, "second");
+  if (abs < 60) return formatter.format(diffSeconds, "second");
   if (abs < 3600)
-    return relativeFormatter.format(Math.round(diffSeconds / 60), "minute");
+    return formatter.format(Math.round(diffSeconds / 60), "minute");
   if (abs < 86400)
-    return relativeFormatter.format(Math.round(diffSeconds / 3600), "hour");
-  return relativeFormatter.format(Math.round(diffSeconds / 86400), "day");
+    return formatter.format(Math.round(diffSeconds / 3600), "hour");
+  return formatter.format(Math.round(diffSeconds / 86400), "day");
 }

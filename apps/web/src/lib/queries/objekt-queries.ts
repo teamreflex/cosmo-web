@@ -259,6 +259,7 @@ export function objektMetadataQuery(slug: string) {
         signal,
       }),
     retry: 1,
+    staleTime: 1000 * 60 * 10,
   });
 }
 

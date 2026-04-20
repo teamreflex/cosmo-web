@@ -122,7 +122,7 @@ export const addObjektToSaleListSchema = z.object({
     .array(
       z.object({
         tokenId: z.string(),
-        price: z.number().min(0).nullable(),
+        price: z.number().positive().nullable(),
       }),
     )
     .min(1)
@@ -132,7 +132,7 @@ export const addObjektToSaleListSchema = z.object({
 const updateEntryBase = z.object({
   objektListId: z.uuid(),
   objektListEntryId: z.uuid(),
-  price: z.number().min(0).nullable(),
+  price: z.number().positive().nullable(),
 });
 
 export const updateTokenEntrySchema = updateEntryBase.extend({

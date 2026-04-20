@@ -1,5 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
+import { type CosmoFilters, useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import type { CollectionDataSource } from "@apollo/util";
 import { Suspense } from "react";
 import type { Dispatch, SetStateAction } from "react";
@@ -33,6 +33,21 @@ export default function CollectionFilters({
   isSpin,
 }: Props) {
   const { filters, setFilters } = useCosmoFilters();
+  const count = countActive(filters);
+
+  function handleReset() {
+    setFilters({
+      member: undefined,
+      artist: undefined,
+      sort: undefined,
+      class: undefined,
+      season: undefined,
+      on_offline: undefined,
+      transferable: undefined,
+      gridable: undefined,
+      collectionNo: undefined,
+    });
+  }
 
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -84,7 +99,21 @@ export default function CollectionFilters({
         setDataSource={setDataSource}
       />
 
-      <ResetFilters filters={filters} setFilters={setFilters} />
+      <ResetFilters count={count} onReset={handleReset} />
     </div>
   );
+}
+
+function countActive(filters: CosmoFilters) {
+  let n = 0;
+  for (const [key, value] of Object.entries(filters)) {
+    if (key === "sort") {
+      if (value !== undefined && value !== "newest") n += 1;
+      continue;
+    }
+    if (value === undefined || value === null || value === false) continue;
+    if (Array.isArray(value)) n += value.length;
+    else n += 1;
+  }
+  return n;
 }

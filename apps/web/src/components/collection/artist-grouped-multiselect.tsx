@@ -1,3 +1,4 @@
+import { m } from "@/i18n/messages";
 import { cn } from "@/lib/utils";
 
 type ArtistInfo = {
@@ -54,6 +55,7 @@ export default function ArtistGroupedMultiSelect({
                   <button
                     key={item}
                     type="button"
+                    aria-pressed={on}
                     onClick={() => onToggle(group.artist.id, item, !on)}
                     className="flex w-full items-center gap-2 rounded-sm px-1.5 py-1 text-left text-xs transition-colors hover:bg-accent"
                   >
@@ -88,7 +90,9 @@ export default function ArtistGroupedMultiSelect({
 
       <div className="flex items-center justify-between px-3 py-2">
         <span className="font-mono text-xxs text-muted-foreground">
-          {selectedCount === 0 ? "none selected" : `${selectedCount} selected`}
+          {selectedCount === 0
+            ? m.filter_none_selected()
+            : m.filter_count_selected({ count: selectedCount.toString() })}
         </span>
         {selectedCount > 0 && onClear && (
           <button
@@ -96,7 +100,7 @@ export default function ArtistGroupedMultiSelect({
             onClick={onClear}
             className="text-[11px] tracking-[0.14em] text-muted-foreground uppercase transition-colors hover:text-foreground"
           >
-            clear
+            {m.filter_clear()}
           </button>
         )}
       </div>

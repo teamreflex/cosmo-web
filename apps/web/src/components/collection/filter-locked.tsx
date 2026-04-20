@@ -34,7 +34,7 @@ export default function LockedFilter({ showLocked, setShowLocked }: Props) {
   const valueLabel =
     value === "all"
       ? m.filter_value_all()
-      : options.find((o) => o.value === value)!.label.toLowerCase();
+      : (options.find((o) => o.value === value)?.label ?? value).toLowerCase();
 
   return (
     <FilterChip

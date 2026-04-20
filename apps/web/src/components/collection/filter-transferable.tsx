@@ -37,7 +37,7 @@ export default function TransferableFilter({ transferable, onChange }: Props) {
   const valueLabel =
     value === "all"
       ? m.filter_value_all()
-      : options.find((o) => o.value === value)!.label.toLowerCase();
+      : (options.find((o) => o.value === value)?.label ?? value).toLowerCase();
 
   return (
     <FilterChip

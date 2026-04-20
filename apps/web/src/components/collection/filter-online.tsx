@@ -43,7 +43,7 @@ export default function OnlineFilter({ onOffline, onChange }: Props) {
   const valueLabel =
     value === "any"
       ? m.filter_value_all()
-      : options.find((o) => o.value === value)!.label.toLowerCase();
+      : (options.find((o) => o.value === value)?.label ?? value).toLowerCase();
 
   return (
     <FilterChip
@@ -66,5 +66,5 @@ export default function OnlineFilter({ onOffline, onChange }: Props) {
 
 function deriveValue(value: CosmoFilters["on_offline"]): OnlineValue {
   if (!value || value.length === 0 || value.length === 2) return "any";
-  return value[0]!;
+  return value[0] ?? "any";
 }

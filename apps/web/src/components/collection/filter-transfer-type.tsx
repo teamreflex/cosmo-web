@@ -22,7 +22,7 @@ export default function TransferTypeFilter({ type, setType }: Props) {
   const valueLabel =
     type === "all"
       ? m.filter_value_all()
-      : options.find((o) => o.value === type)!.label.toLowerCase();
+      : (options.find((o) => o.value === type)?.label ?? type).toLowerCase();
 
   return (
     <FilterChip

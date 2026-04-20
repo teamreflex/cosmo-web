@@ -12,6 +12,7 @@ import {
   getVariantGradient,
   getVariantRibbon,
 } from "../objekt/variant-gradients";
+import Portal from "../portal";
 import UserAvatar from "../profile/user-avatar";
 import { Skeleton } from "../ui/skeleton";
 
@@ -33,9 +34,9 @@ export default function ListMatchesContent({ listId }: Props) {
 
   return (
     <>
-      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+      <Portal to="#list-matches-count">
         {m.list_matches_partners_label({ count: data.partners.length })}
-      </p>
+      </Portal>
       <ul className="flex flex-col divide-y divide-border rounded-md border overflow-clip">
         {data.partners.map((partner, index) => (
           <PartnerRow

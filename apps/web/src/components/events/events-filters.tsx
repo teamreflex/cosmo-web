@@ -1,10 +1,9 @@
+import ResetFilters from "@/components/collection/reset-filters";
 import { Skeleton } from "@/components/ui/skeleton";
 import type {
   EventsFilters,
   SetEventsFilters,
 } from "@/hooks/use-events-filters";
-import { m } from "@/i18n/messages";
-import { IconX } from "@tabler/icons-react";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import EventsArtistFilter from "./filter-artist";
@@ -69,18 +68,7 @@ export default function EventsFiltersContainer({ filters, setFilters }: Props) {
       <EventsTypeFilter type={filters.type} onChange={setFilters} />
       <EventsSortFilter sort={filters.sort} onChange={setFilters} />
 
-      {count > 0 && (
-        <button
-          type="button"
-          onClick={handleReset}
-          aria-label={m.aria_reset_filters()}
-          className="inline-flex h-8 items-center gap-1 rounded-sm px-2 text-[11px] tracking-[0.14em] text-muted-foreground uppercase transition-colors hover:text-foreground"
-        >
-          <IconX className="size-3" />
-          <span>{m.filter_reset()}</span>
-          <span className="font-mono text-xxs">({count})</span>
-        </button>
-      )}
+      <ResetFilters count={count} onReset={handleReset} />
     </div>
   );
 }

@@ -37,8 +37,7 @@ export default function UserDropdown({
   cosmo,
   onSignOut,
 }: UserDropdownProps) {
-  const { artistList } = useArtists();
-  const { selectedIds } = useArtists();
+  const { artistList, selectedIds } = useArtists();
   const [openSettings, setOpenSettings] = useState(false);
   const [openAccount, setOpenAccount] = useState(false);
   const [openAbout, setOpenAbout] = useState(false);

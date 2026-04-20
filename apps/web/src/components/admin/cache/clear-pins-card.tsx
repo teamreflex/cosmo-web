@@ -39,6 +39,7 @@ export default function ClearPinsCard() {
         <CardDescription>{m.admin_cache_pins_description()}</CardDescription>
       </CardHeader>
       <CardContent>
+        {/* admin-only pin cache clearing is tripleS-scoped today */}
         <CosmoUserCombobox artistId="tripleS" value={user} onChange={setUser} />
       </CardContent>
       <CardFooter>

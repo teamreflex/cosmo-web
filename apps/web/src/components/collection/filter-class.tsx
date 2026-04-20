@@ -44,7 +44,7 @@ export default function ClassFilter(props: Props) {
     value.length === 0
       ? m.filter_value_all()
       : value.length === 1
-        ? value[0]!
+        ? (value[0] ?? "")
         : m.filter_value_multiple();
 
   return (

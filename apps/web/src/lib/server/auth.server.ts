@@ -46,21 +46,6 @@ export const auth = betterAuth({
   ],
 
   /**
-   * Enable session caching in cookies.
-   */
-  // session: {
-  //   cookieCache: {
-  //     enabled: true,
-  //     maxAge: 60 * 5, // 5 minutes
-  //     refreshCache: {
-  //       updateAge: 60, // refresh 60 seconds before expiry
-  //     },
-  //     strategy: "compact",
-  //     version: "1",
-  //   },
-  // },
-
-  /**
    * Enable email verification.
    */
   emailVerification: {
@@ -249,10 +234,6 @@ export const auth = betterAuth({
       ipAddressHeaders: ["cf-connecting-ip", "x-forwarded-for"],
     },
     cookiePrefix: "apollo",
-    // useSecureCookies: true,
-    // defaultCookieAttributes: {
-    //   sameSite: "strict",
-    // },
   },
   user: {
     changeEmail: {
@@ -402,5 +383,6 @@ export function toPublicUser(
       twitter: user.showSocials ? (user.twitter ?? undefined) : undefined,
     },
     showSocials: user.showSocials ?? false,
+    // PublicUser is brand-typed — the cast is the only way to produce one without going through the branded constructor.
   } as PublicUser;
 }

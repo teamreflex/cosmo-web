@@ -6,6 +6,7 @@ import { useObjektSerial } from "@/hooks/use-objekt-serial";
 import { useLockedObjekt, usePinnedObjekt } from "@/hooks/use-profile";
 import { useProfileContext } from "@/hooks/use-profile";
 import { m } from "@/i18n/messages";
+import { reasonLabel } from "@/lib/client/objekt-util";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { IconArrowRight } from "@tabler/icons-react";
 import { format } from "date-fns";
@@ -125,20 +126,4 @@ export default function SerialTicket({
       <IconArrowRight className="ml-1 size-4 shrink-0 text-muted-foreground group-hover:text-foreground" />
     </div>
   );
-}
-
-function reasonLabel(reason: string): string {
-  switch (reason) {
-    case "mint-pending":
-      return m.objekt_overlay_mint_pending();
-    case "welcome-objekt":
-      return m.objekt_overlay_welcome_reward();
-    case "used-for-grid":
-      return m.objekt_overlay_used_for_grid();
-    case "challenge-reward":
-      return m.objekt_overlay_event_reward();
-    case "not-transferable":
-    default:
-      return m.objekt_overlay_not_transferable();
-  }
 }

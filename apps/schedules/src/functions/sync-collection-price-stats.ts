@@ -126,6 +126,10 @@ export const syncCollectionPriceStatsTask = {
                   objektLists,
                   eq(objektLists.id, objektListEntries.objektListId),
                 )
+                .innerJoin(
+                  latestRates,
+                  eq(latestRates.currency, objektLists.currency),
+                )
                 .where(
                   and(
                     eq(

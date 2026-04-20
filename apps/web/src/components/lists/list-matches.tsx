@@ -47,13 +47,12 @@ export default function ListMatches({ list }: Props) {
           {m.list_matches_title()}
         </span>
         <span
+          id="list-matches-count"
           className={cn(
             "ml-auto truncate font-mono text-xs",
             list.type === "have" ? "text-teal-500" : "text-amber-500",
           )}
-        >
-          {m.list_matches_description({ listName: list.name })}
-        </span>
+        />
       </div>
       <div className="min-h-0 flex-1 overflow-auto p-4">
         <QueryErrorResetBoundary>

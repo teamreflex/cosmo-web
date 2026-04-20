@@ -3,7 +3,7 @@ import { Env } from "@/env";
 import { fxRates } from "@apollo/database/web/schema";
 import { HttpClient, HttpClientResponse } from "@effect/platform";
 import { sql } from "drizzle-orm";
-import { Data, Effect, Redacted, Schema } from "effect";
+import { Data, Effect, Redacted, Schedule, Schema } from "effect";
 import type { ScheduledTask } from "../task";
 
 const ExchangerateResponse = Schema.Union(
@@ -45,6 +45,7 @@ export const syncFxRatesTask = {
             Effect.fail(new FetchFxRatesError({ cause })),
         }),
         Effect.scoped,
+        Effect.retry(Schedule.recurs(2)),
       );
 
     if (json.result !== "success") {

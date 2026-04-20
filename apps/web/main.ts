@@ -81,6 +81,7 @@ function buildContentSecurityPolicy(): string {
     `script-src ${scriptSrc.join(" ")}`,
     "style-src 'self' 'unsafe-inline'",
     `img-src ${imgSrc.join(" ")}`,
+    "media-src 'self' https://cdn.apollo.cafe blob:",
     "font-src 'self'",
     `connect-src ${connectSrc.join(" ")}`,
     "object-src 'none'",

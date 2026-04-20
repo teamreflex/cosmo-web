@@ -10,13 +10,13 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAddToList } from "@/hooks/use-add-to-list";
 import { m } from "@/i18n/messages";
+import { reasonLabel } from "@/lib/client/objekt-util";
 import { $addObjektToHaveList } from "@/lib/functions/lists";
 import {
   $fetchOwnedSerials,
   type OwnedSerial,
 } from "@/lib/functions/objekts/owned-serials";
 import { cn } from "@/lib/utils";
-import type { NonTransferableReason } from "@apollo/cosmo/types/objekts";
 import type { ObjektList } from "@apollo/database/web/types";
 import { IconCheck, IconLoader2 } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
@@ -206,20 +206,4 @@ function SerialRow({ serial, isChecked, onToggle }: SerialRowProps) {
       </div>
     </button>
   );
-}
-
-function reasonLabel(reason: NonTransferableReason): string {
-  switch (reason) {
-    case "mint-pending":
-      return m.objekt_overlay_mint_pending();
-    case "welcome-objekt":
-      return m.objekt_overlay_welcome_reward();
-    case "used-for-grid":
-      return m.objekt_overlay_used_for_grid();
-    case "challenge-reward":
-      return m.objekt_overlay_event_reward();
-    case "not-transferable":
-    default:
-      return m.objekt_overlay_not_transferable();
-  }
 }

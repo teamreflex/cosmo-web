@@ -18,6 +18,7 @@ import { useRef, useState } from "react";
 import { Button } from "../ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { ScrollArea } from "../ui/scroll-area";
+import { Skeleton } from "../ui/skeleton";
 
 export default function NotificationBell() {
   const [open, setOpen] = useState(false);
@@ -56,7 +57,13 @@ export default function NotificationBell() {
         </header>
 
         <ScrollArea className="max-h-96">
-          {list.isPending && <p className="p-2 text-sm">…</p>}
+          {list.isPending && (
+            <div className="flex flex-col gap-1 p-2">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-8 rounded-sm" />
+              ))}
+            </div>
+          )}
           {list.data && list.data.length === 0 && (
             <p className="p-2 text-sm text-muted-foreground">
               {m.notification_empty()}

@@ -1,6 +1,7 @@
 export const listErrorCodes = [
   "not_have_list",
   "not_want_list",
+  "not_sale_list",
   "not_owned",
   "already_on_list",
   "not_live_list",

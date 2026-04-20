@@ -1,5 +1,3 @@
-import { cn } from "@/lib/utils";
-
 export type SingleSelectOption<T extends string> = {
   value: T;
   label: string;
@@ -27,14 +25,12 @@ export default function SingleSelectList<T extends string>({
           <button
             key={option.value}
             type="button"
+            aria-pressed={selected}
             onClick={() => {
               onChange(option.value);
               close?.();
             }}
-            className={cn(
-              "flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-xs transition-colors hover:bg-accent",
-              selected ? "text-foreground" : "text-foreground",
-            )}
+            className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-xs text-foreground transition-colors hover:bg-accent"
           >
             <div className="flex flex-col">
               <span className="font-medium">{option.label}</span>
