@@ -45,7 +45,7 @@ export default function IndexRenderer(props: Props) {
             fallback={
               <Button
                 className="animate-pulse"
-                variant="secondary"
+                variant="outline"
                 size="profile"
                 data-profile
               >

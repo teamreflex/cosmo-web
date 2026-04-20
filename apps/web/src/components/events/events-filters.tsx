@@ -44,9 +44,13 @@ export default function EventsFiltersContainer({ filters, setFilters }: Props) {
     <div className="flex flex-wrap items-center gap-2">
       <EventsArtistFilter artist={filters.artist} onChange={setFilters} />
       <ErrorBoundary
-        fallback={<Skeleton className="h-8 w-24 bg-destructive" />}
+        fallback={<Skeleton className="h-8 w-[96px] bg-destructive" />}
       >
-        <Suspense fallback={<Skeleton className="h-8 w-24" />}>
+        <Suspense
+          fallback={
+            <Skeleton className="h-8 w-[96px] border border-transparent dark:border-input" />
+          }
+        >
           <EventsEraFilter
             era={filters.era}
             artist={filters.artist}
@@ -55,9 +59,13 @@ export default function EventsFiltersContainer({ filters, setFilters }: Props) {
         </Suspense>
       </ErrorBoundary>
       <ErrorBoundary
-        fallback={<Skeleton className="h-8 w-24 bg-destructive" />}
+        fallback={<Skeleton className="h-8 w-[119px] bg-destructive" />}
       >
-        <Suspense fallback={<Skeleton className="h-8 w-24" />}>
+        <Suspense
+          fallback={
+            <Skeleton className="h-8 w-[119px] border border-transparent dark:border-input" />
+          }
+        >
           <EventsSeasonFilter
             seasons={filters.season}
             artist={filters.artist}

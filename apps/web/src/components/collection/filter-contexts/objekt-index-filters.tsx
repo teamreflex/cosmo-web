@@ -40,9 +40,13 @@ export default function ObjektIndexFilters({ search = false }: Props) {
   return (
     <div className="flex flex-wrap items-center gap-2">
       <ErrorBoundary
-        fallback={<Skeleton className="h-9 w-[97px] bg-destructive" />}
+        fallback={<Skeleton className="h-8 w-[119px] bg-destructive" />}
       >
-        <Suspense fallback={<Skeleton className="h-9 w-[97px]" />}>
+        <Suspense
+          fallback={
+            <Skeleton className="h-8 w-[119px] border border-transparent dark:border-input" />
+          }
+        >
           <SeasonFilter
             seasons={filters.season}
             artist={filters.artist}
@@ -52,9 +56,13 @@ export default function ObjektIndexFilters({ search = false }: Props) {
       </ErrorBoundary>
 
       <ErrorBoundary
-        fallback={<Skeleton className="h-9 w-[124px] bg-destructive" />}
+        fallback={<Skeleton className="h-8 w-[141px] bg-destructive" />}
       >
-        <Suspense fallback={<Skeleton className="h-9 w-[124px]" />}>
+        <Suspense
+          fallback={
+            <Skeleton className="h-8 w-[141px] border border-transparent dark:border-input" />
+          }
+        >
           <CollectionFilter
             collections={filters.collectionNo}
             onChange={setFilters}
@@ -65,9 +73,13 @@ export default function ObjektIndexFilters({ search = false }: Props) {
       <OnlineFilter onOffline={filters.on_offline} onChange={setFilters} />
 
       <ErrorBoundary
-        fallback={<Skeleton className="h-9 w-[85px] bg-destructive" />}
+        fallback={<Skeleton className="h-8 w-[108px] bg-destructive" />}
       >
-        <Suspense fallback={<Skeleton className="h-9 w-[85px]" />}>
+        <Suspense
+          fallback={
+            <Skeleton className="h-8 w-[108px] border border-transparent dark:border-input" />
+          }
+        >
           <ClassFilter
             classes={filters.class}
             artist={filters.artist}
