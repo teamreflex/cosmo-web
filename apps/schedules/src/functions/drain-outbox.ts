@@ -29,8 +29,6 @@ const processBatch = Effect.gen(function* () {
   const webDb = yield* DatabaseWeb;
   const redis = yield* Redis;
 
-  yield* Effect.logInfo("Draining outbox...");
-
   const cursor = yield* Effect.tryPromise({
     try: () =>
       webDb.query.listDrainCursor.findFirst({
@@ -59,6 +57,8 @@ const processBatch = Effect.gen(function* () {
   if (outboxRows.length === 0) {
     return yield* Effect.as(purgeOutbox(fromSeq), 0);
   }
+
+  yield* Effect.logInfo(`Draining ${outboxRows.length} outbox rows`);
 
   const lastSeq = outboxRows[outboxRows.length - 1]!.id;
   const tokenIds = [...new Set(outboxRows.map((r) => r.tokenId))];
@@ -109,7 +109,7 @@ const processBatch = Effect.gen(function* () {
   yield* purgeOutbox(lastSeq);
 
   yield* Effect.logInfo(
-    `drain-outbox: processed ${outboxRows.length} outbox rows for ${tokenIds.length} unique tokens, busted ${cacheKeys.length} pin cache keys`,
+    `Drained ${outboxRows.length} outbox rows for ${tokenIds.length} unique tokens, busted ${cacheKeys.length} pin cache keys`,
   );
 
   return outboxRows.length;

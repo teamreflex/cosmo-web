@@ -215,6 +215,7 @@ services:
       - WEB_DATABASE_URL=postgresql://postgres:postgres@pgbouncer-web:5432/web
       - INDEXER_DATABASE_URL=postgresql://postgres:postgres@pgbouncer-indexer:5432/indexer
       - REDIS_URL=redis://valkey:6379
+      - EXCHANGERATE_API_KEY=${EXCHANGERATE_API_KEY}
     depends_on:
       pgbouncer-web:
         condition: service_healthy
