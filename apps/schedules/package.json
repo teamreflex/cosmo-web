@@ -9,7 +9,7 @@
     "start": "bun run --bun dist/main.js",
     "lint": "bun --bun oxlint --type-aware --type-check",
     "lint:fix": "bun --bun oxlint --type-aware --type-check --fix",
-    "typecheck": "tsc --pretty --noEmit",
+    "typecheck": "tsgo --pretty --noEmit",
     "format": "oxfmt ."
   },
   "dependencies": {
@@ -31,6 +31,7 @@
     "@effect/eslint-plugin": "catalog:",
     "@effect/language-service": "catalog:",
     "@types/bun": "catalog:",
+    "@typescript/native-preview": "catalog:",
     "typescript": "catalog:"
   },
   "effect": {

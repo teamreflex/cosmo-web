@@ -13,7 +13,7 @@
   "scripts": {
     "lint": "bun --bun oxlint --type-aware --type-check",
     "lint:fix": "bun --bun oxlint --type-aware --type-check --fix",
-    "typecheck": "tsc --pretty --noEmit",
+    "typecheck": "tsgo --pretty --noEmit",
     "format": "oxfmt ."
   },
   "dependencies": {
@@ -24,6 +24,7 @@
   "devDependencies": {
     "@apollo/lint": "workspace:*",
     "@apollo/typescript": "workspace:*",
+    "@typescript/native-preview": "catalog:",
     "turbo": "catalog:",
     "typescript": "catalog:"
   }

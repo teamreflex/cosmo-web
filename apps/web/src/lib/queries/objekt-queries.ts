@@ -40,7 +40,7 @@ export function objektIndexTypesenseQuery(
         artists: selectedArtists,
       },
     ],
-    queryFn: async ({ pageParam = 0 }) => {
+    queryFn: async ({ pageParam }) => {
       const { getTypesenseResults } = await import("@/lib/client/typesense");
       return getTypesenseResults({
         query: searchParams.search || "",
@@ -78,7 +78,7 @@ export function objektIndexBlockchainQuery(
         artists: selectedArtists,
       },
     ],
-    queryFn: ({ signal, pageParam = 0 }) => {
+    queryFn: ({ signal, pageParam }) => {
       return $fetchObjektsIndex({
         signal,
         data: {
@@ -113,7 +113,7 @@ export function userCollectionBlockchainGroupsQuery(
         artists: selectedArtists,
       },
     ],
-    queryFn: ({ signal, pageParam = 1 }) => {
+    queryFn: ({ signal, pageParam }) => {
       return $fetchObjektsBlockchainGroups({
         signal,
         data: {
@@ -152,7 +152,7 @@ export function userCollectionBlockchainQuery(
         artists: selectedArtists,
       },
     ],
-    queryFn: ({ signal, pageParam = 0 }) => {
+    queryFn: ({ signal, pageParam }) => {
       return $fetchObjektsBlockchain({
         signal,
         data: {
@@ -195,7 +195,7 @@ export function objektListQuery(
         artists: selectedArtists,
       },
     ],
-    queryFn: ({ signal, pageParam = 0 }) => {
+    queryFn: ({ signal, pageParam }) => {
       return $fetchObjektListEntries({
         signal,
         data: {

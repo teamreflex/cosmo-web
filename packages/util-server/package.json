@@ -7,19 +7,17 @@
   "exports": {
     ".": "./src/index.ts"
   },
-  "publishConfig": {
-    "access": "public"
-  },
   "scripts": {
     "lint": "bun --bun oxlint --type-aware --type-check",
     "lint:fix": "bun --bun oxlint --type-aware --type-check --fix",
-    "typecheck": "tsc --pretty --noEmit",
+    "typecheck": "tsgo --pretty --noEmit",
     "format": "oxfmt ."
   },
   "devDependencies": {
     "@apollo/lint": "workspace:*",
     "@apollo/typescript": "workspace:*",
     "@types/bun": "catalog:",
+    "@typescript/native-preview": "catalog:",
     "turbo": "catalog:",
     "typescript": "catalog:"
   }
