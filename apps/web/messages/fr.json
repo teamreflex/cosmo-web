@@ -654,7 +654,7 @@
   "objekt_metadata_video_not_loaded": "La vidéo n'a pas encore été chargée dans le système.",
   "objekt_metadata_description": "Description",
   "objekt_metadata_pricing_tab": "Prix",
-  "objekt_metadata_market_price": "Prix du marché",
+  "objekt_metadata_market_price": "Médiane",
   "objekt_metadata_min_price": "Le plus bas",
   "objekt_metadata_max_price": "Le plus haut",
   "objekt_metadata_listing_count": "Annonces",

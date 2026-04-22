@@ -654,7 +654,7 @@
   "objekt_metadata_video_not_loaded": "動画はまだシステムに読み込まれていません。",
   "objekt_metadata_description": "説明",
   "objekt_metadata_pricing_tab": "価格",
-  "objekt_metadata_market_price": "市場価格",
+  "objekt_metadata_market_price": "中央値",
   "objekt_metadata_min_price": "最安値",
   "objekt_metadata_max_price": "最高値",
   "objekt_metadata_listing_count": "出品数",

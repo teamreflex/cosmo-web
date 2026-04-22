@@ -43,7 +43,7 @@ export function AttrCell({ label, value, mono, className }: CellProps) {
   return (
     <div
       className={cn(
-        "flex flex-col gap-1 border-r border-b border-border p-3 last:border-r-0 [&:nth-child(3n)]:border-r-0",
+        "flex flex-col justify-center border-r border-b border-border px-4 h-14 last:border-r-0 [&:nth-child(3n)]:border-r-0",
         className,
       )}
     >
@@ -66,16 +66,16 @@ export function StatCell({ label, value, mono, className }: CellProps) {
   return (
     <div
       className={cn(
-        "flex-1 border-r border-border px-4 py-3 last:border-r-0",
+        "flex-1 flex flex-col justify-center border-r border-border px-4 h-14 last:border-r-0",
         className,
       )}
     >
       <div className="text-xxs font-medium tracking-[0.14em] text-muted-foreground uppercase">
         {label}
       </div>
-      <div className={cn("font-semibold", mono && "font-mono tabular-nums")}>
+      <span className={cn("font-semibold", mono && "font-mono tabular-nums")}>
         {value}
-      </div>
+      </span>
     </div>
   );
 }

@@ -654,7 +654,7 @@
   "objekt_metadata_video_not_loaded": "영상이 아직 시스템에 로드되지 않았습니다.",
   "objekt_metadata_description": "설명",
   "objekt_metadata_pricing_tab": "가격",
-  "objekt_metadata_market_price": "시장 가격",
+  "objekt_metadata_market_price": "중앙값",
   "objekt_metadata_min_price": "최저가",
   "objekt_metadata_max_price": "최고가",
   "objekt_metadata_listing_count": "매물 수",

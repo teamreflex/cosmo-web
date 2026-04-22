@@ -5,7 +5,7 @@ import {
   type PriceStats,
 } from "@/lib/universal/objekts";
 import { formatPrice } from "@/lib/utils";
-import Pill from "./pill";
+import { StatCell } from "./common";
 
 type Props = {
   data: PriceStats | null;
@@ -15,43 +15,53 @@ export default function PricingPanel({ data }: Props) {
   const hasEnoughListings =
     data !== null && data.listingCount >= PRICE_STATS_MIN_LISTINGS;
 
-  return (
-    <div className="flex grow flex-col gap-3">
-      <p className="text-xs text-muted-foreground">
-        {m.objekt_metadata_pricing_source()}
-      </p>
-
-      {hasEnoughListings ? (
-        <div className="flex flex-col gap-2">
-          <div className="flex flex-wrap gap-2">
-            <Pill
-              label={m.objekt_metadata_market_price()}
-              value={formatPrice(data.medianPriceUsd, "USD")}
-            />
-            <Pill
-              label={m.objekt_metadata_min_price()}
-              value={formatPrice(data.minPriceUsd, "USD")}
-            />
-            <Pill
-              label={m.objekt_metadata_max_price()}
-              value={formatPrice(data.maxPriceUsd, "USD")}
-            />
-            <Pill
-              label={m.objekt_metadata_listing_count()}
-              value={data.listingCount.toString()}
-            />
-          </div>
-          <p className="text-xs text-muted-foreground">
-            {m.objekt_metadata_pricing_updated({
-              when: formatRelative(data.updatedAt),
-            })}
-          </p>
-        </div>
-      ) : (
+  if (!hasEnoughListings) {
+    return (
+      <div className="flex flex-col gap-2 px-4 py-3">
+        <p className="text-xs text-muted-foreground">
+          {m.objekt_metadata_pricing_source()}
+        </p>
         <p className="text-sm text-muted-foreground">
           {m.objekt_metadata_pricing_empty()}
         </p>
-      )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col">
+      <div className="flex items-stretch border-b border-border">
+        <StatCell
+          label={m.objekt_metadata_market_price()}
+          value={formatPrice(data.medianPriceUsd, "USD")}
+          mono
+        />
+        <StatCell
+          label={m.objekt_metadata_listing_count()}
+          value={data.listingCount.toString()}
+          mono
+        />
+      </div>
+      <div className="flex items-stretch border-b border-border">
+        <StatCell
+          label={m.objekt_metadata_min_price()}
+          value={formatPrice(data.minPriceUsd, "USD")}
+          mono
+        />
+        <StatCell
+          label={m.objekt_metadata_max_price()}
+          value={formatPrice(data.maxPriceUsd, "USD")}
+          mono
+        />
+      </div>
+      <div className="flex flex-col gap-0.5 px-4 py-2 text-xs text-muted-foreground">
+        <span>{m.objekt_metadata_pricing_source()}</span>
+        <span>
+          {m.objekt_metadata_pricing_updated({
+            when: formatRelative(data.updatedAt),
+          })}
+        </span>
+      </div>
     </div>
   );
 }

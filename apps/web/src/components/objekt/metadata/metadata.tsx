@@ -44,9 +44,10 @@ export default function Metadata(props: Props) {
       <Tabs
         value={props.tab}
         onValueChange={(value) => props.setTab(value as ObjektMetadataTab)}
-        className="flex flex-col"
+        variant="navbar"
+        className="flex flex-col gap-0"
       >
-        <TabsList variant="line" className="mx-4 mt-2 w-fit">
+        <TabsList>
           <TabsTrigger value="metadata">
             {m.objekt_metadata_information()}
           </TabsTrigger>
@@ -68,7 +69,7 @@ export default function Metadata(props: Props) {
           <SerialsPanel slug={props.objekt.slug} />
         </TabsContent>
 
-        <TabsContent value="pricing" className="px-4 py-3">
+        <TabsContent value="pricing">
           <PricingPanel data={data.priceStats} />
         </TabsContent>
       </Tabs>
