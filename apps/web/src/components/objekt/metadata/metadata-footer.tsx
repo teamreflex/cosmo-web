@@ -11,7 +11,10 @@ import { env } from "@/lib/env/client";
 import { objektMetadataQuery } from "@/lib/queries/objekt-queries";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import type { CollectionDataEvent } from "@/lib/universal/objekts";
+import { unobtainables } from "@/lib/unobtainables";
+import { cn } from "@/lib/utils";
 import {
+  IconAlertSquareRounded,
   IconCloudDownload,
   IconLink,
   IconMovie,
@@ -32,10 +35,42 @@ type Props = {
 };
 
 export default function MetadataFooter(props: Props) {
+  const missingVideo =
+    props.objekt.class === "Motion" && !props.objekt.frontMedia;
+  const isUnobtainable = unobtainables.includes(props.objekt.slug);
+
   return (
-    <Suspense fallback={<FooterFallback />}>
-      <FooterInner objekt={props.objekt} />
-    </Suspense>
+    <div className="shrink-0 border-t border-border bg-card">
+      {missingVideo && (
+        <NoticeRow
+          text={m.objekt_metadata_video_not_loaded()}
+          className="text-orange-500"
+        />
+      )}
+      {isUnobtainable && (
+        <NoticeRow
+          text={m.objekt_metadata_unobtainable()}
+          className="text-red-500"
+        />
+      )}
+      <Suspense fallback={<FooterFallback />}>
+        <FooterInner objekt={props.objekt} />
+      </Suspense>
+    </div>
+  );
+}
+
+function NoticeRow({ text, className }: { text: string; className?: string }) {
+  return (
+    <div
+      className={cn(
+        "flex items-center gap-1 focus:outline-none border-b border-border px-4 py-2 text-xs w-full",
+        className,
+      )}
+    >
+      <IconAlertSquareRounded className="size-4" />
+      <span>{text}</span>
+    </div>
   );
 }
 
@@ -53,7 +88,7 @@ function FooterInner(props: Props) {
   const { front, back } = getObjektImageUrls(props.objekt);
 
   return (
-    <div className="flex shrink-0 items-center gap-2 border-t border-border bg-card px-4 py-2">
+    <div className="flex items-center gap-2 px-4 py-2">
       {data.data?.event ? (
         <div className="flex min-w-0 items-center gap-2">
           <span className="font-mono text-xxs tracking-[0.14em] text-muted-foreground uppercase">
@@ -127,7 +162,7 @@ function FooterInner(props: Props) {
 
 function FooterFallback() {
   return (
-    <div className="flex shrink-0 items-center gap-2 border-t border-border bg-card px-4 py-2">
+    <div className="flex items-center gap-2 px-4 py-2">
       <Skeleton className="h-6 w-32" />
       <div className="ml-auto flex items-center gap-1">
         <Skeleton className="size-8" />
