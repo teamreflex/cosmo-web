@@ -29,7 +29,7 @@ export default function MetadataContent(props: Props) {
           size={{ width: 600, height: 300 }}
           className="flex shrink-0 items-center justify-center border-b border-border p-6"
         >
-          <div className="w-full max-w-[280px]">
+          <div className="w-full max-w-50 sm:max-w-70">
             <FlippableObjekt collection={data}>
               <ObjektSidebar collection={data} />
             </FlippableObjekt>
