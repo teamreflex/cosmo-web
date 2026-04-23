@@ -219,6 +219,7 @@
   "list_already_on_list": "{collectionId}이(가) 이미 이 리스트에 있습니다",
   "list_description": "설명",
   "list_description_placeholder": "메모, 연락처 또는 교환 희망사항을 입력하세요",
+  "list_description_public_notice": "이 설명은 다른 사용자에게 공개됩니다. 민감한 정보는 포함하지 마세요.",
   "list_discoverable": "공개",
   "list_discoverable_description": "다른 사용자가 교환 파트너를 찾을 때 이 리스트를 볼 수 있도록 허용합니다.",
   "list_link_cosmo_required": "have/want 리스트를 사용하려면 COSMO 계정을 연결하세요.",

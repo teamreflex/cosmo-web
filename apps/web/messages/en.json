@@ -219,6 +219,7 @@
   "list_already_on_list": "{collectionId} is already on this list",
   "list_description": "Description",
   "list_description_placeholder": "Add notes, contact info, or trade preferences",
+  "list_description_public_notice": "This description is visible to other users. Do not include sensitive information.",
   "list_discoverable": "Discoverable",
   "list_discoverable_description": "Allow other users to find this list when looking for trade partners.",
   "list_link_cosmo_required": "Link a COSMO account to use have/want lists.",

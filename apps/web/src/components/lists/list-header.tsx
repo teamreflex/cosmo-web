@@ -28,7 +28,7 @@ export default function ListHeader({
   const intent = intentCopy(list.type);
 
   return (
-    <div className="py-4">
+    <div className="flex min-h-40 flex-col py-4">
       <div className="flex flex-wrap items-start gap-x-6 gap-y-4">
         <div className="flex items-start gap-4">
           {/* intent mark */}
@@ -83,7 +83,7 @@ export default function ListHeader({
         </div>
       </div>
 
-      <div className="mt-4 grid gap-4 md:grid-cols-[1fr_auto]">
+      <div className="mt-4 grid flex-1 gap-4 md:grid-cols-[1fr_auto]">
         <div className={cn("border-l-2 pl-4", intent.borderColor)}>
           <div className="mb-1 font-mono text-xxs font-semibold tracking-[0.18em] text-muted-foreground uppercase">
             {m.list_header_description()}
@@ -109,7 +109,7 @@ export default function ListHeader({
 
 export function ListHeaderSkeleton() {
   return (
-    <div className="py-4">
+    <div className="min-h-40 py-4">
       <div className="flex flex-wrap items-start gap-x-6 gap-y-4">
         <div className="flex items-start gap-4">
           <Skeleton className="size-10 shrink-0 rounded-sm md:size-14" />

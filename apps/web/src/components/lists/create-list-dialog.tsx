@@ -34,7 +34,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../ui/dialog";
-import { Field, FieldError, FieldLabel } from "../ui/field";
+import { Field, FieldDescription, FieldError, FieldLabel } from "../ui/field";
 import { Input } from "../ui/input";
 import {
   Select,
@@ -92,7 +92,7 @@ export default function CreateListDialog(props: Props) {
 
   return (
     <Dialog open={props.open} onOpenChange={props.onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{m.list_create()}</DialogTitle>
           <DialogDescription>
@@ -381,6 +381,9 @@ function DescriptionField() {
               field.onChange(e.target.value === "" ? undefined : e.target.value)
             }
           />
+          <FieldDescription>
+            {m.list_description_public_notice()}
+          </FieldDescription>
           <FieldError errors={[fieldState.error]} />
         </Field>
       )}
@@ -405,7 +408,7 @@ function CurrencyField() {
               field.onChange(e.target.value === "" ? undefined : e.target.value)
             }
           />
-          <div className="flex gap-1">
+          <div className="flex gap-1 flex-wrap">
             {defaultCurrencies.map((c) => (
               <button
                 key={c}
@@ -420,9 +423,7 @@ function CurrencyField() {
               </button>
             ))}
           </div>
-          <p className="text-xs text-muted-foreground">
-            {m.list_currency_description()}
-          </p>
+          <FieldDescription>{m.list_currency_description()}</FieldDescription>
           <FieldError errors={[fieldState.error]} />
         </Field>
       )}
@@ -448,9 +449,9 @@ function DiscoverableField() {
               onCheckedChange={field.onChange}
             />
           </div>
-          <p className="text-xs text-muted-foreground">
+          <FieldDescription>
             {m.list_discoverable_description()}
-          </p>
+          </FieldDescription>
         </Field>
       )}
     />
@@ -486,9 +487,9 @@ function PairField({ availableLists }: { availableLists: ObjektList[] }) {
               ))}
             </SelectContent>
           </Select>
-          <p className="text-xs text-muted-foreground">
+          <FieldDescription>
             {m.list_pair_required_for_matching()}
-          </p>
+          </FieldDescription>
         </Field>
       )}
     />

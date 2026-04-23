@@ -1,6 +1,16 @@
 import * as z from "zod";
 
-export const defaultCurrencies = ["USD", "KRW", "EUR", "GBP", "JPY"] as const;
+export const defaultCurrencies = [
+  "USD",
+  "KRW",
+  "EUR",
+  "GBP",
+  "JPY",
+  "RMB",
+  "NTD",
+  "HKD",
+  "SGD",
+] as const;
 
 export const listTypes = ["regular", "have", "want", "sale"] as const;
 export type ListType = (typeof listTypes)[number];

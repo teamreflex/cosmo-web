@@ -219,6 +219,7 @@
   "list_already_on_list": "{collectionId}は既にこのリストにあります",
   "list_description": "説明",
   "list_description_placeholder": "メモ、連絡先、交換の希望などを入力してください",
+  "list_description_public_notice": "この説明は他のユーザーに表示されます。個人情報や機密情報は入力しないでください。",
   "list_discoverable": "公開する",
   "list_discoverable_description": "交換パートナーを探している他のユーザーがこのリストを見つけられるようにします。",
   "list_link_cosmo_required": "have/wantリストを利用するには、COSMOアカウントを連携してください。",
