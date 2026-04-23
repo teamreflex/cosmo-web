@@ -26,7 +26,7 @@ const ExchangerateResponse = Schema.Union(
  */
 export const syncFxRatesTask = {
   name: "sync-fx-rates",
-  cron: "0 */6 * * *",
+  cron: "0 */12 * * *",
   effect: Effect.gen(function* () {
     const env = yield* Env;
     const db = yield* DatabaseWeb;

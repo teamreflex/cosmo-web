@@ -16,7 +16,7 @@ import type { ScheduledTask } from "../task";
  */
 export const syncCollectionPriceStatsTask = {
   name: "sync-collection-price-stats",
-  cron: "*/15 * * * *",
+  cron: "0 */4 * * *",
   effect: Effect.gen(function* () {
     const db = yield* DatabaseWeb;
 
