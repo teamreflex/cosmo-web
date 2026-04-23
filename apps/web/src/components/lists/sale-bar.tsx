@@ -36,9 +36,9 @@ export default function SaleBar(props: Props) {
       style={{ backgroundColor: props.backgroundColor, color: props.textColor }}
     >
       {formattedPrice && <span>{formattedPrice}</span>}
-      {market && (
+      {market !== null && (
         <span className="ml-2 opacity-70">
-          {m.list_market_price({ price: market })}
+          {m.list_median_price({ price: market })}
         </span>
       )}
       <span className="ml-auto">x{props.quantity}</span>

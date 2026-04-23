@@ -201,7 +201,7 @@
   "list_sale_quantity": "Quantité",
   "list_sale_price": "Prix",
   "list_edit_sale_entry": "Modifier l'entrée",
-  "list_market_price": "{price} marché",
+  "list_median_price": "{price} médiane",
   "toast_entry_updated": "Entrée actualisée",
   "list_type": "Type de liste",
   "list_type_regular": "Normale",

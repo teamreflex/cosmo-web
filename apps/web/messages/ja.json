@@ -201,7 +201,7 @@
   "list_sale_quantity": "数量",
   "list_sale_price": "価格",
   "list_edit_sale_entry": "エントリーを編集",
-  "list_market_price": "市場 {price}",
+  "list_median_price": "中央値 {price}",
   "toast_entry_updated": "エントリーを更新しました",
   "list_type": "リストの種類",
   "list_type_regular": "通常",

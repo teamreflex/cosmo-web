@@ -201,7 +201,7 @@
   "list_sale_quantity": "수량",
   "list_sale_price": "가격",
   "list_edit_sale_entry": "항목 수정",
-  "list_market_price": "시장 {price}",
+  "list_median_price": "중간값 {price}",
   "toast_entry_updated": "항목이 업데이트되었습니다",
   "list_type": "리스트 유형",
   "list_type_regular": "일반",
