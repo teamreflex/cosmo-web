@@ -117,31 +117,34 @@ export const syncCollectionPriceStatsTask = {
               },
             });
 
-          await tx.delete(collectionPriceStats).where(
-            notExists(
-              tx
-                .select({ one: sql`1` })
-                .from(objektListEntries)
-                .innerJoin(
-                  objektLists,
-                  eq(objektLists.id, objektListEntries.objektListId),
-                )
-                .innerJoin(
-                  latestRates,
-                  eq(latestRates.currency, objektLists.currency),
-                )
-                .where(
-                  and(
-                    eq(
-                      objektListEntries.collectionId,
-                      collectionPriceStats.collectionId,
+          await tx
+            .with(latestRates)
+            .delete(collectionPriceStats)
+            .where(
+              notExists(
+                tx
+                  .select({ one: sql`1` })
+                  .from(objektListEntries)
+                  .innerJoin(
+                    objektLists,
+                    eq(objektLists.id, objektListEntries.objektListId),
+                  )
+                  .innerJoin(
+                    latestRates,
+                    eq(latestRates.currency, objektLists.currency),
+                  )
+                  .where(
+                    and(
+                      eq(
+                        objektListEntries.collectionId,
+                        collectionPriceStats.collectionId,
+                      ),
+                      isNotNull(objektListEntries.price),
+                      isNotNull(objektLists.currency),
                     ),
-                    isNotNull(objektListEntries.price),
-                    isNotNull(objektLists.currency),
                   ),
-                ),
-            ),
-          );
+              ),
+            );
         }),
       catch: (cause) => new SyncStatsError({ cause }),
     });
