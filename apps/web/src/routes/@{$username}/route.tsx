@@ -151,18 +151,19 @@ function PendingComponent() {
   return (
     <main className="relative flex flex-col">
       <div className="border-b border-border">
-        <div className="container flex flex-col gap-4 py-6 md:flex-row md:items-center md:gap-6">
+        <div className="container flex flex-col gap-3 py-6 md:flex-row md:items-center md:gap-6">
           <Skeleton className="size-16 rounded-sm md:size-22" />
           <div className="flex min-w-0 flex-1 flex-col gap-3">
             <Skeleton className="h-8 w-40" />
             <Skeleton className="h-10.5 w-36 rounded-sm" />
           </div>
           <div className="-mx-4 flex flex-nowrap items-center justify-center gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:flex-wrap md:self-end md:overflow-visible md:p-0">
-            <Skeleton className="h-8 w-24" />
-            <Skeleton className="h-8 w-24" />
-            <Skeleton className="h-8 w-24" />
-            <Skeleton className="h-8 w-24" />
-            <Skeleton className="h-8 w-24" />
+            <Skeleton className="size-10 sm:h-8 sm:w-24" />
+            <Skeleton className="size-10 sm:h-8 sm:w-24" />
+            <Skeleton className="size-10 sm:h-8 sm:w-24" />
+            <Skeleton className="size-10 sm:h-8 sm:w-24" />
+            <Skeleton className="size-10 sm:h-8 sm:w-24" />
+            <Skeleton className="size-10 sm:h-8 sm:w-24" />
           </div>
         </div>
       </div>

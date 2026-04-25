@@ -45,5 +45,6 @@
   "[json5]": {
     "editor.defaultFormatter": "oxc.oxc-vscode"
   },
-  "js/ts.tsdk.path": "node_modules/typescript/lib"
+  "js/ts.tsdk.path": "node_modules/typescript/lib",
+  "typescript.native-preview.tsdk": "node_modules/@typescript/native-preview"
 }

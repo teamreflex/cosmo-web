@@ -40,23 +40,25 @@ export default function IndexRenderer(props: Props) {
           </div>
         </div>
 
-        <div className="ml-auto flex items-center gap-2">
-          <Suspense
-            fallback={
-              <Button
-                className="animate-pulse"
-                variant="outline"
-                size="profile"
-                data-profile
-              >
-                <IconList className="h-5 w-5" />
-                <span className="hidden sm:block">{m.list_lists()}</span>
-              </Button>
-            }
-          >
-            <IndexListDropdown />
-          </Suspense>
-        </div>
+        {authenticated && (
+          <div className="ml-auto flex items-center gap-2">
+            <Suspense
+              fallback={
+                <Button
+                  className="animate-pulse"
+                  variant="outline"
+                  size="profile"
+                  data-profile
+                >
+                  <IconList className="h-5 w-5" />
+                  <span className="hidden sm:block">{m.list_lists()}</span>
+                </Button>
+              }
+            >
+              <IndexListDropdown />
+            </Suspense>
+          </div>
+        )}
       </TitleHeader>
 
       <FiltersContainer>
