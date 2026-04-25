@@ -467,7 +467,6 @@
   "events_error_loading": "イベントを読み込めませんでした",
   "events_error_not_found": "イベントが見つかりません",
   "events_error_not_found_description": "お探しのイベントは存在しないか、削除された可能性があります。",
-  "event_from": "開始：",
 
   "_comment_filter": "Filter strings",
   "filter_reset": "フィルターをリセット",

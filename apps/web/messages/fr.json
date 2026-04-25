@@ -467,7 +467,6 @@
   "events_error_loading": "Impossible de charger les évènements",
   "events_error_not_found": "Évènement introuvable",
   "events_error_not_found_description": "L'évènement que vous cherchez n'existe pas ou a été supprimé.",
-  "event_from": "De:",
 
   "_comment_filter": "Filter strings",
   "filter_reset": "Réinitialiser les filtres",

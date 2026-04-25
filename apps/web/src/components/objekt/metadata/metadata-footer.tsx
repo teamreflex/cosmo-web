@@ -86,19 +86,12 @@ function FooterInner(props: Props) {
   }
 
   const { front, back } = getObjektImageUrls(props.objekt);
+  const event = data.data?.event ?? null;
 
   return (
     <div className="flex items-center gap-2 px-4 py-2">
-      {data.data?.event ? (
-        <div className="flex min-w-0 items-center gap-2">
-          <span className="font-mono text-xxs tracking-[0.14em] text-muted-foreground uppercase">
-            {m.event_from()}
-          </span>
-          <EventBadge event={data.data.event} />
-        </div>
-      ) : (
-        <div />
-      )}
+      {event !== null && <EventBadge event={event} />}
+
       <div className="ml-auto flex items-center gap-1">
         {user?.isAdmin && (
           <EditMetadata
@@ -163,10 +156,16 @@ function FooterInner(props: Props) {
 function FooterFallback() {
   return (
     <div className="flex items-center gap-2 px-4 py-2">
-      <Skeleton className="h-6 w-32" />
+      {/* event */}
+      <div className="flex items-center gap-1">
+        <Skeleton className="aspect-square size-5 rounded" />
+        <Skeleton className="h-5 w-40 rounded-4xl" />
+      </div>
+
+      {/* buttons */}
       <div className="ml-auto flex items-center gap-1">
-        <Skeleton className="size-8" />
-        <Skeleton className="size-8" />
+        <Skeleton className="size-8 rounded-sm" />
+        <Skeleton className="size-8 rounded-sm" />
       </div>
     </div>
   );
@@ -185,7 +184,11 @@ function EventBadge({ event }: { event: CollectionDataEvent }) {
         />
       )}
       <Badge variant="secondary" className="gap-1">
-        <Link to={`/events/$slug`} params={{ slug: event.slug }}>
+        <Link
+          to={`/events/$slug`}
+          params={{ slug: event.slug }}
+          className="truncate"
+        >
           {event.name}
         </Link>
       </Badge>
