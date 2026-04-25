@@ -70,6 +70,9 @@
     "db:upgrade": {
       "cache": false
     },
+    "db:check": {
+      "cache": false
+    },
     "i18n": {
       "cache": false
     },
