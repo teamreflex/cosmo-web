@@ -1,0 +1,2 @@
+DROP INDEX "notifications_list_match_dedup_idx";--> statement-breakpoint
+CREATE UNIQUE INDEX "notifications_list_match_dedup_idx" ON "notifications" ("user_id",(payload->>'sourceUserId'),(payload->>'collectionId'),(payload->>'direction')) WHERE "type" = 'list_match';

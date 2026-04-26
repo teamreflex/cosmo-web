@@ -184,6 +184,7 @@ export const notifications = pgTable(
         t.userId,
         sql`(payload->>'sourceUserId')`,
         sql`(payload->>'collectionId')`,
+        sql`(payload->>'direction')`,
       )
       .where(eq(t.type, "list_match")),
   ],
