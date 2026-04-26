@@ -230,7 +230,13 @@
   "list_matches_description": "{listName}의 매칭",
   "list_matches_empty": "아직 상호 매칭이 없습니다.",
   "list_matches_overlap_count": "{count}개 일치",
-  "list_matches_partners_label": "파트너 {count}명",
+  "list_matches_count_label": [{
+    "declarations": ["input count", "local countPlural = count: plural"],
+    "selectors": ["countPlural"],
+    "match": {
+      "countPlural=other": "매칭 {count}개"
+    }
+  }],
   "list_matches_they_have_you_want": "상대 보유 — 본인 희망",
   "list_matches_you_have_they_want": "본인 보유 — 상대 희망",
   "list_matches_have_label": "보유",

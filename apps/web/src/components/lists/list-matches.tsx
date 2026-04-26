@@ -66,7 +66,7 @@ export default function ListMatches({ list }: Props) {
               )}
             >
               <Suspense fallback={<ListMatchesSkeleton />}>
-                <ListMatchesContent listId={list.id} />
+                <ListMatchesContent id={list.id} name={list.name} />
               </Suspense>
             </ErrorBoundary>
           )}

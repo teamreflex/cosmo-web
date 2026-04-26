@@ -230,7 +230,14 @@
   "list_matches_description": "Correspondances pour {listName}",
   "list_matches_empty": "Aucune correspondance mutuelle pour le moment.",
   "list_matches_overlap_count": "{count} en commun",
-  "list_matches_partners_label": "{count} partenaires",
+  "list_matches_count_label": [{
+    "declarations": ["input count", "local countPlural = count: plural"],
+    "selectors": ["countPlural"],
+    "match": {
+      "countPlural=one": "{count} correspondance",
+      "countPlural=other": "{count} correspondances"
+    }
+  }],
   "list_matches_they_have_you_want": "Ils ont — vous voulez",
   "list_matches_you_have_they_want": "Vous avez — ils veulent",
   "list_matches_have_label": "ont",

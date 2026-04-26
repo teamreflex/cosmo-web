@@ -4,8 +4,13 @@ import { listMatchesQuery, objektQuery } from "@/lib/queries/objekt-queries";
 import type { TradePartner } from "@/lib/universal/lists";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
-import { IconArrowsExchange, IconChevronRight } from "@tabler/icons-react";
+import {
+  IconArrowsExchange,
+  IconArrowUpRight,
+  IconChevronRight,
+} from "@tabler/icons-react";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import MetadataDialog from "../objekt/metadata-dialog";
 import {
@@ -17,13 +22,14 @@ import UserAvatar from "../profile/user-avatar";
 import { Skeleton } from "../ui/skeleton";
 
 type Props = {
-  listId: string;
+  id: string;
+  name: string;
 };
 
 const MAX_VISIBLE_TILES = 12;
 
-export default function ListMatchesContent({ listId }: Props) {
-  const { data } = useSuspenseQuery(listMatchesQuery(listId));
+export default function ListMatchesContent(props: Props) {
+  const { data } = useSuspenseQuery(listMatchesQuery(props.id));
   const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
 
   if (data.partners.length === 0) {
@@ -35,12 +41,13 @@ export default function ListMatchesContent({ listId }: Props) {
   return (
     <>
       <Portal to="#list-matches-count">
-        {m.list_matches_partners_label({ count: data.partners.length })}
+        {m.list_matches_count_label({ count: data.partners.length })}
       </Portal>
       <ul className="flex flex-col divide-y divide-border rounded-md border overflow-clip">
         {data.partners.map((partner, index) => (
           <PartnerRow
             key={partner.userId}
+            listName={props.name}
             partner={partner}
             rank={index + 1}
             expanded={expandedUserId === partner.userId}
@@ -58,6 +65,7 @@ export default function ListMatchesContent({ listId }: Props) {
 }
 
 type PartnerRowProps = {
+  listName: string;
   partner: TradePartner;
   rank: number;
   expanded: boolean;
@@ -66,14 +74,19 @@ type PartnerRowProps = {
 };
 
 function PartnerRow({
+  listName,
   partner,
   rank,
   expanded,
   collections,
   onToggle,
 }: PartnerRowProps) {
-  const overlapHave = partner.theyHaveIWant.length;
-  const overlapWant = partner.iHaveTheyWant.length;
+  const overlapHave = new Set(
+    partner.matches.flatMap((match) => match.theyHaveIWant),
+  ).size;
+  const overlapWant = new Set(
+    partner.matches.flatMap((match) => match.iHaveTheyWant),
+  ).size;
 
   return (
     <li className={cn(expanded && "bg-muted/40")}>
@@ -108,23 +121,42 @@ function PartnerRow({
       </button>
 
       {expanded && (
-        <div className="flex flex-col gap-3 border-t border-border px-3 pb-3 pt-3">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <DirectionColumn
-              arrow="←"
-              title={m.list_matches_they_have_you_want()}
-              slugs={partner.theyHaveIWant}
-              collections={collections}
-              tone="want"
-            />
-            <DirectionColumn
-              arrow="→"
-              title={m.list_matches_you_have_they_want()}
-              slugs={partner.iHaveTheyWant}
-              collections={collections}
-              tone="have"
-            />
-          </div>
+        <div className="flex flex-col gap-4 border-t border-border px-3 pb-3 pt-3">
+          {partner.matches.map((match) => (
+            <div key={match.listId} className="flex flex-col gap-2">
+              <div className="flex items-center justify-between text-xs">
+                <span>{listName}</span>
+
+                <Link
+                  to="/@{$username}/list/$slug"
+                  params={{
+                    username: partner.username,
+                    slug: match.listSlug,
+                  }}
+                  className="flex items-center justify-end gap-1.5 text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  <span>{match.listName}</span>
+                  <IconArrowUpRight className="size-3.5" />
+                </Link>
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <DirectionColumn
+                  arrow="←"
+                  title={m.list_matches_you_have_they_want()}
+                  slugs={match.iHaveTheyWant}
+                  collections={collections}
+                  tone="have"
+                />
+                <DirectionColumn
+                  arrow="→"
+                  title={m.list_matches_they_have_you_want()}
+                  slugs={match.theyHaveIWant}
+                  collections={collections}
+                  tone="want"
+                />
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </li>

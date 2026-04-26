@@ -230,7 +230,14 @@
   "list_matches_description": "Matching {listName}",
   "list_matches_empty": "No mutual matches yet.",
   "list_matches_overlap_count": "{count} overlap",
-  "list_matches_partners_label": "{count} partners",
+  "list_matches_count_label": [{
+    "declarations": ["input count", "local countPlural = count: plural"],
+    "selectors": ["countPlural"],
+    "match": {
+      "countPlural=one": "{count} match",
+      "countPlural=other": "{count} matches"
+    }
+  }],
   "list_matches_they_have_you_want": "They have — you want",
   "list_matches_you_have_they_want": "You have — they want",
   "list_matches_have_label": "have",

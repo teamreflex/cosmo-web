@@ -10,6 +10,7 @@ import { fetchLatestFxRate } from "@/lib/server/objekts/fx.server";
 import { assertUserOwnsList } from "@/lib/server/objekts/lists.server";
 import type { PublicUser } from "@/lib/universal/auth";
 import type {
+  PartnerListMatch,
   PartnerMatchRow,
   TradePartner,
   TradePartnersResponse,
@@ -766,18 +767,20 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
       throw new Error("not_live_list");
     }
 
-    const anchorIsActive =
+    // The opposite-side list paired to the anchor via the trade link.
+    // Used to scope my-side matching to a single trade pair, mirroring how
+    // partner pairs are treated.
+    const myLinkedListId =
       myList.type === "have"
-        ? myList.linkedWantListId !== null
-        : myList.linkingHaveList !== null;
-    if (!anchorIsActive) {
+        ? myList.linkedWantListId
+        : (myList.linkingHaveList?.id ?? null);
+    if (myLinkedListId === null) {
       throw new Error("anchor_not_trade_active");
     }
 
-    // The anchor side scopes one direction of the mutual check; the other
-    // direction considers the union of all the user's discoverable lists of
-    // the opposite type. CTEs materialise the trade-active list sets; the
-    // body swaps roles based on anchor type.
+    // CTEs materialise the trade-active partner list sets; the body swaps
+    // roles based on anchor type. Both my anchor and my linked counterpart
+    // are scoped to specific lists, so partner matches are pair-against-pair.
     const w = alias(objektLists, "w");
     const h = alias(objektLists, "h");
 
@@ -786,7 +789,9 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
         .select({
           id: objektLists.id,
           userId: objektLists.userId,
-          description: objektLists.description,
+          slug: objektLists.slug,
+          name: objektLists.name,
+          linkedWantListId: objektLists.linkedWantListId,
         })
         .from(objektLists)
         .where(
@@ -803,6 +808,8 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
         .select({
           id: w.id,
           userId: w.userId,
+          slug: w.slug,
+          name: w.name,
         })
         .from(w)
         .innerJoin(h, eq(h.linkedWantListId, w.id))
@@ -822,23 +829,23 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
 
     switch (myList.type) {
       case "want": {
-        const myHaves = db
-          .$with("my_haves")
-          .as(
-            db
-              .selectDistinct({ collectionId: objektListEntries.collectionId })
-              .from(objektListEntries)
-              .innerJoin(
-                tradeActiveHaves,
-                eq(tradeActiveHaves.id, objektListEntries.objektListId),
-              )
-              .where(eq(tradeActiveHaves.userId, userId)),
-          );
+        const myHaves = db.$with("my_haves").as(
+          db
+            .selectDistinct({
+              collectionId: objektListEntries.collectionId,
+            })
+            .from(objektListEntries)
+            .where(eq(objektListEntries.objektListId, myLinkedListId)),
+        );
 
         const theirHaves = db.$with("their_haves").as(
           db
             .select({
               userId: tradeActiveHaves.userId,
+              listId: tradeActiveHaves.id,
+              listSlug: tradeActiveHaves.slug,
+              listName: tradeActiveHaves.name,
+              linkedWantListId: tradeActiveHaves.linkedWantListId,
               collectionId: objektListEntries.collectionId,
             })
             .from(objektListEntries)
@@ -860,6 +867,7 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
           db
             .select({
               userId: tradeActiveWants.userId,
+              wantListId: tradeActiveWants.id,
               collectionId: objektListEntries.collectionId,
             })
             .from(objektListEntries)
@@ -885,6 +893,9 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
           )
           .select({
             theirUserId: theirHaves.userId,
+            listId: theirHaves.listId,
+            listSlug: theirHaves.listSlug,
+            listName: theirHaves.listName,
             theyHaveIWant: sql<
               string[] | null
             >`array_agg(DISTINCT ${theirHaves.collectionId})`,
@@ -893,13 +904,27 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
             >`array_agg(DISTINCT ${theirWants.collectionId})`,
           })
           .from(theirHaves)
-          .innerJoin(theirWants, eq(theirWants.userId, theirHaves.userId))
-          .groupBy(theirHaves.userId)
+          .innerJoin(
+            theirWants,
+            and(
+              eq(theirWants.userId, theirHaves.userId),
+              eq(theirWants.wantListId, theirHaves.linkedWantListId),
+            ),
+          )
+          .groupBy(
+            theirHaves.userId,
+            theirHaves.listId,
+            theirHaves.listSlug,
+            theirHaves.listName,
+          )
           .orderBy(desc(countDistinct(theirHaves.collectionId)))
           .limit(50);
 
         matches = result.map((r) => ({
           userId: r.theirUserId,
+          listId: r.listId,
+          listSlug: r.listSlug,
+          listName: r.listName,
           theyHaveIWant: r.theyHaveIWant ?? [],
           iHaveTheyWant: r.iHaveTheyWant ?? [],
         }));
@@ -907,23 +932,22 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
       }
 
       case "have": {
-        const myWants = db
-          .$with("my_wants")
-          .as(
-            db
-              .selectDistinct({ collectionId: objektListEntries.collectionId })
-              .from(objektListEntries)
-              .innerJoin(
-                tradeActiveWants,
-                eq(tradeActiveWants.id, objektListEntries.objektListId),
-              )
-              .where(eq(tradeActiveWants.userId, userId)),
-          );
+        const myWants = db.$with("my_wants").as(
+          db
+            .selectDistinct({
+              collectionId: objektListEntries.collectionId,
+            })
+            .from(objektListEntries)
+            .where(eq(objektListEntries.objektListId, myLinkedListId)),
+        );
 
         const theirWants = db.$with("their_wants").as(
           db
             .select({
               userId: tradeActiveWants.userId,
+              listId: tradeActiveWants.id,
+              listSlug: tradeActiveWants.slug,
+              listName: tradeActiveWants.name,
               collectionId: objektListEntries.collectionId,
             })
             .from(objektListEntries)
@@ -945,6 +969,7 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
           db
             .select({
               userId: tradeActiveHaves.userId,
+              linkedWantListId: tradeActiveHaves.linkedWantListId,
               collectionId: objektListEntries.collectionId,
             })
             .from(objektListEntries)
@@ -970,6 +995,9 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
           )
           .select({
             theirUserId: theirWants.userId,
+            listId: theirWants.listId,
+            listSlug: theirWants.listSlug,
+            listName: theirWants.listName,
             theyHaveIWant: sql<
               string[] | null
             >`array_agg(DISTINCT ${theirHaves.collectionId})`,
@@ -978,13 +1006,27 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
             >`array_agg(DISTINCT ${theirWants.collectionId})`,
           })
           .from(theirWants)
-          .innerJoin(theirHaves, eq(theirHaves.userId, theirWants.userId))
-          .groupBy(theirWants.userId)
+          .innerJoin(
+            theirHaves,
+            and(
+              eq(theirHaves.userId, theirWants.userId),
+              eq(theirHaves.linkedWantListId, theirWants.listId),
+            ),
+          )
+          .groupBy(
+            theirWants.userId,
+            theirWants.listId,
+            theirWants.listSlug,
+            theirWants.listName,
+          )
           .orderBy(desc(countDistinct(theirWants.collectionId)))
           .limit(50);
 
         matches = result.map((r) => ({
           userId: r.theirUserId,
+          listId: r.listId,
+          listSlug: r.listSlug,
+          listName: r.listName,
           theyHaveIWant: r.theyHaveIWant ?? [],
           iHaveTheyWant: r.iHaveTheyWant ?? [],
         }));
@@ -1033,18 +1075,53 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
       collections[c.slug] = Objekt.fromIndexer(c);
     }
 
-    const partners: TradePartner[] = [];
+    const partnerOrder: string[] = [];
+    const matchesByUserId = new Map<string, PartnerListMatch[]>();
     for (const row of matches) {
-      const identity = identityByUserId.get(row.userId);
+      const list = matchesByUserId.get(row.userId);
+      if (list) {
+        list.push({
+          listId: row.listId,
+          listSlug: row.listSlug,
+          listName: row.listName,
+          theyHaveIWant: row.theyHaveIWant,
+          iHaveTheyWant: row.iHaveTheyWant,
+        });
+      } else {
+        partnerOrder.push(row.userId);
+        matchesByUserId.set(row.userId, [
+          {
+            listId: row.listId,
+            listSlug: row.listSlug,
+            listName: row.listName,
+            theyHaveIWant: row.theyHaveIWant,
+            iHaveTheyWant: row.iHaveTheyWant,
+          },
+        ]);
+      }
+    }
+
+    const partners: TradePartner[] = [];
+    for (const partnerUserId of partnerOrder) {
+      const identity = identityByUserId.get(partnerUserId);
       if (!identity) continue;
+      const partnerMatches = matchesByUserId.get(partnerUserId) ?? [];
       partners.push({
-        userId: row.userId,
+        userId: partnerUserId,
         username: identity.username,
         user: identity.user,
-        theyHaveIWant: row.theyHaveIWant,
-        iHaveTheyWant: row.iHaveTheyWant,
+        matches: partnerMatches,
       });
     }
+
+    // Rank partners by total distinct collections they hold that I want, so a
+    // partner with multiple matching trade pairs outranks a one-pair partner
+    // with the same per-pair overlap.
+    partners.sort((a, b) => {
+      const aTotal = new Set(a.matches.flatMap((m) => m.theyHaveIWant)).size;
+      const bTotal = new Set(b.matches.flatMap((m) => m.theyHaveIWant)).size;
+      return bTotal - aTotal;
+    });
 
     return { partners, collections };
   });

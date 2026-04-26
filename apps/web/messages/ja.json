@@ -230,7 +230,13 @@
   "list_matches_description": "{listName}のマッチ",
   "list_matches_empty": "まだ相互マッチはありません。",
   "list_matches_overlap_count": "{count}件一致",
-  "list_matches_partners_label": "{count}人のパートナー",
+  "list_matches_count_label": [{
+    "declarations": ["input count", "local countPlural = count: plural"],
+    "selectors": ["countPlural"],
+    "match": {
+      "countPlural=other": "{count}件のマッチ"
+    }
+  }],
   "list_matches_they_have_you_want": "相手が所有 — あなたが希望",
   "list_matches_you_have_they_want": "あなたが所有 — 相手が希望",
   "list_matches_have_label": "所有",
