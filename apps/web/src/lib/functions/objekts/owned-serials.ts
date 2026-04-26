@@ -36,7 +36,7 @@ export const $fetchOwnedSerials = createServerFn({ method: "GET" })
         .from(objekts)
         .where(
           and(
-            eq(objekts.owner, context.cosmo.address),
+            eq(objekts.owner, context.cosmo.address.toLowerCase()),
             eq(objekts.collectionId, data.collectionId),
           ),
         ),
