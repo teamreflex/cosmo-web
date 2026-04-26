@@ -2,13 +2,14 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { m } from "@/i18n/messages";
 import { cn } from "@/lib/utils";
 import type { ObjektList } from "@apollo/database/web/types";
-import { IconUsers } from "@tabler/icons-react";
+import { IconUsers, IconX } from "@tabler/icons-react";
 import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import { Suspense, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { Button } from "../ui/button";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogTitle,
@@ -46,13 +47,22 @@ export default function ListMatches({ list }: Props) {
         <span className="font-cosmo text-sm font-black tracking-[0.14em] uppercase">
           {m.list_matches_title()}
         </span>
-        <span
-          id="list-matches-count"
-          className={cn(
-            "ml-auto truncate font-mono text-xs",
-            list.type === "have" ? "text-teal-500" : "text-amber-500",
-          )}
-        />
+        <div className="ml-auto flex items-center gap-2">
+          <span
+            id="list-matches-count"
+            className={cn(
+              "truncate font-mono text-xs",
+              list.type === "have" ? "text-teal-500" : "text-amber-500",
+            )}
+          />
+
+          <DialogClose asChild>
+            <Button variant="ghost" size="icon-sm">
+              <IconX />
+              <span className="sr-only">Close</span>
+            </Button>
+          </DialogClose>
+        </div>
       </div>
       <div className="min-h-0 flex-1 overflow-auto p-4">
         <QueryErrorResetBoundary>
