@@ -83,7 +83,7 @@ export default function UpdateList({ objektList }: Props) {
           <IconEdit />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{m.list_update()}</DialogTitle>
         </DialogHeader>
