@@ -83,7 +83,7 @@ export default function UpdateDialog() {
 
 const updates = [
   {
-    date: "2026-04-30",
+    date: "2026-04-27",
     changes: [
       "More redesign work, should be more mobile friendly and less janky.",
       "Added: Per-objekt pricing stats, based on all available sale lists. Shows min/max/median in USD.",
