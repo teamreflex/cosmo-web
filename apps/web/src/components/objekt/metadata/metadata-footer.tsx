@@ -92,7 +92,7 @@ function FooterInner(props: Props) {
     <div className="flex items-center gap-2 px-4 py-2">
       {event !== null && <EventBadge event={event} />}
 
-      <div className="ml-auto flex items-center gap-1">
+      <div className="ml-auto flex shrink-0 items-center gap-1">
         {user?.isAdmin && (
           <EditMetadata
             slug={props.objekt.slug}
@@ -163,7 +163,7 @@ function FooterFallback() {
       </div>
 
       {/* buttons */}
-      <div className="ml-auto flex items-center gap-1">
+      <div className="ml-auto flex shrink-0 items-center gap-1">
         <Skeleton className="size-8 rounded-sm" />
         <Skeleton className="size-8 rounded-sm" />
       </div>
@@ -175,19 +175,19 @@ function EventBadge({ event }: { event: CollectionDataEvent }) {
   const imageUrl = event.era.spotifyAlbumArt || event.era.imageUrl;
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex min-w-0 items-center gap-1">
       {imageUrl && (
         <img
           src={imageUrl}
           alt={event.era.name}
-          className="aspect-square size-5 rounded"
+          className="aspect-square size-5 shrink-0 rounded"
         />
       )}
-      <Badge variant="secondary" className="gap-1">
+      <Badge variant="secondary" className="min-w-0 shrink gap-1">
         <Link
           to={`/events/$slug`}
           params={{ slug: event.slug }}
-          className="truncate"
+          className="min-w-0 truncate"
         >
           {event.name}
         </Link>
