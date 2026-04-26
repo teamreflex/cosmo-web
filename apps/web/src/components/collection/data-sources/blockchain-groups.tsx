@@ -1,4 +1,5 @@
 import VirtualizedObjektGrid from "@/components/objekt/virtualized-objekt-grid";
+import ProfileTotalStat from "@/components/profile/profile-total-stat";
 import { useArtists } from "@/hooks/use-artists";
 import { useAuthenticated } from "@/hooks/use-authenticated";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
@@ -55,13 +56,10 @@ export default function BlockchainGroups(props: Props) {
       filters,
       selectedIds,
     ),
+    totalPortalTarget: "#profile-total-stat",
     calculateTotal: (data) => {
       const total = data.pages[0]?.collectionCount ?? 0;
-      return (
-        <p className="text-end font-semibold">
-          {total.toLocaleString("en")} {m.blockchain_types()}
-        </p>
-      );
+      return <ProfileTotalStat title={m.blockchain_types()} count={total} />;
     },
     getItems: (data) => data.pages.flatMap((page) => page.collections),
   });

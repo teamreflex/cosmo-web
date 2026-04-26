@@ -40,13 +40,13 @@ export default function SignIn() {
       <DialogTrigger asChild>
         <Button
           onClick={() => setOpen(true)}
-          variant="link"
+          variant="ghost"
           size="icon"
-          className="outline-hidden drop-shadow-lg md:mx-2"
+          className="md:w-auto md:px-3"
           aria-label={m.auth_sign_in()}
         >
-          <IconLogin className="size-8 shrink-0 md:hidden" />
-          <span className="hidden md:contents">{m.auth_sign_in()}</span>
+          <IconLogin className="size-6 md:hidden" />
+          <span className="hidden md:inline">{m.auth_sign_in()}</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="w-full">

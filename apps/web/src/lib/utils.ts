@@ -1,9 +1,17 @@
 import type { ValidArtist } from "@apollo/cosmo/types/common";
 import { clsx } from "clsx";
 import type { ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { extendTailwindMerge } from "tailwind-merge";
 import * as z from "zod";
 import { env } from "./env/client";
+
+const twMerge = extendTailwindMerge({
+  extend: {
+    classGroups: {
+      "font-size": [{ text: ["xxs"] }],
+    },
+  },
+});
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -17,6 +25,23 @@ export type PropsWithClassName<T> = T & { className?: string };
 export function baseUrl() {
   const scheme = env.VITE_APP_ENV === "development" ? "http" : "https";
   return `${scheme}://${env.VITE_BASE_URL}`;
+}
+
+/**
+ * Format a price in the given currency. Falls back to a manual format string
+ * when the currency code is not recognized by `Intl.NumberFormat` (we allow
+ * freeform currency input on objekt lists).
+ */
+export function formatPrice(price: number, currency: string) {
+  try {
+    return new Intl.NumberFormat("en", {
+      style: "currency",
+      currency,
+      maximumFractionDigits: 2,
+    }).format(price);
+  } catch {
+    return `${price.toLocaleString("en", { maximumFractionDigits: 2 })} ${currency}`;
+  }
 }
 
 /**

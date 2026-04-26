@@ -44,7 +44,7 @@ export function useObjektIndex() {
       calculateTotal: (data) => {
         const total = data.pages[0]?.total ?? 0;
         return (
-          <p className="font-semibold">
+          <p className="font-mono text-xxs sm:text-xs tracking-[0.14em] uppercase text-muted-foreground">
             {total.toLocaleString("en")} {m.common_total()}
           </p>
         );
@@ -57,10 +57,11 @@ export function useObjektIndex() {
   return objektOptions({
     filtering: "remote",
     query: objektIndexTypesenseQuery(searchParams, selectedIds),
+    totalPortalTarget: "#objekt-total",
     calculateTotal: (data) => {
       const total = data.pages[0]?.total ?? 0;
       return (
-        <p className="font-semibold">
+        <p className="font-mono text-xs tracking-[0.14em] uppercase text-muted-foreground">
           {total.toLocaleString("en")} {m.common_total()}
         </p>
       );

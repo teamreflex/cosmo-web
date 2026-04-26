@@ -12,7 +12,7 @@ import CosmoMemberFilter from "../objekt/cosmo-member-filter";
 import RoutedExpandableObjekt from "../objekt/objekt-routed";
 import VirtualizedObjektGrid from "../objekt/virtualized-objekt-grid";
 import { Button } from "../ui/button";
-import HelpDialog from "./help-dialog";
+import TitleHeader from "../ui/title-header";
 import { IndexGridItem } from "./index-grid-item";
 
 type Props = {
@@ -28,61 +28,59 @@ export default function IndexRenderer(props: Props) {
 
   return (
     <div className="flex flex-col">
-      <Title />
+      <TitleHeader title={m.objekts_header()}>
+        <div
+          id="objekt-total"
+          className="font-mono text-xs text-muted-foreground tabular-nums"
+        />
+
+        <div className="ml-auto md:pointer-events-none md:absolute md:inset-0 md:ml-0 md:flex md:items-center md:justify-center">
+          <div className="md:pointer-events-auto">
+            <CosmoMemberFilter />
+          </div>
+        </div>
+
+        {authenticated && (
+          <div className="ml-auto flex items-center gap-2">
+            <Suspense
+              fallback={
+                <Button
+                  className="animate-pulse"
+                  variant="outline"
+                  size="profile"
+                  data-profile
+                >
+                  <IconList className="h-5 w-5" />
+                  <span className="hidden sm:block">{m.list_lists()}</span>
+                </Button>
+              }
+            >
+              <IndexListDropdown />
+            </Suspense>
+          </div>
+        )}
+      </TitleHeader>
 
       <FiltersContainer>
         <ObjektIndexFilters search />
       </FiltersContainer>
 
-      <CosmoMemberFilter />
+      <div className="container flex flex-col">
+        <VirtualizedObjektGrid
+          options={options}
+          gridColumns={gridColumns}
+          getObjektId={(objekt) => objekt.id}
+          authenticated={authenticated}
+          ItemComponent={IndexGridItem}
+          itemComponentProps={{
+            authenticated,
+            objektLists: props.objektLists,
+          }}
+          showTotal
+        />
 
-      <VirtualizedObjektGrid
-        options={options}
-        gridColumns={gridColumns}
-        getObjektId={(objekt) => objekt.id}
-        authenticated={authenticated}
-        ItemComponent={IndexGridItem}
-        itemComponentProps={{
-          authenticated,
-          objektLists: props.objektLists,
-        }}
-        showTotal
-      />
-
-      {/* if there's a slug in the url, open an expandable objekt dialog */}
-      <RoutedExpandableObjekt />
-    </div>
-  );
-}
-
-function Title() {
-  return (
-    <div className="flex w-full items-center gap-2 pb-1">
-      <h1 className="font-cosmo text-2xl uppercase md:text-3xl">
-        {m.objekts_header()}
-      </h1>
-      <HelpDialog />
-
-      <div className="flex items-center gap-2 last:ml-auto">
-        <div className="min-w-24 text-right" id="objekt-total" />
-
-        <div className="flex items-center gap-2">
-          <Suspense
-            fallback={
-              <Button
-                className="animate-pulse"
-                variant="secondary"
-                size="profile"
-                data-profile
-              >
-                <IconList className="h-5 w-5" />
-                <span className="hidden sm:block">{m.list_lists()}</span>
-              </Button>
-            }
-          >
-            <IndexListDropdown />
-          </Suspense>
-        </div>
+        {/* if there's a slug in the url, open an expandable objekt dialog */}
+        <RoutedExpandableObjekt />
       </div>
     </div>
   );

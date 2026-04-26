@@ -23,13 +23,75 @@ const SERVER_PORT =
 const CLIENT_DIRECTORY = path.join(import.meta.dir, "./dist/client");
 const SERVER_ENTRY_POINT = path.join(
   import.meta.dir,
-  "./dist/server/server.mjs",
+  "./dist/server/server.js",
 );
 
 // Optional compression for dynamic responses (TanStack SSR, API routes)
 // When disabled, Cloudflare handles compression
 const ENABLE_DYNAMIC_COMPRESSION =
   process.env.ENABLE_DYNAMIC_COMPRESSION === "true";
+
+/**
+ * Build the Content-Security-Policy header value from known origins.
+ */
+function buildContentSecurityPolicy(): string {
+  const scriptSrc = ["'self'", "'unsafe-inline'"];
+  const connectSrc = ["'self'"];
+  const imgSrc = [
+    "'self'",
+    "data:",
+    "blob:",
+    // objekt images
+    "https://imagedelivery.net",
+    // cosmo assets - artist/member images
+    "https://static.cosmo.fans",
+    // band images
+    "https://resources.cosmo.fans",
+    // apollo assets - MCO videos, era/event images
+    "https://cdn.apollo.cafe",
+    // spotify images
+    "https://i.scdn.co",
+  ];
+
+  const umamiUrl = process.env.VITE_UMAMI_SCRIPT_URL;
+  if (umamiUrl) {
+    try {
+      const origin = new URL(umamiUrl).origin;
+      scriptSrc.push(origin);
+      connectSrc.push(origin);
+    } catch {}
+  }
+
+  const sentryDsn = process.env.VITE_SENTRY_DSN;
+  if (sentryDsn) {
+    try {
+      connectSrc.push(new URL(sentryDsn).origin);
+    } catch {}
+  }
+
+  const typesenseUrl = process.env.VITE_TYPESENSE_URL;
+  if (typesenseUrl) {
+    try {
+      connectSrc.push(new URL(typesenseUrl).origin);
+    } catch {}
+  }
+
+  return [
+    "default-src 'self'",
+    `script-src ${scriptSrc.join(" ")}`,
+    "style-src 'self' 'unsafe-inline'",
+    `img-src ${imgSrc.join(" ")}`,
+    "media-src 'self' https://cdn.apollo.cafe blob:",
+    "font-src 'self'",
+    `connect-src ${connectSrc.join(" ")}`,
+    "object-src 'none'",
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+  ].join("; ");
+}
+
+const CONTENT_SECURITY_POLICY = buildContentSecurityPolicy();
 
 // MIME types eligible for compression
 const COMPRESSIBLE_TYPES = [
@@ -52,6 +114,7 @@ const log = {
  * Add basic security headers to response
  */
 function addSecurityHeaders(headers: Headers): void {
+  headers.set("Content-Security-Policy", CONTENT_SECURITY_POLICY);
   headers.set("X-Content-Type-Options", "nosniff");
   headers.set("X-Frame-Options", "DENY");
   headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
@@ -298,6 +361,7 @@ async function initializeServer() {
           const end = performance.now() - start;
           const headers = new Headers(response.headers);
           headers.set("Server-Timing", `handler;dur=${end.toFixed(1)}`);
+          addSecurityHeaders(headers);
           return new Response(response.body, {
             status: response.status,
             statusText: response.statusText,

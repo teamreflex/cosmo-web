@@ -10,7 +10,7 @@ type Props = {
 
 export default function TradesButton({ cosmo }: Props) {
   return (
-    <Button variant="secondary" size="profile" data-profile asChild>
+    <Button variant="outline" size="profile" data-profile asChild>
       <Link
         to="/@{$username}/trades"
         params={{ username: cosmo.isAddress ? cosmo.address : cosmo.username }}

@@ -40,6 +40,7 @@ export default function AboutDialog({ open, onOpenChange }: Props) {
             <a
               href="https://github.com/teamreflex/cosmo-web"
               target="_blank"
+              rel="noopener noreferrer"
               aria-label={m.aria_github()}
             >
               <IconBrandGithub />

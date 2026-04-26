@@ -19,18 +19,17 @@ export function CosmoVerifiedBadge() {
   return (
     <TooltipProvider>
       <Tooltip>
-        <TooltipTrigger>
-          <img
-            className="size-5 shrink-0 rounded invert dark:invert-0"
-            src="/cosmo.webp"
-            alt={m.common_cosmo()}
-          />
+        <TooltipTrigger asChild>
+          <button
+            className="inline-flex h-5 items-center gap-1 rounded border border-border bg-background/40 px-1.5 font-mono text-xxs font-semibold tracking-[0.14em] text-muted-foreground uppercase"
+            aria-label={m.profile_badge_cosmo_verified()}
+          >
+            <IconCheck className="size-3" />
+            {m.profile_badge_verified()}
+          </button>
         </TooltipTrigger>
         <TooltipContent side="bottom" align="start">
-          <div className="flex flex-row items-center gap-2">
-            <IconCheck className="h-4 w-4" />
-            <span>{m.profile_badge_cosmo_verified()}</span>
-          </div>
+          <span>{m.profile_badge_cosmo_verified()}</span>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

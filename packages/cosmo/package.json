@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "license": "MIT",
+  "type": "module",
   "exports": {
     "./types/*": "./src/types/*.ts",
     "./server/*": "./src/server/*.ts",
@@ -11,18 +12,19 @@
   "scripts": {
     "lint": "bun --bun oxlint --type-aware --type-check",
     "lint:fix": "bun --bun oxlint --type-aware --type-check --fix",
-    "typecheck": "tsc --pretty --noEmit",
+    "typecheck": "tsgo --pretty --noEmit",
     "format": "oxfmt ."
   },
   "dependencies": {
     "ofetch": "catalog:",
-    "puppeteer-core": "^24.40.0",
+    "puppeteer-core": "^24.42.0",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@apollo/lint": "workspace:*",
     "@apollo/typescript": "workspace:*",
     "@types/bun": "catalog:",
+    "@typescript/native-preview": "catalog:",
     "turbo": "catalog:",
     "typescript": "catalog:"
   }

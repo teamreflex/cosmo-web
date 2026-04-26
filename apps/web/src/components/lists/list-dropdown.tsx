@@ -1,3 +1,4 @@
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -35,6 +36,7 @@ export default function ListDropdown(props: Props) {
   return (
     <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
       <CreateListDialog
+        objektLists={props.objektLists}
         open={createOpen}
         onOpenChange={setCreateOpen}
         username={props.username}
@@ -46,7 +48,7 @@ export default function ListDropdown(props: Props) {
       />
 
       <DropdownMenuTrigger asChild>
-        <Button variant="secondary" size="profile" data-profile>
+        <Button variant="outline" size="profile" data-profile>
           <IconList className="h-5 w-5" />
           <span className="hidden sm:block">{m.list_lists()}</span>
         </Button>
@@ -56,21 +58,27 @@ export default function ListDropdown(props: Props) {
           {props.objektLists.map((list) => (
             <DropdownMenuItem
               key={list.id}
-              className="text-sm"
               onClick={() => setDropdownOpen(false)}
             >
               <Link
                 to={props.createListUrl(list)}
-                className="flex w-full items-center justify-between"
+                className="flex w-full items-center justify-between gap-2"
               >
-                <span>
-                  {list.name}
-                  {list.currency && (
-                    <span className="ml-1 text-xs text-muted-foreground">
-                      ({list.currency})
-                    </span>
-                  )}
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm">{list.name}</span>
+
+                  <span className="text-xs">
+                    {list.type === "have" && (
+                      <Badge variant="list-have">{m.list_type_have()}</Badge>
+                    )}
+                    {list.type === "want" && (
+                      <Badge variant="list-want">{m.list_type_want()}</Badge>
+                    )}
+                    {list.type === "sale" && list.currency && (
+                      <Badge variant="secondary">{list.currency}</Badge>
+                    )}
+                  </span>
+                </div>
                 <IconChevronRight className="h-4 w-4" />
               </Link>
             </DropdownMenuItem>

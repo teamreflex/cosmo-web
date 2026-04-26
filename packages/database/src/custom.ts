@@ -6,6 +6,13 @@ export const citext = customType<{ data: string }>({
   },
 });
 
+// bun:sql JSON.stringifies jsonb params itself, so we skip Drizzle's built-in stringify to avoid double-encoding.
+export const bunJsonb = customType<{ data: unknown; driverData: unknown }>({
+  dataType() {
+    return "jsonb";
+  },
+});
+
 export const createdAt = timestamp("created_at", {
   withTimezone: false,
   mode: "string",

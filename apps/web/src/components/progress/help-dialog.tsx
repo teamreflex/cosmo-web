@@ -16,8 +16,8 @@ export default function HelpDialog() {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button className="rounded-full" variant="secondary" size="profile">
-          <IconHelp className="h-5 w-5" />
+        <Button variant="outline" size="icon-sm">
+          <IconHelp className="h-4 w-4" />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>

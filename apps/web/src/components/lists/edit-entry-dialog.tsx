@@ -23,22 +23,27 @@ type Props = {
   onOpenChange: (open: boolean) => void;
   objektListId: string;
   objektListEntryId: string;
+  tokenId: string | null;
   quantity: number;
   price: number | null;
   currency: string;
   collectionId: string;
 };
 
+type FormValues = z.infer<typeof updateObjektListEntrySchema>;
+
 export default function EditEntryDialog({
   open,
   onOpenChange,
   objektListId,
   objektListEntryId,
+  tokenId,
   quantity,
   price,
   currency,
   collectionId,
 }: Props) {
+  const isTokenKeyed = tokenId !== null;
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: $updateObjektListEntry,
@@ -49,19 +54,25 @@ export default function EditEntryDialog({
     },
   });
 
-  const form = useForm<z.infer<typeof updateObjektListEntrySchema>>({
+  const form = useForm<FormValues>({
     resolver: standardSchemaResolver(updateObjektListEntrySchema),
-    values: {
-      objektListId,
-      objektListEntryId,
-      quantity,
-      price: price ?? undefined,
-    },
+    values: isTokenKeyed
+      ? {
+          kind: "token",
+          objektListId,
+          objektListEntryId,
+          price: price,
+        }
+      : {
+          kind: "collection",
+          objektListId,
+          objektListEntryId,
+          quantity,
+          price: price,
+        },
   });
 
-  async function handleSubmit(
-    data: z.infer<typeof updateObjektListEntrySchema>,
-  ) {
+  async function handleSubmit(data: FormValues) {
     await mutation.mutateAsync({ data });
   }
 
@@ -78,23 +89,25 @@ export default function EditEntryDialog({
             onSubmit={form.handleSubmit(handleSubmit)}
             className="flex w-full flex-col gap-2"
           >
-            <Controller
-              control={form.control}
-              name="quantity"
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel>{m.list_sale_quantity()}</FieldLabel>
-                  <Input
-                    type="number"
-                    min={1}
-                    max={99}
-                    {...field}
-                    onChange={(e) => field.onChange(e.target.valueAsNumber)}
-                  />
-                  <FieldError errors={[fieldState.error]} />
-                </Field>
-              )}
-            />
+            {!isTokenKeyed && (
+              <Controller
+                control={form.control}
+                name="quantity"
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel>{m.list_sale_quantity()}</FieldLabel>
+                    <Input
+                      type="number"
+                      min={1}
+                      max={99}
+                      {...field}
+                      onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                    />
+                    <FieldError errors={[fieldState.error]} />
+                  </Field>
+                )}
+              />
+            )}
 
             <Controller
               control={form.control}
@@ -112,9 +125,7 @@ export default function EditEntryDialog({
                     value={field.value ?? ""}
                     onChange={(e) =>
                       field.onChange(
-                        e.target.value === ""
-                          ? undefined
-                          : e.target.valueAsNumber,
+                        e.target.value === "" ? null : e.target.valueAsNumber,
                       )
                     }
                   />

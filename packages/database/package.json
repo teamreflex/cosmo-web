@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "license": "MIT",
+  "type": "module",
   "exports": {
     "./web/*": "./src/web/*.ts",
     "./indexer/*": "./src/indexer/*.ts",
@@ -12,7 +13,7 @@
   "scripts": {
     "lint": "bun --bun oxlint --type-aware --type-check",
     "lint:fix": "bun --bun oxlint --type-aware --type-check --fix",
-    "typecheck": "tsc --pretty --noEmit",
+    "typecheck": "tsgo --pretty --noEmit",
     "format": "oxfmt ."
   },
   "dependencies": {
@@ -23,6 +24,7 @@
   "devDependencies": {
     "@apollo/lint": "workspace:*",
     "@apollo/typescript": "workspace:*",
+    "@typescript/native-preview": "catalog:",
     "turbo": "catalog:",
     "typescript": "catalog:"
   }

@@ -1,12 +1,3 @@
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useArtists } from "@/hooks/use-artists";
 import type {
   EventsFilters,
@@ -14,10 +5,9 @@ import type {
 } from "@/hooks/use-events-filters";
 import { m } from "@/i18n/messages";
 import { erasForFilterQuery } from "@/lib/queries/events";
-import { cn } from "@/lib/utils";
-import { IconChevronDown } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
+import FilterChip from "../collection/filter-chip";
 
 type Props = {
   era: EventsFilters["era"];
@@ -28,7 +18,6 @@ type Props = {
 export default function EventsEraFilter({ era, artist, onChange }: Props) {
   const { data: eras } = useSuspenseQuery(erasForFilterQuery);
   const { artistList, selectedIds } = useArtists();
-  const [open, setOpen] = useState(false);
 
   const groupedEras = useMemo(() => {
     const filtered = eras.filter((e) => {
@@ -58,73 +47,60 @@ export default function EventsEraFilter({ era, artist, onChange }: Props) {
   }, [eras, artist, selectedIds, artistList]);
 
   const selectedEra = era ? eras.find((e) => e.id === era) : undefined;
-
-  function handleChange(eraId: string, checked: boolean) {
-    onChange({
-      era: checked ? eraId : undefined,
-    });
-  }
+  const valueLabel = selectedEra?.name.toLowerCase() ?? m.filter_value_all();
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          className={cn(
-            "flex items-center gap-2",
-            era && "border-cosmo dark:border-cosmo",
-          )}
-        >
-          {selectedEra ? (
-            <>
-              {(selectedEra.imageUrl ?? selectedEra.spotifyAlbumArt) && (
+    <FilterChip
+      label={m.events_filter_era()}
+      valueLabel={valueLabel}
+      active={era !== undefined}
+      width={280}
+    >
+      {({ close }) => (
+        <div className="flex max-h-80 flex-col overflow-y-auto py-1">
+          {groupedEras.map(({ artist: artistData, eras: artistEras }) => (
+            <div key={artistData.id} className="flex flex-col">
+              <div className="flex items-center gap-1.5 px-3 pt-2 pb-1 font-mono text-xxs tracking-[0.14em] text-muted-foreground uppercase">
                 <img
-                  src={
-                    (selectedEra.imageUrl ??
-                      selectedEra.spotifyAlbumArt) as string
-                  }
-                  alt={selectedEra.name}
-                  className="size-4 rounded-xs"
+                  className="size-4 shrink-0 rounded-full"
+                  src={artistData.logoImageUrl}
+                  alt={artistData.title}
                 />
-              )}
-              <span>{selectedEra.name}</span>
-            </>
-          ) : (
-            <span>{m.events_filter_era()}</span>
-          )}
-          <IconChevronDown className="h-4 w-4 opacity-50" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56 max-h-80 overflow-y-auto">
-        {groupedEras.map(({ artist: artistData, eras: artistEras }) => (
-          <DropdownMenuGroup key={artistData.id}>
-            <DropdownMenuLabel className="flex items-center gap-2 text-xs">
-              <img
-                className="aspect-square size-4 rounded-full"
-                src={artistData.logoImageUrl}
-                alt={artistData.title}
-              />
-              {artistData.title}
-            </DropdownMenuLabel>
-            {artistEras.map((e) => (
-              <DropdownMenuCheckboxItem
-                key={e.id}
-                checked={era === e.id}
-                onCheckedChange={(checked) => handleChange(e.id, checked)}
-              >
-                {(e.imageUrl ?? e.spotifyAlbumArt) && (
-                  <img
-                    src={(e.imageUrl ?? e.spotifyAlbumArt) as string}
-                    alt={e.name}
-                    className="mr-2 size-4 rounded-xs"
-                  />
-                )}
-                {e.name}
-              </DropdownMenuCheckboxItem>
-            ))}
-          </DropdownMenuGroup>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
+                <span>{artistData.title}</span>
+              </div>
+              {artistEras.map((e) => {
+                const selected = era === e.id;
+                const imageSrc = e.imageUrl ?? e.spotifyAlbumArt;
+                return (
+                  <button
+                    key={e.id}
+                    type="button"
+                    onClick={() => {
+                      onChange({ era: selected ? undefined : e.id });
+                      close();
+                    }}
+                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs transition-colors hover:bg-accent"
+                  >
+                    {imageSrc && (
+                      <img
+                        src={imageSrc}
+                        alt={e.name}
+                        className="size-4 shrink-0 rounded-xs"
+                      />
+                    )}
+                    <span className="min-w-0 flex-1 truncate">{e.name}</span>
+                    {selected && (
+                      <span className="font-mono text-[11px] text-cosmo">
+                        ●
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      )}
+    </FilterChip>
   );
 }

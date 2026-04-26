@@ -10,6 +10,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import MemberFilter from "../collection/member-filter";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
+import TitleHeader from "../ui/title-header";
 import ProgressTable from "./progress-table";
 
 type Props = PropsWithChildren<{
@@ -45,45 +46,53 @@ export default function ProgressRenderer(props: Props) {
   );
 
   return (
-    <div className="flex flex-col gap-6">
-      <MemberFilter
-        active={filters.artist ?? filters.member}
-        updateArtist={setActiveArtist}
-        updateMember={setActiveMember}
-      />
+    <div className="flex flex-col">
+      <TitleHeader title={m.progress_title()}>
+        <div className="ml-auto md:pointer-events-none md:absolute md:inset-0 md:ml-0 md:flex md:items-center md:justify-center">
+          <div className="md:pointer-events-auto">
+            <MemberFilter
+              active={filters.artist ?? filters.member}
+              updateArtist={setActiveArtist}
+              updateMember={setActiveMember}
+            />
+          </div>
+        </div>
+      </TitleHeader>
 
-      <QueryErrorResetBoundary>
-        {({ reset }) => (
-          <ErrorBoundary
-            onReset={reset}
-            fallbackRender={({ resetErrorBoundary }) => (
-              <div className="flex flex-col items-center gap-2 py-6 text-sm font-semibold">
-                <p className="text-center text-sm font-semibold">
-                  {m.progress_error_fetching()}
-                </p>
+      <div className="container flex flex-col gap-6 pt-4">
+        <QueryErrorResetBoundary>
+          {({ reset }) => (
+            <ErrorBoundary
+              onReset={reset}
+              fallbackRender={({ resetErrorBoundary }) => (
+                <div className="flex flex-col items-center gap-2 py-6 text-sm font-semibold">
+                  <p className="text-center text-sm font-semibold">
+                    {m.progress_error_fetching()}
+                  </p>
 
-                <Button variant="outline" onClick={resetErrorBoundary}>
-                  <IconRefresh className="mr-2" /> {m.error_try_again()}
-                </Button>
-              </div>
-            )}
-          >
-            {filters.member && memberArtist ? (
-              <Suspense fallback={<ProgressTableSkeleton />}>
-                <ProgressTable
-                  artist={memberArtist}
-                  address={props.address}
-                  member={filters.member}
-                  onlineType={filters.filter ?? undefined}
-                  setOnlineType={(value) => setFilter("filter", value)}
-                />
-              </Suspense>
-            ) : (
-              props.children
-            )}
-          </ErrorBoundary>
-        )}
-      </QueryErrorResetBoundary>
+                  <Button variant="outline" onClick={resetErrorBoundary}>
+                    <IconRefresh className="mr-2" /> {m.error_try_again()}
+                  </Button>
+                </div>
+              )}
+            >
+              {filters.member && memberArtist ? (
+                <Suspense fallback={<ProgressTableSkeleton />}>
+                  <ProgressTable
+                    artist={memberArtist}
+                    address={props.address}
+                    member={filters.member}
+                    onlineType={filters.filter ?? undefined}
+                    setOnlineType={(value) => setFilter("filter", value)}
+                  />
+                </Suspense>
+              ) : (
+                props.children
+              )}
+            </ErrorBoundary>
+          )}
+        </QueryErrorResetBoundary>
+      </div>
     </div>
   );
 }

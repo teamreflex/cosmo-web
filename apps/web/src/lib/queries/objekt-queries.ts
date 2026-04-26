@@ -1,4 +1,5 @@
 import { ObjektNotFoundError } from "@/lib/client/objekt-util";
+import { $findTradePartnersForList } from "@/lib/functions/lists";
 import { $fetchObjektsBlockchain } from "@/lib/functions/objekts/objekt-blockchain";
 import {
   $fetchObjektsBlockchainGroups,
@@ -39,7 +40,7 @@ export function objektIndexTypesenseQuery(
         artists: selectedArtists,
       },
     ],
-    queryFn: async ({ pageParam = 0 }) => {
+    queryFn: async ({ pageParam }) => {
       const { getTypesenseResults } = await import("@/lib/client/typesense");
       return getTypesenseResults({
         query: searchParams.search || "",
@@ -77,7 +78,7 @@ export function objektIndexBlockchainQuery(
         artists: selectedArtists,
       },
     ],
-    queryFn: ({ signal, pageParam = 0 }) => {
+    queryFn: ({ signal, pageParam }) => {
       return $fetchObjektsIndex({
         signal,
         data: {
@@ -112,7 +113,7 @@ export function userCollectionBlockchainGroupsQuery(
         artists: selectedArtists,
       },
     ],
-    queryFn: ({ signal, pageParam = 1 }) => {
+    queryFn: ({ signal, pageParam }) => {
       return $fetchObjektsBlockchainGroups({
         signal,
         data: {
@@ -151,7 +152,7 @@ export function userCollectionBlockchainQuery(
         artists: selectedArtists,
       },
     ],
-    queryFn: ({ signal, pageParam = 0 }) => {
+    queryFn: ({ signal, pageParam }) => {
       return $fetchObjektsBlockchain({
         signal,
         data: {
@@ -194,7 +195,7 @@ export function objektListQuery(
         artists: selectedArtists,
       },
     ],
-    queryFn: ({ signal, pageParam = 0 }) => {
+    queryFn: ({ signal, pageParam }) => {
       return $fetchObjektListEntries({
         signal,
         data: {
@@ -258,6 +259,7 @@ export function objektMetadataQuery(slug: string) {
         signal,
       }),
     retry: 1,
+    staleTime: 1000 * 60 * 10,
   });
 }
 
@@ -279,5 +281,17 @@ export function objektQuery(slug: string) {
       );
     },
     retry: 1,
+  });
+}
+
+/**
+ * Mutual trade partners for a single live list. Sheet-only — opt-in fetch.
+ */
+export function listMatchesQuery(listId: string) {
+  return queryOptions({
+    queryKey: ["list-trade-partners", listId],
+    queryFn: ({ signal }) =>
+      $findTradePartnersForList({ signal, data: { listId } }),
+    staleTime: 1000 * 60,
   });
 }

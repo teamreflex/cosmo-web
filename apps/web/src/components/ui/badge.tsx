@@ -16,6 +16,7 @@ const badgeVariants = cva(
           "bg-destructive/10 [a]:hover:bg-destructive/20 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 text-destructive dark:bg-destructive/20",
         outline:
           "border-border text-foreground [a]:hover:bg-muted [a]:hover:text-muted-foreground",
+        pill: "h-auto rounded-sm border-border bg-transparent px-1.5 py-0.5 font-mono text-xxs tracking-[0.14em] text-muted-foreground uppercase [&>svg]:size-2.5!",
         ghost:
           "hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50",
         link: "text-primary underline-offset-4 hover:underline",
@@ -23,6 +24,9 @@ const badgeVariants = cva(
         twitter: "bg-twitter text-white hover:bg-twitter/90",
         discord: "bg-discord text-white hover:bg-discord/90",
         cosmo: "bg-cosmo text-white hover:bg-cosmo/90",
+        // list types
+        "list-have": "border-transparent bg-teal-200 text-teal-800!",
+        "list-want": "border-transparent bg-amber-200 text-amber-800!",
         // gravity
         "event-gravity": "border-transparent bg-teal-200 text-teal-700",
         "grand-gravity": "border-transparent bg-pink-300 text-pink-700",

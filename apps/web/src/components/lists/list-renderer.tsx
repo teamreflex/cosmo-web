@@ -9,10 +9,11 @@ import ObjektIndexFilters from "../collection/filter-contexts/objekt-index-filte
 import FiltersContainer from "../collection/filters-container";
 import CosmoMemberFilter from "../objekt/cosmo-member-filter";
 import VirtualizedObjektGrid from "../objekt/virtualized-objekt-grid";
+import TitleHeader from "../ui/title-header";
 import { ListGridItem } from "./list-grid-item";
 
 type Props = {
-  objektList: ObjektList;
+  objektList: ObjektList & { fxRateToUsd: number | null };
   authenticated: boolean;
 };
 
@@ -27,12 +28,18 @@ export default function ListRenderer(props: Props) {
   const options = objektOptions({
     filtering: "remote",
     query: objektListQuery(props.objektList.id, filters, selectedIds),
+    totalPortalTarget: "#list-total-stat",
     calculateTotal: (data) => {
       const total = data.pages[0]?.total ?? 0;
       return (
-        <p className="font-semibold">
-          {total.toLocaleString("en")} {m.common_total()}
-        </p>
+        <span className="flex items-baseline gap-1">
+          <span className="tabular-nums text-foreground">
+            {total.toLocaleString()}
+          </span>
+          <span className="text-muted-foreground">
+            {m.list_header_objekts_label()}
+          </span>
+        </span>
       );
     },
     getItems: (data) => data.pages.flatMap((page) => page.objekts),
@@ -40,24 +47,33 @@ export default function ListRenderer(props: Props) {
 
   return (
     <div className="flex flex-col">
-      <FiltersContainer isPortaled>
+      <TitleHeader title={m.list_title()}>
+        <div className="ml-auto md:pointer-events-none md:absolute md:inset-0 md:ml-0 md:flex md:items-center md:justify-center">
+          <div className="md:pointer-events-auto">
+            <CosmoMemberFilter />
+          </div>
+        </div>
+      </TitleHeader>
+
+      <FiltersContainer>
         <ObjektIndexFilters />
       </FiltersContainer>
 
-      <CosmoMemberFilter />
-      <VirtualizedObjektGrid
-        options={options}
-        gridColumns={gridColumns}
-        getObjektId={(objekt) => objekt.id}
-        authenticated={props.authenticated}
-        ItemComponent={ListGridItem}
-        itemComponentProps={{
-          authenticated: props.authenticated,
-          objektList: props.objektList,
-        }}
-        extraRowHeight={props.objektList.currency !== null ? 28 : 0}
-        showTotal
-      />
+      <div className="container flex flex-col">
+        <VirtualizedObjektGrid
+          options={options}
+          gridColumns={gridColumns}
+          getObjektId={(objekt) => objekt.id}
+          authenticated={props.authenticated}
+          ItemComponent={ListGridItem}
+          itemComponentProps={{
+            authenticated: props.authenticated,
+            objektList: props.objektList,
+          }}
+          extraRowHeight={props.objektList.type === "sale" ? 28 : 0}
+          showTotal
+        />
+      </div>
     </div>
   );
 }

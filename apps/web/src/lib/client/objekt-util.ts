@@ -63,3 +63,22 @@ export class ObjektNotFoundError extends Error {
     this.name = "ObjektNotFoundError";
   }
 }
+
+/**
+ * Maps a NonTransferableReason to a localized, user-facing label.
+ */
+export function reasonLabel(reason: NonTransferableReason): string {
+  switch (reason) {
+    case "mint-pending":
+      return m.objekt_overlay_mint_pending();
+    case "welcome-objekt":
+      return m.objekt_overlay_welcome_reward();
+    case "used-for-grid":
+      return m.objekt_overlay_used_for_grid();
+    case "challenge-reward":
+      return m.objekt_overlay_event_reward();
+    case "not-transferable":
+    default:
+      return m.objekt_overlay_not_transferable();
+  }
+}

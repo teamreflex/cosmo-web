@@ -1,6 +1,8 @@
+import { FetchHttpClient } from "@effect/platform";
 import { BunContext, BunRuntime } from "@effect/platform-bun";
-import { ConfigProvider, Duration, Effect, Layer, Schedule } from "effect";
+import { ConfigProvider, Effect, Layer } from "effect";
 import { DatabaseWeb } from "./db";
+import { DatabaseIndexer } from "./db-indexer";
 import { Env } from "./env";
 import { ProxiedToken } from "./proxied-token";
 import { Redis } from "./redis";
@@ -15,20 +17,8 @@ const main = Effect.gen(function* () {
 
   yield* Effect.logInfo(`Started ${fibers.length} scheduled tasks`);
 
-  // monitor fiber health every 5 minutes
-  yield* Effect.gen(function* () {
-    const statuses = yield* Effect.all(
-      fibers.map((f) => f.status),
-      { concurrency: "unbounded" },
-    );
-    const running = statuses.filter((s) => s._tag === "Running").length;
-    yield* Effect.logInfo(
-      `Fiber health: ${running}/${fibers.length} tasks running`,
-    );
-  }).pipe(Effect.repeat(Schedule.spaced(Duration.minutes(5))), Effect.fork);
-
   // keep the main fiber alive to prevent process exit
-  yield* Effect.never;
+  return yield* Effect.never;
 });
 
 BunRuntime.runMain(
@@ -42,8 +32,10 @@ BunRuntime.runMain(
     Effect.provide(
       Layer.mergeAll(
         BunContext.layer,
+        FetchHttpClient.layer,
         Env.Default,
         DatabaseWeb.Default,
+        DatabaseIndexer.Default,
         ProxiedToken.Default,
         Redis.Default,
       ),

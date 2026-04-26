@@ -63,7 +63,7 @@ export default function ActionOverlay({
     <div
       data-hovering={hoverState !== undefined}
       className={cn(
-        "group absolute top-0 left-0 h-5 items-center overflow-hidden rounded-br-lg p-1 transition-all sm:h-9 sm:rounded-br-xl sm:p-2",
+        "group absolute top-0 left-0 h-5 items-center overflow-hidden rounded-br-photocard p-1 transition-all sm:h-9 sm:p-2",
         "bg-(--objekt-background-color) text-(--objekt-text-color)",
         "grid grid-flow-col grid-cols-[1fr_min-content]",
         (showActions === false || isHidden) && "hidden",
@@ -96,9 +96,11 @@ export default function ActionOverlay({
         {authenticated && !isPin && (
           <div {...createHoverProps("list")}>
             <AddToList
-              collectionId={collection.collectionId}
-              collectionSlug={collection.slug}
+              collectionName={collection.collectionId}
+              slug={collection.slug}
+              collectionId={collection.id}
               lists={objektLists}
+              tokenId={token.tokenId}
             />
           </div>
         )}

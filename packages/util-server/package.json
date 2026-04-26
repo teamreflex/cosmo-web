@@ -1,0 +1,24 @@
+{
+  "name": "@apollo/util-server",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "bun --bun oxlint --type-aware --type-check",
+    "lint:fix": "bun --bun oxlint --type-aware --type-check --fix",
+    "typecheck": "tsgo --pretty --noEmit",
+    "format": "oxfmt ."
+  },
+  "devDependencies": {
+    "@apollo/lint": "workspace:*",
+    "@apollo/typescript": "workspace:*",
+    "@types/bun": "catalog:",
+    "@typescript/native-preview": "catalog:",
+    "turbo": "catalog:",
+    "typescript": "catalog:"
+  }
+}

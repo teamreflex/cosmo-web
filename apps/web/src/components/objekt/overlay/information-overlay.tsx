@@ -31,7 +31,7 @@ export default function InformationOverlay({ collection, token }: Props) {
     <div
       data-open={open}
       className={cn(
-        "group absolute bottom-0 left-0 isolate flex h-5 w-5 gap-2 overflow-hidden rounded-tr-lg p-1 transition-all sm:h-9 sm:w-9 sm:rounded-tr-xl sm:p-2",
+        "group absolute bottom-0 left-0 isolate flex h-5 w-5 gap-2 overflow-hidden rounded-tr-photocard p-1 transition-all sm:h-9 sm:w-9 sm:p-2",
         "bg-(--objekt-background-color) text-(--objekt-text-color)",
         "data-[open=true]:h-32 data-[open=true]:w-20 sm:data-[open=true]:h-32 sm:data-[open=true]:w-32",
         isHidden && "hidden",

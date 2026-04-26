@@ -28,46 +28,48 @@ export default function FlippableObjekt({ children, collection }: Props) {
   );
 
   return (
-    <div
-      role="button"
-      aria-label={m.aria_flip_objekt()}
-      style={{
-        "--objekt-background-color": collection.backgroundColor,
-        "--objekt-text-color": collection.textColor,
-      }}
-      data-flipped={flipped}
-      onClick={() => setFlipped((prev) => !prev)}
-      className={cn(
-        "relative aspect-photocard w-full transform-gpu touch-manipulation rounded-2xl object-contain transition-transform duration-500 transform-3d focus:outline-none data-[flipped=true]:rotate-y-180",
-        !flipped && "will-change-transform",
-      )}
-    >
-      {/* front */}
-      <div className="absolute inset-0 backface-hidden">
-        {collection.frontMedia ? (
-          <ErrorBoundary fallback={Image}>
-            <Suspense fallback={Image}>
-              <ObjektVideo
-                imageSrc={collection.frontImage}
-                videoSrc={collection.frontMedia}
-                alt={collection.collectionId}
-              >
-                {children}
-              </ObjektVideo>
-            </Suspense>
-          </ErrorBoundary>
-        ) : (
-          Image
+    <div className="@container">
+      <div
+        role="button"
+        aria-label={m.aria_flip_objekt()}
+        style={{
+          "--objekt-background-color": collection.backgroundColor,
+          "--objekt-text-color": collection.textColor,
+        }}
+        data-flipped={flipped}
+        onClick={() => setFlipped((prev) => !prev)}
+        className={cn(
+          "relative aspect-photocard w-full transform-gpu touch-manipulation rounded-photocard object-contain transition-transform duration-500 transform-3d focus:outline-none data-[flipped=true]:rotate-y-180",
+          !flipped && "will-change-transform",
         )}
-      </div>
+      >
+        {/* front */}
+        <div className="absolute inset-0 backface-hidden">
+          {collection.frontMedia ? (
+            <ErrorBoundary fallback={Image}>
+              <Suspense fallback={Image}>
+                <ObjektVideo
+                  imageSrc={collection.frontImage}
+                  videoSrc={collection.frontMedia}
+                  alt={collection.collectionId}
+                >
+                  {children}
+                </ObjektVideo>
+              </Suspense>
+            </ErrorBoundary>
+          ) : (
+            Image
+          )}
+        </div>
 
-      {/* back */}
-      <div className="absolute inset-0 rotate-y-180 backface-hidden">
-        <img
-          className="absolute"
-          src={collection.backImage}
-          alt={collection.collectionId}
-        />
+        {/* back */}
+        <div className="absolute inset-0 rotate-y-180 backface-hidden">
+          <img
+            className="absolute"
+            src={collection.backImage}
+            alt={collection.collectionId}
+          />
+        </div>
       </div>
     </div>
   );

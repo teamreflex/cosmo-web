@@ -1,6 +1,7 @@
 import { useFilters } from "@/hooks/use-filters";
 import { useGridColumns } from "@/hooks/use-grid-columns";
 import { useUserState } from "@/hooks/use-user-state";
+import { m } from "@/i18n/messages";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import { Addresses, isEqual } from "@apollo/util";
 import Blockchain from "../collection/data-sources/blockchain";
@@ -9,6 +10,7 @@ import CollectionFilters from "../collection/filter-contexts/collection-filters"
 import FiltersContainer from "../collection/filters-container";
 import CosmoMemberFilter from "../objekt/cosmo-member-filter";
 import Portal from "../portal";
+import TitleHeader from "../ui/title-header";
 import HelpDialog from "./help-dialog";
 
 type Props = {
@@ -30,7 +32,15 @@ export default function ProfileRenderer({ targetCosmo }: Props) {
         <HelpDialog />
       </Portal>
 
-      <FiltersContainer isPortaled>
+      <TitleHeader title={m.collection_title()}>
+        <div className="ml-auto md:pointer-events-none md:absolute md:inset-0 md:ml-0 md:flex md:items-center md:justify-center">
+          <div className="md:pointer-events-auto">
+            <CosmoMemberFilter />
+          </div>
+        </div>
+      </TitleHeader>
+
+      <FiltersContainer>
         <CollectionFilters
           dataSource={dataSource}
           setDataSource={setDataSource}
@@ -40,31 +50,30 @@ export default function ProfileRenderer({ targetCosmo }: Props) {
         />
       </FiltersContainer>
 
-      <CosmoMemberFilter />
-
-      {/* display */}
-      {(() => {
-        switch (dataSource) {
-          case "blockchain":
-            return (
-              <Blockchain
-                gridColumns={gridColumns}
-                targetCosmo={targetCosmo}
-                showLocked={showLocked}
-              />
-            );
-          case "blockchain-groups":
-            return (
-              <BlockchainGroups
-                gridColumns={gridColumns}
-                targetCosmo={targetCosmo}
-                showLocked={showLocked}
-              />
-            );
-          default:
-            return null;
-        }
-      })()}
+      <div className="container flex flex-col">
+        {(() => {
+          switch (dataSource) {
+            case "blockchain":
+              return (
+                <Blockchain
+                  gridColumns={gridColumns}
+                  targetCosmo={targetCosmo}
+                  showLocked={showLocked}
+                />
+              );
+            case "blockchain-groups":
+              return (
+                <BlockchainGroups
+                  gridColumns={gridColumns}
+                  targetCosmo={targetCosmo}
+                  showLocked={showLocked}
+                />
+              );
+            default:
+              return null;
+          }
+        })()}
+      </div>
     </div>
   );
 }

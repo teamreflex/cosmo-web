@@ -6,9 +6,16 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { Outlet, createFileRoute } from "@tanstack/react-router";
+import { currentAccountQuery } from "@/lib/queries/core";
+import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/admin")({
+  beforeLoad: async ({ context }) => {
+    const user = await context.queryClient.ensureQueryData(currentAccountQuery);
+    if (!user?.user.isAdmin) {
+      throw redirect({ to: "/" });
+    }
+  },
   component: RouteComponent,
 });
 

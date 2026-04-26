@@ -40,24 +40,27 @@ export default function ExpandableObjekt({
       defaultOpen={false}
       onClose={() => setActive?.(undefined)}
     >
-      <div
-        style={{
-          "--objekt-background-color": collection.backgroundColor,
-          "--objekt-text-color": collection.textColor,
-        }}
-        className={cn(
-          "relative aspect-photocard touch-manipulation overflow-hidden rounded-lg bg-secondary ring-2 ring-transparent drop-shadow-sm transition-colors md:rounded-xl lg:rounded-2xl",
-          isSelected && "ring-foreground",
-          className,
-        )}
-      >
-        <FrontImage
-          collection={collection}
-          setActive={setActive}
-          priority={priority}
-        />
+      <div className="@container">
+        <div
+          style={{
+            "--objekt-background-color": collection.backgroundColor,
+            "--objekt-text-color": collection.textColor,
+          }}
+          className={cn(
+            "group/objekt relative aspect-photocard touch-manipulation overflow-hidden rounded-photocard bg-secondary outline outline-transparent transition-[transform,box-shadow,outline-color] duration-200 ease-out hover:-translate-y-0.5 hover:outline-cosmo hover:shadow-lg",
+            isSelected &&
+              "outline-2 outline-foreground hover:outline-foreground",
+            className,
+          )}
+        >
+          <FrontImage
+            collection={collection}
+            setActive={setActive}
+            priority={priority}
+          />
 
-        {children}
+          {children}
+        </div>
       </div>
     </MetadataDialog>
   );

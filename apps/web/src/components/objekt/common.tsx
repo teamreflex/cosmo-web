@@ -5,8 +5,9 @@ import type { PropsWithClassName } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { bands } from "@apollo/cosmo/bands";
 import { Fragment, useState } from "react";
-import type { CSSProperties, PropsWithChildren } from "react";
+import type { ComponentProps, CSSProperties, PropsWithChildren } from "react";
 import ArtistLogo from "./artist-logo";
+import { getVariantGradient, getVariantRibbon } from "./variant-gradients";
 
 type ObjektSidebarProps = {
   collection: Objekt.Collection;
@@ -119,5 +120,88 @@ export function ObjektNewIndicator(props: PropsWithClassName<{}>) {
     >
       {m.common_new()}
     </span>
+  );
+}
+
+type ObjektGradientProps = ComponentProps<"div"> & {
+  collection: Pick<Objekt.Collection, "class" | "backgroundColor" | "artist">;
+  size?: { width: number; height: number };
+};
+
+/**
+ * Wraps its children in a div with an ellipse gradient background derived from
+ * the objekt. Certain class/artist combinations fade through custom multi-stop
+ * gradients; others fade from the objekt's backgroundColor.
+ */
+export function ObjektGradient({
+  collection,
+  size,
+  style,
+  className,
+  children,
+  ...props
+}: ObjektGradientProps) {
+  const w = size?.width ?? 600;
+  const h = size?.height ?? 400;
+  const variantBg = getVariantGradient(collection);
+
+  if (variantBg) {
+    const mask = `radial-gradient(${w}px ${h}px at 50% 30%, rgba(0,0,0,0.4), transparent 70%)`;
+    return (
+      <div
+        {...props}
+        className={cn("relative isolate", className)}
+        style={style}
+      >
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 -z-10"
+          style={{
+            background: variantBg,
+            WebkitMaskImage: mask,
+            maskImage: mask,
+          }}
+        />
+        {children}
+      </div>
+    );
+  }
+
+  return (
+    <div
+      {...props}
+      className={className}
+      style={{
+        ...style,
+        background: `radial-gradient(${w}px ${h}px at 50% 30%, ${collection.backgroundColor}22, transparent 70%)`,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+type ObjektRibbonProps = ComponentProps<"div"> & {
+  collection: Pick<Objekt.Collection, "class" | "backgroundColor" | "artist">;
+};
+
+/**
+ * Small ribbon sliver colored by the objekt. Certain class/artist combinations
+ * get a custom gradient; others use their backgroundColor as a solid fill.
+ */
+export function ObjektRibbon({
+  collection,
+  style,
+  className,
+  ...props
+}: ObjektRibbonProps) {
+  const background = getVariantRibbon(collection) ?? collection.backgroundColor;
+
+  return (
+    <div
+      {...props}
+      className={cn("h-12 w-1.5 shrink-0 rounded-full", className)}
+      style={{ ...style, background }}
+    />
   );
 }

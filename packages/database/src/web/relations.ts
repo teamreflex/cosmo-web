@@ -39,6 +39,10 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.collectionData.eventId,
       to: r.events.id,
     }),
+    priceStats: r.one.collectionPriceStats({
+      from: r.collectionData.collectionId,
+      to: r.collectionPriceStats.collectionId,
+    }),
   },
   objektLists: {
     entries: r.many.objektListEntries(),
@@ -51,13 +55,37 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.objektLists.userId,
       to: r.cosmoAccounts.userId,
     }),
+    linkedWantList: r.one.objektLists({
+      from: r.objektLists.linkedWantListId,
+      to: r.objektLists.id,
+      alias: "have_want_pair",
+    }),
+    linkingHaveList: r.one.objektLists({
+      from: r.objektLists.id,
+      to: r.objektLists.linkedWantListId,
+      alias: "have_want_pair",
+    }),
   },
   objektListEntries: {
-    list: r.one.objektLists({
+    objektList: r.one.objektLists({
       from: r.objektListEntries.objektListId,
       to: r.objektLists.id,
     }),
+    priceStats: r.one.collectionPriceStats({
+      from: r.objektListEntries.collectionId,
+      to: r.collectionPriceStats.collectionId,
+    }),
   },
+  notifications: {
+    user: r.one.user({
+      from: r.notifications.userId,
+      to: r.user.id,
+      optional: false,
+    }),
+  },
+  listDrainCursor: {},
+  collectionPriceStats: {},
+  fxRates: {},
   cosmoTokens: {},
   gravities: {
     polls: r.many.gravityPolls(),

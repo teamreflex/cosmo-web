@@ -1,17 +1,9 @@
-import { Button } from "@/components/ui/button";
+import ResetFilters from "@/components/collection/reset-filters";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import type {
   EventsFilters,
   SetEventsFilters,
 } from "@/hooks/use-events-filters";
-import { m } from "@/i18n/messages";
-import { IconRotate } from "@tabler/icons-react";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import EventsArtistFilter from "./filter-artist";
@@ -25,18 +17,18 @@ type Props = {
   setFilters: SetEventsFilters;
 };
 
-function filtersAreDirty(filters: EventsFilters) {
-  return Boolean(
-    filters.sort ||
-    filters.artist ||
-    filters.era ||
-    filters.season?.length ||
-    filters.type,
-  );
+function countActive(filters: EventsFilters) {
+  let n = 0;
+  if (filters.sort) n += 1;
+  if (filters.artist) n += 1;
+  if (filters.era) n += 1;
+  if (filters.season?.length) n += filters.season.length;
+  if (filters.type) n += 1;
+  return n;
 }
 
 export default function EventsFiltersContainer({ filters, setFilters }: Props) {
-  const isDirty = filtersAreDirty(filters);
+  const count = countActive(filters);
 
   function handleReset() {
     setFilters({
@@ -49,12 +41,16 @@ export default function EventsFiltersContainer({ filters, setFilters }: Props) {
   }
 
   return (
-    <div className="flex flex-wrap items-center justify-center gap-2 md:justify-end">
+    <div className="flex flex-wrap items-center gap-2">
       <EventsArtistFilter artist={filters.artist} onChange={setFilters} />
       <ErrorBoundary
-        fallback={<Skeleton className="h-9 w-24 bg-destructive" />}
+        fallback={<Skeleton className="h-8 w-[96px] bg-destructive" />}
       >
-        <Suspense fallback={<Skeleton className="h-9 w-24" />}>
+        <Suspense
+          fallback={
+            <Skeleton className="h-8 w-[96px] border border-transparent dark:border-input" />
+          }
+        >
           <EventsEraFilter
             era={filters.era}
             artist={filters.artist}
@@ -63,9 +59,13 @@ export default function EventsFiltersContainer({ filters, setFilters }: Props) {
         </Suspense>
       </ErrorBoundary>
       <ErrorBoundary
-        fallback={<Skeleton className="h-9 w-24 bg-destructive" />}
+        fallback={<Skeleton className="h-8 w-[119px] bg-destructive" />}
       >
-        <Suspense fallback={<Skeleton className="h-9 w-24" />}>
+        <Suspense
+          fallback={
+            <Skeleton className="h-8 w-[119px] border border-transparent dark:border-input" />
+          }
+        >
           <EventsSeasonFilter
             seasons={filters.season}
             artist={filters.artist}
@@ -76,21 +76,7 @@ export default function EventsFiltersContainer({ filters, setFilters }: Props) {
       <EventsTypeFilter type={filters.type} onChange={setFilters} />
       <EventsSortFilter sort={filters.sort} onChange={setFilters} />
 
-      <TooltipProvider delayDuration={0}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              onClick={handleReset}
-              disabled={!isDirty}
-              variant="outline"
-              aria-label={m.aria_reset_filters()}
-            >
-              <IconRotate />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>{m.filter_reset()}</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <ResetFilters count={count} onReset={handleReset} />
     </div>
   );
 }

@@ -2,11 +2,11 @@ import { remember } from "@/lib/server/cache.server";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import type { Collection, Objekt } from "@/lib/server/db/indexer/schema";
-import { pinCacheKey } from "@/lib/server/objekts/pins.server";
 import type { ValidArtist } from "@apollo/cosmo/types/common";
 import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
 import { cosmoAccounts, pins } from "@apollo/database/web/schema";
 import { isAddress } from "@apollo/util";
+import { pinCacheKey } from "@apollo/util-server";
 import { createServerFn } from "@tanstack/react-start";
 import { desc, eq } from "drizzle-orm";
 import * as z from "zod";
@@ -52,7 +52,7 @@ export const $fetchPins = createServerFn({ method: "GET" })
             collection: true,
           },
         });
-      } catch (err) {
+      } catch {
         return [];
       }
 

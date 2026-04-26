@@ -7,6 +7,7 @@ import {
 import HelpDialog from "@/components/progress/help-dialog";
 import ProgressRenderer from "@/components/progress/progress-renderer";
 import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
+import TitleHeader from "@/components/ui/title-header";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import {
@@ -80,7 +81,13 @@ function RouteComponent() {
 function PendingComponent() {
   return (
     <div className="flex flex-col">
-      <MemberFilterSkeleton />
+      <TitleHeader title={m.progress_title()}>
+        <div className="ml-auto md:pointer-events-none md:absolute md:inset-0 md:ml-0 md:flex md:items-center md:justify-center">
+          <div className="md:pointer-events-auto">
+            <MemberFilterSkeleton />
+          </div>
+        </div>
+      </TitleHeader>
     </div>
   );
 }

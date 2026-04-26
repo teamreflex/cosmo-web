@@ -1,12 +1,15 @@
+import FiltersContainer from "@/components/collection/filters-container";
 import { Error } from "@/components/error-boundary";
-import DeleteList from "@/components/lists/delete-list";
+import ListHeader, { ListHeaderSkeleton } from "@/components/lists/list-header";
+import ListMatches from "@/components/lists/list-matches";
 import ListRenderer from "@/components/lists/list-renderer";
-import UpdateList from "@/components/lists/update-list";
 import Overlay from "@/components/misc/overlay";
 import ScrollToTop from "@/components/misc/overlay/scroll-to-top";
 import ToggleObjektBands from "@/components/misc/overlay/toggle-objekt-bands";
 import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import TitleHeader from "@/components/ui/title-header";
 import { m } from "@/i18n/messages";
 import { $fetchObjektList } from "@/lib/functions/lists";
 import { defineHead } from "@/lib/meta";
@@ -21,8 +24,13 @@ import { objektListQuery } from "@/lib/queries/objekt-queries";
 import { objektListFrontendSchema } from "@/lib/universal/parsers";
 import { ProfileProvider } from "@/providers/profile-provider";
 import { UserStateProvider } from "@/providers/user-state-provider";
-import { IconHeartBroken } from "@tabler/icons-react";
-import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
+import { IconArrowsExchange, IconHeartBroken } from "@tabler/icons-react";
+import {
+  Link,
+  createFileRoute,
+  notFound,
+  redirect,
+} from "@tanstack/react-router";
 
 export const Route = createFileRoute("/@{$username}/list/$slug")({
   staleTime: 1000 * 60 * 15, // 15 minutes
@@ -89,25 +97,65 @@ function RouteComponent() {
   const { account, target, targetObjektLists, isAuthenticated, objektList } =
     Route.useLoaderData();
 
+  // a list is trade-active if it's a have list with a linked want, OR a want
+  // list that some have list of the same user links to
+  const linkingHave =
+    objektList.type === "want"
+      ? targetObjektLists.find(
+          (l) => l.type === "have" && l.linkedWantListId === objektList.id,
+        )
+      : undefined;
+  const isTradeActive =
+    objektList.type === "have"
+      ? objektList.linkedWantListId !== null
+      : linkingHave !== undefined;
+
+  const pairedList =
+    objektList.type === "have" && objektList.linkedWantListId
+      ? targetObjektLists.find((l) => l.id === objektList.linkedWantListId)
+      : linkingHave;
+
+  const extras = (
+    <>
+      {pairedList && (
+        <Button variant="outline" size="sm" asChild>
+          <Link
+            to="/@{$username}/list/$slug"
+            params={{
+              username: target.cosmo.username,
+              slug: pairedList.slug,
+            }}
+          >
+            <IconArrowsExchange />
+            <span>
+              {pairedList.type === "have"
+                ? m.list_type_have()
+                : m.list_type_want()}
+            </span>
+          </Link>
+        </Button>
+      )}
+      {isAuthenticated &&
+        isTradeActive &&
+        (objektList.type === "have" || objektList.type === "want") && (
+          <ListMatches list={objektList} />
+        )}
+    </>
+  );
+
   return (
     <UserStateProvider {...account}>
       <ProfileProvider target={target} objektLists={targetObjektLists}>
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className="font-cosmo text-xl">
-            {objektList.name}
-            {objektList.currency && (
-              <span className="ml-2 text-sm text-muted-foreground">
-                ({objektList.currency})
-              </span>
-            )}
-          </h3>
-
-          {isAuthenticated && (
-            <div className="flex items-center gap-2">
-              <UpdateList objektList={objektList} />
-              <DeleteList objektList={objektList} />
-            </div>
-          )}
+        <div className="border-b border-border">
+          <div className="container">
+            <ListHeader
+              list={objektList}
+              ownerName={target.cosmo.username}
+              owner={target.user}
+              isOwner={isAuthenticated}
+              extras={extras}
+            />
+          </div>
         </div>
 
         <ListRenderer objektList={objektList} authenticated={isAuthenticated} />
@@ -124,23 +172,28 @@ function RouteComponent() {
 function PendingComponent() {
   return (
     <div className="flex flex-col">
-      <div className="group flex flex-col" data-show={false}>
-        {/* title */}
-        <div className="flex h-10 items-center">
-          <Skeleton className="h-6 w-32 rounded-full" />
-        </div>
-
-        {/* filters */}
-        <div className="flex flex-wrap items-center justify-center gap-2 transition-all group-data-[show=false]:invisible group-data-[show=false]:h-0 group-data-[show=false]:opacity-0 group-data-[show=true]:h-36 group-data-[show=true]:pb-2 sm:pb-1 sm:group-data-[show=false]:visible sm:group-data-[show=false]:h-12 sm:group-data-[show=false]:opacity-100 sm:group-data-[show=true]:visible sm:group-data-[show=true]:h-12 sm:group-data-[show=true]:opacity-100">
-          {Array.from({ length: 7 }).map((_, i) => (
-            <Skeleton key={i} className="h-9 w-24" />
-          ))}
-          <Skeleton className="h-[36px] w-[42px]" />
+      <div className="border-b border-border">
+        <div className="container">
+          <ListHeaderSkeleton />
         </div>
       </div>
 
       <div className="flex flex-col">
-        <MemberFilterSkeleton />
+        <TitleHeader title={m.list_title()}>
+          <div className="ml-auto md:pointer-events-none md:absolute md:inset-0 md:ml-0 md:flex md:items-center md:justify-center">
+            <div className="md:pointer-events-auto">
+              <MemberFilterSkeleton />
+            </div>
+          </div>
+        </TitleHeader>
+
+        <FiltersContainer>
+          <div className="flex flex-wrap items-center gap-2">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} className="h-8 w-24" />
+            ))}
+          </div>
+        </FiltersContainer>
       </div>
     </div>
   );

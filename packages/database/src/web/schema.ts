@@ -1,10 +1,16 @@
-import { sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import {
+  type AnyPgColumn,
+  bigint,
   boolean,
+  check,
+  date,
   index,
   integer,
   jsonb,
+  pgEnum,
   pgTable,
+  primaryKey,
   real,
   serial,
   text,
@@ -14,10 +20,23 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 import { user } from "../auth";
-import { citext, createdAt } from "../custom";
-import type { CosmoGravityType, CosmoPollType, EventTypeKey } from "./types";
+import { bunJsonb, citext, createdAt } from "../custom";
+import type {
+  CosmoGravityType,
+  CosmoPollType,
+  EventTypeKey,
+  NotificationPayload,
+} from "./types";
 
 export * from "../auth";
+
+export const listType = pgEnum("list_type", [
+  "regular",
+  "have",
+  "want",
+  "sale",
+]);
+export const notificationType = pgEnum("notification_type", ["list_match"]);
 
 export const cosmoAccounts = pgTable(
   "cosmo_account",
@@ -97,10 +116,27 @@ export const objektLists = pgTable(
     name: varchar("name", { length: 24 }).notNull(),
     slug: citext("slug", { length: 24 }).notNull(),
     currency: varchar("currency", { length: 3 }),
+    type: listType("type").notNull().default("regular"),
+    discoverable: boolean("discoverable").notNull().default(false),
+    description: text("description"),
+    linkedWantListId: uuid("linked_want_list_id").references(
+      (): AnyPgColumn => objektLists.id,
+      { onDelete: "set null" },
+    ),
   },
   (t) => [
     index("objekt_lists_slug_idx").on(t.slug),
     uniqueIndex("objekt_lists_user_slug_idx").on(t.userId, t.slug),
+    index("objekt_lists_trade_active_idx")
+      .on(t.type, t.userId)
+      .where(sql`type IN ('have', 'want') AND discoverable = true`),
+    uniqueIndex("objekt_lists_linked_want_list_idx")
+      .on(t.linkedWantListId)
+      .where(sql`linked_want_list_id IS NOT NULL`),
+    check(
+      "objekt_lists_currency_type_chk",
+      sql`(${t.type} = 'sale') = (${t.currency} IS NOT NULL)`,
+    ),
   ],
 );
 
@@ -115,11 +151,53 @@ export const objektListEntries = pgTable(
         onDelete: "cascade",
       }),
     collectionId: varchar("collection_id", { length: 36 }).notNull(), // slug: atom01-jinsoul-101z
+    tokenId: text("token_id"),
     quantity: integer("quantity").notNull().default(1),
     price: real("price"),
+    verifiedAt: timestamp("verified_at", { mode: "string" }),
   },
-  (t) => [index("objekt_list_entries_list_idx").on(t.objektListId)],
+  (t) => [
+    index("objekt_list_entries_list_idx").on(t.objektListId),
+    index("objekt_list_entries_collection_id_idx").on(t.collectionId),
+    uniqueIndex("objekt_list_entries_token_list_unique_idx")
+      .on(t.tokenId, t.objektListId)
+      .where(sql`${t.tokenId} IS NOT NULL`),
+  ],
 );
+
+export const notifications = pgTable(
+  "notifications",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    createdAt,
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    type: notificationType("type").notNull(),
+    payload: bunJsonb("payload").$type<NotificationPayload>().notNull(),
+    readAt: timestamp("read_at", { mode: "string" }),
+  },
+  (t) => [
+    index("notifications_user_unread_idx").on(t.userId, t.readAt),
+    uniqueIndex("notifications_list_match_dedup_idx")
+      .on(
+        t.userId,
+        sql`(payload->>'sourceUserId')`,
+        sql`(payload->>'collectionId')`,
+      )
+      .where(eq(t.type, "list_match")),
+  ],
+);
+
+/**
+ * Named cursor for the indexer outbox drain. The drain advances `seq`
+ * inside the same transaction as the entry deletes so a crash cannot
+ * replay already-applied outbox rows.
+ */
+export const listDrainCursor = pgTable("list_drain_cursor", {
+  name: text("name").primaryKey(),
+  seq: bigint("seq", { mode: "bigint" }).notNull(),
+});
 
 export const eras = pgTable(
   "eras",
@@ -164,6 +242,11 @@ export const events = pgTable(
     endDate: timestamp("end_date", { mode: "date", withTimezone: true }),
     imageUrl: varchar("image_url", { length: 255 }),
     dominantColor: varchar("dominant_color", { length: 16 }),
+    /**
+     * NOTE: uses Drizzle's built-in jsonb, which double-encodes under bun:sql (stored as a JSON string rather than an object).
+     * Existing data is in that format and the read path already copes, so we leave it.
+     * New columns should use `bunJsonb` from ../custom instead.
+     */
     seasons: jsonb("seasons").$type<string[]>().notNull().default([]),
   },
   (t) => [
@@ -190,6 +273,33 @@ export const collectionData = pgTable(
     index("collection_data_event_idx").on(t.eventId),
     index("collection_data_contributor_idx").on(t.contributor),
   ],
+);
+
+export const fxRates = pgTable(
+  "fx_rates",
+  {
+    date: date("date", { mode: "string" }).notNull(),
+    currency: varchar("currency", { length: 3 }).notNull(),
+    rateToUsd: real("rate_to_usd").notNull(),
+    updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.date, t.currency] }),
+    index("fx_rates_currency_idx").on(t.currency),
+  ],
+);
+
+export const collectionPriceStats = pgTable(
+  "collection_price_stats",
+  {
+    collectionId: varchar("collection_id", { length: 36 }).primaryKey(),
+    medianPriceUsd: real("median_price_usd").notNull(),
+    listingCount: integer("listing_count").notNull(),
+    minPriceUsd: real("min_price_usd").notNull(),
+    maxPriceUsd: real("max_price_usd").notNull(),
+    updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
+  },
+  (t) => [index("collection_price_stats_median_idx").on(t.medianPriceUsd)],
 );
 
 export const cosmoTokens = pgTable(

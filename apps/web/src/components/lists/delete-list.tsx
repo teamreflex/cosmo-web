@@ -16,7 +16,7 @@ import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
 import type { ObjektList } from "@apollo/database/web/types";
 import { IconLoader2, IconTrash } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import type { MouseEvent } from "react";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
@@ -26,50 +26,61 @@ type Props = {
 };
 
 export default function DeleteList({ objektList }: Props) {
-  const router = useRouter();
   const target = useProfileContext((ctx) => ctx.target);
   const removeObjektList = useProfileContext((state) => state.removeObjektList);
+  const addObjektList = useProfileContext((state) => state.addObjektList);
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: $deleteObjektList,
-    onSuccess: () => {
+    mutationFn: useServerFn($deleteObjektList),
+    onMutate: () => {
       toast.success(m.toast_list_deleted());
 
-      // remove list from current account query
-      queryClient.setQueryData(currentAccountQuery.queryKey, (old) => {
-        if (!old) return old;
-        return {
-          ...old,
-          objektLists: old.objektLists.filter(
-            (list) => list.id !== objektList.id,
-          ),
-        };
-      });
-
-      // remove list from target account query if it exists
-      if (target?.cosmo?.username) {
-        removeObjektList(objektList.id);
-        queryClient.setQueryData(
-          targetAccountQuery(target.cosmo.username).queryKey,
-          (old) => {
-            if (!old) return old;
-            return {
+      queryClient.setQueryData(currentAccountQuery.queryKey, (old) =>
+        old
+          ? {
               ...old,
               objektLists: old.objektLists.filter(
                 (list) => list.id !== objektList.id,
               ),
-            };
-          },
+            }
+          : old,
+      );
+
+      if (target?.cosmo?.username) {
+        removeObjektList(objektList.id);
+        queryClient.setQueryData(
+          targetAccountQuery(target.cosmo.username).queryKey,
+          (old) =>
+            old
+              ? {
+                  ...old,
+                  objektLists: old.objektLists.filter(
+                    (list) => list.id !== objektList.id,
+                  ),
+                }
+              : old,
         );
       }
+    },
+    onError: (error) => {
+      toast.error(error.message);
 
-      // refresh the loader
-      void router.invalidate({
-        filter: (route) =>
-          route.routeId === "/" ||
-          (target?.cosmo?.username !== undefined &&
-            route.pathname === `/@${target.cosmo.username}`),
-      });
+      queryClient.setQueryData(currentAccountQuery.queryKey, (old) =>
+        old && !old.objektLists.some((list) => list.id === objektList.id)
+          ? { ...old, objektLists: [...old.objektLists, objektList] }
+          : old,
+      );
+
+      if (target?.cosmo?.username) {
+        addObjektList(objektList);
+        queryClient.setQueryData(
+          targetAccountQuery(target.cosmo.username).queryKey,
+          (old) =>
+            old && !old.objektLists.some((list) => list.id === objektList.id)
+              ? { ...old, objektLists: [...old.objektLists, objektList] }
+              : old,
+        );
+      }
     },
   });
 
@@ -87,8 +98,7 @@ export default function DeleteList({ objektList }: Props) {
       <AlertDialogTrigger asChild>
         <Button
           variant="destructive"
-          size="icon"
-          className="rounded-full"
+          size="icon-sm"
           aria-label={m.aria_delete_list()}
         >
           <IconTrash />

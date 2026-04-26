@@ -1,6 +1,9 @@
 import type { ValidArtist } from "./common";
 
 export type ObjektBaseFields = {
+  /** diverges from cosmo api */
+  id: string;
+  // cosmo fields
   collectionId: string;
   season: string;
   member: string;
@@ -69,6 +72,9 @@ export type BFFCollectionGroup = {
 };
 
 export type BFFCollectionGroupCollection = {
+  /** diverges from cosmo api */
+  id: string;
+  // cosmo fields
   collectionId: string;
   season: string;
   collectionNo: string;

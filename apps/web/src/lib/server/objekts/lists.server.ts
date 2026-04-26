@@ -2,6 +2,9 @@ import { objektListEntries, objektLists } from "@apollo/database/web/schema";
 import { and, eq } from "drizzle-orm";
 import { db } from "../db";
 
+type WebTx = Parameters<Parameters<typeof db.transaction>[0]>[0];
+type DbOrTx = typeof db | WebTx;
+
 /**
  * Import objekt lists from the old tables into the new ones.
  */
@@ -65,8 +68,17 @@ export async function importObjektLists(userId: string, address: string) {
   });
 }
 
-export async function assertUserOwnsList(id: string, userId: string) {
-  const count = await db.$count(
+/**
+ * Throws unless the given user owns the given list. Accepts either the bare
+ * connection or a transaction so callers inside a tx run the check on the
+ * same snapshot as their writes.
+ */
+export async function assertUserOwnsList(
+  id: string,
+  userId: string,
+  conn: DbOrTx = db,
+) {
+  const count = await conn.$count(
     objektLists,
     and(eq(objektLists.id, id), eq(objektLists.userId, userId)),
   );

@@ -13,7 +13,7 @@ type Props = {
   id: string;
   priority: boolean;
   authenticated: boolean;
-  objektList: ObjektList;
+  objektList: ObjektList & { fxRateToUsd: number | null };
 };
 
 export function ListGridItem({
@@ -23,14 +23,16 @@ export function ListGridItem({
   objektList,
 }: Props) {
   const collection = useMemo(() => Objekt.fromIndexer(item), [item]);
-  const { currency } = objektList;
+  const isSaleList = objektList.type === "sale";
+  const serial = item.entrySerial ?? undefined;
+  const { fxRateToUsd } = objektList;
   const [editOpen, setEditOpen] = useState(false);
 
   return (
-    <div className="relative">
+    <div className="relative @container">
       <div className="relative z-10 drop-shadow-md">
         <ExpandableObjekt collection={collection} priority={priority}>
-          <ObjektSidebar collection={collection} />
+          <ObjektSidebar collection={collection} serial={serial} />
           {authenticated && (
             <ListOverlay
               id={item.id}
@@ -41,12 +43,15 @@ export function ListGridItem({
         </ExpandableObjekt>
       </div>
 
-      {currency !== null && (
+      {isSaleList && objektList.currency && (
         <>
           <SaleBar
             quantity={item.entryQuantity}
             price={item.entryPrice}
-            currency={currency}
+            currency={objektList.currency}
+            medianPriceUsd={item.medianPriceUsd}
+            listingCount={item.listingCount}
+            fxRateToUsd={fxRateToUsd}
             backgroundColor={collection.backgroundColor}
             textColor={collection.textColor}
             onClick={authenticated ? () => setEditOpen(true) : undefined}
@@ -57,9 +62,10 @@ export function ListGridItem({
               onOpenChange={setEditOpen}
               objektListId={objektList.id}
               objektListEntryId={item.id}
+              tokenId={item.entryTokenId}
               quantity={item.entryQuantity}
               price={item.entryPrice}
-              currency={currency}
+              currency={objektList.currency}
               collectionId={collection.collectionId}
             />
           )}

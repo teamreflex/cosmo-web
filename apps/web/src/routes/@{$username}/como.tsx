@@ -1,9 +1,9 @@
 import ArtistIcon from "@/components/artist-icon";
 import ComoCalendar from "@/components/como/calendar";
-import CurrentMonth from "@/components/como/current-month";
 import HelpDialog from "@/components/como/help-dialog";
 import { Error } from "@/components/error-boundary";
 import Portal from "@/components/portal";
+import TitleHeader from "@/components/ui/title-header";
 import { useArtists } from "@/hooks/use-artists";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
@@ -53,25 +53,23 @@ function RouteComponent() {
   });
 
   return (
-    <main className="flex flex-col gap-2">
-      <div className="flex items-center">
-        <div className="flex w-full items-center justify-between gap-2">
-          <CurrentMonth />
-
-          <div className="flex items-center gap-4">
-            {totals.map((total) => (
-              <div className="flex items-center gap-1" key={total.artist.name}>
-                <ArtistIcon artist={total.artist.name} />
-                <span className="font-semibold">
-                  +{total.total.toLocaleString()}
-                </span>
-              </div>
-            ))}
-          </div>
+    <main className="flex flex-col">
+      <TitleHeader title={m.common_como()}>
+        <div className="ml-auto flex items-center gap-3">
+          {totals.map((total) => (
+            <div className="flex items-center gap-1" key={total.artist.name}>
+              <ArtistIcon artist={total.artist.name} />
+              <span className="font-semibold tabular-nums">
+                +{total.total.toLocaleString()}
+              </span>
+            </div>
+          ))}
         </div>
-      </div>
+      </TitleHeader>
 
-      <ComoCalendar artists={artistList} transfers={data} />
+      <div className="container flex flex-col pt-4">
+        <ComoCalendar artists={artistList} transfers={data} />
+      </div>
 
       <Portal to="#help">
         <HelpDialog />
@@ -87,43 +85,45 @@ function PendingComponent() {
   );
 
   return (
-    <main className="flex flex-col gap-2">
-      <CurrentMonth />
+    <main className="flex flex-col">
+      <TitleHeader title={m.common_como()} />
 
-      <div className="flex h-fit flex-col overflow-hidden rounded-lg border border-secondary bg-secondary text-clip">
-        {/* days of the week */}
-        <div className="grid grid-cols-7 gap-px border-b border-secondary">
-          <div className="flex items-center justify-center bg-background/80 py-2 font-bold">
-            {m.como_calendar_mon()}
+      <div className="container pt-4">
+        <div className="flex h-fit flex-col overflow-hidden rounded-lg border border-secondary bg-secondary text-clip">
+          {/* days of the week */}
+          <div className="grid grid-cols-7 gap-px border-b border-secondary">
+            <div className="flex items-center justify-center bg-background/80 py-2 font-bold">
+              {m.como_calendar_mon()}
+            </div>
+            <div className="flex items-center justify-center bg-background/80 py-2 font-bold">
+              {m.como_calendar_tue()}
+            </div>
+            <div className="flex items-center justify-center bg-background/80 py-2 font-bold">
+              {m.como_calendar_wed()}
+            </div>
+            <div className="flex items-center justify-center bg-background/80 py-2 font-bold">
+              {m.como_calendar_thu()}
+            </div>
+            <div className="flex items-center justify-center bg-background/80 py-2 font-bold">
+              {m.como_calendar_fri()}
+            </div>
+            <div className="flex items-center justify-center bg-background/80 py-2 font-bold">
+              {m.como_calendar_sat()}
+            </div>
+            <div className="flex items-center justify-center bg-background/80 py-2 font-bold">
+              {m.como_calendar_sun()}
+            </div>
           </div>
-          <div className="flex items-center justify-center bg-background/80 py-2 font-bold">
-            {m.como_calendar_tue()}
-          </div>
-          <div className="flex items-center justify-center bg-background/80 py-2 font-bold">
-            {m.como_calendar_wed()}
-          </div>
-          <div className="flex items-center justify-center bg-background/80 py-2 font-bold">
-            {m.como_calendar_thu()}
-          </div>
-          <div className="flex items-center justify-center bg-background/80 py-2 font-bold">
-            {m.como_calendar_fri()}
-          </div>
-          <div className="flex items-center justify-center bg-background/80 py-2 font-bold">
-            {m.como_calendar_sat()}
-          </div>
-          <div className="flex items-center justify-center bg-background/80 py-2 font-bold">
-            {m.como_calendar_sun()}
-          </div>
-        </div>
 
-        {/* days of the month */}
-        <div className="grid grid-cols-7 gap-px">
-          {cells.map((day) => (
-            <div
-              key={day}
-              className="relative flex h-24 animate-pulse items-center justify-center bg-background/70 transition-colors hover:bg-background/50 sm:h-20"
-            />
-          ))}
+          {/* days of the month */}
+          <div className="grid grid-cols-7 gap-px">
+            {cells.map((day) => (
+              <div
+                key={day}
+                className="relative flex h-24 animate-pulse items-center justify-center bg-background/70 transition-colors hover:bg-background/50 sm:h-20"
+              />
+            ))}
+          </div>
         </div>
       </div>
     </main>

@@ -23,7 +23,7 @@ export default function SystemStatus() {
     <ErrorBoundary fallback={<ErrorFallback />}>
       <Suspense
         fallback={
-          <div className="h-8 w-9 animate-pulse rounded-l-md bg-secondary" />
+          <div className="h-8 w-9 animate-pulse rounded-l-sm bg-secondary" />
         }
       >
         <SystemStatusPopover />
@@ -41,8 +41,9 @@ function SystemStatusPopover() {
     <Popover>
       <PopoverTrigger asChild>
         <button
+          type="button"
           className={cn(
-            "flex h-8 w-9 items-center justify-center rounded-l-lg border shadow-sm transition-colors",
+            "flex h-8 w-9 items-center justify-center rounded-l-sm border shadow-sm transition-colors",
             textStatus(processor.status),
             bgStatus(processor.status),
           )}
@@ -108,12 +109,6 @@ function bgStatus(status: SystemStatusType) {
     status === "down" && "bg-red-600/25 hover:bg-red-600/40 border-red-600/40",
   ];
 }
-
-// const gasText = {
-//   normal: "Network is normal, transfers should be fast",
-//   degraded: "Network has activity, transfers may be slow",
-//   down: "Network is congested, transfers will likely fail",
-// };
 
 const processorText = {
   normal: m.system_status_normal(),

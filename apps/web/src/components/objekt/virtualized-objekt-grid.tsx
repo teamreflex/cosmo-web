@@ -150,7 +150,7 @@ function ObjektGrid<
     <>
       <div className="w-full py-2" ref={containerRef}>
         <div
-          className="relative flex flex-col will-change-transform contain-paint"
+          className="relative flex flex-col will-change-transform"
           style={{
             height: `${virtualizerRef.current.getTotalSize()}px`,
           }}
@@ -217,7 +217,11 @@ function ObjektGrid<
         </div>
       </div>
 
-      {showTotal && <Portal to="#objekt-total">{total}</Portal>}
+      {showTotal && (
+        <Portal to={options.totalPortalTarget ?? "#objekt-total"}>
+          {total}
+        </Portal>
+      )}
       <Portal to="#pagination">
         <InfiniteQueryNext
           status={query.status}

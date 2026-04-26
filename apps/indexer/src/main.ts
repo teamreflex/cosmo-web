@@ -6,6 +6,7 @@ import { randomUUID } from "crypto";
 import { env } from "./env";
 import { fetchMetadataWithRetry } from "./metadata";
 import { Collection, ComoBalance, Objekt, type Transfer, Vote } from "./model";
+import { ListEventOutbox } from "./model";
 import {
   type ComoBalanceEvent,
   type RevealFunction,
@@ -85,6 +86,29 @@ processor.run(db, async (ctx) => {
       // upsert transfers
       if (transferBatch.length > 0) {
         await ctx.store.upsert(transferBatch);
+      }
+
+      // mints should not be inserted into the outbox
+      const userTransfers = transferBatch.filter(
+        (t) => t.from !== Addresses.NULL,
+      );
+
+      // insert outbox rows
+      if (userTransfers.length > 0) {
+        const outboxRows = userTransfers.map(
+          (t) =>
+            new ListEventOutbox({
+              transferId: t.id,
+              fromAddress: t.from,
+              toAddress: t.to,
+              // store the slug (not the UUID) so the web-side drain can match
+              // it directly against objekt_list_entries.collection_id, which is also a slug.
+              collectionId: t.collection.slug,
+              tokenId: t.tokenId,
+              timestamp: new Date(t.timestamp),
+            }),
+        );
+        await ctx.store.insert(outboxRows);
       }
     });
 

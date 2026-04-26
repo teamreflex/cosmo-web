@@ -5,6 +5,7 @@ import Overlay from "@/components/misc/overlay";
 import ScrollToTop from "@/components/misc/overlay/scroll-to-top";
 import SkeletonGradient from "@/components/skeleton/skeleton-overlay";
 import { Skeleton } from "@/components/ui/skeleton";
+import TitleHeader from "@/components/ui/title-header";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import { artistsQuery, selectedArtistsQuery } from "@/lib/queries/core";
@@ -48,15 +49,16 @@ function RouteComponent() {
   );
 
   return (
-    <main className="container flex flex-col gap-4 py-2">
-      {/* Header */}
-      <h1 className="font-cosmo text-3xl uppercase">{m.gravity_header()}</h1>
+    <main className="flex flex-col">
+      <TitleHeader title={m.gravity_header()} />
 
-      {/* Active gravities hero */}
-      <GravityHero gravities={activeGravities} artists={artists} />
+      <div className="container flex flex-col gap-4 pt-4">
+        {/* Active gravities hero */}
+        <GravityHero gravities={activeGravities} artists={artists} />
 
-      {/* Past gravities list */}
-      <GravityList selectedArtists={artistsFilter} artists={artists} />
+        {/* Past gravities list */}
+        <GravityList selectedArtists={artistsFilter} artists={artists} />
+      </div>
 
       <Overlay>
         <ScrollToTop />
@@ -67,11 +69,10 @@ function RouteComponent() {
 
 function PendingComponent() {
   return (
-    <main className="container flex flex-col py-2">
-      {/* header */}
-      <h1 className="font-cosmo text-3xl uppercase">{m.gravity_header()}</h1>
+    <main className="flex flex-col">
+      <TitleHeader title={m.gravity_header()} />
 
-      <div className="relative mt-4 flex flex-col gap-4">
+      <div className="container relative flex flex-col gap-4 pt-4">
         <SkeletonGradient />
         {/* Hero skeleton */}
         <Skeleton className="h-[180px] w-full rounded-xl" />

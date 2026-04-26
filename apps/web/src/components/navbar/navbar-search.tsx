@@ -4,12 +4,7 @@ import type { CosmoPublicUser } from "@apollo/cosmo/types/user";
 import { IconSearch } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "../ui/tooltip";
+import { Button } from "../ui/button";
 import { UserSearch } from "../user-search";
 
 export default function NavbarSearch() {
@@ -35,22 +30,14 @@ export default function NavbarSearch() {
       onSelect={onSelect}
       recent={recent}
     >
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              className="outline-hidden drop-shadow-lg focus:outline-hidden"
-              aria-label={m.navbar_search_user()}
-              onClick={() => setOpen(true)}
-            >
-              <IconSearch className="h-8 w-8 shrink-0 fill-transparent transition-all" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{m.common_user_search()}</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <Button
+        variant="ghost"
+        size="icon"
+        aria-label={m.navbar_search_user()}
+        onClick={() => setOpen(true)}
+      >
+        <IconSearch className="size-6" />
+      </Button>
     </UserSearch>
   );
 }

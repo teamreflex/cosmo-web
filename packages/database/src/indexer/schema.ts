@@ -1,6 +1,8 @@
 import {
   bigint,
+  bigserial,
   boolean,
+  index,
   integer,
   numeric,
   pgSchema,
@@ -90,6 +92,29 @@ export const comoBalances = pgTable("como_balance", {
   owner: varchar("owner", { length: 42 }).notNull(),
   amount: bigint("amount", { mode: "number" }).notNull(),
 });
+
+export const listEventOutbox = pgTable(
+  "list_event_outbox",
+  {
+    id: bigserial("id", { mode: "bigint" }).primaryKey(),
+    transferId: varchar("transfer_id", { length: 36 }).notNull(),
+    fromAddress: text("from_address").notNull(),
+    toAddress: text("to_address").notNull(),
+    collectionId: varchar("collection_id", { length: 36 }).notNull(),
+    tokenId: text("token_id").notNull(),
+    timestamp: timestamp("timestamp", {
+      mode: "string",
+      withTimezone: true,
+    }).notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+    })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index("idx_list_event_outbox_created_at").on(t.createdAt)],
+);
 
 export const votes = pgTable("vote", {
   id: uuid("id").primaryKey(),

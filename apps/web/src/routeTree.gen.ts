@@ -25,6 +25,7 @@ import { Route as EventsSlugRouteImport } from './routes/events/$slug'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
 import { Route as AdminEventsRouteImport } from './routes/admin/events'
 import { Route as AdminErasRouteImport } from './routes/admin/eras'
+import { Route as AdminCacheRouteImport } from './routes/admin/cache'
 import { Route as AdminBandsRouteImport } from './routes/admin/bands'
 import { Route as AtChar123usernameChar125TradesRouteImport } from './routes/@{$username}/trades'
 import { Route as AtChar123usernameChar125ProgressRouteImport } from './routes/@{$username}/progress'
@@ -125,6 +126,11 @@ const AdminEventsRoute = AdminEventsRouteImport.update({
 const AdminErasRoute = AdminErasRouteImport.update({
   id: '/eras',
   path: '/eras',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminCacheRoute = AdminCacheRouteImport.update({
+  id: '/cache',
+  path: '/cache',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const AdminBandsRoute = AdminBandsRouteImport.update({
@@ -244,6 +250,7 @@ export interface FileRoutesByFullPath {
   '/@{$username}/progress': typeof AtChar123usernameChar125ProgressRoute
   '/@{$username}/trades': typeof AtChar123usernameChar125TradesRoute
   '/admin/bands': typeof AdminBandsRoute
+  '/admin/cache': typeof AdminCacheRoute
   '/admin/eras': typeof AdminErasRoute
   '/admin/events': typeof AdminEventsRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
@@ -279,6 +286,7 @@ export interface FileRoutesByTo {
   '/@{$username}/progress': typeof AtChar123usernameChar125ProgressRoute
   '/@{$username}/trades': typeof AtChar123usernameChar125TradesRoute
   '/admin/bands': typeof AdminBandsRoute
+  '/admin/cache': typeof AdminCacheRoute
   '/admin/eras': typeof AdminErasRoute
   '/admin/events': typeof AdminEventsRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
@@ -317,6 +325,7 @@ export interface FileRoutesById {
   '/@{$username}/progress': typeof AtChar123usernameChar125ProgressRoute
   '/@{$username}/trades': typeof AtChar123usernameChar125TradesRoute
   '/admin/bands': typeof AdminBandsRoute
+  '/admin/cache': typeof AdminCacheRoute
   '/admin/eras': typeof AdminErasRoute
   '/admin/events': typeof AdminEventsRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
@@ -356,6 +365,7 @@ export interface FileRouteTypes {
     | '/@{$username}/progress'
     | '/@{$username}/trades'
     | '/admin/bands'
+    | '/admin/cache'
     | '/admin/eras'
     | '/admin/events'
     | '/auth/reset-password'
@@ -391,6 +401,7 @@ export interface FileRouteTypes {
     | '/@{$username}/progress'
     | '/@{$username}/trades'
     | '/admin/bands'
+    | '/admin/cache'
     | '/admin/eras'
     | '/admin/events'
     | '/auth/reset-password'
@@ -428,6 +439,7 @@ export interface FileRouteTypes {
     | '/@{$username}/progress'
     | '/@{$username}/trades'
     | '/admin/bands'
+    | '/admin/cache'
     | '/admin/eras'
     | '/admin/events'
     | '/auth/reset-password'
@@ -599,6 +611,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminErasRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/cache': {
+      id: '/admin/cache'
+      path: '/cache'
+      fullPath: '/admin/cache'
+      preLoaderRoute: typeof AdminCacheRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/bands': {
       id: '/admin/bands'
       path: '/bands'
@@ -761,6 +780,7 @@ const AtChar123usernameChar125RouteRouteWithChildren =
 
 interface AdminRouteRouteChildren {
   AdminBandsRoute: typeof AdminBandsRoute
+  AdminCacheRoute: typeof AdminCacheRoute
   AdminErasRoute: typeof AdminErasRoute
   AdminEventsRoute: typeof AdminEventsRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -768,6 +788,7 @@ interface AdminRouteRouteChildren {
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminBandsRoute: AdminBandsRoute,
+  AdminCacheRoute: AdminCacheRoute,
   AdminErasRoute: AdminErasRoute,
   AdminEventsRoute: AdminEventsRoute,
   AdminIndexRoute: AdminIndexRoute,

@@ -26,6 +26,7 @@ export type ObjektResponseOptions<
     queryKey: DataTag<TQueryKey, InfiniteData<TResponse>, TError>;
   };
   calculateTotal: (data: InfiniteData<TResponse>) => ReactNode;
+  totalPortalTarget?: string;
   getItems: (data: InfiniteData<TResponse>) => TItem[];
 };
 

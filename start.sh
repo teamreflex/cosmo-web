@@ -18,6 +18,10 @@ if [ "${DEV_SERVICES}" = "true" ]; then
     SERVICES="$SERVICES import-server"
   fi
 
+  if [ "${DEV_SCHEDULES}" = "true" ]; then
+    SERVICES="$SERVICES schedules"
+  fi
+
   echo "Starting services: $SERVICES"
   exec docker compose up $SERVICES
 else

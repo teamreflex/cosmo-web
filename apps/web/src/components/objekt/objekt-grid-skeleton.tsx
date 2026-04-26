@@ -9,10 +9,9 @@ export default function ObjektGridSkeleton(props: { gridColumns: number }) {
     >
       <SkeletonGradient />
       {Array.from({ length: props.gridColumns * 3 }).map((_, i) => (
-        <Skeleton
-          key={i}
-          className="z-10 aspect-photocard w-full rounded-lg md:rounded-xl lg:rounded-2xl"
-        />
+        <div key={i} className="@container">
+          <Skeleton className="z-10 aspect-photocard w-full rounded-photocard" />
+        </div>
       ))}
     </div>
   );

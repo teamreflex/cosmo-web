@@ -21,6 +21,7 @@ import Portal from "../portal";
 import SkeletonGradient from "../skeleton/skeleton-overlay";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
+import TitleHeader from "../ui/title-header";
 import TransferRow from "./transfer-row";
 
 type Props = {
@@ -60,39 +61,47 @@ export default function TransfersRenderer({ cosmo }: Props) {
 
   return (
     <div className="flex flex-col">
-      <FiltersContainer isPortaled>
+      <TitleHeader title={m.trades_title()}>
+        <div className="ml-auto md:pointer-events-none md:absolute md:inset-0 md:ml-0 md:flex md:items-center md:justify-center">
+          <div className="md:pointer-events-auto">
+            <MemberFilter
+              active={filters.artist ?? filters.member}
+              updateArtist={setActiveArtist}
+              updateMember={setActiveMember}
+            />
+          </div>
+        </div>
+      </TitleHeader>
+
+      <FiltersContainer>
         <TransfersFilters type={type} setType={setType} />
       </FiltersContainer>
 
-      <MemberFilter
-        active={filters.artist ?? filters.member}
-        updateArtist={setActiveArtist}
-        updateMember={setActiveMember}
-      />
-
-      <div className="pt-2">
-        <QueryErrorResetBoundary>
-          {({ reset }) => (
-            <ErrorBoundary
-              onReset={reset}
-              fallbackRender={({ resetErrorBoundary }) => (
-                <div className="flex w-full flex-col items-center gap-2">
-                  <div className="flex flex-col items-center justify-center gap-2 py-12">
-                    <IconHeartBroken className="h-12 w-12" />
-                    <p>{m.transfer_error_loading()}</p>
+      <div className="container flex flex-col">
+        <div className="pt-2">
+          <QueryErrorResetBoundary>
+            {({ reset }) => (
+              <ErrorBoundary
+                onReset={reset}
+                fallbackRender={({ resetErrorBoundary }) => (
+                  <div className="flex w-full flex-col items-center gap-2">
+                    <div className="flex flex-col items-center justify-center gap-2 py-12">
+                      <IconHeartBroken className="h-12 w-12" />
+                      <p>{m.transfer_error_loading()}</p>
+                    </div>
+                    <Button variant="outline" onClick={resetErrorBoundary}>
+                      <IconRefresh className="mr-2" /> {m.common_retry()}
+                    </Button>
                   </div>
-                  <Button variant="outline" onClick={resetErrorBoundary}>
-                    <IconRefresh className="mr-2" /> {m.common_retry()}
-                  </Button>
-                </div>
-              )}
-            >
-              <Suspense fallback={<TransfersSkeleton />}>
-                <Transfers address={cosmo.address} filters={filters} />
-              </Suspense>
-            </ErrorBoundary>
-          )}
-        </QueryErrorResetBoundary>
+                )}
+              >
+                <Suspense fallback={<TransfersSkeleton />}>
+                  <Transfers address={cosmo.address} filters={filters} />
+                </Suspense>
+              </ErrorBoundary>
+            )}
+          </QueryErrorResetBoundary>
+        </div>
       </div>
     </div>
   );

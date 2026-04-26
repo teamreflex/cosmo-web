@@ -55,7 +55,7 @@ function RouteComponent() {
   const { account } = Route.useLoaderData();
 
   return (
-    <main className="relative container flex flex-col py-2">
+    <main className="relative flex w-full flex-col">
       <UserStateProvider user={account?.user} cosmo={account?.cosmo}>
         <ProfileProvider objektLists={account?.objektLists ?? []}>
           <IndexRenderer objektLists={account?.objektLists ?? []} />
@@ -76,37 +76,32 @@ function ErrorComponent() {
 
 function PendingComponent() {
   return (
-    <div className="container flex flex-col py-2">
-      <div className="flex flex-col">
-        {/* Title */}
-        <div className="flex w-full items-center gap-2 pb-1">
-          <div className="flex h-9 items-center gap-2">
-            <h1 className="font-cosmo text-2xl uppercase md:text-3xl">
-              {m.objekts_header()}
-            </h1>
+    <div className="flex flex-col">
+      {/* Title */}
+      <div className="border-b border-border">
+        <div className="container grid grid-cols-[auto_1fr_auto] items-center gap-3 py-3">
+          <h1 className="font-cosmo text-2xl leading-none font-black tracking-wide uppercase md:text-3xl">
+            {m.objekts_header()}
+          </h1>
+          <div className="flex justify-center">
+            <MemberFilterSkeleton />
           </div>
+          <Skeleton className="h-8 w-20" />
         </div>
+      </div>
 
-        {/* FiltersContainer */}
-        <div className="group flex flex-col gap-2 pb-0 lg:pb-2">
-          <div className="flex flex-row items-center justify-center gap-2 sm:hidden">
-            <Skeleton className="h-9 w-20 rounded-full" />
-          </div>
-
-          <div className="hidden flex-wrap items-center justify-center gap-2 sm:flex">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-9 w-24" />
-            ))}
-            <Skeleton className="h-9 w-48" />
-            <Skeleton className="h-[36px] w-[42px]" />
-          </div>
+      {/* FiltersContainer */}
+      <div className="border-b border-border bg-muted/40">
+        <div className="container flex flex-wrap items-center gap-2 py-2">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} className="h-9 w-24" />
+          ))}
+          <Skeleton className="h-9 w-48" />
         </div>
+      </div>
 
-        {/* FilteredObjektDisplay */}
-        <div className="flex flex-col">
-          <MemberFilterSkeleton />
-          <ObjektGridSkeleton gridColumns={5} />
-        </div>
+      <div className="container">
+        <ObjektGridSkeleton gridColumns={5} />
       </div>
     </div>
   );

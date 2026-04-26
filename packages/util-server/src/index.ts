@@ -1,12 +1,12 @@
 import { createHash } from "node:crypto";
 
 /**
- * Get the cache key for the pins of a user.
+ * Redis cache key for a user's pins.
  * Hashing the decoded username to avoid CJK characters.
  */
-export function pinCacheKey(username: string) {
+export function pinCacheKey(value: string) {
   const hash = createHash("md5")
-    .update(decodeURIComponent(username.toLowerCase()))
+    .update(decodeURIComponent(value.toLowerCase()))
     .digest("hex");
   return `pins:${hash}`;
 }

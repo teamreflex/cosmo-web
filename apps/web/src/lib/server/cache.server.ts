@@ -26,10 +26,11 @@ export async function remember<T>(
 }
 
 /**
- * Clear a tag from the cache.
+ * Clear one or more tags from the cache in a single call.
  */
-export async function clearTag(tag: string) {
-  await redis.del(tag);
+export async function clearTag(...tags: string[]) {
+  if (tags.length === 0) return;
+  await redis.del(...tags);
 }
 
 type CacheHeaders = {

@@ -28,8 +28,9 @@ export function TopOverlay({ objekt, objektLists }: TopOverlayProps) {
       <div className="flex items-center gap-2">
         {/* add to list */}
         <AddToList
-          collectionId={objekt.collectionId}
-          collectionSlug={objekt.slug}
+          collectionName={objekt.collectionId}
+          slug={objekt.slug}
+          collectionId={objekt.id}
           lists={objektLists}
         />
       </div>
