@@ -30,7 +30,7 @@ export async function assertOwnsTokens(
     .where(
       and(
         inArray(objekts.id, tokenIds),
-        eq(objekts.owner, address),
+        eq(objekts.owner, address.toLowerCase()),
         eq(objekts.transferable, true),
         eq(objekts.collectionId, collectionId),
       ),
