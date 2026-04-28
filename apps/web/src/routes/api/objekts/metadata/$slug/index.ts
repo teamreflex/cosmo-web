@@ -2,10 +2,11 @@ import { cacheHeaders } from "@/lib/server/cache.server";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import { collections, objekts } from "@/lib/server/db/indexer/schema";
-import type {
-  ObjektCollectionData,
-  ObjektMetadata,
-  PriceStats,
+import {
+  PRICE_STATS_MIN_LISTINGS,
+  type ObjektCollectionData,
+  type ObjektMetadata,
+  type PriceStats,
 } from "@/lib/universal/objekts";
 import { Addresses, addr } from "@apollo/util";
 import { createFileRoute } from "@tanstack/react-router";
@@ -101,7 +102,7 @@ async function fetchPriceStats(slug: string): Promise<PriceStats | null> {
     },
   });
 
-  if (!row) return null;
+  if (!row || row.listingCount < PRICE_STATS_MIN_LISTINGS) return null;
 
   return {
     medianPriceUsd: row.medianPriceUsd,

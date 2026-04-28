@@ -1,9 +1,6 @@
 import { m } from "@/i18n/messages";
 import { getLocale } from "@/i18n/runtime";
-import {
-  PRICE_STATS_MIN_LISTINGS,
-  type PriceStats,
-} from "@/lib/universal/objekts";
+import type { PriceStats } from "@/lib/universal/objekts";
 import { formatPrice } from "@/lib/utils";
 import { StatCell } from "./common";
 
@@ -12,10 +9,7 @@ type Props = {
 };
 
 export default function PricingPanel({ data }: Props) {
-  const hasEnoughListings =
-    data !== null && data.listingCount >= PRICE_STATS_MIN_LISTINGS;
-
-  if (!hasEnoughListings) {
+  if (data === null) {
     return (
       <div className="flex flex-col gap-2 px-4 py-3">
         <p className="text-xs text-muted-foreground">

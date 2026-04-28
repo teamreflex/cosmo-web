@@ -66,6 +66,7 @@ export const syncCollectionPriceStatsTask = {
               .where(
                 and(
                   isNotNull(objektListEntries.price),
+                  isNotNull(objektListEntries.tokenId),
                   isNotNull(objektLists.currency),
                 ),
               ),
@@ -140,6 +141,7 @@ export const syncCollectionPriceStatsTask = {
                         collectionPriceStats.collectionId,
                       ),
                       isNotNull(objektListEntries.price),
+                      isNotNull(objektListEntries.tokenId),
                       isNotNull(objektLists.currency),
                     ),
                   ),
