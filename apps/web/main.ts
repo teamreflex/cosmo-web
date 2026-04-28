@@ -76,6 +76,16 @@ function buildContentSecurityPolicy(): string {
     } catch {}
   }
 
+  const r2AccountId = process.env.R2_ACCOUNT_ID;
+  if (r2AccountId) {
+    connectSrc.push(`${r2AccountId}.r2.cloudflarestorage.com`);
+  }
+
+  const r2Domain = process.env.R2_DOMAIN;
+  if (r2Domain) {
+    imgSrc.push(r2Domain);
+  }
+
   return [
     "default-src 'self'",
     `script-src ${scriptSrc.join(" ")}`,
