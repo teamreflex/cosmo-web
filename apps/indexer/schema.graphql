@@ -20,6 +20,7 @@ type Collection @entity {
   comoAmount: Int!
   onOffline: String! @index
   bandImageUrl: String
+  hasAudio: Boolean!
   transfers: [Transfer!] @derivedFrom(field: "collection")
   objekts: [Objekt!] @derivedFrom(field: "collection")
 }

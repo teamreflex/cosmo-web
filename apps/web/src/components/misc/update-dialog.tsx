@@ -83,6 +83,10 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2026-05-01",
+    changes: ["Added support for objekts with audio tracks."],
+  },
+  {
     date: "2026-04-27",
     changes: [
       "More redesign work, should be more mobile friendly and less janky.",
@@ -96,16 +100,6 @@ const updates = [
       "Updated: Sale lists now enforce selecting a specific objekt/serial when adding an entry. After some time, we will start automatically removing entries upon transfer just like 'have' lists.",
       "Updated: Pins are removed upon sending the objekt to another user.",
       "Fixed: Locked & Transferable filters are more clear in their behavior.",
-    ],
-  },
-  {
-    date: "2026-03-26",
-    changes: [
-      "Added: Japanese and French translations (thanks Azagal).",
-      "Added: Icon denoting when an MCO hasn't had its video loaded in yet.",
-      "Fixed: COSMO error causing objekts to be missing serials and back-face images.",
-      "Fixed: Progress charts no longer filter out entries under 1%.",
-      "Updated: Leaderboards now update at 9am KST every day rather than every hour.",
     ],
   },
 ];

@@ -658,6 +658,7 @@
   "objekt_metadata_save_back_image": "裏面画像を保存",
   "objekt_metadata_save_video": "動画を保存",
   "objekt_metadata_video_not_loaded": "動画はまだシステムに読み込まれていません。",
+  "objekt_metadata_audio_not_loaded": "音声はまだシステムに読み込まれていません。",
   "objekt_metadata_description": "説明",
   "objekt_metadata_pricing_tab": "価格",
   "objekt_metadata_market_price": "中央値",
@@ -776,5 +777,7 @@
   "aria_twitter": "Twitter",
   "aria_discord": "Discord",
   "aria_flip_objekt": "Objektを反転",
-  "aria_view_objekt": "Objektを表示"
+  "aria_view_objekt": "Objektを表示",
+  "aria_play_audio": "音声を再生",
+  "aria_pause_audio": "音声を一時停止"
 }

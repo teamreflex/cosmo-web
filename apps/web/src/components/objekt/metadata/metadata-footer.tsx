@@ -37,6 +37,7 @@ type Props = {
 export default function MetadataFooter(props: Props) {
   const missingVideo =
     props.objekt.class === "Motion" && !props.objekt.frontMedia;
+  const missingAudio = props.objekt.hasAudio && !props.objekt.frontMedia;
   const isUnobtainable = unobtainables.includes(props.objekt.slug);
 
   return (
@@ -44,6 +45,12 @@ export default function MetadataFooter(props: Props) {
       {missingVideo && (
         <NoticeRow
           text={m.objekt_metadata_video_not_loaded()}
+          className="text-orange-500"
+        />
+      )}
+      {missingAudio && (
+        <NoticeRow
+          text={m.objekt_metadata_audio_not_loaded()}
           className="text-orange-500"
         />
       )}

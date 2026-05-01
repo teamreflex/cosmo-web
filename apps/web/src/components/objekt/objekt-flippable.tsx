@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { Fragment, useState, lazy, Suspense } from "react";
 import type { PropsWithChildren } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import ObjektAudio from "./objekt-audio";
 
 const ObjektVideo = lazy(() => import("./objekt-video"));
 
@@ -44,8 +45,8 @@ export default function FlippableObjekt({ children, collection }: Props) {
         )}
       >
         {/* front */}
-        <div className="absolute inset-0 backface-hidden">
-          {collection.frontMedia ? (
+        <div className="absolute inset-0 overflow-hidden rounded-photocard backface-hidden">
+          {collection.frontMedia && !collection.hasAudio ? (
             <ErrorBoundary fallback={Image}>
               <Suspense fallback={Image}>
                 <ObjektVideo
@@ -58,7 +59,15 @@ export default function FlippableObjekt({ children, collection }: Props) {
               </Suspense>
             </ErrorBoundary>
           ) : (
-            Image
+            <ObjektImage
+              src={collection.frontImage}
+              alt={collection.collectionId}
+            >
+              {collection.hasAudio && collection.frontMedia && (
+                <ObjektAudio src={collection.frontMedia} />
+              )}
+              {children}
+            </ObjektImage>
           )}
         </div>
 

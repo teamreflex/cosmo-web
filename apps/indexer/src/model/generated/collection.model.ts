@@ -81,6 +81,9 @@ export class Collection {
   @Column({ type: "varchar", length: 255, nullable: true })
   bandImageUrl!: string | null;
 
+  @Column("bool", { nullable: false, default: false })
+  hasAudio!: boolean;
+
   @OneToMany(() => Transfer, (e) => e.collection)
   transfers!: Transfer[];
 

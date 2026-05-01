@@ -659,6 +659,7 @@
   "objekt_metadata_save_back_image": "Save Back Image",
   "objekt_metadata_save_video": "Save Video",
   "objekt_metadata_video_not_loaded": "Video not yet loaded into the system.",
+  "objekt_metadata_audio_not_loaded": "Audio not yet loaded into the system.",
   "objekt_metadata_description": "Description",
   "objekt_metadata_pricing_tab": "Pricing",
   "objekt_metadata_market_price": "Median",
@@ -777,5 +778,7 @@
   "aria_twitter": "Twitter",
   "aria_discord": "Discord",
   "aria_flip_objekt": "Flip objekt",
-  "aria_view_objekt": "View objekt"
+  "aria_view_objekt": "View objekt",
+  "aria_play_audio": "Play audio",
+  "aria_pause_audio": "Pause audio"
 }

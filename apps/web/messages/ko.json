@@ -658,6 +658,7 @@
   "objekt_metadata_save_back_image": "뒷면 이미지 저장",
   "objekt_metadata_save_video": "비디오 저장",
   "objekt_metadata_video_not_loaded": "영상이 아직 시스템에 로드되지 않았습니다.",
+  "objekt_metadata_audio_not_loaded": "오디오가 아직 시스템에 로드되지 않았습니다.",
   "objekt_metadata_description": "설명",
   "objekt_metadata_pricing_tab": "가격",
   "objekt_metadata_market_price": "중앙값",
@@ -776,5 +777,7 @@
   "aria_twitter": "Twitter",
   "aria_discord": "Discord",
   "aria_flip_objekt": "오브젝트 뒤집기",
-  "aria_view_objekt": "오브젝트 보기"
+  "aria_view_objekt": "오브젝트 보기",
+  "aria_play_audio": "오디오 재생",
+  "aria_pause_audio": "오디오 일시정지"
 }

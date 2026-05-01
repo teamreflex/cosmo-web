@@ -32,6 +32,7 @@ function createCollection(
     onOffline: "online",
     bandImageUrl: null,
     frontMedia: null,
+    hasAudio: false,
   };
 }
 

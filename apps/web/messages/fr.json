@@ -659,6 +659,7 @@
   "objekt_metadata_save_back_image": "Sauvegarder l'image arrière",
   "objekt_metadata_save_video": "Sauvegarder la vidéo",
   "objekt_metadata_video_not_loaded": "La vidéo n'a pas encore été chargée dans le système.",
+  "objekt_metadata_audio_not_loaded": "L'audio n'a pas encore été chargé dans le système.",
   "objekt_metadata_description": "Description",
   "objekt_metadata_pricing_tab": "Prix",
   "objekt_metadata_market_price": "Médiane",
@@ -777,5 +778,7 @@
   "aria_twitter": "Twitter",
   "aria_discord": "Discord",
   "aria_flip_objekt": "Retourner l'objekt",
-  "aria_view_objekt": "Voir l'objekt"
+  "aria_view_objekt": "Voir l'objekt",
+  "aria_play_audio": "Lire l'audio",
+  "aria_pause_audio": "Mettre l'audio en pause"
 }
