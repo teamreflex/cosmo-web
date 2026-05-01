@@ -1,5 +1,6 @@
 import { indexer } from "@/lib/server/db/indexer";
 import { authenticatedMiddleware } from "@/lib/server/middlewares";
+import { getRequestSignal } from "@/lib/server/request.server";
 import { fetchMetadataV1 } from "@apollo/cosmo/server/metadata";
 import { collections, objekts } from "@apollo/database/indexer/schema";
 import { createServerFn } from "@tanstack/react-start";
@@ -14,7 +15,7 @@ export const $rescanObjektMetadata = createServerFn({ method: "POST" })
   .inputValidator(z.object({ tokenId: z.string() }))
   .handler(async ({ data }) => {
     try {
-      var metadata = await fetchMetadataV1(data.tokenId);
+      var metadata = await fetchMetadataV1(data.tokenId, getRequestSignal());
     } catch (e) {
       console.error("Failed to fetch metadata:", e);
       throw new Error("Failed to fetch metadata");

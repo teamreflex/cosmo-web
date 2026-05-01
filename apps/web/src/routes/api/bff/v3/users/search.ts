@@ -15,7 +15,7 @@ export const Route = createFileRoute("/api/bff/v3/users/search")({
         const query = url.searchParams.get("query") ?? "";
 
         // get the latest cosmo token
-        const { accessToken } = await getProxiedToken();
+        const { accessToken } = await getProxiedToken(request.signal);
 
         let results: CosmoSearchResult = {
           hasNext: false,
@@ -25,7 +25,7 @@ export const Route = createFileRoute("/api/bff/v3/users/search")({
 
         // try cosmo first
         try {
-          results = await search(accessToken, query);
+          results = await search(accessToken, query, request.signal);
         } catch {
           // fallback to database
           return Response.json(await queryDatabase(query));

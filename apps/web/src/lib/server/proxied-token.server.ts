@@ -7,7 +7,9 @@ import { db } from "./db";
 /**
  * Get the latest COSMO token from the database, refresh if necessary.
  */
-export async function getProxiedToken(): Promise<CosmoToken> {
+export async function getProxiedToken(
+  signal?: AbortSignal,
+): Promise<CosmoToken> {
   const latestToken: CosmoToken | undefined =
     await db.query.cosmoTokens.findFirst({
       orderBy: {
@@ -25,7 +27,7 @@ export async function getProxiedToken(): Promise<CosmoToken> {
       // validate the refresh token
       if (validateExpiry(latestToken.refreshToken)) {
         // if valid, refresh the token
-        const newTokens = await refresh(latestToken.refreshToken);
+        const newTokens = await refresh(latestToken.refreshToken, signal);
 
         // create new token
         const [newToken] = await db

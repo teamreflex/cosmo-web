@@ -11,6 +11,7 @@ import {
   fetchUniqueCollections,
   fetchUniqueSeasons,
 } from "@/lib/server/objekts/filter-data.server";
+import { getRequestSignal } from "@/lib/server/request.server";
 import type { PublicUser } from "@/lib/universal/auth";
 import type { FullAccount, PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import type { ObjektList } from "@apollo/database/web/types";
@@ -127,7 +128,7 @@ export const $fetchCurrentAccount = createServerFn({ method: "GET" }).handler(
 export const $fetchTargetAccount = createServerFn({ method: "GET" })
   .inputValidator(z.object({ identifier: z.string() }))
   .handler(async ({ data }): Promise<FullAccount> => {
-    const account = await fetchFullAccount(data.identifier);
+    const account = await fetchFullAccount(data.identifier, getRequestSignal());
     if (!account) {
       throw notFound();
     }

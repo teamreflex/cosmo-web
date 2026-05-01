@@ -7,9 +7,10 @@ import type {
 /**
  * Fetch objekt metadata from the v1 API.
  */
-export async function fetchMetadataV1(tokenId: string) {
+export async function fetchMetadataV1(tokenId: string, signal?: AbortSignal) {
   return await ofetch<CosmoObjektMetadataV1>(
     `https://api.cosmo.fans/objekt/v1/token/${tokenId}`,
+    { signal },
   );
 }
 
@@ -17,8 +18,9 @@ export async function fetchMetadataV1(tokenId: string) {
  * Fetch objekt metadata from the v3 API.
  * Shouldn't be used as it doesn't contain full collection data.
  */
-export async function fetchMetadataV3(tokenId: string) {
+export async function fetchMetadataV3(tokenId: string, signal?: AbortSignal) {
   return await ofetch<CosmoObjektMetadataV3>(
     `https://api.cosmo.fans/bff/v3/objekts/nft-metadata/${tokenId}`,
+    { signal },
   );
 }

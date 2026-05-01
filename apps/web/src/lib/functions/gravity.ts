@@ -4,6 +4,7 @@ import { cacheHeaders, remember } from "@/lib/server/cache.server";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import { getProxiedToken } from "@/lib/server/proxied-token.server";
+import { getRequestSignal } from "@/lib/server/request.server";
 import { GravityNotSupportedError } from "@/lib/universal/gravity";
 import { fetchGravity, fetchPoll } from "@apollo/cosmo/server/gravity";
 import { gravities, gravityPolls } from "@apollo/database/web/schema";
@@ -26,6 +27,7 @@ export const $fetchGravityDetails = createServerFn({ method: "GET" })
     }),
   )
   .handler(async ({ data }) => {
+    const signal = getRequestSignal();
     // get artists
     const { artists } = await $fetchArtists();
 
@@ -57,7 +59,7 @@ export const $fetchGravityDetails = createServerFn({ method: "GET" })
     }
 
     // fetch the full gravity from cosmo or cache, depending on timing
-    const gravity = await fetchCachedGravity(info.cosmoId, isPast);
+    const gravity = await fetchCachedGravity(info.cosmoId, isPast, signal);
     if (!gravity) {
       throw notFound();
     }
@@ -185,15 +187,16 @@ export const $fetchPolygonGravity = createServerFn({ method: "GET" })
       ),
     );
 
+    const signal = getRequestSignal();
     return await remember(
       cacheKey,
       60 * 60 * 24 * 30, // 30 days
       async () => {
         // 1. get a cosmo token
-        const { accessToken } = await getProxiedToken();
+        const { accessToken } = await getProxiedToken(signal);
 
         // 2. fetch gravity from cosmo
-        const gravity = await fetchGravity(accessToken, data.id);
+        const gravity = await fetchGravity(accessToken, data.id, signal);
         if (!gravity) {
           throw notFound();
         }
@@ -204,7 +207,7 @@ export const $fetchPolygonGravity = createServerFn({ method: "GET" })
           throw notFound();
         }
 
-        const poll = await fetchPoll(accessToken, gravityPoll.poll.id);
+        const poll = await fetchPoll(accessToken, gravityPoll.poll.id, signal);
 
         // prior to gravity 11, they used the cosmo poll ID on-chain instead of a separate ID
         const chainPollId = gravity.id <= 11 ? poll.id : poll.pollIdOnChain;
@@ -264,10 +267,14 @@ export const $fetchPolygonGravity = createServerFn({ method: "GET" })
 /**
  * Fetch a gravity, and if it's in the past, cache it for 30 days.
  */
-async function fetchCachedGravity(id: number, isPast: boolean) {
+async function fetchCachedGravity(
+  id: number,
+  isPast: boolean,
+  signal?: AbortSignal,
+) {
   async function fn(id: number) {
-    const { accessToken } = await getProxiedToken();
-    return await fetchGravity(accessToken, id);
+    const { accessToken } = await getProxiedToken(signal);
+    return await fetchGravity(accessToken, id, signal);
   }
 
   if (isPast) {
@@ -294,9 +301,10 @@ export const $fetchCachedPoll = createServerFn({ method: "GET" })
     }),
   )
   .handler(async ({ data }) => {
+    const signal = getRequestSignal();
     const fn = async () => {
-      const { accessToken } = await getProxiedToken();
-      return await fetchPoll(accessToken, data.pollId);
+      const { accessToken } = await getProxiedToken(signal);
+      return await fetchPoll(accessToken, data.pollId, signal);
     };
 
     // check the database for the end date if not provided

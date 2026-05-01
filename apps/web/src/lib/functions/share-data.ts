@@ -1,6 +1,7 @@
 import { indexer } from "@/lib/server/db/indexer";
 import { authenticatedMiddleware } from "@/lib/server/middlewares";
 import { uploadCollectionMedia } from "@/lib/server/r2.server";
+import { getRequestSignal } from "@/lib/server/request.server";
 import { verifyCosmoSchema } from "@/lib/universal/schema/cosmo";
 import { fetchObjektSummaries } from "@apollo/cosmo/server/collection";
 import { certifyTicket } from "@apollo/cosmo/server/qr-auth";
@@ -24,7 +25,8 @@ export const $scrapeCollectionMedia = createServerFn({ method: "POST" })
       return { updated: 0 };
     }
 
-    const response = await certifyTicket(data.otp, data.ticket);
+    const signal = getRequestSignal();
+    const response = await certifyTicket(data.otp, data.ticket, signal);
 
     // extract user-session cookie
     const headers = response.headers.getSetCookie();
@@ -72,6 +74,7 @@ export const $scrapeCollectionMedia = createServerFn({ method: "POST" })
           session,
           artistId: query.artistId,
           className: query.class,
+          signal,
         });
 
         return { query, summaries: result };

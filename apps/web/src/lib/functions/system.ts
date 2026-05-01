@@ -1,5 +1,6 @@
 import { remember } from "@/lib/server/cache.server";
 import { abstract } from "@/lib/server/http.server";
+import { getRequestSignal } from "@/lib/server/request.server";
 import { fetchProcessorHeight } from "@/lib/server/system.server";
 import type { RPCResponse, SystemStatus } from "@/lib/universal/system";
 import { createServerFn } from "@tanstack/react-start";
@@ -7,7 +8,7 @@ import { createServerFn } from "@tanstack/react-start";
 /**
  * Fetch the current block height from the Abstract RPC.
  */
-async function fetchChainStatus() {
+async function fetchChainStatus(signal?: AbortSignal) {
   const blockNumber = await abstract<RPCResponse>("/", {
     body: {
       id: 1,
@@ -15,6 +16,7 @@ async function fetchChainStatus() {
       method: "eth_blockNumber",
       params: [],
     },
+    signal,
   });
 
   return {
@@ -29,9 +31,10 @@ async function fetchChainStatus() {
  * - more than 12000 blocks / 60 minutes: down
  */
 export const $fetchSystemStatus = createServerFn().handler(async () => {
+  const signal = getRequestSignal();
   return await remember(`system-status`, 60 * 5, async () => {
     const [{ blockHeight }, processorHeight] = await Promise.all([
-      fetchChainStatus(),
+      fetchChainStatus(signal),
       fetchProcessorHeight(),
     ]);
 

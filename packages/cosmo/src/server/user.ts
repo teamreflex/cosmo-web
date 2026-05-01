@@ -9,16 +9,21 @@ import { cosmo } from "./http";
 /**
  * Fetch a user from COSMO by nickname.
  */
-export async function fetchByNickname(nickname: string) {
+export async function fetchByNickname(nickname: string, signal?: AbortSignal) {
   return await cosmo<CosmoByNickname>(`/bff/v3/users/by-nickname/${nickname}`, {
     retry: false,
+    signal,
   });
 }
 
 /**
  * Search for the given user.
  */
-export async function search(token: string, term: string) {
+export async function search(
+  token: string,
+  term: string,
+  signal?: AbortSignal,
+) {
   return await cosmo<CosmoSearchResult>("/bff/v3/users/search", {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -28,6 +33,7 @@ export async function search(token: string, term: string) {
       skip: 0,
       take: 100,
     },
+    signal,
   });
 }
 
@@ -38,6 +44,7 @@ export async function fetchUserProfile(
   token: string,
   userId: number,
   artistId: ValidArtist,
+  signal?: AbortSignal,
 ) {
   return await cosmo<CosmoUserProfile>(`/bff/v3/users/${userId}`, {
     headers: {
@@ -46,5 +53,6 @@ export async function fetchUserProfile(
     query: {
       artistId,
     },
+    signal,
   });
 }

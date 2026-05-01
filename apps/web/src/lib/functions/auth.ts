@@ -3,6 +3,7 @@ import { linkAccount } from "@/lib/server/cosmo-accounts.server";
 import { authenticatedMiddleware } from "@/lib/server/middlewares";
 import { importObjektLists } from "@/lib/server/objekts/lists.server";
 import { getProxiedToken } from "@/lib/server/proxied-token.server";
+import { getRequestSignal } from "@/lib/server/request.server";
 import {
   clearVerification,
   getVerification,
@@ -69,11 +70,13 @@ export const $verifyCosmoBio = createServerFn({ method: "POST" })
     }
 
     // fetch the user's profile from cosmo
-    const { accessToken } = await getProxiedToken();
+    const signal = getRequestSignal();
+    const { accessToken } = await getProxiedToken(signal);
     const profile = await fetchUserProfile(
       accessToken,
       data.userId,
       data.artistId,
+      signal,
     );
 
     // check if the bio contains the verification code

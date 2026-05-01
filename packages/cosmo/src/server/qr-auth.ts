@@ -56,7 +56,10 @@ export async function getRecaptchaToken(config: QrAuthConfig) {
 /**
  * Exchange a Google reCAPTCHA token for a login ticket.
  */
-export async function exchangeLoginTicket(recaptchaToken: string) {
+export async function exchangeLoginTicket(
+  recaptchaToken: string,
+  signal?: AbortSignal,
+) {
   return await cosmoShop<AuthTicket>(
     `/bff/v1/users/auth/login/native/qr/ticket`,
     {
@@ -70,6 +73,7 @@ export async function exchangeLoginTicket(recaptchaToken: string) {
       query: {
         tid: crypto.randomUUID(),
       },
+      signal,
     },
   );
 }
@@ -77,7 +81,7 @@ export async function exchangeLoginTicket(recaptchaToken: string) {
 /**
  * Query the ticket status.
  */
-export async function queryTicket(ticket: string) {
+export async function queryTicket(ticket: string, signal?: AbortSignal) {
   return await cosmoShop<QueryTicket>(
     `/bff/v1/users/auth/login/native/qr/ticket`,
     {
@@ -85,6 +89,7 @@ export async function queryTicket(ticket: string) {
         tid: crypto.randomUUID(),
         ticket,
       },
+      signal,
     },
   );
 }
@@ -92,7 +97,11 @@ export async function queryTicket(ticket: string) {
 /**
  * Certify the ticket.
  */
-export async function certifyTicket(otp: number, ticket: string) {
+export async function certifyTicket(
+  otp: number,
+  ticket: string,
+  signal?: AbortSignal,
+) {
   return await cosmoShop.raw<void>(
     `/bff/v1/users/auth/login/native/qr/ticket/certify`,
     {
@@ -104,6 +113,7 @@ export async function certifyTicket(otp: number, ticket: string) {
       query: {
         tid: crypto.randomUUID(),
       },
+      signal,
     },
   );
 }

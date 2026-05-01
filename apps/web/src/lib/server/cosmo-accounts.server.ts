@@ -14,6 +14,7 @@ import { db } from "./db";
  */
 export async function fetchFullAccount(
   identifier: string,
+  signal?: AbortSignal,
 ): Promise<FullAccount | undefined> {
   const identifierIsAddress = isAddress(identifier);
 
@@ -70,7 +71,7 @@ export async function fetchFullAccount(
 
   // attempt to fetch from cosmo
   try {
-    const user = await fetchByNickname(identifier);
+    const user = await fetchByNickname(identifier, signal);
 
     // cache & upsert profile
     await cacheAccounts([
@@ -81,7 +82,7 @@ export async function fetchFullAccount(
       },
     ]);
 
-    return await fetchFullAccount(user.nickname);
+    return await fetchFullAccount(user.nickname, signal);
   } catch (err) {
     if (err instanceof FetchError && err.status !== 404) {
       console.error(`[fetchFullAccount] ${err.status} from COSMO`, err);

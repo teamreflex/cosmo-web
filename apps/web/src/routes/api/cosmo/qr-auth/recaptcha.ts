@@ -49,7 +49,7 @@ export const Route = createFileRoute("/api/cosmo/qr-auth/recaptcha")({
 
         // exchange recaptcha token for a cosmo qr ticket
         try {
-          var ticket = await exchangeLoginTicket(recaptcha);
+          var ticket = await exchangeLoginTicket(recaptcha, request.signal);
         } catch (err) {
           console.error("[exchangeLoginTicket] error:", err);
           return Response.json(

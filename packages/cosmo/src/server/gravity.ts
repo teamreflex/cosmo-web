@@ -17,7 +17,11 @@ type CosmoGravityList = {
 /**
  * Fetch the list of gravities for the given artist.
  */
-export async function fetchGravities(token: string, artistId: ValidArtist) {
+export async function fetchGravities(
+  token: string,
+  artistId: ValidArtist,
+  signal?: AbortSignal,
+) {
   return await cosmo<CosmoGravityList>(`/bff/v3/gravities`, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -25,19 +29,25 @@ export async function fetchGravities(token: string, artistId: ValidArtist) {
     query: {
       artistId,
     },
+    signal,
   });
 }
 
 /**
  * Fetch a single gravity.
  */
-export async function fetchGravity(token: string, gravityId: number) {
+export async function fetchGravity(
+  token: string,
+  gravityId: number,
+  signal?: AbortSignal,
+) {
   return await cosmo<{ gravity: CosmoGravity }>(
     `/bff/v3/gravities/${gravityId}`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
       },
+      signal,
     },
   )
     .then((res: { gravity: CosmoGravity }) => res.gravity)
@@ -47,13 +57,18 @@ export async function fetchGravity(token: string, gravityId: number) {
 /**
  * Fetch the poll fields.
  */
-export async function fetchPoll(token: string, pollId: number) {
+export async function fetchPoll(
+  token: string,
+  pollId: number,
+  signal?: AbortSignal,
+) {
   return await cosmo<{ pollDetail: CosmoPollChoices }>(
     `/bff/v3/polls/${pollId}`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
       },
+      signal,
     },
   ).then((res: { pollDetail: CosmoPollChoices }) => res.pollDetail);
 }
