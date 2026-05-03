@@ -1,5 +1,10 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -99,8 +104,11 @@ function Row({ user, candidates }: RowProps) {
       });
     }
 
-    return breakdown;
+    return breakdown.sort((a, b) => b.comoAmount - a.comoAmount);
   }, [user.votes, candidates]);
+
+  const visibleVotes = votes.slice(0, 3);
+  const hiddenVotes = votes.slice(3);
 
   return (
     <div className="flex h-12 w-full items-center rounded-lg bg-secondary/70 px-4 transition-all hover:bg-secondary">
@@ -109,48 +117,107 @@ function Row({ user, candidates }: RowProps) {
         <span className="text-xs">{totalComo.toLocaleString()} COMO</span>
       </div>
 
-      <span className="ml-auto flex items-center -space-x-3">
-        {votes.map((vote) => (
-          <TooltipProvider key={vote.id}>
-            {vote.candidate !== null ? (
-              <Tooltip>
-                <TooltipTrigger>
-                  <Avatar className="size-8 rounded ring ring-secondary">
-                    <AvatarFallback>
-                      {vote.candidate.title.at(0)}
-                    </AvatarFallback>
-                    <AvatarImage
-                      src={vote.candidate.imageUrl}
-                      alt={vote.candidate.title}
-                    />
-                  </Avatar>
-                </TooltipTrigger>
-                <TooltipContent className="flex flex-col">
-                  <span className="font-semibold">{vote.candidate.title}</span>
-                  <span className="text-xs">
-                    {vote.comoAmount.toLocaleString()} COMO
-                  </span>
-                </TooltipContent>
-              </Tooltip>
-            ) : (
-              <Tooltip>
-                <TooltipTrigger>
-                  <div className="flex size-8 items-center justify-center rounded bg-accent ring ring-secondary">
-                    <IconQuestionMark className="size-5 text-foreground" />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent className="flex flex-col">
-                  <span className="font-semibold italic">
-                    {m.gravity_unrevealed()}
-                  </span>
-                  <span className="text-xs">
-                    {vote.comoAmount.toLocaleString()} COMO
-                  </span>
-                </TooltipContent>
-              </Tooltip>
-            )}
-          </TooltipProvider>
-        ))}
+      <span className="ml-auto flex items-center gap-1">
+        <span className="flex flex-row-reverse items-center -space-x-3 space-x-reverse">
+          {visibleVotes.toReversed().map((vote) => (
+            <VoteAvatar key={vote.id} vote={vote} />
+          ))}
+        </span>
+        {hiddenVotes.length > 0 && (
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                className="flex size-8 items-center justify-center rounded bg-accent text-xs font-semibold ring ring-secondary"
+              >
+                +{hiddenVotes.length}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent
+              align="end"
+              className="max-h-56 w-auto min-w-52 gap-1 overflow-y-auto p-2"
+            >
+              {hiddenVotes.map((vote) => (
+                <HiddenVoteRow key={vote.id} vote={vote} />
+              ))}
+            </PopoverContent>
+          </Popover>
+        )}
+      </span>
+    </div>
+  );
+}
+
+function VoteAvatar({ vote }: { vote: CandidateBreakdown }) {
+  return (
+    <TooltipProvider>
+      {vote.candidate !== null ? (
+        <Tooltip>
+          <TooltipTrigger>
+            <Avatar className="size-8 rounded bg-accent ring ring-secondary">
+              <AvatarFallback>{vote.candidate.title.at(0)}</AvatarFallback>
+              <AvatarImage
+                src={vote.candidate.imageUrl}
+                alt={vote.candidate.title}
+              />
+            </Avatar>
+          </TooltipTrigger>
+          <TooltipContent className="flex flex-col">
+            <span className="font-semibold">{vote.candidate.title}</span>
+            <span className="text-xs">
+              {vote.comoAmount.toLocaleString()} COMO
+            </span>
+          </TooltipContent>
+        </Tooltip>
+      ) : (
+        <Tooltip>
+          <TooltipTrigger>
+            <div className="flex size-8 items-center justify-center rounded bg-accent ring ring-secondary">
+              <IconQuestionMark className="size-5 text-foreground" />
+            </div>
+          </TooltipTrigger>
+          <TooltipContent className="flex flex-col">
+            <span className="font-semibold italic">
+              {m.gravity_unrevealed()}
+            </span>
+            <span className="text-xs">
+              {vote.comoAmount.toLocaleString()} COMO
+            </span>
+          </TooltipContent>
+        </Tooltip>
+      )}
+    </TooltipProvider>
+  );
+}
+
+function HiddenVoteRow({ vote }: { vote: CandidateBreakdown }) {
+  if (vote.candidate === null) {
+    return (
+      <div className="flex items-center gap-2">
+        <div className="flex size-6 items-center justify-center rounded bg-accent">
+          <IconQuestionMark className="size-4 text-foreground" />
+        </div>
+        <span className="flex-1 truncate text-sm font-medium italic">
+          {m.gravity_unrevealed()}
+        </span>
+        <span className="text-xs tabular-nums text-muted-foreground">
+          {vote.comoAmount.toLocaleString()} COMO
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <Avatar className="size-6 rounded">
+        <AvatarFallback>{vote.candidate.title.at(0)}</AvatarFallback>
+        <AvatarImage src={vote.candidate.imageUrl} alt={vote.candidate.title} />
+      </Avatar>
+      <span className="flex-1 truncate text-sm font-medium">
+        {vote.candidate.title}
+      </span>
+      <span className="text-xs tabular-nums text-muted-foreground">
+        {vote.comoAmount.toLocaleString()} COMO
       </span>
     </div>
   );
