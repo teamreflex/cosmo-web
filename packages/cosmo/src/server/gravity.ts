@@ -20,7 +20,7 @@ type CosmoGravityList = {
 export async function fetchGravities(
   token: string,
   artistId: ValidArtist,
-  signal?: AbortSignal,
+  signal: AbortSignal | null = null,
 ) {
   return await cosmo<CosmoGravityList>(`/bff/v3/gravities`, {
     headers: {
@@ -39,7 +39,7 @@ export async function fetchGravities(
 export async function fetchGravity(
   token: string,
   gravityId: number,
-  signal?: AbortSignal,
+  signal: AbortSignal | null = null,
 ) {
   return await cosmo<{ gravity: CosmoGravity }>(
     `/bff/v3/gravities/${gravityId}`,
@@ -60,7 +60,7 @@ export async function fetchGravity(
 export async function fetchPoll(
   token: string,
   pollId: number,
-  signal?: AbortSignal,
+  signal: AbortSignal | null = null,
 ) {
   return await cosmo<{ pollDetail: CosmoPollChoices }>(
     `/bff/v3/polls/${pollId}`,

@@ -6,7 +6,7 @@ type FetchSummariesParams = {
   session: string;
   artistId: ValidArtist;
   className: string;
-  signal?: AbortSignal;
+  signal?: AbortSignal | null;
 };
 
 /**
@@ -16,7 +16,7 @@ export async function fetchObjektSummaries({
   session,
   artistId,
   className,
-  signal,
+  signal = null,
 }: FetchSummariesParams): Promise<ObjektSummary[]> {
   const response = await cosmo<ObjektSummariesResponse>(
     "/bff/v3/objekt-summaries",

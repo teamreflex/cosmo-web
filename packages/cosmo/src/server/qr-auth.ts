@@ -58,7 +58,7 @@ export async function getRecaptchaToken(config: QrAuthConfig) {
  */
 export async function exchangeLoginTicket(
   recaptchaToken: string,
-  signal?: AbortSignal,
+  signal: AbortSignal | null = null,
 ) {
   return await cosmoShop<AuthTicket>(
     `/bff/v1/users/auth/login/native/qr/ticket`,
@@ -81,7 +81,10 @@ export async function exchangeLoginTicket(
 /**
  * Query the ticket status.
  */
-export async function queryTicket(ticket: string, signal?: AbortSignal) {
+export async function queryTicket(
+  ticket: string,
+  signal: AbortSignal | null = null,
+) {
   return await cosmoShop<QueryTicket>(
     `/bff/v1/users/auth/login/native/qr/ticket`,
     {
@@ -100,7 +103,7 @@ export async function queryTicket(ticket: string, signal?: AbortSignal) {
 export async function certifyTicket(
   otp: number,
   ticket: string,
-  signal?: AbortSignal,
+  signal: AbortSignal | null = null,
 ) {
   return await cosmoShop.raw<void>(
     `/bff/v1/users/auth/login/native/qr/ticket/certify`,

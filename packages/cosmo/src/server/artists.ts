@@ -5,7 +5,10 @@ import { cosmo } from "./http";
 /**
  * Fetch artists within COSMO.
  */
-export async function fetchArtists(token: string, signal?: AbortSignal) {
+export async function fetchArtists(
+  token: string,
+  signal: AbortSignal | null = null,
+) {
   return await cosmo<CosmoArtist[]>(`/bff/v3/artists`, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -20,7 +23,7 @@ export async function fetchArtists(token: string, signal?: AbortSignal) {
 export async function fetchArtist(
   token: string,
   artistId: ValidArtist,
-  signal?: AbortSignal,
+  signal: AbortSignal | null = null,
 ) {
   return await cosmo<CosmoArtistWithMembersBFF>(`/bff/v3/artists/${artistId}`, {
     headers: {

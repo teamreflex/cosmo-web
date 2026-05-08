@@ -9,7 +9,10 @@ import { cosmo } from "./http";
 /**
  * Fetch a user from COSMO by nickname.
  */
-export async function fetchByNickname(nickname: string, signal?: AbortSignal) {
+export async function fetchByNickname(
+  nickname: string,
+  signal: AbortSignal | null = null,
+) {
   return await cosmo<CosmoByNickname>(`/bff/v3/users/by-nickname/${nickname}`, {
     retry: false,
     signal,
@@ -22,7 +25,7 @@ export async function fetchByNickname(nickname: string, signal?: AbortSignal) {
 export async function search(
   token: string,
   term: string,
-  signal?: AbortSignal,
+  signal: AbortSignal | null = null,
 ) {
   return await cosmo<CosmoSearchResult>("/bff/v3/users/search", {
     headers: {
@@ -44,7 +47,7 @@ export async function fetchUserProfile(
   token: string,
   userId: number,
   artistId: ValidArtist,
-  signal?: AbortSignal,
+  signal: AbortSignal | null = null,
 ) {
   return await cosmo<CosmoUserProfile>(`/bff/v3/users/${userId}`, {
     headers: {
