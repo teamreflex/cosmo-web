@@ -26,7 +26,9 @@ export function buildCalendar(date: Date, objekts: ObjektWithCollection[]) {
   const lastDayOfMonth = currentDays.at(-1)!;
 
   for (const objekt of objekts) {
-    const day = new Date(objekt.mintedAt).getDate();
+    // anchor to UTC: COSMO drops at midnight UTC (9am KST), so the drop
+    // day is the UTC day of the original mint regardless of viewer locale
+    const day = new Date(objekt.mintedAt).getUTCDate();
 
     // initialize day
     if (!calendar[day]) {
