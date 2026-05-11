@@ -3,10 +3,18 @@ import { addr, chunk, slugifyObjekt } from "@apollo/util";
 import { Addresses } from "@apollo/util";
 import { TypeormDatabase, type Store } from "@subsquid/typeorm-store";
 import { randomUUID } from "crypto";
+import { In, IsNull, LessThan } from "typeorm";
 import { env } from "./env";
 import { fetchMetadataWithRetry } from "./metadata";
-import { Collection, ComoBalance, Objekt, type Transfer, Vote } from "./model";
-import { ListEventOutbox } from "./model";
+import {
+  Collection,
+  ComoBalance,
+  ListEventOutbox,
+  Objekt,
+  Transfer,
+  TransferBacklog,
+  Vote,
+} from "./model";
 import {
   type ComoBalanceEvent,
   type RevealFunction,
@@ -16,6 +24,9 @@ import {
 } from "./parser";
 import { processor, type ProcessorContext } from "./processor";
 
+const BACKLOG_COOLDOWN_MINUTES = 5;
+const BACKLOG_MAX_BATCH_SIZE = 1000;
+
 const db = new TypeormDatabase({ supportHotBlocks: true });
 
 processor.run(db, async (ctx) => {
@@ -23,94 +34,11 @@ processor.run(db, async (ctx) => {
     parseBlocks(ctx.blocks);
 
   if (env.ENABLE_OBJEKTS) {
-    if (transfers.length > 0) {
-      ctx.log.info(`Processing ${transfers.length} objekt transfers`);
-    }
+    // drain previously-failed transfers first so live processing builds on any state recovered from the backlog
+    await drainBacklog(ctx);
 
-    // chunk everything into batches
-    await chunk(transfers, env.COSMO_PARALLEL_COUNT, async (chunk) => {
-      const transferBatch: Transfer[] = [];
-      const collectionBatch = new Map<string, Collection>();
-      const objektBatch = new Map<string, Objekt>();
-
-      const metadataBatch = await Promise.allSettled(
-        chunk.map((e) => fetchMetadataWithRetry(e.tokenId)),
-      );
-
-      // iterate over each objekt metadata request
-      for (let j = 0; j < metadataBatch.length; j++) {
-        const request = metadataBatch[j];
-        const transfer = chunk[j];
-        if (!transfer || !request || request.status === "rejected") {
-          ctx.log.error(
-            `Unable to fetch metadata for token ${transfer?.tokenId ?? "unknown"}`,
-          );
-          continue;
-        }
-
-        // handle collection
-        const collection = await handleCollection(
-          ctx,
-          request.value,
-          collectionBatch,
-          transfer,
-        );
-        collectionBatch.set(collection.slug, collection);
-
-        // handle objekt
-        const objekt = await handleObjekt(
-          ctx,
-          request.value,
-          objektBatch,
-          transfer,
-        );
-        objekt.collection = collection;
-        objektBatch.set(objekt.id, objekt);
-
-        // handle transfer
-        transfer.objekt = objekt;
-        transfer.collection = collection;
-        transferBatch.push(transfer);
-      }
-
-      // upsert collections
-      if (collectionBatch.size > 0) {
-        await ctx.store.upsert(Array.from(collectionBatch.values()));
-      }
-
-      // upsert objekts
-      if (objektBatch.size > 0) {
-        await ctx.store.upsert(Array.from(objektBatch.values()));
-      }
-
-      // upsert transfers
-      if (transferBatch.length > 0) {
-        await ctx.store.upsert(transferBatch);
-      }
-
-      // mints should not be inserted into the outbox
-      const userTransfers = transferBatch.filter(
-        (t) => t.from !== Addresses.NULL,
-      );
-
-      // insert outbox rows
-      if (userTransfers.length > 0) {
-        const outboxRows = userTransfers.map(
-          (t) =>
-            new ListEventOutbox({
-              transferId: t.id,
-              fromAddress: t.from,
-              toAddress: t.to,
-              // store the slug (not the UUID) so the web-side drain can match
-              // it directly against objekt_list_entries.collection_id, which is also a slug.
-              collectionId: t.collection.slug,
-              tokenId: t.tokenId,
-              timestamp: new Date(t.timestamp),
-            }),
-        );
-        await ctx.store.insert(outboxRows);
-      }
-    });
+    // handle live, incoming transfers
+    await processTransfers(ctx, { source: "live", rows: transfers });
 
     // process transferability updates separately from transfers
     if (transferability.length > 0) {
@@ -212,6 +140,13 @@ async function handleCollection(
     });
   }
 
+  // rewind createdAt if a backlog replay surfaces an older transfer for this
+  // collection — symmetric with the mintedAt floor in handleObjekt
+  const ts = new Date(transfer.timestamp);
+  if (ts < collection.createdAt) {
+    collection.createdAt = ts;
+  }
+
   // set and/or update metadata
   collection.season = metadata.objekt.season;
   collection.member = metadata.objekt.member;
@@ -233,13 +168,15 @@ async function handleCollection(
 }
 
 /**
- * Create or update the objekt row.
+ * Create or update the objekt row. Gates ensure out-of-order replays from the
+ * backlog drain don't clobber newer state.
  */
 async function handleObjekt(
   ctx: ProcessorContext<Store>,
   metadata: CosmoObjektMetadataV1,
   buffer: Map<string, Objekt>,
   transfer: Transfer,
+  source: "live" | "backlog",
 ) {
   // fetch out of buffer
   let objekt = buffer.get(transfer.tokenId);
@@ -249,26 +186,40 @@ async function handleObjekt(
     objekt = await ctx.store.get(Objekt, transfer.tokenId);
   }
 
-  // if not new, update fields. skip transferable
   if (objekt) {
-    objekt.receivedAt = new Date(transfer.timestamp);
-    objekt.owner = addr(transfer.to);
+    const ts = new Date(transfer.timestamp);
+
+    // only update these when the transfer is new
+    if (ts > objekt.receivedAt) {
+      objekt.receivedAt = ts;
+      objekt.owner = addr(transfer.to);
+    }
+
+    // backlog may be replaying an older transfer
+    if (ts < objekt.mintedAt) {
+      objekt.mintedAt = ts;
+    }
+
+    /**
+     * a backlog drain may have missed transferability updates while the
+     * objekt didn't exist; metadata reflects current on-chain state so we
+     * accept it here. the live path leaves transferability to handleTransferabilityUpdates.
+     */
+    if (source === "backlog") {
+      objekt.transferable = metadata.objekt.transferable;
+    }
+
     return objekt;
   }
 
-  // otherwise create it
-  if (!objekt) {
-    objekt = new Objekt({
-      id: transfer.tokenId,
-      mintedAt: new Date(transfer.timestamp),
-      receivedAt: new Date(transfer.timestamp),
-      owner: addr(transfer.to),
-      serial: metadata.objekt.objektNo,
-      transferable: metadata.objekt.transferable,
-    });
-  }
-
-  return objekt;
+  return new Objekt({
+    id: transfer.tokenId,
+    mintedAt: new Date(transfer.timestamp),
+    receivedAt: new Date(transfer.timestamp),
+    owner: addr(transfer.to),
+    serial: metadata.objekt.objektNo,
+    transferable: metadata.objekt.transferable,
+  });
 }
 
 /**
@@ -418,5 +369,234 @@ async function handleReveals(
     if (toUpdate.length > 0) {
       await ctx.store.upsert(toUpdate);
     }
+  }
+}
+
+type ProcessTransfersInput =
+  | { source: "live"; rows: Transfer[] }
+  | { source: "backlog"; rows: TransferBacklog[] };
+
+type TransferItem = { transfer: Transfer; backlogId: string | null };
+
+/**
+ * Process a batch of transfers through the metadata pipeline. Live transfers
+ * emit outbox rows and capture failures into the backlog; backlog rows are
+ * tracked per-row so the caller can delete successes and bump failure counters.
+ */
+async function processTransfers(
+  ctx: ProcessorContext<Store>,
+  input: ProcessTransfersInput,
+): Promise<{ succeededIds: string[]; failedIds: string[] }> {
+  const items: TransferItem[] =
+    input.source === "backlog"
+      ? input.rows.map((row) => ({
+          transfer: new Transfer({
+            id: randomUUID(),
+            hash: row.hash,
+            from: row.from,
+            to: row.to,
+            tokenId: row.tokenId,
+            timestamp: row.timestamp,
+          }),
+          backlogId: row.id,
+        }))
+      : input.rows.map((transfer) => ({ transfer, backlogId: null }));
+
+  const succeededIds: string[] = [];
+  const failedIds: string[] = [];
+
+  if (items.length > 0) {
+    ctx.log.info(
+      `Processing ${items.length} objekt transfers (${input.source})`,
+    );
+  }
+
+  await chunk(items, env.COSMO_PARALLEL_COUNT, async (batch) => {
+    const transferBatch: Transfer[] = [];
+    const collectionBatch = new Map<string, Collection>();
+    const objektBatch = new Map<string, Objekt>();
+    const liveFailures: Transfer[] = [];
+
+    const metadataBatch = await Promise.allSettled(
+      batch.map((item) => fetchMetadataWithRetry(item.transfer.tokenId)),
+    );
+
+    for (let j = 0; j < metadataBatch.length; j++) {
+      const request = metadataBatch[j];
+      const item = batch[j];
+      if (!item || !request) continue;
+
+      if (request.status === "rejected") {
+        ctx.log.error(`Sending token ${item.transfer.tokenId} to backlog`);
+        if (input.source === "backlog" && item.backlogId) {
+          failedIds.push(item.backlogId);
+        } else {
+          liveFailures.push(item.transfer);
+        }
+        continue;
+      }
+
+      const collection = await handleCollection(
+        ctx,
+        request.value,
+        collectionBatch,
+        item.transfer,
+      );
+      collectionBatch.set(collection.slug, collection);
+
+      const objekt = await handleObjekt(
+        ctx,
+        request.value,
+        objektBatch,
+        item.transfer,
+        input.source,
+      );
+      objekt.collection = collection;
+      objektBatch.set(objekt.id, objekt);
+
+      item.transfer.objekt = objekt;
+      item.transfer.collection = collection;
+      transferBatch.push(item.transfer);
+
+      if (input.source === "backlog" && item.backlogId) {
+        succeededIds.push(item.backlogId);
+      }
+    }
+
+    if (collectionBatch.size > 0) {
+      await ctx.store.upsert(Array.from(collectionBatch.values()));
+    }
+    if (objektBatch.size > 0) {
+      await ctx.store.upsert(Array.from(objektBatch.values()));
+    }
+    if (transferBatch.length > 0) {
+      await ctx.store.upsert(transferBatch);
+    }
+
+    // outbox emission is live-only
+    if (input.source === "live") {
+      const userTransfers = transferBatch.filter(
+        (t) => t.from !== Addresses.NULL,
+      );
+      if (userTransfers.length > 0) {
+        const outboxRows = userTransfers.map(
+          (t) =>
+            new ListEventOutbox({
+              transferId: t.id,
+              fromAddress: t.from,
+              toAddress: t.to,
+              // store the slug (not the UUID) so the web-side drain can match
+              // it directly against objekt_list_entries.collection_id, which is also a slug.
+              collectionId: t.collection.slug,
+              tokenId: t.tokenId,
+              timestamp: new Date(t.timestamp),
+            }),
+        );
+        await ctx.store.insert(outboxRows);
+      }
+
+      if (liveFailures.length > 0) {
+        await persistBacklogFailures(ctx, liveFailures);
+      }
+    }
+  });
+
+  return { succeededIds, failedIds };
+}
+
+/**
+ * Insert backlog rows for transfers whose metadata fetch failed, deduplicating
+ * against existing (hash, tokenId) pairs to stay idempotent under hot-block reorgs.
+ */
+async function persistBacklogFailures(
+  ctx: ProcessorContext<Store>,
+  failures: Transfer[],
+) {
+  const existing = await ctx.store.find(TransferBacklog, {
+    where: { hash: In(failures.map((t) => t.hash)) },
+  });
+  const existingKeys = new Set(existing.map((b) => `${b.hash}-${b.tokenId}`));
+
+  const newRows = failures
+    .filter((t) => !existingKeys.has(`${t.hash}-${t.tokenId}`))
+    .map(
+      (t) =>
+        new TransferBacklog({
+          id: randomUUID(),
+          hash: t.hash,
+          from: t.from,
+          to: t.to,
+          tokenId: t.tokenId,
+          timestamp: t.timestamp,
+          retryCount: 0,
+          lastAttemptAt: null,
+          createdAt: new Date(),
+        }),
+    );
+
+  if (newRows.length > 0) {
+    await ctx.store.upsert(newRows);
+  }
+}
+
+/**
+ * Load eligible backlog rows, feed them through the transfer pipeline, then
+ * delete successes and increment retry counters for failures.
+ */
+async function drainBacklog(ctx: ProcessorContext<Store>) {
+  const cutoff = new Date(Date.now() - BACKLOG_COOLDOWN_MINUTES * 60_000);
+  const rows = await ctx.store.find(TransferBacklog, {
+    where: [{ lastAttemptAt: IsNull() }, { lastAttemptAt: LessThan(cutoff) }],
+    order: { timestamp: "ASC" },
+    take: BACKLOG_MAX_BATCH_SIZE,
+  });
+
+  if (rows.length === 0) return;
+
+  ctx.log.info(`Draining ${rows.length} backlog rows`);
+
+  // hot-block reorg dedup: a backlog row's transfer may have been re-parsed
+  // and inserted in a later run with a fresh UUID. Drop the backlog row
+  // outright in that case rather than inserting a duplicate transfer.
+  const hashes = [...new Set(rows.map((r) => r.hash))];
+  const existingTransfers = await ctx.store.find(Transfer, {
+    where: { hash: In(hashes) },
+  });
+  const alreadyPresent = new Set(
+    existingTransfers.map((t) => `${t.hash}-${t.tokenId}`),
+  );
+  const stale = rows.filter((r) =>
+    alreadyPresent.has(`${r.hash}-${r.tokenId}`),
+  );
+  const retryRows = rows.filter(
+    (r) => !alreadyPresent.has(`${r.hash}-${r.tokenId}`),
+  );
+
+  if (stale.length > 0) {
+    await ctx.store.remove(
+      TransferBacklog,
+      stale.map((s) => s.id),
+    );
+  }
+
+  if (retryRows.length === 0) return;
+
+  const { succeededIds, failedIds } = await processTransfers(ctx, {
+    source: "backlog",
+    rows: retryRows,
+  });
+
+  if (succeededIds.length > 0) {
+    await ctx.store.remove(TransferBacklog, succeededIds);
+  }
+  if (failedIds.length > 0) {
+    const failedSet = new Set(failedIds);
+    const failedRows = retryRows.filter((r) => failedSet.has(r.id));
+    const now = new Date();
+    for (const row of failedRows) {
+      row.retryCount += 1;
+      row.lastAttemptAt = now;
+    }
+    await ctx.store.upsert(failedRows);
   }
 }

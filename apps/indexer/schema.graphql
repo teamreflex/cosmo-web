@@ -75,3 +75,15 @@ type ListEventOutbox @entity {
   timestamp: DateTime!
   createdAt: DateTime! @index
 }
+
+type TransferBacklog @entity {
+  id: ID! # uuid
+  hash: String!
+  from: String!
+  to: String!
+  tokenId: String! @index
+  timestamp: DateTime!
+  retryCount: Int!
+  lastAttemptAt: DateTime
+  createdAt: DateTime!
+}

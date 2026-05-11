@@ -9,6 +9,7 @@ import {
   pgTable,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
@@ -115,6 +116,37 @@ export const listEventOutbox = pgTable(
       .defaultNow(),
   },
   (t) => [index("idx_list_event_outbox_created_at").on(t.createdAt)],
+);
+
+export const transferBacklog = pgTable(
+  "transfer_backlog",
+  {
+    id: varchar("id", { length: 36 }).primaryKey(),
+    hash: text("hash").notNull(),
+    from: text("from").notNull(),
+    to: text("to").notNull(),
+    tokenId: text("token_id").notNull(),
+    timestamp: timestamp("timestamp", {
+      mode: "string",
+      withTimezone: true,
+    }).notNull(),
+    retryCount: integer("retry_count").notNull(),
+    lastAttemptAt: timestamp("last_attempt_at", {
+      mode: "string",
+      withTimezone: true,
+    }),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+    })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("idx_transfer_backlog_hash_token_id").on(t.hash, t.tokenId),
+    index("idx_transfer_backlog_last_attempt_at").on(t.lastAttemptAt),
+    index("idx_transfer_backlog_token_id").on(t.tokenId),
+  ],
 );
 
 export const votes = pgTable("vote", {
