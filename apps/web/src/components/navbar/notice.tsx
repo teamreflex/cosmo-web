@@ -15,10 +15,9 @@ export default function Notice() {
       </PopoverTrigger>
       <PopoverContent className="flex flex-col gap-1 text-xs">
         <p>
-          A COSMO update has removed the ability for us to get full objekt data,
-          meaning serials and back-face images are not available.
+          May 11 3:30PM KST: An issue with COSMO is preventing objekts from
+          updating.
         </p>
-        <p>Objekts missing from 3:30AM ~ 5:00AM KST will be fixed soon.</p>
       </PopoverContent>
     </Popover>
   );
