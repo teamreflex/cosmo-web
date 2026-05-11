@@ -17,12 +17,16 @@
     "@subsquid/evm-abi": "^0.3.1",
     "@subsquid/evm-codec": "^0.3.0",
     "@subsquid/evm-processor": "^1.29.1",
+    "@subsquid/graphql-server": "^4.12.0",
     "@subsquid/typeorm-migration": "^1.3.1",
     "@subsquid/typeorm-store": "^1.9.0",
+    "@subsquid/util-internal": "^3.2.0",
+    "dotenv": "^17.4.2",
+    "ethers": "^6.16.0",
     "glob": "^13.0.6",
     "lru-cache": "^11.3.5",
+    "ofetch": "catalog:",
     "path-scurry": "^2.0.2",
-    "pg": "^8.20.0",
     "typeorm": "^0.3.28",
     "zod": "catalog:"
   },
@@ -31,8 +35,8 @@
     "@apollo/typescript": "workspace:*",
     "@subsquid/commands": "^2.3.1",
     "@subsquid/evm-typegen": "^4.6.0",
+    "@subsquid/typeorm-codegen": "^2.2.0",
     "@types/bun": "catalog:",
-    "dotenv": "^17.4.2",
     "turbo": "catalog:",
     "typescript": "catalog:"
   }
