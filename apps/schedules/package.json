@@ -17,6 +17,7 @@
     "@apollo/database": "workspace:*",
     "@apollo/util": "workspace:*",
     "@apollo/util-server": "workspace:*",
+    "@effect/cluster": "catalog:",
     "@effect/platform": "catalog:",
     "@effect/platform-bun": "catalog:",
     "drizzle-orm": "catalog:",
@@ -26,6 +27,7 @@
   "devDependencies": {
     "@apollo/lint": "workspace:*",
     "@apollo/typescript": "workspace:*",
+    "@effect/build-utils": "catalog:",
     "@effect/eslint-plugin": "catalog:",
     "@effect/language-service": "catalog:",
     "@types/bun": "catalog:",

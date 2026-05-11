@@ -83,6 +83,10 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2026-05-11",
+    changes: ["Updated COMO calendars to better match COSMO behavior."],
+  },
+  {
     date: "2026-05-01",
     changes: ["Added support for objekts with audio tracks."],
   },
