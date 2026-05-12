@@ -226,7 +226,7 @@ async function handleCollection(
   collection.frontImage = metadata.objekt.frontImage;
   collection.backImage = metadata.objekt.backImage;
   collection.backgroundColor = metadata.objekt.backgroundColor;
-  collection.textColor = metadata.objekt.textColor;
+  // collection.textColor = metadata.objekt.textColor;
   collection.accentColor = metadata.objekt.accentColor;
 
   return collection;
