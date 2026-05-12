@@ -19,6 +19,20 @@
         "typescript": "catalog:",
       },
     },
+    "apps/archive": {
+      "name": "archive",
+      "version": "1.0.0",
+      "dependencies": {
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@apollo/lint": "workspace:*",
+        "@apollo/typescript": "workspace:*",
+        "@types/bun": "catalog:",
+        "@typescript/native-preview": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
     "apps/indexer": {
       "name": "indexer",
       "version": "1.0.0",
@@ -1662,6 +1676,8 @@
     "apollo-server-types": ["apollo-server-types@3.8.0", "", { "dependencies": { "@apollo/utils.keyvaluecache": "^1.0.1", "@apollo/utils.logger": "^1.0.0", "apollo-reporting-protobuf": "^3.4.0", "apollo-server-env": "^4.2.1" }, "peerDependencies": { "graphql": "^15.3.0 || ^16.0.0" } }, "sha512-ZI/8rTE4ww8BHktsVpb91Sdq7Cb71rdSkXELSwdSR0eXu600/sY+1UXhTWdiJvk+Eq5ljqoHLwLbY2+Clq2b9A=="],
 
     "app-root-path": ["app-root-path@3.1.0", "", {}, "sha512-biN3PwB2gUtjaYy/isrU3aNWI5w+fAfvHkSvCKeQGxhmYpwKFUxudR3Yya+KqVRHBmEDYh+/lTozYCFbmzX4nA=="],
+
+    "archive": ["archive@workspace:apps/archive"],
 
     "argparse": ["argparse@2.0.1", "", {}, "sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q=="],
 

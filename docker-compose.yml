@@ -147,10 +147,10 @@ services:
       - RPC_FINALITY=${INDEXER_RPC_FINALITY}
       - SQD_ENDPOINT=${INDEXER_SQD_ENDPOINT}
       - SQD_KEY=${INDEXER_SQD_KEY}
-      - DB_URL=postgresql://postgres:postgres@postgres-indexer:5432/indexer
-      - DB_NAME=indexer
-      - DB_READ_USER=postgres
-      - DB_READ_PASS=postgres
+      - DB_URL=${INDEXER_DB_URL}
+      - DB_NAME=${INDEXER_DB_NAME}
+      - DB_READ_USER=postgres_read
+      - DB_READ_PASS=postgres_read
       - ENABLE_OBJEKTS=${INDEXER_ENABLE_OBJEKTS}
       - ENABLE_GRAVITY=${INDEXER_ENABLE_GRAVITY}
       - COSMO_PARALLEL_COUNT=${INDEXER_COSMO_PARALLEL_COUNT}
@@ -224,6 +224,35 @@ services:
         condition: service_healthy
       valkey:
         condition: service_healthy
+    networks:
+      - apollo-network
+
+  # subsquid gateway record/replay proxy
+  archive:
+    build:
+      context: .
+      dockerfile: apps/archive/Dockerfile
+    restart: on-failure
+    ports:
+      - "${ARCHIVE_PORT}:${ARCHIVE_PORT}"
+    environment:
+      - PORT=${ARCHIVE_PORT}
+      - MODE=${ARCHIVE_MODE}
+      - UPSTREAM_URL=${ARCHIVE_UPSTREAM_URL}
+      - DATA_DIR=/data
+      - EXTERNAL_BASE_URL=${ARCHIVE_EXTERNAL_BASE_URL}
+    volumes:
+      - ./apps/archive/data:/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -q -O- http://localhost:${ARCHIVE_PORT}/health || exit 1",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     networks:
       - apollo-network
 

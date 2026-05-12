@@ -1,0 +1,30 @@
+{
+  "$schema": "https://turborepo.com/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "dev": {
+      "with": ["//#services"],
+      "persistent": true,
+      "cache": false
+    },
+    "build": {
+      "cache": true,
+      "outputs": ["dist/**"]
+    },
+    "start": {
+      "cache": false
+    },
+    "typecheck": {
+      "cache": true
+    },
+    "lint": {
+      "cache": true
+    },
+    "lint:fix": {
+      "cache": false
+    },
+    "format": {
+      "cache": true
+    }
+  }
+}

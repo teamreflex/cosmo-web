@@ -1,0 +1,25 @@
+{
+  "name": "archive",
+  "version": "1.0.0",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --bun --watch --env-file=../../.env --env-file=../../.env.local ./src/main.ts",
+    "build": "bun build ./src/main.ts --outdir ./dist --target bun",
+    "start": "bun run --bun dist/main.js",
+    "lint": "bun --bun oxlint --type-aware --type-check",
+    "lint:fix": "bun --bun oxlint --type-aware --type-check --fix",
+    "typecheck": "tsgo --pretty --noEmit",
+    "format": "oxfmt ."
+  },
+  "dependencies": {
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@apollo/lint": "workspace:*",
+    "@apollo/typescript": "workspace:*",
+    "@types/bun": "catalog:",
+    "@typescript/native-preview": "catalog:",
+    "typescript": "catalog:"
+  }
+}

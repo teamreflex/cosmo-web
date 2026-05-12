@@ -22,6 +22,10 @@ if [ "${DEV_SERVICES}" = "true" ]; then
     SERVICES="$SERVICES schedules"
   fi
 
+  if [ "${DEV_ARCHIVE}" = "true" ]; then
+    SERVICES="$SERVICES archive"
+  fi
+
   echo "Starting services: $SERVICES"
   exec docker compose up $SERVICES
 else
