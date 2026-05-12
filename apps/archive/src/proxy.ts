@@ -1,7 +1,16 @@
-import { canonicalize } from "./canonicalize";
-import { env } from "./env";
-import type { ProxyRecord, RecordKind } from "./record-types";
-import type { Recorder } from "./recorder";
+import {
+  type Headers as PlatformHeaders,
+  HttpClient,
+  HttpClientRequest,
+  HttpServerRequest,
+  HttpServerResponse,
+} from "@effect/platform";
+import { Effect, Option } from "effect";
+import { canonicalize, canonicalizeRpc } from "./canonicalize";
+import { Env } from "./env";
+import { Recorder } from "./recorder";
+import type { InteractionKind } from "./schema";
+import type { InteractionInsert } from "./types";
 import { decodeWorkerToken, encodeWorkerToken } from "./url-token";
 
 const HOP_BY_HOP = new Set([
@@ -15,442 +24,315 @@ const HOP_BY_HOP = new Set([
   "proxy-connection",
 ]);
 
-const EMPTY_BYTES: Uint8Array<ArrayBuffer> = new Uint8Array(0);
-const textDecoder = new TextDecoder();
-const textEncoder = new TextEncoder();
-
-function toBase64(bytes: Uint8Array): string {
-  return Buffer.from(bytes).toString("base64");
-}
-
-function filterHeaders(input: Headers): Headers {
-  const out = new Headers();
-  for (const [name, value] of input.entries()) {
-    if (HOP_BY_HOP.has(name)) continue;
-    out.append(name, value);
+function filterHeaders(input: PlatformHeaders.Headers): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(input)) {
+    if (HOP_BY_HOP.has(k)) continue;
+    out[k] = v;
   }
   return out;
 }
 
-function headersToArray(headers: Headers): [string, string][] {
-  return Array.from(headers.entries());
+function headersToArray(input: Record<string, string>): [string, string][] {
+  return Object.entries(input);
 }
 
-async function readRequestBytes(
-  req: Request,
-): Promise<Uint8Array<ArrayBuffer>> {
-  if (req.body === null) return EMPTY_BYTES;
-  return new Uint8Array(await req.arrayBuffer());
-}
-
-async function drainToBuffer(
-  stream: ReadableStream<Uint8Array>,
-  limit: number,
-): Promise<{
-  bytes: Uint8Array<ArrayBuffer>;
-  truncated: boolean;
-  truncatedAt: number | null;
-}> {
-  const reader = stream.getReader();
-  const chunks: Uint8Array[] = [];
-  let total = 0;
-  let truncated = false;
-  let truncatedAt: number | null = null;
-  while (true) {
-    const { value, done } = await reader.read();
-    if (done) break;
-    if (total >= limit) continue;
-    if (total + value.byteLength > limit) {
-      const sliceEnd = limit - total;
-      chunks.push(value.subarray(0, sliceEnd));
-      truncated = true;
-      truncatedAt = total;
-      total = limit;
-    } else {
-      chunks.push(value);
-      total += value.byteLength;
-    }
-  }
-  const bytes = new Uint8Array(total);
-  let offset = 0;
-  for (const chunk of chunks) {
-    bytes.set(chunk, offset);
-    offset += chunk.byteLength;
-  }
-  return { bytes, truncated, truncatedAt };
+function decompressIfNeeded(
+  bytes: Uint8Array<ArrayBuffer>,
+  encoding: string | null,
+): Uint8Array<ArrayBuffer> {
+  if (encoding === "gzip") return Bun.gunzipSync(bytes);
+  if (encoding === "deflate") return Bun.inflateSync(bytes);
+  return bytes;
 }
 
 function extractMeta(
-  kind: RecordKind,
-  requestBytes: Uint8Array,
-  responseBytes: Uint8Array,
-): ProxyRecord["meta"] {
+  kind: InteractionKind,
+  reqBody: Uint8Array,
+  resBody: Uint8Array,
+): {
+  blockFrom: number | null;
+  blockTo: number | null;
+  workerUrl: string | null;
+  height: number | null;
+  rpcMethod: string | null;
+} {
+  const empty = {
+    blockFrom: null,
+    blockTo: null,
+    workerUrl: null,
+    height: null,
+    rpcMethod: null,
+  };
+  const td = new TextDecoder();
   if (kind === "height") {
-    const text = textDecoder.decode(responseBytes).trim();
-    const n = Number.parseInt(text, 10);
-    return {
-      blockRange: null,
-      workerUrl: null,
-      height: Number.isFinite(n) ? n : null,
-    };
+    const n = Number.parseInt(td.decode(resBody).trim(), 10);
+    return { ...empty, height: Number.isFinite(n) ? n : null };
   }
   if (kind === "worker-lookup") {
-    const text = textDecoder.decode(responseBytes).trim();
-    return {
-      blockRange: null,
-      workerUrl: text.length > 0 ? text : null,
-      height: null,
-    };
+    const text = td.decode(resBody).trim();
+    return { ...empty, workerUrl: text.length > 0 ? text : null };
   }
-  // worker-query
-  try {
-    const body = JSON.parse(textDecoder.decode(requestBytes)) as Record<
-      string,
-      unknown
-    >;
-    const fromRaw = body.fromBlock;
-    const toRaw = body.toBlock;
-    const from =
-      typeof fromRaw === "number"
-        ? fromRaw
-        : typeof fromRaw === "string"
-          ? Number.parseInt(fromRaw, 10)
-          : NaN;
-    if (!Number.isFinite(from))
-      return { blockRange: null, workerUrl: null, height: null };
-    const to =
-      typeof toRaw === "number"
-        ? toRaw
-        : typeof toRaw === "string"
-          ? Number.parseInt(toRaw, 10)
-          : null;
-    return {
-      blockRange: {
-        from,
-        to: typeof to === "number" && Number.isFinite(to) ? to : null,
-      },
-      workerUrl: null,
-      height: null,
-    };
-  } catch {
-    return { blockRange: null, workerUrl: null, height: null };
+  if (kind === "worker-query") {
+    try {
+      const body = JSON.parse(td.decode(reqBody)) as Record<string, unknown>;
+      const fromRaw = body.fromBlock;
+      const toRaw = body.toBlock;
+      const from =
+        typeof fromRaw === "number"
+          ? fromRaw
+          : typeof fromRaw === "string"
+            ? Number.parseInt(fromRaw, 10)
+            : NaN;
+      const to =
+        typeof toRaw === "number"
+          ? toRaw
+          : typeof toRaw === "string"
+            ? Number.parseInt(toRaw, 10)
+            : NaN;
+      return {
+        ...empty,
+        blockFrom: Number.isFinite(from) ? from : null,
+        blockTo: Number.isFinite(to) ? to : null,
+      };
+    } catch {
+      return empty;
+    }
   }
+  if (kind === "rpc") {
+    try {
+      const body = JSON.parse(td.decode(reqBody)) as
+        | { method?: unknown }
+        | { method?: unknown }[];
+      const methods = Array.isArray(body)
+        ? body
+            .map((c) => (typeof c.method === "string" ? c.method : null))
+            .filter((m): m is string => m !== null)
+        : typeof body.method === "string"
+          ? [body.method]
+          : [];
+      return { ...empty, rpcMethod: methods[0] ?? null };
+    } catch {
+      return empty;
+    }
+  }
+  return empty;
 }
 
-export class Proxy {
-  #recorder: Recorder;
-  #externalBaseUrl: string;
-  #pending = new Set<Promise<void>>();
+/**
+ * @effect-expect-leaking HttpServerRequest
+ */
+export class Proxy extends Effect.Service<Proxy>()("app/Proxy", {
+  effect: Effect.gen(function* () {
+    const env = yield* Env;
+    const recorder = yield* Recorder;
+    const client = yield* HttpClient.HttpClient;
 
-  constructor(recorder: Recorder, externalBaseUrl: string) {
-    this.#recorder = recorder;
-    this.#externalBaseUrl = externalBaseUrl;
-  }
-
-  handleHeight(req: Request): Promise<Response> {
-    return this.#proxyStream(req, "height", `${env.UPSTREAM_URL}/height`);
-  }
-
-  handleWorkerLookup(req: Request, fromBlock: string): Promise<Response> {
-    return this.#proxyWorkerLookup(
-      req,
-      `${env.UPSTREAM_URL}/${fromBlock}/worker`,
-    );
-  }
-
-  handleWorkerQuery(req: Request, token: string): Promise<Response> {
-    let upstreamUrl: URL;
-    try {
-      upstreamUrl = decodeWorkerToken(token);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      console.warn(`[archive] ${message}`);
-      return Promise.resolve(
-        new Response(message, {
-          status: 400,
-          headers: { "content-type": "text/plain" },
-        }),
-      );
-    }
-    return this.#proxyStream(req, "worker-query", upstreamUrl.toString());
-  }
-
-  async drain(): Promise<void> {
-    await Promise.allSettled(this.#pending);
-  }
-
-  #track(task: Promise<void>): void {
-    this.#pending.add(task);
-    void task.finally(() => this.#pending.delete(task));
-  }
-
-  async #proxyStream(
-    req: Request,
-    kind: RecordKind,
-    upstreamUrl: string,
-  ): Promise<Response> {
-    const id = crypto.randomUUID();
-    const ts = new Date().toISOString();
-    const t0 = performance.now();
-    const reqUrl = new URL(req.url);
-    const incomingPath = reqUrl.pathname + reqUrl.search;
-    const outboundHeaders = filterHeaders(req.headers);
-    const outboundHeadersArr = headersToArray(outboundHeaders);
-    const requestBytes = await readRequestBytes(req);
-    const { canonical, hash } =
-      kind === "worker-query"
-        ? canonicalize(requestBytes)
-        : { canonical: null, hash: null };
-
-    let upstreamRes: Response;
-    try {
-      upstreamRes = await fetch(upstreamUrl, {
-        method: req.method,
-        headers: outboundHeaders,
-        body: requestBytes.byteLength > 0 ? requestBytes : undefined,
-        signal: req.signal,
-        decompress: false,
-      });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      const errBody = textEncoder.encode(`upstream error: ${message}`);
-      this.#recorder.record({
-        schemaVersion: 1,
-        id,
-        ts,
-        tsEnd: new Date().toISOString(),
-        durationMs: performance.now() - t0,
-        kind,
-        req: {
-          method: req.method,
-          incomingPath,
-          upstreamUrl,
-          headers: outboundHeadersArr,
-          bodyBase64: toBase64(requestBytes),
-          bodyHash: hash,
-          bodyCanonical: canonical,
-        },
-        res: {
-          status: 0,
-          statusText: "",
-          headers: [],
-          contentEncoding: null,
-          bodyBase64: toBase64(errBody),
-          bodyTruncated: false,
-          bodyTruncatedAt: null,
-        },
-        proxyError: message,
-        meta: { blockRange: null, workerUrl: null, height: null },
-      });
-      return new Response(errBody, {
-        status: 502,
-        headers: { "content-type": "text/plain" },
-      });
-    }
-
-    const responseHeaders = filterHeaders(upstreamRes.headers);
-    const responseHeadersArr = headersToArray(responseHeaders);
-    const contentEncoding = upstreamRes.headers.get("content-encoding");
-
-    if (upstreamRes.body === null) {
-      this.#recorder.record({
-        schemaVersion: 1,
-        id,
-        ts,
-        tsEnd: new Date().toISOString(),
-        durationMs: performance.now() - t0,
-        kind,
-        req: {
-          method: req.method,
-          incomingPath,
-          upstreamUrl,
-          headers: outboundHeadersArr,
-          bodyBase64: toBase64(requestBytes),
-          bodyHash: hash,
-          bodyCanonical: canonical,
-        },
-        res: {
-          status: upstreamRes.status,
-          statusText: upstreamRes.statusText,
-          headers: responseHeadersArr,
-          contentEncoding,
-          bodyBase64: "",
-          bodyTruncated: false,
-          bodyTruncatedAt: null,
-        },
-        proxyError: null,
-        meta: extractMeta(kind, requestBytes, EMPTY_BYTES),
-      });
-      return new Response(null, {
-        status: upstreamRes.status,
-        statusText: upstreamRes.statusText,
-        headers: responseHeaders,
-      });
-    }
-
-    const [forClient, forRecorder] = upstreamRes.body.tee();
-    const recordingTask = (async () => {
+    function externalBase(req: HttpServerRequest.HttpServerRequest): string {
+      if (Option.isSome(env.externalBaseUrl)) {
+        return env.externalBaseUrl.value;
+      }
       try {
-        const { bytes, truncated, truncatedAt } = await drainToBuffer(
-          forRecorder,
-          env.RECORD_BODY_LIMIT_BYTES,
-        );
-        this.#recorder.record({
-          schemaVersion: 1,
+        return new URL(req.url).origin;
+      } catch {
+        return `http://localhost:${env.port}`;
+      }
+    }
+
+    const proxyOne = Effect.fn("Proxy.proxy")(function* (params: {
+      kind: InteractionKind;
+      upstreamUrl: string;
+      rewriteWorkerUrl: boolean;
+    }) {
+      const req = yield* HttpServerRequest.HttpServerRequest;
+      const id = crypto.randomUUID();
+      const ts = new Date().toISOString();
+      const t0 = performance.now();
+
+      const reqUrl = new URL(req.url, "http://x");
+      const incomingPath = reqUrl.pathname + reqUrl.search;
+      const outboundHeaders = filterHeaders(req.headers);
+
+      const reqBuffer = yield* req.arrayBuffer.pipe(
+        Effect.catchTag("RequestError", () =>
+          Effect.succeed(new ArrayBuffer(0)),
+        ),
+      );
+      const reqBytes = new Uint8Array(reqBuffer);
+
+      const { canonical, hash } =
+        params.kind === "worker-query"
+          ? canonicalize(reqBytes)
+          : params.kind === "rpc"
+            ? canonicalizeRpc(reqBytes)
+            : { canonical: null, hash: null };
+
+      const upstreamReq = HttpClientRequest.make(req.method)(
+        params.upstreamUrl,
+      ).pipe(
+        HttpClientRequest.setHeaders(outboundHeaders),
+        reqBytes.byteLength > 0
+          ? HttpClientRequest.bodyUint8Array(
+              reqBytes,
+              outboundHeaders["content-type"] ?? "application/octet-stream",
+            )
+          : (r) => r,
+      );
+
+      const result = yield* Effect.gen(function* () {
+        const res = yield* client.execute(upstreamReq);
+        const buf = yield* res.arrayBuffer;
+        return { res, buf };
+      }).pipe(Effect.either);
+
+      if (result._tag === "Left") {
+        const message = String(result.left);
+        const errBody = new TextEncoder().encode(`upstream error: ${message}`);
+        const entry: InteractionInsert = {
           id,
           ts,
           tsEnd: new Date().toISOString(),
-          durationMs: performance.now() - t0,
-          kind,
-          req: {
-            method: req.method,
-            incomingPath,
-            upstreamUrl,
-            headers: outboundHeadersArr,
-            bodyBase64: toBase64(requestBytes),
-            bodyHash: hash,
-            bodyCanonical: canonical,
-          },
-          res: {
-            status: upstreamRes.status,
-            statusText: upstreamRes.statusText,
-            headers: responseHeadersArr,
-            contentEncoding,
-            bodyBase64: toBase64(bytes),
-            bodyTruncated: truncated,
-            bodyTruncatedAt: truncatedAt,
-          },
-          proxyError: null,
-          meta: extractMeta(kind, requestBytes, bytes),
+          durationMs: Math.round(performance.now() - t0),
+          kind: params.kind,
+          reqMethod: req.method,
+          reqPath: incomingPath,
+          reqUpstream: params.upstreamUrl,
+          reqHeaders: headersToArray(outboundHeaders),
+          reqBody: reqBytes,
+          reqHash: hash,
+          reqCanonical: canonical,
+          resStatus: 0,
+          resStatusText: "",
+          resHeaders: [],
+          resContentEncoding: null,
+          resBody: new Uint8Array(0),
+          resBodyTruncated: false,
+          proxyError: message,
+          blockFrom: null,
+          blockTo: null,
+          workerUrl: null,
+          height: null,
+          rpcMethod: null,
+        };
+        yield* recorder.offer(entry);
+        return HttpServerResponse.uint8Array(errBody, {
+          status: 502,
+          contentType: "text/plain",
         });
-      } catch (err) {
-        console.error(`[archive] drain failed for ${id}:`, err);
       }
-    })();
-    this.#track(recordingTask);
 
-    return new Response(forClient, {
-      status: upstreamRes.status,
-      statusText: upstreamRes.statusText,
-      headers: responseHeaders,
-    });
-  }
+      const upstreamRes = result.right.res;
+      const upstreamBytes = new Uint8Array(result.right.buf as ArrayBuffer);
+      const truncated = upstreamBytes.byteLength > env.recordBodyLimitBytes;
+      const recordedBytes = truncated
+        ? upstreamBytes.subarray(0, env.recordBodyLimitBytes)
+        : upstreamBytes;
 
-  async #proxyWorkerLookup(
-    req: Request,
-    upstreamUrl: string,
-  ): Promise<Response> {
-    const id = crypto.randomUUID();
-    const ts = new Date().toISOString();
-    const t0 = performance.now();
-    const reqUrl = new URL(req.url);
-    const incomingPath = reqUrl.pathname + reqUrl.search;
-    const outboundHeaders = filterHeaders(req.headers);
-    const outboundHeadersArr = headersToArray(outboundHeaders);
+      const resHeadersRaw = Object.fromEntries(
+        Object.entries(upstreamRes.headers).filter(
+          ([k]) => !HOP_BY_HOP.has(k.toLowerCase()),
+        ),
+      );
+      const contentEncoding = resHeadersRaw["content-encoding"] ?? null;
 
-    let upstreamRes: Response;
-    try {
-      upstreamRes = await fetch(upstreamUrl, {
-        method: req.method,
-        headers: outboundHeaders,
-        signal: req.signal,
-        decompress: false,
-      });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      const errBody = textEncoder.encode(`upstream error: ${message}`);
-      this.#recorder.record({
-        schemaVersion: 1,
+      const meta = extractMeta(
+        params.kind,
+        reqBytes,
+        params.kind === "worker-lookup"
+          ? decompressIfNeeded(upstreamBytes, contentEncoding)
+          : upstreamBytes,
+      );
+
+      let responseBody: Uint8Array<ArrayBuffer> = upstreamBytes;
+      let responseHeaders = resHeadersRaw;
+      if (
+        params.rewriteWorkerUrl &&
+        upstreamRes.status >= 200 &&
+        upstreamRes.status < 300 &&
+        meta.workerUrl !== null
+      ) {
+        const rewritten = `${externalBase(req)}/_worker/${encodeWorkerToken(meta.workerUrl)}`;
+        responseBody = new TextEncoder().encode(rewritten);
+        responseHeaders = { ...resHeadersRaw };
+        delete responseHeaders["content-encoding"];
+        delete responseHeaders["content-length"];
+      }
+
+      const entry: InteractionInsert = {
         id,
         ts,
         tsEnd: new Date().toISOString(),
-        durationMs: performance.now() - t0,
-        kind: "worker-lookup",
-        req: {
-          method: req.method,
-          incomingPath,
-          upstreamUrl,
-          headers: outboundHeadersArr,
-          bodyBase64: "",
-          bodyHash: null,
-          bodyCanonical: null,
-        },
-        res: {
-          status: 0,
-          statusText: "",
-          headers: [],
-          contentEncoding: null,
-          bodyBase64: toBase64(errBody),
-          bodyTruncated: false,
-          bodyTruncatedAt: null,
-        },
-        proxyError: message,
-        meta: { blockRange: null, workerUrl: null, height: null },
-      });
-      return new Response(errBody, {
-        status: 502,
-        headers: { "content-type": "text/plain" },
-      });
-    }
+        durationMs: Math.round(performance.now() - t0),
+        kind: params.kind,
+        reqMethod: req.method,
+        reqPath: incomingPath,
+        reqUpstream: params.upstreamUrl,
+        reqHeaders: headersToArray(outboundHeaders),
+        reqBody: reqBytes,
+        reqHash: hash,
+        reqCanonical: canonical,
+        resStatus: upstreamRes.status,
+        resStatusText: "",
+        resHeaders: headersToArray(resHeadersRaw),
+        resContentEncoding: contentEncoding,
+        resBody: recordedBytes,
+        resBodyTruncated: truncated,
+        proxyError: null,
+        ...meta,
+      };
+      yield* recorder.offer(entry);
 
-    const responseHeaders = filterHeaders(upstreamRes.headers);
-    const contentEncoding = upstreamRes.headers.get("content-encoding");
-    const bodyBytes = new Uint8Array(await upstreamRes.arrayBuffer());
-
-    let textBytes = bodyBytes;
-    if (contentEncoding === "gzip") {
-      textBytes = Bun.gunzipSync(bodyBytes);
-    } else if (contentEncoding === "deflate") {
-      textBytes = Bun.inflateSync(bodyBytes);
-    }
-
-    let responseBody: string | Uint8Array<ArrayBuffer>;
-    let responseInitHeaders: Headers;
-    if (upstreamRes.ok) {
-      const upstreamWorkerUrl = textDecoder.decode(textBytes).trim();
-      const rewritten = `${this.#externalBaseUrl}/_worker/${encodeWorkerToken(upstreamWorkerUrl)}`;
-      responseBody = rewritten;
-      responseInitHeaders = filterHeaders(upstreamRes.headers);
-      responseInitHeaders.delete("content-encoding");
-      responseInitHeaders.delete("content-length");
-    } else {
-      responseBody = bodyBytes;
-      responseInitHeaders = responseHeaders;
-    }
-
-    this.#recorder.record({
-      schemaVersion: 1,
-      id,
-      ts,
-      tsEnd: new Date().toISOString(),
-      durationMs: performance.now() - t0,
-      kind: "worker-lookup",
-      req: {
-        method: req.method,
-        incomingPath,
-        upstreamUrl,
-        headers: outboundHeadersArr,
-        bodyBase64: "",
-        bodyHash: null,
-        bodyCanonical: null,
-      },
-      res: {
+      return HttpServerResponse.uint8Array(responseBody, {
         status: upstreamRes.status,
-        statusText: upstreamRes.statusText,
-        headers: headersToArray(responseHeaders),
-        contentEncoding,
-        bodyBase64: toBase64(bodyBytes),
-        bodyTruncated: false,
-        bodyTruncatedAt: null,
-      },
-      proxyError: null,
-      meta: extractMeta("worker-lookup", EMPTY_BYTES, textBytes),
+        headers: responseHeaders,
+      });
     });
 
-    return new Response(responseBody, {
-      status: upstreamRes.status,
-      statusText: upstreamRes.statusText,
-      headers: responseInitHeaders,
+    const handleHeight = proxyOne({
+      kind: "height",
+      upstreamUrl: `${env.upstreamUrl}/height`,
+      rewriteWorkerUrl: false,
     });
-  }
-}
+
+    const handleWorkerLookup = Effect.fn("Proxy.handleWorkerLookup")(function* (
+      fromBlock: string,
+    ) {
+      return yield* proxyOne({
+        kind: "worker-lookup",
+        upstreamUrl: `${env.upstreamUrl}/${fromBlock}/worker`,
+        rewriteWorkerUrl: true,
+      });
+    });
+
+    const handleWorkerQuery = Effect.fn("Proxy.handleWorkerQuery")(function* (
+      token: string,
+    ) {
+      const decoded = yield* Effect.either(decodeWorkerToken(token));
+
+      if (decoded._tag === "Left") {
+        return HttpServerResponse.text(String(decoded.left.cause), {
+          status: 400,
+        });
+      }
+      return yield* proxyOne({
+        kind: "worker-query",
+        upstreamUrl: decoded.right.toString(),
+        rewriteWorkerUrl: false,
+      });
+    });
+
+    const handleRpc = proxyOne({
+      kind: "rpc",
+      upstreamUrl: env.upstreamRpcUrl.toString(),
+      rewriteWorkerUrl: false,
+    });
+
+    return {
+      handleHeight,
+      handleWorkerLookup,
+      handleWorkerQuery,
+      handleRpc,
+    };
+  }),
+  dependencies: [Env.Default, Recorder.Default],
+}) {}

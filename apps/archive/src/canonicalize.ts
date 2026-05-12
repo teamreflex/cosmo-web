@@ -11,12 +11,11 @@ const FILTER_ARRAY_KEYS = new Set([
   "sighash",
   "traceTypes",
 ]);
-const BLOCK_NUMBER_KEYS = new Set(["fromBlock", "toBlock"]);
+const BLOCK_NUMBER_KEYS = new Set(["fromBlock"]); // toBlock excluded — varies with chain head between runs
+const RPC_DROP_KEYS = new Set(["id", "jsonrpc"]);
 
 type Json = string | number | boolean | null | Json[] | { [k: string]: Json };
 
-// Produces a deterministic serialization of the body so semantically-identical
-// requests hash to the same key regardless of cosmetic ordering differences.
 function normalize(value: Json, parentKey: string | null): Json {
   if (value === null) return null;
   if (Array.isArray(value)) {
@@ -34,6 +33,8 @@ function normalize(value: Json, parentKey: string | null): Json {
     const out: Record<string, Json> = {};
     const keys = Object.keys(value).sort();
     for (const k of keys) {
+      // skip toBlock entirely — chain head varies between record and replay
+      if (k === "toBlock") continue;
       out[k] = normalize(value[k] as Json, k);
     }
     return out;
@@ -51,11 +52,24 @@ function normalize(value: Json, parentKey: string | null): Json {
   return value;
 }
 
-// Returns canonical form + sha256 hex, or nulls if the body isn't valid JSON.
-// Empty bodies (zero-length) also return nulls — they aren't eligible for hash matching.
-export function canonicalize(
-  bytes: Uint8Array,
-): { canonical: string; hash: string } | { canonical: null; hash: null } {
+function normalizeRpc(value: Json): Json {
+  if (value === null || typeof value !== "object" || Array.isArray(value))
+    return value;
+  const out: Record<string, Json> = {};
+  const keys = Object.keys(value)
+    .filter((k) => !RPC_DROP_KEYS.has(k))
+    .sort();
+  for (const k of keys) {
+    out[k] = normalize(value[k] as Json, k);
+  }
+  return out;
+}
+
+export type Canonicalized =
+  | { canonical: string; hash: string }
+  | { canonical: null; hash: null };
+
+export function canonicalize(bytes: Uint8Array): Canonicalized {
   if (bytes.length === 0) return { canonical: null, hash: null };
   let parsed: Json;
   try {
@@ -63,7 +77,24 @@ export function canonicalize(
   } catch {
     return { canonical: null, hash: null };
   }
-  const normalized = normalize(parsed, null);
+  const canonical = JSON.stringify(normalize(parsed, null));
+  const hash = createHash("sha256").update(canonical, "utf8").digest("hex");
+  return { canonical, hash };
+}
+
+// JSON-RPC body: hash on { method, params } only — id/jsonrpc are per-call sequence.
+// For batch requests (array body), each element is canonicalized independently.
+export function canonicalizeRpc(bytes: Uint8Array): Canonicalized {
+  if (bytes.length === 0) return { canonical: null, hash: null };
+  let parsed: Json;
+  try {
+    parsed = JSON.parse(new TextDecoder().decode(bytes)) as Json;
+  } catch {
+    return { canonical: null, hash: null };
+  }
+  const normalized = Array.isArray(parsed)
+    ? parsed.map(normalizeRpc)
+    : normalizeRpc(parsed);
   const canonical = JSON.stringify(normalized);
   const hash = createHash("sha256").update(canonical, "utf8").digest("hex");
   return { canonical, hash };

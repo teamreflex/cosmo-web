@@ -17,9 +17,8 @@ RUN bun run --filter archive build
 FROM base AS runner
 WORKDIR /app
 COPY --from=builder /app/apps/archive/dist ./dist
+COPY --from=builder /app/apps/archive/drizzle ./drizzle
 COPY --from=builder /app/apps/archive/package.json ./package.json
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/packages ./packages
-RUN mkdir -p /data
-VOLUME /data
 CMD ["bun", "run", "--bun", "./dist/main.js"]

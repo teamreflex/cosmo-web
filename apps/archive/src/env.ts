@@ -1,13 +1,35 @@
-import * as z from "zod";
+import { Config, Effect } from "effect";
 
-const envSchema = z.object({
-  PORT: z.coerce.number().positive().default(4350),
-  MODE: z.enum(["record", "replay"]).default("record"),
-  UPSTREAM_URL: z.url(),
-  DATA_DIR: z.string().default("./data"),
-  LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
-  EXTERNAL_BASE_URL: z.url().optional(),
-  RECORD_BODY_LIMIT_BYTES: z.coerce.number().positive().default(67108864),
-});
+export class Env extends Effect.Service<Env>()("app/Env", {
+  effect: Effect.gen(function* () {
+    const port = yield* Config.number("PORT").pipe(Config.withDefault(4350));
+    const mode = yield* Config.literal(
+      "record",
+      "replay",
+    )("MODE").pipe(Config.withDefault("record" as const));
+    const upstreamUrl = yield* Config.url("UPSTREAM_URL");
+    const upstreamRpcUrl = yield* Config.url("UPSTREAM_RPC_URL");
+    const dbUrl = yield* Config.redacted("DB_URL");
+    const externalBaseUrl = yield* Config.string("EXTERNAL_BASE_URL").pipe(
+      Config.option,
+    );
+    const replayFallthrough = yield* Config.boolean("REPLAY_FALLTHROUGH").pipe(
+      Config.withDefault(false),
+    );
+    const recordBodyLimitBytes = yield* Config.number(
+      "RECORD_BODY_LIMIT_BYTES",
+    ).pipe(Config.withDefault(67108864));
 
-export const env = envSchema.parse(process.env);
+    return {
+      port,
+      mode,
+      upstreamUrl,
+      upstreamRpcUrl,
+      dbUrl,
+      externalBaseUrl,
+      replayFallthrough,
+      recordBodyLimitBytes,
+    };
+  }),
+  dependencies: [],
+}) {}

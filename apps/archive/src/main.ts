@@ -1,34 +1,51 @@
-import { env } from "./env";
+import { FetchHttpClient, HttpServer } from "@effect/platform";
+import { BunHttpServer, BunRuntime } from "@effect/platform-bun";
+import { ConfigProvider, Effect, Layer } from "effect";
+import { Database } from "./db";
+import { Env } from "./env";
 import { Proxy } from "./proxy";
 import { Recorder } from "./recorder";
-import { buildServer } from "./server";
+import { Replay } from "./replay";
+import { router } from "./router";
 
-if (env.MODE === "replay") {
-  console.error("[archive] replay mode not implemented in phase 1");
-  process.exit(1);
-}
+const main = Effect.gen(function* () {
+  const env = yield* Env;
+  yield* Effect.logInfo(
+    `archive listening on port ${env.port} (mode=${env.mode})`,
+  );
+  const app = yield* router;
+  yield* HttpServer.serveEffect()(app);
+  return yield* Effect.never;
+});
 
-const recorder = new Recorder(env.DATA_DIR);
-await recorder.init();
+const ServerLayer = Layer.unwrapEffect(
+  Env.pipe(Effect.map((env) => BunHttpServer.layer({ port: env.port }))),
+).pipe(Layer.provide(Env.Default));
 
-const externalBaseUrl = env.EXTERNAL_BASE_URL ?? `http://localhost:${env.PORT}`;
-const proxy = new Proxy(recorder, externalBaseUrl);
-const server = buildServer(proxy);
+// preserve gzip framing on upstream responses; we forward Content-Encoding
+// verbatim, so decompressing here would cause double-decompression on the client.
+const FetchInitLayer = Layer.succeed(FetchHttpClient.RequestInit, {
+  decompress: false,
+} satisfies RequestInit);
 
-console.log(
-  `[archive] listening on http://${server.hostname}:${server.port} (mode=${env.MODE}, upstream=${env.UPSTREAM_URL})`,
+const ServicesLayer = Layer.mergeAll(
+  Database.Default,
+  Recorder.Default,
+  Proxy.Default,
+  Replay.Default,
+).pipe(
+  Layer.provideMerge(
+    Layer.mergeAll(Env.Default, FetchHttpClient.layer, FetchInitLayer),
+  ),
 );
 
-let shuttingDown = false;
-async function shutdown(signal: string): Promise<void> {
-  if (shuttingDown) return;
-  shuttingDown = true;
-  console.log(`[archive] received ${signal}, shutting down`);
-  await server.stop();
-  await proxy.drain();
-  await recorder.close();
-  process.exit(0);
-}
-
-process.on("SIGTERM", () => void shutdown("SIGTERM"));
-process.on("SIGINT", () => void shutdown("SIGINT"));
+BunRuntime.runMain(
+  Effect.scoped(main).pipe(
+    Effect.catchAllCause((cause) => {
+      console.error("FATAL", cause);
+      return Effect.die(cause);
+    }),
+    Effect.withConfigProvider(ConfigProvider.fromEnv()),
+    Effect.provide(Layer.merge(ServerLayer, ServicesLayer)),
+  ),
+);

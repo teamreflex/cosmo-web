@@ -1,8 +1,38 @@
 {
   "extends": "@apollo/typescript/tsconfig.bun.json",
-  "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", ".turbo", "dist"],
+
+  "include": ["src/**/*.ts", "drizzle.config.ts"],
+  "exclude": ["node_modules", ".turbo", "dist", "proxy", "repos"],
+
   "compilerOptions": {
-    "types": ["bun"]
+    // Effect-TS build requirements
+    "noEmit": false,
+    "outDir": "dist",
+    "allowImportingTsExtensions": false,
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "incremental": true,
+
+    // Effect-TS specific
+    "exactOptionalPropertyTypes": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["bun"],
+    "noImplicitReturns": false,
+    "noUnusedParameters": false,
+    "noUncheckedIndexedAccess": false,
+    "noEmitOnError": false,
+    "noErrorTruncation": false,
+    "forceConsistentCasingInFileNames": true,
+    "removeComments": false,
+    "plugins": [{ "name": "@effect/language-service" }],
+
+    // Path aliases
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   }
 }

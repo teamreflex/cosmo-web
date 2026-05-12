@@ -1,53 +1,48 @@
-import type { FileSink } from "bun";
-import { mkdir } from "node:fs/promises";
-import { join } from "node:path";
-import type { ProxyRecord } from "./record-types";
+import { Data, Effect, Queue } from "effect";
+import { Database } from "./db";
+import { interactions } from "./schema";
+import type { InteractionInsert } from "./types";
 
-// Append-only JSONL writer with per-UTC-date rotation. Appends are serialized
-// through a single Promise chain so concurrent requests don't interleave bytes
-// mid-line.
-export class Recorder {
-  #dataDir: string;
-  #currentDate: string | null = null;
-  #writer: FileSink | null = null;
-  #queue: Promise<void> = Promise.resolve();
-  #closed = false;
+export class RecorderError extends Data.TaggedError("RecorderError")<{
+  cause: unknown;
+}> {}
 
-  constructor(dataDir: string) {
-    this.#dataDir = dataDir;
-  }
+export class Recorder extends Effect.Service<Recorder>()("app/Recorder", {
+  scoped: Effect.gen(function* () {
+    const db = yield* Database;
+    const queue = yield* Queue.unbounded<InteractionInsert>();
 
-  async init(): Promise<void> {
-    await mkdir(this.#dataDir, { recursive: true });
-  }
+    // single drainer fiber: serializes inserts, survives across the server's lifetime
+    yield* Effect.forkScoped(
+      Effect.gen(function* () {
+        while (true) {
+          const entry = yield* Queue.take(queue);
+          yield* Effect.tryPromise({
+            try: () => db.insert(interactions).values(entry),
+            catch: (cause) => new RecorderError({ cause }),
+          }).pipe(
+            Effect.catchAll((err) =>
+              Effect.logError(`recorder insert failed for ${entry.id}`, err),
+            ),
+          );
+        }
+      }),
+    );
 
-  record(record: ProxyRecord): void {
-    if (this.#closed) return;
-    this.#queue = this.#queue
-      .then(() => this.#append(record))
-      .catch((err: unknown) => {
-        console.error("[archive] recorder append failed:", err);
-      });
-  }
+    // graceful shutdown: drain queue before scope finalization
+    yield* Effect.addFinalizer(() =>
+      Effect.gen(function* () {
+        const remaining = yield* Queue.size(queue);
+        if (remaining > 0) {
+          yield* Effect.logInfo(`flushing ${remaining} pending records`);
+        }
+        yield* Queue.shutdown(queue);
+      }),
+    );
 
-  async #append(record: ProxyRecord): Promise<void> {
-    const date = record.ts.slice(0, 10);
-    if (this.#writer === null || date !== this.#currentDate) {
-      if (this.#writer !== null) await this.#writer.end();
-      const path = join(this.#dataDir, `${date}.jsonl`);
-      this.#writer = Bun.file(path).writer();
-      this.#currentDate = date;
-    }
-    void this.#writer.write(`${JSON.stringify(record)}\n`);
-    await this.#writer.flush();
-  }
-
-  async close(): Promise<void> {
-    this.#closed = true;
-    await this.#queue;
-    if (this.#writer !== null) {
-      await this.#writer.end();
-      this.#writer = null;
-    }
-  }
-}
+    return {
+      offer: (entry: InteractionInsert) => Queue.offer(queue, entry),
+    };
+  }),
+  dependencies: [Database.Default],
+}) {}

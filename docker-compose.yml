@@ -85,6 +85,32 @@ services:
     networks:
       - apollo-network
 
+  # postgres for the archive proxy (long-lived gateway+rpc record store)
+  postgres-archive:
+    restart: on-failure
+    image: postgres:17.6-alpine
+    ports:
+      - "5436:5432"
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 2g
+    environment:
+      - POSTGRES_DB=archive
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    healthcheck:
+      test: "pg_isready -d archive -U postgres"
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s
+    volumes:
+      - postgres-archive-data:/var/lib/postgresql/data
+    networks:
+      - apollo-network
+
   # pgbouncer for indexer
   pgbouncer-indexer:
     image: edoburu/pgbouncer:latest
@@ -239,10 +265,10 @@ services:
       - PORT=${ARCHIVE_PORT}
       - MODE=${ARCHIVE_MODE}
       - UPSTREAM_URL=${ARCHIVE_UPSTREAM_URL}
-      - DATA_DIR=/data
+      - UPSTREAM_RPC_URL=${ARCHIVE_UPSTREAM_RPC_URL}
+      - DB_URL=postgresql://postgres:postgres@postgres-archive:5432/archive
       - EXTERNAL_BASE_URL=${ARCHIVE_EXTERNAL_BASE_URL}
-    volumes:
-      - ./apps/archive/data:/data
+      - REPLAY_FALLTHROUGH=${ARCHIVE_REPLAY_FALLTHROUGH:-false}
     healthcheck:
       test:
         [
@@ -253,6 +279,9 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+    depends_on:
+      postgres-archive:
+        condition: service_healthy
     networks:
       - apollo-network
 
@@ -277,5 +306,6 @@ networks:
 volumes:
   postgres-web-data:
   postgres-indexer-data:
+  postgres-archive-data:
   typesense-data:
   valkey-data:

@@ -13,13 +13,21 @@
     "format": "oxfmt ."
   },
   "dependencies": {
-    "zod": "catalog:"
+    "@apollo/database": "workspace:*",
+    "@effect/platform": "catalog:",
+    "@effect/platform-bun": "catalog:",
+    "drizzle-orm": "catalog:",
+    "effect": "catalog:"
   },
   "devDependencies": {
     "@apollo/lint": "workspace:*",
     "@apollo/typescript": "workspace:*",
+    "@effect/build-utils": "catalog:",
+    "@effect/eslint-plugin": "catalog:",
+    "@effect/language-service": "catalog:",
     "@types/bun": "catalog:",
     "@typescript/native-preview": "catalog:",
+    "drizzle-kit": "catalog:",
     "typescript": "catalog:"
   }
 }

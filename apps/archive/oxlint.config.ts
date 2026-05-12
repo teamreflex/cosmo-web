@@ -3,5 +3,17 @@ import { defineConfig } from "oxlint";
 
 export default defineConfig({
   extends: [baseConfig],
-  ignorePatterns: ["node_modules", ".turbo", "build", "dist", "data"],
+  jsPlugins: ["@effect/eslint-plugin"],
+  ignorePatterns: [
+    "node_modules",
+    ".turbo",
+    "build",
+    "dist",
+    "data",
+    "proxy",
+    "repos",
+  ],
+  rules: {
+    "@effect/dprint": "off",
+  },
 });
