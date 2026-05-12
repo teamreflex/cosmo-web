@@ -209,6 +209,9 @@ async function handleCollection(
       createdAt: new Date(transfer.timestamp),
       collectionId: metadata.objekt.collectionId,
       slug: slug,
+      textColor: metadata.objekt.textColor,
+      backImage: metadata.objekt.backImage,
+      accentColor: metadata.objekt.accentColor,
     });
   }
 
@@ -224,10 +227,7 @@ async function handleCollection(
     : "offline";
   collection.thumbnailImage = metadata.objekt.thumbnailImage;
   collection.frontImage = metadata.objekt.frontImage;
-  collection.backImage = metadata.objekt.backImage;
   collection.backgroundColor = metadata.objekt.backgroundColor;
-  // collection.textColor = metadata.objekt.textColor;
-  collection.accentColor = metadata.objekt.accentColor;
 
   return collection;
 }
