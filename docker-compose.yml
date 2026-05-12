@@ -146,6 +146,7 @@ services:
       - RPC_RATE_LIMIT=${INDEXER_RPC_RATE_LIMIT}
       - RPC_FINALITY=${INDEXER_RPC_FINALITY}
       - SQD_ENDPOINT=${INDEXER_SQD_ENDPOINT}
+      - SQD_KEY=${INDEXER_SQD_KEY}
       - DB_URL=postgresql://postgres:postgres@postgres-indexer:5432/indexer
       - DB_NAME=indexer
       - DB_READ_USER=postgres
