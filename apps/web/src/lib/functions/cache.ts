@@ -1,5 +1,10 @@
-import { clearTag } from "@/lib/server/cache.server";
+import { clearTag, redis } from "@/lib/server/cache.server";
+import {
+  COSMO_KEY_CACHE_KEY,
+  setCosmoKey,
+} from "@/lib/server/encryption.server";
 import { adminMiddleware } from "@/lib/server/middlewares";
+import { cosmoKeySchema } from "@/lib/universal/schema/cosmo-key";
 import { pinCacheKey } from "@apollo/util-server";
 import { createServerFn } from "@tanstack/react-start";
 import * as z from "zod";
@@ -32,4 +37,24 @@ export const $clearUserPinsCache = createServerFn({ method: "POST" })
   .inputValidator(z.object({ username: z.string() }))
   .handler(async ({ data }) => {
     await clearTag(pinCacheKey(data.username));
+  });
+
+/**
+ * Report whether the COSMO encryption key is sourced from Redis or the env fallback.
+ */
+export const $getCosmoKeyStatus = createServerFn({ method: "GET" })
+  .middleware([adminMiddleware])
+  .handler(async () => {
+    const cached = await redis.get(COSMO_KEY_CACHE_KEY);
+    return { source: cached !== null ? ("redis" as const) : ("env" as const) };
+  });
+
+/**
+ * Update the COSMO encryption key in Redis.
+ */
+export const $setCosmoKey = createServerFn({ method: "POST" })
+  .middleware([adminMiddleware])
+  .inputValidator(cosmoKeySchema)
+  .handler(async ({ data }) => {
+    await setCosmoKey(data.key);
   });

@@ -1,6 +1,7 @@
 import ClearArtistsCard from "@/components/admin/cache/clear-artists-card";
 import ClearFilterDataCard from "@/components/admin/cache/clear-filter-data-card";
 import ClearPinsCard from "@/components/admin/cache/clear-pins-card";
+import UpdateCosmoKeyCard from "@/components/admin/cache/update-cosmo-key-card";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import { currentAccountQuery } from "@/lib/queries/core";
@@ -27,6 +28,7 @@ function RouteComponent() {
         <ClearArtistsCard />
         <ClearFilterDataCard />
         <ClearPinsCard />
+        <UpdateCosmoKeyCard />
       </div>
     </section>
   );

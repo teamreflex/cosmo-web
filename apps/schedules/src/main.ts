@@ -1,6 +1,7 @@
 import { FetchHttpClient } from "@effect/platform";
 import { BunContext, BunRuntime } from "@effect/platform-bun";
 import { ConfigProvider, Effect, Layer } from "effect";
+import { CosmoKey } from "./cosmo-key";
 import { DatabaseWeb } from "./db";
 import { DatabaseIndexer } from "./db-indexer";
 import { Env } from "./env";
@@ -37,6 +38,7 @@ BunRuntime.runMain(
         DatabaseWeb.Default,
         DatabaseIndexer.Default,
         ProxiedToken.Default,
+        CosmoKey.Default,
         Redis.Default,
       ),
     ),
