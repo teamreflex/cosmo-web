@@ -1,5 +1,5 @@
 import { HttpServerRequest, HttpServerResponse } from "@effect/platform";
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, asc, between, eq, sql } from "drizzle-orm";
 import { Data, Effect, Option } from "effect";
 import { canonicalize, canonicalizeRpc } from "./canonicalize";
 import { Database } from "./db";
@@ -12,15 +12,25 @@ export class ReplayError extends Data.TaggedError("ReplayError")<{
   cause: unknown;
 }> {}
 
-function applyHeaders(
-  res: HttpServerResponse.HttpServerResponse,
+function buildResponse(
+  body: Uint8Array,
+  status: number,
   headers: ReadonlyArray<readonly [string, string]>,
 ): HttpServerResponse.HttpServerResponse {
-  let acc = res;
-  for (const [k, v] of headers) {
-    acc = HttpServerResponse.setHeader(acc, k, v);
-  }
-  return acc;
+  // pull content-type out of headers so it overrides HttpServerResponse's
+  // default (application/octet-stream), which the indexer SDK relies on to
+  // decide whether to JSON-parse the body.
+  const contentType =
+    headers.find(([k]) => k.toLowerCase() === "content-type")?.[1] ??
+    "application/octet-stream";
+  const headerObj = Object.fromEntries(
+    headers.filter(([k]) => k.toLowerCase() !== "content-type"),
+  );
+  return HttpServerResponse.uint8Array(body, {
+    status,
+    contentType,
+    headers: headerObj,
+  });
 }
 
 /**
@@ -56,9 +66,13 @@ export class Replay extends Effect.Service<Replay>()("app/Replay", {
             })
             .from(interactions)
             .where(
-              and(eq(interactions.reqHash, hash), eq(interactions.kind, kind)),
+              and(
+                eq(interactions.reqHash, hash),
+                eq(interactions.kind, kind),
+                between(interactions.resStatus, 200, 299),
+              ),
             )
-            .orderBy(desc(interactions.ts))
+            .orderBy(asc(interactions.ts))
             .limit(1),
         catch: (cause) => new ReplayError({ cause }),
       });
@@ -124,12 +138,7 @@ export class Replay extends Effect.Service<Replay>()("app/Replay", {
       const row = yield* lookupByHash(hash, "worker-query");
 
       if (row !== undefined) {
-        return applyHeaders(
-          HttpServerResponse.uint8Array(row.resBody, {
-            status: row.resStatus,
-          }),
-          row.resHeaders,
-        );
+        return buildResponse(row.resBody, row.resStatus, row.resHeaders);
       }
 
       if (env.replayFallthrough) {
@@ -158,12 +167,7 @@ export class Replay extends Effect.Service<Replay>()("app/Replay", {
       const row = yield* lookupByHash(hash, "rpc");
 
       if (row !== undefined) {
-        return applyHeaders(
-          HttpServerResponse.uint8Array(row.resBody, {
-            status: row.resStatus,
-          }),
-          row.resHeaders,
-        );
+        return buildResponse(row.resBody, row.resStatus, row.resHeaders);
       }
 
       if (env.replayFallthrough) {

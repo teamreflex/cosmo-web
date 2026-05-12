@@ -24,9 +24,8 @@ const ServerLayer = Layer.unwrapEffect(
 
 // preserve gzip framing on upstream responses; we forward Content-Encoding
 // verbatim, so decompressing here would cause double-decompression on the client.
-const FetchInitLayer = Layer.succeed(FetchHttpClient.RequestInit, {
-  decompress: false,
-} satisfies RequestInit);
+const fetchInit: BunFetchRequestInit = { decompress: false };
+const FetchInitLayer = Layer.succeed(FetchHttpClient.RequestInit, fetchInit);
 
 const ServicesLayer = Layer.mergeAll(
   Database.Default,
