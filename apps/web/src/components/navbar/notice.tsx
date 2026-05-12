@@ -18,6 +18,10 @@ export default function Notice() {
           May 11 3:30PM KST: An issue with COSMO is preventing objekts from
           updating.
         </p>
+        <p>
+          May 12 2:00PM KST: Objekt database is starting to catch up. Back
+          images and serials will be missing.
+        </p>
       </PopoverContent>
     </Popover>
   );

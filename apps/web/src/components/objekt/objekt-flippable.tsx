@@ -72,7 +72,7 @@ export default function FlippableObjekt({ children, collection }: Props) {
         </div>
 
         {/* back */}
-        <div className="absolute inset-0 rotate-y-180 backface-hidden">
+        <div className="absolute inset-0 rotate-y-180 rounded-photocard backface-hidden bg-accent">
           <img
             className="absolute"
             src={collection.backImage}
