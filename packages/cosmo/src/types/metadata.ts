@@ -57,7 +57,7 @@ export function normalizeV3(
     image: metadata.image,
     background_color: metadata.background_color,
     objekt: {
-      collectionId: `${season} ${member} ${collection}`,
+      collectionId: metadata.name.replace(/ #\d+$/, ""),
       season: season,
       member: member,
       collectionNo: collection,
