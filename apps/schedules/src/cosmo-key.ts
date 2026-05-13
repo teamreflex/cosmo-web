@@ -1,8 +1,7 @@
+import { cosmoKeyCacheKey } from "@apollo/util-server";
 import { Effect, Redacted } from "effect";
 import { Env } from "./env";
 import { Redis } from "./redis";
-
-const REDIS_KEY = "cosmo-key";
 
 export class CosmoKey extends Effect.Service<CosmoKey>()("app/CosmoKey", {
   effect: Effect.gen(function* () {
@@ -13,7 +12,7 @@ export class CosmoKey extends Effect.Service<CosmoKey>()("app/CosmoKey", {
      * Returns the Redis-stored COSMO encryption key, or the env fallback when unset.
      */
     const get = Effect.gen(function* () {
-      const cached = yield* redis.get(REDIS_KEY);
+      const cached = yield* redis.get(cosmoKeyCacheKey);
       return cached ?? Redacted.value(env.cosmoKey);
     });
 

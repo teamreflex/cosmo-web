@@ -1,13 +1,12 @@
 import { env } from "@/lib/env/server";
+import { cosmoKeyCacheKey } from "@apollo/util-server";
 import { redis } from "./cache.server";
-
-export const COSMO_KEY_CACHE_KEY = "cosmo-key";
 
 /**
  * Returns the Redis-stored COSMO encryption key, or the env fallback when unset.
  */
 export async function getCosmoKey(): Promise<string> {
-  const cached = await redis.get(COSMO_KEY_CACHE_KEY);
+  const cached = await redis.get(cosmoKeyCacheKey);
   return cached ?? env.COSMO_KEY;
 }
 
@@ -15,5 +14,5 @@ export async function getCosmoKey(): Promise<string> {
  * Persists a new COSMO encryption key into Redis. No TTL; rotation is operator-driven.
  */
 export async function setCosmoKey(key: string): Promise<void> {
-  await redis.set(COSMO_KEY_CACHE_KEY, key);
+  await redis.set(cosmoKeyCacheKey, key);
 }

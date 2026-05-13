@@ -1,11 +1,8 @@
 import { clearTag, redis } from "@/lib/server/cache.server";
-import {
-  COSMO_KEY_CACHE_KEY,
-  setCosmoKey,
-} from "@/lib/server/encryption.server";
+import { setCosmoKey } from "@/lib/server/encryption.server";
 import { adminMiddleware } from "@/lib/server/middlewares";
 import { cosmoKeySchema } from "@/lib/universal/schema/cosmo-key";
-import { pinCacheKey } from "@apollo/util-server";
+import { cosmoKeyCacheKey, pinCacheKey } from "@apollo/util-server";
 import { createServerFn } from "@tanstack/react-start";
 import * as z from "zod";
 import { ARTISTS_CACHE_KEY } from "./artists";
@@ -45,7 +42,7 @@ export const $clearUserPinsCache = createServerFn({ method: "POST" })
 export const $getCosmoKeyStatus = createServerFn({ method: "GET" })
   .middleware([adminMiddleware])
   .handler(async () => {
-    const cached = await redis.get(COSMO_KEY_CACHE_KEY);
+    const cached = await redis.get(cosmoKeyCacheKey);
     return { source: cached !== null ? ("redis" as const) : ("env" as const) };
   });
 
