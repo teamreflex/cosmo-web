@@ -26,7 +26,7 @@ A platform for exploring objekts & gravities from [MODHAUS](https://www.mod-haus
 - `packages/cosmo`: COSMO related types and API functions
 - `packages/database`: `drizzle-orm` schemas for both databases
 - `packages/lint`: Shared oxlint config
-- `packages/typescript`: Shared tsconfig.json file
+- `packages/TypeScript`: Shared tsconfig.json file
 - `packages/util`: Shared utility functions
 
 ## Requirements
