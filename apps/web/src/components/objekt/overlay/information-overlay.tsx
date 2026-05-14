@@ -1,4 +1,3 @@
-import { useUserState } from "@/hooks/use-user-state";
 import { m } from "@/i18n/messages";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
@@ -12,19 +11,19 @@ type Props = {
   token: Objekt.Token;
 };
 
-export default function InformationOverlay({ collection, token }: Props) {
+export default function InformationOverlay(props: Props) {
   const [open, setOpen] = useState(false);
-  const { user } = useUserState();
+  // const { user } = useUserState();
   const isHidden = useObjektOverlay((state) => state.isHidden);
 
   // safari 15 doesn't like to parse the date string for some reason
   const formatted = useMemo(() => {
     try {
-      return format(new Date(token.acquiredAt), "dd/MM/yy h:mmaa");
+      return format(new Date(props.token.acquiredAt), "dd/MM/yy h:mmaa");
     } catch (error) {
-      return token.acquiredAt;
+      return props.token.acquiredAt;
     }
-  }, [token.acquiredAt]);
+  }, [props.token.acquiredAt]);
 
   return (
     <div
@@ -46,12 +45,12 @@ export default function InformationOverlay({ collection, token }: Props) {
 
       <div className="absolute z-40 flex flex-col gap-1 transition-all group-data-[open=false]:opacity-0 group-data-[open=true]:opacity-100">
         {/* {user !== undefined && (
-          <RescanMetadata collection={collection} token={token} />
+          <RescanMetadata collection={props.collection} token={props.token} />
         )} */}
 
         <div className="flex flex-col text-xs">
           <span className="font-semibold">{m.objekt_info_token_id()}</span>
-          <span>{token.tokenId}</span>
+          <span>{props.token.tokenId}</span>
         </div>
 
         <div className="flex flex-col text-xs">
