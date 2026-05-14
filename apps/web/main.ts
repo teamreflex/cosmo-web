@@ -43,6 +43,7 @@ function buildContentSecurityPolicy(): string {
     "blob:",
     // objekt images
     "https://imagedelivery.net",
+    "https://a6056a84169c4302bbb29edd133b91f1.cosmo.fans",
     // cosmo assets - artist/member images
     "https://static.cosmo.fans",
     // band images
