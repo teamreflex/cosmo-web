@@ -1,6 +1,7 @@
 import { m } from "@/i18n/messages";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
+import { IconPhotoQuestion } from "@tabler/icons-react";
 import { Fragment, useState, lazy, Suspense } from "react";
 import type { PropsWithChildren } from "react";
 import { ErrorBoundary } from "react-error-boundary";
@@ -21,6 +22,8 @@ type Props = PropsWithChildren<{
  */
 export default function FlippableObjekt({ children, collection }: Props) {
   const [flipped, setFlipped] = useState(false);
+
+  const hasBackImage = collection.backImage !== "";
 
   const Image = (
     <ObjektImage src={collection.frontImage} alt={collection.collectionId}>
@@ -72,13 +75,19 @@ export default function FlippableObjekt({ children, collection }: Props) {
         </div>
 
         {/* back */}
-        <div className="absolute inset-0 rotate-y-180 rounded-photocard backface-hidden bg-accent">
-          <img
-            className="absolute"
-            src={collection.backImage}
-            alt={collection.collectionId}
-          />
-        </div>
+        {hasBackImage ? (
+          <div className="absolute inset-0 rotate-y-180 rounded-photocard backface-hidden">
+            <img
+              className="absolute"
+              src={collection.backImage}
+              alt={collection.collectionId}
+            />
+          </div>
+        ) : (
+          <div className="flex items-center justify-center w-full h-full rotate-y-180 rounded-photocard backface-hidden bg-accent">
+            <IconPhotoQuestion className="w-1/3 h-auto aspect-square opacity-60" />
+          </div>
+        )}
       </div>
     </div>
   );
