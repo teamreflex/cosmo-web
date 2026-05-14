@@ -14,7 +14,7 @@ export default function ListOverlay({ id, collection, objektList }: Props) {
   return (
     <div
       className={cn(
-        "group absolute top-0 left-0 h-5 items-center overflow-hidden rounded-br-lg p-1 transition-all sm:h-9 sm:rounded-br-xl sm:p-2",
+        "group absolute top-0 left-0 h-5 items-center overflow-hidden rounded-br-photocard p-1 transition-all sm:h-9 sm:p-2",
         "bg-(--objekt-background-color) text-(--objekt-text-color)",
         "grid grid-flow-col grid-cols-[1fr_min-content]",
       )}

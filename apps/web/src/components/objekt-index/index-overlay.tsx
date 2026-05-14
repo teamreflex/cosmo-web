@@ -20,7 +20,7 @@ export function TopOverlay({ objekt, objektLists }: TopOverlayProps) {
         "group absolute left-0 h-5 items-center overflow-hidden p-1 transition-all sm:h-9 sm:p-2",
         "bg-(--objekt-background-color) text-(--objekt-text-color)",
         "grid grid-flow-col grid-cols-[1fr_min-content]",
-        "top-0 rounded-br-lg sm:rounded-br-xl",
+        "top-0 rounded-br-photocard",
         isHidden && "hidden",
       )}
     >

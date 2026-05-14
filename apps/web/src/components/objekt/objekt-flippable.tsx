@@ -1,7 +1,7 @@
 import { m } from "@/i18n/messages";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
-import { IconPhotoQuestion } from "@tabler/icons-react";
+import { IconPhotoX } from "@tabler/icons-react";
 import { Fragment, useState, lazy, Suspense } from "react";
 import type { PropsWithChildren } from "react";
 import { ErrorBoundary } from "react-error-boundary";
@@ -85,7 +85,7 @@ export default function FlippableObjekt({ children, collection }: Props) {
           </div>
         ) : (
           <div className="flex items-center justify-center w-full h-full rotate-y-180 rounded-photocard backface-hidden bg-accent">
-            <IconPhotoQuestion className="w-1/3 h-auto aspect-square opacity-60" />
+            <IconPhotoX className="w-1/3 h-auto aspect-square opacity-60" />
           </div>
         )}
       </div>
