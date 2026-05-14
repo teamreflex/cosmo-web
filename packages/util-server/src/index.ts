@@ -10,3 +10,8 @@ export function pinCacheKey(value: string) {
     .digest("hex");
   return `pins:${hash}`;
 }
+
+/**
+ * Redis cache key for the operator-rotatable COSMO encryption key.
+ */
+export const cosmoKeyCacheKey = "cosmo-key";

@@ -1,7 +1,8 @@
-import { refresh } from "@apollo/cosmo/server/auth";
+import { refreshV3 } from "@apollo/cosmo/server/auth";
 import { cosmoTokens } from "@apollo/database/web/schema";
 import { Data, Effect } from "effect";
 import { decodeJwt } from "jose";
+import { CosmoKey } from "./cosmo-key";
 import { DatabaseWeb } from "./db";
 
 export class ProxiedToken extends Effect.Service<ProxiedToken>()(
@@ -9,6 +10,7 @@ export class ProxiedToken extends Effect.Service<ProxiedToken>()(
   {
     effect: Effect.gen(function* () {
       const db = yield* DatabaseWeb;
+      const cosmoKey = yield* CosmoKey;
 
       /**
        * Get the latest COSMO token from the database, refresh if necessary.
@@ -38,8 +40,9 @@ export class ProxiedToken extends Effect.Service<ProxiedToken>()(
           });
         }
 
+        const key = yield* cosmoKey.get;
         const newTokens = yield* Effect.tryPromise({
-          try: () => refresh(latestToken.refreshToken),
+          try: () => refreshV3(latestToken.refreshToken, key),
           catch: (cause) => new TokenRefreshError({ cause }),
         });
 
@@ -66,7 +69,7 @@ export class ProxiedToken extends Effect.Service<ProxiedToken>()(
 
       return { get };
     }),
-    dependencies: [DatabaseWeb.Default],
+    dependencies: [DatabaseWeb.Default, CosmoKey.Default],
   },
 ) {}
 

@@ -1,8 +1,10 @@
-import { refresh } from "@apollo/cosmo/server/auth";
+import { refreshV3 } from "@apollo/cosmo/server/auth";
 import { cosmoTokens } from "@apollo/database/web/schema";
 import type { CosmoToken } from "@apollo/database/web/types";
+import { captureException } from "@sentry/tanstackstart-react";
 import { decodeJwt } from "jose";
 import { db } from "./db";
+import { getCosmoKey } from "./encryption.server";
 
 /**
  * Get the latest COSMO token from the database, refresh if necessary.
@@ -27,7 +29,12 @@ export async function getProxiedToken(
       // validate the refresh token
       if (validateExpiry(latestToken.refreshToken)) {
         // if valid, refresh the token
-        const newTokens = await refresh(latestToken.refreshToken, signal);
+        const key = await getCosmoKey();
+        const newTokens = await refreshV3(
+          latestToken.refreshToken,
+          key,
+          signal,
+        );
 
         // create new token
         const [newToken] = await db
@@ -49,6 +56,7 @@ export async function getProxiedToken(
       }
     }
   } catch (err) {
+    captureException(err);
     throw new TokenRefreshError();
   }
 
