@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@sentry/bun": "^10.50.0",
-    "strip-ansi": "6.0.1"
+    "strip-ansi": "^6.0.2"
   },
   "devDependencies": {
     "@socketsecurity/bun-security-scanner": "^1.1.2",
