@@ -21,6 +21,7 @@ export default function ObjektAudio({ src }: Props) {
     const audio = audioRef.current;
     if (!audio) return;
     if (audio.paused) {
+      audio.volume = 50;
       void audio.play();
     } else {
       audio.pause();
