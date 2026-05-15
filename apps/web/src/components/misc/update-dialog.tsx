@@ -83,6 +83,10 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2026-05-15",
+    changes: ["Objekt back images, text color and serials have been restored."],
+  },
+  {
     date: "2026-05-11",
     changes: ["Updated COMO calendars to better match COSMO behavior."],
   },

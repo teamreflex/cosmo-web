@@ -13,7 +13,7 @@ import NotificationBell from "../notifications/notification-bell";
 import { Skeleton } from "../ui/skeleton";
 import { DesktopAuthLinks, DesktopPublicLinks, MobileMenu } from "./links";
 import NavbarSearch from "./navbar-search";
-import Notice from "./notice";
+// import Notice from "./notice";
 
 export default function Navbar() {
   return (
@@ -25,7 +25,7 @@ export default function Navbar() {
           <UpdateDialog />
         </div>
 
-        <Notice />
+        {/* <Notice /> */}
 
         <div className="flex items-center gap-1">
           <DesktopPublicLinks />
