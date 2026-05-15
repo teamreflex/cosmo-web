@@ -31,6 +31,14 @@
     "db:seed": {
       "cache": false,
       "dependsOn": ["//#services"]
+    },
+    "proxy:audio": {
+      "persistent": true,
+      "cache": false
+    },
+    "proxy:motion": {
+      "persistent": true,
+      "cache": false
     }
   }
 }

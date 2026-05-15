@@ -1,0 +1,8 @@
+{
+  "name": "proxy",
+  "private": true,
+  "scripts": {
+    "proxy:audio": "mitmdump -q -s src/audio.py --listen-port 8080 --set block_global=false",
+    "proxy:motion": "mitmdump -q -s src/motion.py --listen-port 8080 --set block_global=false"
+  }
+}
