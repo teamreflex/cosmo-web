@@ -58,7 +58,7 @@ class MotionAddon:
             return
 
         self._token = auth.split(" ", 1)[1].strip()
-        print(f"[motion] captured token ({self._token[:12]}...), starting fetch")
+        print(f"[motion] captured token, starting fetch")
         threading.Thread(target=self._run, args=(self._token,), daemon=True).start()
 
     def _run(self, token: str) -> None:
