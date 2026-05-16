@@ -5,7 +5,7 @@ import * as authSchema from "@apollo/database/auth";
 import { cosmoAccounts } from "@apollo/database/web/schema";
 import { GRID_COLUMNS } from "@apollo/util";
 import type { CollectionDataSource } from "@apollo/util";
-import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 import { createAuthMiddleware } from "better-auth/api";
 import { parseSessionOutput, parseUserOutput } from "better-auth/db";
 import { betterAuth } from "better-auth/minimal";
@@ -28,7 +28,7 @@ export const auth = betterAuth({
   telemetry: { enabled: false },
   appName: clientEnv.env.VITE_APP_NAME,
   secret: serverEnv.env.BETTER_AUTH_SECRET,
-  baseUrl: baseUrl(),
+  baseURL: baseUrl(),
   trustedOrigins: [baseUrl()],
   database: drizzleAdapter(db, {
     provider: "pg",
@@ -44,6 +44,10 @@ export const auth = betterAuth({
     }),
     tanstackStartCookies(),
   ],
+
+  session: {
+    freshAge: 0,
+  },
 
   /**
    * Enable email verification.

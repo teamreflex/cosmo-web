@@ -48,12 +48,12 @@ export default function WithEmail(props: Props) {
 
   function handleSubmit(data: z.infer<typeof signInSchema>) {
     mutation.mutate(data, {
-      onSuccess: () => {
+      onSuccess: async () => {
         track("sign-in");
-        void queryClient.invalidateQueries({
+        await queryClient.invalidateQueries({
           queryKey: currentAccountQuery.queryKey,
         });
-        void router.invalidate();
+        await router.invalidate();
         void router.navigate({ to: "/" });
         props.onSuccess();
       },
