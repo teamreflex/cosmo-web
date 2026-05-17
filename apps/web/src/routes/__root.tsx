@@ -22,7 +22,6 @@ import {
   createRootRouteWithContext,
 } from "@tanstack/react-router";
 import React from "react";
-import { preconnect } from "react-dom";
 import { Toaster } from "sonner";
 import appCss from "../styles/tailwind.css?url";
 
@@ -75,6 +74,21 @@ export const Route = createRootRouteWithContext<RouterContext>()({
         dark: "#09090b",
       },
       links: [
+        // objekt images
+        {
+          rel: "preconnect",
+          href: "https://imagedelivery.net",
+        },
+        // objekt sidebars
+        {
+          rel: "preconnect",
+          href: "https://resources.cosmo.fans",
+        },
+        // member/artist images
+        {
+          rel: "preconnect",
+          href: "https://static.cosmo.fans",
+        },
         {
           rel: "preload",
           href: "/HalvarBreit-Bd.woff2",
@@ -133,14 +147,6 @@ function RootComponent() {
 }
 
 function ShellComponent({ children }: { children: React.ReactNode }) {
-  preconnect("https://imagedelivery.net");
-  preconnect("https://resources.cosmo.fans");
-  preconnect("https://static.cosmo.fans");
-  preconnect("https://cdn.apollo.cafe");
-  if (env.VITE_SENTRY_DSN) {
-    preconnect(new URL(env.VITE_SENTRY_DSN).origin);
-  }
-
   return (
     <html lang={getLocale()} suppressHydrationWarning>
       <head>
