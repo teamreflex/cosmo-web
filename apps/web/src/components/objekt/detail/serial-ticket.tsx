@@ -2,13 +2,14 @@ import AddToList from "@/components/lists/add-to-list";
 import LockObjekt from "@/components/objekt/overlay/lock-button";
 import PinObjekt from "@/components/objekt/overlay/pin-button";
 import { useMetadataDialog } from "@/hooks/use-metadata-dialog";
-import { useObjektSerial } from "@/hooks/use-objekt-serial";
 import { useLockedObjekt, usePinnedObjekt } from "@/hooks/use-profile";
 import { useProfileContext } from "@/hooks/use-profile";
 import { m } from "@/i18n/messages";
 import { reasonLabel } from "@/lib/client/objekt-util";
+import { objektQuery } from "@/lib/queries/objekt-queries";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { IconArrowRight } from "@tabler/icons-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { useMemo } from "react";
 import { ObjektRibbon } from "../common";
@@ -28,8 +29,8 @@ export default function SerialTicket({
   const isLocked = useLockedObjekt(token.tokenId);
   const isPinned = usePinnedObjekt(token.tokenId);
   const objektLists = useProfileContext((ctx) => ctx.objektLists);
-  const { setSerial } = useObjektSerial();
   const { open } = useMetadataDialog();
+  const queryClient = useQueryClient();
 
   const receivedAt = useMemo(() => {
     try {
@@ -42,8 +43,8 @@ export default function SerialTicket({
   const paddedSerial = token.serial.toString().padStart(5, "0");
 
   function handleClick() {
-    setSerial(token.serial);
-    open();
+    queryClient.setQueryData(objektQuery(collection.slug).queryKey, collection);
+    open(collection.slug, { serial: token.serial });
   }
 
   const isTradable =

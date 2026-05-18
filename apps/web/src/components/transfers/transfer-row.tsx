@@ -23,7 +23,7 @@ export default function TransferRow({ row, address }: Props) {
   });
 
   return (
-    <div className="grid h-14 grid-cols-[3fr_2fr_2fr] items-center gap-2 border-t border-accent px-4 text-xs transition-colors hover:bg-secondary/40 sm:text-sm">
+    <div className="grid h-14 grid-cols-[3fr_2fr_2fr] items-center gap-2 border-t border-accent px-4 text-xs transition-colors [content-visibility:auto] [contain-intrinsic-size:auto_56px] hover:bg-secondary/40 sm:text-sm">
       <div className="flex flex-col">
         <span>{row.collection?.collectionId ?? m.transfer_unknown()}</span>
         <span className="text-xs">#{serial}</span>

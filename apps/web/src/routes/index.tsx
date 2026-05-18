@@ -8,14 +8,10 @@ import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
-import {
-  artistsQuery,
-  currentAccountQuery,
-  filterDataQuery,
-  selectedArtistsQuery,
-} from "@/lib/queries/core";
+import { currentAccountQuery, selectedArtistsQuery } from "@/lib/queries/core";
 import { objektIndexBlockchainQuery } from "@/lib/queries/objekt-queries";
 import { objektIndexFrontendSchema } from "@/lib/universal/parsers";
+import { MetadataDialogProvider } from "@/providers/metadata-dialog-provider";
 import { ProfileProvider } from "@/providers/profile-provider";
 import { UserStateProvider } from "@/providers/user-state-provider";
 import { createFileRoute } from "@tanstack/react-router";
@@ -28,14 +24,9 @@ export const Route = createFileRoute("/")({
   pendingComponent: PendingComponent,
   loaderDeps: ({ search }) => ({ searchParams: search }),
   loader: async ({ context, deps }) => {
-    // prefetch filter data
-    void context.queryClient.prefetchQuery(filterDataQuery);
-
-    // load required data
     const [account, selected] = await Promise.all([
       context.queryClient.ensureQueryData(currentAccountQuery),
       context.queryClient.ensureQueryData(selectedArtistsQuery),
-      context.queryClient.ensureQueryData(artistsQuery),
     ]);
 
     // prefetch objekts
@@ -57,9 +48,11 @@ function RouteComponent() {
   return (
     <main className="relative flex w-full flex-col">
       <UserStateProvider user={account?.user} cosmo={account?.cosmo}>
-        <ProfileProvider objektLists={account?.objektLists ?? []}>
-          <IndexRenderer objektLists={account?.objektLists ?? []} />
-        </ProfileProvider>
+        <MetadataDialogProvider>
+          <ProfileProvider objektLists={account?.objektLists ?? []}>
+            <IndexRenderer objektLists={account?.objektLists ?? []} />
+          </ProfileProvider>
+        </MetadataDialogProvider>
       </UserStateProvider>
 
       <Overlay>

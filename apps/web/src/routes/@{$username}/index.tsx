@@ -10,9 +10,7 @@ import TitleHeader from "@/components/ui/title-header";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import {
-  artistsQuery,
   currentAccountQuery,
-  filterDataQuery,
   selectedArtistsQuery,
   targetAccountQuery,
 } from "@/lib/queries/core";
@@ -33,14 +31,11 @@ export const Route = createFileRoute("/@{$username}/")({
   pendingComponent: PendingComponent,
   errorComponent: ErrorComponent,
   loader: async ({ context, params, deps }) => {
-    void context.queryClient.prefetchQuery(filterDataQuery);
-
     const [account, target, pins, selected] = await Promise.all([
       context.queryClient.ensureQueryData(currentAccountQuery),
       context.queryClient.ensureQueryData(targetAccountQuery(params.username)),
       context.queryClient.ensureQueryData(pinsQuery(params.username)),
       context.queryClient.ensureQueryData(selectedArtistsQuery),
-      context.queryClient.ensureQueryData(artistsQuery),
     ]);
 
     // if the user is in collection groups mode, prefetch the collection groups

@@ -13,11 +13,7 @@ import {
 } from "@/hooks/use-events-filters";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
-import {
-  artistsQuery,
-  filterDataQuery,
-  selectedArtistsQuery,
-} from "@/lib/queries/core";
+import { selectedArtistsQuery } from "@/lib/queries/core";
 import {
   activeEventsQuery,
   erasForFilterQuery,
@@ -43,9 +39,7 @@ export const Route = createFileRoute("/events/")({
   validateSearch: eventsSearchSchema,
   loaderDeps: ({ search }) => ({ search }),
   loader: async ({ context, deps: { search } }) => {
-    void context.queryClient.prefetchQuery(filterDataQuery);
     void context.queryClient.prefetchQuery(erasForFilterQuery);
-    void context.queryClient.prefetchQuery(artistsQuery);
 
     const selected =
       await context.queryClient.ensureQueryData(selectedArtistsQuery);

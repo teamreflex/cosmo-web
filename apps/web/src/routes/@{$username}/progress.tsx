@@ -10,12 +10,7 @@ import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
 import TitleHeader from "@/components/ui/title-header";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
-import {
-  artistsQuery,
-  currentAccountQuery,
-  filterDataQuery,
-  targetAccountQuery,
-} from "@/lib/queries/core";
+import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
 import { artistStatsQuery } from "@/lib/queries/progress";
 import { progressFrontendSchema } from "@/lib/universal/parsers";
 import { ProfileProvider } from "@/providers/profile-provider";
@@ -30,12 +25,9 @@ export const Route = createFileRoute("/@{$username}/progress")({
   validateSearch: progressFrontendSchema,
   loaderDeps: ({ search }) => ({ searchParams: search }),
   loader: async ({ context, params }) => {
-    void context.queryClient.prefetchQuery(filterDataQuery);
-
     const [target, account] = await Promise.all([
       context.queryClient.ensureQueryData(targetAccountQuery(params.username)),
       context.queryClient.ensureQueryData(currentAccountQuery),
-      context.queryClient.ensureQueryData(artistsQuery),
     ]);
 
     void context.queryClient.prefetchQuery(

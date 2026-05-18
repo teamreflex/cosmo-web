@@ -13,6 +13,7 @@ import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import { currentAccountQuery } from "@/lib/queries/core";
 import { eventBySlugQuery, eventObjektsQuery } from "@/lib/queries/events";
+import { MetadataDialogProvider } from "@/providers/metadata-dialog-provider";
 import { ProfileProvider } from "@/providers/profile-provider";
 import { UserStateProvider } from "@/providers/user-state-provider";
 import { IconAlertCircle } from "@tabler/icons-react";
@@ -53,9 +54,11 @@ function RouteComponent() {
       {/* Content - constrained */}
       <div className="container -mt-16 pb-4 md:-mt-42">
         <UserStateProvider user={account?.user} cosmo={account?.cosmo}>
-          <ProfileProvider>
-            <EventRenderer slug={event.slug} />
-          </ProfileProvider>
+          <MetadataDialogProvider>
+            <ProfileProvider>
+              <EventRenderer slug={event.slug} />
+            </ProfileProvider>
+          </MetadataDialogProvider>
         </UserStateProvider>
       </div>
 

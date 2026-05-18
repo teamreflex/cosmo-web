@@ -13,7 +13,6 @@ import { useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { ObjektNewIndicator, ObjektSidebar } from "./common";
 import DetailDialog from "./detail/detail-dialog";
-import MetadataDialog from "./metadata-dialog";
 
 interface Props {
   group: BFFCollectionGroup;
@@ -42,16 +41,14 @@ export default function GroupedObjekt({
   });
 
   return (
-    <MetadataDialog slug={collection.slug}>
-      <Detail
-        collection={collection}
-        group={group}
-        showLocked={showLocked}
-        hasSelected={hasSelected}
-        hasNew={hasNew}
-        priority={priority}
-      />
-    </MetadataDialog>
+    <Detail
+      collection={collection}
+      group={group}
+      showLocked={showLocked}
+      hasSelected={hasSelected}
+      hasNew={hasNew}
+      priority={priority}
+    />
   );
 }
 
@@ -187,7 +184,7 @@ function RootObjektOverlay({
 
   function handleClick() {
     queryClient.setQueryData(objektQuery(collection.slug).queryKey, collection);
-    open();
+    open(collection.slug);
   }
 
   return (

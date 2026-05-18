@@ -9,7 +9,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import type { PropsWithChildren } from "react";
 import { useShallow } from "zustand/react/shallow";
-import MetadataDialog from "./metadata-dialog";
 
 type Props = PropsWithChildren<{
   collection: Objekt.Collection;
@@ -20,7 +19,7 @@ type Props = PropsWithChildren<{
 }>;
 
 /**
- * Displays the front of an objekt and opens a MetadataDialog on click.
+ * Displays the front of an objekt and opens the shared MetadataDialog on click.
  */
 export default function ExpandableObjekt({
   children,
@@ -35,34 +34,27 @@ export default function ExpandableObjekt({
   );
 
   return (
-    <MetadataDialog
-      slug={collection.slug}
-      defaultOpen={false}
-      onClose={() => setActive?.(undefined)}
-    >
-      <div className="@container">
-        <div
-          style={{
-            "--objekt-background-color": collection.backgroundColor,
-            "--objekt-text-color": collection.textColor,
-          }}
-          className={cn(
-            "group/objekt relative aspect-photocard touch-manipulation overflow-hidden rounded-photocard bg-secondary outline outline-transparent transition-[transform,box-shadow,outline-color] duration-200 ease-out hover:-translate-y-0.5 hover:outline-cosmo hover:shadow-lg",
-            isSelected &&
-              "outline-2 outline-foreground hover:outline-foreground",
-            className,
-          )}
-        >
-          <FrontImage
-            collection={collection}
-            setActive={setActive}
-            priority={priority}
-          />
+    <div className="@container">
+      <div
+        style={{
+          "--objekt-background-color": collection.backgroundColor,
+          "--objekt-text-color": collection.textColor,
+        }}
+        className={cn(
+          "group/objekt relative aspect-photocard touch-manipulation overflow-hidden rounded-photocard bg-secondary outline outline-transparent transition-[transform,box-shadow,outline-color] duration-200 ease-out hover:-translate-y-0.5 hover:outline-cosmo hover:shadow-lg",
+          isSelected && "outline-2 outline-foreground hover:outline-foreground",
+          className,
+        )}
+      >
+        <FrontImage
+          collection={collection}
+          setActive={setActive}
+          priority={priority}
+        />
 
-          {children}
-        </div>
+        {children}
       </div>
-    </MetadataDialog>
+    </div>
   );
 }
 
@@ -84,27 +76,28 @@ function FrontImage(props: FrontImageProps) {
     img.src = front.download;
   }
 
+  function handleClick() {
+    // populate the query cache so the dialog skips its initial fetch
+    queryClient.setQueryData(
+      objektQuery(props.collection.slug).queryKey,
+      props.collection,
+    );
+
+    if (props.setActive) {
+      // URL routing mode: update URL, let RoutedExpandableObjekt sync the dialog
+      props.setActive(props.collection.slug);
+    } else {
+      open(props.collection.slug);
+    }
+  }
+
   return (
     <img
       role="button"
       aria-label={m.aria_view_objekt()}
       onMouseOver={prefetch}
       onLoad={() => setIsLoaded(true)}
-      onClick={() => {
-        // populate the query cache so it doesn't re-fetch
-        queryClient.setQueryData(
-          objektQuery(props.collection.slug).queryKey,
-          props.collection,
-        );
-
-        if (props.setActive) {
-          // URL routing mode: update URL, let RoutedExpandableObjekt handle dialog
-          props.setActive(props.collection.slug);
-        } else {
-          // Local dialog mode: directly open dialog
-          open();
-        }
-      }}
+      onClick={handleClick}
       className={cn(
         "w-full transition-opacity",
         isLoaded === false && "opacity-0",

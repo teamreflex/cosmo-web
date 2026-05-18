@@ -3,7 +3,7 @@ import type { Collection } from "@/lib/server/db/indexer/schema";
 import { collections, objekts } from "@/lib/server/db/indexer/schema";
 import type { ValidOnlineType } from "@apollo/cosmo/types/common";
 import { Addresses } from "@apollo/util";
-import { and, desc, eq, inArray, not, notInArray, sql } from "drizzle-orm";
+import { and, eq, inArray, not, notInArray, sql } from "drizzle-orm";
 import { unobtainables } from "../unobtainables";
 
 type FetchTotal = {
@@ -30,8 +30,7 @@ export async function fetchTotal({
         ...(onlineType !== null ? [eq(collections.onOffline, onlineType)] : []),
         ...(season !== null ? [eq(collections.season, season)] : []),
       ),
-    )
-    .orderBy(desc(collections.createdAt));
+    );
 
   return result;
 }

@@ -11,15 +11,11 @@ import TitleHeader from "@/components/ui/title-header";
 import { m } from "@/i18n/messages";
 import { $getObjektListWithUser } from "@/lib/functions/lists";
 import { defineHead } from "@/lib/meta";
-import {
-  artistsQuery,
-  currentAccountQuery,
-  filterDataQuery,
-  selectedArtistsQuery,
-} from "@/lib/queries/core";
+import { currentAccountQuery, selectedArtistsQuery } from "@/lib/queries/core";
 import { objektListQuery } from "@/lib/queries/objekt-queries";
 import { objektListFrontendSchema } from "@/lib/universal/parsers";
 import { sanitizeUuid } from "@/lib/utils";
+import { MetadataDialogProvider } from "@/providers/metadata-dialog-provider";
 import { ProfileProvider } from "@/providers/profile-provider";
 import { UserStateProvider } from "@/providers/user-state-provider";
 import { IconHeartBroken } from "@tabler/icons-react";
@@ -34,8 +30,6 @@ export const Route = createFileRoute("/list/$id")({
   validateSearch: objektListFrontendSchema,
   loaderDeps: ({ search }) => ({ searchParams: search }),
   loader: async ({ context, params, deps }) => {
-    void context.queryClient.prefetchQuery(filterDataQuery);
-
     // sanitize the id due to discord users accidentally appending formatting to the URL
     const sanitizedId = sanitizeUuid(params.id);
     if (!sanitizedId) {
@@ -53,7 +47,6 @@ export const Route = createFileRoute("/list/$id")({
     const [objektListWithUser, account] = await Promise.all([
       $getObjektListWithUser({ data: { id: sanitizedId } }),
       context.queryClient.ensureQueryData(currentAccountQuery),
-      context.queryClient.ensureQueryData(artistsQuery),
     ]);
 
     if (!objektListWithUser) {
@@ -95,28 +88,30 @@ function RouteComponent() {
   return (
     <main className="flex flex-col">
       <UserStateProvider user={account?.user} cosmo={account?.cosmo}>
-        <ProfileProvider>
-          <div className="border-b border-border">
-            <div className="container">
-              <ListHeader
-                list={objektList}
-                ownerName={owner.display}
-                owner={owner.user}
-                isOwner={isAuthenticated}
-              />
+        <MetadataDialogProvider>
+          <ProfileProvider>
+            <div className="border-b border-border">
+              <div className="container">
+                <ListHeader
+                  list={objektList}
+                  ownerName={owner.display}
+                  owner={owner.user}
+                  isOwner={isAuthenticated}
+                />
+              </div>
             </div>
-          </div>
 
-          <ListRenderer
-            authenticated={isAuthenticated}
-            objektList={objektList}
-          />
+            <ListRenderer
+              authenticated={isAuthenticated}
+              objektList={objektList}
+            />
 
-          <Overlay>
-            <ScrollToTop />
-            <ToggleObjektBands />
-          </Overlay>
-        </ProfileProvider>
+            <Overlay>
+              <ScrollToTop />
+              <ToggleObjektBands />
+            </Overlay>
+          </ProfileProvider>
+        </MetadataDialogProvider>
       </UserStateProvider>
     </main>
   );

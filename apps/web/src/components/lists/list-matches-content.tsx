@@ -12,7 +12,6 @@ import {
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-import MetadataDialog from "../objekt/metadata-dialog";
 import {
   getVariantGradient,
   getVariantRibbon,
@@ -274,18 +273,6 @@ function DirectionColumn({
 }
 
 function MiniObjektTile({ collection }: { collection: Objekt.Collection }) {
-  return (
-    <MetadataDialog slug={collection.slug}>
-      <MiniObjektTileButton collection={collection} />
-    </MetadataDialog>
-  );
-}
-
-function MiniObjektTileButton({
-  collection,
-}: {
-  collection: Objekt.Collection;
-}) {
   const { open } = useMetadataDialog();
   const queryClient = useQueryClient();
   const background = collection.backgroundColor || "#333";
@@ -303,7 +290,7 @@ function MiniObjektTileButton({
           objektQuery(collection.slug).queryKey,
           collection,
         );
-        open();
+        open(collection.slug);
       }}
       className="relative flex h-14 w-28 overflow-hidden rounded-sm border border-border transition-shadow hover:shadow-md"
       title={`${collection.member} ${collection.collectionNo}`}

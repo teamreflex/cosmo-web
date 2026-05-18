@@ -14,9 +14,7 @@ import { m } from "@/i18n/messages";
 import { $fetchObjektList } from "@/lib/functions/lists";
 import { defineHead } from "@/lib/meta";
 import {
-  artistsQuery,
   currentAccountQuery,
-  filterDataQuery,
   selectedArtistsQuery,
   targetAccountQuery,
 } from "@/lib/queries/core";
@@ -41,13 +39,10 @@ export const Route = createFileRoute("/@{$username}/list/$slug")({
   validateSearch: objektListFrontendSchema,
   loaderDeps: ({ search }) => ({ searchParams: search }),
   loader: async ({ context, params, deps }) => {
-    void context.queryClient.prefetchQuery(filterDataQuery);
-
     const [account, target, selected] = await Promise.all([
       context.queryClient.ensureQueryData(currentAccountQuery),
       context.queryClient.ensureQueryData(targetAccountQuery(params.username)),
       context.queryClient.ensureQueryData(selectedArtistsQuery),
-      context.queryClient.ensureQueryData(artistsQuery),
     ]);
 
     // user not found

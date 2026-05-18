@@ -11,13 +11,16 @@ import MetadataPanel from "./metadata-panel";
 
 type Props = {
   slug: string;
+  initialSerial?: number;
 };
 
 export default function MetadataContent(props: Props) {
   const { data } = useSuspenseQuery(objektQuery(props.slug));
   const { serial } = useObjektSerial();
+  // prefer the caller's intent over the URL, since the URL navigation racing
+  // with this component's mount can leave `serial` stale on first render
   const [tab, setTab] = useState<ObjektMetadataTab>(() =>
-    serial !== undefined ? "serials" : "metadata",
+    (props.initialSerial ?? serial) !== undefined ? "serials" : "metadata",
   );
 
   return (

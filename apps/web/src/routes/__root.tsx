@@ -9,6 +9,7 @@ import { defineHead } from "@/lib/meta";
 import {
   artistsQuery,
   currentAccountQuery,
+  filterDataQuery,
   selectedArtistsQuery,
 } from "@/lib/queries/core";
 import { systemStatusQuery } from "@/lib/queries/system";
@@ -35,6 +36,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     void context.queryClient.prefetchQuery(currentAccountQuery);
     void context.queryClient.prefetchQuery(systemStatusQuery);
     void context.queryClient.prefetchQuery(artistsQuery);
+    void context.queryClient.prefetchQuery(filterDataQuery);
 
     await context.queryClient.ensureQueryData(selectedArtistsQuery);
   },
