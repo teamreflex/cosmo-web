@@ -29,10 +29,11 @@ export const Route = createFileRoute("/api/user/by-address/$address/")({
 
         const url = new URL(request.url);
         const now = url.searchParams.get("now");
+        const tz = url.searchParams.get("tz") ?? "UTC";
 
         const [account, calendar, stats] = await Promise.all([
           getCosmoAccount(params.address),
-          getCalendar(params.address, now),
+          getCalendar(params.address, now, tz),
           getObjektStats(params.address),
         ]);
 
@@ -59,7 +60,7 @@ async function getCosmoAccount(address: string) {
 /**
  * Get the COMO calendar for a given address.
  */
-async function getCalendar(address: string, now: string | null) {
+async function getCalendar(address: string, now: string | null, tz: string) {
   // parse unix timestamp (supports both seconds and milliseconds)
   const timestamp = now ? parseInt(now) : new Date().getTime();
   const date = new Date(timestamp < 10000000000 ? timestamp * 1000 : timestamp);
@@ -67,7 +68,7 @@ async function getCalendar(address: string, now: string | null) {
   const result = await $fetchObjektsWithComo({
     data: { address },
   });
-  return buildCalendar(date, result);
+  return buildCalendar(date, result, tz);
 }
 
 /**

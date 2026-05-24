@@ -32,6 +32,7 @@ function getWeek() {
 export default function ComoCalendar({ artists, transfers }: Props) {
   // run date functions in client
   const now = new Date();
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const days = getDays(now);
   const startOffset =
     (new Date(now.getFullYear(), now.getMonth(), 1).getDay() + 6) % 7;
@@ -41,7 +42,7 @@ export default function ComoCalendar({ artists, transfers }: Props) {
     (_, i) => i + 1,
   );
 
-  const calendar = buildCalendar(now, transfers);
+  const calendar = buildCalendar(now, transfers, timezone);
   const week = getWeek();
 
   return (

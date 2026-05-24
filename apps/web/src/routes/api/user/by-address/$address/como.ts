@@ -25,6 +25,7 @@ export const Route = createFileRoute("/api/user/by-address/$address/como")({
 
         const url = new URL(request.url);
         const now = url.searchParams.get("now");
+        const tz = url.searchParams.get("tz") ?? "UTC";
 
         // parse unix timestamp (supports both seconds and milliseconds)
         const timestamp = now ? parseInt(now) : new Date().getTime();
@@ -35,7 +36,7 @@ export const Route = createFileRoute("/api/user/by-address/$address/como")({
         const objekts = await $fetchObjektsWithComo({
           data: { address: params.address },
         });
-        const calendar = buildCalendar(date, objekts);
+        const calendar = buildCalendar(date, objekts, tz);
 
         return Response.json(calendar);
       },

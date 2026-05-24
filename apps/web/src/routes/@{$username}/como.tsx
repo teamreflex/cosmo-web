@@ -9,7 +9,7 @@ import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import { fetchObjektsWithComoQuery } from "@/lib/queries/como";
 import { targetAccountQuery } from "@/lib/queries/core";
-import { createFileRoute } from "@tanstack/react-router";
+import { ClientOnly, createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/@{$username}/como")({
   component: RouteComponent,
@@ -67,7 +67,9 @@ function RouteComponent() {
       </TitleHeader>
 
       <div className="container flex flex-col pt-4">
-        <ComoCalendar artists={artistList} transfers={data} />
+        <ClientOnly>
+          <ComoCalendar artists={artistList} transfers={data} />
+        </ClientOnly>
       </div>
 
       <Portal to="#help">

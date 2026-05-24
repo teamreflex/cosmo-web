@@ -1,4 +1,5 @@
 import { getDaysInMonth } from "date-fns";
+import { toZonedTime } from "date-fns-tz";
 
 export type ObjektWithCollection = {
   artistId: string;
@@ -18,55 +19,60 @@ type Calendar = {
 /**
  * Build a breakdown per day and per contract of all Como drops.
  */
-export function buildCalendar(date: Date, objekts: ObjektWithCollection[]) {
+export function buildCalendar(
+  date: Date,
+  objekts: ObjektWithCollection[],
+  timezone: string,
+) {
   const calendar: Calendar = {};
 
-  // get the days in the given month
-  const currentDays = getDays(date);
-  const lastDayOfMonth = currentDays.at(-1)!;
+  // the displayed local month, interpreted in the viewer's timezone
+  const dateInZone = toZonedTime(date, timezone);
+  const displayedYear = dateInZone.getFullYear();
+  const displayedMonth = dateInZone.getMonth();
+
+  // the displayed local month can span up to two UTC months, so we check
+  // the previous, current, and next UTC months for drop events whose
+  // viewer-local day falls in the displayed month
+  const candidates = [-1, 0, 1].map((offset) => {
+    const m = displayedMonth + offset;
+    if (m < 0) return { year: displayedYear - 1, month: 11 };
+    if (m > 11) return { year: displayedYear + 1, month: 0 };
+    return { year: displayedYear, month: m };
+  });
 
   for (const objekt of objekts) {
-    // anchor to UTC: COSMO drops at midnight UTC (9am KST), so the drop
-    // day is the UTC day of the original mint regardless of viewer locale
-    const day = new Date(objekt.mintedAt).getUTCDate();
+    const mintUtcDay = new Date(objekt.mintedAt).getUTCDate();
 
-    // initialize day
-    if (!calendar[day]) {
-      calendar[day] = {};
-    }
+    for (const { year, month } of candidates) {
+      const daysInUtcMonth = getDaysInMonth(new Date(Date.UTC(year, month, 1)));
+      // COSMO carries day-31 mints to the last day in shorter UTC months
+      const cappedDay = Math.min(mintUtcDay, daysInUtcMonth);
+      const wasCarried = mintUtcDay > daysInUtcMonth;
 
-    // initialize contract
-    if (!calendar[day][objekt.artistId]) {
-      calendar[day][objekt.artistId] = {
-        count: 0,
-        carried: 0,
-      };
-    }
-    // increment count for day and contract
-    calendar[day][objekt.artistId]!.count += objekt.amount;
+      const dropUtc = new Date(Date.UTC(year, month, cappedDay));
+      const dropInZone = toZonedTime(dropUtc, timezone);
 
-    // carry over drops from non-existent days to the last day of the month
-    if (!currentDays.includes(day)) {
-      if (!calendar[lastDayOfMonth]) {
-        calendar[lastDayOfMonth] = {};
+      // skip drops that fall outside the displayed local month
+      if (
+        dropInZone.getMonth() !== displayedMonth ||
+        dropInZone.getFullYear() !== displayedYear
+      ) {
+        continue;
       }
 
-      if (!calendar[lastDayOfMonth][objekt.artistId]) {
-        calendar[lastDayOfMonth][objekt.artistId] = {
-          count: 0,
-          carried: 0,
-        };
+      const day = dropInZone.getDate();
+
+      if (!calendar[day]) {
+        calendar[day] = {};
       }
-
-      calendar[lastDayOfMonth][objekt.artistId]!.carried += objekt.amount;
-      calendar[lastDayOfMonth][objekt.artistId]!.count += objekt.amount;
-    }
-  }
-
-  // remove any days that aren't in the current month
-  for (const day in calendar) {
-    if (!currentDays.includes(Number(day))) {
-      delete calendar[Number(day)];
+      if (!calendar[day][objekt.artistId]) {
+        calendar[day][objekt.artistId] = { count: 0, carried: 0 };
+      }
+      calendar[day][objekt.artistId]!.count += objekt.amount;
+      if (wasCarried) {
+        calendar[day][objekt.artistId]!.carried += objekt.amount;
+      }
     }
   }
 
