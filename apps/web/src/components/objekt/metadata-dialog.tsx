@@ -7,11 +7,10 @@ import {
 import { useObjektSerial } from "@/hooks/use-objekt-serial";
 import { IconLoader2 } from "@tabler/icons-react";
 import { QueryErrorResetBoundary } from "@tanstack/react-query";
-import { Suspense, lazy, useState } from "react";
+import { Suspense, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { MetadataDialogError } from "./metadata/common";
-
-const MetadataContent = lazy(() => import("./metadata/metadata-content"));
+import MetadataContent from "./metadata/metadata-content";
 
 type Props = {
   slug: string;
