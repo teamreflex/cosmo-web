@@ -48,14 +48,18 @@ export default function MemberSelection({
     );
   }
 
-  function addCustomMember() {
-    const trimmed = customInput.trim();
-    if (!trimmed || value.includes(trimmed)) {
-      setCustomInput("");
-      return;
+  function addCustomMembers(inputs: string[]) {
+    const seen = new Set(value);
+    const additions: string[] = [];
+    for (const input of inputs) {
+      const trimmed = input.trim();
+      if (!trimmed || seen.has(trimmed)) continue;
+      seen.add(trimmed);
+      additions.push(trimmed);
     }
-    onChange([...value, trimmed]);
     setCustomInput("");
+    if (additions.length === 0) return;
+    onChange([...value, ...additions]);
     setPopoverOpen(false);
   }
 
@@ -83,8 +87,15 @@ export default function MemberSelection({
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter") {
       e.preventDefault();
-      addCustomMember();
+      addCustomMembers([customInput]);
     }
+  }
+
+  function handlePaste(e: React.ClipboardEvent<HTMLInputElement>) {
+    const text = e.clipboardData.getData("text");
+    if (!/\r?\n/.test(text)) return;
+    e.preventDefault();
+    addCustomMembers(text.split(/\r?\n/));
   }
 
   return (
@@ -120,6 +131,7 @@ export default function MemberSelection({
                 value={customInput}
                 onChange={(e) => setCustomInput(e.currentTarget.value)}
                 onKeyDown={handleKeyDown}
+                onPaste={handlePaste}
                 autoFocus
               />
             </PopoverContent>
