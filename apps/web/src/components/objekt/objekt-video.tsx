@@ -5,12 +5,13 @@ type Props = PropsWithChildren<{
   imageSrc: string;
   videoSrc: string;
   alt: string;
+  muted?: boolean;
 }>;
 
 /**
- * Motion class objekts have videos.
+ * Motion class and some audio objekts have videos.
  */
-export default function ObjektVideo(props: Props) {
+export default function ObjektVideo({ muted = true, ...props }: Props) {
   return (
     <Fragment>
       <div className="absolute inset-0 h-full w-full animate-pulse rounded-photocard bg-secondary" />
@@ -21,7 +22,8 @@ export default function ObjektVideo(props: Props) {
         preload="auto"
         playsInline={true}
         loop={true}
-        muted={true}
+        muted={muted}
+        volume={0.5}
         autoPlay={true}
         controls={false}
       />

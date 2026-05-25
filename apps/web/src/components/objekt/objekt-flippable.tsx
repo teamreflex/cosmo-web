@@ -22,6 +22,7 @@ type Props = PropsWithChildren<{
  */
 export default function FlippableObjekt({ children, collection }: Props) {
   const [flipped, setFlipped] = useState(false);
+  const [audioPlaying, setAudioPlaying] = useState(false);
 
   const hasBackImage = collection.backImage !== "";
 
@@ -30,6 +31,14 @@ export default function FlippableObjekt({ children, collection }: Props) {
       {children}
     </ObjektImage>
   );
+
+  const audioButton =
+    collection.hasAudio && collection.frontMedia ? (
+      <ObjektAudio
+        playing={audioPlaying}
+        onToggle={() => setAudioPlaying((p) => !p)}
+      />
+    ) : null;
 
   return (
     <div className="@container">
@@ -61,14 +70,26 @@ export default function FlippableObjekt({ children, collection }: Props) {
                 </ObjektVideo>
               </Suspense>
             </ErrorBoundary>
+          ) : collection.frontMedia && collection.hasAudio && audioPlaying ? (
+            <ErrorBoundary fallback={Image}>
+              <Suspense fallback={Image}>
+                <ObjektVideo
+                  imageSrc={collection.frontImage}
+                  videoSrc={collection.frontMedia}
+                  alt={collection.collectionId}
+                  muted={false}
+                >
+                  {audioButton}
+                  {children}
+                </ObjektVideo>
+              </Suspense>
+            </ErrorBoundary>
           ) : (
             <ObjektImage
               src={collection.frontImage}
               alt={collection.collectionId}
             >
-              {collection.hasAudio && collection.frontMedia && (
-                <ObjektAudio src={collection.frontMedia} />
-              )}
+              {audioButton}
               {children}
             </ObjektImage>
           )}
