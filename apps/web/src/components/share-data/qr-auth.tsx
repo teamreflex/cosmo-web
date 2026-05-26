@@ -19,9 +19,9 @@ import {
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { FetchError, ofetch } from "ofetch";
+import { QRCodeSVG } from "qrcode.react";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import QRCode from "react-qr-code";
 import { toast } from "sonner";
 import { useInterval } from "usehooks-ts";
 import type { z } from "zod";
@@ -178,7 +178,7 @@ function RenderQRCode({ ticket, retry }: RenderQRCodeProps) {
       ) : (
         <div className="flex flex-col items-center gap-2">
           <div className="h-56 w-56 rounded bg-white p-4">
-            <QRCode value={qr} className="h-full w-full" />
+            <QRCodeSVG value={qr} className="h-full w-full" />
           </div>
 
           <div className="flex items-center gap-2 text-sm">
