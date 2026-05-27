@@ -25,6 +25,42 @@ function carried(cal: ReturnType<typeof buildCalendar>) {
 }
 
 describe("buildCalendar", () => {
+  describe("system-TZ agnostic", () => {
+    it("produces identical output across host TZs", () => {
+      // The algorithm must not leak the system's local TZ into its output —
+      // a previous regression had `getDaysInMonth` reading in local time,
+      // producing a phantom carry for negative-GMT browsers.
+      const originalTz = process.env.TZ;
+
+      function buildIn(tz: string) {
+        process.env.TZ = tz;
+        // Date constructions happen here so they pick up the new TZ
+        return buildCalendar(
+          new Date("2026-05-15T12:00:00Z"),
+          gmt7UserObjekts,
+          "America/Los_Angeles",
+        );
+      }
+
+      try {
+        const utc = buildIn("UTC");
+        const la = buildIn("America/Los_Angeles");
+        const nz = buildIn("Pacific/Auckland");
+        const ny = buildIn("America/New_York");
+
+        expect(la).toEqual(utc);
+        expect(nz).toEqual(utc);
+        expect(ny).toEqual(utc);
+      } finally {
+        if (originalTz === undefined) {
+          delete process.env.TZ;
+        } else {
+          process.env.TZ = originalTz;
+        }
+      }
+    });
+  });
+
   describe("NZT", () => {
     // baseline COMO totals per day in May 2026 as displayed by COSMO for NZT.
     const expectedByDay: Record<number, number> = {

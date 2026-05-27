@@ -1,6 +1,11 @@
 import { getDaysInMonth } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 
+// days in a given UTC month, independent of the system TZ
+function getUtcDaysInMonth(year: number, month: number) {
+  return new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+}
+
 export type ObjektWithCollection = {
   artistId: string;
   mintedAt: string;
@@ -45,7 +50,7 @@ export function buildCalendar(
     const mintUtcDay = new Date(objekt.mintedAt).getUTCDate();
 
     for (const { year, month } of candidates) {
-      const daysInUtcMonth = getDaysInMonth(new Date(Date.UTC(year, month, 1)));
+      const daysInUtcMonth = getUtcDaysInMonth(year, month);
       // COSMO carries day-31 mints to the last day in shorter UTC months
       const cappedDay = Math.min(mintUtcDay, daysInUtcMonth);
       const wasCarried = mintUtcDay > daysInUtcMonth;

@@ -228,7 +228,7 @@ export const auth = betterAuth({
       overrideUserInfoOnSignIn: true,
       mapProfileToUser: (profile) => {
         return {
-          twitter: profile.username,
+          twitter: profile.data.username,
         };
       },
     },
