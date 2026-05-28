@@ -23,6 +23,7 @@ A platform for exploring objekts & gravities from [MODHAUS](https://www.mod-haus
 - `apps/schedules`: Functions for executing scheduled tasks
 - `apps/typesense`: Dockerfile for building Typesense with `curl` available
 - `apps/typesense-import`: Sync new objekt collections to the Typesense database
+- `apps/proxy`: mitmproxy addons for intercepting COSMO app traffic
 - `packages/cosmo`: COSMO related types and API functions
 - `packages/database`: `drizzle-orm` schemas for both databases
 - `packages/lint`: Shared oxlint config
