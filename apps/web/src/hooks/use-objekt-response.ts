@@ -1,7 +1,6 @@
 import type { FilterType } from "@apollo/util";
 import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import type {
-  DataTag,
   DefaultError,
   InfiniteData,
   QueryKey,
@@ -22,9 +21,7 @@ export type ObjektResponseOptions<
     InfiniteData<TResponse>,
     TQueryKey,
     number
-  > & {
-    queryKey: DataTag<TQueryKey, InfiniteData<TResponse>, TError>;
-  };
+  >;
   calculateTotal: (data: InfiniteData<TResponse>) => ReactNode;
   totalPortalTarget?: string;
   getItems: (data: InfiniteData<TResponse>) => TItem[];

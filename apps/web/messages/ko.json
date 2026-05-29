@@ -351,6 +351,7 @@
   "linked_accounts_unlink": "{provider} 연결 해제",
   "linked_accounts_link": "{provider} 연결",
   "linked_accounts_twitter": "트위터",
+  "linked_accounts_resign_in_notice": "연결된 계정은 해당 계정으로 다시 로그인해야 프로필에 표시됩니다.",
 
   "_comment_admin": "Admin panel strings",
   "admin_title": "{appName} 관리자",

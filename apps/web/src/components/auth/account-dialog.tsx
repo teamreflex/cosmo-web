@@ -37,6 +37,9 @@ export default function AccountDialog({ open, onOpenChange, cosmo }: Props) {
 
           <div className="flex flex-col">
             <h3 className="text-lg font-semibold">{m.auth_sign_in()}</h3>
+            <p className="mb-2 text-xs text-muted-foreground">
+              {m.linked_accounts_resign_in_notice()}
+            </p>
             <Suspense
               fallback={
                 <div className="flex flex-col gap-2">

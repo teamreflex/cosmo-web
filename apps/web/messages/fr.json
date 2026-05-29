@@ -352,6 +352,7 @@
   "linked_accounts_unlink": "Désassocier {provider}",
   "linked_accounts_link": "Associer {provider}",
   "linked_accounts_twitter": "Twitter",
+  "linked_accounts_resign_in_notice": "Les comptes associés n'apparaîtront sur votre profil qu'après vous être reconnecté avec ceux-ci.",
 
   "_comment_admin": "Admin panel strings",
   "admin_title": "{appName} Admin",

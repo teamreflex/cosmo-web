@@ -351,6 +351,7 @@
   "linked_accounts_unlink": "{provider}の連携を解除",
   "linked_accounts_link": "{provider}を連携",
   "linked_accounts_twitter": "Twitter",
+  "linked_accounts_resign_in_notice": "連携したアカウントは、再度そのアカウントでサインインするまでプロフィールに表示されません。",
 
   "_comment_admin": "Admin panel strings",
   "admin_title": "{appName} Admin",

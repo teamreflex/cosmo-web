@@ -352,6 +352,7 @@
   "linked_accounts_unlink": "Unlink {provider}",
   "linked_accounts_link": "Link {provider}",
   "linked_accounts_twitter": "Twitter",
+  "linked_accounts_resign_in_notice": "Linked accounts won't show on your profile until you sign in with them again.",
 
   "_comment_admin": "Admin panel strings",
   "admin_title": "{appName} Admin",
