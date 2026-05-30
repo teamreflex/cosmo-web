@@ -28,7 +28,7 @@ export default function BlockchainGroups(props: Props) {
   const { selectedIds } = useArtists();
   const gridColumns = useGridColumns();
 
-  const usingFilters = filtersAreDirty(filters);
+  const usingFilters = filtersAreDirty(filters) || !props.showLocked;
 
   /**
    * Determine if the group should be rendered

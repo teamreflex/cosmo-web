@@ -29,7 +29,7 @@ export default function Blockchain(props: Props) {
   const { selectedIds } = useArtists();
   const gridColumns = useGridColumns();
 
-  const usingFilters = filtersAreDirty(filters);
+  const usingFilters = filtersAreDirty(filters) || !props.showLocked;
   const isSpin = isEqual(props.targetCosmo.address, Addresses.SPIN);
 
   /**
