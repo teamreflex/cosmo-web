@@ -6,6 +6,7 @@ import IndexRenderer from "@/components/objekt-index/index-renderer";
 import ObjektGridSkeleton from "@/components/objekt/objekt-grid-skeleton";
 import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
+import TitleHeader from "@/components/ui/title-header";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import { currentAccountQuery, selectedArtistsQuery } from "@/lib/queries/core";
@@ -71,25 +72,22 @@ function PendingComponent() {
   return (
     <div className="flex flex-col">
       {/* Title */}
-      <div className="border-b border-border">
-        <div className="container grid grid-cols-[auto_1fr_auto] items-center gap-3 py-3">
-          <h1 className="font-cosmo text-2xl leading-none font-black tracking-wide uppercase md:text-3xl">
-            {m.objekts_header()}
-          </h1>
-          <div className="flex justify-center">
+      <TitleHeader title={m.objekts_header()}>
+        <div className="ml-auto md:pointer-events-none md:absolute md:inset-0 md:ml-0 md:flex md:items-center md:justify-center">
+          <div className="md:pointer-events-auto">
             <MemberFilterSkeleton />
           </div>
-          <Skeleton className="h-8 w-20" />
         </div>
-      </div>
+        <Skeleton className="ml-auto h-8 w-20" />
+      </TitleHeader>
 
       {/* FiltersContainer */}
       <div className="border-b border-border bg-muted/40">
         <div className="container flex flex-wrap items-center gap-2 py-2">
           {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-9 w-24" />
+            <Skeleton key={i} className="h-8 w-24" />
           ))}
-          <Skeleton className="h-9 w-48" />
+          <Skeleton className="h-8 w-48" />
         </div>
       </div>
 
