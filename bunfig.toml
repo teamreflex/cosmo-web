@@ -1,4 +1,4 @@
 [install]
 linker = "isolated"
-minimumReleaseAge = 259200
+minimumReleaseAge = 86400
 scanner = "@socketsecurity/bun-security-scanner"
