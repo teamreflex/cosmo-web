@@ -34,6 +34,7 @@ import { sanitizeUuid } from "@/lib/utils";
 import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
 import { objektListEntries, objektLists } from "@apollo/database/web/schema";
 import type { ObjektListEntry } from "@apollo/database/web/types";
+import { memberSortOrder } from "@apollo/util";
 import { redirect } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import {
@@ -1302,7 +1303,7 @@ function format(
   const memberOrderMap: Record<string, number> = {};
   artists.forEach((artist, artistIndex) => {
     artist.artistMembers.forEach((member) => {
-      memberOrderMap[member.name] = (artistIndex + 1) * 1000 + member.order;
+      memberOrderMap[member.name] = memberSortOrder(artistIndex, member.order);
     });
   });
 

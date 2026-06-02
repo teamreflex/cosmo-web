@@ -89,3 +89,11 @@ export function slugify(text: string): string {
     .replace(/\s+/g, "-")
     .replace(/^-+|-+$/g, ""); // trim leading/trailing hyphens
 }
+
+/**
+ * Combine an artist's index with a member's per-artist order into a single
+ * sortable value, grouping members by artist before their debut order.
+ */
+export function memberSortOrder(artistIndex: number, memberOrder: number) {
+  return (artistIndex + 1) * 1000 + memberOrder;
+}

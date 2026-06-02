@@ -1,6 +1,6 @@
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
-import { collections, objekts } from "@/lib/server/db/indexer/schema";
+import { collections, members, objekts } from "@/lib/server/db/indexer/schema";
 import type { Collection } from "@/lib/server/db/indexer/schema";
 import {
   withArtist,
@@ -11,6 +11,7 @@ import {
   withSeason,
 } from "@/lib/server/objekts/filters.server";
 import { objektListBackendSchema } from "@/lib/universal/parsers";
+import { isMemberSort } from "@apollo/cosmo/types/common";
 import { createServerFn } from "@tanstack/react-start";
 import { and, inArray } from "drizzle-orm";
 import * as z from "zod";
@@ -22,6 +23,7 @@ export type ObjektListItem = Collection & {
   entryPrice: number | null;
   entryTokenId: string | null;
   entrySerial: number | null;
+  entryCreatedAt: string;
   medianPriceUsd: number | null;
   listingCount: number;
 };
@@ -99,20 +101,9 @@ export const $fetchObjektListEntries = createServerFn({ method: "GET" })
       matchingCollections.map((c) => [c.slug, c]),
     );
 
-    const tokenIds = entries
-      .map((e) => e.tokenId)
-      .filter((id): id is string => id !== null);
-    const serialByTokenId =
-      tokenIds.length > 0
-        ? new Map(
-            (
-              await indexer
-                .select({ id: objekts.id, serial: objekts.serial })
-                .from(objekts)
-                .where(inArray(objekts.id, tokenIds))
-            ).map((o) => [o.id, o.serial]),
-          )
-        : new Map<string, number>();
+    const serialByTokenId = await fetchSerials(
+      entries.map((e) => e.tokenId).filter((id): id is string => id !== null),
+    );
 
     const items: ObjektListItem[] = [];
     for (const entry of entries) {
@@ -128,23 +119,17 @@ export const $fetchObjektListEntries = createServerFn({ method: "GET" })
           entry.tokenId !== null
             ? (serialByTokenId.get(entry.tokenId) ?? null)
             : null,
+        entryCreatedAt: entry.createdAt.toISOString(),
         medianPriceUsd: entry.priceStats?.medianPriceUsd ?? null,
         listingCount: entry.priceStats?.listingCount ?? 0,
       });
     }
 
-    if (list?.type === "have") {
-      // serials added later appear first
-      items.sort((a, b) => {
-        const ai = entries.findIndex((e) => e.id === a.id);
-        const bi = entries.findIndex((e) => e.id === b.id);
-        const ad = entries[ai]?.createdAt;
-        const bd = entries[bi]?.createdAt;
-        return (bd?.getTime() ?? 0) - (ad?.getTime() ?? 0);
-      });
-    } else {
-      sortByIndexerOrder(items, data.sort ?? "newest");
-    }
+    const sort = data.sort ?? "newest";
+    const memberOrder = isMemberSort(sort)
+      ? await fetchMemberOrder()
+      : undefined;
+    sortObjektListItems(items, sort, memberOrder, list?.type === "have");
 
     const total = items.length;
     const start = data.page * LIMIT;
@@ -160,22 +145,91 @@ export const $fetchObjektListEntries = createServerFn({ method: "GET" })
   });
 
 /**
- * In-memory port of the indexer-side sort for non-have lists, applied after
- * entry projection so per-entry rendering stays consistent across types.
+ * Fetch serials from the indexer for the given token IDs.
  */
-function sortByIndexerOrder(items: ObjektListItem[], sort: string) {
+async function fetchSerials(tokenIds: string[]) {
+  if (tokenIds.length === 0) {
+    return new Map<string, number>();
+  }
+
+  const result = await indexer
+    .select({ id: objekts.id, serial: objekts.serial })
+    .from(objekts)
+    .where(inArray(objekts.id, tokenIds));
+
+  return new Map(result.map((o) => [o.id, o.serial]));
+}
+
+/**
+ * Sort list items by the selected sort, applied after entry projection so
+ * per-entry rendering stays consistent across types. Have lists order
+ * newest/oldest by when the serial was added to the list (not minted) and
+ * break ties between serials of the same collection the same way.
+ */
+function sortObjektListItems(
+  items: ObjektListItem[],
+  sort: string,
+  memberOrder: Map<string, number> | undefined,
+  byEntryDate: boolean,
+) {
+  const recency = (i: ObjektListItem) =>
+    byEntryDate ? i.entryCreatedAt : i.createdAt;
+  // newest-added serial first when breaking ties within a collection
+  const tiebreak = (a: ObjektListItem, b: ObjektListItem) =>
+    byEntryDate ? b.entryCreatedAt.localeCompare(a.entryCreatedAt) : 0;
+
   switch (sort) {
     case "oldest":
-      items.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+      items.sort((a, b) => recency(a).localeCompare(recency(b)));
       return;
     case "noAscending":
-      items.sort((a, b) => a.collectionNo.localeCompare(b.collectionNo));
+      items.sort(
+        (a, b) =>
+          a.collectionNo.localeCompare(b.collectionNo) || tiebreak(a, b),
+      );
       return;
     case "noDescending":
-      items.sort((a, b) => b.collectionNo.localeCompare(a.collectionNo));
+      items.sort(
+        (a, b) =>
+          b.collectionNo.localeCompare(a.collectionNo) || tiebreak(a, b),
+      );
+      return;
+    case "memberAsc":
+      items.sort(
+        (a, b) =>
+          memberRank(a, memberOrder) - memberRank(b, memberOrder) ||
+          a.collectionNo.localeCompare(b.collectionNo) ||
+          tiebreak(a, b),
+      );
+      return;
+    case "memberDesc":
+      items.sort(
+        (a, b) =>
+          memberRank(b, memberOrder) - memberRank(a, memberOrder) ||
+          a.collectionNo.localeCompare(b.collectionNo) ||
+          tiebreak(a, b),
+      );
       return;
     case "newest":
     default:
-      items.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+      items.sort((a, b) => recency(b).localeCompare(recency(a)));
   }
+}
+
+/**
+ * Resolve a member's canonical sort position, falling back to last for any
+ * member missing from the synced member table.
+ */
+function memberRank(item: ObjektListItem, memberOrder?: Map<string, number>) {
+  return memberOrder?.get(item.member) ?? Number.MAX_SAFE_INTEGER;
+}
+
+/**
+ * Load the member name → canonical sort order map from the indexer.
+ */
+async function fetchMemberOrder() {
+  const rows = await indexer
+    .select({ name: members.name, sortOrder: members.sortOrder })
+    .from(members);
+  return new Map(rows.map((r) => [r.name, r.sortOrder]));
 }
