@@ -38,7 +38,12 @@ export const syncMembersTask = {
       { concurrency: 5 },
     );
 
-    const rows = artists.flatMap((artist, artistIndex) =>
+    // order artists by comoTokenId so the per-artist grouping in sortOrder is deterministic
+    const sortedArtists = [...artists].sort(
+      (a, b) => a.comoTokenId - b.comoTokenId,
+    );
+
+    const rows = sortedArtists.flatMap((artist, artistIndex) =>
       artist.artistMembers.map((member) => ({
         id: randomUUID(),
         name: member.name,
