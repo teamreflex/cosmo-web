@@ -3,6 +3,7 @@ import { fetchKnownAddresses } from "@/lib/server/cosmo-accounts.server";
 import { indexer } from "@/lib/server/db/indexer";
 import type { Collection } from "@/lib/server/db/indexer/schema";
 import { collections, objekts } from "@/lib/server/db/indexer/schema";
+import { withSpinMonth } from "@/lib/server/objekts/filters.server";
 import {
   fetchLeaderboard,
   fetchProgress,
@@ -17,15 +18,15 @@ import type {
 } from "@/lib/universal/progress";
 import { unobtainables } from "@/lib/unobtainables";
 import { validOnlineTypes } from "@apollo/cosmo/types/common";
+import { Addresses, isEqual } from "@apollo/util";
 import { createServerFn } from "@tanstack/react-start";
-import { count, eq } from "drizzle-orm";
+import { and, count, eq } from "drizzle-orm";
 import * as z from "zod";
 
 type PartialObjekt = Awaited<ReturnType<typeof fetchProgress>>;
 
 /**
  * Fetch the progress breakdown for a given member and address.
- * Cached for 1 hour.
  */
 export const $fetchProgressBreakdown = createServerFn({ method: "GET" })
   .inputValidator(
@@ -118,6 +119,8 @@ export const $fetchProgressLeaderboard = createServerFn({ method: "GET" })
 export const $fetchArtistStatsByAddress = createServerFn({ method: "GET" })
   .inputValidator(z.object({ address: z.string() }))
   .handler(async ({ data }) => {
+    const isSpin = isEqual(data.address, Addresses.SPIN);
+
     const stats = await indexer
       .select({
         season: collections.season,
@@ -128,7 +131,12 @@ export const $fetchArtistStatsByAddress = createServerFn({ method: "GET" })
       })
       .from(objekts)
       .innerJoin(collections, eq(objekts.collectionId, collections.id))
-      .where(eq(objekts.owner, data.address.toLowerCase()))
+      .where(
+        and(
+          eq(objekts.owner, data.address.toLowerCase()),
+          ...withSpinMonth(isSpin, objekts.receivedAt),
+        ),
+      )
       .groupBy(
         collections.season,
         collections.member,

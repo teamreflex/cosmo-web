@@ -10,13 +10,14 @@ import {
   withOnlineType,
   withSeason,
   withSelectedArtists,
+  withSpinMonth,
   withTransferable,
 } from "@/lib/server/objekts/filters.server";
 import { userCollectionBackendSchema } from "@/lib/universal/parsers";
 import type { ValidSort } from "@apollo/cosmo/types/common";
 import { Addresses, isEqual } from "@apollo/util";
 import { createServerFn } from "@tanstack/react-start";
-import { and, eq, gte, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import * as z from "zod";
 import { mapLegacyObjekt } from "./common";
 
@@ -85,7 +86,7 @@ async function fetchObjekts(
         eq(objekts.owner, owner),
         ...collectionFilters(data),
         ...withTransferable(data.transferable),
-        ...spinMonthFilter(isSpin),
+        ...withSpinMonth(isSpin, objekts.receivedAt),
       ),
     )
     .$dynamic();
@@ -101,29 +102,31 @@ async function fetchObjekts(
  * Fetch the count of objekts from the database.
  */
 async function fetchCount(owner: string, filters: InputData): Promise<number> {
+  const collectionConditions = collectionFilters(filters);
+
   let query = indexer
     .select({ count: sql<number>`count(*)` })
     .from(objekts)
-    .innerJoin(collections, eq(collections.id, objekts.collectionId))
-    .where(
-      and(
-        eq(objekts.owner, owner),
-        ...collectionFilters(filters),
-        ...withTransferable(filters.transferable),
-      ),
-    );
+    .$dynamic();
 
-  const [results] = await query;
+  // the FK guarantees every objekt has a collection, so only join when a
+  // collection-column filter needs it — otherwise count objekts directly
+  if (collectionConditions.length > 0) {
+    query = query.innerJoin(
+      collections,
+      eq(collections.id, objekts.collectionId),
+    );
+  }
+
+  const [results] = await query.where(
+    and(
+      eq(objekts.owner, owner),
+      ...collectionConditions,
+      ...withTransferable(filters.transferable),
+    ),
+  );
 
   return Number(results?.count ?? 0);
-}
-
-/**
- * Build the filter for the spin account to only query the last month of objekts.
- */
-function spinMonthFilter(isSpin: boolean) {
-  if (!isSpin) return [];
-  return [gte(objekts.receivedAt, sql`now() - interval '1 month'`)];
 }
 
 /**

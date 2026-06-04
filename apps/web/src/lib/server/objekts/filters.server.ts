@@ -3,8 +3,8 @@ import type {
   ValidOnlineType,
   ValidSort,
 } from "@apollo/cosmo/types/common";
-import { asc, between, desc, eq, inArray } from "drizzle-orm";
-import type { PgSelect } from "drizzle-orm/pg-core";
+import { asc, between, desc, eq, gte, inArray, sql } from "drizzle-orm";
+import type { PgColumn, PgSelect } from "drizzle-orm/pg-core";
 import { collections, objekts } from "../db/indexer/schema";
 
 /**
@@ -151,4 +151,12 @@ export function withTimeframe(timeframe?: [string, string]) {
  */
 export function withTransferable(transferable: boolean | null | undefined) {
   return transferable ? [eq(objekts.transferable, transferable)] : [];
+}
+
+/**
+ * The spin account holds millions of objekts and is never emptied; cap spin
+ * queries to the last month on the given timestamp column to avoid full scans.
+ */
+export function withSpinMonth(isSpin: boolean, column: PgColumn) {
+  return isSpin ? [gte(column, sql`now() - interval '1 month'`)] : [];
 }

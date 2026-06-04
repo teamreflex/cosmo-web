@@ -4,7 +4,6 @@ import {
   and,
   desc,
   eq,
-  gte,
   inArray,
   lt,
   not,
@@ -23,6 +22,7 @@ import {
   withOnlineType,
   withSeason,
   withSelectedArtists,
+  withSpinMonth,
 } from "./objekts/filters.server";
 
 const PER_PAGE = 60;
@@ -37,7 +37,7 @@ export async function fetchTransferRows(
 ): Promise<TransferResult> {
   const cursor = decodeCursor(params.cursor);
   const isSpin = isEqual(address, Addresses.SPIN);
-  const extraFilters = isSpin ? spinMonthFilter() : [];
+  const extraFilters = withSpinMonth(isSpin, transfers.timestamp);
   const addr = address.toLowerCase();
 
   const results =
@@ -104,13 +104,6 @@ function decodeCursor(cursor: string | null | undefined) {
  */
 function encodeCursor(timestamp: string, id: string) {
   return Buffer.from(`${timestamp}|${id}`).toString("base64");
-}
-
-/**
- * Build the filter for the spin account to only query the last month of transfers.
- */
-function spinMonthFilter() {
-  return [gte(transfers.timestamp, sql`now() - interval '1 month'`)];
 }
 
 /**

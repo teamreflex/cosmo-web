@@ -2,9 +2,10 @@ import { indexer } from "@/lib/server/db/indexer";
 import type { Collection } from "@/lib/server/db/indexer/schema";
 import { collections, objekts } from "@/lib/server/db/indexer/schema";
 import type { ValidOnlineType } from "@apollo/cosmo/types/common";
-import { Addresses } from "@apollo/util";
+import { Addresses, isEqual } from "@apollo/util";
 import { and, eq, inArray, not, notInArray, sql } from "drizzle-orm";
 import { unobtainables } from "../unobtainables";
+import { withSpinMonth } from "./objekts/filters.server";
 
 type FetchTotal = {
   member: string;
@@ -39,6 +40,8 @@ export async function fetchTotal({
  * Fetch unique collections the user owns for given member.
  */
 export async function fetchProgress(address: string, member: string) {
+  const isSpin = isEqual(address, Addresses.SPIN);
+
   return await indexer
     // ensure we only count each collection once
     .selectDistinctOn([objekts.collectionId], {
@@ -58,6 +61,7 @@ export async function fetchProgress(address: string, member: string) {
         eq(objekts.owner, address),
         // only operate on objekts of the given member
         eq(collections.member, member),
+        ...withSpinMonth(isSpin, objekts.receivedAt),
       ),
     )
     .orderBy(objekts.collectionId);
