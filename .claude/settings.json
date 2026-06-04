@@ -16,18 +16,6 @@
     "deny": ["Bash(npm:*)", "Bash(pnpm:*)"]
   },
   "enabledMcpjsonServers": ["bun", "context7"],
-  "enabledPlugins": {
-    "typescript-lsp@claude-plugins-official": true,
-    "agent-browser@agent-browser": true
-  },
-  "extraKnownMarketplaces": {
-    "agent-browser": {
-      "source": {
-        "source": "git",
-        "url": "https://github.com/vercel-labs/agent-browser.git"
-      }
-    }
-  },
   "hooks": {
     "PostToolUse": [
       {
@@ -40,5 +28,26 @@
         ]
       }
     ]
+  },
+  "enabledPlugins": {
+    "typescript-lsp@claude-plugins-official": true,
+    "agent-browser@agent-browser": true,
+    "planetscale@planetscale": true
+  },
+  "extraKnownMarketplaces": {
+    "agent-browser": {
+      "source": {
+        "source": "git",
+        "url": "https://github.com/vercel-labs/agent-browser.git"
+      },
+      "autoUpdate": true
+    },
+    "planetscale": {
+      "source": {
+        "source": "git",
+        "url": "https://github.com/planetscale/claude-plugin.git"
+      },
+      "autoUpdate": true
+    }
   }
 }
