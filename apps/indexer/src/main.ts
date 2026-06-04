@@ -4,7 +4,7 @@ import { Addresses } from "@apollo/util";
 import { TypeormDatabase, type Store } from "@subsquid/typeorm-store";
 import { randomUUID } from "crypto";
 import { env } from "./env";
-import { fetchMetadataWithRetry } from "./metadata";
+import { fetchMetadataWithRetryV3 } from "./metadata";
 import { Collection, ComoBalance, Objekt, type Transfer, Vote } from "./model";
 import { ListEventOutbox } from "./model";
 import {
@@ -34,7 +34,7 @@ processor.run(db, async (ctx) => {
       const objektBatch = new Map<string, Objekt>();
 
       const metadataBatch = await Promise.allSettled(
-        chunk.map((e) => fetchMetadataWithRetry(e.tokenId)),
+        chunk.map((e) => fetchMetadataWithRetryV3(e.tokenId)),
       );
 
       // iterate over each objekt metadata request
