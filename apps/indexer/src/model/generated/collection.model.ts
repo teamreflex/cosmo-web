@@ -46,7 +46,6 @@ export class Collection {
   @Column("text", { nullable: false })
   collectionNo!: string;
 
-  @Index()
   @Column("text", { nullable: false })
   class!: string;
 

@@ -33,7 +33,6 @@ export class Objekt {
   @Column("int4", { nullable: false })
   serial!: number;
 
-  @Index()
   @Column("boolean", { nullable: false })
   transferable!: boolean;
 

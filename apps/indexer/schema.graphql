@@ -9,7 +9,7 @@ type Collection @entity {
   member: String! @index
   artist: String! @index
   collectionNo: String! @index
-  class: String! @index
+  class: String!
   thumbnailImage: String!
   frontImage: String!
   frontMedia: String
@@ -42,7 +42,7 @@ type Objekt @entity {
   mintedAt: DateTime!
   receivedAt: DateTime! @index
   serial: Int! @index
-  transferable: Boolean! @index
+  transferable: Boolean!
   transfers: [Transfer!] @derivedFrom(field: "objekt")
   collection: Collection!
 }

@@ -36,7 +36,6 @@ export class Transfer {
   @ManyToOne(() => Objekt, { nullable: true })
   objekt!: Objekt;
 
-  @Index()
   @ManyToOne(() => Collection, { nullable: true })
   collection!: Collection;
 }
