@@ -28,12 +28,69 @@ export class Redis extends Effect.Service<Redis>()("app/Redis", {
     });
 
     /**
-     * Set a value by key.
+     * Set a value by key, optionally with a TTL (seconds) so a dead writer
+     * can't pin the value indefinitely.
      */
-    const set = Effect.fn(function* (key: string, value: string) {
+    const set = Effect.fn(function* (
+      key: string,
+      value: string,
+      ttlSeconds?: number,
+    ) {
       yield* Effect.tryPromise({
-        try: () => client.set(key, value),
+        try: () =>
+          ttlSeconds === undefined
+            ? client.set(key, value)
+            : client.set(key, value, "EX", ttlSeconds),
         catch: (error) => new RedisSetError({ key, cause: error }),
+      });
+    });
+
+    /**
+     * Set a TTL (seconds) on an existing key, refreshing it on each call.
+     */
+    const expire = Effect.fn(function* (key: string, ttlSeconds: number) {
+      yield* Effect.tryPromise({
+        try: () => client.expire(key, ttlSeconds),
+        catch: (error) => new RedisSetError({ key, cause: error }),
+      });
+    });
+
+    /**
+     * Prepend a value to the head of a list.
+     */
+    const lpush = Effect.fn(function* (key: string, value: string) {
+      yield* Effect.tryPromise({
+        try: () => client.send("LPUSH", [key, value]),
+        catch: (error) => new RedisListError({ key, cause: error }),
+      });
+    });
+
+    /**
+     * Trim a list to the inclusive [start, stop] index range.
+     */
+    const ltrim = Effect.fn(function* (
+      key: string,
+      start: number,
+      stop: number,
+    ) {
+      yield* Effect.tryPromise({
+        try: () => client.send("LTRIM", [key, String(start), String(stop)]),
+        catch: (error) => new RedisListError({ key, cause: error }),
+      });
+    });
+
+    /**
+     * Read the values of a list over the inclusive [start, stop] index range.
+     */
+    const lrange = Effect.fn(function* (
+      key: string,
+      start: number,
+      stop: number,
+    ) {
+      return yield* Effect.tryPromise({
+        try: (): Promise<string[]> =>
+          client.send("LRANGE", [key, String(start), String(stop)]),
+        catch: (error) => new RedisListError({ key, cause: error }),
       });
     });
 
@@ -41,6 +98,10 @@ export class Redis extends Effect.Service<Redis>()("app/Redis", {
       del,
       get,
       set,
+      expire,
+      lpush,
+      ltrim,
+      lrange,
     };
   }),
   dependencies: [Env.Default],
@@ -57,6 +118,11 @@ export class RedisGetError extends Data.TaggedError("RedisGetError")<{
 }> {}
 
 export class RedisSetError extends Data.TaggedError("RedisSetError")<{
+  key: string;
+  cause: unknown;
+}> {}
+
+export class RedisListError extends Data.TaggedError("RedisListError")<{
   key: string;
   cause: unknown;
 }> {}

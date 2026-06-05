@@ -304,6 +304,9 @@
   "system_status_normal": "데이터베이스가 최신 상태입니다",
   "system_status_degraded": "데이터베이스가 약 1시간 지연되었습니다",
   "system_status_down": "데이터베이스가 1시간 이상 지연되었습니다",
+  "system_metadata": "메타데이터",
+  "system_status_metadata_operational": "메타데이터 API가 정상 작동 중입니다",
+  "system_status_metadata_down": "메타데이터 API를 사용할 수 없습니다",
   "system_status_fetch_error": "시스템 상태를 가져올 수 없습니다",
 
   "_comment_updates": "Update dialog strings",

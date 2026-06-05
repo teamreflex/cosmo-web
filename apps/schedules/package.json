@@ -22,7 +22,8 @@
     "@effect/platform-bun": "catalog:",
     "drizzle-orm": "catalog:",
     "effect": "catalog:",
-    "jose": "catalog:"
+    "jose": "catalog:",
+    "ofetch": "catalog:"
   },
   "devDependencies": {
     "@apollo/lint": "workspace:*",

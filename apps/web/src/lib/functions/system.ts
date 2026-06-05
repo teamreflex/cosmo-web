@@ -1,8 +1,13 @@
-import { remember } from "@/lib/server/cache.server";
+import { redis, remember } from "@/lib/server/cache.server";
 import { abstract } from "@/lib/server/http.server";
 import { getRequestSignal } from "@/lib/server/request.server";
 import { fetchProcessorHeight } from "@/lib/server/system.server";
-import type { RPCResponse, SystemStatus } from "@/lib/universal/system";
+import type {
+  MetadataStatus,
+  RPCResponse,
+  SystemStatus,
+} from "@/lib/universal/system";
+import { COSMO_V1_STATUS_KEY } from "@apollo/util";
 import { createServerFn } from "@tanstack/react-start";
 
 /**
@@ -32,7 +37,9 @@ async function fetchChainStatus(signal?: AbortSignal) {
  */
 export const $fetchSystemStatus = createServerFn().handler(async () => {
   const signal = getRequestSignal();
-  return await remember(`system-status`, 60 * 5, async () => {
+
+  // processor sync status stays cached for 5 minutes (it changes slowly)...
+  const { processor } = await remember(`system-status`, 60 * 5, async () => {
     const [{ blockHeight }, processorHeight] = await Promise.all([
       fetchChainStatus(signal),
       fetchProcessorHeight(),
@@ -53,4 +60,13 @@ export const $fetchSystemStatus = createServerFn().handler(async () => {
       },
     };
   });
+
+  // ...but the v1 metadata signal is read fresh so an outage isn't masked by the
+  // 5-minute cache. An absent/unknown key means healthy (no false alarm).
+  const metadataStatus = await redis.get(COSMO_V1_STATUS_KEY);
+  const metadata = {
+    status: metadataStatus === "down" ? "down" : "operational",
+  } satisfies { status: MetadataStatus };
+
+  return { processor, metadata };
 });

@@ -304,6 +304,9 @@
   "system_status_normal": "データベースは最新です",
   "system_status_degraded": "データベースは約1時間遅れています",
   "system_status_down": "データベースは1時間以上遅れています",
+  "system_metadata": "メタデータ",
+  "system_status_metadata_operational": "メタデータAPIは正常に動作しています",
+  "system_status_metadata_down": "メタデータAPIが利用できません",
   "system_status_fetch_error": "システム状態を取得できませんでした",
 
   "_comment_updates": "Update dialog strings",

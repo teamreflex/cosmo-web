@@ -51,6 +51,14 @@ export async function chunk<T>(
 export const GRID_COLUMNS = 5;
 
 /**
+ * Redis keys for the COSMO v1 metadata health monitor. The schedules health
+ * task writes them and the web app reads them; sharing the names here keeps the
+ * writer and reader from drifting.
+ */
+export const COSMO_V1_STATUS_KEY = "cosmo:v1:status";
+export const COSMO_V1_SAMPLES_KEY = "cosmo:v1:samples";
+
+/**
  * Collection data source.
  */
 export const collectionDataSources = [

@@ -5,9 +5,17 @@ import {
 } from "@/components/ui/popover";
 import { m } from "@/i18n/messages";
 import { systemStatusQuery } from "@/lib/queries/system";
-import type { SystemStatus as SystemStatusType } from "@/lib/universal/system";
+import type {
+  MetadataStatus,
+  SystemStatus as SystemStatusType,
+} from "@/lib/universal/system";
 import { cn } from "@/lib/utils";
-import { IconActivity, IconServer, IconX } from "@tabler/icons-react";
+import {
+  IconActivity,
+  IconServer,
+  IconWorld,
+  IconX,
+} from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
@@ -34,8 +42,13 @@ export default function SystemStatus() {
 
 function SystemStatusPopover() {
   const {
-    data: { processor },
+    data: { processor, metadata },
   } = useSuspenseQuery(systemStatusQuery);
+
+  // a v1 metadata outage is an overriding display state on the navbar dot,
+  // shown regardless of how far the processor has synced.
+  const display: DisplayStatus =
+    metadata.status === "down" ? "metadata-down" : processor.status;
 
   return (
     <Popover>
@@ -44,15 +57,15 @@ function SystemStatusPopover() {
           type="button"
           className={cn(
             "flex h-8 w-9 items-center justify-center rounded-l-sm border shadow-sm transition-colors",
-            textStatus(processor.status),
-            bgStatus(processor.status),
+            textStatus(display),
+            bgStatus(display),
           )}
           aria-label={m.aria_system_status()}
         >
           <IconActivity className="h-5 w-5" />
         </button>
       </PopoverTrigger>
-      <PopoverContent align="start" className="p-2">
+      <PopoverContent align="start" className="flex flex-col gap-2 p-2">
         {/* processor */}
         <div className="flex flex-col">
           <div className="flex items-center justify-between">
@@ -70,6 +83,20 @@ function SystemStatusPopover() {
             </div>
           </div>
           <p className="text-xs">{processorText[processor.status]}</p>
+        </div>
+
+        {/* metadata */}
+        <div className="flex flex-col">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-semibold">{m.system_metadata()}</p>
+            <IconWorld
+              className={cn(
+                "size-4",
+                metadata.status === "down" ? "text-blue-500" : "text-green-500",
+              )}
+            />
+          </div>
+          <p className="text-xs">{metadataText[metadata.status]}</p>
         </div>
       </PopoverContent>
     </Popover>
@@ -92,21 +119,29 @@ function ErrorFallback() {
   );
 }
 
-function textStatus(status: SystemStatusType) {
+// the navbar dot collapses two orthogonal facts (sync lag + metadata health)
+// into one overriding indicator, so it carries the sync states plus a blue
+// metadata-down override.
+type DisplayStatus = SystemStatusType | "metadata-down";
+
+function textStatus(status: DisplayStatus) {
   return [
     status === "normal" && "text-green-500",
     status === "degraded" && "text-yellow-500",
     status === "down" && "text-red-600",
+    status === "metadata-down" && "text-blue-500",
   ];
 }
 
-function bgStatus(status: SystemStatusType) {
+function bgStatus(status: DisplayStatus) {
   return [
     status === "normal" &&
       "bg-green-500/25 hover:bg-green-500/40 border-green-500/40",
     status === "degraded" &&
       "bg-yellow-500/25 hover:bg-yellow-500/40 border-yellow-500/40",
     status === "down" && "bg-red-600/25 hover:bg-red-600/40 border-red-600/40",
+    status === "metadata-down" &&
+      "bg-blue-500/25 hover:bg-blue-500/40 border-blue-500/40",
   ];
 }
 
@@ -115,3 +150,8 @@ const processorText = {
   degraded: m.system_status_degraded(),
   down: m.system_status_down(),
 };
+
+const metadataText = {
+  operational: m.system_status_metadata_operational(),
+  down: m.system_status_metadata_down(),
+} satisfies Record<MetadataStatus, string>;

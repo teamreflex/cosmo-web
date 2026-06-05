@@ -5,6 +5,7 @@ import type { DatabaseIndexer } from "./db-indexer";
 import type { Env } from "./env";
 import { backfillSerialTask } from "./functions/backfill-serial";
 import { clearObjektStatsTask } from "./functions/clear-objekt-stats";
+import { cosmoHealthTask } from "./functions/cosmo-health";
 import { drainOutboxTask } from "./functions/drain-outbox";
 import { syncCollectionPriceStatsTask } from "./functions/sync-collection-price-stats";
 import { syncFxRatesTask } from "./functions/sync-fx-rates";
@@ -35,6 +36,7 @@ export const SCHEDULED_TASKS: ScheduledTask[] = [
   syncFxRatesTask,
   syncCollectionPriceStatsTask,
   backfillSerialTask,
+  cosmoHealthTask,
 ];
 
 /**
