@@ -23,6 +23,7 @@ import { Route as ObjektsStatsRouteImport } from './routes/objekts/stats'
 import { Route as ListIdRouteImport } from './routes/list/$id'
 import { Route as EventsSlugRouteImport } from './routes/events/$slug'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
+import { Route as AdminNoticeRouteImport } from './routes/admin/notice'
 import { Route as AdminEventsRouteImport } from './routes/admin/events'
 import { Route as AdminErasRouteImport } from './routes/admin/eras'
 import { Route as AdminCacheRouteImport } from './routes/admin/cache'
@@ -117,6 +118,11 @@ const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
   id: '/auth/reset-password',
   path: '/auth/reset-password',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminNoticeRoute = AdminNoticeRouteImport.update({
+  id: '/notice',
+  path: '/notice',
+  getParentRoute: () => AdminRouteRoute,
 } as any)
 const AdminEventsRoute = AdminEventsRouteImport.update({
   id: '/events',
@@ -253,6 +259,7 @@ export interface FileRoutesByFullPath {
   '/admin/cache': typeof AdminCacheRoute
   '/admin/eras': typeof AdminErasRoute
   '/admin/events': typeof AdminEventsRoute
+  '/admin/notice': typeof AdminNoticeRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/events/$slug': typeof EventsSlugRoute
   '/list/$id': typeof ListIdRoute
@@ -289,6 +296,7 @@ export interface FileRoutesByTo {
   '/admin/cache': typeof AdminCacheRoute
   '/admin/eras': typeof AdminErasRoute
   '/admin/events': typeof AdminEventsRoute
+  '/admin/notice': typeof AdminNoticeRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/events/$slug': typeof EventsSlugRoute
   '/list/$id': typeof ListIdRoute
@@ -328,6 +336,7 @@ export interface FileRoutesById {
   '/admin/cache': typeof AdminCacheRoute
   '/admin/eras': typeof AdminErasRoute
   '/admin/events': typeof AdminEventsRoute
+  '/admin/notice': typeof AdminNoticeRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/events/$slug': typeof EventsSlugRoute
   '/list/$id': typeof ListIdRoute
@@ -368,6 +377,7 @@ export interface FileRouteTypes {
     | '/admin/cache'
     | '/admin/eras'
     | '/admin/events'
+    | '/admin/notice'
     | '/auth/reset-password'
     | '/events/$slug'
     | '/list/$id'
@@ -404,6 +414,7 @@ export interface FileRouteTypes {
     | '/admin/cache'
     | '/admin/eras'
     | '/admin/events'
+    | '/admin/notice'
     | '/auth/reset-password'
     | '/events/$slug'
     | '/list/$id'
@@ -442,6 +453,7 @@ export interface FileRouteTypes {
     | '/admin/cache'
     | '/admin/eras'
     | '/admin/events'
+    | '/admin/notice'
     | '/auth/reset-password'
     | '/events/$slug'
     | '/list/$id'
@@ -596,6 +608,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/auth/reset-password'
       preLoaderRoute: typeof AuthResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/notice': {
+      id: '/admin/notice'
+      path: '/notice'
+      fullPath: '/admin/notice'
+      preLoaderRoute: typeof AdminNoticeRouteImport
+      parentRoute: typeof AdminRouteRoute
     }
     '/admin/events': {
       id: '/admin/events'
@@ -783,6 +802,7 @@ interface AdminRouteRouteChildren {
   AdminCacheRoute: typeof AdminCacheRoute
   AdminErasRoute: typeof AdminErasRoute
   AdminEventsRoute: typeof AdminEventsRoute
+  AdminNoticeRoute: typeof AdminNoticeRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
@@ -791,6 +811,7 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminCacheRoute: AdminCacheRoute,
   AdminErasRoute: AdminErasRoute,
   AdminEventsRoute: AdminEventsRoute,
+  AdminNoticeRoute: AdminNoticeRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 

@@ -1,5 +1,6 @@
 import { m } from "@/i18n/messages";
 import {
+  IconAlertTriangle,
   IconCalendarEvent,
   IconDatabase,
   IconDisc,
@@ -33,6 +34,11 @@ export function getAdminItems() {
       title: m.admin_cache_title(),
       url: "/admin/cache",
       icon: IconDatabase,
+    },
+    {
+      title: m.admin_notice_title(),
+      url: "/admin/notice",
+      icon: IconAlertTriangle,
     },
   ];
 }

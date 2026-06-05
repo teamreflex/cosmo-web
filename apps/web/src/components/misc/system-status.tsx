@@ -23,7 +23,7 @@ export default function SystemStatus() {
     <ErrorBoundary fallback={<ErrorFallback />}>
       <Suspense
         fallback={
-          <div className="h-8 w-9 animate-pulse rounded-l-sm bg-secondary" />
+          <div className="h-7 w-8 animate-pulse rounded-sm bg-secondary lg:h-8 lg:w-9" />
         }
       >
         <SystemStatusPopover />
@@ -43,7 +43,7 @@ function SystemStatusPopover() {
         <button
           type="button"
           className={cn(
-            "flex h-8 w-9 items-center justify-center rounded-l-sm border shadow-sm transition-colors",
+            "flex h-7 w-8 items-center justify-center rounded-sm border shadow-sm transition-colors lg:h-8 lg:w-9",
             textStatus(processor.status),
             bgStatus(processor.status),
           )}

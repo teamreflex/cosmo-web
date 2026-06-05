@@ -10,22 +10,22 @@ import Logo from "../logo";
 import SystemStatus from "../misc/system-status";
 import UpdateDialog from "../misc/update-dialog";
 import NotificationBell from "../notifications/notification-bell";
+import { ButtonGroup } from "../ui/button-group";
 import { Skeleton } from "../ui/skeleton";
 import { DesktopAuthLinks, DesktopPublicLinks, MobileMenu } from "./links";
 import NavbarSearch from "./navbar-search";
-// import Notice from "./notice";
+import Notice from "./notice";
 
 export default function Navbar() {
   return (
     <nav className="sticky top-0 right-0 left-0 z-30 h-14 border-b border-border bg-background/90 backdrop-blur-lg">
       <div className="container flex h-14 items-center gap-4 text-sm text-foreground">
         <Logo className="h-8" />
-        <div className="flex items-center">
+        <ButtonGroup>
           <SystemStatus />
           <UpdateDialog />
-        </div>
-
-        {/* <Notice /> */}
+          <Notice />
+        </ButtonGroup>
 
         <div className="flex items-center gap-1">
           <DesktopPublicLinks />
@@ -37,7 +37,7 @@ export default function Navbar() {
           </ErrorBoundary>
         </div>
 
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-1 lg:gap-2">
           <NavbarSearch />
 
           <ErrorBoundary fallback={<AuthFallback />}>
