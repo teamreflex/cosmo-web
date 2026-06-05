@@ -3,6 +3,7 @@ import { addr, chunk, slugifyObjekt } from "@apollo/util";
 import { Addresses } from "@apollo/util";
 import { TypeormDatabase, type Store } from "@subsquid/typeorm-store";
 import { randomUUID } from "crypto";
+import { In } from "typeorm";
 import { env } from "./env";
 import { fetchMetadata, type MetadataResult } from "./metadata";
 import { Collection, ComoBalance, Objekt, type Transfer, Vote } from "./model";
@@ -33,17 +34,52 @@ processor.run(db, async (ctx) => {
       const collectionBatch = new Map<string, Collection>();
       const objektBatch = new Map<string, Objekt>();
 
-      const metadataBatch = await Promise.allSettled(
-        chunk.map((e) => fetchMetadata(e.tokenId)),
-      );
+      // batch-load existing objekts (the bulk of trades) with their collection,
+      // so only mints/unknown tokens incur a metadata fetch + collection lookup.
+      const tokenIds = [...new Set(chunk.map((t) => t.tokenId))];
+      const existing = await ctx.store.find(Objekt, {
+        where: { id: In(tokenIds) },
+        relations: { collection: true },
+      });
+      const existingById = new Map(existing.map((o) => [o.id, o]));
 
-      // iterate over each objekt metadata request
-      for (let j = 0; j < metadataBatch.length; j++) {
-        const request = metadataBatch[j];
-        const transfer = chunk[j];
-        if (!transfer || !request || request.status === "rejected") {
+      // fetch metadata only for tokens we've never seen before
+      const unknownTokenIds = tokenIds.filter((id) => !existingById.has(id));
+      const metadataResults = await Promise.allSettled(
+        unknownTokenIds.map((id) => fetchMetadata(id)),
+      );
+      const metadataByToken = new Map<
+        string,
+        PromiseSettledResult<MetadataResult>
+      >();
+      unknownTokenIds.forEach((id, i) => {
+        const result = metadataResults[i];
+        if (result) metadataByToken.set(id, result);
+      });
+
+      // iterate over each transfer in chronological order
+      for (const transfer of chunk) {
+        // in-chunk buffer first (handles mint→trade within one chunk), then db
+        const existingObjekt =
+          objektBatch.get(transfer.tokenId) ??
+          existingById.get(transfer.tokenId);
+
+        // known objekt: reuse its collection, just update ownership. no fetch.
+        if (existingObjekt) {
+          updateExistingObjekt(existingObjekt, transfer);
+          objektBatch.set(existingObjekt.id, existingObjekt);
+
+          transfer.objekt = existingObjekt;
+          transfer.collection = existingObjekt.collection;
+          transferBatch.push(transfer);
+          continue;
+        }
+
+        // unknown objekt: needs metadata to create it (mint, or lazy-create)
+        const request = metadataByToken.get(transfer.tokenId);
+        if (!request || request.status === "rejected") {
           ctx.log.error(
-            `Unable to fetch metadata for token ${transfer?.tokenId ?? "unknown"}`,
+            `Unable to fetch metadata for token ${transfer.tokenId}`,
           );
           continue;
         }
@@ -60,13 +96,7 @@ processor.run(db, async (ctx) => {
         collectionBatch.set(collection.slug, collection);
 
         // handle objekt
-        const objekt = await handleObjekt(
-          ctx,
-          data,
-          source,
-          objektBatch,
-          transfer,
-        );
+        const objekt = createObjekt(data, source, transfer);
         objekt.collection = collection;
         objektBatch.set(objekt.id, objekt);
 
@@ -236,45 +266,35 @@ async function handleCollection(
 }
 
 /**
- * Create or update the objekt row.
+ * Update an existing objekt's ownership for a transfer. Mutates in place and
+ * leaves transferable untouched; the caller buffers it for upsert.
  */
-async function handleObjekt(
-  ctx: ProcessorContext<Store>,
+function updateExistingObjekt(objekt: Objekt, transfer: Transfer) {
+  objekt.receivedAt = new Date(transfer.timestamp);
+  objekt.owner = addr(transfer.to);
+}
+
+/**
+ * Create a new objekt row from freshly fetched metadata. A non-mint transfer can
+ * reach here when its objekt is missing (reorg/restart/previously-dropped mint);
+ * in that case mintedAt is this transfer's timestamp rather than the true mint
+ * time, an accepted inaccuracy.
+ */
+function createObjekt(
   metadata: CosmoObjektMetadataV1,
   source: MetadataResult["source"],
-  buffer: Map<string, Objekt>,
   transfer: Transfer,
 ) {
-  // fetch out of buffer
-  let objekt = buffer.get(transfer.tokenId);
-
-  // fetch from db
-  if (!objekt) {
-    objekt = await ctx.store.get(Objekt, transfer.tokenId);
-  }
-
-  // if not new, update fields. skip transferable
-  if (objekt) {
-    objekt.receivedAt = new Date(transfer.timestamp);
-    objekt.owner = addr(transfer.to);
-    return objekt;
-  }
-
-  // otherwise create it
-  if (!objekt) {
-    objekt = new Objekt({
-      id: transfer.tokenId,
-      mintedAt: new Date(transfer.timestamp),
-      receivedAt: new Date(transfer.timestamp),
-      owner: addr(transfer.to),
-      // v3 fallback can't supply a real serial; 0 is the placeholder the
-      // serial-0 backfill repairs once v1 recovers.
-      serial: source === "v3" ? 0 : metadata.objekt.objektNo,
-      transferable: metadata.objekt.transferable,
-    });
-  }
-
-  return objekt;
+  return new Objekt({
+    id: transfer.tokenId,
+    mintedAt: new Date(transfer.timestamp),
+    receivedAt: new Date(transfer.timestamp),
+    owner: addr(transfer.to),
+    // v3 fallback can't supply a real serial; 0 is the placeholder the serial-0
+    // backfill repairs once v1 recovers.
+    serial: source === "v3" ? 0 : metadata.objekt.objektNo,
+    transferable: metadata.objekt.transferable,
+  });
 }
 
 /**
