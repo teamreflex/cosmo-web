@@ -5,7 +5,11 @@ import { TypeormDatabase, type Store } from "@subsquid/typeorm-store";
 import { randomUUID } from "crypto";
 import { In } from "typeorm";
 import { env } from "./env";
-import { fetchMetadata, type MetadataResult } from "./metadata";
+import {
+  fetchMetadata,
+  type MetadataResult,
+  type MetadataSource,
+} from "./metadata";
 import { Collection, ComoBalance, Objekt, type Transfer, Vote } from "./model";
 import { ListEventOutbox } from "./model";
 import {
@@ -18,6 +22,13 @@ import {
 import { processor, type ProcessorContext } from "./processor";
 
 const db = new TypeormDatabase({ supportHotBlocks: true });
+
+// when most of a batch's metadata fetches are fatal it's a systemic COSMO
+// outage; pause before crashing so the restart loop (railway has no restart
+// backoff) doesn't re-fetch the chain and hammer COSMO every few seconds. An
+// isolated fatal stays below the ratio and crashes fast, which is self-alerting.
+const FATAL_BACKOFF_RATIO = 0.5;
+const FATAL_BACKOFF_MS = 30_000;
 
 processor.run(db, async (ctx) => {
   const { transfers, transferability, comoBalanceUpdates, votes, reveals } =
@@ -45,13 +56,36 @@ processor.run(db, async (ctx) => {
 
       // fetch metadata only for tokens we've never seen before
       const unknownTokenIds = tokenIds.filter((id) => !existingById.has(id));
-      const metadataResults = await Promise.allSettled(
+      const metadataResults = await Promise.all(
         unknownTokenIds.map((id) => fetchMetadata(id)),
       );
-      const metadataByToken = new Map<
-        string,
-        PromiseSettledResult<MetadataResult>
-      >();
+
+      // a fatal fetch (both COSMO APIs unusable, or an unparseable v3 payload)
+      // must not silently drop a mint. throw so subsquid rolls the whole batch
+      // back and retries it from the last committed height once they recover.
+      const fatal = metadataResults.find(
+        (r): r is Extract<MetadataResult, { outcome: "fatal" }> =>
+          r.outcome === "fatal",
+      );
+      if (fatal) {
+        // a systemic outage (most of the batch fatal) gets a paced crash;
+        // an isolated poison crashes immediately.
+        const fatalCount = metadataResults.filter(
+          (r) => r.outcome === "fatal",
+        ).length;
+        if (fatalCount / metadataResults.length >= FATAL_BACKOFF_RATIO) {
+          ctx.log.error(
+            `${fatalCount}/${metadataResults.length} metadata fetches fatal; pausing ${FATAL_BACKOFF_MS}ms before crashing`,
+          );
+          await new Promise((resolve) => setTimeout(resolve, FATAL_BACKOFF_MS));
+        }
+        throw new Error(
+          "COSMO metadata APIs unavailable; crashing to retry batch",
+          { cause: fatal.cause },
+        );
+      }
+
+      const metadataByToken = new Map<string, MetadataResult>();
       unknownTokenIds.forEach((id, i) => {
         const result = metadataResults[i];
         if (result) metadataByToken.set(id, result);
@@ -76,15 +110,16 @@ processor.run(db, async (ctx) => {
         }
 
         // unknown objekt: needs metadata to create it (mint, or lazy-create)
-        const request = metadataByToken.get(transfer.tokenId);
-        if (!request || request.status === "rejected") {
+        const result = metadataByToken.get(transfer.tokenId);
+        if (!result || result.outcome !== "ok") {
+          // skip (404): burned/deleted or not-yet-generated — never persist.
           ctx.log.error(
             `Unable to fetch metadata for token ${transfer.tokenId}`,
           );
           continue;
         }
 
-        const { source, data } = request.value;
+        const { source, data } = result;
 
         // handle collection
         const collection = await handleCollection(
@@ -282,7 +317,7 @@ function updateExistingObjekt(objekt: Objekt, transfer: Transfer) {
  */
 function createObjekt(
   metadata: CosmoObjektMetadataV1,
-  source: MetadataResult["source"],
+  source: MetadataSource,
   transfer: Transfer,
 ) {
   return new Objekt({

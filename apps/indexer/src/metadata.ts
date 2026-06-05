@@ -8,18 +8,27 @@ import {
 } from "@apollo/cosmo/types/metadata";
 import { FetchError } from "ofetch";
 
-// v1 carries the real serial (objektNo); v3 fabricates it as 0 as a placeholder
-// that the serial-0 backfill repairs once v1 recovers.
+export type MetadataSource = "v1" | "v3";
+
+// `ok` carries usable metadata: v1 has the real serial, v3 fabricates it as 0 (a
+// placeholder the backfill repairs). `skip` is a 404 — a burned/deleted or
+// not-yet-generated token we must never persist. `fatal` means both APIs are
+// unusable (down, or an unparseable v3 payload); the caller crashes so subsquid
+// retries the batch rather than silently dropping a mint.
 export type MetadataResult =
-  | { source: "v1"; data: CosmoObjektMetadataV1 }
-  | { source: "v3"; data: CosmoObjektMetadataV1 };
+  | { outcome: "ok"; source: MetadataSource; data: CosmoObjektMetadataV1 }
+  | { outcome: "skip" }
+  | { outcome: "fatal"; cause: unknown };
+
+const sleep = (ms: number) =>
+  new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 /**
  * Fetch objekt metadata preferring v1 (real serial), falling back to v3 when v1
- * is down. A 404 means metadata isn't generated yet and short-circuits without a
- * fallback so the caller drops the row; other failures (including timeouts) retry
- * v1 then fall to v3. Each attempt is bounded by `timeoutMs` so a hung v1 can't
- * pin a whole chunk under the per-chunk concurrent fan-out.
+ * is down. A 404 is a skip the caller must never persist; both APIs being
+ * unusable is fatal so the caller can crash and let subsquid retry the batch
+ * rather than drop data. Each attempt is bounded by `timeoutMs` so a hung API
+ * can't pin a whole chunk under the per-chunk concurrent fan-out.
  */
 export async function fetchMetadata(
   tokenId: string,
@@ -27,31 +36,47 @@ export async function fetchMetadata(
   baseDelayMs = 500,
   timeoutMs = 3_000,
 ): Promise<MetadataResult> {
+  // v1 first; a 404 means the token is burned/deleted or not yet generated.
   for (let attempt = 0; ; attempt++) {
     try {
       const data = await fetchMetadataV1(
         tokenId,
         AbortSignal.timeout(timeoutMs),
       );
-      return { source: "v1", data };
+      return { outcome: "ok", source: "v1", data };
     } catch (error) {
-      // 404 = metadata not generated yet, not an outage; preserve today's drop.
       if (error instanceof FetchError && error.status === 404) {
-        throw error;
+        return { outcome: "skip" };
       }
+      if (attempt >= retries) break;
+      await sleep(baseDelayMs * 2 ** attempt);
+    }
+  }
 
-      // v1 retries exhausted on a non-404 failure: fall back to v3.
-      if (attempt >= retries) {
-        const metadata = await fetchMetadataV3(
-          tokenId,
-          AbortSignal.timeout(timeoutMs),
-        );
-        return { source: "v3", data: normalizeV3(metadata, tokenId) };
-      }
-
-      await new Promise((resolve) =>
-        setTimeout(resolve, baseDelayMs * 2 ** attempt),
+  // v1 is unreachable: fall back to v3 with its own bounded retries.
+  for (let attempt = 0; ; attempt++) {
+    try {
+      const metadata = await fetchMetadataV3(
+        tokenId,
+        AbortSignal.timeout(timeoutMs),
       );
+      // v3 answered; a normalize failure is a deterministic bad payload, not a
+      // transient outage, so it's fatal rather than retryable.
+      try {
+        return {
+          outcome: "ok",
+          source: "v3",
+          data: normalizeV3(metadata, tokenId),
+        };
+      } catch (cause) {
+        return { outcome: "fatal", cause };
+      }
+    } catch (error) {
+      // both APIs unusable after retries → fatal: crash to retry the batch.
+      if (attempt >= retries) {
+        return { outcome: "fatal", cause: error };
+      }
+      await sleep(baseDelayMs * 2 ** attempt);
     }
   }
 }
