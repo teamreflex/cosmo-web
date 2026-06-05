@@ -29,6 +29,7 @@ import { Badge } from "../../ui/badge";
 import { Button } from "../../ui/button";
 import { Skeleton } from "../../ui/skeleton";
 import EditMetadata from "./edit-metadata";
+import RefreshCollectionMetadata from "./refresh-collection-metadata";
 
 type Props = {
   objekt: Objekt.Collection;
@@ -101,10 +102,13 @@ function FooterInner(props: Props) {
 
       <div className="ml-auto flex shrink-0 items-center gap-1">
         {user?.isAdmin && (
-          <EditMetadata
-            slug={props.objekt.slug}
-            defaultValue={data.data?.description}
-          />
+          <>
+            <RefreshCollectionMetadata slug={props.objekt.slug} />
+            <EditMetadata
+              slug={props.objekt.slug}
+              defaultValue={data.data?.description}
+            />
+          </>
         )}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
