@@ -306,9 +306,9 @@
   "system_status_normal": "Database is up to date",
   "system_status_degraded": "Database is ~1 hour behind",
   "system_status_down": "Database is over 1 hour behind",
-  "system_metadata": "Metadata",
-  "system_status_metadata_operational": "Metadata API is operational",
-  "system_status_metadata_down": "Metadata API is unavailable",
+  "system_metadata": "COSMO Data",
+  "system_status_metadata_operational": "COSMO data is up and running",
+  "system_status_metadata_down": "COSMO data is partially unavailable",
   "system_status_fetch_error": "Could not fetch system status",
 
   "_comment_updates": "Update dialog strings",
