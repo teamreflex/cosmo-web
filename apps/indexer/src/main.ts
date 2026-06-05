@@ -4,7 +4,7 @@ import { Addresses } from "@apollo/util";
 import { TypeormDatabase, type Store } from "@subsquid/typeorm-store";
 import { randomUUID } from "crypto";
 import { env } from "./env";
-import { fetchMetadataWithRetryV3 } from "./metadata";
+import { fetchMetadata, type MetadataResult } from "./metadata";
 import { Collection, ComoBalance, Objekt, type Transfer, Vote } from "./model";
 import { ListEventOutbox } from "./model";
 import {
@@ -34,7 +34,7 @@ processor.run(db, async (ctx) => {
       const objektBatch = new Map<string, Objekt>();
 
       const metadataBatch = await Promise.allSettled(
-        chunk.map((e) => fetchMetadataWithRetryV3(e.tokenId)),
+        chunk.map((e) => fetchMetadata(e.tokenId)),
       );
 
       // iterate over each objekt metadata request
@@ -48,10 +48,12 @@ processor.run(db, async (ctx) => {
           continue;
         }
 
+        const { source, data } = request.value;
+
         // handle collection
         const collection = await handleCollection(
           ctx,
-          request.value,
+          data,
           collectionBatch,
           transfer,
         );
@@ -60,7 +62,8 @@ processor.run(db, async (ctx) => {
         // handle objekt
         const objekt = await handleObjekt(
           ctx,
-          request.value,
+          data,
+          source,
           objektBatch,
           transfer,
         );
@@ -238,6 +241,7 @@ async function handleCollection(
 async function handleObjekt(
   ctx: ProcessorContext<Store>,
   metadata: CosmoObjektMetadataV1,
+  source: MetadataResult["source"],
   buffer: Map<string, Objekt>,
   transfer: Transfer,
 ) {
@@ -263,7 +267,9 @@ async function handleObjekt(
       mintedAt: new Date(transfer.timestamp),
       receivedAt: new Date(transfer.timestamp),
       owner: addr(transfer.to),
-      serial: metadata.objekt.objektNo,
+      // v3 fallback can't supply a real serial; 0 is the placeholder the
+      // serial-0 backfill repairs once v1 recovers.
+      serial: source === "v3" ? 0 : metadata.objekt.objektNo,
       transferable: metadata.objekt.transferable,
     });
   }
