@@ -245,6 +245,7 @@
   "list_error_not_want_list": "want 리스트가 아닙니다",
   "list_error_not_sale_list": "판매 리스트가 아닙니다",
   "list_error_not_owned": "전송 가능한 {collectionId}을(를) 보유하고 있지 않습니다",
+  "list_error_serial_unverified": "{collectionId}을(를) 아직 확인하는 중입니다. 잠시 후 다시 시도해 주세요",
   "list_error_not_live_list": "라이브 리스트가 아닙니다",
   "list_error_anchor_not_trade_active": "교환 파트너를 찾으려면 이 리스트를 반대 유형과 연결해 주세요",
   "list_error_discord_lists_required": "두 리스트를 모두 선택해 주세요",

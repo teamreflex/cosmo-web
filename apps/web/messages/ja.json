@@ -245,6 +245,7 @@
   "list_error_not_want_list": "wantリストではありません",
   "list_error_not_sale_list": "販売リストではありません",
   "list_error_not_owned": "譲渡可能な{collectionId}を所有していません",
+  "list_error_serial_unverified": "{collectionId}はまだ確認中です。しばらくしてからもう一度お試しください",
   "list_error_not_live_list": "ライブリストではありません",
   "list_error_anchor_not_trade_active": "交換相手を見つけるには、このリストを反対のタイプとペアにしてください",
   "list_error_discord_lists_required": "両方のリストを選択してください",

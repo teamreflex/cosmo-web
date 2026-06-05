@@ -246,6 +246,7 @@
   "list_error_not_want_list": "Ce n'est pas une liste want",
   "list_error_not_sale_list": "Ce n'est pas une liste de vente",
   "list_error_not_owned": "Vous ne possédez pas de {collectionId} transférable",
+  "list_error_serial_unverified": "{collectionId} est en cours de vérification, veuillez réessayer sous peu",
   "list_error_not_live_list": "Ce n'est pas une liste en direct",
   "list_error_anchor_not_trade_active": "Associez cette liste au type opposé pour trouver des partenaires d'échange",
   "list_error_discord_lists_required": "Veuillez sélectionner les deux listes",

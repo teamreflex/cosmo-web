@@ -246,6 +246,7 @@
   "list_error_not_want_list": "Not a want list",
   "list_error_not_sale_list": "Not a sale list",
   "list_error_not_owned": "You don't own a transferable {collectionId}",
+  "list_error_serial_unverified": "{collectionId} is still being verified, please try again shortly",
   "list_error_not_live_list": "Not a live list",
   "list_error_anchor_not_trade_active": "Pair this list with the opposite type to find trade partners",
   "list_error_discord_lists_required": "Please select both lists",

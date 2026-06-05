@@ -15,9 +15,10 @@ type WebTx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 type DbOrTx = typeof db | WebTx;
 
 /**
- * Throws unless every tokenId belongs to `address`, is transferable, and
- * matches `collectionId` (indexer UUID). Single indexer round-trip, no join —
- * `objekts.collectionId` is the FK so the filter is an index lookup.
+ * Throws unless every tokenId belongs to `address`, is transferable, has a
+ * verified serial, and matches `collectionId` (indexer UUID). Single indexer
+ * round-trip, no join — `objekts.collectionId` is the FK so the filter is an
+ * index lookup.
  */
 export async function assertOwnsTokens(
   address: string,
@@ -25,7 +26,7 @@ export async function assertOwnsTokens(
   tokenIds: string[],
 ): Promise<void> {
   const owned = await indexer
-    .select({ id: objekts.id })
+    .select({ id: objekts.id, serial: objekts.serial })
     .from(objekts)
     .where(
       and(
@@ -38,6 +39,12 @@ export async function assertOwnsTokens(
 
   if (owned.length !== tokenIds.length) {
     throw new Error("not_owned");
+  }
+
+  // serial 0 is a v3-fallback placeholder whose transferable flag is unverified
+  // until the backfill confirms it against v1; keep it off have/sale lists.
+  if (owned.some((o) => o.serial === 0)) {
+    throw new Error("serial_unverified");
   }
 }
 
