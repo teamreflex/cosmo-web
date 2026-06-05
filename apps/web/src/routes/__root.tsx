@@ -12,6 +12,7 @@ import {
   filterDataQuery,
   selectedArtistsQuery,
 } from "@/lib/queries/core";
+import { noticeQuery } from "@/lib/queries/notice";
 import { systemStatusQuery } from "@/lib/queries/system";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { IconFileUnknown, IconRefresh } from "@tabler/icons-react";
@@ -37,6 +38,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     void context.queryClient.prefetchQuery(systemStatusQuery);
     void context.queryClient.prefetchQuery(artistsQuery);
     void context.queryClient.prefetchQuery(filterDataQuery);
+    void context.queryClient.prefetchQuery(noticeQuery);
 
     await context.queryClient.ensureQueryData(selectedArtistsQuery);
   },
