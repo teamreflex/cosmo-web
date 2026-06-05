@@ -4,6 +4,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { m } from "@/i18n/messages";
+import { getLocale } from "@/i18n/runtime";
 import { systemStatusQuery } from "@/lib/queries/system";
 import type {
   MetadataStatus,
@@ -45,10 +46,13 @@ function SystemStatusPopover() {
     data: { processor, metadata },
   } = useSuspenseQuery(systemStatusQuery);
 
-  // a v1 metadata outage is an overriding display state on the navbar dot,
-  // shown regardless of how far the processor has synced.
-  const display: DisplayStatus =
-    metadata.status === "down" ? "metadata-down" : processor.status;
+  // the dot scales to the worse of the two signals: a COSMO metadata outage
+  // counts as degraded-level, so it nudges a healthy processor to yellow but
+  // never softens a processor that's already down.
+  const display = worseStatus(
+    processor.status,
+    metadata.status === "down" ? "degraded" : "normal",
+  );
 
   return (
     <Popover>
@@ -70,19 +74,11 @@ function SystemStatusPopover() {
         <div className="flex flex-col">
           <div className="flex items-center justify-between">
             <p className="text-sm font-semibold">{m.system_database()}</p>
-            <div
-              className={cn(
-                "flex items-center gap-1",
-                textStatus(processor.status),
-              )}
-            >
-              <span className="font-semibold">
-                {processor.height.processor}
-              </span>
-              <IconServer className="size-4" />
-            </div>
+            <IconServer
+              className={cn("size-4", textStatus(processor.status))}
+            />
           </div>
-          <p className="text-xs">{processorText[processor.status]}</p>
+          <p className="text-xs">{formatFreshness(processor.lagSeconds)}</p>
         </div>
 
         {/* metadata */}
@@ -92,7 +88,9 @@ function SystemStatusPopover() {
             <IconWorld
               className={cn(
                 "size-4",
-                metadata.status === "down" ? "text-blue-500" : "text-green-500",
+                metadata.status === "down"
+                  ? "text-yellow-500"
+                  : "text-green-500",
               )}
             />
           </div>
@@ -120,36 +118,51 @@ function ErrorFallback() {
 }
 
 // the navbar dot collapses two orthogonal facts (sync lag + metadata health)
-// into one overriding indicator, so it carries the sync states plus a blue
-// metadata-down override.
-type DisplayStatus = SystemStatusType | "metadata-down";
+// into one indicator that scales to whichever is worse.
+const statusSeverity = {
+  normal: 0,
+  degraded: 1,
+  down: 2,
+} satisfies Record<SystemStatusType, number>;
 
-function textStatus(status: DisplayStatus) {
+function worseStatus(a: SystemStatusType, b: SystemStatusType) {
+  return statusSeverity[a] >= statusSeverity[b] ? a : b;
+}
+
+function textStatus(status: SystemStatusType) {
   return [
     status === "normal" && "text-green-500",
     status === "degraded" && "text-yellow-500",
     status === "down" && "text-red-600",
-    status === "metadata-down" && "text-blue-500",
   ];
 }
 
-function bgStatus(status: DisplayStatus) {
+function bgStatus(status: SystemStatusType) {
   return [
     status === "normal" &&
       "bg-green-500/25 hover:bg-green-500/40 border-green-500/40",
     status === "degraded" &&
       "bg-yellow-500/25 hover:bg-yellow-500/40 border-yellow-500/40",
     status === "down" && "bg-red-600/25 hover:bg-red-600/40 border-red-600/40",
-    status === "metadata-down" &&
-      "bg-blue-500/25 hover:bg-blue-500/40 border-blue-500/40",
   ];
 }
 
-const processorText = {
-  normal: m.system_status_normal(),
-  degraded: m.system_status_degraded(),
-  down: m.system_status_down(),
-};
+// renders the processor's last-block lag as plain freshness; anything under ~90s
+// reads as caught up, otherwise the relative age with the unit picked to fit.
+function formatFreshness(lagSeconds: number) {
+  if (lagSeconds < 90) return m.system_status_synced();
+
+  const formatter = new Intl.RelativeTimeFormat(getLocale(), {
+    numeric: "auto",
+  });
+  const when =
+    lagSeconds < 3600
+      ? formatter.format(-Math.round(lagSeconds / 60), "minute")
+      : lagSeconds < 86400
+        ? formatter.format(-Math.round(lagSeconds / 3600), "hour")
+        : formatter.format(-Math.round(lagSeconds / 86400), "day");
+  return m.system_status_updated({ when });
+}
 
 const metadataText = {
   operational: m.system_status_metadata_operational(),

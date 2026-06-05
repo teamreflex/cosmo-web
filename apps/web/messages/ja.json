@@ -302,9 +302,8 @@
 
   "_comment_system": "System status strings",
   "system_database": "データベース",
-  "system_status_normal": "データベースは最新です",
-  "system_status_degraded": "データベースは約1時間遅れています",
-  "system_status_down": "データベースは1時間以上遅れています",
+  "system_status_synced": "最新です",
+  "system_status_updated": "{when}に更新",
   "system_metadata": "COSMOデータ",
   "system_status_metadata_operational": "COSMOデータは元気に稼働中です",
   "system_status_metadata_down": "COSMOデータは一部利用できません",

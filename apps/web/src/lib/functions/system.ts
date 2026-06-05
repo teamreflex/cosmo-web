@@ -3,60 +3,57 @@ import { abstract } from "@/lib/server/http.server";
 import { getRequestSignal } from "@/lib/server/request.server";
 import { fetchProcessorHeight } from "@/lib/server/system.server";
 import type {
+  BlockResponse,
   MetadataStatus,
-  RPCResponse,
   SystemStatus,
 } from "@/lib/universal/system";
 import { COSMO_V1_STATUS_KEY } from "@apollo/util";
 import { createServerFn } from "@tanstack/react-start";
 
 /**
- * Fetch the current block height from the Abstract RPC.
+ * Fetch the unix timestamp (seconds) of a block from the Abstract RPC.
  */
-async function fetchChainStatus(signal?: AbortSignal) {
-  const blockNumber = await abstract<RPCResponse>("/", {
+async function fetchBlockTimestamp(height: number, signal?: AbortSignal) {
+  const block = await abstract<BlockResponse>("/", {
     body: {
       id: 1,
       jsonrpc: "2.0",
-      method: "eth_blockNumber",
-      params: [],
+      method: "eth_getBlockByNumber",
+      params: [`0x${height.toString(16)}`, false],
     },
     signal,
   });
 
-  return {
-    blockHeight: parseInt(blockNumber.result),
-  };
+  return parseInt(block.result.timestamp, 16);
 }
 
 /**
- * Calculate status for indexer height.
- * - within 6000 blocks / 30 minutes: normal
- * - over 6000 but within 12000 blocks / 60 minutes: degraded
- * - more than 12000 blocks / 60 minutes: down
+ * Calculate processor status from how stale its last indexed block is.
+ * - under 30 minutes behind: normal
+ * - 30 to 60 minutes behind: degraded
+ * - over 60 minutes behind: down
  */
 export const $fetchSystemStatus = createServerFn().handler(async () => {
   const signal = getRequestSignal();
 
   // processor sync status stays cached for 5 minutes (it changes slowly)...
   const { processor } = await remember(`system-status`, 60 * 5, async () => {
-    const [{ blockHeight }, processorHeight] = await Promise.all([
-      fetchChainStatus(signal),
-      fetchProcessorHeight(),
-    ]);
+    // the processor's last block timestamp gives us the lag directly, so we read
+    // its height then ask the chain when that block landed (no chain-head call).
+    const processorHeight = await fetchProcessorHeight();
+    const blockTimestamp = await fetchBlockTimestamp(processorHeight, signal);
 
-    // calculate processor status
-    const diff = blockHeight - processorHeight;
+    const lagSeconds = Math.max(
+      0,
+      Math.floor(Date.now() / 1000) - blockTimestamp,
+    );
     const status: SystemStatus =
-      diff < 6000 ? "normal" : diff < 12000 ? "degraded" : "down";
+      lagSeconds < 1800 ? "normal" : lagSeconds < 3600 ? "degraded" : "down";
 
     return {
       processor: {
         status,
-        height: {
-          processor: processorHeight,
-          chain: blockHeight,
-        },
+        lagSeconds,
       },
     };
   });

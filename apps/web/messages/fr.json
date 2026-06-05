@@ -303,9 +303,8 @@
 
   "_comment_system": "System status strings",
   "system_database": "Base de données",
-  "system_status_normal": "La base de données est à jour",
-  "system_status_degraded": "La base de données a ~1h de latence",
-  "system_status_down": "La base de données a plus d'1h de latence",
+  "system_status_synced": "À jour",
+  "system_status_updated": "Mis à jour {when}",
   "system_metadata": "Données COSMO",
   "system_status_metadata_operational": "Les données COSMO tournent à merveille",
   "system_status_metadata_down": "Les données COSMO sont partiellement indisponibles",

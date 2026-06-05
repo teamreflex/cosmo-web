@@ -302,9 +302,8 @@
 
   "_comment_system": "System status strings",
   "system_database": "데이터베이스",
-  "system_status_normal": "데이터베이스가 최신 상태입니다",
-  "system_status_degraded": "데이터베이스가 약 1시간 지연되었습니다",
-  "system_status_down": "데이터베이스가 1시간 이상 지연되었습니다",
+  "system_status_synced": "최신 상태입니다",
+  "system_status_updated": "{when} 업데이트됨",
   "system_metadata": "COSMO 데이터",
   "system_status_metadata_operational": "COSMO 데이터가 원활하게 작동 중입니다",
   "system_status_metadata_down": "COSMO 데이터를 일부 사용할 수 없습니다",

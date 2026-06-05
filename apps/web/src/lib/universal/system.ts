@@ -2,8 +2,8 @@ export type SystemStatus = "down" | "degraded" | "normal";
 
 export type MetadataStatus = "operational" | "down";
 
-export type RPCResponse = {
+export type BlockResponse = {
   jsonrpc: string;
   id: number;
-  result: string;
+  result: { timestamp: string };
 };
