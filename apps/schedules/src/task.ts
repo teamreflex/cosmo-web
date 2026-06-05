@@ -3,6 +3,7 @@ import { Cron, Duration, Effect, Schedule } from "effect";
 import type { DatabaseWeb } from "./db";
 import type { DatabaseIndexer } from "./db-indexer";
 import type { Env } from "./env";
+import { backfillSerialTask } from "./functions/backfill-serial";
 import { clearObjektStatsTask } from "./functions/clear-objekt-stats";
 import { drainOutboxTask } from "./functions/drain-outbox";
 import { syncCollectionPriceStatsTask } from "./functions/sync-collection-price-stats";
@@ -33,6 +34,7 @@ export const SCHEDULED_TASKS: ScheduledTask[] = [
   drainOutboxTask,
   syncFxRatesTask,
   syncCollectionPriceStatsTask,
+  backfillSerialTask,
 ];
 
 /**
