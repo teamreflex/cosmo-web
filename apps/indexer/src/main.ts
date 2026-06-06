@@ -57,7 +57,7 @@ processor.run(db, async (ctx) => {
       // fetch metadata only for tokens we've never seen before
       const unknownTokenIds = tokenIds.filter((id) => !existingById.has(id));
       const metadataResults = await Promise.all(
-        unknownTokenIds.map((id) => fetchMetadata(id)),
+        unknownTokenIds.map((id) => fetchMetadata(id, ctx.log)),
       );
 
       // a fatal fetch (both COSMO APIs unusable, or an unparseable v3 payload)
