@@ -1,17 +1,14 @@
 import { DatabaseIndexer } from "@/db-indexer";
+import { Redis } from "@/redis";
 import { fetchMetadataV1 } from "@apollo/cosmo/server/metadata";
 import type { CosmoObjektMetadataV1 } from "@apollo/cosmo/types/metadata";
 import { collections, objekts } from "@apollo/database/indexer/schema";
-import { addr, Addresses } from "@apollo/util";
+import { addr, Addresses, COSMO_V1_STATUS_KEY } from "@apollo/util";
 import { sql } from "drizzle-orm";
 import { Data, Effect } from "effect";
 import type { ScheduledTask } from "../task";
 
 const BATCH_SIZE = 100;
-// sequentially probe this many of the oldest rows to gauge v1 uptime before
-// committing to the full parallel fan-out.
-const PROBE_SIZE = 10;
-const PROBE_SUCCESS_RATIO = 0.5;
 const FETCH_CONCURRENCY = 10;
 const TIMEOUT_MS = 5_000;
 
@@ -74,16 +71,22 @@ function recordRepair(
 
 /**
  * Repair serial-0 objekts left behind by the indexer's v3 metadata fallback.
- * Sequentially probes the oldest few to gauge v1 uptime, fans the rest out in
- * parallel only when v1 looks healthy (otherwise defers them to the next tick),
- * and batches the serial/transferable fixes plus any placeholder-collection
- * cosmetics into a single update per table.
  */
 export const backfillSerialTask = {
   name: "backfill-serial",
   cron: "*/5 * * * *",
   effect: Effect.gen(function* () {
     const indexer = yield* DatabaseIndexer;
+    const redis = yield* Redis;
+
+    // gate on the shared v1 health status before touching the indexer
+    const status = yield* redis.get(COSMO_V1_STATUS_KEY);
+    if (status !== "up") {
+      yield* Effect.logWarning(
+        `Skipping serial-0 backfill: v1 status is ${status ?? "unknown"}`,
+      );
+      return;
+    }
 
     const placeholders = yield* Effect.tryPromise({
       try: () =>
@@ -106,15 +109,17 @@ export const backfillSerialTask = {
     const objektRepairs: ObjektRepair[] = [];
     const collectionRepairs = new Map<string, CollectionRepair>();
 
-    // sequential probe to gauge v1 uptime before committing to the fan-out
-    const probe = placeholders.slice(0, PROBE_SIZE);
-    const rest = placeholders.slice(PROBE_SIZE);
-    let probeSuccesses = 0;
+    const results = yield* Effect.all(
+      placeholders.map((placeholder) =>
+        fetchMetadata(placeholder.id).pipe(
+          Effect.map((result) => ({ placeholder, result })),
+        ),
+      ),
+      { concurrency: FETCH_CONCURRENCY },
+    );
 
-    for (const placeholder of probe) {
-      const result = yield* fetchMetadata(placeholder.id);
+    for (const { placeholder, result } of results) {
       if (result._tag === "Some") {
-        probeSuccesses++;
         recordRepair(
           placeholder,
           result.value,
@@ -122,37 +127,6 @@ export const backfillSerialTask = {
           collectionRepairs,
         );
       }
-    }
-
-    // only fan out the rest if the probe shows v1 is healthy; otherwise leave
-    // them serial-0 to be re-selected (oldest-first) on the next tick.
-    if (
-      rest.length > 0 &&
-      probeSuccesses / probe.length >= PROBE_SUCCESS_RATIO
-    ) {
-      const results = yield* Effect.all(
-        rest.map((placeholder) =>
-          fetchMetadata(placeholder.id).pipe(
-            Effect.map((result) => ({ placeholder, result })),
-          ),
-        ),
-        { concurrency: FETCH_CONCURRENCY },
-      );
-
-      for (const { placeholder, result } of results) {
-        if (result._tag === "Some") {
-          recordRepair(
-            placeholder,
-            result.value,
-            objektRepairs,
-            collectionRepairs,
-          );
-        }
-      }
-    } else if (rest.length > 0) {
-      yield* Effect.logWarning(
-        `Deferring ${rest.length} serial-0 rows: v1 probe only ${probeSuccesses}/${probe.length} healthy`,
-      );
     }
 
     if (objektRepairs.length === 0) {
