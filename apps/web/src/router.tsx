@@ -12,7 +12,6 @@ export function getRouter() {
     defaultOptions: {
       queries: {
         staleTime: 1000 * 60 * 5, // 5 minutes
-        gcTime: 0,
       },
     },
   });
