@@ -24,7 +24,7 @@ async function fetchBlockTimestamp(height: number, signal?: AbortSignal) {
     signal,
   });
 
-  return parseInt(block.result.timestamp, 16);
+  return block.result === null ? null : parseInt(block.result.timestamp, 16);
 }
 
 /**
@@ -43,10 +43,12 @@ export const $fetchSystemStatus = createServerFn().handler(async () => {
     const processorHeight = await fetchProcessorHeight();
     const blockTimestamp = await fetchBlockTimestamp(processorHeight, signal);
 
-    const lagSeconds = Math.max(
-      0,
-      Math.floor(Date.now() / 1000) - blockTimestamp,
-    );
+    // a null block means a lagging RPC replica hasn't seen the processor's
+    // head block yet, which only happens when the processor is caught up.
+    const lagSeconds =
+      blockTimestamp === null
+        ? 0
+        : Math.max(0, Math.floor(Date.now() / 1000) - blockTimestamp);
     const status: SystemStatus =
       lagSeconds < 1800 ? "normal" : lagSeconds < 3600 ? "degraded" : "down";
 

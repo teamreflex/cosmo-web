@@ -5,5 +5,5 @@ export type MetadataStatus = "operational" | "down";
 export type BlockResponse = {
   jsonrpc: string;
   id: number;
-  result: { timestamp: string };
+  result: { timestamp: string } | null;
 };

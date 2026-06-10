@@ -2,6 +2,7 @@ import {
   fetchMetadataV1,
   fetchMetadataV3,
 } from "@apollo/cosmo/server/metadata";
+import { parseCosmoError } from "@apollo/cosmo/types/error";
 import {
   normalizeV3,
   type CosmoObjektMetadataV1,
@@ -108,6 +109,13 @@ export async function fetchMetadata(
         return { outcome: "fatal", cause };
       }
     } catch (error) {
+      // an OBJEKT_NOT_FOUND 404 means the objekt doesn't exist: skip. a bare
+      // 404 means the route itself is gone — fatal, and not worth retrying.
+      if (error instanceof FetchError && error.status === 404) {
+        return parseCosmoError(error)?.code === "OBJEKT_NOT_FOUND"
+          ? { outcome: "skip" }
+          : { outcome: "fatal", cause: error };
+      }
       // both APIs unusable after retries → fatal: crash to retry the batch.
       if (attempt >= retries) {
         return { outcome: "fatal", cause: error };
