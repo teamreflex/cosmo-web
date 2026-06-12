@@ -243,6 +243,17 @@ async function buildStaticRoutes(
 }
 
 /**
+ * Default dynamic responses to no-cache when the app didn't set a policy,
+ * so Cloudflare doesn't apply its default edge/browser TTLs (e.g. caching
+ * asset 404s for 4 hours in user browsers).
+ */
+function ensureCacheControl(headers: Headers): void {
+  if (!headers.has("Cache-Control")) {
+    headers.set("Cache-Control", "no-cache");
+  }
+}
+
+/**
  * Add no-transform to Cache-Control header
  */
 function ensureNoTransform(headers: Headers): void {
@@ -263,6 +274,7 @@ function compressResponse(response: Response, req: Request): Response {
   const headers = new Headers(response.headers);
   headers.append("Vary", "Accept-Encoding");
   addSecurityHeaders(headers);
+  ensureCacheControl(headers);
 
   const respond = (body: RequestInit["body"] | null) =>
     new Response(body, {
@@ -373,6 +385,7 @@ async function initializeServer() {
           const headers = new Headers(response.headers);
           headers.set("Server-Timing", `handler;dur=${end.toFixed(1)}`);
           addSecurityHeaders(headers);
+          ensureCacheControl(headers);
           return new Response(response.body, {
             status: response.status,
             statusText: response.statusText,
