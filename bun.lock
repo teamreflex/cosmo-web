@@ -253,6 +253,9 @@
       },
     },
   },
+  "patchedDependencies": {
+    "@tanstack/react-router@1.170.15": "patches/@tanstack%2Freact-router@1.170.15.patch",
+  },
   "catalog": {
     "@effect/build-utils": "^0.8.9",
     "@effect/cluster": "^0.58.2",

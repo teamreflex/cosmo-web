@@ -1,0 +1,24 @@
+diff --git a/dist/cjs/Asset.cjs b/dist/cjs/Asset.cjs
+index f257c7ff78f350c049c2a9e499cb5370bb793989..9022ef59d16033c6436d0a7f357cc46a6fe63a39 100644
+--- a/dist/cjs/Asset.cjs
++++ b/dist/cjs/Asset.cjs
+@@ -134,6 +134,7 @@ function Script({ attrs, children, preventScriptHoist }) {
+ 	if (!hydrated) {
+ 		if (attrs?.src) return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("script", {
+ 			...attrs,
++			...preventScriptHoist ? { onLoad: noopScriptHandler } : {},
+ 			suppressHydrationWarning: true
+ 		});
+ 		if (typeof children === "string") return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("script", {
+diff --git a/dist/esm/Asset.js b/dist/esm/Asset.js
+index 5c76313f7f052c1d1c431f5aca572c8ce281e646..4557f429448986393ddd13ba9b65607e7ccc91cd 100644
+--- a/dist/esm/Asset.js
++++ b/dist/esm/Asset.js
+@@ -132,6 +132,7 @@ function Script({ attrs, children, preventScriptHoist }) {
+ 	if (!hydrated) {
+ 		if (attrs?.src) return /* @__PURE__ */ jsx("script", {
+ 			...attrs,
++			...preventScriptHoist ? { onLoad: noopScriptHandler } : {},
+ 			suppressHydrationWarning: true
+ 		});
+ 		if (typeof children === "string") return /* @__PURE__ */ jsx("script", {

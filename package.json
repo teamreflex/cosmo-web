@@ -50,5 +50,8 @@
     "typesense": "^2.1.0",
     "typescript": "^6.0.3",
     "zod": "^4.3.6"
+  },
+  "patchedDependencies": {
+    "@tanstack/react-router@1.170.15": "patches/@tanstack%2Freact-router@1.170.15.patch"
   }
 }
