@@ -20,7 +20,7 @@ import { $fetchArtists } from "./artists";
  * Fetch full gravity details.
  */
 export const $fetchGravityDetails = createServerFn({ method: "GET" })
-  .inputValidator(
+  .validator(
     z.object({
       artist: z.string(),
       id: z.number(),
@@ -97,7 +97,7 @@ function getLatestPollSubquery() {
  * Fetch active gravities (endDate in the future) with their last poll's dates.
  */
 export const $fetchActiveGravities = createServerFn({ method: "GET" })
-  .inputValidator(z.object({ artists: z.array(z.string()).optional() }))
+  .validator(z.object({ artists: z.array(z.string()).optional() }))
   .handler(async ({ data }) => {
     const latestPoll = getLatestPollSubquery();
     const now = new Date();
@@ -123,7 +123,7 @@ export const $fetchActiveGravities = createServerFn({ method: "GET" })
  * Fetch paginated past gravities (endDate in the past) with their last poll's dates.
  */
 export const $fetchPaginatedGravities = createServerFn({ method: "GET" })
-  .inputValidator(
+  .validator(
     z.object({
       artists: z.array(z.string()).optional(),
       cursor: z.iso.datetime().optional(),
@@ -171,7 +171,7 @@ export const $fetchPaginatedGravities = createServerFn({ method: "GET" })
  * Cached for 30 days.
  */
 export const $fetchPolygonGravity = createServerFn({ method: "GET" })
-  .inputValidator(
+  .validator(
     z.object({
       artist: z.string(),
       id: z.number(),
@@ -292,7 +292,7 @@ async function fetchCachedGravity(
  * Fetch a poll, and if it's in the past, cache it for 30 days.
  */
 export const $fetchCachedPoll = createServerFn({ method: "GET" })
-  .inputValidator(
+  .validator(
     z.object({
       artist: z.string(),
       gravityId: z.number(),
@@ -342,7 +342,7 @@ export const $fetchCachedPoll = createServerFn({ method: "GET" })
  * Cursor-based for incremental fetching during reveal polling.
  */
 export const $fetchRevealedVotes = createServerFn({ method: "GET" })
-  .inputValidator(
+  .validator(
     z.object({
       pollId: z.number(),
       cursor: z.number().optional(),

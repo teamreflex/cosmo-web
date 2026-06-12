@@ -11,7 +11,7 @@ const updateCollectionMetadataSchema = z.object({
 
 export const $updateCollectionMetadata = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
-  .inputValidator(updateCollectionMetadataSchema)
+  .validator(updateCollectionMetadataSchema)
   .handler(async ({ data, context }) => {
     await db
       .insert(collectionData)

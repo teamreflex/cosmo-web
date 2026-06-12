@@ -15,7 +15,7 @@
     ],
     "deny": ["Bash(npm:*)", "Bash(pnpm:*)"]
   },
-  "enabledMcpjsonServers": ["bun", "context7"],
+  "enabledMcpjsonServers": ["bun", "context7", "sentry"],
   "hooks": {
     "PostToolUse": [
       {

@@ -29,7 +29,7 @@ type PartialObjekt = Awaited<ReturnType<typeof fetchProgress>>;
  * Fetch the progress breakdown for a given member and address.
  */
 export const $fetchProgressBreakdown = createServerFn({ method: "GET" })
-  .inputValidator(
+  .validator(
     z.object({
       member: z.string(),
       address: z.string(),
@@ -62,7 +62,7 @@ export const $fetchProgressBreakdown = createServerFn({ method: "GET" })
  * Cached for 24 hours, resets 9am KST (UTC+9).
  */
 export const $fetchProgressLeaderboard = createServerFn({ method: "GET" })
-  .inputValidator(
+  .validator(
     z.object({
       member: z.string(),
       onlineType: z.preprocess(
@@ -117,7 +117,7 @@ export const $fetchProgressLeaderboard = createServerFn({ method: "GET" })
  * Get objekts stats grouped by artist for a given address
  */
 export const $fetchArtistStatsByAddress = createServerFn({ method: "GET" })
-  .inputValidator(z.object({ address: z.string() }))
+  .validator(z.object({ address: z.string() }))
   .handler(async ({ data }) => {
     const isSpin = isEqual(data.address, Addresses.SPIN);
 

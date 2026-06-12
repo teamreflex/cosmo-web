@@ -13,7 +13,7 @@ import { normalizePin } from "./pins";
  * Toggle the lock on an objekt.
  */
 export const $toggleObjektLock = createServerFn({ method: "POST" })
-  .inputValidator(z.object({ tokenId: z.number(), lock: z.boolean() }))
+  .validator(z.object({ tokenId: z.number(), lock: z.boolean() }))
   .middleware([cosmoMiddleware])
   .handler(async ({ data, context }) => {
     // lock the objekt
@@ -52,7 +52,7 @@ export const $toggleObjektLock = createServerFn({ method: "POST" })
  * Pin an objekt to the user's profile.
  */
 export const $pinObjekt = createServerFn({ method: "POST" })
-  .inputValidator(
+  .validator(
     z.object({
       tokenId: z.coerce.number(),
     }),
@@ -92,7 +92,7 @@ export const $pinObjekt = createServerFn({ method: "POST" })
  * Delete a pin.
  */
 export const $unpinObjekt = createServerFn({ method: "POST" })
-  .inputValidator(
+  .validator(
     z.object({
       tokenId: z.coerce.number(),
     }),

@@ -41,7 +41,7 @@ type FetchObjektListEntries = {
  * the indexer sort.
  */
 export const $fetchObjektListEntries = createServerFn({ method: "GET" })
-  .inputValidator(
+  .validator(
     objektListBackendSchema.extend({
       objektListId: z.uuid(),
     }),

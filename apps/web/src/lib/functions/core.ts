@@ -126,7 +126,7 @@ export const $fetchCurrentAccount = createServerFn({ method: "GET" }).handler(
  * Fetch the target account.
  */
 export const $fetchTargetAccount = createServerFn({ method: "GET" })
-  .inputValidator(z.object({ identifier: z.string() }))
+  .validator(z.object({ identifier: z.string() }))
   .handler(async ({ data }): Promise<FullAccount> => {
     const account = await fetchFullAccount(data.identifier, getRequestSignal());
     if (!account) {
@@ -148,7 +148,7 @@ export const $fetchSelectedArtists = createServerFn({ method: "GET" }).handler(
  * Set the selected artists in a cookie.
  */
 export const $setSelectedArtist = createServerFn({ method: "POST" })
-  .inputValidator(z.object({ artist: z.string() }))
+  .validator(z.object({ artist: z.string() }))
   .handler(async ({ data }) => {
     const artists = await $fetchSelectedArtists();
 

@@ -31,7 +31,7 @@ export const $clearFilterDataCache = createServerFn({ method: "POST" })
  */
 export const $clearUserPinsCache = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
-  .inputValidator(z.object({ username: z.string() }))
+  .validator(z.object({ username: z.string() }))
   .handler(async ({ data }) => {
     await clearTag(pinCacheKey(data.username));
   });
@@ -51,7 +51,7 @@ export const $getCosmoKeyStatus = createServerFn({ method: "GET" })
  */
 export const $setCosmoKey = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
-  .inputValidator(cosmoKeySchema)
+  .validator(cosmoKeySchema)
   .handler(async ({ data }) => {
     await setCosmoKey(data.key);
   });

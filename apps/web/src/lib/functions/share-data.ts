@@ -17,7 +17,7 @@ import { and, eq, inArray, isNull, or } from "drizzle-orm";
  */
 export const $scrapeCollectionMedia = createServerFn({ method: "POST" })
   .middleware([authenticatedMiddleware])
-  .inputValidator(verifyCosmoSchema)
+  .validator(verifyCosmoSchema)
   .handler(async ({ data }) => {
     // safety check: if no collections need to be updated, return early
     const missing = await $fetchScrapeCandidates();

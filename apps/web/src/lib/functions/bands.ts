@@ -10,7 +10,7 @@ import { sql } from "drizzle-orm";
  */
 export const $saveBandUrls = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
-  .inputValidator(bandUrlRowSchema.array())
+  .validator(bandUrlRowSchema.array())
   .handler(async ({ data }) => {
     if (data.length === 0) return true;
 

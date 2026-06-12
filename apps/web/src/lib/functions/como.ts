@@ -12,7 +12,7 @@ import { $fetchArtists } from "./artists";
  * Fetch Special & Premier objekts for a given address.
  */
 export const $fetchObjektsWithComo = createServerFn({ method: "GET" })
-  .inputValidator(z.object({ address: z.string() }))
+  .validator(z.object({ address: z.string() }))
   .handler(async ({ data }): Promise<ObjektWithCollection[]> => {
     // spin account doesn't accumulate como
     if (isEqual(data.address, Addresses.SPIN)) {
@@ -43,7 +43,7 @@ export const $fetchObjektsWithComo = createServerFn({ method: "GET" })
  * Cached for 15 minutes.
  */
 export const $fetchTokenBalances = createServerFn({ method: "GET" })
-  .inputValidator(z.object({ address: z.string() }))
+  .validator(z.object({ address: z.string() }))
   .handler(async ({ data }): Promise<ComoBalance[]> => {
     return remember(`como-balances:${data.address}`, 60 * 15, async () => {
       const { artists } = await $fetchArtists();

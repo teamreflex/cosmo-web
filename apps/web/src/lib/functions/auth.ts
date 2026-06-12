@@ -23,7 +23,7 @@ import { getRequestHeaders } from "@tanstack/react-start/server";
  */
 export const $updateSettings = createServerFn({ method: "POST" })
   .middleware([authenticatedMiddleware])
-  .inputValidator(settingsSchema)
+  .validator(settingsSchema)
   .handler(async ({ data }) => {
     await auth.api.updateUser({
       headers: getRequestHeaders(),
@@ -39,7 +39,7 @@ export const $updateSettings = createServerFn({ method: "POST" })
  */
 export const $generateVerificationCode = createServerFn({ method: "POST" })
   .middleware([authenticatedMiddleware])
-  .inputValidator(generateVerificationCodeSchema)
+  .validator(generateVerificationCodeSchema)
   .handler(async ({ data, context }) => {
     const code = await storeVerification(context.session.user.id, {
       userId: data.userId,
@@ -56,7 +56,7 @@ export const $generateVerificationCode = createServerFn({ method: "POST" })
  */
 export const $verifyCosmoBio = createServerFn({ method: "POST" })
   .middleware([authenticatedMiddleware])
-  .inputValidator(verifyCosmoBioSchema)
+  .validator(verifyCosmoBioSchema)
   .handler(async ({ data, context }) => {
     // get the stored verification data
     const stored = await getVerification(context.session.user.id);

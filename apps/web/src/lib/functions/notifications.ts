@@ -19,7 +19,7 @@ const markReadSchema = z.object({
  * Fetch the current user's notifications, newest first.
  */
 export const $listNotifications = createServerFn({ method: "GET" })
-  .inputValidator(listNotificationsSchema)
+  .validator(listNotificationsSchema)
   .middleware([authenticatedMiddleware])
   .handler(async ({ data, context }) => {
     const rows = await db
@@ -48,7 +48,7 @@ export const $listNotifications = createServerFn({ method: "GET" })
  * Mark notifications read. Pass an explicit list of IDs, or omit to mark all.
  */
 export const $markNotificationsRead = createServerFn({ method: "POST" })
-  .inputValidator(markReadSchema)
+  .validator(markReadSchema)
   .middleware([authenticatedMiddleware])
   .handler(async ({ data, context }) => {
     const userId = context.session.session.userId;

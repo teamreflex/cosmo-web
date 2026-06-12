@@ -40,7 +40,7 @@ type InputData = z.infer<typeof schema>;
  * Fetch a user's objekts from the indexer with given filters.
  */
 export const $fetchObjektsBlockchain = createServerFn({ method: "GET" })
-  .inputValidator(schema)
+  .validator(schema)
   .handler(async ({ data }) => {
     const isSpin = isEqual(data.address, Addresses.SPIN);
     const owner = data.address.toLowerCase();

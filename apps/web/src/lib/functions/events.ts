@@ -37,7 +37,7 @@ import * as z from "zod";
  */
 export const $createEra = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
-  .inputValidator(createEraSchema)
+  .validator(createEraSchema)
   .handler(async ({ data }) => {
     await validateEraSlug(data.slug);
 
@@ -72,7 +72,7 @@ export const $createEra = createServerFn({ method: "POST" })
  */
 export const $updateEra = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
-  .inputValidator(updateEraSchema)
+  .validator(updateEraSchema)
   .handler(async ({ data }) => {
     const { id, ...updateData } = data;
 
@@ -104,7 +104,7 @@ export const $updateEra = createServerFn({ method: "POST" })
  */
 export const $deleteEra = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
-  .inputValidator(z.object({ id: z.uuid() }))
+  .validator(z.object({ id: z.uuid() }))
   .handler(async ({ data }) => {
     await db.delete(eras).where(eq(eras.id, data.id));
     return { success: true };
@@ -115,7 +115,7 @@ export const $deleteEra = createServerFn({ method: "POST" })
  */
 export const $createEvent = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
-  .inputValidator(createEventSchema)
+  .validator(createEventSchema)
   .handler(async ({ data }) => {
     await validateEventSlug(data.slug);
 
@@ -151,7 +151,7 @@ export const $createEvent = createServerFn({ method: "POST" })
  */
 export const $updateEvent = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
-  .inputValidator(updateEventSchema)
+  .validator(updateEventSchema)
   .handler(async ({ data }) => {
     const { id, ...updateData } = data;
 
@@ -184,7 +184,7 @@ export const $updateEvent = createServerFn({ method: "POST" })
  */
 export const $deleteEvent = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
-  .inputValidator(z.object({ id: z.uuid() }))
+  .validator(z.object({ id: z.uuid() }))
   .handler(async ({ data }) => {
     await db.delete(events).where(eq(events.id, data.id));
     return { success: true };
@@ -195,7 +195,7 @@ export const $deleteEvent = createServerFn({ method: "POST" })
  */
 export const $addCollectionsToEvent = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
-  .inputValidator(addCollectionsToEventSchema)
+  .validator(addCollectionsToEventSchema)
   .handler(async ({ data, context }) => {
     const result = await db
       .insert(collectionData)
@@ -224,7 +224,7 @@ export const $addCollectionsToEvent = createServerFn({ method: "POST" })
  */
 export const $removeCollectionFromEvent = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
-  .inputValidator(removeCollectionFromEventSchema)
+  .validator(removeCollectionFromEventSchema)
   .handler(async ({ data }) => {
     await db
       .update(collectionData)
@@ -242,7 +242,7 @@ export const $removeCollectionFromEvent = createServerFn({ method: "POST" })
  */
 export const $searchSpotifyAlbums = createServerFn({ method: "GET" })
   .middleware([adminMiddleware])
-  .inputValidator(z.object({ query: z.string().min(1) }))
+  .validator(z.object({ query: z.string().min(1) }))
   .handler(async ({ data }) => {
     return searchSpotifyAlbums(data.query);
   });
@@ -252,7 +252,7 @@ export const $searchSpotifyAlbums = createServerFn({ method: "GET" })
  */
 export const $getSpotifyAlbum = createServerFn({ method: "GET" })
   .middleware([adminMiddleware])
-  .inputValidator(z.object({ albumId: z.string().min(1) }))
+  .validator(z.object({ albumId: z.string().min(1) }))
   .handler(async ({ data }) => {
     const album = await fetchSpotifyAlbum(data.albumId);
     if (!album) return null;
@@ -268,7 +268,7 @@ export const $getSpotifyAlbum = createServerFn({ method: "GET" })
  */
 export const $getEraImageUploadUrl = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
-  .inputValidator(
+  .validator(
     z.object({
       filename: z.string().min(1),
       contentType: z.string().regex(/^image\/(jpeg|png|gif|webp)$/),
@@ -296,7 +296,7 @@ export const $getEraImageUploadUrl = createServerFn({ method: "POST" })
  */
 export const $getEventImageUploadUrl = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
-  .inputValidator(
+  .validator(
     z.object({
       filename: z.string().min(1),
       contentType: z.string().regex(/^image\/(jpeg|png|gif|webp)$/),
@@ -367,7 +367,7 @@ export const $fetchEvents = createServerFn({ method: "GET" })
  */
 export const $fetchCollectionsForEvent = createServerFn({ method: "GET" })
   .middleware([adminMiddleware])
-  .inputValidator(z.object({ eventId: z.uuid() }))
+  .validator(z.object({ eventId: z.uuid() }))
   .handler(async ({ data }) => {
     return db.query.collectionData.findMany({
       where: { eventId: data.eventId },
@@ -378,7 +378,7 @@ export const $fetchCollectionsForEvent = createServerFn({ method: "GET" })
  * Fetches an event by slug along with its era.
  */
 export const $fetchEventBySlug = createServerFn({ method: "GET" })
-  .inputValidator(z.object({ slug: z.string() }))
+  .validator(z.object({ slug: z.string() }))
   .handler(async ({ data }) => {
     const result = await db.query.events.findFirst({
       where: { slug: data.slug },
@@ -398,7 +398,7 @@ export const $fetchEventBySlug = createServerFn({ method: "GET" })
  * Fetches paginated events with timestamp-based cursor and filters.
  */
 export const $fetchPaginatedEvents = createServerFn({ method: "GET" })
-  .inputValidator(
+  .validator(
     z.object({
       artists: z.array(z.string()).optional(),
       cursor: z.iso.datetime().optional(),
@@ -474,7 +474,7 @@ export const $fetchPaginatedEvents = createServerFn({ method: "GET" })
  * Fetches active events (currently ongoing).
  */
 export const $fetchActiveEvents = createServerFn({ method: "GET" })
-  .inputValidator(
+  .validator(
     z.object({
       artists: z.array(z.string()).optional(),
     }),
@@ -500,7 +500,7 @@ export const $fetchActiveEvents = createServerFn({ method: "GET" })
  * Fetches paginated objekt collections for an event.
  */
 export const $fetchEventObjekts = createServerFn({ method: "GET" })
-  .inputValidator(
+  .validator(
     z.object({
       eventSlug: z.string(),
       cursor: z.number().optional(),

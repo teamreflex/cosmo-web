@@ -21,7 +21,7 @@ const LIMIT = 60;
  * Fetch objekts from the indexer with given filters.
  */
 export const $fetchObjektsIndex = createServerFn({ method: "GET" })
-  .inputValidator(objektIndexBackendSchema)
+  .validator(objektIndexBackendSchema)
   .handler(async ({ data }) => {
     // build the where clause
     const where = and(

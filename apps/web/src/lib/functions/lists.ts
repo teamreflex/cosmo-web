@@ -52,7 +52,7 @@ import {
  * own currency for display.
  */
 export const $fetchObjektList = createServerFn({ method: "GET" })
-  .inputValidator(
+  .validator(
     z.union([
       z.object({ id: z.string() }),
       z.object({ userId: z.string(), slug: z.string() }),
@@ -74,7 +74,7 @@ export const $fetchObjektList = createServerFn({ method: "GET" })
  * the list's currency.
  */
 export const $getObjektListWithUser = createServerFn({ method: "GET" })
-  .inputValidator(z.object({ id: z.string() }))
+  .validator(z.object({ id: z.string() }))
   .handler(async ({ data }) => {
     const sanitized = sanitizeUuid(data.id);
     if (!sanitized) {
@@ -125,7 +125,7 @@ function createSlug(name: string) {
  * Create a new regular or sale objekt list. Have/want lists go through $createLiveList instead.
  */
 export const $createObjektList = createServerFn({ method: "POST" })
-  .inputValidator(createObjektListSchema)
+  .validator(createObjektListSchema)
   .middleware([authenticatedMiddleware])
   .handler(async ({ data, context }) => {
     if (data.type !== "regular" && data.type !== "sale") {
@@ -170,7 +170,7 @@ export const $createObjektList = createServerFn({ method: "POST" })
  * within the same transaction.
  */
 export const $createLiveList = createServerFn({ method: "POST" })
-  .inputValidator(createObjektListSchema)
+  .validator(createObjektListSchema)
   .middleware([cosmoMiddleware])
   .handler(async ({ data, context }) => {
     if (data.type !== "have" && data.type !== "want") {
@@ -256,7 +256,7 @@ export const $createLiveList = createServerFn({ method: "POST" })
  * have/want lists go through $updateLiveList.
  */
 export const $updateObjektList = createServerFn({ method: "POST" })
-  .inputValidator(updateObjektListSchema)
+  .validator(updateObjektListSchema)
   .middleware([authenticatedMiddleware])
   .handler(async ({ data, context }) => {
     if (data.type !== "regular" && data.type !== "sale") {
@@ -331,7 +331,7 @@ export const $updateObjektList = createServerFn({ method: "POST" })
  * transaction also touches that row.
  */
 export const $updateLiveList = createServerFn({ method: "POST" })
-  .inputValidator(updateObjektListSchema)
+  .validator(updateObjektListSchema)
   .middleware([cosmoMiddleware])
   .handler(async ({ data, context }) => {
     if (data.type !== "have" && data.type !== "want") {
@@ -453,7 +453,7 @@ export const $updateLiveList = createServerFn({ method: "POST" })
  * Delete an objekt list.
  */
 export const $deleteObjektList = createServerFn({ method: "POST" })
-  .inputValidator(deleteObjektListSchema)
+  .validator(deleteObjektListSchema)
   .middleware([authenticatedMiddleware])
   .handler(async ({ data, context }) => {
     await db
@@ -472,7 +472,7 @@ export const $deleteObjektList = createServerFn({ method: "POST" })
  * Add an objekt to a list
  */
 export const $addObjektToList = createServerFn({ method: "POST" })
-  .inputValidator(addObjektToListSchema)
+  .validator(addObjektToListSchema)
   .middleware([authenticatedMiddleware])
   .handler(async ({ data, context }) => {
     await assertUserOwnsList(data.objektListId, context.session.session.userId);
@@ -491,7 +491,7 @@ export const $addObjektToList = createServerFn({ method: "POST" })
  * objekts they actually hold and that are currently transferable.
  */
 export const $addObjektToSaleList = createServerFn({ method: "POST" })
-  .inputValidator(addObjektToSaleListSchema)
+  .validator(addObjektToSaleListSchema)
   .middleware([cosmoMiddleware])
   .handler(async ({ data, context }) => {
     const userId = context.session.user.id;
@@ -550,7 +550,7 @@ export const $addObjektToSaleList = createServerFn({ method: "POST" })
  * discoverable, fires a single notification fan-out for the collection.
  */
 export const $addObjektToHaveList = createServerFn({ method: "POST" })
-  .inputValidator(addObjektToHaveListSchema)
+  .validator(addObjektToHaveListSchema)
   .middleware([cosmoMiddleware])
   .handler(async ({ data, context }) => {
     const userId = context.session.user.id;
@@ -614,7 +614,7 @@ export const $addObjektToHaveList = createServerFn({ method: "POST" })
  * list is trade-active and discoverable.
  */
 export const $addObjektToWantList = createServerFn({ method: "POST" })
-  .inputValidator(addObjektToWantListSchema)
+  .validator(addObjektToWantListSchema)
   .middleware([cosmoMiddleware])
   .handler(async ({ data, context }) => {
     const userId = context.session.user.id;
@@ -681,7 +681,7 @@ export const $addObjektToWantList = createServerFn({ method: "POST" })
  * cross-checks against the stored `tokenId` to reject mismatches.
  */
 export const $updateObjektListEntry = createServerFn({ method: "POST" })
-  .inputValidator(updateObjektListEntrySchema)
+  .validator(updateObjektListEntrySchema)
   .middleware([authenticatedMiddleware])
   .handler(async ({ data, context }) => {
     await assertUserOwnsList(data.objektListId, context.session.session.userId);
@@ -722,7 +722,7 @@ export const $updateObjektListEntry = createServerFn({ method: "POST" })
  * Remove an objekt from a list
  */
 export const $removeObjektFromList = createServerFn({ method: "POST" })
-  .inputValidator(removeObjektFromListSchema)
+  .validator(removeObjektFromListSchema)
   .middleware([authenticatedMiddleware])
   .handler(async ({ data, context }) => {
     await assertUserOwnsList(data.objektListId, context.session.session.userId);
@@ -746,7 +746,7 @@ export const $removeObjektFromList = createServerFn({ method: "POST" })
  * holds something the current user wants). Anchor must be trade-active.
  */
 export const $findTradePartnersForList = createServerFn({ method: "GET" })
-  .inputValidator(findTradePartnersSchema)
+  .validator(findTradePartnersSchema)
   .middleware([authenticatedMiddleware])
   .handler(async ({ data, context }): Promise<TradePartnersResponse> => {
     const userId = context.session.session.userId;
@@ -1130,7 +1130,7 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
  * Generate a Discord have/want list.
  */
 export const $generateDiscordList = createServerFn({ method: "POST" })
-  .inputValidator(generateDiscordListSchema)
+  .validator(generateDiscordListSchema)
   .middleware([authenticatedMiddleware])
   .handler(async ({ data, context }) => {
     // fetch lists and associated entries

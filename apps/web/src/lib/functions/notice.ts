@@ -19,7 +19,7 @@ export const $getNotice = createServerFn({ method: "GET" }).handler(
  */
 export const $setNotice = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
-  .inputValidator(noticeSchema)
+  .validator(noticeSchema)
   .handler(async ({ data }) => {
     const message = data.message.trim();
     if (message.length === 0) {

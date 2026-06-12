@@ -29,10 +29,10 @@ export default defineConfig({
     external: ["bun"],
   },
   plugins: [
-    tanstackStart(),
     devtools({
       removeDevtoolsOnBuild: true,
     }),
+    tanstackStart(),
     tailwindcss(),
     react(),
     babel({ presets: [reactCompilerPreset()] }),

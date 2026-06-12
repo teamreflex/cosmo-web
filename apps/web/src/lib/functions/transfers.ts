@@ -9,7 +9,7 @@ import { createServerFn } from "@tanstack/react-start";
  * Fetches transfers and zips known nicknames into the results.
  */
 export const $fetchTransfers = createServerFn({ method: "GET" })
-  .inputValidator(transfersBackendSchema)
+  .validator(transfersBackendSchema)
   .handler(async ({ data }): Promise<TransferResult> => {
     // too much data, bail
     if (isEqual(data.address, Addresses.NULL)) {

@@ -12,7 +12,7 @@ import * as z from "zod";
  */
 export const $rescanObjektMetadata = createServerFn({ method: "POST" })
   .middleware([authenticatedMiddleware])
-  .inputValidator(z.object({ tokenId: z.string() }))
+  .validator(z.object({ tokenId: z.string() }))
   .handler(async ({ data }) => {
     try {
       var metadata = await fetchMetadataV1(data.tokenId, getRequestSignal());

@@ -23,7 +23,7 @@ export type OwnedSerial = {
  * status and derived non-transferable reason for the picker UI.
  */
 export const $fetchOwnedSerials = createServerFn({ method: "GET" })
-  .inputValidator(z.object({ collectionId: z.uuid() }))
+  .validator(z.object({ collectionId: z.uuid() }))
   .middleware([cosmoMiddleware])
   .handler(async ({ data, context }): Promise<OwnedSerial[]> => {
     const [owned, collection] = await Promise.all([
