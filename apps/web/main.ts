@@ -12,6 +12,7 @@
  * Cloudflare caches responses, Vite hashes filenames.
  */
 
+import * as Sentry from "@sentry/bun";
 import path from "node:path";
 
 // Configuration
@@ -392,6 +393,7 @@ async function initializeServer() {
             headers,
           });
         } catch (error) {
+          Sentry.captureException(error);
           log.error(`Handler error: ${String(error)}`);
           const headers = new Headers({
             "Content-Type": "text/plain",
@@ -406,6 +408,7 @@ async function initializeServer() {
     },
 
     error(error) {
+      Sentry.captureException(error);
       log.error(`Server error: ${error.message}`);
       const headers = new Headers({
         "Content-Type": "text/plain",
