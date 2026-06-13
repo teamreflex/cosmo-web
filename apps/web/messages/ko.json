@@ -105,6 +105,7 @@
   "link_cosmo_qr_expired": "QR 코드가 만료되었습니다.",
   "link_cosmo_remaining": "남은 시간",
   "link_cosmo_enter_code": "코스모에서 2자리 코드 입력",
+  "link_cosmo_signing_in_as": "{nickname} 계정으로 로그인",
   "link_cosmo_error_linking": "코스모 계정 연결 중 오류 발생",
   "link_cosmo_success": "코스모 계정이 연결되었습니다!",
   "link_cosmo_select_artist": "코스모는 아티스트별로 프로필이 다릅니다. 인증할 아티스트를 선택하세요.",

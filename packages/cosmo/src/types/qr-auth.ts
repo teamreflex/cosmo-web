@@ -13,19 +13,24 @@ type TicketInvalid = {
   status: "invalid";
 };
 
+export type ProfileImage = {
+  artistName: string;
+  profileImageUrl: string;
+};
+
+export type TicketUser = {
+  id: number;
+  nickname: string;
+  profileImageUrl: string;
+  profileImages: ProfileImage[];
+};
+
 type LoadedTicket<TStatus extends string> = {
   status: TStatus;
   ticketRemainingMs: number;
   ticketOtpRemainingMs: number;
-  profiles: {
-    artistName: string;
-    profileImageUrl: string;
-  }[];
-  user: {
-    id: number;
-    nickname: string;
-    profileImageUrl: string;
-  };
+  profiles: ProfileImage[];
+  user: TicketUser;
 };
 
 type TicketWaitingForCertify = LoadedTicket<"wait_for_certify">;

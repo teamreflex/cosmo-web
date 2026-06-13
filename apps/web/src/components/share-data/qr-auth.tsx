@@ -1,3 +1,4 @@
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError } from "@/components/ui/field";
 import {
@@ -8,7 +9,11 @@ import {
 import { m } from "@/i18n/messages";
 import { $scrapeCollectionMedia } from "@/lib/functions/share-data";
 import { verifyCosmoSchema } from "@/lib/universal/schema/cosmo";
-import type { AuthTicket, QueryTicket } from "@apollo/cosmo/types/qr-auth";
+import type {
+  AuthTicket,
+  QueryTicket,
+  TicketUser,
+} from "@apollo/cosmo/types/qr-auth";
 import { generateQrCode } from "@apollo/cosmo/types/qr-auth";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import {
@@ -122,7 +127,7 @@ function RenderTicket({ ticket, retry, onSuccess }: RenderTicketProps) {
   }
 
   if (data.status === "wait_for_certify") {
-    return <OTP ticket={ticket} onSuccess={onSuccess} />;
+    return <OTP ticket={ticket} user={data.user} onSuccess={onSuccess} />;
   }
 
   return (
@@ -196,12 +201,20 @@ function RenderQRCode({ ticket, retry }: RenderQRCodeProps) {
 
 type OTPProps = {
   ticket: AuthTicket;
+  user: TicketUser;
   onSuccess: (updated: number) => void;
 };
 
-function OTP({ ticket, onSuccess }: OTPProps) {
+function OTP({ ticket, user, onSuccess }: OTPProps) {
   const mutation = useMutation({
     mutationFn: $scrapeCollectionMedia,
+  });
+
+  // pick a random profile image once, since COSMO returns one per artist
+  const [avatar] = useState(() => {
+    const images = user.profileImages;
+    if (images.length === 0) return undefined;
+    return images[Math.floor(Math.random() * images.length)];
   });
 
   const form = useForm<z.infer<typeof verifyCosmoSchema>>({
@@ -248,9 +261,21 @@ function OTP({ ticket, onSuccess }: OTPProps) {
   return (
     <form
       onSubmit={form.handleSubmit(handleSubmit)}
-      className="flex flex-col gap-4"
+      className="flex flex-col gap-4 items-center"
     >
       <div className="flex flex-col items-center justify-center gap-4">
+        <div className="flex flex-col items-center gap-2">
+          <Avatar className="size-12">
+            <AvatarImage src={avatar?.profileImageUrl} alt={user.nickname} />
+            <AvatarFallback>
+              {user.nickname.charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <p className="text-sm font-semibold">
+            {m.link_cosmo_signing_in_as({ nickname: user.nickname })}
+          </p>
+        </div>
+
         <p className="text-center text-sm">{m.link_cosmo_enter_code()}</p>
 
         <Controller
@@ -265,6 +290,7 @@ function OTP({ ticket, onSuccess }: OTPProps) {
                 pattern={REGEXP_ONLY_DIGITS}
                 autoFocus
                 aria-invalid={fieldState.invalid}
+                containerClassName="justify-center"
               >
                 <InputOTPGroup>
                   <InputOTPSlot index={0} />

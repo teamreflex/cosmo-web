@@ -105,6 +105,7 @@
   "link_cosmo_qr_expired": "The QR code has expired.",
   "link_cosmo_remaining": "Remaining",
   "link_cosmo_enter_code": "Enter the 2-digit code from COSMO",
+  "link_cosmo_signing_in_as": "Signing in as {nickname}",
   "link_cosmo_error_linking": "Error linking COSMO account",
   "link_cosmo_success": "COSMO account linked!",
   "link_cosmo_select_artist": "COSMO has separate profiles per artist. Select the artist you want to verify with.",

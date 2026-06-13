@@ -60,22 +60,16 @@ export async function exchangeLoginTicket(
   recaptchaToken: string,
   signal: AbortSignal | null = null,
 ) {
-  return await cosmoShop<AuthTicket>(
-    `/bff/v1/users/auth/login/native/qr/ticket`,
-    {
-      method: "POST",
-      body: {
-        recaptcha: {
-          action: "login",
-          token: recaptchaToken,
-        },
+  return await cosmoShop<AuthTicket>(`/bff/v3/users/login-by-qr/ticket`, {
+    method: "POST",
+    body: {
+      recaptcha: {
+        action: "login",
+        token: recaptchaToken,
       },
-      query: {
-        tid: crypto.randomUUID(),
-      },
-      signal,
     },
-  );
+    signal,
+  });
 }
 
 /**
@@ -85,16 +79,12 @@ export async function queryTicket(
   ticket: string,
   signal: AbortSignal | null = null,
 ) {
-  return await cosmoShop<QueryTicket>(
-    `/bff/v1/users/auth/login/native/qr/ticket`,
-    {
-      query: {
-        tid: crypto.randomUUID(),
-        ticket,
-      },
-      signal,
+  return await cosmoShop<QueryTicket>(`/bff/v3/users/login-by-qr/ticket`, {
+    query: {
+      ticket,
     },
-  );
+    signal,
+  });
 }
 
 /**
@@ -105,18 +95,12 @@ export async function certifyTicket(
   ticket: string,
   signal: AbortSignal | null = null,
 ) {
-  return await cosmoShop.raw<void>(
-    `/bff/v1/users/auth/login/native/qr/ticket/certify`,
-    {
-      method: "POST",
-      body: {
-        otp,
-        ticket,
-      },
-      query: {
-        tid: crypto.randomUUID(),
-      },
-      signal,
+  return await cosmoShop.raw<void>(`/bff/v3/users/login-by-qr/certify`, {
+    method: "POST",
+    body: {
+      otp,
+      ticket,
     },
-  );
+    signal,
+  });
 }
