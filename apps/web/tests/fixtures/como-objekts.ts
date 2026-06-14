@@ -1,7 +1,8 @@
 import type { ObjektWithCollection } from "../../src/lib/universal/como";
 
 // owned Special/Premier objekts for 0xa5848873c7ab6189989dd8534eecf4295b00a98d
-// (NZ +12/+13). captured 2026-05-09; ordered by mintedAt; amount=2 marks Premier.
+// (NZ +12/+13). pulled from apollo-indexer 2026-06-15 (received_at < 2026-06-01);
+// ordered by mintedAt; amount=2 marks Premier. verified against COSMO Apr+May 2026.
 export const nztUserObjekts: ObjektWithCollection[] = [
   { artistId: "artms", mintedAt: "2023-07-04T12:04:00Z", amount: 1 },
   { artistId: "artms", mintedAt: "2023-07-04T12:11:34Z", amount: 1 },
@@ -318,6 +319,7 @@ export const nztUserObjekts: ObjektWithCollection[] = [
   { artistId: "artms", mintedAt: "2026-04-24T04:36:14Z", amount: 1 },
   { artistId: "artms", mintedAt: "2026-04-24T04:56:30Z", amount: 1 },
   { artistId: "artms", mintedAt: "2026-04-25T06:42:15Z", amount: 1 },
+  { artistId: "artms", mintedAt: "2026-04-27T08:12:37Z", amount: 1 },
   { artistId: "artms", mintedAt: "2026-04-27T09:49:22Z", amount: 1 },
 ];
 

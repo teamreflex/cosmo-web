@@ -62,7 +62,11 @@ describe("buildCalendar", () => {
   });
 
   describe("NZT", () => {
-    // baseline COMO totals per day in May 2026 as displayed by COSMO for NZT.
+    // COMO totals per day in May 2026 for the fixture owner, verified against
+    // their COSMO calendar. May has 31 days, so day-31 mints land natively on
+    // the 31st and no carryover occurs. Days 1 and 28 read 10/6 here (the
+    // indexer mint-day anchoring) vs COSMO's 9/7 — one Special that COSMO
+    // anchors a day later; a known 1-COMO quirk we don't replicate.
     const expectedByDay: Record<number, number> = {
       1: 10,
       2: 15,
@@ -88,7 +92,7 @@ describe("buildCalendar", () => {
       24: 19,
       25: 5,
       26: 18,
-      27: 12,
+      27: 13,
       28: 6,
       29: 16,
       30: 6,
@@ -125,18 +129,29 @@ describe("buildCalendar", () => {
       expect(cal[5]?.artms?.count).toBe(7);
     });
 
-    it("carries day-31 mints in 30-day months", () => {
-      // April 2026: UTC day 31 doesn't exist, so the 7 COMO from day-31
-      // mints (5 Specials + 1 Premier@2) carry to day 30 alongside the 6
-      // native day-30 mints, totalling 13 COMO with carried=7.
+    it("renders the full April calendar with day-31 mints capped onto day 30", () => {
+      // April mirrors May's day-by-day distribution, with one difference:
+      // April has no 31st, so the 7 COMO from day-31 mints (5 Specials + 1
+      // Premier@2) cap onto day 30 — 6 native + 7 = 13, carried 7 — and day
+      // 31 is absent. Verified against COSMO, which renders April 30 as
+      // "11+2" (the same Premier that sits on day 31 in May). Days 24/25/27
+      // read higher than COSMO's April here because the calendar is
+      // forward-looking: it projects current holdings across the whole month
+      // regardless of when each objekt was received.
+      const aprilExpectedByDay: Record<number, number> = {
+        ...expectedByDay,
+        30: 13,
+      };
+      delete aprilExpectedByDay[31];
+
       const cal = buildCalendar(
         new Date("2026-04-15T00:00:00Z"),
         nztUserObjekts,
         "Pacific/Auckland",
       );
 
-      expect(cal[30]?.artms?.count).toBe(13);
-      expect(cal[30]?.artms?.carried).toBe(7);
+      expect(totals(cal)).toEqual(aprilExpectedByDay);
+      expect(carried(cal)).toEqual({ 30: 7 });
       expect(cal[31]).toBeUndefined();
     });
 
