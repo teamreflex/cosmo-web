@@ -83,31 +83,7 @@ export default function UpdateDialog() {
 
 const updates = [
   {
-    date: "2026-05-15",
-    changes: ["Objekt back images, text color and serials have been restored."],
-  },
-  {
-    date: "2026-05-11",
-    changes: ["Updated COMO calendars to better match COSMO behavior."],
-  },
-  {
-    date: "2026-05-01",
-    changes: ["Added support for objekts with audio tracks."],
-  },
-  {
-    date: "2026-04-27",
-    changes: [
-      "More redesign work, should be more mobile friendly and less janky.",
-      "Added: Per-objekt pricing stats, based on all available sale lists. Shows min/max/median in USD.",
-      "Added: Dedicated 'have' and 'want' objekt lists that when paired together, can show users with mutual matches. 'have' lists will only accept objekts you own per serial, entries are automatically removed when you send them to another user, and you are notified when someone updates a 'have' list and matches with you.",
-      "Added: Objekt lists can now have descriptions.",
-      "Updated: Objekt lists now display individual entries rather than merging duplicates into one.",
-      "Updated: Objekt information dialogs have been redesigned to be more mobile friendly.",
-      "Updated: Owned objekt collection view has been redesigned to surface more detail rather than just replicating what COSMO shows.",
-      "Updated: Filters now display all the time on mobile rather than being collapsed into a toggle.",
-      "Updated: Sale lists now enforce selecting a specific objekt/serial when adding an entry. After some time, we will start automatically removing entries upon transfer just like 'have' lists.",
-      "Updated: Pins are removed upon sending the objekt to another user.",
-      "Fixed: Locked & Transferable filters are more clear in their behavior.",
-    ],
+    date: "2026-06-15",
+    changes: ["Added multi-select when adding objekts to lists."],
   },
 ];
