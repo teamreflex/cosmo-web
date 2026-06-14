@@ -1,9 +1,9 @@
 import { useAddToList } from "@/hooks/use-add-to-list";
 import { m } from "@/i18n/messages";
 import {
-  $addObjektToHaveList,
-  $addObjektToList,
   $addObjektToWantList,
+  $addObjektsToHaveList,
+  $addObjektsToList,
 } from "@/lib/functions/lists";
 import type { ObjektList } from "@apollo/database/web/types";
 import { IconLoader2, IconPlaylistAdd, IconPlus } from "@tabler/icons-react";
@@ -157,10 +157,10 @@ type ListItemBaseProps = {
 
 function RegularListItem(props: ListItemBaseProps) {
   const mutate = useAddToList(props, () =>
-    $addObjektToList({
+    $addObjektsToList({
       data: {
         objektListId: props.list.id,
-        slug: props.slug,
+        slugs: [props.slug],
       },
     }),
   );
@@ -206,13 +206,17 @@ function HaveListItem(props: HaveListItemProps) {
   const mutate = useAddToList(props, () => {
     // caller guarantees tokenId is defined before dispatching the direct path
     if (props.tokenId === undefined) throw new Error("token_id_required");
-    return $addObjektToHaveList({
+    return $addObjektsToHaveList({
       data: {
         objektListId: props.list.id,
-        slug: props.slug,
-        collectionName: props.collectionName,
-        collectionId: props.collectionId,
-        tokenIds: [String(props.tokenId)],
+        objekts: [
+          {
+            slug: props.slug,
+            collectionId: props.collectionId,
+            collectionName: props.collectionName,
+            tokenId: String(props.tokenId),
+          },
+        ],
       },
     });
   });

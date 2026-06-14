@@ -218,6 +218,23 @@
   "list_picker_no_copies": "このコレクションのオブジェクトを所有していません。",
   "list_picker_add_count": "{count}件追加",
   "list_already_on_list": "{collectionId}は既にこのリストにあります",
+  "batch_selected_count": [{
+    "declarations": ["input count", "local countPlural = count: plural"],
+    "selectors": ["countPlural"],
+    "match": {
+      "countPlural=other": "{count}件選択中"
+    }
+  }],
+  "batch_add_to_list": "リスト",
+  "batch_clear_selection": "クリア",
+  "batch_show_selection": "選択中",
+  "batch_remove_from_selection": "選択から削除",
+  "batch_none_eligible": "選択したオブジェクトの中に{listName}へ追加できるものがありません。",
+  "batch_sale_title": "{listName}に追加",
+  "batch_sale_description": "この販売リストに追加する各オブジェクトの価格を設定してください。",
+  "batch_added_to_list": "{added}件を{listName}に追加しました",
+  "batch_added_with_skipped": "{added}件を{listName}に追加しました（{skipped}件はスキップ）",
+  "batch_all_on_list": "選択したオブジェクトはすべて{listName}に登録済みです",
   "list_description": "説明",
   "list_description_placeholder": "メモ、連絡先、交換の希望などを入力してください",
   "list_description_public_notice": "この説明は他のユーザーに表示されます。個人情報や機密情報は入力しないでください。",
@@ -629,6 +646,8 @@
   "objekt_overlay_pinned": "ピン留め済み",
   "objekt_overlay_send": "送信",
   "objekt_overlay_add_to_list": "リストに追加",
+  "objekt_overlay_select": "選択",
+  "objekt_overlay_deselect": "選択解除",
   "objekt_overlay_unlock": "ロック解除",
   "objekt_overlay_lock": "ロック",
   "objekt_overlay_unpin": "ピン解除",

@@ -11,7 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAddToList } from "@/hooks/use-add-to-list";
 import { m } from "@/i18n/messages";
 import { reasonLabel } from "@/lib/client/objekt-util";
-import { $addObjektToHaveList } from "@/lib/functions/lists";
+import { $addObjektsToHaveList } from "@/lib/functions/lists";
 import {
   $fetchOwnedSerials,
   type OwnedSerial,
@@ -94,13 +94,15 @@ function SerialPickerBody({
   });
 
   const mutation = useAddToList({ list, collectionName, onDone: onClose }, () =>
-    $addObjektToHaveList({
+    $addObjektsToHaveList({
       data: {
         objektListId: list.id,
-        slug,
-        collectionName,
-        collectionId,
-        tokenIds: Array.from(selected),
+        objekts: Array.from(selected).map((tokenId) => ({
+          slug,
+          collectionId,
+          collectionName,
+          tokenId,
+        })),
       },
     }),
   );

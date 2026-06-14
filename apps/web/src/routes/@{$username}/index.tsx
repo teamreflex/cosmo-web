@@ -3,6 +3,7 @@ import { Error } from "@/components/error-boundary";
 import Overlay from "@/components/misc/overlay";
 import ScrollToTop from "@/components/misc/overlay/scroll-to-top";
 import ToggleObjektBands from "@/components/misc/overlay/toggle-objekt-bands";
+import BatchSelectionBar from "@/components/profile/batch-selection-bar";
 import ProfileRenderer from "@/components/profile/profile-renderer";
 import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -93,6 +94,8 @@ function RouteComponent() {
         <ScrollToTop />
         <ToggleObjektBands />
       </Overlay>
+
+      <BatchSelectionBar />
     </ProfileProvider>
   );
 }

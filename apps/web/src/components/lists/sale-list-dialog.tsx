@@ -12,7 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { m } from "@/i18n/messages";
 import { formatListError } from "@/lib/client/list-errors";
 import { reasonLabel } from "@/lib/client/objekt-util";
-import { $addObjektToSaleList } from "@/lib/functions/lists";
+import { $addObjektsToSaleList } from "@/lib/functions/lists";
 import {
   $fetchOwnedSerials,
   type OwnedSerial,
@@ -112,7 +112,7 @@ function SaleListBody({
   });
 
   const mutation = useMutation({
-    mutationFn: $addObjektToSaleList,
+    mutationFn: $addObjektsToSaleList,
     onSuccess: async () => {
       toast.success(
         m.toast_added_to_list({ collectionId: collectionName, listName }),
@@ -143,6 +143,9 @@ function SaleListBody({
 
   function submit() {
     const entries = Array.from(selected).map((tokenId) => ({
+      slug,
+      collectionId,
+      collectionName,
       tokenId,
       price: prices.get(tokenId) ?? null,
     }));
@@ -150,9 +153,6 @@ function SaleListBody({
     mutation.mutate({
       data: {
         objektListId,
-        slug,
-        collectionName,
-        collectionId,
         entries,
       },
     });

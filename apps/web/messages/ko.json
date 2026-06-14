@@ -218,6 +218,23 @@
   "list_picker_no_copies": "이 컬렉션의 오브젝트를 보유하고 있지 않습니다.",
   "list_picker_add_count": "{count}개 추가",
   "list_already_on_list": "{collectionId}이(가) 이미 이 리스트에 있습니다",
+  "batch_selected_count": [{
+    "declarations": ["input count", "local countPlural = count: plural"],
+    "selectors": ["countPlural"],
+    "match": {
+      "countPlural=other": "{count}개 선택됨"
+    }
+  }],
+  "batch_add_to_list": "리스트",
+  "batch_clear_selection": "선택 해제",
+  "batch_show_selection": "선택 항목",
+  "batch_remove_from_selection": "선택에서 제거",
+  "batch_none_eligible": "선택한 오브젝트 중 {listName}에 추가할 수 있는 것이 없습니다.",
+  "batch_sale_title": "{listName}에 추가",
+  "batch_sale_description": "이 판매 리스트에 추가할 각 오브젝트의 가격을 설정하세요.",
+  "batch_added_to_list": "{added}개를 {listName}에 추가했습니다",
+  "batch_added_with_skipped": "{added}개를 {listName}에 추가했습니다 ({skipped}개 건너뜀)",
+  "batch_all_on_list": "선택한 오브젝트가 모두 {listName}에 이미 있습니다",
   "list_description": "설명",
   "list_description_placeholder": "메모, 연락처 또는 교환 희망사항을 입력하세요",
   "list_description_public_notice": "이 설명은 다른 사용자에게 공개됩니다. 민감한 정보는 포함하지 마세요.",
@@ -629,6 +646,8 @@
   "objekt_overlay_pinned": "고정됨",
   "objekt_overlay_send": "전송",
   "objekt_overlay_add_to_list": "리스트에 추가",
+  "objekt_overlay_select": "선택",
+  "objekt_overlay_deselect": "선택 해제",
   "objekt_overlay_unlock": "잠금 해제",
   "objekt_overlay_lock": "잠금",
   "objekt_overlay_unpin": "고정 해제",

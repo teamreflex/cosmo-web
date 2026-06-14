@@ -3,6 +3,7 @@ import type { NonTransferableReason } from "@apollo/cosmo/types/objekts";
 
 export type Hoverable =
   | "send"
+  | "select"
   | "lock"
   | "locked"
   | "list"

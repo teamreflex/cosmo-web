@@ -218,6 +218,24 @@
   "list_picker_no_copies": "You don't own any copies of this collection.",
   "list_picker_add_count": "Add {count}",
   "list_already_on_list": "{collectionId} is already on this list",
+  "batch_selected_count": [{
+    "declarations": ["input count", "local countPlural = count: plural"],
+    "selectors": ["countPlural"],
+    "match": {
+      "countPlural=one": "{count} objekt selected",
+      "countPlural=other": "{count} objekts selected"
+    }
+  }],
+  "batch_add_to_list": "Lists",
+  "batch_clear_selection": "Clear",
+  "batch_show_selection": "Selections",
+  "batch_remove_from_selection": "Remove from selection",
+  "batch_none_eligible": "No selected objekts can be added to {listName}.",
+  "batch_sale_title": "Add to {listName}",
+  "batch_sale_description": "Set a price for each objekt you're adding to this sale list.",
+  "batch_added_to_list": "Added {added} to {listName}",
+  "batch_added_with_skipped": "Added {added} to {listName} ({skipped} skipped)",
+  "batch_all_on_list": "All selected objekts are already on {listName}",
   "list_description": "Description",
   "list_description_placeholder": "Add notes, contact info, or trade preferences",
   "list_description_public_notice": "This description is visible to other users. Do not include sensitive information.",
@@ -630,6 +648,8 @@
   "objekt_overlay_pinned": "Pinned",
   "objekt_overlay_send": "Send",
   "objekt_overlay_add_to_list": "Add to List",
+  "objekt_overlay_select": "Select",
+  "objekt_overlay_deselect": "Deselect",
   "objekt_overlay_unlock": "Unlock",
   "objekt_overlay_lock": "Lock",
   "objekt_overlay_unpin": "Unpin",

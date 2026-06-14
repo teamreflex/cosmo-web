@@ -1,5 +1,5 @@
 import { useMetadataDialog } from "@/hooks/use-metadata-dialog";
-import { useObjektTransfer } from "@/hooks/use-objekt-transfer";
+import { useObjektSelection } from "@/hooks/use-objekt-selection";
 import { m } from "@/i18n/messages";
 import { getObjektImageUrls } from "@/lib/client/objekt-util";
 import { objektQuery } from "@/lib/queries/objekt-queries";
@@ -29,7 +29,7 @@ export default function ExpandableObjekt({
   priority = false,
   className,
 }: Props) {
-  const isSelected = useObjektTransfer(
+  const isSelected = useObjektSelection(
     useShallow((state) => state.isSelected(Number(tokenId))),
   );
 

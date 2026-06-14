@@ -2,16 +2,19 @@ import AddToList from "@/components/lists/add-to-list";
 import LockObjekt from "@/components/objekt/overlay/lock-button";
 import PinObjekt from "@/components/objekt/overlay/pin-button";
 import { useMetadataDialog } from "@/hooks/use-metadata-dialog";
+import { useObjektSelection } from "@/hooks/use-objekt-selection";
 import { useLockedObjekt, usePinnedObjekt } from "@/hooks/use-profile";
 import { useProfileContext } from "@/hooks/use-profile";
 import { m } from "@/i18n/messages";
 import { reasonLabel } from "@/lib/client/objekt-util";
 import { objektQuery } from "@/lib/queries/objekt-queries";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
+import { cn } from "@/lib/utils";
 import { IconArrowRight } from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { ObjektRibbon } from "../common";
 import StatusPill from "./status-pill";
 
@@ -31,6 +34,10 @@ export default function SerialTicket({
   const objektLists = useProfileContext((ctx) => ctx.objektLists);
   const { open } = useMetadataDialog();
   const queryClient = useQueryClient();
+  const isSelected = useObjektSelection(
+    useShallow((state) => state.isSelected(token.tokenId)),
+  );
+  const select = useObjektSelection((state) => state.select);
 
   const receivedAt = useMemo(() => {
     try {
@@ -42,26 +49,39 @@ export default function SerialTicket({
 
   const paddedSerial = token.serial.toString().padStart(5, "0");
 
-  function handleClick() {
+  const isTradable =
+    token.transferable && token.nonTransferableReason === undefined;
+
+  function openDetail() {
     queryClient.setQueryData(objektQuery(collection.slug).queryKey, collection);
     open(collection.slug, { serial: token.serial });
   }
 
-  const isTradable =
-    token.transferable && token.nonTransferableReason === undefined;
+  // on the owner's profile any serial toggles into the batch selection
+  // (eligibility is enforced when adding to a list); other viewers open detail
+  function handleRowClick() {
+    if (authenticated) {
+      select({ collection, token });
+    } else {
+      openDetail();
+    }
+  }
 
   return (
     <div
       role="button"
       tabIndex={0}
-      onClick={handleClick}
+      onClick={handleRowClick}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          handleClick();
+          handleRowClick();
         }
       }}
-      className="group flex w-full cursor-pointer items-center gap-3 border-b border-border px-4 py-3 text-left transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none sm:gap-4 sm:px-5"
+      className={cn(
+        "group flex w-full cursor-pointer items-center gap-3 border-b border-border px-4 py-3 text-left transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none sm:gap-4 sm:px-5",
+        isSelected && "outline outline-2 -outline-offset-2 outline-foreground",
+      )}
     >
       {/* ribbon sliver */}
       <ObjektRibbon collection={collection} />
@@ -124,7 +144,17 @@ export default function SerialTicket({
         </div>
       )}
 
-      <IconArrowRight className="ml-1 size-4 shrink-0 text-muted-foreground group-hover:text-foreground" />
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          openDetail();
+        }}
+        aria-label={m.aria_view_objekt()}
+        className="ml-1 shrink-0 text-muted-foreground transition-colors hover:text-foreground"
+      >
+        <IconArrowRight className="size-4" />
+      </button>
     </div>
   );
 }

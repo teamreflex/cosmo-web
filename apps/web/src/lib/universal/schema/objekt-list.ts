@@ -104,17 +104,24 @@ export const deleteObjektListSchema = z.object({
   id: z.uuid(),
 });
 
-export const addObjektToListSchema = z.object({
+export const addObjektsToListSchema = z.object({
   objektListId: z.uuid(),
-  slug: z.string(),
+  slugs: z.array(z.string()).min(1).max(100),
 });
 
-export const addObjektToHaveListSchema = z.object({
+export const addObjektsToHaveListSchema = z.object({
   objektListId: z.uuid(),
-  slug: z.string(),
-  collectionName: z.string(),
-  collectionId: z.uuid(),
-  tokenIds: z.array(z.string()).min(1).max(50),
+  objekts: z
+    .array(
+      z.object({
+        slug: z.string(),
+        collectionId: z.uuid(),
+        collectionName: z.string(),
+        tokenId: z.string(),
+      }),
+    )
+    .min(1)
+    .max(100),
 });
 
 export const addObjektToWantListSchema = z.object({
@@ -123,20 +130,20 @@ export const addObjektToWantListSchema = z.object({
   collectionName: z.string(),
 });
 
-export const addObjektToSaleListSchema = z.object({
+export const addObjektsToSaleListSchema = z.object({
   objektListId: z.uuid(),
-  slug: z.string(),
-  collectionName: z.string(),
-  collectionId: z.uuid(),
   entries: z
     .array(
       z.object({
+        slug: z.string(),
+        collectionId: z.uuid(),
+        collectionName: z.string(),
         tokenId: z.string(),
         price: z.number().positive().nullable(),
       }),
     )
     .min(1)
-    .max(50),
+    .max(100),
 });
 
 const updateEntryBase = z.object({

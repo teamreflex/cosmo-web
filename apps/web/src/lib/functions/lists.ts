@@ -17,10 +17,10 @@ import type {
 } from "@/lib/universal/lists";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import {
-  addObjektToHaveListSchema,
-  addObjektToListSchema,
-  addObjektToSaleListSchema,
   addObjektToWantListSchema,
+  addObjektsToHaveListSchema,
+  addObjektsToListSchema,
+  addObjektsToSaleListSchema,
   createObjektListSchema,
   deleteObjektListSchema,
   findTradePartnersSchema,
@@ -38,10 +38,9 @@ import { createServerFn } from "@tanstack/react-start";
 import { and, countDistinct, desc, eq, isNotNull, ne, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import * as z from "zod";
-import { isPostgresError } from "../server/util.server";
 import { $fetchArtists } from "./artists";
 import {
-  assertOwnsTokens,
+  assertOwnsTokensMulti,
   fireHaveAddNotifications,
   fireWantAddNotifications,
 } from "./lists.server";
@@ -469,42 +468,54 @@ export const $deleteObjektList = createServerFn({ method: "POST" })
   });
 
 /**
- * Add an objekt to a list
+ * Add one or more collections to a regular list as collection-keyed entries.
+ * Collections are not deduped, so the inserted count always matches the number
+ * of distinct slugs supplied.
  */
-export const $addObjektToList = createServerFn({ method: "POST" })
-  .validator(addObjektToListSchema)
+export const $addObjektsToList = createServerFn({ method: "POST" })
+  .validator(addObjektsToListSchema)
   .middleware([authenticatedMiddleware])
   .handler(async ({ data, context }) => {
     await assertUserOwnsList(data.objektListId, context.session.session.userId);
 
-    await db.insert(objektListEntries).values({
-      objektListId: data.objektListId,
-      collectionId: data.slug,
-    });
+    const slugs = [...new Set(data.slugs)];
 
-    return true;
+    const inserted = await db
+      .insert(objektListEntries)
+      .values(
+        slugs.map((slug) => ({
+          objektListId: data.objektListId,
+          collectionId: slug,
+        })),
+      )
+      .returning();
+
+    return { inserted: inserted.length };
   });
 
 /**
  * Add one or more owned serials to a sale list, each keyed by tokenId with its
  * own price. Verifies ownership against the indexer so users can only list
- * objekts they actually hold and that are currently transferable.
+ * objekts they actually hold and that are currently transferable. Serials
+ * already on the list are silently skipped via the partial unique index.
  */
-export const $addObjektToSaleList = createServerFn({ method: "POST" })
-  .validator(addObjektToSaleListSchema)
+export const $addObjektsToSaleList = createServerFn({ method: "POST" })
+  .validator(addObjektsToSaleListSchema)
   .middleware([cosmoMiddleware])
   .handler(async ({ data, context }) => {
     const userId = context.session.user.id;
 
-    await assertOwnsTokens(
+    await assertOwnsTokensMulti(
       context.cosmo.address,
-      data.collectionId,
-      data.entries.map((e) => e.tokenId),
+      data.entries.map((e) => ({
+        tokenId: e.tokenId,
+        collectionId: e.collectionId,
+      })),
     );
 
     const verifiedAt = new Date().toISOString();
 
-    await db.transaction(async (tx) => {
+    return await db.transaction(async (tx) => {
       const list = await tx.query.objektLists.findFirst({
         where: { id: data.objektListId, userId },
         columns: { type: true },
@@ -517,54 +528,50 @@ export const $addObjektToSaleList = createServerFn({ method: "POST" })
         throw new Error("not_sale_list");
       }
 
-      try {
-        await tx.insert(objektListEntries).values(
+      const inserted = await tx
+        .insert(objektListEntries)
+        .values(
           data.entries.map((entry) => ({
             objektListId: data.objektListId,
-            collectionId: data.slug,
+            collectionId: entry.slug,
             tokenId: entry.tokenId,
             quantity: 1,
             price: entry.price,
             verifiedAt,
           })),
-        );
-      } catch (error) {
-        if (
-          error instanceof Error &&
-          "code" in error &&
-          error.code === "23505"
-        ) {
-          throw new Error("already_on_list");
-        }
-        throw error;
-      }
-    });
+        )
+        .onConflictDoNothing()
+        .returning();
 
-    return true;
+      return { inserted: inserted.length };
+    });
   });
 
 /**
- * Add one or more owned serials of a collection to a have list. Each serial
- * becomes its own entry row keyed by tokenId, so the drain can delete on
- * transfer with a single index lookup. If the list is trade-active and
- * discoverable, fires a single notification fan-out for the collection.
+ * Add one or more owned serials to a have list. Each serial becomes its own
+ * entry row keyed by tokenId, so the drain can delete on transfer with a single
+ * index lookup. Serials already on the list are silently skipped via the
+ * partial unique index. If the list is trade-active and discoverable, fires a
+ * notification fan-out per distinct collection that gained at least one serial.
  */
-export const $addObjektToHaveList = createServerFn({ method: "POST" })
-  .validator(addObjektToHaveListSchema)
+export const $addObjektsToHaveList = createServerFn({ method: "POST" })
+  .validator(addObjektsToHaveListSchema)
   .middleware([cosmoMiddleware])
   .handler(async ({ data, context }) => {
     const userId = context.session.user.id;
 
     // verify ownership against the indexer first
-    await assertOwnsTokens(
+    await assertOwnsTokensMulti(
       context.cosmo.address,
-      data.collectionId,
-      data.tokenIds,
+      data.objekts.map((o) => ({
+        tokenId: o.tokenId,
+        collectionId: o.collectionId,
+      })),
     );
 
     const verifiedAt = new Date().toISOString();
 
-    await db.transaction(async (tx) => {
+    return await db.transaction(async (tx) => {
       const list = await tx.query.objektLists.findFirst({
         where: { id: data.objektListId, userId },
         columns: { type: true, discoverable: true, linkedWantListId: true },
@@ -577,35 +584,47 @@ export const $addObjektToHaveList = createServerFn({ method: "POST" })
         throw new Error("not_have_list");
       }
 
-      try {
-        await tx.insert(objektListEntries).values(
-          data.tokenIds.map((tokenId) => ({
+      const inserted = await tx
+        .insert(objektListEntries)
+        .values(
+          data.objekts.map((o) => ({
             objektListId: data.objektListId,
-            collectionId: data.slug,
-            tokenId,
+            collectionId: o.slug,
+            tokenId: o.tokenId,
             quantity: 1,
             verifiedAt,
           })),
-        );
-      } catch (error) {
-        if (isPostgresError(error, "23505")) {
-          throw new Error("already_on_list");
+        )
+        .onConflictDoNothing()
+        .returning();
+
+      if (
+        list.discoverable &&
+        list.linkedWantListId !== null &&
+        inserted.length > 0
+      ) {
+        // notify once per distinct collection that actually gained a serial,
+        // matched in a single query inside fireHaveAddNotifications
+        const insertedTokenIds = new Set(inserted.map((r) => r.tokenId));
+        const collectionNames = new Map<string, string>();
+        for (const o of data.objekts) {
+          if (insertedTokenIds.has(o.tokenId)) {
+            collectionNames.set(o.slug, o.collectionName);
+          }
         }
 
-        throw error;
-      }
-
-      if (list.discoverable && list.linkedWantListId !== null) {
         await fireHaveAddNotifications(tx, {
           sourceUserId: userId,
           sourceListId: data.objektListId,
-          slug: data.slug,
-          collectionName: data.collectionName,
+          collections: [...collectionNames].map(([slug, collectionName]) => ({
+            slug,
+            collectionName,
+          })),
         });
       }
-    });
 
-    return true;
+      return { inserted: inserted.length };
+    });
   });
 
 /**
@@ -671,7 +690,8 @@ export const $addObjektToWantList = createServerFn({ method: "POST" })
       }
     });
 
-    return true;
+    // want lists stack quantity, so an add always counts as one inserted
+    return { inserted: 1 };
   });
 
 /**

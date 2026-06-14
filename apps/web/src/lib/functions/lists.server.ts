@@ -15,29 +15,34 @@ type WebTx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 type DbOrTx = typeof db | WebTx;
 
 /**
- * Throws unless every tokenId belongs to `address`, is transferable, and
- * matches `collectionId` (indexer UUID). Single indexer round-trip, no join —
- * `objekts.collectionId` is the FK so the filter is an index lookup.
+ * Throws unless every (tokenId, collectionId) pair is owned by `address` and
+ * transferable. Tokens may span collections, so a single indexer round-trip
+ * fetches the owned set and each pair is checked against the id->collectionId
+ * map it builds.
  */
-export async function assertOwnsTokens(
+export async function assertOwnsTokensMulti(
   address: string,
-  collectionId: string,
-  tokenIds: string[],
+  tokens: { tokenId: string; collectionId: string }[],
 ): Promise<void> {
   const owned = await indexer
-    .select({ id: objekts.id })
+    .select({ id: objekts.id, collectionId: objekts.collectionId })
     .from(objekts)
     .where(
       and(
-        inArray(objekts.id, tokenIds),
+        inArray(
+          objekts.id,
+          tokens.map((t) => t.tokenId),
+        ),
         eq(objekts.owner, address.toLowerCase()),
         eq(objekts.transferable, true),
-        eq(objekts.collectionId, collectionId),
       ),
     );
 
-  if (owned.length !== tokenIds.length) {
-    throw new Error("not_owned");
+  const collectionByTokenId = new Map(owned.map((o) => [o.id, o.collectionId]));
+  for (const token of tokens) {
+    if (collectionByTokenId.get(token.tokenId) !== token.collectionId) {
+      throw new Error("not_owned");
+    }
   }
 }
 
@@ -48,16 +53,30 @@ type FireNotificationArgs = {
   collectionName: string;
 };
 
+type FireHaveNotificationArgs = {
+  sourceUserId: string;
+  sourceListId: string;
+  collections: { slug: string; collectionName: string }[];
+};
+
 /**
  * Insert mutual-viability notifications for users whose trade-active want list
- * contains the just-added collection AND whose trade-active have list overlaps
- * with the source user's trade-active want lists. The dedup index prevents
- * repeated notifications for the same source/target/collection combination.
+ * contains one of the just-added collections AND whose trade-active have list
+ * overlaps with the source user's trade-active want lists. All added
+ * collections are matched in a single query (so a 100-objekt batch stays one
+ * round-trip), then one notification is inserted per (watcher, collection); the
+ * dedup index prevents repeats for the same source/target/collection.
  */
 export async function fireHaveAddNotifications(
   tx: DbOrTx,
-  args: FireNotificationArgs,
+  args: FireHaveNotificationArgs,
 ): Promise<void> {
+  const collectionNameBySlug = new Map(
+    args.collections.map((c) => [c.slug, c.collectionName]),
+  );
+  const slugs = [...collectionNameBySlug.keys()];
+  if (slugs.length === 0) return;
+
   const watcherWant = alias(objektLists, "watcher_want");
   const watcherWantLink = alias(objektLists, "watcher_want_link");
   const watcherWantEntry = alias(objektListEntries, "watcher_want_entry");
@@ -67,15 +86,11 @@ export async function fireHaveAddNotifications(
   const sourceWantLink = alias(objektLists, "source_want_link");
   const sourceWantEntry = alias(objektListEntries, "source_want_entry");
 
-  const payload = {
-    sourceUserId: args.sourceUserId,
-    sourceListId: args.sourceListId,
-    collectionId: args.collectionName,
-    direction: "they_added_have",
-  } satisfies ListMatchPayload;
-
   const watchers = await tx
-    .selectDistinct({ userId: watcherWant.userId })
+    .selectDistinct({
+      userId: watcherWant.userId,
+      slug: watcherWantEntry.collectionId,
+    })
     .from(watcherWant)
     .innerJoin(
       watcherWantLink,
@@ -85,7 +100,7 @@ export async function fireHaveAddNotifications(
       watcherWantEntry,
       and(
         eq(watcherWantEntry.objektListId, watcherWant.id),
-        eq(watcherWantEntry.collectionId, args.slug),
+        inArray(watcherWantEntry.collectionId, slugs),
       ),
     )
     .where(
@@ -130,16 +145,26 @@ export async function fireHaveAddNotifications(
 
   if (watchers.length === 0) return;
 
-  await tx
-    .insert(notifications)
-    .values(
-      watchers.map(({ userId }) => ({
+  const values = watchers.flatMap(({ userId, slug }) => {
+    const collectionName = collectionNameBySlug.get(slug);
+    if (collectionName === undefined) return [];
+    return [
+      {
         userId,
         type: "list_match" as const,
-        payload,
-      })),
-    )
-    .onConflictDoNothing();
+        payload: {
+          sourceUserId: args.sourceUserId,
+          sourceListId: args.sourceListId,
+          collectionId: collectionName,
+          direction: "they_added_have",
+        } satisfies ListMatchPayload,
+      },
+    ];
+  });
+
+  if (values.length === 0) return;
+
+  await tx.insert(notifications).values(values).onConflictDoNothing();
 }
 
 /**

@@ -1,5 +1,6 @@
 import AddToList from "@/components/lists/add-to-list";
 import PinObjekt from "@/components/objekt/overlay/pin-button";
+import { useObjektSelection } from "@/hooks/use-objekt-selection";
 import useOverlayHover from "@/hooks/use-overlay-hover";
 import { useProfileContext } from "@/hooks/use-profile";
 import { m } from "@/i18n/messages";
@@ -14,7 +15,10 @@ import {
   IconLock,
   IconMailOff,
   IconPin,
+  IconSquare,
+  IconSquareCheckFilled,
 } from "@tabler/icons-react";
+import { useShallow } from "zustand/react/shallow";
 import LockObjekt from "./lock-button";
 import OverlayStatus from "./overlay-status";
 
@@ -38,6 +42,10 @@ export default function ActionOverlay({
   const objektLists = useProfileContext((ctx) => ctx.objektLists);
   const [hoverState, createHoverProps] = useOverlayHover();
   const isHidden = useObjektOverlay((state) => state.isHidden);
+  const isSelected = useObjektSelection(
+    useShallow((state) => state.isSelected(token.tokenId)),
+  );
+  const select = useObjektSelection((state) => state.select);
 
   // grouping uses nonTransferableReason = "challenge-reward" for gridded objekts
   const usedForGrid =
@@ -110,6 +118,27 @@ export default function ActionOverlay({
           <div {...createHoverProps("lock")}>
             <LockObjekt tokenId={token.tokenId} isLocked={isLocked} />
           </div>
+        )}
+
+        {/* batch select (authenticated, own profile) — any objekt may be
+            selected; eligibility is enforced when adding to a list */}
+        {authenticated && !isPin && (
+          <button
+            {...createHoverProps("select")}
+            onClick={() => select({ collection, token })}
+            className="flex items-center transition-all hover:scale-110"
+            aria-label={
+              isSelected
+                ? m.objekt_overlay_deselect()
+                : m.objekt_overlay_select()
+            }
+          >
+            {isSelected ? (
+              <IconSquareCheckFilled className="h-3 w-3 shrink-0 sm:h-5 sm:w-5" />
+            ) : (
+              <IconSquare className="h-3 w-3 shrink-0 sm:h-5 sm:w-5" />
+            )}
+          </button>
         )}
 
         {/* send (authenticated) */}
@@ -187,6 +216,13 @@ export default function ActionOverlay({
             )}
             {hoverState === "list" && authenticated && (
               <OverlayStatus>{m.objekt_overlay_add_to_list()}</OverlayStatus>
+            )}
+            {hoverState === "select" && authenticated && (
+              <OverlayStatus>
+                {isSelected
+                  ? m.objekt_overlay_deselect()
+                  : m.objekt_overlay_select()}
+              </OverlayStatus>
             )}
             {hoverState === "lock" && (
               <OverlayStatus>

@@ -218,6 +218,24 @@
   "list_picker_no_copies": "Vous ne possédez aucune copie de cette collection.",
   "list_picker_add_count": "Ajouter {count}",
   "list_already_on_list": "{collectionId} est déjà sur cette liste",
+  "batch_selected_count": [{
+    "declarations": ["input count", "local countPlural = count: plural"],
+    "selectors": ["countPlural"],
+    "match": {
+      "countPlural=one": "{count} objekt sélectionné",
+      "countPlural=other": "{count} objekts sélectionnés"
+    }
+  }],
+  "batch_add_to_list": "Listes",
+  "batch_clear_selection": "Effacer",
+  "batch_show_selection": "Sélection",
+  "batch_remove_from_selection": "Retirer de la sélection",
+  "batch_none_eligible": "Aucun objekt sélectionné ne peut être ajouté à {listName}.",
+  "batch_sale_title": "Ajouter à {listName}",
+  "batch_sale_description": "Définissez un prix pour chaque objekt ajouté à cette liste de vente.",
+  "batch_added_to_list": "{added} ajouté(s) à {listName}",
+  "batch_added_with_skipped": "{added} ajouté(s) à {listName} ({skipped} ignoré(s))",
+  "batch_all_on_list": "Tous les objekts sélectionnés sont déjà dans {listName}",
   "list_description": "Description",
   "list_description_placeholder": "Ajoutez des notes, des coordonnées ou vos préférences d'échange",
   "list_description_public_notice": "Cette description est visible par les autres utilisateurs. N'incluez aucune information sensible.",
@@ -630,6 +648,8 @@
   "objekt_overlay_pinned": "Épinglé",
   "objekt_overlay_send": "Envoyer",
   "objekt_overlay_add_to_list": "Ajouter à la liste",
+  "objekt_overlay_select": "Sélectionner",
+  "objekt_overlay_deselect": "Désélectionner",
   "objekt_overlay_unlock": "Dévérr.",
   "objekt_overlay_lock": "Verr.",
   "objekt_overlay_unpin": "Désépingler",
