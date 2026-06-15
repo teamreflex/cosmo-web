@@ -3,7 +3,7 @@ import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { toast } from "sonner";
 import { create } from "zustand";
 
-const MAX_SELECTIONS = 100;
+const MAX_SELECTIONS = 150;
 
 export type SelectedObjekt = {
   collection: Objekt.Collection;
