@@ -65,7 +65,12 @@ function BatchSaleBody({ list, currency, onClose }: BodyProps) {
   const eligible = selected.filter((s) => s.token.transferable);
 
   const mutation = useBatchAddToList(
-    { list, requested: eligible.length, onDone: onClose },
+    {
+      list,
+      attempted: eligible.length,
+      notTradable: selected.length - eligible.length,
+      onDone: onClose,
+    },
     () =>
       $addObjektsToSaleList({
         data: {

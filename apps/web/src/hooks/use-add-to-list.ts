@@ -54,14 +54,17 @@ export function useAddToList(
 
 type UseBatchAddToListOptions = {
   list: ObjektList;
-  requested: number;
+  // items actually sent to the server (transferable for have/sale, distinct slugs for regular)
+  attempted: number;
+  // selected objekts dropped client-side for not being transferable
+  notTradable?: number;
   onDone?: () => void;
 };
 
 /**
- * Mutation wrapper for the batch "add objekts to list" flows. Reports an
- * added/skipped summary, invalidates the list query, and clears the selection
- * only after the server call succeeds.
+ * Mutation wrapper for the batch "add objekts to list" flows. Reports a summary
+ * that breaks down the result into added / already-listed / not-tradable,
+ * invalidates the list query, and clears the selection after the server call.
  */
 export function useBatchAddToList(
   options: UseBatchAddToListOptions,
@@ -72,25 +75,40 @@ export function useBatchAddToList(
   return useMutation({
     mutationFn,
     onSuccess: async ({ inserted }) => {
-      const skipped = Math.max(options.requested - inserted, 0);
-      if (inserted === 0) {
-        toast.info(m.batch_all_on_list({ listName: options.list.name }));
-      } else if (skipped > 0) {
-        toast.success(
-          m.batch_added_with_skipped({
-            added: inserted.toString(),
-            skipped: skipped.toString(),
-            listName: options.list.name,
-          }),
-        );
-      } else {
-        toast.success(
-          m.batch_added_to_list({
-            added: inserted.toString(),
-            listName: options.list.name,
-          }),
+      const alreadyListed = Math.max(options.attempted - inserted, 0);
+      const notTradable = options.notTradable ?? 0;
+
+      const skips: string[] = [];
+      if (alreadyListed > 0) {
+        skips.push(m.batch_skip_already({ count: alreadyListed.toString() }));
+      }
+      if (notTradable > 0) {
+        skips.push(
+          m.batch_skip_not_tradable({ count: notTradable.toString() }),
         );
       }
+      const detail = skips.join(", ");
+
+      if (inserted > 0) {
+        toast.success(
+          detail
+            ? m.batch_added_with_detail({
+                added: inserted.toString(),
+                listName: options.list.name,
+                detail,
+              })
+            : m.batch_added_to_list({
+                added: inserted.toString(),
+                listName: options.list.name,
+              }),
+        );
+      } else {
+        // nothing inserted; the guard upstream means `detail` is always set
+        toast.info(
+          m.batch_nothing_added({ listName: options.list.name, detail }),
+        );
+      }
+
       await queryClient.invalidateQueries(
         objektListQueryFilter(options.list.id),
       );

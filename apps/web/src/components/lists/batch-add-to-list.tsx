@@ -122,7 +122,7 @@ type ItemProps = {
 function RegularItem({ list, selected, onDone }: ItemProps) {
   const slugs = selected.map((s) => s.collection.slug);
   const mutate = useBatchAddToList(
-    { list, requested: new Set(slugs).size, onDone },
+    { list, attempted: new Set(slugs).size, onDone },
     () =>
       $addObjektsToList({
         data: { objektListId: list.id, slugs },
@@ -141,7 +141,12 @@ function HaveItem({ list, selected, onDone }: ItemProps) {
   // only transferable serials can be tracked on a have list
   const eligible = selected.filter((s) => s.token.transferable);
   const mutate = useBatchAddToList(
-    { list, requested: eligible.length, onDone },
+    {
+      list,
+      attempted: eligible.length,
+      notTradable: selected.length - eligible.length,
+      onDone,
+    },
     () =>
       $addObjektsToHaveList({
         data: {
