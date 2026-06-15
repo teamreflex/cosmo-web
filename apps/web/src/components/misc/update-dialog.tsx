@@ -84,6 +84,9 @@ export default function UpdateDialog() {
 const updates = [
   {
     date: "2026-06-16",
-    changes: ["Added multi-select when adding objekts to lists."],
+    changes: [
+      "Added multi-select when adding objekts to lists from your profile.",
+      "When viewing in grouped mode, clicking a row in the Your Objekts popup will add it to your selection.",
+    ],
   },
 ];

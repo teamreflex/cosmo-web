@@ -120,27 +120,6 @@ export default function ActionOverlay({
           </div>
         )}
 
-        {/* batch select (authenticated, own profile) — any objekt may be
-            selected; eligibility is enforced when adding to a list */}
-        {authenticated && !isPin && (
-          <button
-            {...createHoverProps("select")}
-            onClick={() => select({ collection, token })}
-            className="flex items-center transition-all hover:scale-110"
-            aria-label={
-              isSelected
-                ? m.objekt_overlay_deselect()
-                : m.objekt_overlay_select()
-            }
-          >
-            {isSelected ? (
-              <IconSquareCheckFilled className="h-3 w-3 shrink-0 sm:h-5 sm:w-5" />
-            ) : (
-              <IconSquare className="h-3 w-3 shrink-0 sm:h-5 sm:w-5" />
-            )}
-          </button>
-        )}
-
         {/* send (authenticated) */}
         {/* {isSendable && authenticated && !isPin && !isLocked && (
           <div {...createHoverProps("send")}>
@@ -202,6 +181,27 @@ export default function ActionOverlay({
               />
             )}
           </div>
+        )}
+
+        {/* batch select (authenticated, own profile) — any objekt may be
+            selected; eligibility is enforced when adding to a list */}
+        {authenticated && !isPin && (
+          <button
+            {...createHoverProps("select")}
+            onClick={() => select({ collection, token })}
+            className="flex items-center transition-all hover:scale-110"
+            aria-label={
+              isSelected
+                ? m.objekt_overlay_deselect()
+                : m.objekt_overlay_select()
+            }
+          >
+            {isSelected ? (
+              <IconSquareCheckFilled className="h-3 w-3 shrink-0 sm:h-5 sm:w-5" />
+            ) : (
+              <IconSquare className="h-3 w-3 shrink-0 sm:h-5 sm:w-5" />
+            )}
+          </button>
         )}
       </div>
 
