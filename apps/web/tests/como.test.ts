@@ -276,28 +276,30 @@ describe("buildCalendar", () => {
     });
 
     it("carries day-31 mints in 30-day months", () => {
-      // April 2026: UTC day 31 carry-to-day-30 lands on local day 29 (one
-      // earlier due to the GMT-7 shift). The next UTC month's day-1 drop
-      // (May 1 UTC = Apr 30 local) wraps onto the local month's last day.
+      // April 2026: the capped day-31 drop's count lands on local day 29 (the
+      // 00:00 UTC drop shifts a day earlier in GMT-7), but the carried-over
+      // badge belongs on the month's last local day (30). The next UTC month's
+      // day-1 drop (May 1 UTC = Apr 30 local) wraps onto day 30.
       const cal = buildCalendar(
         new Date("2026-04-15T00:00:00Z"),
         gmt7UserObjekts,
         "America/Los_Angeles",
       );
 
-      // day 29: 2 UTC-day-30 + 1 Premier@2 carried from UTC-day-31 = 4
+      // day 29: 2 UTC-day-30 + 1 Premier@2 capped from UTC-day-31 = 4
       expect(cal[29]?.artms?.count).toBe(4);
-      expect(cal[29]?.artms?.carried).toBe(2);
-      // day 30: 2 Specials + 1 Premier@2 from UTC-day-1 wrap = 4
+      expect(cal[29]?.artms?.carried).toBe(0);
+      // day 30: UTC-day-1 wrap (count 4); carries the Premier@2 badge for the month
       expect(cal[30]?.artms?.count).toBe(4);
-      expect(cal[30]?.artms?.carried).toBe(0);
+      expect(cal[30]?.artms?.carried).toBe(2);
       expect(cal[31]).toBeUndefined();
     });
 
     it("collapses days 29-31 in February (non-leap)", () => {
       // Feb 2026 (non-leap): UTC days 29/30/31 all carry to UTC day 28,
-      // landing on local day 27 alongside the native UTC-day-28 mint.
-      // UTC day 1 from the next UTC month wraps onto local day 28.
+      // their counts landing on local day 27 alongside the native UTC-day-28
+      // mint. UTC day 1 from the next UTC month wraps onto local day 28 — the
+      // month's last local day, where the carried-over badge belongs.
       const cal = buildCalendar(
         new Date("2026-02-15T00:00:00Z"),
         gmt7UserObjekts,
@@ -305,33 +307,34 @@ describe("buildCalendar", () => {
       );
 
       // day 27: 1 native (UTC 28) + 6 (UTC 29) + 2 (UTC 30) + Premier@2
-      // (UTC 31) = 11; carried = 6 + 2 + 2 = 10
+      // (UTC 31) = 11
       expect(cal[27]?.artms?.count).toBe(11);
-      expect(cal[27]?.artms?.carried).toBe(10);
-      // day 28: UTC-day-1 wrap (2 Specials + 1 Premier@2 = 4)
+      expect(cal[27]?.artms?.carried).toBe(0);
+      // day 28: UTC-day-1 wrap (count 4); carries the month's badge (6+2+2=10)
       expect(cal[28]?.artms?.count).toBe(4);
-      expect(cal[28]?.artms?.carried).toBe(0);
+      expect(cal[28]?.artms?.carried).toBe(10);
       expect(cal[29]).toBeUndefined();
       expect(cal[30]).toBeUndefined();
       expect(cal[31]).toBeUndefined();
     });
 
     it("handles leap-year February", () => {
-      // Feb 2024 had 29 days. UTC day 29 lands on local day 28; UTC
-      // days 30/31 carry to UTC 29 and also land on local day 28. The
-      // extra leap day (local 29) catches the UTC-day-1 wrap from Mar.
+      // Feb 2024 had 29 days. UTC day 29 lands on local day 28; UTC days 30/31
+      // carry to UTC 29 and their counts also land on local day 28. The extra
+      // leap day (local 29) catches the UTC-day-1 wrap from Mar and is the
+      // last local day, so it carries the badge.
       const cal = buildCalendar(
         new Date("2024-02-15T00:00:00Z"),
         gmt7UserObjekts,
         "America/Los_Angeles",
       );
 
-      // day 28: 6 (UTC 29) + 2 carried (UTC 30) + 2 carried (Premier UTC 31) = 10
+      // day 28: 6 (UTC 29) + 2 (UTC 30) + 2 (Premier UTC 31) = 10
       expect(cal[28]?.artms?.count).toBe(10);
-      expect(cal[28]?.artms?.carried).toBe(4);
-      // day 29: UTC-day-1 wrap = 4
+      expect(cal[28]?.artms?.carried).toBe(0);
+      // day 29: UTC-day-1 wrap (count 4); carries the month's badge (2+2=4)
       expect(cal[29]?.artms?.count).toBe(4);
-      expect(cal[29]?.artms?.carried).toBe(0);
+      expect(cal[29]?.artms?.carried).toBe(4);
       expect(cal[30]).toBeUndefined();
       expect(cal[31]).toBeUndefined();
     });
