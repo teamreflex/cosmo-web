@@ -1,9 +1,8 @@
 import { m } from "@/i18n/messages";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
+import { MAX_OBJEKT_SELECTIONS } from "@/lib/universal/schema/objekt-list";
 import { toast } from "sonner";
 import { create } from "zustand";
-
-const MAX_SELECTIONS = 150;
 
 export type SelectedObjekt = {
   collection: Objekt.Collection;
@@ -45,9 +44,9 @@ export const useObjektSelection = create<ObjektSelectionState>()(
           };
         }
 
-        if (state.selected.length >= MAX_SELECTIONS) {
+        if (state.selected.length >= MAX_OBJEKT_SELECTIONS) {
           toast.info(
-            m.toast_max_selections({ count: MAX_SELECTIONS.toString() }),
+            m.toast_max_selections({ count: MAX_OBJEKT_SELECTIONS.toString() }),
           );
           return state;
         }

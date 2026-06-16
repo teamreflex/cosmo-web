@@ -104,9 +104,11 @@ export const deleteObjektListSchema = z.object({
   id: z.uuid(),
 });
 
+export const MAX_OBJEKT_SELECTIONS = 150;
+
 export const addObjektsToListSchema = z.object({
   objektListId: z.uuid(),
-  slugs: z.array(z.string()).min(1).max(100),
+  slugs: z.array(z.string()).min(1).max(MAX_OBJEKT_SELECTIONS),
 });
 
 export const addObjektsToHaveListSchema = z.object({
@@ -121,7 +123,7 @@ export const addObjektsToHaveListSchema = z.object({
       }),
     )
     .min(1)
-    .max(100),
+    .max(MAX_OBJEKT_SELECTIONS),
 });
 
 export const addObjektToWantListSchema = z.object({
@@ -143,7 +145,7 @@ export const addObjektsToSaleListSchema = z.object({
       }),
     )
     .min(1)
-    .max(100),
+    .max(MAX_OBJEKT_SELECTIONS),
 });
 
 const updateEntryBase = z.object({
