@@ -1,4 +1,3 @@
-import { useObjektSelection } from "@/hooks/use-objekt-selection";
 import { m } from "@/i18n/messages";
 import { formatListError } from "@/lib/client/list-errors";
 import { objektListQueryFilter } from "@/lib/queries/objekt-queries";
@@ -71,7 +70,6 @@ export function useBatchAddToList(
   mutationFn: () => Promise<AddResult>,
 ) {
   const queryClient = useQueryClient();
-  const reset = useObjektSelection((state) => state.reset);
   return useMutation({
     mutationFn,
     onSuccess: async ({ inserted }) => {
@@ -112,7 +110,6 @@ export function useBatchAddToList(
       await queryClient.invalidateQueries(
         objektListQueryFilter(options.list.id),
       );
-      reset();
       options.onDone?.();
     },
     onError: (error) => {

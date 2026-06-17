@@ -104,7 +104,7 @@ export const deleteObjektListSchema = z.object({
   id: z.uuid(),
 });
 
-export const MAX_OBJEKT_SELECTIONS = 150;
+export const MAX_OBJEKT_SELECTIONS = 500;
 
 export const addObjektsToListSchema = z.object({
   objektListId: z.uuid(),
