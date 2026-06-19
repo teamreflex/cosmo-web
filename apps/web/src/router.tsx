@@ -5,6 +5,12 @@ import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query
 import type { ReactNode } from "react";
 import { env } from "./lib/env/client";
 import { isExpectedError } from "./lib/universal/errors/expected";
+import {
+  sentryDenyUrls,
+  sentryIgnoreErrors,
+  transientFetchError,
+  transientFetchSampleRate,
+} from "./lib/universal/errors/sentry-noise";
 import { MediaQueryProvider } from "./providers/media-query-provider";
 import { routeTree } from "./routeTree.gen";
 
@@ -34,8 +40,29 @@ export function getRouter() {
       sendDefaultPii: false,
       debug: false,
       tracesSampleRate: 0,
+      ignoreErrors: sentryIgnoreErrors,
+      denyUrls: sentryDenyUrls,
       beforeSend(event, hint) {
         if (isExpectedError(hint.originalException)) {
+          return null;
+        }
+        // downsample generic fetch failures so an outage still spikes
+        const message = event.exception?.values?.[0]?.value ?? "";
+        if (
+          transientFetchError.test(message) &&
+          Math.random() > transientFetchSampleRate
+        ) {
+          return null;
+        }
+        // drop injected/extension noise: stack frames exist but none are ours
+        const frames = event.exception?.values?.flatMap(
+          (value) => value.stacktrace?.frames ?? [],
+        );
+        if (
+          frames !== undefined &&
+          frames.length > 0 &&
+          frames.every((frame) => frame.in_app !== true)
+        ) {
           return null;
         }
         return event;
