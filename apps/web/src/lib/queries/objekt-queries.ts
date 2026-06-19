@@ -54,7 +54,7 @@ export function objektIndexTypesenseQuery(
       });
     },
     initialPageParam: 1,
-    getNextPageParam: (lastPage) => lastPage.nextStartAfter,
+    getNextPageParam: (lastPage) => lastPage?.nextStartAfter,
     staleTime: 1000 * 60 * 5,
     refetchOnMount: false,
   });
@@ -89,7 +89,7 @@ export function objektIndexBlockchainQuery(
       });
     },
     initialPageParam: 0,
-    getNextPageParam: (lastPage) => lastPage.nextStartAfter,
+    getNextPageParam: (lastPage) => lastPage?.nextStartAfter,
     staleTime: 1000 * 60 * 5,
     refetchOnMount: false,
   });
@@ -126,7 +126,7 @@ export function userCollectionBlockchainGroupsQuery(
     },
     initialPageParam: 1,
     getNextPageParam: (lastPage, _, lastPageParam) =>
-      lastPage.collections.length === BLOCKCHAIN_GROUPS_PER_PAGE
+      lastPage?.collections.length === BLOCKCHAIN_GROUPS_PER_PAGE
         ? lastPageParam + 1
         : undefined,
     staleTime: 1000 * 60 * 5,
@@ -164,7 +164,7 @@ export function userCollectionBlockchainQuery(
       });
     },
     initialPageParam: 0,
-    getNextPageParam: (lastPage) => lastPage.nextStartAfter,
+    getNextPageParam: (lastPage) => lastPage?.nextStartAfter,
     staleTime: 1000 * 60 * 5,
     refetchOnMount: false,
   });
@@ -207,7 +207,7 @@ export function objektListQuery(
       });
     },
     initialPageParam: 0,
-    getNextPageParam: (lastPage) => lastPage.nextStartAfter,
+    getNextPageParam: (lastPage) => lastPage?.nextStartAfter,
     staleTime: 1000 * 60 * 5,
   });
 }
@@ -242,7 +242,7 @@ export function transfersQuery(
       });
     },
     initialPageParam: undefined as string | undefined,
-    getNextPageParam: (lastPage) => lastPage.cursor,
+    getNextPageParam: (lastPage) => lastPage?.cursor,
     staleTime: 1000 * 60 * 5,
     refetchOnMount: false,
   });
