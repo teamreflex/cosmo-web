@@ -72,7 +72,7 @@ function PendingComponent() {
     <main className="flex flex-col">
       <TitleHeader title={m.gravity_header()} />
 
-      <div className="container relative flex flex-col gap-4 pt-4">
+      <div className="relative container flex flex-col gap-4 pt-4">
         <SkeletonGradient />
         {/* Hero skeleton */}
         <Skeleton className="h-[180px] w-full rounded-xl" />

@@ -12,7 +12,7 @@ export default function TitleHeader(props: Props) {
     <div className="border-b border-border">
       <div
         className={cn(
-          "container relative flex h-14 items-center gap-3",
+          "relative container flex h-14 items-center gap-3",
           props.className,
         )}
       >

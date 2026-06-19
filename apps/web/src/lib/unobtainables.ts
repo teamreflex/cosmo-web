@@ -98,5 +98,5 @@ export const unobtainables = [
   "binary01-yooyeon-118a",
   "binary01-kotone-117a",
   "binary01-xinyu-120a",
-  "atom01-heejin-111a"
+  "atom01-heejin-111a",
 ];

@@ -41,7 +41,7 @@ export default function ExpandableObjekt({
           "--objekt-text-color": collection.textColor,
         }}
         className={cn(
-          "group/objekt relative aspect-photocard touch-manipulation overflow-hidden rounded-photocard bg-secondary outline outline-transparent transition-[transform,box-shadow,outline-color] duration-200 ease-out hover:-translate-y-0.5 hover:outline-cosmo hover:shadow-lg",
+          "group/objekt relative aspect-photocard touch-manipulation overflow-hidden rounded-photocard bg-secondary outline outline-transparent transition-[transform,box-shadow,outline-color] duration-200 ease-out hover:-translate-y-0.5 hover:shadow-lg hover:outline-cosmo",
           isSelected && "outline-2 outline-foreground hover:outline-foreground",
           className,
         )}

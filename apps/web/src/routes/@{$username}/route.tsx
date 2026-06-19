@@ -104,7 +104,7 @@ function RouteComponent() {
                   </ErrorBoundary>
                   <div
                     id="profile-total-stat"
-                    className="flex min-w-0 flex-col gap-0.5 pl-4 empty:hidden first:pl-0"
+                    className="flex min-w-0 flex-col gap-0.5 pl-4 first:pl-0 empty:hidden"
                   />
                 </div>
               </div>

@@ -71,7 +71,7 @@ function NoticeRow({ text, className }: { text: string; className?: string }) {
   return (
     <div
       className={cn(
-        "flex items-center gap-1 focus:outline-none border-b border-border px-4 py-2 text-xs w-full",
+        "flex w-full items-center gap-1 border-b border-border px-4 py-2 text-xs focus:outline-none",
         className,
       )}
     >

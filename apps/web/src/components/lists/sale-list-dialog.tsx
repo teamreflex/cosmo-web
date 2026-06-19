@@ -284,10 +284,10 @@ function SaleRow({
           onChange={(e) =>
             onPriceChange(e.target.value === "" ? null : e.target.valueAsNumber)
           }
-          className="pr-11 text-right tabular-nums [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+          className="[appearance:textfield] pr-11 text-right tabular-nums [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
           aria-label={`${m.list_sale_price()} (${currency})`}
         />
-        <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-xs font-mono uppercase text-muted-foreground">
+        <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center font-mono text-xs text-muted-foreground uppercase">
           {currency}
         </span>
       </div>

@@ -408,7 +408,7 @@ function CurrencyField() {
               field.onChange(e.target.value === "" ? undefined : e.target.value)
             }
           />
-          <div className="flex gap-1 flex-wrap">
+          <div className="flex flex-wrap gap-1">
             {defaultCurrencies.map((c) => (
               <button
                 key={c}

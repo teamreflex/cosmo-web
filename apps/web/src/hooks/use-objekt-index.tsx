@@ -44,7 +44,7 @@ export function useObjektIndex() {
       calculateTotal: (data) => {
         const total = data.pages[0]?.total ?? 0;
         return (
-          <p className="font-mono text-xxs sm:text-xs tracking-[0.14em] uppercase text-muted-foreground">
+          <p className="font-mono text-xxs tracking-[0.14em] text-muted-foreground uppercase sm:text-xs">
             {total.toLocaleString("en")} {m.common_total()}
           </p>
         );
@@ -61,7 +61,7 @@ export function useObjektIndex() {
     calculateTotal: (data) => {
       const total = data.pages[0]?.total ?? 0;
       return (
-        <p className="font-mono text-xs tracking-[0.14em] uppercase text-muted-foreground">
+        <p className="font-mono text-xs tracking-[0.14em] text-muted-foreground uppercase">
           {total.toLocaleString("en")} {m.common_total()}
         </p>
       );

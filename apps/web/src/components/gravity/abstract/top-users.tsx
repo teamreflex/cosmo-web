@@ -200,7 +200,7 @@ function HiddenVoteRow({ vote }: { vote: CandidateBreakdown }) {
         <span className="flex-1 truncate text-sm font-medium italic">
           {m.gravity_unrevealed()}
         </span>
-        <span className="text-xs tabular-nums text-muted-foreground">
+        <span className="text-xs text-muted-foreground tabular-nums">
           {vote.comoAmount.toLocaleString()} COMO
         </span>
       </div>
@@ -216,7 +216,7 @@ function HiddenVoteRow({ vote }: { vote: CandidateBreakdown }) {
       <span className="flex-1 truncate text-sm font-medium">
         {vote.candidate.title}
       </span>
-      <span className="text-xs tabular-nums text-muted-foreground">
+      <span className="text-xs text-muted-foreground tabular-nums">
         {vote.comoAmount.toLocaleString()} COMO
       </span>
     </div>

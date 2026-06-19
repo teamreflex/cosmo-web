@@ -38,6 +38,6 @@
     "@subsquid/typeorm-codegen": "^2.2.0",
     "@types/bun": "catalog:",
     "turbo": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "^6.0.3"
   }
 }

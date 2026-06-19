@@ -123,7 +123,7 @@ export default function SerialTicket({
       {/* actions — authenticated owner only, always visible */}
       {authenticated && (
         <div
-          className="flex items-center gap-3 text-foreground [&_svg]:size-5 sm:gap-2"
+          className="flex items-center gap-3 text-foreground sm:gap-2 [&_svg]:size-5"
           onClick={(e) => e.stopPropagation()}
           onKeyDown={(e) => e.stopPropagation()}
           role="presentation"

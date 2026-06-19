@@ -33,7 +33,7 @@ export default function ListRenderer(props: Props) {
       const total = data.pages[0]?.total ?? 0;
       return (
         <span className="flex items-baseline gap-1">
-          <span className="tabular-nums text-foreground">
+          <span className="text-foreground tabular-nums">
             {total.toLocaleString()}
           </span>
           <span className="text-muted-foreground">
