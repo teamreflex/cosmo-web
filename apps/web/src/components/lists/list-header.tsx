@@ -52,7 +52,7 @@ export default function ListHeader({
                   <span className="text-muted-foreground">·</span>
                   <span className="text-muted-foreground">
                     {m.list_header_updated({
-                      date: format(new Date(list.createdAt), "d MMM yy"),
+                      date: format(list.createdAt, "d MMM yy"),
                     })}
                   </span>
                 </>

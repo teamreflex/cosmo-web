@@ -15,7 +15,7 @@ export const bunJsonb = customType<{ data: unknown; driverData: unknown }>({
 
 export const createdAt = timestamp("created_at", {
   withTimezone: false,
-  mode: "string",
+  mode: "date",
 })
   .notNull()
   .defaultNow();

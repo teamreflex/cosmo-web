@@ -138,9 +138,9 @@ export const $fetchObjektListEntries = createServerFn({ method: "GET" })
       items.sort((a, b) => {
         const ai = entries.findIndex((e) => e.id === a.id);
         const bi = entries.findIndex((e) => e.id === b.id);
-        const ad = entries[ai]?.createdAt ?? "";
-        const bd = entries[bi]?.createdAt ?? "";
-        return bd.localeCompare(ad);
+        const ad = entries[ai]?.createdAt;
+        const bd = entries[bi]?.createdAt;
+        return (bd?.getTime() ?? 0) - (ad?.getTime() ?? 0);
       });
     } else {
       sortByIndexerOrder(items, data.sort ?? "newest");
