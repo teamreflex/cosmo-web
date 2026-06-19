@@ -63,9 +63,9 @@ type UseBatchAddToListOptions = {
  * that breaks down the result into added / already-listed / not-tradable,
  * invalidates the list query, and clears the selection after the server call.
  */
-export function useBatchAddToList(
+export function useBatchAddToList<TVariables = void>(
   options: UseBatchAddToListOptions,
-  mutationFn: () => Promise<AddResult>,
+  mutationFn: (variables: TVariables) => Promise<AddResult>,
 ) {
   const queryClient = useQueryClient();
   return useMutation({

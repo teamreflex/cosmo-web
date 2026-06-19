@@ -134,16 +134,6 @@ export const $createObjektList = createServerFn({ method: "POST" })
 
     const slug = createSlug(data.name);
 
-    const existing = await $fetchObjektList({
-      data: {
-        userId: context.session.session.userId,
-        slug,
-      },
-    });
-    if (existing !== undefined) {
-      throw new ExpectedError("list_name_taken");
-    }
-
     const [result] = await db
       .insert(objektLists)
       .values({
@@ -154,10 +144,14 @@ export const $createObjektList = createServerFn({ method: "POST" })
         type: data.type,
         userId: context.session.session.userId,
       })
+      .onConflictDoNothing({
+        target: [objektLists.userId, objektLists.slug],
+      })
       .returning();
 
+    // a missing row means the (user, slug) unique index suppressed the insert
     if (!result) {
-      throw new Error("Failed to create list");
+      throw new ExpectedError("list_name_taken");
     }
 
     return result;
@@ -179,13 +173,6 @@ export const $createLiveList = createServerFn({ method: "POST" })
 
     const userId = context.session.user.id;
     const slug = createSlug(data.name);
-
-    const existing = await $fetchObjektList({
-      data: { userId, slug },
-    });
-    if (existing !== undefined) {
-      throw new ExpectedError("list_name_taken");
-    }
 
     if (data.pairListId !== null) {
       const targetType = data.type === "have" ? "want" : "have";
@@ -223,10 +210,14 @@ export const $createLiveList = createServerFn({ method: "POST" })
           linkedWantListId: data.type === "have" ? data.pairListId : null,
           userId,
         })
+        .onConflictDoNothing({
+          target: [objektLists.userId, objektLists.slug],
+        })
         .returning();
 
+      // a missing row means the (user, slug) unique index suppressed the insert
       if (!row) {
-        throw new Error("Failed to create list");
+        throw new ExpectedError("list_name_taken");
       }
 
       if (data.type === "want" && data.pairListId !== null) {

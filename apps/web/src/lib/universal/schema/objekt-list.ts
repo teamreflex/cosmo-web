@@ -132,6 +132,9 @@ export const addObjektToWantListSchema = z.object({
   collectionName: z.string(),
 });
 
+const SALE_PRICE_ERROR = "Price must be greater than 0";
+export const salePriceSchema = z.number().positive(SALE_PRICE_ERROR).nullable();
+
 export const addObjektsToSaleListSchema = z.object({
   objektListId: z.uuid(),
   entries: z
@@ -141,7 +144,7 @@ export const addObjektsToSaleListSchema = z.object({
         collectionId: z.uuid(),
         collectionName: z.string(),
         tokenId: z.string(),
-        price: z.number().positive().nullable(),
+        price: salePriceSchema,
       }),
     )
     .min(1)
@@ -151,7 +154,7 @@ export const addObjektsToSaleListSchema = z.object({
 const updateEntryBase = z.object({
   objektListId: z.uuid(),
   objektListEntryId: z.uuid(),
-  price: z.number().positive().nullable(),
+  price: salePriceSchema,
 });
 
 export const updateTokenEntrySchema = updateEntryBase.extend({
@@ -172,6 +175,21 @@ export const removeObjektFromListSchema = z.object({
   objektListId: z.uuid(),
   objektListEntryId: z.uuid(),
 });
+
+export const saleListFormSchema = z.object({
+  rows: z.array(
+    z
+      .object({
+        selected: z.boolean(),
+        price: z.number().nullable(),
+      })
+      .refine(
+        (row) => !row.selected || salePriceSchema.safeParse(row.price).success,
+        { message: SALE_PRICE_ERROR, path: ["price"] },
+      ),
+  ),
+});
+export type SaleListFormValues = z.infer<typeof saleListFormSchema>;
 
 export const findTradePartnersSchema = z.object({
   listId: z.uuid(),

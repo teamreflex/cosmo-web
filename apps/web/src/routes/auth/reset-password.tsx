@@ -6,7 +6,7 @@ import * as z from "zod";
 
 export const Route = createFileRoute("/auth/reset-password")({
   validateSearch: z.object({
-    token: z.string(),
+    token: z.string().optional(),
   }),
   loaderDeps: ({ search }) => ({ search }),
   loader: ({ deps: { search } }) => {

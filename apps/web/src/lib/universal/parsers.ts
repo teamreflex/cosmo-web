@@ -27,10 +27,10 @@ export function castToArray<TSchema extends z.Schema>(schema: TSchema) {
  * Base schema for querying objekts.
  */
 export const cosmoSchema = z.object({
-  sort: z.enum(validSorts).nullish(),
+  sort: z.enum(validSorts).nullish().catch(null),
   season: castToArray(z.string()).nullish(),
   class: castToArray(z.string()).nullish(),
-  on_offline: castToArray(z.enum(validOnlineTypes)).nullish(),
+  on_offline: castToArray(z.enum(validOnlineTypes)).nullish().catch(null),
   member: z.string().nullish(),
   artist: z
     .string()
@@ -38,7 +38,8 @@ export const cosmoSchema = z.object({
       (v) => validArtists.find((a) => a.toLowerCase() === v.toLowerCase()) ?? v,
     )
     .pipe(z.enum(validArtists))
-    .nullish(),
+    .nullish()
+    .catch(null),
   transferable: z.coerce.boolean().nullish(),
   gridable: z.coerce.boolean().nullish(),
   collectionNo: castToArray(z.string()).nullish(),

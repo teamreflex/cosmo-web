@@ -18,14 +18,25 @@ import {
   type OwnedSerial,
 } from "@/lib/functions/objekts/owned-serials";
 import { objektListQueryFilter } from "@/lib/queries/objekt-queries";
+import {
+  type SaleListFormValues,
+  saleListFormSchema,
+} from "@/lib/universal/schema/objekt-list";
 import { cn } from "@/lib/utils";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconCheck, IconLoader2 } from "@tabler/icons-react";
 import {
   useMutation,
   useQueryClient,
   useSuspenseQuery,
 } from "@tanstack/react-query";
-import { Suspense, useState } from "react";
+import { Suspense } from "react";
+import {
+  type Control,
+  useController,
+  useForm,
+  useWatch,
+} from "react-hook-form";
 import { toast } from "sonner";
 
 type Props = {
@@ -102,9 +113,6 @@ function SaleListBody({
   currency,
   onClose,
 }: BodyProps) {
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [prices, setPrices] = useState<Map<string, number | null>>(new Map());
-
   const queryClient = useQueryClient();
   const { data: owned } = useSuspenseQuery({
     queryKey: ["owned-serials", collectionId],
@@ -124,38 +132,30 @@ function SaleListBody({
       toast.error(formatError(error, { collectionId: collectionName })),
   });
 
-  function toggle(tokenId: string) {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(tokenId)) next.delete(tokenId);
-      else next.add(tokenId);
-      return next;
-    });
-  }
+  const form = useForm({
+    resolver: standardSchemaResolver(saleListFormSchema),
+    defaultValues: {
+      rows: owned.map(() => ({ selected: false, price: null })),
+    },
+  });
 
-  function setPrice(tokenId: string, price: number | null) {
-    setPrices((prev) => {
-      const next = new Map(prev);
-      next.set(tokenId, price);
-      return next;
+  async function handleSubmit(data: SaleListFormValues) {
+    const entries = owned.flatMap((serial, i) => {
+      const row = data.rows[i];
+      if (row === undefined || !row.selected) return [];
+      return [
+        {
+          slug,
+          collectionId,
+          collectionName,
+          tokenId: serial.tokenId,
+          price: row.price,
+        },
+      ];
     });
-  }
 
-  function submit() {
-    const entries = Array.from(selected).map((tokenId) => ({
-      slug,
-      collectionId,
-      collectionName,
-      tokenId,
-      price: prices.get(tokenId) ?? null,
-    }));
-
-    mutation.mutate({
-      data: {
-        objektListId,
-        entries,
-      },
-    });
+    if (entries.length === 0) return;
+    await mutation.mutateAsync({ data: { objektListId, entries } });
   }
 
   if (owned.length === 0) {
@@ -167,63 +167,72 @@ function SaleListBody({
   }
 
   return (
-    <>
+    <form onSubmit={form.handleSubmit(handleSubmit)} className="contents">
       <ScrollArea className="-mx-6 max-h-72">
         <ul className="flex flex-col">
-          {owned.map((o) => (
+          {owned.map((o, i) => (
             <li key={o.tokenId}>
               <SaleRow
+                index={i}
                 serial={o}
-                isChecked={selected.has(o.tokenId)}
-                price={prices.get(o.tokenId) ?? null}
                 currency={currency}
-                onToggle={() => toggle(o.tokenId)}
-                onPriceChange={(value) => setPrice(o.tokenId, value)}
+                control={form.control}
               />
             </li>
           ))}
         </ul>
       </ScrollArea>
 
-      <Button
-        type="button"
-        onClick={submit}
-        disabled={selected.size === 0 || mutation.isPending}
-      >
-        <span>
-          {m.list_picker_add_count({ count: selected.size.toString() })}
-        </span>
-        {mutation.isPending && <IconLoader2 className="animate-spin" />}
-      </Button>
-    </>
+      <SubmitButton control={form.control} isPending={mutation.isPending} />
+    </form>
+  );
+}
+
+function SubmitButton({
+  control,
+  isPending,
+}: {
+  control: Control<SaleListFormValues>;
+  isPending: boolean;
+}) {
+  const rows = useWatch({ control, name: "rows" });
+  const selectedCount = rows.filter((row) => row.selected).length;
+
+  return (
+    <Button type="submit" disabled={selectedCount === 0 || isPending}>
+      <span>
+        {m.list_picker_add_count({ count: selectedCount.toString() })}
+      </span>
+      {isPending && <IconLoader2 className="animate-spin" />}
+    </Button>
   );
 }
 
 type SaleRowProps = {
+  index: number;
   serial: OwnedSerial;
-  isChecked: boolean;
-  price: number | null;
   currency: string;
-  onToggle: () => void;
-  onPriceChange: (value: number | null) => void;
+  control: Control<SaleListFormValues>;
 };
 
-function SaleRow({
-  serial,
-  isChecked,
-  price,
-  currency,
-  onToggle,
-  onPriceChange,
-}: SaleRowProps) {
+function SaleRow({ index, serial, currency, control }: SaleRowProps) {
+  const { field: selected } = useController({
+    control,
+    name: `rows.${index}.selected`,
+  });
+  const { field: price, fieldState } = useController({
+    control,
+    name: `rows.${index}.price`,
+  });
+
   const isTradable =
     serial.transferable && serial.nonTransferableReason === undefined;
   const disabled = !serial.transferable || serial.locked;
   const paddedSerial = serial.serial.toString().padStart(5, "0");
 
-  function handleClick() {
+  function toggle() {
     if (disabled) return;
-    onToggle();
+    selected.onChange(!selected.value);
   }
 
   return (
@@ -231,13 +240,13 @@ function SaleRow({
       role="checkbox"
       tabIndex={disabled ? -1 : 0}
       aria-disabled={disabled}
-      aria-checked={isChecked}
-      onClick={handleClick}
+      aria-checked={selected.value}
+      onClick={toggle}
       onKeyDown={(e) => {
         if (disabled) return;
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          onToggle();
+          toggle();
         }
       }}
       className={cn(
@@ -269,38 +278,49 @@ function SaleRow({
       </div>
 
       <div
-        className="relative w-28 shrink-0"
+        className="w-28 shrink-0"
         onClick={(e) => e.stopPropagation()}
         onKeyDown={(e) => e.stopPropagation()}
         role="presentation"
       >
-        <Input
-          type="number"
-          min={0}
-          step="any"
-          placeholder={m.list_sale_price()}
-          value={price ?? ""}
-          disabled={disabled}
-          onChange={(e) =>
-            onPriceChange(e.target.value === "" ? null : e.target.valueAsNumber)
-          }
-          className="pr-11 text-right tabular-nums [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-          aria-label={`${m.list_sale_price()} (${currency})`}
-        />
-        <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-xs font-mono uppercase text-muted-foreground">
-          {currency}
-        </span>
+        <div className="relative">
+          <Input
+            type="number"
+            min={0}
+            step="any"
+            placeholder={m.list_sale_price()}
+            value={price.value ?? ""}
+            disabled={disabled}
+            aria-invalid={fieldState.invalid}
+            onChange={(e) => {
+              const next = e.target.valueAsNumber;
+              price.onChange(
+                e.target.value === "" || Number.isNaN(next) ? null : next,
+              );
+            }}
+            className="pr-11 text-right tabular-nums [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+            aria-label={`${m.list_sale_price()} (${currency})`}
+          />
+          <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-xs font-mono uppercase text-muted-foreground">
+            {currency}
+          </span>
+        </div>
+        {fieldState.error && (
+          <p className="mt-1 text-xxs text-destructive">
+            {fieldState.error.message}
+          </p>
+        )}
       </div>
 
       <div
         aria-hidden
-        data-checked={isChecked}
+        data-checked={selected.value}
         className={cn(
           "flex size-4 shrink-0 items-center justify-center rounded-[4px] border border-input transition-colors",
           "data-[checked=true]:border-primary data-[checked=true]:bg-primary data-[checked=true]:text-primary-foreground",
         )}
       >
-        {isChecked && <IconCheck className="size-3.5" />}
+        {selected.value && <IconCheck className="size-3.5" />}
       </div>
     </div>
   );

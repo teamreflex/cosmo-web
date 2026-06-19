@@ -14,9 +14,14 @@ import { m } from "@/i18n/messages";
 import { getObjektImageUrls } from "@/lib/client/objekt-util";
 import { $addObjektsToSaleList } from "@/lib/functions/lists";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
+import { addObjektsToSaleListSchema } from "@/lib/universal/schema/objekt-list";
 import type { ObjektList } from "@apollo/database/web/types";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconLoader2 } from "@tabler/icons-react";
-import { useState } from "react";
+import { type Control, useController, useForm } from "react-hook-form";
+import type { z } from "zod";
+
+type AddToSaleListInput = z.infer<typeof addObjektsToSaleListSchema>;
 
 type Props = {
   open: boolean;
@@ -59,10 +64,23 @@ type BodyProps = {
 
 function BatchSaleBody({ list, currency, onClose }: BodyProps) {
   const selected = useObjektSelection((state) => state.selected);
-  const [prices, setPrices] = useState<Map<number, number | null>>(new Map());
 
   // only transferable serials can be listed for sale
   const eligible = selected.filter((s) => s.token.transferable);
+
+  const form = useForm({
+    resolver: standardSchemaResolver(addObjektsToSaleListSchema),
+    defaultValues: {
+      objektListId: list.id,
+      entries: eligible.map((s) => ({
+        slug: s.collection.slug,
+        collectionId: s.collection.id,
+        collectionName: s.collection.collectionId,
+        tokenId: String(s.token.tokenId),
+        price: null,
+      })),
+    },
+  });
 
   const mutation = useBatchAddToList(
     {
@@ -71,27 +89,11 @@ function BatchSaleBody({ list, currency, onClose }: BodyProps) {
       notTradable: selected.length - eligible.length,
       onDone: onClose,
     },
-    () =>
-      $addObjektsToSaleList({
-        data: {
-          objektListId: list.id,
-          entries: eligible.map((s) => ({
-            slug: s.collection.slug,
-            collectionId: s.collection.id,
-            collectionName: s.collection.collectionId,
-            tokenId: String(s.token.tokenId),
-            price: prices.get(s.token.tokenId) ?? null,
-          })),
-        },
-      }),
+    (data: AddToSaleListInput) => $addObjektsToSaleList({ data }),
   );
 
-  function setPrice(tokenId: number, price: number | null) {
-    setPrices((prev) => {
-      const next = new Map(prev);
-      next.set(tokenId, price);
-      return next;
-    });
+  async function handleSubmit(data: AddToSaleListInput) {
+    await mutation.mutateAsync(data);
   }
 
   if (eligible.length === 0) {
@@ -103,52 +105,52 @@ function BatchSaleBody({ list, currency, onClose }: BodyProps) {
   }
 
   return (
-    <>
+    <form onSubmit={form.handleSubmit(handleSubmit)} className="contents">
       <ScrollArea className="-mx-6 max-h-72">
         <ul className="flex flex-col">
-          {eligible.map((s) => (
+          {eligible.map((s, i) => (
             <li key={s.token.tokenId}>
               <BatchSaleRow
+                index={i}
                 collection={s.collection}
                 token={s.token}
                 currency={currency}
-                price={prices.get(s.token.tokenId) ?? null}
-                onPriceChange={(value) => setPrice(s.token.tokenId, value)}
+                control={form.control}
               />
             </li>
           ))}
         </ul>
       </ScrollArea>
 
-      <Button
-        type="button"
-        onClick={() => mutation.mutate()}
-        disabled={mutation.isPending}
-      >
+      <Button type="submit" disabled={mutation.isPending}>
         <span>
           {m.list_picker_add_count({ count: eligible.length.toString() })}
         </span>
         {mutation.isPending && <IconLoader2 className="animate-spin" />}
       </Button>
-    </>
+    </form>
   );
 }
 
 type RowProps = {
+  index: number;
   collection: Objekt.Collection;
   token: Objekt.Token;
   currency: string;
-  price: number | null;
-  onPriceChange: (value: number | null) => void;
+  control: Control<AddToSaleListInput>;
 };
 
 function BatchSaleRow({
+  index,
   collection,
   token,
   currency,
-  price,
-  onPriceChange,
+  control,
 }: RowProps) {
+  const { field: price, fieldState } = useController({
+    control,
+    name: `entries.${index}.price`,
+  });
   const { front } = getObjektImageUrls(collection);
   const paddedSerial = token.serial.toString().padStart(5, "0");
 
@@ -170,22 +172,33 @@ function BatchSaleRow({
         </span>
       </div>
 
-      <div className="relative w-28 shrink-0">
-        <Input
-          type="number"
-          min={0}
-          step="any"
-          placeholder={m.list_sale_price()}
-          value={price ?? ""}
-          onChange={(e) =>
-            onPriceChange(e.target.value === "" ? null : e.target.valueAsNumber)
-          }
-          className="pr-11 text-right tabular-nums [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-          aria-label={`${m.list_sale_price()} (${currency})`}
-        />
-        <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center font-mono text-xs text-muted-foreground uppercase">
-          {currency}
-        </span>
+      <div className="w-28 shrink-0">
+        <div className="relative">
+          <Input
+            type="number"
+            min={0}
+            step="any"
+            placeholder={m.list_sale_price()}
+            value={price.value ?? ""}
+            aria-invalid={fieldState.invalid}
+            onChange={(e) => {
+              const next = e.target.valueAsNumber;
+              price.onChange(
+                e.target.value === "" || Number.isNaN(next) ? null : next,
+              );
+            }}
+            className="pr-11 text-right tabular-nums [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+            aria-label={`${m.list_sale_price()} (${currency})`}
+          />
+          <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center font-mono text-xs text-muted-foreground uppercase">
+            {currency}
+          </span>
+        </div>
+        {fieldState.error && (
+          <p className="mt-1 text-xxs text-destructive">
+            {fieldState.error.message}
+          </p>
+        )}
       </div>
     </div>
   );
