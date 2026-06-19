@@ -32,12 +32,15 @@ export default function GroupedObjekt({
     ),
   );
 
+  // capture mount time once rather than reading Date.now() during render
+  const [now] = useState(() => Date.now());
+
   const collection = Objekt.fromCollectionGroup({
     collection: group.collection,
   });
   const hasNew = group.objekts.some((o) => {
     const acquiredAt = new Date(o.inventory.acquiredAt);
-    return Date.now() - acquiredAt.getTime() < 24 * 60 * 60 * 1000;
+    return now - acquiredAt.getTime() < 24 * 60 * 60 * 1000;
   });
 
   return (

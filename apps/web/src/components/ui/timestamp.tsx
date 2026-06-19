@@ -1,7 +1,7 @@
+import { useHydrated } from "@/hooks/use-hydrated";
 import type { PropsWithClassName } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { format as formatDate } from "date-fns";
-import { useEffect, useState } from "react";
 import { Skeleton } from "./skeleton";
 
 type Props = PropsWithClassName<{
@@ -11,13 +11,9 @@ type Props = PropsWithClassName<{
 }>;
 
 export function Timestamp({ date, format, className, showTime }: Props) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
+  // defer to client render to avoid hydration mismatch from timezone differences
+  const hydrated = useHydrated();
+  if (!hydrated) {
     return <Skeleton className="h-4 w-20 rounded-full" />;
   }
 

@@ -43,13 +43,12 @@ function useDatePassed(date: string) {
   useEffect(() => {
     if (hasPassed) return;
 
+    // a 0ms timeout still fires asynchronously, avoiding a synchronous setState in the effect
     const msUntilDate = new Date(date).getTime() - Date.now();
-    if (msUntilDate <= 0) {
-      setHasPassed(true);
-      return;
-    }
-
-    const timeout = setTimeout(() => setHasPassed(true), msUntilDate);
+    const timeout = setTimeout(
+      () => setHasPassed(true),
+      Math.max(0, msUntilDate),
+    );
     return () => clearTimeout(timeout);
   }, [date, hasPassed]);
 

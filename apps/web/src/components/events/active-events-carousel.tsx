@@ -7,8 +7,8 @@ import {
 } from "@/components/ui/carousel";
 import { cn } from "@/lib/utils";
 import type { EventWithEra } from "@apollo/database/web/types";
-import Autoplay from "embla-carousel-autoplay";
-import { useEffect, useRef, useState } from "react";
+import createAutoplay from "embla-carousel-autoplay";
+import { useEffect, useState } from "react";
 
 type ActiveEventsCarouselProps = {
   events: EventWithEra[];
@@ -23,8 +23,8 @@ export default function ActiveEventsCarousel({
 }: ActiveEventsCarouselProps) {
   const [api, setApi] = useState<CarouselApi>();
   const [activeIndex, setActiveIndex] = useState(0);
-  const autoplay = useRef(
-    Autoplay({
+  const [autoplay] = useState(() =>
+    createAutoplay({
       delay: 5000,
       stopOnInteraction: false,
       stopOnMouseEnter: true,
@@ -65,7 +65,7 @@ export default function ActiveEventsCarousel({
           align: "center",
           containScroll: false,
         }}
-        plugins={[autoplay.current]}
+        plugins={[autoplay]}
         setApi={setApi}
         className="w-full"
       >
