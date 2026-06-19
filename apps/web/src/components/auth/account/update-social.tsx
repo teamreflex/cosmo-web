@@ -8,6 +8,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { m } from "@/i18n/messages";
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
+import { formatError } from "@/lib/client/errors";
 import { updateSocialsSchema } from "@/lib/universal/schema/auth";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconLoader2 } from "@tabler/icons-react";
@@ -49,7 +50,7 @@ export default function UpdateSocial(props: Props) {
         void router.invalidate();
       },
       onError: (error) => {
-        toast.error(error.message);
+        toast.error(formatError(error));
       },
     });
   }

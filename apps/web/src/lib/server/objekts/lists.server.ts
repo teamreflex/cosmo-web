@@ -1,3 +1,4 @@
+import { ExpectedError } from "@/lib/universal/errors/expected";
 import { objektListEntries, objektLists } from "@apollo/database/web/schema";
 import { and, eq } from "drizzle-orm";
 import { db } from "../db";
@@ -84,6 +85,6 @@ export async function assertUserOwnsList(
   );
 
   if (count === 0) {
-    throw new Error("You do not have access to this list");
+    throw new ExpectedError("list_no_access");
   }
 }

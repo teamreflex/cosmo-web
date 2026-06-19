@@ -10,6 +10,7 @@ import {
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 import { m } from "@/i18n/messages";
+import { formatError } from "@/lib/client/errors";
 import { $setNotice } from "@/lib/functions/notice";
 import { noticeQuery } from "@/lib/queries/notice";
 import { noticeSchema } from "@/lib/universal/schema/notice";
@@ -40,7 +41,7 @@ export default function UpdateNoticeCard() {
       toast.success(m.admin_notice_saved());
       void queryClient.invalidateQueries({ queryKey: noticeQuery.queryKey });
     },
-    onError: (error) => toast.error(error.message),
+    onError: (error) => toast.error(formatError(error)),
   });
 
   function handleSubmit(data: z.infer<typeof noticeSchema>) {

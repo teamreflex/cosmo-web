@@ -10,7 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { m } from "@/i18n/messages";
-import { formatListError } from "@/lib/client/list-errors";
+import { formatError } from "@/lib/client/errors";
 import { reasonLabel } from "@/lib/client/objekt-util";
 import { $addObjektsToSaleList } from "@/lib/functions/lists";
 import {
@@ -121,7 +121,7 @@ function SaleListBody({
       onClose();
     },
     onError: (error) =>
-      toast.error(formatListError(error, { collectionId: collectionName })),
+      toast.error(formatError(error, { collectionId: collectionName })),
   });
 
   function toggle(tokenId: string) {

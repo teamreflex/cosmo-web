@@ -1,3 +1,4 @@
+import { ExpectedError } from "@/lib/universal/errors/expected";
 import { createMiddleware } from "@tanstack/react-start";
 import { getRequestHeaders } from "@tanstack/react-start/server";
 import { auth } from "./auth.server";
@@ -27,7 +28,7 @@ export const authenticatedMiddleware = createMiddleware({ type: "function" })
   .middleware([authMiddleware])
   .server(async ({ next, context }) => {
     if (!context.session) {
-      throw new Error("Please sign-in to continue.");
+      throw new ExpectedError("not_signed_in");
     }
 
     return next({
@@ -49,7 +50,7 @@ export const cosmoMiddleware = createMiddleware({ type: "function" })
     });
 
     if (!cosmo) {
-      throw new Error("Please link your COSMO account to continue.");
+      throw new ExpectedError("cosmo_not_linked");
     }
 
     return next({
@@ -67,7 +68,7 @@ export const adminMiddleware = createMiddleware({ type: "function" })
   .middleware([cosmoMiddleware])
   .server(async ({ next, context }) => {
     if (context.session.user.isAdmin !== true) {
-      throw new Error("You are not authorized to perform this action.");
+      throw new ExpectedError("not_admin");
     }
 
     return next({

@@ -5,7 +5,7 @@ import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import { getProxiedToken } from "@/lib/server/proxied-token.server";
 import { getRequestSignal } from "@/lib/server/request.server";
-import { GravityNotSupportedError } from "@/lib/universal/gravity";
+import { ExpectedError } from "@/lib/universal/errors/expected";
 import { fetchGravity, fetchPoll } from "@apollo/cosmo/server/gravity";
 import { gravities, gravityPolls } from "@apollo/database/web/schema";
 import { notFound } from "@tanstack/react-router";
@@ -46,9 +46,7 @@ export const $fetchGravityDetails = createServerFn({ method: "GET" })
 
     // we don't support combination polls yet
     if (info.pollType !== "single-poll") {
-      throw new GravityNotSupportedError(
-        "Combination poll support is not available yet.",
-      );
+      throw new ExpectedError("combination_poll_unsupported");
     }
 
     const isPast = isBefore(info.endDate, Date.now());

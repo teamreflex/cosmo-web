@@ -6,6 +6,7 @@ import {
 } from "@/components/ui/input-group";
 import { m } from "@/i18n/messages";
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
+import { formatError } from "@/lib/client/errors";
 import { updateUsernameSchema } from "@/lib/universal/schema/auth";
 import { randomHandle } from "@/lib/utils";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
@@ -49,7 +50,7 @@ export default function UpdateUsername({ username }: Props) {
         void router.invalidate();
       },
       onError: (error) => {
-        toast.error(error.message);
+        toast.error(formatError(error));
       },
     });
   }

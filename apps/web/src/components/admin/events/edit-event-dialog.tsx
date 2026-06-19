@@ -10,6 +10,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { m } from "@/i18n/messages";
+import { formatError } from "@/lib/client/errors";
 import { $getEventImageUploadUrl, $updateEvent } from "@/lib/functions/events";
 import { adminEventsQuery } from "@/lib/queries/events";
 import type { CreateEventInput } from "@/lib/universal/schema/events";
@@ -43,7 +44,7 @@ export default function EditEventDialog({ event }: Props) {
       selectedImageRef.current = null;
     },
     onError: (error) => {
-      toast.error(error.message);
+      toast.error(formatError(error));
     },
   });
 

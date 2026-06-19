@@ -10,6 +10,7 @@ import {
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { m } from "@/i18n/messages";
+import { formatError } from "@/lib/client/errors";
 import { $setCosmoKey } from "@/lib/functions/cache";
 import { cosmoKeyStatusQuery } from "@/lib/queries/admin";
 import { cosmoKeySchema } from "@/lib/universal/schema/cosmo-key";
@@ -40,7 +41,7 @@ export default function UpdateCosmoKeyCard() {
         queryKey: cosmoKeyStatusQuery.queryKey,
       });
     },
-    onError: (error) => toast.error(error.message),
+    onError: (error) => toast.error(formatError(error)),
   });
 
   function handleSubmit(data: FormValues) {

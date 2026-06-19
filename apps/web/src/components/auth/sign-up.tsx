@@ -1,5 +1,6 @@
 import { m } from "@/i18n/messages";
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
+import { formatError } from "@/lib/client/errors";
 import { signUpSchema } from "@/lib/universal/schema/auth";
 import { track } from "@/lib/utils";
 import { randomHandle } from "@/lib/utils";
@@ -51,7 +52,7 @@ export default function SignUp({ onCancel }: Props) {
         track("sign-up");
       },
       onError: (error) => {
-        toast.error(error.message);
+        toast.error(formatError(error));
       },
     });
   }

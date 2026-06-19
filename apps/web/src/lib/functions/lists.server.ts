@@ -1,5 +1,6 @@
 import type { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
+import { ExpectedError } from "@/lib/universal/errors/expected";
 import { objekts } from "@apollo/database/indexer/schema";
 import {
   notifications,
@@ -41,7 +42,7 @@ export async function assertOwnsTokensMulti(
   const collectionByTokenId = new Map(owned.map((o) => [o.id, o.collectionId]));
   for (const token of tokens) {
     if (collectionByTokenId.get(token.tokenId) !== token.collectionId) {
-      throw new Error("not_owned");
+      throw new ExpectedError("not_owned");
     }
   }
 }

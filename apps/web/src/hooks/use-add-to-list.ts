@@ -1,5 +1,5 @@
 import { m } from "@/i18n/messages";
-import { formatListError } from "@/lib/client/list-errors";
+import { formatError } from "@/lib/client/errors";
 import { objektListQueryFilter } from "@/lib/queries/objekt-queries";
 import type { ObjektList } from "@apollo/database/web/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -44,9 +44,7 @@ export function useAddToList(
       options.onDone();
     },
     onError: (error) => {
-      toast.error(
-        formatListError(error, { collectionId: options.collectionName }),
-      );
+      toast.error(formatError(error, { collectionId: options.collectionName }));
     },
   });
 }
@@ -113,7 +111,7 @@ export function useBatchAddToList(
       options.onDone?.();
     },
     onError: (error) => {
-      toast.error(formatListError(error));
+      toast.error(formatError(error));
     },
   });
 }

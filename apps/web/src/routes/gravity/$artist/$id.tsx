@@ -3,10 +3,10 @@ import DynamicLiveChart from "@/components/gravity/dynamic-live-chart";
 import GravitySkeleton from "@/components/gravity/gravity-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
+import { formatGravityError } from "@/lib/client/errors/gravity";
 import { $fetchGravityDetails } from "@/lib/functions/gravity";
 import { defineHead } from "@/lib/meta";
 import { gravityPollDetailsQuery } from "@/lib/queries/gravity";
-import { GravityNotSupportedError } from "@/lib/universal/gravity";
 import { IconAlertTriangle, IconHeartBroken } from "@tabler/icons-react";
 import { createFileRoute } from "@tanstack/react-router";
 import type { ErrorComponentProps } from "@tanstack/react-router";
@@ -113,8 +113,9 @@ function PendingComponent() {
 }
 
 function ErrorComponent({ error }: ErrorComponentProps) {
-  if (error.name === GravityNotSupportedError.name) {
-    return <Error message={m.gravity_combination_not_supported()} />;
+  const gravityMessage = formatGravityError(error);
+  if (gravityMessage !== null) {
+    return <Error message={gravityMessage} />;
   }
   return <Error message={m.gravity_error_loading_details()} />;
 }

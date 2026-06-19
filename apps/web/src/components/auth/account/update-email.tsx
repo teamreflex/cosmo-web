@@ -6,6 +6,7 @@ import {
 } from "@/components/ui/input-group";
 import { m } from "@/i18n/messages";
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
+import { formatError } from "@/lib/client/errors";
 import { updateEmailSchema } from "@/lib/universal/schema/auth";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconDeviceFloppy, IconLoader2 } from "@tabler/icons-react";
@@ -47,7 +48,7 @@ export default function UpdateEmail({ email }: Props) {
         void router.invalidate();
       },
       onError: (error) => {
-        toast.error(error.message);
+        toast.error(formatError(error));
       },
     });
   }

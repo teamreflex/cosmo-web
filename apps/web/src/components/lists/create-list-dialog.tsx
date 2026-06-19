@@ -1,5 +1,6 @@
 import { useUserState } from "@/hooks/use-user-state";
 import { m } from "@/i18n/messages";
+import { formatError } from "@/lib/client/errors";
 import { $createLiveList, $createObjektList } from "@/lib/functions/lists";
 import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
 import { track } from "@/lib/utils";
@@ -176,7 +177,7 @@ function RegularForm({ onCreated }: FormProps) {
   const mutation = useMutation({
     mutationFn: $createObjektList,
     onError: (error) => {
-      toast.error(error.message);
+      toast.error(formatError(error));
     },
   });
   const form = useForm({
@@ -211,7 +212,7 @@ function SaleForm({ onCreated }: FormProps) {
   const mutation = useMutation({
     mutationFn: $createObjektList,
     onError: (error) => {
-      toast.error(error.message);
+      toast.error(formatError(error));
     },
   });
   const form = useForm({
@@ -252,7 +253,7 @@ function HaveForm({ allLists, onCreated }: LiveFormProps) {
   const mutation = useMutation({
     mutationFn: $createLiveList,
     onError: (error) => {
-      toast.error(error.message);
+      toast.error(formatError(error));
     },
   });
   const form = useForm({
@@ -299,7 +300,7 @@ function WantForm({ allLists, onCreated }: LiveFormProps) {
   const mutation = useMutation({
     mutationFn: $createLiveList,
     onError: (error) => {
-      toast.error(error.message);
+      toast.error(formatError(error));
     },
   });
   const form = useForm({

@@ -9,6 +9,7 @@ import {
   getVerification,
   storeVerification,
 } from "@/lib/server/verification-codes.server";
+import { ExpectedError } from "@/lib/universal/errors/expected";
 import { settingsSchema } from "@/lib/universal/schema/auth";
 import {
   generateVerificationCodeSchema,
@@ -61,12 +62,12 @@ export const $verifyCosmoBio = createServerFn({ method: "POST" })
     // get the stored verification data
     const stored = await getVerification(context.session.user.id);
     if (!stored) {
-      throw new Error("EXPIRED");
+      throw new ExpectedError("EXPIRED");
     }
 
     // validate the code matches what was stored
     if (stored.code !== data.code) {
-      throw new Error("INVALID");
+      throw new ExpectedError("INVALID");
     }
 
     // fetch the user's profile from cosmo
@@ -83,7 +84,7 @@ export const $verifyCosmoBio = createServerFn({ method: "POST" })
     if (
       !profile.statusMessage?.toLowerCase().includes(data.code.toLowerCase())
     ) {
-      throw new Error("NOT_FOUND");
+      throw new ExpectedError("NOT_FOUND");
     }
 
     // link the account

@@ -1,5 +1,6 @@
 import { useUserState } from "@/hooks/use-user-state";
 import { m } from "@/i18n/messages";
+import { formatError } from "@/lib/client/errors";
 import { $updateLiveList, $updateObjektList } from "@/lib/functions/lists";
 import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
 import type { ObjektList } from "@apollo/database/web/types";
@@ -122,7 +123,7 @@ function RegularForm({ objektList, onSubmit }: FormProps) {
   const mutation = useMutation({
     mutationFn: useServerFn($updateObjektList),
     onError: (error) => {
-      toast.error(error.message);
+      toast.error(formatError(error));
     },
   });
   const form = useForm({
@@ -158,7 +159,7 @@ function SaleForm({ objektList, onSubmit }: FormProps) {
   const mutation = useMutation({
     mutationFn: useServerFn($updateObjektList),
     onError: (error) => {
-      toast.error(error.message);
+      toast.error(formatError(error));
     },
   });
   const form = useForm({
@@ -200,7 +201,7 @@ function HaveForm({ objektList, allLists, onSubmit }: LiveFormProps) {
   const mutation = useMutation({
     mutationFn: useServerFn($updateLiveList),
     onError: (error) => {
-      toast.error(error.message);
+      toast.error(formatError(error));
     },
   });
   const form = useForm({
@@ -251,7 +252,7 @@ function WantForm({ objektList, allLists, onSubmit }: LiveFormProps) {
   const mutation = useMutation({
     mutationFn: useServerFn($updateLiveList),
     onError: (error) => {
-      toast.error(error.message);
+      toast.error(formatError(error));
     },
   });
   const currentHave = allLists.find(

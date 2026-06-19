@@ -10,6 +10,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { m } from "@/i18n/messages";
+import { formatError } from "@/lib/client/errors";
 import { $createEra, $getEraImageUploadUrl } from "@/lib/functions/events";
 import { adminErasQuery } from "@/lib/queries/events";
 import type { SpotifyAlbum } from "@/lib/universal/events";
@@ -47,7 +48,7 @@ export default function CreateEra() {
       selectedImageRef.current = null;
     },
     onError: (error) => {
-      toast.error(error.message);
+      toast.error(formatError(error));
     },
   });
 

@@ -6,6 +6,7 @@ import {
 } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { m } from "@/i18n/messages";
+import { formatError } from "@/lib/client/errors";
 import { $updateCollectionMetadata } from "@/lib/functions/metadata";
 import { objektMetadataQuery } from "@/lib/queries/objekt-queries";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
@@ -45,7 +46,7 @@ export default function EditMetadata(props: Props) {
       setOpen(false);
     },
     onError: (error) => {
-      toast.error(error.message);
+      toast.error(formatError(error));
     },
   });
 

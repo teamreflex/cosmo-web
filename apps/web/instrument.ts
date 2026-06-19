@@ -1,4 +1,5 @@
 import * as Sentry from "@sentry/bun";
+import { isExpectedError } from "./src/lib/universal/errors/expected";
 
 /**
  * Skip Start notFound() "errors".
@@ -28,6 +29,7 @@ if (process.env.VITE_SENTRY_DSN !== undefined) {
     tracesSampleRate: 0,
     beforeSend(event, hint) {
       if (
+        isExpectedError(hint.originalException) ||
         isNotFoundSignal(hint.originalException) ||
         isRedirectSignal(hint.originalException)
       ) {

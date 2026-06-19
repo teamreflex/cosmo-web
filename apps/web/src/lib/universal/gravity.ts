@@ -7,10 +7,3 @@ export interface GravityVote extends Omit<
   amount: number;
   username: string | undefined;
 }
-
-export class GravityNotSupportedError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "GravityNotSupportedError";
-  }
-}

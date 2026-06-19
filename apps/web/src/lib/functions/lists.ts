@@ -9,6 +9,7 @@ import {
 import { fetchLatestFxRate } from "@/lib/server/objekts/fx.server";
 import { assertUserOwnsList } from "@/lib/server/objekts/lists.server";
 import type { PublicUser } from "@/lib/universal/auth";
+import { ExpectedError } from "@/lib/universal/errors/expected";
 import type {
   PartnerListMatch,
   PartnerMatchRow,
@@ -140,7 +141,7 @@ export const $createObjektList = createServerFn({ method: "POST" })
       },
     });
     if (existing !== undefined) {
-      throw new Error("You already have a list with this name");
+      throw new ExpectedError("list_name_taken");
     }
 
     const [result] = await db
@@ -183,7 +184,7 @@ export const $createLiveList = createServerFn({ method: "POST" })
       data: { userId, slug },
     });
     if (existing !== undefined) {
-      throw new Error("You already have a list with this name");
+      throw new ExpectedError("list_name_taken");
     }
 
     if (data.pairListId !== null) {
@@ -193,7 +194,7 @@ export const $createLiveList = createServerFn({ method: "POST" })
         columns: { id: true, linkedWantListId: true },
       });
       if (!target) {
-        throw new Error(`Not a ${targetType} list`);
+        throw new ExpectedError(`not_${targetType}_list`);
       }
 
       if (data.type === "have") {
@@ -202,14 +203,10 @@ export const $createLiveList = createServerFn({ method: "POST" })
           columns: { id: true },
         });
         if (alreadyLinked) {
-          throw new Error(
-            "That want list is already linked to another have list",
-          );
+          throw new ExpectedError("want_list_already_linked");
         }
       } else if (target.linkedWantListId !== null) {
-        throw new Error(
-          "That have list is already linked to another want list",
-        );
+        throw new ExpectedError("have_list_already_linked");
       }
     }
 
@@ -270,10 +267,10 @@ export const $updateObjektList = createServerFn({ method: "POST" })
       columns: { type: true },
     });
     if (!existingRow) {
-      throw new Error("List not found");
+      throw new ExpectedError("list_not_found");
     }
     if (existingRow.type !== data.type) {
-      throw new Error("Cannot change list type after creation");
+      throw new ExpectedError("list_type_locked");
     }
 
     const slug = createSlug(data.name);
@@ -286,7 +283,7 @@ export const $updateObjektList = createServerFn({ method: "POST" })
       },
     });
     if (conflict !== undefined) {
-      throw new Error("You already have a list with this name");
+      throw new ExpectedError("list_name_taken");
     }
 
     const [result] = await db
@@ -344,10 +341,10 @@ export const $updateLiveList = createServerFn({ method: "POST" })
       columns: { type: true },
     });
     if (!existingRow) {
-      throw new Error("List not found");
+      throw new ExpectedError("list_not_found");
     }
     if (existingRow.type !== data.type) {
-      throw new Error("Cannot change list type after creation");
+      throw new ExpectedError("list_type_locked");
     }
 
     const slug = createSlug(data.name);
@@ -356,7 +353,7 @@ export const $updateLiveList = createServerFn({ method: "POST" })
       where: { slug, userId, id: { ne: data.id } },
     });
     if (conflict !== undefined) {
-      throw new Error("You already have a list with this name");
+      throw new ExpectedError("list_name_taken");
     }
 
     if (data.pairListId !== null) {
@@ -366,7 +363,7 @@ export const $updateLiveList = createServerFn({ method: "POST" })
         columns: { id: true, linkedWantListId: true },
       });
       if (!target) {
-        throw new Error(`Not a ${targetType} list`);
+        throw new ExpectedError(`not_${targetType}_list`);
       }
 
       if (data.type === "have") {
@@ -380,17 +377,13 @@ export const $updateLiveList = createServerFn({ method: "POST" })
           columns: { id: true },
         });
         if (alreadyLinked) {
-          throw new Error(
-            "That want list is already linked to another have list",
-          );
+          throw new ExpectedError("want_list_already_linked");
         }
       } else if (
         target.linkedWantListId !== null &&
         target.linkedWantListId !== data.id
       ) {
-        throw new Error(
-          "That have list is already linked to another want list",
-        );
+        throw new ExpectedError("have_list_already_linked");
       }
     }
 
@@ -522,10 +515,10 @@ export const $addObjektsToSaleList = createServerFn({ method: "POST" })
       });
 
       if (!list) {
-        throw new Error("You do not have access to this list");
+        throw new ExpectedError("list_no_access");
       }
       if (list.type !== "sale") {
-        throw new Error("not_sale_list");
+        throw new ExpectedError("not_sale_list");
       }
 
       const inserted = await tx
@@ -578,10 +571,10 @@ export const $addObjektsToHaveList = createServerFn({ method: "POST" })
       });
 
       if (!list) {
-        throw new Error("You do not have access to this list");
+        throw new ExpectedError("list_no_access");
       }
       if (list.type !== "have") {
-        throw new Error("not_have_list");
+        throw new ExpectedError("not_have_list");
       }
 
       const inserted = await tx
@@ -652,10 +645,10 @@ export const $addObjektToWantList = createServerFn({ method: "POST" })
       });
 
       if (!parentList) {
-        throw new Error("You do not have access to this list");
+        throw new ExpectedError("list_no_access");
       }
       if (parentList.type !== "want") {
-        throw new Error("not_want_list");
+        throw new ExpectedError("not_want_list");
       }
 
       const isTradeActive = parentList.linkingHaveList !== null;
@@ -714,12 +707,12 @@ export const $updateObjektListEntry = createServerFn({ method: "POST" })
       columns: { tokenId: true },
     });
     if (!entry) {
-      throw new Error("entry_not_found");
+      throw new ExpectedError("entry_not_found");
     }
 
     const isTokenKeyed = entry.tokenId !== null;
     if (isTokenKeyed !== (data.kind === "token")) {
-      throw new Error("entry_kind_mismatch");
+      throw new ExpectedError("entry_kind_mismatch");
     }
 
     await db
@@ -784,7 +777,7 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
       },
     });
     if (!myList || (myList.type !== "have" && myList.type !== "want")) {
-      throw new Error("not_live_list");
+      throw new ExpectedError("not_live_list");
     }
 
     // The opposite-side list paired to the anchor via the trade link.
@@ -795,7 +788,7 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
         ? myList.linkedWantListId
         : (myList.linkingHaveList?.id ?? null);
     if (myLinkedListId === null) {
-      throw new Error("anchor_not_trade_active");
+      throw new ExpectedError("anchor_not_trade_active");
     }
 
     // CTEs materialise the trade-active partner list sets; the body swaps
@@ -1170,7 +1163,7 @@ export const $generateDiscordList = createServerFn({ method: "POST" })
     const want = lists.find((l) => l.id === data.wantId);
 
     if (!have || !want) {
-      throw new Error("discord_lists_required");
+      throw new ExpectedError("discord_lists_required");
     }
 
     // fetch collections from the indexer
@@ -1180,7 +1173,7 @@ export const $generateDiscordList = createServerFn({ method: "POST" })
     ]);
 
     if (unique.size === 0) {
-      throw new Error("discord_list_empty");
+      throw new ExpectedError("discord_list_empty");
     }
 
     const collections = await indexer.query.collections.findMany({

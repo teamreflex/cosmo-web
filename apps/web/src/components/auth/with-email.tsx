@@ -1,5 +1,6 @@
 import { m } from "@/i18n/messages";
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
+import { formatError } from "@/lib/client/errors";
 import { currentAccountQuery } from "@/lib/queries/core";
 import { signInSchema } from "@/lib/universal/schema/auth";
 import { track } from "@/lib/utils";
@@ -58,7 +59,7 @@ export default function WithEmail(props: Props) {
         props.onSuccess();
       },
       onError: (error) => {
-        toast.error(error.message);
+        toast.error(formatError(error));
       },
     });
   }

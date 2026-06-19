@@ -4,6 +4,7 @@ import { createRouter } from "@tanstack/react-router";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
 import type { ReactNode } from "react";
 import { env } from "./lib/env/client";
+import { isExpectedError } from "./lib/universal/errors/expected";
 import { MediaQueryProvider } from "./providers/media-query-provider";
 import { routeTree } from "./routeTree.gen";
 
@@ -33,6 +34,12 @@ export function getRouter() {
       sendDefaultPii: false,
       debug: false,
       tracesSampleRate: 0,
+      beforeSend(event, hint) {
+        if (isExpectedError(hint.originalException)) {
+          return null;
+        }
+        return event;
+      },
     });
   }
 

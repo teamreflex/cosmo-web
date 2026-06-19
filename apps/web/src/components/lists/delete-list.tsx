@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useProfileContext } from "@/hooks/use-profile";
 import { m } from "@/i18n/messages";
+import { formatError } from "@/lib/client/errors";
 import { $deleteObjektList } from "@/lib/functions/lists";
 import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
 import type { ObjektList } from "@apollo/database/web/types";
@@ -63,7 +64,7 @@ export default function DeleteList({ objektList }: Props) {
       }
     },
     onError: (error) => {
-      toast.error(error.message);
+      toast.error(formatError(error));
 
       queryClient.setQueryData(currentAccountQuery.queryKey, (old) =>
         old && !old.objektLists.some((list) => list.id === objektList.id)
