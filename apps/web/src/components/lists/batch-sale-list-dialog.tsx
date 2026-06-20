@@ -187,7 +187,7 @@ function BatchSaleRow({
                 e.target.value === "" || Number.isNaN(next) ? null : next,
               );
             }}
-            className="pr-11 text-right tabular-nums [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+            className="[appearance:textfield] pr-11 text-right tabular-nums [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             aria-label={`${m.list_sale_price()} (${currency})`}
           />
           <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center font-mono text-xs text-muted-foreground uppercase">

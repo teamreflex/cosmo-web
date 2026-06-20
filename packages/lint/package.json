@@ -4,6 +4,7 @@
   "type": "module",
   "private": true,
   "exports": {
-    "./oxlint.config": "./oxlint.config.ts"
+    "./oxlint.config": "./oxlint.config.ts",
+    "./oxfmt.config": "./oxfmt.config.ts"
   }
 }

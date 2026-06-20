@@ -10,13 +10,12 @@
   "scripts": {
     "lint": "bun --bun oxlint --type-aware --type-check",
     "lint:fix": "bun --bun oxlint --type-aware --type-check --fix",
-    "typecheck": "tsgo --pretty --noEmit",
+    "typecheck": "tsc --pretty --noEmit",
     "format": "oxfmt ."
   },
   "devDependencies": {
     "@apollo/lint": "workspace:*",
     "@apollo/typescript": "workspace:*",
-    "@typescript/native-preview": "catalog:",
     "turbo": "catalog:",
     "typescript": "catalog:"
   }

@@ -6,15 +6,12 @@ type Props = PropsWithChildren<{
   to: string;
 }>;
 
-/**
- * using useSyncExternalStore results in missing DOM element errors
- */
 export default function Portal({ children, to }: Props) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // oxlint-disable-next-line react/react-compiler
     setMounted(true);
-    return () => setMounted(false);
   }, []);
 
   return mounted ? createPortal(children, document.querySelector(to)!) : null;

@@ -32,6 +32,7 @@ function getWeek() {
 export default function ComoCalendar({ artists, transfers }: Props) {
   // run date functions in client
   const now = new Date();
+  // oxlint-disable-next-line react/react-compiler
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const days = getDays(now);
   const startOffset =

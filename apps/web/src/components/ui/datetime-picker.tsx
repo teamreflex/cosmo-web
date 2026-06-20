@@ -102,7 +102,7 @@ export function DateTimePicker({
                 variant="ghost"
                 size="icon-sm"
                 disabled={disabled}
-                className="absolute right-1 top-1/2 -translate-y-1/2"
+                className="absolute top-1/2 right-1 -translate-y-1/2"
                 aria-label={m.aria_open_calendar()}
               >
                 <IconCalendar className="size-4" />
@@ -128,7 +128,7 @@ export function DateTimePicker({
           disabled={disabled}
           className="pr-9 [&::-webkit-calendar-picker-indicator]:hidden"
         />
-        <IconClock className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2" />
+        <IconClock className="pointer-events-none absolute top-1/2 right-2.5 size-4 -translate-y-1/2" />
       </div>
 
       <Button

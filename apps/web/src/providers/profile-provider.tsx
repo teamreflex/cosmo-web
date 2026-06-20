@@ -1,12 +1,8 @@
-import {
-  ProfileContext,
-  type ProfileState,
-  type ProfileStore,
-} from "@/hooks/use-profile";
+import { ProfileContext, type ProfileState } from "@/hooks/use-profile";
 import type { PublicAccount } from "@/lib/universal/cosmo-accounts";
 import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
 import type { ObjektList } from "@apollo/database/web/types";
-import { useRef } from "react";
+import { useState } from "react";
 import type { PropsWithChildren } from "react";
 import { createStore } from "zustand";
 
@@ -66,13 +62,8 @@ const createProfileStore = (initProps?: Partial<ProfileProps>) => {
 };
 
 export function ProfileProvider({ children, ...props }: ProfileProviderProps) {
-  const storeRef = useRef<ProfileStore>(null);
-  if (!storeRef.current) {
-    storeRef.current = createProfileStore(props);
-  }
+  const [store] = useState(() => createProfileStore(props));
   return (
-    <ProfileContext.Provider value={storeRef.current}>
-      {children}
-    </ProfileContext.Provider>
+    <ProfileContext.Provider value={store}>{children}</ProfileContext.Provider>
   );
 }

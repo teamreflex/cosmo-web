@@ -1,7 +1,7 @@
 import { defineConfig } from "oxlint";
 
 export default defineConfig({
-  plugins: ["typescript", "react", "import", "unicorn"],
+  plugins: ["typescript", "import", "unicorn"],
   env: {
     builtin_globals: true,
   },

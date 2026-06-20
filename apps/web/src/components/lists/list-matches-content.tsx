@@ -42,7 +42,7 @@ export default function ListMatchesContent(props: Props) {
       <Portal to="#list-matches-count">
         {m.list_matches_count_label({ count: data.partners.length })}
       </Portal>
-      <ul className="flex flex-col divide-y divide-border rounded-md border overflow-clip">
+      <ul className="flex flex-col divide-y divide-border overflow-clip rounded-md border">
         {data.partners.map((partner, index) => (
           <PartnerRow
             key={partner.userId}
@@ -95,7 +95,7 @@ function PartnerRow({
         aria-expanded={expanded}
         className="flex w-full items-center gap-3 px-3 py-3 text-left transition-colors hover:bg-muted/60"
       >
-        <span className="w-6 shrink-0 font-mono text-xs tabular-nums text-muted-foreground">
+        <span className="w-6 shrink-0 font-mono text-xs text-muted-foreground tabular-nums">
           {String(rank).padStart(2, "0")}
         </span>
         <div className="flex min-w-0 flex-1 flex-col gap-x-3 gap-y-2 sm:flex-row sm:items-center">
@@ -120,7 +120,7 @@ function PartnerRow({
       </button>
 
       {expanded && (
-        <div className="flex flex-col gap-4 border-t border-border px-3 pb-3 pt-3">
+        <div className="flex flex-col gap-4 border-t border-border px-3 pt-3 pb-3">
           {partner.matches.map((match) => (
             <div key={match.listId} className="flex flex-col gap-2">
               <div className="flex items-center justify-between text-xs">
@@ -210,7 +210,7 @@ function MatchChip({
       )}
     >
       <span className="font-semibold">{value}</span>
-      <span className="text-[10px] uppercase tracking-wider">{label}</span>
+      <span className="text-[10px] tracking-wider uppercase">{label}</span>
     </span>
   );
 }
@@ -238,13 +238,13 @@ function DirectionColumn({
     <div className={cn("flex flex-col gap-1.5 border-l-2 pl-3", c.border)}>
       <div
         className={cn(
-          "flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider",
+          "flex items-center gap-1.5 text-[10px] font-semibold tracking-wider uppercase",
           c.text,
         )}
       >
         <span>{arrow}</span>
         <span className="flex-1 truncate">{title}</span>
-        <span className="tabular-nums text-muted-foreground">
+        <span className="text-muted-foreground tabular-nums">
           {slugs.length}
         </span>
       </div>
@@ -299,13 +299,13 @@ function MiniObjektTile({ collection }: { collection: Objekt.Collection }) {
         className="relative flex flex-1 flex-col items-start justify-between px-1.5 py-1 dark:[&>*]:[text-shadow:_0_1px_2px_rgba(0,0,0,0.9)]"
         style={{ background: tileBackground }}
       >
-        <div className="font-mono text-[8px] font-bold uppercase tracking-widest text-foreground">
+        <div className="font-mono text-[8px] font-bold tracking-widest text-foreground uppercase">
           {collection.season}
         </div>
-        <div className="font-cosmo text-[10px] font-black uppercase leading-none text-foreground">
+        <div className="font-cosmo text-[10px] leading-none font-black text-foreground uppercase">
           {collection.member}
         </div>
-        <div className="font-mono text-xxs tabular-nums text-foreground">
+        <div className="font-mono text-xxs text-foreground tabular-nums">
           {collection.collectionNo}
         </div>
       </div>

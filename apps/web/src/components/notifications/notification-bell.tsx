@@ -41,14 +41,14 @@ export default function NotificationBell() {
         >
           <IconBell className="size-6" />
           {count > 0 && (
-            <div className="flex items-center justify-center absolute -right-1 -top-1 h-4 min-w-4 rounded-full px-1 text-xxs bg-red-600/25 text-red-600">
+            <div className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600/25 px-1 text-xxs text-red-600">
               {count > 99 ? "99+" : count}
             </div>
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-80 p-0 gap-0">
-        <header className="flex items-center justify-between border-b h-12 px-2">
+      <PopoverContent align="end" className="w-80 gap-0 p-0">
+        <header className="flex h-12 items-center justify-between border-b px-2">
           <h4 className="text-sm font-semibold">
             {m.notification_bell_label()}
           </h4>

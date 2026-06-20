@@ -105,8 +105,8 @@ export default function FlippableObjekt({ children, collection }: Props) {
             />
           </div>
         ) : (
-          <div className="flex items-center justify-center w-full h-full rotate-y-180 rounded-photocard backface-hidden bg-accent">
-            <IconPhotoX className="w-1/3 h-auto aspect-square opacity-60" />
+          <div className="flex h-full w-full rotate-y-180 items-center justify-center rounded-photocard bg-accent backface-hidden">
+            <IconPhotoX className="aspect-square h-auto w-1/3 opacity-60" />
           </div>
         )}
       </div>

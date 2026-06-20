@@ -43,7 +43,7 @@ export function AttrCell({ label, value, mono, className }: CellProps) {
   return (
     <div
       className={cn(
-        "flex flex-col justify-center border-r border-b border-border px-4 h-14 last:border-r-0 [&:nth-child(3n)]:border-r-0",
+        "flex h-14 flex-col justify-center border-r border-b border-border px-4 last:border-r-0 [&:nth-child(3n)]:border-r-0",
         className,
       )}
     >
@@ -66,7 +66,7 @@ export function StatCell({ label, value, mono, className }: CellProps) {
   return (
     <div
       className={cn(
-        "flex-1 flex flex-col justify-center border-r border-border px-4 h-14 last:border-r-0",
+        "flex h-14 flex-1 flex-col justify-center border-r border-border px-4 last:border-r-0",
         className,
       )}
     >

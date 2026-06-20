@@ -1,5 +1,5 @@
 import { MediaQueryContext } from "@/hooks/use-media-query";
-import { useLayoutEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import type { ReactNode } from "react";
 
 type ProviderProps = {
@@ -8,18 +8,19 @@ type ProviderProps = {
 
 const MOBILE_BREAKPOINT = 768; // tailwind's sm breakpoint
 
-export function MediaQueryProvider({ children }: ProviderProps) {
-  const [isMobile, setIsMobile] = useState<boolean>();
+function subscribe(callback: () => void) {
+  const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
+  mql.addEventListener("change", callback);
+  return () => mql.removeEventListener("change", callback);
+}
 
-  useLayoutEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
-    const onChange = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
-    };
-    mql.addEventListener("change", onChange);
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
-    return () => mql.removeEventListener("change", onChange);
-  }, []);
+export function MediaQueryProvider({ children }: ProviderProps) {
+  // subscribe to the breakpoint as an external store; server snapshot defaults to desktop
+  const isMobile = useSyncExternalStore(
+    subscribe,
+    () => window.innerWidth < MOBILE_BREAKPOINT,
+    () => false,
+  );
 
   return (
     <MediaQueryContext value={{ isDesktop: !isMobile }}>

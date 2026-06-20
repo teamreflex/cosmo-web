@@ -3,11 +3,11 @@ import { defineConfig } from "oxlint";
 
 export default defineConfig({
   extends: [baseConfig],
+  plugins: ["typescript", "react", "import", "unicorn"],
   jsPlugins: [
     "eslint-plugin-drizzle",
     "@tanstack/eslint-plugin-query",
     "@tanstack/eslint-plugin-router",
-    "eslint-plugin-react-refresh",
   ],
   ignorePatterns: [
     "node_modules",
@@ -33,11 +33,11 @@ export default defineConfig({
         drizzleObjectName: ["db", "indexer"],
       },
     ],
-    "react-refresh/only-export-components": [
+    "react/only-export-components": [
       "error",
       {
         // allows tanstack router/start routes through
-        extraHOCs: [
+        customHOCs: [
           "createFileRoute",
           "createLazyFileRoute",
           "createRootRoute",
@@ -48,6 +48,7 @@ export default defineConfig({
         ],
       },
     ],
+    "react/react-compiler": "error",
     "@tanstack/query/exhaustive-deps": "error",
   },
 });

@@ -126,7 +126,7 @@ function SerialPickerBody({
 
   return (
     <>
-      <ScrollArea className="max-h-72 -mx-6">
+      <ScrollArea className="-mx-6 max-h-72">
         <ul className="flex flex-col">
           {owned.map((o) => (
             <li key={o.tokenId}>
