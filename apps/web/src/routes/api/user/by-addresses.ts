@@ -1,7 +1,6 @@
-import { env } from "@/lib/env/server";
+import { verifyRequestApiKey } from "@/lib/server/api-key.server";
 import { db } from "@/lib/server/db";
 import { createFileRoute } from "@tanstack/react-router";
-import { timingSafeEqual } from "node:crypto";
 import * as z from "zod";
 
 const schema = z.object({
@@ -18,12 +17,7 @@ export const Route = createFileRoute("/api/user/by-addresses")({
        * Endpoint for getting a list of usernames by a list of addresses.
        */
       POST: async ({ request }) => {
-        const authKey = request.headers.get("Authorization") ?? "";
-        const expected = env.AUTH_KEY;
-        if (
-          authKey.length !== expected.length ||
-          !timingSafeEqual(Buffer.from(authKey), Buffer.from(expected))
-        ) {
+        if (!(await verifyRequestApiKey(request))) {
           return Response.json(
             { error: "invalid authorization" },
             { status: 401 },

@@ -43,7 +43,7 @@ export const auth = betterAuth({
         return /^[a-zA-Z0-9]+$/.test(str);
       },
     }),
-    apiKey({ enableSessionForAPIKeys: false }),
+    apiKey({ enableSessionForAPIKeys: false, rateLimit: { enabled: false } }),
     tanstackStartCookies(),
   ],
 
