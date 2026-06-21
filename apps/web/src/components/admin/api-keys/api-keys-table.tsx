@@ -16,10 +16,7 @@ import DeleteApiKey from "./delete-api-key";
 import EditApiKeyDialog from "./edit-api-key-dialog";
 
 function keyPreview(key: AdminApiKey): string {
-  if (!key.start) {
-    return "—";
-  }
-  return `${key.prefix ?? ""}${key.start}…`;
+  return key.start ? `${key.start}…` : "—";
 }
 
 export default function ApiKeysTable() {

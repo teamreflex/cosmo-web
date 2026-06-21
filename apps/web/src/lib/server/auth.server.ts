@@ -43,7 +43,14 @@ export const auth = betterAuth({
         return /^[a-zA-Z0-9]+$/.test(str);
       },
     }),
-    apiKey({ enableSessionForAPIKeys: false, rateLimit: { enabled: false } }),
+    apiKey({
+      enableSessionForAPIKeys: false,
+      rateLimit: { enabled: false },
+      // prefix is concatenated raw, so include the separator
+      defaultPrefix: "apollo_",
+      // `start` (shown in the admin table) keeps the prefix + a few key chars
+      startingCharactersConfig: { charactersLength: 13 },
+    }),
     tanstackStartCookies(),
   ],
 
