@@ -31,6 +31,7 @@
     "@apollo/util": "workspace:*",
     "@apollo/util-server": "workspace:*",
     "@aws-sdk/client-ses": "^3.1037.0",
+    "@better-auth/api-key": "1.6.11",
     "@better-auth/drizzle-adapter": "1.6.11",
     "@fontsource-variable/dm-sans": "^5.2.8",
     "@fontsource-variable/jetbrains-mono": "^5.2.8",

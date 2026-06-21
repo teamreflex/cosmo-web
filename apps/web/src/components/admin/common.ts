@@ -5,6 +5,7 @@ import {
   IconDatabase,
   IconDisc,
   IconHome,
+  IconKey,
   IconLayoutSidebarRight,
 } from "@tabler/icons-react";
 
@@ -34,6 +35,11 @@ export function getAdminItems() {
       title: m.admin_cache_title(),
       url: "/admin/cache",
       icon: IconDatabase,
+    },
+    {
+      title: m.admin_api_keys_title(),
+      url: "/admin/api-keys",
+      icon: IconKey,
     },
     {
       title: m.admin_notice_title(),
