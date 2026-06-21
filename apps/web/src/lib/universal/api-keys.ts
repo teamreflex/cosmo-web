@@ -2,7 +2,6 @@ export type AdminApiKey = {
   id: string;
   name: string | null;
   start: string | null;
-  prefix: string | null;
   enabled: boolean;
   requestCount: number;
   lastRequest: Date | null;
@@ -16,6 +15,6 @@ export type AdminApiKey = {
 
 export type UserSearchResult = {
   id: string;
+  cosmoUsername: string;
   username: string | null;
-  image: string | null;
 };

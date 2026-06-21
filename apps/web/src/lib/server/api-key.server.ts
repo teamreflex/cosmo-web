@@ -5,7 +5,7 @@ import { auth } from "./auth.server";
  */
 export async function verifyRequestApiKey(request: Request): Promise<boolean> {
   const header =
-    request.headers.get("Authorization") ?? request.headers.get("x-api-key");
+    request.headers.get("Authorization") || request.headers.get("x-api-key");
   const key = header?.replace(/^Bearer\s+/i, "").trim();
   if (!key) {
     return false;

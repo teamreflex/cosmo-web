@@ -25,10 +25,11 @@ export default function UserCombobox({ value, onChange }: Props) {
   const [query, setQuery] = useState("");
   const [debouncedQuery] = useDebounceValue(query, 500);
   const [open, setOpen] = useState(false);
+  const enabled = debouncedQuery.length >= 3;
 
   const { status, data } = useQuery({
     ...searchUsersQuery(debouncedQuery),
-    enabled: debouncedQuery.length > 0,
+    enabled,
   });
 
   function handleSelect(user: UserSearchResult) {
@@ -47,10 +48,17 @@ export default function UserCombobox({ value, onChange }: Props) {
       <div className="flex items-center gap-3 rounded-md border border-input bg-transparent px-3 py-2">
         <Avatar className="size-8">
           <AvatarFallback>
-            {(value.username ?? "?").charAt(0).toUpperCase()}
+            {value.cosmoUsername.charAt(0).toUpperCase()}
           </AvatarFallback>
         </Avatar>
-        <span className="flex-1 text-sm font-medium">{value.username}</span>
+        <div className="flex flex-1 flex-col">
+          <span className="text-sm font-medium">{value.cosmoUsername}</span>
+          {value.username && (
+            <span className="text-xs text-muted-foreground">
+              {value.username}
+            </span>
+          )}
+        </div>
         <button
           type="button"
           onClick={handleClear}
@@ -63,7 +71,7 @@ export default function UserCombobox({ value, onChange }: Props) {
   }
 
   return (
-    <Popover open={open && debouncedQuery.length > 0} onOpenChange={setOpen}>
+    <Popover open={open && enabled} onOpenChange={setOpen}>
       <PopoverAnchor asChild>
         <Input
           placeholder={m.user_search_placeholder()}
@@ -80,7 +88,7 @@ export default function UserCombobox({ value, onChange }: Props) {
         className="w-(--radix-popover-trigger-width) overflow-hidden p-0"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        {status === "pending" && debouncedQuery.length > 0 && (
+        {status === "pending" && enabled && (
           <div className="flex items-center justify-center py-4">
             <IconLoader2 className="size-5 animate-spin" />
           </div>
@@ -106,10 +114,17 @@ export default function UserCombobox({ value, onChange }: Props) {
               >
                 <Avatar className="size-8">
                   <AvatarFallback>
-                    {(user.username ?? "?").charAt(0).toUpperCase()}
+                    {user.cosmoUsername.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <span className="text-sm">{user.username}</span>
+                <div className="flex flex-col">
+                  <span className="text-sm">{user.cosmoUsername}</span>
+                  {user.username && (
+                    <span className="text-xs text-muted-foreground">
+                      {user.username}
+                    </span>
+                  )}
+                </div>
               </button>
             ))}
           </div>

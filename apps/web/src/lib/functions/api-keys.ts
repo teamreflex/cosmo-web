@@ -14,28 +14,37 @@ import { createServerFn } from "@tanstack/react-start";
 import { eq } from "drizzle-orm";
 
 /**
- * Search app users by username/display username to pick an API key owner.
+ * Search linked COSMO accounts by username to pick an API key owner.
  */
 export const $searchUsers = createServerFn({ method: "GET" })
   .middleware([adminMiddleware])
   .validator(searchUsersSchema)
   .handler(async ({ data }) => {
-    const rows = await db.query.user.findMany({
+    // escape LIKE wildcards so they match literally
+    const pattern = `${data.query.replace(/[\\%_]/g, "\\$&")}%`;
+    const rows = await db.query.cosmoAccounts.findMany({
       where: {
-        OR: [
-          { username: { ilike: `${data.query}%` } },
-          { displayUsername: { ilike: `${data.query}%` } },
-        ],
+        username: { ilike: pattern },
+        userId: { isNotNull: true },
       },
-      columns: { id: true, username: true, displayUsername: true, image: true },
+      columns: { username: true },
+      with: {
+        user: { columns: { id: true, username: true, displayUsername: true } },
+      },
       limit: 10,
     });
 
-    return rows.map((user) => ({
-      id: user.id,
-      username: user.displayUsername ?? user.username,
-      image: user.image,
-    })) satisfies UserSearchResult[];
+    return rows.flatMap((row) => {
+      if (!row.user) {
+        return [];
+      }
+      const result: UserSearchResult = {
+        id: row.user.id,
+        cosmoUsername: row.username,
+        username: row.user.displayUsername ?? row.user.username,
+      };
+      return [result];
+    });
   });
 
 /**
@@ -55,7 +64,6 @@ export const $listApiKeys = createServerFn({ method: "GET" })
       id: row.id,
       name: row.name,
       start: row.start,
-      prefix: row.prefix,
       enabled: row.enabled ?? true,
       requestCount: row.requestCount ?? 0,
       lastRequest: row.lastRequest,
