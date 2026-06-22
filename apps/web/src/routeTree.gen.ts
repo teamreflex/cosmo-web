@@ -34,6 +34,12 @@ import { Route as AtChar123usernameChar125ProgressRouteImport } from './routes/@
 import { Route as AtChar123usernameChar125ComoRouteImport } from './routes/@{$username}/como'
 import { Route as GravityArtistIdRouteImport } from './routes/gravity/$artist/$id'
 import { Route as ApiUserByAddressesRouteImport } from './routes/api/user/by-addresses'
+import { Route as ApiRoyProgressRouteImport } from './routes/api/roy/progress'
+import { Route as ApiRoyProfileRouteImport } from './routes/api/roy/profile'
+import { Route as ApiRoyDuplicatesRouteImport } from './routes/api/roy/duplicates'
+import { Route as ApiRoyCompareRouteImport } from './routes/api/roy/compare'
+import { Route as ApiRoyCollectionCopiesRouteImport } from './routes/api/roy/collection-copies'
+import { Route as ApiRoyCollectionRouteImport } from './routes/api/roy/collection'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AtChar123usernameChar125ListSlugRouteImport } from './routes/@{$username}/list.$slug'
 import { Route as ApiObjektsBySlugSlugRouteImport } from './routes/api/objekts/by-slug.$slug'
@@ -178,6 +184,36 @@ const ApiUserByAddressesRoute = ApiUserByAddressesRouteImport.update({
   path: '/api/user/by-addresses',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiRoyProgressRoute = ApiRoyProgressRouteImport.update({
+  id: '/api/roy/progress',
+  path: '/api/roy/progress',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiRoyProfileRoute = ApiRoyProfileRouteImport.update({
+  id: '/api/roy/profile',
+  path: '/api/roy/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiRoyDuplicatesRoute = ApiRoyDuplicatesRouteImport.update({
+  id: '/api/roy/duplicates',
+  path: '/api/roy/duplicates',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiRoyCompareRoute = ApiRoyCompareRouteImport.update({
+  id: '/api/roy/compare',
+  path: '/api/roy/compare',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiRoyCollectionCopiesRoute = ApiRoyCollectionCopiesRouteImport.update({
+  id: '/api/roy/collection-copies',
+  path: '/api/roy/collection-copies',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiRoyCollectionRoute = ApiRoyCollectionRouteImport.update({
+  id: '/api/roy/collection',
+  path: '/api/roy/collection',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -278,6 +314,12 @@ export interface FileRoutesByFullPath {
   '/objekts/': typeof ObjektsIndexRoute
   '/@{$username}/list/$slug': typeof AtChar123usernameChar125ListSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/roy/collection': typeof ApiRoyCollectionRoute
+  '/api/roy/collection-copies': typeof ApiRoyCollectionCopiesRoute
+  '/api/roy/compare': typeof ApiRoyCompareRoute
+  '/api/roy/duplicates': typeof ApiRoyDuplicatesRoute
+  '/api/roy/profile': typeof ApiRoyProfileRoute
+  '/api/roy/progress': typeof ApiRoyProgressRoute
   '/api/user/by-addresses': typeof ApiUserByAddressesRoute
   '/gravity/$artist/$id': typeof GravityArtistIdRoute
   '/api/cosmo/qr-auth/recaptcha': typeof ApiCosmoQrAuthRecaptchaRoute
@@ -316,6 +358,12 @@ export interface FileRoutesByTo {
   '/objekts': typeof ObjektsIndexRoute
   '/@{$username}/list/$slug': typeof AtChar123usernameChar125ListSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/roy/collection': typeof ApiRoyCollectionRoute
+  '/api/roy/collection-copies': typeof ApiRoyCollectionCopiesRoute
+  '/api/roy/compare': typeof ApiRoyCompareRoute
+  '/api/roy/duplicates': typeof ApiRoyDuplicatesRoute
+  '/api/roy/profile': typeof ApiRoyProfileRoute
+  '/api/roy/progress': typeof ApiRoyProgressRoute
   '/api/user/by-addresses': typeof ApiUserByAddressesRoute
   '/gravity/$artist/$id': typeof GravityArtistIdRoute
   '/api/cosmo/qr-auth/recaptcha': typeof ApiCosmoQrAuthRecaptchaRoute
@@ -357,6 +405,12 @@ export interface FileRoutesById {
   '/objekts/': typeof ObjektsIndexRoute
   '/@{$username}/list/$slug': typeof AtChar123usernameChar125ListSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/roy/collection': typeof ApiRoyCollectionRoute
+  '/api/roy/collection-copies': typeof ApiRoyCollectionCopiesRoute
+  '/api/roy/compare': typeof ApiRoyCompareRoute
+  '/api/roy/duplicates': typeof ApiRoyDuplicatesRoute
+  '/api/roy/profile': typeof ApiRoyProfileRoute
+  '/api/roy/progress': typeof ApiRoyProgressRoute
   '/api/user/by-addresses': typeof ApiUserByAddressesRoute
   '/gravity/$artist/$id': typeof GravityArtistIdRoute
   '/api/cosmo/qr-auth/recaptcha': typeof ApiCosmoQrAuthRecaptchaRoute
@@ -399,6 +453,12 @@ export interface FileRouteTypes {
     | '/objekts/'
     | '/@{$username}/list/$slug'
     | '/api/auth/$'
+    | '/api/roy/collection'
+    | '/api/roy/collection-copies'
+    | '/api/roy/compare'
+    | '/api/roy/duplicates'
+    | '/api/roy/profile'
+    | '/api/roy/progress'
     | '/api/user/by-addresses'
     | '/gravity/$artist/$id'
     | '/api/cosmo/qr-auth/recaptcha'
@@ -437,6 +497,12 @@ export interface FileRouteTypes {
     | '/objekts'
     | '/@{$username}/list/$slug'
     | '/api/auth/$'
+    | '/api/roy/collection'
+    | '/api/roy/collection-copies'
+    | '/api/roy/compare'
+    | '/api/roy/duplicates'
+    | '/api/roy/profile'
+    | '/api/roy/progress'
     | '/api/user/by-addresses'
     | '/gravity/$artist/$id'
     | '/api/cosmo/qr-auth/recaptcha'
@@ -477,6 +543,12 @@ export interface FileRouteTypes {
     | '/objekts/'
     | '/@{$username}/list/$slug'
     | '/api/auth/$'
+    | '/api/roy/collection'
+    | '/api/roy/collection-copies'
+    | '/api/roy/compare'
+    | '/api/roy/duplicates'
+    | '/api/roy/profile'
+    | '/api/roy/progress'
     | '/api/user/by-addresses'
     | '/gravity/$artist/$id'
     | '/api/cosmo/qr-auth/recaptcha'
@@ -506,6 +578,12 @@ export interface RootRouteChildren {
   GravityIndexRoute: typeof GravityIndexRoute
   ObjektsIndexRoute: typeof ObjektsIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiRoyCollectionRoute: typeof ApiRoyCollectionRoute
+  ApiRoyCollectionCopiesRoute: typeof ApiRoyCollectionCopiesRoute
+  ApiRoyCompareRoute: typeof ApiRoyCompareRoute
+  ApiRoyDuplicatesRoute: typeof ApiRoyDuplicatesRoute
+  ApiRoyProfileRoute: typeof ApiRoyProfileRoute
+  ApiRoyProgressRoute: typeof ApiRoyProgressRoute
   ApiUserByAddressesRoute: typeof ApiUserByAddressesRoute
   GravityArtistIdRoute: typeof GravityArtistIdRoute
   ApiCosmoQrAuthRecaptchaRoute: typeof ApiCosmoQrAuthRecaptchaRoute
@@ -698,6 +776,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiUserByAddressesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/roy/progress': {
+      id: '/api/roy/progress'
+      path: '/api/roy/progress'
+      fullPath: '/api/roy/progress'
+      preLoaderRoute: typeof ApiRoyProgressRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/roy/profile': {
+      id: '/api/roy/profile'
+      path: '/api/roy/profile'
+      fullPath: '/api/roy/profile'
+      preLoaderRoute: typeof ApiRoyProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/roy/duplicates': {
+      id: '/api/roy/duplicates'
+      path: '/api/roy/duplicates'
+      fullPath: '/api/roy/duplicates'
+      preLoaderRoute: typeof ApiRoyDuplicatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/roy/compare': {
+      id: '/api/roy/compare'
+      path: '/api/roy/compare'
+      fullPath: '/api/roy/compare'
+      preLoaderRoute: typeof ApiRoyCompareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/roy/collection-copies': {
+      id: '/api/roy/collection-copies'
+      path: '/api/roy/collection-copies'
+      fullPath: '/api/roy/collection-copies'
+      preLoaderRoute: typeof ApiRoyCollectionCopiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/roy/collection': {
+      id: '/api/roy/collection'
+      path: '/api/roy/collection'
+      fullPath: '/api/roy/collection'
+      preLoaderRoute: typeof ApiRoyCollectionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -855,6 +975,12 @@ const rootRouteChildren: RootRouteChildren = {
   GravityIndexRoute: GravityIndexRoute,
   ObjektsIndexRoute: ObjektsIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiRoyCollectionRoute: ApiRoyCollectionRoute,
+  ApiRoyCollectionCopiesRoute: ApiRoyCollectionCopiesRoute,
+  ApiRoyCompareRoute: ApiRoyCompareRoute,
+  ApiRoyDuplicatesRoute: ApiRoyDuplicatesRoute,
+  ApiRoyProfileRoute: ApiRoyProfileRoute,
+  ApiRoyProgressRoute: ApiRoyProgressRoute,
   ApiUserByAddressesRoute: ApiUserByAddressesRoute,
   GravityArtistIdRoute: GravityArtistIdRoute,
   ApiCosmoQrAuthRecaptchaRoute: ApiCosmoQrAuthRecaptchaRoute,

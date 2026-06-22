@@ -2,9 +2,9 @@ import { cacheHeaders } from "@/lib/server/cache.server";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import { collections, objekts } from "@/lib/server/db/indexer/schema";
+import { fetchCollectionEvent } from "@/lib/server/objekts/metadata.server";
 import {
   PRICE_STATS_MIN_LISTINGS,
-  type ObjektCollectionData,
   type ObjektMetadata,
   type PriceStats,
 } from "@/lib/universal/objekts";
@@ -22,7 +22,7 @@ export const Route = createFileRoute("/api/objekts/metadata/$slug/")({
       GET: async ({ params }) => {
         const [collection, data, priceStats] = await Promise.all([
           fetchCollection(params.slug),
-          fetchEventForCollection(params.slug),
+          fetchCollectionEvent(params.slug),
           fetchPriceStats(params.slug),
         ]);
 
@@ -111,43 +111,4 @@ async function fetchPriceStats(slug: string): Promise<PriceStats | null> {
     maxPriceUsd: row.maxPriceUsd,
     updatedAt: row.updatedAt.toISOString(),
   };
-}
-
-/**
- * Fetch the event that includes this collection.
- */
-async function fetchEventForCollection(
-  collectionId: string,
-): Promise<ObjektCollectionData | undefined> {
-  return await db.query.collectionData.findFirst({
-    where: { collectionId },
-    columns: {
-      id: true,
-      collectionId: true,
-      description: true,
-    },
-    with: {
-      event: {
-        columns: {
-          id: true,
-          slug: true,
-          name: true,
-          eventType: true,
-          twitterUrl: true,
-          description: true,
-        },
-        with: {
-          era: {
-            columns: {
-              id: true,
-              slug: true,
-              name: true,
-              spotifyAlbumArt: true,
-              imageUrl: true,
-            },
-          },
-        },
-      },
-    },
-  });
 }
