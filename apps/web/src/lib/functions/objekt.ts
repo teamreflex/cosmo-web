@@ -2,16 +2,21 @@ import { indexer } from "@/lib/server/db/indexer";
 import { authenticatedMiddleware } from "@/lib/server/middlewares";
 import { getRequestSignal } from "@/lib/server/request.server";
 import { ExpectedError } from "@/lib/universal/errors/expected";
-import { fetchMetadataV1 } from "@apollo/cosmo/server/metadata";
+import {
+  fetchMetadataV1,
+  fetchMetadataV3,
+} from "@apollo/cosmo/server/metadata";
+import { normalizeV3 } from "@apollo/cosmo/types/metadata";
 import { collections, objekts } from "@apollo/database/indexer/schema";
+import { slugifyObjekt } from "@apollo/util";
 import { createServerFn } from "@tanstack/react-start";
 import { eq } from "drizzle-orm";
 import * as z from "zod";
 
 /**
- * Rescan an objekt's metadata.
+ * Rescan an objekt's metadata using the v1 endpoint.
  */
-export const $rescanObjektMetadata = createServerFn({ method: "POST" })
+export const $rescanObjektMetadataV1 = createServerFn({ method: "POST" })
   .middleware([authenticatedMiddleware])
   .validator(z.object({ tokenId: z.string() }))
   .handler(async ({ data }) => {
@@ -50,4 +55,32 @@ export const $rescanObjektMetadata = createServerFn({ method: "POST" })
         })
         .where(eq(collections.id, objekt.collectionId));
     });
+  });
+
+/**
+ * Rescan an objekt's metadata using the v3 endpoint.
+ * Only updates the collection.
+ */
+export const $rescanObjektMetadataV3 = createServerFn({ method: "POST" })
+  .middleware([authenticatedMiddleware])
+  .validator(z.object({ tokenId: z.string() }))
+  .handler(async ({ data }) => {
+    try {
+      const v3 = await fetchMetadataV3(data.tokenId, getRequestSignal());
+      var metadata = normalizeV3(v3, data.tokenId);
+    } catch (e) {
+      console.error("Failed to fetch metadata:", e);
+      throw new ExpectedError("metadata_fetch_failed");
+    }
+
+    const slug = slugifyObjekt(metadata.objekt.collectionId);
+    await indexer
+      .update(collections)
+      .set({
+        thumbnailImage: metadata.objekt.thumbnailImage,
+        frontImage: metadata.objekt.frontImage,
+        backgroundColor: metadata.objekt.backgroundColor,
+        accentColor: metadata.objekt.backgroundColor,
+      })
+      .where(eq(collections.slug, slug));
   });
