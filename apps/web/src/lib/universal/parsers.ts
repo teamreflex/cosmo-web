@@ -30,7 +30,7 @@ export const cosmoSchema = z.object({
   sort: z.enum(validSorts).nullish().catch(null),
   season: castToArray(z.string()).nullish(),
   class: castToArray(z.string()).nullish(),
-  on_offline: castToArray(z.enum(validOnlineTypes)).nullish().catch(null),
+  on_offline: castToArray(z.enum(validOnlineTypes)).catch([]).nullish(),
   member: z.string().nullish(),
   artist: z
     .string()
