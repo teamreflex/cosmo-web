@@ -26,6 +26,7 @@ import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-passw
 import { Route as AdminNoticeRouteImport } from './routes/admin/notice'
 import { Route as AdminEventsRouteImport } from './routes/admin/events'
 import { Route as AdminErasRouteImport } from './routes/admin/eras'
+import { Route as AdminCollectionsRouteImport } from './routes/admin/collections'
 import { Route as AdminCacheRouteImport } from './routes/admin/cache'
 import { Route as AdminBandsRouteImport } from './routes/admin/bands'
 import { Route as AtChar123usernameChar125TradesRouteImport } from './routes/@{$username}/trades'
@@ -132,6 +133,11 @@ const AdminEventsRoute = AdminEventsRouteImport.update({
 const AdminErasRoute = AdminErasRouteImport.update({
   id: '/eras',
   path: '/eras',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminCollectionsRoute = AdminCollectionsRouteImport.update({
+  id: '/collections',
+  path: '/collections',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const AdminCacheRoute = AdminCacheRouteImport.update({
@@ -257,6 +263,7 @@ export interface FileRoutesByFullPath {
   '/@{$username}/trades': typeof AtChar123usernameChar125TradesRoute
   '/admin/bands': typeof AdminBandsRoute
   '/admin/cache': typeof AdminCacheRoute
+  '/admin/collections': typeof AdminCollectionsRoute
   '/admin/eras': typeof AdminErasRoute
   '/admin/events': typeof AdminEventsRoute
   '/admin/notice': typeof AdminNoticeRoute
@@ -294,6 +301,7 @@ export interface FileRoutesByTo {
   '/@{$username}/trades': typeof AtChar123usernameChar125TradesRoute
   '/admin/bands': typeof AdminBandsRoute
   '/admin/cache': typeof AdminCacheRoute
+  '/admin/collections': typeof AdminCollectionsRoute
   '/admin/eras': typeof AdminErasRoute
   '/admin/events': typeof AdminEventsRoute
   '/admin/notice': typeof AdminNoticeRoute
@@ -334,6 +342,7 @@ export interface FileRoutesById {
   '/@{$username}/trades': typeof AtChar123usernameChar125TradesRoute
   '/admin/bands': typeof AdminBandsRoute
   '/admin/cache': typeof AdminCacheRoute
+  '/admin/collections': typeof AdminCollectionsRoute
   '/admin/eras': typeof AdminErasRoute
   '/admin/events': typeof AdminEventsRoute
   '/admin/notice': typeof AdminNoticeRoute
@@ -375,6 +384,7 @@ export interface FileRouteTypes {
     | '/@{$username}/trades'
     | '/admin/bands'
     | '/admin/cache'
+    | '/admin/collections'
     | '/admin/eras'
     | '/admin/events'
     | '/admin/notice'
@@ -412,6 +422,7 @@ export interface FileRouteTypes {
     | '/@{$username}/trades'
     | '/admin/bands'
     | '/admin/cache'
+    | '/admin/collections'
     | '/admin/eras'
     | '/admin/events'
     | '/admin/notice'
@@ -451,6 +462,7 @@ export interface FileRouteTypes {
     | '/@{$username}/trades'
     | '/admin/bands'
     | '/admin/cache'
+    | '/admin/collections'
     | '/admin/eras'
     | '/admin/events'
     | '/admin/notice'
@@ -630,6 +642,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminErasRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/collections': {
+      id: '/admin/collections'
+      path: '/collections'
+      fullPath: '/admin/collections'
+      preLoaderRoute: typeof AdminCollectionsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/cache': {
       id: '/admin/cache'
       path: '/cache'
@@ -800,6 +819,7 @@ const AtChar123usernameChar125RouteRouteWithChildren =
 interface AdminRouteRouteChildren {
   AdminBandsRoute: typeof AdminBandsRoute
   AdminCacheRoute: typeof AdminCacheRoute
+  AdminCollectionsRoute: typeof AdminCollectionsRoute
   AdminErasRoute: typeof AdminErasRoute
   AdminEventsRoute: typeof AdminEventsRoute
   AdminNoticeRoute: typeof AdminNoticeRoute
@@ -809,6 +829,7 @@ interface AdminRouteRouteChildren {
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminBandsRoute: AdminBandsRoute,
   AdminCacheRoute: AdminCacheRoute,
+  AdminCollectionsRoute: AdminCollectionsRoute,
   AdminErasRoute: AdminErasRoute,
   AdminEventsRoute: AdminEventsRoute,
   AdminNoticeRoute: AdminNoticeRoute,

@@ -2,6 +2,7 @@ import { m } from "@/i18n/messages";
 import {
   IconAlertTriangle,
   IconCalendarEvent,
+  IconCards,
   IconDatabase,
   IconDisc,
   IconHome,
@@ -24,6 +25,11 @@ export function getAdminItems() {
       title: m.admin_eras_title(),
       url: "/admin/eras",
       icon: IconDisc,
+    },
+    {
+      title: m.admin_collections_title(),
+      url: "/admin/collections",
+      icon: IconCards,
     },
     {
       title: m.admin_events_title(),
