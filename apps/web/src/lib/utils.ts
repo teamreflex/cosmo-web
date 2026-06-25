@@ -225,24 +225,6 @@ export function classSort(a: string, b: string, artist: ValidArtist) {
   return aOrder - bOrder;
 }
 
-/**
- * Parse URLSearchParams into a record.
- */
-export function parseSearchParams(
-  searchParams: URLSearchParams,
-): Record<string, string | string[]> {
-  const obj: Record<string, string | string[]> = {};
-  for (const key of new Set(searchParams.keys())) {
-    const values = searchParams.getAll(key);
-    if (values.length > 1) {
-      obj[key] = values;
-    } else if (values.length === 1) {
-      obj[key] = values[0]!;
-    }
-  }
-  return obj;
-}
-
 const handles = [
   "0ct0ber19",
   "withaseul",
