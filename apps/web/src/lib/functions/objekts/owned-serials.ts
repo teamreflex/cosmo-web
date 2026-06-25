@@ -18,58 +18,83 @@ export type OwnedSerial = {
 };
 
 /**
- * Fetch every objekt of the given indexer collection UUID owned by the
- * authenticated user's COSMO address, plus per-token transferable + locked
- * status and derived non-transferable reason for the picker UI.
+ * Fetch every objekt of the given indexer collection UUIDs owned by the
+ * authenticated user's COSMO address, grouped by collection id, plus per-token
+ * transferable + locked status and derived non-transferable reason for the
+ * picker UI. Collections the user owns no copies of map to an empty array.
  */
 export const $fetchOwnedSerials = createServerFn({ method: "GET" })
-  .validator(z.object({ collectionId: z.uuid() }))
+  .validator(z.object({ collectionIds: z.array(z.uuid()).min(1) }))
   .middleware([cosmoMiddleware])
-  .handler(async ({ data, context }): Promise<OwnedSerial[]> => {
-    const [owned, collection] = await Promise.all([
-      indexer
-        .select({
-          tokenId: objekts.id,
-          serial: objekts.serial,
-          transferable: objekts.transferable,
-        })
-        .from(objekts)
-        .where(
-          and(
-            eq(objekts.owner, context.cosmo.address.toLowerCase()),
-            eq(objekts.collectionId, data.collectionId),
+  .handler(
+    async ({ data, context }): Promise<Record<string, OwnedSerial[]>> => {
+      const [owned, collections] = await Promise.all([
+        indexer
+          .select({
+            tokenId: objekts.id,
+            serial: objekts.serial,
+            transferable: objekts.transferable,
+            collectionId: objekts.collectionId,
+          })
+          .from(objekts)
+          .where(
+            and(
+              eq(objekts.owner, context.cosmo.address.toLowerCase()),
+              inArray(objekts.collectionId, data.collectionIds),
+            ),
           ),
-        ),
-      indexer.query.collections.findFirst({
-        where: { id: data.collectionId },
-        columns: { class: true },
-      }),
-    ]);
+        indexer.query.collections.findMany({
+          where: { id: { in: data.collectionIds } },
+          columns: { id: true, class: true },
+        }),
+      ]);
 
-    if (owned.length === 0) return [];
+      const result: Record<string, OwnedSerial[]> = {};
+      for (const collectionId of data.collectionIds) {
+        result[collectionId] = [];
+      }
 
-    const tokenNumbers = owned.map((o) => Number(o.tokenId));
-    const locks = await db
-      .select({ tokenId: lockedObjekts.tokenId, locked: lockedObjekts.locked })
-      .from(lockedObjekts)
-      .where(
-        and(
-          eq(lockedObjekts.address, context.cosmo.address),
-          inArray(lockedObjekts.tokenId, tokenNumbers),
-          eq(lockedObjekts.locked, true),
-        ),
+      if (owned.length === 0) return result;
+
+      const classByCollection = new Map(
+        collections.map((c) => [c.id, c.class]),
       );
 
-    const lockedSet = new Set(locks.map((l) => l.tokenId));
-    const className = collection?.class ?? "";
+      const tokenNumbers = owned.map((o) => Number(o.tokenId));
+      const locks = await db
+        .select({
+          tokenId: lockedObjekts.tokenId,
+          locked: lockedObjekts.locked,
+        })
+        .from(lockedObjekts)
+        .where(
+          and(
+            eq(lockedObjekts.address, context.cosmo.address),
+            inArray(lockedObjekts.tokenId, tokenNumbers),
+            eq(lockedObjekts.locked, true),
+          ),
+        );
 
-    return owned
-      .map((o) => ({
-        tokenId: o.tokenId,
-        serial: o.serial,
-        transferable: o.transferable,
-        locked: lockedSet.has(Number(o.tokenId)),
-        nonTransferableReason: nonTransferableReason(className, o.transferable),
-      }))
-      .sort((a, b) => a.serial - b.serial);
-  });
+      const lockedSet = new Set(locks.map((l) => l.tokenId));
+
+      for (const o of owned) {
+        const className = classByCollection.get(o.collectionId) ?? "";
+        result[o.collectionId]?.push({
+          tokenId: o.tokenId,
+          serial: o.serial,
+          transferable: o.transferable,
+          locked: lockedSet.has(Number(o.tokenId)),
+          nonTransferableReason: nonTransferableReason(
+            className,
+            o.transferable,
+          ),
+        });
+      }
+
+      for (const serials of Object.values(result)) {
+        serials.sort((a, b) => a.serial - b.serial);
+      }
+
+      return result;
+    },
+  );

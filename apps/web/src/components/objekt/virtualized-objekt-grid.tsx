@@ -2,6 +2,7 @@
 import { useElementSize } from "@/hooks/use-element-size";
 import type { ObjektResponseOptions } from "@/hooks/use-objekt-response";
 import { useObjektResponse } from "@/hooks/use-objekt-response";
+import { tokenKey } from "@/hooks/use-objekt-selection";
 import { m } from "@/i18n/messages";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
@@ -186,7 +187,7 @@ function ObjektGrid<
                       <ExpandableObjekt
                         key={objekt.item.tokenId}
                         collection={legacyObjekt.collection}
-                        tokenId={parseInt(objekt.item.tokenId)}
+                        selectionKey={tokenKey(parseInt(objekt.item.tokenId))}
                         priority={true}
                       >
                         <LegacyOverlay

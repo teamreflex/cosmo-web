@@ -1,27 +1,29 @@
 import BatchAddToList from "@/components/lists/batch-add-to-list";
 import BatchSelectionPopover from "@/components/profile/batch-selection-popover";
 import { Button } from "@/components/ui/button";
-import { useAuthenticated } from "@/hooks/use-authenticated";
 import { useObjektSelection } from "@/hooks/use-objekt-selection";
-import { useProfileContext } from "@/hooks/use-profile";
 import { m } from "@/i18n/messages";
+import type { ObjektList } from "@apollo/database/web/types";
 import { IconReload } from "@tabler/icons-react";
 import { useEffect } from "react";
 
+type Props = {
+  objektLists: ObjektList[];
+};
+
 /**
- * Floating bottom bar for the batch-selection flow on the user's own profile.
- * Renders nothing unless the viewer owns the profile and has objekts selected,
- * and clears the selection on unmount so it doesn't bleed to other routes.
+ * Floating bottom bar for the batch-selection flow. Renders nothing unless
+ * objekts are selected, and clears the selection on unmount so it doesn't
+ * bleed to other routes. The per-card select button is auth-gated on every
+ * route, so a non-owner can never populate the selection.
  */
-export default function BatchSelectionBar() {
-  const authenticated = useAuthenticated();
+export default function BatchSelectionBar({ objektLists }: Props) {
   const selected = useObjektSelection((state) => state.selected);
   const reset = useObjektSelection((state) => state.reset);
-  const objektLists = useProfileContext((ctx) => ctx.objektLists);
 
   useEffect(() => () => reset(), [reset]);
 
-  if (!authenticated || selected.length === 0) {
+  if (selected.length === 0) {
     return null;
   }
 

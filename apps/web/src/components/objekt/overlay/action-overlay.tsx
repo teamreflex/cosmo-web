@@ -1,6 +1,6 @@
 import AddToList from "@/components/lists/add-to-list";
 import PinObjekt from "@/components/objekt/overlay/pin-button";
-import { useObjektSelection } from "@/hooks/use-objekt-selection";
+import { tokenKey, useObjektSelection } from "@/hooks/use-objekt-selection";
 import useOverlayHover from "@/hooks/use-overlay-hover";
 import { useProfileContext } from "@/hooks/use-profile";
 import { m } from "@/i18n/messages";
@@ -43,7 +43,7 @@ export default function ActionOverlay({
   const [hoverState, createHoverProps] = useOverlayHover();
   const isHidden = useObjektOverlay((state) => state.isHidden);
   const isSelected = useObjektSelection(
-    useShallow((state) => state.isSelected(token.tokenId)),
+    useShallow((state) => state.isSelected(tokenKey(token.tokenId))),
   );
   const select = useObjektSelection((state) => state.select);
 
@@ -188,7 +188,7 @@ export default function ActionOverlay({
         {authenticated && !isPin && (
           <button
             {...createHoverProps("select")}
-            onClick={() => select({ collection, token })}
+            onClick={() => select({ type: "token", collection, token })}
             className="flex items-center transition-all hover:scale-110"
             aria-label={
               isSelected

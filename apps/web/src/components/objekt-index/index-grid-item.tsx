@@ -1,4 +1,5 @@
 import { useActiveObjekt } from "@/hooks/use-active-objekt";
+import { collectionKey } from "@/hooks/use-objekt-selection";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import type { IndexedObjekt } from "@/lib/universal/objekts";
 import type { ObjektList } from "@apollo/database/web/types";
@@ -27,11 +28,14 @@ export function IndexGridItem({
   return (
     <ExpandableObjekt
       collection={collection}
+      selectionKey={collectionKey(collection.slug)}
       setActive={setActiveObjekt}
       priority={priority}
     >
       <ObjektSidebar collection={collection} />
-      {authenticated && <TopOverlay objekt={item} objektLists={objektLists} />}
+      {authenticated && (
+        <TopOverlay collection={collection} objektLists={objektLists} />
+      )}
     </ExpandableObjekt>
   );
 }

@@ -90,7 +90,9 @@ function SerialPickerBody({
 
   const { data: owned } = useSuspenseQuery({
     queryKey: ["owned-serials", collectionId],
-    queryFn: () => $fetchOwnedSerials({ data: { collectionId } }),
+    queryFn: () =>
+      $fetchOwnedSerials({ data: { collectionIds: [collectionId] } }),
+    select: (data) => data[collectionId] ?? [],
   });
 
   const mutation = useAddToList({ list, collectionName, onDone: onClose }, () =>

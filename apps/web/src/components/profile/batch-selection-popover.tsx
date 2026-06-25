@@ -5,7 +5,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useObjektSelection } from "@/hooks/use-objekt-selection";
+import { selectionKey, useObjektSelection } from "@/hooks/use-objekt-selection";
 import { m } from "@/i18n/messages";
 import { getObjektImageUrls } from "@/lib/client/objekt-util";
 import { IconX } from "@tabler/icons-react";
@@ -30,10 +30,10 @@ export default function BatchSelectionPopover() {
           <ul className="flex flex-col">
             {selected.map((s) => {
               const { front } = getObjektImageUrls(s.collection);
-              const paddedSerial = s.token.serial.toString().padStart(5, "0");
+              const key = selectionKey(s);
               return (
                 <li
-                  key={s.token.tokenId}
+                  key={key}
                   className="flex items-center gap-3 border-b border-border px-3 py-2 last:border-b-0"
                 >
                   <img
@@ -46,13 +46,15 @@ export default function BatchSelectionPopover() {
                     <span className="truncate text-sm font-semibold">
                       {s.collection.collectionId}
                     </span>
-                    <span className="font-mono text-xxs text-muted-foreground tabular-nums">
-                      #{paddedSerial}
-                    </span>
+                    {s.type === "token" && (
+                      <span className="font-mono text-xxs text-muted-foreground tabular-nums">
+                        #{s.token.serial.toString().padStart(5, "0")}
+                      </span>
+                    )}
                   </div>
                   <button
                     type="button"
-                    onClick={() => remove(s.token.tokenId)}
+                    onClick={() => remove(key)}
                     aria-label={m.batch_remove_from_selection()}
                     className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
                   >
