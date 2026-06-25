@@ -31,7 +31,7 @@ export const cosmoSchema = z.object({
   season: castToArray(z.string()).nullish(),
   class: castToArray(z.string()).nullish(),
   on_offline: castToArray(z.enum(validOnlineTypes)).catch([]).nullish(),
-  member: z.string().nullish(),
+  member: castToArray(z.string()).nullish(),
   artist: z
     .string()
     .transform(
@@ -126,13 +126,13 @@ export const transfersBackendSchema = cosmoSchema
     artists: z.string().array().default([]),
   });
 
-// progress frontend
+// progress frontend - progress/leaderboards are single-member by design
 export const progressFrontendSchema = cosmoSchema
   .pick({
-    member: true,
     artist: true,
   })
   .extend({
+    member: z.string().nullish(),
     season: z.string().nullish(),
     filter: z.enum(validOnlineTypes).nullish(),
     leaderboard: z.coerce.boolean().nullish(),

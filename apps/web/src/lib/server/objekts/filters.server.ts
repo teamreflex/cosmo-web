@@ -92,8 +92,10 @@ export function withOnlineType(onlineTypes: ValidOnlineType[]) {
 /**
  * Filter by member.
  */
-export function withMember(member: string | null | undefined) {
-  return member ? [eq(collections.member, member)] : [];
+export function withMember(members: string[] | null | undefined) {
+  return members && members.length > 0
+    ? [inArray(collections.member, members)]
+    : [];
 }
 
 /**
