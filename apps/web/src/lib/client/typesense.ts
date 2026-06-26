@@ -78,8 +78,8 @@ function buildFilterBy(filters: CosmoFilters, artists: string[]) {
   }
 
   // member filter
-  if (filters.member) {
-    allFilters.push(`member:${filters.member}`);
+  if (filters.member && filters.member.length > 0) {
+    allFilters.push(`member:[${filters.member.join(",")}]`);
   }
 
   // season filter

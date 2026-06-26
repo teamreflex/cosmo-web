@@ -41,10 +41,16 @@ export default function TransfersRenderer({ cosmo }: Props) {
 
   const setActiveMember = useCallback(
     (member: string) => {
-      setFilters((prev) => ({
-        artist: undefined,
-        member: prev.member === member ? undefined : member,
-      }));
+      setFilters((prev) => {
+        const current = prev.member ?? [];
+        const next = current.includes(member)
+          ? current.filter((m) => m !== member)
+          : [...current, member];
+        return {
+          artist: undefined,
+          member: next.length > 0 ? next : undefined,
+        };
+      });
     },
     [setFilters],
   );
@@ -65,7 +71,9 @@ export default function TransfersRenderer({ cosmo }: Props) {
         <div className="ml-auto md:pointer-events-none md:absolute md:inset-0 md:ml-0 md:flex md:items-center md:justify-center">
           <div className="md:pointer-events-auto">
             <MemberFilter
-              active={filters.artist ?? filters.member}
+              activeArtist={filters.artist ?? null}
+              activeMembers={filters.member ?? []}
+              multiple
               updateArtist={setActiveArtist}
               updateMember={setActiveMember}
             />

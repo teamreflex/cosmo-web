@@ -8,10 +8,16 @@ export default function CosmoMemberFilter() {
 
   const setActiveMember = useCallback(
     (member: string) => {
-      setFilters((prev) => ({
-        artist: undefined,
-        member: prev.member === member ? undefined : member,
-      }));
+      setFilters((prev) => {
+        const current = prev.member ?? [];
+        const next = current.includes(member)
+          ? current.filter((m) => m !== member)
+          : [...current, member];
+        return {
+          artist: undefined,
+          member: next.length > 0 ? next : undefined,
+        };
+      });
     },
     [setFilters],
   );
@@ -28,7 +34,9 @@ export default function CosmoMemberFilter() {
 
   return (
     <MemberFilter
-      active={filters.artist ?? filters.member}
+      activeArtist={filters.artist ?? null}
+      activeMembers={filters.member ?? []}
+      multiple
       updateArtist={setActiveArtist}
       updateMember={setActiveMember}
     />

@@ -51,7 +51,8 @@ export default function ProgressRenderer(props: Props) {
         <div className="ml-auto md:pointer-events-none md:absolute md:inset-0 md:ml-0 md:flex md:items-center md:justify-center">
           <div className="md:pointer-events-auto">
             <MemberFilter
-              active={filters.artist ?? filters.member}
+              activeArtist={filters.artist ?? null}
+              activeMembers={filters.member ? [filters.member] : []}
               updateArtist={setActiveArtist}
               updateMember={setActiveMember}
             />

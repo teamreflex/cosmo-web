@@ -7,14 +7,18 @@ import { Popover, PopoverAnchor, PopoverContent } from "../ui/popover";
 
 type Props = {
   showArtists?: boolean;
-  active?: string | null;
+  activeArtist?: string | null;
+  activeMembers: string[];
+  multiple?: boolean;
   updateArtist: (artist: string) => void;
   updateMember: (member: string) => void;
 };
 
 export default function MemberFilter({
   showArtists = true,
-  active,
+  activeArtist,
+  activeMembers,
+  multiple = false,
   updateArtist,
   updateMember,
 }: Props) {
@@ -87,7 +91,8 @@ export default function MemberFilter({
             <ArtistTriggerButton
               key={artist.id}
               artist={artist}
-              active={active ?? null}
+              activeArtist={activeArtist ?? null}
+              activeMembers={activeMembers}
               isOpen={openArtistId === artist.id}
               onOpen={() => handleOpen(artist.id)}
             />
@@ -98,7 +103,9 @@ export default function MemberFilter({
         <ArtistPopoverContent
           artist={displayArtist}
           openArtistId={openArtistId}
-          active={active ?? null}
+          activeArtist={activeArtist ?? null}
+          activeMembers={activeMembers}
+          multiple={multiple}
           showArtists={showArtists}
           onArtistSelect={updateArtist}
           onMemberSelect={updateMember}
@@ -111,15 +118,17 @@ export default function MemberFilter({
 
 type ArtistTriggerButtonProps = {
   artist: CosmoArtistWithMembersBFF;
-  active: string | null;
+  activeArtist: string | null;
+  activeMembers: string[];
   isOpen: boolean;
   onOpen: () => void;
 };
 
 function ArtistTriggerButton(props: ArtistTriggerButtonProps) {
-  const isArtistActive = props.active === props.artist.id;
-  const isMemberActive =
-    props.artist.artistMembers.findIndex((m) => m.name === props.active) !== -1;
+  const isArtistActive = props.activeArtist === props.artist.id;
+  const isMemberActive = props.artist.artistMembers.some((m) =>
+    props.activeMembers.includes(m.name),
+  );
   const isActive = props.isOpen || isArtistActive || isMemberActive;
   const artistColor = artistColors[props.artist.name as ValidArtist];
 
@@ -145,7 +154,9 @@ function ArtistTriggerButton(props: ArtistTriggerButtonProps) {
 type ArtistPopoverContentProps = {
   artist: CosmoArtistWithMembersBFF;
   openArtistId: string | null;
-  active: string | null;
+  activeArtist: string | null;
+  activeMembers: string[];
+  multiple: boolean;
   showArtists?: boolean;
   onArtistSelect: (artist: string) => void;
   onMemberSelect: (member: string) => void;
@@ -153,7 +164,7 @@ type ArtistPopoverContentProps = {
 };
 
 function ArtistPopoverContent(props: ArtistPopoverContentProps) {
-  const isArtistActive = props.active === props.artist.id;
+  const isArtistActive = props.activeArtist === props.artist.id;
   const artistColor = artistColors[props.artist.name as ValidArtist];
 
   function handleArtistSelect(artist: string) {
@@ -163,7 +174,10 @@ function ArtistPopoverContent(props: ArtistPopoverContentProps) {
 
   function handleMemberSelect(member: string) {
     props.onMemberSelect(member);
-    props.onClose();
+    // keep the popover open in multi-select mode so several members can be picked
+    if (!props.multiple) {
+      props.onClose();
+    }
   }
 
   function handlePointerDownOutside(e: Event) {
@@ -209,7 +223,7 @@ function ArtistPopoverContent(props: ArtistPopoverContentProps) {
           key={member.name}
           name={member.name}
           image={member.profileImageUrl}
-          isActive={member.name === props.active}
+          isActive={props.activeMembers.includes(member.name)}
           color={member.primaryColorHex}
           onClick={() => handleMemberSelect(member.name)}
           useLabel

@@ -1,6 +1,6 @@
 import { init as initSentry } from "@sentry/tanstackstart-react";
 import { QueryClient } from "@tanstack/react-query";
-import { createRouter } from "@tanstack/react-router";
+import { createRouter, stringifySearchWith } from "@tanstack/react-router";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
 import type { ReactNode } from "react";
 import { env } from "./lib/env/client";
@@ -13,6 +13,23 @@ import {
 } from "./lib/universal/errors/sentry-noise";
 import { MediaQueryProvider } from "./providers/media-query-provider";
 import { routeTree } from "./routeTree.gen";
+
+/**
+ * Serialize arrays as CSV (?member=HeeJin,SeoYeon) instead of the default JSON
+ * (?member=["HeeJin","SeoYeon"]). parseSearch stays default — each field's
+ * castToArray() splits the CSV, and old JSON-array URLs still parse.
+ */
+const stringifyArrays = stringifySearchWith(
+  (value) => (Array.isArray(value) ? value.join(",") : JSON.stringify(value)),
+  JSON.parse,
+);
+
+/**
+ * URLSearchParams percent-encodes commas; restore literal commas (valid per RFC 3986).
+ */
+function stringifySearch(search: Record<string, unknown>) {
+  return stringifyArrays(search).replaceAll("%2C", ",");
+}
 
 export function getRouter() {
   const queryClient = new QueryClient({
@@ -29,6 +46,7 @@ export function getRouter() {
     defaultPreload: "intent",
     defaultPendingMs: 250,
     scrollRestoration: true,
+    stringifySearch,
     Wrap: (props: { children: ReactNode }) => {
       return <MediaQueryProvider>{props.children}</MediaQueryProvider>;
     },
