@@ -5,8 +5,9 @@ import * as authSchema from "@apollo/database/auth";
 import { cosmoAccounts } from "@apollo/database/web/schema";
 import { GRID_COLUMNS } from "@apollo/util";
 import type { CollectionDataSource } from "@apollo/util";
+import { apiKey } from "@better-auth/api-key";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
-import { createAuthMiddleware } from "better-auth/api";
+import { APIError, createAuthMiddleware } from "better-auth/api";
 import { parseSessionOutput, parseUserOutput } from "better-auth/db";
 import { betterAuth } from "better-auth/minimal";
 import { username } from "better-auth/plugins/username";
@@ -41,6 +42,14 @@ export const auth = betterAuth({
       usernameValidator: (str) => {
         return /^[a-zA-Z0-9]+$/.test(str);
       },
+    }),
+    apiKey({
+      enableSessionForAPIKeys: false,
+      rateLimit: { enabled: false },
+      // prefix is concatenated raw, so include the separator
+      defaultPrefix: "apollo_",
+      // `start` (shown in the admin table) keeps the prefix + a few key chars
+      startingCharactersConfig: { charactersLength: 13 },
     }),
     tanstackStartCookies(),
   ],
@@ -167,6 +176,13 @@ export const auth = betterAuth({
    */
   hooks: {
     before: createAuthMiddleware(async (ctx) => {
+      /**
+       * administered by admins only; prevent public usage of the routes
+       */
+      if (ctx.path?.startsWith("/api-key/") && (ctx.request || ctx.headers)) {
+        throw new APIError("NOT_FOUND");
+      }
+
       /**
        * Override the internal adapter to return the session and user in one query.
        */

@@ -10,8 +10,6 @@ export const env = createEnv({
     INDEXER_DATABASE_URL: z.url(),
     // redis
     REDIS_URL: z.url(),
-    // auth key
-    AUTH_KEY: z.string().min(1),
     // abstract rpc endpoint
     ABSTRACT_RPC: z.url(),
     // better auth
@@ -50,7 +48,6 @@ export const env = createEnv({
     DATABASE_URL_UNPOOLED: process.env.DATABASE_URL_UNPOOLED,
     INDEXER_DATABASE_URL: process.env.INDEXER_DATABASE_URL,
     REDIS_URL: process.env.REDIS_URL,
-    AUTH_KEY: process.env.AUTH_KEY,
     ABSTRACT_RPC: process.env.ABSTRACT_RPC,
     BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
     DISCORD_CLIENT_ID: process.env.DISCORD_CLIENT_ID,

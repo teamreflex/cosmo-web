@@ -1,8 +1,7 @@
-import { env } from "@/lib/env/server";
 import { $fetchObjektsWithComo } from "@/lib/functions/como";
+import { verifyRequestApiKey } from "@/lib/server/api-key.server";
 import { buildCalendar } from "@/lib/universal/como";
 import { createFileRoute } from "@tanstack/react-router";
-import { timingSafeEqual } from "node:crypto";
 
 export const Route = createFileRoute("/api/user/by-address/$address/como")({
   server: {
@@ -11,12 +10,7 @@ export const Route = createFileRoute("/api/user/by-address/$address/como")({
        * Endpoint for getting the COMO calendar for a given address.
        */
       GET: async ({ request, params }) => {
-        const authKey = request.headers.get("Authorization") ?? "";
-        const expected = env.AUTH_KEY;
-        if (
-          authKey.length !== expected.length ||
-          !timingSafeEqual(Buffer.from(authKey), Buffer.from(expected))
-        ) {
+        if (!(await verifyRequestApiKey(request))) {
           return Response.json(
             { error: "invalid authorization" },
             { status: 401 },

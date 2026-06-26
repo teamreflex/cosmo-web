@@ -23,6 +23,10 @@ export function formatAuthError(error: unknown): string | null {
       return m.link_cosmo_error_invalid();
     case "NOT_FOUND":
       return m.auth_error_verification_not_found();
+    case "api_key_not_found":
+      return m.auth_error_api_key_not_found();
+    case "user_not_found":
+      return m.auth_error_user_not_found();
     default:
       error.message satisfies never;
       return null;

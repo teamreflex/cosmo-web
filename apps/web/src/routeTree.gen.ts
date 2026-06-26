@@ -29,6 +29,7 @@ import { Route as AdminErasRouteImport } from './routes/admin/eras'
 import { Route as AdminCollectionsRouteImport } from './routes/admin/collections'
 import { Route as AdminCacheRouteImport } from './routes/admin/cache'
 import { Route as AdminBandsRouteImport } from './routes/admin/bands'
+import { Route as AdminApiKeysRouteImport } from './routes/admin/api-keys'
 import { Route as AtChar123usernameChar125TradesRouteImport } from './routes/@{$username}/trades'
 import { Route as AtChar123usernameChar125ProgressRouteImport } from './routes/@{$username}/progress'
 import { Route as AtChar123usernameChar125ComoRouteImport } from './routes/@{$username}/como'
@@ -149,6 +150,11 @@ const AdminBandsRoute = AdminBandsRouteImport.update({
   path: '/bands',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminApiKeysRoute = AdminApiKeysRouteImport.update({
+  id: '/api-keys',
+  path: '/api-keys',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AtChar123usernameChar125TradesRoute =
   AtChar123usernameChar125TradesRouteImport.update({
     id: '/trades',
@@ -254,6 +260,7 @@ export interface FileRoutesByFullPath {
   '/@{$username}/como': typeof AtChar123usernameChar125ComoRoute
   '/@{$username}/progress': typeof AtChar123usernameChar125ProgressRoute
   '/@{$username}/trades': typeof AtChar123usernameChar125TradesRoute
+  '/admin/api-keys': typeof AdminApiKeysRoute
   '/admin/bands': typeof AdminBandsRoute
   '/admin/cache': typeof AdminCacheRoute
   '/admin/collections': typeof AdminCollectionsRoute
@@ -291,6 +298,7 @@ export interface FileRoutesByTo {
   '/@{$username}/como': typeof AtChar123usernameChar125ComoRoute
   '/@{$username}/progress': typeof AtChar123usernameChar125ProgressRoute
   '/@{$username}/trades': typeof AtChar123usernameChar125TradesRoute
+  '/admin/api-keys': typeof AdminApiKeysRoute
   '/admin/bands': typeof AdminBandsRoute
   '/admin/cache': typeof AdminCacheRoute
   '/admin/collections': typeof AdminCollectionsRoute
@@ -331,6 +339,7 @@ export interface FileRoutesById {
   '/@{$username}/como': typeof AtChar123usernameChar125ComoRoute
   '/@{$username}/progress': typeof AtChar123usernameChar125ProgressRoute
   '/@{$username}/trades': typeof AtChar123usernameChar125TradesRoute
+  '/admin/api-keys': typeof AdminApiKeysRoute
   '/admin/bands': typeof AdminBandsRoute
   '/admin/cache': typeof AdminCacheRoute
   '/admin/collections': typeof AdminCollectionsRoute
@@ -372,6 +381,7 @@ export interface FileRouteTypes {
     | '/@{$username}/como'
     | '/@{$username}/progress'
     | '/@{$username}/trades'
+    | '/admin/api-keys'
     | '/admin/bands'
     | '/admin/cache'
     | '/admin/collections'
@@ -409,6 +419,7 @@ export interface FileRouteTypes {
     | '/@{$username}/como'
     | '/@{$username}/progress'
     | '/@{$username}/trades'
+    | '/admin/api-keys'
     | '/admin/bands'
     | '/admin/cache'
     | '/admin/collections'
@@ -448,6 +459,7 @@ export interface FileRouteTypes {
     | '/@{$username}/como'
     | '/@{$username}/progress'
     | '/@{$username}/trades'
+    | '/admin/api-keys'
     | '/admin/bands'
     | '/admin/cache'
     | '/admin/collections'
@@ -649,6 +661,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminBandsRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/api-keys': {
+      id: '/admin/api-keys'
+      path: '/api-keys'
+      fullPath: '/admin/api-keys'
+      preLoaderRoute: typeof AdminApiKeysRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/@{$username}/trades': {
       id: '/@{$username}/trades'
       path: '/trades'
@@ -796,6 +815,7 @@ const AtChar123usernameChar125RouteRouteWithChildren =
   )
 
 interface AdminRouteRouteChildren {
+  AdminApiKeysRoute: typeof AdminApiKeysRoute
   AdminBandsRoute: typeof AdminBandsRoute
   AdminCacheRoute: typeof AdminCacheRoute
   AdminCollectionsRoute: typeof AdminCollectionsRoute
@@ -806,6 +826,7 @@ interface AdminRouteRouteChildren {
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminApiKeysRoute: AdminApiKeysRoute,
   AdminBandsRoute: AdminBandsRoute,
   AdminCacheRoute: AdminCacheRoute,
   AdminCollectionsRoute: AdminCollectionsRoute,
