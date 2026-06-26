@@ -6,7 +6,7 @@ import { objektQuery } from "@/lib/queries/objekt-queries";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import type { PropsWithChildren } from "react";
 import { useShallow } from "zustand/react/shallow";
 
@@ -15,6 +15,7 @@ type Props = PropsWithChildren<{
   selectionKey?: string;
   setActive?: (slug: string | undefined) => void;
   priority?: boolean;
+  eager?: boolean;
   className?: string;
 }>;
 
@@ -27,6 +28,7 @@ export default function ExpandableObjekt({
   collection,
   setActive,
   priority = false,
+  eager = false,
   className,
 }: Props) {
   const isSelected = useObjektSelection(
@@ -52,6 +54,7 @@ export default function ExpandableObjekt({
           collection={collection}
           setActive={setActive}
           priority={priority}
+          eager={eager}
         />
 
         {children}
@@ -64,14 +67,25 @@ type FrontImageProps = {
   collection: Objekt.Collection;
   setActive?: (slug: string | undefined) => void;
   priority?: boolean;
+  eager?: boolean;
 };
 
 function FrontImage(props: FrontImageProps) {
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(props.eager ?? false);
   const queryClient = useQueryClient();
   const { open } = useMetadataDialog();
 
   const { front } = getObjektImageUrls(props.collection);
+
+  /**
+   * Mark already-decoded images as loaded on mount so cached re-mounts,
+   * (e.g. a virtualized cell scrolling back into view) skip the opacity-0 fade.
+   */
+  const handleImageRef = useCallback((node: HTMLImageElement | null) => {
+    if (node?.complete && node.naturalWidth > 0) {
+      setIsLoaded(true);
+    }
+  }, []);
 
   function prefetch() {
     const img = new Image();
@@ -95,6 +109,7 @@ function FrontImage(props: FrontImageProps) {
 
   return (
     <img
+      ref={handleImageRef}
       role="button"
       aria-label={m.aria_view_objekt()}
       onMouseOver={prefetch}

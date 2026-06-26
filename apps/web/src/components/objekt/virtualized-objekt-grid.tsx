@@ -6,11 +6,37 @@ import { tokenKey } from "@/hooks/use-objekt-selection";
 import { m } from "@/i18n/messages";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
+import {
+  DndContext,
+  DragOverlay,
+  KeyboardSensor,
+  MeasuringStrategy,
+  MouseSensor,
+  TouchSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import type {
+  Announcements,
+  DragEndEvent,
+  DragStartEvent,
+  ScreenReaderInstructions,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  rectSortingStrategy,
+  sortableKeyboardCoordinates,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { IconHeartBroken, IconRefresh } from "@tabler/icons-react";
 import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import type { DefaultError, QueryKey } from "@tanstack/react-query";
+import type { Virtualizer } from "@tanstack/react-virtual";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
-import { Suspense, useMemo, useRef } from "react";
+import { Suspense, useCallback, useMemo, useRef, useState } from "react";
 import type { ComponentType } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { LegacyOverlay } from "../collection/data-sources/common-legacy";
@@ -54,6 +80,7 @@ type Props<
   options: ObjektResponseOptions<TResponse, TItem, TError, TQueryKey>;
   pins?: CosmoObjekt[];
   hidePins?: boolean;
+  onReorderPins?: (orderedTokenIds: number[]) => void;
   shouldRender?: (objekt: TItem) => boolean;
   showTotal?: boolean;
 
@@ -103,6 +130,7 @@ function ObjektGrid<
   options,
   pins = [],
   hidePins = true,
+  onReorderPins,
   shouldRender = () => true,
   showTotal = false,
 
@@ -154,82 +182,192 @@ function ObjektGrid<
   const virtualizerRef = useRef(virtualizer);
   const virtualList = virtualizerRef.current.getVirtualItems();
 
+  /**
+   * Drag-and-drop pin reordering. `reorderable` is stable for a mounted grid
+   * (own-profile + handler provided), so the DnD providers never mount/unmount
+   * and the non-pin item cells are never forced to remount when filters toggle.
+   * `sortable` additionally requires visible pins to actually drag.
+   */
+  const sensors = useSensors(
+    useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 200, tolerance: 8 },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+  const [activePin, setActivePin] = useState<CosmoObjekt | null>(null);
+
+  const reorderable = onReorderPins !== undefined && authenticated;
+  const sortable = reorderable && !hidePins && pins.length > 1;
+  const pinIds = useMemo(
+    () => (sortable ? pins.map((pin) => pin.tokenId) : []),
+    [pins, sortable],
+  );
+
+  const handleDragStart = useCallback(
+    (event: DragStartEvent) => {
+      setActivePin(pins.find((pin) => pin.tokenId === event.active.id) ?? null);
+    },
+    [pins],
+  );
+
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      setActivePin(null);
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
+      const oldIndex = pinIds.indexOf(String(active.id));
+      const newIndex = pinIds.indexOf(String(over.id));
+      if (oldIndex === -1 || newIndex === -1) return;
+      onReorderPins?.(arrayMove(pinIds, oldIndex, newIndex).map(Number));
+    },
+    [pinIds, onReorderPins],
+  );
+
+  const handleDragCancel = useCallback(() => setActivePin(null), []);
+
+  const announcements = useMemo<Announcements>(
+    () => ({
+      onDragStart: ({ active }) =>
+        m.pin_reorder_picked_up({
+          position: pinIds.indexOf(String(active.id)) + 1,
+          total: pinIds.length,
+        }),
+      onDragOver: ({ over }) =>
+        over
+          ? m.pin_reorder_over({
+              position: pinIds.indexOf(String(over.id)) + 1,
+              total: pinIds.length,
+            })
+          : undefined,
+      onDragEnd: ({ over }) =>
+        over
+          ? m.pin_reorder_dropped({
+              position: pinIds.indexOf(String(over.id)) + 1,
+              total: pinIds.length,
+            })
+          : undefined,
+      onDragCancel: () => m.pin_reorder_cancelled(),
+    }),
+    [pinIds],
+  );
+
+  const screenReaderInstructions = useMemo<ScreenReaderInstructions>(
+    () => ({ draggable: m.pin_reorder_instructions() }),
+    [],
+  );
+
+  const gridBody = (
+    <div
+      className="relative w-full will-change-transform"
+      style={{
+        height: `${virtualizerRef.current.getTotalSize()}px`,
+      }}
+    >
+      {/* wait for measurement: until the cell size is known the estimated
+          row height is ~0, so the virtualizer would mount every cell at
+          once instead of windowing */}
+      {laneWidth > 0 &&
+        virtualList.map((virtualItem) => {
+          const cell = cells[virtualItem.index];
+          if (!cell) return null;
+
+          const baseY =
+            virtualItem.start - virtualizerRef.current.options.scrollMargin;
+          const left = SIDE + virtualItem.lane * (laneWidth + GAP);
+          const style = {
+            transform: `translateY(${baseY}px)`,
+            left: `${left}px`,
+            width: `${laneWidth}px`,
+          };
+
+          // render pin
+          if (cell.type === "pin") {
+            // sortable pins position via `top` so dnd-kit owns `transform`
+            if (sortable) {
+              return (
+                <SortablePinCell
+                  key={cell.item.tokenId}
+                  pin={cell.item}
+                  index={virtualItem.index}
+                  top={baseY}
+                  left={left}
+                  width={laneWidth}
+                  authenticated={authenticated}
+                  measureElement={virtualizerRef.current.measureElement}
+                />
+              );
+            }
+
+            return (
+              <div
+                key={cell.item.tokenId}
+                data-index={virtualItem.index}
+                ref={virtualizerRef.current.measureElement}
+                style={style}
+                className="absolute top-0"
+              >
+                <PinObjektCard pin={cell.item} authenticated={authenticated} />
+              </div>
+            );
+          }
+
+          // render non-pin items
+          const id = getObjektId(cell.item);
+          const itemProps = {
+            item: cell.item,
+            id,
+            isPin: false,
+            priority: virtualItem.index < gridColumns * 4,
+            ...itemComponentProps,
+          } as BaseItemComponentProps<TItem> & TItemProps;
+
+          return (
+            <div
+              key={id}
+              data-index={virtualItem.index}
+              ref={virtualizerRef.current.measureElement}
+              style={style}
+              className="absolute top-0"
+            >
+              <ItemComponent {...itemProps} />
+            </div>
+          );
+        })}
+    </div>
+  );
+
   return (
     <>
       <div className="w-full py-2" ref={containerRef}>
-        <div
-          className="relative w-full will-change-transform"
-          style={{
-            height: `${virtualizerRef.current.getTotalSize()}px`,
-          }}
-        >
-          {/* wait for measurement: until the cell size is known the estimated
-              row height is ~0, so the virtualizer would mount every cell at
-              once instead of windowing */}
-          {laneWidth > 0 &&
-            virtualList.map((virtualItem) => {
-              const cell = cells[virtualItem.index];
-              if (!cell) return null;
-
-              const style = {
-                transform: `translateY(${
-                  virtualItem.start -
-                  virtualizerRef.current.options.scrollMargin
-                }px)`,
-                left: `${SIDE + virtualItem.lane * (laneWidth + GAP)}px`,
-                width: `${laneWidth}px`,
-              };
-
-              // render pin
-              if (cell.type === "pin") {
-                const legacyObjekt = Objekt.fromLegacy(cell.item);
-                return (
-                  <div
-                    key={cell.item.tokenId}
-                    data-index={virtualItem.index}
-                    ref={virtualizerRef.current.measureElement}
-                    style={style}
-                    className="absolute top-0"
-                  >
-                    <ExpandableObjekt
-                      collection={legacyObjekt.collection}
-                      selectionKey={tokenKey(parseInt(cell.item.tokenId))}
-                      priority={true}
-                    >
-                      <LegacyOverlay
-                        collection={legacyObjekt.collection}
-                        token={legacyObjekt.objekt}
-                        authenticated={authenticated}
-                        isPin={true}
-                      />
-                    </ExpandableObjekt>
-                  </div>
-                );
-              }
-
-              // render non-pin items
-              const id = getObjektId(cell.item);
-              const itemProps = {
-                item: cell.item,
-                id,
-                isPin: false,
-                priority: virtualItem.index < gridColumns * 4,
-                ...itemComponentProps,
-              } as BaseItemComponentProps<TItem> & TItemProps;
-
-              return (
-                <div
-                  key={id}
-                  data-index={virtualItem.index}
-                  ref={virtualizerRef.current.measureElement}
-                  style={style}
-                  className="absolute top-0"
-                >
-                  <ItemComponent {...itemProps} />
-                </div>
-              );
-            })}
-        </div>
+        {reorderable ? (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+            onDragCancel={handleDragCancel}
+            measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
+            accessibility={{ announcements, screenReaderInstructions }}
+          >
+            <SortableContext items={pinIds} strategy={rectSortingStrategy}>
+              {gridBody}
+            </SortableContext>
+            <DragOverlay className="pin-drag-overlay">
+              {activePin ? (
+                <PinObjektCard
+                  pin={activePin}
+                  authenticated={authenticated}
+                  eager
+                />
+              ) : null}
+            </DragOverlay>
+          </DndContext>
+        ) : (
+          gridBody
+        )}
       </div>
 
       {showTotal && (
@@ -247,6 +385,103 @@ function ObjektGrid<
         />
       </Portal>
     </>
+  );
+}
+
+/**
+ * Front image + legacy overlay for a pinned objekt. Shared by the static pin
+ * cell, the sortable pin cell, and the drag overlay preview.
+ */
+function PinObjektCard({
+  pin,
+  authenticated,
+  eager = false,
+}: {
+  pin: CosmoObjekt;
+  authenticated: boolean;
+  eager?: boolean;
+}) {
+  const legacyObjekt = Objekt.fromLegacy(pin);
+  return (
+    <ExpandableObjekt
+      collection={legacyObjekt.collection}
+      selectionKey={tokenKey(parseInt(pin.tokenId))}
+      priority={true}
+      eager={eager}
+    >
+      <LegacyOverlay
+        collection={legacyObjekt.collection}
+        token={legacyObjekt.objekt}
+        authenticated={authenticated}
+        isPin={true}
+      />
+    </ExpandableObjekt>
+  );
+}
+
+type SortablePinCellProps = {
+  pin: CosmoObjekt;
+  index: number;
+  top: number;
+  left: number;
+  width: number;
+  authenticated: boolean;
+  measureElement: Virtualizer<Window, Element>["measureElement"];
+};
+
+/**
+ * A pin cell wired into dnd-kit's sortable context. It positions its base
+ * offset via `top`/`left` so `transform` stays free for the drag/sort
+ * animation, and merges the sortable node ref with the virtualizer's
+ * measurement ref. `touch-action: manipulation` keeps page scroll working
+ * since the touch sensor long-presses rather than claiming the gesture.
+ */
+function SortablePinCell({
+  pin,
+  index,
+  top,
+  left,
+  width,
+  authenticated,
+  measureElement,
+}: SortablePinCellProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: pin.tokenId });
+
+  const setRefs = useCallback(
+    (node: HTMLDivElement | null) => {
+      setNodeRef(node);
+      measureElement(node);
+    },
+    [setNodeRef, measureElement],
+  );
+
+  return (
+    <div
+      ref={setRefs}
+      data-index={index}
+      data-pin-sortable=""
+      style={{
+        top: `${top}px`,
+        left: `${left}px`,
+        width: `${width}px`,
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0 : 1,
+        touchAction: "manipulation",
+      }}
+      className="absolute cursor-pointer"
+      {...attributes}
+      {...listeners}
+    >
+      <PinObjektCard pin={pin} authenticated={authenticated} />
+    </div>
   );
 }
 
