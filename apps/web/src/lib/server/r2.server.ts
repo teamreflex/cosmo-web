@@ -14,16 +14,17 @@ type PresignedUrlOptions = {
   key: string;
   contentType: string;
   contentLength: number;
+  maxSize?: number;
 };
 
 /**
  * Generate a presigned URL for uploading to R2.
  */
 export function getPresignedUploadUrl(options: PresignedUrlOptions) {
-  const { key, contentType, contentLength } = options;
+  const { key, contentType, contentLength, maxSize = MAX_FILE_SIZE } = options;
 
-  if (contentLength > MAX_FILE_SIZE) {
-    throw new Error(`File size exceeds maximum of ${MAX_FILE_SIZE} bytes`);
+  if (contentLength > maxSize) {
+    throw new Error(`File size exceeds maximum of ${maxSize} bytes`);
   }
 
   const uploadUrl = r2.presign(key, {
@@ -54,13 +55,20 @@ export function generateEventImageKey(extension: string): string {
 }
 
 /**
- * Generate a key for collection media.
+ * Generate a key for collection media. The prefix is determined by the objekt
+ * class: Motion media lives under mco/, Double media under dco/.
  */
 export function generateCollectionMediaKey(
   artistName: string,
   slug: string,
+  objektClass: string,
 ): string {
-  return `mco/${artistName}/${slug}.mp4`;
+  const prefix =
+    objektClass === "Motion" ? "mco" : objektClass === "Double" ? "dco" : null;
+  if (prefix === null) {
+    throw new Error(`Invalid media class: ${objektClass}`);
+  }
+  return `${prefix}/${artistName}/${slug}.mp4`;
 }
 
 /**
@@ -70,6 +78,7 @@ export async function uploadCollectionMedia(
   sourceUrl: string,
   artistName: string,
   slug: string,
+  objektClass: string,
 ): Promise<string> {
   const response = await fetch(sourceUrl);
   if (!response.ok) {
@@ -84,7 +93,7 @@ export async function uploadCollectionMedia(
     throw new Error(`Invalid content type: ${contentType}`);
   }
 
-  const key = generateCollectionMediaKey(artistName, slug);
+  const key = generateCollectionMediaKey(artistName, slug, objektClass);
   const blob = await response.blob();
 
   await r2.write(key, blob, {
