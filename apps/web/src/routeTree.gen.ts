@@ -44,7 +44,6 @@ import { Route as ApiUserByAddressAddressIndexRouteImport } from './routes/api/u
 import { Route as ApiObjektsMetadataSlugIndexRouteImport } from './routes/api/objekts/metadata/$slug/index'
 import { Route as ApiUserByAddressAddressStatsRouteImport } from './routes/api/user/by-address/$address/stats'
 import { Route as ApiUserByAddressAddressComoRouteImport } from './routes/api/user/by-address/$address/como'
-import { Route as ApiObjektsMetadataSlugSerialRouteImport } from './routes/api/objekts/metadata/$slug/$serial'
 import { Route as ApiBffV3UsersSearchRouteImport } from './routes/api/bff/v3/users/search'
 
 const TermsPrivacyRoute = TermsPrivacyRouteImport.update({
@@ -234,12 +233,6 @@ const ApiUserByAddressAddressComoRoute =
     path: '/api/user/by-address/$address/como',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiObjektsMetadataSlugSerialRoute =
-  ApiObjektsMetadataSlugSerialRouteImport.update({
-    id: '/api/objekts/metadata/$slug/$serial',
-    path: '/api/objekts/metadata/$slug/$serial',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const ApiBffV3UsersSearchRoute = ApiBffV3UsersSearchRouteImport.update({
   id: '/api/bff/v3/users/search',
   path: '/api/bff/v3/users/search',
@@ -279,7 +272,6 @@ export interface FileRoutesByFullPath {
   '/api/objekt-list/for-user/$identifier': typeof ApiObjektListForUserIdentifierRoute
   '/api/objekts/by-slug/$slug': typeof ApiObjektsBySlugSlugRoute
   '/api/bff/v3/users/search': typeof ApiBffV3UsersSearchRoute
-  '/api/objekts/metadata/$slug/$serial': typeof ApiObjektsMetadataSlugSerialRoute
   '/api/user/by-address/$address/como': typeof ApiUserByAddressAddressComoRoute
   '/api/user/by-address/$address/stats': typeof ApiUserByAddressAddressStatsRoute
   '/api/objekts/metadata/$slug/': typeof ApiObjektsMetadataSlugIndexRoute
@@ -316,7 +308,6 @@ export interface FileRoutesByTo {
   '/api/objekt-list/for-user/$identifier': typeof ApiObjektListForUserIdentifierRoute
   '/api/objekts/by-slug/$slug': typeof ApiObjektsBySlugSlugRoute
   '/api/bff/v3/users/search': typeof ApiBffV3UsersSearchRoute
-  '/api/objekts/metadata/$slug/$serial': typeof ApiObjektsMetadataSlugSerialRoute
   '/api/user/by-address/$address/como': typeof ApiUserByAddressAddressComoRoute
   '/api/user/by-address/$address/stats': typeof ApiUserByAddressAddressStatsRoute
   '/api/objekts/metadata/$slug': typeof ApiObjektsMetadataSlugIndexRoute
@@ -356,7 +347,6 @@ export interface FileRoutesById {
   '/api/objekt-list/for-user/$identifier': typeof ApiObjektListForUserIdentifierRoute
   '/api/objekts/by-slug/$slug': typeof ApiObjektsBySlugSlugRoute
   '/api/bff/v3/users/search': typeof ApiBffV3UsersSearchRoute
-  '/api/objekts/metadata/$slug/$serial': typeof ApiObjektsMetadataSlugSerialRoute
   '/api/user/by-address/$address/como': typeof ApiUserByAddressAddressComoRoute
   '/api/user/by-address/$address/stats': typeof ApiUserByAddressAddressStatsRoute
   '/api/objekts/metadata/$slug/': typeof ApiObjektsMetadataSlugIndexRoute
@@ -397,7 +387,6 @@ export interface FileRouteTypes {
     | '/api/objekt-list/for-user/$identifier'
     | '/api/objekts/by-slug/$slug'
     | '/api/bff/v3/users/search'
-    | '/api/objekts/metadata/$slug/$serial'
     | '/api/user/by-address/$address/como'
     | '/api/user/by-address/$address/stats'
     | '/api/objekts/metadata/$slug/'
@@ -434,7 +423,6 @@ export interface FileRouteTypes {
     | '/api/objekt-list/for-user/$identifier'
     | '/api/objekts/by-slug/$slug'
     | '/api/bff/v3/users/search'
-    | '/api/objekts/metadata/$slug/$serial'
     | '/api/user/by-address/$address/como'
     | '/api/user/by-address/$address/stats'
     | '/api/objekts/metadata/$slug'
@@ -473,7 +461,6 @@ export interface FileRouteTypes {
     | '/api/objekt-list/for-user/$identifier'
     | '/api/objekts/by-slug/$slug'
     | '/api/bff/v3/users/search'
-    | '/api/objekts/metadata/$slug/$serial'
     | '/api/user/by-address/$address/como'
     | '/api/user/by-address/$address/stats'
     | '/api/objekts/metadata/$slug/'
@@ -502,7 +489,6 @@ export interface RootRouteChildren {
   ApiObjektListForUserIdentifierRoute: typeof ApiObjektListForUserIdentifierRoute
   ApiObjektsBySlugSlugRoute: typeof ApiObjektsBySlugSlugRoute
   ApiBffV3UsersSearchRoute: typeof ApiBffV3UsersSearchRoute
-  ApiObjektsMetadataSlugSerialRoute: typeof ApiObjektsMetadataSlugSerialRoute
   ApiUserByAddressAddressComoRoute: typeof ApiUserByAddressAddressComoRoute
   ApiUserByAddressAddressStatsRoute: typeof ApiUserByAddressAddressStatsRoute
   ApiObjektsMetadataSlugIndexRoute: typeof ApiObjektsMetadataSlugIndexRoute
@@ -756,13 +742,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiUserByAddressAddressComoRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/objekts/metadata/$slug/$serial': {
-      id: '/api/objekts/metadata/$slug/$serial'
-      path: '/api/objekts/metadata/$slug/$serial'
-      fullPath: '/api/objekts/metadata/$slug/$serial'
-      preLoaderRoute: typeof ApiObjektsMetadataSlugSerialRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/bff/v3/users/search': {
       id: '/api/bff/v3/users/search'
       path: '/api/bff/v3/users/search'
@@ -842,7 +821,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiObjektListForUserIdentifierRoute: ApiObjektListForUserIdentifierRoute,
   ApiObjektsBySlugSlugRoute: ApiObjektsBySlugSlugRoute,
   ApiBffV3UsersSearchRoute: ApiBffV3UsersSearchRoute,
-  ApiObjektsMetadataSlugSerialRoute: ApiObjektsMetadataSlugSerialRoute,
   ApiUserByAddressAddressComoRoute: ApiUserByAddressAddressComoRoute,
   ApiUserByAddressAddressStatsRoute: ApiUserByAddressAddressStatsRoute,
   ApiObjektsMetadataSlugIndexRoute: ApiObjektsMetadataSlugIndexRoute,
