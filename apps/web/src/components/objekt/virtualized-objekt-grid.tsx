@@ -20,7 +20,10 @@ import { Button } from "../ui/button";
 import ExpandableObjekt from "./objekt-expandable";
 import ObjektGridSkeleton from "./objekt-grid-skeleton";
 
+// gap in pixels between grid cells, both horizontally and vertically
 const GAP = 16;
+// horizontal breathing room so card outlines aren't clipped at the grid edges
+const SIDE = 2;
 const ASPECT_RATIO = 8.5 / 5.5;
 
 export type ObjektRowItem<T> =
@@ -112,8 +115,8 @@ function ObjektGrid<
   extraRowHeight = 0,
 }: Props<TResponse, TItem, TItemProps, TError, TQueryKey>) {
   const { query, total, items } = useObjektResponse(options);
-  const rows = useMemo(() => {
-    const initialItems = [
+  const cells = useMemo<ObjektRowItem<TItem>[]>(() => {
+    return [
       ...(hidePins
         ? []
         : pins.map((pin) => ({
@@ -125,22 +128,25 @@ function ObjektGrid<
         item,
       })),
     ];
-
-    const result: ObjektRowItem<TItem>[][] = [];
-    for (let i = 0; i < initialItems.length; i += gridColumns) {
-      result.push(initialItems.slice(i, i + gridColumns));
-    }
-    return result;
-  }, [items, pins, shouldRender, gridColumns, hidePins]);
+  }, [items, pins, shouldRender, hidePins]);
 
   const [containerRef, { width }] = useElementSize({ axis: "width" });
+
+  // each cell occupies one lane; the grid is laid out per-objekt rather than
+  // per-row so the virtualizer manages every objekt as an individual item.
+  const laneWidth = Math.max(
+    0,
+    (width - SIDE * 2 - GAP * (gridColumns - 1)) / gridColumns,
+  );
+  const itemHeight = laneWidth * ASPECT_RATIO + extraRowHeight;
+
   const virtualizer = useWindowVirtualizer({
-    count: rows.length,
-    overscan: 3,
-    estimateSize: () => {
-      const itemWidth = (width - GAP * (gridColumns - 1)) / gridColumns;
-      return itemWidth * ASPECT_RATIO + extraRowHeight;
-    },
+    count: cells.length,
+    lanes: gridColumns,
+    gap: GAP,
+    // overscan is counted in items, so scale it to keep ~3 rows buffered
+    overscan: gridColumns * 3,
+    estimateSize: () => itemHeight,
     scrollMargin: containerRef.current?.offsetTop ?? 0,
   });
 
@@ -152,70 +158,77 @@ function ObjektGrid<
     <>
       <div className="w-full py-2" ref={containerRef}>
         <div
-          className="relative flex flex-col will-change-transform"
+          className="relative w-full will-change-transform"
           style={{
             height: `${virtualizerRef.current.getTotalSize()}px`,
           }}
         >
-          {virtualList.map((rowItem) => {
-            const row = rows[rowItem.index];
-            if (!row) return null;
+          {/* wait for measurement: until the cell size is known the estimated
+              row height is ~0, so the virtualizer would mount every cell at
+              once instead of windowing */}
+          {laneWidth > 0 &&
+            virtualList.map((virtualItem) => {
+              const cell = cells[virtualItem.index];
+              if (!cell) return null;
 
-            return (
-              <div
-                key={rowItem.key}
-                style={{
-                  "--grid-columns": gridColumns,
-                  transform: `translateY(${
-                    rowItem.start - virtualizerRef.current.options.scrollMargin
-                  }px)`,
-                  // need to add padding to the top and bottom of the grid to prevent border clipping
-                  // add padding to the gap in between rows, and 2px to the first row
-                  paddingTop: rowItem.index === 0 ? 2 : GAP,
-                  // add padding to the last row
-                  paddingBottom: rowItem.index === rows.length - 1 ? 2 : 0,
-                }}
-                data-index={rowItem.index}
-                ref={virtualizerRef.current.measureElement}
-                className="absolute top-0 left-0 grid w-full grid-cols-3 gap-4 px-0.5 md:grid-cols-[repeat(var(--grid-columns),minmax(0,1fr))]"
-              >
-                {row.map((objekt, index) => {
-                  // render pin
-                  if (objekt.type === "pin") {
-                    const legacyObjekt = Objekt.fromLegacy(objekt.item);
-                    return (
-                      <ExpandableObjekt
-                        key={objekt.item.tokenId}
+              const style = {
+                transform: `translateY(${
+                  virtualItem.start -
+                  virtualizerRef.current.options.scrollMargin
+                }px)`,
+                left: `${SIDE + virtualItem.lane * (laneWidth + GAP)}px`,
+                width: `${laneWidth}px`,
+              };
+
+              // render pin
+              if (cell.type === "pin") {
+                const legacyObjekt = Objekt.fromLegacy(cell.item);
+                return (
+                  <div
+                    key={cell.item.tokenId}
+                    data-index={virtualItem.index}
+                    ref={virtualizerRef.current.measureElement}
+                    style={style}
+                    className="absolute top-0"
+                  >
+                    <ExpandableObjekt
+                      collection={legacyObjekt.collection}
+                      selectionKey={tokenKey(parseInt(cell.item.tokenId))}
+                      priority={true}
+                    >
+                      <LegacyOverlay
                         collection={legacyObjekt.collection}
-                        selectionKey={tokenKey(parseInt(objekt.item.tokenId))}
-                        priority={true}
-                      >
-                        <LegacyOverlay
-                          collection={legacyObjekt.collection}
-                          token={legacyObjekt.objekt}
-                          authenticated={authenticated}
-                          isPin={true}
-                        />
-                      </ExpandableObjekt>
-                    );
-                  }
+                        token={legacyObjekt.objekt}
+                        authenticated={authenticated}
+                        isPin={true}
+                      />
+                    </ExpandableObjekt>
+                  </div>
+                );
+              }
 
-                  // render non-pin items
-                  const props = {
-                    item: objekt.item,
-                    id: getObjektId(objekt.item),
-                    isPin: false,
-                    priority: index <= gridColumns * 4,
-                    ...itemComponentProps,
-                  } as BaseItemComponentProps<TItem> & TItemProps;
+              // render non-pin items
+              const id = getObjektId(cell.item);
+              const itemProps = {
+                item: cell.item,
+                id,
+                isPin: false,
+                priority: virtualItem.index < gridColumns * 4,
+                ...itemComponentProps,
+              } as BaseItemComponentProps<TItem> & TItemProps;
 
-                  return (
-                    <ItemComponent key={getObjektId(objekt.item)} {...props} />
-                  );
-                })}
-              </div>
-            );
-          })}
+              return (
+                <div
+                  key={id}
+                  data-index={virtualItem.index}
+                  ref={virtualizerRef.current.measureElement}
+                  style={style}
+                  className="absolute top-0"
+                >
+                  <ItemComponent {...itemProps} />
+                </div>
+              );
+            })}
         </div>
       </div>
 
@@ -224,6 +237,7 @@ function ObjektGrid<
           {total}
         </Portal>
       )}
+
       <Portal to="#pagination">
         <InfiniteQueryNext
           status={query.status}
