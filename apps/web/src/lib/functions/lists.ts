@@ -18,10 +18,10 @@ import type {
 } from "@/lib/universal/lists";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import {
-  addObjektToWantListSchema,
   addObjektsToHaveListSchema,
   addObjektsToListSchema,
   addObjektsToSaleListSchema,
+  addObjektsToWantListSchema,
   createObjektListSchema,
   deleteObjektListSchema,
   findTradePartnersSchema,
@@ -36,7 +36,16 @@ import { objektListEntries, objektLists } from "@apollo/database/web/schema";
 import type { ObjektListEntry } from "@apollo/database/web/types";
 import { redirect } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
-import { and, countDistinct, desc, eq, isNotNull, ne, sql } from "drizzle-orm";
+import {
+  and,
+  countDistinct,
+  desc,
+  eq,
+  inArray,
+  isNotNull,
+  ne,
+  sql,
+} from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import * as z from "zod";
 import { $fetchArtists } from "./artists";
@@ -612,15 +621,19 @@ export const $addObjektsToHaveList = createServerFn({ method: "POST" })
   });
 
 /**
- * Add an objekt to a want list. Skips ownership verification (you can want
- * anything). Fires mutual-viability notifications to other users when the
- * list is trade-active and discoverable.
+ * Add one or more objekts to a want list. Skips ownership verification (you can
+ * want anything). Existing collections stack quantity; new ones insert at one.
+ * Fires mutual-viability notifications when the list is trade-active and
+ * discoverable.
  */
-export const $addObjektToWantList = createServerFn({ method: "POST" })
-  .validator(addObjektToWantListSchema)
+export const $addObjektsToWantList = createServerFn({ method: "POST" })
+  .validator(addObjektsToWantListSchema)
   .middleware([cosmoMiddleware])
   .handler(async ({ data, context }) => {
     const userId = context.session.user.id;
+
+    // selections are keyed by slug client-side, but guard against duplicates
+    const objekts = [...new Map(data.objekts.map((o) => [o.slug, o])).values()];
 
     await db.transaction(async (tx) => {
       // assert ownership of the list and pull the linked list
@@ -644,38 +657,52 @@ export const $addObjektToWantList = createServerFn({ method: "POST" })
 
       const isTradeActive = parentList.linkingHaveList !== null;
 
-      const existing = await tx.query.objektListEntries.findFirst({
+      const existing = await tx.query.objektListEntries.findMany({
         where: {
           objektListId: data.objektListId,
-          collectionId: data.slug,
+          collectionId: { in: objekts.map((o) => o.slug) },
         },
+        columns: { id: true, collectionId: true },
       });
+      const existingSlugs = new Set(existing.map((e) => e.collectionId));
 
-      if (existing) {
+      if (existing.length > 0) {
         await tx
           .update(objektListEntries)
-          .set({ quantity: existing.quantity + 1 })
-          .where(eq(objektListEntries.id, existing.id));
-      } else {
-        await tx.insert(objektListEntries).values({
-          objektListId: data.objektListId,
-          collectionId: data.slug,
-          quantity: 1,
-        });
+          .set({ quantity: sql`${objektListEntries.quantity} + 1` })
+          .where(
+            inArray(
+              objektListEntries.id,
+              existing.map((e) => e.id),
+            ),
+          );
+      }
+
+      const fresh = objekts.filter((o) => !existingSlugs.has(o.slug));
+      if (fresh.length > 0) {
+        await tx.insert(objektListEntries).values(
+          fresh.map((o) => ({
+            objektListId: data.objektListId,
+            collectionId: o.slug,
+            quantity: 1,
+          })),
+        );
       }
 
       if (parentList.discoverable && isTradeActive) {
-        await fireWantAddNotifications(tx, {
-          sourceUserId: userId,
-          sourceListId: data.objektListId,
-          slug: data.slug,
-          collectionName: data.collectionName,
-        });
+        for (const o of objekts) {
+          await fireWantAddNotifications(tx, {
+            sourceUserId: userId,
+            sourceListId: data.objektListId,
+            slug: o.slug,
+            collectionName: o.collectionName,
+          });
+        }
       }
     });
 
-    // want lists stack quantity, so an add always counts as one inserted
-    return { inserted: 1 };
+    // want lists stack quantity, so every add counts toward the inserted total
+    return { inserted: objekts.length };
   });
 
 /**

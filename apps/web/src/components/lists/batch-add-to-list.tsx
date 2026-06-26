@@ -1,5 +1,6 @@
 import { useBatchAddToList } from "@/hooks/use-add-to-list";
 import {
+  isTokenSelection,
   type SelectedObjekt,
   useObjektSelection,
 } from "@/hooks/use-objekt-selection";
@@ -7,12 +8,13 @@ import { m } from "@/i18n/messages";
 import {
   $addObjektsToHaveList,
   $addObjektsToList,
+  $addObjektsToWantList,
 } from "@/lib/functions/lists";
+import type { Objekt } from "@/lib/universal/objekt-conversion";
 import type { ObjektList } from "@apollo/database/web/types";
-import { IconLoader2, IconPlaylistAdd, IconPlus } from "@tabler/icons-react";
+import { IconPlaylistAdd } from "@tabler/icons-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import {
   DropdownMenu,
@@ -25,6 +27,8 @@ import {
 } from "../ui/dropdown-menu";
 import { ScrollArea } from "../ui/scroll-area";
 import BatchSaleListDialog from "./batch-sale-list-dialog";
+import BatchSerialPickerDialog from "./batch-serial-picker-dialog";
+import ListItemShell from "./list-item-shell";
 
 type Props = {
   lists: ObjektList[];
@@ -33,10 +37,26 @@ type Props = {
 export default function BatchAddToList({ lists }: Props) {
   const [open, setOpen] = useState(false);
   const [saleListPending, setSaleListPending] = useState<ObjektList>();
+  const [pickerPending, setPickerPending] = useState<{
+    list: ObjektList;
+    mode: "have" | "sale";
+  }>();
   const selected = useObjektSelection((state) => state.selected);
 
-  // want lists increment quantity via a different path and are excluded here
-  const filtered = lists.filter((list) => list.type !== "want");
+  /**
+   * index selections carry no owned serial,
+   * so have/sale prompt the user to pick which copies they own via the serial picker dialog instead
+   */
+  const collections = selected.flatMap((s) =>
+    s.type === "collection" ? [s.collection] : [],
+  );
+  const hasCollections = collections.length > 0;
+
+  // want lists track collections you don't own, so they only apply to index
+  // (collection) selections, not owned-serial selections on a profile
+  const filtered = lists.filter(
+    (list) => list.type !== "want" || hasCollections,
+  );
 
   return (
     <>
@@ -70,7 +90,17 @@ export default function BatchAddToList({ lists }: Props) {
                       />
                     );
                   case "have":
-                    return (
+                    return hasCollections ? (
+                      <ListItemShell
+                        key={list.id}
+                        list={list}
+                        isPending={false}
+                        onClick={() => {
+                          setOpen(false);
+                          setPickerPending({ list, mode: "have" });
+                        }}
+                      />
+                    ) : (
                       <HaveItem
                         key={list.id}
                         list={list}
@@ -86,8 +116,22 @@ export default function BatchAddToList({ lists }: Props) {
                         isPending={false}
                         onClick={() => {
                           setOpen(false);
-                          setSaleListPending(list);
+                          if (hasCollections) {
+                            setPickerPending({ list, mode: "sale" });
+                          } else {
+                            setSaleListPending(list);
+                          }
                         }}
+                      />
+                    );
+                  case "want":
+                    // only reachable in collection mode (filtered out otherwise)
+                    return (
+                      <WantItem
+                        key={list.id}
+                        list={list}
+                        collections={collections}
+                        onDone={() => setOpen(false)}
                       />
                     );
                   default:
@@ -107,6 +151,19 @@ export default function BatchAddToList({ lists }: Props) {
           }}
           list={saleListPending}
           currency={saleListPending.currency}
+        />
+      )}
+
+      {pickerPending && (
+        <BatchSerialPickerDialog
+          open={true}
+          onOpenChange={(open) => {
+            if (!open) setPickerPending(undefined);
+          }}
+          list={pickerPending.list}
+          mode={pickerPending.mode}
+          currency={pickerPending.list.currency ?? undefined}
+          collections={collections}
         />
       )}
     </>
@@ -139,7 +196,9 @@ function RegularItem({ list, selected, onDone }: ItemProps) {
 
 function HaveItem({ list, selected, onDone }: ItemProps) {
   // only transferable serials can be tracked on a have list
-  const eligible = selected.filter((s) => s.token.transferable);
+  const eligible = selected
+    .filter(isTokenSelection)
+    .filter((s) => s.token.transferable);
   const mutate = useBatchAddToList(
     {
       list,
@@ -179,42 +238,32 @@ function HaveItem({ list, selected, onDone }: ItemProps) {
   );
 }
 
-type ListItemShellProps = {
+type WantItemProps = {
   list: ObjektList;
-  isPending: boolean;
-  onClick: () => void;
+  collections: Objekt.Collection[];
+  onDone: () => void;
 };
 
-function ListItemShell({ list, isPending, onClick }: ListItemShellProps) {
+function WantItem({ list, collections, onDone }: WantItemProps) {
+  // want lists stack quantity, so every collection counts as added
+  const mutate = useBatchAddToList(
+    { list, attempted: collections.length, onDone },
+    () =>
+      $addObjektsToWantList({
+        data: {
+          objektListId: list.id,
+          objekts: collections.map((c) => ({
+            slug: c.slug,
+            collectionName: c.collectionId,
+          })),
+        },
+      }),
+  );
   return (
-    <DropdownMenuItem className="group truncate">
-      <button
-        type="button"
-        onClick={(event) => {
-          event.preventDefault();
-          onClick();
-        }}
-        disabled={isPending}
-        className="flex w-full items-center justify-between gap-2"
-        aria-label={m.list_add_to_list_named({ listName: list.name })}
-      >
-        <div className="flex items-center gap-1.5 text-sm">
-          <span>{list.name}</span>
-          <span className="text-xs">
-            {list.type === "have" && (
-              <Badge variant="list-have">{m.list_type_have()}</Badge>
-            )}
-            {list.type === "sale" && list.currency && (
-              <Badge variant="secondary">{list.currency}</Badge>
-            )}
-          </span>
-        </div>
-        {isPending ? (
-          <IconLoader2 className="h-4 w-4 animate-spin" />
-        ) : (
-          <IconPlus className="h-4 w-4 opacity-0 transition-all group-hover:opacity-100" />
-        )}
-      </button>
-    </DropdownMenuItem>
+    <ListItemShell
+      list={list}
+      isPending={mutate.isPending}
+      onClick={() => mutate.mutate()}
+    />
   );
 }

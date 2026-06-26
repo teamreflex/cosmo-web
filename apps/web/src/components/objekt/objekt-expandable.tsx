@@ -12,7 +12,7 @@ import { useShallow } from "zustand/react/shallow";
 
 type Props = PropsWithChildren<{
   collection: Objekt.Collection;
-  tokenId?: number | string;
+  selectionKey?: string;
   setActive?: (slug: string | undefined) => void;
   priority?: boolean;
   className?: string;
@@ -23,14 +23,16 @@ type Props = PropsWithChildren<{
  */
 export default function ExpandableObjekt({
   children,
-  tokenId = 0,
+  selectionKey,
   collection,
   setActive,
   priority = false,
   className,
 }: Props) {
   const isSelected = useObjektSelection(
-    useShallow((state) => state.isSelected(Number(tokenId))),
+    useShallow((state) =>
+      selectionKey === undefined ? false : state.isSelected(selectionKey),
+    ),
   );
 
   return (

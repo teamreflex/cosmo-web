@@ -1,5 +1,5 @@
 import { useMetadataDialog } from "@/hooks/use-metadata-dialog";
-import { useObjektSelection } from "@/hooks/use-objekt-selection";
+import { tokenKey, useObjektSelection } from "@/hooks/use-objekt-selection";
 import { m } from "@/i18n/messages";
 import { getObjektImageUrls } from "@/lib/client/objekt-util";
 import { objektQuery } from "@/lib/queries/objekt-queries";
@@ -28,7 +28,7 @@ export default function GroupedObjekt({
 }: Props) {
   const hasSelected = useObjektSelection(
     useShallow((state) =>
-      state.hasSelected(group.objekts.map((o) => o.metadata.tokenId)),
+      state.hasSelected(group.objekts.map((o) => tokenKey(o.metadata.tokenId))),
     ),
   );
 
