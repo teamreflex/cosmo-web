@@ -47,6 +47,8 @@ const createProfileStore = (initProps?: Partial<ProfileProps>) => {
         pins: state.pins.filter((p) => p.tokenId !== tokenId.toString()),
       })),
 
+    reorderPins: (pins: CosmoObjekt[]) => set((state) => ({ ...state, pins })),
+
     addObjektList: (list: ObjektList) =>
       set((state) => ({
         ...state,

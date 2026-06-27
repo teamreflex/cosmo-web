@@ -5,7 +5,7 @@ import { cosmoMiddleware } from "@/lib/server/middlewares";
 import { lockedObjekts, pins } from "@apollo/database/web/schema";
 import { pinCacheKey } from "@apollo/util-server";
 import { createServerFn } from "@tanstack/react-start";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import * as z from "zod";
 import { normalizePin } from "./pins";
 
@@ -61,10 +61,11 @@ export const $pinObjekt = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     // perform both operations in parallel
     const [, objekt] = await Promise.all([
-      // insert pin
+      // insert pin, placing it first to match the prepend behavior
       db.insert(pins).values({
         tokenId: data.tokenId,
         address: context.cosmo.address,
+        position: sql`COALESCE((SELECT MIN(${pins.position}) FROM ${pins} WHERE ${pins.address} = ${context.cosmo.address}), 0) - 1`,
       }),
       // fetch objekt
       indexer.query.objekts.findFirst({
@@ -105,6 +106,43 @@ export const $unpinObjekt = createServerFn({ method: "POST" })
         and(
           eq(pins.tokenId, data.tokenId),
           eq(pins.address, context.cosmo.address),
+        ),
+      );
+
+    await clearTag(
+      pinCacheKey(context.cosmo.username),
+      pinCacheKey(context.cosmo.address),
+    );
+    return true;
+  });
+
+/**
+ * Reorder the user's pins to match the given token id order.
+ */
+export const $reorderPins = createServerFn({ method: "POST" })
+  .validator(z.object({ tokenIds: z.array(z.coerce.number()).min(1) }))
+  .middleware([cosmoMiddleware])
+  .handler(async ({ data, context }) => {
+    // single atomic UPDATE assigning each token its index as the new position;
+    // address scoping + inArray make foreign token ids no-ops (they match no rows)
+    const cases = sql.join(
+      [
+        sql`CASE`,
+        ...data.tokenIds.map(
+          (id, i) => sql`WHEN ${pins.tokenId} = ${id} THEN ${i}`,
+        ),
+        sql`ELSE ${pins.position} END`,
+      ],
+      sql` `,
+    );
+
+    await db
+      .update(pins)
+      .set({ position: cases })
+      .where(
+        and(
+          eq(pins.address, context.cosmo.address),
+          inArray(pins.tokenId, data.tokenIds),
         ),
       );
 

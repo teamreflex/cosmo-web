@@ -146,4 +146,17 @@
       opacity: 0.65;
     }
   }
+
+  /* picked-up tilt + lift for an objekt held in a drag overlay; the back-out
+     easing gives a little springy overshoot */
+  --animate-pin-pickup: pin-pickup 220ms cubic-bezier(0.34, 1.56, 0.64, 1)
+    forwards;
+  @keyframes pin-pickup {
+    from {
+      transform: rotate(0deg) scale(1);
+    }
+    to {
+      transform: rotate(5deg) scale(1.05);
+    }
+  }
 }

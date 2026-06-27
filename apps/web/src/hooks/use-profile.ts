@@ -17,6 +17,7 @@ export interface ProfileState extends ProfileProps {
   toggleLock: (tokenId: number) => void;
   addPin: (objekt: CosmoObjekt) => void;
   removePin: (tokenId: number) => void;
+  reorderPins: (pins: CosmoObjekt[]) => void;
   addObjektList: (list: ObjektList) => void;
   removeObjektList: (listId: string) => void;
 }
